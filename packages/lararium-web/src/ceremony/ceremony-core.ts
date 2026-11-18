@@ -3,7 +3,8 @@
  * (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-ceremony).
  *
  * The ceremony document stands only where it can keep its promise: a secure context (a service worker and WebAuthn need
- * one), a top-level window (never a frame), its strict policy in force (no eval, so no injected string runs), and a broker
+ * one), a top-level window (never a frame), no opener (the page opens it `noopener`; a window some script opened and still
+ * holds could have its field read from that script, so the document refuses `ceremony-has-opener`), its strict policy in force (no eval, so no injected string runs), and a broker
  * to hand it the vessel's port. Each failure refuses by name and the document paints no form.
  *
  * This module imports nothing; the reach witness (`tools/ceremony-entry-witness.mjs`) holds the document's graph to its own
@@ -14,6 +15,8 @@ import type { CeremonyAnswer, CeremonyPasskey, CeremonyToVessel } from "../cerem
 export interface CeremonyEnv {
   readonly isSecureContext: boolean;
   readonly framed: boolean;
+  /** True when a window opened this document and kept its handle (`window.opener`): that same-origin script could read a field here. */
+  readonly opened: boolean;
   readonly hasServiceWorker: boolean;
   /** True when a string compiles as code here: the policy forbids it, so true names a policy out of force. */
   readonly evalRuns: boolean;
@@ -23,6 +26,7 @@ export interface CeremonyEnv {
 export function ceremonyRefusal(env: CeremonyEnv): string | null {
   if (!env.isSecureContext) return "ceremony-needs-secure-context";
   if (env.framed) return "ceremony-framed";
+  if (env.opened) return "ceremony-has-opener";
   if (env.evalRuns) return "ceremony-csp-absent";
   if (!env.hasServiceWorker) return "ceremony-broker-absent";
   return null;
@@ -36,6 +40,12 @@ export function evalRuns(): boolean {
 /** The ask id the page's navigation names (`#ask=<id>`), or null. */
 export function askIdOf(hash: string): string | null {
   const id = new URLSearchParams(hash.replace(/^#/, "")).get("ask");
+  return id && /^[0-9a-f-]{36}$/i.test(id) ? id : null;
+}
+
+/** The reset ask id the page's navigation names (`#reset=<id>`), or null: the ceremony then stands as a reset ceremony. */
+export function resetAskOf(hash: string): string | null {
+  const id = new URLSearchParams(hash.replace(/^#/, "")).get("reset");
   return id && /^[0-9a-f-]{36}$/i.test(id) ? id : null;
 }
 

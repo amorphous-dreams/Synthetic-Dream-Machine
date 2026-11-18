@@ -57,7 +57,7 @@ export interface SubmitResult {
    * only when the daemon's own effect index answered a repeat attempt with an earlier `done`
    * outcome rather than running the verb again (`uds-channel.ts`'s `readOutcomeFor` /
    * the awaited-outcome answer carry it as `effect-of` on the wire). Absent means this attempt
-   * ran for real. Additive: an older daemon build that never sends it reads exactly as before.
+   * ran for real.
    */
   readonly effectOf?: string;
 }

@@ -45,22 +45,19 @@ _PERSONA_ROOT_GLOB = ".persona-group-root-*.json"
 
 
 def _identity_dir(identity_dir: "str | None" = None) -> str:
-    """Resolve the on-disk identity dir — an explicit override, else `<lares>/identity`, mirroring the
-    TS `larIdentityDir()` (vessel-paths.ts): `LAR_ROOT/data/lares/identity` for isolated instances, else
-    `$XDG_DATA_HOME/lares/identity` (unset → `~/.local/share/lares/identity`).
+    """Resolve the on-disk identity dir — an explicit override, else `<root>/hearth/identity`, mirroring the
+    TS `larIdentityDir()` (vessel-paths.ts). An unnamed `LAR_ROOT` raises `HouseRootUnnamed`.
 
-    THIS MIRRORS A TS RESOLVER AND MUST FOLLOW IT. The sovereign root belongs to the SPIRITS — a Lar's
-    keys ARE that Lar — so it stands in the spirits' house beside the seal, while the house's own things
-    (the shelf, the sensoriums) stand at `<lararium>` and the state home keeps watermarks alone. A mirror
-    naming any other address reads a salt that is not there and veils against nothing. Guarded by
-    test_identity_dir_mirrors_xdg_data."""
+    THIS MIRRORS A TS RESOLVER AND MUST FOLLOW IT. The sovereign root stands in the hearth beside the seal;
+    a mirror naming any other address reads a salt that is not there and veils against nothing. Guarded by
+    test_identity_dir_mirrors_the_house_root."""
     if identity_dir:
         return identity_dir
     # ONE RESOLVER, IMPORTED — never a second derivation of the same home. A copy that re-derives it drifts
     # the first time the layout moves, and it drifts SILENTLY: a resolver one segment short opens an absent
     # directory and reports a key that is simply not there, which reads exactly like a vessel that holds none.
-    from sensorium import _lares_data_home
-    return os.path.join(_lares_data_home(), "identity")
+    import house_root
+    return house_root.identity_dir()
 
 
 def _persona_signing_secret(identity_dir: str) -> "bytes | None":

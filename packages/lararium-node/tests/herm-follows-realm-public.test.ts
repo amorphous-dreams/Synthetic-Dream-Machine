@@ -17,7 +17,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { sha256HexBytesSync, utf8Bytes, type CasReferenceEntry, type CapTier } from "@lararium/mesh";
 import { announcedRealmBooks, hermRealmShoreBooks, publicCasShore } from "../src/bulb-read-face.js";
-import { crossroadsAnnounceOf, writeRealmBagAnnounce, signRealmBagRegistration, type LarDoc } from "@lararium/mesh";
+import { realmBagAnnounceOf, writeRealmBagAnnounce, signRealmBagRegistration, type LarDoc } from "@lararium/mesh";
 import * as ed from "@noble/ed25519";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 
@@ -104,7 +104,7 @@ describe("the Herm folds its shore off the @crossroads announces, holding no cha
 
     const asked: string[] = [];
     const books = await announcedRealmBooks({
-      crossroadsDoc: () => cross,
+      announceDoc: () => cross,
       findBook: async (url) => {
         asked.push(url);
         return url === PUB_DOC
@@ -122,15 +122,15 @@ describe("the Herm folds its shore off the @crossroads announces, holding no cha
     const cross = emptyDoc();
     writeRealmBagAnnounce(cross, await signRealmBagRegistration(
       { realmId: "r", bagUri: PUBLIC_BAG, docUrl: "automerge:2rEvJcsJjTeS5nDXbyEttkWa6jJa", readTier: "public" }, [await steward()]));
-    expect(await announcedRealmBooks({ crossroadsDoc: () => cross, findBook: async () => null })).toEqual([]);
-    expect(await announcedRealmBooks({ crossroadsDoc: () => emptyDoc(), findBook: async () => null })).toEqual([]);
-    expect(await announcedRealmBooks({ crossroadsDoc: () => null, findBook: async () => null })).toEqual([]);
+    expect(await announcedRealmBooks({ announceDoc: () => cross, findBook: async () => null })).toEqual([]);
+    expect(await announcedRealmBooks({ announceDoc: () => emptyDoc(), findBook: async () => null })).toEqual([]);
+    expect(await announcedRealmBooks({ announceDoc: () => null, findBook: async () => null })).toEqual([]);
   });
 
   test("CONTROL: the announce a CONTRACT registration projects still carries no doc url", async () => {
     const rec = await signRealmBagRegistration(
       { realmId: "r", bagUri: CONTRACT_BAG, docUrl: "automerge:3EuA8kB7XEZ5MP1oBBKdxzoLzXMn", readTier: "contract" }, [await steward()]);
-    expect(crossroadsAnnounceOf(rec)).not.toHaveProperty("docUrl");
+    expect(realmBagAnnounceOf(rec)).not.toHaveProperty("docUrl");
   });
 
   // ── THE WELD (`hermRealmShoreBooks`) — the lane the Herm vessel actually wires ──────────────────
@@ -159,7 +159,7 @@ describe("the Herm folds its shore off the @crossroads announces, holding no cha
       const books = await hermRealmShoreBooks({
         realmStanding: async () => new Map(),            // a Herm holds no charter — the registration road is EMPTY
         findDoc:       async (url) => (url === PUB_DOC ? bookDoc("lar:///t.w.h/photo") : bookDoc("lar:///t.w.h/ledger")),
-        crossroadsDoc: () => cross,
+        announceDoc: () => cross,
       });
       expect(books.map((b) => b.bagUri)).toEqual([PUBLIC_BAG]);
       expect(books[0]!.readTier).toBe("public");
@@ -169,8 +169,8 @@ describe("the Herm folds its shore off the @crossroads announces, holding no cha
     test("CONTROL: a board carrying only a CONTRACT announce serves ZERO books, as an empty board does", async () => {
       const cross = await boardWith([{ bagUri: CONTRACT_BAG, docUrl: CON_DOC, readTier: "contract" as CapTier }]);
       const zero = { realmStanding: async () => new Map(), findDoc: async () => bookDoc("lar:///t.w.h/ledger") };
-      expect(await hermRealmShoreBooks({ ...zero, crossroadsDoc: () => cross })).toEqual([]);
-      expect(await hermRealmShoreBooks({ ...zero, crossroadsDoc: () => emptyDoc() })).toEqual([]);
+      expect(await hermRealmShoreBooks({ ...zero, announceDoc: () => cross })).toEqual([]);
+      expect(await hermRealmShoreBooks({ ...zero, announceDoc: () => emptyDoc() })).toEqual([]);
     });
 
     test("CONTROL: a stale PUBLIC announce never re-tiers a book the registration road declares CONTRACT", async () => {
@@ -178,7 +178,7 @@ describe("the Herm folds its shore off the @crossroads announces, holding no cha
       const books = await hermRealmShoreBooks({
         realmStanding: async () => new Map([[CONTRACT_BAG, { bagUri: CONTRACT_BAG, docUrl: CON_DOC, readTier: "contract" as CapTier }]]),
         findDoc:       async () => bookDoc("lar:///t.w.h/ledger"),
-        crossroadsDoc: () => cross,
+        announceDoc: () => cross,
       });
       expect(books.map((b) => [b.bagUri, b.readTier])).toEqual([[CONTRACT_BAG, "contract"]]);
     });

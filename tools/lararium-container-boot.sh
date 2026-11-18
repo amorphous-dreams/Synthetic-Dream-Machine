@@ -15,9 +15,8 @@ cp -r /app/genesis/cas  "$LAR_ROOT/genesis/" 2>/dev/null || true   # the CAS sub
 # in that vessel's own store (<lares>/vessel), so no copy of a seed can hand a container someone
 # else's identity. Each container founds its own below.
 #
-# THE STORE SITES BY HOUSE, NOT BY KIND. Under LAR_ROOT each directory names an XDG kind — data, state,
-# cache, config, run — and the two houses nest inside the data kind exactly as they do under XDG, so the
-# spirits' substrate stands at `<root>/data/lares/vessel` beside the house's `<root>/data/lararium`.
+# THE STORE SITES BY CLASS. Under LAR_ROOT each first-level directory names one class — hearth, library,
+# projections, config, cache, run — and the spirits' substrate stands at `<root>/hearth/vessel`.
 # A probe reading one segment short finds nothing and re-founds a container that already stands.
 
 # THE CARD OF A STAGED HEARTH. On a staged root the founding's read-back stands in, and its JSON answer carries the
@@ -27,7 +26,7 @@ _card=""
 _json_line() { node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>{const l=s.split("\n").filter((x)=>x.startsWith("{")).pop();process.stdout.write(l??"")})'; }
 _card_of() { node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).data.cards[0].code??""))}catch{}})'; }
 
-_bootstrap="$LAR_ROOT/data/lares/vessel/social-bootstrap.json"
+_bootstrap="$LAR_ROOT/hearth/vessel/social-bootstrap.json"
 # A HEARTH WHOSE FOUNDING STOPPED RESUMES. A place that stands with no face lit, under LAR_STAND_FACE, runs the
 # Stable founding act again: the act skips what stands (the place, a seed charter it already seated) and completes.
 _resume=""

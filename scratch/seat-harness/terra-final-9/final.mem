@@ -1,0 +1,49 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-9/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/terra-final-9/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-9/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-9/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/terra-final-9/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-9/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HOLD.'' The lane-ID and staging changes address the specific round-8 examples, but the install door still follows lead-controlled paths with broker authority. That repeats the broader ''pathname and authority-boundary class'' from earlier rounds. The findings are ''LEAD'' conclusions from source and test inspection; I did not reproduce them or construct payloads.
+
+# ''P1 — Install can re-resolve a worktree outside the lane.'' The relay resolves an install target under the lane in [[commit-relay.mjs:105|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:105]], then passes the pathname to the install wall. The wall later uses that pathname for a writable bind in [[seat-walls.mjs:185|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:185]]. For an ordinary lane worktree, a lead-controlled parent can change between validation and the bind, so the installer can be given writable access to a different directory. The [[install-door test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:476]] covers registry resolution, not a post-validation swap. This belongs in the present broker boundary, not row 7.
+
+# ''P1 — Install preflight can read outside the worktree with broker authority.'' Before starting bubblewrap, [[seat-walls.mjs:165|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:165]] follows `.npmrc` and reads it by pathname. A symlink or changed parent can direct that read outside the worktree; a parsed disallowed key is returned in the relay response. The [[hostile-config test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:244]] checks regular `.npmrc` files and the installer’s wall, not this pre-wall read. This is another part of the same pathname-boundary surface.
+
+# ''P2 — The staging verifier does not verify the scratch parent’s write permissions.'' [[ensureStageRoot|/home/joshu/.lares-scratch/seat-harness/wt/tools/broker-root.mjs:140]] checks that scratch is a directory owned by the user, but does not reject group- or world-writable scratch. Someone able to write that parent could replace the staging entry despite the children being `0700`. The [[test named for group-writable scratch|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:574]] does not actually change or test scratch’s permissions. On this host, scratch is ''MEASURED'' as `0755`, so this is a permitted-configuration gap rather than an observed unsafe setting here.
+
+The round-8 cures have targeted support. The [[lane-ID test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:554]] covers different real paths with the same basename and a symlink alias; the [[go test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:564]] covers lane and destination mismatch. The [[staging tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:574]] and [[launcher preflight test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:1203]] cover the named overlap and component examples, subject to finding 3.
+
+For the remaining confirmations:
+
+* The broker’s [[hook, filter, submodule and environment tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:220]] and [[read-race tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:278]] support the exercised paths. Findings 1–2 prevent confirming the universal authority and lane-root claims. The relay rejects lead launches; push authorization now includes lane and destination.
+* [[Marker matching|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:409]], blindness and read-error tests support ordinary rollout association and fail-closed watching. I cannot confirm that the watchdog //never// signals the wrong process: the previously acknowledged host process-group ID reuse edge remains at [[launch-codex.mjs:467|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:467]].
+* The receipt binds tree, check names and definitions, and its key and receipts remain in memory. The [[receipt tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:325]] and [[read-only export test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:409]] support those properties, subject to the documented host ptrace and seat seccomp assumptions, which I did not measure.
+* Missing walls refuse by name before check or install execution, as covered by [[the refusal test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:440]]. The [[mode and floor tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:367]] support the stated floors and thresholds; I found no additional floor regression.
+
+I ran no tests and wrote no files. Green CI at `b45b756df`, run `41979312768`, with live bubblewrap proofs is a ''MEASURED report supplied in the hand-off'', not an independent measurement by this review.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tePdVBLVXeLjysckD0APoqxVtgjz-sPGUMhHoTTFYrc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

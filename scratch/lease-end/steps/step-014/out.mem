@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-014/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-014/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-014/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-014/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-014/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-014/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-14-hand-back`>>
+
+! Step 14 hand-back
+
+Head `107f4916c74f32a90fbc8881ac5cefacf14a6d13`; no live seats; no push. Relay 023–025 received receipts; next request 026. The commit carries the required attribution trailers. The state counter remains 14.
+
+* Found and fixed a seat wake race: a daemon change while `founderStanding` awaits could arrive before `waitingOnProof` was set, losing the only retry of an aside that had lifted. The seat now queues a trailing pass when a change arrives during any active pass; an idle seat with no pending proof still does no work. The controlled test snapshots aside, blocks the read, delivers a change and then releases it; the lift seats on the trailing pass, while an unchanged aside never seats. Relay 023 measured red (30 pass, 1 fail: 1 read, 0 ingests rather than 2 and 1); relay 024 green (31 pass). `git diff --check` passed before commit.
+* This fixes only delivery of a wake already reaching `daemonChanged`. The live fleet-board-to-seat wake remains UNWIRED on both shores. Browser must subscribe to its actual board/ledger proof changes, with lifecycle and arrival races covered. Node must signal from the vessel's completed `edge-shadow-ring` refold across the worker boundary, never before the authoritative fold lands. Caller-level reds with unchanged-aside controls remain owed. Also examine a change from clear to aside during an in-flight read/ingest; this change does not claim to fence stale authority or close that TOCTOU.
+* `verifyFounderAuthority` already walks lineage before standing at this head (commit `dedd08ae4`); the blind read's fork-masking residue already cleared. Founder lineage freshness after boot, non-memoized fork changes, tri-state ring, remaining epoch-free consumer/type hygiene, daemon join wiring/TOCTOU, complete-view census and the three remaining authority readers remain owed. The edge board explicitly holds no roster (`kapae.mem` #/four-edges); the census needs independently supported completeness and must refuse incomplete proof by name. Keep roll guard and epoch fields until later slices.
+
+Whole non-daemon suites remain due before ready; daemon packages run named single files through the broker; e2e stays in CI. Obtain blind Opus custody read before land; no push without controller go.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Iil2ohoRbEhmVV4u9CLgbjUWz1QMSebhAKyWYo3Lf6I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

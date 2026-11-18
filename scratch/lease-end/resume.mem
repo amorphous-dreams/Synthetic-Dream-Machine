@@ -1,0 +1,35 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/resume`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — resume, 2026-11-07 (file date) — source `.lares-scratch/lease-end/resume.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/resume"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/resume"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! resume.md — resume, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/resume.md` (resume, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-9`>>
+
+!! Step 9
+Lease-Wright (Opus seam lead) cured the grant slice at 3b9cac44d over 24dac581b. The build and typecheck pass, and 11 single test files are green. The founder's authority is now its anchor-pinned KEL plus its remove-wins dyad standing, with no lease. The writer refuses before any mutation, and the seat reads the founder's standing. The census leaves 3 sites that still take a signature as authority: runApplyAdmitPayload, leaf-peer-proof (b5b) and holder-session-proof. A blind Opus custody read is owed before land. Full report: steps/step-009/out.md.
+* Follow-up: 5ba18c736 cures the evergreen narration in the CI red (164/164) and drops the two P3s. Not pushed.
+* Follow-up 2: 8b0c2d818. The e2e face-join verify carries founder proof. Single e2e 6/6. Not pushed.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;is_EeRKVStuH0SLD74JtpFpBeQHeH8y8LlSgcvLGw1Q`>>
+
+<<^ code=`&#x0004;` to=`?`>>

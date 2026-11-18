@@ -157,12 +157,13 @@ function sourceFiles(root, readDir) {
 /**
  * Drop the comments from one file, keeping every string and regex literal as written: a scanner walks the characters
  * and tracks whether it stands inside a quoted or template string, a regex literal, a `//` comment or a block
- * comment, so a `/*` inside a string, a regex or after `//` opens nothing. A `/` opens a regex where an expression
+ * comment (a template's `${…}` reads as code until its own `}`, so a template nested there closes where it opened), so a `/*` inside a string, a regex or after `//` opens nothing. A `/` opens a regex where an expression
  * may begin (after `( = , : [ ! & | ? { } ; + - * % < > ~ ^` or `return`, or at a line's start). Returns the lines,
  * comments blanked, and the mode the file ends in: anything but `code` or `line` reads red by name.
  */
 export function stripComments(text) {
   let out = ""; let mode = "code"; let quote = ""; let inClass = false; let last = "";
+  const braces = [];   // one entry per open `{` in code: "tpl" where a template's `${` opened it
   for (let i = 0; i < text.length; i++) {
     const c = text[i]; const n = text[i + 1];
     if (mode === "code") {
@@ -170,6 +171,8 @@ export function stripComments(text) {
       if (c === "/" && n === "*") { mode = "block"; i++; continue; }
       if (c === "/" && (last === "" || /[(=,:[!&|?{};+\-*%<>~^]/.test(last) || /\breturn\s*$/.test(out.slice(-12)))) { mode = "regex"; inClass = false; out += c; continue; }
       if (c === "\"" || c === "'" || c === "`") { mode = "string"; quote = c; }
+      else if (c === "{") braces.push("code");
+      else if (c === "}" && braces.pop() === "tpl") { mode = "string"; quote = "`"; }
       out += c;
       if (c === "\n") last = ""; else if (!/\s/.test(c)) last = c;
     } else if (mode === "string" || mode === "regex") {
@@ -183,6 +186,7 @@ export function stripComments(text) {
         continue;
       }
       if (c === quote) { mode = "code"; last = c; }
+      else if (quote === "`" && c === "$" && n === "{") { out += n; i++; braces.push("tpl"); mode = "code"; last = "{"; }
       else if (c === "\n" && quote !== "`") { mode = "code"; last = ""; }   // an unclosed quote ends with its line
     } else if (mode === "line") {
       if (c === "\n") { mode = "code"; out += c; last = ""; }

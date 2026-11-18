@@ -16,7 +16,7 @@
 import { describe, expect, test } from "vitest";
 import { bindSlot, decodeSlotTree, encodeSlotTree, nobleKdf, verifyEd25519, type Credential, type DeviceDelegationTiddler } from "@lararium/mesh";
 import {
-  lockBrowserCustody, readKeystoreRow, sealBrowserKeystore, unlockBrowserCustody, withCustodyRows, writeKeystoreRow,
+  lockBrowserCustody, readKeystoreRecord, sealBrowserKeystore, unlockBrowserCustody, withCustodyRecords, writeKeystoreRecord,
 } from "../src/browser-custody.js";
 import { generateOrLoadBrowserPersonaRoot, idbGet, idbPut, listBrowserPersonaRoots, openVesselIdb, wearFaceOfVessel } from "../src/browser-vessel-identity.js";
 import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
@@ -27,6 +27,13 @@ import { browserWalkLeaf } from "../src/browser-walk.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { BootHalted } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { browserKeystoreCustodyIo } from "../src/browser-custody.js";
+
+/** The one root ward's row of that name in this keystore (a root files under its face's custody tree), or a name no row holds. */
+async function wardRow(idbName: string, row: string): Promise<string> {
+  const held = (await browserKeystoreCustodyIo(idbName).list()).filter((r) => /^ward\/root\/[0-9a-f]{32}\//.test(r) && r.endsWith(`/${row}`));
+  return held.length === 1 ? held[0]! : `ward/root/none/${row}`;
+}
 
 const CUSTODY = { kind: "passphrase", passphrase: "this browser's custody" } as const;
 const WARD: Credential = { kind: "passphrase", passphrase: "this face's ward route" };
@@ -77,18 +84,18 @@ describe("r1 · unlocked custody never reaches the face root", () => {
   test("RED: with custody unlocked, the ordinary row doors refuse the root `ward-needs-fresh-unlock` and change no byte; CONTROL: the device seed and the roster still open", async () => {
     const { idbName } = await wardedVessel("r1");
     const before = await keystoreKeys(idbName);
-    expect(readingOf(await settle(readKeystoreRow(idbName, "persona-root-h0")))).toBe("ward-needs-fresh-unlock");
-    expect(readingOf(await settle(writeKeystoreRow(idbName, "persona-root-h0", { verifyingKey: "a".repeat(64), signingKey: "b".repeat(64) })))).toBe("ward-needs-fresh-unlock");
-    expect(readingOf(await settle(withCustodyRows(idbName, (rows) => rows.delete("persona-root-h0"))))).toBe("ward-needs-fresh-unlock");
-    expect(readingOf(await settle(withCustodyRows(idbName, (rows) => rows.read("persona-root-h0"))))).toBe("ward-needs-fresh-unlock");
+    expect(readingOf(await settle(readKeystoreRecord(idbName, "persona-root-h0")))).toBe("ward-needs-fresh-unlock");
+    expect(readingOf(await settle(writeKeystoreRecord(idbName, "persona-root-h0", { verifyingKey: "a".repeat(64), signingKey: "b".repeat(64) })))).toBe("ward-needs-fresh-unlock");
+    expect(readingOf(await settle(withCustodyRecords(idbName, (rows) => rows.delete("persona-root-h0"))))).toBe("ward-needs-fresh-unlock");
+    expect(readingOf(await settle(withCustodyRecords(idbName, (rows) => rows.read("persona-root-h0"))))).toBe("ward-needs-fresh-unlock");
     expect(await keystoreKeys(idbName)).toEqual(before);
     // CONTROL: the rows that are not the root write, open and leave under the same unlock.
     const nexusKey = globalThis.crypto.getRandomValues(new Uint8Array(32));
     await bindFirstFaceSlot(idbName, FACE, CUSTODY);
-    await writeKeystoreRow(idbName, `nexus-key/${FACE}/nexus-a`, nexusKey);
-    expect(await readKeystoreRow(idbName, `nexus-key/${FACE}/nexus-a`)).toEqual(nexusKey);
-    await withCustodyRows(idbName, (rows) => rows.delete(`nexus-key/${FACE}/nexus-a`));
-    expect(await readKeystoreRow(idbName, `nexus-key/${FACE}/nexus-a`)).toBeUndefined();
+    await writeKeystoreRecord(idbName, `nexus-key/${FACE}/nexus-a`, nexusKey);
+    expect(await readKeystoreRecord(idbName, `nexus-key/${FACE}/nexus-a`)).toEqual(nexusKey);
+    await withCustodyRecords(idbName, (rows) => rows.delete(`nexus-key/${FACE}/nexus-a`));
+    expect(await readKeystoreRecord(idbName, `nexus-key/${FACE}/nexus-a`)).toBeUndefined();
     expect(await listBrowserPersonaRoots(idbName)).toEqual([0]);
   }, SLOW);
 });
@@ -129,15 +136,15 @@ describe("r3 · a passkey never opens or binds the ward", () => {
     expect(await keystoreKeys(bare)).toEqual(before);
     expect(await listBrowserPersonaRoots(idbName)).toEqual([0]);
     // A hand-edited ward tree that carries a passkey pin refuses before any derivation.
-    const tree = await rowOf(idbName, "ward/h0/slots");
+    const tree = await rowOf(idbName, await wardRow(idbName, "slots"));
     expect(decodeSlotTree(tree instanceof Uint8Array ? tree : null).reading).toBe("readable");
     const passkeyPin = { kind: "passkey", credentialId: new Uint8Array([9]), prfSalt: new Uint8Array(32).fill(1), prfOutput: new Uint8Array(32).fill(2) } as const;
     const widened = await bindSlot(null, new Uint8Array(32).fill(3), { t: 1, pins: [{ kind: "passphrase", passphrase: (WARD as { passphrase: string }).passphrase }, passkeyPin] }, nobleKdf);
     const db = await openVesselIdb(idbName);
-    try { await idbPut(db, "keystore", "ward/h0/slots", encodeSlotTree(widened)); } finally { db.close(); }
+    try { await idbPut(db, "keystore", await wardRow(idbName, "slots"), encodeSlotTree(widened)); } finally { db.close(); }
     expect(readingOf(await settle(browserWardSign(idbName, 0, WARD, new Uint8Array([1]), spawnCore(watched))))).toBe("ward-passkey-refused");
     const db2 = await openVesselIdb(idbName);
-    try { await idbPut(db2, "keystore", "ward/h0/slots", tree); } finally { db2.close(); }
+    try { await idbPut(db2, "keystore", await wardRow(idbName, "slots"), tree); } finally { db2.close(); }
     // CONTROL: the human route signs.
     const signed = await browserWardSign(idbName, 0, WARD, new Uint8Array([1]), spawnCore(watched));
     expect(signed.key).toBe(rootKey);
@@ -147,8 +154,8 @@ describe("r3 · a passkey never opens or binds the ward", () => {
 describe("r4 · the root rests under the ward from its first write", () => {
   test("RED: a mint lands a ward tree for the face and a `lares-ward-seal` root row, and no root row the keystore's tree key opens; CONTROL: the ward signs as that root", async () => {
     const { idbName, rootKey } = await wardedVessel("r4");
-    expect(decodeSlotTree((await rowOf(idbName, "ward/h0/slots")) as Uint8Array).reading).toBe("readable");
-    expect(startsWard(await rowOf(idbName, "ward/h0/persona-root"))).toBe(true);
+    expect(decodeSlotTree((await rowOf(idbName, await wardRow(idbName, "slots"))) as Uint8Array).reading).toBe("readable");
+    expect(startsWard(await rowOf(idbName, await wardRow(idbName, "persona-root")))).toBe(true);
     expect(await rowOf(idbName, "sealed/persona-root-h0")).toBeUndefined();
     expect(await rowOf(idbName, "persona-root-h0")).toBeUndefined();
     expect((await browserWardSign(idbName, 0, WARD, new Uint8Array([2]), spawnCore([]))).key).toBe(rootKey);
@@ -159,10 +166,10 @@ describe("r4 · the root rests under the ward from its first write", () => {
     // The founder face stands first on this thread, so the founding asks no first bind and binds the ward over its own route.
     await standFounderFace({ idbName, ask: async () => CUSTODY });
     const asked: unknown[] = [];
-    await expect(openBrowserVessel({ idbName, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return (WARD as { passphrase: string }).passphrase; },
+    await expect(openBrowserVessel({ idbName, foundFace: true, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return (WARD as { passphrase: string }).passphrase; },
       onPhase: (phase: string) => { if (phase === "bootstrap-kept") throw new BootHalted(); } } as BrowserVesselOptions)).rejects.toBeInstanceOf(BootHalted);
     expect(asked, "a founding that binds the ward asks the route twice").toEqual(["bind", "retype"]);
-    expect(startsWard(await rowOf(idbName, "ward/h0/persona-root"))).toBe(true);
+    expect(startsWard(await rowOf(idbName, await wardRow(idbName, "persona-root")))).toBe(true);
     expect(await rowOf(idbName, "sealed/persona-root-h0")).toBeUndefined();
     const db = await openVesselIdb(idbName);
     const social = await idbGet<{ deviceEdge: DeviceDelegationTiddler }>(db, "bootstrap", "social-bootstrap");
@@ -178,12 +185,12 @@ describe("r4b · a founding's ward binds only over a route retyped alike", () =>
     await standFounderFace({ idbName, ask: async () => CUSTODY });
     const asked: unknown[] = [];
     const typed = (WARD as { passphrase: string }).passphrase;
-    const reading = await openBrowserVessel({ idbName, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return asked.length === 1 ? typed : `${typed}!`; },
+    const reading = await openBrowserVessel({ idbName, foundFace: true, askWardRoute: async (_act: string, kind?: unknown) => { asked.push(kind); return asked.length === 1 ? typed : `${typed}!`; },
       onPhase: (phase: string) => { if (phase === "bootstrap-kept") throw new BootHalted(); } } as BrowserVesselOptions)
       .then(() => "landed", (e: { reading?: string; message: string }) => e.reading ?? e.message);
     expect(reading).toBe("ward-route-mismatch");
-    expect(await rowOf(idbName, "ward/h0/persona-root")).toBeUndefined();
-    expect(await rowOf(idbName, "ward/h0/slots")).toBeUndefined();
+    expect(await rowOf(idbName, await wardRow(idbName, "persona-root"))).toBeUndefined();
+    expect(await rowOf(idbName, await wardRow(idbName, "slots"))).toBeUndefined();
   }, SLOW);
 });
 
@@ -198,7 +205,7 @@ describe("r5 · the walk's possession check reads no seed", () => {
     const AID = "nexus-" + "a".repeat(64);
     const leaf = await browserWalkLeaf(idbName, AID, FACE);
     expect(leaf.seed).toHaveLength(32);
-    expect((await keystoreKeys(idbName)).filter((k) => /persona-root(?!-roster)/.test(k))).toEqual(["ward/h0/persona-root"]);
+    expect((await keystoreKeys(idbName)).filter((k) => /persona-root(?!-roster)/.test(k))).toEqual([await wardRow(idbName, "persona-root")]);
     await expect(browserWalkLeaf(idbName, AID, "g-held-nowhere")).rejects.toThrow();
   }, SLOW);
 });

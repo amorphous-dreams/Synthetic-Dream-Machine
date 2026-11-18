@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionDir, KAPAE_EXT, readKapaeShadow } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -72,6 +72,25 @@ export interface ScanRow {
    *  re-links records change-id-preserving, `pairRenames`), the source rides
    *  the wave as a rename-deletion, and the CLI moves the observation post-confirm. */
   readonly renameFrom?: string;
+  /** THE OVERRIDE BASE A CARRY RESTORES: the carrier identity (`carrierHash`, `sha256:…`) of the canon record a working copy forked from, as an export
+   *  read it off the record's meta envelope. The island stamps it on the record a working-layer wave lands, so a bundle's
+   *  override keeps its base across a re-founding. Absent for every disk scan: a base never projects. */
+  readonly overrideBase?: string;
+  /** The family's other bases, by fragment title (`<uri>#…`): each fragment record of a working copy forked its own, so
+   *  canon may move a fragment while the root holds still. The island stamps each on the fragment it lands. */
+  readonly familyBases?: Readonly<Record<string, string>>;
+}
+
+/**
+ * THE BASES ONE CARRIER CARRIES, out of a by-title map (an override-bases read, a face's bases sidecar): its root's
+ * (`overrideBase`) and each fragment's of its family (`familyBases`, every title `<uri>#…`). A carrier none names carries none.
+ */
+export function carriedBasesOf(uri: string, bases: Readonly<Record<string, string>>): { overrideBase?: string; familyBases?: Readonly<Record<string, string>> } {
+  const family = Object.entries(bases).filter(([title]) => title.startsWith(`${uri}#`));
+  return {
+    ...(bases[uri] !== undefined ? { overrideBase: bases[uri] } : {}),
+    ...(family.length > 0 ? { familyBases: Object.fromEntries(family) } : {}),
+  };
 }
 
 export interface ScanResult {
@@ -90,10 +109,10 @@ export interface ScanResult {
   readonly refusedShadows?: Array<{ readonly file: string; readonly refusal: string }>;
 }
 
-/** Open the Synced tree at the canonical projection-state path (larProjectionDir() —
- *  runtime vessel state, not corpus). */
+/** Open the Synced tree at the canonical projection checkpoint (larProjectionCheckpointDir() —
+ *  runtime vessel state inside the hearth, not corpus). */
 export function openSyncedTree(): SyncedTree {
-  return new SyncedTree(syncedTreeDir(larProjectionDir()));
+  return new SyncedTree(syncedTreeDir(larProjectionCheckpointDir()));
 }
 
 /**
@@ -150,9 +169,10 @@ function listSourceFiles(source: string): string[] | null {
  *  names which address reverse-derivation a row carries. */
 export type FileToUriFn = (root: string, file: string) => string | null;
 
-/** The two mirror directories a vessel reads — `LAR_BAGS` / `LAR_WIKIS` (cli `larBagsDir()` / `larWikisDir()`),
- *  which may sit outside `LAR_ROOT`. */
-export interface MirrorDirs { readonly bags: string; readonly wikis: string }
+/** The mirror directories a vessel reads — `LAR_BAGS` / `LAR_WIKIS` (cli `larBagsDir()` / `larWikisDir()`),
+ *  which may sit outside `LAR_ROOT`, and the house's projections root (`<root>/projections`), whose `bags/` and
+ *  `wikis/` read the same way. */
+export interface MirrorDirs { readonly bags: string; readonly wikis: string; readonly projections?: string }
 
 /**
  * Pick the address reverse-derivation by which mirror plane the source sits in.
@@ -166,9 +186,13 @@ export function fileToUriForSource(
   root: string, source: string,
   dirs: MirrorDirs = { bags: join(root, "bags"), wikis: join(root, "wikis") },
 ): FileToUriFn {
-  const wikisRoot = resolve(dirs.wikis);
   const abs = resolve(source);
-  const dir = abs === wikisRoot || abs.startsWith(wikisRoot + sep) ? dirs.wikis : dirs.bags;
+  const under = (dir: string): boolean => { const r = resolve(dir); return abs === r || abs.startsWith(r + sep); };
+  const projected = dirs.projections === undefined ? null
+    : under(join(dirs.projections, "wikis")) ? join(dirs.projections, "wikis")
+    : under(join(dirs.projections, "bags")) ? join(dirs.projections, "bags")
+    : null;
+  const dir = projected ?? (under(dirs.wikis) ? dirs.wikis : dirs.bags);
   return (_root, file) => mirrorDirFileToUri(dir, file);
 }
 
@@ -797,12 +821,17 @@ export interface SubmitIngestOpts {
    * executes daemon-side (canon bags).
    */
   readonly inWiki?: boolean;
+  /** With `inWiki`, the wiki the INGEST runs in by name (the `wiki-act` road's own `wiki`), never the active one. */
+  readonly wiki?: string;
   /**
    * NO PERSON STANDS BEHIND THIS WAVE. The watcher sets it on every wave it settles by itself; `lares
    * ingest` and every other gesture a person names leave it absent. The island's gate then never adopts
    * a file that holds no base over records that say something else: it answers `conflict`, `no-base`.
    */
   readonly unattended?: boolean;
+  /** THE FACE-NAMED WAVE (the lit set): the handle index of the open face whose own layer takes this wave. The island lands it
+   *  only where its device table names that face as the target document's owner; it never falls back to the daemon mount. */
+  readonly face?: number;
 }
 
 /**
@@ -815,7 +844,7 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
   const changeId = opts.changeId ?? newChangeId();
   const deletions = opts.deletions ?? [];
   const actionArgs: Record<string, unknown> = {
-    "source-uri": opts.source,
+    "source-uri": resolve(opts.source),
     "to-bag":     opts.toBag,
     "change-id":  changeId,
     // THE BLOB LAW (cas-stage.ts): a pointer-kind `type` (the `.meta` declaration first, else TW5's
@@ -834,17 +863,20 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
         ...(staged.staged ? { textCid: staged.cid } : { text: r.text }),
         ...(staged.skinny ? { skinny: true } : {}),
         ...(r.meta !== undefined ? { meta: r.meta } : {}),
+        ...(r.overrideBase !== undefined ? { overrideBase: r.overrideBase } : {}),
+        ...(r.familyBases !== undefined ? { familyBases: r.familyBases } : {}),
       };
     }),
     ...(deletions.length > 0 ? { deletions: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),
     ...(opts.kapae !== undefined && opts.kapae.length > 0 ? { kapae: [...opts.kapae] } : {}),
     ...(opts.unattended === true ? { unattended: true } : {}),
+    ...(opts.face !== undefined ? { face: opts.face } : {}),
   };
   // --in-wiki: wrap the INGEST so it runs IN the active wiki island over its
   // composite (where working lives), mirroring `lares act --in-wiki`. The
   // default submits daemon-side for canon bags.
   const submitName = opts.inWiki ? "wiki-act" : "INGEST";
-  const submitArgs = opts.inWiki ? { verb: "INGEST", args: actionArgs } : actionArgs;
+  const submitArgs = opts.inWiki ? { verb: "INGEST", args: actionArgs, ...(opts.wiki !== undefined ? { wiki: opts.wiki } : {}) } : actionArgs;
   const requestId = await taskContentId({ subject: opts.toBag, command: submitName, args: submitArgs, nonce: "" });
   const timeoutMs = Math.max(10_000, 10_000 + (opts.candidates.length + deletions.length + (opts.kapae?.length ?? 0)) * 400);
   return await runVerb(submitName, submitArgs, opts.did, { requestId, timeoutMs });

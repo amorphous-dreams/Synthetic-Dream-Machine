@@ -51,7 +51,7 @@ function walkFiles(dir: string): string[] {
 
 /** Poll the staged root's lares-bag mirror surface until files appear (or timeout). */
 async function awaitMirrorFiles(root: string, timeoutMs = 30_000): Promise<string[]> {
-  const mirrorRoot = join(root, "bags/lares");
+  const mirrorRoot = join(root, "projections/bags/lares");
   const start = Date.now();
   for (;;) {
     const files = walkFiles(mirrorRoot);

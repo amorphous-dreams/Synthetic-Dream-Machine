@@ -579,7 +579,7 @@ export interface LockboxRecord {
 }
 /** One row of a durable chunk index: where a sealed value sits in its bag's causal shape. It holds no bag id,
  *  no logical reference and no key: a reader derives the locator from the key, and a carrier keeps the row as it stands. */
-export interface SealedChunkIndexRow {
+export interface SealedChunkIndexEntry {
   readonly bag:        BagLocator;
   readonly keyVersion: KeyVersionId;
   readonly role:       ChunkRole;
@@ -590,7 +590,7 @@ export interface SealedChunkIndexRow {
   readonly manifest:   RecordId;
 }
 /** The index rows one verified manifest yields, in entry order. */
-export function indexRowsOf(manifest: VerifiedRecord<"manifest">): SealedChunkIndexRow[] {
+export function indexEntriesOf(manifest: VerifiedRecord<"manifest">): SealedChunkIndexEntry[] {
   if (!VERIFIED.has(manifest) || manifest.kind !== "manifest") throw new TypeError("sealed-records: only a verified manifest yields index rows");
   return manifest.body.entries.map((entry) => ({
     bag: manifest.body.bag, keyVersion: manifest.body.keyVersion, role: entry.role, address: entry.address,

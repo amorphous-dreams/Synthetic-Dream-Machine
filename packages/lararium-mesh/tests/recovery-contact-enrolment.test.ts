@@ -22,7 +22,7 @@ import { hex } from "../src/crypto.js";
 import { sealKeySetHash } from "../src/wax-stamp.js";
 import { buildDeviceDelegation } from "../src/device-delegation.js";
 import {
-  mintPersonaInception, mintPersonaRotation, mintRecoveryContactEnrolment, mintVeto, personaRotationSigningBytes,
+  mintPersonaInception, mintPersonaRotation, recoverySetCommitment, mintRecoveryContactEnrolment, mintVeto, personaRotationSigningBytes,
   personaEnrolmentSigningBytes, personaEventBytes, personaEventCidOf, personaPrefixOf, sealedEnrolmentBytes,
   verifyPersonaKel, verifyPersonaKelFull,
   foldPersonaContests, headOpKey, verifyEdgeAgainstPersonaKel, enrolmentDigestOf, RECOVERY_CONTACT_ENROLMENT_KIND,
@@ -59,7 +59,7 @@ async function oneOfOne(): Promise<{ inception: PersonaKelEvent; selfPub: string
 
 async function friends(threshold = 2): Promise<{ keys: string[]; hash: string }> {
   const keys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
-  return { keys, hash: sealKeySetHash(keys, threshold) };
+  return { keys, hash: recoverySetCommitment((await oneOfOne()).inception.prefix, keys, threshold) };
 }
 
 async function enrolled(head: PersonaKelEvent, seed: Uint8Array = SEEDS.opA): Promise<PersonaKelEvent> {

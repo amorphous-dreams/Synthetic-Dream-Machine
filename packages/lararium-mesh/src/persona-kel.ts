@@ -9,7 +9,7 @@
  *   · the IDENTIFIER PREFIX — a content-address over the inception op-key + the pre-committed recovery-set
  *     digest — stays FIXED across every rotation (the KERI autonomic-identifier / AID),
  *   · each event SEATS one operational key (`opKeyDid`); the LATEST head carries the authoritative key,
- *   · a rotation ADVANCES the head, hash-linked onto its predecessor; the old op-key SUPERSEDES, never
+ *   · a rotation ADVANCES the head, hash-linked onto its predecessor; the superseded op-key stays SUPERSEDED, never
  *     revives (evict runs forward-only — identity-classes#reading-b-recovery §4).
  *
  * FORK B — threshold-attest (identity-classes#the-two-forks): inception pre-commits the k-of-n DIGEST of
@@ -25,7 +25,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/persona-kel
  */
 
-import { PERSONA_KEL_DOMAIN, SEALED_ENROLMENT_DOMAIN } from "./domains.js";
+import { PERSONA_KEL_DOMAIN, RECOVERY_SET_COMMITMENT_DOMAIN, SEALED_ENROLMENT_DOMAIN } from "./domains.js";
 import { sha256HexSync, canonicalJson, canonicalJsonBytes } from "./crypto.js";
 import { sealKeySetHash } from "./wax-stamp.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
@@ -228,6 +228,35 @@ export function personaPrefixOf(inceptionOpKeyDid: string, recoverySetHash: stri
 }
 
 /**
+ * THE COMMITMENT A FACE MAKES FOR A RECOVERY CONTACT SET: the set's digest (`sealKeySetHash`, order-blind and
+ * threshold-folded) hashed again with the face's own prefix, under its own name. A contact who answers two faces with one
+ * key, or two faces that name the same three contacts, would otherwise show EQUAL digests on two key histories, and a
+ * reader of both boards would join the faces. Salted with the prefix, one set commits an unrelated digest for each face.
+ * The prefix rides every event of the history, so a reveal verifies against the head alone; nothing new rests or travels.
+ *
+ * Every commitment a face makes AFTER its inception takes this form: the first enrolment and each rotation's graft. The
+ * genesis commitment keeps the bare digest (the prefix derives from it, so it cannot salt with the prefix): a face founds
+ * one of one over its own self-recovery key, which no other face holds.
+ */
+export function recoverySetCommitment(prefix: string, keys: readonly string[], threshold: number): string {
+  if (prefix.length === 0) throw new Error("recovery commitment: a set commits under its face's prefix");
+  return sha256HexSync(canonicalJson({ domain: RECOVERY_SET_COMMITMENT_DOMAIN, face: prefix, set: sealKeySetHash(keys, threshold) }));
+}
+
+/**
+ * Does a revealed roster match `commitment` on this face's history? The genesis commitment (the wall every event carries,
+ * `recoverySetHash`) reveals as the bare digest it committed; every other commitment reveals salted with the prefix.
+ * A salted digest never equals the genesis wall, so the form reads off the history's own fields.
+ */
+function revealMatchesCommitment(
+  face: Pick<PersonaEventCore, "prefix" | "recoverySetHash">, roster: readonly string[], threshold: number, commitment: string,
+): boolean {
+  return commitment === face.recoverySetHash
+    ? sealKeySetHash(roster, threshold) === commitment
+    : recoverySetCommitment(face.prefix, roster, threshold) === commitment;
+}
+
+/**
  * Seat the INCEPTION event (seq 0, no predecessor) from the founding op-key + a PRE-COMMITMENT to the
  * recovery contacts' recovery key-set (its digest, `sealKeySetHash`). The founding op-key seats itself here
  * self-authorized — exactly as today's founder edge self-signs; the recovery keys never sign until a
@@ -322,7 +351,7 @@ export async function mintPersonaRotation(input: {
   }
   const weak = weakKeyFault("the fresh op-key", freshOpKeyDid);
   if (weak) return { ok: false, reason: weak };
-  if (sealKeySetHash(recoveryRoster, recoveryThreshold) !== head.nextRecoverySetHash) {
+  if (!revealMatchesCommitment(head, recoveryRoster, recoveryThreshold, head.nextRecoverySetHash)) {
     return { ok: false, reason: "reveal mismatch — the revealed recovery roster does not match the head's rolling commitment" };
   }
   const core: PersonaEventCore = {
@@ -384,7 +413,7 @@ export function personaEnrolmentSigningBytes(head: PersonaKelEvent, recoveryCont
 
 /**
  * Mint a one-of-one face's FIRST recovery contact enrolment: the face's own current op-key signs one typed event that commits
- * `recoveryContactSetHash` (`sealKeySetHash` over the recovery contacts' recovery public keys and the threshold) as the rolling
+ * `recoveryContactSetHash` (`recoverySetCommitment` over the face's prefix, the recovery contacts' recovery public keys and the threshold) as the rolling
  * recovery commitment. The prefix and the op-key stay as they stand, so every device edge and every device's
  * secret stand too. FAILS CLOSED where the reader would refuse the event: a provisional head, a face whose rolling
  * set already moved off its genesis set (the recovery contacts' quorum changes it, by rotation), a set that is no digest or
@@ -477,7 +506,7 @@ function rotationQuorum(
 ): { ok: boolean; reason?: string } {
   if (!Number.isInteger(recoveryThreshold) || recoveryThreshold < 1) return { ok: false, reason: "recovery threshold below 1" };
   if (recoveryRoster.length < recoveryThreshold) return { ok: false, reason: "revealed roster shorter than the threshold" };
-  if (sealKeySetHash(recoveryRoster, recoveryThreshold) !== authorizingSetHash) {
+  if (!revealMatchesCommitment(core, recoveryRoster, recoveryThreshold, authorizingSetHash)) {
     return { ok: false, reason: "revealed roster digest does not match the authorizing commitment" };
   }
   for (const recoveryContact of recoveryRoster) {

@@ -1,0 +1,82 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-002/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-002/brief.md` (brief, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lead-step-2`>>
+
+! Lead step 2 (fresh; read this brief whole, then do ONE step)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lane-state`>>
+
+!! Lane state (from /home/joshu/.lares-scratch/lease-end/state.json)
+* head: 5c3d032dc7be49704d26f4f12b10e6fdacf88380
+* next step: Step 2: Read relay/res-001.json first; update head only from broker success, otherwise resolve the commit wall. Controller runs packages/lararium-keyhive/tests/face-grant-record.test.ts and confirms both reds and controls. Cure slices in order: (1) mesh epoch-free relation, pinned lineage, remove-wins standing and anti-rollback proof, including sibling leaf readers after b5b; (2) keyhive boot, join, grant, seat and daemon readers with red/control coverage; (3) node/browser admission and composer readers after b5b; (4) only after census and tests prove all authority readers enforce standing, burn roll guard, face epoch fields/advance and persona-lease command, regenerate CRDT docs. Each custody slice receives blind Opus review before landing. Preserve separate quorum and bag-capability leases. Follow the existing commit trailers and house law.
+
+!!! Owed rows
+* PENTABARF V (operator, 2026-11-07): believe nothing in canon, the road, these owed rows or research handbacks on their word alone; the system and its docs grew fast. Where a canon claim meets code, measure the code and collide the two; on drift take the most pono side under the house laws and name it (file:line vs carrier#section) in out.md.
+* Controller (step 1 read): relay/req-001.json used key "action"; the broker's schema reads "kind" (commit wants kind, paths, message, expectHead) and refused it ('unknown kind: undefined'). Resubmit the commit as req-002 with "kind":"commit", and request the named test file through the test door ({"kind":"test","runner":"vitest","files":[...]}) to prove each red fails for its own assertion and each control passes.
+* HOUSE LAW at every fork (operator, 2026-11-07): never stop to hold a fork for the operator. Talk it out: Mu tools and Stances, weigh against No global now, no back-compat in early alpha (burn old shapes outright, re-genesis freely), causal islands, identity-as-relation, Infrastructure-as-Myth; read what a user loses each side; DECIDE, build, and name the fork + reason in out.md. Only a residual uncertainty that survives the talk-out surfaces, as a note.
+* RULING (controller Lares-Awakens under the operator's 2026-11-07 law, talked out): the face delegation lease RETIRES. Every authority reader replaces its epoch freshness check (boundEpoch vs expectedEpoch, face-reading counted advances) with anchor-pinned persona lineage plus remove-wins standing (set-aside / kapae per edge). The fleet-wide one-shot invalidation by epoch roll is ACCEPTED as lost: it assumes every island hears the roll (a global now); whole-fleet removal stands instead as remove-wins set-asides over each edge, a kapae over the face, or the K18 re-anchor. No back-compat: epoch fields and the roll command burn outright; CRDT docs re-genesis.
+* ROAD (stable-founding-road #/rulings 2026-11-06 'The face lease's end state', row M6): the roll guard (packages/lararium-node/src/commands/persona-lease.ts ~:93) stands UNTIL a census proves every authority reader enforces set-aside; it burns last.
+* RESEARCH (Terra, read whole first): /home/joshu/.lares-scratch/recovery-research/lease-end-state/final.md — names the readers: device-delegation.ts:228, face-reading.ts:43, face-anchor.ts:80 (mesh); ceremony-core.ts:781, face-grant-record.ts:139, face-join.ts:159, face-seat.ts:149, operator-daemon-behavior.ts:439, boot-daemon-keyhive.ts:158, recovery-core.ts:22 (keyhive); open-browser-vessel.ts:1349; device-admit.ts:144 (node). Lines drift: re-measure.
+* OVERLAP: lane b5b (in flight) holds sibling expectedEpoch reader wiring (standSiblingChannel, SiblingLeaf.expectedEpoch) and open-browser-vessel.ts / open-node-vessel.ts composer hunks; touch those files only where a reader must change, and name each such hunk in out.md so the controller sequences the land after b5b.
+* CUSTODY: authority readers count as custody; every slice of this lane gets a blind Opus read before land (controller). Reds land red-first with a control each.
+* Inside the wall a lead step cannot spawn git or run tests: request named tests through the broker's test door, or mark 'controller runs'.
+
+!!! Live seats
+* (none)
+
+!!! Worktrees
+* lane: /home/joshu/.lares-scratch/lease-end/wt
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-law`>>
+
+!! STEP LAW
+* ONE step per launch: do the next step above, then stop. A step stays under about 10 to 15 minutes or 40 tool calls.
+* Before you stop, rewrite /home/joshu/.lares-scratch/lease-end/state.json (same keys; keep the step counter as it stands) with the new head, the owed rows, the live seats, the worktree map and the next step, and write your hand-back to /home/joshu/.lares-scratch/lease-end/steps/step-002/out.md.
+* A seat you start runs outside your context: record it in the state and stop; never poll for it. The next step reads its result path.
+* Stop at a wall, at a design question that needs an operator ruling (name it with its options and your lean), or at the push go.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lead-law`>>
+
+!! LEAD LAW (appended by tools/launch-codex.mjs to a lead brief; it binds this lead)
+* You hold no git write access and no credential. Every git act goes through the broker: write a request file `req-<id>.json` (zero-padded, in order) into `<lane-root>/relay/` and read its `res-<id>.json` on your next step. The doors are `commit` (`paths`, the commit message as inline `message` text up to 16 KiB, and `expectHead`), `push` (only when the controller's go names the branch and the head), `worktree`, `worktree-remove`, `install` and `launch`.
+* A commit message follows the `lar:///w1.w2.w3 — summary` convention and ends with the two trailers the session's attribution reminder gives. No `git stash` in any form, no `--no-verify`, no `git push -u`, no force-push, no edit of .git/config.
+* Never write the main checkout (~/Synthetic-Dream-Machine) or its submodule worktrees; work in your own worktree under ~/.lares-scratch only.
+* Never read a credential file or the controller's directory.
+* Never boot a daemon in-tree bare; any boot uses a scratch LAR_ROOT and no global LAR_BAGS.
+* No local e2e loops (unit first; e2e in CI via tools/e2e-shards.mjs or a raw ci/* branch).
+* Seats start only through the broker's launch door; a Sol seat only through the controller.
+* A stop that needs more than this wall names itself in out.md and stops.
+* Report to the controller (final.md) for any push beyond the lane's go, and never push without its go.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;R49wLq5n_XrZElE-soJvKChDE0qnMVKT-LqgGqGDYz8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

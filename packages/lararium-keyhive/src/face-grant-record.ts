@@ -5,7 +5,7 @@
  *
  * THE SHAPE. The founder's `face-join` verb seats a joinee in the group and, instead of handing the grant back to
  * its caller alone, WRITES it as a record the joinee already syncs (the PersonaGroup plane crosses by membership).
- * The record carries the grant (`face-join-grant/v1` — the joinee's agent id, the founder's card, the cap events,
+ * The record carries the grant (`face-join-grant` — the joinee's agent id, the founder's card, the cap events,
  * the re-seals), the founder's OWN device edge (root-signed, so a joinee that pinned the root at admit can verify
  * it offline), and a signature under the founder's device key over the canonical bytes of everything else.
  *
@@ -33,7 +33,7 @@ export const FACE_GRANT_PREFIX = "$:/lares/face-grant/";
  * wall-clock stamp: the plane's causal history orders it, and a re-join overwrites it at its own title.
  */
 export interface FaceGrantRecord {
-  readonly kind: "face-join-grant/v1";
+  readonly kind: "face-join-grant";
   /** The PersonaGroup (a Keyhive group's id) this seat lands in. */
   readonly groupId: string;
   /** The joinee's agent id (its card-derived identifier — ends in its vessel verifying key). */
@@ -156,8 +156,8 @@ export async function verifyFounderAuthority(
  */
 export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyContext): Promise<FaceGrantVerdict> {
   const r = rec as Partial<FaceGrantRecord> | null;
-  if (!r || r.kind !== "face-join-grant/v1" || typeof r.sig !== "string" || !r.founderEdge || !Array.isArray(r.capEvents) || !Number.isSafeInteger(r.serial) || (r.serial as number) < 1) {
-    return { ok: false, reason: "not a face-join-grant/v1 record" };
+  if (!r || r.kind !== "face-join-grant" || typeof r.sig !== "string" || !r.founderEdge || !Array.isArray(r.capEvents) || !Number.isSafeInteger(r.serial) || (r.serial as number) < 1) {
+    return { ok: false, reason: "not a face-join-grant record: it lacks the grant shape (kind `face-join-grant`, sig, founderEdge, capEvents, a serial from 1)" };
   }
   if (typeof r.groupId !== "string" || r.groupId.toLowerCase() !== ctx.groupId.toLowerCase()) {
     return { ok: false, reason: "the record names another group" };

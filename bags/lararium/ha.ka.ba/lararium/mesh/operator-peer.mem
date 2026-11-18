@@ -157,8 +157,8 @@ Co-location on one machine stays fine; a shared heap/Repo/storage-scope does not
 ''OP-AP2 — Identity by held keys, not account or session.''
 Human and spirit alike act only through capabilities they hold — attenuated, travelling
 WITH the intent (UCAN-invocation shape over the verb-tiddler). A human presents an
-operator keypair. A spirit acts through the vessel's seat and presents the vessel's own
-key under the face it works for, wearing its Mask; it holds no DID or key of its own. No
+operator keypair. A spirit sits in the vessel seat, which carries the act and witnesses it,
+while the act presents the proof of the face it works for, wearing its Mask; it holds no DID or key of its own. No
 login, no session, no bearer token, no ambient authority. Authority that fails to ride
 the task imports web2 smell.
 
@@ -250,6 +250,6 @@ carrier's verdict.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;17pZcbJi3MIB4xQGdRFAfWouka9XhnQIu9cJBWUBJjg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BST199gcsY2wfdakB-qvQ60pf1AyNU0Nf8eJFIZoILk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

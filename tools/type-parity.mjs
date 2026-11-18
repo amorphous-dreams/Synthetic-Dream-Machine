@@ -19,9 +19,9 @@ const REPO = process.env["REPO"] ?? process.cwd();
 const { carrierFiles } = await distCarrierFiles(REPO, "type-parity");
 
 const DECL  = "packages/lararium-mesh/src/carrier-type.ts";
-// THE DECLARATION'S OWN AUTHORITY moved to @lararium/memetic-frame — `write.ts` is the one hand that
-// mints it (`CARRIER_DECLARATION`), and carrier-type.ts (the media-TYPE registry) no longer carries a
-// copy to reconstruct one from. Reading write.ts's literal directly means this witness compares
+// THE DECLARATION'S OWN AUTHORITY rests in @lararium/memetic-frame — `write.ts` holds the one hand that
+// mints it (`CARRIER_DECLARATION`), and carrier-type.ts (the media-TYPE registry) carries no copy to
+// reconstruct one from. Reading write.ts's literal directly means this witness compares
 // against the bytes the writer actually mints, not a hand-rebuilt guess at them.
 const WRITE = "packages/lararium-memetic-frame/src/write.ts";
 

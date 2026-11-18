@@ -72,13 +72,13 @@ import type {
 import { KAHUA_SHADOW_PREFIX, kahuaShadowOf, kahuaShadowTitle } from "./kahua-shadow.js";
 import { KAHUA_BAG } from "@lararium/mesh";
 import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive, parallelDraftTitle } from "@lararium/mesh";
-import { maskedExecAll } from "@lararium/memetic-frame";
+import { edgeDescendantsOf, rootAddressOf, type FamilyView } from "@lararium/mesh/family";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { ReceiptCapabilityUnavailable, type ReceiptCapability, type ReceiptHold } from "./receipt.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
-import { KAHEA_REF_RE } from "./meme-ast/ahu-scan.js";
+import { familyRefsOf, retitleSlotsInWiki, wikiFamilyView, type FamilyRenameWiki } from "./place-meme.js";
 import { LandedLedger, same, sameWithStamp } from "./landed-ledger.js";
 import { WaveLanding } from "./wave-landing.js";
 import { Drain, macrotask, type DrainOutcome, type DrainSettling } from "./drain.js";
@@ -182,11 +182,14 @@ function toTW5FieldStrings(
  * reference quoted inside a code fence names no child.
  */
 function kaheaChildUris(rootUri: string, text: string): Set<string> {
-  const uris = new Set<string>();
-  if (!text.includes("<<~ kahea ahu ")) return uris;
-  for (const match of maskedExecAll(text, KAHEA_REF_RE)) uris.add(rootUri + match[1]!);
-  return uris;
+  // The one family law's own reading of the text (`familyRefsOf`): the component calls alone.
+  return new Set(familyRefsOf(rootUri, { text }).filter((ref) => ref.kind === "kahea").map((ref) => ref.to));
 }
+
+/** A component leaving with its root: whether the wiki still holds it, and the acknowledgements it had before the write. */
+interface LeavingRider { readonly uri: string; readonly acks: number; readonly standing: boolean }
+/** What leaves with one title: the riders its own change carries, and the members another layer takes. */
+interface Leaving { readonly riders: LeavingRider[]; readonly apart: string[] }
 
 function extractFields(tw5: TW5Engine, tiddler: unknown): Record<string, string> {
   return toTW5FieldStrings(tw5, tiddler);
@@ -298,11 +301,19 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         const alert = landingFailedAlertTitle(title);
         if (this.tw5.$tw.wiki.getTiddler(alert)) this.tw5.$tw.wiki.deleteTiddler(alert);
       },
+      (landed) => { for (const hear of [...this.sliceHearers]) hear(landed); },
     );
     this.landing = landing;
     this.engineApply = apply;
     this.door = (change) => landing.enqueue(change);
     lares.enqueueNalu = this.door;
+  }
+
+  private readonly sliceHearers = new Set<(landed: number) => void>();
+  /** Hear each slice the shore's queue lands (the rows it landed), until the returned unsubscribe: the kernel's breath rides it. */
+  onSliceLanded(hear: (landed: number) => void): () => void {
+    this.sliceHearers.add(hear);
+    return () => { this.sliceHearers.delete(hear); };
   }
 
   armSeedCheckpoint(): Promise<void> {
@@ -344,12 +355,17 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     const marked = this.drain.titles();
     // A whole-drain target the Drain displaced (`superseded`: it keeps the oldest and the newest) never says the acts' writes rest: the hold
     // asks again for the generation marked by now. An empty bag list releases the receipt at once, so the hold waits on a real rest.
-    void this._whenAllRested().then(() => {
+    void this._whenAllRested().then((outcome) => {
+      // A bag the island holds no replica of (the vessel's own temp plane) names no heads: the store call that wrote it already answered.
+      const receipt = this.caps.receipt;
+      const held = (bag: string): boolean => receipt?.holds?.(bag) ?? true;
       for (const { hold, members } of holds) {
         const bags = [...new Set([...members, ...marked])].filter((title) => !this.drain.owes(title)).map((title) => this.lastWriteBag.get(title));
-        // A member the drain still owes was refused: the act's verdict reads false and names it, never `applied`.
-        const owed = members.filter((title) => this.drain.owes(title));
-        void hold.done([...new Set(bags.filter((bag): bag is string => bag !== undefined))], owed.length > 0 ? { titles: owed, refused: true } : { titles: members });
+        // A member the drain still owes was refused: the act's verdict reads false and names it, never `applied`. Once every generation
+        // marked by the rest's ask reads acked, a member still owed owes a LATER act's mark (the next draft under the same title, typed
+        // while this rest returned): this act's own writes rest, and its verdict reads kept.
+        const owed = outcome.kind === "acked" ? [] : members.filter((title) => this.drain.owes(title));
+        void hold.done([...new Set(bags.filter((bag): bag is string => bag !== undefined && held(bag)))], owed.length > 0 ? { titles: owed, refused: true } : { titles: members });
       }
     });
   }
@@ -654,6 +670,27 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   /**
+   * Whether a save of `title` would land in a layer this composition mounts (at or above its working layer), asked without
+   * raising anything: a probe stands no alert and writes no console line. A caller that opens engine-local state (the
+   * island's own default story) asks first, so a composition with no layer for that state keeps it in the engine and
+   * never owes a save it cannot make.
+   */
+  routesSave(title: string): boolean {
+    try { return this._settle(title, this._routeBag(title), true) !== null; }
+    catch (err) { if (err instanceof UnroutedSaveRefusal) return false; throw err; }
+  }
+
+  /**
+   * Hold `title`'s present wiki value as landed with no bag: the engine keeps it, no store hears it, and the bridge reads the
+   * notification the write raised as foam, so no save stands owed. Called in the same synchronous turn as the write, before
+   * TW5 dispatches its `change`. A title a hand already holds stays with that hand.
+   */
+  keepInEngine(title: string): void {
+    if (this.holdsHand(title)) return;
+    this.ledger.set(title, { tiddler: this.tw5.$tw.wiki.getTiddler(title) ?? null });
+  }
+
+  /**
    * Act on a cascade verdict: a slot the composition mounts at or above the working layer lands there, a
    * named withholding skips (null), a gap falls to the write layer, and every other answer THROWS the named
    * refusal after raising it on the alert rail: a rule that routes through an empty pointer, a gap while
@@ -664,11 +701,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * the working layer and the layers above it. The composition's own layer order answers which those are,
    * so no wiki tiddler, edited by hand or by a peer, lands a save beneath the working layer.
    */
-  private _settle(title: string, verdict: RouteVerdict): SlotUri | null {
+  private _settle(title: string, verdict: RouteVerdict, probe = false): SlotUri | null {
+    // A PROBE ASKS WHERE A SAVE WOULD LAND and raises nothing: the refusal it throws stands on no alert rail and in no console.
+    const refuse = (rule: string, reference: string, why?: string): UnroutedSaveRefusal =>
+      probe ? new UnroutedSaveRefusal(title, rule, reference, why) : this._refuseUnrouted(title, rule, reference, why);
     if (verdict.kind === "withheld") {
       const reference = ROUTES_BY_REFERENCE.exec(verdict.rule)?.[1];
       if (reference === undefined) return null;
-      throw this._refuseUnrouted(title, verdict.rule, reference);
+      throw refuse(verdict.rule, reference);
     }
     let uri: string;
     let rule: string;
@@ -679,22 +719,22 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       reference = ROUTES_BY_REFERENCE.exec(verdict.rule)?.[1] ?? verdict.uri;
     } else {
       const fallback = this.tw5.$tw.wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
-      console.warn(
+      if (!probe) console.warn(
         `[island-adaptor] no cascade rule routes "${title}" (${verdict.why}) — ` +
         (fallback ? `writing to the write layer ${fallback}. ` : "and no write layer resolves. ") +
         `Add a rule to ${BAG_PATHS_CONFIG}; a save must never vanish for want of one.`,
       );
       rule = `(no rule: ${verdict.why})`;
       reference = CURRENT_WIKI_BAG;
-      if (!fallback) throw this._refuseUnrouted(title, rule, reference);
+      if (!fallback) throw refuse(rule, reference);
       uri = fallback;
     }
     const working = this.store.defaultWritableBagId();
-    if (!working && reference === CURRENT_WIKI_BAG) throw this._refuseUnrouted(title, rule, reference, "this wiki mounts no working layer");
+    if (!working && reference === CURRENT_WIKI_BAG) throw refuse(rule, reference, "this wiki mounts no working layer");
     const index = this.store.layerIndexOf(uri);
-    if (index < 0) throw this._refuseUnrouted(title, rule, reference, `it names ${uri}, a bag this wiki does not mount`);
+    if (index < 0) throw refuse(rule, reference, `it names ${uri}, a bag this wiki does not mount`);
     if (working && index < this.store.layerIndexOf(working)) {
-      throw this._refuseUnrouted(title, rule, reference, `it names ${uri}, a layer beneath this wiki's working layer; a bag changes only by a residency move`);
+      throw refuse(rule, reference, `it names ${uri}, a layer beneath this wiki's working layer; a bag changes only by a residency move`);
     }
     return uri as SlotUri;
   }
@@ -1433,9 +1473,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (!removal.source) return;
     this._clearUnsaved(removal.target);
     const wiki = this.tw5.$tw.wiki;
-    // A newer hand of the source made meanwhile stands: it leaves as its own owed title, children and all.
+    // A newer hand of the source made meanwhile stands: it leaves as its own owed title, slots and all.
     if (!this._removalStands(title, removal)) return;
-    this._removeSlotChildren(title);
+    // THE SLOTS FOLLOW THEIR ROOT. The source left for its target, durably acknowledged (the save order): each
+    // slot still beneath the source address re-titles under the target, its body untouched, and its source title
+    // leaves as a hand's own delete. Where no target stands the slots stay as they stand: orphans,
+    // kept and flagged, never dropped.
+    if (wiki.getTiddler(removal.target)) retitleSlotsInWiki(wiki as unknown as FamilyRenameWiki, title, removal.target);
     if (wiki.getTiddler(title)) wiki.deleteTiddler(title);
   }
 
@@ -1478,8 +1522,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // not hold (`handed`) is the one exception, and its value stands in for the wiki's.
     const state = this.handed.has(title) ? this.handed.get(title)! : this.tw5.$tw.wiki.getTiddler(title) ?? null;
     // A state equal to what the last wave landed, with nothing sent since, owes the store nothing: the hand
-    // returned to the landed value inside its window. A title the store never saw and the wiki no longer
-    // holds raises no tombstone. A state identical to the value already sent owes nothing either.
+    // returned to the landed value inside its window. A title the store never saw and the wiki does not
+    // hold raises no tombstone. A state identical to the value already sent owes nothing either.
     const landed = this.ledger.landedOf(title);
     // The ledger answers only once the seed wave has rebuilt it (a resident shore), and never for a title
     // this shore wrote whose wave has not landed: there the state leaves and the store decides.
@@ -1547,12 +1591,23 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       writeBag = bag;
       this.sent.set(title, null);
       const base = this._handBaseFor(title, bag);
-      task = this.store.tombstoneInBag(bag, title, origin, base ? { base } : undefined)
-        .catch(async (error: unknown) => {
-          if (!(error instanceof Error) || !error.message.includes("requested base contains heads outside this document history")) throw error;
-          console.warn(`[island-adaptor] retrying "${title}" without unavailable base`);
-          await this.store.tombstoneInBag(bag, title, origin);
-        }).then(() => { this._removeSlotChildren(title); });
+      // THE FAMILY LEAVES AS ONE CHANGE. A record's delete takes every component beneath it: root and slots
+      // ride one `writeFamily`, so no peer ever reads a dead root over live children. A title that holds
+      // no component leaves as the single tombstone it always was.
+      const leaving = this._leavingWith(title, bag);
+      for (const rider of leaving.riders) this.sent.set(rider.uri, null);
+      const issued = leaving.riders.length > 0
+        ? this._issueGroup(bag, base, [], [title, ...leaving.riders.map((rider) => rider.uri)], origin)
+        : this.store.tombstoneInBag(bag, title, origin, base ? { base } : undefined)
+          .catch(async (error: unknown) => {
+            if (!(error instanceof Error) || !error.message.includes("requested base contains heads outside this document history")) throw error;
+            console.warn(`[island-adaptor] retrying "${title}" without unavailable base`);
+            await this.store.tombstoneInBag(bag, title, origin);
+          });
+      task = issued.then(
+        () => { this._settleLeaving(leaving, bag); },
+        (error: unknown) => { this._returnLeaving(leaving, bag, error); throw error; },
+      );
     }
     try {
       await task;
@@ -1661,19 +1716,88 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return this.tw5.$tw.wiki.getTiddler(uri) !== undefined || (this.ledger.landedOf(uri)?.tiddler ?? null) !== null;
   }
 
-  private _childUrisOf(parentUri: string): string[] {
-    return this.tw5.$tw.wiki.filterTiddlers(`[field:$fragment-parent[${parentUri}]]`) as string[];
+  /** The wiki as the one family law reads it (`@lararium/mesh/family`); the engine's own field index answers the parent edges. */
+  private _familyView(): FamilyView {
+    const wiki = this.tw5.$tw.wiki;
+    return wikiFamilyView(wiki as never, {
+      childrenOf: (parent) => wiki.filterTiddlers(`[field:$fragment-parent[${parent}]]`) as string[],
+    });
   }
 
-  /** Remove ahu-slot child tiddlers from TW5 during outbound delete. */
-  private _removeSlotChildren(parentUri: string): void {
-    const children = this.tw5.$tw.wiki.filterTiddlers(`[field:$fragment-parent[${parentUri}]]`);
-    for (const t of children) this.tw5.$tw.wiki.deleteTiddler(t);
+  private _childUrisOf(parentUri: string): string[] {
+    return [...this._familyView().childrenOf!(parentUri)];
+  }
+
+  /** True where the last wave landed `uri` beneath `top`: its landed parent edges climb to it. */
+  private _landedBeneath(uri: string, top: string): boolean {
+    let cur = uri;
+    for (let hops = 0; hops < 64; hops++) {
+      const landed = this.ledger.landedOf(cur)?.tiddler as { fields?: Record<string, unknown> } | null | undefined;
+      const parent = landed?.fields?.["$fragment-parent"];
+      if (typeof parent !== "string" || parent === "") return false;
+      if (parent === top) return true;
+      cur = parent;
+    }
+    return false;
+  }
+
+  /**
+   * WHAT LEAVES WITH A TITLE (the one family law, `@lararium/mesh/family`): every component beneath it. A
+   * component the wiki still holds (the delete named the root alone) and a component the wiki already
+   * dropped and still owes the store (the meme door removed the family title by title) both ride the
+   * title's own change, where the router lands their tombstone in the same bag. A component whose tombstone
+   * lands in another layer leaves `apart`, on its own road: cross-bag atomicity cannot exist.
+   */
+  private _leavingWith(title: string, bag: string): Leaving {
+    const wiki = this.tw5.$tw.wiki;
+    const riders: LeavingRider[] = [];
+    const apart: string[] = [];
+    const routed = (uri: string): string | null => {
+      try { return this._tombstoneBag(uri, this.lastWriteBag.get(uri) ?? (this.ledger.landedOf(uri)?.bag as string | undefined) ?? bag); }
+      catch (error) { if (error instanceof UnroutedSaveRefusal) return null; throw error; }
+    };
+    for (const uri of edgeDescendantsOf(this._familyView(), title)) {
+      if (neverPersists(uri) || this.sent.has(uri)) continue;
+      if (routed(uri) === bag) riders.push({ uri, acks: this.writeAcks.get(uri) ?? 0, standing: true });
+      else apart.push(uri);
+    }
+    const prefix = `${rootAddressOf(title)}#`;
+    for (const uri of this.drain.titles()) {
+      if (uri === title || !uri.startsWith(prefix) || this.handed.has(uri) || this.sent.has(uri) || this.actRemovals.has(uri)) continue;
+      if (wiki.getTiddler(uri) || !this.ledger.landedOf(uri)?.tiddler || !this._landedBeneath(uri, title)) continue;
+      if (routed(uri) === bag) riders.push({ uri, acks: this.writeAcks.get(uri) ?? 0, standing: false });
+    }
+    return { riders, apart };
+  }
+
+  /** The family's change landed: the wiki drops each member it still holds, and each rider reads as written. */
+  private _settleLeaving(leaving: Leaving, bag: string): void {
+    const wiki = this.tw5.$tw.wiki;
+    for (const rider of leaving.riders) {
+      this.lastWriteBag.set(rider.uri, bag);
+      this.recoveryWrites.set(rider.uri, { bag, fields: null });
+      if (rider.standing && wiki.getTiddler(rider.uri)) wiki.deleteTiddler(rider.uri);
+      // A member the store took as a noop raises no envelope, so no return wave will clear its `sent`.
+      if ((this.writeAcks.get(rider.uri) ?? 0) === rider.acks && this.sent.get(rider.uri) === null && !rider.standing) this.sent.delete(rider.uri);
+    }
+    // A member another layer holds leaves through its own delete: the router shadows it from where its save would land.
+    for (const uri of leaving.apart) if (wiki.getTiddler(uri)) wiki.deleteTiddler(uri);
+  }
+
+  /** The family's change was refused: each rider returns to its own owed road. */
+  private _returnLeaving(leaving: Leaving, bag: string, error: unknown): void {
+    for (const rider of leaving.riders) {
+      if (this.sent.get(rider.uri) !== null) continue;
+      this.sent.delete(rider.uri);
+      if (rider.standing) continue;
+      this.drain.mark(rider.uri);
+      this._raiseUnsaved(rider.uri, bag, error);
+    }
   }
 
   /**
    * Write a saved tiddler to the store as its meme FAMILY: the root, the slot children its body
-   * splits into (Path H auto-split), and the tombstones of the children it no longer declares.
+   * splits into (Path H auto-split), and the tombstones of the children it leaves undeclared.
    *
    * ONE CHANGE. Root and children route to the ONE bag the cascade names, so they share one doc, and
    * the family lands through `writeFamily` as a single atomic change — no peer ever sees a root
@@ -1712,6 +1836,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (!split && title.indexOf("#") < 0 && fields["draft.of"] === undefined) {
       const wiki = this.tw5.$tw.wiki;
       const marked = (uri: string): boolean => this.drain.owes(uri) && !this.handed.has(uri);
+      let beneath: Set<string> | undefined;
       // Slot children carry the root's address plus a fragment, so the marked titles alone name them.
       for (const uri of this.drain.titles()) {
         if (!uri.startsWith(`${title}#`) || !marked(uri)) continue;
@@ -1719,7 +1844,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         if (((entry?.bag as SlotUri | undefined) ?? targetBag) !== targetBag) continue;
         const standing = wiki.getTiddler(uri) as { fields?: Record<string, unknown> } | undefined;
         if (standing) {
-          if (standing.fields?.["$fragment-parent"] !== title) continue;
+          // A component at any depth rides its root's change (the one family law reads the parent edges).
+          beneath ??= new Set(edgeDescendantsOf(this._familyView(), title));
+          if (!beneath.has(uri)) continue;
           const { "$origin-bag": _slotOrigin, ...persistedSlot } = extractFields(this.tw5, standing);
           puts.push(toLarTiddlerRecord({ ...withoutDraftBase(persistedSlot), title: uri }));
           rode.push({ uri, value: standing, acks: this.writeAcks.get(uri) ?? 0 });
@@ -1729,7 +1856,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
           let chosen: string;
           try { chosen = this._tombstoneBag(uri, targetBag); } catch (error) { if (error instanceof UnroutedSaveRefusal) continue; throw error; }
           if (chosen !== targetBag) continue;
-          tombstones.push(uri);
+          if (!tombstones.includes(uri)) tombstones.push(uri);
           rode.push({ uri, value: null, acks: this.writeAcks.get(uri) ?? 0 });
         }
       }

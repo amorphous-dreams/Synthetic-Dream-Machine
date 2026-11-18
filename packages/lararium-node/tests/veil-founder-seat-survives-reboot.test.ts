@@ -23,6 +23,7 @@ import {
   CompositeStore, DAEMON_BAG_ID, AutomergeDocStore, type LarDoc,
 } from "@lararium/mesh";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome, MEMORY_SEALED, memorySecretStore } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
@@ -32,7 +33,7 @@ describe("the founder's veil seat survives the night", () => {
   test("★ knowsAgent(the founding PersonaGroup) holds through every reboot shape ★", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const verifyingKey = await pubOf(FOUNDER_SEED);
-    const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo, vesselSeed: FOUNDER_SEED, placeVerifyingKey: verifyingKey,
+    const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo, vesselSeed: FOUNDER_SEED, placeVerifyingKey: verifyingKey,
       vesselDisplayName: "Reboot Shrine",
       binding: { mode: "self-stood", signerSeed: FOUNDER_SEED },
       hearthTrueName: "", nexusPubkey: verifyingKey,
@@ -43,7 +44,7 @@ describe("the founder's veil seat survives the night", () => {
     // The composite the daemon worker's onEa receives: an AutomergeDocStore layer over the daemon doc.
     const composite = new CompositeStore();
     composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(handle as never, DAEMON_BAG_ID), writable: true });
-    const eventStore = new DaemonEventStore({ daemon: composite, face: f.personaGroupId });
+    const eventStore = new DaemonEventStore({ ...memorySecretStore(await repo.find(f.secretUrl as AutomergeUrl)), face: f.personaGroupId });
 
     // R1 — event store only (the first daemon boot, no veil archive yet).
     const r1 = new KeyhiveProvider();

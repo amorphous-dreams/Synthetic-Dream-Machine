@@ -1,0 +1,265 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/code-excerpts`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-25 (file date) — source `.lares-scratch/research/seat-scout/code-excerpts.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/code-excerpts"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/seat-scout/code-excerpts"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! code-excerpts.md — research, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/seat-scout/code-excerpts.md` (research, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/operator-daemon-behavior-ts-270-380`>>
+
+!! operator-daemon-behavior.ts 270-380
+&#47;/ live context; the face-seat read rides the veil's own registry (a pin is standing, a seat is
+&#47;/ capability), so a binding never delegates to an agent the veil cannot name.
+&#47;/ The grant records this vessel already judged, by signature — a refused record is judged ONCE per boot
+&#47;/ (the refusal logs once), a taken one never re-ingests.
+const judgedGrants = new Set&lt;string>();
+/**
+* The joinee's half of THE LATER GRANT. Reads the PersonaGroup plane (the doc both vessels sync by membership)
+* for a `face-join-grant/v1` record naming THIS vessel; verifies it against the persona root pinned at admit
+* and the founder's edge under that root; on a verdict, ingests the cap events into the atom and
+* persists them as cap-event records so the next boot re-hydrates the seat. Returns whether the face now
+* reads seated. Any failure → false, a logged refusal, and NO binding moved.
+&#42;/
+const takeFaceGrantIfPublished = async (ctx: IslandContext): Promise&lt;boolean> => {
+const group = daemonAuth.personaGroupId;
+const ownEdge = daemonAuth.deviceEdge;
+if (!group || !ownEdge || !veilKh || !ctx.catalogUrl) return false;
+&#47;/ NO CLOCK. Absent a founder persona-KEL chain to walk, ABSTAIN rather than fall back to a
+&#47;/ pinned-root-only verify gated on a wall clock — fail-closed, event order or nothing (no global now).
+if (!daemonAuth.personaKel) return false;
+let store: Awaited&lt;ReturnType&lt;ReturnType&lt;typeof makeCatalogAccessor>["storeOf"]>>;
+try { store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(group)); } catch { return false; }
+if (!store) return false;
+const prefix = `${FACE_GRANT_PREFIX}${group}/`;
+const self = ownEdge.deviceVerifyingKey.toLowerCase();
+let titles: string[];
+try { titles = (await store.listVisible()).filter&#40;(t) => t.startsWith(prefix) && t.toLowerCase().endsWith(self)); } catch { return false; }
+for (const title of titles) {
+const record = await store.get(title);
+const text = (record as { tiddler?: { text?: unknown } } | null)?.tiddler?.text;
+if (typeof text !== "string") continue;
+let rec: FaceGrantRecord;
+try { rec = JSON.parse(text) as FaceGrantRecord; } catch { continue; }
+&#47;/ The founder's own edge leases too — read the SAME epoch the founder's door checks it against
+&#47;/ (readLeaseEpoch, shared). An unavailable frontier is a pending mutation, never a reason to
+&#47;/ let the signature and soft wall-clock window license the ingest. Keep the record unjudged so
+&#47;/ a later live attempt can retry after the causal shore returns.
+const lease = await readLeaseEpoch(ctx.composite);
+if (typeof rec?.sig !== "string" || judgedGrants.has(rec.sig)) continue;
+if (lease.kind === "unavailable") {
+console.log(`[daemon] face-join grant pending (${title.slice(-16)}): current lease frontier unavailable (${lease.why}) — no binding moves`);
+continue;
+}
+const expectedEpoch = lease.n;
+judgedGrants.add(rec.sig);
+const verdict = await verifyFaceGrantRecord(rec, {
+personaRootDid: ownEdge.personaRootDid, selfVerifyingKey: self, groupId: group,
+personaKel: daemonAuth.personaKel,   &#47;/ the edge verifies under the KEL HEAD, never a frozen root — no clock
+expectedEpoch,
+});
+if (!verdict.ok) {
+console.log(`[daemon] face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason} — no binding moves`);
+continue;
+}
+&#47;/ THE KIT'S OWN ACT: take the cap events (live) and persist them (boot re-hydrates the seat).
+&#47;/ Ingest is also the READING — the vessel's own handler stamps the true variant and island on the
+&#47;/ events keyhive accepts, so it must reach the store before any backstop row masks them.
+const events = rec.capEvents.map(base64ToBytes);
+try { await absorbCapEvents(veilKh, new DaemonEventStore({ daemon: ctx.composite }), events); } catch (err) { console.log(`[daemon] face-join grant: atom ingest faulted: ${(err as Error)?.message ?? err}`); }
+const seated = await veilKh.knowsAgent(group);
+console.log(`[daemon] face-join grant record taken from the PersonaGroup plane (${events.length} cap events, ${rec.reSealed.length} chunks re-sealed) — face ${seated ? "SEATED" : "still unseated after ingest"}`);
+if (seated) return true;
+}
+return false;
+};
+
+let slotDocs: SlotDocResolver | null = null;
+let floorLifted = false;
+const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
+if (slotDocs) return slotDocs;
+if (!kh) throw new Error("keyhive not booted");
+slotDocs = makeSlotDocResolver({
+repo: restDocuments ? restingMinter(ctx.repo, (ids) => restDocuments(ids,
+gateCleared ? undefined : gateClear)) : ctx.repo,
+daemonStore: ctx.composite, keyhive: kh,
+catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
+vesselDid: () => didFromVerifyingKey(daemonAuth.atom?.key ?? daemonAuth.vesselVerifyingKey),
+mintedByHex: () => mintedByHex,
+...(daemonAuth.personaGroupId ? { personaGroupId: daemonAuth.personaGroupId } : {}),
+...(faceDoor() ? { faceDoor: faceDoor()! } : {}),
+faceSeated: async () => {
+const agent = daemonAuth.personaGroupId;
+if (!agent) return false;
+let seated = veilKh ? await veilKh.knowsAgent(agent) : false;
+&#47;/ THE LATER GRANT (basket-one #/the-later-grant): not seated → read the PersonaGroup plane for a grant
+&#47;/ record naming this vessel, verify it OFFLINE against the published seal, and take the seat by this
+&#47;/ kit's own act. Reading alone re-cuts nothing — a record that fails stays a record.
+if (!seated) seated = await takeFaceGrantIfPublished(ctx);
+if (!seated) console.log(`[daemon] face ${agent.slice(0, 16)}… pinned, not yet seated — bindings mint vessel-only until a face-join lands`);
+&#47;/ THE ANON-VEIL LIFT runs ONCE per process, the first time this vessel reads as seated: at the seat's landing, or at a
+&#47;/ boot that finds the face already seated. The join is the gate; nothing asks per item.
+if (seated && !floorLifted) {
+floorLifted = true;
+try {
+const lifted = await slotDocs!.liftFloor();
+if (lifted.moved.length + lifted.finished.length > 0) console.log(`[daemon] the seat landed: ${lifted.moved.length} floor record(s) moved under the face, ${lifted.finished.length} burn(s) finished`);
+} catch (err) { floorLifted = false; console.log(`[daemon] the anon-veil lift faulted (${(err as Error)?.message ?? err}) — it runs again at the next seat read`); }
+}
+return seated;
+},
+});
+return slotDocs;
+};
+
+&#47;/ Every write made by the daemon wiki, including its receipts and audit records, lands in its working
+&#47;/ layer. The daemon bag beneath holds only records the daemon wiki names explicitly.
+const attachDaemonWorking = async (ctx: IslandContext): Promise&lt;void> => {
+const slug = ctx.recipe.wikiSlug;
+const working = wikiSlotUri(slug, "working");
+try {
+if (ctx.composite.hasBag(working)) {
+if (ctx.composite.defaultWritableBagId() !== working) throw new Error("the working layer is not the default writable");
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/resolve-binding-ts-130-175`>>
+
+!! resolve-binding.ts 130-175
+const key = `${args.prefix}/${args.fingerprint}`;
+
+&#47;/ Reuse-on-present — the binding tiddler already replicated to this device.
+const record = await args.daemonStore.get(key);
+const existing = tiddlerText(record);
+if (existing) {
+const fields = record?.tiddler as Record&lt;string, unknown> | undefined;
+&#47;/ A face binding adopts on the face that created it. A fleet sibling standing no face door reaches the
+&#47;/ document through its seat in the group, so it adopts nothing.
+if (fields?.["face-reach"] === "face" && args.faceDoor) {
+const docId = fields["keyhive-doc-id"];
+if (typeof docId !== "string" || !docId) throw new BindingRegistrationRefusal(key, existing);
+args.faceDoor.adopt(existing, docId);
+}
+&#47;/ A VESSEL-ONLY RECORD ASKS THE SEAT. The later grant lands as a record on the PersonaGroup plane, and the seat is taken
+&#47;/ where the daemon reads it (`faceSeated`); the lift pass runs inside that read and moves the record under the face. This
+&#47;/ call re-reads the record after the ask, so a binding the lift moved returns its new document.
+if (fields?.["face-reach"] === "vessel-only" && args.personaGroupId && args.faceSeated && await args.faceSeated()) {
+const moved = await args.daemonStore.get(key);
+const movedFields = moved?.tiddler as Record&lt;string, unknown> | undefined;
+const movedUrl = tiddlerText(moved);
+if (movedUrl && movedFields?.["face-reach"] === "face") {
+const docId = movedFields["keyhive-doc-id"];
+if (typeof docId === "string" && docId && args.faceDoor) args.faceDoor.adopt(movedUrl, docId);
+return { url: movedUrl, minted: false };
+}
+}
+return { url: existing, minted: false };
+}
+
+&#47;/ Mint-on-absent: a binding never names a document before it rests durably.
+const handle = args.repo.create&lt;LarDoc>(emptyLarDoc());
+
+&#47;/ The provider mapping is process-local, so the binding carries its document ID for reuse.
+const seated = !!(args.personaGroupId && args.faceDoor && await (args.faceSeated?.() ?? Promise.resolve(true)));
+const { docId: keyhiveDocId } = seated
+? await args.faceDoor!.mint(handle.url, "admin")
+&#58; await args.keyhive.registerBag(handle.url);
+
+&#47;/ A seat makes the face the creator. At the floor the vessel creates the document alone.
+&#47;/ Keyhive's admin grant carries the writable slot until an edit grade is available.
+
+const mintKey = `${args.prefix}-minted/${args.fingerprint}/${handle.documentId}`;
+await args.daemonStore.put(mutableLarRecord(mintKey, {
+text: handle.url,
+kind: "binding-mint",
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tools-s-vocabulary-mjs`>>
+
+!! tools/s-vocabulary.mjs
+&#35;!/usr/bin/env node
+/**
+* s-vocabulary — no name, comment or string in tracked code spells the retired omnibus key.
+&#42;
+* The omnibus vessel key retired: the node (S) tree seals the gate root and the place archive, each face seals under its own
+* key (FCK), and the serving tree wraps SK. A word that still spells that key's old abbreviation reads as the thing that retired.
+* The check scans code, comments and strings alike, with no allow-list and no exempt file, itself included: it names the
+* abbreviation only through character classes. The floor vessel key (`.vessel-key*.json`, the place signing seed) is a different
+* thing; its names do not contain the abbreviation.
+&#42;
+* Live canon is scanned too: every carrier the one finder (`carrierFiles()`, the built shore) declares, except `docs/history/` (the canon-history class owns that directory) and
+* the third-party scouts (`*-scout.mem`), whose words are other projects' own terms (a verifying-key field, a tool's acronym). A
+* content-address run (`ni:///sha-256;...`) is not prose and is skipped.
+&#42;
+* Usage: node tools/s-vocabulary.mjs   (exit 1 and the hits on stdout when a word spells it)
+&#42;/
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { distCarrierFiles } from "./corpus-read.mjs";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const LETTERS = "[Vv][Kk]";
+
+/** The words of `text` (identifier-shaped runs, hyphens and dots split them) that spell the retired abbreviation, with line numbers. */
+export function retiredWords(text) {
+const hits = [];
+text.split("\n").forEach&#40;(line, at) => {
+for (const word of line.match(/[A-Za-z0-9_$]+/g) ?? []) {
+if (/^[A-Za-z0-9]{8,}$/.test(word) && /\d/.test(word) && /[a-z]/.test(word) && /[A-Z]/.test(word)) continue;   &#47;/ a base64 run, never a name
+if (new RegExp(`^${LETTERS}$|^v[k][A-Z0-9_]|V[k](?![a-z])|V[K]`).test(word)) hits.push({ line: at + 1, word });
+}
+});
+return hits;
+}
+
+/** A canon carrier's words: its prose with the content-address runs removed. */
+export function memWords(text) {
+return retiredWords(text.replace(/ni:\/\/\/sha-256;[A-Za-z0-9_-]+/g, "ni:&#47;&#47;/sha-256;"));
+}
+
+/** Live canon: every declared carrier outside `docs/history/` and the third-party scouts, read through the one finder. */
+export async function trackedCanon() {
+const { carrierFiles } = await distCarrierFiles(ROOT, "s-vocabulary");
+return carrierFiles(ROOT).filter&#40;(f) => !f.includes("/docs/history/") && !f.endsWith("-scout.mem"));
+}
+
+export function trackedCode() {
+return execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" }).split("\n")
+.filter&#40;(f) => /\.(ts|tsx|mjs|js|sh)$/.test(f) && /^(packages\/[^/]+\/(src|tests|scripts)\/|tests\/|tools\/)/.test(f) && !/node_modules|\/dist\&#47;/.test(f));
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+let count = 0;
+for (const f of trackedCode()) {
+for (const h of retiredWords(readFileSync(join(ROOT, f), "utf8"))) { console.log(`${f}:${h.line}  ${h.word}`); count++; }
+}
+for (const f of await trackedCanon()) {
+for (const h of memWords(readFileSync(join(ROOT, f), "utf8"))) { console.log(`${f}:${h.line}  ${h.word}`); count++; }
+}
+console.log(`s-vocabulary: ${count} word(s) spell the retired abbreviation`);
+process.exit(count === 0 ? 0 : 1);
+}
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8HxnwOUZOj4DNEHSqh37262eu8eQFSNxAjhrsY18OT8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

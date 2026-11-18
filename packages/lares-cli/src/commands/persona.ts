@@ -38,11 +38,12 @@ import {
 import { requireTty } from "../custody-prompt.js";
 import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { promptSecret } from "../prompt-secret.js";
+import { labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
 import { storeVerb, storeFailure, standingRefusal } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { vesselStanding } from "../custody-door.js";
 import { larDataDir } from "../env.js";
-import { readPersonaRoots, type PersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
+import { readPersonaRoots, type PersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-records.js";
 import {
   makeFleetPetnameStore, makeFleetDeclarationStore, readFleetSelves, carryOwnName,
 } from "../daemon-persona-store.js";
@@ -139,7 +140,7 @@ function fleetStores(): {
 /**
  * `lares persona reissue [--nexus <aid>] [--face N]` — the face named (else the one face standing open) hands its key at one Nexus on to a fresh key
  * minted at random. Both keys sign one hand-over; it lands on that Nexus's carriage board, where every gate reads
- * it beside the face's admit, and the old key leaves this vessel. The admit keeps naming the key the Nexus admitted.
+ * it beside the face's admit, and the outgoing key leaves this vessel. The admit keeps naming the key the Nexus admitted.
  * A compromised key takes the face-key roll instead (a revoke and a fresh admit), never a re-issue.
  */
 async function personaReissue(args: ParsedArgs): Promise<number> {
@@ -398,13 +399,13 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   // ONE STORE DOOR: the face founds on the store's one holder — inside the standing vessel when one stands (the
   // floor lifts on its next stand), here otherwise.
   if (index !== 0 && !faceStands()) {
-    throw new UsageError("no face stands on this place yet — light it with `lares persona new 0 --name '<label>'` first.");
+    throw new UsageError("no face stands on this place yet — found the hearth and its first face with `lares found --hearth --name '<label>'` first.");
   }
   // A face that founds INSIDE a standing vessel takes its route over the custody door first (the route rides that frame alone).
   const faceRouteRef = !(index === 0 && faceStands()) && standing.reading === "vessel" ? await handFaceRouteToVessel(`h${index}`, "persona-new", { handleIndex: index }) : undefined;
   // THE EARLY READING GOES STALE ACROSS THE PROMPT above: the door probes AGAIN, so an unlock or lock started in another
   // shell meanwhile refuses by name instead of parking.
-  const founded = (await storeVerb("persona-new", { handleIndex: index, ...(faceRouteRef ? { faceRouteRef } : {}) })).output as unknown as FoundFaceResult;
+  const founded = (await storeVerb("persona-new", { handleIndex: index, ...(faceRouteRef ? { faceRouteRef } : {}) })).output as unknown as FoundFaceResult & { readonly lit?: boolean; readonly lightRefused?: string };
 
   // THE SPLIT RUNS IN THIS PROCESS ALONE (the guard above refused it beside a standing vessel): its shares
   // print to the person at this terminal and ride no door. THE PERSON HOLDS BOTH OFF-DEVICE SHARES BEFORE THE
@@ -422,7 +423,13 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   const verifyingKey = await personaRootKey(index);
   if (!verifyingKey) throw new UsageError(`the face h${index} stands here with no persona root held — re-found it`);
   const root = { verifyingKey, created: !founded.alreadyStood };
+  // The pet-name the face wore before this naming finds the label it wrote at its creation, where its stage answers no relation.
+  const formerPetname = founded.alreadyStood ? await ownPersonaPetname(petnames, index).catch(() => undefined) ?? null : null;
   await renameOwnPersona(petnames, index, name);
+  // THE FACE NAMES ITSELF AT ITS CREATION: its label (relation -> pet-name) lands now, beside the sealed pet-name, so a seed
+  // after a re-founding adopts its folders by this name though no face read ran first. A face that already stood answers its
+  // relation off its own stage, else off the one label naming it under its former pet-name.
+  await labelFaceAtNaming({ handleIndex: index, petname: name, relation: founded.faceRelation ?? null, formerPetname }, faceRelationOnStage);
 
   // The DECLARATION rides its own store, so the private label never becomes a public commitment by matching
   // a string. Each flag lands its own field; neither implies the other.
@@ -443,9 +450,12 @@ async function personaNew(args: ParsedArgs): Promise<number> {
       handle: declaration?.handle ?? null, seat: declaration?.seat === true,
       chair: declaration?.seat === true ? declaration.chair?.trim() || defaultChairLabel(index) : null,
       rootSplit: !splitRoot ? "none" : recovery?.minted ? "armed" : "standing", fleet: fleetRead.reached && fleetRead.rest === "sealed",
+      ...(founded.lit !== undefined ? { lit: founded.lit } : {}), ...(founded.lightRefused !== undefined ? { lightRefused: founded.lightRefused } : {}),
     },
     human: () => {
       console.log(`persona h${index} ${root.created ? "minted" : "loaded"} — "${name}"`);
+      // A face born on a standing vessel lights at its birth; one that would not stays dark in this composition until it composes again.
+      if (founded.lightRefused !== undefined) console.log(`  stands founded and stays dark in the standing composition (${founded.lightRefused}): its stage reads once the vessel composes again (\`lares vault lock\`, then \`lares vault unlock --all\`)`);
       console.log(`  verifying key: ${root.verifyingKey}`);
       if (!splitRoot) {
         console.log("  root split: none (opt in with --split-root)");

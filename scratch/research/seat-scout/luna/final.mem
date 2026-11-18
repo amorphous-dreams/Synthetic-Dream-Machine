@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-25 (file date) — source `.lares-scratch/research/seat-scout/luna/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/seat-scout/luna/final.md` (research, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''Luna-Gatescout · Ink-Clerk · Map-Wisp · Lares (Council) · Lares (Artificer)''
+
+ooda-ha="closed 1↺" · ↻ L-Prime
+
+I wrote both recommendations, their counter-readings, code and internet grounds, user stories, and build briefs to [[out.md|/home/joshu/.lares-scratch/research/seat-scout/luna/out.md]]. It ends with `WORDS=961`, within the 1,200-word limit.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MGbTtIaT8FgWhojK9_gKtTvMF1Dm66Rkmuf4gf_KwZM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -43,7 +43,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isSystemCanonBag, plainRecordOrNull, requireKahuReach, ownEntry } from "@lararium/mesh";
+import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, requireKahuReach, resolveHouseCanon, ownEntry } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -54,12 +54,12 @@ import {
   skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
   crossingDirection, type CapTier,
   isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
-  writesBag, VerbRefusal,
-  neverProjects, NeverProjectedPathRefusal,
+  writesBag, VerbRefusal, workingLayerOfCanon, canonOfWorkingLayer, isWorkingLayerBag, overrideBaseOf, carrierHashOf, OVERRIDE_BASE_META,
+  CONTROL_HOME_ID, SECRET_HOME_ID,
   yieldToHost,
 } from "@lararium/mesh";
 import type { HostTaskYield } from "@lararium/mesh";
-import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
+import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { memeticWikitextDeserializer, QUOTEBLOCKED_FIELD, TORN_FIELD } from "./deserializer.js";
@@ -69,7 +69,9 @@ import { isCarrierType } from "@lararium/mesh/carrier-type";
 import { SESSION_FORM_TITLE_CODE, assertStorableTitle, storableTitleFault } from "@lararium/mesh/lar-uris";
 import { makeTw5FileInfo } from "./tw5-file-info.js";
 import { conflictWhy, decideIngest } from "./ingest-gate.js";
-import { placeMeme } from "./place-meme.js";
+import { familyViewOf, placeMeme } from "./place-meme.js";
+import { componentsBeneath, consequence, orphansUnder, rootAddressOf, type FamilyView } from "@lararium/mesh/family";
+import { snapshotUnderOverrides, fresherAfterChange, listFresherCanon, listBaseUnknown, type FresherCanon } from "./override-bases.js";
 import type { MemeSink } from "./place-meme.js";
 import type { IngestOps } from "./ingest-gate.js";
 import { pairRenames } from "./delete-gate.js";
@@ -106,6 +108,9 @@ export interface Tw5Deserializer {
    *  the deserialize so a content carrier keeps its type/tags/custom fields
    *  across a body-only edit. */
   parseFields(metaText: string): Record<string, unknown>;
+  /** A config tiddler's text as this wiki reads it (an operator's override, else the plugin's shadow); undefined where
+   *  none stands. The projection filters read through it. */
+  configText?(title: string): string | undefined;
   /** Render a native record to its carrier BODY + `.meta` sidecar (the file-info
    *  the projector + the ingest echo gate share). The INGEST gate reads this join as
    *  the native congruence's `render` — its tagged digest equals `carrierHash(body, meta)` — so
@@ -137,6 +142,7 @@ export function makeTw5Deserializer(engine: { readonly $tw: TW5Instance }): Tw5D
   return {
     deserialize: (typeOrExt, text, fields) =>
       (engine.$tw.wiki.deserializeTiddlers(typeOrExt, text, fields) ?? []) as Array<Record<string, unknown>>,
+    configText: (title) => engine.$tw.wiki.getTiddlerText(title) || undefined,
     parseFields: (metaText) => {
       const utils = engine.$tw.utils as { parseFields?: (t: string, f?: Record<string, unknown>) => Record<string, unknown> };
       return typeof utils.parseFields === "function" ? (utils.parseFields(metaText) ?? {}) : {};
@@ -201,8 +207,28 @@ export function makeTw5Deserializer(engine: { readonly $tw: TW5Instance }): Tw5D
  */
 export const LOAD_YIELD_QUANTUM = 25;
 
+/**
+ * THE FACE-NAMED WAVE'S TARGET (the lit set). The island resolves the named face's own document for `bag` (its daemon working
+ * slot by its address secret, its daemon canon by the control document), and reads which face the vessel's device table
+ * names as that document's OWNER within the lit set. `face: null` asks after the daemon mount's own target. A target that
+ * resolves to no document answers `null`.
+ */
+export type FaceTargetResolver = (face: number | null, bag: string) => Promise<{ readonly store: LarTiddlerStore; readonly owner: number | null; readonly worn: number | null } | null>;
+
+/** Is `bag` a face-owned layer a face-named wave may target: the daemon wiki's device slots or a face's daemon canon? */
+export function isFaceOwnedLayer(bag: string): boolean {
+  return /^lar:\/\/\/ha\.ka\.ba\/wikis\/daemon\/(working|draft|personal)$/.test(bag) || /^lar:\/\/\/ha\.ka\.ba\/bags\/daemon-[^/]+$/.test(bag);
+}
+
 export interface ActionHandlerOptions {
   readonly composite: CompositeStore;
+  /**
+   * THE LIT SET'S FACE RESOLVER (the face-named INGEST). Absent: no face-named wave lands (it refuses `face-unresolved`,
+   * never falling back to the daemon mount), and an unnamed wave runs as before.
+   */
+  readonly faceTarget?: FaceTargetResolver;
+  /** Concrete mirror grants from the vessel manifest. An empty list closes disk INGEST. */
+  readonly diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery" }[];
   /** The host-task yield a LOAD takes between landing slices; `yieldToHost` when absent. */
   readonly yieldHostTask?: HostTaskYield;
   /** Native TW5 filetype deserialization (LOAD), closing over the island's $tw. */
@@ -225,7 +251,7 @@ export interface ActionHandlerOptions {
      *  resolver — the door a promotion MOVE out of `wikis/<slug>/working` rides. Absent = the
      *  registry planes alone. */
     slotDocUrl?: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>;
-    /** A system canon bag's LIVE document, which rests in the Kahu realm (no registry plane names it). Reading it asks
+    /** A house canon bag's LIVE document, which rests in the Kahu realm (no registry plane names it). Reading it asks
      *  nothing; every write already cleared `requireKahuReach` before access resolves. */
     systemCanonUrl?: (bag: string) => Promise<string | null>;
   };
@@ -258,7 +284,7 @@ export interface ActionHandlerOptions {
   readonly resolveByCid?: (cid: string) => Promise<Uint8Array | null>;
   /**
    * The vessel's source of the facts the Kahu predicate reads (`kahuCabalCanonAccess`). Every verb that lands a
-   * byte in a system canon bag asks it BEFORE any other check, a MOVE out of canon included (it tombstones the
+   * byte in a house canon bag asks it BEFORE any other check, a MOVE out of canon included (it tombstones the
    * source). Absent → a stranger: a system bag refuses (fail closed). A copy OUT of canon asks nothing.
    */
   readonly kahuReach?: KahuReachSource;
@@ -268,6 +294,43 @@ export interface ActionHandlerOptions {
    * sentinel, so it trusts that gate and asks nothing; any other composition leaves this unset and asks itself.
    */
   readonly kahuReachClearedAtGate?: boolean;
+}
+
+export class DiskWavePlacementRefusal extends Error {
+  override readonly name = "DiskWavePlacementRefusal";
+  readonly code = "disk-wave-placement";
+  constructor(readonly source: string, readonly toBag: string, reason: string) {
+    super(`disk-wave-placement: ${reason} (source ${JSON.stringify(source)}, destination ${JSON.stringify(toBag)})`);
+  }
+}
+
+function normalizedAbsolutePath(path: string): string | null {
+  if (!path || path.includes("\0")) return null;
+  const slashed = path.replaceAll("\\", "/");
+  const drive = /^[A-Za-z]:\//.exec(slashed)?.[0] ?? "";
+  if (!slashed.startsWith("/") && !drive) return null;
+  const body = drive ? slashed.slice(drive.length) : slashed.slice(1);
+  const parts: string[] = [];
+  for (const part of body.split("/")) {
+    if (!part || part === ".") continue;
+    if (part === "..") { if (!parts.length) return null; parts.pop(); }
+    else parts.push(part);
+  }
+  return `${drive || "/"}${parts.join("/")}`.replace(/\/$/, drive ? "/" : "") || "/";
+}
+
+function assertDiskWavePlacement(action: IngestAction, mirrors: ActionHandlerOptions["diskMirrors"]): void {
+  if (mirrors === undefined) return; // non-vessel unit callers carry no filesystem capability
+  const source = normalizedAbsolutePath(action.sourceUri);
+  const candidates = mirrors.filter((m) => m.bagId === action.toBag);
+  if (source === null || candidates.length === 0) {
+    throw new DiskWavePlacementRefusal(action.sourceUri, action.toBag, "the vessel grants no writable mirror for this source and destination");
+  }
+  const allowed = candidates.some((m) => {
+    const root = normalizedAbsolutePath(m.mirrorRoot);
+    return root !== null && (source === root || source.startsWith(root.endsWith("/") ? root : `${root}/`));
+  });
+  if (!allowed) throw new DiskWavePlacementRefusal(action.sourceUri, action.toBag, "the selected source does not rest under this bag's granted mirror");
 }
 
 /**
@@ -280,14 +343,14 @@ export interface ActionHandlerOptions {
  * OWN recipe-mounted layers: a source bag MAY be a read-only library layer (read),
  * a target MUST be a writable layer (write). Authority rides the cap-gate upstream.
  */
-interface BagAccess {
+export interface BagAccess {
   read(bag: string): Promise<LarTiddlerStore | null>;
   write(bag: string): Promise<LarTiddlerStore | null>;
   /** Why each registry plane answered no store for `bag`, in plane order; empty when no plane threw. */
   causesOf(bag: string): readonly string[];
 }
 
-function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
+export function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
   if (opts.reach) {
     const reach = opts.reach;
     const planes = ([["catalog", reach.catalogUrl], ["oracle", reach.oracleUrl]] as const)
@@ -305,26 +368,38 @@ function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
       const hit = cache.get(bag);
       if (hit !== undefined) return hit;
       let store: LarTiddlerStore | null = opts.composite.writableStoreForBag(bag);
+      // HOUSE CANON'S ONE DOCUMENT: its live document rests in the Kahu realm, named by the realm's bag row. Where the vessel
+      // names one, THAT document answers ahead of every registry plane (the document the keel mounts, the mirror projects, the
+      // retire and the floor cut read), so a registry row that names another document for the bag never takes a canon write.
+      // A realm document that fails to arrive refuses by name; it never falls to a row.
+      // The one order (`resolveHouseCanon`): the registry planes are walked only where the realm names none.
       if (!store) {
-        const held: string[] = [];
-        for (const { name, accessor } of planes) {
-          try {
-            store = await accessor.storeOf(bag);
-            if (store) break;
-          } catch (err) {
-            held.push(`${name}: ${err instanceof Error ? err.message : String(err)}`);
-          }
+        const realm = reach.systemCanonUrl;
+        const answer = await resolveHouseCanon<LarTiddlerStore>(bag, {
+          realm: realm ? (b) => realm(b).catch(() => null) : undefined,
+          row: async () => {
+            const held: string[] = [];
+            for (const { name, accessor } of planes) {
+              try {
+                const found = await accessor.storeOf(bag);
+                if (found) return found;
+              } catch (err) {
+                held.push(`${name}: ${err instanceof Error ? err.message : String(err)}`);
+              }
+            }
+            if (held.length > 0) causes.set(bag, held);
+            return null;
+          },
+        });
+        if (answer && "realm" in answer) {
+          const handle = await findOrThrow(reach.repo, answer.realm, bag).catch((err: unknown) => {
+            causes.set(bag, [...(causes.get(bag) ?? []), `realm: ${err instanceof Error ? err.message : String(err)}`]);
+            return null;
+          });
+          store = handle ? new AutomergeDocStore(handle, bag) : null;
+        } else if (answer) {
+          store = answer.row;
         }
-        if (!store && held.length > 0) causes.set(bag, held);
-      }
-      // A system canon bag (`lares`, `lararium`): its live document rests in the Kahu realm, named by the realm's bag row.
-      if (!store && reach.systemCanonUrl && isSystemCanonBag(bag)) {
-        const url = await reach.systemCanonUrl(bag).catch(() => null);
-        const handle = url ? await findOrThrow(reach.repo, url, bag).catch((err: unknown) => {
-          causes.set(bag, [...(causes.get(bag) ?? []), `realm: ${err instanceof Error ? err.message : String(err)}`]);
-          return null;
-        }) : null;
-        store = handle ? new AutomergeDocStore(handle, bag) : null;
       }
       // A wiki's instance slot (`wikis/<slug>/<kind>`) — the doc THE ONE resolver names, the same
       // doc its island mounts; reached by access, never mounted here.
@@ -456,7 +531,29 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     const action = residencyFromContext(verb, args, ctx.invocation);
     if (!action) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
 
-    // THE ONE PREDICATE, before any other check: a hand outside the Kahu cabal lands nothing in system canon.
+    if (action.verb === "INGEST") assertDiskWavePlacement(action, opts.diskMirrors);
+    // THE FACE-NAMED WAVE (the lit set): it lands only in the named face's own document, and only where the device table
+    // names THAT face as its owner; an unnamed wave over a face-owned layer lands only where the daemon mount owns it.
+    let faceStore: LarTiddlerStore | null = null;
+    if (action.verb === "INGEST") faceStore = await faceWaveTarget(action, opts.faceTarget, ctx.worn);
+    if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
+      throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
+    }
+
+    // HOUSE CANON NEVER MINTS. A CREATE over a house canon bag writes nothing: the Kahu realm holds its one live document
+    // (`landKahuRealm`), and a face outside the cabal reads its floor snapshot. So the seed leads every disk-sourced holding
+    // with CREATE on every face and reads clean: the steward's answer names the realm's document, any other face's names
+    // the floor, and no face ever mints a catalog row for canon.
+    if (action.verb === "CREATE" && isHouseCanonBag(action.bag)) return createHouseCanon(action, opts);
+    // THE CALLER'S OWN DISK READING (`house-canon: true`, the seed's): it read this bag's holding off the canon source as house
+    // canon. The seat reads that source once, at boot, so a holding that landed afterwards stands unseated here, and a plain
+    // CREATE would mint the catalog row canon never takes: the realm's document, landed at the steward's next boot, would
+    // then answer every door empty while the row's document held the seeded rows. So it refuses by name and mints nothing.
+    if (action.verb === "CREATE" && args["house-canon"] === true) {
+      throw new VerbRefusal("house-canon-unseated", `house-canon-unseated: ${action.bag} stands under the canon source as house canon, and this vessel booted before it stood there, so the Kahu realm names no document for it; restart the vessel (the steward's boot lands it in the realm at contract), then seed again. No catalog row ever mints canon.`);
+    }
+
+    // THE ONE PREDICATE, before any other check: a hand outside the Kahu cabal lands nothing in house canon.
     if (opts.kahuReachClearedAtGate !== true) {
       await requireKahuReach(destinationBag(action), opts.kahuReach, action.verb);
       if (action.verb === "MOVE") await requireKahuReach(action.fromBag, opts.kahuReach, "MOVE out of canon");
@@ -545,7 +642,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // the bag's own doc and writes-then-syncs; the wiki island resolves its own
     // layers. Content writes AND the effect-record ledger both ride these per-bag
     // stores, so each record lands in its affected bag (residency-model#effect-record-surface).
-    const access = makeBagAccess(opts);
+    const access = faceStore !== null ? overDestination(makeBagAccess(opts), destBag, faceStore) : makeBagAccess(opts);
 
     // Defense in depth: the destination MUST resolve to a writable store. If
     // access resolved nothing, fail loud — a residency write never falls through
@@ -614,6 +711,49 @@ function residencyFromContext(
     args,
   };
   return parseResidencyAction(synth);
+}
+
+/**
+ * The face-named wave's gate. A named face resolves through the island's face resolver alone: no resolver, no document, or
+ * a document whose owner names another face refuses by name, and nothing falls back to the daemon mount. An unnamed wave over
+ * a face-owned layer lands only where the daemon mount owns the document it resolves to. Answers the named face's store, or
+ * null where the wave rides the ordinary access.
+ */
+async function faceWaveTarget(action: IngestAction, resolve: FaceTargetResolver | undefined, hand?: SessionWorn): Promise<LarTiddlerStore | null> {
+  const face = action.face;
+  // THE OPERATOR'S HAND ALONE NAMES ANOTHER FACE (store-door-verbs, the rows that act as a face): a call that rides a session
+  // wears that session's face, so an AI seat (or any session) naming a face other than the one it wears refuses by name. The
+  // operator's own gestures (the CLI seed and import, a ward credential) ride no session and may name any open face.
+  if (face !== undefined && hand !== undefined && hand.ordinal !== face) {
+    throw new VerbRefusal("face-hand-refused", `face-hand-refused: this call wears face h${hand.ordinal}, and only the operator's own hand (\`lares vessel seed\`, \`lares vessel import\`) names another face (h${face}); no seat lands one face's memory in another`);
+  }
+  if (face === undefined) {
+    if (!resolve || !isFaceOwnedLayer(action.toBag)) return null;
+    const worn = await resolve(null, action.toBag);
+    if (worn !== null && worn.owner !== null && worn.owner !== worn.worn) {
+      throw new VerbRefusal("ingest-face-foreign", `ingest-face-foreign: ${action.toBag} resolves to a document face h${worn.owner} owns, and this wave names no face; name it (\`face: ${worn.owner}\`) with that face open, or wear it`);
+    }
+    return null;
+  }
+  if (!isFaceOwnedLayer(action.toBag)) {
+    throw new VerbRefusal("face-layer-unowned", `face-layer-unowned: ${action.toBag} belongs to no face, so a wave naming face h${face} lands nothing there`);
+  }
+  if (!resolve) throw new VerbRefusal("face-unresolved", `face-unresolved: this island resolves no face's own layer, so the wave naming face h${face} lands nothing (it never lands on the worn face)`);
+  const target = await resolve(face, action.toBag);
+  if (target === null) throw new VerbRefusal("face-unresolved", `face-unresolved: face h${face} stands shut or holds no document for ${action.toBag}: \`lares vault unlock --face ${face}\`, then seed again`);
+  if (target.owner !== face) {
+    throw new VerbRefusal("ingest-face-foreign", `ingest-face-foreign: the document for ${action.toBag} files under ${target.owner === null ? "no open face" : `face h${target.owner}`}, never h${face}; no wave lands one face's memory in another`);
+  }
+  return target.store;
+}
+
+/** An access whose destination reads `store`, every other bag through `inner`. */
+function overDestination(inner: BagAccess, destBag: string, store: LarTiddlerStore): BagAccess {
+  return {
+    read: (bag) => (bag === destBag ? Promise.resolve(store) : inner.read(bag)),
+    write: (bag) => (bag === destBag ? Promise.resolve(store) : inner.write(bag)),
+    causesOf: (bag) => (bag === destBag ? [] : inner.causesOf(bag)),
+  };
 }
 
 /** Destination bag URI for the cap-verify step + audit. */
@@ -732,6 +872,18 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
     const count = standing ? (await standing.listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
     return { bag: action.bag, plane: action.plane, docUrl: existing, alreadyStood: true, count };
   }
+  // A BAG THAT RESOLVES ELSEWHERE STANDS ALREADY. The bag's own resolution answers, never a name list: a house canon
+  // bag rests in the Kahu realm (named by the realm's bag row), and another plane may hold a bag this plane's registry
+  // never names. A CREATE over such a bag mints nothing, so a seed may lead every disk-sourced holding with CREATE and
+  // never mint a second doc that shadows the one that stands.
+  if (!existing) {
+    // A probe of its own: the action's access caches what it resolved, and the mint below must reach the fresh doc.
+    const resolved = await makeBagAccess(opts).read(action.bag).catch(() => null);
+    if (resolved && !(await storeIsRetired(resolved, action.bag))) {
+      const count = (await resolved.listVisible()).filter((t) => !isEffectRecordUri(t)).length;
+      return { bag: action.bag, plane: action.plane, alreadyStood: true, resolvedElsewhere: true, count };
+    }
+  }
   // Mint + register inside withEffectRecord so the `creation` ledger record lands
   // after the new bag is reachable (the effect-record rides the new bag's own doc).
   return withEffectRecord(action, (bag) => access.write(bag), async () => {
@@ -759,6 +911,28 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
     });
     return { bag: action.bag, plane: action.plane, docUrl, count: 0 };
   });
+}
+
+/** The named state a face outside the Kahu cabal reads for a house canon bag: no write, the floor snapshot. */
+export const HOUSE_CANON_READS_FLOOR = "house canon, written by the Kahu steward (h0); this face reads the floor" as const;
+
+/**
+ * CREATE over a HOUSE CANON bag (`isHouseCanonBag`): it mints nothing and registers nothing, for any hand. The steward's
+ * answer names the realm's one live document; a face outside the Kahu cabal answers `resolvedElsewhere` with `readsFloor`
+ * (its wikis read the bag's floor snapshot by CID), never a kahu-reach red, so the seed reads clean on every face. A steward
+ * whose realm registers no document for the bag refuses by name: the steward's boot lands it (`standKahuCanon`), never a
+ * catalog row.
+ */
+async function createHouseCanon(action: CreateAction, opts: ActionHandlerOptions): Promise<Record<string, unknown>> {
+  const base = { bag: action.bag, plane: action.plane, alreadyStood: true, resolvedElsewhere: true };
+  if (!(await holdsKahuReach(opts.kahuReach))) return { ...base, readsFloor: true, houseCanon: HOUSE_CANON_READS_FLOOR, count: 0 };
+  const url = opts.reach?.systemCanonUrl ? await opts.reach.systemCanonUrl(action.bag).catch(() => null) : null;
+  if (!url || !opts.reach) {
+    throw new VerbRefusal("house-canon-unlanded", `house-canon-unlanded: ${action.bag} rests in the Kahu realm, and the realm registers no document for it yet; the steward's next boot lands it (standKahuCanon), and no catalog row ever mints canon`);
+  }
+  const handle = await findOrThrow(opts.reach.repo, url, action.bag).catch(() => null);
+  const count = handle ? (await new AutomergeDocStore(handle, action.bag).listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
+  return { ...base, docUrl: url, count };
 }
 
 /**
@@ -792,13 +966,27 @@ const CARRIER_SOH = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
  *   · a LIVE head: a SOH sigil standing outside every fence. A head SHOWN inside a fence opens
  *     nothing, so a document that teaches the frame keeps its own filetype and its sidecar's fields.
  *
+ *   · a `.tid` file's OWN FRAME: a header block of `field: value` lines naming its title, a blank line, then the body. The
+ *     header stands as that file's sidecar, so the file rides TW5's registry and the header never enters the record's text,
+ *     whatever its body holds. A staged memory row rests so, its body a whole framed meme (`bags/daemon-<F>/…/<slug>.tid`):
+ *     read as memetic, the re-pour landed the row with its `title:` line inside the text.
+ *
  * A host with no native bridge reads every carrier as memetic. The routing never reads the path.
  */
-function readsAsMemetic(text: string, meta: string | undefined, tw5: Tw5Deserializer | undefined): boolean {
+function readsAsMemetic(text: string, meta: string | undefined, tw5: Tw5Deserializer | undefined, ext?: string): boolean {
   if (!tw5) return true;
   const declared = meta ? tw5.parseFields(meta)["type"] : undefined;
   if (typeof declared === "string" && declared) return isCarrierType(declared);
+  if (tidFramed(text, ext)) return false;
   return maskedExec(text, CARRIER_SOH) !== null;
+}
+
+/** Whether a `.tid` file frames itself: every line ahead of its first blank line reads `field: value`, and one names the title. */
+function tidFramed(text: string, ext: string | undefined): boolean {
+  if (ext !== ".tid") return false;
+  const end = text.indexOf("\n\n");
+  const head = (end < 0 ? text : text.slice(0, end)).split("\n");
+  return head.every((line) => /^[^\s:][^:]*:/.test(line)) && head.some((line) => line.startsWith("title:"));
 }
 
 /**
@@ -904,7 +1092,6 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     if (carrier.skinny && carrier.textCid) {
       const title = carrier.title;
       if (!title) throw new Error("LOAD: a skinny carrier needs a title (its `lar:` URI) — the handle names the body");
-      if (neverProjects(title) || declaresNoProjection(carrier.meta)) throw new NeverProjectedPathRefusal(title, title);
       families.push([skinnyHandleRecord(action.toBag, title, carrier.textCid, carrier.size ?? 0, carrier.ext, action.changeId, tw5, carrier.meta)]);
       continue;
     }
@@ -915,7 +1102,6 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     // (never OOM the doc), provided it names a cid to point at and carries no memetic wrapper.
     if (carrier.textCid && !CARRIER_SOH.test(carrierText) && isOversizedBody(carrier.size ?? carrierText.length) && carrier.title) {
       const title = carrier.title, cid = carrier.textCid;
-      if (neverProjects(title) || declaresNoProjection(carrier.meta)) throw new NeverProjectedPathRefusal(title, title);
       families.push([skinnyHandleRecord(action.toBag, title, cid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, tw5, carrier.meta)]);
       continue;
     }
@@ -931,7 +1117,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     // lands through TW5's OWN deserializer registry, resolved from its extension.
     // Absent a native resolver (no booted $tw), every carrier falls back to memetic.
     let fieldsList: Array<Record<string, unknown>>;
-    if (!tw5 || readsAsMemetic(carrierText, carrier.meta, tw5)) {
+    if (!tw5 || readsAsMemetic(carrierText, carrier.meta, tw5, carrier.ext)) {
       fieldsList = memeticWikitextDeserializer(carrierText, { title: carrier.title ?? "" });
     } else {
       // The extension routes to TW5's registry — it resolves the content-type + the right
@@ -951,14 +1137,6 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     const tear = tearOf(fieldsList);
     if (tear !== null) {
       throw new Error(`LOAD: carrier ${carrier.title ?? "(carrier)"} REFUSED — its frame is torn (${tear}); nothing landed, and any family under that title stands as it stood`);
-    }
-    const refusedField = fieldsList.find((fields) => {
-      const title = typeof fields["title"] === "string" ? fields["title"] as string : carrier.title ?? "";
-      return neverProjects(title) || fields["disk-projection"] === "no";
-    });
-    if (refusedField) {
-      const title = typeof refusedField["title"] === "string" ? refusedField["title"] as string : carrier.title ?? "(carrier)";
-      throw new NeverProjectedPathRefusal(carrier.title ?? title, title);
     }
     // The title law, ahead of any slice: a LOAD lands in slices, so the refusal rides before the first one
     // and no family of the wave lands beside it.
@@ -986,12 +1164,15 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
   // takes the turn in between cannot be overwritten by a decision made before the yield. The executors
   // that DO decide before they write (INGEST's Confluence gate, MOVE's read-then-retract) take no yield.
   const o = origin(action);
+  // THE FORK REMEMBERS ITS BASE: LOAD writes the layer's own store, around `CompositeStore.put`, so a LOAD into a wiki's
+  // working layer names each copy's override base itself (`forkingOverrideBase`).
+  const fork = isWorkingLayerBag(action.toBag) ? await forkingOverrideBase(access, action.toBag) : null;
   let slice: LarTiddlerRecord[] = [];
   let landedSlices = 0;
   const landSlice = async (): Promise<void> => {
     if (slice.length === 0) return;
     if (landedSlices > 0) await yieldHostTask();
-    await writeFamilyIn(access, action.toBag, slice, o);
+    await writeFamilyIn(access, action.toBag, fork ? await Promise.all(slice.map(fork)) : slice, o);
     for (const record of slice) titles.push(record.tiddler.title);
     landedSlices++;
     slice = [];
@@ -1023,7 +1204,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
  * carrier asks the same law first (`storableTitleFault`, `@lararium/mesh` `title-law.ts`) and names the
  * refusal in that carrier's row; the door still stands behind it.
  */
-function sessionFormRow(uri: string, titles: readonly string[]): Record<string, unknown> | null {
+function sessionFormRecord(uri: string, titles: readonly string[]): Record<string, unknown> | null {
   for (const title of [uri, ...titles]) {
     const fault = storableTitleFault(title);
     if (fault !== null) return { uri, decision: "refuse", code: SESSION_FORM_TITLE_CODE, reason: fault, warnings: [fault] };
@@ -1048,20 +1229,18 @@ async function landedHeads(access: BagAccess, bag: string): Promise<{ heads?: st
   return heads !== null && heads !== undefined && heads.length > 0 ? { heads: [...heads] } : {};
 }
 
-/** True when a carrier's `.meta` sidecar text declares the per-record disk opt-out (`disk-projection: no`). */
-function declaresNoProjection(meta: string | undefined): boolean {
-  return meta !== undefined && /^disk-projection:[ \t]*no[ \t]*$/m.test(meta);
-}
-
-/** The per-carrier answer for a file whose ingest would write a record that never projects to disk. */
-function neverProjectedRow(uri: string, file: string | undefined, title: string): Record<string, unknown> {
-  const refusal = new NeverProjectedPathRefusal(file ?? uri, title);
-  return { uri, decision: "refuse", code: refusal.code, reason: refusal.message, warnings: [refusal.message] };
-}
-
 async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver): Promise<Record<string, unknown>> {
   const o = origin(action);
+  // A carry's working rows name the override base each copy forked from: every record this wave lands under such a title
+  // carries it, so the composite keeps it rather than forking a fresh one off the canon standing now.
+  access = stampingOverrideBases(access, action);
   const deletions = action.deletions ?? [];
+
+  // ── the working copies above this canon bag (override-bases.ts) ──
+  // INGEST writes canon alone. Before the wave lands, read what canon holds under each title the wiki's working layer
+  // shadows; after it lands, the instrument names each copy whose canon moved past its base. Nothing writes: the
+  // recipe stack decides what shows, and a top layer always shadows the one under it.
+  const overrides = await overrideWatch(access, action.toBag);
 
   // ── the vanished addresses a wave names (whole-carrier files gone from disk) ──
   // A WAVE TOMBSTONES NO CARRIER. A vanished file stands pending at the vessel's shore until a person
@@ -1077,22 +1256,26 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       deletes: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })),
       adds:    action.carriers.map((c) => ({ uri: c.uri, diskHash: c.diskHash })),
     });
-    // A re-link never re-homes a record onto an address whose records never project, nor onto a
-    // session-form address (`title-law.ts`): that carrier falls to the gate below and refuses by name,
-    // and its vanished source stands as it stood.
-    const lawful = paired.renames.filter((r) => !neverProjects(r.toUri) && storableTitleFault(r.toUri) === null);
+    // A re-link never re-homes a record onto a title no store may hold (`title-law.ts`: a prototype key, a
+    // session-form address): that carrier falls to the gate below and refuses by name, and its vanished
+    // source stands as it stood.
+    const lawful = paired.renames.filter((r) => storableTitleFault(r.toUri) === null);
     // A RE-LINK RE-HOMES RECORDS THAT STAND. A vanished source that holds no live record leaves nothing
     // to re-home: answered as a rename, the target would skip its own ingest, land no record, and the
     // gesture would still pin a base for it. So such a pair reads as no rename, the target carrier falls
     // to the gate below and lands as itself, and the summary names the source `absent`: the records hold
     // nothing under it, so nothing stays owed for it.
-    const sources = (await listLiveTitlesInBag(access, action.toBag)).filter((t) => !isEffectRecordUri(t) && !neverProjects(t));
-    const absent = lawful.filter((r) => groupOf(sources, r.fromUri).length === 0).map((r) => r.fromUri);
+    const sources = (await listLiveTitlesInBag(access, action.toBag)).filter((t) => !isEffectRecordUri(t));
+    const holdsFamily = async (uri: string): Promise<boolean> => familyTitles(await familyViewInBag(access, action.toBag, uri, sources), uri).length > 0;
+    const absent: string[] = [];
+    for (const r of lawful) if (!(await holdsFamily(r.fromUri))) absent.push(r.fromUri);
     // A RE-LINK NEVER LANDS OVER RECORDS THAT STAND AT ITS TARGET. A re-link skips the target's own gate,
     // so over a target that already holds records it would replace them unweighed. Such a pair reads as
     // no rename: the source stands declined, and the target falls to the gate below, where a person's
     // gesture adopts the file and a wave no person stands behind stands off.
-    renames = lawful.filter((r) => !absent.includes(r.fromUri) && groupOf(sources, r.toUri).length === 0);
+    const clear: Array<{ readonly fromUri: string; readonly toUri: string }> = [];
+    for (const r of lawful) if (!absent.includes(r.fromUri) && !(await holdsFamily(r.toUri))) clear.push(r);
+    renames = clear;
     for (const r of renames) renameTargets.add(r.toUri);
     const settled = new Set([...renames.map((r) => r.fromUri), ...absent]);
     deletionSummary = {
@@ -1119,12 +1302,13 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     for (const title of kapaeTitles) {
       const fault = storableTitleFault(title);
       if (fault !== null) { refused.push({ uri: title, code: SESSION_FORM_TITLE_CODE, reason: fault }); continue; }
-      if (neverProjects(title)) { refused.push({ uri: title, code: "kapae-never-projected", reason: `${title} never projects to disk, so no shadow file speaks for it` }); continue; }
       shadowed.add(title);
-      const fragments = live.filter((t) => t === title || t.startsWith(`${title}#`));
+      // The family the kāpae sets aside, by the one family law: the root and its component slots (the orphans a
+      // dead root left, where none stands). They leave as ONE change of the bag's document.
+      const fragments = familyTitles(await familyViewInBag(access, action.toBag, title, live), title);
       const rootRecord = await readFromBag(access, action.toBag, title);
       if (rootRecord?.meta?.deleted === true && fragments.length === 0) { standing.push(title); continue; }
-      for (const t of new Set([title, ...fragments])) await tombstoneIn(access, action.toBag, t, o);
+      await tombstoneFamilyIn(access, action.toBag, [...new Set([title, ...fragments])], o);
       raised.push(title);
     }
     kapaeSummary = { raised, standing, refused };
@@ -1146,12 +1330,8 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       results.push({ uri, decision: "refuse", code: "kapae-holds", reason, warnings: [reason] });
       continue;
     }
-    if (neverProjects(uri) || declaresNoProjection(carrier.meta)) {
-      results.push(neverProjectedRow(uri, carrier.file, uri));
-      continue;
-    }
     // The carrier's own address, ahead of every write path below (a skinny handle lands before any parse).
-    const sessionFormCarrier = sessionFormRow(uri, []);
+    const sessionFormCarrier = sessionFormRecord(uri, []);
     if (sessionFormCarrier) { results.push(sessionFormCarrier); continue; }
     // Scenario B: an OVERSIZED RAW shard rides a skinny handle — the body stays in the cid/
     // tier, never materializing as a CRDT scalar-string (the automerge OOM wall). The gate
@@ -1203,17 +1383,13 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     if (!CARRIER_SOH.test(carrierText) && isOversizedBody(carrier.size ?? carrierText.length)) {
       throw new Error(`carrier ${uri}: body ${carrier.size ?? carrierText.length}B would inline oversized — a verb rides a reference, never a body (flag _lar_cas or stage the body to CAS)`);
     }
-    const all = await listLiveTitlesInBag(access, action.toBag);
-    // The carrier group: the root + its fragment children (FFZ decomposition
-    // emits `uri#slot` titles) + any path children (`uri/wires/...` era).
-    const groupTitles = all.filter((t) => t === uri || t.startsWith(`${uri}#`) || t.startsWith(`${uri}/`));
 
     // Route by content, mirroring LOAD: a memetic carrier (SOH heading / no
     // native bridge) decomposes at the shore through the Confluence gate; ANY other
     // legal TW5 filetype rides TW5's OWN deserializer registry, keyed by its
     // extension. The registry — not a CLI-side reimplementation — owns the
     // filetype routing; the island hands the bytes to it.
-    const memetic = readsAsMemetic(carrierText, carrier.meta, tw5);
+    const memetic = readsAsMemetic(carrierText, carrier.meta, tw5, carrier.ext);
 
     // Records to land + the receipt this carrier rides. The memetic path grades
     // the recover; the native path leans on the registry + the echo gate.
@@ -1225,13 +1401,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     let packInfo: { packPath: string; members: string[] } | null = null;
     if (memetic) {
       const parsedFields = memeticWikitextDeserializer(carrierText, { title: uri });
-      const refusedField = parsedFields.find((fields) => neverProjects(String(fields["title"] ?? uri)) || fields["disk-projection"] === "no");
-      if (refusedField) {
-        const title = String(refusedField["title"] ?? uri);
-        results.push(neverProjectedRow(uri, carrier.file, title));
-        continue;
-      }
-      const sessionForm = sessionFormRow(uri, parsedFields.map((fields) => String(fields["title"] ?? uri)));
+      const sessionForm = sessionFormRecord(uri, parsedFields.map((fields) => String(fields["title"] ?? uri)));
       if (sessionForm) { results.push(sessionForm); continue; }
       // The ONE placement law (place-meme.ts): group · gate · land · tombstone, over a bag sink.
       // The gesture's Synced-tree hash rides as the base the gate merges against.
@@ -1285,13 +1455,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         const own = typeof fields["title"] === "string" ? (fields["title"] as string) : "";
         return { ...fields, title: own || uri };
       });
-      const refusedRecord = freshRecords.find((record) => neverProjects(String(record["title"] ?? "")) || record["disk-projection"] === "no");
-      if (refusedRecord) {
-        const title = String(refusedRecord["title"] ?? uri);
-        results.push(neverProjectedRow(uri, carrier.file, title));
-        continue;
-      }
-      const sessionForm = sessionFormRow(uri, freshRecords.map((record) => String(record["title"] ?? uri)));
+      const sessionForm = sessionFormRecord(uri, freshRecords.map((record) => String(record["title"] ?? uri)));
       if (sessionForm) { results.push(sessionForm); continue; }
       // Pack detection: any member whose title is NOT the carrier's own `lar:` URI
       // came from a bundle (the file's tiddlers self-title). Record the WHOLE
@@ -1369,7 +1533,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
             continue;
           }
           if (decision.kind === "conflict") {
-            // Surface, never overwrite: leave the record untouched and HOLD the old base so
+            // Surface, never overwrite: leave the record untouched and HOLD the standing base so
             // the conflict re-surfaces next scan (never a silent last-write-wins on this member).
             anyConflict = true;
             memberResults.push({ title, decision: "conflict", reason: decision.reason });
@@ -1489,6 +1653,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       freshTitles.add(title);
     }
     const tombstoned: string[] = [];
+    // The carrier's family, by the one family law: the record under the address and its component slots. A
+    // title the address merely prefixes (`uri/path`) stands as its own and stays.
+    const groupTitles = familyTitles(await familyViewInBag(access, action.toBag, uri), uri);
     for (const t of groupTitles) {
       if (!freshTitles.has(t)) {
         await tombstoneIn(access, action.toBag, t, o);
@@ -1504,10 +1671,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
   // A rename re-homes the vanished carrier's whole group to the new URI, PRESERVING each record's
   // change-id (the re-link, never a fresh create). Nothing here removes a carrier the wave only named gone.
   for (const { fromUri, toUri } of renames) {
-    const live = await listLiveTitlesInBag(access, action.toBag);
     let relinked = 0;
-    for (const t of groupOf(live, fromUri)) {
-      if (neverProjects(t)) continue;
+    const slotPrefix = `${fromUri}#`;
+    for (const t of familyTitles(await familyViewInBag(access, action.toBag, fromUri), fromUri)) {
       const rec = await readFromBag(access, action.toBag, t);
       if (!rec) continue;
       const newTitle = toUri + t.slice(fromUri.length);
@@ -1519,6 +1685,11 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       // so only this same-doc path needs it.
       const movedTiddler = structuredClone(rec.tiddler) as Record<string, unknown>;
       movedTiddler["title"] = newTitle;
+      // THE SLOTS FOLLOW THEIR ROOT: a slot's parent edge and its `uri-path` move with its title, so the
+      // re-homed family still reads as one family under the new address.
+      const parent = movedTiddler["$fragment-parent"];
+      if (typeof parent === "string" && (parent === fromUri || parent.startsWith(slotPrefix))) movedTiddler["$fragment-parent"] = toUri + parent.slice(fromUri.length);
+      if (t !== fromUri && typeof movedTiddler["uri-path"] === "string" && newTitle.startsWith("lar:///")) movedTiddler["uri-path"] = newTitle.slice("lar:///".length);
       const moved: LarTiddlerRecord = {
         tiddler: movedTiddler as LarTiddlerRecord["tiddler"],
         meta: structuredClone(rec.meta ?? {}), // change-id preserved — identity survives the move
@@ -1532,9 +1703,11 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     results.push({ uri: toUri, decision: "rename", from: fromUri, relinked });
   }
 
+  const fresher = overrides ? await overrides.read() : [];
   return {
     sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId,
     carriers: results,
+    ...(fresher.length > 0 ? { fresherCanon: fresherSummary(fresher) } : {}),
     ...(deletionSummary ? { deletions: deletionSummary } : {}),
     ...(kapaeSummary ? { kapae: kapaeSummary } : {}),
     // THE WAVE'S HEADS: the target bag's document after every carrier of this wave landed. Rows that stay behind
@@ -1545,6 +1718,154 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
 
 function origin(action: ResidencyAction): ChangeOrigin {
   return { kind: "lares-verb", requestId: action.requestId };
+}
+
+/**
+ * The watch over one canon bag: canon under each working copy, read now, and the read after the wave. Null where the
+ * bag names no canon bag, or its wiki holds no working layer this island reaches (a layer never minted shadows nothing).
+ */
+async function overrideWatch(access: BagAccess, canonBag: string): Promise<{ read(): Promise<FresherCanon[]> } | null> {
+  const workingBag = workingLayerOfCanon(canonBag);
+  if (workingBag === null) return null;
+  const working = await access.read(workingBag).catch(() => null);
+  const canon = await access.read(canonBag);
+  if (!working || !canon) return null;
+  const prior = await snapshotUnderOverrides(working, canon);
+  if (prior.size === 0) return null;
+  return { read: () => fresherAfterChange(canonBag, workingBag, working, canon, prior) };
+}
+
+/**
+ * THE FORK STAMP FOR A DOOR THAT WRITES A WORKING LAYER'S OWN STORE, by the composite's rule (`override-base.ts`,
+ * `CompositeStore._withOverrideBasesNow`): a record that names its own base, or a tombstone, passes untouched; a title the
+ * working layer holds live keeps the base it named; any other title names the carrier identity of the live record the wiki's
+ * canon bag holds (`canonOfWorkingLayer`, the bag the fresher read weighs it against). Where the working layer reads nothing
+ * here the base stays unknown and the record lands unstamped. An instrument, never a gate.
+ */
+async function forkingOverrideBase(access: BagAccess, workingBag: string): Promise<(record: LarTiddlerRecord) => Promise<LarTiddlerRecord>> {
+  const working = await access.read(workingBag).catch(() => null);
+  const canonBag = canonOfWorkingLayer(workingBag);
+  const canon = canonBag ? await access.read(canonBag).catch(() => null) : null;
+  return async (record) => {
+    if (!working || record.meta?.deleted === true || overrideBaseOf(record) !== null) return record;
+    const title = String(record.tiddler.title);
+    const held = await working.get(title);
+    let base: string | null = null;
+    if (held && held.meta?.deleted !== true) base = overrideBaseOf(held);
+    else if (canon) {
+      const lower = await canon.get(title);
+      if (lower && lower.meta?.deleted !== true) base = carrierHashOf(lower.tiddler);
+    }
+    return base === null ? record : { ...record, meta: { ...(record.meta ?? {}), [OVERRIDE_BASE_META]: base } };
+  };
+}
+
+/**
+ * THE OVERRIDE BASE A CARRY RESTORES. A wave into a wiki's working layer whose carriers name an `overrideBase` lands each
+ * record of that title naming it on the meta envelope (a record that names its own base keeps it at the composite). A
+ * carrier's family lands whole: each fragment record its carrier names a base for (`familyBases`) lands naming its own, so
+ * a fragment whose canon moved under a root that held still reads fresher. Every other wave, and every title no carrier
+ * names a base for, writes as it always has.
+ */
+function stampingOverrideBases(access: BagAccess, action: IngestAction): BagAccess {
+  if (!isWorkingLayerBag(action.toBag)) return access;
+  const bases = new Map<string, string>();
+  for (const c of action.carriers) {
+    if (typeof c.overrideBase === "string") bases.set(c.uri, c.overrideBase);
+    for (const [title, base] of Object.entries(c.familyBases ?? {})) bases.set(title, base);
+  }
+  if (bases.size === 0) return access;
+  const stamp = (r: LarTiddlerRecord): LarTiddlerRecord => {
+    const base = bases.get(String(r.tiddler.title));
+    return base === undefined || r.meta?.deleted === true ? r : { ...r, meta: { ...(r.meta ?? {}), [OVERRIDE_BASE_META]: base } };
+  };
+  return {
+    read: (bag) => access.read(bag),
+    causesOf: (bag) => access.causesOf(bag),
+    write: async (bag) => {
+      const store = await access.write(bag);
+      if (!store || bag !== action.toBag) return store;
+      return new Proxy(store, {
+        get(target, prop, receiver) {
+          if (prop === "put") return (record: LarTiddlerRecord, ...rest: [ChangeOrigin, ...unknown[]]) => (target.put as (...a: unknown[]) => Promise<void>)(stamp(record), ...rest);
+          if (prop === "writeFamily" && typeof target.writeFamily === "function") {
+            return (puts: readonly LarTiddlerRecord[], ...rest: unknown[]) => (target.writeFamily as (...a: unknown[]) => Promise<void>)(puts.map(stamp), ...rest);
+          }
+          const v = Reflect.get(target, prop, receiver) as unknown;
+          return typeof v === "function" ? (v as (...a: unknown[]) => unknown).bind(target) : v;
+        },
+      });
+    },
+  };
+}
+
+/** The page an override-bases listing answers: the outcome carries at most 32 rows of an array. */
+export const OVERRIDE_BASES_PAGE = 32;
+
+/**
+ * THE OVERRIDE-BASES READ — every working copy of one layer (`bag`, `lar:///ha.ka.ba/wikis/<slug>/working`) that names the
+ * canon record it forked from (its carrier identity), by title, a page at a time (`after` the title the page before ended on). An export reads it
+ * to carry each base beside the file, since a base rides the meta envelope and never projects. It reads alone.
+ */
+export function makeOverrideBasesReactor(opts: ActionHandlerOptions): VerbReactor {
+  return async (args, ctx) => {
+    const bag = typeof args["bag"] === "string" ? args["bag"] : "";
+    if (!isWorkingLayerBag(bag)) return { ok: false, refusal: "override-bases-incomplete", why: "override-bases names a working layer (`bag`: lar:///ha.ka.ba/wikis/<slug>/working)" };
+    const proof = await ctx.cap("read", bag);
+    if (!proof.ok) throw new VerbRefusal("cap-denied", `cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    const working = await makeBagAccess(opts).read(bag).catch(() => null);
+    const rows: Array<{ title: string; base: string }> = [];
+    if (working) {
+      for (const title of await working.listVisible()) {
+        if (isEffectRecordUri(title)) continue;
+        const base = overrideBaseOf(await working.get(title));
+        if (base !== null) rows.push({ title, base });
+      }
+    }
+    rows.sort((a, b) => (a.title < b.title ? -1 : a.title > b.title ? 1 : 0));
+    const after = typeof args["after"] === "string" ? args["after"] : null;
+    const behind = after === null ? rows : rows.filter((r) => r.title > after);
+    const taken = behind.slice(0, OVERRIDE_BASES_PAGE);
+    const next = behind.length > taken.length ? taken[taken.length - 1]!.title : null;
+    return { ok: true, bag, bases: taken, count: rows.length, next };
+  };
+}
+
+/** The instrument's reading as an outcome names it: the count beside the titles (the outcome caps rows past 32). */
+function fresherSummary(fresher: readonly FresherCanon[]): Record<string, unknown> {
+  return { working: fresher[0]!.working, titles: fresher.map((f) => f.title), count: fresher.length };
+}
+
+/** The page a fresher-canon listing answers: the outcome carries at most 32 rows of an array. */
+export const FRESHER_CANON_PAGE = 32;
+
+/**
+ * THE FRESHER-CANON READ — every working copy of one wiki that shadows a canon record fresher than the one it forked from
+ * (`override-bases.ts`), a page at a time (`after` the title the page before ended on, `next` the cursor behind). It
+ * names a canon bag (`bag`, `lar:///ha.ka.ba/bags/<slug>`) and reaches the wiki's working layer by access. With
+ * `class: "base-unknown"` it reads the second class instead (`listBaseUnknown`): copies that name no base and differ from
+ * canon, under `unknown`. It reads alone: a person who wants the fresher canon removes the copy with the ordinary verbs.
+ */
+export function makeFresherCanonReactor(opts: ActionHandlerOptions): VerbReactor {
+  return async (args, ctx) => {
+    const bag = typeof args["bag"] === "string" ? args["bag"] : "";
+    const workingBag = workingLayerOfCanon(bag);
+    if (workingBag === null) return { ok: false, refusal: "fresher-canon-incomplete", why: "fresher-canon names a canon bag (`bag`: lar:///ha.ka.ba/bags/<slug>)" };
+    const proof = await ctx.cap("read", workingBag);
+    if (!proof.ok) throw new VerbRefusal("cap-denied", `cap-denied: read on ${workingBag} required (${proof.reason ?? "no reason"})`);
+    const access = makeBagAccess(opts);
+    const working = await access.read(workingBag).catch(() => null);
+    const canon = await access.read(bag);
+    // THE SECOND CLASS (`class: "base-unknown"`): copies that name no base and differ from canon, for review.
+    const unknown = args["class"] === "base-unknown";
+    const rows: ReadonlyArray<{ readonly title: string }> = !working || !canon ? [] : unknown ? await listBaseUnknown(bag, workingBag, working, canon) : await listFresherCanon(bag, workingBag, working, canon);
+    const after = typeof args["after"] === "string" ? args["after"] : null;
+    const behind = after === null ? rows : rows.filter((r) => r.title > after);
+    const taken = behind.slice(0, FRESHER_CANON_PAGE);
+    const next = behind.length > taken.length ? taken[taken.length - 1]!.title : null;
+    if (unknown) return { ok: true, bag, working: workingBag, class: "base-unknown", unknown: taken.map((r) => ({ ...r })), count: rows.length, next };
+    return { ok: true, bag, working: workingBag, fresher: taken.map((r) => ({ ...r })), count: rows.length, next };
+  };
 }
 
 /** Read a bag's OWN Manifestation of title (or null if absent / bag unreachable). */
@@ -1579,6 +1900,14 @@ async function tombstoneIn(access: BagAccess, bag: string, title: string, o: Cha
   await store.tombstone(title, o);
 }
 
+/** Tombstone a family's titles as ONE change where the bag's document writes atomically; title by title where it cannot. */
+async function tombstoneFamilyIn(access: BagAccess, bag: string, titles: readonly string[], o: ChangeOrigin): Promise<void> {
+  const store = await access.write(bag);
+  if (!store) throw new Error(`action-handler: target bag "${bag}" unreachable — cannot tombstone (no silent misroute).`);
+  if (titles.length > 1 && typeof store.writeFamily === "function") { await store.writeFamily([], titles, o); return; }
+  for (const title of titles) await store.tombstone(title, o);
+}
+
 /** HARD-remove (ABSENT — falls through to a lower bag) a title in the bag's own
  *  store, NOT a kāpae tombstone. The retract a MOVE source uses so a canonical
  *  copy beneath surfaces (residency-model anti-pattern #3). Fails loud unreachable. */
@@ -1597,6 +1926,7 @@ function bagMemeSink(access: BagAccess, bag: string, changeId: string, o: Change
     read:      async (title) => ((await readFromBag(access, bag, title))?.tiddler as unknown as TiddlerFields | undefined),
     land:      (fields) => landInBag(access, bag, { tiddler: fields as LarTiddlerRecord["tiddler"], meta: {} }, changeId, o),
     tombstone: (title) => tombstoneIn(access, bag, title, o),
+    tombstoneFamily: (titles) => tombstoneFamilyIn(access, bag, titles, o),
   };
 }
 
@@ -1638,16 +1968,52 @@ async function executeAdd(action: AddAction, access: BagAccess): Promise<Record<
 async function executeCopy(action: CopyAction, access: BagAccess): Promise<Record<string, unknown>> {
   const source = await readFromBag(access, action.fromBag, action.title);
   if (!source) throw new Error(`COPY: source bag ${action.fromBag} does not hold ${action.title}`);
+  // A slot copies only with the root that holds it: a lone slot would land rootless in the target.
+  const read = consequence(await familyViewInBag(access, action.fromBag, action.title), { kind: "copy", title: action.title, toBag: action.toBag });
+  if (read.refusals.some((r) => r.code === "slot-without-root")) throw new SlotWithoutRootRefusal("COPY", action.title, read.family);
   await landInBag(access, action.toBag, source, lineageOf(source, action.changeId), origin(action));
   return { title: action.title, fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, mode: "overwrite" };
 }
 
-/** A memetic-wikitext carrier is a tiddler-GROUP keyed by its root: the root
- *  title itself plus every `#fragment` child and `/path` segment. Residency ops
- *  that touch a carrier MUST carry the whole group so a fragment never orphans
- *  from its root (the shared law the deletion, rename, and MOVE paths enforce). */
-function groupOf(titles: readonly string[], root: string): string[] {
-  return titles.filter((t) => t === root || t.startsWith(`${root}#`) || t.startsWith(`${root}/`));
+/**
+ * A FAMILY IN ONE BAG, read by the one family law (`@lararium/mesh/family`): a carrier rests as a root and
+ * the component slots its parent edges and `kahea` calls name. Residency acts that touch a carrier carry
+ * the whole family, so a slot never orphans from its root. The view names every live title of the bag and
+ * reads the records the address grammar lets a component hold: the title, its root address, and each
+ * `<root>#…` title. A `<root>/path` title stands as its own meme and never joins.
+ */
+async function familyViewInBag(access: BagAccess, bag: string, title: string, titles?: readonly string[]): Promise<FamilyView> {
+  const live = (titles ?? await listLiveTitlesInBag(access, bag)).filter((t) => !isEffectRecordUri(t));
+  const address = rootAddressOf(title);
+  const prefix = `${address}#`;
+  const records = new Map<string, Record<string, unknown>>();
+  for (const t of live) {
+    if (t !== title && t !== address && !t.startsWith(prefix)) continue;
+    const rec = await readFromBag(access, bag, t);
+    if (rec && !rec.meta?.deleted) records.set(t, rec.tiddler as unknown as Record<string, unknown>);
+  }
+  return familyViewOf(() => live, (t) => records.get(t));
+}
+
+/** The record under a title and every component beneath it; where none stands there, the orphans a dead root left. */
+function familyTitles(view: FamilyView, title: string): string[] {
+  return view.read(title) !== undefined ? componentsBeneath(view, title) : orphansUnder(view, title);
+}
+
+/**
+ * A TOMBSTONED FAMILY. A dead record carries no edge to read, so the address grammar alone names what
+ * composed onto it: the title and each `<title>#…` title. A `<title>/path` title never joined it.
+ */
+function tombstonedFamily(titles: readonly string[], title: string): string[] {
+  return titles.filter((t) => t === title || t.startsWith(`${title}#`));
+}
+
+export class SlotWithoutRootRefusal extends Error {
+  readonly code = "SLOT_WITHOUT_ROOT";
+  constructor(verb: string, title: string, root: string | null) {
+    super(`slot-without-root: ${verb}: ${title} names a slot${root ? ` of ${root}` : ""}; a slot moves only with the root that holds it. Name the root${root ? ` (${root})` : ""} and its whole family follows.`);
+    this.name = "SlotWithoutRootRefusal";
+  }
 }
 
 async function executeMove(action: MoveAction, access: BagAccess): Promise<Record<string, unknown>> {
@@ -1669,11 +2035,11 @@ async function executeMove(action: MoveAction, access: BagAccess): Promise<Recor
     // (a store that lists none answers the title alone plus each group member the target holds live).
     const lister = (await access.read(action.fromBag)) as (LarTiddlerStore & { listTombstoned?: () => string[] }) | null;
     const sourceTombstones = typeof lister?.listTombstoned === "function"
-      ? groupOf(lister.listTombstoned().filter((t) => !isEffectRecordUri(t)), action.title)
+      ? tombstonedFamily(lister.listTombstoned().filter((t) => !isEffectRecordUri(t)), action.title)
       : [];
     const family = new Set<string>([action.title, ...sourceTombstones]);
     if (typeof lister?.listTombstoned !== "function") {
-      for (const t of groupOf((await listLiveTitlesInBag(access, action.toBag)).filter((x) => !isEffectRecordUri(x)), action.title)) {
+      for (const t of tombstonedFamily((await listLiveTitlesInBag(access, action.toBag)).filter((x) => !isEffectRecordUri(x)), action.title)) {
         if ((await readFromBag(access, action.fromBag, t))?.meta?.deleted) family.add(t);
       }
     }
@@ -1695,13 +2061,13 @@ async function executeMove(action: MoveAction, access: BagAccess): Promise<Recor
     };
   }
   if (action.shadow === true) throw new ShadowRequiresTombstoneRefusal(action.title);
-  // Carrier-group MOVE: a MOVE of a carrier root
-  // carries its WHOLE group — root + #fragment + /path — so promotion publishes
-  // a meme entire and never orphans a fragment from its root (#shore-law). The
-  // same group law the deletion/rename path uses; a single-title move of one
-  // record of a carrier was the latent bug this closes.
-  const live  = await listLiveTitlesInBag(access, action.fromBag);
-  const group = groupOf(live, action.title);
+  // Family MOVE: a MOVE of a carrier root carries its WHOLE family (the root and its component slots, by
+  // the one family law), so promotion publishes a meme entire and never orphans a slot from its root
+  // (#shore-law). The consequence names what moves: a slot subject refuses (`slot-without-root`: the
+  // caller names the root), and a `root/path` title stands as its own meme and stays.
+  const read = consequence(await familyViewInBag(access, action.fromBag, action.title), { kind: "move", title: action.title, toBag: action.toBag });
+  if (read.refusals.some((r) => r.code === "slot-without-root")) throw new SlotWithoutRootRefusal("MOVE", action.title, read.family);
+  const group = read.acts.filter((row) => row.act === "put").map((row) => row.title);
   if (group.length === 0) throw new Error(`MOVE: source bag ${action.fromBag} does not hold ${action.title}`);
   // Order: land the whole group first, then tombstone the source group. If a
   // land fails, the source stays intact (no orphaned deaccession); a tombstone

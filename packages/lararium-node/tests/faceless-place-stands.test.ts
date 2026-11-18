@@ -27,6 +27,7 @@ function fakeRegistry() {
 /** The minimum an island context must offer for the wiring pass to run. */
 const fakeCtx = () => ({
   composite: {} as never,
+  control:   {} as never,
   repo:      {} as never,
   catalogUrl: "automerge:fakeCatalog",
   oracleUrl:  "automerge:fakeOracle",

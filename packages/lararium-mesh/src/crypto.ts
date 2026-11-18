@@ -1,7 +1,7 @@
 /**
  * The crypto boundary for Lararium.
  *
- * Doctrine (lives here — the old CRYPTO.md pointer dangled and drops):
+ * Doctrine (lives here, in the module it governs):
  *   - Lararium defines needs; it does not implement primitives.
  *   - Portable code depends on this module's shores, never on Node crypto or hand-rolled code.
  *   - Callers must supply canonical bytes, never raw objects.

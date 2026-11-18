@@ -118,7 +118,7 @@ async function runOne(input: FaceJoinOperationInput): Promise<Record<string, unk
   void _grantKind;
   const grantTitle = faceGrantTitle(ctx.personaGroupId, outcome.grant.joineeAgentIdHex);
   const serial = (await standingSerial(grantTitle, outcome.grant.joineeAgentIdHex)).serial + 1;
-  const grantRecord = await signFaceGrantRecord({ kind: "face-join-grant/v1", groupId: ctx.personaGroupId, ...grantBody, serial, founderEdge }, signGrant);
+  const grantRecord = await signFaceGrantRecord({ kind: "face-join-grant", groupId: ctx.personaGroupId, ...grantBody, serial, founderEdge }, signGrant);
   const issued = { state: "issued", outcome, grantRecord, grantTitle } satisfies JoinOperation;
   await writeFaceOperation(operationStore, atomSeed, signedInput, issued);
   return publish(issued);

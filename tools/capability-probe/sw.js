@@ -1,7 +1,7 @@
 /* SharedWorker: one instance serves every tab of the origin. Invariants:
  *   - instanceId is minted once, from crypto.getRandomValues, when the script first runs;
  *   - ownerEpoch is an IndexedDB counter this worker increments once, while holding the Web Lock
- *     "probe-owner-lifetime" for the rest of its life; a new instance cannot count until the old one released it;
+ *     "probe-owner-lifetime" for the rest of its life; a new instance cannot count until the prior holder releases it;
  *   - `ticks` counts setInterval firings (a counter, never a clock);
  *   - `events` is a sequence-numbered log posted by pages. */
 "use strict";

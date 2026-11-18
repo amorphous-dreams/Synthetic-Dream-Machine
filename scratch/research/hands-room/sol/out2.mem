@@ -1,0 +1,62 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/sol/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/hands-room/sol/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/sol/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hands-room/sol/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/hands-room/sol/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set hud="aim" mode="ratchet" mu="_!" stance="🏛️🗡️" aperture="17/theme" ooda-ha="✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ aftermath">>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sol-handwright-lares`>>
+
+! Sol-Handwright: Lares (Tasked Spirit)
+
+Lares (Ink-Clerk), Lares (Council), Lares (Artificer): ''✶ Observe.'' I re-read both hands and the carriers. One end state holds: ''the session carries the hand''. “A session wears the face and the vessel wears none” (`stable-founding-road.mem:106-107`); “Every hand that reaches a vessel opens a session” and “The door carries; the hand authorizes” (`session-contract.mem:61,85`). Node and browser carry the same model, with platform-specific ports. K15 bonds lands before identity hunks; D2 owns the TW5 island/port and projection gate; I2 keeps its separately scouted relay lane. All identity, receipt and authorship bytes land before the bake.
+
+''⏿ Orient — H1, one cut.'' I accept ''four hands lanes plus I2'', but move the boundaries from my wave one. F4/F5 receipts belong to ''session authority and outcomes'', since a one-shot caller dies while the same verified face must recover its outcome (`session-contract.mem:186-206`); an authored-records lane would ship a temporary receipt reader. P13 belongs to ''surface mount'', since one resolver combines face grant, recipe and profile at mount and a recipe cannot widen a grant (`session-contract.mem:152-162`; `surface-recipe.ts:75-105,174-175`). B2 belongs to ''holder and surfaces'': two tabs need separate islands over one Repo, so splitting the proof into a later device lane would leave the holder's ownership model unfinished (`session-contract.mem:126-144,221-223`; `shared-holder-core.ts:578-594`). F12 authored records follows the session signer, while F10 device view follows the face relation. G13 dispatch follows verified author and durable outcomes. I2 follows I1 and its own scout.
+
+''H2, first move now — DERIVED (build the end state; one name, one relation).'' The first lane may start ''now'', on files K15 and D2 do not hold: `packages/lararium-mesh/src/session-contract.ts`, `session-document-view.ts`, `surface-recipe.ts`, `wiki-recipe.ts` (working-slot resolution); `packages/lararium-node/src/uds-channel.ts`; `packages/lararium-tw5/src/verb-vm.ts`; and their focused proof files. First slice: define one binding from socket/port to owner epoch, session id, generation, verified face reference and fixed hand profile; make UDS refuse copied socket, wrong face and stale generation, then bind request digest/outcome lookup to the face proof subject. The existing UDS ledger holds durable outcomes but its socket opens no verified face (`session-contract.mem:279,297`; `uds-channel.ts:639-646`); `verb-vm.ts:114,162,169,220` still passes caller `requestedBy`. Keep the supplier/signature adapter seam explicit; merge K15's atom and opener hunks once landed. Do ''not'' edit `keyhive-provider`, `place-card`, `ceremony-core`, `boot-daemon-keyhive`, `carriage-relay`, `carriage-caps`, `node-caps`, either vessel opener, or D2's TW5 island/port, `hand-gate.ts`, `tw5-projection.ts`, `projection-sink.ts` in this first slice. A lane may start; its production face-open proof waits for K15 and its surface integration waits for D2. No interim vessel selector ships.
+
+''◇ Decide — H3, OPERATOR.'' Options: ''(a)'' open one live session for `(PersonaGroup, Nexus)`; ''(b)'' open one PersonaGroup session with separately bounded Nexus facets. Lean ''(a)''. Canon fixes one face per session, yet explicitly withholds the two-Nexus word (`session-contract.mem:295`; `face-proof.mem:297`). The proof key and admit bind `(PersonaGroup,Nexus)`, and the signer binds `(session,Nexus)` (`face-proof.mem:45-47,64-66`); a dial takes one `(hearth,Nexus)` path (`stable-founding-road.mem:728`). The effective recipe freezes for a session's mount (`session-contract.mem:154-158`), and cabal/realm grants narrow by relation (`session-contract.mem:238`; `cabal-realm.ts:54-64`). These facts favor (a), but do not forbid (b); the two facets could each carry their own proof and recipe. Ask the operator for this one architectural choice before freezing the session face type.
+
+''H4, the person's joints.'' ''CANON:'' `persona wear` switches the caller's ''live'' session, not a later CLI invocation (`session-contract.mem:198-206`); the five-step fence advances its generation and leaves sibling sessions alone (`:257-265`). Thus no close-and-open substitute. ''CANON:'' the receipt rests with proof subject plus input digest; a later same-face session reads it, another face cannot (`:186-190`). ''DERIVED (causal islands; one name, one relation):'' the display must identify request/action, verified face, outcome or unknown, and causal position/last verified fence; `requestedBy` remains display text (`:190,204`; `uds-channel.ts:639-646`). Exact typography needs no operator ruling. ''CANON:'' a wall clock cannot decide an act (`stable-founding-road.mem:112`); observed causal revocation closes dependent sessions, while incomplete history says incomplete (`session-contract.mem:246-249`). ''DERIVED (no global now):'' show the long-silent device's last verified fence and allow explicit removal; never invent expiry. The road still lists a broader long-silent-device lean (`stable-founding-road.mem:853`), but this hands lane needs no threshold to enforce removal.
+
+''▶ Act — ordered whole lanes; each slice runs red → control → known positive.''
+
+# ''Session authority, switch and outcomes:'' F3/F4/F5/F9/A8/W17. Hold mesh `session-contract.ts`, `session-face.ts`, `session-signer.ts`, `wiki-recipe.ts` working resolver; node `uds-channel.ts`, TW5 `verb-vm.ts`, CLI `persona` callers, then node/browser opener session hunks. Red: copied socket, cross-face receipt, stale generation, wrong working address. Control: same-face later CLI recovers receipt; sibling session survives switch. Positive: K15-selected atom signs and one live session switches through all five steps. K15 opener identity hunks land first; this lane owns receipt format and working-address genesis before bake.
+# ''Scoped surface and holder:'' F1/F2/F6/P13/B2. Hold mesh `session-document-view.ts`, `surface-recipe.ts`, pool `mountSurface`; node/browser compose/mount callers; browser `shared-holder-core.ts` and runtime; TW5 view port after D2. Red: foreign document/catalog fetch, cross-tab reply, two Repos. Control: allowed same-face read, same-face tabs separate. Positive: two faces/tabs, one holder, two bounded islands and recipes. Merge D2 port/gate first and K15 opener supplier; recipe/grant bytes settle before bake.
+# ''Hands, fleet and authorship:'' F10/F11/F12. Hold watcher/projector, MCP seat adapter, fleet view/removal, `parallel-drafts.ts` and shared-record writer. Red: unleased disk edit signs, spoofed `modifier` authors, stale removed device acts. Control: leased edit, standing-seat draft, retained device. Positive: signed face authorship plus Mask as non-authorizing field, causal fleet removal and catch-up. Consume D2 projection and K15 face signer; authorship/fleet bytes precede bake.
+# ''Intent and effects:'' G13. Hold `verb-summons.ts`, `verb-dispatcher.ts`, effect ledger/reader and intent adapter. Red: forged writer, wrong audience, replay after restart, canon tombstone. Control: authorized fresh intent. Positive: working-only tombstone, durable lease/fence and result. Consume I1 face plane, lane-one receipt and signer; effect bytes precede bake.
+# ''I2 relay:'' independent scouted lane after I1, K15 and session signer. Hold delegation/revoke, intent entry/reader, relay admission and seat. Red: altered arguments or revoked grant; control: valid local act; positive: far agent reaches its intended face device with relay recording transit only (`/home/joshu/.lares-scratch/research/i2-relay/sol/out.md:17-22`). Its grant bytes precede bake.
+
+''↺ Aftermath.'' One operator joint remains: the two-Nexus session shape. The first isolated slice can start while K15 and D2 finish; the lanes integrate in the order above.
+
+&lt;&lt;~ set hud="yield" ooda-ha="closed 1↺">>
+
+WORDS=1021
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bzCM3ZoJnbxWVscZSFcHbR7Glln4cvwM65b_VoDEfiU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

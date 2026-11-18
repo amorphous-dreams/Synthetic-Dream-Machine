@@ -65,16 +65,24 @@ function seedFixture(floor = null) {
       blobs[id] = { id, sha256: cid, kind: "floor" };
     }
   }
-  return JSON.stringify({ format: "lararium-genesis-seed/v1", blobs, tiddlers });
+  return JSON.stringify({ format: "lararium-genesis-seed", blobs, tiddlers });
 }
 
-function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow } = {}) {
-  const manifest = JSON.stringify({ format: "lararium-floor/v1", ...REGION_CIDS, lares, lararium: sha(FLOOR_LARARIUM) });
+const FLOOR_SDM = "floor sdm snapshot";
+
+const FLOOR_FORMAT = "lararium-floor";
+function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow, format = FLOOR_FORMAT, pairKeyed = false } = {}) {
+  // The floor keys one snapshot per house-canon slug, sorted; a pair-keyed plant keys lares and lararium alone, a shape
+  // that lacks `snapshots` and that the witness refuses by its fields.
+  const manifest = pairKeyed
+    ? JSON.stringify({ format, ...REGION_CIDS, lares, lararium: sha(FLOOR_LARARIUM) })
+    : JSON.stringify({ format, ...REGION_CIDS, snapshots: { lararium: sha(FLOOR_LARARIUM), lares, sdm: sha(FLOOR_SDM) } });
   const manifestCid = sha(manifest);
   const rows = {
     "floor-manifest": manifestCid,
     "floor-lares": sha(FLOOR_LARES),
     "floor-lararium": sha(FLOOR_LARARIUM),
+    ...(pairKeyed ? {} : { "floor-sdm": sha(FLOOR_SDM) }),
   };
   if (omitRow) delete rows[omitRow];
   return {
@@ -82,6 +90,7 @@ function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow } = {}) {
     [`genesis/cas/${manifestCid}`]: manifest,
     [`genesis/cas/${sha(FLOOR_LARES)}`]: FLOOR_LARES,
     [`genesis/cas/${sha(FLOOR_LARARIUM)}`]: FLOOR_LARARIUM,
+    [`genesis/cas/${sha(FLOOR_SDM)}`]: FLOOR_SDM,
   };
 }
 
@@ -127,7 +136,7 @@ async function withTree(plant, check, { git = false } = {}) {
   }
 }
 
-const declaration = (rows) => JSON.stringify({ format: "lararium-genesis-unbaked/v1", unbaked: rows });
+const declaration = (rows) => JSON.stringify({ format: "lararium-genesis-unbaked", unbaked: rows });
 const MOVED_GRAMMAR = JSON.stringify({ title: GRAMMAR_ID, version: "0.0.1", text: "{\"tiddlers\":{\"a cure\":{}}}" });
 
 await test("CONTROL: a genesis that carries the tree's bytes reads green and lists what it compared", async () => {
@@ -145,7 +154,7 @@ await test("CONTROL: a genesis that carries the tree's bytes reads green and lis
 await test("FLOOR: a coherent manifest, snapshot rows and release witness read green", async () => {
   await withTree(floorPlant(), (run, out) => {
     assert.equal(run.status, 0, out);
-    assert.match(out, /3 source artifact\(s\) compared against 6 genesis blob\(s\)/);
+    assert.match(out, /3 source artifact\(s\) compared against 7 genesis blob\(s\)/);
     assert.doesNotMatch(out, /NO SOURCE|FLOOR\s+|RED:/);
   });
 });
@@ -161,6 +170,21 @@ await test("FLOOR RED: the seed's release witness names another manifest", async
   await withTree(floorPlant({ witnessCid: sha("another manifest") }), (run, out) => {
     assert.equal(run.status, 1, out);
     assert.match(out, /FLOOR\s+genesis-cid-floor .* differs from floor-manifest row/);
+  });
+});
+
+await test("FLOOR RED: a manifest keyed by lares and lararium alone refuses by the fields it lacks; one naming another format refuses too", async () => {
+  await withTree(floorPlant({ pairKeyed: true }), (run, out) => {
+    assert.notEqual(run.status, 0, out);
+    assert.match(out, /FLOOR\s+floor-manifest does not read as canonical lararium-floor: fields or order differ/);
+  });
+  await withTree(floorPlant({ format: `${FLOOR_FORMAT}-keyed` }), (run, out) => {
+    assert.notEqual(run.status, 0, out);
+    assert.match(out, /FLOOR\s+floor-manifest does not read as canonical lararium-floor: format differs/);
+  });
+  await withTree(floorPlant({ omitRow: "floor-sdm" }), (run, out) => {
+    assert.notEqual(run.status, 0, out);
+    assert.match(out, /FLOOR\s+floor-manifest names floor-sdm but the seed holds no floor snapshot row/);
   });
 });
 
@@ -252,7 +276,7 @@ await test("RED: a declaration standing over a genesis that carries the source r
 await test("RED: a row with no reason reads as no declaration, and the drift stays red", async () => {
   await withTree({
     [GRAMMAR_PATH]: MOVED_GRAMMAR,
-    "genesis/unbaked.json": JSON.stringify({ format: "lararium-genesis-unbaked/v1", unbaked: [{ source: GRAMMAR_PATH, sha256: sha(MOVED_GRAMMAR) }] }),
+    "genesis/unbaked.json": JSON.stringify({ format: "lararium-genesis-unbaked", unbaked: [{ source: GRAMMAR_PATH, sha256: sha(MOVED_GRAMMAR) }] }),
   }, (run, out) => {
     assert.equal(run.status, 1, out);
     assert.match(out, /does not read as a declaration/);

@@ -5,11 +5,10 @@
  *   Warm mempalace write-daemons spawn ON-DEMAND — a client `mempalace … mine
  *   --daemon` HANDS OFF to a per-palace write-daemon (`python -m mempalace.daemon
  *   serve --palace <p>`), auto-starting it if absent. The
- *   `lares` capture + subagents + telemetry legs of the ingest hook fire on every
- *   Stop / SessionEnd / subagent-dispatch → each mints a daemon. Killing the
- *   CHILDREN (daemons) never stops the SPAWNER (the hook). The cure is to make the
- *   spawner legible: every row carries WHO SPAWNED IT, so the reader learns to
- *   kill-the-parent-not-the-children (and to `lares hooks pause` the minting).
+ *   `lares` capture + subagents + telemetry legs each mint a daemon. Killing the
+ *   CHILDREN (daemons) never stops the SPAWNER (whatever runs the legs). The cure is
+ *   to make the spawner legible: every row carries WHO SPAWNED IT, so the reader
+ *   learns to kill-the-parent-not-the-children.
  *
  * The parser is PURE over a `ps` table (unit-tested with fixture output); the
  * shell-out lives in {@link livePalaceProcs}. One physical palace = one write-daemon
@@ -42,7 +41,6 @@ export type ProcKind =
   | "one-shot-mine"  // mempalace … mine …                             (a direct/handoff mine)
   | "chroma"         // chromadb / chroma run                          (the vector backend)
   | "node-vessel"    // the lararium node daemon holding the WS port
-  | "ingest-hook"    // lares-mempalace-ingest-hook.sh                 (the Stop/SessionEnd SPAWNER)
   | "capture-holder" // capture_session.py --serve                     (the sovereign serialized writer)
   | "capture-job"    // lares capture …                               (drawer leg — mints a daemon)
   | "subagents-job"  // lares subagents …                            (spirit leg — mints a daemon)
@@ -62,7 +60,6 @@ export const KIND_META: Readonly<Record<ProcKind, KindMeta>> = {
   "chroma":        { holdsStore: true,  mintsDaemons: false, label: "chroma backend" },
   "node-vessel":   { holdsStore: false, mintsDaemons: false, label: "lararium node (WS port)" },
   "capture-holder":{ holdsStore: true,  mintsDaemons: false, label: "capture session holder (sovereign)" },
-  "ingest-hook":   { holdsStore: false, mintsDaemons: true,  label: "ingest hook (SPAWNER)" },
   "capture-job":   { holdsStore: false, mintsDaemons: true,  label: "capture leg" },
   "subagents-job": { holdsStore: false, mintsDaemons: true,  label: "subagents leg" },
   "telemetry-job": { holdsStore: false, mintsDaemons: true,  label: "telemetry leg" },
@@ -136,13 +133,9 @@ export function parseProcTable(raw: string): RawProc[] {
 /**
  * The kind of a command line, or null when it is not a palace-integration process.
  * Order is load-bearing: the daemon `serve` and the MCP holder must be caught
- * BEFORE the generic `mempalace … mine` / `mempalace` matchers, and the bash hook
- * wrapper BEFORE its `lares capture/subagents` children (a `bash …-hook.sh` line
- * also mentions neither — it is its own kind).
+ * BEFORE the generic `mempalace … mine` / `mempalace` matchers.
  */
 export function classifyKind(args: string): ProcKind | null {
-  // The ingest-hook bash wrapper (the top-level SPAWNER) — match by script name.
-  if (/lares-mempalace-ingest-hook/.test(args)) return "ingest-hook";
   // mempalace python module invocations.
   if (/mempalace\.daemon\b.*\bserve\b|\bdaemon\.py\b.*\bserve\b/.test(args)) return "write-daemon";
   if (/mempalace[._-]mcp(_server)?|mempalace\.mcp_server|mempalace-mcp/.test(args)) return "read-holder";
@@ -152,7 +145,7 @@ export function classifyKind(args: string): ProcKind | null {
   if (/\bmempalace\b.*\bmine\b/.test(args)) return "one-shot-mine";
   // The chroma vector backend (rare as a standalone proc, but possible).
   if (/\bchromadb\b|\bchroma\s+run\b|\bchroma\.cli\b/.test(args)) return "chroma";
-  // The `lares` hook legs — each mints a daemon on the next dispatch.
+  // The `lares` capture legs — each mints a daemon on the next dispatch.
   if (/\blares\b.*\bcapture\b/.test(args))   return "capture-job";
   if (/\blares\b.*\bsubagents\b/.test(args)) return "subagents-job";
   if (/\blares\b.*\btelemetry\b/.test(args)) return "telemetry-job";
@@ -169,7 +162,7 @@ function servesOf(kind: ProcKind, args: string, port?: number): string {
   }
   const palace = args.match(/--palace(?:[=\s])(\S+)/);
   const wing   = args.match(/--wing(?:[=\s])(\S+)/);
-  // The `lares` hook legs are keyed by their WING (their domain); a stray `--palace`
+  // The `lares` capture legs are keyed by their WING (their domain); a stray `--palace`
   // in a shell-snapshot wrapper is misleading, so prefer the wing for those kinds.
   const wingFirst = kind === "capture-job" || kind === "subagents-job" || kind === "telemetry-job";
   const pick = wingFirst ? (wing?.[1] ?? palace?.[1]) : (palace?.[1] ?? wing?.[1]);
@@ -184,7 +177,7 @@ function shortCmd(args: string, max = 140): string {
 
 /**
  * Shorten a SPAWNER command, keeping the TAIL — the informative bit of a parent is
- * the end (the `…/lares-mempalace-ingest-hook.sh`, the `lares capture … --wing w`),
+ * the end (the script's file name, the `lares capture … --wing w`),
  * never the leading `bash /very/long/path`. So front-elide when over `max`.
  */
 function shortSpawner(args: string, max = 80): string {
@@ -262,7 +255,7 @@ function readProcTable(): RawProc[] {
 
 /**
  * The live palace topology — every mempalace daemon / recall holder / one-shot
- * mine / chroma / `lares` hook-leg + ingest-hook, plus the node vessel (the WS-port
+ * mine / chroma / `lares` capture leg, plus the node vessel (the WS-port
  * holder), each with its SPAWNER. `vesselPids` is passed in by the caller (it owns
  * the OS port-table read via port-control, avoiding a dep cycle).
  */
@@ -290,8 +283,8 @@ export function isUnderPath(dir: string, root: string): boolean {
  * Does this proc belong to ONE island's holder set, keyed by its store PATH? A
  * store-HOLDER (write-daemon · recall holder · one-shot mine · chroma · capture
  * holder) pins an absolute store path — `serves` carries it — so it counts only
- * when that path sits UNDER `root`. The daemon-MINTING legs (the ingest hook +
- * `lares capture/subagents/telemetry`) carry a WING, not a path, and mint the
+ * when that path sits UNDER `root`. The daemon-MINTING legs
+ * (`lares capture/subagents/telemetry`) carry a WING, not a path, and mint the
  * SOVEREIGN memory capture; a caller owns them only when it says `spawners: true`
  * (the sovereign memory door), never the guest. Everything else (the node vessel)
  * belongs to no island's drain. This is the predicate that keeps `lares mempalace`

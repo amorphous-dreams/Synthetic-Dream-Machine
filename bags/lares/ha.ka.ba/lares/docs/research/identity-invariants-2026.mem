@@ -44,7 +44,7 @@ The operator un-asked a founding choice on 2026-10-20: //"When we started, all w
 | lease epochs | signed advances in the per-writer shape, beside a sealed local frontier that never falls |
 | dyads | a CRDT of signed entries, verified on read |
 | plane URLs and membership | signed founding and admission acts, projected into the planes |
-| the group secret's seal | a sealed custody row |
+| the group secret's seal | a sealed custody record |
 | the cabal doc, the catalog, working content | shared mutable CRDT, with access checks at use |
 
 <<~/ahu>>
@@ -55,10 +55,10 @@ The operator un-asked a founding choice on 2026-10-20: //"When we started, all w
 
 A sealed anchor per face per device; signed records carried by sync under immutable ids and verified against the anchor and the KEL; the face planes as verified projections; per-vessel records off the mirrored daemon doc; summonses on `@intents`. In-context keys and held grants decide what a vessel may //receive//; the anchor decides which face it //wears//; verification decides what //counts//.
 
-''Reds'': a forged selector row, and a coherent valid foreign bundle, switch no pinned face, and a missing anchor refuses boot; two signed acts at one sequence surface as a fork; a deleted, replayed or forged epoch never lowers the local frontier; reordering face rows moves no pin from its owner on either host; a join bootstraps offline from its admission bundle and the anchor; the floor gains no face authority from an unverified pin; capability-driven sync still converges every plane that carries no authority.
+''Reds'': a forged selector record, and a coherent valid foreign bundle, switch no pinned face, and a missing anchor refuses boot; two signed acts at one sequence surface as a fork; a deleted, replayed or forged epoch never lowers the local frontier; reordering face records moves no pin from its owner on either host; a join bootstraps offline from its admission bundle and the anchor; the floor gains no face authority from an unverified pin; capability-driven sync still converges every plane that carries no authority.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uKegRZ8mQQumjbEerJSWGxs1rnG9HUC8qenMcCSP8FQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4SGyQfJRe9LoRNyLeMsWw07Lm9RZ-lA-X-aZ6wRkmq8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

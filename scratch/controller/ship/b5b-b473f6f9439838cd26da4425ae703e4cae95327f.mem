@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-b473f6f9439838cd26da4425ae703e4cae95327f`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/b5b-b473f6f9439838cd26da4425ae703e4cae95327f.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-b473f6f9439838cd26da4425ae703e4cae95327f"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-b473f6f9439838cd26da4425ae703e4cae95327f"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b5b-b473f6f9439838cd26da4425ae703e4cae95327f.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/b5b-b473f6f9439838cd26da4425ae703e4cae95327f.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP b5b b473f6f9439838cd26da4425ae703e4cae95327f
+read: Luna (drain 035d68b74..7960324dc: no P1/blocking P2); blind Opus custody (Blind-Warden-Drain, same range: LAND-AFTER-CURES F1 forged close, F2 applied-after-refused; cured bf1132516, step 28b holder class 216a562f9); blind Opus merge read (Blind-Warden-Merge over 1686985da, the span merge with clock-sweep: F1 latch-meets-rebook P2 measured by probe; cured 348a2a69d); blind Opus second read (7b135e5af..348a2a69d + bf1132516..216a562f9: latch cure and holder class hold; A4 third teardown wait, cured b473f6f94); every cure red-first; controller reran the drain reds 11/11 and sealed-rest 34/34; lead suites + node e2e seat-settle + typecheck + pre-push gate green at each head.
+owed: the two ask doors that end on any fault (open-browser-daemon-vm.ts:111 islandAskingThroughRecord, daemon-vm-core.ts:496 failPendingAsks): fail-safe today, narrowing owed after a measure; A2 P3 (a spamming island stretches the lock ritual); B2 P3 (non-owner sensorium signals refuse; no re-ownership after the owner leaves); F7/F8 P3; a full herm boot teardown with an owed write; road row L29 re-wording (cites sovereign-kernel.ts:555 and a retired LIVENESS allowance).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jVceAcgBEC-sLpRoSGRtE5marubfPG831sLtcJ_w_5Q`>>
+
+<<^ code=`&#x0004;` to=`?`>>

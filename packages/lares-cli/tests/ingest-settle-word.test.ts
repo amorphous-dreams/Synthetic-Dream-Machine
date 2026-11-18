@@ -127,7 +127,7 @@ describe("the gesture asks the settle word", () => {
     const read = await askSettle(async (a) => { sent.push(a); return answer(true, { ok: true, op: "settle", mirrored: true, settledCount: 2, elsewhereCount: 1 }); },
       BAG, [{ uri: "u1", records: "h1" }, { uri: "u2", records: "h2" }]);
     expect(sent).toEqual([{ op: "settle", bag: BAG, carriers: [{ uri: "u1", records: "h1" }, { uri: "u2", records: "h2" }] }]);
-    expect(read).toEqual({ settled: true, shore: true, mirrored: true, settledCount: 2, elsewhereCount: 1, supersededCount: 0 });
+    expect(read).toEqual({ settled: true, shore: true, mirrored: true, settledCount: 2, elsewhereCount: 1, supersededCount: 0, stalled: false, pendingCount: 0, stalledCount: 0, pendingUris: [] });
   });
 
   test("it sends the heads a carrier named, and none for a carrier that named none", async () => {
@@ -151,6 +151,6 @@ describe("the gesture asks the settle word", () => {
 
   test("a carrier a later word took reads as superseded, claimed as no projection", async () => {
     expect(await askSettle(async () => answer(true, { ok: true, mirrored: true, settledCount: 1, elsewhereCount: 0, supersededCount: 2, superseded: ["a", "b"] }), BAG, [{ uri: "u", records: "h" }]))
-      .toEqual({ settled: true, shore: true, mirrored: true, settledCount: 1, elsewhereCount: 0, supersededCount: 2 });
+      .toEqual({ settled: true, shore: true, mirrored: true, settledCount: 1, elsewhereCount: 0, supersededCount: 2, stalled: false, pendingCount: 0, stalledCount: 0, pendingUris: [] });
   });
 });

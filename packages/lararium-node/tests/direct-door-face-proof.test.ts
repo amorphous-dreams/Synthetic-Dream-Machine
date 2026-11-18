@@ -26,7 +26,7 @@ import { direct } from "./direct-store.js";
 import { foundDirect, openTestCustody, seatSeedCharter } from "./found-route.js";
 
 const ROOT = mkdtempSync(join(tmpdir(), "lar-direct-face-proof-"));
-const storage = join(ROOT, "data", "lares", "vessel"), genesis = join(ROOT, "genesis");
+const storage = join(ROOT, "hearth", "vessel"), genesis = join(ROOT, "genesis");
 const builtGenesis = join(new URL("../", import.meta.url).pathname, "..", "..", "genesis");
 let group = "", floorUrl = "", forgedUrl = "", intentsUrl = "";
 afterAll(() => rmSync(ROOT, { recursive: true, force: true }));
@@ -43,9 +43,9 @@ beforeAll(async () => {
     intentsUrl = packed.tiddlers[bags.intents]!.text!;
     [floorUrl, forgedUrl] = await ownedStore(storage, async (repo) => {
       // THE FLOOR AS THE SPLIT LEAVES IT: no face row.
-      const floor = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: {} } as unknown as LarDoc);
-      const stray = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: {} } as unknown as LarDoc);
-      const forged = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: {
+      const floor = repo.create<LarDoc>({ tiddlers: {} } as unknown as LarDoc);
+      const stray = repo.create<LarDoc>({ tiddlers: {} } as unknown as LarDoc);
+      const forged = repo.create<LarDoc>({ tiddlers: {
         [bags.intents]: { tiddler: { title: bags.intents, text: stray.url } },
       } } as unknown as LarDoc);
       await repo.flush([floor.documentId, stray.documentId, forged.documentId]);

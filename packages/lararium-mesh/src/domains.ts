@@ -12,9 +12,8 @@
  * state, EIP-712's domainSeparator. The constant is protocol identity, never a magic number.
  *
  * ── WHY A TABLE, AND NOT JUST THE STRINGS ───────────────────────────────────────────────────────
- * Scattered, they cannot be checked. Thirty-two of them once sat across twenty-five files in TWO
- * spellings — `lar-<name>/v<N>` for signing, `"lares <name> v<N>"` for HMAC keys — and nothing could say
- * they differed. A typo in a domain tag does not fail loudly: it silently mints a SECOND protocol whose
+ * Scattered, they cannot be checked: tags spread across many files drift into more than one spelling
+ * — one for signing, another for HMAC keys — and nothing can say they differ. A typo in a domain tag does not fail loudly: it silently mints a SECOND protocol whose
  * signatures verify against nothing. Multiformats sets the sharpest prior art, and its whole value rides
  * on THE TABLE AS THE ARTIFACT rather than on the prefixes.
  *
@@ -104,6 +103,9 @@ export const RECOVERY_CONTACT_REGISTRATION_DOMAIN = mint("recovery-contact-regis
 /** A recovery contact's proof that it holds the private half of the recovery key it offers ONE face: its signature over
  *  that face's prefix and that key, taken before the face's enrolment commits the key's set. */
 export const RECOVERY_CONTACT_POSSESSION_DOMAIN = mint("recovery-contact-possession");
+/** The COMMITMENT a face's key history makes for a recovery contact set: the set's digest hashed with that face's prefix
+ *  under this name, so one set commits an unrelated digest on each face's history. */
+export const RECOVERY_SET_COMMITMENT_DOMAIN = mint("recovery-set-commitment");
 /** The growth rite's crossing record: old quorum signs the handoff, new quorum the receipt, witnesses
  *  outside both sets attest the rite — the checkable form of the ceremony witness report. */
 export const RESERVE_TRANSITION_DOMAIN = mint("reserve-transition");
@@ -225,6 +227,9 @@ export const PLACE_FLOOR_PIN_DOMAIN = mint("place-floor-pin");
 /** A herm's EXPLICIT JOIN carried by hand (`carry-bundle`): the kind the bundle's public bytes carry, so a reader never
  *  takes an admit bundle, or any other file, as a carry. */
 export const CARRY_BUNDLE_DOMAIN = mint("carry-bundle");
+/** A PLACE's positive receipt for one carriage it took (`carriage-log`): signed by the place signer, keyed by the carriage's
+ *  own content or causal id. Its own name: a receipt must never verify as a carrier seal, a floor pin or any other duty. */
+export const CARRIAGE_RECEIPT_DOMAIN = mint("carriage-receipt");
 /** One hand's act over one RELATIONSHIP — a raise or a lower, by the edge's holder or by the seat quorum. */
 export const EDGE_KAPAE_DOMAIN = mint("edge-act");
 /** One signed ACT in a face's `@persona` log (founding, admission, device edge, lease advance): the canonical
@@ -242,9 +247,33 @@ export const PROMOTE_ACT_DOMAIN = mint("promote-act");
 /** A daemon or kahua promotion's ward signature: the face root over (wiki, digest, seq), made under a fresh ward unlock
  *  (seat-harness#/the-ward). Its own name, so no promote act, kahua act or swarm act verifies as one. */
 export const PROMOTE_WARD_DOMAIN = mint("promote-ward");
-/** One signed swarm control: the house cap, a lane share, a go, a go's spend, a lane's state, a roster row or a check receipt.
+/** One signed swarm control: the house cap, a lane share, a lei, its return, narrowing or unstringing, a rite's begin or land, a lane's state, a roster row or a check receipt.
  *  Its own name, so no swarm record verifies as a promote or kahua act and none of those as a swarm control. */
 export const SWARM_ACT_DOMAIN = mint("swarm-act");
+/** A kūkulu vouch (apart from the cabal vouch edge below): the standing vessel's signature over the candidate image it walked before a kūkulu (the-worn-house#/the-pulama).
+ *  The name serves twice: the custody root's CHILD the vouch key derives from, and the `kind` its signed body carries, so no
+ *  swarm control verifies as a vouch and a vouch signs only under a key the custody root yields. */
+export const KUKULU_VOUCH_DOMAIN = mint("kukulu-vouch");
+/** The pūlama's tessera half (a kūkulu it served, a lei's return it claimed): the custody root's CHILD the pūlama signs under,
+ *  and the `kind` that record carries. Apart from the vouch's key, so a vessel that vouches never signs as the pūlama. */
+export const PULAMA_TESSERA_DOMAIN = mint("pulama-tessera");
+/** A face's OFFER of records toward a house-canon bag: the offered fields, each record's carrier digest and fork base, signed by
+ *  the offering face's key for that Nexus (`CANON_OFFER_KEY_DOMAIN`). Its own name, so no plugin offering, promote act or release verifies as one. */
+export const CANON_OFFER_DOMAIN = mint("canon-offer");
+/** The HKDF info under which a face's atom seed derives its OFFER KEY for one Nexus (the Nexus rides beside it in the info):
+ *  one key for each (face, Nexus), so an offer names no PersonaGroup and no key the face shows anywhere else. */
+export const CANON_OFFER_KEY_DOMAIN = mint("canon-offer-key");
+/** The digest that names a worn face's WIRE SCOPE inside a vessel's own store (`wire-identity`): the store keeps one store id
+ *  for each scope, and the scope's name there carries no PersonaGroup. */
+export const WIRE_SCOPE_DOMAIN = mint("wire-scope");
+/** The digest under which a face scope's own secret and a Nexus derive what one (face, Nexus) presents at the wire
+ *  (`wire-identity`): the pair's store id and its local scope. Its own name, so no alias reads as a scope's name. */
+export const WIRE_ALIAS_DOMAIN = mint("wire-alias");
+/** The keyed digest under which a face scope's own secret derives the CHANGE ACTOR a face writes one document under in one
+ *  composition (`wire-identity`, `actor`). Its own name, so no actor reads as an alias or a scope's name. */
+export const WIRE_ACTOR_DOMAIN = mint("wire-actor");
+/** The steward's RETIRE of one canon offer after its promotion, keyed to the offer's CID. Its own name, so no offer verifies as one. */
+export const CANON_OFFER_RETIRE_DOMAIN = mint("canon-offer-retire");
 /** The COMMITMENT a sealed face anchor keeps to its persona root: the root's DID hashes under this name, so
  *  the anchor names the root without carrying it. */
 export const FACE_ANCHOR_ROOT_DOMAIN = mint("face-anchor-root");
@@ -322,7 +351,7 @@ export const SEALED_LOCKBOX_REF_INFO = mint("sealed-lockbox-ref");
 /** A signed RECORD as it rests and travels: its kind, its clear part and its sealed part. */
 export const SEALED_RECORD_REST_DOMAIN = mint("sealed-record-rest");
 /** One ROW of the chunk index as it rests. */
-export const SEALED_INDEX_ROW_DOMAIN = mint("sealed-index-row");
+export const SEALED_INDEX_ENTRY_DOMAIN = mint("sealed-index-row");
 /** A HAND-OVER RECORD: its clear part hashes to the record id under this name. */
 export const SEALED_HAND_OVER_DOMAIN = mint("sealed-hand-over");
 /** A PER-NEXUS KEY HAND-OVER: a face's key at one Nexus hands its standing on to a fresh key; both keys sign. */
@@ -417,7 +446,6 @@ export const FACE_WITHDRAWAL_GENESIS_DOMAIN = mint("face-withdrawal-genesis");
 export const FACE_WITHDRAWN_KEY_DOMAIN = mint("face-withdrawn-key");
 /** The reference a local session carries for its face's proof subject: a digest name. */
 export const FACE_PROOF_SUBJECT_DOMAIN = mint("face-proof-subject");
-export const FACE_WORKING_ADDRESS_DOMAIN = mint("face-working-address");
 /** A face's catalog document: the address its secret derives for the face's own half of the split catalog (U1). */
 export const FACE_CATALOG_ADDRESS_DOMAIN = mint("face-catalog-address");
 /** A SESSION's certificate: the vessel's face-scoped key signs one session key and its hand's profile. */
@@ -526,10 +554,23 @@ export const OFFERING_KAPAE_DOMAIN = mint("offering-kapae");
 /** The crossroads-plane ANNOUNCE of a realm bag — that it exists and who keeps it, NEVER the doc. A different
  *  domain from the registration: a public announce must never stand in for a steward's signature. */
 export const REALM_BAG_ANNOUNCE_DOMAIN = mint("realm-bag-announce");
+
+/**
+ * A PRIVATE CABAL OF ONE's realm id (cabal-realm#/the-workbench): derived from the owning face and the wiki's NFC slug, so
+ * every device of one face that stands the wiki offline names the same realm and the islands converge on one workbench.
+ */
+export const PRIVATE_CABAL_REALM_DOMAIN = mint("private-cabal-realm");
 /** The persona-root seed WRAPPED at rest under a passkey PRF output (browser, opt-in). A NAME of its own,
  *  apart from every seal above: the PRF output is a cloud-synced-class secret and the wrap must never
  *  derive into an admit seal. */
 export const SEED_WRAP_PRF_INFO = mint("seed-wrap-prf");
+/**
+ * THE FLOOR'S REST KEY (the-veil-ladder#/the-base-model): the key a vessel's FLOOR documents rest sealed under (a wiki's
+ * working layer and canon it stands with no face, the daemon wiki's floor memory). A name of its own, apart from the secret
+ * home's random key: the floor stands before any face mints a secret home, and each host derives it through its own door
+ * (`held-rest-key` `floorRestKey`: a node through its custody root, a browser through its `floor-rest` seed).
+ */
+export const FLOOR_REST_KEY_INFO = mint("floor-rest-key");
 
 // ── PLANES + SCOPES (HMAC name derivations) ─────────────────────────────────────────────────────
 /** One PersonaGroup's private plane name, derived from that group's own doc id. */

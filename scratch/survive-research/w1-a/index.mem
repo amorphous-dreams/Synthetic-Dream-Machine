@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/survive-research/w1-a/` — 5 record(s) here, 5 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/survive-research/w1-a/`
+
+The scratch planning records of `.lares-scratch/survive-research/w1-a/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 5 record(s) stand here and 5 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[survive-research/|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/brief]] | brief | 2026-11-08 | `brief.md` |
+| [[clean|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/clean]] | research | 2026-11-08 | `clean.md` |
+| [[final|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/final]] | research | 2026-11-08 | `final.md` |
+| [[out|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/out]] | research | 2026-11-08 | `out.md` |
+| [[report|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/report]] | research | 2026-11-08 | `report.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0MSqA1JfdDLDiaVtdJum66hvPhMhnwIcvJxk-NYQw1A`>>
+
+<<^ code=`&#x0004;` to=`?`>>

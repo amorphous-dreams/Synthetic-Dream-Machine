@@ -21,7 +21,7 @@
  *   - src/*.js      — generated CJS module tiddlers (built by Vite)
  */
 
-import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexSync } from "@lararium/mesh";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexSync, PROJECTION_FILTER, PROJECTION_FILTER_TEXT, projectionFilterTitle, type ProjectionClass } from "@lararium/mesh";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync, copyFileSync } from "fs";
 import { spawnSync } from "child_process";
 import { tmpdir } from "os";
@@ -131,6 +131,23 @@ function verifyPackedPluginAgainstManifest(
   console.log(`[plugin-build] verified ${manifest.modules.length} packed module tiddlers against manifest`);
 }
 
+/** Write each projection filter's `.tid` under tiddlers/ from `PROJECTION_FILTER_TEXT`; a byte-identical file stays as it stands. */
+function writeProjectionFilterTiddlers(): void {
+  const entries: Array<[string, string, string]> = [["config-projection-filter.tid", PROJECTION_FILTER, PROJECTION_FILTER_TEXT.base]];
+  for (const cls of Object.keys(PROJECTION_FILTER_TEXT).filter((k) => k !== "base") as ProjectionClass[]) {
+    entries.push([`config-projection-filter-${cls}.tid`, projectionFilterTitle(cls), PROJECTION_FILTER_TEXT[cls]]);
+  }
+  for (const [file, title, text] of entries) {
+    const body = text.length > 0
+      ? `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`
+      : `title: ${title}\ntype: text/vnd.tiddlywiki\n`;
+    const at = path.join(ROOT, TIDDLERS_DIR, file);
+    let held = "";
+    try { held = readFileSync(at, "utf8"); } catch { /* first write */ }
+    if (held !== body) writeFileSync(at, body, "utf8");
+  }
+}
+
 async function main(): Promise<void> {
   mkdirSync(OUT_DIR, { recursive: true });
 
@@ -143,6 +160,9 @@ async function main(): Promise<void> {
     console.error("[plugin-build] Vite build failed");
     process.exit(viteResult.status ?? 1);
   }
+  // 1b. THE PROJECTION FILTERS ship as the plugin's `$:/config/` shadows, written from the one source the house's evaluator
+  //     reads (`@lararium/mesh` PROJECTION_FILTER_TEXT), so the shadow and the default never stand as two lists.
+  writeProjectionFilterTiddlers();
   const moduleManifest = readModuleManifest(path.join(ROOT, MODULE_MANIFEST));
   const sourceManifestPath = path.join(ROOT, SOURCE_MANIFEST);
   writePluginSourceManifest(
@@ -217,7 +237,7 @@ async function main(): Promise<void> {
     "lares-module-count":             String(moduleManifest.manifest.modules.length),
     "lares-module-manifest-sha256":   moduleManifest.sha256,
     "lares-source-manifest-sha256":   sourceManifest.sha256,
-    "lares-build-attestation-format": "lararium-tw5-plugin-build/v1",
+    "lares-build-attestation-format": "lararium-tw5-plugin-build",
   });
   const innerParsed = JSON.parse(pluginTiddlerLar["text"] as string) as { tiddlers?: Record<string, unknown> };
   const tiddlerCount = Object.keys(innerParsed.tiddlers ?? {}).length;
@@ -260,7 +280,7 @@ async function main(): Promise<void> {
   const pluginJsonSha = sha256(pluginLarJson);
   const pluginTw5Sha  = sha256(pluginTw5Json);
   const attestation = {
-    format: "lararium-tw5-plugin-build/v1",
+    format: "lararium-tw5-plugin-build",
     canonicalTitle: PLUGIN_TITLE_LAR,
     compatibilityTitle: PLUGIN_TITLE_TW5,
     moduleManifestPath: MODULE_MANIFEST,

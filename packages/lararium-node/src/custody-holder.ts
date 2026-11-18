@@ -3,8 +3,8 @@
  *
  * The vessel key (S key) and the opened custody root rest in this module's closure for as long as the vessel stays
  * unlocked, and nowhere else: no field, no log line, no refusal and no reading carries the key, the root, a
- * credential or a digest of one. Every hot row a standing vessel reads or writes passes through `readRow` /
- * `writeRow`; a cold row opens for one act (`openColdRow`) and its plaintext zero-fills when the act settles.
+ * credential or a digest of one. Every hot row a standing vessel reads or writes passes through `readRecord` /
+ * `writeRecord`; a cold row opens for one act (`openColdRecord`) and its plaintext zero-fills when the act settles.
  *
  * ── THE FLOOR HOLDS NOTHING ─────────────────────────────────────────────────────────────────────
  * A fresh holder holds no key. Locked, a read answers `locked` and a write refuses `CustodyLocked`. `lock` waits
@@ -12,7 +12,7 @@
  * so a restart always returns to the floor.
  *
  * ── A TORN ROW NEVER READS EMPTY ────────────────────────────────────────────────────────────────
- * `readRow` answers `opens`, `absent`, `locked`, or `unavailable` with the sealed reader's own name for what
+ * `readRecord` answers `opens`, `absent`, `locked`, or `unavailable` with the sealed reader's own name for what
  * stands (`torn`, `key-fails`, `bare`, `unopenable`). No caller may mint over `unavailable`.
  *
  * ── THE UNLOCK BOUND ────────────────────────────────────────────────────────────────────────────
@@ -71,14 +71,14 @@ export type HolderProof =
   | { readonly reading: "tree-absent" }
   | { readonly reading: "tree-unreadable"; readonly why: string };
 
-export type RowReading =
+export type RecordReading =
   | { readonly reading: "opens"; readonly plaintext: Uint8Array }
   | { readonly reading: "absent" }
   | { readonly reading: "locked"; readonly fcid?: string }
   | { readonly reading: "unavailable"; readonly why: string };
 
-/** What `updateRow`'s decision answers: the row's next plaintext (`null` writes nothing) and the caller's answer. */
-export interface RowUpdate<T> { readonly plaintext: Uint8Array | null; readonly value: T }
+/** What `updateRecord`'s decision answers: the row's next plaintext (`null` writes nothing) and the caller's answer. */
+export interface RecordUpdate<T> { readonly plaintext: Uint8Array | null; readonly value: T }
 
 export class CustodyLocked extends Error {
   override readonly name: string = "CustodyLocked";
@@ -97,16 +97,16 @@ export class FaceCustodyAbsent extends Error {
   constructor(file: string) { super(`custody row identity/${file} names a face this node holds no custody for; found or admit the face first`); }
 }
 /** A cold row that stands and does not open: the act never runs over anything but the row's own plaintext. */
-export class CustodyRowUnavailable extends Error {
-  override readonly name = "CustodyRowUnavailable";
+export class CustodyRecordUnavailable extends Error {
+  override readonly name = "CustodyRecordUnavailable";
   constructor(readonly home: CustodyHome, readonly file: string, readonly reading: string) {
-    super(`custody row ${home}/${file} reads ${reading}`);
+    super(`custody record ${home}/${file} reads ${reading}`);
   }
 }
-export class CustodyRowUnknown extends Error {
-  override readonly name = "CustodyRowUnknown";
+export class CustodyRecordUnknown extends Error {
+  override readonly name = "CustodyRecordUnknown";
   constructor(home: CustodyHome, file: string, detail = "no hot or cold carrier row matches") {
-    super(`custody row ${home}/${file}: ${detail}`);
+    super(`custody record ${home}/${file}: ${detail}`);
   }
 }
 
@@ -128,7 +128,7 @@ export interface WardSeat {
   /** Open one warded row for the act; a row with nothing at its path, or one that does not open, refuses by name. */
   open<T>(file: string, act: (plaintext: Uint8Array) => Promise<T> | T): Promise<T>;
   /** Read one warded row, decide, and write it, under the ward key, as ONE custody holder. The plaintext zero-fills once `decide` returns. */
-  update<T>(file: string, decide: (plaintext: Uint8Array | null) => RowUpdate<T>): Promise<T>;
+  update<T>(file: string, decide: (plaintext: Uint8Array | null) => RecordUpdate<T>): Promise<T>;
   /** Whether a warded row stands at `file` (it opens nothing). */
   stands(file: string): Promise<boolean>;
   /** Sign `bytes` with this face's ward key on this device (`wardSigningSeed` over the ward key opened for this act), zeroing the
@@ -151,7 +151,7 @@ export type FaceUnlock =
   | { readonly reading: "index-mismatch"; readonly fcid: string; readonly why: string };
 
 /** The D row a face's directory keeps to authenticate the floor index entry that routed to it. */
-export interface FaceOwnerRow { readonly fcid: string; readonly group: string | null }
+export interface FaceOwnerRecord { readonly fcid: string; readonly group: string | null }
 
 export const UNLOCK_ATTEMPTS_PER_BOOT = 3;
 
@@ -193,38 +193,38 @@ export interface CustodyHolder {
   onOpened?(listener: () => void): () => void;
   attemptsLeft(): number;
   openedSlot(): string | null;
-  readRow(home: CustodyHome, file: string): Promise<RowReading>;
-  writeRow(home: CustodyHome, file: string, plaintext: Uint8Array): Promise<void>;
+  readRecord(home: CustodyHome, file: string): Promise<RecordReading>;
+  writeRecord(home: CustodyHome, file: string, plaintext: Uint8Array): Promise<void>;
   /**
    * Read a hot row, decide, and write it as ONE custody holder: no other writer in any process lands between the
    * read and the write. `decide` answers the row's next plaintext, or `null` to leave it as it stands.
    */
-  updateRow<T>(home: CustodyHome, file: string, decide: (standing: RowReading) => RowUpdate<T>): Promise<T>;
+  updateRecord<T>(home: CustodyHome, file: string, decide: (standing: RecordReading) => RecordUpdate<T>): Promise<T>;
   /** Move one hot row's bytes under one holder claim; a matching destination completes a stopped move. */
-  moveRow(home: CustodyHome, source: string, destination: string, expected: Uint8Array): Promise<void>;
+  moveRecord(home: CustodyHome, source: string, destination: string, expected: Uint8Array): Promise<void>;
   /** Run a scan and its decisions under the same claim as a founding row move. */
-  withRows<T>(act: (rows: { read(home: CustodyHome, file: string): Promise<Uint8Array | null>; remove(home: CustodyHome, file: string, when?: (bytes: Uint8Array) => boolean): Promise<boolean> }) => Promise<T>): Promise<T>;
+  withRecords<T>(act: (records: { read(home: CustodyHome, file: string): Promise<Uint8Array | null>; remove(home: CustodyHome, file: string, when?: (bytes: Uint8Array) => boolean): Promise<boolean> }) => Promise<T>): Promise<T>;
   /**
    * Remove one hot row as ONE custody holder; answers whether a row stood. The holder removes only a row its own
-   * key opens: a row that stands and does not open refuses `CustodyRowUnavailable` and stays.
+   * key opens: a row that stands and does not open refuses `CustodyRecordUnavailable` and stays.
    */
-  removeRow(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean>;
+  removeRecord(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean>;
   /**
-   * Remove one COLD row as ONE custody holder; answers whether a row stood. As `removeRow` does for a hot row,
+   * Remove one COLD row as ONE custody holder; answers whether a row stood. As `removeRecord` does for a hot row,
    * the holder removes only a row its own key opens: a row that stands and does not open refuses
-   * `CustodyRowUnavailable` and stays. An act removes a cold row once what the row committed stands done. `when`,
+   * `CustodyRecordUnavailable` and stays. An act removes a cold row once what the row committed stands done. `when`,
    * where given, reads the standing plaintext under the same hold: a row it declines stays, and the removal
    * answers false. The plaintext zero-fills once `when` returns.
    */
-  removeColdRow(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean>;
-  openColdRow<T>(home: CustodyHome, file: string, act: (plaintext: Uint8Array) => Promise<T> | T): Promise<T>;
+  removeColdRecord(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean>;
+  openColdRecord<T>(home: CustodyHome, file: string, act: (plaintext: Uint8Array) => Promise<T> | T): Promise<T>;
   /**
    * Read a cold row, decide, and write it as ONE custody holder, for a cold row whose mint must never land over a
    * standing one. `decide` receives the row's standing reading and answers its next plaintext, or `null` to leave
    * it as it stands. The standing plaintext zero-fills once the decision returns, so the decision keeps a copy of
    * what it needs and nothing else.
    */
-  updateColdRow<T>(home: CustodyHome, file: string, decide: (standing: RowReading) => RowUpdate<T>): Promise<T>;
+  updateColdRecord<T>(home: CustodyHome, file: string, decide: (standing: RecordReading) => RecordUpdate<T>): Promise<T>;
   /**
    * Run `act` as ONE custody holder, while this holder holds its key: no sealed write in any process lands while it
    * runs, and no other `exclusive` act either. For a floor row whose mint must land once and never over another
@@ -401,8 +401,8 @@ export function makeCustodyHolder(a: {
     const seed = wardSigningSeed(ward);
     try { return new TextEncoder().encode(await wardPublicKeyOf(seed)); } finally { seed.fill(0); }
   };
-  const encodeOwner = (owner: FaceOwnerRow): Uint8Array => new TextEncoder().encode(JSON.stringify({ fcid: owner.fcid, group: owner.group }));
-  const decodeOwner = (bytes: Uint8Array): FaceOwnerRow | null => {
+  const encodeOwner = (owner: FaceOwnerRecord): Uint8Array => new TextEncoder().encode(JSON.stringify({ fcid: owner.fcid, group: owner.group }));
+  const decodeOwner = (bytes: Uint8Array): FaceOwnerRecord | null => {
     try {
       const v = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
       if (Object.keys(v).sort().join(",") !== "fcid,group" || typeof v["fcid"] !== "string" || !(v["group"] === null || typeof v["group"] === "string")) return null;
@@ -461,8 +461,8 @@ export function makeCustodyHolder(a: {
   };
   /** The warded row a file names inside one face's directory, as a carrier; anything but a warded row refuses. */
   const wardCarrierOf = (fcid: string, file: string): FaceCarrier => {
-    const row = carrierTable().find((r) => r.custody === "ward-cold" && r.faceRow !== undefined && r.faceRow.inner.test(file));
-    if (!row) throw new CustodyRowUnknown("identity", file, "no warded row matches");
+    const row = carrierTable().find((r) => r.custody === "ward-cold" && r.faceRecord !== undefined && r.faceRecord.inner.test(file));
+    if (!row) throw new CustodyRecordUnknown("identity", file, "no warded row matches");
     return faceCarrierFor(a.homes, fcid, file, row);
   };
   /** The ward tree standing for a face, or the reading that refuses: absent names the rewrap. */
@@ -494,12 +494,12 @@ export function makeCustodyHolder(a: {
     return {
       async open(file, act) {
         const opened = await openWardCarrier({ io: a.io, key: live(), carrier: wardCarrierOf(fcid, file) });
-        if (opened.reading !== "opens") throw new CustodyRowUnavailable("identity", file, opened.reading);
+        if (opened.reading !== "opens") throw new CustodyRecordUnavailable("identity", file, opened.reading);
         try { return await act(opened.plaintext); } finally { opened.plaintext.fill(0); }
       },
       async update(file, decide) {
         return updateWardCarrier({ io: a.io, key: live(), treePath, carrier: wardCarrierOf(fcid, file), decide: (standing) => {
-          if (standing.reading !== "opens" && standing.reading !== "absent") throw new CustodyRowUnavailable("identity", file, standing.reading);
+          if (standing.reading !== "opens" && standing.reading !== "absent") throw new CustodyRecordUnavailable("identity", file, standing.reading);
           try {
             const next = decide(standing.reading === "opens" ? standing.plaintext : null);
             return next.plaintext !== null && standing.reading === "opens" && next.plaintext.buffer === standing.plaintext.buffer
@@ -535,9 +535,9 @@ export function makeCustodyHolder(a: {
   /** The files of one face's directory that a warded row names. */
   const wardFilesOf = async (fcid: string): Promise<string[]> => {
     const dir = faceDir(a.homes.identity, fcid);
-    const rows = carrierTable().filter((r) => r.custody === "ward-cold" && r.faceRow !== undefined);
+    const rows = carrierTable().filter((r) => r.custody === "ward-cold" && r.faceRecord !== undefined);
     return (await a.io.list()).filter((p) => p.startsWith(`${dir}/`)).map((p) => p.slice(dir.length + 1))
-      .filter((f) => !f.includes("/") && rows.some((r) => r.faceRow!.inner.test(f)));
+      .filter((f) => !f.includes("/") && rows.some((r) => r.faceRecord!.inner.test(f)));
   };
   const doRewrapWard = async (by: FaceRef, credentials: readonly Credential[]): Promise<{ readonly rewrapped: number }> => {
     const { fcid } = await openFaceFor(by);
@@ -593,9 +593,9 @@ export function makeCustodyHolder(a: {
         const carrier = wardCarrierOf(fcid, file);
         const bytes = await a.io.read(carrier.path);
         if (readWardCarrier(bytes) === "sealed") continue;
-        if (readFckCarrier(bytes) !== "sealed") throw new CustodyRowUnavailable("identity", file, `reads ${readFckCarrier(bytes)}, neither warded nor face-sealed`);
+        if (readFckCarrier(bytes) !== "sealed") throw new CustodyRecordUnavailable("identity", file, `reads ${readFckCarrier(bytes)}, neither warded nor face-sealed`);
         const faceSealed = await openFaceCarrier({ io: a.io, key: fck, carrier });
-        if (faceSealed.reading !== "opens") throw new CustodyRowUnavailable("identity", file, faceSealed.reading);
+        if (faceSealed.reading !== "opens") throw new CustodyRecordUnavailable("identity", file, faceSealed.reading);
         try {
           // The FCK-framed bytes stand where a warded row belongs: the ward's writer would refuse them, so the move seals to a sidecar,
           // reads it back under the ward, and only then renames over them (the writer's own law, held here for the one frame it crosses).
@@ -606,7 +606,7 @@ export function makeCustodyHolder(a: {
             const back = openUnderWard(ward, carrier, await a.io.read(side));
             if (back.reading !== "opens" || !back.plaintext.every((b, i) => b === faceSealed.plaintext[i]) || back.plaintext.length !== faceSealed.plaintext.length) {
               await a.io.remove(side);
-              throw new CustodyRowUnavailable("identity", file, "the ward seal did not read back; the face-sealed row stands as it was");
+              throw new CustodyRecordUnavailable("identity", file, "the ward seal did not read back; the face-sealed row stands as it was");
             }
             back.plaintext.fill(0);
             await a.io.rename(side, carrier.path);
@@ -693,16 +693,16 @@ export function makeCustodyHolder(a: {
       return r.match.test(file);
     });
     if (sRow) {
-      if (sRow.custody === "cold" && !coldAllowed) throw new CustodyRowUnknown(home, file, "cold rows require openColdRow");
+      if (sRow.custody === "cold" && !coldAllowed) throw new CustodyRecordUnknown(home, file, "cold rows require openColdRecord");
       return { kind: "treeKey", row: sRow, path: `${a.homes[home]}/${file}`, name: `${home}/${file}` };
     }
-    const faceRow = home === "identity" ? carrierTable().find((r) => r.faceRow !== undefined && r.faceRow.select !== null && r.faceRow.inner.test(file)) : undefined;
+    const faceRow = home === "identity" ? carrierTable().find((r) => r.faceRecord !== undefined && r.faceRecord.select !== null && r.faceRecord.inner.test(file)) : undefined;
     // A warded row never answers a door of unlocked custody: it opens only inside a fresh ward act (`withWardKey`).
-    const warded = home === "identity" ? carrierTable().find((r) => r.custody === "ward-cold" && r.faceRow !== undefined && r.faceRow.inner.test(file)) : undefined;
+    const warded = home === "identity" ? carrierTable().find((r) => r.custody === "ward-cold" && r.faceRecord !== undefined && r.faceRecord.inner.test(file)) : undefined;
     if (warded) throw new WardNeedsFreshUnlock(`identity/${file}`);
-    if (!faceRow || faceRow.faceRow!.select(faceRow.faceRow!.inner.exec(file)!) === null) throw new CustodyRowUnknown(home, file);
-    if (faceRow.custody === "face-cold" && !coldAllowed) throw new CustodyRowUnknown(home, file, "cold rows require openColdRow");
-    const selector = faceRow.faceRow!.select(faceRow.faceRow!.inner.exec(file)!) as Exclude<FaceSelector, null>;
+    if (!faceRow || faceRow.faceRecord!.select(faceRow.faceRecord!.inner.exec(file)!) === null) throw new CustodyRecordUnknown(home, file);
+    if (faceRow.custody === "face-cold" && !coldAllowed) throw new CustodyRecordUnknown(home, file, "cold rows require openColdRecord");
+    const selector = faceRow.faceRecord!.select(faceRow.faceRecord!.inner.exec(file)!) as Exclude<FaceSelector, null>;
     let found = findFace(await readFaceIndex(a.io, a.homes.identity), selector);
     if (!found && forWrite && faceAutoFounder) {
       // Two writers racing to the same absent face found it once: the loser finds the winner's face standing.
@@ -735,20 +735,20 @@ export function makeCustodyHolder(a: {
     keyOpened();
   };
 
-  const asReading = (standing: { readonly reading: string; readonly plaintext?: Uint8Array }): RowReading =>
+  const asReading = (standing: { readonly reading: string; readonly plaintext?: Uint8Array }): RecordReading =>
     standing.reading === "opens" ? { reading: "opens", plaintext: standing.plaintext! }
       : standing.reading === "absent" ? { reading: "absent" }
         : { reading: "unavailable", why: standing.reading };
 
   /** One read of one located row. */
-  const readLocated = async (t: Located): Promise<RowReading> => {
+  const readLocated = async (t: Located): Promise<RecordReading> => {
     if (t.kind === "treeKey") {
       const result = await openSealedCarrier({ io: a.io, treeKey: needTreeKey(), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass } });
       return asReading(result);
     }
     return asReading(await openFaceCarrier({ io: a.io, key: keyOf(t), carrier: t.carrier }));
   };
-  const updateLocated = <T>(t: Located, decide: (standing: RowReading) => RowUpdate<T>): Promise<T> => {
+  const updateLocated = <T>(t: Located, decide: (standing: RecordReading) => RecordUpdate<T>): Promise<T> => {
     if (t.kind === "treeKey") {
       return updateSealedCarrier({ io: a.io, treeKey: needTreeKey(), treePath: sSlotsPath(a.homes.identity), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass }, decide: (standing) => decide(asReading(standing)) });
     }
@@ -761,7 +761,7 @@ export function makeCustodyHolder(a: {
     return removeFaceCarrier({ io: a.io, key: keyOf(t), treePath: t.treePath, carrier: t.carrier, ...(when ? { when } : {}) });
   };
   const refusedAs = (home: CustodyHome, file: string, err: unknown): never => {
-    if (err instanceof CustodyRefusal) throw new CustodyRowUnavailable(home, file, err.reading);
+    if (err instanceof CustodyRefusal) throw new CustodyRecordUnavailable(home, file, err.reading);
     throw err;
   };
 
@@ -805,14 +805,14 @@ export function makeCustodyHolder(a: {
     isUnlocked: () => treeKey !== null,
     attemptsLeft: () => UNLOCK_ATTEMPTS_PER_BOOT - spent,
     openedSlot: () => slot,
-    async readRow(home, file) {
+    async readRecord(home, file) {
       if (!accepting) return { reading: "locked" };
       let target: Located;
       try { target = await locate(home, file, false); } catch (err) { if (err instanceof FaceCustodyAbsent) return { reading: "absent" }; throw err; }
       if (target.kind === "treeKey" ? treeKey === null : !faces.has(target.fcid)) return target.kind === "face" ? { reading: "locked", fcid: target.fcid } : { reading: "locked" };
       return operation(() => readLocated(target));
     },
-    async writeRow(home, file, plaintext) {
+    async writeRecord(home, file, plaintext) {
       const t = await locate(home, file, true, true);
       if (t.kind === "treeKey") {
         const key = needTreeKey();
@@ -821,7 +821,7 @@ export function makeCustodyHolder(a: {
       const key = keyOf(t);
       return operation(() => writeFaceCarrier({ io: a.io, key, treePath: t.treePath, carrier: t.carrier, plaintext }));
     },
-    async updateRow(home, file, decide) {
+    async updateRecord(home, file, decide) {
       // A face the index does not name holds no row: a decision that writes nothing reads it absent; one that writes founds the face
       // (a fixture's policy) or refuses `FaceCustodyAbsent`.
       let t: Located;
@@ -834,7 +834,7 @@ export function makeCustodyHolder(a: {
       if (t.kind === "treeKey") needTreeKey(); else keyOf(t);
       return operation(() => updateLocated(t, decide));
     },
-    async moveRow(home, source, destination, expected) {
+    async moveRecord(home, source, destination, expected) {
       if (source === destination) throw new Error("custody move names the same row twice");
       const from = await locate(home, source, false, true);
       const to = await locate(home, destination, false, true);
@@ -846,11 +846,11 @@ export function makeCustodyHolder(a: {
         // The outer claim spans both sealed steps; the inner writer receives a claim already held.
         const io = heldPort(a.io);
         const equals = (bytes: Uint8Array) => bytes.length === expected.length && bytes.every((byte, i) => byte === expected[i]);
-        const open = async (t: Located, file: string): Promise<RowReading> => {
+        const open = async (t: Located, file: string): Promise<RecordReading> => {
           const reading = t.kind === "treeKey"
             ? asReading(await openSealedCarrier({ io, treeKey: needTreeKey(), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass } }))
             : asReading(await openFaceCarrier({ io, key: keyOf(t), carrier: t.carrier }));
-          if (reading.reading !== "opens" && reading.reading !== "absent") throw new CustodyRowUnavailable(home, file, reading.reading === "unavailable" ? reading.why : reading.reading);
+          if (reading.reading !== "opens" && reading.reading !== "absent") throw new CustodyRecordUnavailable(home, file, reading.reading === "unavailable" ? reading.why : reading.reading);
           return reading;
         };
         const standingSource = await open(from, source);
@@ -869,7 +869,7 @@ export function makeCustodyHolder(a: {
         }
       }));
     },
-    withRows(act) {
+    withRecords(act) {
       if (!accepting) return Promise.reject(new CustodyLocked());
       return operation(() => a.io.exclusive(async () => {
         const io = heldPort(a.io);
@@ -881,7 +881,7 @@ export function makeCustodyHolder(a: {
               : asReading(await openFaceCarrier({ io, key: keyOf(t), carrier: t.carrier }));
             if (reading.reading === "opens") return reading.plaintext;
             if (reading.reading === "absent") return null;
-            throw new CustodyRowUnavailable(home, file, reading.reading === "unavailable" ? reading.why : reading.reading);
+            throw new CustodyRecordUnavailable(home, file, reading.reading === "unavailable" ? reading.why : reading.reading);
           },
           async remove(home, file, when) {
             const t = await locate(home, file, false);
@@ -894,21 +894,21 @@ export function makeCustodyHolder(a: {
         });
       }));
     },
-    async removeRow(home, file, when) {
+    async removeRecord(home, file, when) {
       // A face this node holds no custody for holds no row to remove.
       let t: Located;
       try { t = await locate(home, file, false); } catch (err) { if (err instanceof FaceCustodyAbsent) return false; throw err; }
       if (t.kind === "treeKey") needTreeKey(); else keyOf(t);
       return operation(async () => { try { return await removeLocated(t, when); } catch (err) { return refusedAs(home, file, err); } });
     },
-    async removeColdRow(home, file, when) {
+    async removeColdRecord(home, file, when) {
       let t: Located;
       try { t = await locate(home, file, true); } catch (err) { if (err instanceof FaceCustodyAbsent) return false; throw err; }
-      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRowUnknown(home, file, "removeColdRow requires a cold row");
+      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRecordUnknown(home, file, "removeColdRecord requires a cold row");
       if (t.kind === "treeKey") needTreeKey(); else keyOf(t);
       return operation(async () => { try { return await removeLocated(t, when); } catch (err) { return refusedAs(home, file, err); } });
     },
-    async updateColdRow(home, file, decide) {
+    async updateColdRecord(home, file, decide) {
       let t: Located;
       try { t = await locate(home, file, true); } catch (err) {
         if (!(err instanceof FaceCustodyAbsent)) throw err;
@@ -916,7 +916,7 @@ export function makeCustodyHolder(a: {
         if (probe.plaintext === null) return probe.value;
         t = await locate(home, file, true, true);
       }
-      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRowUnknown(home, file, "updateColdRow requires a cold row");
+      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRecordUnknown(home, file, "updateColdRecord requires a cold row");
       if (t.kind === "treeKey") needTreeKey(); else keyOf(t);
       return operation(() => updateLocated(t, (standing) => {
         try {
@@ -930,13 +930,13 @@ export function makeCustodyHolder(a: {
         }
       }));
     },
-    async openColdRow(home, file, act) {
+    async openColdRecord(home, file, act) {
       const t = await locate(home, file, true);
-      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRowUnknown(home, file, "openColdRow requires a cold row");
+      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRecordUnknown(home, file, "openColdRecord requires a cold row");
       if (t.kind === "treeKey") needTreeKey(); else keyOf(t);
       return operation(async () => {
         const opened = await readLocated(t);
-        if (opened.reading !== "opens") throw new CustodyRowUnavailable(home, file, opened.reading === "unavailable" ? opened.why : opened.reading);
+        if (opened.reading !== "opens") throw new CustodyRecordUnavailable(home, file, opened.reading === "unavailable" ? opened.why : opened.reading);
         try { return await act(opened.plaintext); } finally { opened.plaintext.fill(0); }
       });
     },
@@ -1012,10 +1012,10 @@ export function makeCustodyHolder(a: {
       if (!seat) throw new FaceLocked(found.fcid);
       const opened = await openFaceCarrier({ io: a.io, key: seat.fck, carrier: wardKeyCarrier(found.fcid) });
       if (opened.reading === "absent") return null;
-      if (opened.reading !== "opens") throw new CustodyRowUnavailable("identity", "face-ward-key.bin", opened.reading);
+      if (opened.reading !== "opens") throw new CustodyRecordUnavailable("identity", "face-ward-key.bin", opened.reading);
       try {
         const key = new TextDecoder().decode(opened.plaintext);
-        if (!isWardKey(key)) throw new CustodyRowUnavailable("identity", "face-ward-key.bin", "malformed");
+        if (!isWardKey(key)) throw new CustodyRecordUnavailable("identity", "face-ward-key.bin", "malformed");
         return key;
       } finally { opened.plaintext.fill(0); }
     },

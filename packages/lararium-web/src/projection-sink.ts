@@ -37,6 +37,7 @@
  *     door per act, and only for a kind the manifest the surface opened with names; any other answers by name,
  *     with the words beside the control the person acted on. Every ask gets its `lar:service-result`.
  */
+import { PAGE_DOORS } from "./page-doors.js";
 import { Idiomorph } from "idiomorph";
 // The contract module carries no imports of its own; its own subpath keeps the mesh barrel (and its wasm) out of
 // the page sink.
@@ -96,6 +97,8 @@ export interface ProjectionSink {
   apply(frame: LarSurfaceFrame): FrameVerdict;
   /** Take an answer: `applied` clears its control's words, `stale-target` and `refused` paint them. */
   applyResult(result: LarMsg_ControlResult): ResultVerdict;
+  /** The vessel's named reply to a resend that met an act still waiting (`control-event-pending`): that send counts no attempt. */
+  applyPending(eventId: string): void;
   /** The island's latest breath for a surface, read by the loading plate while that surface's mount waits. */
   setBreath(surface: string, breath: LarBreath): void;
   /** The vessel moved its gate to a surface: the plate stands over the shown frame until that surface paints. */
@@ -490,6 +493,17 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     if (picker) { pickers.delete(id); picker.setStatus("refused"); }
     if (asked.surface === shownSurface) paintRefusal(fieldId ?? asked.target, reason);
   };
+  /**
+   * THE BOUND FIRES, AND A LATE ANSWER STILL LANDS. An act's answer waits on its rest while the frames its own write painted stream
+   * ahead of it on the same channel, so the bound can fire with the answer already queued behind them. The act leaves `pending` with
+   * its words painted, and stays named here: the answer that follows clears those words or paints its own. Bounded like `pending`.
+   */
+  const exhausted = new Map<string, { readonly surface: string; readonly target: string; readonly mountEpoch: number }>();
+  const exhaust = (id: string, asked: { readonly surface: string; readonly target: string; readonly mountEpoch: number }): void => {
+    endPending(id, "binding-unavailable");
+    exhausted.set(id, { surface: asked.surface, target: asked.target, mountEpoch: asked.mountEpoch });
+    if (exhausted.size > PENDING_MAX) exhausted.delete(exhausted.keys().next().value!);
+  };
   const endEpochPending = (surface: string, epoch: number): void => {
     for (const [id, asked] of pending) {
       if (asked.surface === surface && asked.mountEpoch === epoch) endPending(id, "stale-target");
@@ -500,7 +514,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     const epoch = stateOf(surface).epoch;
     for (const [id, asked] of pending) {
       if (asked.surface !== surface || asked.mountEpoch !== epoch) continue;
-      if (asked.attempts >= RESEND_ATTEMPTS) { endPending(id, "binding-unavailable"); continue; }
+      if (asked.attempts >= RESEND_ATTEMPTS) { exhaust(id, asked); continue; }
       asked.attempts++;
       doors.sendControlEvent(surface, asked.ev);
     }
@@ -1092,6 +1106,15 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   const applyResult = (result: LarMsg_ControlResult): ResultVerdict => {
     if (readLarControlResult(result) === null) return "ignored";
     settleOffer(result);                                           // S6: a file picker's status
+    const late = exhausted.get(result.eventId);
+    if (late) {
+      exhausted.delete(result.eventId);
+      if (late.surface !== shownSurface || result.mountEpoch !== late.mountEpoch || result.mountEpoch !== stateOf(late.surface).epoch) return "ignored";
+      if (result.status === "applied") { dropRefusal(late.target); return "cleared"; }
+      const lateReason: LarRefusal = result.status === "stale-target" ? "stale-target" : result.reason ?? "binding-unavailable";
+      if (lateReason !== "unclaimed") paintRefusal(late.target, lateReason);
+      return "painted";
+    }
     const asked = pending.get(result.eventId);
     if (!asked) return "ignored";                                  // an answer to nothing this page relayed
     if (asked.surface !== shownSurface) { pending.delete(result.eventId); endFieldAct(result.eventId); return "ignored"; }
@@ -1113,27 +1136,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   let activation: { readonly at: number; readonly surface: string; readonly target: string } | null = null;
   const manifestKinds: readonly LarServiceKind[] = opts.services ?? LAR_SURFACE_DEFAULT_SERVICES;
   const carried = new Set<LarServiceKind>(manifestKinds);
-  const pageDoors: Partial<Record<LarServiceKind, LarHostDoor>> = {
-    clipboard: async (args) => { await navigator.clipboard.writeText(String(args["text"] ?? "")); },
-    download: (args) => {
-      const url = URL.createObjectURL(new Blob([String(args["text"] ?? "")], { type: String(args["type"] ?? "text/plain") }));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = String(args["filename"] ?? "download.txt");
-      a.click();
-      // PACING: defer URL cleanup to the next task so the download can start.
-      setTimeout(() => URL.revokeObjectURL(url), 0);
-    },
-    print: () => { window.print(); },
-    fullscreen: async (args, at) => {
-      const mode = String(args["mode"] ?? "toggle");
-      if (mode === "exit" || (mode === "toggle" && document.fullscreenElement)) await document.exitFullscreen();
-      else await at.requestFullscreen();
-    },
-    "open-external": (args) => {
-      if (!window.open(String(args["url"] ?? ""), String(args["windowName"] ?? "_blank"), "noopener,noreferrer")) throw new Error("the browser opened no window");
-    },
-  };
+  const pageDoors = PAGE_DOORS;
   const doorFor = (kind: LarServiceKind): LarHostDoor | undefined => opts.doors?.[kind] ?? pageDoors[kind];
   // LIVENESS: this window bounds how long an unspent act licenses a door. The token already spends once (one act opens one
   // door) and a later act replaces it, but an act that no ask ever claims has no event that ends it
@@ -1180,9 +1183,17 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     return "opened";
   };
 
+  // THE RETRY BOUND COUNTS ONLY SENDS THE VESSEL NEVER ACKNOWLEDGED (dreamdom-port-contract #/retry-law). A resend that met the act
+  // still waiting at the vessel draws its named reply, a causal event: the act stands held, so that send refunds its attempt.
+  const applyPending = (eventId: string): void => {
+    const asked = pending.get(eventId);
+    if (asked && asked.attempts > 1) asked.attempts--;
+  };
+
   return {
     apply,
     applyResult,
+    applyPending,
     applyService,
     pendingActs: () => pending.size,
     dispose: () => { leaving?.removeEventListener("beforeunload", holdUnload); },

@@ -22,7 +22,7 @@ import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, rmSync, existsSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { casReferences, sha256HexBytesSync, utf8Bytes, GENESIS_CAS_MANIFEST_FORMAT, type CasReferenceEntry, type GenesisCasManifest } from "@lararium/mesh";
+import { casReferences, sha256HexBytesSync, utf8Bytes, GENESIS_CAS_MANIFEST_FORMAT, ENGINE_CORE_ID, type CasReferenceEntry, type GenesisCasManifest, type LarDoc } from "@lararium/mesh";
 import { casSweep, listCasBlobs, writeCasEntriesFs, readCasPins, pinCas, releaseCas } from "../src/node-cas.js";
 import { genesisProtectSet } from "../src/genesis-artifact.js";
 
@@ -44,7 +44,7 @@ const YOUNG = 0;
 const age = (_cid: string): void => { /* vestigial — age is supplied, not read from the fs */ };
 
 const genesis: GenesisCasManifest = {
-  format: "lararium-genesis-cas/v1", engineCid: "", pluginsCid: "",
+  format: "lararium-genesis-cas", engineCid: "", pluginsCid: "",
   blobs: [{ cid: blob("the engine core").cid, id: "tiddlywikicore", mimeType: "application/javascript", version: "1" }],
 };
 
@@ -546,7 +546,7 @@ describe("the genesis protect set, when the seed will not read", () => {
 
   test("CONTROL — a WELL-FORMED seed answers its blob cids, so the guard still guards", () => {
     const cid = "a".repeat(64);
-    const seed = { format: "lararium-genesis-seed/v1", actorSeed: "actor",
+    const seed = { format: "lararium-genesis-seed", actorSeed: "actor",
       blobs: { x: { id: "x", sha256: cid, mimeType: "application/json", version: "1" } },
       tiddlers: {
         "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "e" } },
@@ -557,6 +557,57 @@ describe("the genesis protect set, when the seed will not read", () => {
     const set = genesisProtectSet(genesisDir);
     expect(set).not.toBe("unreadable");
     expect([...(set as ReadonlySet<string>)]).toEqual([cid]);
+  });
+});
+
+/**
+ * THE STORED ISLAND OUTLIVES THE SEED IT WAS BORN FROM. A vessel founded on an explicit genesis reloads its
+ * persisted oracle island at every boot under the fixed doc id, so after a rebuild that declares a new seed it
+ * still serves its grammar and canon floor from the blobs that island names. The sweep must keep those bytes:
+ * a protect set drawn from the declared seed alone leaves the stored island's own blobs (its grammar, its floor
+ * manifest, its floor snapshots) unguarded, and a realm clock that ages them out leaves the mounts reading
+ * bytes that are gone. The protect set reads the UNION of the declared seed and the stored island.
+ */
+describe("the genesis protect set, when the stored island names blobs the declared seed does not", () => {
+  let genesisDir = "";
+  beforeEach(() => { genesisDir = mkdtempSync(join(tmpdir(), "lares-genesisdir-")); });
+  afterEach(() => { rmSync(genesisDir, { recursive: true, force: true }); });
+
+  const seedCid = "a".repeat(64), oldCore = "b".repeat(64), oldFloor = "c".repeat(64);
+  const writeSeed = (): void => {
+    const seed = { format: "lararium-genesis-seed", actorSeed: "actor",
+      blobs: { x: { id: "x", sha256: seedCid, mimeType: "application/json", version: "1" } },
+      tiddlers: {
+        "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "e" } },
+        "lar:///ha.ka.ba/bags/oracle/genesis-cid-grammar": { tiddler: { cid: "g" } },
+        "lar:///ha.ka.ba/bags/oracle/genesis-cid-plugins": { tiddler: { cid: "p" } },
+      } };
+    writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(seed), "utf8");
+  };
+  const storedIsland = (): LarDoc => ({
+    blobs: {
+      [ENGINE_CORE_ID]: { id: ENGINE_CORE_ID, version: "1", sha256: oldCore, mimeType: "application/javascript" },
+      "floor-lares":    { id: "floor-lares", version: "1", sha256: oldFloor, mimeType: "application/json", kind: "floor" },
+    },
+  }) as unknown as LarDoc;
+
+  test("★ the stored island's blobs stand protected beside the declared seed's ★", () => {
+    writeSeed();
+    const set = genesisProtectSet(genesisDir, storedIsland());
+    expect(set).not.toBe("unreadable");
+    expect([...(set as ReadonlySet<string>)].sort()).toEqual([seedCid, oldCore, oldFloor]);
+  });
+
+  test("★ a stored island with no declared seed still protects its own blobs ★", () => {
+    const set = genesisProtectSet(genesisDir, storedIsland());
+    expect(set).not.toBe("unreadable");
+    expect([...(set as ReadonlySet<string>)].sort()).toEqual([oldCore, oldFloor]);
+  });
+
+  test("★ a stored island whose blob metadata will not read withholds the sweep ★", () => {
+    writeSeed();
+    const torn = { blobs: { "floor-lares": { id: "floor-lares", version: "1", sha256: "not-a-cid", mimeType: "application/json" } } } as unknown as LarDoc;
+    expect(genesisProtectSet(genesisDir, torn)).toBe("unreadable");
   });
 });
 

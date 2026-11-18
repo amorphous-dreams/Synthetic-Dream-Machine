@@ -4,7 +4,7 @@
  *
  *   · `runHostState`  — per Nexus this hearth hosts in: the current and previous epochs (act CIDs), the cap, and
  *     how many tokens were redeemed this epoch and the last — counts, never a row.
- *   · `runHostRoll`   — sign the hearth's next hosting act in N with its per-Nexus leaf, keep the old act as the
+ *   · `runHostRoll`   — sign the hearth's next hosting act in N with its per-Nexus leaf, keep the current act as the
  *     previous epoch, remove the spend rows of every older epoch, and LAND the act on this hearth's HOSTING DOC in N
  *     (`hostingDocUrl(N, gate key)`, the one doc its walkers read and N's carriers replicate). Rolling twice
  *     kills every grant and token two epochs back — the hard roll is a roll done twice.

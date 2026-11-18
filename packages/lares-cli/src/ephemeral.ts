@@ -1,36 +1,32 @@
 /**
  * ephemeral — the EPHEMERAL mark (the capture flow's skip verdict).
  *
- * Witness-spirits, LAR_ROOT sandbox runs, and scratch sessions pollute the rhizome when the
+ * Witness-spirits, harness-staged sandbox runs, and scratch sessions pollute the rhizome when the
  * palace ingests them as memory. This module reads ONE verdict per session transcript, honored
- * at the three ingest gates (the hook · `lares sense capture` · `lares sense subagents`),
+ * at the two ingest gates (`lares sense capture` · `lares sense subagents`),
  * in two grains:
  *
  *   (a) DERIVED — the session's own recorded cwd (its first-line `cwd`, the same row the wing
  *       law reads) sits under a recognized scratch root: the OS tmpdir / `/tmp` (Claude
- *       scratchpads + tmp sandboxes), a `LAR_ROOT` sandbox (the harness/staged-instance root),
- *       or the sensorium scratch (`<cache>/scratch/sensoriums`). Derive, don't declare — the
- *       designation rides the transcript's own content, never this process's ambience alone
- *       (`LAR_ROOT` names the one sandbox root the deriving process can vouch for).
+ *       scratchpads + tmp sandboxes), or a root that carries the harness's scratch marker
+ *       (`.lar-test-scratch`, which `tools/test-scratch-marker.mjs` writes at stage time). A house
+ *       root reads scratch by that marker alone, never because `LAR_ROOT` names it: the container
+ *       names its own real house `/lar`, and a session working inside it reads live.
  *   (b) DECLARED — an explicit marker the operator (or a spawning harness) sets: a
  *       `<transcript-dir>/<session>.ephemeral` sibling file, or a `.lar-ephemeral` marker file
  *       in the session's recorded cwd.
  *
  * The verdict reads off the transcript's CONTENT (grain a + the cwd half of b), so it survives
  * staging/hardlink copies; the sibling-marker half of (b) reads beside the ORIGINAL transcript
- * only (a staged copy carries no sibling — the hook gate, which sees the original, honors it).
+ * only (a staged copy carries no sibling).
  *
  * EPHEMERAL ≠ DELETED: the transcript survives on disk untouched; only the palace ingest
  * declines. Every gate MUST log one loud line per skipped session — silence never hides a skip.
- *
- * The bash twin of grain (a)+(b) lives in `.claude-plugin/hooks/lares-mempalace-ingest-hook.sh`
- * (gate 1 — skip staging entirely); keep the two in lockstep.
  */
 
 import { existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, join, resolve, sep } from "node:path";
-import { larCacheHome } from "@lararium/node";
+import { basename, dirname, join, resolve, sep } from "node:path";
 
 export interface EphemeralVerdict {
   readonly ephemeral: boolean;
@@ -58,10 +54,21 @@ export function transcriptCwd(jsonl: string): string | null {
 
 /** The recognized scratch roots — a session whose recorded cwd sits under one reads ephemeral. */
 export function scratchRoots(): readonly string[] {
-  const roots = [tmpdir(), "/tmp", join(larCacheHome(), "scratch", "sensoriums")];
-  const larRootEnv = process.env["LAR_ROOT"];
-  if (larRootEnv) roots.push(larRootEnv); // a LAR_ROOT sandbox — the isolated-instance tree
-  return [...new Set(roots.map((r) => resolve(r)))];
+  return [...new Set([tmpdir(), "/tmp"].map((r) => resolve(r)))];
+}
+
+/** The harness's scratch marker: a root carrying it reads scratch (`tools/test-scratch-marker.mjs` writes it). */
+export const SCRATCH_MARKER = ".lar-test-scratch";
+
+/** The nearest ancestor of `dir` (itself included) that carries the scratch marker, or null. */
+export function markedScratchRoot(dir: string): string | null {
+  let cur = resolve(dir);
+  for (;;) {
+    if (existsSync(join(cur, SCRATCH_MARKER))) return cur;
+    const parent = dirname(cur);
+    if (parent === cur) return null;
+    cur = parent;
+  }
 }
 
 /** True when `dir` sits at or under `root` (path-boundary-safe prefix). */
@@ -92,6 +99,8 @@ export function sessionEphemeral(transcript: string): EphemeralVerdict {
   for (const root of scratchRoots()) {
     if (underRoot(cwd, root)) return { ephemeral: true, reason: `derived: cwd ${cwd} under scratch root ${root}` };
   }
+  const marked = markedScratchRoot(cwd);
+  if (marked !== null) return { ephemeral: true, reason: `derived: cwd ${cwd} under marked scratch root ${marked}` };
   return LIVE;
 }
 

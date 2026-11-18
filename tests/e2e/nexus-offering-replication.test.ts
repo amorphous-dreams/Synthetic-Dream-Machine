@@ -121,7 +121,7 @@ describe("source offering → receiver Crossroads evidence", () => {
     const seedBefore = readFileSync(join(receiver.root, "genesis", "seed.json"));
     const missing = await inspectUntil(receiver, offeringCid, "partial");
     expect(missing.json?.["data"]).toMatchObject({
-      transport: { status: "complete", source: "local-crossroads", remoteFetch: false },
+      transport: { status: "complete", source: "local-publication-board", remoteFetch: false },
       inspection: { status: "verified", byteStatus: "partial", adoption: "not-requested" },
       antigen: { status: "unavailable", reason: "not-configured" },
     });

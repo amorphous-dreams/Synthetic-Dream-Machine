@@ -12,9 +12,10 @@
  */
 import { describe, expect, test } from "vitest";
 import {
-  originCompositionForFace, flowOriginForFace, crossingBannerLines, assertWaystoneCustody,
+  originCompositionForFace, flowOriginForFace, crossingBannerLines, floorCarriageBannerLines, assertWaystoneCustody,
   OriginCustodyRefusal, type ReachFace,
 } from "../src/lan-address.js";
+import { floorCardCarriageText, readFloorCardCarriage } from "@lararium/mesh";
 import { pronaosShoreBootNotice } from "../src/pronaos-composition.js";
 
 const FACE: ReachFace = { kind: "lan", host: "192.168.1.42:8080", origin: "http://192.168.1.42:8080" };
@@ -93,21 +94,28 @@ describe("lararium controls — the composition stays as it stood", () => {
   });
 });
 
-describe("the crossing banner (Web origin + relay + floor card, never a gate key) speaks only for a lararium", () => {
+describe("the crossing banner (the page's own URL, never a gate key, a query string or a fragment) speaks only for a lararium", () => {
   test("a herm composition yields no crossing line", () => {
     const herm = originCompositionForFace(DECLARED, { sameOrigin: true }, "herm");
-    expect(crossingBannerLines("herm", [{ face: DECLARED, composition: herm }], "Y2FyZA")).toEqual([]);
+    expect(crossingBannerLines("herm", [{ face: DECLARED, composition: herm }])).toEqual([]);
   });
 
-  test("CONTROL: a lararium composition yields one crossing line per face", () => {
+  test("RED: a lararium composition yields one page URL per face, with no relay key and no fragment", () => {
     const lar = originCompositionForFace(DECLARED, { sameOrigin: true }, "lararium");
-    expect(crossingBannerLines("lararium", [{ face: DECLARED, composition: lar }], "Y2FyZA")).toEqual([
-      "https://waystone.example/?relay=wss://waystone.example/ws#floor=Y2FyZA   (declared)",
+    expect(crossingBannerLines("lararium", [{ face: DECLARED, composition: lar }])).toEqual([
+      "https://waystone.example/   (declared)",
     ]);
-    // A hearth that stands no floor gate at a Nexus hands the relay alone.
-    expect(crossingBannerLines("lararium", [{ face: DECLARED, composition: lar }], null)).toEqual([
-      "https://waystone.example/?relay=wss://waystone.example/ws   (declared)",
-    ]);
+  });
+
+  test("RED: the floor card travels as a carriage file on its own line and the anchor apart from it; CONTROL: no floor gate, no line", () => {
+    const AID = "ab".repeat(32);
+    const lines = floorCarriageBannerLines({ cardFile: floorCardCarriageText("Y2FyZA"), aid: AID });
+    expect(lines[1]!.trim()).toBe('{"kind":"floor-card","card":"Y2FyZA"}');
+    expect(readFloorCardCarriage(lines[1]!.trim())).toBe("Y2FyZA");
+    expect(lines[1], "the card's line names no anchor").not.toContain(AID);
+    expect(lines[2]).toMatch(new RegExp(`^floor anchor: ${AID} `));
+    expect(lines.join("\n")).not.toMatch(/#floor=|#anchor=|\?relay=/);
+    expect(floorCarriageBannerLines(null)).toEqual([]);
   });
 });
 

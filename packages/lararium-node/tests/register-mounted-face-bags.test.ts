@@ -21,6 +21,7 @@ import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 const capture = vi.hoisted(() => ({
   registerBags: [] as string[][],
 }));
@@ -72,10 +73,10 @@ async function founderForSecondFace() {
   const atomSeed = new Uint8Array(32).fill(93);
   const founderKey = faceAtomKeyFromSeed(vesselSeed, "founder-vessel").key;
   const hearthTrueName = "hearth-for-second-face";
-  const place = await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName });
+  const place = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed }), founderRepo);
   const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo,
-    daemonHandle: place.daemonHandle,
+    daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true },
     placeVerifyingKey: founderKey,
     vesselDisplayName: "founder B",
     binding: { mode: "self-stood", signerSeed },
@@ -111,7 +112,7 @@ async function captureRegisterBags(root: string): Promise<string[]> {
     hostId: "register-bags",
     wikiId: "register-bags",
     storageDir,
-    rootDir: root,
+    projectionRoot: root,
     wss: new EventEmitter() as never,
     genesisDir: join(root, "genesis"),
   } as never)).rejects.toThrow(/capture-register-bags/);

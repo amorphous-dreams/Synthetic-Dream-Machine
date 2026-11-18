@@ -10,9 +10,16 @@
  * carries `[documentId, kind, id]`; `snapshot` and `incremental` chunks load to one Automerge document whose heads
  * are read here, `sync-state` rows name the peer storage id they rest for.
  *
+ * A SEALED DOCUMENT RESTS AS CIPHERTEXT (its chunks open `SEALED_CHUNK_MARK`: the vessel's held homes; or a pointer at the
+ * holder's sealed value: a face's sealed documents, which a self-founded face's lift seals at its place), and no key reaches this reader, so its heads stay unread here: it reads by presence (minted, dropped) and
+ * by its sealed chunk set, which the CONTROL may see move. Handing one to Automerge raw threw `Invalid magic bytes` in the
+ * READER, never in the vessel.
+ *
  *   B1 — CONTROL: a saved edit between boots moves a Document's heads (the instrument reads a real write)
  *   B2 — the second and third boot hold every Document's heads, mint no Document, and add no peer row for a peer
  *        the second boot did not already hold
+ *   B3 — no island's store rests a clear copy of a Document the vessel holds sealed (a wiki island renders pages and
+ *        holds no custody document)
  *
  * The stand reads quiescence by its own event: two consecutive readings of the store that agree, taken after the
  * page reports live.
@@ -23,6 +30,7 @@ import { afterAll, beforeAll, test } from "vitest";
 import { resolve } from "node:path";
 import { chromium } from "playwright";
 import * as A from "@automerge/automerge";
+import { SEALED_CHUNK_MARK } from "@lararium/mesh";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
 
@@ -65,7 +73,12 @@ const dump = (page: Page): Promise<Row[]> => page.evaluate(async () => {
   return out;
 });
 
-interface Reading { readonly heads: Map<string, string>; readonly peers: Set<string> }
+interface Reading { readonly heads: Map<string, string>; readonly sealed: Map<string, string>; readonly peers: Set<string> }
+
+/** A face's sealed document rests a POINTER at its sealed value (the holder keeps the value itself): `lares-sealed-value:<address>`. */
+const SEALED_POINTER = new TextEncoder().encode("lares-sealed-value:");
+/** Whether a chunk rests sealed: it opens with the sealed-chunk mark or names a sealed value, never Automerge's own magic. */
+const sealedChunk = (c: Uint8Array): boolean => SEALED_CHUNK_MARK.every((b, i) => c[i] === b) || SEALED_POINTER.every((b, i) => c[i] === b);
 
 /** Heads per Document (store plus document id) and the peer ids the sync rows rest for. */
 function read(rows: readonly Row[]): Reading {
@@ -80,18 +93,24 @@ function read(rows: readonly Row[]): Reading {
     chunks.set(k, c);
   }
   const heads = new Map<string, string>();
+  const sealed = new Map<string, string>();
   for (const [k, { snaps, incs }] of chunks) {
+    const all = [...snaps, ...incs];
+    if (all.some(sealedChunk)) {
+      sealed.set(k, JSON.stringify(all.map((c) => Buffer.from(c).toString("base64")).sort()));
+      continue;
+    }
     let doc = A.init();
-    for (const c of [...snaps, ...incs]) doc = A.loadIncremental(doc, c);
+    for (const c of all) doc = A.loadIncremental(doc, c);
     heads.set(k, JSON.stringify(A.getHeads(doc)));
   }
-  return { heads, peers };
+  return { heads, sealed, peers };
 }
 
 const live = (page: Page) => page.waitForFunction(() => [...document.querySelectorAll("#phases .phase")].some((p) => p.textContent === "live"), undefined, { timeout: 60_000 });
 
 /** The signature a reading settles on: every Document's heads and every peer row. */
-const signature = (r: Reading): string => JSON.stringify([[...r.heads].sort(), [...r.peers].sort()]);
+const signature = (r: Reading): string => JSON.stringify([[...r.heads].sort(), [...r.sealed].sort(), [...r.peers].sort()]);
 
 /** The store once three readings a second apart agree on heads and peer rows: the boot has finished writing. */
 async function settled(page: Page): Promise<Reading> {
@@ -130,15 +149,23 @@ test("B1/B2 — a browser vessel's second and third boot hold every Document's h
     await page.waitForFunction(() => document.querySelector("#mirror")?.shadowRoot?.querySelector(".lar-mirror")?.textContent?.includes("Second Boot Control") ?? false, undefined, { timeout: 30_000 });
     const edited = await settled(page);
     const moved = [...edited.heads].filter(([k, h]) => one.heads.has(k) && one.heads.get(k) !== h).map(([k]) => k);
-    assert.ok(moved.length > 0, "CONTROL: the saved edit moves the heads of a Document the first boot already held");
+    const resealed = [...edited.sealed].filter(([k, c]) => one.sealed.has(k) && one.sealed.get(k) !== c).map(([k]) => k);
+    assert.ok(moved.length + resealed.length > 0, "CONTROL: the saved edit moves the heads (or the sealed chunks) of a Document the first boot already held");
 
     await page.reload();
     const two = await settled(page);
     await page.reload();
     const three = await settled(page);
 
+    // B3 — A DOCUMENT THE VESSEL HOLDS SEALED RESTS CLEAR IN NO ISLAND'S STORE (the secret home, a face's sealed documents).
+    for (const [label, r] of [["boot 1", one], ["boot 2", two], ["boot 3", three]] as const) {
+      const sealedIds = new Set([...r.sealed.keys()].map((k) => k.split("|")[1]));
+      const clearCopies = [...r.heads.keys()].filter((k) => sealedIds.has(k.split("|")[1]));
+      assert.deepEqual(clearCopies, [], `${label}: no island store rests a clear copy of a document the vessel holds sealed`);
+    }
     for (const [label, before, after] of [["boot 2", edited, two], ["boot 3", two, three]] as const) {
       assert.deepEqual(names(after.heads), names(before.heads), `${label} mints no Document and drops none`);
+      assert.deepEqual(names(after.sealed), names(before.sealed), `${label} mints no sealed Document and drops none`);
       const drifted = [...after.heads].filter(([k, h]) => before.heads.get(k) !== h).map(([k]) => k);
       assert.deepEqual(drifted, [], `${label} adds no content head to any Document`);
     }

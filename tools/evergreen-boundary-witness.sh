@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # evergreen-boundary-witness — authored version fields, clock readings that flow into ids, gates and durable
-# fields, and comments that narrate history, each counted in `packages/*/src` and `tools/` against a ceiling that
+# fields, comments that narrate history, and readings that recognize an old shape or name an older peer's build, each
+# counted in `packages/*/src` and `tools/` against a ceiling that
 # only comes down. Three more classes count the places a past shape lingers: tests that name the house's earlier
 # shape, `onupgradeneeded` bodies that delete, and history words in live canon. Named exceptions carry their reasons
 # in `tools/evergreen-boundary.mjs`; its self-test plants a red of each rule and a lawful control

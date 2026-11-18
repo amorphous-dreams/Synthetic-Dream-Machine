@@ -1,8 +1,8 @@
 """test_wing_derive — the cross-language wing-slug agreement, the python side of the pin.
 
 `wing-law.ts::wingFromDir` and `wing_derive.py::wing_from_dir` must produce the SAME slug, so the
-python bulk sweep files a transcript under the SAME wing the live TS ingest hook does. These fixture
-cases mirror `tests/ingest-hook-wing.test.ts` byte-for-byte; if the slug law moves on either side,
+python bulk sweep files a transcript under the SAME wing the TS capture does. These fixture
+cases mirror `tests/wing-law.test.ts` byte-for-byte; if the slug law moves on either side,
 one of these fails loud and the port has drifted.
 """
 import json
@@ -11,7 +11,7 @@ import os
 from wing_derive import (read_codex_cwd, read_cwd_from_transcript,
                          resolve_transcript_wing, scrape_wing, wing_from_dir)
 
-# The exact fixtures from tests/ingest-hook-wing.test.ts, each a basename → its wing.
+# The exact fixtures from tests/wing-law.test.ts, each a basename → its wing.
 WING_FIXTURES = {
     "Synthetic-Dream-Machine": "wing_synthetic_dream_machine",  # hyphen + case
     "My Project": "wing_my_project",                            # space → underscore

@@ -154,6 +154,14 @@ async function resolved(input: SurfaceRecipeInput): Promise<SurfaceRecipe> {
 }
 
 describe("one function resolves a session's effective recipe at surface mount", () => {
+  test("a supplied canonBag resolves as the canon", async () => {
+    const v = vessel();
+    const bag = "lar:///ha.ka.ba/bags/daemon-custom";
+    v.point(v.catalog, bag, v.later.url);
+    const result = await resolved(inputOf(v, "player", { recipe: { wikiSlug: SLUG, canonBag: bag } }));
+    expect(result.slots.find(slot => slot.slot === bag)).toMatchObject({ layer: "canon", document: v.later.url });
+  });
+
   test("it returns absolute ids, top first, and a revision that names them", async () => {
     const v = vessel();
     v.writeRecipe("catalog", { wikiSlug: SLUG, libraryBags: [SHARED_BAG, LARES_BAG] });
@@ -194,7 +202,7 @@ describe("one function resolves a session's effective recipe at surface mount", 
     const lares = "44".repeat(32), lararium = "55".repeat(32);
     const bytes = floorManifestBytes({
       format: FLOOR_MANIFEST_FORMAT, engine: CORE_CID, grammar: GRAMMAR_CID,
-      plugins: "66".repeat(32), lares, lararium,
+      plugins: "66".repeat(32), snapshots: { lares, lararium },
     });
     const cid = sha256HexBytesSync(bytes);
     v.oracle.change((d) => { d.tiddlers[GENESIS_FLOOR_TIDDLER] = storedLarRecord(GENESIS_FLOOR_TIDDLER, { cid }, "test"); });
@@ -205,8 +213,9 @@ describe("one function resolves a session's effective recipe at surface mount", 
     } } };
     const withFloor = await resolved(withBytes);
     expect(reads).toEqual([cid]);
-    expect(withFloor.floorCids).toEqual([cid, lares, lararium]);
-    expect(facetsOfSurfaceRecipe(withFloor).content).toEqual([CORE_CID, GRAMMAR_CID, cid, lares, lararium]);
+    // The manifest's slugs walk sorted: lararium before lares.
+    expect(withFloor.floorCids).toEqual([cid, lararium, lares]);
+    expect(facetsOfSurfaceRecipe(withFloor).content).toEqual([CORE_CID, GRAMMAR_CID, cid, lararium, lares]);
     expect(withFloor.revision).not.toBe(withoutFloor.revision);
 
     const missing = await resolveSurfaceRecipe(base);

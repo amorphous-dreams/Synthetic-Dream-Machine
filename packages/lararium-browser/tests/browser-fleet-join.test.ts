@@ -22,7 +22,7 @@ import {
 } from "@lararium/mesh";
 import { certificateImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet, FLEET_JOIN_STORE } from "../src/browser-vessel-identity.js";
-import { readKeystoreRow, withCustodyRows } from "../src/browser-custody.js";
+import { readKeystoreRecord, withCustodyRecords } from "../src/browser-custody.js";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import {
   browserFleetJoinAbandon, browserFleetJoinLand, browserFleetJoinRequest, browserFleetJoinSettle, browserVesselFaceKeyCustody,
@@ -70,7 +70,7 @@ async function stage(): Promise<{ idbName: string; offer: FleetJoinOffer; root: 
 async function answerTo(s: Awaited<ReturnType<typeof stage>>, request: FleetJoinRequest, secret: Uint8Array = SECRET) {
   const body = {
     nonce: request.nonce, atomKey: request.atomKey, personaGroup: GROUP,
-    edge: { kind: "device-admit/v1", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
+    edge: { kind: "device-admit", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
     carriage: CARRIAGE,
     reach: { syncUrl: "ws://hearth.synthetic:7777/ws", islandKind: "anchor", islandScope: HEARTH_NEXUS },
     // The dial the answer carries: the hearth's charter, the face's admit committing to this carriage, its floor pins.
@@ -85,7 +85,7 @@ async function answerTo(s: Awaited<ReturnType<typeof stage>>, request: FleetJoin
   return { kind: "fleet-join-answer", ...body, certificates, grants, signature: await signHex(fleetJoinAnswerImage(body), s.root) };
 }
 
-const pendingOf = (idbName: string) => readKeystoreRow(idbName, `fleet-join-pending/${GROUP}`);
+const pendingOf = (idbName: string) => readKeystoreRecord(idbName, `fleet-join-pending/${GROUP}`);
 
 describe("the browser's fleet join", () => {
   test("B0 — two faces' joins stand pending at once; abandon without a name refuses, and naming one clears only it", async () => {
@@ -94,11 +94,11 @@ describe("the browser's fleet join", () => {
     const offerB = fleetJoinOffer({ personaGroup: GROUP_B, rootKey: s.root.key, nonce: "cd".repeat(32), scopes: [s.face.scope] });
     await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName, ward: FIXTURE_WARD });
     await browserFleetJoinRequest({ offer: offerB, idbName: s.idbName, ward: FIXTURE_WARD });
-    expect(await readKeystoreRow(s.idbName, `fleet-join-pending/${GROUP}`), "face A's own row").toBeDefined();
-    expect(await readKeystoreRow(s.idbName, `fleet-join-pending/${GROUP_B}`), "face B's own row").toBeDefined();
+    expect(await readKeystoreRecord(s.idbName, `fleet-join-pending/${GROUP}`), "face A's own row").toBeDefined();
+    expect(await readKeystoreRecord(s.idbName, `fleet-join-pending/${GROUP_B}`), "face B's own row").toBeDefined();
     await expect(browserFleetJoinAbandon(s.idbName)).rejects.toThrow(/face-not-named/);
     expect(await browserFleetJoinAbandon(s.idbName, GROUP_B)).toBe(true);
-    expect(await readKeystoreRow(s.idbName, `fleet-join-pending/${GROUP}`), "A stands").toBeDefined();
+    expect(await readKeystoreRecord(s.idbName, `fleet-join-pending/${GROUP}`), "A stands").toBeDefined();
     expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);   // the one left goes without a name
   });
 
@@ -139,7 +139,7 @@ describe("the browser's fleet join", () => {
     seed.fill(0);
     expect((await vesselFaceTagFields(child, GROUP, request.atomKey, request.wardKey, NO_POP)).vesselTag).not.toBe(request.vesselTag);
     // The face's own row holds the 32 random bytes the tag stands on; a re-join on the face presents them again.
-    const row = await readKeystoreRow(s.idbName, `vessel-face-tag/${GROUP}`);
+    const row = await readKeystoreRecord(s.idbName, `vessel-face-tag/${GROUP}`);
     expect(row instanceof Uint8Array && row.length === 32).toBe(true);
     expect((await vesselFaceTagFields(row as Uint8Array, GROUP, request.atomKey, request.wardKey, NO_POP)).vesselTag).toBe(request.vesselTag);
     expect(await browserFleetJoinAbandon(s.idbName)).toBe(true);
@@ -150,7 +150,7 @@ describe("the browser's fleet join", () => {
     await bindFirstFaceSlot(s.idbName, otherGroup, { kind: "passphrase", passphrase: "another face's route" });
     const otherFace = await browserFleetJoinRequest({ offer: fleetJoinOffer({ ...s.offer, personaGroup: otherGroup, nonce: "9b".repeat(32) }), idbName: s.idbName, ward: FIXTURE_WARD });
     expect(otherFace.vesselTag).not.toBe(request.vesselTag);
-    expect(await readKeystoreRow(s.idbName, `vessel-face-tag/${otherGroup}`)).not.toEqual(row);
+    expect(await readKeystoreRecord(s.idbName, `vessel-face-tag/${otherGroup}`)).not.toEqual(row);
   });
 
   test("the selected face atom signs its fleet request; the place key and another face fail the request reader", async () => {
@@ -180,7 +180,7 @@ describe("the browser's fleet join", () => {
     expect(answer.certificates[0]!.vesselFaceKey).toBe(request.requests[0]!.vesselFaceKey);
     const db = await openVesselIdb(s.idbName);
     try {
-      expect(Array.from((await readKeystoreRow(s.idbName, `face-address-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET));
+      expect(Array.from((await readKeystoreRecord(s.idbName, `face-address-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET));
       expect(await idbGet(db, FLEET_JOIN_STORE, `record:${GROUP}`)).toMatchObject({ personaGroup: GROUP, rootKey: s.root.key });
     } finally { db.close(); }
     expect(await pendingOf(s.idbName)).toMatchObject({ landed: true });
@@ -197,7 +197,7 @@ describe("the browser's fleet join", () => {
     expect(await pendingOf(s.idbName)).not.toHaveProperty("landed");
     const bare = await openVesselIdb(s.idbName);
     try {
-      expect(await readKeystoreRow(s.idbName, `face-address-secret/${GROUP}`)).toBeUndefined();
+      expect(await readKeystoreRecord(s.idbName, `face-address-secret/${GROUP}`)).toBeUndefined();
       expect(await idbGet(bare, FLEET_JOIN_STORE, `record:${GROUP}`)).toBeUndefined();
     } finally { bare.close(); }
     // CONTROL: settling a join whose answer never landed leaves it standing.
@@ -209,7 +209,7 @@ describe("the browser's fleet join", () => {
     await expect(browserFleetJoinLand({ answer: await answerTo(s, request, new Uint8Array(32).fill(9)), idbName: s.idbName }))
       .rejects.toThrow(/secret-other/);
     const db = await openVesselIdb(s.idbName);
-    try { expect(Array.from((await readKeystoreRow(s.idbName, `face-address-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET)); } finally { db.close(); }
+    try { expect(Array.from((await readKeystoreRecord(s.idbName, `face-address-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET)); } finally { db.close(); }
     expect(await browserFleetJoinSettle(s.idbName)).toBe(true);
     await expect(browserFleetJoinLand({ answer: good, idbName: s.idbName })).rejects.toThrow(/join-absent/);
   });
@@ -228,7 +228,7 @@ describe("the browser's fleet join", () => {
     const s = await stage();
     const first = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName, ward: FIXTURE_WARD });
     // The break: the key rests, but the pending row never came to stand.
-    await withCustodyRows(s.idbName, (rows) => rows.delete(`fleet-join-pending/${GROUP}`));
+    await withCustodyRecords(s.idbName, (rows) => rows.delete(`fleet-join-pending/${GROUP}`));
     const again = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName, ward: FIXTURE_WARD });
     expect(again.requests[0]!.vesselFaceKey).toBe(first.requests[0]!.vesselFaceKey);
   });
@@ -246,7 +246,7 @@ describe("the browser's fleet join", () => {
     const db = await openVesselIdb(s.idbName);
     try {
       expect(await idbGet(db, FLEET_JOIN_STORE, `record:${GROUP}`)).toMatchObject({ rootKey: s.root.key });
-      expect(Array.from((await readKeystoreRow(s.idbName, `face-address-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET));
+      expect(Array.from((await readKeystoreRecord(s.idbName, `face-address-secret/${GROUP}`)) as Uint8Array)).toEqual(Array.from(SECRET));
     } finally { db.close(); }
     expect(await pendingOf(s.idbName)).not.toHaveProperty("landed");
   });

@@ -55,15 +55,15 @@ import { existsSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   RECOVERY_CONTACT_ENROLMENT_KIND, HANDLE_BOOK_SNAPSHOT_ERA, bundleMemoryKeypair, canonicalJsonBytes, deriveSelfRecoveryKey,
-  foldPersonaContests, recoveryContactCompartmentCheck, mintPersonaInception, openFaceBundleBody, readFaceBundleBody, sealKeySetHash,
+  foldPersonaContests, recoveryContactCompartmentCheck, mintPersonaInception, openFaceBundleBody, readFaceBundleBody, recoverySetCommitment, sealKeySetHash,
   sealMemorySecret, verifyPersonaKelFull,
   type FaceBundleBody, type FaceBundleHolding, type PersonaKelEvent,
 } from "@lararium/mesh";
 import { faceStands, runFoundTheFace } from "./commands/init.js";
 import type { BackupDoor } from "./face-bundle-cut.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
-import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openColdCustodyRow, removeColdCustodyRow, updateColdCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
+import { openColdCustodyRecord, removeColdCustodyRecord, updateColdCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { recoveryContactKeysOfOtherFaces, recoveryContactSetFile, readRecoveryContactSet, type RecoveryContactSetRecord } from "./recovery-contact-enrolment.js";
 import { couldConfirm, markProvisional } from "./face-provisional.js";
 import { faceProofKeyStanding, landFaceProofKey } from "./face-key-custody.js";
@@ -163,7 +163,7 @@ async function consistent(body: FaceBundleBody): Promise<{ readonly signerDid: s
   const set = body.recoveryContactSet;
   if (set !== null) {
     const keys = set.recoveryContacts.map((g) => g.recoveryPubKey);
-    if (new Set(keys).size !== keys.length || sealKeySetHash(keys, set.threshold) !== set.recoveryContactSetHash) inconsistent("the carried recovery contact set does not recompute the digest it names");
+    if (new Set(keys).size !== keys.length || recoverySetCommitment(inception.prefix, keys, set.threshold) !== set.recoveryContactSetHash) inconsistent("the carried recovery contact set does not recompute the digest it names");
     if (!body.kel.some((e) => e.kind === RECOVERY_CONTACT_ENROLMENT_KIND && e.nextRecoverySetHash === set.recoveryContactSetHash)) inconsistent("the carried recovery contact set names a digest no enrolment in the carried key history commits");
   }
   return { signerDid, recoveryCommit };
@@ -207,12 +207,12 @@ async function readPending(): Promise<Pending | null> {
   if (standing.length === 0) return null;
   if (standing.length > 1) throw new RestoreRefused("restore-pending", "more than one face holds a restore pending on this vessel; run each face's own restore again, lowest handle index first. Nothing moved.");
   const file = standing[0]!;
-  return await openColdCustodyRow("identity", file, (bytes) => {
+  return await openColdCustodyRecord("identity", file, (bytes) => {
     let raw: { target?: unknown; body?: unknown };
     try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as typeof raw; }
-    catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+    catch { throw new CustodyRecordUnavailable("identity", file, "malformed"); }
     const body = raw.body === undefined ? null : readFaceBundleBody(canonicalJsonBytes(raw.body));
-    if (!Number.isSafeInteger(raw.target) || (raw.target as number) < 0 || body === null || restorePendingFile(raw.target as number) !== file) throw new CustodyRowUnavailable("identity", file, "malformed");
+    if (!Number.isSafeInteger(raw.target) || (raw.target as number) < 0 || body === null || restorePendingFile(raw.target as number) !== file) throw new CustodyRecordUnavailable("identity", file, "malformed");
     return { target: raw.target as number, body };
   });
 }
@@ -297,7 +297,7 @@ async function land(pending: Pending, head: { readonly seq: number; readonly eve
   let recoveryContactSet: "landed" | "held" | null = null;
   const record = recoveryContactRecordOf(body);
   if (record !== null) {
-    recoveryContactSet = await updateCustodyRow("identity", recoveryContactSetFile(target), (standing) => {
+    recoveryContactSet = await updateCustodyRecord("identity", recoveryContactSetFile(target), (standing) => {
       if (standing === null) return { plaintext: new TextEncoder().encode(JSON.stringify(record)), value: "landed" as const };
       const held = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(standing)) as RecoveryContactSetRecord;
       if (held.recoveryContactSetHash !== record.recoveryContactSetHash || held.prefix !== record.prefix) {
@@ -353,10 +353,10 @@ export async function restoreFaceBody(args: {
   readonly founding?: () => Promise<void>;
 }): Promise<FaceBundleRestored> {
   const { body } = args;
-  // THE ADDRESS SECRET RIDES THE BUNDLE: a restore lands the face's own, so its working documents follow it here, and
+  // THE ADDRESS SECRET RIDES THE BUNDLE: a restore lands the face's own, so its catalog document follows it here, and
   // never mints a fresh one. A body that names none refuses by name; paper names null, and lands none.
   if (body.addressSecret === undefined || (body.addressSecret === null && args.fromPaper !== true)) {
-    refuse("no-address-secret", "the bundle carries no address secret for the face, so the restored face could find none of its working documents: cut the bundle again on a vessel that wears the face; only the paper door may carry none. Nothing moved.");
+    refuse("no-address-secret", "the bundle carries no address secret for the face, so the restored face could find no catalog document of its own: cut the bundle again on a vessel that wears the face; only the paper door may carry none. Nothing moved.");
   }
   const { signerDid, recoveryCommit } = await consistent(body);
 
@@ -385,7 +385,7 @@ export async function restoreFaceBody(args: {
       // the face asks for), and the pending row rests under that face's own key.
       await ensureFaceCustodyAtHandle(target, `h${target}`, (slots) => { ward ??= wardCredentialOfRoute(slots) ?? undefined; });
       try {
-        await updateColdCustodyRow("identity", restorePendingFile(target), (standing) => {
+        await updateColdCustodyRecord("identity", restorePendingFile(target), (standing) => {
           if (standing !== null) throw new RestoreRefused("restore-pending", "a restore's commit row appeared while this one checked its rows. Run the restore again.");
           return { plaintext: row, value: undefined };
         });
@@ -405,7 +405,7 @@ export async function restoreFaceBody(args: {
     if (!lit.alreadyStood && lit.personaKelPrefix !== pending.body.anchors.personaKelPrefix) {
       throw new Error(`face-bundle-restore: the face lit under prefix ${lit.personaKelPrefix}, and the bundle carried ${pending.body.anchors.personaKelPrefix}; the pending row stays for a person to read`);
     }
-    await removeColdCustodyRow("identity", restorePendingFile(pending.target));
+    await removeColdCustodyRecord("identity", restorePendingFile(pending.target));
     return {
       face: { handleIndex: pending.target, verifyingKey: pending.body.root.verifyingKey },
       prefix: pending.body.anchors.personaKelPrefix, resumed, checked: { seq: checked.seq, from: checked.from }, landed,
@@ -446,7 +446,7 @@ export async function importFaceBundleMemory(args: {
   try { body = openRestoreBody(args.sealedBody, args.bundleKey); }
   catch (err) { if (err instanceof RestoreRefused) throw new ImportRefused(err.reason, err.message); throw err; }
   const door = args.door;
-  const worn = door?.wornFace() ?? null;
+  const worn = door?.mountFace() ?? null;
   if (door === null || worn === null) {
     throw new ImportRefused("face-not-worn", "this vessel stands wearing no face: an import wraps each key for this vessel's own seat in the face's key group. Stand the vessel wearing the restored face, unlock it, then import.");
   }

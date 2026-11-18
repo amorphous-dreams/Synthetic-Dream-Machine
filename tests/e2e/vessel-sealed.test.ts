@@ -63,7 +63,7 @@ let cli: (env: Record<string, string>, args: readonly string[]) => Promise<CliRe
 let carrierHash = "";
 const PLAIN: Record<string, string> = {};
 
-const identity = (file: string): string => join(lar!.root, "data/lares/identity", file);
+const identity = (file: string): string => join(lar!.root, "hearth/identity", file);
 /** A face's row rests in that face's own directory: the file, found in whichever face holds it. */
 const faceDirs = (): string[] => { try { return readdirSync(identity("faces")); } catch { return []; } };
 const faceRowFile = (file: string): string => {

@@ -2,7 +2,7 @@
  * runNexusContract / runNexusAcceptCarriage / runNexusMembersList — the RAISE side of the operator MEMBERS-registry
  * (the Kapae-antigen's ALLOW-twin). The founding kahu WRITE a quorum-signed `admit` / `revoke` onto the
  * always-carried members BOARD; the READER (`members-board`) + the consult (`nexus-membership`,
- * `carrierShareDecision`) fold it. This is the writer they were missing — the mirror of `runNexusKapae`.
+ * `carrierShareDecision`) fold it. This is the writer they fold — the mirror of `runNexusKapae`.
  *
  * TWO WAX-SEALS ride an ADMIT (membership-doctrine):
  *   · the OPERATOR's own "accepts carriage" contract-sig (the contract-in). Either the joining operator produced
@@ -111,6 +111,12 @@ export interface NexusContractOptions {
   readonly repo:        Repo;
   /** The catalog named by this store holder; absence names no canon. */
   readonly catalogUrl?: string | undefined;
+  /**
+   * The group of the face an `admit` seats, where the caller knows it (a face's household admit): the carriage names the
+   * canon the realm stands for THAT group. Absent, the founding face's group reads (another operator's joinee, seated at
+   * the hearth's own face).
+   */
+  readonly canonGroup?: string | null | undefined;
   /** The Nexus the act lands under, where this vessel carries its charter beside the primary; absent names the primary. */
   readonly aid?:        string;
   /** The custody door the admit's gate pin derives from (`hearthSovereignPin`); absent → this home's own custody seat. */
@@ -297,7 +303,7 @@ function floorPinOrRefuse(raw: string | undefined, nym: string, aid: string, car
   }
   const kel: PlaceKelEvent[] = [];
   for (const row of file.placeKel) { const event = decodePlaceKelEvent(row); if (event === null) throw new NexusContractError("carry REFUSED: a --floor-pin KEL row does not read. Nothing was written."); kel.push(event); }
-  const read = readPlaceFloorPin(file.floorPin, { nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelRows: kel, standing: { via: "carrier", carriers: new Set([nym]) } });
+  const read = readPlaceFloorPin(file.floorPin, { nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelEntries: kel, standing: { via: "carrier", carriers: new Set([nym]) } });
   if ("refusal" in read) throw new NexusContractError(`carry REFUSED: the --floor-pin claim does not read for this place at this Nexus (${read.refusal}). Nothing was written.`);
   const folded = foldClaimHead(kel, read.aid, read.head);
   if (!folded.ok || !verifyCarrierContractAtHead({ nym, sealEpochCid, sig: carrierSeal.sig }, folded.head)) {
@@ -363,7 +369,7 @@ async function contractCore(opts: NexusContractOptions): Promise<ContractCore> {
   // THE ADMIT SIGNS WHAT IT CARRIES (face-proof#/the-gate-exchange, step 5): the joinee takes this hearth's gate pin
   // and canon list off the admit's own signed bytes, never off a field beside them.
   const opening: AdmitOpening | null = opts.action === "admit"
-    ? openAdmitCarriage({ gatePin: hearthSovereignPin(nexusAidOrRefuse(home), opts.gateDoor), canon: await admitCanonDocs(opts.repo, home, await hearthCustodyGroup()) })
+    ? openAdmitCarriage({ gatePin: hearthSovereignPin(nexusAidOrRefuse(home), opts.gateDoor), canon: await admitCanonDocs(opts.repo, home, opts.canonGroup !== undefined ? opts.canonGroup : await hearthCustodyGroup()) })
     : null;
   const claimed = opts.action === "carry" ? floorPinOrRefuse(opts.floorPin, nym, nexusAidOrRefuse(home), contract!.contractSig, roster.sealEpochCid) : null;
   return { nym, home, roster, contract, gateKey, boardUrl, handle, parents, opening, floorPin: claimed?.statement ?? null, placeKel: claimed?.kel ?? [] };

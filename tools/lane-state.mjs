@@ -100,6 +100,6 @@ ${state.trailers.join("\n")}
 * ONE step per launch: do the next step above, then stop. A step stays under about 10 to 15 minutes or 40 tool calls.
 * Before you stop, rewrite ${join(laneRoot, "state.json")} (same keys; keep the step counter as it stands) with the new head, the owed rows, the live seats, the worktree map and the next step (the trailers stay as they stand), and write your hand-back to ${join(stepDir, "out.md")}.
 * A seat you start runs outside your context: record it in the state and stop; never poll for it. The next step reads its result path.
-* Stop at a wall, at a design question that needs an operator ruling (name it with its options and your lean), or at the push go.
+* Stop at a wall, at a design question that needs an operator ruling (name it with its options and your lean), or at the push lei.
 `;
 }

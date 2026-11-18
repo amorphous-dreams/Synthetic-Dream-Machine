@@ -77,6 +77,9 @@ export interface NexusClientDialConfig {
   /** THE ARRIVAL'S SEAT (road `P26`): hears the adapter BEFORE it joins the Repo's network, so a `peer-candidate` listener the
    *  caller attaches here marks the dialed peer's arrival ahead of the subsystem's `peer` event (`peerArrivals`). */
   readonly beforeJoin?: (adapter: LarWSClientAdapter) => void;
+  /** THE LEG'S SEAT (`wire-identity`, `leg`): seats the adapter for the face this dial presents at the Nexus it dials,
+   *  before it joins the Repo, so the dialed hearth reads that pair's alias and never the composition's own ids. */
+  readonly leg?: (adapter: LarWSClientAdapter) => LarWSClientAdapter;
 }
 
 /** The adapter shape the re-arm reads — its own `peer-candidate` event and nothing else. Named as a
@@ -154,7 +157,7 @@ export function startNexusClientDial(cfg: NexusClientDialConfig): NexusClientDia
     dialSocket: () => nodeDialSocket(cfg.syncUrl), onLog: (line) => console.warn(line),
   });
   cfg.beforeJoin?.(adapter);
-  cfg.repo.networkSubsystem.addNetworkAdapter(shoreInbound(adapter));
+  cfg.repo.networkSubsystem.addNetworkAdapter(shoreInbound(cfg.leg ? cfg.leg(adapter) : adapter));
   log(`nexus dial-out up → ${cfg.syncUrl} (aud=${cfg.aud ?? DAEMON_BAG_ID})`);
 
   // Pull the peer's named doc, when one rides the config. A denial reads as "never resolved" (the adapter
@@ -206,6 +209,7 @@ export interface NexusClientDialInput {
   readonly onLog?:      (line: string) => void;
   readonly onReconnect?: () => Promise<void> | void;
   readonly beforeJoin?: (adapter: LarWSClientAdapter) => void;
+  readonly leg?: (adapter: LarWSClientAdapter) => LarWSClientAdapter;
 }
 
 /**
@@ -230,5 +234,6 @@ export function maybeStartNexusClientDial(input: NexusClientDialInput): NexusCli
     ...(input.onLog ? { onLog: input.onLog } : {}),
     ...(input.onReconnect ? { onReconnect: input.onReconnect } : {}),
     ...(input.beforeJoin ? { beforeJoin: input.beforeJoin } : {}),
+    ...(input.leg ? { leg: input.leg } : {}),
   });
 }

@@ -8,8 +8,8 @@
  * meme, and the CLI's `lares meme get --recipe default` reads the same bytes back from the staged hearth.
  *
  * CONTROLS: before the put the CLI answers `not-found`; and the same seat spawned WITHOUT the entry's
- * `LAR_ROOT` reaches no daemon at all (it binds the default vessel, which no one stood), the exact gap the
- * row names.
+ * `LAR_ROOT` reaches no daemon at all: the aho resolves no child, and the call answers `hearth-sleeps` from
+ * the seat, the exact gap the entry closes.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
@@ -19,6 +19,7 @@ import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { daemonWikiDir, openStaged, awaitRendezvous, stageDir, type LarInstance } from "../harness/instance.js";
 import { expectEntry } from "../harness/journal-expect.js";
+import { privateTitlesProjected } from "../harness/placement-mirrors.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -44,7 +45,7 @@ function harnessEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
   return { ...env, ...extra };
 }
 
-/** Speak MCP over stdio to one spawned seat: initialize, then each call in turn; resolves the results. */
+/** Speak MCP over stdio to one spawned seat as a harness does: initialize, list the tools, then each call in turn; resolves the results. */
 async function speak(entry: Entry, env: NodeJS.ProcessEnv, calls: Array<{ name: string; arguments: Record<string, unknown> }>):
   Promise<{ results: unknown[]; stderr: string; code: number | null }> {
   const child = spawn(entry.command, entry.args, { env, stdio: ["pipe", "pipe", "pipe"] });
@@ -72,6 +73,9 @@ async function speak(entry: Entry, env: NodeJS.ProcessEnv, calls: Array<{ name: 
   });
   if (init !== null) {
     child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
+    // A harness lists the tools before it calls one, as this walk does: the aho (`lares mcp aho`) holds that list until its
+    // child stands, and answers a call that reaches it sooner `hearth-sleeps` at once (iris: nothing waits in the seat).
+    await request("tools/list", {});
     for (const c of calls) {
       const r = await request("tools/call", c);
       results.push(r?.["error"] ?? r?.["result"] ?? null);
@@ -176,14 +180,21 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     }, { budgetMs: 60_000 });
     expect(existsSync(projection), `MCP write never projected to ${projection}`).toBe(true);
     expect(readFileSync(projection, "utf8")).toContain(`uri-path = "${PATH}"`);
-    expect(existsSync(join(lar.root, "bags", "daemon")), "control: the private daemon bag must not project").toBe(false);
+    // CONTROL (placement over patterns): the seat's write lands in the worn face's `wikis/daemon-<F>`, and the outcome and
+    // receipt it raised rest in the control document, which names no mirror: no projected file names a private home.
+    expect(existsSync(join(lar.root, "projections", "bags", "daemon")), "control: the daemon document gained a mirror").toBe(false);
+    expect(privateTitlesProjected(lar.root), "control: a control, secret or daemon-document title projected").toEqual([]);
   }, 120_000);
 
-  test("control: the same seat without the entry's LAR_ROOT reaches no daemon", async () => {
+  test("control: the same seat without the entry's LAR_ROOT names no house and reaches no daemon", async () => {
     const said = await speak(entry, harnessEnv({ ...entry.env, LAR_ROOT: "" }), [
       { name: "meme_get", arguments: { uri: URI, recipe: "default" } },
     ]);
-    expect(said.code).not.toBe(0);
-    expect(said.stderr).toMatch(/no lares daemon/);
+    // No house root named: the aho resolves its child at each spawn and the resolver names none rather than guess a home,
+    // so no child ever stands (`child-unresolved`, never `child-up`) and the call answers `hearth-sleeps`: it never left
+    // the seat. The seat itself answers on (a7562300d: a resolver that names no child reads as a failed spawn).
+    expect(said.stderr).toMatch(/aho: child-unresolved/);
+    expect(said.stderr).not.toMatch(/aho: child-up/);
+    expect(JSON.stringify(said.results[0])).toContain("hearth-sleeps");
   }, 60_000);
 });

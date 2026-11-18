@@ -1,5 +1,7 @@
 // @lararium/keyhive — capability layer wrapping @keyhive/keyhive (Ink & Switch concap, pre-alpha).
 
+import type { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
+export { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
 import type { DeviceDelegationRootHalf, PersonaKelEvent, GroupSecretSeal, GateBundlePin } from "@lararium/mesh";
 
 export type {
@@ -27,8 +29,8 @@ export { memoryProviderChunkRest } from "./capability-provider.js";
 export { packPersonaCrossing, applyPersonaCrossing } from "./persona-crossing.js";
 export type { PersonaCrossingBundle, CrossingContent, CrossingPlaintext } from "./persona-crossing.js";
 export { runFaceJoin, gateFaceJoin } from "./face-join.js";
-export { faceGrantTitle, signFaceGrantRecord, verifyFaceGrantRecord, FACE_GRANT_PREFIX } from "./face-grant-record.js";
-export type { FaceGrantRecord, UnsignedFaceGrantRecord, FaceGrantVerifyContext, FaceGrantVerdict } from "./face-grant-record.js";
+export { faceGrantRecordCid, faceGrantTitle, signFaceGrantRecord, verifyFaceGrantRecord, FACE_GRANT_PREFIX } from "./face-grant-record.js";
+export type { FaceGrantRecord, UnsignedFaceGrantRecord, FaceGrantVerifyContext, FaceGrantVerdict, FounderLineage } from "./face-grant-record.js";
 // THE ONE assembly of the PersonaGroup identity-slot ring — node and browser both call it; only the proof source differs.
 export { assemblePersonaGroupRing } from "./persona-group-ring-assembly.js";
 export type { PersonaGroupRingInput } from "./persona-group-ring-assembly.js";
@@ -46,13 +48,13 @@ export { InMemoryEventStore, inIslandSlice, inSelfSlice } from "./event-store.js
 export type { EventStore, EventRecord } from "./event-store.js";
 
 export { DaemonEventStore, capEventTitle } from "./daemon-event-store.js";
-export type { DaemonEventStoreOptions } from "./daemon-event-store.js";
+export type { DaemonEventStoreOptions, SecretRestCapability } from "./daemon-event-store.js";
 
 export { bootDaemonKeyhive, FacelessKeyhiveRefused } from "./boot-daemon-keyhive.js";
 export type { BootDaemonKeyhiveInput, BootDaemonKeyhiveResult } from "./boot-daemon-keyhive.js";
 // THE ONE ROAD a daemon island reads its lease frontier by — its own daemon layer, two verdicts never merged.
-export { readLeaseFrontier, daemonLayerOf } from "./lease-frontier.js";
-export type { LeaseFrontier, DaemonLayerHolder } from "./lease-frontier.js";
+export { readLeaseFrontier, controlLayerOf } from "./lease-frontier.js";
+export type { LeaseFrontier, ControlLayerHolder } from "./lease-frontier.js";
 // THE ONE DOOR that lands the sovereign identity archive — and the standing gate standing on it.
 export { persistArchiveFloor } from "./archive-floor-write.js";
 export type {
@@ -63,8 +65,9 @@ export { resolveOrMintBinding, unboundMints, restingMinter } from "./resolve-bin
 export type {
   ResolveBindingArgs, ResolveBindingResult, BindingKind, DocMinter,
 } from "./resolve-binding.js";
-export { makeSlotDocResolver, WorkingSlotRefusal } from "./slot-doc-resolver.js";
-export type { SlotDocResolver, SlotDocResolverArgs, SlotDoc, SlotDocRepo } from "./slot-doc-resolver.js";
+export { makeSlotDocResolver, litFaceSlotDocs, WorkingSlotRefusal } from "./slot-doc-resolver.js";
+export { slotAnnouncer, type SlotAnnouncer, type SlotNoticeDoor } from "./slot-announcer.js";
+export type { SlotDocResolver, SlotDocResolverArgs, SlotDoc, SlotDocRepo, LitFaceSlotSpec, LitFaceSlotDocs } from "./slot-doc-resolver.js";
 
 // makeOperatorDaemonBehavior is NOT re-exported here — it couples to @lararium/tw5
 // (makeDaemonBehavior), and dragging tw5's index through the keyhive core index
@@ -100,8 +103,15 @@ export {
   openDwelling, dwellersHolding, cabalRealmLiveness,
 } from "./cabal-realm-ceremony.js";
 export type { FoundCabalRealmOpts, FoundedCabalRealm } from "./cabal-realm-ceremony.js";
+// EVERY WIKI'S WORKING LAYER RESTS IN A REALM WORKBENCH, kept by a private cabal of one human's faces (cabal-realm#/the-workbench).
+export {
+  foundWorkbench, standWorkbench, adoptWorkbench, admitWorkbenchFace, removeWorkbenchFace, workbenchFaceHolds, requireWorkbenchWriter, workbenchWriterSeat, workbenchFoundsOnWrite,
+  landWorkbench, projectWorkbenchRoster,
+} from "./workbench-realm.js";
+export type { FoundedWorkbench, LedgerDoc, WorkbenchMember, LandWorkbenchPorts, LandedWorkbench } from "./workbench-realm.js";
 export { forkCabalRealm } from "./fork-realm-ceremony.js";
 // THE FLEET-JOIN ANSWER'S ADMIT: the one shape the node's `runInit` and the browser's admit boot found a face by.
+export * from "./carried-seat.js";
 export { carriedAdmitOfFleetJoin, FLEET_JOIN_ADMIT_REFUSALS, type FleetJoinAdmitRefusalName } from "./fleet-join-admit.js";
 export type { ForkCabalRealmOpts } from "./fork-realm-ceremony.js";
 
@@ -114,7 +124,7 @@ export type { ForkCabalRealmOpts } from "./fork-realm-ceremony.js";
  * can import this type without taking a Node dependency.
  */
 export interface DeviceAdmitPayload {
-  readonly kind:                   "device-admit/v1";
+  readonly kind:                   typeof DEVICE_ADMIT_KIND;
   /** The PINNED signer DID — PROVENANCE only (the founder's persona-KEL inception op-key). The pin is
    *  `personaKelPrefix`: the Binding Gate walks that identifier's KEL to its current head and verifies
    *  against THAT, so a rotated key still binds and a superseded one rejects. */
@@ -124,7 +134,7 @@ export interface DeviceAdmitPayload {
   readonly personaKelPrefix:       string;
   /** The founder's persona-KEL chain SNAPSHOT (as of admit) — the joinee seeds its LOCAL KEL board from it so
    *  its very first boot walks to a head WITHOUT waiting on a federated sync (no-global-now: local seed, never
-   *  a global lookup). REQUIRED — early alpha, no back-compat: a payload minted without it names a vessel that
+   *  a global lookup). REQUIRED: a payload minted without it names a vessel that
    *  would RE-FOUND rather than join, so `runApplyAdmitPayload` refuses it by a named error instead of silently
    *  falling back to a federated-board wait. */
   readonly personaKelChain:       readonly PersonaKelEvent[];
@@ -137,7 +147,7 @@ export interface DeviceAdmitPayload {
    *  sibling proofs and channel tags run on. REQUIRED: an enrolment that delivers no secret leaves the joinee
    *  unable to meet a single sibling, so `runApplyAdmitPayload` refuses a payload without one. */
   readonly groupSecretSeal:        GroupSecretSeal;
-  /** The hearth true-name (engine CID) the joinee binds TO. */
+  /** The hearth true name the joinee's edge binds TO (the root holder's seed-charter Nexus AID; "" from a gateless leaf). */
   readonly hearthTrueName:         string;
   /** Founder sentinel oracle IDs — for the founding sentinel dance + the future affiliation layer. */
   readonly personaGroupId:    string;
@@ -147,7 +157,7 @@ export interface DeviceAdmitPayload {
    * The founder's persona doc URL — the joinee resolves/syncs it to receive the
    * shared veiled identity (PersonaGroup), the membership-sync foundation. The daemon bag
    * stays sovereign-per-vessel (the joinee seeds its own); the persona plane crosses by membership.
-   * REQUIRED — early alpha, no back-compat: a payload minted without it would have the joinee seed a
+   * REQUIRED: a payload minted without it would have the joinee seed a
    * FRESH local persona doc (a silent RE-FOUND, never a join); `runApplyAdmitPayload` refuses such a
    * payload by a named error instead.
    */
@@ -163,7 +173,7 @@ export interface DeviceAdmitPayload {
    * Automerge URL of the genesis island doc on the issuing vessel's Repo.
    * Browser vessels call repo.find(islandDocUrl) over the WebSocket to sync
    * the genesis island (TW5 core blob + sigil tiddlers) without a separate
-   * binary delivery. Absent on payloads from older vessels; treated as null.
+   * binary delivery. Absent reads as null.
    */
   readonly islandDocUrl?:          string | null;
   /**
@@ -178,7 +188,7 @@ export interface DeviceAdmitPayload {
    * and writing to it, with the hearth observing the change over the same crossed socket. Naming the door is
    * what was missing, never the opening of it.
    *
-   * REQUIRED — early alpha, no back-compat: a payload minted without it would leave the joinee holding
+   * REQUIRED: a payload minted without it would leave the joinee holding
    * standing with no route to ask for anything; `runApplyAdmitPayload` refuses such a payload by a named
    * error instead of silently seating it door-less. Still nullable: a founder with no door to name says
    * so explicitly (`hearthDaemonUrl: null`), which is a stated absence, never a missing field.

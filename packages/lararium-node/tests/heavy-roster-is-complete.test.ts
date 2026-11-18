@@ -35,6 +35,9 @@ const ALLOWED_LIGHT: Record<string, string> = {
   // This reader itself only READS the source of other suites; it binds and spawns nothing.
   "tests/heavy-roster-is-complete.test.ts": "reads source text; stands no live resource",
   "tests/worker-entry-census.test.ts": "reads worker source text and scans fixture strings that name listeners; binds and spawns nothing",
+  // `.listen(` here names the island handle's own in-memory hearing door (`handle.listen`, `port.listen`) over a fake
+  // worker object; no socket binds and no worker thread stands.
+  "tests/dyad.test.ts": "calls the island handle's in-memory `listen` door over a fake worker; binds no socket and stands no worker",
   // EXCLUDED_BY_DESIGN already keeps this suite out of BOTH `main` and `heavy` (it lives under
   // `tests/e2e/`, which `mainExclude` drops entirely) — it never runs under THIS package's split at
   // all, so the "live resource → serial project" cure this roster exists to apply has nothing to

@@ -2,9 +2,9 @@
  * sealed-carriage — the application frames that ride a sealed channel once the gate seat opens.
  *
  * The handshake owns tags 0x01–0x13 and nothing past it. Once the seat opens, every plaintext frame a side
- * seals leads with SEALED_FRAME_VERSION and a fixed header:
+ * seals leads with SEALED_FRAME_TAG and a fixed header:
  *
- *   version u8 · kind u8 · messageId u32 BE · partIndex u16 BE · partCount u16 BE · totalLength u32 BE · body
+ *   tag u8 · kind u8 · messageId u32 BE · partIndex u16 BE · partCount u16 BE · totalLength u32 BE · body
  *
  * A writer cuts one message into parts: every part but the last carries a full body, so one Noise message
  * holds header, body and tag with no byte to spare. A reader joins the parts back, in order, while several
@@ -25,11 +25,11 @@
 import { NOISE_MAX_MESSAGE_BYTES } from "./noise-ik.js";
 
 /** The first byte of every application frame; it stands outside the handshake's tags 0x01–0x13. */
-export const SEALED_FRAME_VERSION = 0x80;
+export const SEALED_FRAME_TAG = 0x80;
 /** The kinds a message rides under: a session, a sync, or a named control. */
 export const SEALED_KINDS = Object.freeze({ session: 0x01, sync: 0x02, "control/close": 0x10, "control/announce": 0x11 } as const);
 export type SealedKind = keyof typeof SEALED_KINDS;
-/** version u8 · kind u8 · messageId u32 · partIndex u16 · partCount u16 · totalLength u32, big-endian. */
+/** tag u8 · kind u8 · messageId u32 · partIndex u16 · partCount u16 · totalLength u32, big-endian. */
 export const SEALED_HEADER_BYTES = 14;
 /** The Noise AEAD tag each sealed frame carries. */
 export const SEALED_SEAL_OVERHEAD = 16;
@@ -75,7 +75,7 @@ export function sealedParts(kind: SealedKind, messageId: number, bytes: Uint8Arr
     const body = bytes.subarray(index * SEALED_PART_BODY_MAX, (index + 1) * SEALED_PART_BODY_MAX);
     const frame = new Uint8Array(SEALED_HEADER_BYTES + body.length);
     const view = new DataView(frame.buffer);
-    view.setUint8(0, SEALED_FRAME_VERSION);
+    view.setUint8(0, SEALED_FRAME_TAG);
     view.setUint8(1, kb);
     view.setUint32(2, messageId);
     view.setUint16(6, index);
@@ -113,7 +113,7 @@ export function sealedWriter(firstId = 0): { parts(kind: SealedKind, bytes: Uint
 export const SEALED_REFUSALS = [
   "closed",              // a part after close(), or after an earlier refusal spent the reader
   "handshake-tag",       // first byte in 0x01–0x13: a handshake frame after open
-  "version-foreign",     // any other first byte than SEALED_FRAME_VERSION
+  "tag-foreign",     // any other first byte than SEALED_FRAME_TAG
   "header-short",        // fewer bytes than the header
   "kind-foreign",        // a kind byte outside SEALED_KINDS
   "part-overlong",       // a body longer than SEALED_PART_BODY_MAX
@@ -179,7 +179,7 @@ export function sealedReader(bounds?: { readonly concurrent?: number; readonly b
     if (!(frame instanceof Uint8Array) || frame.length < 1) return refuse("header-short");
     const first = frame[0]!;
     if (first >= 0x01 && first <= 0x13) return refuse("handshake-tag");
-    if (first !== SEALED_FRAME_VERSION) return refuse("version-foreign");
+    if (first !== SEALED_FRAME_TAG) return refuse("tag-foreign");
     if (frame.length < SEALED_HEADER_BYTES) return refuse("header-short");
 
     const view = new DataView(frame.buffer, frame.byteOffset, frame.byteLength);

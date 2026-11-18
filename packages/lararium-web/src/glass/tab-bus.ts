@@ -26,8 +26,8 @@ const lendOf = (value: unknown): Lend | null => {
 const typeOf = (msg: unknown): string | null => msg && typeof msg === "object" ? String((msg as { type?: unknown }).type ?? "") : null;
 
 /**
- * A follower holds its open requests so each new leader can send a fresh snapshot, and a widen rewrites the remembered open
- * so a successor opens the port at the width the mirror reached. The ready that answers its hello carries the leader's lend.
+ * A follower holds its open requests so each new leader can send a fresh snapshot; the remembered open asks no boot set, since the
+ * follower's engine already stands. The ready that answers its hello carries the leader's lend.
  */
 export function makeFollowerDoors(bus: TabBus, tabId: string) {
   const opens = new Map<string, { surface: string; msg: unknown }>();
@@ -71,11 +71,8 @@ export function makeFollowerDoors(bus: TabBus, tabId: string) {
   return {
     place(surface: string, binding: string, msg: unknown) {
       const type = typeOf(msg);
-      if (type === "port:open") opens.set(binding, { surface, msg });
-      else if (type === "port:widen") {
-        const open = opens.get(binding);
-        if (open) opens.set(binding, { surface, msg: { ...(open.msg as Record<string, unknown>), width: (msg as { width: unknown }).width } });
-      }
+      // The open a new leader hears again asks no boot set: the follower's engine already stands from the first handoff.
+      if (type === "port:open") { const { boot: _boot, ...again } = msg as Record<string, unknown>; opens.set(binding, { surface, msg: again }); }
       if (ready) bus.postMessage({ kind: "port-up", tab: tabId, binding, surface, msg });
       return { ok: true as const };
     },

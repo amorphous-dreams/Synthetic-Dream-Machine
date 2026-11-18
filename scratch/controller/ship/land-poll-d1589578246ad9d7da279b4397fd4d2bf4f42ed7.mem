@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/land-poll-d1589578246ad9d7da279b4397fd4d2bf4f42ed7`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/controller/ship/land-poll-d1589578246ad9d7da279b4397fd4d2bf4f42ed7.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/land-poll-d1589578246ad9d7da279b4397fd4d2bf4f42ed7"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/land-poll-d1589578246ad9d7da279b4397fd4d2bf4f42ed7"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! land-poll-d1589578246ad9d7da279b4397fd4d2bf4f42ed7.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/ship/land-poll-d1589578246ad9d7da279b4397fd4d2bf4f42ed7.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+d1589578246ad9d7da279b4397fd4d2bf4f42ed7
+read: blind Terra cold read of the land tools' diff (land-train, ci-verdict, e2e-shards, burst-bisect, evergreen-boundary) = HOLD: P1 a &#45;-poll/&#45;-interval past Node's timer limit (2147484 s) clamped to 1 ms and slipped under the pace — cured red-first at 4d439f2e8 (pollRefusal refuses poll-over-timer-limit for both tools); P1-b consecutive gh calls inside one verdict round — ruled a wording fix (the law spaces ROUNDS of reads, never calls within a round), trued in headers, comments and test names; P2 the find budget's injected now() hid its Date.now from the evergreen witness — the witness now flags a now = Date.now default, and two named own-liveness exceptions account for it (the budget decides only the tool's own giving-up, allowed under the no-global-now ruling). The stale e2e-shards clock exception left by the find-loop change cured at 91a88466a. CI 42144178193 green at this head (the span a9f461bf4 merged in).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tKLzuDSVrGC3e7FTYe2Lyy-IKv79iMEXLrWEy69NGpY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

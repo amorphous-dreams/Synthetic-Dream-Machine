@@ -23,7 +23,11 @@ vi.mock("../src/island-kernel.js", () => ({ IslandKernel: class {
     delete instance.larariumWritableStand;
     await stand();
   }
-  tw5() { return {}; }
+  // The engine the kernel opens its default story on once the seed drains: a wiki holding nothing, so the story opens empty.
+  tw5() {
+    const wiki = { getTiddlerText: () => "", filterTiddlers: () => [], tiddlerExists: () => false, addTiddler: () => {}, getModificationFields: () => ({}) };
+    return { $tw: { wiki, hooks: { invokeHook: (_name: string, value: string[]) => value } } };
+  }
   sendEa(wikiUri: string) { this.post({ type: "ea", wikiUri }); }
   teardown() {}
 } }));
@@ -46,6 +50,7 @@ async function scenario(responsive: boolean, opts: { reportUnsaved?: boolean } =
   const stopped = new Promise<void>((resolve) => { shutdown = resolve; });
   fake.handle = { documentId: "working-doc", doc: () => ({ blobs: {}, tiddlers: {} }) };
   fake.adaptor = {
+    routesSave: () => true, keepInEngine: () => {},   // the island opens its story through the adaptor (`island-story.ts`): this composition routes it
     caps: {}, receiptRequired: false,
     awaitWikiDispatch: async () => {},
     stop: async function (submitted?: () => void) {
@@ -136,7 +141,7 @@ describe("F1: the vessel's close answers this island's asks-done, and nothing el
     let ready!: () => void;
     const ea = new Promise<void>((resolve) => { ready = resolve; });
     fake.handle = { documentId: "working-doc", doc: () => ({ blobs: {}, tiddlers: {} }) };
-    fake.adaptor = { caps: {}, receiptRequired: false, awaitWikiDispatch: async () => {}, stop: async () => [] };
+    fake.adaptor = { routesSave: () => true, keepInEngine: () => {}, caps: {}, receiptRequired: false, awaitWikiDispatch: async () => {}, stop: async () => [] };
     const host: IslandHostShore = {
       listen: (listener) => { deliver = listener; }, storage: () => undefined,
       resolveByCid: async (cid) => cid === hash ? core : plugin,
@@ -173,6 +178,7 @@ describe("vessel stand-down releases receipt waits", () => {
     const ea = new Promise<void>((resolve) => { ready = resolve; });
     fake.handle = { documentId: "working-doc", doc: () => ({ blobs: {}, tiddlers: {} }) };
     fake.adaptor = {
+      routesSave: () => true, keepInEngine: () => {},   // the island opens its story through the adaptor (`island-story.ts`): this composition routes it
       caps: {}, receiptRequired: false, awaitWikiDispatch: async () => {},
       stop: async (submitted?: () => void) => {
         if (kind === "unfinished-act") { fake.adaptor.caps.receipt.begin(); return; }

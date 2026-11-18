@@ -1,0 +1,92 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/recut-rolls-design`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-t4/recut-rolls-design.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/recut-rolls-design"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/recut-rolls-design"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! recut-rolls-design.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-t4/recut-rolls-design.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/recut-rolls-threat-sketch-the-removal-rolls-2026`>>
+
+! recut-rolls threat sketch: the removal rolls (T33 · T34 · T35), 2026-10-31
+
+Rolls-Wright (Tasked Spirit). Worktree cut at 3b9f8eebe (the span). u1 (#140) read at 1c8881c1a (`git diff 27bc0cb6b..HEAD`), its design.md, cold-t2/blind.md waves 1-4.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-a-removal-roll-trusts`>>
+
+!! What a removal roll trusts
+
+| authority input | source | what proves it | where the law lives (verifier) | fails closed to |h
+| ''the answered mark'' `rolled/<raise>` (T33) | this vessel's `ledger:edge` doc, URL = `edgeLedgerDocUrl(atom key)`; the atom key stands public on the fleet board and the device edge | TODAY: nothing. `markRaiseRolled` stores `{edgeId,how,seat}` and drops the receipt; `raisesSeenThrough`, `rolledRaises`, `keptSeatRolls`, u1's `raisesMarkedAnswered` count any row | ONE verified row reader in `edge-ledger.ts`: the row holds the whole `SignedSeatRoll`; it counts only where `verifiedSeatRoll(row, ledgerKey)` holds, `scope` matches and the raise sits in `roll.raiseCids` | an unverified row reads UNANSWERED: seat-duties plans the roll, the edge standing stays `owing`, the owed list keeps the raise. A planted row at the key never blocks the genuine mark (overwritten) |
+| ''reach to `ledger:edge`'' (T33) | the share verdict; today unclassed, so it falls through to the ordinary lanes (sibling gate composes a `DeterministicFederationGate`; same-operator face view) | TRACED, not measured: which lane opens it | `protectedDocGuard`, class `vessel-private`, new owner `device` that no relation opens (F2) | withheld from every wire peer; a torn bootstrap withholds all |
+| ''the counted raises'' (fold; T34, T35) | the face's fleet board, root-signed acts | `countEdgeActs` under `fleetEdgeAuthority(root)`, recounted in the island | `readVesselEdgeBoard` + `answerFleetSeatDuties` | a face worn but no fold readable: the door refuses (`signer-unavailable`), never `[]` |
+| ''the worn fleet root'' (T35) | the daemon doc's device edge (`personaRootDid`), Binding-Gate checked, in the clear | the Binding Gate | composer `wornFleetRoot` (`open-node-vessel.ts:2103`) | null while a face stands worn: the fold throws |
+| ''the ledger key'' (T33, T34) | `activeAtom` from custody, checked equal to `deviceEdge.deviceVerifyingKey` (`:2101`) | that equality | composer | no atom: the fold throws, the settle reads nothing |
+| ''who rolls a founding'' (T34) | the settler on each fold → island `seat-duties` (vessel-key-signed ask) → `announceSeatRoll` → the content-key seat | the island recounts; the roll's receipt signs under the atom; F7 keeps it owed until a session signer stands | `fleet-seat-duties.ts`, `content-key-seat.ts` | a roll that cannot mint stays owed; seals refuse `roll-owed` |
+| ''"never rolled"'' (u1 N1) | `holder.holdsRemoval()` off own-chain key-version records | u1's own; unchanged here | `content-key-holder.ts` | refusal, never `false` |
+
+Side findings (TRACED, for the record): a planted mark also flips a lifted device's standing from `owing` to `returned` early (`edgeStandingOf` reads the same set, `board-dyad-reader.ts:35`), and the ledger carries frontier pins and `seen` rows a wire writer could move. The class cures those; the receipt cures the marks. `keptSeatRolls` emits receipt-less rolls, so `catchUp` (which verifies) would refuse every kept roll; no node caller places `sealed-rolls` today. The receipt-bearing row cures that by construction.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/which-rows-need-u1`>>
+
+!! Which rows need u1
+
+* ''T33, span half (builds now):'' the ledger class, the receipt-bearing mark, the verified reader under `raisesSeenThrough` / `rolledRaises` / `keptSeatRolls`. Red: plant `rolled/<raise>` → `runEdgeSeatFacts().rolled` still omits it and seat-duties still plans the revoke; the edge standing stays `owing`. Control: the vessel's own receipt-signed mark clears it.
+* ''T33, u1 half:'' "the owed list keeps the raise" rides u1's `fleetRaisesOf` / `raisesMarkedAnswered`. The verified reader takes the ledger key, and the raw reader burns, so u1's two-argument `raisesMarkedAnswered` fails typecheck when the lane takes u1 (a weld, never a silent merge). That red lands after u1.
+* ''T34: needs u1.'' On the span no seal lands in production (`NO_PROOF`), and the sink, the F7 owed list and the fold-to-holder path are all u1's.
+* ''T35: needs u1 entirely'' (`fleetRaisesOf`, `foldOrRefuse`, `holdsRemoval`).
+
+Order: T33 span half now → (u1 lands) take u1 → T33 u1 half → T34 → T35 (F1).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-each-talked-out-two-rounds`>>
+
+!! Forks, each talked out two rounds
+
+''F1 · the T35 predicate and the order (to the controller: it changes the brief's stated cure).''
+(a) The brief: `fleetRaisesOf` answers `read:false` only for a vessel holding no root; a roster held with the worn root null or unmatched throws.
+(b) The end-state: the fold reads off the worn device edge's root and the worn atom, the roster never. It answers `read:false` only for a faceless vessel, and throws when a face stands worn but names no root or no atom.
+* R1. Council: T34 makes a joinee read its fold, which rewrites (a)'s "joinee → read:false" clause one slice later. That stages "a now, b later". Stranger: N1′'s second trigger, "root not served" on a founder whose roster reads missing, comes from the roster dependency itself. (b) removes the cause: that founder now READS its owed raise and refuses `roll-owed`, rather than reading empty.
+* R2. Breach-Watch: under (b), a joinee's fold counts raises its ledger never marked, so its seals refuse `roll-owed` until its own settle rolls. That fails closed, and it costs liveness only if T34's settle never runs. Liminal: if a joinee's island cannot answer `seat-duties` (no veil `kh`), (b) bricks joinee sealing after any removal. So (b) lands only with or after T34, and T34's red measures `ran:true` on a joinee first.
+* ''Lean (b),'' order T34 before T35. T35's red (the founder case) gets written first all the same, because it reds on u1's head today. If (a) gets ruled instead, T34 still rewrites its clause.
+
+''F2 · the ledger's owner in the vessel-private class (settled in-house).'' `vessel` lets the sibling gate and the same-face view decide. A new `device` owner opens to no relation. Grep: every ledger reader opens its own atom's ledger (node composer, edge-board, nexus-contract, the browser's own `ledgerRepo`, the in-process island). No cross-device reader exists, and in-process islands never reach the guard. Gaia: a browser sibling never reads my ledger. Elyncia: a niche's offering tally stays in the niche. ''Settled: `device`.'' Class ids come from every device edge key the vessel holds, readable in the clear at the floor, before custody opens.
+
+''F3 · T33's base (settled in-house, inside the brief's allowance).'' The span now, with the ledger key threaded through one verified reader so u1's reader welds at typecheck. The lane merges u1 once it lands, and its merge routes `raisesMarkedAnswered` through that reader under the u1-half red.
+
+''F4 · if the class red stays GREEN (to the controller).'' The red asks, over a sibling-gate peer and a same-operator session, for `ledger:edge` by id. If no wire lane opens it today, canon says a green red retires its row ("never force a red"). ''Lean:'' retire the class half and say so plainly. The receipt half still carries T33, because its red plants straight into the doc and proves the verifier whatever the reach. Counter-lean, held open: one id on the guard costs little, and a lane opening deterministic docs later stays plausible. I keep it open, not overclosed.
+
+''F5 · T34's roll path (settled in-house, pending one measure).'' Reuse the one settle on a joinee. The island answers `no-authority` (it revokes nothing), the content-key roll proceeds (`SeatRoll.how` doc), and the atom signs the receipt. The fences in `runEdgeSeatFacts` / `runEdgeSeatMarks` / `atomKeyForFleet` widen from "a root this vessel serves" to "the root its own device edge names, or one it serves". No authority widens: the board reads under the public root, the island recounts, and receipts sign under the own atom. Measure first: `seat-duties` answers `ran:true` on a joinee, and the composer's `sovereign` holds there. Fallback if not: a content-key-only announce from the same facts, named in the red's hand-back.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/battery`>>
+
+!! Battery (the new fast tier, operator 2026-10-31)
+Run locally: `pnpm build` · each red's proof against its parent · `tools/typecheck-witness.sh` · `node tools/evergreen-boundary.mjs` · `bash tools/witness-all.sh --fast` · `npx vitest run --changed <merge-base>` in each touched package (mesh, node, and after u1 keyhive). Whole suites and e2e run in CI only. Every run uses a scratch HOME and LAR_ROOT under this lane dir, with LAR_BAGS unset and GIT_CONFIG_GLOBAL=/dev/null. The reds are seat-level vitest cases in the probe's shape, with the production standing (`ownChainStanding`) and a hostile removed device. No new e2e file.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;I5DNPvlijJAXDvEQerbkjIMFrNXluZ01wHUykaM66Y8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

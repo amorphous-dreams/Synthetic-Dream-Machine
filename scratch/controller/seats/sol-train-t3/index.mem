@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/controller/seats/sol-train-t3/` — 5 record(s) here, 5 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/controller/seats/sol-train-t3/`
+
+The scratch planning records of `.lares-scratch/controller/seats/sol-train-t3/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 5 record(s) stand here and 5 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[controller/seats/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/brief]] | brief | 2026-10-31 | `brief.md` |
+| [[final-keep|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/final-keep]] | hand-back | 2026-10-31 | `final.keep.md` |
+| [[final|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/final]] | hand-back | 2026-10-31 | `final.md` |
+| [[hearth-design|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/hearth-design]] | plan | 2026-10-31 | `hearth-design.md` |
+| [[recut-gates-design|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/recut-gates-design]] | plan | 2026-10-31 | `recut-gates-design.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YZC4A5_qDpCiMvXtJBXczZbuEthZa-ObjNbkXn53om8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -6,7 +6,7 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-role        = "the LarDoc record/blob shapes + the catalog-row resolve-and-write-back primitive (`catalog-row.ts`) (resolveCatalogRow) + blob descriptor addressing"
+role        = "the LarDoc record/blob shapes + the catalog-entry resolve-and-write-back primitive (`catalog-entry.ts`) (resolveCatalogEntry) + blob descriptor addressing"
 source-file = "packages/lararium-mesh/src/base-doc.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/base-doc"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -30,10 +30,10 @@ turns a bag-URI into a live doc handle:
   Blobs live in the ''`@oracle`'' runtime system island beside the engine
   bytes — never in the `lararium` corpus seed (the 2026-06-16 carve; see
   `disk-projection#oracle-split`).
-* ''`resolveCatalogRow(registryHandle, rowKey, resolve, provenance)`'' — the
+* ''`resolveCatalogEntry(registryHandle, rowKey, resolve, provenance)`'' — the
   read → resolve → write-back-on-first-mint shape for a bag→doc pointer.
   Reads the pointer (`text` field) from the registry doc; hands the URL (or
-  null) to the platform `resolve` strategy; writes the row back
+  null) to the platform `resolve` strategy; writes the entry back
   only on first mint. Platform divergence rides the two arguments (`resolve`
   = repo strategy, `provenance` = authority stamp), never the protocol.
 
@@ -43,14 +43,14 @@ turns a bag-URI into a live doc handle:
 
 !! One owner per registry (W26 slice 2, 2026-10-18)
 
-`resolveCatalogRow` takes the ''registry handle'' as an argument and stays plane-blind: it writes wherever the handed
-handle points. Today every caller (`open-vessel-core`) hands the vessel's own `@catalog`, so each vessel's bag→doc rows
-rest in its own registry and no shared `@oracle` registry carries a pointer. The system bags `lares` and `lararium` carry
-no catalog row at all: their live documents rest in the Kahu realm (`kahu-realm.ts`, `realm-bag.ts`), and the genesis
+`resolveCatalogEntry` takes the ''registry handle'' as an argument and stays plane-blind: it writes wherever the handed
+handle points. Today every caller (`open-vessel-core`) hands the vessel's own `@catalog`, so each vessel's bag→doc entries
+rest in its own registry and no shared `@oracle` registry carries a pointer. The house-canon bags (`lares` and `lararium` among
+them) carry no catalog entry at all: their live documents rest in the Kahu realm (`kahu-realm.ts`, `realm-bag.ts`), and the genesis
 island document is the floor's read-face (`wiki-layer-ontology#oracle-planes`).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g_lib6Og37kBwT4YzeC9enUCmjDl3xovJx6DV4KFYeQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jqN2BL64QpxNfDuumLEewpj0wqHk8xwH532V_dOYp98`>>
 
 <<^ code=`&#x0004;` to=`?`>>

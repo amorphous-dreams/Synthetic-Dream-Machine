@@ -52,23 +52,38 @@ export async function atomicWriteFile(path: string, data: string | Uint8Array): 
 }
 
 /**
- * Atomically + durably write `data` to `path` (temp → fsync → rename → fsync-dir). `tmp` names the sibling
- * temp when a caller's temp spelling is part of its contract; it must sit in `path`'s directory. On any fault
- * the temp is removed and the WRITE's error rethrows, so `path` keeps its prior bytes and nothing strands.
+ * The sync calls {@link atomicWriteFileSync} makes, held on one object so a suite can watch them land (the fsync law
+ * reads only as calls made; no file state shows a skipped fsync until a crash).
  */
-export function atomicWriteFileSync(path: string, data: string | Uint8Array, tmp = `${path}.${process.pid}.tmp`): void {
+export const durableSyncIo = { fsyncSync, renameSync };
+
+/**
+ * Atomically + durably write `data` to `path` (temp → fsync → rename → fsync-dir). `tmp` names the sibling
+ * temp when a caller's temp spelling is part of its contract; it must sit in `path`'s directory. `mode` names the
+ * permission the temp takes at creation (a stale temp clears first, so the mode always applies), and the target
+ * carries it after the rename. On any fault the temp is removed and the WRITE's error rethrows, so `path` keeps its
+ * prior bytes and nothing strands.
+ */
+export function atomicWriteFileSync(
+  path: string, data: string | Uint8Array, tmp = `${path}.${process.pid}.tmp`, opts: { readonly mode?: number } = {},
+): void {
   try {
-    writeFileSync(tmp, data);
+    if (opts.mode !== undefined) {
+      rmSync(tmp, { force: true });
+      writeFileSync(tmp, data, { mode: opts.mode });
+    } else {
+      writeFileSync(tmp, data);
+    }
     // fsync the FILE: flush the payload to disk BEFORE the rename exposes it.
     const fd = openSync(tmp, "r+");
-    try { fsyncSync(fd); } finally { closeSync(fd); }
+    try { durableSyncIo.fsyncSync(fd); } finally { closeSync(fd); }
     // Atomic pointer swap.
-    renameSync(tmp, path);
+    durableSyncIo.renameSync(tmp, path);
     // fsync the DIRECTORY: persist the rename itself. Best-effort — a dir fsync rejects on some
     // platforms (e.g. Windows), where the filesystem already lands the rename durably.
     try {
       const dfd = openSync(dirname(path), "r");
-      try { fsyncSync(dfd); } finally { closeSync(dfd); }
+      try { durableSyncIo.fsyncSync(dfd); } finally { closeSync(dfd); }
     } catch { /* platform without dir-fsync — rename durability handled by the fs */ }
   } catch (err) {
     // Never leave a stranded temp on failure. A temp the remove itself cannot clear (a directory planted at

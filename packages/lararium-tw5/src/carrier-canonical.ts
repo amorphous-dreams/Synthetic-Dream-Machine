@@ -50,8 +50,8 @@ import { memeticIngestOps } from "./ingest-gate.js";
  * SHORE. Ingest's rule 3 guards it because a lossy render makes an edit inside a
  * dropped slot read as "framing only" and never reach the records. On THIS shore
  * the canonical-equivalence verdict is a DISK WRITE: a lossy render that matched
- * the records' view would replace the operator's bytes with a text that no longer
- * carries the slot — the edit does not merely fail to land, it DIES on disk. So
+ * the records' view would replace the operator's bytes with a text that drops
+ * the slot — the edit does not merely fail to land, it DIES on disk. So
  * the guard belongs inside this door, where every caller of `≈` gets it, rather
  * than in the pure gate (which holds no text to scan) or in one caller's body.
  *

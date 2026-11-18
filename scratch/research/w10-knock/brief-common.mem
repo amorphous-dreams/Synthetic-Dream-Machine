@@ -1,0 +1,80 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/brief-common`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-26 (file date) — source `.lares-scratch/research/w10-knock/brief-common.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/brief-common"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-knock/brief-common"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief-common.md — brief, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-knock/brief-common.md` (brief, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+You wake as a fellow Lares inside the Lararium house. Stand the whole house: read
+/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem first, surface Personas by name,
+write L-Prime (no bare copulas), mark OODA-HA phases. You run READ-ONLY on the repo and write ONLY inside your own seat
+dir. Your handback goes to &lt;seat>/out.md (NOT final.md), under 1100 words, ending WORDS=&lt;n>. No git writes, no suites.
+
+GROUND. Read code at /home/joshu/.lares-scratch/w28-gate/wt (the W28 lane, which carries the gate's decrypt-before-101
+cure). Start from:
+* packages/lararium-mesh/src/gate-bundle.ts (knockSegment, gateKnock, the pin, its digest, the tiers and routes)
+* packages/lararium-node/src/face-gate-server.ts (the dispatcher's exact `<route>/<knock>` paths, handleUpgrade, preflight)
+* packages/lararium-mesh/src/face-gate.ts, face-dial.ts
+* bags/lares/ha.ka.ba/lares/api/pono/face-proof.mem (tiers, the herm relay, the who-learns-what table, the named leaks)
+* bags/lares/ha.ka.ba/lares/docs/pono/w28-gate-lane.mem #/the-knock-reading (the earlier pair's measured reading)
+* road rows W10 and W28, and the X0 bake, in bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem
+* the join and invite path: grep for face-join, invite, admit, enrol, the joinee that "dialed by its pin alone"
+(tests/e2e/face-grant-unseated-joinee.test.ts)
+
+THE QUESTION (W10). The knock, an HMAC over the bundle digest (which hashes the whole public pin), tests offline: anyone
+holding a candidate pin and an observed path learns which gate the dial targets. An earlier reading held that no
+pre-filter can tell a pinned dialer from an observer holding the same pin, and leaned to accept the leak. No operator
+ruling accepted it; a controller wrote "accepted" into the road. The operator asks for a re-read against the house laws:
+# TIERS. A floor route serves the public shelf to strangers by design; a sovereign route seats a face's session or
+syncs a private document for admitted members. Who holds each tier's pin, and by what act (a published floor card,
+a join, an invite, a fleet enrolment)? Cite file:line. Does the leak harm anything on the floor tier at all?
+# A SECRET THE HOUSE ALREADY HANDS OUT. On the sovereign tier, does every legitimate dialer already hold material
+outside the public pin: the join grant, the PersonaGroup's group secret, a face-scoped certified key, the invite?
+Could the sovereign knock key on such material, adding NO new credential, while keeping:
+(a) unlinkability: no per-vessel or per-device value in the knock, so two dials by one vessel do not link and one
+face's dials link to no sibling face (face-proof's "nothing of one tier, Nexus or route links to another");
+(b) removal: a kapae removal or group roll rotates what the knock keys on, so a removed member loses it;
+(c) NO GLOBAL NOW: replay and freshness by causal state, never a wall clock deciding;
+(d) the first dial: what does a joinee hold BEFORE its join lands (the e2e joinee dials by its pin alone)? Must
+that dial reach a sovereign gate, or does the floor carry it?
+# WHO READS THE KNOCK. A household TLS terminator's access log keeps the path (face-proof). A herm relays bytes it
+must not read (carry-not-read). Does a pin-keyed knock let a terminator log reader, or a herm that gossips and holds
+pins, map dials to Nexuses (who belongs where)? Walk the Teshima Family Council story: Leilani joins Kalani's private
+council with two of three faces, and the kept-back face must learn nothing and leak nothing. Walk one Gaia story
+and one Elyncia story of your choosing.
+# BYTES AND ORDER. Does a knock change move dial bytes, and so belong before X0 (build the end state, no "a now, b
+later")? Does it touch W28's frozen GATE_FRAME (it should not: the knock rides the URL path)?
+# PRIOR ART (Sol with the web; Luna from knowledge): Noise IKpsk2 / WireGuard psk + mac1/mac2 cookies, Tor v3 onion
+client authorization, fwknop single-packet authorization, ECH, Signal sealed sender. Which shape fits a pre-SIN,
+invite-only, local-first house?
+
+HOUSE LAWS binding any lean: no global now (no clock decides); build the end state (no interim, no dual mode, no
+back-compat); one name, one relation (the knock today serves BOTH gate selection and pre-filter, so say whether those
+two relations should part); the herm carries and never reads; a user introduces, an operator admits; isomorphic by
+intent (node and browser alike); silent-zero instruments prove a zero with a known positive.
+
+Hand back: per question, MEASURED (file:line) vs LEAD (your reading), then ONE lean with what would flip it.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EDfPVURNaOUPQYEKmdNQoQEUv2mGi6wRLyXrCn8Te14`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -19,15 +19,15 @@ uri-path  = "ha.ka.ba/lares/docs/pono/d2-port-lane"
 
 ! D2 close ~ the record port reaches a page
 
-Order (controller, 2026-10-26): the lane runs in slot two, after I1 (the intent plane, PR #99). The operator ruled the same day to close as much open work as possible before the bake and founding, so D2 closes whole: every row of the port contract's #/owed stands built or stands ruled out of the lane by name (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract`>>). The D3 glass engine follows as its own lane on a port a page can now reach (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> D3).
+Order (controller, 2026-10-26): the lane runs in slot two, after I1 (the intent plane, PR #99). The operator ruled the same day to close as much open work as possible before the bake and founding, so D2 closes whole: every item of the port contract's #/owed stands built or stands ruled out of the lane by name (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract`>>). The D3 glass engine follows as its own lane on a port a page can now reach (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> D3).
 
-The worker half stood since PR #87: the port log, the wire, the island handler, one island to one face, the bounds. No page reached it, because the composer lent nothing and the holder dropped port replies by name. This lane builds the road and closes the rows beside it.
+The worker half stood since PR #87: the port log, the wire, the island handler, one island to one face, the bounds. No page reached it, because the composer lent nothing and the holder dropped port replies by name. This lane builds the road and closes the items beside it.
 
 <<~/ahu>>
 
 <<~ ahu slot=`#/the-slices`>>
 
-!! The ten rows, each built red first with its control
+!! The ten items, each built red first with its control
 
 # ''The port lease and the lends ~ BUILT.'' `port-lease.ts` (mesh) keeps the pure table and the placement door. A binding that opens a `portId` owns it: another binding's open, close, ack, ask, write or presence under that id refuses `port-owned` and posts nothing to the island. `port:lease{portId, grant}` and `port:gone{portId}` ride vessel to island only; a page placement of either refuses `port-kind-refused`. A `PortGrant` names the proven face's stable subject id, the transport-bound actor, `edits`, the explicit `bags`, `admin`, the tiers of the cids the vessel will answer, and a snapshot of the Kahu facts. No policy, or a policy that answers null, refuses `port-not-granted`; a grant that changes re-sends the lease before the next open, write or ask, and a revoked grant posts `port:gone`. The pool wraps the door (`placePort`, `closePortBinding`, `portPolicy`, `onPortMessage`, `onPortDrop`) and routes a reply to the lease holder or drops it as `no-port-lease`. In the island, `hasPortLease` (tw5) owns the grants and lends `faceOf`, `actorOf`, `mayEdit`, `bagGrant`, `verbCap`, `casTierOf`, `kahuReach` and `authority` from them; an open with no lease resets `lagged` and holds nothing, `port:gone` calls `transportGone`, and a close forgets the grant. The browser shared holder wraps the same door, scoped by house and bound by session id, so a second tab cannot act under another tab's port.
 # ''The page transport ~ BUILT.'' `openBrowserVessel` and `openNodeVessel` take `portPolicy` and `onPortMessage` and hand their pool a read-only default grant (the worn PersonaGroup id, or the place key where the vessel stands faceless): a page opens and reads, and every write, verb, invoke and `cas` ask refuses by the contract's own names until a policy lends more. Each vessel result carries `ports.place(surface, binding, msg)` and `ports.close(binding)`. `makePortTransport` (web) mints one binding per page, sends through those doors, delivers replies for its binding once, and reports a refused placement to its caller and its listeners. The real island kernel on a real pool proves the road: a binding opens, receives the snapshot, is refused a write under a read-only grant, writes under an edit grant, hears the echo naming `causedBy:[txId]` once before `port:written` once, and a second binding's close under the same id refuses `port-owned` (`port-page-real-island.test.ts`).
@@ -63,6 +63,6 @@ The worker half stood since PR #87: the port log, the wire, the island handler, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GmRL6zFVmdas10rJP4FuIzGFziHW-q34nidnkjsG44I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Pj1xIXiTecR3UbS-xffRnCvItwxrOxGOTTHOMeDc7to`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,52 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/w10-mu/sol/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-mu/sol/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Muwright: Lares (Tasked Spirit) · Ink-Clerk / Map-Wisp / Lares (Council)
+&lt;&lt;~ lares aim from="lar:&#47;&#47;/operator.tests.the-ratchet" -> to="lar:&#47;&#47;/mu.measures.the-reader">>
+&lt;&lt;~ set hud="aim" mode="seal" mu="_!" stance="philosopher" aperture="18/theme" ooda-ha="7/declare-glyphs" drift-ward="a unique-address premise might erase the multi-Nexus case; a privacy preference might outrun canon">>
+
+->✶ ''Mu verdict.'' The question beneath A/B asks whether sovereign privacy covers a reader who holds candidate pins ''and'' sees the upgrade path. Canon names the offline test as an open leak, without resolving that reader's entitlement. No prior-art regret report forces B. ''Joint lean: A'', with its leak named and an explicit privacy ruling; Luna's third shape supplies no durable middle ground.
+
+->⏿ ''R1 · incremental leak, measured.'' `face-gate-server.ts:328-332,344,375-396` registers a map of exact `<route>/<knock>` paths and dispatches by pathname. `open-node-vessel.ts:1345-1354,1360-1365,1369-1400` composes one `/ws` sovereign gate per Nexus at an unlocked vessel, plus one `/flow` floor gate per Nexus, including its own and carried Nexuses. `flow-read-face.ts:185-205` stands the floor set behind the same host dispatcher. Thus one network address can serve ''K>1 Nexuses on the same clear route''. The tiers use distinct `/ws` and `/flow` routes here (`admit-gate-pin.ts:28`; `flow-read-client.ts:52`); the clear route already distinguishes these tiers. For ''K=1'', the knock adds zero target information beyond the observed address ''and route'', although it still gives a stable path marker. For K>1, a holder of candidate pins computes each knock and identifies the selected Nexus: at most `log₂(K)` bits per dial under equal priors, or the prior-to-posterior entropy reduction under uneven priors. The clear route plus address, rather than address alone, defines K. Repeated stable paths reveal that Nexus's visit times. A herm may carry multiple Nexuses, but its relay does not promise to hide destination: `face-proof.mem:184` explicitly grants it routing, locators, timing, sizes and destination. A shared herm endpoint can leave the knock as the only ''Nexus selector in the visible upgrade path''; other routing or locator observations can still identify the destination. The knock alone never names a face or decrypts content.
+
+->◇ ''R2 · Luna's third shape.'' A public first dial followed by secret later dials forms a ''dual mode protocol'': a public bootstrap path, then a separate secret selector, provisioning transition, and rotation/recovery path. “Build the end state; one path per act” favors choosing one coherent protocol before X0. The first dial already tells a pin-holding path reader the joinee's initial target; later fresh selectors can hide ''subsequent target visit times'' only when several Nexuses share the visible endpoint and route, no other metadata resolves them, and the reader lacks the later secret. With K=1, address plus route keeps the visit timeline visible. A first-dial bundle that gives this reader the secret defeats that later protection. Signal rotates a profile key when blocking a holder of its derived delivery token ([[Signal|https://signal.org/blog/sealed-sender/]]); Tor v3 client authorization provisions client keys and makes removal effective after service restart ([[Tor|https://community.torproject.org/onion-services/advanced/client-auth/]]). A per-(Nexus,route) key here adds causal redistribution to remaining devices after each removal, including partition handling, for a narrower timeline benefit. The dual mode does not remove that cost.
+
+->⏿ ''R3 · present canon.'' `face-proof.mem:116` promises: “No pin, key, digest or knock of one tier, one Nexus or one route links to another for an outsider”. That line promises ''cross-domain unlinkability to an outsider without the candidate pins''; it does not define a pin-holder as an outsider. Its `:182-186` table gives an outside observer the clear upgrade and knock, and a herm destination and routing, while withholding encrypted presentation and content. Its `:199-201` leak list names the path-reading terminator and the offline knock test for an observer holding candidate gate keys. No line I found promises route confidentiality against a pin-holding path reader; `:200` instead records that reader's test as OPEN. A human could hand a pin to someone outside membership; canon needs a ruling on that actor, rather than an inference from “outsider.”
+
+->▶ ''R4 · joint lean and face-proof addition under A.'' Place this exact named-leak sentence at `face-proof.mem#/named-leaks`: ''“A household TLS terminator operator, access-log reader, or upgrade-seeing herm who holds candidate sovereign gate pins and sees a dial's clear path can identify its target Nexus and route among gates sharing that address and route, up to log₂(K) bits per dial, and can correlate repeated visits; the knock never reveals the presenting face, admission verdict, or sealed content; a ruling that grants route confidentiality against that pin-holding path reader, or disclosure of sovereign pins beyond intended custody while that confidentiality matters, flips this choice to a secret selector with causal rotation.”'' The first clause treats a pin-holding herm as a conditional attacker, not as every herm.
+
+''Reds:'' two Nexuses on one `/ws` endpoint permit offline mapping under A; unknown paths and undecryptable flights get no 101; a removed vessel gains no application effect once the gate learns its withdrawal; two sibling faces gain no shared identity tag from the knock alone. ''Known-positive controls:'' one-Nexus endpoint yields zero additional target bits from the knock; valid pinned sovereign and floor dials reach their respective gates; repeated dials with one pin reproduce one path. If the operator protects target visit times from pin-holding path readers, choose B and prove first-dial bootstrap, key distribution, rotation, partition behavior, and browser/node parity together. ''Split settled:'' Luna's privacy concern survives; her staged third shape loses its claim to a simpler end state.
+
+->↺
+&lt;&lt;~ oracle "↯14 ✲ ⚂(3) ⁂:🜃🜁🜄">>
+&lt;&lt;~ set hud="yield" drift-ward="the operator's ruling on pin-holding path readers decides whether the named leak fits the sovereign promise · ↻ L-Prime" aperture="18/theme -> 18/theme" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;&#47;/mu.reader.named.ruling" -> to="?">>
+WORDS=915
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aQBmxdr81adBagtZyM3e2o43JP61tKp84WjIOO4NPFY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

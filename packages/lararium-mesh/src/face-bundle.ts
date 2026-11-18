@@ -19,9 +19,9 @@
  * ── WHAT THE BODY NAMES ─────────────────────────────────────────────────────────────────────────
  * One face: its root, the roster line that names it, the two fixed names of its anchors, its key event log, its
  * own names, its face proof keys, its own handle-book records, the recovery contact set its typed first enrolment committed
- * (null where its log commits none), its address secret (the 32 bytes its working documents derive their addresses
- * from, so a restored face finds the documents it wrote elsewhere; null where a reader built the body from paper,
- * which carries none) and its memory section. `readFaceBundleBody`
+ * (null where its log commits none), its address secret (the 32 bytes the face's own catalog document derives its
+ * address from, so a restored face finds its catalog half; its working layers rest in realm workbenches and derive
+ * nothing from it; null where a reader built the body from paper, which carries none) and its memory section. `readFaceBundleBody`
  * reads SHAPE alone and refuses any key it does not name; the restore judges every relation between the parts.
  * The body names no veil key, no vessel key, no seat and no row of another face, and its shape gives none a home.
  *
@@ -117,7 +117,8 @@ export interface FaceBundleBody {
   /** The memory section, sealed to the pair this bundle's key derives (base64), and what it holds. */
   readonly memory:     { readonly section: string; readonly holds: readonly FaceBundleHolding[] };
   /**
-   * The face's address secret, 64 lower hex: every device that wears the face derives its working addresses from it.
+   * The face's address secret, 64 lower hex: every device that wears the face derives the face's catalog document from it
+   * (`faceCatalogDocUrl`); working layers rest in realm workbenches and derive nothing from it.
    * Null where the body came from paper (the root cards carry none). Absent, the body reads whole and the restore
    * refuses it `no-address-secret`: a restore never mints a fresh one.
    */

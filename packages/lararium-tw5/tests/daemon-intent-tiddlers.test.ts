@@ -16,7 +16,11 @@ const pane: IntentPaneModel = { rows: [{ id: "1234567890abcdef", verb: "MOVE", s
 
 const fakeWiki = () => {
   const fields = new Map<string, Record<string, string>>();
-  return { fields, tw5: { setTiddler: (row: Record<string, string>) => fields.set(row.title!, row) } as unknown as TW5Engine };
+  const tw5 = {
+    setTiddler: (row: Record<string, string>) => fields.set(row.title!, row),
+    setShadowTiddlers: (_plugin: string, rows: readonly Record<string, string>[]) => { for (const row of rows) fields.set(row.title!, row); },
+  };
+  return { fields, tw5: tw5 as unknown as TW5Engine };
 };
 const context = (ok: boolean) => ({ cap: vi.fn(async () => ({ ok })) }) as unknown as VerbContext;
 const signer = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });

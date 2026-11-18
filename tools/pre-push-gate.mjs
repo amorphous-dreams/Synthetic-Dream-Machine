@@ -24,6 +24,8 @@ export const CENSUS = [
 export const STEPS = [
   { name: "witnesses-fast", cmd: "bash", args: ["tools/witness-all.sh", "--fast"], cwd: "." },
   { name: "census-laws", cmd: "npx", args: ["vitest", "run", ...CENSUS.map((c) => `tests/${c}.test.ts`)], cwd: "packages/lararium-mesh" },
+  { name: "carrier-pins", cmd: "node", args: ["tools/rite-walk.mjs", "--bind"], cwd: "." },
+  { name: "carrier-tests", cmd: "node", args: ["--test", "tools/launch-codex.test.mjs", "tools/ci-ignored-paths.test.mjs"], cwd: "." },
 ];
 
 /** Runs every step through `run(step) -> exit code`, then reports. Returns { code, red }. */

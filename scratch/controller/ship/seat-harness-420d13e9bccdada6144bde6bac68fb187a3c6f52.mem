@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/seat-harness-420d13e9bccdada6144bde6bac68fb187a3c6f52`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/controller/ship/seat-harness-420d13e9bccdada6144bde6bac68fb187a3c6f52.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/seat-harness-420d13e9bccdada6144bde6bac68fb187a3c6f52"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/seat-harness-420d13e9bccdada6144bde6bac68fb187a3c6f52"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! seat-harness-420d13e9bccdada6144bde6bac68fb187a3c6f52.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/ship/seat-harness-420d13e9bccdada6144bde6bac68fb187a3c6f52.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+420d13e9bccdada6144bde6bac68fb187a3c6f52
+read: Terra cold reads rounds 1-9 over the seat-harness lane (each HOLD named a real hole; each cured by class, red-first, CI green). The round-9 class cure (every broker act through a held handle, bwrap &#45;-bind-fd, the pathname-access witness, writable scratch/home refusal) got no tenth Terra round, under the operator's ruling 2026-11-04 ("Settle the AI harness ... deep reads and debugging after the wiki server stands up"); live Luna read seats ran end to end through each final layout. The span merge at 420d13e9b auto-merged with no conflicts (CI 42050272611 green). The kill(-1) incident is guarded by killGroup (pgid > 1) plus its witnesses. Residuals named in the PR and in the carrier's #/owed, with the deep read owed after standing.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tVKnQeLBN1pZEqgg7vvaJrikL6VA4xqO-YUPHhz00wE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

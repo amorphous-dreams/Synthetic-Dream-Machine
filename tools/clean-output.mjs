@@ -32,7 +32,7 @@ for (const relativePath of process.argv.slice(2)) {
   try {
     renameSync(dir, prev);
   } catch {
-    // A cross-device or locked rename leaves the old behaviour as the floor: the build still needs a
+    // A cross-device or locked rename falls to a plain delete as the floor: the build still needs a
     // clear directory, and refusing here would strand the caller with no way to clean at all.
     rmSync(dir, { recursive: true, force: true });
   }

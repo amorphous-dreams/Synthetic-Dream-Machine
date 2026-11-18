@@ -23,8 +23,8 @@
 
 import { join } from "node:path";
 import type { RecoveryShare, CustodianTag, RecoveryShareStore } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
-import { updateColdCustodyRow } from "./custody-seat.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
+import { updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 /** The device share's row for one face, as the carrier table spells it. */
@@ -48,7 +48,7 @@ const CUSTODIANS: ReadonlySet<string> = new Set(["device", "recorded-code", "esc
 
 /** Read a share off a row's plaintext; any other shape refuses `malformed`. */
 function parseShare(bytes: Uint8Array, file: string): RecoveryShare {
-  const malformed = (): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
+  const malformed = (): CustodyRecordUnavailable => new CustodyRecordUnavailable("identity", file, "malformed");
   let j: Partial<StoredShare>;
   try { j = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as Partial<StoredShare>; } catch { throw malformed(); }
   if (!j || typeof j !== "object" || !Number.isSafeInteger(j.x) || !Array.isArray(j.ys) || j.ys.length === 0
@@ -75,7 +75,7 @@ export class RecoveryShareStands extends Error {
 export async function persistRecoveryDeviceShare(share: RecoveryShare, handleIndex = 0): Promise<void> {
   const file = deviceShareFile(handleIndex);
   const stored: StoredShare = { x: share.bytes.x, ys: [...share.bytes.ys], custodian: share.custodian, recoveryEpoch: share.recoveryEpoch };
-  await updateColdCustodyRow("identity", file, (standing) => {
+  await updateColdCustodyRecord("identity", file, (standing) => {
     if (standing !== null) {
       const held = parseShare(standing, file);                         // a row of another shape refuses the write too
       const same = held.bytes.x === share.bytes.x && held.custodian === share.custodian && held.recoveryEpoch === share.recoveryEpoch
@@ -91,7 +91,7 @@ export async function persistRecoveryDeviceShare(share: RecoveryShare, handleInd
 /** The device share for one face, or null when none has landed. A row that stands and does not open refuses by name. */
 export async function loadRecoveryDeviceShare(handleIndex = 0): Promise<RecoveryShare | null> {
   const file = deviceShareFile(handleIndex);
-  return updateColdCustodyRow("identity", file, (standing) => ({ plaintext: null, value: standing === null ? null : parseShare(standing, file) }));
+  return updateColdCustodyRecord("identity", file, (standing) => ({ plaintext: null, value: standing === null ? null : parseShare(standing, file) }));
 }
 
 /** The node's device-share store, as the persona vault carries it. */

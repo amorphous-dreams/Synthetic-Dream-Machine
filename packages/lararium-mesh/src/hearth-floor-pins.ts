@@ -16,7 +16,7 @@
  * One reader serves both: each pin reads whole, stands at floor tier and at the expected Nexus, and names a route no other
  * pin in the set names. A set that fails any of these reads as none: nothing of it files.
  *
- * THE FLOOR READ RIDES THE PORCH, NOT A PIN. The floor of system canon answers by the Nexus's release (`floor-release`, served at
+ * THE FLOOR READ RIDES THE PORCH, NOT A PIN. The floor of house canon answers by the Nexus's release (`floor-release`, served at
  * `GET /floor/<Nexus AID>`): a reader holding the Nexus AID verifies the charter's epoch lineage (the genesis epoch re-derives the
  * AID, each step verifies under the prior roster's threshold), the head release and the floor bytes itself (`floor-answer`), so a
  * card's AID anchors a full verification and no signed pointer carries a floor.
@@ -118,7 +118,7 @@ export function fileSessionClaims(index: ClaimDoor, hearth: string, nexusHex: st
   const aid = adoptedAnchor(index, hearth, proof.claims);
   if (aid === null) return { filed: [], refused: proof.claims.map(() => "statement-malformed" as const), held: [] };
   const filings: ClaimFilingReport[] = proof.claims.map((claim) => filePlaceFloorPins(index, [claim],
-    { nexusHex, route: (claim as { pin?: { route?: string } })?.pin?.route ?? "", kelRows: proof.kel, standing: { via: "anchor", aid } }, () => hearth));
+    { nexusHex, route: (claim as { pin?: { route?: string } })?.pin?.route ?? "", kelEntries: proof.kel, standing: { via: "anchor", aid } }, () => hearth));
   return { filed: filings.flatMap((f) => f.filed), refused: filings.flatMap((f) => f.refused), held: filings.flatMap((f) => f.held) };
 }
 
@@ -154,6 +154,30 @@ export function hearthFloorCardText(card: HearthFloorCard): string {
   return base64UrlEncode(utf8Bytes(JSON.stringify({ claim: card.claim, kel: card.kel })));
 }
 
+/** The `kind` a floor card's carried FILE names (the carriage door reads a file by its kind, as it reads a fleet-join file). */
+export const FLOOR_CARD_CARRIAGE_KIND = "floor-card";
+
+/**
+ * A floor card as the FILE a person carries by hand (paste, file or QR) from the hearth's banner to a device's carriage door:
+ * `{ kind: "floor-card", card }`, and nothing else. It carries no anchor: the place AID travels apart, by its own act.
+ */
+export function floorCardCarriageText(cardText: string): string {
+  return JSON.stringify({ kind: FLOOR_CARD_CARRIAGE_KIND, card: cardText });
+}
+
+/** The card text a carried floor card file holds, or null where the text reads as no such file (any second key refuses it whole). */
+export function readFloorCardCarriage(text: unknown): string | null {
+  try {
+    if (typeof text !== "string" || text.length === 0 || text.length > FLOOR_CARD_TEXT_BOUND + 64) return null;
+    const value = JSON.parse(text) as unknown;
+    if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+    const keys = Reflect.ownKeys(value);
+    if (keys.length !== 2 || !keys.includes("kind") || !keys.includes("card")) return null;
+    const { kind, card } = value as { kind: unknown; card: unknown };
+    return kind === FLOOR_CARD_CARRIAGE_KIND && typeof card === "string" && card.length > 0 ? card : null;
+  } catch { return null; }
+}
+
 /** Read a carried floor card's SHAPE: a claim on the flow route and KEL events that decode; else null. Nothing here trusts the card. */
 export function readHearthFloorCard(text: unknown): HearthFloorCard | null {
   try {
@@ -181,7 +205,7 @@ export type VerifiedFloorCard =
 export function verifyHearthFloorCard(card: HearthFloorCard | null, anchor: FloorAnchor | null | undefined): VerifiedFloorCard {
   if (card === null) return { refusal: "statement-malformed" };
   if (!anchor || typeof anchor.aid !== "string") return { refusal: "place-unanchored" };
-  const read = readPlaceFloorPin(card.claim, { nexusHex: card.claim?.pin?.nexus, route: HEARTH_FLOOR_CARD_ROUTE, kelRows: card.kel, standing: { via: "anchor", aid: anchor.aid } });
+  const read = readPlaceFloorPin(card.claim, { nexusHex: card.claim?.pin?.nexus, route: HEARTH_FLOOR_CARD_ROUTE, kelEntries: card.kel, standing: { via: "anchor", aid: anchor.aid } });
   return "refusal" in read ? { refusal: read.refusal } : { card, reading: read, publisher: read.signerKey };
 }
 
@@ -198,7 +222,7 @@ export function fileHearthFloorCard(index: HearthPinIndex, hearth: string, card:
   const verified = verifyHearthFloorCard(card, anchor);
   if ("refusal" in verified) {
     if (verified.refusal === "kel-forked" && card) {
-      const again = readPlaceFloorPin(card.claim, { nexusHex: card.claim.pin.nexus, route: HEARTH_FLOOR_CARD_ROUTE, kelRows: card.kel, standing: { via: "anchor", aid: anchor!.aid } });
+      const again = readPlaceFloorPin(card.claim, { nexusHex: card.claim.pin.nexus, route: HEARTH_FLOOR_CARD_ROUTE, kelEntries: card.kel, standing: { via: "anchor", aid: anchor!.aid } });
       if ("fork" in again && again.fork) index.noteKelFork(again.fork);
     }
     return { filed: false, refusal: verified.refusal };
@@ -211,8 +235,8 @@ export function fileHearthFloorCard(index: HearthPinIndex, hearth: string, card:
 }
 
 /** The words an offline reader says of the head it holds: "as of my last sync". */
-export function lastSyncNote(stand: { readonly aid: string; readonly seq: number; readonly head: string } | null): string {
+export function lastSyncNote(stand: { readonly aid: string; readonly head: string } | null): string {
   return stand === null
     ? "no floor pin claim held: nothing synced yet"
-    : `as of my last sync: place ${stand.aid.slice(0, 12)}… at KEL seq ${String(stand.seq)} (${stand.head.slice(0, 12)}…)`;
+    : `as of my last sync: place ${stand.aid.slice(0, 12)}… at KEL head ${stand.head.slice(0, 12)}…`;
 }

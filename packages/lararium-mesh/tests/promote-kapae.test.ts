@@ -4,7 +4,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae
  */
 import { describe, expect, test } from "vitest";
-import { EMPTY_LEDGER, encodeLedger, ledgerCommit, promoteDigest, promotedPreloads, verifyPromotionRows } from "../src/promote.js";
+import { EMPTY_LEDGER, encodeLedger, ledgerCommit, promoteDigest, promotedPreloads, verifyPromotionEntries } from "../src/promote.js";
 import { EMPTY_KAPAE_LOCAL, KapaeRefused, assertKapaeHand, decodeKapaeLocal, encodeKapaeLocal, kapaeBootSet, kapaeNoteArrival, kapaeStanding } from "../src/promote-kapae.js";
 import { promoteEdgeKey } from "../src/promote-board.js";
 
@@ -33,7 +33,7 @@ describe("a raise arrives", () => {
     expect(Buffer.from(encodeKapaeLocal(raised.local)).equals(Buffer.from(encodeKapaeLocal(EMPTY_KAPAE_LOCAL)))).toBe(false);
     expect(decodeKapaeLocal(encodeKapaeLocal(raised.local))).toEqual(raised.local);
     expect(() => decodeKapaeLocal(new TextEncoder().encode("{\"shadowed\":[1]}"))).toThrowError(expect.objectContaining({ code: "kapae-local-malformed" }));
-    const verified = verifyPromotionRows(ledger.rows).verified;
+    const verified = verifyPromotionEntries(ledger.rows).verified;
     expect(promotedPreloads(verified, W1, new Set([E1]))).toEqual([]);
     expect(promotedPreloads(verified, W1, new Set())).toHaveLength(1);
   });

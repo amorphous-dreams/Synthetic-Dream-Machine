@@ -1,10 +1,11 @@
 import { describe, expect, test } from "vitest";
-import { BrowserCustodyRefused, lockBrowserCustody, readBrowserCustody, readKeystoreRow, sealBrowserKeystore, writeKeystoreRow } from "../src/browser-custody.js";
+import { BrowserCustodyRefused, lockBrowserCustody, readBrowserCustody, readKeystoreRecord, sealBrowserKeystore, writeKeystoreRecord } from "../src/browser-custody.js";
 import { openBrowserVessel } from "../src/open-browser-vessel.js";
 import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
 import { holdVesselLock, type LockHost } from "../src/vessel-lock.js";
 import { clearCustodyVerb, standBrowserCustody, standFounderFace } from "../src/browser-boot-custody.js";
 import { CLEAR_CUSTODY_CLEARS, CLEAR_CUSTODY_QUESTION } from "../src/browser-custody.js";
+import { VESSEL_LOCKED, vesselLockedRefusal } from "@lararium/mesh";
 
 let serial = 0;
 const vessel = () => `lares:test-boot-custody:${Date.now()}:${serial++}`;
@@ -66,7 +67,7 @@ describe("browser boot custody asks before secret rows rest", () => {
     expect((await readBrowserCustody(idbName)).reading).toBe("clear");
   });
 
-  test("RED: a boot over a locked seal refuses sealed-locked and gives the store lock back; the stand then opens and the same page reads", async () => {
+  test("RED (browser parity): a boot over a locked seal refuses sealed-locked, named `vessel-locked` as node names it, and gives the store lock back; the stand then opens and the same page reads", async () => {
     const idbName = vessel();
     await generateOrLoadBrowserVesselIdentity(idbName);
     await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: "right route" });
@@ -75,13 +76,16 @@ describe("browser boot custody asks before secret rows rest", () => {
     const refused = await openBrowserVessel({ wikiId: "w", idbName, locks: host, teardownBudgetMs: 5_000 } as never).catch((e: unknown) => e);
     expect(refused, String(refused)).toBeInstanceOf(BrowserCustodyRefused);
     expect((refused as BrowserCustodyRefused).reading).toBe("sealed-locked");
+    // BROWSER PARITY: the locked boot answers the one name a node vessel's control acts and the CLI's direct holder answer.
+    expect((refused as BrowserCustodyRefused).refusal).toBe(VESSEL_LOCKED);
+    expect((refused as BrowserCustodyRefused).refusal).toBe(vesselLockedRefusal().refusal);
     expect(held.size, "the refused boot gave the store lock back").toBe(0);
     const retry = await holdVesselLock(idbName, host);
     expect(retry.held).toBe(true);
     await retry.release();
     const verdict = await standBrowserCustody({ idbName, ask: async () => ({ kind: "passphrase", passphrase: "right route" }) });
     expect(verdict.reading).toBe("opens");
-    expect(await readKeystoreRow(idbName, "vessel-key"), "the device seed opens in this page").not.toBeUndefined();
+    expect(await readKeystoreRecord(idbName, "vessel-key"), "the device seed opens in this page").not.toBeUndefined();
   });
 
   test("RED: a locked seal refuses the custody read sealed-locked; the stand opens on the right route and the same page reads", async () => {
@@ -89,10 +93,10 @@ describe("browser boot custody asks before secret rows rest", () => {
     await generateOrLoadBrowserVesselIdentity(idbName);
     await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: "right route" });
     lockBrowserCustody(idbName);
-    await expect(readKeystoreRow(idbName, "vessel-key")).rejects.toMatchObject({ reading: "sealed-locked" });
+    await expect(readKeystoreRecord(idbName, "vessel-key")).rejects.toMatchObject({ reading: "sealed-locked" });
     const verdict = await standBrowserCustody({ idbName, ask: async () => ({ kind: "passphrase", passphrase: "right route" }) });
     expect(verdict.reading).toBe("opens");
-    expect(await readKeystoreRow(idbName, "vessel-key")).not.toBeUndefined();
+    expect(await readKeystoreRecord(idbName, "vessel-key")).not.toBeUndefined();
   });
 
   test("CONTROL: wrong routes make three asks and preserve every keystore row", async () => {
@@ -137,17 +141,17 @@ describe("browser boot custody asks before secret rows rest", () => {
 
   test("RED: a clear keystore binds its first slot before a walk row rests, and the write that refused lands after", async () => {
     const idbName = vessel();
-    const ROSTER = { roots: [{ handleIndex: 0, verifyingKey: "a".repeat(64) }] };
+    const ROSTER = { roots: [{ tree: "f".repeat(32), verifyingKey: "a".repeat(64) }] };
     await generateOrLoadBrowserVesselIdentity(idbName);
-    await expect(writeKeystoreRow(idbName, "persona-root-roster", ROSTER)).rejects.toMatchObject({ reading: "no-custody-slot" });
+    await expect(writeKeystoreRecord(idbName, "persona-root-roster", ROSTER)).rejects.toMatchObject({ reading: "no-custody-slot" });
     const walk = { nexusAid: "nexus-a" };
-    await expect(writeKeystoreRow(idbName, "walk/ab", walk)).rejects.toMatchObject({ reading: "no-custody-slot" });
+    await expect(writeKeystoreRecord(idbName, "walk/ab", walk)).rejects.toMatchObject({ reading: "no-custody-slot" });
     const verdict = await standBrowserCustody({ idbName, secretMintDue: true, ask: async () => ({ kind: "passphrase", passphrase: "first route" }) });
     expect(verdict.reading).toBe("bound");
-    await writeKeystoreRow(idbName, "persona-root-roster", ROSTER);
-    expect(await readKeystoreRow(idbName, "persona-root-roster")).toEqual(ROSTER);
-    await writeKeystoreRow(idbName, "walk/ab", walk);
-    expect(await readKeystoreRow(idbName, "walk/ab")).toEqual(walk);
+    await writeKeystoreRecord(idbName, "persona-root-roster", ROSTER);
+    expect(await readKeystoreRecord(idbName, "persona-root-roster")).toEqual(ROSTER);
+    await writeKeystoreRecord(idbName, "walk/ab", walk);
+    expect(await readKeystoreRecord(idbName, "walk/ab")).toEqual(walk);
   });
 
   test("RED: the founder face's tree stands before its first row on the first bind's one route; a declined bind or no door refuses no-custody-slot", async () => {

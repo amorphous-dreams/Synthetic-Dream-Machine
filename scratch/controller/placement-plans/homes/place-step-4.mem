@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-4`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-10 (file date) — source `.lares-scratch/controller/placement-plans/homes/PLACE-STEP-4.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-4"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-4"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! PLACE-STEP-4.md — plan, 2026-11-10
+
+Verbatim scratch record `.lares-scratch/controller/placement-plans/homes/PLACE-STEP-4.md` (plan, file date 2026-11-10); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/placement-step-4-residency-follows-placement`>>
+
+! Placement step 4 — residency follows placement
+
+The projector reads the selected bag's mirror, skips effect records by record kind, and retains only the TW5 temp/state plus temp-layer preference filters. The former daemon, VM, manifest, realm announcement, swarm, and nexus-handle title residency gates are removed. The kahua stage accepts control-shaped titles as ordinary content in its selected store. The disk ingress ward checks the vessel's mirror registry and requires the source path to fall under a mirror for the selected destination; control and secret homes refuse LOAD by name. Arbitrary-directory LOAD into ordinary working layers remains available through the existing LOAD gesture, followed by MOVE for promotion. Carry's in-memory import path still submits INGEST directly and has not yet been converted to that named road. The active daemon working-layer mirror is withheld while control writers still target that layer; this is an incomplete safety hold under the operator ruling, not a completed placement.
+
+Red coverage: cross-mirror source rejection, private-home LOAD refusal, receipt-shaped title accepted in the selected ordinary bag, manifest-shaped title follows its selected mirror, realm announcements and WHO handles follow the crossroads mirror, and kahua accepts control-shaped content.
+
+Validation status: see `PLACE-HANDBACK.md`; full package suites and final build/stamp/typecheck pass remain required.
+
+Proposed commit subject: `lar:///ha.ka.ba/placement/lets-mirrors-decide-residency`
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sdhZfNEGA_sTq20oTnkgu8k4XAOFn2QBT22rKm8lKw0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

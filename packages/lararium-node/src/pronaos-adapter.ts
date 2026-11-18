@@ -90,8 +90,10 @@ export const ARRIVAL_WELL_KNOWN_ROUTE = "/.well-known/lar";
 export const WELL_KNOWN_LAR_ROUTE_KEY = "well-known:lar";
 /** The descriptor's media type; a request for `/` naming it negotiates onto the same descriptor bytes. */
 export const ARRIVAL_MEDIA_TYPE = "application/vnd.lar.arrival+json";
-/** The descriptor format tag — a name, never a version; a reader refuses any other. */
-export const ARRIVAL_FORMAT = "lar-arrival";
+/** The descriptor format tag — a name, never a version; a reader refuses any other. One owner (`@lararium/mesh/wire-names`),
+ *  so the page reads the same constant. */
+export { ARRIVAL_FORMAT } from "@lararium/mesh/wire-names";
+import { ARRIVAL_FORMAT } from "@lararium/mesh/wire-names";
 
 /**
  * One hash-pinned copy of one receipt CID, standing on an origin of its own. A mirror serves a vessel that

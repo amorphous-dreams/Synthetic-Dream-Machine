@@ -82,7 +82,7 @@ describe("stampCarrier — the body first, the check last", () => {
     expect(stampCarrier(carrier)).toBe(carrier);
   });
 
-  test("a retired trailer is never stamped over — grammar-cut migrates it, the writer never guesses", () => {
+  test("a retired trailer is never stamped over — the writer never guesses", () => {
     const trailer = carrier.replace(/ bcc=`([^`]*)`>>/, ">>$1");
     expect(verdict(trailer).kind).toBe("torn");
     expect(stampCarrier(trailer)).toBe(trailer);

@@ -78,13 +78,14 @@ import { closeSync, openSync, readdirSync, readSync, statSync, type Dirent } fro
 import { basename, join } from "node:path";
 import {
   REST_KINDS, ROTATING_SUFFIX, SEALING_SUFFIX, S_SEAL_MIN_LENGTH,
-  readCarriedRecord, readIndexRow, readLockboxRecord, readsAsOutboxSeal, readSCarrier, restNameHolds, rotateTreeKey,
+  readCarriedRecord, readIndexEntry, readLockboxRecord, readsAsOutboxSeal, readSCarrier, restNameHolds, rotateTreeKey,
   type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type TreeKey,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 import { custodyRootPath } from "./custody-root.js";
 import { VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
+import { VEIL_LIFT_GROUP_FILE } from "./node-veil-lift.js";
 import { FACES_DIR, FACE_INDEX_FILE, WARD_TREE_FILE } from "./face-index.js";
 import { FACE_ANCHOR_GROUP_FILE } from "./face-anchor-store.js";
 import { PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
@@ -92,6 +93,7 @@ import { OUTBOX_KEY_FILE } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 import { RELAY_GATE_SEED_FILE } from "./relay-gate-seed.js";
 import { SWITCH_ACTS_FILE } from "./switch-act-log.js";
+import { SECRET_HOME_FILE } from "./secret-home-store.js";
 
 /** The custody classes, closed. */
 export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold", "ward-cold"] as const;
@@ -136,7 +138,7 @@ export type CarrierFace = number | "vessel" | `group:${string}` | `fcid:${string
 export type FaceSelector = { readonly group: string } | { readonly ask: string } | { readonly ordinal: number } | null;
 
 /** The part of a face row the holder resolves a logical `(home, file)` by: the file's own spelling inside the face's directory. */
-export interface FaceRowAddress {
+export interface FaceRecordAddress {
   /** Matched against the file name inside `faces/<fcid>/` (what callers pass as `file`). */
   readonly inner:  RegExp;
   /** Which face the matched file names; `null` marks a row only the holder addresses, by the directory it already stands in. */
@@ -203,10 +205,10 @@ export interface CarrierRow {
    */
   readonly face:     (m: RegExpExecArray) => CarrierFace;
   /** Present on a `face-hot`, `face-cold` or `ward-cold` row: how a logical file name resolves to its face's directory. */
-  readonly faceRow?: FaceRowAddress;
+  readonly faceRecord?: FaceRecordAddress;
   /**
    * How a face's backup bundle treats this row. A row that names none `stays`. The bundle's cut and the restore's
-   * check both derive from this column (`bundleRows`), so no hand picks the rows a bundle carries.
+   * check both derive from this column (`bundleCarriers`), so no hand picks the rows a bundle carries.
    */
   readonly bundle:   BundleTreatment;
   /** The K15 target class of this row. Required: a new row cannot land without one. */
@@ -245,7 +247,7 @@ const file = (name: string): RegExp => new RegExp(`^${escape(name)}$`);
  * A row as its line of the table spells it. The custody class decides the `bare` column at the type: a row
  * outside the vessel key states its law, and a row under it states none.
  */
-type RowSpec = Omit<CarrierRow, "name" | "face" | "bundle" | "bare" | "custody" | "holds" | "faceRow"> & Partial<Pick<CarrierRow, "name" | "face" | "bundle" | "holds" | "faceRow">>
+type RowSpec = Omit<CarrierRow, "name" | "face" | "bundle" | "bare" | "custody" | "holds" | "faceRecord"> & Partial<Pick<CarrierRow, "name" | "face" | "bundle" | "holds" | "faceRecord">>
   & ({ readonly custody: "floor" | "floor-plain"; readonly bare: string } | { readonly custody: "serving" | "hot" | "cold" | "outbox" | "face-hot" | "face-cold" | "ward-cold" });
 
 /** A row of the identity home's top level: the same line with its home and subtree left to the helper. */
@@ -268,7 +270,7 @@ const restFileHolds = (file: string, bytes: Uint8Array): boolean => {
   const [, kind, name] = file.split("/");
   if (kind === undefined || name === undefined || !restNameHolds(name, bytes)) return false;
   if (kind === "lockbox") return readLockboxRecord(bytes) !== null;
-  if (kind === "index") return readIndexRow(bytes) !== null;
+  if (kind === "index") return readIndexEntry(bytes) !== null;
   if (kind === "outbox") return readsAsOutboxSeal(bytes);
   return readCarriedRecord(bytes)?.kind === kind;
 };
@@ -285,8 +287,8 @@ const faceOf = (m: RegExpExecArray): CarrierFace => Number(m[1]);
  * A D row: sealed under its face's custody key and resting in `faces/<fcid>/<file>`. `inner` spells the file as callers name it;
  * the row's census match spells the whole path under the identity home. `select` names the face the file belongs to.
  */
-function faceRowOf(spec: {
-  readonly row: string; readonly inner: RegExp; readonly select: FaceRowAddress["select"]; readonly custody: "face-hot" | "face-cold" | "ward-cold";
+function faceRecordOf(spec: {
+  readonly row: string; readonly inner: RegExp; readonly select: FaceRecordAddress["select"]; readonly custody: "face-hot" | "face-cold" | "ward-cold";
   readonly keyClass: KeyClass | null; readonly writer: string; readonly target: CustodyTarget; readonly bundle?: BundleTreatment;
   readonly name: (m: RegExpExecArray) => string; readonly face?: (m: RegExpExecArray) => CarrierFace;
 }): CarrierRow {
@@ -301,7 +303,7 @@ function faceRowOf(spec: {
   return row({
     row: spec.row, home: "identity", under: FACES_DIR, match, custody: spec.custody, keyClass: spec.keyClass, writer: spec.writer, target: spec.target,
     name: (m) => spec.name(innerOf(m)), face: (m) => (spec.face ? spec.face(innerOf(m)) : (`fcid:${m[1]}` as const)),
-    faceRow: { inner: new RegExp(`^(?:${body})$`), select: spec.select },
+    faceRecord: { inner: new RegExp(`^(?:${body})$`), select: spec.select },
     ...(spec.bundle ? { bundle: spec.bundle } : {}),
   });
 }
@@ -373,25 +375,29 @@ function buildTable(): readonly CarrierRow[] {
     // ── hot: sealed under the S key, opened at unlock ─────────────────────────────────────────────
     id({ row: "gate-root", target: tgt(["D"], LEAD), match: exact(custodyRootPath()), custody: "hot", keyClass: "device-minted",
          writer: "custody-root (founding)" }),
-    faceRowOf({ row: "veil-archive", target: tgt(["D"], LEAD, "archive-row-selector"), inner: VEIL_ARCHIVE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+    faceRecordOf({ row: "veil-archive", target: tgt(["D"], LEAD, "archive-row-selector"), inner: VEIL_ARCHIVE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "identity-anchors", name: (m) => `veil-archive-g${m[1]}`, face: (m) => `group:${m[1]}` }),
+    // A face's private veil-lift link (`node-veil-lift`): the vessel's key signed {veil, face, atom}, so it names THIS vessel's veil and
+    // stays on it; it rests under its face alone and leaves with that face's tree.
+    faceRecordOf({ row: "veil-lift", target: tgt(["D"]), inner: VEIL_LIFT_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: null,
+         writer: "node-veil-lift", name: (m) => `veil-lift-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
     // A group digest owns this local atom row; bundles leave its seed on this vessel.
-    faceRowOf({ row: "face-atom", target: tgt(["D"]), inner: FACE_ATOM_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+    faceRecordOf({ row: "face-atom", target: tgt(["D"]), inner: FACE_ATOM_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "face-atom-store", name: (m) => `face-atom-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
-    faceRowOf({ row: "face-anchor", target: tgt(["D"]), inner: FACE_ANCHOR_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+    faceRecordOf({ row: "face-anchor", target: tgt(["D"]), inner: FACE_ANCHOR_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "face-anchor-store", name: (m) => `face-anchor-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
     // A founding ask holds a seed until its group row keeps it.
-    faceRowOf({ row: "face-atom-ask", target: tgt(["D"]), inner: FACE_ATOM_ASK_FILE, select: (m) => ({ ask: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+    faceRecordOf({ row: "face-atom-ask", target: tgt(["D"]), inner: FACE_ATOM_ASK_FILE, select: (m) => ({ ask: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "face-atom-store", name: (m) => `face-atom-ask-${m[1]}`, bundle: "stays" }),
-    faceRowOf({ row: "promoted", target: tgt(["D"]), inner: PROMOTED_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+    faceRecordOf({ row: "promoted", target: tgt(["D"]), inner: PROMOTED_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "promoted-store", name: (m) => `promoted-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
-    faceRowOf({ row: "kapae-local", target: tgt(["D"]), inner: KAPAE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+    faceRecordOf({ row: "kapae-local", target: tgt(["D"]), inner: KAPAE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "promoted-store", name: (m) => `kapae-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
     // The face's own custody label: its fcid and the digest of its PersonaGroup. The holder reads it to check the floor index it unlocked by.
-    faceRowOf({ row: "face-owner", target: tgt(["D"]), inner: /face-owner\.bin/, select: () => null, custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "face-owner", target: tgt(["D"]), inner: /face-owner\.bin/, select: () => null, custody: "face-hot", keyClass: null,
          writer: "custody-holder", name: () => "face-owner" }),
     // The face's ward signing key's public half on this device: the `wardKey` its admission into the face carries. No secret; it lands with the ward.
-    faceRowOf({ row: "face-ward-key", target: tgt(["D"]), inner: /face-ward-key\.bin/, select: () => null, custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "face-ward-key", target: tgt(["D"]), inner: /face-ward-key\.bin/, select: () => null, custody: "face-hot", keyClass: null,
          writer: "custody-holder", name: () => "face-ward-key" }),
     // A session switch's acts name two faces together, so they rest on this vessel alone and never in a document.
     id({ row: "switch-acts", target: tgt(["D"]), match: file(SWITCH_ACTS_FILE), custody: "hot", keyClass: null,
@@ -403,68 +409,68 @@ function buildTable(): readonly CarrierRow[] {
          writer: "none (reserved carrier)" }),
     id({ row: "admissions", target: tgt(["D"], LEAD), match: file(".persona-admissions.json"), custody: "hot", keyClass: "relation",
          writer: "none (reserved carrier)" }),
-    faceRowOf({ row: "anchors", target: tgt(["D"]), inner: /^anchors-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "anchors", target: tgt(["D"]), inner: /^anchors-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "identity-anchors", name: (m) => `anchors-h${m[1]}`, face: faceOf, bundle: "lines" }),
     // The roster of a vessel's roots, its pet-names, declarations and published records: one row per face, in that face's own
     // directory, named by the handle index. No shared roster names the faces: the floor index does, by ordinal alone.
-    faceRowOf({ row: "persona-roster", target: tgt(["D"]), inner: faceIndexed("persona-roster"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "persona-roster", target: tgt(["D"]), inner: faceIndexed("persona-roster"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-vessel-identity", name: (m) => `persona-roster-h${m[1]}`, face: faceOf, bundle: "lines" }),
-    faceRowOf({ row: "persona-petnames", target: tgt(["D"]), inner: faceIndexed("persona-petnames"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "persona-petnames", target: tgt(["D"]), inner: faceIndexed("persona-petnames"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-vessel-identity", name: (m) => `persona-petnames-h${m[1]}`, face: faceOf, bundle: "lines" }),
-    faceRowOf({ row: "persona-declarations", target: tgt(["D"]), inner: faceIndexed("persona-declarations"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "persona-declarations", target: tgt(["D"]), inner: faceIndexed("persona-declarations"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-vessel-identity", name: (m) => `persona-declarations-h${m[1]}`, face: faceOf, bundle: "lines" }),
-    faceRowOf({ row: "public-handles", target: tgt(["D"]), inner: faceIndexed("persona-public-handles"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "public-handles", target: tgt(["D"]), inner: faceIndexed("persona-public-handles"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-vessel-identity", name: (m) => `persona-public-handles-h${m[1]}`, face: faceOf }),
     // This vessel's own face-scoped key under one face at one Nexus (`face-key-custody`, the face proof's library
     // names the row). It stays on its vessel: no bundle carries it.
-    faceRowOf({ row: "vessel-face-key", target: tgt(["D"]), inner: /^vessel-face-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: "device-minted",
+    faceRecordOf({ row: "vessel-face-key", target: tgt(["D"]), inner: /^vessel-face-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: "device-minted",
          writer: "face-key-custody", name: (m) => `vessel-face-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // One face's address secret (`fleet-join-custody`): minted once on the root holder, carried to each joined
     // vessel by the fleet-join door. Its file names a digest of the face's PersonaGroup. A bundle carries it whole;
     // a paper restore carries none, through the fromPaper door.
-    faceRowOf({ row: "face-address-secret", target: tgt(["D"]), inner: /^face-address-secret-g([0-9a-f]{64})\.bin$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
+    faceRecordOf({ row: "face-address-secret", target: tgt(["D"]), inner: /^face-address-secret-g([0-9a-f]{64})\.bin$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
          writer: "fleet-join-custody", name: (m) => `face-address-secret-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "whole" }),
     // One face's tag secret (`vessel-face-tag-store`): 32 random bytes minted on this vessel at the face's founding or its
     // first join request, under no seed. A re-join on the face presents the tag it stands behind. It stays on this vessel:
     // a bundle restored onto another device never wears this one's tag.
-    faceRowOf({ row: "vessel-face-tag", target: tgt(["D"]), inner: /^vessel-face-tag-g([0-9a-f]{64})\.bin$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+    faceRecordOf({ row: "vessel-face-tag", target: tgt(["D"]), inner: /^vessel-face-tag-g([0-9a-f]{64})\.bin$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "vessel-face-tag-store", name: (m) => `vessel-face-tag-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
     // A founding face's tag secret while its ask names the face; the founding's settle moves it onto the group's row.
-    faceRowOf({ row: "vessel-face-tag-ask", target: tgt(["D"]), inner: /^vessel-face-tag-ask-([0-9a-f]{64})\.bin$/, select: (m) => ({ ask: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+    faceRecordOf({ row: "vessel-face-tag-ask", target: tgt(["D"]), inner: /^vessel-face-tag-ask-([0-9a-f]{64})\.bin$/, select: (m) => ({ ask: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "vessel-face-tag-store", name: (m) => `vessel-face-tag-ask-${m[1]}`, bundle: "stays" }),
     // A joining vessel's half-done fleet join (`fleet-join-custody`): its request and the X25519 secret its
     // answer seals to. The landing removes it.
-    faceRowOf({ row: "fleet-join-pending", target: tgt(["D"]), inner: /^fleet-join-pending-g([0-9a-f]{64})\.json$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
+    faceRecordOf({ row: "fleet-join-pending", target: tgt(["D"]), inner: /^fleet-join-pending-g([0-9a-f]{64})\.json$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
          writer: "fleet-join-custody", name: (m) => `fleet-join-pending-g${m[1]}`, face: (m) => `group:${m[1]}` }),
     // A joined face's record (`fleet-join-custody`): its root key, the certificates over this vessel's face-scoped
     // keys and the root's grants, as the fleet-join answer carried them. It stays on its vessel.
-    faceRowOf({ row: "face-join-record", target: tgt(["D"]), inner: /^face-join-record-g([0-9a-f]{64})\.json$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
+    faceRecordOf({ row: "face-join-record", target: tgt(["D"]), inner: /^face-join-record-g([0-9a-f]{64})\.json$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
          writer: "fleet-join-custody", name: (m) => `face-join-record-g${m[1]}`, face: (m) => `group:${m[1]}` }),
     // One face's recognition book, in that face's own row: the nyms it recognised and the private labels it keeps for them.
-    faceRowOf({ row: "handle-book", target: tgt(["D"]), inner: /^\.handle-book-h(0|[1-9]\d*)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "handle-book", target: tgt(["D"]), inner: /^\.handle-book-h(0|[1-9]\d*)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-circle-store", name: (m) => `handle-book-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One face's recovery contact set as its typed first enrolment committed it (`recovery-contact-enrolment`): the keys a later
     // rotation reveals, and what another face's enrolment reads to refuse a shared key. That face's bundle carries
     // it whole wherever the face's log commits it, and a restore lands it beside the root.
-    faceRowOf({ row: "recovery-contact-set", target: tgt(["D"]), inner: /^recovery-contact-set-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "recovery-contact-set", target: tgt(["D"]), inner: /^recovery-contact-set-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "recovery-contact-enrolment", name: (m) => `recovery-contact-set-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One restored face's provisional mark (`face-provisional`): the head its restore read, until a party to its
     // relation agrees. It belongs to the vessel that restored the face: no bundle carries it.
-    faceRowOf({ row: "face-provisional", target: tgt(["D"]), inner: /^face-provisional-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "face-provisional", target: tgt(["D"]), inner: /^face-provisional-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "face-provisional", name: (m) => `face-provisional-h${m[1]}`, face: faceOf }),
-    faceRowOf({ row: "hosting-state", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/state\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "hosting-state", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/state\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "hosting-store", name: (m) => `hosting-state-h${m[1]}-${m[2]}`, face: faceOf }),
-    faceRowOf({ row: "hosting-spent", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/spent-[^/]+$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "hosting-spent", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/spent-[^/]+$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "hosting-store", name: (m) => `hosting-spent-h${m[1]}-${m[2]}`, face: faceOf }),
-    faceRowOf({ row: "hosting-carry", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/carry\/.+$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "hosting-carry", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/carry\/.+$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "hosting-carry", name: (m) => `hosting-carry-h${m[1]}-${m[2]}`, face: faceOf }),
-    faceRowOf({ row: "walk", target: tgt(["D"]), inner: /^walk-h(0|[1-9]\d*)-([0-9a-f]{32})\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "walk", target: tgt(["D"]), inner: /^walk-h(0|[1-9]\d*)-([0-9a-f]{32})\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-walk-store", name: (m) => `walk-h${m[1]}-${m[2]}`, face: faceOf }),
     // A sovereign gate's withdrawal memory, one row per face key named by its proof-subject digest
-    // (`gate-memory-rows`). It belongs to its vessel: no face's bundle carries it.
+    // (`gate-memory-records`). It belongs to its vessel: no face's bundle carries it.
     // A gate's withdrawal memory rests in the face whose gate learned it: the file name's handle index only spells the face, the face's own directory is the location.
-    faceRowOf({ row: "gate-memory", target: tgt(["D"]), inner: /^gate-memory-h(0|[1-9]\d*)-([0-9a-f]{64})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
-         writer: "gate-memory-rows", name: (m) => `gate-memory-h${m[1]}-${m[2]}`, face: faceOf }),
+    faceRecordOf({ row: "gate-memory", target: tgt(["D"]), inner: /^gate-memory-h(0|[1-9]\d*)-([0-9a-f]{64})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "gate-memory-records", name: (m) => `gate-memory-h${m[1]}-${m[2]}`, face: faceOf }),
     // The growth rite's two rows (`seal-ceremony`): the first prepares a crossing, the second commits its record.
     row({ row: "transition-pending", target: tgt(["F"]), home: "seal", under: "", match: file("transition-pending.json"),
           custody: "floor-plain", keyClass: null, writer: "seal-ceremony",
@@ -474,12 +480,12 @@ function buildTable(): readonly CarrierRow[] {
           bare: "sealed crossing records carry public key-sets, signatures and witnesses and no secret: each record verifies from the charter alone" }),
     // One joint founding's record (`cofound-record`): the offer this vessel made or answered, its seat and hearth
     // cadence keys' public halves, and the image it judged. The inception door licenses a joint signature by it.
-    faceRowOf({ row: "cofound", target: tgt(["D"]), inner: /^cofound-h(0|[1-9]\d*)-([0-9a-f]{64})\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+    faceRecordOf({ row: "cofound", target: tgt(["D"]), inner: /^cofound-h(0|[1-9]\d*)-([0-9a-f]{64})\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "cofound-record", name: (m) => `cofound-h${m[1]}-${m[2]}`, face: faceOf }),
 
     // The vessel's outbox key (`outbox-key`): minted once, at the first unlocked composition, and handed to the daemon
     // island at each unlock. It seals the outbox's parcels and nothing beside them; it stays on its vessel.
-    faceRowOf({ row: "outbox-key", target: tgt(["D"]), inner: OUTBOX_KEY_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: "device-minted",
+    faceRecordOf({ row: "outbox-key", target: tgt(["D"]), inner: OUTBOX_KEY_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: "device-minted",
          writer: "outbox-key", name: (m) => `outbox-key-h${m[1]}`, face: faceOf }),
 
     // ── outbox: sealed under the outbox key the S key wraps ───────────────────────────────────────
@@ -489,17 +495,17 @@ function buildTable(): readonly CarrierRow[] {
           custody: "outbox", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds }),
 
     // ── ward-cold: the face root seed, under the face's ward key alone (seat-harness#/the-ward) ──
-    faceRowOf({ row: "persona-root", target: tgt(["D"]), inner: faceIndexed("persona-group-root"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "ward-cold", keyClass: "seed",
+    faceRecordOf({ row: "persona-root", target: tgt(["D"]), inner: faceIndexed("persona-group-root"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "ward-cold", keyClass: "seed",
          writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // ── cold: sealed under the S key, opened per act ──────────────────────────────────────────────
     // One face's proof key at one Nexus, held by the root-holding vessel alone (`face-key-custody`). Its file names
     // the face, so that face's bundle carries it.
-    faceRowOf({ row: "face-proof-key", target: tgt(["D"]), inner: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
+    faceRecordOf({ row: "face-proof-key", target: tgt(["D"]), inner: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "face-key-custody", name: (m) => `face-proof-key-h${m[1]}-${m[2]}`, face: faceOf, bundle: "whole" }),
     // A seat's own key, minted at random and apart from every root and leaf (`seat-key-store`). Its file names the
     // face whose seat claim stood for the chair and a digest of the seat's public key. It stays on its vessel: a
     // bundle carries no key of any seat.
-    faceRowOf({ row: "seat-key", target: tgt(["D"]), inner: /^seat-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
+    faceRecordOf({ row: "seat-key", target: tgt(["D"]), inner: /^seat-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "seat-key-store", name: (m) => `seat-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // Principal: intent-admission service. Opener: intent-relay-key-store alone, through its scoped cold custody door.
     id({ row: "intent-relay-key", target: tgt(["S"]), match: file("intent-relay-key.bin"), custody: "cold", keyClass: "device-minted",
@@ -507,15 +513,19 @@ function buildTable(): readonly CarrierRow[] {
     // An operator's per-face relay switches rest sealed; an absent row leaves every face off. Principal: intent-admission service; opener: intent-relay-ring.
     id({ row: "intent-relay-faces", target: tgt(["S"]), match: file("intent-relay-faces.json"), custody: "hot", keyClass: null,
          writer: "intent-relay-ring" }),
+    // The vessel's secret home's address (`secret-home-store`): its document id and the held key its rest seals it under. A
+    // node-only secret of the vessel, never one face's: it never leaves its vessel. Principal and opener: secret-home-store.
+    id({ row: "secret-home", target: tgt(["S"]), match: file(SECRET_HOME_FILE), custody: "hot", keyClass: "device-minted",
+         writer: "secret-home-store" }),
     // A hearth's own cadence key and its next key, minted at random on the device for one joint founding
     // (`cadence-key-store`): apart from every root, leaf, seat and serving or floor key. It stays on its vessel.
-    faceRowOf({ row: "cadence-key", target: tgt(["D"]), inner: /^cadence-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "device-minted",
+    faceRecordOf({ row: "cadence-key", target: tgt(["D"]), inner: /^cadence-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "device-minted",
          writer: "cadence-key-store", name: (m) => `cadence-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // A restore's own commit row: everything one restore will land, sealed in ONE write before any row moves. It
     // holds a root for the length of that restore and leaves once the face stands lit; no bundle carries it.
-    faceRowOf({ row: "restore-pending", target: tgt(["D"]), inner: RESTORE_PENDING_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed", name: (m) => `restore-pending-h${m[1]}`,
+    faceRecordOf({ row: "restore-pending", target: tgt(["D"]), inner: RESTORE_PENDING_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed", name: (m) => `restore-pending-h${m[1]}`,
          writer: "face-bundle-restore" }),
-    faceRowOf({ row: "device-share", target: tgt(["D"]), inner: DEVICE_SHARE_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
+    faceRecordOf({ row: "device-share", target: tgt(["D"]), inner: DEVICE_SHARE_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf }),
   ]);
 }
@@ -523,7 +533,7 @@ function buildTable(): readonly CarrierRow[] {
 let table: readonly CarrierRow[] | null = null;
 
 /** The rows a face's backup bundle carries, each beside its treatment: every row the column names anything but `stays`. */
-export function bundleRows(): ReadonlyArray<{ readonly row: string; readonly bundle: Exclude<BundleTreatment, "stays"> }> {
+export function bundleCarriers(): ReadonlyArray<{ readonly row: string; readonly bundle: Exclude<BundleTreatment, "stays"> }> {
   return carrierTable().flatMap((r) => (r.bundle === "stays" ? [] : [{ row: r.row, bundle: r.bundle }]));
 }
 

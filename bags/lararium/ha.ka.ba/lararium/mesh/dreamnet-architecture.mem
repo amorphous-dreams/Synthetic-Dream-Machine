@@ -145,7 +145,28 @@ The corpus-kahu hold ''kahu'' at this layer — a k-of-n quorum seated from the 
 
 ''The engine cadence runs per Nexus, and devices move by adoption.'' A Nexus admits a rolling window of engine epochs; a cadence threshold seated apart from its kahu quorum — a self-governing lineage held by those who bear the reboot cost (operators whose places run the engine) — offers the next engine and advances the window. ''Each device moves only by its own adoption'' — a reboot onto the offered engine — and carrying never counts toward the cadence (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/contract`>>, the seated engine-update authority at <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/engine-watch`>>).
 
-''Grammar drift alone does not separate Nexuses — the engine epoch binds who-can-talk.'' (And a PLUGIN drift makes no grammar drift at all: the grammar holds its own region, so an operator's collection moves `pluginsCid` and touches no reading but their own.) Membership rides `hearthTrueName` = `engineCid`, signed into every device-delegation edge, so two operators on one engine differ in grammar without schisming; only a DIFFERENT engine reaches the disjoint-station-set break (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-real-mover`>>).
+''Grammar drift alone does not separate Nexuses — the engine epoch binds who-can-talk.'' (And a PLUGIN drift makes no grammar drift at all: the grammar holds its own region, so an operator's collection moves `pluginsCid` and touches no reading but their own.) Membership rides `hearthTrueName`, the hearth's seed-charter Nexus AID (operator ruling R1, 2026-10-05; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>), signed into every device-delegation edge with the engine as a separate claim, so two operators on one engine differ in grammar without schisming; only a DIFFERENT engine reaches the disjoint-station-set break (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-real-mover`>>).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-nexus-scales`>>
+
+!! The Nexus scales ~ one Lararium per human, then a recursive stack by contract (talk-story, 2026-11-12)
+
+The shrine tiers of #/infra-axis read at five scales. Each scale keeps its own charter, its own engine cadence and its own Kahu, and none commands the scale beneath it; a wider scale gathers narrower ones by contract and treaty, never by a chain of command.
+
+* ''One human, one Lararium.'' A person's many nodes, browsers and phones stay one Lararium, however many faces that person wears. The Nexus threshold sits at a second sovereign (#/infra-axis), so no quorum forms across one human's own faces (#/social-axis, plurality).
+* ''The Household Nexus.'' Two operators under one roof found a fresh joint charter beside each household's own seed, under a settlement-free PEER contract; its true name names that joint charter's AID (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>).
+* ''The Crossroads.'' A neighbourhood's Nexus: flat carriage over a shared leyline fabric (the IXP rhyme), its own Kahu, its own public board (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/crossroads`>>).
+* ''The Temple.'' A city's Nexus: any-to-any carriage at civic radius, commanding no tier below it.
+* ''The True-Named planetary Nexus.'' New-Delos and Neo-Thracia in the fiction: a recursive `#has`-stack of Nexuses held together by carriage contracts and treaties. Each member keeps its charter, its engine cadence and its Kahu, and accepts the parent's floors by pull, the way a vessel accepts a floor release (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin`>>).
+
+''Two laws bind the stack'' (operator, 2026-11-12: //"Pono, approve both leans (many floors, Kahu seats)."//).
+
+* ''Many floors stack innermost-first.'' A vessel standing in several Nexuses pins one floor per Nexus, and its recipe stacks them innermost-first: its Household's canon shadows the Crossroads', which shadows the Temple's, with the planetary floor beneath. The top layer shadows across tiers as it does within one recipe (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/many-floors`>>).
+* ''A Kahu seat per tier.'' Each tier seats its own Kahu quorum. Any human may hold seats at several tiers, and no tier's seats count toward another tier's quorum (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seats-per-tier`>>).
+
+''The DreamNet hosts each scale in one of three postures'' (#/publication-and-discovery): ''private'' (the Nexus announces nothing; its members reach it by invitation and carried pins alone), ''contracted'' (it carries for the Nexuses it signed a PEER or TRANSIT contract with, and they read its floor by pull), or ''public'' (its boards and floor releases announce on the crossroads plane, and their CIDs read public to every DreamNet user).
 
 <<~/ahu>>
 
@@ -209,11 +230,11 @@ The root. Each vessel mints its ''own'' Ed25519 keypair, stored locally (disk `0
 
 !!! personaGroup (veiled)
 
-One operator, N device-vessels. The `PersonaGroup`, a Keyhive group, proves which vessels speak for the same operator. The group faces the mesh ''veiled'' — anon by default, a first-class veil, not a deficit (see the veil doctrine at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil`>>). The fleet-join ceremony transfers one face's membership out-of-band (QR, file, direct message) — no server participates.
+One face, N device-vessels. A face's `PersonaGroup`, a Keyhive group, holds the devices that wear that face and proves which vessels speak for it. A human who wears several faces holds one PersonaGroup per face, and no Keyhive structure, key or record joins them. The group faces the mesh ''veiled'' — anon by default, a first-class veil, not a deficit (see the veil doctrine at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil`>>). The fleet-join ceremony transfers one face's membership out-of-band (QR, file, direct message) — no server participates.
 
 !!! cabalGroup (neighborhood shrine)
 
-Multiple personaGroups who share a charter and a common ontology surface. The Keyhive `MeshCabal` sentinel document proves cabalGroup membership; cabal membership ''scopes read'' — it decides what a vessel may decrypt off the streams its relays deliver. ''A cabal names a //social// relationship — a mutual-petname Circle (who-recognizes-whom on the WHO axis), and it carries NO carriage:'' cabal-membership proposes ''no'' relay edge. To carry, a vessel signs a //separate//, deliberate PEER/TRANSIT edge on the INFRA axis (#/infra-axis) — the two planes never auto-couple, ''map never collapses to territory'' (ruling 2026-06-28). A cabalGroup holds `cap=admin` on its own ''charter and corpus bags'' (its social shared docs, never carriage-infrastructure) and may author a local corpus extension — new meme namespaces, local sigil tiddlers, charter documents — without permission from the DreamNet layer. The charter lives in the cabal's own Automerge docs; it does not inherit the corpus-kahu's grammar, it ''shares'' it via CRDT propagation from the genesis artifact.
+Multiple personaGroups who share a charter and a common ontology surface. A cabal's membership lives in the counted admission its charter's seat quorum signs plus, for a private cabal of one and for a shared wiki's workbench, a Keyhive Document that a vessel keeps for the realm; the per-face `MeshCabal` sentinel a face founds seats only that face's own PersonaGroup. Cabal membership ''scopes read'' — it decides what a vessel may decrypt off the streams its relays deliver. ''A cabal names a //social// relationship — a mutual-petname Circle (who-recognizes-whom on the WHO axis), and it carries NO carriage:'' cabal-membership proposes ''no'' relay edge. To carry, a vessel signs a //separate//, deliberate PEER/TRANSIT edge on the INFRA axis (#/infra-axis) — the two planes never auto-couple, ''map never collapses to territory'' (ruling 2026-06-28). A cabalGroup holds `cap=admin` on its own ''charter and corpus bags'' (its social shared docs, never carriage-infrastructure) and may author a local corpus extension — new meme namespaces, local sigil tiddlers, charter documents — without permission from the DreamNet layer. The charter lives in the cabal's own Automerge docs; it does not inherit the corpus-kahu's grammar, it ''shares'' it via CRDT propagation from the genesis artifact.
 
 The "neighborhood shrine" framing: a place that carries local ritual, local knowledge, local aesthetic — while recognizing the shared pattern grammar that keeps it legible to neighboring shrines.
 
@@ -229,15 +250,38 @@ One human carries ''many Handles'' (personaGroups on the WHO axis) crossed with 
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-walkers`>>
+
+!! The walkers ~ a user, an operator and the crossing between them (talk-story, 2026-11-12)
+
+The operator's words frame the stories: //"a human carries multiple faces"//, //"isomorphic by intent for all vessels by capability"//, //"users have leaf-device fleets, operators have leaf+node fleets"// (2026-11-12). Each story names what the person holds and where it stops.
+
+* ''Mele, a user.'' Mele holds a leaf fleet: a phone and a laptop browser. Each leaf arrives as a veil (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model`>>); her phone founds her face through its own door, and the laptop joins by three files the two screens trade, then seats by two more, with no server between them (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/device-seats`>>). Her edges state `hearthTrueName: ""`, since no hearth holds her. A lost device leaves by an act (the root strikes its edge), and a lost root returns by her recovery contacts, never by a custodian.
+* ''Leilani, an operator.'' Leilani holds a hearth: a node that founded her seed charter, her leaves joined to its face. Her edges name the seed charter's AID. She contracts into a Crossroads by a signed PEER edge, and she leaves a Nexus by forking: a new charter, her own seat, her relations re-bound under it.
+* ''Mele becomes an operator.'' Mele buys a Pi. It stands its veil floor, joins her existing face through the carriage, then seals a seed charter as that face, so her leaves keep the face they already wear and gain a hearth's wall by that act. Today `found` mints a fresh face 0, so this crossing stands owed (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-leaps`>>).
+
+''A home mints only where a vessel rests content.'' The vessel types read by what each can hold.
+
+|! Vessel |! Stands as |! Rests content |
+| a node | a full vessel, or a herm | yes: its store, its keys, an inbound gate |
+| a browser, a phone, a tablet | a leaf vessel | yes: its OPFS and IndexedDB store, its device key; no inbound socket |
+| Mudlet | a surface | no: no key, no store; it reads and writes through a node's doors |
+| UE6 | a surface, or a sidecar vessel carrying a store of its own | only as the sidecar |
+| QuickJS without WASM | an engine | no: it runs a wiki and holds no store |
+
+A surface or a bare engine holds no secret home and no control document, since nothing of a face rests there; the vessel it ports onto holds both.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/faces-fleets-and-the-ward`>>
 
 !! Faces, Fleets and the Ward ~ who may cross a device
 
-Rulings from the operator, 2026-11-04 and 2026-11-05. The ward lands as row 7 of the seat-harness carrier.
+Rulings from the operator, 2026-11-04 and 2026-11-05. The ward lands as item 7 of the seat-harness carrier.
 
 !!! A cloud of faces, never a registry
 
-A human holds plural faces (PersonaGroups), and each face is a relation with its own fleet. ''Fleets overlap'': one vessel may stand enrolled in several faces, with ''one active face per device or session''. A face holds its own signed device set, folded from its admissions. The human appears in no record. The human stays the hand that knows each face's passphrase, so the overlap forms a cloud, never a list of who owns which device.
+A human holds plural faces (PersonaGroups), and each face is a relation with its own fleet. ''Fleets overlap'': one vessel may stand enrolled in several faces, and several of them may stand ''open'' on it at once, each sealing under its own key, while ''one face stands worn'': the face the unlock names and the composition mounts, the one the AI seat acts as (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set`>>). The multitude of faces reads as a private cabal of one human: a face shares with another face by the cabal grammar, never by a parallel list (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>). A face holds its own signed device set, folded from its admissions. The human appears in no record. The human stays the hand that knows each face's passphrase, so the overlap forms a cloud, never a list of who owns which device.
 
 !!! The ward binds the hearth's own fire
 
@@ -245,17 +289,19 @@ Users keep full caps over their own wikis. The daemon wiki and the kahua stage c
 
 Bound acts:
 * promote-commit and kāpae-lower in the daemon and kahua wikis;
-* the swarm's house cap, lane shares and push go;
+* the swarm's house cap, lane shares and push lei;
 * every act that changes who belongs to a face, or what it trusts: admit, fleet-join, recovery contact, publication, the founder certificate;
 * the kahua lift.
 
 kāpae-raise only adds a brake, so it fails safe and needs no hand.
 
+''Critical procedures stand beside this list, never in it.'' A door that destroys a place or a face on a device (a browser vessel's reset first) signs nothing, so it opens no ward key. It takes the confirm gate: a passphrase that opens the device's custody where any stands, proved against custody at rest so a locked vessel answers too, and the typed phrase at a bare floor (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-confirm-gate`>>).
+
 !!! The reach law
 
 ''Motion stays local; a decision that crosses devices takes a hand.'' The working top serves as the free local floor the AI writes on. A kahua lift crosses devices, because the stage syncs to every device the face wears, so it rides the ward: one passphrase per verified batch. Memory steers the spirit, since the Lares read the kahua at cold boot, so memory carries weight the way code does.
 
-''The co-sign binds by reach.'' An act whose effect leaves the device (kāpae-lower, the house cap, the push go) also needs a second device of the same face to answer through the face intent plane. A one-device fleet needs the fresh unlock alone. An offline second device refuses and never falls back. Distinctness reads by the face's own atoms. An answer counts only when its signer stands in that face's device set and differs from the asker.
+''The co-sign binds by reach.'' An act whose effect leaves the device (kāpae-lower, the house cap, the push lei) also needs a second device of the same face to answer through the face intent plane. A one-device fleet needs the fresh unlock alone. An offline second device refuses and never falls back. Distinctness reads by the face's own atoms. An answer counts only when its signer stands in that face's device set and differs from the asker.
 
 ''A vessel never publishes one key across faces'', since that would link a person's faces. Instead, each admission carries a per-face blinded vessel tag, so a vessel admitted twice into one face refuses, while its tags in different faces stay unlinkable.
 
@@ -345,7 +391,7 @@ The Nexus AID (`nexus-…`, `sealEpochCidOf` at genesis, read by `nexusAidOf`) c
 
 !!! Where the board reads
 
-All 12 CLI-verb board-read sites route through `nodeNexusIsland({ ownVesselKey })` rather than a raw vessel key, mirroring the internal `device-admit/v1` edge mint's board reading (`0b085461c`); a 13th site (`runNexusMembersList`'s `carriageDocUrl`) stays per-vessel BY DESIGN (own board only, the carry-split registry). The KEL-chain climb (`carryPersonaKelUpTheGradient`) runs at daemon boot and ''ON READ'' at the internal device-edge seam (`ac9a645ba`), reusing the boot's own idempotent climb, so a store-direct sequence (`persona new 0` then `nexus rite quorum` with no restart) finds `admitBoardIsland` reading a board the charter island holds.
+All 12 CLI-verb board-read sites route through `nodeNexusIsland({ ownVesselKey })` rather than a raw vessel key, mirroring the internal `device-admit` edge mint's board reading (`0b085461c`); a 13th site (`runNexusMembersList`'s `carriageDocUrl`) stays per-vessel BY DESIGN (own board only, the carry-split registry). The KEL-chain climb (`carryPersonaKelUpTheGradient`) runs at daemon boot and ''ON READ'' at the internal device-edge seam (`ac9a645ba`), reusing the boot's own idempotent climb, so a store-direct sequence (`persona new 0` then `nexus rite quorum` with no restart) finds `admitBoardIsland` reading a board the charter island holds.
 
 <<~/ahu>>
 
@@ -492,11 +538,11 @@ A vessel that imports a bag from a foreign cabalGroup parses its memes, verifies
 
 <<~ ahu slot=`#/publication-and-discovery`>>
 
-!! Publication & Discovery — the offering, the crossroads announce, the handle card
+!! Publication & Discovery — the offering, the Nexus's public boards, the handle card
 
 ''The lamplighter carries the basket; the kahu decides to plant'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/offering`>> #/charge, operator 2026-09-13, quote license). `nexus publish` names a LAMPLIGHTER act (the offering's own cap names `offer` · `carry` · `witness`; how they sit against the ruled Lamplighter stack `carry` · `tend/island` · `tend/reach` stands OPEN, `offering.mem` #/the-caps) that never ratchets, distinct from the grammar cadence (`nexus kahuli grammar`) that installs. That cadence turns on a joint apart from the Nexus kahu quorum's admit, kapae and seal: infrastructure operators ratify it on their own hearth and device users adopt (`kahu.mem` ``kahu#/nexus-scale``). ''`--apply` MUST'' mint a signed offering naming a collection by its region cid and announce it on the crossroads plane, and it ''MUST NOT'' install anything, ratchet anything, reach another vessel, compile a list of offerings, or carry a second signing hand (`offering.mem` #/apply). Only the RECEIVING hearth's own `kāhuli grammar` ratchets, at the operator's own hand. ''Status, honestly'': the record + recompute + antigen fold stand BUILT (`dcec1ef0b`, `6df13cffc`); `--apply` itself stands HELD at `packages/lares-cli/src/commands/nexus-publish.ts:60-66`, and the announce record, the taker's `--from` door, and the `offer`/`carry`/`witness` cap names all stand UNBUILT (`offering.mem` meta `status-why`).
 
-''The crossroads announce'' — crossroads-plane carries a kūkala (a public cry: notice, tombstone, or kāpae) and //"names only that it exists"//, never the doc (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/crossroads`>> #/open, quote license). One crossroads serves ONE Nexus, by ruling (2026-09-03): ''no confederation-wide floor exists, by design''. Crossing costs a DECLARING ACT — bytes sitting in a vessel's mirror publish nothing; an act carries them across, and the declaration duplicates while the content never does (`crossroads.mem` #/open).
+''The crossroads announce'' — crossroads-plane carries a kūkala (a public cry: notice, tombstone, or kāpae) and //"names only that it exists"//, never the doc (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/crossroads`>> #/open, quote license). One crossroads serves ONE Nexus, by ruling (2026-09-03): ''no confederation-wide floor exists, by design''. Crossing costs a DECLARING ACT — bytes sitting in a vessel's mirror publish nothing; an act carries them across, and the declaration duplicates while the content never does (`crossroads.mem` #/open). ''Where each announce rests, by placement:'' the Nexus's signed publications (each offering's announce from `nexus publish`, each floor release from `nexus release`) rest on its publication board (`publicationDocUrl`), and each realm-bag announce on its realm-announce board (`realmAnnounceDocUrl`); the federation gate carries both beside the crossroads document, no recipe mounts either and no mirror names either, so no announce reaches `bags/crossroads/` and a file hand-placed under the crossroads mirror reads as neither.
 
 ''Handle announce cards'' ride the same law: WRITE-OPEN, READ-CERTIFIED (#/the-planes). The board gates nothing at write time — gating there would require a compiled who-may-announce set, which builds the rejected registry (`handle-announce.mem`/`handle-announce.ts:18-25`) — and standing arrives only from a READ verdict against the card's own chain.
 
@@ -512,7 +558,7 @@ A vessel that imports a bag from a foreign cabalGroup parses its memes, verifies
 
 !! The Golden Principles — what every plane above obeys
 
-''No-global-now / causal islands.'' ''"No-global-now stands as a HARD design parameter"'' (operator, 2026-09-06, quote license, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>> #/the-law). Federation reads as a presheaf of local causal-logs that forms NO sheaf — the local sections need not glue to a global section, and that failure carries the content: //"'no global now' IS the gluing obstruction"// (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>> #/law). The master cut rides above the gluing: ''AUTHORITY(safety) ⊥ FLOW(liveness)'' — flow may glue probabilistically and eventually, authority never. A vessel holds a snapshot of previously-synchronized state, never the whole distributed system "at once" (`causal-islands.mem` #/head).
+''No-global-now / causal islands.'' ''"No-global-now stands as a HARD design parameter"'' (operator, 2026-09-06, quote license, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>> #/the-law). Federation reads as a presheaf of local causal-logs that forms NO sheaf — the local sections need not glue to a global section, and that failure carries the content: //"'no global now' IS the gluing obstruction"// (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>> #/law). The master cut rides above the gluing: ''AUTHORITY(safety) ⊥ FLOW(liveness)'' — flow may glue probabilistically and eventually, authority never. A vessel holds a snapshot of state as of its last sync, never the whole distributed system "at once" (`causal-islands.mem` #/head).
 
 ''The registry filter.'' ''"If a fork's downstream builds a 'global registry' of even ONE-NEXUS scope, the fork is REJECTED"'' (operator, 2026-09-06, quote license, `registry-filter.mem` #/the-law) — the rule fires at DESIGN time, so a rejected fork never reaches code. The mechanical test, run on every plane above: ''CARRIAGE (passes)'' — authored announced-BY-the-subject, replicated causally, read as-of-my-last-sync, not enumerable by construction; ''REGISTRY (rejected, at ANY scope)'' — compiled ABOUT subjects, replicated authoritatively, read as-of-truth, and its compilation IS the product (`registry-filter.mem` #/the-test). ''The shadow-case:'' a key reused across contexts compiles a registry in the correlations it leaves, with or without a table — "the test reads OUTPUT SHAPES, not tables" (`registry-filter.mem` #/the-test).
 
@@ -539,7 +585,7 @@ The earlier cap-wall — an anonymous vessel ''DENIED'' at the relay door — re
 A fresh browser spore dials in along one of ''three distinct crossings'', each clearing a different door:
 
 * ''anon → public-lararium'' — the ''veil'' path: public-read off the content-addressed floor (#/the-cas-substrate), no pledge, no admission; the relay-forward gate runs near-open. WITNESSED: an anon browser boots live against a public lararium and renders the public plane (the browser-wiki witness, commit 0c379598). This older direct browser projection witness does not prove the current Pronaos target or an NGINX/Caddy carrier deployment.
-* ''anon → walking'' — the ''invite'': any member face (a Kahu, a Lamplighter, another user) hands a burned-once invite, and the spore boots onto the road — no quorum, no board trace, hospitality rather than admission (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions`>>). A realm's own JOIN rides apart: a held face ''vouches'' and stakes its own standing, which decays if the joiner sours (the siege-gate `rb>c`, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate`>>); and a fleet-join `device-admit/v1` edge binds one human's own instruments into their PersonaGroup, never a second human (#/social-axis). ''No invite → anergy:'' the spore draws no ban, it ''stays anon at the floor'', free to re-present later with an invite.
+* ''anon → walking'' — the ''invite'': any member face (a Kahu, a Lamplighter, another user) hands a burned-once invite, and the spore boots onto the road — no quorum, no board trace, hospitality rather than admission (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions`>>). A realm's own JOIN rides apart: a held face ''vouches'' and stakes its own standing, which decays if the joiner sours (the siege-gate `rb>c`, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate`>>); and a fleet-join `device-admit` edge binds one human's own instruments into their PersonaGroup, never a second human (#/social-axis). ''No invite → anergy:'' the spore draws no ban, it ''stays anon at the floor'', free to re-present later with an invite.
 * ''operator'' — ''runs-INFRA'', orthogonal to the two WHO crossings: a browser carrying the operator's own infrastructure standing reaches its own sovereign plane. The vertical-on-INFRA position (#/two-axis-topology), never a social tier.
 
 ''The keystone (PROPOSED, unbuilt):'' a ''tiered verdict in the keyholder worker'' — the gate reads the dialing spore and returns one of ''veil · PersonaGroup · owner'', routing each crossing to its right door (the split-gate made operational). The earlier single DENIED verdict read as a fused gate; the tiered verdict dissolves it. the matrix stands ruled; the tiered keyholder-worker verdict awaits build and witness.
@@ -624,7 +670,7 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 ''SETTLED.'' The board-keying fork stands ''RULED WHOLE'' (2026-09-18) (#/the-nexus-keying-spine, `91ce09afb`+`c6cfe5b8d`; source declares closure at `open-node-vessel.ts:2272-2277`). All 12 CLI-verb board reads route through `nodeNexusIsland` (`0b085461c`). Device-admit carries on read, so a store-direct rite-then-admit sequence never strands a board mid-climb (`ac9a645ba`+`fadd667f0`). ''`heraldry.mem`'s order note (#/plan) names this fork "owed to the operator"; the ruling closes it, so a reader carries that note as a record, never as open''.
 
-The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side door stands: `open-node-vessel.ts` `resolveCidThroughDoor` → `node-cas.ts` `hermCasTransitFromEnv` → `makeCidResolver` (`tests/herm-cas-transit.test.ts` and `tests/herm-reshares-public-blob.test.ts` hold it green). The Herm's own public read face (`bulb-read-face.ts`) serves local bytes only, synchronously, with no fetch-and-write-through, and `composeCasTransits` (`node-cas.ts`) has no caller in `packages/*/src` (`W22` names that wiring owed).
+The carriage-client fetch item stays OWED (measured 2026-10-22). The vessel-side door stands: `open-node-vessel.ts` `resolveCidThroughDoor` → `node-cas.ts` `hermCasTransitFromEnv` → `makeCidResolver` (`tests/herm-cas-transit.test.ts` and `tests/herm-reshares-public-blob.test.ts` hold it green). The Herm's own public read face (`bulb-read-face.ts`) serves local bytes only, synchronously, with no fetch-and-write-through, and `composeCasTransits` (`node-cas.ts`) has no caller in `packages/*/src` (`W22` names that wiring owed).
 
 ''NAMED-BUT-UNBUILT, in staged order:''
 
@@ -679,6 +725,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;19hUbqH1f0Eb_XFqOc-VKMcIcI6P8ZP0FfhNwUpd9oQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;md8FTaToLPFx7R2ql17nQzNkum40sqJ6xkcUiLPHR6Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1,13 +1,18 @@
 import { describe, expect, test } from "vitest";
 import * as glass from "@lararium/tw5/glass";
 import { TW5Engine } from "@lararium/tw5/glass";
-import { named } from "../src/glass/cid.js";
 import coreUrl from "../../lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js?url";
 
 async function coreBytes(): Promise<Uint8Array> {
   const response = await fetch(coreUrl);
   if (!response.ok) throw new Error(`glass-core-fixture-unavailable:${response.status}`);
   return new Uint8Array(await response.arrayBuffer());
+}
+
+/** The core's content id: the hex SHA-256 of its bytes. */
+async function cidOf(bytes: Uint8Array): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
 /** Run `act`, then wait for the wiki's own change event; the camera's listener stands ahead of this one. */
@@ -39,8 +44,7 @@ describe("glass boot on the real page", () => {
     const door = (glass as any).openMirror;
     expect(door).toBeTypeOf("function");
     const bytes = await coreBytes();
-    const digest = await crypto.subtle.digest("SHA-256", bytes);
-    const coreCid = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    const coreCid = await cidOf(bytes);
     const camera = await door({ transport, inputs: { coreBytes: bytes, coreCid, preloadedTiddlers: [
       { title: "Glass Seed", text: "Glass seed body" },
       { title: "$:/StoryList", list: ["Glass Seed"] },
@@ -67,12 +71,37 @@ describe("glass boot on the real page", () => {
     // CONTROL: the lends stay for the engine's life and leave with it.
     expect(typeof (globalThis as Record<string, unknown>)["Buffer"]).toBe("undefined");
   });
-});
 
-describe("glass cas names", () => {
-  test("a malformed core or plugin id refuses by name before any read; a hash passes", () => {
-    expect(() => named("core", "not-a-cid")).toThrow("glass-core-cid-refused:not-a-cid");
-    expect(() => named("plugin", "../x")).toThrow("glass-plugin-cid-refused:../x");
-    expect(named("core", "0".repeat(64))).toBe("0".repeat(64));
+  test("orphan-projects-and-flags, the browser's half: a slot record with no root stands as a plain tiddler and the mirror raises the flag", async () => {
+    const host = document.createElement("div");
+    document.body.append(host);
+    const shadowRoot = host.attachShadow({ mode: "open" });
+    const transport = { send: () => ({ ok: true as const }), onMessage: () => () => {} };
+    const bytes = await coreBytes();
+    const coreCid = await cidOf(bytes);
+    const root = "lar:///t/glass/orphan-root";
+    const whole = "lar:///t/glass/whole-root";
+    const carrier = "text/memetic-wikitext+tiddlywiki";
+    const record = (title: string, fields: Record<string, string>) => ({ title, fields: { title, type: carrier, ...fields } });
+    const camera = await (glass as any).openMirror({ transport, inputs: { coreBytes: bytes, coreCid, preloadedTiddlers: [] }, shadowRoot,
+      opened: { records: [
+        record(`${root}#/lone`, { text: "lone body", "$fragment-parent": root, "$slot": "#/lone" }),
+        // CONTROL: a whole family raises nothing.
+        record(whole, { text: "root" }),
+        record(`${whole}#/a`, { text: "a body", "$fragment-parent": whole, "$slot": "#/a" }),
+      ] },
+      wikiUri: "wiki", actor: "actor", width: "full", portId: "test", mintTx: () => "tx" });
+    const tw = camera.tw;
+    // The flag pass waits one microtask after the boot's records stand.
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(tw.wiki.getTiddler(`${root}#/lone`)?.fields.text).toBe("lone body");
+    const flag = tw.wiki.getTiddler(`$:/temp/lares/alert/meme-orphan/${root}`);
+    expect(flag?.fields.orphans).toBe(`${root}#/lone`);
+    expect(flag?.fields.root).toBe(root);
+    expect(flag?.fields["seen-at"]).toMatch(/@\d+$/);
+    expect(tw.wiki.getTiddler(`$:/temp/lares/alert/meme-orphan/${whole}`)).toBeUndefined();
+    camera.unmount();
+    host.remove();
   });
 });

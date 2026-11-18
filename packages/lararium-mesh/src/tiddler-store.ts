@@ -89,14 +89,6 @@ export interface LarTiddlerMeta {
   readonly authority?:     string;
   readonly recipe?:        string;
   /**
-   * Residency Model schema-version tag — Anti-pattern #2 defense (schema drift
-   * across multi-bag residency). Records carry their schema-version so a
-   * consumer can tell which shape generation it is reading. Absent = no
-   * migration needed. Convention: short stable string (e.g. "v1", "lore-2",
-   * "2026-05"). No read-time lens projects these.
-   */
-  readonly schemaVersion?: string;
-  /**
    * Residency Model change-id — Anti-pattern #1 defense (causal-history
    * severance on copy). When an ACTION verb (ADD / COPY / MOVE / LOAD)
    * transfers a tiddler between bags, the handler MUST preserve the
@@ -119,6 +111,11 @@ export interface LarTiddlerRecord {
 export interface LarWriteOptions {
   readonly bag?: string;
   readonly base?: readonly string[];
+  /**
+   * `writeFamily` alone: titles that RETRACT to absent inside the same change (a hard remove, never a kāpae
+   * tombstone), so the cascade falls through and a record beneath surfaces. A reveal delete of a family rides here.
+   */
+  readonly retracts?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -250,7 +247,7 @@ export interface LarTiddlerStore {
   tombstone(title: string, origin: ChangeOrigin, options?: { readonly base?: readonly string[] }): Promise<void>;
 
   /**
-   * Write a meme FAMILY — a root, its slot children, and the orphan children it no longer declares —
+   * Write a meme FAMILY — a root, its slot children, and the orphan children it leaves undeclared —
    * as ONE atomic change, so no peer ever sees the root pointing at a tombstoned child or a child
    * without its root. `options.bag` routes exactly as `put`'s does. A store that cannot write
    * atomically omits this and its callers write member by member.

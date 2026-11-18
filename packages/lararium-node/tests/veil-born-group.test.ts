@@ -17,14 +17,18 @@ import {
   type LarDoc,
 } from "@lararium/mesh";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome, MEMORY_SEALED } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 
+/** Each founding's secret home, by its PersonaGroup: where its cap events replay from. */
+const secretHandles = new Map<string, unknown>();
+
 async function found() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo,
+  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo,
     vesselSeed:         FOUNDER_SEED,
     placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",
@@ -33,7 +37,9 @@ async function found() {
     nexusPubkey:          verifyingKey,
   });
   const handle = await repo.find(f.daemonUrl as AutomergeUrl);
-  return { repo, f, handle, doc: handle.doc() as unknown as LarDoc };
+  const secret = await repo.find(f.secretUrl as AutomergeUrl);
+  secretHandles.set(f.personaGroupId, secret);
+  return { repo, f, handle, doc: handle.doc() as unknown as LarDoc, secretDoc: secret.doc() as unknown as LarDoc };
 }
 
 describe("the atom-born group", () => {
@@ -49,10 +55,10 @@ describe("the atom-born group", () => {
     // Stand the atom identity exactly as boot will: open the seed, restore the Archive the founding handed
     // out (the creator's key agreement state rests there and nowhere else), hydrate over the daemon doc.
     const veilKh = new KeyhiveProvider();
-    await veilKh.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never, f.personaGroupId), archiveBytes: f.veilArchive });
+    await veilKh.init({ seed: f.atomSeed, eventStore: await replayCapEvents(secretHandles.get(f.personaGroupId) as never, f.personaGroupId, MEMORY_SEALED), archiveBytes: f.veilArchive });
     await veilKh.hydrateFromEventStore();
     const vesselKh = new KeyhiveProvider();
-    await vesselKh.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never, f.personaGroupId) });
+    await vesselKh.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(secretHandles.get(f.personaGroupId) as never, f.personaGroupId, MEMORY_SEALED) });
     await vesselKh.hydrateFromEventStore();
     const vesselId = await vesselKh.vesselIdentifierHex();
 
@@ -69,7 +75,7 @@ describe("the atom-born group", () => {
 
     // The functional half: the boot-stood veil EXERCISES the creator's authority.
     const guest = new KeyhiveProvider();
-    await guest.init({ seed: new Uint8Array(32).fill(99), eventStore: await replayCapEvents(handle as never, f.personaGroupId) });
+    await guest.init({ seed: new Uint8Array(32).fill(99), eventStore: await replayCapEvents(secretHandles.get(f.personaGroupId) as never, f.personaGroupId, MEMORY_SEALED) });
     const { id: guestId } = await veilKh.receiveContactCard(await guest.contactCard());
     await veilKh.addGroupMember(guestId, f.personaGroupId);
     const after = await veilKh.groupMembers(f.personaGroupId);
@@ -77,8 +83,8 @@ describe("the atom-born group", () => {
   });
 
   test("the founder's dyad names the atom", async () => {
-    const { f, doc } = await found();
-    const dyads = vesselDyads(doc);
+    const { f, secretDoc } = await found();
+    const dyads = vesselDyads(secretDoc);
     expect(dyads).toHaveLength(1);
     expect(dyads[0]!.ref.deviceDid.toLowerCase()).toBe(faceAtomKeyFromSeed(f.atomSeed, f.personaGroupId).did.toLowerCase());
   });
@@ -90,11 +96,11 @@ describe("the atom-born group", () => {
     // (the group's material keys to the prekeys the seated card carried).
     const { f, handle } = await found();
     const seat = new KeyhiveProvider();
-    await seat.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never, f.personaGroupId), archiveBytes: f.veilArchive });
+    await seat.init({ seed: f.atomSeed, eventStore: await replayCapEvents(secretHandles.get(f.personaGroupId) as never, f.personaGroupId, MEMORY_SEALED), archiveBytes: f.veilArchive });
     await seat.hydrateFromEventStore();
 
     const founderVessel = new KeyhiveProvider();
-    await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never, f.personaGroupId) });
+    await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(secretHandles.get(f.personaGroupId) as never, f.personaGroupId, MEMORY_SEALED) });
     await founderVessel.hydrateFromEventStore();
 
     const JOINEE_SEED = new Uint8Array(32).fill(41);
@@ -134,10 +140,10 @@ describe("the atom-born group", () => {
     // on a veil stood FROM THE ARCHIVE — never a fresh mint whose prekeys match nothing.
     const { f, handle } = await found();
     const seat = new KeyhiveProvider();
-    await seat.init({ seed: f.atomSeed, eventStore: await replayCapEvents(handle as never, f.personaGroupId), archiveBytes: f.veilArchive });
+    await seat.init({ seed: f.atomSeed, eventStore: await replayCapEvents(secretHandles.get(f.personaGroupId) as never, f.personaGroupId, MEMORY_SEALED), archiveBytes: f.veilArchive });
     await seat.hydrateFromEventStore();
     const founderVessel = new KeyhiveProvider();
-    await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never, f.personaGroupId) });
+    await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(secretHandles.get(f.personaGroupId) as never, f.personaGroupId, MEMORY_SEALED) });
     await founderVessel.hydrateFromEventStore();
 
     // The joinee's FIRST boot: mint the veil, export the archive, present the card, receive content.
@@ -173,7 +179,7 @@ describe("the atom-born group", () => {
     // identifier must not be greppable from the founded face's cap events.
     const { handle, f } = await found();
     const vesselKh = new KeyhiveProvider();
-    const store = await replayCapEvents(handle as never, f.personaGroupId);
+    const store = await replayCapEvents(secretHandles.get(f.personaGroupId) as never, f.personaGroupId, MEMORY_SEALED);
     await vesselKh.init({ seed: FOUNDER_SEED, eventStore: store });
     const vesselId = (await vesselKh.vesselIdentifierHex()).replace(/^0x/, "").toLowerCase();
     const events = await store.list();

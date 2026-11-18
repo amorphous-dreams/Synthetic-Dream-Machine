@@ -30,7 +30,7 @@
  * as an explicit declared argument ({@link smoothSimplex}) — never applied silently.
  *
  * CONSUMERS-TO-BE (named, not wired — this file stays a pure organ):
- *   · the Antigonish Sprint-3 DEM heightfield / flow-lens — d_FR as the walk metric over the field;
+ *   · the Antigonish DEM heightfield / flow-lens — d_FR as the walk metric over the field;
  *   · the drift-lens riding the FFZ stick — {@link windowedDrift} with FFZ ticks supplied from outside;
  *   · register-coherence beside bures-metric.ts — same simplex, classical vs quantum step, factor 2.
  *

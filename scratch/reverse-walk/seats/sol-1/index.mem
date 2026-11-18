@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/reverse-walk/seats/sol-1/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/reverse-walk/seats/sol-1/` — 2 record(s) here, 2 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/reverse-walk/seats/sol-1/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/reverse-walk/seats/sol-1/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/reverse-walk/seats/sol-1/`
+
+The scratch planning records of `.lares-scratch/reverse-walk/seats/sol-1/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 2 record(s) stand here and 2 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[reverse-walk/seats/|lar:///ha.ka.ba/lares/docs/history/workshop/reverse-walk/seats/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/reverse-walk/seats/sol-1/brief]] | brief | 2026-11-07 | `brief.md` |
+| [[final|lar:///ha.ka.ba/lares/docs/history/workshop/reverse-walk/seats/sol-1/final]] | hand-back | 2026-11-07 | `final.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iBg7Wg2RGMeQwO0V1ZNyiZqlvFtUdj8JoXr9hAsMlwY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -36,12 +36,16 @@
 
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
-import { join, extname, resolve, relative, sep } from "node:path";
+import { join, extname, resolve, relative, sep, basename } from "node:path";
 import { statSync, readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
-import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
+import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
+
+/** The projections root when one stands, as the optional `MirrorDirs` field. */
+const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
 import { readCarrierText, fileToUriForSource } from "../ingest-core.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "../cas-stage.js";
-import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX, wikiSlugOfBag } from "@lararium/mesh";
+import { metaTableFromBody } from "@lararium/node";
+import { bagManifestUri, BAG_MANIFEST_FILE, ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX, wikiSlugOfBag } from "@lararium/mesh";
 import { summaryOutput, type SubmitResult } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-connector.js";
@@ -139,7 +143,7 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   const root = larRoot();
   // Derive the pack path (mirror-relative, WITH extension) exactly as the island recorded it in the
   // aside provenance: the `lar:` URI's path + the file's extension.
-  const uri = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir() })(root, source);
+  const uri = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() })(root, source);
   if (!uri || !uri.startsWith("lar:///")) {
     emit(args, { ok: false, error: { code: "usage", message: `no address derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`lares act REPACK: no address derivation for "${source}"`) });
     return exitFor("usage");
@@ -231,7 +235,14 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-export async function cmdAct(args: ParsedArgs): Promise<number> {
+/**
+ * What a caller inside this CLI states beside the parsed arguments, with no typed surface of its own:
+ *   · `houseCanon` — the caller (the seed) read this CREATE's bag off the canon source as house canon. The verb carries it as
+ *     `house-canon: true`, and an island that never seated the bag refuses `house-canon-unseated` and mints no catalog row.
+ */
+export interface ActClaims { readonly houseCanon?: boolean }
+
+export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<number> {
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
@@ -332,6 +343,9 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
     nonce = changeId;
     actionArgs["bag"]   = bag;
     actionArgs["plane"] = plane;
+    // THE SEED'S CLAIM (`ActClaims.houseCanon`): the seed read this bag's holding off the canon source as house canon. An island
+    // that never seated the bag refuses `house-canon-unseated` and mints no catalog row for canon.
+    if (claims.houseCanon === true) actionArgs["house-canon"] = true;
   } else {
     // verb === "LOAD"
     const sourceUri = args.options["source-uri"];
@@ -357,7 +371,13 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
             .filter((f) => { try { return statSync(f).isFile(); } catch { return false; } })
         : [sourceUri])
         // A `.meta` sidecar rides WITH its content file, never as a carrier of its own.
-        .filter((f) => !f.endsWith(".meta"));
+        .filter((f) => !f.endsWith(".meta"))
+        // The catalog owns only a declaration naming this source bag; authored meta.mem files still travel.
+        .filter((f) => {
+          if (!isDir || f !== join(sourceUri, BAG_MANIFEST_FILE)) return true;
+          try { return metaTableFromBody(readFileSync(f, "utf8"))["title"] !== bagManifestUri(basename(resolve(sourceUri))); }
+          catch { return true; }
+        });
       // The feed lands BOTH memetic-wikitext memes AND every other legal TW5
       // filetype: each carrier rides its text + a `lar:` title + its extension, and
       // the island routes by content (an SOH heading → the memetic shore; else
@@ -530,8 +550,8 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
         return exitFor("request-interrupted");
       } else if (receipt?.state === "evicted") {
         // M1: the receipt ring dropped this id's outcome past its retention bound — its own code,
-        // never a bare "unknown" that would invite a re-run to re-read a receipt that no longer
-        // exists. Same shared helper as above.
+        // never a bare "unknown" that would invite a re-run to re-read a receipt the ring has
+        // dropped. Same shared helper as above.
         const hint = refusalHint("retention-gap", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "retention-gap", message: msg, hint },
@@ -540,10 +560,10 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
         });
         return exitFor("retention-gap");
       } else {
-        // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID NO LONGER DOES (H4, generalized E1 commit
-        // 4′), AND MUST NEVER CALL A FLAGLESS RE-RUN "SAFE" (M10) — a re-run that omits `--change-id`
+        // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID DOES NOT DO (H4, E1),
+        // AND MUST NEVER CALL A FLAGLESS RE-RUN "SAFE" (M10) — a re-run that omits `--change-id`
         // mints a NEW change, which is exactly the double-run this hint exists to prevent. requestId
-        // is now a FRESH nonce every verb's own attempt alone owns — re-running never reads IT back
+        // is a FRESH nonce every verb's own attempt alone owns — re-running never reads IT back
         // (a fresh attempt mints its own) — so the hint names the EXACT gesture that keeps this a
         // retry rather than a new change: reuse `--change-id`.
         const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares receipt ${requestId}\`. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;

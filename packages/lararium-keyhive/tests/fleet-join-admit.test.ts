@@ -15,7 +15,7 @@ const FLOOR = (() => {
 const GROUP = "0xc0ffee00d15ea5e5";
 const answer = (over: Partial<FleetJoinAnswer> = {}): FleetJoinAnswer => ({
   kind: "fleet-join-answer", nonce: "ab".repeat(32), vesselKey: "cd".repeat(32), personaGroup: GROUP,
-  edge: { kind: "device-admit/v1", personaGroupId: GROUP, syncUrl: "ws://stale.synthetic/ws", deviceEdge: "synthetic" },
+  edge: { kind: "device-admit", personaGroupId: GROUP, syncUrl: "ws://stale.synthetic/ws", deviceEdge: "synthetic" },
   carriage: { gatePin: PIN, canon: { "lar:///ha.ka.ba/bags/lares": "automerge:canon" } },
   reach: { syncUrl: "ws://hearth.synthetic:7777/ws", islandKind: "charter", islandScope: "epoch-0" },
   secret: { epk: "00".repeat(32), nonce: "00".repeat(24), ciphertext: "00" },
@@ -28,7 +28,7 @@ describe("the admit a fleet-join answer carries", () => {
   test("the signed edge founds, with the signed pin, canon and reach beside it", () => {
     const admit = carriedAdmitOfFleetJoin(answer());
     if ("refusal" in admit) throw new Error(admit.refusal);
-    expect(admit.kind).toBe("device-admit/v1");
+    expect(admit.kind).toBe("device-admit");
     expect(admit.hearthGatePubKey).toBe(PIN.signingKey);
     expect(admit.hearthGatePin).toEqual(PIN);
     expect(admit.hearthCanonDocs).toEqual({ "lar:///ha.ka.ba/bags/lares": "automerge:canon" });
@@ -47,7 +47,9 @@ describe("the admit a fleet-join answer carries", () => {
 
   test("an edge reading as no device admit, an edge of another face, or an unknown island kind refuses by name", () => {
     expect(carriedAdmitOfFleetJoin(answer({ edge: { kind: "other" } }))).toEqual({ refusal: "edge-malformed" });
-    expect(carriedAdmitOfFleetJoin(answer({ edge: { kind: "device-admit/v1", personaGroupId: "0x00" } }))).toEqual({ refusal: "edge-other-face" });
+    // A kind that carries a counter names no device admit.
+    expect(carriedAdmitOfFleetJoin(answer({ edge: { kind: "device-admit/v1" } }))).toEqual({ refusal: "edge-malformed" });
+    expect(carriedAdmitOfFleetJoin(answer({ edge: { kind: "device-admit", personaGroupId: "0x00" } }))).toEqual({ refusal: "edge-other-face" });
     expect(carriedAdmitOfFleetJoin(answer({ reach: { syncUrl: null, islandKind: "torn", islandScope: null } }))).toEqual({ refusal: "reach-malformed" });
   });
 });

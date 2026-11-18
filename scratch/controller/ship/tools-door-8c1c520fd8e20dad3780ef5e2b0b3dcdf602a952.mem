@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/tools-door-8c1c520fd8e20dad3780ef5e2b0b3dcdf602a952`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/ship/tools-door-8c1c520fd8e20dad3780ef5e2b0b3dcdf602a952.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/tools-door-8c1c520fd8e20dad3780ef5e2b0b3dcdf602a952"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/tools-door-8c1c520fd8e20dad3780ef5e2b0b3dcdf602a952"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! tools-door-8c1c520fd8e20dad3780ef5e2b0b3dcdf602a952.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/ship/tools-door-8c1c520fd8e20dad3780ef5e2b0b3dcdf602a952.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP tools-door 8c1c520fd8e20dad3780ef5e2b0b3dcdf602a952
+read: Luna cold read (/home/joshu/.lares-scratch/tools-door/luna-read/final.md) HOLD on a P1 (DIRECT landed with no completed held-out run), cured red-first (reds d82a86c77, green 8c1c520fd: one shared held-out gate for train, DIRECT and mem-only DIRECT); Luna re-read (/home/joshu/.lares-scratch/tools-door/luna-read-2/final.md) LAND; the controller's outside-wall runs at every step (land-train 77/77, guards-teach 5/5, headless-default 3/3).
+owed: the launcher ladder P1-3 and the broker test door (re-cut in a fresh lane).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;81sNkAh_5NWS4bxZpKO0voeFKmk0Ir1Pj2cfbKRIXVo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

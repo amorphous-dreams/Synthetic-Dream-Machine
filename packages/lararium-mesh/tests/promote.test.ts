@@ -10,7 +10,7 @@
 import { describe, expect, test } from "vitest";
 import {
   EMPTY_LEDGER, PromoteRefused, decodeLedger, encodeLedger, ledgerCommit, ledgerDecideOrphan, ledgerUnpromote, promoteClass, promoteDigest,
-  promotePreloadBytes, promotedPreloads, reconcilePromotions, verifyPromotionRows, type PromotionLedger,
+  promotePreloadBytes, promotedPreloads, reconcilePromotions, verifyPromotionEntries, type PromotionLedger,
 } from "../src/promote.js";
 
 const W1 = "lar:///ha.ka.ba/wikis/field-notes", W2 = "lar:///ha.ka.ba/wikis/garden";
@@ -83,18 +83,18 @@ describe("who commits", () => {
 describe("the edge is (wiki, digest)", () => {
   test("RED: a promotion in W1 never preloads in W2 though W2 holds the same bytes; CONTROL: W1 preloads it, and promoting the same digest in W2 adds a row of its own", () => {
     const l1 = commit(HAND);
-    const verified = verifyPromotionRows(l1.rows).verified;
+    const verified = verifyPromotionEntries(l1.rows).verified;
     expect(promotedPreloads(verified, W2)).toEqual([]);
     expect(promotedPreloads(verified, W1)).toHaveLength(1);
     const both = commit(HAND, l1, W2);
     expect(both.rows.map((r) => r.wiki).sort()).toEqual([W1, W2]);
-    expect(promotedPreloads(verifyPromotionRows(both.rows).verified, W2)).toHaveLength(1);
+    expect(promotedPreloads(verifyPromotionEntries(both.rows).verified, W2)).toHaveLength(1);
     expect(ledgerUnpromote(both, { wiki: W1, digest: promoteDigest(rite) }, HAND).rows.map((r) => r.wiki)).toEqual([W2]);
   });
 
   test("RED: a shadowed edge (wiki, digest) is skipped in that wiki alone; CONTROL: the other wiki's row of the same digest still preloads", () => {
     const both = commit(HAND, commit(HAND), W2);
-    const verified = verifyPromotionRows(both.rows).verified;
+    const verified = verifyPromotionEntries(both.rows).verified;
     const shadow = new Set([`${W1}\n${promoteDigest(rite)}`]);
     expect(promotedPreloads(verified, W1, shadow)).toEqual([]);
     expect(promotedPreloads(verified, W2, shadow)).toHaveLength(1);
@@ -106,10 +106,10 @@ describe("what runs", () => {
     const other = item({}, "plain", "rites/b");
     const two = commit(HAND, commit(HAND), W1, other);
     const tampered = two.rows.map((r) => (r.title === "rites/a" ? { ...r, bytes: r.bytes.replace("startup", "evil") } : r));
-    const { verified, voided } = verifyPromotionRows(tampered);
+    const { verified, voided } = verifyPromotionEntries(tampered);
     expect(voided).toEqual([{ digest: promoteDigest(rite), reason: "digest-mismatch" }]);
     expect(promotedPreloads(verified, W1)).toEqual([{ title: "rites/b", text: "plain" }]);
-    expect(promotedPreloads(verifyPromotionRows(two.rows).verified, W1).map((e) => e["title"]).sort()).toEqual(["rites/a", "rites/b"]);
+    expect(promotedPreloads(verifyPromotionEntries(two.rows).verified, W1).map((e) => e["title"]).sort()).toEqual(["rites/a", "rites/b"]);
   });
 
   test("RED: reconcile reads the wiki's current digest per (wiki, title): same -> standing, different -> update-waits (the promoted bytes keep running), absent -> orphaned (still running), kept after the hand keeps it", () => {
@@ -120,10 +120,10 @@ describe("what runs", () => {
     const asked: string[] = [];
     reconcilePromotions(rows, (wiki, title) => { asked.push(`${wiki}|${title}`); return d; });
     expect(asked).toEqual([`${W1}|rites/a`]);
-    expect(promotedPreloads(verifyPromotionRows(rows).verified, W1)).toHaveLength(1);
+    expect(promotedPreloads(verifyPromotionEntries(rows).verified, W1)).toHaveLength(1);
     const kept = ledgerDecideOrphan(l, { wiki: W1, digest: d }, "keep", HAND);
     expect(reconcilePromotions(kept.rows, () => null)[0]).toMatchObject({ state: "kept" });
-    expect(promotedPreloads(verifyPromotionRows(kept.rows).verified, W1)).toHaveLength(1);
+    expect(promotedPreloads(verifyPromotionEntries(kept.rows).verified, W1)).toHaveLength(1);
     expect(ledgerDecideOrphan(l, { wiki: W1, digest: d }, "drop", HAND).rows).toEqual([]);
     expect(() => ledgerDecideOrphan(EMPTY_LEDGER, { wiki: W1, digest: "f".repeat(64) }, "drop", HAND)).toThrowError(expect.objectContaining({ code: "promote-unknown" }));
   });
@@ -138,27 +138,27 @@ describe("the ward binds a daemon or kahua promotion (row 7, S2)", () => {
     const face = { grant: (k: string) => k === root.key };
     for (const wiki of ["daemon", "kahua", "kahua-garden"]) {
       const bare = commit(HAND, EMPTY_LEDGER, wiki).rows[0]!;
-      expect(verifyPromotionRows([bare], face, undefined, NO_DROPS).voided, wiki).toEqual([{ digest: bare.digest, reason: "ward-unsigned" }]);
+      expect(verifyPromotionEntries([bare], face, undefined, NO_DROPS).voided, wiki).toEqual([{ digest: bare.digest, reason: "ward-unsigned" }]);
       const byOther = { ...bare, wardSig: await signPromotionWard({ ...bare, owner: OWNER }, other) };
-      expect(verifyPromotionRows([byOther], face, undefined, NO_DROPS).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
+      expect(verifyPromotionEntries([byOther], face, undefined, NO_DROPS).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
       const forged = { ...bare, wardSig: { key: root.key, sig: (await signPromotionWard({ ...bare, owner: OWNER }, other)).sig } };
-      expect(verifyPromotionRows([forged], face, undefined, NO_DROPS).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
+      expect(verifyPromotionEntries([forged], face, undefined, NO_DROPS).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
       const moved = { ...bare, seq: bare.seq + 1, wardSig: await signPromotionWard({ ...bare, owner: OWNER }, root) };
-      expect(verifyPromotionRows([moved], face, undefined, NO_DROPS).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
+      expect(verifyPromotionEntries([moved], face, undefined, NO_DROPS).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
       const signed = { ...bare, wardSig: await signPromotionWard({ ...bare, owner: OWNER }, root) };
-      expect(verifyPromotionRows([signed], face, undefined, NO_DROPS).verified).toEqual([signed]);
+      expect(verifyPromotionEntries([signed], face, undefined, NO_DROPS).verified).toEqual([signed]);
       // The board unread: no floor proves the row was never dropped, so it voids by name.
-      expect(verifyPromotionRows([signed], face).voided.map((v) => v.reason)).toEqual(["ward-floor-unread"]);
+      expect(verifyPromotionEntries([signed], face).voided.map((v) => v.reason)).toEqual(["ward-floor-unread"]);
       // With no face to read grants against, a bound row voids: the read fails closed.
-      expect(verifyPromotionRows([signed], undefined, undefined, NO_DROPS).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
+      expect(verifyPromotionEntries([signed], undefined, undefined, NO_DROPS).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
       // A row lifted into another device's ledger: the ward bytes bind the owner, so it voids there.
-      expect(verifyPromotionRows([signed], face, undefined, { owner: "d".repeat(64), dropped: () => new Set<string>() }).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
+      expect(verifyPromotionEntries([signed], face, undefined, { owner: "d".repeat(64), dropped: () => new Set<string>() }).voided.map((v) => v.reason)).toEqual(["ward-unsigned"]);
       // The signature rides the ledger's bytes and back.
       expect(decodeLedger(encodeLedger({ seq: 1, rows: [signed] })).rows[0]).toEqual(signed);
     }
     const user = commit(HAND, EMPTY_LEDGER, W1).rows[0]!;
-    expect(verifyPromotionRows([user], face).verified).toEqual([user]);
-    expect(verifyPromotionRows([user]).verified).toEqual([user]);
+    expect(verifyPromotionEntries([user], face).verified).toEqual([user]);
+    expect(verifyPromotionEntries([user]).verified).toEqual([user]);
   });
 });
 
@@ -173,14 +173,14 @@ describe("a dropped bound row stays dropped (S2 cold read, P2-2)", () => {
     const wardSig = await signPromotionWard({ ...unsigned, owner: OWNER }, root);
     const committed = ledgerCommit(EMPTY_LEDGER, { wiki: "daemon", digest, item: rite, revision: R, wardSig }, HAND);
     const signed = committed.rows[0]!;
-    expect(verifyPromotionRows(committed.rows, face, committed, NO_DROPS).verified).toEqual([signed]);
+    expect(verifyPromotionEntries(committed.rows, face, committed, NO_DROPS).verified).toEqual([signed]);
     const dropped = ledgerUnpromote(committed, { wiki: "daemon", digest }, HAND);
     // A writer of the face's custody puts the old signed row back.
     const replayed = { ...dropped, rows: [...dropped.rows, signed] };
     const back = decodeLedger(encodeLedger(replayed));
-    expect(verifyPromotionRows(back.rows, face, back, NO_DROPS).voided).toEqual([{ digest, reason: "ward-dropped" }]);
+    expect(verifyPromotionEntries(back.rows, face, back, NO_DROPS).voided).toEqual([{ digest, reason: "ward-dropped" }]);
     // CONTROL: the hand commits the same bytes again under a fresh ward signature; the new row stands.
     const again = ledgerCommit(dropped, { wiki: "daemon", digest, item: rite, revision: R, wardSig: await signPromotionWard({ wiki: "daemon", digest, seq: dropped.seq + 1, owner: OWNER }, root) }, HAND);
-    expect(verifyPromotionRows(again.rows, face, again, NO_DROPS).verified.map((r) => r.seq)).toEqual([again.seq]);
+    expect(verifyPromotionEntries(again.rows, face, again, NO_DROPS).verified.map((r) => r.seq)).toEqual([again.seq]);
   });
 });

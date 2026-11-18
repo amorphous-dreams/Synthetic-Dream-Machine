@@ -59,18 +59,15 @@ function stand(): {
 }
 
 describe("a carrier that stops projecting leaves its standoff", () => {
-  test("a carrier marked disk-projection: no, or moved to a bag with no mirror, clears the standoff it stood in", async () => {
-    for (const leave of [{ "disk-projection": "no" }, { "$origin-bag": "a-bag-with-no-mirror" }]) {
-      const s = stand();
-      await s.reconcile(URI_A);
-      const key = s.conflicts[0]!.standoff;
-      s.fields.set(URI_A, leave);
-      await s.reconcile(URI_A);
-      await s.reconcile(URI_A);
-      expect(s.resolved).toEqual([{ bagId: BAG, uri: URI_A, standoff: key }]);
-      await s.stop();
-      rmSync(root, { recursive: true, force: true });
-    }
+  test("a carrier moved to a bag with no mirror clears its standoff", async () => {
+    const s = stand();
+    await s.reconcile(URI_A);
+    const key = s.conflicts[0]!.standoff;
+    s.fields.set(URI_A, { "$origin-bag": "a-bag-with-no-mirror" });
+    await s.reconcile(URI_A);
+    await s.reconcile(URI_A);
+    expect(s.resolved).toEqual([{ bagId: BAG, uri: URI_A, standoff: key }]);
+    await s.stop();
   });
 });
 

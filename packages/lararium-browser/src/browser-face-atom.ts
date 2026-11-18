@@ -18,35 +18,35 @@ import {
   requireFaceAtomSeed,
   standFaceAtomSeed,
   type FaceAtomKey,
-  type FaceAtomRows,
+  type FaceAtomRecords,
   constantTimeBytesEqual,
   vesselFaceTagFields,
   wardKeyPopImage,
   type VesselFaceTagDoor,
 } from "@lararium/mesh";
-import { browserKeystoreCustodyIo, readKeystoreRow, SEALED_ROW_PREFIX, withCustodyRows } from "./browser-custody.js";
+import { browserKeystoreCustodyIo, readKeystoreRecord, SEALED_RECORD_PREFIX, withCustodyRecords } from "./browser-custody.js";
 import { browserWardBindRoute, browserWardKeyMint, browserWardKeyOf, browserWardKeySign, BrowserWardRefused, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";
 import type { BrowserWardRoute } from "./browser-ward-cosign.js";
 
 /** The custody row that keeps one face's atom seed. */
-export const faceAtomRow = (personaGroup: string): string => {
+export const faceAtomRecord = (personaGroup: string): string => {
   if (personaGroup.length === 0) throw new Error("[browser-face-atom] an atom names its PersonaGroup");
   return `face-atom/${personaGroup}`;
 };
 
 /** This browser's row store for one face atom custody contract. */
-export function browserFaceAtomRows(idbName: string): FaceAtomRows {
+export function browserFaceAtomRecords(idbName: string): FaceAtomRecords {
   return {
     async read(personaGroup) {
-      const held = await readKeystoreRow(idbName, faceAtomRow(personaGroup));
+      const held = await readKeystoreRecord(idbName, faceAtomRecord(personaGroup));
       return held as Uint8Array | undefined;
     },
-    withRow(personaGroup, step) {
-      const row = faceAtomRow(personaGroup);
-      return withCustodyRows(idbName, async (rows) => step(
-        await rows.read(row) as Uint8Array | undefined,
-        async (seed) => { await rows.write(row, Uint8Array.from(seed)); },
+    withRecord(personaGroup, step) {
+      const row = faceAtomRecord(personaGroup);
+      return withCustodyRecords(idbName, async (records) => step(
+        await records.read(row) as Uint8Array | undefined,
+        async (seed) => { await records.write(row, Uint8Array.from(seed)); },
       ));
     },
   };
@@ -54,7 +54,7 @@ export function browserFaceAtomRows(idbName: string): FaceAtomRows {
 
 /** The face's atom as it rests, or `undefined` when none was ever minted. */
 export async function readBrowserFaceAtom(idbName: string, personaGroup: string): Promise<FaceAtomKey | undefined> {
-  return readFaceAtom(browserFaceAtomRows(idbName), personaGroup);
+  return readFaceAtom(browserFaceAtomRecords(idbName), personaGroup);
 }
 
 /** The face's atom: the one at rest, or a fresh one sealed there in the same custody act when none stands. */
@@ -65,20 +65,20 @@ export async function browserFaceAtom(idbName: string, personaGroup: string): Pr
 
 /** The atom seed a face rests, or a refusal by name: a boot never mints over a face whose edge names another key. */
 export async function requireBrowserFaceAtomSeed(idbName: string, personaGroup: string): Promise<Uint8Array> {
-  return requireFaceAtomSeed(browserFaceAtomRows(idbName), personaGroup);
+  return requireFaceAtomSeed(browserFaceAtomRecords(idbName), personaGroup);
 }
 
 /** The atom seed for a face being joined or founded: the one at rest, or a fresh one sealed there. The caller zeroes the copy. */
 export async function standBrowserFaceAtomSeed(idbName: string, personaGroup: string): Promise<Uint8Array> {
-  return standFaceAtomSeed(browserFaceAtomRows(idbName), personaGroup);
+  return standFaceAtomSeed(browserFaceAtomRecords(idbName), personaGroup);
 }
 
 /** Keep the seed a founding minted under the group it founded; a row already standing must hold the same seed. */
 export async function keepBrowserFaceAtomSeed(idbName: string, personaGroup: string, seed: Uint8Array): Promise<void> {
-  await keepFaceAtomSeed(browserFaceAtomRows(idbName), personaGroup, seed);
+  await keepFaceAtomSeed(browserFaceAtomRecords(idbName), personaGroup, seed);
 }
 
-/** The custody row that keeps one face's address secret: its working documents derive their addresses from it. */
+/** The custody row that keeps one face's address secret: the face's catalog document derives its address from it. */
 export const faceAddressSecretRow = (personaGroup: string): string => {
   if (personaGroup.length === 0) throw new Error("[browser-face-atom] an address secret names its PersonaGroup");
   return `face-address-secret/${personaGroup}`;
@@ -91,18 +91,18 @@ export const faceAddressSecretRow = (personaGroup: string): string => {
  */
 export async function mintBrowserFaceAddressSecret(idbName: string, personaGroup: string): Promise<void> {
   const row = faceAddressSecretRow(personaGroup);
-  await withCustodyRows(idbName, async (rows) => {
-    const held = await rows.read(row);
+  await withCustodyRecords(idbName, async (records) => {
+    const held = await records.read(row);
     if (held instanceof Uint8Array && held.length === 32) return;
     if (held !== undefined) throw new Error("[browser-face-atom] the face's address secret row reads malformed");
     const fresh = crypto.getRandomValues(new Uint8Array(32));
-    try { await rows.write(row, Uint8Array.from(fresh)); } finally { fresh.fill(0); }
+    try { await records.write(row, Uint8Array.from(fresh)); } finally { fresh.fill(0); }
   });
 }
 
 /** The face's address secret this browser holds (the caller zeroes the copy), or null; a read never mints. */
 export async function readBrowserFaceAddressSecret(idbName: string, personaGroup: string): Promise<Uint8Array | null> {
-  const held = await readKeystoreRow(idbName, faceAddressSecretRow(personaGroup));
+  const held = await readKeystoreRecord(idbName, faceAddressSecretRow(personaGroup));
   return held instanceof Uint8Array && held.length === 32 ? Uint8Array.from(held) : null;
 }
 
@@ -117,7 +117,7 @@ export const vesselFaceTagRow = (personaGroup: string): string => {
  * rests under a ward of its own (`ward/sign/<group>/…`, `ward-core`): a signing seed minted at random per face inside one ward act,
  * derived from no seed and no vessel-wide key, so two faces present ward keys no reader links.
  */
-export const wardSignRow = (personaGroup: string): string => {
+export const wardSignRecord = (personaGroup: string): string => {
   if (personaGroup.length === 0) throw new Error("[browser-face-atom] a ward key names its PersonaGroup");
   return `ward-sign/${personaGroup}`;
 };
@@ -132,13 +132,13 @@ export interface BrowserTagDoorWard {
 }
 
 /** The face's ward-key row from before the key moved under its own ward: the next tag ask sweeps it (alpha line, no shim). */
-const sweptWardSignRow = (personaGroup: string): string => `${SEALED_ROW_PREFIX}${wardSignRow(personaGroup)}`;
+const sweptWardSignRecord = (personaGroup: string): string => `${SEALED_RECORD_PREFIX}${wardSignRecord(personaGroup)}`;
 
 /**
  * THE BROWSER VESSEL'S TAG DOOR: the blinded per-face tag one admission of this browser carries (`vessel-face-tag`).
  * The face's tag secret rests in its own row beside its atom, 32 random bytes minted at the face's founding or first
  * join request and derived from no seed, so the place seed computes no face's tag. A re-join on the face reads the
- * row and presents the same tag. The door answers the tag, the face's ward key (`wardSignRow`, minted under a ward of its own at the
+ * row and presents the same tag. The door answers the tag, the face's ward key (`wardSignRecord`, minted under a ward of its own at the
  * first ask), the tag's signature and the ward key's POP (its own signature over (group, atom, ward key)), and zeroes the copies it
  * read. The key's public half reads off the plain row beside its ward, so naming the key opens no seed; the pop signs only inside a
  * ward act of this face (the per-act ward worker, opened from the route typed for it, zeroed after): the mint's own act where this ask
@@ -151,16 +151,16 @@ export function browserVesselFaceTagDoor(idbName = "lares:vessel", ward: Browser
     // A FOUNDING'S TAG SECRET MINTS BEFORE ITS GROUP NAMES THE FACE'S TREE: the founding hands the unnamed face it stands, the
     // row seals under that face's own tree, and the name the ceremony then gives the tree reads the same row by its group.
     const row = vesselFaceTagRow(rowFace ?? group);
-    const secret = await withCustodyRows(idbName, async (rows) => {
-      const held = await rows.read(row);
+    const secret = await withCustodyRecords(idbName, async (records) => {
+      const held = await records.read(row);
       if (held instanceof Uint8Array && held.length === 32) return Uint8Array.from(held);
       if (held !== undefined) throw new Error("[browser-face-atom] the face's tag secret row reads malformed");
       const fresh = crypto.getRandomValues(new Uint8Array(32));
-      await rows.write(row, Uint8Array.from(fresh));
+      await records.write(row, Uint8Array.from(fresh));
       return fresh;
     });
     try {
-      await browserKeystoreCustodyIo(idbName).remove(sweptWardSignRow(group));
+      await browserKeystoreCustodyIo(idbName).remove(sweptWardSignRecord(group));
       if (!ward.route) throw new BrowserWardRefused("ward-needs-fresh-unlock", "the face's ward key opens only inside a ward act, and this door offers no route");
       const ask = ward.route;
       const stood = await browserWardKeyOf(idbName, group);

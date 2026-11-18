@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/heleuma"
 
 ! Heleuma — Anchor
 
-//Heleuma//: a stone or iron anchor used to secure a ship.
+//Heleuma//: a stone or iron anchor that secures a ship.
 
 A ''heleuma'' names any artifact that MUST exist outside the `lar:///` URI space — compiled TypeScript, runtime imperative registrations, build-generated assets — but that ALSO exists inside the meme graph as a self-documenting pair:
 
@@ -81,6 +81,6 @@ A heleuma API meme that acquires:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;B3XhXvKVY3VzvDUqPgJ_f-AkQf1nL1K1T1NAiLN-aKg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GrX_dvvbGAL11pMxiYujJ4z9fGtH8a_acVsp7Qf5adA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

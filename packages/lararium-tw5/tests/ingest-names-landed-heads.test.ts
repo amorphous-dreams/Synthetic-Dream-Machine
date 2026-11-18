@@ -19,9 +19,9 @@ import { Repo, shoreRig, turns, workingBag, personalBag, remote } from "./wiki-s
 
 const URI = "lar:///t.ingest.heads/one";
 const BAG = "lar:///ha.ka.ba/bags/ingest-heads";
-const meme = (prose: string): string =>
-  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
-  "```toml meta\nuri-path = \"t.ingest.heads/one\"\n```\n\n" +
+const meme = (prose: string, title = URI): string =>
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${title}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
+  `\`\`\`toml meta\nuri-path = \"${title.slice("lar:///".length)}\"\n\`\`\`\n\n` +
   `${prose}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 async function ingest(composite: CompositeStore, text: string): Promise<Array<Record<string, unknown>>> {
@@ -32,6 +32,38 @@ async function ingest(composite: CompositeStore, text: string): Promise<Array<Re
   ) as Record<string, unknown>;
   return result["carriers"] as Array<Record<string, unknown>>;
 }
+
+async function ingestWithGrant(composite: CompositeStore, input: { title: string; bag: string; source: string; mirrors: readonly { bagId: string; mirrorRoot: string; scope: string }[] }): Promise<Array<Record<string, unknown>>> {
+  const invocation = { requestId: "ingest-placement", title: "ingest", action: "INGEST", args: {}, targets: [], batchMode: "best-effort", status: "pending", requestedBy: "test", requestedAt: "2026-10-25" } as unknown as Verb;
+  const ctx = { daemon: composite, invocation, cap: async () => ({ ok: true }) } as unknown as VerbContext;
+  const result = await makeActionReactorFor("INGEST", { composite, diskMirrors: input.mirrors })(
+    { "source-uri": input.source, "to-bag": input.bag, "change-id": "chg-placement", carriers: [{ uri: input.title, text: meme("receipt-shaped content", input.title), diskHash: "sha256:01", syncedHash: null, file: `${input.source}/receipt.mem` }] }, ctx,
+  ) as Record<string, unknown>;
+  return result["carriers"] as Array<Record<string, unknown>>;
+}
+
+describe("the ingest door binds a disk wave to its resting mirror", () => {
+  test("a receipt-fact-shaped title lands as ordinary content in the granted bag", async () => {
+    const title = "lar:///ha.ka.ba/bags/daemon/receipts/looks-like-a-fact";
+    const composite = new CompositeStore();
+    const store = new MemoryTiddlerStore();
+    composite.addLayer({ bagId: BAG, store, writable: true, defaultWritable: true });
+    const rows = await ingestWithGrant(composite, { title, bag: BAG, source: "/mirror/notes", mirrors: [{ bagId: BAG, mirrorRoot: "/mirror/notes", scope: "notes" }] });
+    expect(rows[0]).toMatchObject({ uri: title, decision: "ingest" });
+    expect(await store.get(title)).not.toBeNull();
+  });
+
+  test("a source under one mirror cannot land into another bag or an unmirrored control home", async () => {
+    const composite = new CompositeStore();
+    const foreignBag = "lar:///ha.ka.ba/wikis/other/working";
+    composite.addLayer({ bagId: foreignBag, store: new MemoryTiddlerStore(), writable: true, defaultWritable: true });
+    const grant = [{ bagId: BAG, mirrorRoot: "/mirror/notes", scope: "notes" }];
+    await expect(ingestWithGrant(composite, { title: URI, bag: foreignBag, source: "/mirror/notes", mirrors: grant }))
+      .rejects.toMatchObject({ code: "disk-wave-placement" });
+    await expect(ingestWithGrant(composite, { title: URI, bag: "lar:///ha.ka.ba/bags/control", source: "/mirror/notes", mirrors: grant }))
+      .rejects.toMatchObject({ code: "disk-wave-placement" });
+  });
+});
 
 describe("the ingest row names the heads it landed", () => {
   test("a CRDT-backed bag: the row names heads the document holds at the carrier's landing, and a second landing moves them", async () => {

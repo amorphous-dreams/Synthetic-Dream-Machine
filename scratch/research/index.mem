@@ -1,0 +1,67 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/research/` — 6 record(s) here, 224 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/research/`
+
+The scratch planning records of `.lares-scratch/research/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 6 record(s) stand here and 224 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[workshop|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[capability-default/|lar:///ha.ka.ba/lares/docs/history/workshop/research/capability-default/index]] | 5 |
+| [[codex-controller/|lar:///ha.ka.ba/lares/docs/history/workshop/research/codex-controller/index]] | 3 |
+| [[dreamdom-width/|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/index]] | 9 |
+| [[floor-trust/|lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/index]] | 17 |
+| [[hands-room/|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/index]] | 18 |
+| [[hydrafusion/|lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/index]] | 8 |
+| [[i1-intent/|lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/index]] | 18 |
+| [[i2-relay/|lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/index]] | 18 |
+| [[k15-bonds/|lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/index]] | 18 |
+| [[mirror-realm/|lar:///ha.ka.ba/lares/docs/history/workshop/research/mirror-realm/index]] | 3 |
+| [[model-roster/|lar:///ha.ka.ba/lares/docs/history/workshop/research/model-roster/index]] | 5 |
+| [[model-tiers/|lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/index]] | 4 |
+| [[place-kel/|lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/index]] | 17 |
+| [[pre-founding/|lar:///ha.ka.ba/lares/docs/history/workshop/research/pre-founding/index]] | 18 |
+| [[seat-scout/|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/index]] | 23 |
+| [[w10-knock/|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/index]] | 17 |
+| [[w10-mu/|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/index]] | 17 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[after-the-seat-a|lar:///ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-a]] | plan | 2026-10-25 | `after-the-seat-a.md` |
+| [[after-the-seat-b|lar:///ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-b]] | plan | 2026-10-25 | `after-the-seat-b.md` |
+| [[after-the-seat-settle|lar:///ha.ka.ba/lares/docs/history/workshop/research/after-the-seat-settle]] | plan | 2026-10-25 | `after-the-seat-settle.md` |
+| [[fusion-canon|lar:///ha.ka.ba/lares/docs/history/workshop/research/fusion-canon]] | plan | 2026-10-25 | `fusion-canon.md` |
+| [[ground-lane|lar:///ha.ka.ba/lares/docs/history/workshop/research/ground-lane]] | plan | 2026-10-25 | `ground-lane.md` |
+| [[one-face-brief|lar:///ha.ka.ba/lares/docs/history/workshop/research/one-face-brief]] | brief | 2026-10-25 | `one-face-brief.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-TQAQqKnAT_XrXiPssbsIfkgpYDbOh9EE-K2nF6-gy0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

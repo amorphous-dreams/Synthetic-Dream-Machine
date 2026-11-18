@@ -7,7 +7,7 @@ import {
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 const title = "lar:///ha.ka.ba/lares/api/floor-carrier";
-const floorRows: Readonly<Record<string, LarTiddlerRecord>> = {
+const floorRecords: Readonly<Record<string, LarTiddlerRecord>> = {
   [title]: { tiddler: { title, text: "floor carrier" } },
 };
 
@@ -63,7 +63,7 @@ describe("buildIslandRecipe mounts the floor under a user wiki", () => {
         { slot: ORACLE_BAG, handle: fakeHandle() },
         { slot: workingSlot, handle: fakeHandle() },
       ],
-      floorRows: [floorRows],
+      floorRecords: [floorRecords],
     });
 
     const oracle = stores.find(({ slot }) => slot === ORACLE_BAG)?.store;
@@ -79,7 +79,7 @@ describe("buildIslandRecipe mounts the floor under a user wiki", () => {
     );
     expect((await working!.get(title))?.tiddler.text).toBe("wiki edit");
     expect((await oracle!.get(title))?.tiddler.text).toBe("floor carrier");
-    expect(floorRows[title]?.tiddler.text).toBe("floor carrier");
+    expect(floorRecords[title]?.tiddler.text).toBe("floor carrier");
   });
 
   test("without floor rows, @oracle cannot read the carrier", async () => {

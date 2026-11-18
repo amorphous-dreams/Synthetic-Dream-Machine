@@ -30,8 +30,8 @@ import {
   type DocHandle,
   type LarDoc,
   type LarTiddlerRecord,
-  type LarTiddlerStore, ownEntry} from "@lararium/mesh";
-import { catalogRowHalf, isSystemCanonBag, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
+  type LarTiddlerStore, ownEntry, plainField} from "@lararium/mesh";
+import { catalogRowHalf, houseCanonUrl, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl, resolveHouseCanon, wikiCanonAddress } from "@lararium/mesh";
 
 export interface CatalogAccessor {
   /** The `catalog` registry doc itself, resolved + cached (the floor with the face's rows laid over it, U1). */
@@ -52,6 +52,13 @@ export interface CatalogAccessor {
    *  syncs — it MOUNTS nothing into a composite (access≠load). Authority rides
    *  the cap-gate upstream, never a composite read-only flag. */
   storeOf(bagUri: string): Promise<LarTiddlerStore | null>;
+  /**
+   * THE DIRECT ROAD to a private-synced home (the face's persona plane): `find`/`storeOf` pass such a row by, so no verb
+   * lookup, library mount or membership scan reaches it, and the home's own readers and writers (the face-join grant, the
+   * PersonaGroup ring) resolve it here by the url its row names. Any other row answers as `find`/`storeOf` would.
+   */
+  homeOf?(bagUri: string): Promise<DocHandle<LarDoc> | null>;
+  homeStoreOf?(bagUri: string): Promise<LarTiddlerStore | null>;
 }
 
 /**
@@ -122,6 +129,8 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
 
   const find = async (bagUri: string): Promise<DocHandle<LarDoc> | null> => {
     if (bagUri === CATALOG_DOC_URI) return handle();
+    const row = await recordOf(bagUri);
+    if (plainField(row, "kind") === "private-synced") return null;
     const url = await urlOf(bagUri);
     if (!url) return null;
     return findOrThrow(repo, url, `bag ${bagUri}`);
@@ -132,16 +141,43 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
     return h ? new AutomergeDocStore(h, bagUri) : null;
   };
 
-  return { handle, floor: floorHandle ?? handle, urlOf, recordOf, find, storeOf };
+  const homeOf = async (bagUri: string): Promise<DocHandle<LarDoc> | null> => {
+    if (bagUri === CATALOG_DOC_URI) return handle();
+    const url = await urlOf(bagUri);
+    return url ? findOrThrow(repo, url, `home ${bagUri}`) : null;
+  };
+  const homeStoreOf = async (bagUri: string): Promise<LarTiddlerStore | null> => {
+    const h = await homeOf(bagUri);
+    return h ? new AutomergeDocStore(h, bagUri) : null;
+  };
+
+  return { handle, floor: floorHandle ?? handle, urlOf, recordOf, find, storeOf, homeOf, homeStoreOf };
+}
+
+/** The door `resolveHouseCanon` reads a bag through over this catalog: the Kahu realm's standing registration (read off the
+ *  catalog's floor half, where the realm's rows rest), then the bag's own registry row. */
+function catalogCanonDoor(catalog: CatalogAccessor, bagUri: string): { realm: (bag: string) => Promise<string | null>; row: () => Promise<string | null> } {
+  return {
+    realm: async (bag) => realmStandingDocUrl((await (catalog.floor ?? catalog.handle)()).doc(), bag),
+    row: () => catalog.urlOf(bagUri),
+  };
 }
 
 /**
- * The document a recipe's LIBRARY bag mounts from: the registry's entry, else — for a system canon bag (`lares`,
- * `lararium`), which no registry row names — the Kahu realm's standing registration read off this catalog. It names a
- * url and grants no reach: every write into the document clears the Kahu predicate at its own door.
+ * The document a recipe's LIBRARY bag mounts from, by the one order (`resolveHouseCanon`): for a house canon bag, the Kahu
+ * realm's standing registration read off this catalog, ahead of any registry row; a registry row only where the realm names
+ * none, and for every other bag. It names a url and grants no reach: every write into the document clears the Kahu predicate
+ * at its own door.
  */
 export async function libraryDocUrl(catalog: CatalogAccessor, bagUri: string): Promise<string | null> {
-  const row = await catalog.urlOf(bagUri);
-  if (row !== null || !isSystemCanonBag(bagUri)) return row;
-  return realmStandingDocUrl((await (catalog.floor ?? catalog.handle)()).doc(), bagUri);
+  if (plainField(await catalog.recordOf(bagUri), "kind") === "private-synced") return null;
+  return houseCanonUrl(await resolveHouseCanon<string>(bagUri, catalogCanonDoor(catalog, bagUri)));
+}
+
+/**
+ * The address a wiki's canon keys on, read off this catalog for a wiki the session has not mounted (`wikiCanonAddress`): the
+ * document `resolveHouseCanon` names; for a house canon bag no document answers, its floor address; else null.
+ */
+export async function catalogCanonAddress(catalog: CatalogAccessor, bagUri: string): Promise<string | null> {
+  return wikiCanonAddress(bagUri, catalogCanonDoor(catalog, bagUri));
 }

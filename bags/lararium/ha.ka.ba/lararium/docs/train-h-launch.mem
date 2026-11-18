@@ -27,7 +27,7 @@ uri-path  = "ha.ka.ba/lararium/docs/train-h-launch"
 
 !! Ground and crew
 
-Start pure signed-act and grant vectors beside N and W on disjoint files. Start the live cut after N hands over the joint AID and W hands over gate sorting. One authority lead owns `hosting.ts` and `hosting-store.ts` through one coordinated signed-byte re-cut. A store builder owns HOT row persistence; a door builder owns introduction, answer and strangers' dial. The operator's seat signs ONE delegation to a hosting key. That key signs every hosting act and seeds every epoch. The delegation persists across sessions. A session wearing another face signs nothing for the hearth. The worn face hosts and walks; a vessel wearing none does neither.
+Start pure signed-act and grant vectors beside N and W on disjoint files. Start the live cut after N hands over the joint AID and W hands over gate sorting. One authority lead owns `hosting.ts` and `hosting-store.ts` through one coordinated signed-byte re-cut. A store builder owns HOT record persistence; a door builder owns introduction, answer and strangers' dial. The operator's seat signs ONE delegation to a hosting key. That key signs every hosting act and seeds every epoch. The delegation persists across sessions. A session wearing another face signs nothing for the hearth. The worn face hosts and walks; a vessel wearing none does neither.
 
 <<~/ahu>>
 
@@ -36,8 +36,8 @@ Start pure signed-act and grant vectors beside N and W on disjoint files. Start 
 !! Commit walk
 
 # ''SPECIFIED: authority and dials.'' `hosting-delegation.ts` carries H2's delegation, hosting key and three dials; its named red reads unskipped. The live issuer and reader still need the same signed shape. Their cut verifies the seat, delegation, key, Nexus, epoch parent and each dial; the hosting key seeds each epoch across session endings.
-# ''SPECIFIED: H8 grant.'' `walker-grant.ts` signs the grant and verifies under a public half; its named red reads unskipped. The serving rows and live cut remain owed. Derive the public halves for serving rows during the hosting-act re-cut; a SERVING checker holds no minting secret.
-# ''LIVE: one signed-byte cut.'' Move issuer, reader, hosting store and socket sorter together. Preserve each spend as one sealed HOT row and each roll as one committed state row. Re-derive hosting-doc acts from committed state. A row that refuses to open refuses by name. Keep the floor sorter free of hosting rows.
+# ''SPECIFIED: H8 grant.'' `walker-grant.ts` signs the grant and verifies under a public half; its named red reads unskipped. The serving records and live cut remain owed. Derive the public halves for serving records during the hosting-act re-cut; a SERVING checker holds no minting secret.
+# ''LIVE: one signed-byte cut.'' Move issuer, reader, hosting store and socket sorter together. Preserve each spend as one sealed HOT record and each roll as one committed state record. Re-derive hosting-doc acts from committed state. A record that refuses to open refuses by name. Keep the floor sorter free of hosting records.
 # ''LIVE: introduction and answer.'' A token buys a knock. Only the operator's answer or a pre-answer gives standing. A walker's invitation vests at the host's next roll; a host invitation receives floor 1 at once. Wire the strangers' three-dial decision and the host door. Fold H7 invite canon after the live reader passes.
 # ''GATE: E's walker arm.'' Prove a SERVING hearth checks the walker grant with its public half and no minting secret in its serving tier. Only then arm E's walker path.
 
@@ -59,7 +59,7 @@ Start pure signed-act and grant vectors beside N and W on disjoint files. Start 
 |---|---|
 | N | Consume final AID and operator seat from N; leave charter and cofounding bytes with N. |
 | W | Take `socket-sorter.ts` after W's gate cutover; keep its verified face and per-Nexus gate pin. |
-| S8 and sealed-store step 3 | Keep hosting HOT rows under S key and serving rows under SK; leave selves rows and Repo value sealing to their owners. |
+| S8 and sealed-store step 3 | Keep hosting HOT records under S key and serving records under SK; leave selves records and Repo value sealing to their owners. |
 | O1 | Consume the worn session face through O1's verified session. A delegated hosting key, rather than the session lifetime, sustains acts. |
 | E and X | E waits for H8's public-half verifier before its walker arm. X consumes hosted restart and strangers' dial without changing H's act image. |
 
@@ -81,6 +81,6 @@ The hosting-key and worn-face rulings already stand at the roadmap's `#/rulings`
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qozWeG16Pqtxz68G0J4u8YCNfrHyZqNoVo3krQc1h_M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y-iB9IXLUVftT0nzfLhQ-TrH_ertSfKlHvJJV9aLkQs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

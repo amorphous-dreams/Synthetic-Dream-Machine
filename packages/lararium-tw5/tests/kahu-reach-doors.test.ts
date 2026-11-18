@@ -15,8 +15,9 @@ import { describe, test, expect } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
 import { AutomergeDocStore, CompositeStore, bagUri, emptyLarDoc, isVerbRefusal, plainField, recipeUri, wikiBagUri, type DocHandle, type LarDoc, type LarTiddlerRecord, type LarTiddlerStore, type Repo as RepoType, type Verb } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
+import { storedLarRecord } from "@lararium/mesh";
 import { makeActionReactorFor } from "../src/action-handler.js";
-import { makeMemePutReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemePutReactor, makeMemeDeleteReactor, makeMemeGetReactor, makeMemeListReactor, memeVerbOptions, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { makeDraftReactor } from "../src/wiki-draft-handlers.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeInitWikiReactor } from "../src/wiki-mint-handlers.js";
@@ -225,5 +226,161 @@ describe("wiki-mint", () => {
     await expect(makeInitWikiReactor(mintOpts(catalog.accessor, oracle.accessor, { systemCanonUrl: async () => null }))({ slug: "lares" }, ctx)).rejects.toThrow(/system-bag/);
     await expect(makeInitWikiReactor(mintOpts(catalog.accessor, oracle.accessor))({ slug: "lares" }, ctx)).rejects.toThrow(/system-bag/);
     expect(await makeInitWikiReactor(mintOpts(catalog.accessor, oracle.accessor, { systemCanonUrl: naming }))({ slug: "lares" }, ctx)).toMatchObject({ system: true, wikiDocUrl: "automerge:lares-live" });
+  });
+});
+
+/**
+ * HOUSE CANON'S ONE DOCUMENT, AT EVERY DOOR THAT REACHES IT BY ACCESS (offering#/the-canon-offer, "One canon document"). The Kahu
+ * realm's standing document carries a house canon bag wherever the vessel names one: the document the keel mounts, the mirror
+ * projects, the retire and the floor cut read. A registry row that names another document for the bag (the stand-in a floor boot
+ * of the `lares` wiki leaves in the catalog) answers no door once the realm names its own.
+ */
+describe("house canon resolves the Kahu realm's standing document at the action door and the meme door", () => {
+  async function split(realmNames: boolean) {
+    const repo = new Repo({ network: [] });
+    const island = new CompositeStore();   // the daemon island mounts no canon layer: it reaches canon by access
+    const working = new AutomergeDocStore(repo.create(emptyLarDoc()), WORKING);
+    island.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
+    await working.put(live("T"), hand);
+    const realm = repo.create<LarDoc>(emptyLarDoc()), stray = repo.create<LarDoc>(emptyLarDoc()), garden = repo.create<LarDoc>(emptyLarDoc());
+    await new AutomergeDocStore(realm, LARES).put({ tiddler: { title: "where", text: "realm" } }, hand);
+    await new AutomergeDocStore(stray, LARES).put({ tiddler: { title: "where", text: "stray" } }, hand);
+    const catalog = repo.create<LarDoc>(emptyLarDoc());
+    catalog.change((d) => {
+      d.tiddlers[LARES] = storedLarRecord(LARES, { text: stray.url }, "vessel-boot");
+      d.tiddlers[GARDEN] = storedLarRecord(GARDEN, { text: garden.url }, "test");
+    });
+    const systemCanonUrl = async (bag: string): Promise<string | null> => (realmNames && bag === LARES ? realm.url : null);
+    const reach = { repo: repo as unknown as RepoType, catalogUrl: catalog.url, oracleUrl: null, systemCanonUrl };
+    const textIn = async (doc: DocHandle<LarDoc>, bag: string, title: string) => (await new AutomergeDocStore(doc, bag).get(title))?.tiddler.text ?? null;
+    return { repo, island, realm, stray, garden, catalog, reach, systemCanonUrl, textIn };
+  }
+
+  test("RED: a COPY into bags/lares lands in the realm's document while a catalog row names another (the seed's INGEST rides the same access)", async () => {
+    const s = await split(true);
+    try {
+      await makeActionReactorFor("COPY", { composite: s.island, reach: s.reach, kahuReach: await kahuHand() })(into(LARES), ctxOf(s.island, "COPY"));
+      expect(await s.textIn(s.realm, LARES, "T")).toBe("T");
+      expect(await s.textIn(s.stray, LARES, "T")).toBeNull();                 // the stand-in takes no byte
+      // CONTROL: a user bag still lands in the document its catalog row names.
+      await makeActionReactorFor("COPY", { composite: s.island, reach: s.reach })(into(GARDEN), ctxOf(s.island, "COPY"));
+      expect(await s.textIn(s.garden, GARDEN, "T")).toBe("T");
+    } finally { await s.repo.shutdown(); }
+  });
+
+  test("CONTROL: where the realm names no document (a rig, a vessel outside every realm), the action door reaches the bag by its registry row", async () => {
+    const s = await split(false);
+    try {
+      await makeActionReactorFor("COPY", { composite: s.island, reach: s.reach, kahuReach: await kahuHand() })(into(LARES), ctxOf(s.island, "COPY"));
+      expect(await s.textIn(s.stray, LARES, "T")).toBe("T");
+    } finally { await s.repo.shutdown(); }
+  });
+
+  test("RED: the meme door reads bags/lares off the realm's document while a catalog row names another (CONTROL: with no realm document, the row answers)", async () => {
+    const s = await split(true);
+    try {
+      const ctx = { composite: s.island, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as never, repo: s.repo as unknown as RepoType, catalogUrl: s.catalog.url, oracleUrl: null };
+      const named = memeVerbOptions(ctx, async () => null, s.systemCanonUrl);
+      expect((await (await named.reach!(LARES, LARES))!.get("where"))?.tiddler.text).toBe("realm");
+      const unnamed = memeVerbOptions(ctx, async () => null, async () => null);
+      expect((await (await unnamed.reach!(LARES, LARES))!.get("where"))?.tiddler.text).toBe("stray");
+    } finally { await s.repo.shutdown(); }
+  });
+
+  /**
+   * A FACE OUTSIDE THE KAHU CABAL READS HOUSE CANON FROM THE FLOOR. Its island registers no house canon bag (the live documents
+   * rest in the Kahu realm), so its read cap names none; the vessel-wide realm pointer may still reach the live document. The
+   * meme door answers the bag's floor snapshot, with no cap asked (the floor's blobs rest public by CID), through every read:
+   * `meme list --bag`, `meme get --bag`, and a wiki's stack (`--recipe`).
+   */
+  async function outsideFace() {
+    const repo = new Repo({ network: [] });
+    const store = (bag: string) => new AutomergeDocStore(repo.create(emptyLarDoc()), bag);
+    const liveLararium = store(LARARIUM), floorLararium = store(LARARIUM), liveLares = store(LARES), working = new MemoryTiddlerStore(WORKING);
+    const lay = async (into: LarTiddlerStore, bag: string, uri: string, slot: string): Promise<void> => {
+      const composite = new CompositeStore();
+      composite.addLayer({ bagId: bag, store: into, writable: true });
+      const text = meme(slot).replaceAll(URI, uri).replace('uri-path = "t/ford"', `uri-path = "${uri.slice("lar:///".length)}"`);
+      await makeMemePutReactor({ composite, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as never, kahuReach: await kahuHand() })({ uri, bag, text }, ctxOf(composite, "meme-put"));
+    };
+    // The floor carries the released page; live canon has moved past it, and holds a page no release carries yet.
+    await lay(floorLararium, LARARIUM, "lar:///t/released", "/floor");
+    await lay(liveLararium, LARARIUM, "lar:///t/released", "/live");
+    await lay(liveLararium, LARARIUM, "lar:///t/unreleased", "/live");
+    await lay(liveLares, LARES, "lar:///t/lares-page", "/live");
+    const recipes = new Map<string, LarTiddlerRecord>([[recipeUri("catalog", "trove"), { tiddler: { title: recipeUri("catalog", "trove"), "bag-stack": `${LARARIUM} ${WORKING}`, "writable-bag": WORKING } }]]);
+    const opts: MemeVerbOptions = {
+      composite: new CompositeStore(),                                     // this face's daemon island mounts no canon layer
+      tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as unknown as MemeVerbOptions["tw5"],
+      recipeOf: async (slug) => recipes.get(recipeUri("catalog", slug)) ?? null,
+      slotStore: async (_slug, kind) => (kind === "working" ? working : null),
+      reach: async (key) => (key === LARARIUM ? liveLararium : key === LARES ? liveLares : null),   // the vessel-wide realm pointer
+      floorCanon: (bag) => (bag === LARARIUM ? floorLararium : null),      // the floor this island mounted carries lararium; no lares snapshot here
+      kahuReach: await strangerHand("joined-without-admission"),
+    };
+    // The face's hive registered neither house canon bag: its verifier answers as the live one does.
+    const cap: VerbContext["cap"] = async (_access, bag) => (bag === LARARIUM || bag === LARES ? { ok: false, reason: `bag not registered: ${bag}` } : { ok: true });
+    const ctx = (action: string): VerbContext => ({ ...ctxOf(opts.composite, action), cap });
+    return { repo, opts, ctx, live: liveLararium, floor: floorLararium };
+  }
+  const slotsOf = (answer: Record<string, unknown>): string => JSON.stringify(answer);
+
+  test("RED: a face whose cap names no house canon bag lists and gets bags/lararium from its floor snapshot, by bag and through a wiki's stack", async () => {
+    const f = await outsideFace();
+    try {
+      const listed = await makeMemeListReactor(f.opts)({ bag: "lararium" }, f.ctx("meme-list"));
+      expect(listed).toMatchObject({ bag: LARARIUM, floor: true });
+      expect((listed["roots"] as Array<{ uri: string }>).map((r) => r.uri)).toEqual(["lar:///t/released"]);   // the floor's roots: no unreleased page
+      const got = await makeMemeGetReactor(f.opts)({ uri: "lar:///t/released", bag: "lararium" }, f.ctx("meme-get"));
+      expect(got).toMatchObject({ uri: "lar:///t/released", floor: true });
+      expect(slotsOf(got)).toContain("/floor");
+      expect(slotsOf(got)).not.toContain("/live");
+      const stack = await makeMemeListReactor(f.opts)({ recipe: "trove" }, f.ctx("meme-list"));
+      expect((stack["roots"] as Array<{ uri: string; bag: string; floor?: boolean }>)).toEqual([expect.objectContaining({ uri: "lar:///t/released", bag: LARARIUM, floor: true })]);
+      const viaWiki = await makeMemeGetReactor(f.opts)({ uri: "lar:///t/released", recipe: "trove" }, f.ctx("meme-get"));
+      expect(viaWiki).toMatchObject({ floor: true });
+      expect(slotsOf(viaWiki)).toContain("/floor");
+    } finally { await f.repo.shutdown(); }
+  });
+
+  test("RED: a put through a wiki that names the hash its get just answered lands as a copy-up in the working layer, though that layer held no record of the title", async () => {
+    const f = await outsideFace();
+    try {
+      const got = await makeMemeGetReactor(f.opts)({ uri: "lar:///t/released", recipe: "trove" }, f.ctx("meme-get"));
+      const read = (got["meme"] as { canonicalHash: string; text: string });
+      expect(read.canonicalHash).toMatch(/^sha256:[0-9a-f]{64}$/);
+      const edited = meme("/working").replaceAll(URI, "lar:///t/released").replace('uri-path = "t/ford"', 'uri-path = "t/released"');
+      const put = await makeMemePutReactor(f.opts)({ uri: "lar:///t/released", recipe: "trove", text: edited, base: read.canonicalHash }, f.ctx("meme-put"));
+      expect(put, "the base the writer read still stands below, so the copy-up lands").toMatchObject({ decision: "ingest" });
+      // The wiki now answers the working copy, and the floor's page never moved.
+      const after = await makeMemeGetReactor(f.opts)({ uri: "lar:///t/released", recipe: "trove" }, f.ctx("meme-get"));
+      expect(slotsOf(after)).toContain("/working");
+      expect(after["floor"]).toBeUndefined();
+      // CONTROL: a stale base (the page below moved past what the writer read) stands off, and the receipt names the hash
+      // the wiki answers now, never the hash of no bytes.
+      const g = await outsideFace();
+      try {
+        const stale = await makeMemePutReactor(g.opts)({ uri: "lar:///t/released", recipe: "trove", text: edited, base: `sha256:${"0".repeat(64)}` }, g.ctx("meme-put"));
+        expect(stale).toMatchObject({ decision: "conflict", canonicalHash: read.canonicalHash });
+      } finally { await g.repo.shutdown(); }
+    } finally { await f.repo.shutdown(); }
+  });
+
+  test("CONTROLS: the same face writes no house canon (kahu-reach); a house canon bag the floor carries no snapshot of keeps its cap refusal; a hand whose cap holds reads the live document", async () => {
+    const f = await outsideFace();
+    try {
+      // The write door never reads the floor: with a canon layer mounted writable the put draws the Kahu predicate's refusal, and
+      // with none (this face's own island) it finds no layer to write. Either way no byte moves.
+      const before = [f.live.headsNow(), f.floor.headsNow()];
+      const mounted = new CompositeStore();
+      mounted.addLayer({ bagId: LARARIUM, store: f.live, writable: true });
+      expect(await reasonOf(async () => makeMemePutReactor({ ...f.opts, composite: mounted })({ uri: "lar:///t/released", bag: "lararium", text: meme("/x") }, f.ctx("meme-put")))).toBe("kahu-reach");
+      await expect(makeMemePutReactor(f.opts)({ uri: "lar:///t/released", bag: "lararium", text: meme("/x") }, f.ctx("meme-put"))).rejects.toThrow();
+      expect([f.live.headsNow(), f.floor.headsNow()]).toEqual(before);
+      await expect(makeMemeListReactor(f.opts)({ bag: "lares" }, f.ctx("meme-list"))).rejects.toThrow(/cap-denied: read on lar:\/\/\/ha\.ka\.ba\/bags\/lares required \(bag not registered/);
+      const held = await makeMemeListReactor(f.opts)({ bag: "lararium" }, { ...f.ctx("meme-list"), cap: async () => ({ ok: true }) });
+      expect(held["floor"]).toBeUndefined();
+      expect((held["roots"] as Array<{ uri: string }>).map((r) => r.uri)).toEqual(["lar:///t/released", "lar:///t/unreleased"]);
+    } finally { await f.repo.shutdown(); }
   });
 });

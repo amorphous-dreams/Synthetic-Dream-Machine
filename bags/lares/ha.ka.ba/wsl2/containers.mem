@@ -88,7 +88,7 @@ Any one of these moves `wslc` to the primary path and the in-distro engine to a 
 
 Separately, the #41492 fix shipped in 3.0.1 (PR #41512). ''Re-read 2026-10-06: rootful stays the household default; rootless stands as a documented variant, below.''
 
-When the tripwire turns: `stand-linux.sh` step 5b reads for `wslc` first and reports the in-distro engine as the fallback; `witness.sh` gains a `wslc compose` row; this carrier re-trues its ruling line and date.
+When the tripwire turns: `stand-linux.sh` step 5b reads for `wslc` first and reports the in-distro engine as the fallback; `witness.sh` gains a `wslc compose` check; this carrier re-trues its ruling line and date.
 
 <<~/ahu>>
 
@@ -107,7 +107,7 @@ WSL 3.0.1 restored rootless Docker (PR #41512 gives each distro its own cgroup n
 | storage | overlay2 | overlay2 on kernels ≥ 5.11 — no fuse penalty on 6.6 / 6.18 |
 | limits | all controllers | `memory` and `pids` delegated by default; `--cpus` needs the operator to delegate `cpu` |
 
-''Tripwire for this variant:'' the first independent "rootless works on 3.0.1" report on microsoft/WSL #41492 or a successor, plus a bind-mount run against the lararium's own compose. When it turns, `stand-linux.sh` step 5b reads `${DOCKER_HOST#unix://}` → `$XDG_RUNTIME_DIR/docker.sock` → `/var/run/docker.sock` in that order and its `needs-you` lines name the rootless install; the witness gains a socket-owner row; the runbook's `usermod -aG docker` line leaves.
+''Tripwire for this variant:'' the first independent "rootless works on 3.0.1" report on microsoft/WSL #41492 or a successor, plus a bind-mount run against the lararium's own compose. When it turns, `stand-linux.sh` step 5b reads `${DOCKER_HOST#unix://}` → `$XDG_RUNTIME_DIR/docker.sock` → `/var/run/docker.sock` in that order and its `needs-you` lines name the rootless install; the witness gains a socket-owner check; the runbook's `usermod -aG docker` line leaves.
 
 Podman's own machine distro still reproduces #41492 because it starts systemd in a namespace without `systemd=true`; that fault and its fix sit on Podman's side.
 
@@ -125,6 +125,6 @@ Community, most rigorous first: [[endjin — Trying out WSL containers|https://e
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7xIADlQD4d3YO2G-hFumDP8pqwsV9p6BFEZyjLsqg7c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QKczU_tUhWeMukh8Z75dlPaEWefnNRuXpLPqhSD-Ra0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

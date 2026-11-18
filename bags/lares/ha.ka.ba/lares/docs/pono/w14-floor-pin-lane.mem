@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/docs/pono/w14-floor-pin-lane"
 
 ! W14 to W16 ~ the place claims its floor pin
 
-Three road rows share one shape: the `#floor=` card read unsigned on origin trust (W14), a floor pin statement carried no causal position and the index filed first-wins, so a rotated floor key re-filed only on a restart (W15), and two-vault carry partials landed no floor pin, so a cofounded Nexus carried no herm (W16). The prerequisite, the pre-rotated place KEL, stands from W29 (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w29-place-kel-lane`>>). This lane builds the one relation the three rows name.
+Three road items share one shape: the `#floor=` card read unsigned on origin trust (W14), a floor pin statement carried no causal position and the index filed first-wins, so a rotated floor key re-filed only on a restart (W15), and two-vault carry partials landed no floor pin, so a cofounded Nexus carried no herm (W16). The prerequisite, the pre-rotated place KEL, stands from W29 (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w29-place-kel-lane`>>). This lane builds the one relation the three items name.
 
 <<~/ahu>>
 
@@ -31,10 +31,10 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 * ''No release head in the claim.'' W26's release tracks floor CONTENT; the claim tracks the place's KEY STATE. A card may point at release evidence beside the claim, and nothing signs that pointer into pin succession.
 * ''KEL descent orders the pin.'' A floor route's keys derive from the place floor key, tier, Nexus and route (`gate-bundle.ts`), so a pin changes on its route only when the place key rotates: no per-route successor log. The pair index (`admit-gate-pin.ts`) replaces first-wins with a SET fold: a descendant claim replaces; a known ancestor refuses `rollback`; two claims at one head, a sibling rotation and another AID at one key surface as a fork and the index serves the settled ancestor (or nothing where none is held); arrival order never selects. An offline reader holds its last accepted head and says "as of my last sync". Node and browser run this one fold.
 * ''Two standings, one reader.'' A claim files when the signer AT ITS HEAD is a counted `carry` of the reader's own held root (herm boards, bundles, partials), or when its AID is the anchor the reader was handed apart from the card.
-* ''First contact takes an anchor apart from the card.'' Three conveyances stand: the founder's own genesis; an authenticated admit (a claim set a sovereign crossing carried, whose first claim adopts the AID, and every later claim must descend from it); a deliberate person-to-person transfer (`#anchor=<aid>`, printed on its own banner line). The card alone never anchors: an unanchored or forged card refuses by name.
-* ''Two-vault carry.'' A carry partial (`nexus-partial`, family `carry`) crosses with its claim and the KEL rows that fold to its head. The claim files ONLY atomically with the counted act, in one write; a partial below the quorum exposes no pin. The carrier seal verifies under the signer the KEL seats at the claim's head (`verifyCarrierContractAtHead`). The herm carries the claim opaque.
+* ''First contact takes an anchor apart from the card.'' Three conveyances stand: the founder's own genesis; an authenticated admit (a claim set a sovereign crossing carried, whose first claim adopts the AID, and every later claim must descend from it); a deliberate person-to-person transfer (the place AID, printed on its own banner line and carried alone to the page's carriage door; no URL carries it). The card alone never anchors: an unanchored or forged card refuses by name.
+* ''Two-vault carry.'' A carry partial (`nexus-partial`, family `carry`) crosses with its claim and the KEL events that fold to its head. The claim files ONLY atomically with the counted act, in one write; a partial below the quorum exposes no pin. The carrier seal verifies under the signer the KEL seats at the claim's head (`verifyCarrierContractAtHead`). The herm carries the claim opaque.
 * ''Rotation carries again.'' A carry names the signer at the head, so a rotated place is carried again under its new signer; the older signer's name answers nothing once the new claim replaces the old.
-* ''Hostile rows are bounded at the board.'' A board read takes at most `PLACE_FLOOR_PIN_ROWS` (512) claim rows and `PLACE_KEL_BOARD_ROWS` (4096) KEL rows in key order, treats a payload past its byte bound as noise, folds each (AID, head) once per filing pass, and the index keeps at most 256 claims per set and 1024 noted KEL forks.
+* ''Hostile entries are bounded at the board.'' A board read takes at most `PLACE_FLOOR_PIN_ENTRIES` (512) claims and `PLACE_KEL_BOARD_ENTRIES` (4096) KEL events in key order, treats a payload past its byte bound as noise, folds each (AID, head) once per filing pass, and the index keeps at most 256 claims per set and 1024 noted KEL forks.
 * ''The sovereign tier is fenced.'' Sovereign pins follow custody-key changes by their own signed relation; a place-KEL claim never orders them, and the index refuses a claim over a sovereign pin by name.
 
 <<~/ahu>>
@@ -46,7 +46,7 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 # ''Built ~ the claim and its reader'' (`place-floor-pin.ts`: `signPlaceFloorPin`, `foldClaimHead`, `readPlaceFloorPin`, `filePlaceFloorPins`; mesh test `place-floor-pin-claim`).
 # ''Built ~ the index'' (`admit-gate-pin.ts`: `fileClaim`, `noteKelFork`, `standingOf`, `forks`; mesh test `place-claim-index`).
 # ''Built ~ the card'' (`hearth-floor-pins.ts`: `HearthFloorCard` {claim, kel}, `verifyHearthFloorCard`, `fileHearthFloorCard`, `lastSyncNote`; the sovereign session body `{pins, claims, kel}` and `fileSessionClaims`; mesh tests `hearth-floor-card`, `lar-ws-client-floor-pins`).
-# ''Built ~ the carry'' (`nexus-partial.ts` family `carry`; `verifyCarrierContractAtHead`; node `nexus-contract.ts` lands claim and rows with the counted act, `carry-bundle.ts` folds claims off the bundle's rows, `herm-carriage.ts` lays the herm's claim and rows; CLI `carry-for --out` and `carry --floor-pin`, `--out`, `--from`; tests `nexus-partial`, `nexus-carry-two-vault`, `herm-explicit-join`, `carry-bundle-*`).
+# ''Built ~ the carry'' (`nexus-partial.ts` family `carry`; `verifyCarrierContractAtHead`; node `nexus-contract.ts` lands claim and KEL events with the counted act, `carry-bundle.ts` folds claims off the bundle's records, `herm-carriage.ts` lays the herm's claim and KEL events; CLI `carry-for --out` and `carry --floor-pin`, `--out`, `--from`; tests `nexus-partial`, `nexus-carry-two-vault`, `herm-explicit-join`, `carry-bundle-*`).
 # ''Built ~ the node card and session'' (`hearth-floor-claims.ts`, `main.ts`'s banner card and anchor line, `gate-sync-server.ts`'s `floorProof`; node tests `hearth-floor-claims`, `gate-sync-server`).
 # ''Built ~ the browser and the page'' (`browser-gate-pins.ts` `fileFloorCard`, `browser-floor-read.ts` last-sync note, `open-browser-vessel.ts` `floorAnchor`; web `live-status.ts` `floorAnchorOf`, `main.ts`'s kept transfer).
 # ''Built ~ the storm witness'' (mesh and browser `place-claim-storm.test`): a place rotating through four carried heads, under reorder, restart and offline gaps, ends on one head with no arrival winner on node and browser; the empty fixture is paired with a known-positive rotation and carry and with a planted fork.
@@ -66,6 +66,6 @@ Three road rows share one shape: the `#floor=` card read unsigned on origin trus
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Ejtf5nQBDxD7V3fUJODOpUaYqMQx36kQUyaxhvxp6g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jNrlMHo9yAZJ9V6GFDTKnn84uIUZAcflvyjDvZ8wdE4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

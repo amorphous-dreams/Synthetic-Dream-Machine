@@ -1,0 +1,60 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/cache`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-29 (file date) — source `.lares-scratch/research/model-tiers/data/cache.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/cache"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/cache"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! cache.md — plan, 2026-10-29
+
+Verbatim scratch record `.lares-scratch/research/model-tiers/data/cache.md` (plan, file date 2026-10-29); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+| era | model | role | n | cache write:read | calls writing >50k tok | tokens in those writes | of them after a >1h gap | text-only (no tool) turns % of calls |h
+| fable-day | fable-5-1 | lead | 3 | 0.0195 | 9 | 3.4M | 9 | 8.9% |
+| fable-day | fable-5-1 | reader | 2 | 0.0643 | 1 | 0.1M | 0 | 15.3% |
+| fable-day | fable-5-1 | scout | 4 | 0.1422 | 0 | 0.0M | 0 | 0.0% |
+| fable-day | opus-5-5 | helper | 2 | 0.0195 | 0 | 0.0M | 0 | 0.0% |
+| fable-day | opus-5-5 | lead | 1 | 0.0125 | 4 | 1.7M | 4 | 9.1% |
+| fable-day | opus-5-5 | reader | 5 | 0.0192 | 0 | 0.0M | 0 | 0.0% |
+| fable-day | opus-5-5 | scout | 6 | 0.0458 | 0 | 0.0M | 0 | 0.0% |
+| fable-day | sonnet-5-5 | lead | 2 | 0.0099 | 0 | 0.0M | 0 | 0.5% |
+| fable-day | sonnet-5-5 | reader | 4 | 0.0853 | 0 | 0.0M | 0 | 0.0% |
+| prior | opus-5-5 | helper | 4 | 0.0248 | 2 | 0.4M | 0 | 0.3% |
+| prior | opus-5-5 | lead | 12 | 0.0735 | 159 | 79.8M | 4 | 4.0% |
+| prior | opus-5-5 | scout | 6 | 0.0468 | 0 | 0.0M | 0 | 0.0% |
+| prior | sonnet-5-5 | helper | 4 | 0.1212 | 0 | 0.0M | 0 | 0.0% |
+| prior | sonnet-5-5 | lead | 35 | 0.0786 | 671 | 271.8M | 30 | 1.9% |
+| prior | sonnet-5-5 | reader | 12 | 0.0407 | 0 | 0.0M | 0 | 0.0% |
+| prior | sonnet-5-5 | scout | 13 | 0.0570 | 0 | 0.0M | 0 | 0.4% |
+Spec-Crucible (1, 55091, 0, 0, 0.0995)
+Realm-Scout (0, 0, 0, 0, 0.0346)
+True-Hand (0, 0, 0, 0, 0.02)
+Spec-Scout (0, 0, 0, 0, 0.0501)
+Porch-Wright (3, 1250017, 3, 18, 0.0207)
+Mirror-Wright (4, 1265722, 4, 44, 0.0182)
+Hive-Wright (4, 1686343, 4, 46, 0.0125)
+Founding-Wright (0, 0, 0, 8, 0.0084)
+Relay-Wright (4, 1009980, 4, 3, 0.0095)
+Walk-Wright (5, 2176590, 5, 14, 0.0279)
+Test-Wright (0, 0, 0, 1, 0.008)
+Contract-Clerk (0, 0, 0, 0, 0.0192)
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3INetbUUpomoCucMBIvt2c8sWbySdn4Rvsj1PYy7KvQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -41,6 +41,8 @@ export interface Item {
   readonly absent?: string | null;
   /** The host stands but a piece the item needs does not: the item cannot act, and the exit reads 4. */
   readonly unreachable?: string | null;
+  /** The house hook scripts the current bytes name that no row declares: the names this item's transform lifts. */
+  readonly lifts?: (current: string | null) => string[];
 }
 
 export interface External {
@@ -63,6 +65,8 @@ export interface Row {
   /** The live bytes differ from what the house last wrote here. */
   readonly touched: boolean;
   readonly detail: string;
+  /** The house hook scripts a tend lifts from this target, by file name; absent when it lifts none. */
+  readonly lifts?: readonly string[];
 }
 
 /** A target's live form: file bytes, a link's target, or absent. */
@@ -189,6 +193,8 @@ function rowOf(it: Item, live: Live, touched: boolean): Row {
   const why = it.foreign?.(cur) ?? null;
   if (why) return { ...base, state: "foreign", detail: why };
   const want = it.transform ? it.transform(cur) : cur;
+  const lifts = it.lifts?.(cur) ?? [];
+  if (lifts.length > 0) return { ...base, state: "drift", lifts, detail: `names house hook script(s) no row declares (${lifts.join(", ")}); tend lifts each` };
   if (want === cur) return { ...base, state: "aligned", detail: cur === null ? "absent, as intended" : "holds" };
   return { ...base, state: "drift", detail: cur === null ? "absent; tend writes it" : want === null ? "present; tend lifts it" : "differs; tend rewrites it" };
 }

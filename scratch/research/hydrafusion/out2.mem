@@ -1,0 +1,173 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/hydrafusion/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/hydrafusion/out2.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/round-two-hydrafusion-copilot-fusion-trade-verif`>>
+
+! Round two: HydraFusion / Copilot Fusion — trade, verify, collide (Sonnet seat, 2026-10-28)
+
+Marks: SOURCED (URL, date; docs pages fetched 2026-10-28) or REASONED. Fetches went through a summarising fetcher, so quotes are as that tool returned them; nothing here was read from a credential file or written to the repository.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-trade-where-the-two-reports-differ-or-stand-al`>>
+
+!! 1. TRADE: where the two reports differ or stand alone
+
+| # | Claim | Terra | Sonnet | Ruling |h
+| 1 | Existence, dates, GA today | yes, 09-04 / 10-28 | yes, same | HOLDS. GA changelog fetched: "Copilot Fusion is available on all Copilot plans"; clients listed: CLI, VS Code, Copilot app, JetBrains. https://github.blog/changelog/2026-10-28-route-and-orchestrate-models-with-github-copilot-fusion/ |
+| 2 | Metering | per-model standard token rate, no Fusion fee, 30% off through 2026-11-30 | same, "limited time" | HOLDS, and Terra's date is now SOURCED: docs: "Through November 30, 2026, users on paid Copilot plans receive a 30% discount on model costs when using Copilot Fusion." https://docs.github.com/en/copilot/concepts/models/copilot-fusion |
+| 3 | Fusion works apart from subagents | stated, central | absent | HOLDS (Terra only). Docs: "Copilot Fusion works separately from subagents and doesn't start them." |
+| 4 | Discarded draft edits persist | docs-sourced warning | "secondary, unverified" | Terra HOLDS, Sonnet's doubt resolved. Docs: "changes that the draft already made in your workspace, such as file edits, aren't undone automatically." This contradicts the blog's "Apply no patch when the workflow is cancelled or fails validation" only if "patch" means the final change set; the docs rule governs files on disk. |
+| 5 | Critic is tool-less | "read-only", later tool-based | "read-only, tool-less" (then tools on 10-14) | BOTH PARTLY. Blog (09-04) says review runs in "isolated, tool-less contexts" with "an independent read-only critic from a different model family". Terra read the 10-14 update (critics inspect the workspace with tools) as current; Sonnet reported the same update. Reconciled: tool-less was the preview; the 10-14 text moved it. Neither report is wrong; the GA text does not restate it, so UNVERIFIED for today's runs. |
+| 6 | Plans in the preview | CLI on all plans | Pro, Pro+, Business, Enterprise | Blog (09-04) fetched: "available to users on all GitHub Copilot plans". Sonnet's four-plan list (from the discussion, Business/Enterprise admin-gated) is not contradicted for admin enablement, but "all plans" HOLDS. Moot after GA. |
+| 7 | Legacy annual plan reaches Fusion | "legacy restriction points against; unresolved" | "not addressed" | See section 2 (CLOSED, with a lean, not a proof). |
+| 8 | Headless / scriptable | not established | REASONED only, one user report of `--model hydrafusion` failing | See section 2 (UNVERIFIED, leans no pin). |
+| 9 | Benchmarks vs Opus 5 | "mixed" | numbers given | HOLDS, numbers verified in the blog: TerminalBench 2.1 +4.9 pts / 67% cheaper; DeepSWE -1.5 / 36%; CheckpointBench -0.1 / 65%. Vendor-run, tuned on the same sets (Sonnet's caveat; not re-fetched, REASONED from the blog). |
+| 10 | Blog URL | .../ai-and-ml/project-hydrafusion-... | .../ai-and-ml/github-copilot/project-hydrafusion-... | Sonnet's path fetched cleanly; Terra's omits `/github-copilot/`. Cite Sonnet's. https://github.blog/ai-and-ml/github-copilot/project-hydrafusion-frontier-quality-via-multi-model-orchestration/ |
+| 11 | Pool contents (Opus 5.5, GPT-6 Astra, Sol, Luna) | omitted | stated from 10-14 | UNVERIFIED by me (not re-fetched); docs say "Models and patterns can change" and "we don't publish a fixed roster" (Sonnet, staff quote in discussion). Treat as a dated snapshot. |
+| 12 | Hidden drafts | docs: only the final response | staff quote | HOLDS. Docs: "Intermediate drafts might be revised or discarded, so Copilot Fusion only shows you the final response." |
+| 13 | User reports of routing faults, AIC burn | absent | discussion anecdotes | Anecdote only; not re-fetched. Discussion #206492 and #211017 stay UNVERIFIED leads. |
+| 14 | User cannot pick the models | implied | explicit | HOLDS. Docs: "You select Copilot Fusion in the model picker, but you aren't selecting a specific model." Admins can exclude models. |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-close-the-open-items`>>
+
+!! 2. CLOSE: the open items
+
+!!! 2a. Does the legacy annual plan (300 premium requests a month, `gpt-5.3-codex` at 6x) reach Fusion, and at what meter?
+* SOURCED: the annual-plan multiplier page says "Users on legacy annual Copilot plans will not receive access to new models and features", lists GPT-5.3-Codex at 6, and says GitHub "moved to usage-based billing" on June 1, 2026 with multipliers that "do not apply" to the new model. https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/model-multipliers-for-annual-plans
+* SOURCED: the what-changed page says annual plans "will continue to track your Copilot expenditure using premium requests, combined with a model multiplier". https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/what-changed-with-billing
+* SOURCED: the legacy requests page says "Each prompt to Copilot CLI uses one premium request with the default model", other models at their multiplier, and does not mention Fusion or Auto. https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/copilot-requests
+* SOURCED: the Fusion docs and GA changelog name no annual exception, no premium-request multiplier, and no "annual plans" at all.
+* SOURCED (one new fact): the legacy page grants Auto a 10% discount, so Auto is not treated as a "new feature" there. Fusion is Auto's successor but is a distinct picker entry.
+* RULING: UNVERIFIED, lean NO. No page grants an annual plan a Fusion meter, no multiplier for Fusion exists in the 6x table, and the one explicit sentence ("will not receive access to new models and features") points against. Fusion's own meter is AI credits (tokens), a unit the annual plan does not hold. Even if the picker shows it, a Fusion leg would bill an unknown unit against a 300-request allowance. Test (free, read-only): run `copilot` interactively once, open `/model`, and see whether a Fusion entry appears; the picker "doesn't appear if none of Fusion's models are available" (docs). Presence still would not name the meter: read the allowance before and after one tiny prompt.
+* Note: round one's phrase "legacy annual users do not receive new models" is the verified sentence above, quoted from the multiplier page, not the changes page.
+
+!!! 2b. Can Fusion run headless from the Copilot CLI with a model we pin?
+* SOURCED: docs say you do not pin: "you aren't selecting a specific model", and "keeps your main conversation on the same model whenever possible" is routing, not a setting. CLI use: "Start the CLI with the `--experimental` option" for local models (docs, 2026-10-28).
+* SOURCED: `copilot -p PROMPT` runs programmatically (https://docs.github.com/en/copilot/how-tos/copilot-cli/automate-with-actions); that page does not mention Fusion or `--model`.
+* SOURCED (local, REASONED as to meaning): this machine's Copilot CLI is 1.0.104. `copilot help` documents `--model <model>` ("use 'auto' to let Copilot pick automatically"), `--auto-tier <preference>`, `--experimental`, `--reasoning-effort`, and names no Fusion model id. The CLI is older than GA, so a Fusion id may exist in a newer build; none is documented.
+* RULING: UNVERIFIED that a headless Fusion launch exists. Two blockers regardless: (1) no documented model id to put after `--model`; (2) the launcher's contract is a pinned model, and Fusion by definition is not one. The `--no-ask-user` and deny-tool walls in `launch-copilot.mjs` would still apply to the host agent loop, but Fusion's critic legs are "isolated" by the runtime, so our deny list does not wall them (REASONED).
+* Launcher facts (read, `tools/launch-copilot.mjs`): requires `--model`; builds `-p <brief> --model <id> --no-ask-user --no-auto-update --disable-builtin-mcps --disallow-temp-dir` plus deny/allow tool flags; prints the allowance "before" and "after" from `~/.cache/copilot/copilot-user-cache.json` `quota_snapshots.premium_interactions`; refuses a builder in the main checkout or without a scratch `LAR_ROOT`. Nothing in it validates that the model id exists.
+* `spend.py` (read): the Copilot tally greps each seat log for the closing `^Requests N Premium` line. Under usage-based billing a Fusion run would print an AI-credit figure (REASONED, not observed), and the regex would count it as zero. That is the silent-zero hazard the house already names.
+
+!!! 2c. The docs.github.com pages round one could not open
+Opened and used: https://docs.github.com/en/copilot/concepts/models/copilot-fusion (the real path, no `/enterprise-cloud@latest`), the three legacy billing pages above, the CLI automate page, the GA changelog and the 09-04 blog. Not opened: the `early-access/copilot/hydrafusion` page, the admin `fusiontier` managed-setting page, and Discussion #211017 (links only, from the GA changelog).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-collide-fusion-against-our-crew-law`>>
+
+!! 3. COLLIDE: Fusion against our crew law
+
+Law read: `mixed-model-swarm.mem` (seats, shapes, seven refinements, lens law, Copilot seat, lanes, fences); `spend.py`; the k17-r brief exists but I used the law's own seven refinements as the settled text.
+
+| Pattern | Fusion | Ours | Stronger integrity, and why |h
+| Who chooses the model | learned router per prompt, roster undisclosed, drifts | named seat, pinned model and effort, lineage counted | Ours. A lineage cannot be counted when the roster is hidden; the lens law needs the name. |
+| Reviewer independence | critic from a different family by design | lens law: "correlated eyes count once", second lineage must see what the first missed | Even in aim; ours stronger in practice because it names the lineage and forbids reading what you wrote. Fusion's pool is Claude + OpenAI, so a Fusion critique may repeat our Terra/Luna read (REASONED). |
+| Review bound | drafter revises once | HOLD returns findings as the next launch, up to five, talked out between | Fusion's cap is cleaner against ping-pong; ours is better evidenced. Borrow the cap's name, keep ours. |
+| Writer count | one drafter in the shared workspace | one writer per worktree, lead alone lands with `--only` | Ours. Fusion's own docs admit discarded edits stay on disk. |
+| Failure custody | "no patch on cancel" (blog), edits not undone (docs) | seat dirty in its worktree, lead pulls by diff, disk carries | Ours. A vanished seat's work stays visible; theirs may quietly remain. |
+| Gate | model judge, benchmark-tuned policy | red as own commit, CI, held-out cells, fresh reader, train | Ours. A judge is an opinion; our gate is executable. Fusion's evals tune on their own sets. |
+| Escalation | Cascade: cheap draft, judge, repair or escalate | Terra builds, Luna reads, Sol on a named ask | Fusion adapts per prompt; ours is decided and explained. Cost-aware in both. |
+| Spend | per-leg record kept inside, aggregate incl. retries, user cannot cap | `spend.py` from each tool's own log, Codex pool floor, overage off | Ours on independence; Fusion's "count retries and fallbacks" is the lesson. |
+| Visibility | final answer only | controller reads every diff and handback | Ours. Hiding drafts removes the human checkpoint. |
+| Subagents / lanes | explicitly none | lanes, sub-branches, PRs, trains | Not comparable; Fusion is a per-prompt component, ours governs lanes. |
+| Scope of evidence | first-turn single prompts, multi-turn "future work" (Sonnet's blog read) | multi-slice, multi-lane | Ours. |
+
+!!! BORROW list
+Each item: law line or tool change | red test | cost.
+
+# ''Leg record on every handback'' | add to the handback form (`noosphere-boot #/worker-swarm`): one line `seat | model | role | outcome | wall-seconds | cost`. Red: a lint over `<seat>.out.md` sample fixtures that fails a handback without the line (control: one with). Cost: low; the line is typed by the lead from `spend.py`, not by the seat, so it keeps "spend reads from what each tool writes".
+# ''Count the whole attempt'' | `spend.py`: tally relaunches and fallback seats per lane (a `runs` and `retried` field beside the current `runs N`). Red: a fixture lane with two Terra rollouts and one failed launch must print three attempts; control: one attempt prints one. Cost: low-medium; needs a rule to detect a retry (same brief file, later start).
+# ''Silent-zero guard for Copilot'' | `spend.py` and the launcher: if a Copilot log lacks `^Requests N Premium`, print `UNMETERED`, not zero; the launcher prints "allowance unchanged" only when before equals after. Red: a log without the line must not sum to 0.0 silently. Cost: low. This guard matters even without Fusion because a usage-billed model leg would otherwise vanish (REASONED).
+# ''Revise-once cap, named'' | a ninth crew-law line: a seat's review of one diff revises once; a second disagreement goes to the Episkopos, never a second seat-to-seat round. Our five-launch HOLD rule stays at the lane level. Red: none executable; a brief lint that every build brief names the cap. Cost: near zero.
+# ''Least-complex-workflow line in the lane brief'' | brief template: "crew chosen: [single seat | build+read | +Sol] because ...". Red: a brief without the line fails the brief lint. Cost: zero. (Mirrors Fusion's "least complex workflow expected to meet its needs", SOURCED blog 09-04.)
+# ''Preflight the pinned model'' | `launch-copilot.mjs refusal()`: refuse when `--model` is not in the model list the CLI prints (parse `copilot help` or its model listing), and refuse `fusion`/`auto` as a seat model unless the brief names it. Red: `refusal` returns a reason for `--model fusion` and for an unknown id; control: `gpt-5.3-codex` passes. Cost: medium; depends on a stable listing format.
+# ''Quarantine check after a discarded draft'' | already covered by our rule (the lead pulls by diff); add one sentence to the fences: a seat that stopped, timed out or was cancelled leaves its worktree dirty and the lead reads the diff before relaunch. Cost: zero.
+
+!!! Where ours holds stronger (without flattery)
+* Every landing carries a named human-readable reader; Fusion's gate is an unspecified model judge.
+* Held-out cells and a train catch what a tuned policy cannot; Fusion's headline numbers come from sets the policy was tuned on (blog, via Sonnet's read).
+* Pinned, reproducible seats; Fusion's roster changed mid-preview.
+* Independent spend from tool logs; Fusion offers no user cap and no user-facing per-leg export (SOURCED gap, round one).
+* Honest limits on ours: our spend regex is exactly as blind as noted in 2b; our Terra build is "unproven locally" (round one citing the roster); our Copilot seat is a read seat on an allowance that rounds to a few dozen reads a month. Those are not strengths.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-yin-then-yang`>>
+
+!! 4. YIN then YANG
+
+!!! YIN: the strongest case for adopting Fusion as a seat or a lane controller
+* It is free of a new subscription; GA on all plans; 30% off through 2026-11-30, so a trial is cheap.
+* Its critic idea is exactly our lens law, built in: a different family reads the draft read-only. The house already pays for that with a second lineage; Fusion would supply one on tap.
+* Vendor numbers say about equal quality at one third to two thirds less cost on coding tasks (SOURCED, blog; discounted by tuning and single-turn caveats).
+* Our Copilot seat reads on `gpt-5.3-codex` at 6x of a small allowance; a usage-billed Fusion read at Standard might cost less per read and brings a cross-family check for the Aftermath sweep.
+* As a lane controller it would remove the hand-written routing choices and relieve the Opus controller's read burden.
+
+!!! YANG: what survives
+* As a controller: nothing. Fusion "works separately from subagents and doesn't start them" (docs); it has no lane, branch, PR, train or land gate; its drafter writes the shared workspace and discarded edits stay (docs). It would break "the controller reads every diff" and "one writer per lane".
+* As a seat: weak. Hidden composition defeats the lens law ("correlated eyes count once" needs the lineage named); no pin; headless use has no documented id; on the legacy annual plan the likely answer is no access, and an unknown meter if yes. The existing Copilot seat reads Aftermath on a model we choose and count.
+* What survives is the engineering: leg records, whole-attempt accounting, the revise-once cap, the least-complex-workflow line, the silent-zero guard (section 3). Those cost nearly nothing and each has a red test.
+* The "cheap" case does not survive our own law: a cheap read that a model judge accepts is an opinion; our land gate runs on tests, held-out and a train.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-integration-verdict`>>
+
+!! 5. INTEGRATION verdict
+
+Lean: BORROW IDEAS ONLY. Adopt nothing as a seat now; never as a lane controller.
+
+| Option | Lean | Reason |h
+| Adopt as a lane controller | NO | Contradicts docs ("doesn't start" subagents), contradicts overwatch and the one-writer fence. SOURCED. |
+| Adopt as a seat | NOT NOW; revisit | Needs entitlement, a documented headless id, and a metered cost. The probe in 2a-2b costs one picker look. |
+| Borrow ideas only | YES | Seven items in section 3, order by value: silent-zero guard, whole-attempt accounting, leg record, preflight, then the two brief lines. |
+| Ignore | NO | The silent-zero hazard and the retry-count gap are ours to fix whether or not Fusion exists. |
+
+!!! The operator's open questions, each with a lean
+# Does the 300-request annual plan show Fusion in `/model`? Lean: no. The check takes one interactive look and no spend. If it appears, read the allowance before and after one prompt and stop.
+# If it appears, should we run one bounded Fusion read beside a Luna read on a finished slice? Lean: yes, once, fixed head, read-only, in a worktree outside the repo, to learn whether its cross-family critique finds what Luna missed. Not a build.
+# Should the launcher accept `--model fusion`? Lean: no until a documented id exists and the unit of its charge reads in a log; treat any try as an experiment with its own launcher flag, not a default.
+# Do we change plans to get Fusion? Lean: no. The vendor numbers are single-turn and tuned; our lane work is multi-turn and our gate does not take a model judge.
+# Do we file the borrowed items? Lean: yes, as one porch lane: spend.py silent-zero guard and attempt count first, handback leg-record line second, brief template lines third.
+# After 2026-11-30 the 30% discount ends. Lean: price a Fusion read against a Luna read only after the discount, since Luna's cost is already on a sunk Codex pool.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/6-residual-gaps`>>
+
+!! 6. Residual gaps (UNVERIFIED, named)
+* Whether a newer Copilot CLI lists a Fusion model id (ours is 1.0.104).
+* The `early-access/copilot/hydrafusion` and `fusiontier` admin pages and Discussion #211017.
+* Current pool contents and effort-to-model bindings (changed 10-14; may change again).
+* Whether GA critics are tool-equipped on every run.
+* Annual-plan treatment of Fusion: no source states it either way; ruling rests on the "new models and features" sentence.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_AQO883TOjLcAFbFo1q7-Bg5vOlxRAazwENNFIbRs64`>>
+
+<<^ code=`&#x0004;` to=`?`>>

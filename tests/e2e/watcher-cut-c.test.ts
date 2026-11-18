@@ -40,7 +40,7 @@ let tickTemplate = "";
 
 /** Disk path a `cutc-<slug>` carrier projects to under the staged bags mirror. */
 function carrierPath(slug: string): string {
-  return join(lar.root, "bags/lares/ha.ka.ba/lares/api/pono", `${slug}.mem`);
+  return join(lar.root, "projections/bags/lares/ha.ka.ba/lares/api/pono", `${slug}.mem`);
 }
 function carrierUri(slug: string): string {
   return `lar:///ha.ka.ba/lares/api/pono/${slug}`;
@@ -114,7 +114,7 @@ const SLUGS = ["cutc-edit", "cutc-trans", "cutc-ren", "cutc-del", "cutc-brake-1"
 beforeAll(async () => {
   lar = await targetInstance();
   if (!stagedTarget) return;
-  SRC = join(lar.root, "bags/lares");
+  SRC = join(lar.root, "projections/bags/lares");
   tickTemplate = readFileSync(TICK_TMPL, "utf8");
 
   // Write all test carriers, then land them in ONE ingest wave.

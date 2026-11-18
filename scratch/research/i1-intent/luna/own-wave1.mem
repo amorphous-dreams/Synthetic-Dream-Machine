@@ -1,0 +1,92 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/luna/own-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/i1-intent/luna/own-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/luna/own-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i1-intent/luna/own-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! own-wave1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i1-intent/luna/own-wave1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/i1-scout-lares`>>
+
+! I1 scout — Lares (Tasked Spirit)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/orient-builder-owned-joints-and-their-ruling-sta`>>
+
+!! ◇ Orient: builder-owned joints and their ruling status
+
+''MEASURED —'' Carrier `face-intent-plane.mem:45–68, 86–107, 149–150`; I1 roadmap `stable-founding-road.mem:487`. ''LEAD —'' <code>&#64;intents-&lt;tag></code> now has a strong model but no implementation (<code>rg &#64;intents-</code> returned no code): entry kinds/signatures, deterministic IDs, outcome-slot semantics, intent expiry/voids, and the daemon view remain build work. The danger lies in treating those as local implementation details. Most already have canon:
+
+* ''Entry kinds and signed image — canon.'' Quote: “Entries append, never edit, each signed by the atom of the device that writes it.” Intent covers verb, args, audience, causal bound; outcome names cause and acting device; asks/answer cite ask; claim/release/takeover/supersede/cancel carry their stated roles. Image must bind all semantic fields and kind; ''derive'' domain separation/canonical encoding from signed plane-act practice, not JSON property order. (''Operator owns'' exact encoding/hash envelope only if existing signer canon does not settle it.)
+* ''Content-hash ID — canon.'' Quote: “content hash of issuer, verb, arguments and nonce.” Empty nonce for idempotent verbs; fresh nonce for a deliberate new invocation. Replay retains ID. Don’t include audience/bound unless the operator amends canon.
+* ''Claim/release/takeover winner, no global now — canon.'' Quote: “The winner reads, never elects.” Preference list order; otherwise lowest `H(atom ‖ intent id)`. Keep duplicates visible. Claims never expire; takeover names claim; no clock decides. Operator release/cancel outranks claims by authority. A local elapsed-time suspicion may prompt takeover only. ''Derived law:'' claims steer effort, not safety; fenced effect checks current claim; idempotent effect converges.
+* ''“Any device” refusal — canon.'' Quote: single-effect fleet-wide “MUST NOT address ‘any device’”; pin executor or require human answer naming atom; refuse at issue. Red tests already name this.
+* ''Causal voids/release — canon, with exact bound semantics needed per verb.'' Supersede, revoked issuer delegation, named roster edge, operator cancel; reader declines if void merged first, but preserves act if it acted before learning. No bound means honor. Don’t invent timeout expiry.
+* ''Face-join summons migration/two hearths — canon.'' Move summons and answers from daemon wiki to face plane so same Persona on two hearths shares one invocation channel, while two faces on one vessel share none. CLI names issuing face per invocation. Carrier explicitly gives this order.
+* ''Rubric witness — canon.'' Cross-device + settled + content addressed by address/CID + expects answer + later authority. One decision, not edits; content never rides intent. Hundred keystrokes/save-with-no-cross-device effect stays zero; one move gives intent+outcome. Duplicate fixture must trip before trusting zero.
+* ''View pane — canon.'' Daemon wiki shows read-only intents/receipts, never pipes them. Capability-filtered projection follows house law.
+* ''Operator-owned risk:'' causal bound vocabulary/schema and which roster edge each verb binds. Lean: require explicit bounds only where a named event truly voids the act; otherwise unbounded. Operator to settle whether supersede is issuer-only for all verbs (carrier says issuer’s or operator’s later word; preserve both authorities).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/observe-what-stands-today`>>
+
+!! ✶ Observe: what stands today
+
+''MEASURED —'' Wave C/D docs: `k15-wave-c-lane.mem:47,49–50,62–64,82`; `k15-wave-d-lane.mem:40`. Each face carries its own FCK, atom, <code>&#64;persona</code>, <code>&#64;circles</code>, <code>&#64;identities</code> and related planes; sealed D anchor pins group/KEL/root/edge/frontier. Signed `plane` acts register verified projections; a bare URL without signed founding/admission refuses (Wave C:50). Devices derive siblings from persona plane ID (`boot-face-planes.ts:29–55`); join carries/adopts planes, no extra provisioning (Wave C:82). Persona acts append to face LarDoc (`persona-act-store.ts:5–17`). Atom signature authority rides sealed face custody; anchor/frontier cannot fall by sync (Wave C:47,49).
+
+Daemon summons still land at `bags/daemon/summons/<id>` and relay into volatile local invocation, then tombstone (`verb-summons.ts:2–9,31–61`; dispatcher `verb-dispatcher.ts:11–20`). The daemon worker runs the handler; `open-node-vessel.ts:2792–2975` registers verbs into its registry. Current durable outcomes go to daemon bag, not a shared face intent plane (`verb-vm.ts:2–5,25–29`). CLI `verb-call.ts` shares local socket; roadmap explicitly couples per-invocation face naming to I1 (`face-intent-plane.mem:149`). Browser uses TW5 worker/isomorphic dispatcher (`verb-summons.ts:12`); I1 must share semantics, not platform APIs.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decide-lane-slices-and-overlap`>>
+
+!! ▶ Decide: lane slices and overlap
+
+''Lean: one I1 lane, internally staged red-first.'' Splitting identity, arbitration, and UI into separate lanes would freeze interfaces before the end state exists. Land a complete slice chain on the sealed anchor: (1) face plane mint/derive/register and signed entry schema; (2) read-side stand-down, effect classes, winner and duplicate marks; (3) claims, operator release, causal voids; (4) migrate face-join summons + CLI face selector; (5) capability-readable daemon view; (6) rubric witness; (7) far-agent relay only after separate research. At each red, pair control and positive: no plane URL absent signed act / valid plane registers; outcome already merged / one effect; pinned wrong atom / right executor; duplicate answer / duplicate counter; no bound / bound void; second face / same-face second hearth; no capability / readable view; ordinary save / settled cross-device decision. Preserve carrier red cases `face-intent-plane.mem:130–141`.
+
+Keep seams explicit with live work: ''W14–W16 floor pin'' owns `place-floor-pin`, `admit-gate-pin`, gate pins, card filing, nexus-contract carry; I1 may name their CID but cannot redefine those pin contracts. ''K17-R'' owns frontier, lease and realm boards; I1 causal roster-edge bounds must consume its frontier proof, not create a competing board. ''W26 slice 5 queued'' owns floor accept act per `(face, Nexus)`; intent may carry/reference it, never substitute. Wave C sealed anchor precedes I1; Wave D’s browser face mirrors provide its browser host. Avoid `family`; name each PersonaGroup/face.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/orient-prior-art-and-fit`>>
+
+!! ⏿ Orient: prior art and fit
+
+''MEASURED (web):'' Automerge supports concurrent CRDT edits/merge and local persistence, while `automerge-repo` supplies storage/network plumbing ([[concepts|https://automerge.org/docs/reference/concepts/]], [[repo|https://github.com/automerge/automerge]]). Ink & Switch’s local-first essay values user-owned durable local data and collaboration ([[essay|https://www.inkandswitch.com/local-first/]]). Keyhive/Beelay are local-first authorization/identity work; use their capability and key-evolution vocabulary, not assume their protocol rules transfer ([[Keyhive|https://github.com/inkandswitch/keyhive]], [[Beelay|https://github.com/inkandswitch/beelay]]). OTP supervision fits daemon worker restart and replayable pending work, while actor mailboxes fit addressed asks and per-device inbox //views//; neither mailbox nor supervisor replaces durable signed intent/outcome records ([[OTP supervisors|https://www.erlang.org/doc/system/supervisor.html]]). CRDT task queues commonly need explicit claim/ack and duplicate-safe effects; I1’s claim is softer and outcome winner deterministic. Kubernetes Lease election deliberately uses renew times/duration and expiry ([[Lease|https://kubernetes.io/docs/concepts/architecture/leases/]]); that conflicts with no-global-now. The house substitutes append-only claims, causal takeover/release, deterministic read winner and effect idempotence/fencing. ''LEAD:'' borrow CRDT merge and supervision patterns; reject a timer lease as authority.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/stories`>>
+
+!! Stories
+
+''Gaia.'' A person’s laptop and phone wear one face. Laptop issues “rebuild the wiki” with an empty nonce and idempotent class. Phone sleeps; laptop claims and runs. On waking, phone sees the outcome and stands down. If partitioned both run, keyed effects converge; merge picks the deterministic winner and preserves the losing act as duplicate.
+
+''Elyncia.'' A shrine-keeper’s face wears two hearths. One sees a face-join summons; the other later syncs the same face plane and sees that entry, while another face on either hearth sees none. The answering atom records the join outcome; the daemon wiki renders it but carries no summons.
+
+''↺ Aftermath — open operator gates:'' settle canonical signed image only if existing plane-act canon leaves it open; causal-bound vocabulary and roster-edge binding; issuer/operator supersede authority. No code build should guess those. OODA-HA: `✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ aftermath`.
+
+WORDS=1160
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;34io-HWAbyNvE_jOZkReftiqXs0mHqnqtd2o2MyWOQY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

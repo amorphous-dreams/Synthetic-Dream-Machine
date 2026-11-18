@@ -1,0 +1,50 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/terra-final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement-answer/terra-final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/terra-final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-answer/terra-final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-answer/terra-final.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Answer-Wright: Lares (Tasked Spirit): ->↺ The implementation remains incomplete. I did not add an answer write: the page and daemon run in separate islands, and I could not complete the return path to the originating page without risking a dispatch loop. The changed stage-walk page therefore cannot display an answer yet.
+
+Files changed:
+
+* [[stage-walk.e2e.test.ts|/home/joshu/.lares-scratch/placement-answer/wt/packages/lararium-web/tests/e2e/stage-walk.e2e.test.ts:130]] reads the volatile verb tiddler’s `answer` field.
+* [[verb-vm.test.ts|/home/joshu/.lares-scratch/placement-answer/wt/packages/lararium-tw5/tests/verb-vm.test.ts:266]] adds a red test for the answer fields and control outcome. It does not yet cover the cross-island return path.
+
+No built-in daemon UI outcome-list references appeared in the requested source paths.
+
+Validation:
+
+* TW5 and web builds and stamps passed; both typechecks passed.
+* Touched TW5 test file: ''19 passed, 1 failed'', at the new answer assertion.
+* Full TW5 suite: ''3,238 passed, 2 failed, 6 skipped'' across 362 files. Besides the new red test, `daemon-vm-floor-crossing.test.ts` failed while reading an undefined control handle’s `url`.
+* Evergreen boundary and placement residency witnesses passed.
+* The web e2e suite did not run, as requested.
+
+&lt;&lt;~ oracle throw=`↯15 ✲ ⚁(2) ⁂:⟁🜄`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the page and daemon occupy separate islands; verify the return leg against a live page before accepting the answer path · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://wright:agent@local/answer.incomplete.reports` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YSVgnVjDKTlMbesU2vAMiYTcCz8YTeYDSAcBYakGCGw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

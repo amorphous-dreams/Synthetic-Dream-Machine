@@ -18,7 +18,7 @@ uri-path    = "ha.ka.ba/lararium/mesh/quorum-entry"
 ! quorum-entry ~ one byte-image, two boards, no drift
 
 The Kapae antigen board (`kapae-antigen`) and the members set (`membership-registry`) stand the SAME structure:
-a monotone per-nym CRDT of quorum-signed steward acts. Their signed bytes carry the identical five fields in
+a grow-only per-nym CRDT of quorum-signed steward acts, ordered by causal parents. Their signed bytes carry the identical five fields in
 the identical order — only the `kind` DOMAIN separates them. This module holds that common image once, so the
 two boards can never drift a field apart while both claiming a quorum verified them.
 
@@ -30,7 +30,8 @@ two boards can never drift a field apart while both claiming a quorum verified t
 
 `QuorumEntryFields` names the steward act every quorum board carries: `kind` (the signing domain), `nym` (the
 subject's verifying-key hex — an identity, never a doc), `action` (the board-local act — `kapae`/`un_kapae`,
-`admit`/`revoke`), `version` (monotone per nym; a higher verified version supersedes a lower), and
+`admit`/`revoke`), `parents` (the content-addressed acts it follows, sorted and unique; empty names the relation
+family's first act, and a later act supersedes by causal descent, never by a counter), and
 `sealEpochCid` (the charter epoch the act roots on — an entry citing an unknown epoch is IGNORED).
 
 `quorumEntryBytes` canonicalises exactly those five, sorted-key stable. ''The signatures ride OUTSIDE the
@@ -114,6 +115,6 @@ passes.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GvMeoRRB4E9vYT4BOI_JXgzh7llpGNeCMua7DUeedzM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8Z32vQjERwYhuF2IrMQvbQvlXdoHs0GqEWLE7MRBiHM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

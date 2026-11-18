@@ -1,0 +1,50 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-dial-fault/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-dial-fault/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-dial-fault/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-dial-fault/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-dial-fault/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-dial-fault/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Dial-Fault: Lares (Tasked Spirit). Read-only diagnosis. Repo: /home/joshu/Synthetic-Dream-Machine at ffe05bc79. Write nothing. Mark claims MEASURED (file:line) or INFER.
+A CI run (42184948499, cell node-b, the heavy set) over a canon-only diff atop ffe05bc79 went red in packages/lararium-node/tests/nexus-client-dial.test.ts > "B1 — the production client dial-out mounts onto a live Repo and crosses the gate" > "node A mounts the dial onto its LIVE repo, syncs B's doc, and a change flows back (both ways)": `timeout: the dialing repo never gained peer peer-…` from `awaitRepoPeer` (~line 103). The span's own CI at ffe05bc79 passed it. The log excerpt (ANSI stripped) is at /home/joshu/.lares-scratch/controller/terra-dial-fault/fail-excerpt.log. History: an earlier flake in this file was cured 2026-09-11 (findWhenReady; see bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready.mem if present). House law: a recurrence reads as a new fault, never a rerun; a race gets pinned by the product's own event, never a sleep, a retry loop or load.
+Find: 1. Every path by which the dialing repo's network subsystem may never emit `peer` for that peer id, or emit it before `onPeer` registers, or under a different id (read nexus-client-dial.ts, lar-ws-client-adapter.ts, the face gate handshake, and what PR #171 / S3b changed in the admission or gate the dial crosses: wardPop, the per-face ward key, the frozen spend). 2. Whether the test's timeout budget (its `ms`) bounds a real product wait that load stretches, or masks a missed event. 3. The minimal cure: product-side or test-side, pinned by which event, and the red that must fail first (under load, without load).
+Final message under 700 words.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QzBX8SvR2Zv_dfUpcgQ_0cHrat0Iao1QZgTNVnSOf-c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

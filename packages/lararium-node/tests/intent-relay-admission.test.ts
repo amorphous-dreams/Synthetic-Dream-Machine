@@ -37,7 +37,7 @@ import { direct } from "./direct-store.js";
 import { foundDirect, openTestCustody, seatSeedCharter } from "./found-route.js";
 
 const ROOT = mkdtempSync(join(tmpdir(), "lar-relay-admission-"));
-const storage = join(ROOT, "data", "lares", "vessel"), genesis = join(ROOT, "genesis");
+const storage = join(ROOT, "hearth", "vessel"), genesis = join(ROOT, "genesis");
 const builtGenesis = join(new URL("../", import.meta.url).pathname, "..", "..", "genesis");
 let group = "", catalogUrl = "";
 afterAll(() => rmSync(ROOT, { recursive: true, force: true }));
@@ -53,7 +53,7 @@ beforeAll(async () => {
     group = packed.tiddlers[PERSONA_GROUP_ID_TIDDLER]!.text!;
     const bags = personaSiblingBagIds(personaBagIdFor(group))!;
     catalogUrl = await ownedStore(storage, async (repo) => {
-      const catalog = repo.create<LarDoc>({ schemaVersion: "lar/1", tiddlers: {
+      const catalog = repo.create<LarDoc>({ tiddlers: {
         [bags.persona]: { tiddler: { title: bags.persona, text: packed.tiddlers[bags.persona]!.text } },
         [bags.intents]: { tiddler: { title: bags.intents, text: packed.tiddlers[bags.intents]!.text } },
       } } as unknown as LarDoc);

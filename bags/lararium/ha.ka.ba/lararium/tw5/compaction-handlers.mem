@@ -55,7 +55,9 @@ Two reactors, both running worker-ward over the catalog accessor
 * ''`rotate-recipe <slug>`'' (`makeRotateRecipeReactor`) — fresh canonical:
   mint an empty doc as the wiki's new canonical bag; the old canonical drops
   to a previous-canon underlay in the recipe stack (content stays readable,
-  new writes land in the fresh doc).
+  new writes land in the fresh doc). The underlay takes the old doc's own id
+  (`<wiki>/canon/<documentId>`) and a `rotated-from` link names the canon it
+  followed; no rotation counter orders the canons.
 
 <<~/ahu>>
 
@@ -127,6 +129,6 @@ is free recovery until growth on a long-lived high-churn bag actually bites
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;unZd6A_pfl_ieXBPtKtL0oqEVzWGeWprSS06h581hiA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jWhQDDPYAZCOlbbOI-ibYQG2mXt22kX2p9qqzxU6goI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

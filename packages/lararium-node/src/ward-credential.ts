@@ -2,7 +2,7 @@
  * ward-credential — THE HAND'S ROUTE FOR ONE WARD ACT, carried from the place a person typed it to the act that opens the ward.
  *
  * A ward act (every act that reads a face's root seed: a daemon or kahua promote-commit, a kāpae-lower, the swarm's house cap and
- * push go, and every act that changes who belongs to the face or what it trusts) opens the face's ward key fresh from a human route.
+ * push lei, and every act that changes who belongs to the face or what it trusts) opens the face's ward key fresh from a human route.
  * The route rides as a `WardCredential`: an opaque token only `wardCredential` mints, over the credentials a person presented for
  * THIS act. It is never cached: the act that receives one drops it when it settles, and no module holds one between acts. Without
  * one, a root-reading act refuses `ward-needs-fresh-unlock` before any key opens.
@@ -131,7 +131,7 @@ export function dropWardTickets(): void { tickets.clear(); }
  * act that changes who belongs to the face or what it trusts, and the daemon realm's bound acts (seat-harness#/the-ward).
  */
 const WARD_VERBS: ReadonlySet<string> = new Set([
-  "kapae-lower", "swarm-cap-set", "swarm-share-set", "swarm-go-issue",
+  "kapae-lower", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
   "kahua-lift", "kahua-withdraw", "kahua-carry", "intent-root",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest",
   "persona-lease", "nexus-publish", "fleet-join-answer",
@@ -153,7 +153,7 @@ export function storeVerbNeedsWard(verb: string, args: Readonly<Record<string, u
  * two devices with no answer, nobody types a passphrase only to read `ward-awaiting-cosign`. An answer runs first too: only an
  * approve of a ward act opens the co-signing device's ward, so an answer to any other ask asks no route.
  */
-const GATED_WARD_VERBS: ReadonlySet<string> = new Set(["kapae-lower", "swarm-cap-set", "swarm-go-issue", "intent-answer"]);
+const GATED_WARD_VERBS: ReadonlySet<string> = new Set(["kapae-lower", "swarm-cap-set", "swarm-lei-kui", "swarm-lei-restring", "intent-answer"]);
 export function storeVerbGatesFirst(verb: string): boolean { return GATED_WARD_VERBS.has(verb); }
 
 // ── the seated gatherer: a person at this process's terminal ─────────────────────────────────────────────────────────────

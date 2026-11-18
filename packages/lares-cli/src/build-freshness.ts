@@ -43,7 +43,7 @@ import type { ParsedArgs } from "./parse-args.js";
  * argues otherwise. Only two motions neither found nor boot — `read` inspects and starts nothing, and
  * `stop` is pure port-control that loads no vessel logic.
  */
-const NEVER_STALE: ReadonlySet<string> = new Set(["read", "stop", "help", "unbound"]);
+const NEVER_STALE: ReadonlySet<string> = new Set(["read", "stop", "help", "unbound", "census", "fresher"]);
 
 /**
  * The vessel door's own sub-door names, DERIVED from its SUBS table — never a second roster to drift.
@@ -201,11 +201,9 @@ export async function freshBuildGate(argv: readonly string[], args: ParsedArgs, 
   // alone mutates nothing, so the danger it guards cannot arise.
   //
   // And the rebuild is not free to attempt: it re-emits every package's dist while a daemon runs from it.
-  // Measured, when a liveness check reached for the stand door: the gate fired, the build cleared dist,
-  // and the running node lost `node-host.js` mid-flight — the probe killed what it was measuring, then
-  // reported it dead. `build` re-emits without clearing today (`build:clean` holds the clearing), so the
-  // sharpest edge has moved; the rule stands on the principle rather than on that one blast radius. A
-  // reading must not be able to disturb what it reads, and this is where that promise gets kept.
+  // `build` re-emits without clearing (`build:clean` holds the clearing), and the rule stands on the
+  // principle rather than on one blast radius: a reading must not be able to disturb what it reads, and
+  // this is where that promise gets kept.
   if (args.flags["observe"]) return null;
   // SOCKET FIRST. A daemon that answers turns `stand` into a reading — it attaches and reports — and a
   // reading never earns a rebuild (the same promise as `--observe`, kept by asking the socket rather than

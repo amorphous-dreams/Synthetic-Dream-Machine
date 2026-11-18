@@ -250,11 +250,27 @@ describe.skipIf(wikiSkip)(`seedDrained — the checkpoint the kernel awaits befo
     expect(wiki.getTiddlerText!(CURRENT_WIKI_BAG, "")).toBe(wikiSlotUri(slug, "working"));
   }, 120_000);
 
-  test("★ the kernel awaits `seedDrained(tw5)` after the recipe and before `behavior.onEa` ★", () => {
+  test("the seed drain breathes as it works: a seed of several slices tells the kernel's breath once per slice before the checkpoint resolves; a drain nobody listens to still resolves (control)", async () => {
+    const seedOf = (slug: string, rows: number) => {
+      const canon = fakeHandle();
+      const tiddlers = (canon.doc() as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+      for (let i = 0; i < rows; i++) { const title = `lar:///t/recipe/breath/${i}`; tiddlers[title] = { tiddler: { title, text: `row ${i}` } }; }
+      const engine = fakeTw5();
+      buildIslandRecipe({ tw5: engine, composite: new CompositeStore(), recipe: { wikiSlug: slug }, ready: [{ slot: wikiBagUri(slug), handle: canon }, { slot: wikiSlotUri(slug, "working"), handle: fakeHandle() }] });
+      return engine;
+    };
+    let breaths = 0;
+    await seedDrained(seedOf("breathing", 450), () => { breaths++; });
+    expect(breaths, "a slow drain that moves must read as moving: one breath per landed slice").toBeGreaterThanOrEqual(3);
+    // CONTROL: the same seed with no listener resolves as before.
+    await expect(seedDrained(seedOf("silent", 450))).resolves.toBeUndefined();
+  }, 120_000);
+
+  test("★ the kernel awaits `seedDrained(tw5, …)` after the recipe and before `behavior.onEa`, and hands it the breath's own tick ★", () => {
     const src = readFileSync(new URL("../src/sovereign-kernel.ts", import.meta.url), "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
     const recipe = src.indexOf("buildIslandRecipe({");
-    const drained = src.indexOf("await seedDrained(tw5)");
+    const drained = src.indexOf("await seedDrained(tw5, () => tick())");
     const behavior = src.indexOf("await behavior.onEa(");
     expect(recipe, "the kernel builds no recipe").toBeGreaterThan(-1);
     expect(drained, "the kernel never awaits the shore's seed checkpoint").toBeGreaterThan(recipe);

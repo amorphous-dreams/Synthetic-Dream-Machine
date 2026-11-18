@@ -9,6 +9,7 @@
  * Control: a refusal that names no standoff (the disk ward, a seal refusal) files a row per refusal
  * and posts an unkeyed alert, as it always did.
  */
+import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, expect, test } from "vitest";
 import { CompositeStore, DAEMON_BAG_ID, WARD_AUDIT_URI_PREFIX, wikiSlotUri } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -22,45 +23,48 @@ async function daemon(): Promise<CompositeStore> {
   await composite.put({ tiddler: { title: ACTIVE_WIKI_URI, text: "elyncia" } }, { kind: "lares-verb", requestId: "seed" });
   return composite;
 }
-const rows = async (composite: CompositeStore): Promise<string[]> => (await composite.listVisible()).filter((t) => t.startsWith(WARD_AUDIT_URI_PREFIX));
+const rows = async (store: CompositeStore): Promise<string[]> => (await store.listVisible()).filter((t) => t.startsWith(WARD_AUDIT_URI_PREFIX));
 const conflict = (standoff: string, uri = "lar:///ha.ka.ba/probe/carrier") =>
   ({ bagId: "lares", uri, reason: "the disk and the records both moved", wardKind: "projection-conflict", standoff });
 
 describe("the ward rail keys a standoff", () => {
   test("ten reports of one standoff file one audit row; two standoffs post two alerts under two keys", async () => {
     const composite = await daemon();
+    const control = memoryControlStore();
     const posted: DaemonMsg_WikiAlert[] = [];
-    const react = makeWardAlertReactor(composite, (m) => posted.push(m));
+    const react = makeWardAlertReactor(composite, control, (m) => posted.push(m));
     for (let i = 0; i < 10; i++) await react(conflict("aaaa1111aaaa1111"));
-    expect(await rows(composite)).toEqual([`${WARD_AUDIT_URI_PREFIX}aaaa1111aaaa1111`]);
+    expect(await rows(control)).toEqual([`${WARD_AUDIT_URI_PREFIX}aaaa1111aaaa1111`]);
 
     await react(conflict("bbbb2222bbbb2222", "lar:///ha.ka.ba/probe/other"));
-    expect((await rows(composite)).sort()).toEqual([`${WARD_AUDIT_URI_PREFIX}aaaa1111aaaa1111`, `${WARD_AUDIT_URI_PREFIX}bbbb2222bbbb2222`]);
+    expect((await rows(control)).sort()).toEqual([`${WARD_AUDIT_URI_PREFIX}aaaa1111aaaa1111`, `${WARD_AUDIT_URI_PREFIX}bbbb2222bbbb2222`]);
     expect(new Set(posted.map((m) => m.key))).toEqual(new Set(["aaaa1111aaaa1111", "bbbb2222bbbb2222"]));
     expect(posted.every((m) => m.kind === "disk-ward" && m.clear !== true && m.wikiSlug === "elyncia")).toBe(true);
-    const row = (await composite.get(`${WARD_AUDIT_URI_PREFIX}aaaa1111aaaa1111`))!.tiddler as Record<string, unknown>;
+    const row = (await control.get(`${WARD_AUDIT_URI_PREFIX}aaaa1111aaaa1111`))!.tiddler as Record<string, unknown>;
     expect(row["alert-kind"]).toBe("projection-conflict");
     expect(row["standoff"]).toBe("aaaa1111aaaa1111");
-    expect(row["disk-projection"]).toBe("no");
+    expect(await rows(composite), "an audit row reached the daemon wiki").toEqual([]);
   });
 
   test("a resolution posts the standoff's key with clear, and files no row", async () => {
     const composite = await daemon();
+    const control = memoryControlStore();
     const posted: DaemonMsg_WikiAlert[] = [];
-    const react = makeWardAlertReactor(composite, (m) => posted.push(m));
+    const react = makeWardAlertReactor(composite, control, (m) => posted.push(m));
     await react(conflict("cccc3333cccc3333"));
-    const before = await rows(composite);
+    const before = await rows(control);
     await react({ ...conflict("cccc3333cccc3333"), resolved: true });
-    expect(await rows(composite)).toEqual(before);
+    expect(await rows(control)).toEqual(before);
     expect(posted.at(-1)).toMatchObject({ kind: "disk-ward", key: "cccc3333cccc3333", clear: true, wikiSlug: "elyncia" });
   });
 
   test("CONTROL: a refusal that names no standoff files a row each time and posts an unkeyed alert", async () => {
     const composite = await daemon();
+    const control = memoryControlStore();
     const posted: DaemonMsg_WikiAlert[] = [];
-    const react = makeWardAlertReactor(composite, (m) => posted.push(m));
+    const react = makeWardAlertReactor(composite, control, (m) => posted.push(m));
     for (let i = 0; i < 3; i++) await react({ bagId: "lares", uri: "lar:///x", reason: "escapes the mirror root" });
-    expect(await rows(composite)).toHaveLength(3);
+    expect(await rows(control)).toHaveLength(3);
     expect(posted.every((m) => m.key === undefined && m.clear === undefined)).toBe(true);
   });
 });

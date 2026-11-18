@@ -332,6 +332,11 @@ export class KeyedReconcileGate<K> {
     return new Promise((resolve) => this.idleWaiters.push(resolve));
   }
 
+  /** The keys queued or running now, in no promised order: what a drain still owes. */
+  pending(): K[] {
+    return [...this.records.keys()];
+  }
+
   /** Stop admission, drop queued observations, and wait for the running reconcile to complete. */
   settle(): Promise<void> {
     this.stopped = true;

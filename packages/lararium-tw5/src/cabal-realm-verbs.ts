@@ -64,7 +64,7 @@ async function leaseSlotsOf(store: LarTiddlerStore, realm: string): Promise<Map<
     const record = await store.get(title);
     if (record) tiddlers[title] = storedRecord(record);
   }
-  const doc: LarDoc = { schemaVersion: "lar/1", tiddlers };
+  const doc: LarDoc = { tiddlers };
   return realmLeaseSlotsFromBoard(doc, realm);
 }
 

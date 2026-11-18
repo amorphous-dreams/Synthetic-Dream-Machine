@@ -31,7 +31,9 @@ import { slotLayerFlags, wikiSlotUri } from "./wiki-recipe.js";
 import { resolveBootDoc, isStillJoining } from "./boot-resolver.js";
 import { isCondemned, isUnresolved, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
 import { storedLarRecord } from "./stored-record.js";
-import { resolveCatalogRow } from "./catalog-row.js";
+import { resolveCatalogEntry } from "./catalog-entry.js";
+import { floorCanonAddress } from "./house-canon-doc.js";
+import { isHouseCanonBag } from "./kahu-canon-reach.js";
 import { PLANE_LABELS } from "./plane-labels.js";
 import { ownEntry } from "./stored-value.js";
 
@@ -78,7 +80,7 @@ export interface VesselKeel {
   catalogHandle: DocHandle<LarDoc>;
   /** Resolve-or-fallback a doc handle.
    *
-   *  ⚠ NOT `allowableStates` — that option carries `@deprecated This no longer has any effect` in the
+   *  ⚠ NOT `allowableStates` — that option carries an upstream deprecation tag and takes no effect in the
    *  pinned automerge-repo, so a strategy resting on it rests on nothing. Progress reads through
    *  `findWithProgress`, which reports per-source state rather than one collapsed verdict. */
   waitHandle:    <T>(url: AutomergeUrl, fallback: () => DocHandle<T>) => Promise<DocHandle<T>>;
@@ -218,7 +220,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
       doc.tiddlers[ORACLE_DOC_URI] = storedLarRecord(ORACLE_DOC_URI, { text: islandHandle.url }, "vessel-boot");
     });
   }
-  // The live system canon rests in the Kahu realm, never in the catalog registry. The catalog registry serves USER bag
+  // The live house canon rests in the Kahu realm, never in the catalog registry. The catalog registry serves USER bag
   // oracles (ocap grants); the realm's registrations serve the cabal's live documents; the crossroads plane serves
   // public/infrastructure answers. Each registry has its one owner.
   emit("island-ready");
@@ -310,44 +312,54 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
  * The draft doc resolves through the daemon's slot-doc resolver (`resolveSlotDoc` —
  * the face binding when a seat stands, the device floor when none does), so the host
  * and the island mount ONE draft doc for one slug.
+ *
+ * HOUSE CANON TAKES NO STAND-IN. A wiki that stands on a house canon bag (`isHouseCanonBag`) mounts the Kahu realm's
+ * standing document where the vessel holds it (`presetWikiHandle`). Where it holds none, the mount mints no document, lays
+ * no canon layer and files no catalog row: the bag reads through the floor (`@oracle`), and the slot bindings key on the
+ * bag's floor address (`floorCanonAddress`), one name on every boot. A catalog row never names house canon.
  */
 export async function mountWikiSlot(
   keel: VesselKeel,
   composite: CompositeStore,
   slot: { wikiSlug: string; wikiKey: string; wikiBagId: string; draftBagId: string },
-  /** The draft doc url for this wiki, given its canon doc url — the daemon's resolver. */
-  resolveDraft: (wikiUrl: string) => Promise<string>,
-  /** The working doc url for this wiki, given its canon doc url. */
-  resolveWorking: (wikiUrl: string) => Promise<string>,
-  /** Pre-resolved wiki doc — the lares-as-wiki quine seats the operator-minted
-   *  invariant doc as the write layer (its oracle lives on the lararium doc,
-   *  never in the catalog registry — no cross-plane resolution, no second mint). */
+  /** The draft doc url for this wiki, given its canon address (its document url, or a house canon bag's floor address) — the daemon's resolver. */
+  resolveDraft: (canonAddress: string) => Promise<string>,
+  /** The working doc url for this wiki, given its canon address; null where the vessel wears no face (`no-face`): the faceless
+   *  floor lays no working layer, so the wiki stands with no default writable and its writes refuse by name. */
+  resolveWorking: (canonAddress: string) => Promise<string | null>,
+  /** Pre-resolved wiki doc — the lares-as-wiki quine seats the Kahu realm's live canon document as the canon layer
+   *  (the realm names it, never the catalog registry — no cross-plane resolution, no second mint). */
   presetWikiHandle?: DocHandle<LarDoc>,
-): Promise<{ wikiHandle: DocHandle<LarDoc>; draftHandle: DocHandle<LarDoc> }> {
+  /** `personal` where the worn face holds no writer's seat in the wiki's workbench: the host mounts the workbench it may read
+   *  as a layer that takes no write (the island's `personal` slot takes the face's saves; the host composite lays none). */
+  resolveWriteSlot?: (canonAddress: string) => Promise<"personal" | undefined>,
+): Promise<{ wikiHandle: DocHandle<LarDoc> | null; canonAddress: string; draftHandle: DocHandle<LarDoc> }> {
   const { repo, catalogHandle, waitHandle } = keel;
   // Resolve the CANON doc by its content key (bags/{slug}) — where the mint
   // writer keys it. The wiki IDENTITY (wikis/{slug}, slot.wikiKey) is a separate
   // registry entry, not the canon-doc lookup.
-  const wikiHandle = presetWikiHandle ?? await resolveCatalogRow(
+  const wikiHandle = presetWikiHandle ?? (isHouseCanonBag(slot.wikiBagId) ? null : await resolveCatalogEntry(
     catalogHandle, slot.wikiBagId,
     (url) => url ? waitHandle<LarDoc>(url as AutomergeUrl, () => blankDoc(repo)) : blankDoc(repo),
     "vessel-boot",
-  );
+  ));
+  const canonAddress = wikiHandle?.url ?? floorCanonAddress(slot.wikiBagId);
   // When the wiki's own bag coincides with an already-mounted substrate layer
   // (the quine), the read-only substrate layer yields to the writable one.
-  if (composite.hasBag(slot.wikiBagId)) composite.removeLayer(slot.wikiBagId);
-  const workingUrl = await resolveWorking(wikiHandle.url);
-  const workingHandle = await findOrThrow(repo, workingUrl, `${wikiSlotUri(slot.wikiSlug, "working")} (working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
-  const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug);
-  composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId), ...flags(slot.wikiBagId) });
+  if (wikiHandle && composite.hasBag(slot.wikiBagId)) composite.removeLayer(slot.wikiBagId);
+  const workingUrl = await resolveWorking(canonAddress);
   const workingSlot = wikiSlotUri(slot.wikiSlug, "working");
-  composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot), ...flags(workingSlot) });
+  const workingHandle = workingUrl === null ? null : await findOrThrow(repo, workingUrl, `${workingSlot} (working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
+  const writeSlot = await resolveWriteSlot?.(canonAddress);
+  const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug, writeSlot);
+  if (wikiHandle) composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId), ...flags(slot.wikiBagId) });
+  if (workingHandle) composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot), ...flags(workingSlot) });
 
-  const draftHandle = await waitHandle<LarDoc>(await resolveDraft(wikiHandle.url) as AutomergeUrl, () => blankDoc(repo));
+  const draftHandle = await waitHandle<LarDoc>(await resolveDraft(canonAddress) as AutomergeUrl, () => blankDoc(repo));
   composite.addLayer({ bagId: slot.draftBagId, store: new AutomergeDocStore(draftHandle, slot.draftBagId), ...flags(slot.draftBagId) });
 
   const tempSlot = wikiSlotUri(slot.wikiSlug, "temp");
   composite.addLayer({ bagId: tempSlot, store: keel.tempStore(), ...flags(tempSlot) });
 
-  return { wikiHandle, draftHandle };
+  return { wikiHandle, canonAddress, draftHandle };
 }

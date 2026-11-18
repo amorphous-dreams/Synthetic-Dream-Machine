@@ -19,9 +19,15 @@ import os
 import tempfile
 
 import content_io as cio
+from house_root import HouseRefusal
 from capture_stream import ContentStoreLandCap, Pipeline
 from deep_time import island_local_now
 from holder_caps import acquire_root_lock, release_lock, root_mutation
+
+
+class AddressRefused(HouseRefusal, ValueError):
+    """A name that reaches out of its root (`assert_one_segment`): the house's own refusal, in words for the caller
+    who sent the name, so a seat hands it across."""
 
 
 @dataclass(frozen=True)
@@ -95,66 +101,37 @@ def derived_views(root: str) -> dict:
     return views
 
 
-def _lares_data_home() -> str:
-    """Resolve THE SPIRITS' HOUSE the SAME way TS `laresDataHome` (xdg-base.ts) resolves it:
-    `LAR_ROOT/data/lares` for an isolated instance, else `$XDG_DATA_HOME/lares` (unset → `~/.local/share/lares`).
-
-    `lares` names the SPIRITS — their identity, their seal, the substrate they run on; a Lar's keys ARE
-    that Lar. `lararium` names the HOUSE. `lar` names the NAMESPACE alone. The two views stay
-    byte-identical by convention so a name a caller addresses lands on the one root both surfaces name."""
-    lar_root = os.environ.get("LAR_ROOT")
-    if lar_root:
-        return os.path.join(lar_root, "data", "lares")
-    xdg = (os.environ.get("XDG_DATA_HOME") or "").strip()
-    return os.path.join(xdg or os.path.join(os.path.expanduser("~"), ".local", "share"), "lares")
-
-
-def _lararium_data_home() -> str:
-    """Resolve THE HOUSE'S HOME the SAME way TS `larariumDataHome` (xdg-base.ts) resolves it:
-    `LAR_ROOT/data/lararium` for an isolated instance, else `$XDG_DATA_HOME/lararium`
-    (unset -> `~/.local/share/lararium`).
-
-    THE CRITERION IS WHOSE IT IS. A sensorium holds operator history and DreamNet history — the
-    LARARIUM's, never any one Lar's — so it stands here. LARES PASS; THE LARARIUM ABIDES, and surviving a
-    complete re-founding follows from that: capture the machine took once and cannot take again, kept in
-    its own house rather than off a wipe's list."""
-    lar_root = os.environ.get("LAR_ROOT")
-    if lar_root:
-        return os.path.join(lar_root, "data", "lararium")
-    xdg = (os.environ.get("XDG_DATA_HOME") or "").strip()
-    return os.path.join(xdg or os.path.join(os.path.expanduser("~"), ".local", "share"), "lararium")
-
-
 def assert_one_segment(kind: str, name: str) -> str:
     """Admit a caller-supplied NAME as exactly one path segment, or refuse. Mirrors TS
     `assertOneSegment` (vessel-paths.ts).
 
     `os.path.join` resolves nothing, but the joined string still walks: a name carrying `..` reaches
     out of the root it was meant to stay inside the moment anything opens or removes it. This shore
-    takes names from the MCP, so the segment arrives from outside this island entirely. The shrine
-    survives a RITE structurally, by standing in a house no wipe-list names; a traversing segment is
-    the one thing that defeats that, because it walks rather than consulting a list. It RAISES rather
+    takes names from the MCP, so the segment arrives from outside this island entirely. The sensoriums
+    stand under one root; a traversing segment is the one thing that walks out of it. It RAISES rather
     than returning a verdict — a caller resolves a path it is about to act on, and a fail-closed
     refusal is the only reading that cannot be ignored."""
     if not name or name in (".", "..") or os.path.basename(name) != name or "\\" in name:
-        raise ValueError(
+        raise AddressRefused(
             f"{kind} refuses {name!r} — a name resolves to ONE path segment, never a route out of its root"
         )
     return name
 
 
 def sensorium_dir(name: str) -> str:
-    """Turn a sensorium NAME into its root — `<lararium>/sensoriums/<name>` — mirroring TS `sensoriumDir`
+    """Turn a sensorium NAME into its root — `<root>/sensoriums/<name>` — mirroring TS `sensoriumDir`
     (vessel-paths.ts). The one shore a `lares sense <sensorium>` / MCP `sensorium=` address crosses to
     reach a target root; `memory` resolves the same dir the memory default names. The name passes the
-    one-segment law first, so an address can never route out of the shrine."""
-    return os.path.join(_lararium_data_home(), "sensoriums", assert_one_segment("sensorium_dir", name))
+    one-segment law first, so an address can never route out of the sensoriums home."""
+    import house_root
+    return os.path.join(house_root.sensoriums_home(), assert_one_segment("sensorium_dir", name))
 
 
 def sensorium_names() -> "list[str]":
-    """Roster every sensorium standing under `<lararium>/sensoriums` — the names an address may reach.
+    """Roster every sensorium standing under `<root>/sensoriums` — the names an address may reach.
     Mirrors TS `sensoriumNames`; an absent dir reads as an empty roster rather than raising."""
-    root = os.path.join(_lararium_data_home(), "sensoriums")
+    import house_root
+    root = house_root.sensoriums_home()
     try:
         return sorted(e.name for e in os.scandir(root) if e.is_dir())
     except OSError:

@@ -49,7 +49,7 @@ const codeOf = (p: Promise<unknown>): Promise<string | undefined> =>
 
 test("RED: a joinee's approve of a ward ask with no fresh unlock refuses `ward-needs-fresh-unlock`; CONTROL: under its own route it lands", async () => {
   const j = await joinee();
-  for (const verb of ["ward-kapae-lower", "ward-house-cap", "ward-push-go"]) {
+  for (const verb of ["ward-kapae-lower", "ward-house-cap", "ward-push-lei"]) {
     expect(await codeOf(j.answer(verb))).toBe("ward-needs-fresh-unlock");
     const landed = await j.answer(verb, { ward: fixtureWard() });
     expect(landed.body).toMatchObject({ entry: "answer", verdict: "approve", executor: j.issuer.key.toLowerCase() });
@@ -102,7 +102,7 @@ test("RED: the co-signer's approve carries no ward signature; CONTROL: it carrie
 
 test("RED: an approve of a ward ask with no fleet frontier read signs; it refuses `ward-cosign-frontier-unknown` before the ward opens", async () => {
   const j = await joinee();
-  expect(await codeOf(j.answer("ward-push-go", { ward: fixtureWard(), frontier: null }))).toBe("ward-cosign-frontier-unknown");
+  expect(await codeOf(j.answer("ward-push-lei", { ward: fixtureWard(), frontier: null }))).toBe("ward-cosign-frontier-unknown");
 });
 
 test("RED: two faces of one vessel present one ward key, or keys a reader links; CONTROL: each face's key verifies only its own face's approve", async () => {
@@ -117,7 +117,7 @@ test("RED: two faces of one vessel present one ward key, or keys a reader links;
   // a re-read presents the same key: the key answers to the face, never to the call
   expect((await door(GROUP, one.answerer.key)).wardKey).toBe(k1);
   const signed = await signIntentAnswer({ group: other, signer: one.answerer, ask: "a".repeat(64), executor: one.issuer.key.toLowerCase(), deny: false, face: ordinal, frontier: FRONTIER, ward: fixtureWard(),
-    asked: { intent: "i".repeat(64), verb: "ward-push-go", issuer: one.issuer.key.toLowerCase(), askedBy: one.issuer.key.toLowerCase(), detail: DETAIL, cosign: true, spent: false } });
+    asked: { intent: "i".repeat(64), verb: "ward-push-lei", issuer: one.issuer.key.toLowerCase(), askedBy: one.issuer.key.toLowerCase(), detail: DETAIL, cosign: true, spent: false } });
   const image = wardAnswerImage({ group: other, ask: "a".repeat(64), detail: DETAIL, verdict: "approve", executor: one.issuer.key, frontier: FRONTIER });
   expect(verifyEd25519(signed.body["wardSig"], image, k2)).toBe(true);
   expect(verifyEd25519(signed.body["wardSig"], image, k1)).toBe(false);

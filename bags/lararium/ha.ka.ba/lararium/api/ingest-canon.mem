@@ -130,7 +130,7 @@ structural sigils, and the turn sigils stand registered (above).
 
 !! The harvester burn ~ what the fire took, where each part went
 
-''Lock 9 enacted (operator rulings 2026-10-31, rounds 2 and 3; Train Q row Q6, o-takiage).'' The
+''Lock 9 enacted (operator rulings 2026-10-31, rounds 2 and 3; Train Q item Q6, o-takiage).'' The
 outside-VM turn readers burned whole, with everything that fed only on them. ''Old turns get mined
 later by a flexible method''; until then no TypeScript or Python reader parses a turn's frame.
 
@@ -159,7 +159,7 @@ later by a flexible method''; until then no TypeScript or Python reader parses a
 projection (`telemetry-writeback.ts`), the recall form leg (`makeFormSearch`) and the FORM store
 surface (`makeFormPalace`). Each keeps its export shape, answers empty, names the ruling in its
 source, and carries one pinning test. They retire when the sensorium arc returns, which waits on the
-founded-Lararium proof; a road row tracks them.
+founded-Lararium proof; a road item tracks them.
 
 <<~/ahu>>
 
@@ -220,6 +220,6 @@ linonetwo's tw-react + TidGi):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PtBLkJDkizJEaG8wZaHJERGQB1WZ10qkLF4ukk9EnF4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RWoNV-WFUYWnPOb_XiDP2MZhf6UHezpl0G74DxzNpXE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

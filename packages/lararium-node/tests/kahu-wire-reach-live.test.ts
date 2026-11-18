@@ -52,7 +52,7 @@ describe("Kahu reach at the wire reads the live standing", () => {
 
   test("W1–W3 — the live standing follows the board: founded, removed, re-admitted", async () => {
     expect(typeof live.watchKahuStanding, "watchKahuStanding stands").toBe("function");
-    await withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") }));
+    await withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") }));
     await withLarRoot(r, async () => {
       const sealHome = larSealHome();
       const vesselKey = await loadVesselVerifyingKey();

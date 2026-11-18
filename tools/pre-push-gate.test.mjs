@@ -19,5 +19,10 @@ test("RED: a red step refuses by name and the later steps still run; CONTROL: al
 test("the roster names real files: every census suite and the witness script exist", () => {
   for (const c of CENSUS) assert.ok(existsSync(join(ROOT, "packages/lararium-mesh/tests", `${c}.test.ts`)), c);
   assert.ok(existsSync(join(ROOT, "tools/witness-all.sh")));
-  assert.deepEqual(STEPS.map((s) => s.name), ["witnesses-fast", "census-laws"]);
+  assert.deepEqual(STEPS.map((s) => s.name), ["witnesses-fast", "census-laws", "carrier-pins", "carrier-tests"]);
+});
+
+test("carrier pins bind the rite and run carrier-reading self-tests", () => {
+  assert.deepEqual(STEPS.find(s => s.name === "carrier-pins"), { name: "carrier-pins", cmd: "node", args: ["tools/rite-walk.mjs", "--bind"], cwd: "." });
+  assert.deepEqual(STEPS.find(s => s.name === "carrier-tests").args, ["--test", "tools/launch-codex.test.mjs", "tools/ci-ignored-paths.test.mjs"]);
 });

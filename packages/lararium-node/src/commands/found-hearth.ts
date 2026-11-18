@@ -50,9 +50,10 @@ import {
   generateOrLoadPersonaGroupRoot, listPersonaRosterLines, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore,
 } from "../node-vessel-identity.js";
 import { armGenesis, retireSeats, signLicensedInception } from "../seal-ceremony.js";
-import { larSealHome } from "../vessel-paths.js";
+import { larSealHome, larProjectionsHome } from "../vessel-paths.js";
+import { writeFaceLabel } from "../face-labels.js";
 import { landFoundingAdmission } from "./nexus-cabal.js";
-import { landKahuRealm } from "../kahu-realm.js";
+import { landKahuRealm, seatHouseCanonFromCheckout } from "../kahu-realm.js";
 import { runFoundTheFace, runInit, type InitOptions, type FoundFaceResult } from "./init.js";
 
 /** One chair's cold next key, held in this process until its card reads back. */
@@ -213,7 +214,15 @@ export async function runFoundHearth(opts: FoundHearthOptions): Promise<FoundHea
   // one seat; a group already admitted lands nothing), so persona zero's group holds the Kahu realm from birth.
   const light = async () => {
     const face = await runFoundTheFace({ repo: opts.repo, ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}), handleIndex: 0, ...(ward.value ? { ward: ward.value } : {}) });
+    // THE FACE NAMES ITSELF AT ITS CREATION: persona zero's label (relation -> pet-name) lands the moment the face stands, so a
+    // seed after a re-founding adopts its folders by that name with no door having read the face first. A restore carries no
+    // label here (its pet-name lands later, by the operator's naming), and a label never fails the founding.
+    if (label.length > 0 && face.faceRelation !== null) {
+      try { writeFaceLabel({ relation: face.faceRelation, petname: label, handleIndex: 0 }, larProjectionsHome()); } catch { /* an aid, never a gate */ }
+    }
     await landFoundingAdmission({ repo: opts.repo, sealHome: larSealHome(), personaGroupId: face.personaGroupId });
+    // THE HOUSE CANON the founding lands: every disk-sourced holding of this checkout but the public board, at contract.
+    seatHouseCanonFromCheckout();
     await landKahuRealm({ repo: opts.repo, sealHome: larSealHome() });
     return face;
   };

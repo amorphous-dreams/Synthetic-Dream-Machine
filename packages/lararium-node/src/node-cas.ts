@@ -21,7 +21,7 @@ import {
 import { runtimeCasOverride } from "./lares-config.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
-/** The CAS dir for a vessel rooted at `storageDir` (`<lares>/vessel` → `<lares>/vessel/cas`). The
+/** The CAS dir for a vessel rooted at `storageDir` (`<root>/hearth/vessel` → `<root>/hearth/vessel/cas`). The
  *  runtime-cas OVERRIDE (`LAR_CAS` → `config.vessel.cas`) wins when sited — the SAME lever the CLI stager
  *  (`larCasDir`) honors, so ONE dir holds the blob the CLI stages and the blob a worker resolveByCid-reads.
  *  Absent → the storage-rooted default. A lever moving only one side diverges the two silently. */
@@ -39,7 +39,13 @@ export function corpusCasDirFromEnv(): string | null {
 }
 
 /** What an island worker is handed at construction (`workerData`): the vessel's CAS dirs, so the worker reads no env. */
-export interface IslandCasData { readonly cidDir: string | null; readonly corpusCasDir: string | null }
+export interface IslandCasData {
+  readonly cidDir: string | null;
+  readonly corpusCasDir: string | null;
+  /** The house canon slugs the vessel seated off its checkout (`seatHouseCanon`): the island seats the same set, since a
+   *  worker thread holds its own module state and reads no disk for it. Absent: the island holds the system canon alone. */
+  readonly houseCanon?: readonly string[];
+}
 
 /**
  * The CAS dir an island WORKER derives from its own manifest storage dir. Every
@@ -60,7 +66,7 @@ export function casDirFromIslandStorageDir(islandStorageDir: string): string {
  * flush of the directory. No write opens an entry's own name.
  *
  * A FILE ALTERED AT REST GETS REPLACED, AND ONLY BY BYTES THAT PROVE THEMSELVES. Where a file already stands
- * under the address and no longer recomputes to it, bytes that do recompute to it take its place by an atomic
+ * under the address and fails to recompute to it, bytes that do recompute to it take its place by an atomic
  * write, so a holder that fetched a block again keeps it. Bytes that fail the address replace nothing.
  */
 export function writeCasEntriesFs(

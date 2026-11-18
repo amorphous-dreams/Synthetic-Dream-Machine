@@ -21,7 +21,7 @@ function entropy(): RandomProvider {
   let n = 1;
   return { getRandomValues<T extends Uint8Array<ArrayBuffer>>(a: T): T { for (let i = 0; i < a.length; i++) a[i] = n++ & 255; return a; }, randomUUID: () => "deterministic" };
 }
-const opts = (r: string) => ({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") });
+const opts = (r: string) => ({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") });
 
 describe("place founding", () => {
   test("the real door arms a chain and leaves the cold seed on the card alone", async () => {

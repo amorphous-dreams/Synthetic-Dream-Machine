@@ -8,6 +8,7 @@
  * refuses triggers no mount (control: no wiki-switch recorded); a mount that cannot stand refuses by the name
  * `wiki-mount-refused: <cause>`; a daemon-slug or non-slot act asks no mount.
  */
+import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, test, expect } from "vitest";
 import { CompositeStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, type CapabilityVerifier } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -44,6 +45,7 @@ const outcomeOf = async (daemon: CompositeStore, id: string) => (await daemon.ge
 const WORKING = "lar:///ha.ka.ba/wikis/orchard/working";
 function stand(opts: { textOnly?: boolean; switchAnswer?: Record<string, unknown> | Error; fence?: boolean; deny?: string } = {}) {
   const daemon = makeDaemon();
+  const control = memoryControlStore();
   const routed: string[] = [];
   let mounted = false;
   // The working slot's cap mints at the first mount, as resolveBinding does.
@@ -57,7 +59,7 @@ function stand(opts: { textOnly?: boolean; switchAnswer?: Record<string, unknown
     if (context.presenter !== "did:key:mounted") throw Object.assign(new Error(`${verb}: fenced`), { reason: "content-mounted-only" });
   } });
   const dispatcher = new VerbDispatcher({
-    daemonVm: new FakeWiki() as unknown as TW5Engine, daemon, registry, verifier, localOf: () => true,
+    daemonVm: new FakeWiki() as unknown as TW5Engine, daemon, control, registry, verifier, localOf: () => true,
     routeFn: async (inv) => {
       routed.push(inv.action);
       if (inv.action === "wiki-switch") {
@@ -73,7 +75,7 @@ function stand(opts: { textOnly?: boolean; switchAnswer?: Record<string, unknown
   const act = (requestedBy: string, to = WORKING, requestId = "r1") => dispatcher.placeVerb({
     verb: "wiki-act", args: { verb: "LOAD", args: { "to-bag": to, "source-uri": "/x" } }, requestedBy, requestId,
   });
-  return { daemon, routed, act, dispatcher };
+  return { daemon, control, routed, act, dispatcher };
 }
 
 describe("a wiki-act aimed at a wiki no island mounts asks the vessel to mount it", () => {
@@ -81,7 +83,7 @@ describe("a wiki-act aimed at a wiki no island mounts asks the vessel to mount i
     const s = stand();
     s.act("did:key:mounted");
     await settle();
-    const out = await outcomeOf(s.daemon, "r1");
+    const out = await outcomeOf(s.control, "r1");
     expect(out?.["status"], String(out?.["results"])).toBe("done");
     expect(s.routed).toEqual(["wiki-switch", "wiki-act"]);
     s.dispatcher.stop();
@@ -91,7 +93,7 @@ describe("a wiki-act aimed at a wiki no island mounts asks the vessel to mount i
     const s = stand({ fence: true });
     s.act("did:key:sibling");
     await settle();
-    const out = await outcomeOf(s.daemon, "r1");
+    const out = await outcomeOf(s.control, "r1");
     expect(out?.["status"]).toBe("error");
     expect(String(out?.["results"])).toContain("fenced");
     expect(s.routed).toEqual([]);
@@ -102,7 +104,7 @@ describe("a wiki-act aimed at a wiki no island mounts asks the vessel to mount i
     const s = stand({ switchAnswer: { active: false, cause: "no-such-wiki", detail: "orchard holds no spec" } });
     s.act("did:key:mounted");
     await settle();
-    const out = await outcomeOf(s.daemon, "r1");
+    const out = await outcomeOf(s.control, "r1");
     expect(out?.["status"]).toBe("error");
     const text = String(out?.["results"]);
     expect(text).toContain("wiki-mount-refused: no-such-wiki");
@@ -115,7 +117,7 @@ describe("a wiki-act aimed at a wiki no island mounts asks the vessel to mount i
     const s = stand({ switchAnswer: new Error("island down") });
     s.act("did:key:mounted");
     await settle();
-    expect(String((await outcomeOf(s.daemon, "r1"))?.["results"])).toContain("wiki-mount-refused: island down");
+    expect(String((await outcomeOf(s.control, "r1"))?.["results"])).toContain("wiki-mount-refused: island down");
     s.dispatcher.stop();
   });
 
@@ -132,7 +134,7 @@ describe("a wiki-act aimed at a wiki no island mounts asks the vessel to mount i
     s.dispatcher.placeVerb({ verb: "wiki-act", args: { wiki: "orchard", verb: "LOAD", args: { "to-bag": WORKING } }, requestedBy: "did:key:label", requestId: "r3" });
     await settle();
     expect(s.routed).toEqual([]);
-    expect(String((await outcomeOf(s.daemon, "r3"))?.["results"])).toContain("no face provider");
+    expect(String((await outcomeOf(s.control, "r3"))?.["results"])).toContain("no face provider");
     s.dispatcher.stop();
   });
 
@@ -141,7 +143,7 @@ describe("a wiki-act aimed at a wiki no island mounts asks the vessel to mount i
     s.act("did:key:mounted");
     await settle();
     expect(s.routed).toEqual([]);
-    expect(String((await outcomeOf(s.daemon, "r1"))?.["results"])).toContain("bag not registered");
+    expect(String((await outcomeOf(s.control, "r1"))?.["results"])).toContain("bag not registered");
     s.dispatcher.stop();
   });
 

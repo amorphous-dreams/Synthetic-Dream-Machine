@@ -212,7 +212,7 @@ authority-first-states = ["authenticating", "syncing-authority", "syncing-manife
 edge-island-lifecycle = ["boot-receipt", "live-tail", "sediment", "revoked"]
 # boot-receipt — join snapshot issued; peer authorized to see visible world
 # live-tail    — receiving delta stream from last known offset
-# sediment     — historical compacted state; no longer receiving deltas
+# sediment     — compacted state; receives no deltas
 # revoked      — epoch rolled; no future live-tail frames for this principal
 
 # Causal island MUST doctrine
@@ -363,6 +363,6 @@ meant to escape):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NKvteFnGWrdC4bTzAXCqibz9vJwDUUP-nG1SEhk8Dfw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ro8pL7VZ-KnmYGH6adPGUN4nkYWC8r65U5SACJaP1Gw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

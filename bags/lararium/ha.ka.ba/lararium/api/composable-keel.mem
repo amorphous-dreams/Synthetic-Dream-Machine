@@ -28,7 +28,7 @@ A vessel ''declares'' what it carries; a separate move ''wires'' that declaratio
 
 ''Declare ⊥ wire.'' The same shore the architecture cuts everywhere — ''INFRA ⊥ WHO'', ''map ⊥ territory'', the inventory ⊥ the engine. The `#has-cap-stack` carries the inventory; `composeVessel` carries the engine. Neither folds into the other: a stack stays a pure data declaration any vessel can hold without running, and the root stays a transient builder that retains nothing once it hands back the read-face.
 
-''Source authority:'' the operator's composable-keel recognition (2026-06-29); the prior-art convergence at #rhymes; the `#has`-ontology that already retired typed edges (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>). WITNESSED in code + LIVE in Docker (#/witnessed).
+''Source authority:'' the operator's composable-keel recognition (2026-06-29); the prior-art convergence at #rhymes; the `#has`-ontology, which carries no typed edges (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>). WITNESSED in code + LIVE in Docker (#/witnessed).
 
 <<~/ahu>>
 
@@ -36,7 +36,7 @@ A vessel ''declares'' what it carries; a separate move ''wires'' that declaratio
 
 !! Declare ~ the cap-stack as ECS inventory
 
-The `#has-cap-stack` reads ''entity-component-system'' (ECS) and stays purely declarative: a ''nameless vessel'' carries a ''flat set of `#has`-cap tags'' — //what is present//, nothing more. It carries ''no edges'' (the retired-typed-edge ruling holds, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>): the stack never says //how// caps connect, only //which// a vessel holds.
+The `#has-cap-stack` reads ''entity-component-system'' (ECS) and stays purely declarative: a ''nameless vessel'' carries a ''flat set of `#has`-cap tags'' — //what is present//, nothing more. It carries ''no edges'' (the no-typed-edge ruling holds, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>): the stack never says //how// caps connect, only //which// a vessel holds.
 
 ```text
 #has-cap-stack = (VesselId, Set<CapModule>)   — flat, edgeless, dependency-blind
@@ -144,6 +144,6 @@ Four domains converging on one shape reads as a real pattern integrity, not a lo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1a8WVeihbtqIhelBrkas2NFa9D9KGdnqLGChTqWXO8M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ob1563vXKHxjAhCSG1ZhBv1LoPSSwtytA5876WUIHRM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

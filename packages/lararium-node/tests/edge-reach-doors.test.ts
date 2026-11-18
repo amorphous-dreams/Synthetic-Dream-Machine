@@ -32,7 +32,7 @@ import { runCabalFace } from "../src/commands/cabal-face.js";
 import { FaceNotNamed } from "../src/face-selector.js";
 import { edgeLedgerDocUrl, keptFromLedger } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
-import { storeDoorDirect, STORE_DOOR_FACE_ROWS } from "../src/store-door-verbs.js";
+import { storeDoorDirect, STORE_DOOR_FACE_VERBS } from "../src/store-door-verbs.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
@@ -41,6 +41,7 @@ import { seedFaceAtom } from "./atom-fixture.js";
 import { actingAtomKey } from "./atom-fixture.js";
 import { makeEdgeShadowRing } from "../src/edge-shadow-ring.js";
 import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
 
 const REALM = "a".repeat(64);
 
@@ -68,7 +69,7 @@ beforeEach(async () => {
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
   await ownedStore(larDataDir(), async (repo) => {
-    const handle = seedDaemonDoc(repo);
+    const handle = await seedFoundedDaemonDoc(repo);
     await repo.flush();
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
     const packed = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
@@ -249,8 +250,8 @@ describe("two faces open and none named: no door picks a face", () => {
       return rollAnchorsFromBoard((await materializeSharedLarDoc(repo, carriageDocUrl(island), "board:carriage-contracts")).doc()).length;
     });
     const roll = { closing, opened, epoch: openedEpoch };
-    expect(STORE_DOOR_FACE_ROWS.has("nexus-roll-anchor")).toBe(false);       // the carriage anchor acts as the place
-    expect(STORE_DOOR_FACE_ROWS.has("nexus-roll-anchor-edge")).toBe(true);    // its realm edge anchors act as a face
+    expect(STORE_DOOR_FACE_VERBS.has("nexus-roll-anchor")).toBe(false);       // the carriage anchor acts as the place
+    expect(STORE_DOOR_FACE_VERBS.has("nexus-roll-anchor-edge")).toBe(true);    // its realm edge anchors act as a face
     const place = await storeDoorDirect("nexus-roll-anchor", { ...roll }, { sealHome: larSealHome() });
     expect(place["refused"]).toBeUndefined();
     expect(await carriageAnchors()).toBe(1);                                // the place's anchor landed, no face asked

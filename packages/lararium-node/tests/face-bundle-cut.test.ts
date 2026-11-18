@@ -27,7 +27,7 @@ import {
   openMemorySection, readFaceBundleBody, sealMemorySection, signHandleCard,
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
-import { BUNDLE_EXTRACTOR_ROWS, BackupRefused, CUT_REFUSALS, cutFaceBundle, type BackupDoor } from "../src/face-bundle-cut.js";
+import { BUNDLE_EXTRACTOR_CARRIERS, BackupRefused, CUT_REFUSALS, cutFaceBundle, type BackupDoor } from "../src/face-bundle-cut.js";
 import { storeFaceProofKey, storeVesselFaceKey } from "../src/face-key-custody.js";
 import { persistIdentityAnchors } from "../src/identity-anchors.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
@@ -39,7 +39,7 @@ import {
 } from "../src/node-vessel-identity.js";
 import * as carriers from "../src/vault-carriers.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
-import { removeCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
+import { removeCustodyRecord, writeCustodyRecord } from "../src/custody-seat.js";
 import { faceAddressSecretFile, landFaceAddressSecret } from "../src/fleet-join-custody.js";
 import { recoveryContactSetFile } from "../src/recovery-contact-enrolment.js";
 
@@ -113,7 +113,7 @@ function door(over: Partial<BackupDoor> & { mounted?: number | null } = {}): { d
   return {
     asked,
     door: {
-      wornFace: () => (over.mounted === undefined ? 0 : over.mounted),
+      mountFace: () => (over.mounted === undefined ? 0 : over.mounted),
       ownEdgeShadowed: over.ownEdgeShadowed ?? (async () => false),
       cutMemory: over.cutMemory === undefined
         ? async (to) => {
@@ -199,9 +199,9 @@ describe("a cut carries one face's standing section and its memory section", () 
 
 describe("the table picks the rows a bundle carries", () => {
   test("C3 — the bundle column and the cut's extractors name the same rows", () => {
-    expect([...BUNDLE_EXTRACTOR_ROWS].sort()).toEqual(carriers.bundleRows().map((r) => r.row).sort());
+    expect([...BUNDLE_EXTRACTOR_CARRIERS].sort()).toEqual(carriers.bundleCarriers().map((r) => r.row).sort());
     // The law's table (custody#/the-table): five rows ride whole, four ride as one face's lines, the rest stay.
-    const by = (t: string): string[] => carriers.bundleRows().filter((r) => r.bundle === t).map((r) => r.row).sort();
+    const by = (t: string): string[] => carriers.bundleCarriers().filter((r) => r.bundle === t).map((r) => r.row).sort();
     expect(by("whole")).toEqual(["face-address-secret", "face-proof-key", "handle-book", "persona-root", "recovery-contact-set"]);
     expect(by("lines")).toEqual(["anchors", "persona-declarations", "persona-petnames", "persona-roster"]);
     for (const stays of ["face-atom", "veil-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "gate-root", "seat-key", "fleet-join-pending", "face-join-record"]) {
@@ -210,8 +210,8 @@ describe("the table picks the rows a bundle carries", () => {
   });
 
   test("C3 — a row the column names with no extractor refuses the cut, and nothing gets sealed", async () => {
-    const real = carriers.bundleRows();
-    const spy = vi.spyOn(carriers, "bundleRows").mockReturnValue([...real, { row: "gate-memory", bundle: "whole" }]);
+    const real = carriers.bundleCarriers();
+    const spy = vi.spyOn(carriers, "bundleCarriers").mockReturnValue([...real, { row: "gate-memory", bundle: "whole" }]);
     try {
       await expect(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door().door })).rejects.toThrow(/no extractor reads it/);
     } finally { spy.mockRestore(); }
@@ -224,7 +224,7 @@ describe("a cut refuses by name, and a refused cut seals nothing", () => {
   });
 
   test("C4 — a face whose address secret stands nowhere here refuses `no-address-secret`, before any island ask", async () => {
-    await removeCustodyRow("identity", faceAddressSecretFile(GROUP0));
+    await removeCustodyRecord("identity", faceAddressSecretFile(GROUP0));
     const lend = door();
     expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: lend.door }))).toBe("no-address-secret");
     expect(lend.asked).toEqual([]);
@@ -248,8 +248,8 @@ describe("a cut refuses by name, and a refused cut seals nothing", () => {
   test("C4 — under its own shadow the cut refuses `own-edge-shadowed`: the shadow reads once, no island ask leaves and no root row opens", async () => {
     let reads = 0;
     const lend = door({ ownEdgeShadowed: async () => { reads++; return true; } });
-    const openCold = vi.spyOn(seat.holder, "openColdRow");
-    const readHot = vi.spyOn(seat.holder, "readRow");
+    const openCold = vi.spyOn(seat.holder, "openColdRecord");
+    const readHot = vi.spyOn(seat.holder, "readRecord");
     expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: lend.door }))).toBe("own-edge-shadowed");
     expect(reads).toBe(1);
     expect(lend.asked).toEqual([]);
@@ -293,7 +293,7 @@ describe("the recovery contact set rides where the face's key history commits it
     const recoveryContact = await publicOf(secretOf(81));
     const set = { recoveryContactSetHash: sealKeySetHash([recoveryContact], 1), threshold: 1, recoveryContacts: [recoveryContactRegistrationCard("contact-a", recoveryContact, null)] };
     const recordOf = (prefix: string) => new TextEncoder().encode(JSON.stringify({ prefix, ...set }));
-    await writeCustodyRow("identity", recoveryContactSetFile(0), recordOf(kel0[0]!.prefix));
+    await writeCustodyRecord("identity", recoveryContactSetFile(0), recordOf(kel0[0]!.prefix));
     // PENDING: the record stands and the head still stands one-of-one.
     let key = mintBundleKey();
     let cut = await cutFaceBundle({ face: 0, bundleKey: key, door: door().door });
@@ -309,7 +309,7 @@ describe("the recovery contact set rides where the face's key history commits it
     expect(opened(cut.sealedBody, key).body.recoveryContactSet).toEqual(JSON.parse(JSON.stringify(set)));
     expect(cut.carries.recoveryContacts).toBe(1);
     // A RECORD UNDER ANOTHER PREFIX stays, even beside a head that commits its digest.
-    await writeCustodyRow("identity", recoveryContactSetFile(0), recordOf("persona-" + "ee".repeat(32)));
+    await writeCustodyRecord("identity", recoveryContactSetFile(0), recordOf("persona-" + "ee".repeat(32)));
     key = mintBundleKey();
     cut = await cutFaceBundle({ face: 0, bundleKey: key, door: door({ kel: async () => enrolled }).door });
     expect(opened(cut.sealedBody, key).body.recoveryContactSet).toBeNull();

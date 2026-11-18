@@ -45,16 +45,16 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, deriveSelfRecoveryKey, faceAtomKeyFromSeed, foldPersonaContests, recoveryContactRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
-  faceWorkingDocUrl, personaBagIdFor, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
+  HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, recoverySetCommitment, deriveSelfRecoveryKey, faceAtomKeyFromSeed, foldPersonaContests, recoveryContactRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
+  faceCatalogDocUrl, personaBagIdFor, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
 import * as init from "../src/commands/init.js";
-import { removeCustodyRow, seatedCustody, unseatCustody, writeCustodyRow } from "../src/custody-seat.js";
+import { removeCustodyRecord, seatedCustody, unseatCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import { cutFaceBundle } from "../src/face-bundle-cut.js";
 import { RESTORE_REFUSALS, RestoreRefused, restoreFaceBundle } from "../src/face-bundle-restore.js";
 import { FACE_PROOF_KEY_FILE, storeFaceProofKey } from "../src/face-key-custody.js";
-import { faceRowNames } from "./face-paths.js";
+import { faceRecordNames } from "./face-paths.js";
 import { recoveryContactOffer, recoveryContactSetFile, readRecoveryContactSet, runRecoveryContactEnrolment } from "../src/recovery-contact-enrolment.js";
 import { ConfirmRefused, FaceProvisional, chairLogView, confirmProvisional, readProvisionalMark, refuseWhileProvisional } from "../src/face-provisional.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
@@ -157,7 +157,7 @@ async function cutHere(): Promise<{ sealedBody: Uint8Array; bundleKey: Uint8Arra
   const cut = await cutFaceBundle({
     face: 0, bundleKey,
     door: {
-      wornFace: () => 0, ownEdgeShadowed: async () => false,
+      mountFace: () => 0, ownEdgeShadowed: async () => false,
       cutMemory: async (to) => ({ section: Buffer.from(sealMemorySection([], to)).toString("base64"), holds: [] }),
       kel: (prefix) => withRepo((repo) => readLocalPersonaKelChain(repo, prefix)),
       memoryDoor: null, importMemory: null,
@@ -206,11 +206,12 @@ async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", p
   expect(existsSync(root)).toBe(false);
   return out;
 }
-/** The working address a face derives for the wiki "garden" from the address secret this vessel holds for its group. */
+/** The catalog address a face derives from the address secret this vessel holds for its group (a wiki's working layer rests in
+ *  its realm workbench and derives from no face secret, cabal-realm#/the-workbench). */
 async function workingUrlOf(group: string): Promise<string> {
   const secret = await readFaceAddressSecret(group);
   if (!secret) throw new Error(`no address secret stands for ${group.slice(0, 12)}`);
-  try { return faceWorkingDocUrl(secret, "garden", "working"); } finally { secret.fill(0); }
+  try { return faceCatalogDocUrl(secret); } finally { secret.fill(0); }
 }
 /** Seal `body` under a fresh key, as a bundle a cut would carry. */
 function sealed(body: FaceBundleBody): { sealedBody: Uint8Array; bundleKey: Uint8Array } {
@@ -238,7 +239,7 @@ function homeTree(): string {
   walk(larDataDir());
   return h.digest("hex");
 }
-const pendingStands = (): boolean => faceRowNames().some((n) => RESTORE_PENDING_FILE.test(n));
+const pendingStands = (): boolean => faceRecordNames().some((n) => RESTORE_PENDING_FILE.test(n));
 
 describe("a face returns from its bundle onto a fresh vessel", () => {
   test("R1 + R2 — the restored face stands under the same prefix at a NEW seat; a second restore refuses", async () => {
@@ -281,7 +282,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(await (await makeNodePersonaDeclarationStore()).get(1)).toEqual({ handle: "the gardener-handle" });
     const friend = (await loadNodeHandleBook(1)).snapshotFor(a.rootKey).records;
     expect(friend.map((r) => r.petname)).toEqual(["Ana"]);
-    expect(faceRowNames().filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(1);
+    expect(faceRecordNames().filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(1);
     expect(pendingStands(), "the pending row leaves once the face stands lit").toBe(false);
 
     // R2: a second restore over it refuses, and moves nothing.
@@ -307,7 +308,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
     const anchors = (await loadIdentityAnchors(1))!;
     expect(anchors.personaKelPrefix, "CONTROL: the identifier stays").toBe(a.prefix);
-    expect(await workingUrlOf(anchors.personaGroupId), "CONTROL: the working address stays").toBe(a.workingUrl);
+    expect(await workingUrlOf(anchors.personaGroupId), "CONTROL: the secret-derived address stays").toBe(a.workingUrl);
     expect({ plane: personaBagIdFor(anchors.personaGroupId) },
       "the restore re-minted the PersonaGroup: the face's tag, plane and kahua folders moved")
       .toEqual({ plane: personaBagIdFor(a.group) });
@@ -316,7 +317,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
   test("R16 — the bundle carries the face's address secret, so the face restored on B derives the working address it derived on A; CONTROL: a second face derives another; a bundle without the secret refuses no-address-secret before any write", async () => {
     const a = await cutOnDestroyedVessel("a");
     const other = await cutOnDestroyedVessel("other", "the potter", 5);
-    expect(other.workingUrl, "CONTROL: a second face derives another working address").not.toBe(a.workingUrl);
+    expect(other.workingUrl, "CONTROL: a second face derives another secret-derived address").not.toBe(a.workingUrl);
     await foundVessel("b");
     // A bundle cut without the secret refuses by name, and moves nothing.
     const before = homeTree();
@@ -328,7 +329,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
     const group = (await loadIdentityAnchors(1))!.personaGroupId;
     expect(group, "a new seat on B").not.toBe(a.group);
-    expect(await workingUrlOf(group), "one face, one working address on every device that wears it").toBe(a.workingUrl);
+    expect(await workingUrlOf(group), "one face, one secret-derived address on every device that wears it").toBe(a.workingUrl);
     expect(await workingUrlOf((await loadIdentityAnchors(0))!.personaGroupId), "CONTROL: B's own persona zero derives its own").not.toBe(a.workingUrl);
   });
 
@@ -520,7 +521,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
 
     // AN ORPHAN ROOT under another key: a root row with no roster line (an act that stopped between its two writes).
     await foundVessel("orphan", "charter");
-    expect(await removeCustodyRow("identity", ".persona-roster-h0.json")).toBe(true);
+    expect(await removeCustodyRecord("identity", ".persona-roster-h0.json")).toBe(true);
     expect(await listPersonaRosterLines()).toEqual([]);
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("orphan-names-another-key");
@@ -529,9 +530,9 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     // A NAMES ROW THAT STANDS AND DOES NOT READ WHOLE refuses by its own name before the commit row: the landing
     // meets no row the preflight has not already read.
     await foundVessel("torn");
-    await seatedCustody()!.writeRow("identity", ".persona-petnames-h1.json", new TextEncoder().encode("{ this row reads as no map"));
+    await seatedCustody()!.writeRecord("identity", ".persona-petnames-h1.json", new TextEncoder().encode("{ this row reads as no map"));
     before = homeTree();
-    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toMatch(/^threw: custody row identity\/\.persona-petnames.*reads malformed/);
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toMatch(/^threw: custody record identity\/\.persona-petnames.*reads malformed/);
     expect(homeTree()).toBe(before);
     expect(pendingStands()).toBe(false);
 
@@ -633,7 +634,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
   test("R10 — a restore after recovery contact enrolment carries the face's set, and an earlier bundle still restores", async () => {
     const a = await cutOnDestroyedVessel("a", "the gardener", 3, 3);
     const { early, recoveryContacts, kel } = a.enrolled!;
-    const setHash = sealKeySetHash(recoveryContacts.map((g) => g.recoveryPubKey), 2);
+    const setHash = recoverySetCommitment(a.prefix, recoveryContacts.map((g) => g.recoveryPubKey), 2);
     expect(kel.map((e) => e.kind ?? "plain"), "CONTROL: A's board heads at the typed first enrolment").toEqual(["plain", "recovery-contact-enrolment"]);
     expect(early.body.recoveryContactSet, "the early cut carries no set: its log stood one-of-one").toBeNull();
     expect(a.body.recoveryContactSet?.recoveryContactSetHash, "the later cut carries the set its log commits").toBe(setHash);
@@ -672,7 +673,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     // A CARRIED SET ITS OWN LOG DOES NOT COMMIT: another digest beside the enrolment, and a set beside a one-of-one log.
     await foundVessel("e");
     before = homeTree();
-    const other = { ...a.body.recoveryContactSet!, recoveryContactSetHash: sealKeySetHash([recoveryContacts[0]!.recoveryPubKey], 1), threshold: 1, recoveryContacts: [a.body.recoveryContactSet!.recoveryContacts[0]!] };
+    const other = { ...a.body.recoveryContactSet!, recoveryContactSetHash: recoverySetCommitment(a.prefix, [recoveryContacts[0]!.recoveryPubKey], 1), threshold: 1, recoveryContacts: [a.body.recoveryContactSet!.recoveryContacts[0]!] };
     expect(await refusalOf(restoreFaceBundle({ ...sealed({ ...a.body, recoveryContactSet: other }), as: 1, withRepo }))).toBe("bundle-inconsistent");
     expect(await refusalOf(restoreFaceBundle({ ...sealed({ ...early.body, recoveryContactSet: a.body.recoveryContactSet }), as: 1, withRepo }))).toBe("bundle-inconsistent");
     // A set whose registrations do not recompute the digest it names.
@@ -682,7 +683,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
 
     // A CARRIED KEY ANOTHER FACE OF THIS VESSEL GUARDS WITH refuses, naming that face.
     const shared = { prefix: "persona-" + "00".repeat(32), recoveryContactSetHash: sealKeySetHash([recoveryContacts[1]!.recoveryPubKey], 1), threshold: 1, recoveryContacts: [a.body.recoveryContactSet!.recoveryContacts[1]!] };
-    await writeCustodyRow("identity", recoveryContactSetFile(0), new TextEncoder().encode(JSON.stringify(shared)));
+    await writeCustodyRecord("identity", recoveryContactSetFile(0), new TextEncoder().encode(JSON.stringify(shared)));
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("recovery-contact-key-serves-another-face");
     expect(homeTree()).toBe(before);
@@ -691,12 +692,12 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await foundVessel("f");
     const fresh = await publicOf(secretOf(71));
     const stale = { prefix: a.prefix, recoveryContactSetHash: sealKeySetHash([fresh], 1), threshold: 1, recoveryContacts: [recoveryContactRegistrationCard("contact-a", fresh, null)] };
-    await writeCustodyRow("identity", recoveryContactSetFile(1), new TextEncoder().encode(JSON.stringify(stale)));
+    await writeCustodyRecord("identity", recoveryContactSetFile(1), new TextEncoder().encode(JSON.stringify(stale)));
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("row-conflict");
     expect(homeTree()).toBe(before);
     expect(pendingStands()).toBe(false);
-    await writeCustodyRow("identity", recoveryContactSetFile(1), new TextEncoder().encode(JSON.stringify({ prefix: a.prefix, ...a.body.recoveryContactSet })));
+    await writeCustodyRecord("identity", recoveryContactSetFile(1), new TextEncoder().encode(JSON.stringify({ prefix: a.prefix, ...a.body.recoveryContactSet })));
     expect((await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo })).recoveryContactSet).toBe("held");
   });
   test("R15 — a restored face standing provisional, and a face this vessel founded, each open a session at the place through the production door, so persona.confirm and the recovery contact enrolment ride it", async () => {

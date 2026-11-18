@@ -21,7 +21,7 @@ import {
   runDeviceAdmitEdge, runApplyAdmitPayload, packPersonaCrossing, replayCapEvents, readLeaseFrontier } from "@lararium/keyhive";
 import { seedDaemonDoc } from "@lararium/mesh";
 import {
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, type LarDoc,
+  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, controlStoreOf, standControlHome, hex, type LarDoc,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
   mintFaceAnchor,
 } from "@lararium/mesh";
@@ -29,6 +29,7 @@ import * as ed25519 from "@noble/ed25519";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome, MEMORY_SEALED, memorySecretStore } from "../../lararium-mesh/tests/secret-home-fixture.js";
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const FOUNDER_SEED = seed(60);
@@ -37,7 +38,7 @@ const JOINEE_PLACE_SEED = seed(161);
 const BAG = "lar:///ha.ka.ba/bags/catalog/handle-shared";
 
 /** Boot a live keyhive over a founded/admitted daemon doc, the way a real vessel boots. */
-async function bootOver(repo: Repo, daemonUrl: string, s: Uint8Array, verifyingKey: string,
+async function bootOver(repo: Repo, daemonUrl: string, secretUrl: string, s: Uint8Array, verifyingKey: string,
                         pg: { groupId: string }, mesh: string, signerDid: string,
                         personaKelPrefix: string, deviceEdge: unknown, archiveBytes?: Uint8Array) {
   const handle = await repo.find<LarDoc>(daemonUrl as AutomergeUrl);
@@ -49,11 +50,11 @@ async function bootOver(repo: Repo, daemonUrl: string, s: Uint8Array, verifyingK
   const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(verifyingKey), "board:persona-kel");
   const chain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
   if (!chain) throw new Error(`no persona-KEL chain for ${personaKelPrefix} on this vessel's board`);
-  // The lease frontier, by the SAME fold the daemon behaviour runs, over this vessel's OWN daemon layer.
-  const lease = await readLeaseFrontier(composite, pg.groupId);
+  // The lease frontier, by the SAME fold the daemon behaviour runs, over this vessel's OWN control document.
+  const lease = await readLeaseFrontier(controlStoreOf(await standControlHome(repo, handle)), pg.groupId);
   if (lease.kind !== "epoch") throw new Error(`fixture: lease frontier unavailable (${lease.why})`);
   return bootDaemonKeyhive({
-    atomSeed: s, eventStore: new DaemonEventStore({ daemon: composite, face: pg.groupId }),
+    atomSeed: s, eventStore: new DaemonEventStore({ ...memorySecretStore(await repo.find(secretUrl as AutomergeUrl)), face: pg.groupId }),
     placeVerifyingKey: verifyingKey,
     faceVerifyingKey: (deviceEdge as { deviceVerifyingKey: string }).deviceVerifyingKey,
     personaGroupId: pg.groupId, meshCabalDocIdHex: mesh,
@@ -69,11 +70,11 @@ describe("two vessels bind under one Handle", () => {
   test("the joinee joins the founder's PersonaGroup and reads its shared content — real ceremony + boot", async () => {
     const founderRepo = new Repo({ sharePolicy: async () => true });
     const founderKey = await pubOf(FOUNDER_SEED);
-    const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo: founderRepo, atomSeed: seed(61), placeVerifyingKey: founderKey,
+    const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(founderRepo), repo: founderRepo, atomSeed: seed(61), placeVerifyingKey: founderKey,
       vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: founderKey,
     });
     const pg = { groupId: cer.personaGroupId };
-    const { keyhive: founder } = await bootOver(founderRepo, cer.daemonUrl, cer.atomSeed, founderKey, pg, cer.meshCabalDocIdHex, cer.signerDid, cer.personaKelPrefix, cer.founderEdge, cer.veilArchive);
+    const { keyhive: founder } = await bootOver(founderRepo, cer.daemonUrl, cer.secretUrl, cer.atomSeed, founderKey, pg, cer.meshCabalDocIdHex, cer.signerDid, cer.personaKelPrefix, cer.founderEdge, cer.veilArchive);
     // Snapshot the founder's KEL chain — the admit payload carries it so the joinee seeds its LOCAL board.
     const founderKelBoard = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(founderKey), "board:persona-kel");
     const founderKelChain = personaKelChainForPrefix(founderKelBoard.doc(), cer.personaKelPrefix)!;
@@ -91,7 +92,7 @@ describe("two vessels bind under one Handle", () => {
     // The seat is the creator atom, restored from its founding archive.
     const daemonHandle = await founderRepo.find(cer.daemonUrl as AutomergeUrl);
     const seat = new KeyhiveProvider();
-    await seat.init({ seed: cer.atomSeed, eventStore: await replayCapEvents(daemonHandle as never, cer.personaGroupId), archiveBytes: cer.veilArchive });
+    await seat.init({ seed: cer.atomSeed, eventStore: await replayCapEvents(await founderRepo.find(cer.secretUrl as AutomergeUrl) as never, cer.personaGroupId, MEMORY_SEALED), archiveBytes: cer.veilArchive });
     await seat.hydrateFromEventStore();
     const bundle = await packPersonaCrossing(founder, joineeCard, pg,
       [{ bagUrl: BAG, docIdHex: docId, plaintext: new TextEncoder().encode("shared under the Handle") }], seat);
@@ -108,15 +109,15 @@ describe("two vessels bind under one Handle", () => {
 
     // Joinee applies the payload (writes the membership to its own daemon doc), then BOOTS restoring its Archive.
     const joineeRepo = new Repo({ sharePolicy: async () => true });
-    const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), atomSeed: JOINEE_SEED,
+    const applied = await runApplyAdmitPayload({ repo: joineeRepo, daemonHandle: seedDaemonDoc(joineeRepo), ...memorySecretHome(joineeRepo), atomSeed: JOINEE_SEED,
       vesselDisplayName: "Joinee", payload, nexusPubkey: joineePlaceKey,
     });
-    const { keyhive: joineePlace } = await bootOver(joineeRepo, applied.daemonUrl, JOINEE_SEED, joineePlaceKey,
+    const { keyhive: joineePlace } = await bootOver(joineeRepo, applied.daemonUrl, applied.secretUrl, JOINEE_SEED, joineePlaceKey,
       { groupId: payload.personaGroupId }, payload.meshCabalDocIdHex,
       payload.signerDid, payload.personaKelPrefix, applied.deviceEdge, joineeArchive);
     const joineeHandle = await joineeRepo.find<LarDoc>(applied.daemonUrl as AutomergeUrl);
     const joinee = new KeyhiveProvider();
-    await joinee.init({ seed: JOINEE_SEED, eventStore: await replayCapEvents(joineeHandle as never, cer.personaGroupId), archiveBytes: joineeArchive });
+    await joinee.init({ seed: JOINEE_SEED, eventStore: await replayCapEvents(await joineeRepo.find(applied.secretUrl as AutomergeUrl) as never, cer.personaGroupId, MEMORY_SEALED), archiveBytes: joineeArchive });
     await joinee.hydrateFromEventStore();
 
     // BOUND: the joinee reads the Handle's shared content.

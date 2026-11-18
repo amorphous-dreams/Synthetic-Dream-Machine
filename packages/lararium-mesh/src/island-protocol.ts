@@ -62,7 +62,6 @@
 
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { FaceAnchor } from "./face-anchor.js";
-import type { WorkingFloorAnchor } from "./wiki-recipe.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
@@ -168,9 +167,29 @@ export interface IslandGrants {
   /** working — the SAVED live write layer (PersonaGroup×fingerprint-bound, like
    *  personal); normal edits route here, canon publishes on a promotion MOVE. */
   workingUrl?:  string | null;
+  /** The layer this face's saves of the wiki land in where it holds no writer's seat in the wiki's workbench: its own
+   *  `personal` slot (cabal-realm#/the-workbench). Absent: the working slot, where one stands. */
+  writeSlot?:   "personal";
   /** The face's kahua stage, the url its VERIFIED `plane` act pins (`adoptKahuaPlane`); `bags/kahua` mounts from this
    *  grant alone and never from a catalog row. Absent/null: the layer stands absent. */
   kahuaUrl?:    string | null;
+  /** The HEARTH's daemon working document (road row `L4f`): the url the worn face's signed log names for this device, granted
+   *  to the daemon island of a vessel that crosses to its own hearth. The daemon wiki's working slot mounts it. Absent/null:
+   *  the slot stays this device's own. */
+  hearthWorkingUrl?: string | null;
+  /** The vessel's CONTROL document (`control-home`), granted to the daemon island alone: an access grant, never a recipe
+   *  slot. The island's control store stands over it; absent on every wiki island. */
+  controlUrl?:  string | null;
+  /** The control document's refusal while the vessel cannot read it (`vessel-locked`: the key stays shut; `control-home-unnamed`:
+   *  the place holds no face). The island resolves nothing then: its control store refuses every read and write by this name. */
+  controlRefusal?: "vessel-locked" | "control-home-unnamed" | "control-home-unavailable";
+  /** THE FLOOR'S REST KEY as the vessel holds it for this composition (`floor-registry`): `stands` where the vessel derived
+   *  it, else the refusal the floor's registry answers (`vessel-locked`: the key stays shut; `floor-unkeyed`: the place
+   *  derives none, a herm). Granted to the daemon island alone; absent reads as `floor-unkeyed` (fail closed). */
+  floorKey?: "stands" | "vessel-locked" | "floor-unkeyed";
+  /** The worn face's daemon canon (`daemonFaceCanonBag`), the document its catalog row names: the daemon recipe's
+   *  `canonBag` slot mounts from this grant alone. Absent at the floor, where the daemon wiki reads no canon. */
+  canonUrl?:    string | null;
 }
 export interface IslandMsg_Manifest {
   type: "manifest";
@@ -211,6 +230,12 @@ export interface IslandMsg_Manifest {
    * always is).
    */
   pluginCids?: readonly string[];
+  /**
+   * The floor manifest CID the island mounts as its `@oracle` read-face: the vessel's ACCEPTED floor pin
+   * (`floor-pin` `floorCidToMount`). Absent, the island mounts the floor its genesis seed names
+   * (`GENESIS_FLOOR_TIDDLER`). The island resolves it from the local CAS exactly as it resolves the genesis floor.
+   */
+  floorCid?: string;
   /** Slot structure for this wiki — wikiSlug + optional libraryBags. */
   recipe: import("./wiki-recipe.js").WikiRecipe;
   /** Typed structural capabilities (see IslandGrants). Libraries resolve via the catalog registry. */
@@ -245,7 +270,7 @@ export interface IslandMsg_Manifest {
    * via `namedBagMirror(scope, mirrorRoot)` from `bag-paths`.
    * Absent = no disk projection for this island.
    */
-  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; guardNexusHandles?: boolean; titlePaths?: boolean }[];
+  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
   /**
    * DAEMON-ISLAND ONLY — operator authn/z material for in-worker keyhive boot
    * (isomorphic-vessel epic, Stage 1). The daemon worker's `onEa` calls
@@ -264,19 +289,27 @@ export interface IslandMsg_Manifest {
     veilArchiveBytes?: Uint8Array;
     /** Public place key for place checks; the face's atom supplies Keyhive identity. */
     placeVerifyingKey:     string;
-    /** THE FLOOR'S OWN ANCHOR, read by the opener from what the vessel holds (`WorkingFloorAnchor`): a node's place KEL prefix,
-     *  or a browser leaf's private Nexus of one. A faceless floor keys its working documents by it. Absent only where the
-     *  vessel holds neither, and then a floor working layer refuses `no-place`. */
-    workingFloorAnchor?:   WorkingFloorAnchor;
     /** THE MOUNTED FACE'S ADDRESS SECRET, hex, read from main-thread custody at the manifest's build (the node's
-     *  `face-address-secret` row, the browser's keystore row): the face's working documents derive their addresses from
-     *  it (`faceWorkingDocUrl`). It crosses the worker boundary beside the atom seed, and only with a face lit. */
+     *  `face-address-secret` row, the browser's keystore row): the face's own catalog derives its address from it
+     *  (`faceCatalogDocUrl`). A wiki's working layer derives from no face secret: it rests in the wiki's realm workbench
+     *  (cabal-realm#/the-workbench). It crosses the worker boundary beside the atom seed, and only with a face lit. */
     faceAddressSecret?:    string;
+    /** THE VESSEL'S SECRET HOME, read from main-thread custody at the manifest's build (`secret-home-store`): the document
+     *  group-secret seals, dyads and Keyhive cap events rest in. Only its url crosses; the island reaches it by its own sync
+     *  (the vessel shares it with its own islands alone) and asks the vessel's rest before each secret act. Absent: every
+     *  Keyhive secret write refuses `secret-home-unavailable`. */
+    secretUrl?:            string;
     /** The FACE's pins, present only when a face stands. A place founded and never lit carries NONE of
      *  them, and that names the WAKING FLOOR rather than a fault — canon has a vessel boot permissionlessly
      *  on its own key. The worker refuses a TORN face (some pins, not all), so absence buys FEWER CAPS and
      *  never a softened gate. */
     personaGroupId?:   string;
+    /** THE LIT SET: this face's handle index on its vessel (`h<N>`), so a face-named INGEST finds its face by the ordinal the
+     *  operator names. Absent: a composition that names none (a browser lift, a herm), and no face-named wave lands there. */
+    handleIndex?:      number;
+    /** This face's relation (its face plane pin, `faceRelationOf`): its daemon canon (`bags/daemon-<relation>`) stands by
+     *  it. Absent: the face's daemon canon waits until a proof names it. */
+    faceRelation?:     string;
     faceAnchor?: FaceAnchor | null;
     meshCabalDocIdHex?:    string;
     /** Writable bag URIs to register so verify/delegate resolve (lar: URIs). */
@@ -310,25 +343,25 @@ export interface IslandMsg_Manifest {
 /** Authentication material carried by one unlocked joined face. */
 export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>,
   "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags">> &
-  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret">;
+  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret" | "handleIndex" | "faceRelation">;
 
 /**
  * Cool the wiki slot from `wela` (hot) to `anu` (cold) — teardown; thread
  * terminates. Type literal `"hooanu"` — Hawaiian: hoʻoanu, "to cool."
  *
- * The temperature register replaces an organizational rank register (the old
- * `"demote"`) that would conflict with the residency-model ACTION verb surface.
+ * The verb rides a temperature register, never an organizational rank register (a
+ * `"demote"`), which would conflict with the residency-model ACTION verb surface.
  * The two thermal states wear ʻōlelo Hawaiʻi: `wela` / `anu` (see
  * residency-tiers.md).
  *
  * Counterpart: `anu` → `wela` (hoʻowela, "to heat") happens at the vessel layer
  * via `vessel-island-pool.mountWiki` — a fresh worker boots and runs `ea` — not
  * via a worker-side signal. A `warm` middle tier (suspended-not-terminated,
- * resume by a hoʻomahana signal) was proposed and CUT: a
- * suspended Worker still holds its heap, so it did not shed memory, and the
+ * resume by a hoʻomahana signal) stays out: a
+ * suspended Worker still holds its heap, so it would not shed memory, and the
  * proven virtual-actor runtimes use two states. Reintroduce only behind a
  * measured resume-cost problem AND a memory-shedding suspend — reopening
- * condition in residency-tiers.md #warm-cut. No HooMahana signal type today.
+ * condition in residency-tiers.md #warm-cut. No HooMahana signal type stands.
  */
 export interface IslandMsg_HooAnu {
   type: "hooanu";
@@ -622,6 +655,15 @@ export interface DaemonMsg_ResolveBindingResult {
   personalUrl?: string;
   draftUrl?: string;
   workingUrl?: string;
+  /**
+   * THE STOOD WORKING DOCUMENT, carried with its name (cabal-realm#/the-workbench): the bytes of the realm workbench the island
+   * stood at its DERIVED address. The island asked the vessel for that address before standing it, and the vessel answered
+   * `unavailable`; the vessel lands these bytes at `workingUrl` (`landBindingDocuments`) before the mount reads it, so the
+   * name never reaches the vessel ahead of the document it names.
+   */
+  workingDoc?: Uint8Array;
+  /** The face holds no writer's seat in the wiki's workbench: its saves land in its own `personal` slot. */
+  writeSlot?: "personal";
   error?: string;
 }
 
@@ -679,6 +721,21 @@ export interface DaemonMsg_ResidencyOpResult {
  * island so the operator sees it. Fire-and-forget (best-effort UX); main skips wikis
  * that aren't mounted. The daemon computes "affected by content"; main filters "live".
  */
+/**
+ * Island → vessel: one verb ANSWER the daemon island's floor store took (`floorAnswerStore`): an outcome, or the effect
+ * index beside a done one, for an act a place answered with no readable control document. The vessel holds it in its own
+ * floor store for the caller that waits on it; nothing rests.
+ */
+export interface DaemonMsg_FloorAnswer {
+  type: "daemon:floor-answer";
+  /** The answer record, under an outcome or effect title (the vessel's floor store refuses any other). */
+  record: { tiddler: Record<string, unknown>; meta?: Record<string, unknown> };
+}
+
+export function mkDaemonFloorAnswer(record: DaemonMsg_FloorAnswer["record"]): DaemonMsg_FloorAnswer {
+  return { type: "daemon:floor-answer", record };
+}
+
 export interface DaemonMsg_WikiAlert {
   type: "daemon:wiki-alert";
   /** The affected wiki's slug — main maps it to `${hostId}:${slug}` to find the island. */
@@ -1099,6 +1156,7 @@ export type IslandToVesselMsg =
   | DaemonMsg_EvictRequest
   | DaemonMsg_ResidencyOp
   | DaemonMsg_WikiAlert
+  | DaemonMsg_FloorAnswer
   | IslandMsg_CasWant
   | IslandMsg_DyadAsk
   | IslandMsg_ReceiptRequest
@@ -1162,8 +1220,13 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
   if (v.type === LAR_SERVICE) return readLarService(v) !== null;
   if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
+  if (v.type === "daemon:floor-answer") {
+    const record = (v as Record<string, unknown>).record as Record<string, unknown> | undefined;
+    const tiddler = record?.tiddler as Record<string, unknown> | undefined;
+    return typeof record === "object" && record !== null && typeof tiddler === "object" && tiddler !== null && typeof tiddler.title === "string";
+  }
   return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent"] as const).includes(
-    v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
+    v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | "daemon:floor-answer" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
 
@@ -1199,9 +1262,10 @@ export function mkManifest(
   opts?: {
     storage?:        IslandStorageConfig;
     ownedDocument?:  IslandOwnedDocumentScope;
-    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; guardNexusHandles?: boolean; titlePaths?: boolean }[];
+    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
     daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
     pluginCids?:     readonly string[];
+    floorCid?:       string | null;
     view?:           IslandViewStanding;
     resolved?:       Readonly<Record<string, string>>;
   },
@@ -1219,6 +1283,7 @@ export function mkManifest(
   if (opts?.diskMirrors?.length) msg.diskMirrors = opts.diskMirrors;
   if (opts?.daemonAuth)           msg.daemonAuth   = opts.daemonAuth;
   if (opts?.pluginCids?.length)  msg.pluginCids  = opts.pluginCids;
+  if (opts?.floorCid)            msg.floorCid    = opts.floorCid;
   if (opts?.view)                msg.view        = opts.view;
   if (opts?.resolved)            msg.resolved    = opts.resolved;
   return msg;
@@ -1440,6 +1505,8 @@ export function mkDaemonResolveBindingResult(opts: {
   personalUrl?: string;
   draftUrl?:    string;
   workingUrl?:  string;
+  workingDoc?:  Uint8Array;
+  writeSlot?:   "personal";
   error?:       string;
 }): DaemonMsg_ResolveBindingResult {
   const msg: DaemonMsg_ResolveBindingResult = {
@@ -1449,6 +1516,8 @@ export function mkDaemonResolveBindingResult(opts: {
   if (opts.personalUrl !== undefined) msg.personalUrl = opts.personalUrl;
   if (opts.draftUrl    !== undefined) msg.draftUrl    = opts.draftUrl;
   if (opts.workingUrl  !== undefined) msg.workingUrl  = opts.workingUrl;
+  if (opts.workingDoc  !== undefined) msg.workingDoc  = opts.workingDoc;
+  if (opts.writeSlot   !== undefined) msg.writeSlot   = opts.writeSlot;
   if (opts.error       !== undefined) msg.error       = opts.error;
   return msg;
 }

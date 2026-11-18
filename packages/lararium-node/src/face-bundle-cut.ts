@@ -8,9 +8,9 @@
  * body under that key. Ciphertext leaves; no row's plaintext does.
  *
  * ── THE TABLE PICKS THE ROWS ────────────────────────────────────────────────────────────────────
- * The carrier table's `bundle` column names every row a bundle carries (`bundleRows`). The cut walks that column
+ * The carrier table's `bundle` column names every row a bundle carries (`bundleCarriers`). The cut walks that column
  * and runs one extractor per row; a row the column names with no extractor here refuses the cut, and
- * `BUNDLE_EXTRACTOR_ROWS` lets a test hold the two sets equal. No hand picks a row.
+ * `BUNDLE_EXTRACTOR_CARRIERS` lets a test hold the two sets equal. No hand picks a row.
  *
  * ── WHAT A CUT REFUSES ──────────────────────────────────────────────────────────────────────────
  * The cut reads its vessel's own edge shadow ONCE, at its entry, and refuses under it before any row opens
@@ -18,7 +18,7 @@
  * of its own. The cut then refuses, by name: a face this vessel holds no root for (`face-not-held`); a face the
  * standing vessel does not wear, since its island counts keys for the mounted face alone (`face-not-worn`); a board
  * that holds no whole key history for the face (`key-history-unread`); a face whose address secret stands nowhere
- * here (`no-address-secret`), since its restore could derive none of its working addresses; and an island with no
+ * here (`no-address-secret`), since its restore could derive no face catalog document; and an island with no
  * content-key holder (`memory-unavailable`). A cut that refuses seals nothing and answers nothing but the name.
  *
  * Node-main only: a worker never imports this module.
@@ -39,7 +39,7 @@ import {
   listPersonaRosterLines, loadPersonaGroupRootSeed, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore,
   type PersonaRosterLine,
 } from "./node-vessel-identity.js";
-import { bundleRows } from "./vault-carriers.js";
+import { bundleCarriers } from "./vault-carriers.js";
 
 /** The names a cut refuses under (custody#/the-cut). */
 export const CUT_REFUSALS = ["face-not-held", "face-not-worn", "own-edge-shadowed", "key-history-unread", "memory-unavailable", "no-address-secret"] as const;
@@ -54,7 +54,7 @@ export class BackupRefused extends Error {
 /** What the standing composition lends a bundle's cut, and the import of a bundle's memory section. */
 export interface BackupDoor {
   /** The face this composition wears, by handle-index: the one its island counts keys for. Null where no face stands lit. */
-  readonly wornFace: () => number | null;
+  readonly mountFace: () => number | null;
   /** This vessel's own reading of its edge on the mounted face's fleet: true under its own shadow. */
   readonly ownEdgeShadowed: () => Promise<boolean>;
   /**
@@ -128,12 +128,12 @@ const EXTRACTORS: Readonly<Record<string, Extractor>> = {
     const mine = (await loadNodeHandleBook(line.handleIndex)).snapshot();
     parts.handleBook = { records: JSON.parse(JSON.stringify(mine.records)) as Record<string, unknown>[] };
   },
-  // whole: the face's address secret, so the face restored elsewhere derives the working addresses it derives here.
+  // whole: the face's address secret, so the face restored elsewhere derives the catalog document it derives here.
   "face-address-secret": async (line, parts) => {
     const group = (await loadIdentityAnchors(line.handleIndex))?.personaGroupId;
     const secret = group ? await readFaceAddressSecret(group) : null;
     if (!secret) {
-      throw new BackupRefused("no-address-secret", `the face at h${line.handleIndex} holds no address secret on this vessel, so a restore could derive none of its working addresses; nothing was cut`);
+      throw new BackupRefused("no-address-secret", `the face at h${line.handleIndex} holds no address secret on this vessel, so a restore could derive no face catalog document; nothing was cut`);
     }
     try { parts.addressSecret = hexOf(secret); } finally { secret.fill(0); }
   },
@@ -147,7 +147,7 @@ const EXTRACTORS: Readonly<Record<string, Extractor>> = {
 };
 
 /** The rows this module extracts, for the test that holds them equal to the table's column. */
-export const BUNDLE_EXTRACTOR_ROWS: readonly string[] = Object.freeze(Object.keys(EXTRACTORS));
+export const BUNDLE_EXTRACTOR_CARRIERS: readonly string[] = Object.freeze(Object.keys(EXTRACTORS));
 
 /** What a cut answers: the sealed body, what its memory section holds, and the face it carries. Nothing secret. */
 export interface FaceBundleCut {
@@ -160,18 +160,18 @@ export interface FaceBundleCut {
 
 /**
  * Cut face `face`'s bundle body and seal it under `bundleKey`. The caller owns the key and zero-fills it.
- * Refuses `BackupRefused` by name; a custody refusal (`CustodyLocked`, `CustodyRowUnavailable`) passes through.
+ * Refuses `BackupRefused` by name; a custody refusal (`CustodyLocked`, `CustodyRecordUnavailable`) passes through.
  */
 export async function cutFaceBundle(args: { readonly face: number; readonly bundleKey: Uint8Array; readonly door: BackupDoor | null; readonly ward?: WardCredential }): Promise<FaceBundleCut> {
   const { face, door } = args;
   // THE SHADOW, READ ONCE, AT THE ENTRY, and judged before any row opens: a vessel under its own shadow performs
   // no key act, whatever face the cut names. A raise this vessel counts while the cut runs binds its next act.
-  const shadowed = door !== null && door.wornFace() !== null ? await door.ownEdgeShadowed() : false;
+  const shadowed = door !== null && door.mountFace() !== null ? await door.ownEdgeShadowed() : false;
   if (shadowed) throw new BackupRefused("own-edge-shadowed", "this vessel reads a shadow over its own edge: a cut hands keys beyond the holder, and a vessel under its own shadow performs no key act");
 
   const line = (await listPersonaRosterLines()).find((l) => l.handleIndex === face);
   if (!line) throw new BackupRefused("face-not-held", `this vessel holds no root at h${face}: a bundle carries a face's root, and only a vessel that holds it cuts one`);
-  const worn = door?.wornFace() ?? null;
+  const worn = door?.mountFace() ?? null;
   if (door === null || worn !== face) {
     throw new BackupRefused("face-not-worn", worn === null
       ? `this vessel's composition mounts no face, so no island counts keys for h${face}: mount it (\`lares vault unlock --face ${face}\`) on a standing vessel, and cut`
@@ -180,7 +180,7 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
   if (door.cutMemory === null) throw new BackupRefused("memory-unavailable", "no daemon island stands in this vessel, so no content-key holder answers the memory section");
 
   const parts: Parts = { names: {} };
-  for (const { row } of bundleRows()) {
+  for (const { row } of bundleCarriers()) {
     const extract = EXTRACTORS[row];
     if (!extract) throw new Error(`face-bundle-cut: the carrier table's bundle column names "${row}" and no extractor reads it; nothing was cut`);
     await extract(line, parts, args.ward);

@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/tools-ground-af1f4b98a7b6ee60ded312bf161fcff28ac26389`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/ship/tools-ground-af1f4b98a7b6ee60ded312bf161fcff28ac26389.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/tools-ground-af1f4b98a7b6ee60ded312bf161fcff28ac26389"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/tools-ground-af1f4b98a7b6ee60ded312bf161fcff28ac26389"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! tools-ground-af1f4b98a7b6ee60ded312bf161fcff28ac26389.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/ship/tools-ground-af1f4b98a7b6ee60ded312bf161fcff28ac26389.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP tools-ground af1f4b98a7b6ee60ded312bf161fcff28ac26389
+read: the controller's own diff read of tools/land-train.mjs (laneGreenAncestor) and the domain-registry witness; a Luna cold read (gpt-6-luna, /home/joshu/.lares-scratch/tools-ground/luna-read/final.md) LAND-AFTER-CURES: P2 unbounded ancestor walk, cured at af1f4b98a (-n 50, matching greenAncestor); land-train suite 70/70; CI green run 42276737890.
+owed: a future initialized submodule's files would sit outside the domain witness's git ls-files walk (Luna INFER).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;atoHVet8g2yBbujOYlPtnU2vi5PvBDkF9xeX1see2ec`>>
+
+<<^ code=`&#x0004;` to=`?`>>

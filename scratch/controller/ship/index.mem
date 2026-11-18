@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/controller/ship/` — 71 record(s) here, 71 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/controller/ship/`
+
+The scratch planning records of `.lares-scratch/controller/ship/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 71 record(s) stand here and 71 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[controller/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[b1-lift-0df40b07bb9fd1bd1d07fd8ead5170f083601d5c|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b1-lift-0df40b07bb9fd1bd1d07fd8ead5170f083601d5c]] | plan | 2026-11-06 | `b1-lift-0df40b07bb9fd1bd1d07fd8ead5170f083601d5c.md` |
+| [[b1-lift-2e106a6bb7bf3522dd0055885b6df4a8f830ad78|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b1-lift-2e106a6bb7bf3522dd0055885b6df4a8f830ad78]] | plan | 2026-11-06 | `b1-lift-2e106a6bb7bf3522dd0055885b6df4a8f830ad78.md` |
+| [[b1-lift-55b631484edcb6b663f211c0ca19d734567c8b89|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b1-lift-55b631484edcb6b663f211c0ca19d734567c8b89]] | plan | 2026-11-06 | `b1-lift-55b631484edcb6b663f211c0ca19d734567c8b89.md` |
+| [[b5b-77bd7755a6af640ae209c4c99c2691fb39c689d7|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-77bd7755a6af640ae209c4c99c2691fb39c689d7]] | plan | 2026-11-07 | `b5b-77bd7755a6af640ae209c4c99c2691fb39c689d7.md` |
+| [[b5b-a6979b1fb19c9f096020eecd6518449dcff5ae3d|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-a6979b1fb19c9f096020eecd6518449dcff5ae3d]] | plan | 2026-11-07 | `b5b-a6979b1fb19c9f096020eecd6518449dcff5ae3d.md` |
+| [[b5b-b473f6f9439838cd26da4425ae703e4cae95327f|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-b473f6f9439838cd26da4425ae703e4cae95327f]] | plan | 2026-11-07 | `b5b-b473f6f9439838cd26da4425ae703e4cae95327f.md` |
+| [[b5b-bdab8bc9b73aafd7868f2a207f066ca7e38e79fe|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-bdab8bc9b73aafd7868f2a207f066ca7e38e79fe]] | plan | 2026-11-06 | `b5b-bdab8bc9b73aafd7868f2a207f066ca7e38e79fe.md` |
+| [[b5b-e4b7cbea7043f2797134a5ebf9df4ba06208ce42|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-e4b7cbea7043f2797134a5ebf9df4ba06208ce42]] | plan | 2026-11-07 | `b5b-e4b7cbea7043f2797134a5ebf9df4ba06208ce42.md` |
+| [[b7-click-b43abd86e68dcb6697050aae28d8bb72571a6234|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b7-click-b43abd86e68dcb6697050aae28d8bb72571a6234]] | plan | 2026-11-06 | `b7-click-b43abd86e68dcb6697050aae28d8bb72571a6234.md` |
+| [[blank-lines-2eafdcb09726564d97a7e9651cf509b279187aa0|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/blank-lines-2eafdcb09726564d97a7e9651cf509b279187aa0]] | plan | 2026-11-02 | `blank-lines-2eafdcb09726564d97a7e9651cf509b279187aa0.md` |
+| [[cap-stack-b7ac04f3ab201fc3daa5a33b87eb2f9a7e170c94|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/cap-stack-b7ac04f3ab201fc3daa5a33b87eb2f9a7e170c94]] | plan | 2026-11-05 | `cap-stack-b7ac04f3ab201fc3daa5a33b87eb2f9a7e170c94.md` |
+| [[carry-a1089fa0d09fb2a24781d7f34ace8dd746cb6aca|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/carry-a1089fa0d09fb2a24781d7f34ace8dd746cb6aca]] | plan | 2026-11-08 | `carry-a1089fa0d09fb2a24781d7f34ace8dd746cb6aca.md` |
+| [[carry-f13df80b7f54951aa6cfb13eed25ad4c1b8e8085|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/carry-f13df80b7f54951aa6cfb13eed25ad4c1b8e8085]] | plan | 2026-11-09 | `carry-f13df80b7f54951aa6cfb13eed25ad4c1b8e8085.md` |
+| [[ci-container-4dd3ed3780c4513193645e7d34aabe7c0c9240f9|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-container-4dd3ed3780c4513193645e7d34aabe7c0c9240f9]] | plan | 2026-11-05 | `ci-container-4dd3ed3780c4513193645e7d34aabe7c0c9240f9.md` |
+| [[ci-container-85389f46c5959dc70c9003c5061f43c1dcca7fce|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-container-85389f46c5959dc70c9003c5061f43c1dcca7fce]] | plan | 2026-11-05 | `ci-container-85389f46c5959dc70c9003c5061f43c1dcca7fce.md` |
+| [[ci-ground-13252c2c747b20e6e9ebde891a5fb10c64094ba8|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-ground-13252c2c747b20e6e9ebde891a5fb10c64094ba8]] | plan | 2026-11-06 | `ci-ground-13252c2c747b20e6e9ebde891a5fb10c64094ba8.md` |
+| [[ci-ground-d85875aa031f75a1b210cb8716f57581b2b65ba6|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-ground-d85875aa031f75a1b210cb8716f57581b2b65ba6]] | plan | 2026-11-06 | `ci-ground-d85875aa031f75a1b210cb8716f57581b2b65ba6.md` |
+| [[clock-sweep-5d9d53022c4d33334db4042cc7058327507973a3|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/clock-sweep-5d9d53022c4d33334db4042cc7058327507973a3]] | plan | 2026-11-07 | `clock-sweep-5d9d53022c4d33334db4042cc7058327507973a3.md` |
+| [[clock-sweep-fea5dbc1747c30803c5a47599973aadb702fc3b9|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/clock-sweep-fea5dbc1747c30803c5a47599973aadb702fc3b9]] | plan | 2026-11-07 | `clock-sweep-fea5dbc1747c30803c5a47599973aadb702fc3b9.md` |
+| [[debt-porch-wt2-b9265c9e6a428ca33bb34b0f10b0d0d140c7ebc8|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/debt-porch-wt2-b9265c9e6a428ca33bb34b0f10b0d0d140c7ebc8]] | plan | 2026-11-03 | `debt-porch-wt2-b9265c9e6a428ca33bb34b0f10b0d0d140c7ebc8.md` |
+| [[deps-920f2ed4a33be964aa0817391cafc4d8a4b9d779|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/deps-920f2ed4a33be964aa0817391cafc4d8a4b9d779]] | plan | 2026-11-01 | `deps-920f2ed4a33be964aa0817391cafc4d8a4b9d779.md` |
+| [[dogfood-proof-b416c6eb895d62f4032b088f1fe2a68f033d7245|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/dogfood-proof-b416c6eb895d62f4032b088f1fe2a68f033d7245]] | plan | 2026-11-07 | `dogfood-proof-b416c6eb895d62f4032b088f1fe2a68f033d7245.md` |
+| [[dogfood-proof-c06dab3a02917762a91dbd488a9e0b3d08829e54|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/dogfood-proof-c06dab3a02917762a91dbd488a9e0b3d08829e54]] | plan | 2026-11-07 | `dogfood-proof-c06dab3a02917762a91dbd488a9e0b3d08829e54.md` |
+| [[door-fix-2f176658484bcc2a5a7d956033026c3962fdb5ae|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/door-fix-2f176658484bcc2a5a7d956033026c3962fdb5ae]] | plan | 2026-11-07 | `door-fix-2f176658484bcc2a5a7d956033026c3962fdb5ae.md` |
+| [[door-fix-41bfdbe2f4b4f66337af906debf67f1c359304ad|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/door-fix-41bfdbe2f4b4f66337af906debf67f1c359304ad]] | plan | 2026-11-07 | `door-fix-41bfdbe2f4b4f66337af906debf67f1c359304ad.md` |
+| [[down-census-03787da4d3e367adb6719ef11f8954ee98addc3a|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/down-census-03787da4d3e367adb6719ef11f8954ee98addc3a]] | plan | 2026-11-08 | `down-census-03787da4d3e367adb6719ef11f8954ee98addc3a.md` |
+| [[found-ux-782e24bb3|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/found-ux-782e24bb3]] | plan | 2026-11-08 | `found-ux-782e24bb3.md` |
+| [[g54-f23bb808bf4427d80087c80507197764885efdf7|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/g54-f23bb808bf4427d80087c80507197764885efdf7]] | plan | 2026-11-06 | `g54-f23bb808bf4427d80087c80507197764885efdf7.md` |
+| [[harden-5f5dc936f78fdbbf2a2159d7c71576d241940eba|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/harden-5f5dc936f78fdbbf2a2159d7c71576d241940eba]] | plan | 2026-11-02 | `harden-5f5dc936f78fdbbf2a2159d7c71576d241940eba.md` |
+| [[harness-373a9e0eb5cd282ceb7cb0906f45ddd4021436a2|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/harness-373a9e0eb5cd282ceb7cb0906f45ddd4021436a2]] | plan | 2026-11-07 | `harness-373a9e0eb5cd282ceb7cb0906f45ddd4021436a2.md` |
+| [[held-out-03fd4fd8d9650435d5ef64eda25169bfacb94f75|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/held-out-03fd4fd8d9650435d5ef64eda25169bfacb94f75]] | plan | 2026-11-06 | `held-out-03fd4fd8d9650435d5ef64eda25169bfacb94f75.md` |
+| [[kdf-native-405ea3794|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/kdf-native-405ea3794]] | plan | 2026-11-01 | `kdf-native-405ea3794.md` |
+| [[kdf-native-8947ae4a6|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/kdf-native-8947ae4a6]] | plan | 2026-11-01 | `kdf-native-8947ae4a6.md` |
+| [[kupono-grammar-1ae8119d578963a5df67281b4d6280f4ff5ad479|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/kupono-grammar-1ae8119d578963a5df67281b4d6280f4ff5ad479]] | plan | 2026-11-01 | `kupono-grammar-1ae8119d578963a5df67281b4d6280f4ff5ad479.md` |
+| [[l23-drop-floor-ebbfdd348b8a2bbc1b16cf556dd65e429425b831|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l23-drop-floor-ebbfdd348b8a2bbc1b16cf556dd65e429425b831]] | plan | 2026-11-07 | `l23-drop-floor-ebbfdd348b8a2bbc1b16cf556dd65e429425b831.md` |
+| [[l23-drop-floor-ee054e2f3659e32965bc995e99c70f64d96b3372|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l23-drop-floor-ee054e2f3659e32965bc995e99c70f64d96b3372]] | plan | 2026-11-07 | `l23-drop-floor-ee054e2f3659e32965bc995e99c70f64d96b3372.md` |
+| [[l27-ward-2396d46decee49d7b0192873dfb321d658e430c8|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l27-ward-2396d46decee49d7b0192873dfb321d658e430c8]] | plan | 2026-11-07 | `l27-ward-2396d46decee49d7b0192873dfb321d658e430c8.md` |
+| [[l27-ward-ea8ecf729ea46ad7e2c4eaf3bf00c229dc57a39c|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l27-ward-ea8ecf729ea46ad7e2c4eaf3bf00c229dc57a39c]] | plan | 2026-11-07 | `l27-ward-ea8ecf729ea46ad7e2c4eaf3bf00c229dc57a39c.md` |
+| [[l3-mcp-seat-7a7e86d25|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l3-mcp-seat-7a7e86d25]] | plan | 2026-11-01 | `l3-mcp-seat-7a7e86d25.md` |
+| [[l3-mcp-seat-a6006578ca7915cf9810be2fac35c953fd8df38b|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l3-mcp-seat-a6006578ca7915cf9810be2fac35c953fd8df38b]] | plan | 2026-11-01 | `l3-mcp-seat-a6006578ca7915cf9810be2fac35c953fd8df38b.md` |
+| [[l4-stage-40bc01075c25e689d13899f0cffc13861330dc1d|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-40bc01075c25e689d13899f0cffc13861330dc1d]] | plan | 2026-11-01 | `l4-stage-40bc01075c25e689d13899f0cffc13861330dc1d.md` |
+| [[l4-stage-dbe579a5e59b93e1bb3fec8e56ad6efad2649d37|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-dbe579a5e59b93e1bb3fec8e56ad6efad2649d37]] | plan | 2026-11-02 | `l4-stage-dbe579a5e59b93e1bb3fec8e56ad6efad2649d37.md` |
+| [[l4-stage-f45e00f330eca620e80d94bae3819ce08a02fdac|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-f45e00f330eca620e80d94bae3819ce08a02fdac]] | plan | 2026-11-02 | `l4-stage-f45e00f330eca620e80d94bae3819ce08a02fdac.md` |
+| [[land-poll-d1589578246ad9d7da279b4397fd4d2bf4f42ed7|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/land-poll-d1589578246ad9d7da279b4397fd4d2bf4f42ed7]] | plan | 2026-11-05 | `land-poll-d1589578246ad9d7da279b4397fd4d2bf4f42ed7.md` |
+| [[land-queue-c761c29f3|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/land-queue-c761c29f3]] | plan | 2026-11-01 | `land-queue-c761c29f3.md` |
+| [[lease-end-8b0c2d81801584c1b969c68fbb39be5a257ccfb7|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/lease-end-8b0c2d81801584c1b969c68fbb39be5a257ccfb7]] | plan | 2026-11-07 | `lease-end-8b0c2d81801584c1b969c68fbb39be5a257ccfb7.md` |
+| [[lease-end-9decbdf5bf8e4a998637eac752a9dfbe81d16903|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/lease-end-9decbdf5bf8e4a998637eac752a9dfbe81d16903]] | plan | 2026-11-07 | `lease-end-9decbdf5bf8e4a998637eac752a9dfbe81d16903.md` |
+| [[lease-end-a49ce62e1c9fee4dfb50cc77c5214702618ad0d5|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/lease-end-a49ce62e1c9fee4dfb50cc77c5214702618ad0d5]] | plan | 2026-11-07 | `lease-end-a49ce62e1c9fee4dfb50cc77c5214702618ad0d5.md` |
+| [[mesh-seat-0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/mesh-seat-0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d]] | plan | 2026-11-07 | `mesh-seat-0c7ec63d3a9f0fb81cf053c7991bbe5d5b69961d.md` |
+| [[narrow-proto-4c9f422edb2ca9a244974aaf5aad861aea45693d|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/narrow-proto-4c9f422edb2ca9a244974aaf5aad861aea45693d]] | plan | 2026-11-02 | `narrow-proto-4c9f422edb2ca9a244974aaf5aad861aea45693d.md` |
+| [[one-root-d5adba8add8722f6005b740cbb7fcb720c3e9c48|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/one-root-d5adba8add8722f6005b740cbb7fcb720c3e9c48]] | plan | 2026-11-08 | `one-root-d5adba8add8722f6005b740cbb7fcb720c3e9c48.md` |
+| [[p27-wire-ecb26d4d0854d1bc9a71136112f2969b6c7d62fb|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/p27-wire-ecb26d4d0854d1bc9a71136112f2969b6c7d62fb]] | plan | 2026-11-07 | `p27-wire-ecb26d4d0854d1bc9a71136112f2969b6c7d62fb.md` |
+| [[parity-9c59d1cc8b7a047968b15dd89b0ed2a0a1901a0b|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/parity-9c59d1cc8b7a047968b15dd89b0ed2a0a1901a0b]] | plan | 2026-11-01 | `parity-9c59d1cc8b7a047968b15dd89b0ed2a0a1901a0b.md` |
+| [[parity-b59d3cc1e03cf03dd0976aa215293682dfaba3b4|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/parity-b59d3cc1e03cf03dd0976aa215293682dfaba3b4]] | plan | 2026-11-01 | `parity-b59d3cc1e03cf03dd0976aa215293682dfaba3b4.md` |
+| [[pre-rite-bf5fad6c76c48a76538c3b4bce987610a0ab644b|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/pre-rite-bf5fad6c76c48a76538c3b4bce987610a0ab644b]] | plan | 2026-11-05 | `pre-rite-bf5fad6c76c48a76538c3b4bce987610a0ab644b.md` |
+| [[promote-e0342d7256c4f3e4315bbea8547bfa24514c60ee|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/promote-e0342d7256c4f3e4315bbea8547bfa24514c60ee]] | plan | 2026-11-05 | `promote-e0342d7256c4f3e4315bbea8547bfa24514c60ee.md` |
+| [[row7-s2-bc1ee8eaffc3312b5c7b09ab19a15431971065c7|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s2-bc1ee8eaffc3312b5c7b09ab19a15431971065c7]] | plan | 2026-11-05 | `row7-s2-bc1ee8eaffc3312b5c7b09ab19a15431971065c7.md` |
+| [[row7-s2b-7a6ff41ca0ee63c8c1fb6755078521cde20181bf|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s2b-7a6ff41ca0ee63c8c1fb6755078521cde20181bf]] | plan | 2026-11-05 | `row7-s2b-7a6ff41ca0ee63c8c1fb6755078521cde20181bf.md` |
+| [[row7-s3a-f5280b0ad9661fa386fd43202def198c02a6351d|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s3a-f5280b0ad9661fa386fd43202def198c02a6351d]] | plan | 2026-11-05 | `row7-s3a-f5280b0ad9661fa386fd43202def198c02a6351d.md` |
+| [[row7-s3b-a8f218b0b75baf528eda64deccc80ed50ae6b434|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s3b-a8f218b0b75baf528eda64deccc80ed50ae6b434]] | plan | 2026-11-05 | `row7-s3b-a8f218b0b75baf528eda64deccc80ed50ae6b434.md` |
+| [[seat-harness-420d13e9bccdada6144bde6bac68fb187a3c6f52|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/seat-harness-420d13e9bccdada6144bde6bac68fb187a3c6f52]] | plan | 2026-11-05 | `seat-harness-420d13e9bccdada6144bde6bac68fb187a3c6f52.md` |
+| [[shim-build-fb6c4532dc9fb3b6f00fe15c1876ab4083616df1|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/shim-build-fb6c4532dc9fb3b6f00fe15c1876ab4083616df1]] | plan | 2026-11-09 | `shim-build-fb6c4532dc9fb3b6f00fe15c1876ab4083616df1.md` |
+| [[slot-wake-0ab69b5310ce460fc2e55a593058beb5a5f10778|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/slot-wake-0ab69b5310ce460fc2e55a593058beb5a5f10778]] | plan | 2026-11-06 | `slot-wake-0ab69b5310ce460fc2e55a593058beb5a5f10778.md` |
+| [[store-wall-bc78bb963ea1bdd039449cbde07ad45d07c965a7|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/store-wall-bc78bb963ea1bdd039449cbde07ad45d07c965a7]] | plan | 2026-11-07 | `store-wall-bc78bb963ea1bdd039449cbde07ad45d07c965a7.md` |
+| [[tag-burn-9368a327faff9ec9aa9377bdafe66cf31844c2f6|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/tag-burn-9368a327faff9ec9aa9377bdafe66cf31844c2f6]] | plan | 2026-11-07 | `tag-burn-9368a327faff9ec9aa9377bdafe66cf31844c2f6.md` |
+| [[temp-capture-7070c0f0e5d6e527afb48fa9bbb5aa6c14c197d3|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/temp-capture-7070c0f0e5d6e527afb48fa9bbb5aa6c14c197d3]] | plan | 2026-11-08 | `temp-capture-7070c0f0e5d6e527afb48fa9bbb5aa6c14c197d3.md` |
+| [[tools-ci-c3c31a3b46fa09935caa29806228f7074cfb63d9|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/tools-ci-c3c31a3b46fa09935caa29806228f7074cfb63d9]] | plan | 2026-11-06 | `tools-ci-c3c31a3b46fa09935caa29806228f7074cfb63d9.md` |
+| [[tools-door-8c1c520fd8e20dad3780ef5e2b0b3dcdf602a952|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/tools-door-8c1c520fd8e20dad3780ef5e2b0b3dcdf602a952]] | plan | 2026-11-06 | `tools-door-8c1c520fd8e20dad3780ef5e2b0b3dcdf602a952.md` |
+| [[tools-door-fd06bd5cbe0c26cc82e5b2f9bf048cda162619e6|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/tools-door-fd06bd5cbe0c26cc82e5b2f9bf048cda162619e6]] | plan | 2026-11-06 | `tools-door-fd06bd5cbe0c26cc82e5b2f9bf048cda162619e6.md` |
+| [[tools-ground-af1f4b98a7b6ee60ded312bf161fcff28ac26389|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/tools-ground-af1f4b98a7b6ee60ded312bf161fcff28ac26389]] | plan | 2026-11-06 | `tools-ground-af1f4b98a7b6ee60ded312bf161fcff28ac26389.md` |
+| [[wake-shim-c090b4732|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/wake-shim-c090b4732]] | plan | 2026-11-08 | `wake-shim-c090b4732.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wobgPnjDi-RQcCfK0iz9Jap087aJL0IGAo0b1pr2WiA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

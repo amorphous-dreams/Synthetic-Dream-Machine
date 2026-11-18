@@ -47,7 +47,8 @@ async function stand(expectedEpoch: number | null, refusals: SiblingRefusal[]) {
   const inception = await inceptionOf();
   const key = await pubOf(seed(56));
   const adapter = await standSiblingChannel({
-    repo, herms: [], nexusPubkey: NEXUS, personaKelPrefix: inception.prefix,
+    // A pass-through seat: this suite reads the channel's refusal, never what its leg presents.
+    repo, wire: { leg: (leg) => leg }, face: "persona-group-lease-unread", herms: [], nexusPubkey: NEXUS, personaKelPrefix: inception.prefix,
     deviceKey: key, sign: ed25519SignerFromSeed(seed(56)),
     enrolment: await enrolDevice({ opSeed: seed(52), prefix: inception.prefix, deviceVerifyingKey: key, hearthTrueName: "", boundEpoch: 1 }),
     open: groupSecretOpenerFromSeed(seed(56)),

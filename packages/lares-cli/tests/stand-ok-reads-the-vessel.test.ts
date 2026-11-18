@@ -8,12 +8,12 @@
  * the stand whatever the library says.
  */
 import { describe, test, expect } from "vitest";
-import { mempalaceStanding, standOk, type IntegrationCheck } from "../src/integration-check.js";
+import { checkMempalaceIntegration, mempalaceStanding, standOk, type IntegrationCheck } from "../src/integration-check.js";
 
 const check = (name: string, ok: boolean): IntegrationCheck => ({ name, ok, detail: ok ? "present" : "absent" });
-/** The four checks a stand runs, with the two that name the library itself set by hand. */
+/** The three checks a stand runs, with the two that name the library itself set by hand. */
 const checks = (submodule: boolean, holder: boolean, repo = true): IntegrationCheck[] => [
-  check("submodule", submodule), check("integration-package", repo), check("holder-deps", holder), check("recall-plugin", repo && submodule),
+  check("submodule", submodule), check("integration-package", repo), check("holder-deps", holder),
 ];
 
 describe("how the memory library stands", () => {
@@ -31,17 +31,17 @@ describe("how the memory library stands", () => {
     expect(mempalaceStanding(checks(true, false))).toBe("incomplete");
     expect(mempalaceStanding(checks(false, true))).toBe("incomplete");
     // The library stands and a repository file lacks: still a fault, never an absence.
-    expect(mempalaceStanding([check("submodule", true), check("integration-package", false), check("holder-deps", true), check("recall-plugin", true)])).toBe("incomplete");
+    expect(mempalaceStanding([check("submodule", true), check("integration-package", false), check("holder-deps", true)])).toBe("incomplete");
   });
 
   test("a source directory that holds files and lacks its entry reads INCOMPLETE, though both library checks fail", () => {
-    const partial: IntegrationCheck[] = [{ ...check("submodule", false), partial: true }, check("integration-package", true), check("holder-deps", false), check("recall-plugin", false)];
+    const partial: IntegrationCheck[] = [{ ...check("submodule", false), partial: true }, check("integration-package", true), check("holder-deps", false)];
     expect(mempalaceStanding(partial)).toBe("incomplete");
     expect(standOk(true, mempalaceStanding(partial))).toBe(false);
   });
 
   test("CONTROL: a report that names neither library check reads incomplete, never absent", () => {
-    expect(mempalaceStanding([check("recall-plugin", false)])).toBe("incomplete");
+    expect(mempalaceStanding([check("integration-package", false)])).toBe("incomplete");
   });
 });
 
@@ -68,5 +68,13 @@ describe("what `ok` means on a stand", () => {
       // CONTROL: the same vessel with no refusal reads ok.
       expect(standOk(true, standing, false)).toBe(true);
     }
+  });
+});
+
+describe("wake-ok-reads-what-stands", () => {
+  test("RED: the retired memory palace's plugin check leaves the stand's report, so `ok` reads only what stands", () => {
+    const report = checkMempalaceIntegration();
+    expect(report.checks.map((c) => c.name)).toEqual(["submodule", "integration-package", "holder-deps"]);
+    expect(report.ok).toBe(report.checks.every((c) => c.ok));
   });
 });

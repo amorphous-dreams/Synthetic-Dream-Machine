@@ -5,7 +5,7 @@
  *   - the store's one holder (`repo`): the direct holder's for a founding (`ownedStore`), with no vessel
  *     standing; the standing vessel's own Repo, or the direct holder's, for a face
  *   - generateOrLoadVesselIdentity / loadVesselSigningSeed (disk keypair)
- *   - writeFileSync for the social bootstrap (<lares>/vessel — see larBootstrapPath)
+ *   - writeFileSync for the social bootstrap (<root>/hearth/vessel — see larBootstrapPath)
  *   - the composable genesis cap (daemonGenesisDir) for default directory resolution
  *
  * All ceremony logic lives in @lararium/keyhive (foundThePlace, foundTheFace,
@@ -18,11 +18,12 @@
  * on disk, the function returns early without re-seeding.
  */
 
+import { keepNodeVeilLift } from "../node-veil-lift.js";
 import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.js";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID, personaMembershipEntries, personaScopedBagIds,
+  DAEMON_BAG_ID, personaMembershipEntries, personaScopedBagIds, nameControlHome,
   seedDaemonDoc,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   nexusIdentity, nexusScopeOrThrow, nexusAidOf,
@@ -62,9 +63,10 @@ import type { PlaceFoundingCard } from "@lararium/mesh";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 import {
   foundThePlace, foundTheFace, runApplyAdmitPayload, archiveIsOf,
-  retireFaceCheckpoint, retireApplyCheckpoint,
+  retireFaceCheckpoint, retireApplyCheckpoint, DEVICE_ADMIT_KIND,
 } from "@lararium/keyhive";
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../open-node-vessel.js";
+import { openVesselSecretHome, standVesselSecretHome } from "../secret-home-store.js";
 
 export interface InitOptions {
   readonly placeFoundingCard?: PlaceFoundingCard;
@@ -75,7 +77,7 @@ export interface InitOptions {
   readonly storageDir?: string;
   readonly genesisDir?: string;
   readonly force?:      boolean;
-  /** A device-admit/v1 payload the fleet-join door's landing read out of a verified answer: it skips the founding
+  /** A device-admit payload the fleet-join door's landing read out of a verified answer: it skips the founding
    *  ceremony and joins this vessel, a place that stands (with `force`), to the face's PersonaGroup. A second
    *  OPERATOR joins by carriage contract-receive. */
   readonly admitPayload?: CarriedAdmitPayload;
@@ -95,8 +97,8 @@ export interface InitResult {
 
 function defaultDirs(): { storageDir: string; genesisDir: string } {
   return {
-    storageDir: larDataDir(),        // the vessel substrate → <lares>/vessel
-    // Baked seed rides the composable genesis cap (LAR_GENESIS → ~/.lares/config.json →
+    storageDir: larDataDir(),        // the vessel substrate → <root>/hearth/vessel
+    // Baked seed rides the composable genesis cap (LAR_GENESIS → <root>/config/config.json →
     // repo-relative <corpus>/genesis). Checked-in by default; a no-config boot lands on the repo seed.
     genesisDir: daemonGenesisDir(),
   };
@@ -194,9 +196,8 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
       const group = readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text;
       const atomSeed = group ? await loadFaceAtomOfGroup(group) : null;
       if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
-      const daemonUrl = readPackedTiddlers(bootstrap)[DAEMON_BAG_ID]?.text;
-      if (!daemonUrl) throw new Error("[lares fleet join land] the bootstrap names no daemon doc");
-      await retireApplyCheckpoint(await opts.repo.find<LarDoc>(daemonUrl as AutomergeUrl), atomSeed);
+      // THE CHECKPOINT RESTS IN THE SECRET HOME (operator ruling A5): it retires there.
+      await retireApplyCheckpoint((await openVesselSecretHome(opts.repo)).handle, atomSeed);
       await opts.repo.flush();
     }
     console.log(`[lares vessel found] ${bootstrap} already exists — skipping.`);
@@ -215,20 +216,20 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
   mkdirSync(genesisDir, { recursive: true });
 
   // ── THE PRECONDITION RUNS BEFORE THE FIRST MUTATION ──────────────────────────────────────────
-  // A founding binds (device × hearthTrueName), so an absent engine CID means there is nothing to bind
-  // TO and no founding can complete. Checked LATER, this same refusal arrived after the vessel keypair
+  // A founding stands on the genesis engine, so an absent engine CID means no engine to boot
+  // and no founding can complete. Checked LATER, this same refusal arrived after the vessel keypair
   // and the PersonaGroup root had already been minted — a tree carrying keys and no charter, which reads
   // like damage even though both mints load-or-create and a re-run heals them.
   //
   // A gate that fires after the act it guards teaches the operator to distrust a clean refusal.
-  const hearthTrueName = GENESIS_ENGINE_CID(genesisDir);
+  const engineCid = GENESIS_ENGINE_CID(genesisDir);
   const genesisUsed = genesisResolutionAt(genesisDir, { explicit: process.env["LAR_GENESIS"], configured: loadLaresConfig().resources?.genesis, corpusRoot: daemonCorpusRoot(), shippedRoot: repoRoot });
-  if (hearthTrueName) {
+  if (engineCid) {
     console.log(`[lares vessel found] ${genesisFoundingLine(genesisUsed)}`);
   }
-  if (!hearthTrueName) {
+  if (!engineCid) {
     throw new Error(
-      "[lares vessel found] cannot found: hearth true-name (engine CID) absent from " + genesisDir + " —\n" +
+      "[lares vessel found] cannot found: the genesis engine CID reads absent from " + genesisDir + " —\n" +
       "  the genesis seed carries it. In this repo: `pnpm --filter @lararium/node build:genesis`.\n" +
       "  Founding an ISOLATED root (LAR_ROOT)? Seed the tracked genesis into it first:\n" +
       "    (cd <repo> && git ls-files -z genesis/ | xargs -0 -I{} cp --parents \"{}\" \"$LAR_ROOT/\")",
@@ -282,8 +283,8 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
     // binding into its OWN daemon doc and boots through its Binding Gate — no Beelay, no cap events.
     const payload = opts.admitPayload;
     // The admit supplies the binding; the joinee's selected face atom supplies its own Keyhive card.
-    if (payload.kind !== "device-admit/v1") {
-      throw new Error(`[lares fleet join land] unexpected payload kind: ${payload.kind}`);
+    if (payload.kind !== DEVICE_ADMIT_KIND) {
+      throw new Error(`[lares fleet join land] the payload names the kind ${JSON.stringify(payload.kind)}: it lacks the device admit shape (${JSON.stringify(DEVICE_ADMIT_KIND)})`);
     }
     // The ceremony mints the selected face's card from its atom; the public place key remains an equality guard.
     const mountedGroup = existsSync(bootstrap) ? readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text : undefined;
@@ -297,9 +298,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
     const admitSeed = await loadFaceAtomOfGroup(payload.personaGroupId);
     if (!admitSeed) throw new Error("this face holds no atom; re-found or re-admit it");
     if (stoodIndex !== undefined) {
-      const daemonUrl = readPackedTiddlers(bootstrap)[DAEMON_BAG_ID]?.text;
-      if (!daemonUrl) throw new Error("[lares fleet join land] the bootstrap names no daemon doc");
-      await retireApplyCheckpoint(await repo.find<LarDoc>(daemonUrl as AutomergeUrl), admitSeed);
+      await retireApplyCheckpoint((await openVesselSecretHome(repo)).handle, admitSeed);
       await repo.flush();
       return { skipped: true, bootstrapPath: bootstrap, storageDir, genesisDir };
     }
@@ -314,10 +313,17 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
       await repo.flush();
       writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin(placeTiddlers(admitDaemon.url))), "utf8");
     }
+    // THE SECRET HOME STANDS BEFORE THE ADMISSION'S FIRST SECRET WRITE: the joinee's dyad, its group-secret seal and the
+    // cap events it ingests rest in this vessel's own sealed home, enrolled on the holder's rest (custody stood above).
+    const secret = await standVesselSecretHome(repo);
+    // THE CONTROL DOCUMENT the founding minted beside the home: the daemon document names it, for the floor's stand.
+    if (secret.controlUrl) nameControlHome(admitDaemon, secret.controlUrl);
     const { archive, identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, daemonUrl, personaUrl, deviceEdge } = await runApplyAdmitPayload({
       repo,
       atomSeed: admitSeed,
       daemonHandle: admitDaemon,
+      secretHandle: secret.handle,
+      secretRest:   secret.rest,
       ...(standingAdmitArchive ? { archiveBytes: standingAdmitArchive } : {}),
       vesselDisplayName:  operatorIdentity.displayName ?? "operator",
       payload,
@@ -325,10 +331,9 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
       // THE ISLAND. An admit carries a SNAPSHOT of the founder's own RESOLVED NexusIdentity — `kind` +
       // `scope`, minted from the SAME `nexusIdentity` ruling the boot composes (device-admit.ts). A
       // `charter` kind re-enters as a genesis epoch (every charter holder derives the identical scope);
-      // any other kind — `own`/`anchor`, and an absent kind on an older payload — resolves through the
-      // anchor branch keyed on the founder's own gate key, UNCHANGED from before this carry existed. So a
-      // climbed founder's device now seats where the founder itself stands, and an un-climbed founder's
-      // device is byte-identical to today. Seeding one island and reading another HALTS the Binding Gate
+      // any other kind — `own`/`anchor`, and an absent kind — resolves through the anchor branch keyed
+      // on the founder's own gate key. So a climbed founder's device seats where the founder itself
+      // stands, and an un-climbed founder's device seats at the founder's own gate key. Seeding one island and reading another HALTS the Binding Gate
       // fail-closed at first boot, which reads as a broken vessel.
       nexusPubkey: admittedJoineeIsland({
         hearthGatePubKey:  payload.hearthGatePubKey,
@@ -360,7 +365,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
         ...readPackedTiddlers(bootstrap),
         ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, personaUrl, payload.personaGroupId),
       }), null, 2), "utf8");
-      await retireApplyCheckpoint(admitDaemon, admitSeed);
+      await retireApplyCheckpoint(secret.handle, admitSeed);
       await repo.flush();
       return { skipped: false, bootstrapPath: bootstrap, storageDir, genesisDir };
     }
@@ -390,7 +395,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
         scope: payload.hearthIslandScope,
       }, payload.hearthGatePin, payload.islandDocUrl),
     }), null, 2), "utf8");
-    await retireApplyCheckpoint(admitDaemon, admitSeed);
+    await retireApplyCheckpoint(secret.handle, admitSeed);
     await repo.flush();
 
     console.log(`[lares fleet join land] vessel ${operatorIdentity.verifyingKey.slice(0, 16)}… admitted`);
@@ -412,7 +417,10 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
   // The FACE lands later, by an operator act: `lares persona new 0 --name '<label>'` runs `runFoundTheFace`
   // below. A hearth whose operator stands right here types two commands instead of one, and a crossroads
   // never types the second at all.
-  const place = await foundThePlace({ repo, hearthTrueName });
+  // THE PLACE MINTS NO SECRET HOME AND NO CONTROL DOCUMENT (operator ruling 2026-11-09): both mint with the FACE, where its
+  // founding or its admission lands (`runFoundTheFace`, the fleet-join land above). The place writes nothing secret and
+  // holds no control family; a herm that never lights a face holds neither, and its custody row names none.
+  const place = await foundThePlace({ repo });
 
   // THE FLUSH COMES FIRST, and the catalog pointer already carries the reason: a pointer written
   // after its referent is durable can be stale; one written BEFORE can be a LIE. Automerge saves ride
@@ -428,7 +436,7 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
 
   console.log(`[lares vessel found] ${bootstrap} written`);
   console.log(`  daemon-doc    ${place.daemonUrl}`);
-  console.log(`  hearth-name   ${hearthTrueName.slice(0, 20)}…  (the place this vessel stands at)`);
+  console.log(`  engine        ${engineCid.slice(0, 20)}…  (the genesis engine this place boots)`);
   console.log("[lares vessel found] the PLACE stands — carrying, serving the public shelf, faceless.");
   console.log("  stand it:      lares vessel stand");
   console.log("  light a face:  lares persona new 0 --name '<label>'");
@@ -482,6 +490,12 @@ export interface FoundFaceResult {
   readonly personaGroupId: string;
   readonly personaKelPrefix:     string;
   readonly signerDid:            string;
+  /**
+   * The face's relation (F), the uuid its founding log pins on the `face` plane — what its label, its mirror folders and its
+   * bases sidecar key on. A fresh founding names it, so the face names itself the moment it stands; an already-standing face
+   * reads null here, and its caller reads the relation off the face's own stage (`kahua-read`).
+   */
+  readonly faceRelation:         string | null;
 }
 
 /** What arming recovery at a founding hands back: whether THIS act split the root, and the two carriers
@@ -564,11 +578,11 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
       await settleAddressSecret(already, opts.addressSecret);
       const daemonUrl = packed[DAEMON_BAG_ID]?.text;
       if (!daemonUrl) throw new Error("[lares persona new] the bootstrap names no daemon doc");
-      await retireFaceCheckpoint(await opts.repo.find<LarDoc>(daemonUrl as AutomergeUrl), atomSeed);
+      await retireFaceCheckpoint((await openVesselSecretHome(opts.repo)).handle, atomSeed);
       const hearthTrueName = hearthAid();
       if (hearthTrueName) await retirePendingFoundingSeed({ hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex });
       await opts.repo.flush();
-      return { alreadyStood: true, personaGroupId: already, personaKelPrefix: "", signerDid: "" };
+      return { alreadyStood: true, personaGroupId: already, personaKelPrefix: "", signerDid: "", faceRelation: null };
     }
   } else {
     // A COMPARTMENT STANDS WHEN ITS PLANE ENTRY STANDS. The bootstrap entry lands last (below), so anchors with no
@@ -579,15 +593,15 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
       await settleAddressSecret(priorAnchors.personaGroupId, opts.addressSecret);
       const daemonUrl = packed[DAEMON_BAG_ID]?.text;
       if (!daemonUrl) throw new Error("[lares persona new] the bootstrap names no daemon doc");
-      await retireFaceCheckpoint(await opts.repo.find<LarDoc>(daemonUrl as AutomergeUrl), atomSeed);
+      await retireFaceCheckpoint((await openVesselSecretHome(opts.repo)).handle, atomSeed);
       const hearthTrueName = hearthAid();
       if (hearthTrueName) await retirePendingFoundingSeed({ hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex });
       await opts.repo.flush();
-      return { alreadyStood: true, personaGroupId: priorAnchors.personaGroupId, personaKelPrefix: "", signerDid: "" };
+      return { alreadyStood: true, personaGroupId: priorAnchors.personaGroupId, personaKelPrefix: "", signerDid: "", faceRelation: null };
     }
     // A compartment rides BESIDE the mounted face — the founding face must stand first.
     if (!packed[PERSONA_GROUP_ID_TIDDLER]?.text) {
-      throw new Error("[lares persona new] no founding face stands yet — light it with `lares persona new 0 --name '<label>'` first.");
+      throw new Error("[lares persona new] no founding face stands yet — found the hearth and its first face with `lares found --hearth --name '<label>'` first.");
     }
   }
 
@@ -634,13 +648,22 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // The ask's first row founds the face's own custody (never the vessel's route), keyed by this ask until its group exists;
   // an interrupted founding re-enters the face it already holds.
   const askDigest = foundingAskDigest(foundingAsk);
+  // THE SECRET HOME STANDS BEFORE THE FACE'S FIRST SEAL, DYAD OR CAP EVENT, minted here with the face (or opened where an
+  // interrupted founding already minted it) on this holder's rest (the direct holder's, or the standing vessel's), mapped
+  // sealed before the Repo reads a byte of it. Its founding checkpoint rests there (A5), so an interrupted founding
+  // recovers its seed from the home.
+  const secret = await standVesselSecretHome(repo);
+  // THE CONTROL DOCUMENT MINTS WITH THE FACE, beside the secret home (operator ruling 2026-11-09): the daemon document names
+  // it, so a locked floor's stand finds it before the custody row opens. The first name the daemon document took holds.
+  if (secret.controlUrl) nameControlHome(daemonHandle, secret.controlUrl);
   const atomSeed = (await loadPendingFoundingSeed(foundingAsk))
-    ?? await recoverFoundingSeedFromGroup(foundingAsk, daemonHandle.doc()?.tiddlers ?? {})
+    ?? await recoverFoundingSeedFromGroup(foundingAsk, secret.handle.doc()?.tiddlers ?? {})
     ?? await standPendingFoundingSeed(foundingAsk);
-
   const face = await foundTheFace({
     repo,
     daemonHandle,
+    secretHandle: secret.handle,
+    secretRest:   secret.rest,
     atomSeed,
     askDigest: foundingAskDigest(foundingAsk),
     placeVerifyingKey: vesselIdentity.verifyingKey,
@@ -674,10 +697,12 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   });
   await settleFaceCustody(askDigest, face.personaGroupId, async () => {
     await keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed);
+    // THE VEIL-LIFT LINK: a founding over the floor links the veil to its first face as a join does, under the face's custody alone.
+    await keepNodeVeilLift(face.personaGroupId, atomSeed);
     await settleFoundingVesselFaceTag(askDigest, face.personaGroupId);
   });
-  // THE FACE'S ADDRESS SECRET MINTS AT ITS FOUNDING, beside its atom and behind its custody: its working documents derive
-  // their addresses from it from the first boot, and no later read mints one. A founding that runs again finds it standing.
+  // THE FACE'S ADDRESS SECRET MINTS AT ITS FOUNDING, beside its atom and behind its custody: the face's catalog document
+  // derives its address from it from the first boot, and no later read mints one. A founding that runs again finds it standing.
   // A restore lands the secret its bundle carried in place of the mint.
   await settleAddressSecret(face.personaGroupId, opts.addressSecret);
   await keepFaceAnchorOfGroup(mintFaceAnchor({
@@ -716,7 +741,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   };
   await persistIdentityAnchors(founderAnchors, handleIndex);
   writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({ ...packed, ...faceEntry }), null, 2), "utf8");
-  await retireFaceCheckpoint(daemonHandle, atomSeed);
+  await retireFaceCheckpoint(secret.handle, atomSeed);
   await repo.flush();
 
   return {
@@ -724,6 +749,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     personaGroupId: face.personaGroupId,
     personaKelPrefix:     face.personaKelPrefix,
     signerDid:            face.signerDid,
+    faceRelation:         face.faceRelation,
   };
   } finally { signerSeed.fill(0); }
 }

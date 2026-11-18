@@ -188,7 +188,7 @@ describe("the pane names the entry a refusal concerns", () => {
 });
 
 describe("ward co-sign (S3a)", () => {
-  const VERB = "ward-push-go";
+  const VERB = "ward-push-lei";
   const digestOf = (head = "h1") => cosignDigest({ act: VERB, face: "face", wiki: "daemon", head });
   const rig = async () => {
     const a = await who(11), b = await who(12), c = await who(13), foreign = await who(14), root = await who(15);

@@ -44,7 +44,8 @@ import { type LarDoc, tiddlerText } from "./base-doc.js";
 import { BAG_IDS, CATALOG_DOC_URI, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
 import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
 import { ownEntry } from "./stored-value.js";
-import { wikiSlotUri } from "./wiki-recipe.js";
+import { houseCanonBagsSeated, isHouseCanonBag } from "./kahu-canon-reach.js";
+import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 
 /**
  * The bag URIs the `catalog` registry NAMES — the PersonaGroup's own work, read from the projection.
@@ -90,7 +91,7 @@ export interface RegisterBagsInput {
   /** The wiki slot's bag ids, when a wiki stands in the stack. A Herm carries none — blind by structure. */
   readonly wikiBags?: readonly string[];
   /** True where the Kahu cabal admitted this vessel's group and the keel mounted the live system documents: the
-   *  vessel then registers `lares` and `lararium`. Absent = it holds neither document. */
+   *  vessel then registers every house canon bag (`houseCanonBagsSeated`). Absent = it holds no canon document. */
   readonly systemCanon?: boolean;
 }
 
@@ -108,14 +109,13 @@ const OWN_GROUND = [
 ] as const;
 
 /**
- * The LIVE system bags: ground for the Kahu cabal's vessel alone. They rest in the Kahu realm (`kahu-realm`), so a
- * vessel outside the cabal holds neither document and registers neither bag. They remain vessel-ground in KIND: the
- * daemon's own key holds their caps, as it holds the substrate's.
+ * The LIVE house canon (`houseCanonBagsSeated`): ground for the Kahu cabal's vessel alone. It rests in the Kahu realm
+ * (`kahu-realm`), so a vessel outside the cabal holds no document of it and registers none of its bags, the canon bag of the
+ * wiki it stands included (`deriveRegisterBags` leaves a house canon bag out of `wikiBags` without `systemCanon`). It remains
+ * vessel-ground in KIND: the daemon's own key holds its caps, as it holds the substrate's.
  */
-const KAHU_CANON_GROUND = [BAG_IDS.lares, BAG_IDS.lararium] as const;
-
 export function isVesselGround(bag: string): boolean {
-  return (OWN_GROUND as readonly string[]).includes(bag) || (KAHU_CANON_GROUND as readonly string[]).includes(bag);
+  return (OWN_GROUND as readonly string[]).includes(bag) || isHouseCanonBag(bag);
 }
 
 /**
@@ -127,7 +127,11 @@ export function isVesselGround(bag: string): boolean {
  * produce one comparable set, and two groups naming a bag in common register it once.
  */
 export function deriveRegisterBags(input: RegisterBagsInput): string[] {
-  const out: string[] = [...OWN_GROUND, ...(input.systemCanon === true ? KAHU_CANON_GROUND : []), ...(input.wikiBags ?? [])];
+  // A HOUSE CANON BAG ENTERS THROUGH THE CABAL'S ADMISSION ALONE. The wiki a face stands may compose house canon (`lares`), and
+  // its slot names that canon bag as the wiki's own; a vessel outside the cabal holds no document of it, so it registers the
+  // wiki's slots and never the canon bag: its read cap over that bag never forms, and its reads answer from the floor.
+  const wikiBags = (input.wikiBags ?? []).filter((bag) => input.systemCanon === true || !isHouseCanonBag(bag));
+  const out: string[] = [...OWN_GROUND, ...(input.systemCanon === true ? houseCanonBagsSeated() : []), ...wikiBags];
   for (const fleet of input.fleets) {
     const face = personaScopedBagIds(fleet.personaGroupId);
     // The catalog names every face's planes; a group registers ITS four (above) and never another face's, which the derived shape
@@ -152,7 +156,25 @@ export interface WikiSlotBags {
 /** The bag the face's own catalog document answers to (`catalog-view`), sealed under the lit face. */
 export const FACE_CATALOG_BAG_ID = `${CATALOG_DOC_URI}/face`;
 
-export const DAEMON_WIKI_SLOT_BAGS: readonly string[] = [wikiSlotUri("daemon", "working"), wikiSlotUri("daemon", "draft")];
+export const DAEMON_WIKI_SLOT_BAGS: readonly string[] = [wikiSlotUri("daemon", "working"), wikiSlotUri("daemon", "draft"), wikiSlotUri("daemon", "personal")];
+
+/**
+ * The daemon canon bag a worn face stands (`daemonFaceCanonBag`), or null. The canon's document seals under the face, so it
+ * stands only where {@link wornFaceWikiBags} registers and seals its bag: a face that stands lit and proved. A worn face
+ * that stands unlit, and the floor, stand none.
+ */
+export function standingDaemonCanonBag(input: { readonly lit: boolean; readonly faceRelation: string | null }): string | null {
+  return input.lit && input.faceRelation ? daemonFaceCanonBag(input.faceRelation) : null;
+}
+
+/**
+ * THE LIT SET: the bags a face OWNS while it stands lit, worn or beside the worn face: the daemon wiki's device slots, its daemon
+ * canon (where its relation stands known), and its own catalog half. A sibling face's hive registers these and never a user
+ * wiki's bags, which belong to the worn face's mount.
+ */
+export function litFaceOwnBags(faceRelation: string | null | undefined): string[] {
+  return [...DAEMON_WIKI_SLOT_BAGS, ...(faceRelation ? [daemonFaceCanonBag(faceRelation)] : []), FACE_CATALOG_BAG_ID];
+}
 
 /**
  * The wiki bags a vessel's worn face carries: `registered`, the wiki bags the face's hive registers (`deriveRegisterBags`'s
@@ -164,11 +186,13 @@ export const DAEMON_WIKI_SLOT_BAGS: readonly string[] = [wikiSlotUri("daemon", "
  * register set reads `writer-not-capable`, its seal refuses, and a flush waits on it. The user wiki's slots register at
  * the floor and lit alike, as a wiki stack stands; the daemon wiki's slots register and seal under the lit face alone.
  */
-export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefined; readonly lit: boolean }): { readonly registered: string[]; readonly sealed: string[] } {
+export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefined; readonly lit: boolean; readonly daemonCanon?: string }): { readonly registered: string[]; readonly sealed: string[] } {
   const user = input.slot ? [input.slot.wikiBagId, input.slot.workingBagId, input.slot.draftBagId] : [];
   // The face's own catalog (U1's D half of the catalog) rides with the daemon wiki's slots: the island registers it at
-  // boot, so its holder holds the catalog's key before the lift opens the sealed document.
-  const faceOwn = input.lit ? [...DAEMON_WIKI_SLOT_BAGS, FACE_CATALOG_BAG_ID] : [];
+  // boot, so its holder holds the catalog's key before the lift opens the sealed document. The vessel's control document
+  // seals beside the secret home under the vessel's own key (`secret-home`), never under one face.
+  // The worn face's daemon canon (`bags/daemon-<F>`, `daemonFaceCanonBag`) rides with them too: a face's daemon wiki content.
+  const faceOwn = input.lit ? [...DAEMON_WIKI_SLOT_BAGS, ...(input.daemonCanon ? [input.daemonCanon] : []), FACE_CATALOG_BAG_ID] : [];
   return {
     registered: [...user, ...faceOwn],
     sealed: [...(input.lit ? user : []), ...faceOwn],

@@ -40,9 +40,14 @@
  *
  * AUTOMERGE RIDES ONLY THE SESSION. `SiblingNetworkAdapter` takes the automerge-repo `NetworkAdapter` shape. A
  * sibling becomes a peer (`peer-candidate`) only once its proof passed AND it named, inside the sealed session, the
- * repo peer id its proven device key derives (`siblingPeerIdOf`); any other id refuses. Its messages ride under that
+ * repo peer id its proven device key derives under this face (`siblingPeerIdOf`); any other id refuses. Its messages ride under that
  * derived id both ways, so a sibling never stands under an id another adapter carries and never inherits that
  * peer's verdict, and one id never names two carriers (`bindRepo`: a collision either way surfaces as `route`).
+ * THE METADATA A SIBLING READS SCOPES TO THE FACE (`seatSiblingLeg`). The peer metadata a leaf names inside the session
+ * carries a store id, and a vessel that lights two faces stands one Repo behind both channels. Each channel seats as a
+ * wire leg for its (face, Nexus) (`wire-identity`, `leg`): it names that pair's alias store id, never the Repo's own, and
+ * hands the Repo a sibling's store id under the pair's local scope, so a party that proves under two faces reads two
+ * unrelated store ids and each face keeps its own sync state with that party.
  * Every sync message is CBOR sealed under the session. `provenKeyOf(peerId)` names the device key a peer proved —
  * the sibling source a PersonaGroup ring reads. A proven sibling holds STANDING, never the vessel: the ring admits
  * it to its face's own planes and the public boards, and to nothing else.
@@ -98,6 +103,7 @@ import {
   depositPersonaKelChain, httpPersonaKelDropHerm, pullPersonaKelSuccessors, type PersonaKelDropHerm, type PersonaKelPull,
 } from "./persona-kel-drop.js";
 import { shoreInbound } from "./prototype-key-shore.js";
+import type { WireIdentity, WireLegAt, WireLegRefusal } from "./wire-identity.js";
 
 
 /** The session kind a leaf joins its channel under. Body: `{ channels }` — a later join REPLACES the set. */
@@ -184,12 +190,28 @@ export function siblingRefusalLine(r: SiblingRefusal): string {
 
 /**
  * The repo peer id a sibling stands under: a hash, under `SIBLING_PEER_ID_INFO`, of the device key it proved over
- * the session. A sibling NAMES this id inside the session and the leaf refuses any other, so a sibling never
+ * the session and the FACE the session proves under (the persona KEL's prefix, which both ends hold and every event of
+ * that KEL carries). A sibling NAMES this id inside the session and the leaf refuses any other, so a sibling never
  * stands under an id another adapter carries (the operator's own node, a relay peer, an island worker) and never
- * inherits that peer's share verdict. The id is derived on both sides alone; nothing a sibling chooses enters it.
+ * inherits that peer's share verdict. Both sides derive the id alone; nothing a sibling chooses enters it. The face
+ * rides the derivation so one key's peer id differs under each face it proves: a peer that meets the key under two
+ * faces reads two ids (residency-follows-the-contract#/faces-sit-flat).
  */
-export function siblingPeerIdOf(deviceKey: string): PeerId {
-  return `sibling-${hex(sha256(canonicalJsonBytes({ domain: SIBLING_PEER_ID_INFO, key: deviceKey.toLowerCase() })))}` as PeerId;
+export function siblingPeerIdOf(deviceKey: string, face: string): PeerId {
+  return `sibling-${hex(sha256(canonicalJsonBytes({ domain: SIBLING_PEER_ID_INFO, face, key: deviceKey.toLowerCase() })))}` as PeerId;
+}
+
+/**
+ * SEAT A SIBLING CHANNEL AS THE WIRE LEG OF ITS (FACE, NEXUS), before it joins the Repo: the door `standSiblingChannel`
+ * calls for both vessels. The channel then names the pair's alias store id inside each proven session and rests a
+ * sibling's store id under the pair's local scope (`WireIdentity.leg`); the peer id a sibling reads stays the one its
+ * proven key derives under the face (`siblingPeerIdOf`). `at.face` names the PersonaGroup the channel proves for, the
+ * name every other leg of that face seats under, so one face reads one alias at one Nexus on every leg.
+ */
+export function seatSiblingLeg<T extends object>(
+  wire: Pick<WireIdentity, "leg">, adapter: T, at: WireLegAt, onRefusal?: (refusal: WireLegRefusal, peerId: string) => void,
+): T {
+  return wire.leg(adapter, at, onRefusal);
 }
 
 /**
@@ -380,6 +402,10 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
     this.#kel = opts.kel;
   }
 
+  /** The face this channel proves under: the prefix every event of its KEL carries (the empty text while it holds none,
+   *  where the leaf stands under no standing and names no peer id). */
+  #face(): string { return this.#kel[0]?.prefix ?? ""; }
+
   isReady(): boolean { return this.#ready; }
   isStopped(): boolean { return this.#stopped; }
 
@@ -454,7 +480,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
     // One standing session carries it — the one over the lowest-indexed herm that stands.
     for (const [slotKey, slot] of this.#slotsOf(key)) {
       if (!slot.session || slot.session.refusal !== null || !slot.peerId) continue;
-      this.#sendSealed(slotKey, slot.session, { t: "msg", m: { ...message, senderId: siblingPeerIdOf(self.deviceKey) } as Message });
+      this.#sendSealed(slotKey, slot.session, { t: "msg", m: { ...message, senderId: siblingPeerIdOf(self.deviceKey, this.#face()) } as Message });
       return;
     }
   }
@@ -463,7 +489,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
    * Stand this leaf again under a KEL it now carries. It deposits a KEL that moved at every pinned herm FIRST, so a
    * sibling that hears the close finds the move waiting — at most a herm's deadline, never longer. Then it judges
    * every standing session under the head: one whose sibling proved with an edge the head rolled past closes, the
-   * sibling hears why inside it while both still share the old channel, and only then does this leaf join the head's
+   * sibling hears why inside it while both still share the channel it leaves, and only then does this leaf join the head's
    * channel and say `here` — where the head re-enrolled that sibling it catches up and they prove again, and where it
    * revoked it the sibling says so itself. Moves judge one at a time, in arrival order.
    */
@@ -704,7 +730,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
 
   /**
    * Close a session this leaf holds and tell the sibling why, inside the session, so its half closes too and it
-   * syncs nothing on into a session that no longer stands. The session stays readable only for the sibling's
+   * syncs nothing on into a session that has closed. The session stays readable only for the sibling's
    * frames already in flight.
    */
   #close(slotKey: string, session: LeafPeerSession, why: CloseWhy): void {
@@ -866,7 +892,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
       }
       if (body?.t === "peer") {
         if (typeof body.peerId !== "string" || slot!.peerId) { this.#refusePeer(from, via, "a sibling named its peer id twice", true); return; }
-        const peerId = siblingPeerIdOf(from);
+        const peerId = siblingPeerIdOf(from, this.#face());
         if (body.peerId !== peerId) { this.#refusePeer(from, via, "a sibling named a repo peer id its proven device key does not derive", true); return; }
         // A sibling already standing as a peer over another herm takes this session as a second path, and the
         // repo hears of it once.
@@ -899,7 +925,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
     this.#siblings.set(slotKey, { session, via });
     const self = this.#self;
     if (!self) return;
-    this.#sendSealed(slotKey, session, { t: "peer", peerId: siblingPeerIdOf(self.deviceKey), ...(this.peerMetadata ? { peerMetadata: this.peerMetadata } : {}) });
+    this.#sendSealed(slotKey, session, { t: "peer", peerId: siblingPeerIdOf(self.deviceKey, this.#face()), ...(this.peerMetadata ? { peerMetadata: this.peerMetadata } : {}) });
   }
 }
 
@@ -950,6 +976,10 @@ export function siblingLeafOf(opts: {
  */
 export async function standSiblingChannel(opts: {
   readonly repo: Repo;
+  /** The wire identity of the composition `repo` stands on: the channel seats as one of its legs (`seatSiblingLeg`). */
+  readonly wire: Pick<WireIdentity, "leg">;
+  /** The PersonaGroup this channel proves for: with `nexusPubkey`, the (face, Nexus) its leg seats under. */
+  readonly face: string;
   /** The herms' pinned relay addresses, `ws://host:port#<gate key hex>`: two or more under distinct gate keys for
    *  tolerance, one for the degraded mode. The channel dials every one, and every one carries the drops. */
   readonly herms: readonly string[];
@@ -1011,7 +1041,8 @@ export async function standSiblingChannel(opts: {
     ...(opts.onRefusal ? { onRefusal: opts.onRefusal } : {}),
   });
   if (refusal === undefined) board.on("change", () => { void adapter.relicense(eventsNow()); });
-  opts.repo.networkSubsystem.addNetworkAdapter(shoreInbound(adapter));
+  // THE SEAT STANDS BEFORE THE CHANNEL JOINS: the Repo connects it under the alias of its (face, Nexus).
+  opts.repo.networkSubsystem.addNetworkAdapter(shoreInbound(seatSiblingLeg(opts.wire, adapter, { face: opts.face, nexus: opts.nexusPubkey })));
   adapter.bindRepo(opts.repo);
   return adapter;
 }

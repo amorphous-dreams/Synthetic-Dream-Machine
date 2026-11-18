@@ -122,6 +122,7 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
       // island (no CAS dir); the ingest path faults loud there rather than fabricating a body.
       registerActionReactors(registry, {
         composite: ctx.composite,
+        diskMirrors: ctx.diskMirrors ?? [],
         tw5: makeTw5Deserializer(ctx.tw5),
         ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
         // The keyholder island's gate asked the Kahu predicate for every system bag the routed verb names.
@@ -172,9 +173,9 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
     },
   };
 
-  // The nameless wiki island = a #has cap stack. Order = the original onEa order (dispatch ·
-  // projection · engine-watch · recipe-watch); composeIsland's LIFO teardown reproduces the old
-  // onHooAnu order (recipe · engine · projection-cleanup · registry-null) exactly. hasProjection is
+  // The nameless wiki island = a #has cap stack. Order: dispatch ·
+  // projection · engine-watch · recipe-watch; composeIsland's LIFO teardown runs
+  // recipe · engine · projection-cleanup · registry-null. hasProjection is
   // the SHARED render cap the daemon also inherits — one VM, one surface path. Caller-supplied caps
   // fold at the tail — added capability, never a re-ordering of the base channels.
   return composeIsland([hasHandBoundary(), dispatchCap, hasPortLease(opts.recordPort), hasProjection(opts.onBoot), hasEngineWatch(), hasRecipeWatch(), ...(opts.caps ?? [])]);

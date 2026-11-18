@@ -1,7 +1,7 @@
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { describe, expect, it } from "vitest";
-import { hex } from "../src/crypto.js";
-import { acceptPlaceHead, foldPlaceKel, mintPlaceInception, mintPlaceRotation, PLACE_KEL_FORK_EVIDENCE, PLACE_KEL_ROWS_PER_AID, type PlaceKelEvent } from "../src/vessel-kel.js";
+import { canonicalJsonBytes, hex } from "../src/crypto.js";
+import { acceptPlaceHead, foldPlaceKel, mintPlaceInception, mintPlaceRotation, PLACE_KEL_FORK_EVIDENCE, PLACE_KEL_ENTRIES_PER_AID, type PlaceKelEvent } from "../src/vessel-kel.js";
 
 const seed = (n: number) => new Uint8Array(32).fill(n);
 const key = (n: number) => hex(ed25519.getPublicKey(seed(n)));
@@ -54,6 +54,34 @@ describe("place KEL reader", () => {
     if (!gapped.ok) expect(gapped.verified?.seq).toBe(0);
   });
 
+  /** Re-sign `event` under `coldSeed` with another `seq`: a lawful link (its `prev` and reveal hold) whose counter disagrees. */
+  const reseq = (event: Extract<PlaceKelEvent, { t: "rot" }>, coldSeed: Uint8Array, seq: number): PlaceKelEvent => {
+    const { sig: _sig, ...unsigned } = { ...event, seq };
+    return { ...unsigned, sig: hex(ed25519.sign(canonicalJsonBytes(unsigned), coldSeed)) } as PlaceKelEvent;
+  };
+  it("ORDER RIDES THE HASH CHAIN: a lawful link whose seq disagrees refuses by name; the agreeing chain reads", () => {
+    const f = fixture();
+    // CONTROL: the chain whose seq agrees with its links reads its head, in any arrival order.
+    const agreeing = foldPlaceKel([f.two, f.one, f.start.event], f.pin);
+    expect(agreeing.ok && agreeing.seq).toBe(2);
+    // A rotation that links to the inception (its `prev` holds) but names seq 2 breaks the cross-check: the walk descends
+    // by `prev` alone, meets the row as the inception's successor, and refuses the counter's disagreement.
+    const skewed = reseq(f.one as Extract<PlaceKelEvent, { t: "rot" }>, seed(2), 2);
+    const read = foldPlaceKel([f.start.event, skewed], f.pin);
+    expect(read.ok).toBe(false);
+    if (!read.ok) expect(read.verified?.seq).toBe(0);   // the verified prefix stands; the skewed row never advances it
+    // A head accepted at a position its seq does not name refuses seq-mismatch: descent finds it, the counter disagrees.
+    const two = foldPlaceKel([f.start.event, f.one, f.two], f.pin);
+    expect(two.ok).toBe(true);
+    const oneHead = (foldPlaceKel([f.start.event, f.one], f.pin) as { headDigest: string }).headDigest;
+    if (two.ok) {
+      expect(acceptPlaceHead({ aid: two.aid, seq: 1, headDigest: oneHead }, two).ok).toBe(true);
+      expect(refusal(acceptPlaceHead({ aid: two.aid, seq: 2, headDigest: oneHead }, two))).toBe("seq-mismatch");
+      // A head the chain never carries is a rollback or another branch, whatever seq it names.
+      expect(refusal(acceptPlaceHead({ aid: two.aid, seq: 1, headDigest: "ab".repeat(32) }, two))).toBe("rollback");
+    }
+  });
+
   const wide = (n: number) => { const b = new Uint8Array(32); new DataView(b.buffer).setUint32(0, n + 1000); return b; };
   const wideKey = (n: number) => hex(ed25519.getPublicKey(wide(n)));
   /** A lawful chain of `rotations` rotations: cold seed n reveals at rotation n, signer n+1_000_000 signs the floor. */
@@ -66,10 +94,10 @@ describe("place KEL reader", () => {
     return { start, chain };
   };
   it("a lawful chain at the ceiling folds; a board past it refuses in bounded work", () => {
-    const at = lawful(PLACE_KEL_ROWS_PER_AID - 1);
+    const at = lawful(PLACE_KEL_ENTRIES_PER_AID - 1);
     const read = foldPlaceKel(at.chain, { aid: at.start.aid });
-    expect(read.ok && read.seq).toBe(PLACE_KEL_ROWS_PER_AID - 1);
-    const past = lawful(PLACE_KEL_ROWS_PER_AID + 1);   // one rotation past the ceiling
+    expect(read.ok && read.seq).toBe(PLACE_KEL_ENTRIES_PER_AID - 1);
+    const past = lawful(PLACE_KEL_ENTRIES_PER_AID + 1);   // one rotation past the ceiling
     expect(refusal(foldPlaceKel(past.chain, { aid: past.start.aid }))).toBe("too-many-rows");
   }, 240_000);
   it("a key-holder fork flood reads the fork with bounded evidence, and unsigned or foreign rows never reach a digest walk", () => {

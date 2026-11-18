@@ -13,6 +13,9 @@ export function seedTestCustody(root: string, stdio: "pipe" | "ignore" = "pipe")
   execFileSync(process.execPath, [join(REPO_ROOT, "tools", "seed-test-custody.mjs"), root], { stdio });
 }
 
+/** How long the door waits on a daemon that took its frame: an unlock recomposes the whole hearth, well inside this. */
+const DOOR_BOUND_MS = 150_000;
+
 /** What the unlock door's daemon answered: the parsed answer, the door's exit code, and its stderr. */
 export interface TestUnlock { readonly code: number; readonly answer: Record<string, unknown> | null; readonly stderr: string }
 
@@ -25,13 +28,17 @@ export interface TestUnlock { readonly code: number; readonly answer: Record<str
 export function unlockTestCustody(root: string, act: "unlock" | "lock" | "status" = "unlock"): TestUnlock {
   const args = [join(REPO_ROOT, "tools", "unlock-test-custody.mjs"), root, ...(act === "unlock" ? [] : [`--${act}`])];
   try {
-    const out = execFileSync(process.execPath, args, { stdio: ["ignore", "pipe", "pipe"], encoding: "utf8" });
+    // BOUNDED. This call holds the suite's event loop, so a daemon that takes the frame and never answers would freeze the
+    // whole run past every vitest timeout, silent (CI run 42780391519: four shards cut at 45 minutes, naming nothing). The
+    // bound turns that into a refusal the caller names, with the daemon's own log.
+    const out = execFileSync(process.execPath, args, { stdio: ["ignore", "pipe", "pipe"], encoding: "utf8", timeout: DOOR_BOUND_MS, killSignal: "SIGKILL" });
     return { code: 0, answer: JSON.parse(out.trim().split("\n").pop() ?? "null") as Record<string, unknown>, stderr: "" };
   } catch (e) {
-    const err = e as { status?: number; stdout?: string; stderr?: string };
+    const err = e as { status?: number | null; signal?: string | null; stdout?: string; stderr?: string };
     let answer: Record<string, unknown> | null = null;
     try { answer = JSON.parse((err.stdout ?? "").trim().split("\n").pop() ?? "null") as Record<string, unknown> | null; } catch { /* no answer */ }
-    return { code: err.status ?? 1, answer, stderr: err.stderr ?? "" };
+    const bounded = err.signal === "SIGKILL" ? `unlock-test-custody: the daemon took the ${act} frame and answered nothing in ${DOOR_BOUND_MS / 1000}s\n` : "";
+    return { code: err.status ?? 1, answer, stderr: bounded + (err.stderr ?? "") };
   }
 }
 

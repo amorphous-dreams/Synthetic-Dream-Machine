@@ -96,7 +96,7 @@ describe("no code name says oracle for a thing that is now the flow, the floor, 
     expect(client).toContain('FLOW_SOCKET_ROUTE  = "/flow"');
     expect(read("packages/lararium-mesh/src/hearth-floor-pins.ts")).toContain('HEARTH_FLOOR_CARD_ROUTE = "/flow"');
     expect(read("packages/lararium-node/src/lares-config.ts")).toContain("LAR_FLOW_ORIGIN");
-    expect(read("packages/lararium-mesh/src/catalog-row.ts")).toContain("resolveCatalogRow");
+    expect(read("packages/lararium-mesh/src/catalog-entry.ts")).toContain("resolveCatalogEntry");
     expect(read("packages/lararium-mesh/src/cap-tier.ts")).toContain("TierFloorSource");
   });
 });

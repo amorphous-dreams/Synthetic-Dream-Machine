@@ -70,7 +70,7 @@ const orphanCarrierRoot = () => {
   const root = fresh();
   assert.equal(run(STAGER, root).status, 0);
   assert.equal(run(DOOR, root).status, 0);
-  rmSync(join(root, "data", "lares", "identity", "s-slots.bin"));
+  rmSync(join(root, "hearth", "identity", "s-slots.bin"));
   return root;
 };
 
@@ -92,7 +92,7 @@ test("the stager refuses a root that holds identity carriers and no tree", () =>
 
 test("the door names OccupiedStoreRefusal on one line over a marked root with carriers and no tree, and writes nothing", () => {
   const root = orphanCarrierRoot();
-  const identity = join(root, "data", "lares", "identity");
+  const identity = join(root, "hearth", "identity");
   try {
     const before = readdirSync(identity).sort();
     const r = run(DOOR, root);

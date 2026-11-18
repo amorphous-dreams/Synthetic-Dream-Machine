@@ -1,0 +1,46 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/canon-owed`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/canon-owed.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/canon-owed"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/canon-owed"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! canon-owed.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/canon-owed.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canon-owed-at-the-next-true-up`>>
+
+! Canon owed at the next true-up (folds into controller-handoff / the road before the pass)
+* controller-handoff #/the-lane-law, the battery: "One named e2e file whose own waits exceed the cap runs locally under `timeout 600`, still in the bwrap PID namespace with the 1536 MB heap and headless; every other run keeps `timeout 180`, and no whole suite runs locally" (operator, 2026-11-06: "Approve the 600s e2e cap, OODA-HA."). The 180 s CI poll floor stays a separate law (GitHub reads).
+* controller-handoff #/the-practice: the talk-story law (flow first; mu, then user stories, then only survivors with a lean; "none, flowing into OODA-HA loops"; a question never stalls the flow unless it blocks; correct an overturned ruling plainly).
+* controller-handoff #/the-practice: browser-mode runs go headless (lararium-web vitest.config headless: true, on b1-lift); a watcher polls run completion, never `ci-verdict --wait` on a lane branch until #175 lands; a merge push that changes .mem alone raises no CI (paths-ignore): watch its parent's run.
+* the road: a G row for the web-tw5 e2e load timeouts (shore-writes, rest-before-reload's shore cousin, golden-whole-road: three lanes red within one hour while 3-4 CI runs flew; green on rerun / locally) — owed: pin each wait on the product's own event; measure CI concurrency.
+* the road: line 199 (the DNS credential) gains its post-hearth move into the vault's Porkbun VEIL slot (reach-plane.mem).
+* a tools row: tools/launch-codex.test.mjs leaks SIGTERM-proof `codex` shims under /tmp/sup-* (seven ended 2026-11-06 by pid); the ladder test reaps its own fixture.
+* #/state: the pass to Lares-Awakens, the lanes' heads, the scout wave and its kairos.
+* the road, a new owed row beside slice 6/7 (durability; Terra read 2026-11-06, /home/joshu/.lares-scratch/controller/terra-no-receipt/final.md): &#39;'The teardown drain&#39;' — the sovereign kernel closes its receipt waits before `adaptor.stop()` drains owed titles (packages/lararium-tw5/src/sovereign-kernel.ts:555), so a write queued just before teardown can end unacknowledged ("the vessel issued no receipt for the written documents", seen on local e2e runs). Owed red: with a responsive vessel, queue one daemon working write immediately before teardown, complete shutdown, reopen, assert the exact value durable; control: a quiet peer still lets shutdown end without a false acknowledgement. The CI hits of the same message come from planted refusals (wiki-shore-draft-road, stop-with-hung-receipt). Before the rite (X0b/durability ground).
+* a tools row: land-train read a lane's merge head (5f96ba091, a span merge whose new content came through the second parent and touched .mem alone) as "ci unread" although its first parent read CI green; the ancestor-ride rule credits no such merge. Measure against tools-ci's own new mem-only rule once #175 lands; cure red first.
+* mixed-model-swarm #/the-shapes crew law + #/rulings (operator, 2026-11-06: "Approve, OODA-HA." to the house's bend): for every NON-custody lane, the lead writes each red as an exact prose spec (the seam, the inputs, the expected refusal, the control) and a Terra seat writes the test from it; the lead reads the red and proves it fails on its parent before any green. Custody and ward reds stay Claude-authored; the blind custody read stays Opus. Big merges: a Terra read maps the hunks, a gpt-6.1-sol build seat resolves them, a Claude read only where custody moves.
+* seat-harness #/the-broker + a tools row (measured 2026-11-06, the first live Codex lead run, G54): the broker refuses every commit without `--checks` ("no checks configured for the check seat"), and the check seat's bwrap wall binds /usr alone, so no house Node gate can run inside it (node lives under ~/.nvm). Owed: the check seat binds the operator's Node toolchain read-only (and the tree's built deps, or a check that needs none) so `pre-push-gate` itself runs walled; until then the lead runs the gate in its worktree and the broker's check stays structural (no conflict markers). Also the lead law asks for the session's two attribution trailers: the controller writes them into the lane state's `next`.
+* a tools row (the same test file as the shim leak): tools/launch-codex.test.mjs P1-3 "a seat that sleeps past its ceiling is stopped by its parent" read red once in CI on tools-ci (run 42223282838: "the child's output landed in run.log through the held fd" — actual &#39;' vs /STUB-OUTPUT/, a 3.1 s live test) on a lane that does not touch launch-codex.mjs; owed: pin the read on the child's own exit or the held fd's flush, never a sleep, and reap the stub's group (the leaked SIGTERM-proof shims came from this ladder).
+* a tools/typecheck row (Rekey-Wright, 2026-11-06): lararium-node's tsconfig excludes `tests`, so a stale call shape in a test or e2e (askIslandVerb's `composite` rename) passes typecheck silently; owed: a tests typecheck project for lararium-node (and every package whose tests the typecheck-witness skips), red first.
+* G59 widens (measured 2026-11-06, PR #179): the canon-direct land (#175) still refuses a .mem-only lane "LANE NOT GREEN … ci unread" because validate reads green runs on the LANE's branch alone; a canon lane's own pushes raise no run (paths-ignore), and its base's green run lives on the span; so every canon lane still needs a dispatched CI. Cure: validate credits the nearest first-parent ancestor's green run wherever it ran (the span included), red first.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B4vQ1Uuq-5ORx4D8sxdQOfqhI7tvhUapgkj2I8tjicQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -18,6 +18,7 @@ import type { LarDoc }               from "@lararium/mesh";
 import {
   materializeGenesisIsland,
   genesisCasManifestFromSeed,
+  genesisCasCidsFromOracle,
   GENESIS_SEED_FORMAT, genesisSeedCarriesAVersion,
   sha256HexBytesSync,
   utf8Bytes,
@@ -30,7 +31,7 @@ import {
 // ---------------------------------------------------------------------------
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
- *  (`LAR_GENESIS` → `~/.lares/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
+ *  (`LAR_GENESIS` → `<root>/config/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
  *  checked-in-by-default, so a no-config boot lands on the repo's tracked seed exactly as before. */
 function defaultGenesisDir(): string {
   return daemonGenesisDir();
@@ -115,13 +116,27 @@ export function readGenesisCasManifest(genesisDir?: string): GenesisCasManifest 
  * The ABSENT case keeps its empty set on purpose: a vessel carrying no seed holds no genesis blobs, so
  * protecting nothing states a fact rather than losing one. Only a seed that stands and refuses to read
  * answers `"unreadable"`, and a caller holding that answer must not sweep at all.
+ *
+ * THE STORED ISLAND JOINS THE SET. A vessel reloads its persisted oracle island under the fixed doc id at every
+ * boot, so after a rebuild that declares a new seed it keeps serving its grammar and canon floor from the blobs
+ * that island names, not the ones the new seed names. A caller holding that island passes it, and the set reads
+ * the union: the declared seed's blobs and every blob the stored island still points at. An island whose blob
+ * metadata will not read answers `"unreadable"` too, for the same reason a torn seed does.
  */
-export function genesisProtectSet(genesisDir?: string): ReadonlySet<string> | "unreadable" {
+export function genesisProtectSet(genesisDir?: string, storedIsland?: LarDoc | null): ReadonlySet<string> | "unreadable" {
   const { seed } = genesisArtifactPaths(genesisDir);
-  if (!existsSync(seed)) return new Set<string>();
-  const read = readGenesisCasManifest(genesisDir);
-  if (read === null) return "unreadable";
-  return new Set(read.blobs.map((b) => b.cid));
+  const set = new Set<string>();
+  if (existsSync(seed)) {
+    const read = readGenesisCasManifest(genesisDir);
+    if (read === null) return "unreadable";
+    for (const b of read.blobs) set.add(b.cid);
+  }
+  if (storedIsland) {
+    let island: readonly string[];
+    try { island = genesisCasCidsFromOracle(storedIsland); } catch { return "unreadable"; }
+    for (const cid of island) set.add(cid);
+  }
+  return set;
 }
 
 // ---------------------------------------------------------------------------
@@ -143,28 +158,6 @@ export function readGenesisGrammarCid(genesisDir?: string): string | undefined {
 /** The engine content-CID (slow ratchet) — the hearth's stable true-name (G-D3). */
 export function GENESIS_ENGINE_CID(genesisDir?: string): string | undefined {
   return readGenesisEngineCid(genesisDir);
-}
-
-// ---------------------------------------------------------------------------
-// hearthTrueName — the hearth's PUBLIC true-name (the place's public face).
-// ---------------------------------------------------------------------------
-//
-// The hearth wears two faces, never fused (lar:///ha.ka.ba/lares/api/pono/
-// lararium-identity#head). The PUBLIC face = the content-address of the place's
-// GRAMMAR — the engine content-CID ALONE (G-D3), the TW5 core + version, NOT the
-// plugins. Plugins compose per-operator (DreamNet-offered) and ride their own fast
-// ratchet, so a plugin change MUST NEVER perturb the true-name. The engine face is
-// shared DreamNet-wide, ratchets by engine-epoch, checked into git, holds NO secret.
-// The PRIVATE face = a secret root minted per-founding (node-vessel-identity,
-// gitignored), NEVER derived from this public content. This accessor surfaces the
-// public engine face ONLY.
-//
-// Under capability-is-identity + petnames (#capability-and-petnames), this is the
-// hearth's canonical STABLE petname — a content-addressed name for "which grammar/
-// lineage this place speaks," legible across the mesh with no registry. It returns
-// `undefined` when the genesis artifact is absent (mirrors GENESIS_ENGINE_CID).
-export function hearthTrueName(genesisDir?: string): string | undefined {
-  return GENESIS_ENGINE_CID(genesisDir);
 }
 
 // ---------------------------------------------------------------------------

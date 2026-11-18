@@ -16,6 +16,12 @@ import { askYesNo, gatherFoundingRoute, requireTty } from "./custody-prompt.js";
  * later asks nothing of it.
  */
 let nodeRouteOfThisFounding: readonly SlotSpec[] | null = null;
+
+/** Why a new face over a standing vessel's door binds a passphrase alone. */
+export const STANDING_VESSEL_PASSPHRASE_ONLY = "a standing vessel takes a passphrase route for a new face over its door; stop the vessel to bind a paper sheet";
+
+/** Set while a route gathers for a standing vessel's door: the bind prompt then offers the passphrase alone. */
+let gatheringForStandingVessel = false;
 export function noteFoundingNodeRoute(slots: readonly SlotSpec[]): void { nodeRouteOfThisFounding = slots; }
 
 /**
@@ -34,7 +40,7 @@ export async function gatherNewFaceRoute(face: { readonly label: string }): Prom
     if (same) return nodeRoute;
   }
   process.stdout.write(`Face ${face.label} takes a route of its own, apart from this vessel's. Lose it and this face's sealed state opens for no one.\n`);
-  return gatherFoundingRoute();
+  return gatherFoundingRoute(gatheringForStandingVessel ? { passphraseOnly: STANDING_VESSEL_PASSPHRASE_ONLY } : {});
 }
 
 /** Seat the gatherer the face-founding acts of this process ask. */
@@ -46,11 +52,13 @@ export function seatNewFaceRoute(): void { if (!faceRouteSeated()) seatFaceRoute
  */
 export async function handFaceRouteToVessel(label: string, purpose: "persona-new" | "bundle.restore", args: Readonly<Record<string, unknown>>): Promise<string> {
   // The gatherer this process seated asks (the binary seats the terminal prompt; a harness seats its own route explicitly).
-  const slots = await gatherFaceRoute(label);
+  // THE PROMPT KNOWS FIRST: it offers the passphrase alone, so no sheet prints that the door would then refuse.
+  gatheringForStandingVessel = true;
+  let slots: readonly SlotSpec[];
+  try { slots = await gatherFaceRoute(label); } finally { gatheringForStandingVessel = false; }
+  // A harness that seats its own route still meets the door's rule here.
   for (const slot of slots) {
-    if (slot.pins.some((pin) => pin.kind !== "passphrase")) {
-      throw new Error("a standing vessel takes a passphrase route for a new face over its door; stop the vessel to bind a paper sheet");
-    }
+    if (slot.pins.some((pin) => pin.kind !== "passphrase")) throw new Error(STANDING_VESSEL_PASSPHRASE_ONLY);
   }
   const answer = await sendCustodyFrame({ op: "face-route", slots, purpose, argsDigest: faceRouteBindDigest(purpose, args) });
   if (answer === null || typeof answer["ref"] !== "string") {

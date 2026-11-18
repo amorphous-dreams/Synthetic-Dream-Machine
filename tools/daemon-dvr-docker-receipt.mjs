@@ -32,7 +32,7 @@ function receiptFromLogs(logs) {
   const line = logs.split(/\n/).find((candidate) => candidate.includes(RECEIPT));
   if (!line) throw new Error("D-VR container emitted no receipt");
   const receipt = JSON.parse(line.slice(line.indexOf(RECEIPT) + RECEIPT.length));
-  if (receipt.schema !== "lararium-dvr-node-owned/v1") throw new Error("D-VR receipt schema is unsupported");
+  if (receipt.schema !== "lararium-dvr-node-owned") throw new Error(`D-VR receipt names the schema ${JSON.stringify(receipt.schema)}: it lacks the node-owned receipt shape ("lararium-dvr-node-owned")`);
   return receipt;
 }
 

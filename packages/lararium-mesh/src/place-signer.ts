@@ -1,13 +1,13 @@
-/** The place signer signs five framed floor duties under its online KEL key. */
+/** The place signer signs six framed floor duties under its online KEL key. */
 import * as ed25519 from "@noble/ed25519";
 import { ed25519 as edCurve } from "@noble/curves/ed25519.js";
 import { hex, utf8Bytes } from "./crypto.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { placeSignerKeyAt, type PlaceKelEvent, type PlaceKelReading } from "./vessel-kel.js";
-import { CARRIAGE_CARRIER_DOMAIN, GATE_PLACE_FINISH_DOMAIN, FLOW_POINTER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN, RAISE_CHALLENGE_DOMAIN } from "./domains.js";
+import { CARRIAGE_CARRIER_DOMAIN, CARRIAGE_RECEIPT_DOMAIN, GATE_PLACE_FINISH_DOMAIN, FLOW_POINTER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN, RAISE_CHALLENGE_DOMAIN } from "./domains.js";
 
 export const PLACE_SIGNER_DOMAINS: readonly string[] = Object.freeze([
-  CARRIAGE_CARRIER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN, FLOW_POINTER_DOMAIN, RAISE_CHALLENGE_DOMAIN, GATE_PLACE_FINISH_DOMAIN,
+  CARRIAGE_CARRIER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN, FLOW_POINTER_DOMAIN, RAISE_CHALLENGE_DOMAIN, GATE_PLACE_FINISH_DOMAIN, CARRIAGE_RECEIPT_DOMAIN,
 ]);
 
 /** Place one duty name at the head of the signed image. */

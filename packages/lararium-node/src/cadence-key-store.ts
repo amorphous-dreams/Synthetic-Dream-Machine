@@ -26,8 +26,8 @@
 import { createPrivateKey, createPublicKey, randomFillSync, sign } from "node:crypto";
 import { faceFileNames } from "./face-index.js";
 import { cadenceNextDigest, sha256HexBytesSync, type CadenceHolder } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openColdCustodyRow, openedCustody, removeColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
+import { openColdCustodyRecord, openFaceFileNames, removeColdCustodyRecord, updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 /** The cadence key's file, for the carrier table: `cadence-key-h<N>-<32 hex of the key's name>.bin`, in the face that minted it. */
@@ -36,7 +36,7 @@ export const CADENCE_KEY_FILE = /^cadence-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$
 const utf8 = new TextEncoder();
 const PKCS8_ED25519 = Buffer.from("302e020100300506032b657004220420", "hex");
 const HEX64 = /^[0-9a-f]{64}$/;
-const ROW_BYTES = 64;
+const RECORD_BYTES = 64;
 
 function assertKey(verifyingKey: string): string {
   const key = typeof verifyingKey === "string" ? verifyingKey.toLowerCase() : "";
@@ -55,12 +55,24 @@ export function cadenceKeyFile(handleIndex: number, verifyingKey: string): strin
   return `cadence-key-h${handleIndex}-${cadenceKeyName(verifyingKey)}.bin`;
 }
 
-/** The row standing for `verifyingKey`, in whichever face minted it: the file name carries that face's handle index. Names alone; null where none. */
+/**
+ * The row standing for `verifyingKey`, in whichever face minted it: the file name carries that face's handle index. NAMES
+ * ALONE, over every face's directory (the lend's and the rest); null where none. It opens nothing.
+ */
 function heldCadenceFile(verifyingKey: string): string | null {
   const name = cadenceKeyName(verifyingKey);
   let names: string[];
   try { names = faceFileNames(larIdentityDir()); } catch { return null; }
   return names.find((f) => CADENCE_KEY_FILE.exec(f)?.[2] === name) ?? null;
+}
+
+/**
+ * The row a door opens for `verifyingKey`: found among the faces this seat serves (`openFaceFileNames`), so a row of a
+ * face resting locked or outside the lend reads as none. A locked seat refuses `CustodyLocked` here.
+ */
+async function servedCadenceFile(verifyingKey: string): Promise<string | null> {
+  const name = cadenceKeyName(verifyingKey);
+  return (await openFaceFileNames()).find((f) => CADENCE_KEY_FILE.exec(f)?.[2] === name) ?? null;
 }
 
 function keyOf(secret: Uint8Array) {
@@ -82,14 +94,14 @@ export function heldCadenceKey(verifyingKey: string): boolean {
  * returns. A row that already stands under the minted name refuses untouched.
  */
 export async function mintCadenceKey(handleIndex: number): Promise<CadenceHolder> {
-  const secret = new Uint8Array(ROW_BYTES);
+  const secret = new Uint8Array(RECORD_BYTES);
   try {
     randomFillSync(secret);
     const key = publicOf(secret.subarray(0, 32));
     const next = cadenceNextDigest(publicOf(secret.subarray(32)));
     const file = cadenceKeyFile(handleIndex, key);
-    await updateColdCustodyRow("identity", file, (bytes) => {
-      if (bytes !== null) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    await updateColdCustodyRecord("identity", file, (bytes) => {
+      if (bytes !== null) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
       return { plaintext: secret, value: undefined };
     });
     return { key, next };
@@ -99,15 +111,14 @@ export async function mintCadenceKey(handleIndex: number): Promise<CadenceHolder
 /** The cadence key's door: its cold row opens for this one signature over exactly `image`. Answers lower hex. */
 export async function signAsCadence(verifyingKey: string, image: Uint8Array): Promise<string> {
   const key = assertKey(verifyingKey);
-  const file = heldCadenceFile(key);
+  const file = await servedCadenceFile(key);
   if (file === null) {
-    await openedCustody();
-    throw new CustodyRowUnavailable("identity", `cadence-key-${cadenceKeyName(key)}`, "absent");
+    throw new CustodyRecordUnavailable("identity", `cadence-key-${cadenceKeyName(key)}`, "absent");
   }
-  return openColdCustodyRow("identity", file, (secret) => {
-    if (secret.length !== ROW_BYTES) throw new CustodyRowUnavailable("identity", file, "malformed");
+  return openColdCustodyRecord("identity", file, (secret) => {
+    if (secret.length !== RECORD_BYTES) throw new CustodyRecordUnavailable("identity", file, "malformed");
     const own = secret.subarray(0, 32);
-    if (publicOf(own) !== key) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (publicOf(own) !== key) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
     return Buffer.from(sign(null, Buffer.from(image), keyOf(own))).toString("hex");
   });
 }
@@ -118,13 +129,13 @@ export async function signAsCadence(verifyingKey: string, image: Uint8Array): Pr
  */
 export async function retireCadenceKey(verifyingKey: string): Promise<boolean> {
   const key = assertKey(verifyingKey);
-  const file = heldCadenceFile(key);
-  if (file === null) { await openedCustody(); return false; }
+  const file = await servedCadenceFile(key);
+  if (file === null) return false;
   let reading: "malformed" | "names-another-key" | null = null;
-  const left = await removeColdCustodyRow("identity", file, (secret) => {
-    reading = secret.length !== ROW_BYTES ? "malformed" : publicOf(secret.subarray(0, 32)) !== key ? "names-another-key" : null;
+  const left = await removeColdCustodyRecord("identity", file, (secret) => {
+    reading = secret.length !== RECORD_BYTES ? "malformed" : publicOf(secret.subarray(0, 32)) !== key ? "names-another-key" : null;
     return reading === null;
   });
-  if (reading !== null) throw new CustodyRowUnavailable("identity", file, reading);
+  if (reading !== null) throw new CustodyRecordUnavailable("identity", file, reading);
   return left;
 }

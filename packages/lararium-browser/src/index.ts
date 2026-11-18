@@ -20,7 +20,7 @@ export { standVesselHouse, sessionLifetimeLock, VesselSessionRefused } from "./v
 export type { VesselHouse, VesselSession, VesselFloorState, VesselLockReport, VesselHouseCensus, LitVessel, SessionKeyHolder, VesselSessionRefusal, HouseAsk, FaceProviderDoor, FaceBooking, FaceSwitchOptions } from "./vessel-sessions.js";
 export {
   FaceCustodyRefused, checkFaceName, readFaceCustody, readFaceCustodyPasskeys, bindFirstFaceSlot, unlockFaceCustody, lockFaceCustody,
-  writeFaceRow, readFaceRow, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, standUnnamedFace, heldUnnamedFace,
+  writeFaceRecord, readFaceRecord, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, standUnnamedFace, heldUnnamedFace,
 } from "./browser-face-custody.js";
 export type { FaceCustodyStatus, FaceCustodyUnlock, FaceCustodyClear, FaceCustodyRefusalReading } from "./browser-face-custody.js";
 export { mintEmber, answerEmberAsk, emberAskBytes, EmberRefused } from "./browser-ember.js";
@@ -95,6 +95,14 @@ export { parseAdmitCarriage, toAdmitCarriage, ADMIT_KIND, StaleAdmitCarriage } f
 export {
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, browserVesselFaceKeyCustody, BrowserFleetJoinRefused,
 } from "./browser-fleet-join.js";
+// THE FLEET-JOIN DOOR's ROOT-HOLDER half: a face this browser founded offers and answers, with no node in the walk.
+export { openBrowserSecretHome } from "./browser-secret-home.js";
+// THE CARRIED SEAT: the second round of two files that seats a joined leaf with no road.
+export { browserSeatRequest, browserSeatGrant, browserSeatGrantLand, browserJoinedFaces } from "./browser-fleet-seat.js";
+export {
+  browserFleetJoinOffer, browserFleetJoinAnswer, browserSeatDevice, browserRootFaces, browserFleetRootDoor, browserStandingFaceScopes, BrowserFleetRootRefused, issuedRow,
+  type BrowserRootFace, type BrowserSeatFace, type BrowserSeatInput,
+} from "./browser-fleet-root.js";
 
 // The mint-time context gate — refuse where a browser withholds, and name the cause and the cure.
 export type {
@@ -107,3 +115,5 @@ export { SharedHolderRefusal } from "./shared-holder.js";
 export type { HolderRefused } from "./shared-holder-core.js";
 export { BROWSER_IDENTITY_CONTINUITY_DB, readBrowserIdentityContinuity } from "./browser-vessel-identity.js";
 export type { BrowserIdentityContinuity } from "./browser-vessel-identity.js";
+// THE FACE LABEL in this browser's origin-private file system (`face-labels/<F>.json`), the node's record by the shared seam.
+export { writeBrowserFaceLabel, readBrowserFaceLabel, opfsFaceLabelShelf, browserOpfsRoot, BROWSER_LABEL_NO_OPFS, type OpfsDirectoryLike } from "./browser-face-labels.js";

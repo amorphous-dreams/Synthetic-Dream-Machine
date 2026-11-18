@@ -1,0 +1,107 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/report`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/testability/report.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/report"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/report"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! report.md — hand-back, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/testability/report.md` (hand-back, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/pono-testability-merged-report`>>
+
+! Pono testability: merged report (wave 1 codebase + wave 2 outside practice)
+
+Kilo-Scout: Lares (Tasked Spirit), 2026-10-31. Repo untouched. Evidence files: `wave1.md` (measurements, file:line, commands), `wave2.md` (sources, fetched vs search-only). Claims marked ''testimony'' were not verified.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tl-dr`>>
+
+!! TL;DR
+
+# The ratio runs ''1.41:1'' non-comment (204,871 test vs 145,127 source, TS/MJS), ''1.10:1'' raw, not 1.66. Weight sits in node (1.88), web (2.02), keyhive (1.60), tw5 (1.50); node+mesh+tw5 hold 74% of test LOC. Source is 39% comments, which is why the raw ratio understates. (wave1)
+# The decisive seam is `prepareNodeBootOn`, ~2,840 lines (`open-node-vessel.ts:709-3546`, 164 closures, 49 `let`s). Test breadth follows from it: 1,032 `mkdtemp` in 389 files; 66 node suites in the serial heavy project. (wave1)
+# ''New: the "Stryker activates no mutants" verdict has an upstream cause and a fix.'' Vitest 5 joined test names with `>`, Stryker 10.0.0 joined with a space, so mutants under `describe` reported Survived with 0 tests (issue #6262). v10.1.0/10.1.1 ("support vitest v5", 2026-10-23, eight days ago) fixes it. Re-probe 10.1.1 against the repo's vitest 5.0.3 before building a hand catalog further. (wave2 s1)
+# Stryker's default is a ''sandbox copy'' (`inPlace: false`); the house's burn came from an inPlace run. Incremental mode and `mutate` ranges exist. Mutation score as the value measure is viable per package, as a list of surviving mutants (Google's practice), not as one number or an auto-delete rule: red-first controls kill no unique mutant by design. (wave2 s2, s4)
+# The road rules the test re-cut AFTER the founding. Five items open seams without re-cutting and can run before; the stage-cut folds into the founding.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/measured-numbers`>>
+
+!! Measured numbers (wave 1 summary)
+
+| Measure | Value | Evidence |h
+| Test : source, non-comment, TS/MJS | 1.41 (204,871 / 145,127) | wave1 table, `loc.mjs` |
+| Same, raw lines | 1.10 | wave1 |
+| Heaviest packages | web 2.02, node 1.88, keyhive 1.60, tw5 1.50, browser 1.46 | wave1 |
+| Test rows (floor) | 12,659 | rg `it(`/`test(` |
+| Test files / median / >500 lines | 1,819 / 80 / 29 | wave1 |
+| `mkdtemp` sites | 1,032 in 389 files | rg |
+| Test-only exports (strict / loose / dead) | ~350 / ~1,198 / 69 of 5,669 | `exp.mjs` use graph, candidates only |
+| Module-level Map/Set; `let` | 74 in 53 files; 46 in 28 files | rg |
+| Poll loops; setImmediate | 44 in 27 files; 77 in 44 files | rg |
+| Mutation catalog | 14 mutants, lares-cli only; fast-check in lares-cli only | `mutants.json` |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ranked-recommendations`>>
+
+!! Ranked recommendations
+
+Order tags: ''BEFORE'' = seam-opening, no re-cut, needs the operator's lift of `stable-founding-road.mem:268, 849` for the test-side parts; ''FOLDED'' = rides the founding refactor; ''AFTER'' = the re-cut itself.
+
+# ''Re-probe Stryker 10.1.1 on vitest 5.0.3, in a throwaway worktree copy, one small package (memetic-frame or mempalace), sandbox mode.'' Output: does a mutant under `describe` get killed; per-test kill data; wall time; disk cost. Cost S. ''BEFORE.'' Sources: issue #6262 https://github.com/stryker-mutator/stryker-js/issues/6262 ; releases https://github.com/stryker-mutator/stryker-js/releases ; config docs https://stryker-mutator.io/docs/stryker-js/configuration/ . Fences: never `inPlace: true`; no dashboard reporter (web3-only); `df` first (WSL VHD law); sandbox must carry `dist/`.
+# ''Eventful seams for the flake families'' (`LandedLedger.whenLanded`, store-ack on the unlock door, ready attribute + failure artifacts for the TW5 dropdown, event in browser two-tab test). Cost S each; 14+ owed sightings. Outside practice agrees that waits belong on a causal event, and DocHandle already exposes `whenReady` and a heads-changed event (https://automerge.org/automerge-repo/classes/_automerge_automerge-repo.DocHandle.html, search-level; not checked against alpha.5). Do not reach for `vi.useFakeTimers`: it patches the global clock, which the no-global-now law rejects; inject a clock and add the event. ''BEFORE''; red-first: the red forces the late event, the control forces the prompt one.
+# ''Shared scratch helper via `test.extend`'' (temp dir, HOME, LAR_ROOT, GIT_CONFIG_GLOBAL as one fixture, with `onCleanup`) replacing hand-rolled `mkdtemp`. Source: https://vitest.dev/guide/test-context . Pilot on 20 node files, measure LOC drop, then codemod. Cost M. ''BEFORE.''
+# ''Delete the 69 dead exports; produce a compiler-based list of test-only exports (wave 1: ~350 strict).'' Move survivors behind a `testing` subpath during module cuts. Cost S then M. ''BEFORE (dead + list), FOLDED (moves).''
+# ''Characterization tests of the boot sequence around `prepareNodeBootOn` and `open-browser-vessel.ts`.'' Feathers' route: pin observable behavior before cutting (https://leaddev.com/technical-direction/how-refactor-legacy-systems-creating-application-seams, secondary). Cost M. ''BEFORE'' (tests only, no product change).
+# ''Stage-cut `prepareNodeBootOn`'' into typed stages with a `Ports` record (fs, clock, env, network), thin shell composing them (functional core, imperative shell; https://kyle.au/notes/technology/development/functional-core-imperative-shell-pattern , secondary). Land whole, never as a half-injected interim ("Full models land early"). Cost L. ''FOLDED'' into the N/W/H trains.
+# ''Inject homes and the operator hint'' (identity/storage/seal dirs, `readLocalOperatorHint`), retiring `withLarRoot`'s env mutation and the git-global leak. Cost M. ''FOLDED''; do rec 3 first.
+# ''Mutation as an inspection list, per package, incremental.'' Run Stryker `perTest` + `--incremental` + `mutate` ranges (https://stryker-mutator.io/blog/announcing-incremental-mode/ , search-level) in CI on PRs, full run periodically; read surviving mutants, never the score alone (Google: raw score hard to act on; https://research.google/pubs/state-of-mutation-testing-at-google/ , search-level). Zero-kill tests become a review list, never an auto-delete, because controls and bug seeds kill nothing unique. Dynamic subsumption can cut mutant count (~52% runtime in Guimaraes et al., https://www.cin.ufpe.br/~damorim/publications/guimaraes-etal-icst2020.pdf , search-level). Cost M. ''AFTER'' for pruning; the pilot in rec 1 comes first.
+# ''Extend the law pattern (fast-check + seeds + control + named mutants) to tw5 wiki-shore vectors and mesh face-gate/content-key-holder.'' Evidence in-house: 55 tests retired, 3 files removed, 5 faults found. Outside migration reports with numbers: none found. Keep the fixed seed. Cost M per package. ''AFTER'' (one pilot may ride beside).
+# ''Per-project `isolate: false` and timed unit shards.'' Blocked until registries inject (74 module-level Maps/Sets) and `vi.stubEnv`/`stubGlobal` uses drop (https://vitest.dev/config/isolate.html , search-level). Vitest shards by file hash, not cost (https://main.vitest.dev/guide/improving-performance , search-level); extend `tools/e2e-shards.mjs`. Cost M. ''AFTER.''
+# ''Witness consolidation'' (wrappers into one manifest; check overlap of `contract-witness.sh` 715 lines with `nexus-two-root`). Cost S-M. ''AFTER.''
+# ''Report the ratio non-comment; track test runtime per claim, co-change churn and flake sightings per test beside it.'' The ratio is a bulk indicator; coverage/ratio targets mislead (https://www.thoughtworks.com/en-gb/insights/blog/are-test-coverage-metrics-overrated , https://blog.ploeh.dk/2015/11/16/code-coverage-is-a-useless-target-measure/ , search-level). No ratio norm found. Cost none. ''Now.''
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/where-outside-practice-conflicts-with-the-house`>>
+
+!! Where outside practice conflicts with the house
+
+* Stryker dashboard reporter: web2 service; use local reporters.
+* `inPlace: true`: the burned mode; default sandbox copy only, in a throwaway worktree.
+* Kill-set pruning vs red-first controls: controls kill no unique mutant; whitelist them.
+* Fake timers vs no global now: inject a clock and add an event.
+* Slice-by-slice refactor vs "Full models land early" and the founding road: land the stage-cut whole, inside the founding.
+* Early test re-cut vs `stable-founding-road.mem:268, 849`: only recs 1-5 and 12 run early, with the operator's lift.
+* Random property seeds vs repeatability: fixed seed stays.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/unverified`>>
+
+!! Unverified
+
+Where 1.66 came from; the prior scout's 233 method; the Stryker probe version that produced canon's claim; whether 10.1.1 passes this repo's suites; Automerge event semantics at 2.6.0-alpha.5; ratio norms; fast-check migration numbers; Stryker per-package monorepo recipe from upstream. Most outside claims above are search-summary level; only the Stryker pages (issue #6262, releases, runner package.json, config docs, vitest-runner docs, issue search) were read directly.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-P0e2-QQQYJGazS7iQnYORoxxvWzPPV8oqZ6zXCNPMQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

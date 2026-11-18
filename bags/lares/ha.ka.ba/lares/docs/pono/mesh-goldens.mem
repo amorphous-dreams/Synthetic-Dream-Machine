@@ -19,7 +19,7 @@ written   = "2026-10-16"
 
 ! Mesh goldens ~ the e2e suite as scripts of acts and events
 
-''Why.'' The house's law reads that a wall clock never decides run or drop (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>), and most of `tests/e2e/` decides pass or fail by `Date.now()` deadlines over polls of the disk and of stdout. Those waits fail intermittently under load (row `W24`), and a defect that lives between a CLI process and a running daemon (row `W18`) stays invisible to a test that holds one process. DreamDOM answers the same shape at the page with interaction goldens (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> #/conformance): a script of acts over a frozen world, with the expected writes, messages and answers, run on every host as a row. The mesh takes the same form.
+''Why.'' The house's law reads that a wall clock never decides run or drop (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>), and most of `tests/e2e/` decides pass or fail by `Date.now()` deadlines over polls of the disk and of stdout. Those waits fail intermittently under load (item `W24`), and a defect that lives between a CLI process and a running daemon (item `W18`) stays invisible to a test that holds one process. DreamDOM answers the same shape at the page with interaction goldens (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> #/conformance): a script of acts over a frozen world, with the expected writes, messages and answers, run on every host as a result. The mesh takes the same form.
 
 ''Status.'' Designed, unbuilt. A lane opens it under `mixed-model-swarm#/the-lanes`; `W24`'s cure lands as its first script.
 
@@ -68,6 +68,6 @@ The Muse drafted the model; a Copilot Chao pair read it against the tree. Hodge 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TokNyPGZ9UZb7veeZqP1cM5Gydm8qCvbYsbemMlKvzM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rzMCvI2y2U5CK1LqcxstdHFO1gQ-EwLAcnnWiPAWf8c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

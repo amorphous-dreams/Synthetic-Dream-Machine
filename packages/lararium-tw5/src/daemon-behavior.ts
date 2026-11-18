@@ -46,6 +46,7 @@ import { hasCapture } from "./capture/has-capture.js";
 import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
+import { controlOf } from "./island-context.js";
 import type { RunnableHulls } from "@lararium/mesh";
 import { seedDaemonProtocol } from "./daemon-protocol-seed.js";
 import { canonicalJson, wikiSlotUri, VERB_URI_PREFIX } from "@lararium/mesh";
@@ -117,7 +118,7 @@ export interface DaemonBehaviorOptions {
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
     wikiSlug: string,
-  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
+  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null; workingDoc?: Uint8Array; writeSlot?: "personal" }>;
   /**
    * Sovereign-worker data-plane: register the residency / wiki / where / resolve
    * reactors into the worker's VerbDispatcher, in-worker, over the IslandContext.
@@ -157,8 +158,8 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
   const delegations = makeDelegationBook((msg) => _post(msg));
 
   // The daemon island is a nameless cap stack: #has engine-watch + #has daemon-dispatch (the
-  // VerbDispatcher + the daemon:* signal family). The dispatch cap below holds what once was the
-  // whole behavior, minus the engine-watch (now its own shared cap).
+  // VerbDispatcher + the daemon:* signal family). The dispatch cap below holds the
+  // whole behavior but the engine-watch, which stands as its own shared cap.
   const dispatchCap: IslandCap = {
     name: "daemon-dispatch",
     async onWritable(ctx: IslandContext) {
@@ -187,9 +188,11 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       // verify-then-delegate gate FOR FREE (a gate a main-thread jobRegistry
       // lacks). Pool-touching reactors command main via ctx.post (daemon:evict-request).
       opts.wireWorkerVerbs?.(registry, ctx);
+      // The control families rest in the vessel's control document alone; a daemon island granted none stands no dispatcher.
       _dispatcher = new VerbDispatcher({
         daemonVm:  tw5,
         daemon:    composite,
+        control:   controlOf(ctx),
         registry,
         routeFn:  (invocation, signal) => delegations.route(invocation, signal),
         ...(verifier ? { verifier } : {}),
@@ -339,7 +342,10 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         } else {
           opts.resolveBinding(ctx, msg.fingerprint, msg.recipeTrace, msg.wikiSlug)
             .then((r) => post(mkDaemonResolveBindingResult({
-              requestId: msg.requestId, personalUrl: r.personalUrl, draftUrl: r.draftUrl, workingUrl: r.workingUrl,
+              requestId: msg.requestId, personalUrl: r.personalUrl, draftUrl: r.draftUrl, ...(r.workingUrl ? { workingUrl: r.workingUrl } : {}),
+              // The stood working document crosses WITH its name, so the vessel holds it before the mount reads it.
+              ...(r.workingUrl && r.workingDoc ? { workingDoc: r.workingDoc } : {}),
+              ...(r.writeSlot ? { writeSlot: r.writeSlot } : {}),
             })))
             .catch((err: unknown) => post(mkDaemonResolveBindingResult({
               requestId: msg.requestId, error: err instanceof Error ? err.message : String(err),

@@ -88,7 +88,7 @@ async function ask(island: RootIsland, verb: string, act: "cut" | "door" | "impo
 /** What a standing vessel lends a cut and an import, over one island the suite stood. */
 function doorOver(island: RootIsland, repo: Parameters<Parameters<typeof ownedStore>[1]>[0], face = 0): BackupDoor {
   return {
-    wornFace: () => face,
+    mountFace: () => face,
     ownEdgeShadowed: async () => false,
     cutMemory: async (to) => {
       const facts = { to: hex(to), shadow: MEMORY_CUT_SHADOW_READ };

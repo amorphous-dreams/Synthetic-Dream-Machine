@@ -2,15 +2,22 @@
 
 The Lares boot **entry point**, as a Claude Code plugin.
 
-On every `SessionStart`, the hook runs `lares vessel stand --observe` and `lares home read --brief`, which:
+On every `SessionStart`, `hooks/lares-wake-hook.mjs` starts its reads together and carries their answers into the session:
 
-- **checks** the mempalace integration — submodule, the `@lararium/mempalace` package, the python holder deps, the recall plugin (`lares mempalace install` installs it);
-- **ensures the live Lararium node is up** — attach if healthy, start detached if down (idempotent; never a restart);
-- **emits a live-delta hydration frame** into the session.
+- **the vessel observation** — `tools/lares-container.sh vessel stand --observe --json`; it observes and never stands a vessel. Where the frame's `mempalace` reading reads red, a `Lares memory library` line follows it: the optional upstream library, never the house memory, with its failing checks, and a check this checkout's CLI no longer makes (`recall-plugin`, dropped at `57de8002a`) named as an older image's report;
+- **the rows in play** — `tools/lares-container.sh wiki filter '[prefix[lar:///ha.ka.ba/kahua/memory/state/]!regexp[#]]' --recipe default --fields title,description --limit 8 --max-bytes 4096 --json`, printed before the index on every wake (startup, resume, clear, compact) as `Lares rows in play (start here): <N> rows`, the `state/handoff` row first where one stands and the rest by title (slot titles `…#/entry` stay out; the memes carry no `modified` field to sort by), each line cut at 320 bytes and the block at 2048, then the call that reads further; the rows come from their address prefix, never a list in the hook; a fault prints `Lares rows in play unread: <cause>`;
+- **the memory index** — the rest of the view, the state rows left to their own block: `tools/lares-container.sh wiki filter '[tag[stage/index]!prefix[lar:///ha.ka.ba/kahua/memory/state/]]' --recipe default --fields title,description --limit 32 --max-bytes 4096 --json`, printed as `Lares memory index: <N> rows`, one `<title> — <description>` line per row, and one line naming the call that reads further; a fault prints `memory index unread: <cause>`, and a vessel that answers no "up" skips the read;
+- **the homes line** — `lares home read --brief`.
+- **the lei** — `lares lei show --rite <push|kukulu> --branch <branch> --head <sha> --json` through the shim, one read per rite at the checkout's branch (`git rev-parse HEAD --abbrev-ref HEAD`), printed as `Lares lei: this session wears <rite> … at <branch>@<head>` (or `none worn`); a locked vessel prints the operator's call (run `lares vault unlock`; tell the operator by the harness's push notification);
+- **the tessera conferre** — `lares rite receipts --json` through the shim, each guest half (`rite-begun`) set against its host half (`rite-landed`), printed as `Lares tessera conferre: N par, M red (no match): …`. Both doors stand behind ports; a runner that answers neither leaves their lines out.
 
-The static `CLAUDE.md` @-import carries the canonical seed (always-true); this plugin grounds it in live state (true-right-now). A degraded wake never blocks the session — it exits 0 with the verdict in the frame.
+Before a compaction, `hooks/lares-compact-hook.mjs` (`PreCompact`) prints the same rows in play and index by `lar:` address; Claude Code appends that text to the compaction's instructions. The wake fires again on the session start that follows a compaction and prints both into the new context. What either hook says lives in `hooks/lares-wake-core.mjs`.
 
-**Install:** `/plugin marketplace add <this repo>` → `/plugin install lares-wake`, or point a `SessionStart` hook at `hooks/lares-wake-hook.sh`.
+At a session's end, `hooks/lares-keep-hook.mjs` (`SessionEnd`) starts `lares rite keep --if-due` and leaves at once: the keep carries the house and this device's Claude Code sessions into the operator's repo under a keep lei, each push spending one return. Its lines land in `$XDG_STATE_HOME/lares/keep-hook.log` (the last run alone); a keep with no workspace named, or with nothing moved, keeps nothing.
+
+The static `CLAUDE.md` @-import carries the canonical seed (always-true); this plugin grounds it in live state (true-right-now). A degraded wake never blocks the session — it exits 0 with each read's own cause in the frame, inside one 12-second budget under the harness's 15.
+
+**Install:** `/plugin marketplace add <this repo>` → `/plugin install lares-wake`, or run `lares home tend`, which seats both hooks in `~/.claude/settings.json` from the main clone.
 
 **Founding vs joining:**
 - `lares vessel stand --init` — found a *first* vessel (build · init · genesis, each found-if-absent; genesis never rebuilt; keypair never wiped). It writes `LAR_ROOT` alone; `lares home tend` keeps the operator's homes.

@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/floor-trust/sol/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/floor-trust/sol/final.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Floorwright: Lares (Tasked Spirit) — ↺ Hoʻoko/aftermath: I wrote the [[wave-two handback|/home/joshu/.lares-scratch/research/floor-trust/sol/out2.md]]. It settles the shared claim shape, separates gate-pin succession from W26 releases, and names the place KEL build as a prerequisite. The source repo received no writes; no suites ran.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gSWPLrr3zMDbuetHZ38kz2wFYnbjXgBNUJs9SCFX65M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

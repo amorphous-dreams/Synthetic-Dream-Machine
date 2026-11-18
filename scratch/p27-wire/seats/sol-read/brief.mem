@@ -1,0 +1,57 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-read/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/seats/sol-read/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-read/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-read/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/seats/sol-read/brief.md` (brief, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-read/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sol-read-p27-share-tier-wiring`>>
+
+! Sol read — P27 share-tier wiring (read seat; your final message carries the hand-back)
+
+Read the lane's diff in /home/joshu/.lares-scratch/p27-wire/wt: `git diff e1d801042 HEAD -- packages` (HEAD ed44bf39a; it includes a span merge, so focus on files touching share-tighten.ts, held-share-floor.ts, lar-vessel.ts, capability-record.ts, worker-handle.ts, self-slot-share.ts, bulb-read-face.ts, open-node-vessel.ts, open-browser-vessel.ts, the browser pool, genesis-doc.ts, and their tests).
+
+Judge as a design reader under the house laws (No global now · no back-compat in early alpha · causal islands · identity-as-relation · Infrastructure-as-Myth):
+# Does ONE predicate truly decide all four crossings, or did copies of the decision grow per vessel?
+# Does the audience read off a relation (identity-as-relation), or off a flag or class name someone can set?
+# Does any piece leave a back-compat path, a silent false, or a default-share?
+# Is the code legible: names that say what each piece does, no dead branches, no duplicated readers?
+# Which tests prove the reds honestly (a red that would fail without the cure), and which only exercise fixtures?
+Rank findings P1/P2/P3 with file:line and the smallest cure. Verdict: LAND, LAND-AFTER-CURES or HOLD.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PpcDOjdZ3EhjoZXicqPdkrb2ecBipjZZX8MA-QXaX2M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

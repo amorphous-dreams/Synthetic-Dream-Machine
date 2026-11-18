@@ -255,7 +255,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
    */
   test("★ the daemon designates crossroads: the MOVE publishes under bags/crossroads/ and leaves wikis/daemon/ ★", async () => {
     const MOVE_PATH = "ha.ka.ba/t/witness/move";
-    const landed = join(lar.root, "bags", "crossroads", `${MOVE_PATH}.mem`);
+    const landed = join(lar.root, "projections/bags", "crossroads", `${MOVE_PATH}.mem`);
     expect(await awaitFileState(landed, true, 15_000), `the MOVE never published under ${landed}`).toBe(true);
     expect(existsSync(join(daemonWikiDir(lar.root), `${MOVE_PATH}.mem`))).toBe(false);
   });
@@ -277,7 +277,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     // it and the pair would stand off for a person (`disk-projection#/projection-law`, no base and a real
     // difference). This witness measures what the daemon's mirror WRITES and then unlinks, so the hand
     // lays its files in a holding tree shaped as a wiki's own (LOAD derives the loci title from the path)
-    // and the projector lays every file fresh under the daemon wiki's folder (`wikis/kahua-<tag>/`).
+    // and the projector lays every file fresh under the daemon wiki's folder (`wikis/daemon-<F>/`).
     const HAND_META = "type: image/png\ntags: witness\n";
     const holding = join(scratch, "wikis", "holding", "ha.ka.ba/t/witness");
     mkdirSync(holding, { recursive: true });
@@ -300,7 +300,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
 
     const mv = await lar.cli(["act", "MOVE", "--title", BLOB_URI, "--from", DAEMON_WORKING, "--to", CROSSROADS_URI, "--yes", "--json"]);
     expect(mv.json?.["ok"], `the MOVE of the pointer refused — ${said(mv)}`).toBe(true);
-    const landedPng  = join(lar.root, "bags", "crossroads", `${BLOB_PATH}.png`);
+    const landedPng  = join(lar.root, "projections/bags", "crossroads", `${BLOB_PATH}.png`);
     const landedMeta = `${landedPng}.meta`;
     expect(await awaitFileState(landedPng, true, 30_000), `the MOVE never published the bytes under ${landedPng}`).toBe(true);
     expect(await awaitFileState(landedMeta, true, 15_000)).toBe(true);
@@ -313,7 +313,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     expect(await awaitFileState(join(srcDir, "photo.png"), false, 30_000), "the daemon wiki folder kept the moved photo.png").toBe(true);
     expect(existsSync(srcMeta)).toBe(false);
     // barrier: the photo's projection under the daemon wiki folder settled above (awaitFileState), so the projector has run
-    expect(existsSync(join(lar.root, "wikis", "daemon")), "an untagged daemon folder appeared").toBe(false);
+    expect(existsSync(join(lar.root, "projections/wikis", "daemon")), "an untagged daemon folder appeared").toBe(false);
   }, 120_000);
 
   test("★ the staged boot wrote nothing into the shared tree — its genesis baked into its own root ★", () => {

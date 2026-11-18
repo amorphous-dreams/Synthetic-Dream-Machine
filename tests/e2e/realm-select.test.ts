@@ -24,7 +24,7 @@ import { join } from "node:path";
 import { openStaged, awaitRendezvous, foundStagedHearth, freePort, growStagedQuorum, type LarInstance } from "../harness/instance.js";
 import { seedUserBag } from "../harness/promote.js";
 import { censusOutcomeLinkage, OUTCOME_URI_PREFIX, plainValue, type LarDoc, type StoredTiddlers } from "../../packages/lararium-mesh/src/index.js";
-import { STORE_DOOR_FACE_ROWS } from "../../packages/lararium-node/src/store-door-verbs.js";
+import { STORE_DOOR_FACE_VERBS } from "../../packages/lararium-node/src/store-door-verbs.js";
 import { openedStoredApart } from "../../tools/opened-store.mjs";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -178,7 +178,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     }
     const tiddlers = out as StoredTiddlers;
     console.error(`realm-select MEASURE ledger: ${ledgerDocs} document(s) of the store hold outcomes`);
-    const census = censusOutcomeLinkage(tiddlers, { socketOnly: STORE_DOOR_FACE_ROWS, keys: [leaf] });
+    const census = censusOutcomeLinkage(tiddlers, { socketOnly: STORE_DOOR_FACE_VERBS, keys: [leaf] });
     const verbs = Object.entries(tiddlers).filter(([t]) => t.startsWith(OUTCOME_URI_PREFIX)).map(([, r]) => String(plainValue(((r as { tiddler?: Record<string, unknown> }).tiddler ?? {})["verb"])));
     console.error(`realm-select MEASURE census: ${census.outcomes} outcomes (${[...new Set(verbs)].join(",")}), linked ${JSON.stringify(census.linked)}`);
     expect(census.outcomes, "the census read the vessel's outcomes").toBeGreaterThan(0);
@@ -195,7 +195,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
       [planted]: { tiddler: { title: wrap(planted), verb: wrap("load"), status: wrap("done"), face: wrap("planted-proof-subject"),
         results: wrap(JSON.stringify({ summary: { ok: true, output: { writer: leaf } } })) }, meta: {} },
       [plantedRow]: { tiddler: { title: wrap(plantedRow), verb: wrap("cabal-face"), status: wrap("done") }, meta: {} } } as unknown as StoredTiddlers;
-    expect(censusOutcomeLinkage(withPlant, { socketOnly: STORE_DOOR_FACE_ROWS, keys: [leaf] }).linked.map((l) => [l.title, l.why]))
+    expect(censusOutcomeLinkage(withPlant, { socketOnly: STORE_DOOR_FACE_VERBS, keys: [leaf] }).linked.map((l) => [l.title, l.why]))
       .toEqual(expect.arrayContaining([[planted, "requester-beside-key"], [plantedRow, "socket-only-verb"]]));
   }, 240_000);
 });

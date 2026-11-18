@@ -34,7 +34,7 @@ import { readFileSync, mkdirSync, existsSync } from "node:fs";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { join, dirname } from "node:path";
 import {
-  NEXUS_DOC_DOMAIN, NEXUS_CHARTER_URI, parseNexusDoc as parseNexusText, readNexusDocFence,
+  NEXUS_DOC_DOMAIN, NEXUS_CHARTER_URI, parseNexusDoc as parseNexusText,
   type NexusDoc, type NexusCharterKahu, type SealEpoch,
   type FederationPosture, type CabalJoinPolicy, type AdmissionDials,
 } from "@lararium/mesh";
@@ -47,7 +47,7 @@ export function nexusCharterDocRelPath(): string {
 }
 
 /**
- * The seal file's absolute path under a SEAL HOME (`larSealHome()` — `<lares>/nexus`, per-operator).
+ * The seal file's absolute path under a SEAL HOME (`larSealHome()` — `<root>/hearth/nexus`, per-operator).
  *
  * It takes a home rather than reading one, so this module keeps no env dependency and a test stands the
  * seal wherever it likes. The home rides per-operator state rather than the corpus tree: a Nexus belongs
@@ -130,26 +130,13 @@ export function nexusCharterStands(bagsDir: string): boolean {
   return existsSync(nexusCharterDocPath(bagsDir));
 }
 
-/** What stands at a charter path: nothing, a whole charter, a torn one, or one written in the earlier charter shape. */
-export type NexusCharterShape = "absent" | "whole" | "torn" | "earlier-shape";
+/** What stands at a charter path: nothing, a whole charter, or a torn one (bytes the parser refuses). */
+export type NexusCharterShape = "absent" | "whole" | "torn";
 
 /** Classify the charter at the same path used by `readNexusDoc`. */
 export function nexusCharterShape(bagsDir: string): NexusCharterShape {
   const body = readBody(bagsDir);
   if (body === null) return existsSync(nexusCharterDocPath(bagsDir)) ? "torn" : "absent";
-  // THE EARLIER SHAPES, each by its own mark: one `nextKeyCommit` per epoch, one `prevEpochCid` link where a seal
-  // record names its predecessors, and a seat that carries `displayName`
-  // where a chair carries `chairLabel`. Every charter written before the Nexus AID took its `nexus-` name carries the
-  // second mark, so no reader needs the earlier name itself.
-  const own = (e: unknown, key: string): boolean => typeof e === "object" && e !== null && Object.prototype.hasOwnProperty.call(e, key);
-  const seal = readNexusDocFence(body, SEAL_BLOCK);
-  if (typeof seal === "object" && seal !== null) {
-    const lineage = (seal as Record<string, unknown>)["sealLineage"];
-    if (Array.isArray(lineage) && lineage.some((e) => own(e, "nextKeyCommit") || own(e, "prevEpochCid"))) return "earlier-shape";
-  }
-  const kahu = readNexusDocFence(body, KAHU_BLOCK);
-  const seats = typeof kahu === "object" && kahu !== null ? (kahu as Record<string, unknown>)["kahu"] : undefined;
-  if (Array.isArray(seats) && seats.some((s) => own(s, "displayName") && !own(s, "chairLabel"))) return "earlier-shape";
   return parseNexusDoc(body) === null ? "torn" : "whole";
 }
 
@@ -258,7 +245,7 @@ function writeJoint(bagsDir: string, block: string, payload: unknown, seed: Nexu
   const body = readBody(bagsDir) ?? renderNexusDoc(seed);
   // The swap moves the span the check covers (the payload's byte length rarely matches the fence it
   // replaces), so the check must move with it — `stampCarrier` re-stamps over the CURRENT span, never
-  // a blind carry of the old check forward.
+  // a blind carry of the replaced span's check.
   return writeBody(bagsDir, stampCarrier(swapFence(body, block, payload)));
 }
 

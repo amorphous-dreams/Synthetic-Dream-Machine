@@ -119,7 +119,7 @@ describe.skipIf(!stagedTarget)("minted-canon projection — a user wiki's @{slug
     // `bag-projected` once the first file of the bag stands (it writes the file, then appends the entry), so the
     // entry is the far-side event; the carrier reads present the moment it comes.
     await expectEntry(lar, { kind: "bag-projected", match: (e) => (e.data as Record<string, unknown>)["bagId"] === CANON_BAG }, { budgetMs: 90_000 });
-    const projected = walk(join(lar.root, `bags/${SLUG}`)).some((f) => f.endsWith("noosphere-boot.mem"));
+    const projected = walk(join(lar.root, `projections/bags/${SLUG}`)).some((f) => f.endsWith("noosphere-boot.mem"));
     expect(projected, `minted canon never projected to bags/${SLUG}`).toBe(true);
   }, 300_000);
 });

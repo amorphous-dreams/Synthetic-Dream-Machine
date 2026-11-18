@@ -1,0 +1,77 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/primary-characters/reya`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+rating    = "kapu"
+role      = "Reya — Freyja's high-level PC face: a steam-punk drow rogue and magic-item-mage out of the Faerun l-space-voids, woven into the plot by Grandmother Spider during the Apophis event along a void-lane vector of her own misadventures; a guest in the Lindwyrm's hidden workshop beneath Old Delos (referee view)"
+title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/reya"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/reya"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Reya ~ Drow Rogue & Magic-Item-Mage (referee)
+
+''Provisional throughout.'' The operator gave these seats on 2026-11-12. The backstory below stands as a ''seed'': it points at a story and tells none of it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/face`>>
+
+!! The Face
+
+Reya stands as ''Freyja's high-level PC face'': a steam-punk drow rogue and magic-item-mage out of Telarus's lost crystal-sphere Faerun. Freyja also carries Lady Aki, Ichi (from the early alpha playtest era onward), and the Grandmother Spider operator-persona. Reya's seat in the table's company structure stays unruled. The sheet stays owed, and the level reads "high" until a number lands.
+
+''Trade.'' She reads, audits and binds the attunement between an item and its bearer. Brass at the wrist, a lens clipped over one eye, a roll of rune-wired tools. She asks of any bond where it lets go.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seed`>>
+
+!! The Backstory Seed (Provisional)
+
+''Grandmother Spider wove her into the plot during the Apophis event, out of the Faerun l-space-voids,'' along ''another void-lane vector, opened by Reya's own misadventures''. Her rescue-recapture resembles [[Telarus|lar:///ha.ka.ba/elyncia/characters/npcs/telarus]]'s in kind and differs in road: she shares neither his god-war, his ship nor his thread.
+
+Open: what the misadventures held; what the vector cost her; whether she knew Telarus in the lost sphere before his fall; what she carried through the void; why the Spider chose her.
+
+''One weaver, two faces of Freyja.'' The Spider and Reya both ride Freyja's hand, so the question of who wove whom links two of her faces. The history memes keep Reya's arrival unexplained on purpose, and this meme holds only the seed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/where-she-sits`>>
+
+!! Where She Sits
+
+A guest at [[the workshop|lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-hoard-workshop]] in the Lindwyrm's hoard, hidden beneath the middle of Old Delos, where Telarus builds the Lar's substrate. She sits at the far bench and audits what he ties. The Patroness's stance toward her stays open.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/guards`>>
+
+!! Guards
+
+* Player-facing text says drow, rogue, item-mage, guest. The weaving stays referee-side.
+* Keep her operator-face unstated in the history memes; this carrier holds it.
+* Ichi enters the timeline in the early alpha playtest era in High Delos, and no earlier. Reya's years at the workshop precede that entry.
+* Keep Freyja's no-spoilers line on Vale and Caverns content: nothing here touches either.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/telarus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-black-widow`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-hoard-workshop`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/grandmother-spider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/the-parallel-at-the-crossroads`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1bWDWTenmNUf6StjDiUY6i1eij5xGkw7CLVoSUQ0Qds`>>
+
+<<^ code=`&#x0004;` to=`?`>>

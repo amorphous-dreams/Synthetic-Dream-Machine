@@ -69,7 +69,7 @@ vi.mock("@lararium/keyhive", async () => {
       seam.edge = { ...args, ...(args["signerSeed"] instanceof Uint8Array ? { signerSeed: Uint8Array.from(args["signerSeed"]) } : {}) };
       const deviceEdge = await mesh.buildDeviceDelegationRootHalf({ personaRootSeed: args["signerSeed"] as Uint8Array,
         deviceVerifyingKey: args["joineeVerifyingKey"] as string, hearthTrueName: args["hearthTrueName"] as string, boundEpoch: (args["boundEpoch"] as number | undefined) ?? 0 });
-      return { kind: "device-admit/v1", deviceEdge };
+      return { kind: "device-admit", deviceEdge };
     },
   };
 });
@@ -100,7 +100,7 @@ vi.mock("@lararium/mesh", async (real) => {
         // The fold's edges: the latest device-edge act per device among the carried records, as `projectPersonaLog` reads them.
         const edges = Object.fromEntries((seam.records as { body?: Record<string, unknown> }[]).map((r) => r.body)
           .filter((b) => b?.["act"] === "device-edge").map((b) => [b!["deviceKey"], b!["edgeDigest"]]));
-        return { founded: true, fork: null, head: { seq: 3, cid: "head" }, cids: seam.cids, vesselTags: seam.vesselTags, admissions: seam.admissions, edges };
+        return { founded: true, fork: null, head: { seq: 3, cid: "head" }, cids: seam.cids, vesselTags: seam.vesselTags, admissions: seam.admissions, edges, hearthDaemons: {} };
       },
     }),
   };
@@ -108,10 +108,11 @@ vi.mock("@lararium/mesh", async (real) => {
 vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => seam.records, appendPersonaActs: (_handle: unknown, acts: unknown[]) => { seam.appended.push(...acts); } }));
 
 import { DeviceAdmitTagRefused, runDeviceAdmit } from "../src/commands/device-admit.js";
-import { actCid } from "@lararium/mesh";
+import { actCid, CONTROL_HOME_ID } from "@lararium/mesh";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
-const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" } } };
+// The daemon doc names the vessel's control document, where the lease slots rest (a fence read refuses where it names none).
+const daemonDoc = { tiddlers: { [T.group]: { text: "group-zero" }, [T.kel]: { text: "kel-zero" }, [CONTROL_HOME_ID]: { text: "automerge:control", tiddler: { text: "automerge:control" } } } };
 const repo = {
   find: async (url: string) => ({ url, doc: () => (url === "automerge:daemon" ? daemonDoc : {}) }),
   flush: async () => {},
@@ -152,6 +153,15 @@ describe("runDeviceAdmit names the face whose root signs", () => {
     await expect(admitAt(3)).rejects.toThrow(/no face at index 3/);
     expect(seam.seeds).toEqual([]);
     expect(seam.edge).toBeNull();
+  });
+
+  test("RED (M16): a daemon doc that names no control document refuses the admission before the root signs, never binds at genesis", async () => {
+    const named = daemonDoc.tiddlers[CONTROL_HOME_ID];
+    delete (daemonDoc.tiddlers as Record<string, unknown>)[CONTROL_HOME_ID];
+    try {
+      await expect(admitAt()).rejects.toThrow(/lease fence reads unread: control-home-unavailable/);
+      expect(seam.edge).toBeNull();
+    } finally { (daemonDoc.tiddlers as Record<string, unknown>)[CONTROL_HOME_ID] = named; }
   });
 
   test("RED: a stale daemon doc never signs the joinee below the issuer's sealed lease frontier, and the log projects from the anchor's accepted seq; CONTROL: an honest fresher advance still binds", async () => {

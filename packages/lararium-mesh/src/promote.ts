@@ -40,26 +40,26 @@ export const promoteEdgeKey = (wiki: string, digest: string): string => `${wiki}
 export const isWardBoundWiki = (wiki: string): boolean => wiki === "daemon" || wiki === "kahua" || wiki.startsWith("kahua-");
 /** The face root's signature over a bound promotion, under a fresh ward unlock: what boot reads before a daemon or kahua row runs. */
 export interface PromotionWardSig { key: string; sig: string }
-export interface PromotionRow { wiki: string; digest: string; title: string; revision: string; hand: string; seq: number; bytes: string; kept?: true; wardSig?: PromotionWardSig }
+export interface PromotionEntry { wiki: string; digest: string; title: string; revision: string; hand: string; seq: number; bytes: string; kept?: true; wardSig?: PromotionWardSig }
 /** The ledger a bound row belongs to: its device's atom key. A ward signature names it, so a row copied into another device's ledger voids. */
 export interface PromotionOwner { readonly owner: string }
 /**
  * The bytes a ward signature covers: its own domain, the wiki, the digest, the row's sequence (a row moved to another seq voids) and the
  * owner, the device whose ledger holds the row (a row moved to another device's ledger voids, and a drop names only its own device's row).
  */
-export const promotionWardBytes = (row: Pick<PromotionRow, "wiki" | "digest" | "seq"> & PromotionOwner): Uint8Array =>
+export const promotionWardBytes = (row: Pick<PromotionEntry, "wiki" | "digest" | "seq"> & PromotionOwner): Uint8Array =>
   canonicalJsonBytes({ kind: PROMOTE_WARD_DOMAIN, wiki: row.wiki, digest: row.digest, seq: row.seq, owner: row.owner.toLowerCase() });
 /** Sign a bound promotion as the face root (the signer opens under the ward for this one act). */
-export async function signPromotionWard(row: Pick<PromotionRow, "wiki" | "digest" | "seq"> & PromotionOwner, signer: { readonly key: string; sign(bytes: Uint8Array): Promise<string> }): Promise<PromotionWardSig> {
+export async function signPromotionWard(row: Pick<PromotionEntry, "wiki" | "digest" | "seq"> & PromotionOwner, signer: { readonly key: string; sign(bytes: Uint8Array): Promise<string> }): Promise<PromotionWardSig> {
   return { key: signer.key.toLowerCase(), sig: await signer.sign(promotionWardBytes(row)) };
 }
 /** The face a boot reads ward signatures against: the root keys its signed log grants. */
 export interface PromotionWardFace { readonly grant: (key: string) => boolean }
 /** A bound row that left the ledger (dropped, or replaced by a newer commit): its old ward signature never runs again. */
 export interface PromotionTombstone { wiki: string; digest: string; seq: number }
-export interface PromotionLedger { seq: number; rows: readonly PromotionRow[]; dropped?: readonly PromotionTombstone[] }
+export interface PromotionLedger { seq: number; rows: readonly PromotionEntry[]; dropped?: readonly PromotionTombstone[] }
 /** Tombstone every bound row of `gone`: a ward signature names its (wiki, digest, seq), so a replay of it reads dropped. */
-const entomb = (l: PromotionLedger, gone: readonly PromotionRow[]): readonly PromotionTombstone[] | undefined => {
+const entomb = (l: PromotionLedger, gone: readonly PromotionEntry[]): readonly PromotionTombstone[] | undefined => {
   const bound = gone.filter((r) => isWardBoundWiki(r.wiki)).map((r) => ({ wiki: r.wiki, digest: r.digest, seq: r.seq }));
   return bound.length === 0 ? l.dropped : [...(l.dropped ?? []), ...bound];
 };
@@ -72,7 +72,7 @@ export function ledgerCommit(l: PromotionLedger, input: { wiki: string; digest: 
   if (input.digest !== promoteDigest(input.item)) throw new PromoteRefused("promote-digest-mismatch", "the digest does not name the preload");
   const seq = l.seq + 1;
   if (!Number.isSafeInteger(seq)) throw new PromoteRefused("promote-seq-exhausted", "the ledger's next seq leaves the safe integers");
-  const row: PromotionRow = { wiki: input.wiki, digest: input.digest, title: input.item.title, revision: input.revision, hand: who.id, seq, bytes: new TextDecoder().decode(promotePreloadBytes(input.item)), ...(input.wardSig ? { wardSig: input.wardSig } : {}) };
+  const row: PromotionEntry = { wiki: input.wiki, digest: input.digest, title: input.item.title, revision: input.revision, hand: who.id, seq, bytes: new TextDecoder().decode(promotePreloadBytes(input.item)), ...(input.wardSig ? { wardSig: input.wardSig } : {}) };
   const replaced = l.rows.filter(r => r.wiki === row.wiki && (r.title === row.title || r.digest === row.digest));
   return withDropped({ seq, rows: [...l.rows.filter(r => !replaced.includes(r)), row] }, entomb(l, replaced));
 }
@@ -106,7 +106,7 @@ export function decodeLedger(bytes: Uint8Array): PromotionLedger {
  } catch { throw new PromoteRefused("ledger-malformed", "the ledger has an invalid shape"); }
 }
 /** Whether a bound row's ward signature stands: a key the face grants, over this row's own (wiki, digest, seq) in this device's ledger. */
-function wardSigStands(row: PromotionRow, face: PromotionWardFace | undefined, owner: string): boolean {
+function wardSigStands(row: PromotionEntry, face: PromotionWardFace | undefined, owner: string): boolean {
   if (!face || !row.wardSig) return false;
   try { return face.grant(row.wardSig.key) && verifyEd25519(row.wardSig.sig, promotionWardBytes({ ...row, owner }), row.wardSig.key); } catch { return false; }
 }
@@ -125,8 +125,8 @@ export interface PromotionDropFloor extends PromotionOwner { readonly dropped: (
  * ledger's own tombstones name it; with no floor (an unread board, or none handed), a bound row voids `ward-floor-unread`. A user's
  * own wiki carries none and stands as its digest and bytes do.
  */
-export function verifyPromotionRows(rows: readonly PromotionRow[], face?: PromotionWardFace, ledger?: Pick<PromotionLedger, "dropped">, floor?: PromotionDropFloor | null): { verified: PromotionRow[]; voided: { digest: string; reason: PromotionVoid }[] } {
-  const verified: PromotionRow[] = [], voided: { digest: string; reason: PromotionVoid }[] = [];
+export function verifyPromotionEntries(rows: readonly PromotionEntry[], face?: PromotionWardFace, ledger?: Pick<PromotionLedger, "dropped">, floor?: PromotionDropFloor | null): { verified: PromotionEntry[]; voided: { digest: string; reason: PromotionVoid }[] } {
+  const verified: PromotionEntry[] = [], voided: { digest: string; reason: PromotionVoid }[] = [];
   const tomb = new Set([...(ledger?.dropped ?? []).map((t) => `${t.wiki}\n${t.digest}\n${t.seq}`), ...(floor?.dropped() ?? [])]);
   for (const row of rows) {
     // A bound row that left the ledger never runs again under its old ward signature: a replay reads dropped, the board's drop
@@ -143,8 +143,8 @@ export function verifyPromotionRows(rows: readonly PromotionRow[], face?: Promot
   }
   return { verified, voided };
 }
-export type PromotionState = { row: PromotionRow; state: "standing" | "update-waits" | "orphaned" | "kept"; head?: string };
-export function reconcilePromotions(rows: readonly PromotionRow[], source: (wiki: string, title: string) => string | null): PromotionState[] {
+export type PromotionState = { row: PromotionEntry; state: "standing" | "update-waits" | "orphaned" | "kept"; head?: string };
+export function reconcilePromotions(rows: readonly PromotionEntry[], source: (wiki: string, title: string) => string | null): PromotionState[] {
  return rows.map(row => { const current = source(row.wiki, row.title); return current === null ? { row, state: row.kept ? "kept" : "orphaned" } : current === row.digest ? { row, state: "standing" } : { row, state: "update-waits", head: current }; });
 }
-export const promotedPreloads = (verified: readonly PromotionRow[], wiki: string, shadowed?: ReadonlySet<string>): Record<string, unknown>[] => verified.filter(r => r.wiki === wiki && !shadowed?.has(promoteEdgeKey(r.wiki, r.digest))).map(r => JSON.parse(r.bytes) as Record<string, unknown>);
+export const promotedPreloads = (verified: readonly PromotionEntry[], wiki: string, shadowed?: ReadonlySet<string>): Record<string, unknown>[] => verified.filter(r => r.wiki === wiki && !shadowed?.has(promoteEdgeKey(r.wiki, r.digest))).map(r => JSON.parse(r.bytes) as Record<string, unknown>);

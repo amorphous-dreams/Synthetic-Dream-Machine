@@ -56,6 +56,44 @@ describe("same-id page resend", () => {
     expect(control.sent).toEqual([answered]);
   });
 
+  test("a-resend-the-vessel-holds-pending-counts-no-attempt: quick acts over a slow rest all answer; CONTROL: a vessel that never answers still exhausts the bound", () => {
+    // dreamdom-port-contract #/retry-law: the vessel names a resend that met an act still waiting (`control-event-pending`), and
+    // that causal reply refunds the attempt; only a send the vessel never acknowledged counts toward the bound.
+    const m = setup();
+    const first = m.act("a");
+    for (let rev = 2; rev <= 8; rev++) {
+      m.sink.apply(frame(rev));
+      m.sink.applyPending(first.eventId);
+    }
+    const second = m.act("b");
+    m.sink.applyPending(first.eventId);
+    expect(m.reason(), "no act ends while the vessel holds it pending").toBeUndefined();
+    expect(m.sink.pendingActs()).toBe(2);
+    expect(m.answer(first)).toBe("cleared");
+    expect(m.answer(second)).toBe("cleared");
+    expect(m.sink.pendingActs()).toBe(0);
+
+    const silent = setup();
+    const lost = silent.act("a");
+    // A pending reply for another act refunds nothing of this one.
+    for (let rev = 2; rev <= 4; rev++) { silent.sink.apply(frame(rev)); silent.sink.applyPending(`${lost.eventId}-other`); }
+    expect(silent.reason(), "CONTROL: a vessel that never answers exhausts the bound").toBe("binding-unavailable");
+    expect(silent.sink.pendingActs()).toBe(0);
+  });
+
+  test("a-late-answer-clears-the-bound's-words: frames the act itself caused can outrun its answer, and the answer that follows still lands; CONTROL: an answer to nothing stays ignored", () => {
+    // The act's answer waits on its rest while the frames its own write painted stream ahead of it on the same channel: the bound can
+    // fire with the answer already queued behind those frames. The answer that arrives clears the words the bound painted.
+    const m = setup();
+    const ev = m.act();
+    for (let rev = 2; rev <= 4; rev++) m.sink.apply(frame(rev));
+    expect(m.reason(), "the bound fires on three unacknowledged sends").toBe("binding-unavailable");
+    expect(m.answer(ev), "the late answer lands").toBe("cleared");
+    expect(m.reason(), "its words leave").toBeUndefined();
+    expect(m.sink.pendingActs()).toBe(0);
+    expect(m.answer(ev), "CONTROL: a second answer to the same act reads nothing").toBe("ignored");
+  });
+
   test("a-resend-is-bounded-by-attempts; CONTROL: an answer before exhaustion clears without refusal", () => {
     const m = setup();
     m.act();

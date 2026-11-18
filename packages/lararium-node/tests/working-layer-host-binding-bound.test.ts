@@ -38,7 +38,7 @@ function rig(boundMs: number) {
     },
   };
   const core = openDaemonVmCore(host, {
-    repo, daemonHandle, recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
+    repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
     workerScriptUrl: new URL("file:///unused-fake-worker"), askLivenessMs: boundMs,
   });
   cleanups.push(() => { core.dispose(); for (const port of ports) port.close(); return repo.shutdown().then(() => {}); });
@@ -81,6 +81,19 @@ describe("the host's binding ask ends in a named refusal or a mount, never in si
     expect(refusal).toBeInstanceOf(HostWorkingBindingRefusal);
     expect(String((refusal as { cause?: unknown }).cause)).toMatch(/the island exited \(code 1\)/);
   }, 3_000);
+
+  test("RED (locked floor stands): an island whose floor key does not stand answers `floor-unavailable`, and the host stands with no working layer, never fatal", async () => {
+    // A locked hearth fails closed but STANDS (operator ruling 2026-11-09): its island holds the daemon's working layer in
+    // memory alone, so the host mounts none and each host write refuses by name until an unlock composes again.
+    for (const refusal of ["vessel-locked", "floor-unkeyed"]) {
+      const r = rig(60_000);
+      const mounting = r.core.mountHostWorkingLayer();
+      const ask = await r.asked();
+      r.listeners.forEach((listener) => listener(mkDaemonResolveBindingResult({ requestId: ask.requestId!, error: `floor-unavailable: ${refusal}: the floor's rest key does not stand` })));
+      await expect(mounting, refusal).resolves.toBeUndefined();
+      expect(r.core.composite.hasBag(wikiSlotUri("daemon", "working")), refusal).toBe(false);
+    }
+  });
 
   test("CONTROL: a worker that answers late, inside the bound, mounts the working layer", async () => {
     const r = rig(5_000);

@@ -2,7 +2,7 @@
  * kahua-face-relation-folders — the face's kahua folders take the opaque relation id F, never a tag derived from keys or group.
  *
  * Operator law (2026-11-02): no pet-names, no key-derived names that move, in dir structure. The wiki projects to
- * `<state>/wikis/kahua-<F>` and the stage to `<state>/bags/kahua-<F>`. The old derived tag burns with no back-compat: the
+ * `<projections>/wikis/daemon-<F>` and the stage to `<projections>/bags/kahua-<F>`. The old derived tag burns with no back-compat: the
  * pre-`F` spelling refuses by name. The label index is a DISK view regenerated from the face records and never read to decide.
  *
  * Reds: the folders name F; a group change (rotation or recovery) leaves the folder where it stood; the old tag-shaped folder
@@ -23,7 +23,7 @@ const OLD_TAG = "2a1f0c9e4b7d";
 describe("the folder names F", () => {
   test("RED: wiki and stage mirrors take kahua-<F>", () => {
     expect(kahuaFaceFolder(F1)).toBe(`kahua-${F1}`);
-    expect(daemonWorkingMirror("/state", F1).mirrorRoot).toBe(`/state/wikis/kahua-${F1}`);
+    expect(daemonWorkingMirror("/state", F1).mirrorRoot).toBe(`/state/wikis/daemon-${F1}`);
     expect(kahuaStageMirror("/state", F1).mirrorRoot).toBe(`/state/bags/kahua-${F1}`);
   });
   test("CONTROL: two faces never share a folder", () => {

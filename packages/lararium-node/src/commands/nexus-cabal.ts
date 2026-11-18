@@ -165,7 +165,7 @@ export async function landFoundingAdmission(opts: {
 /**
  * THE SHORE'S READER OF THE CABAL BOARD, for the daemon island's Kahu predicate: this vessel's charter (its Nexus and
  * seated roster) and the admission acts its carriage board carries, as of its last sync. Null where no seated charter
- * stands here, so the island reads a stranger and refuses system canon. Read at ACCESS, never at boot. The daemon island
+ * stands here, so the island reads a stranger and refuses house canon. Read at ACCESS, never at boot. The daemon island
  * passes the vessel key its manifest names, since a worker holds no custody to load it.
  */
 export async function readKahuCabalBoard(repo: Repo, sealHome: string, vesselKey?: string): Promise<KahuCabalBoard | null> {

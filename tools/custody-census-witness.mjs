@@ -84,8 +84,8 @@ try {
     const r = lares(root, args);
     if (r.status !== 0) throw new Error(`lares ${args.join(" ")}: ${r.stdout}${r.stderr}`);
   }
-  const identity = join(root, "data/lares/identity");
-  const storage = join(root, "data/lares/vessel");
+  const identity = join(root, "hearth/identity");
+  const storage = join(root, "hearth/vessel");
 
   // ── the vessel stands, a person unlocks it: every row the unlock seeds rests on disk ──────────────────────
   vessel = await stand(root);
@@ -128,8 +128,8 @@ try {
   got = breaches(census(root));
   step("RED: a file under a rest row's spelling that fails its own name reads as a fault", got.length === 1 && got[0].startsWith("fault: storage/sealed/lockbox/aa.bb."), got.join("; "));
   rmSync(restStray);
-  const sealedPlain = join(root, "data/lares/nexus/nexus/carriage-consent/planted.json");
-  mkdirSync(join(root, "data/lares/nexus/nexus/carriage-consent"), { recursive: true });
+  const sealedPlain = join(root, "hearth/nexus/nexus/carriage-consent/planted.json");
+  mkdirSync(join(root, "hearth/nexus/nexus/carriage-consent"), { recursive: true });
   copyFileSync(join(identity, "gate-root.bin"), sealedPlain);
   got = breaches(census(root));
   step("RED: a sealed file at a plain row's path reads as a fault", got.length === 1 && got[0] === "fault: seal/nexus/carriage-consent/planted.json (floor-plain) reads sealed and breaks its row's law", got.join("; "));

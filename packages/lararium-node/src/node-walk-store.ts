@@ -25,15 +25,15 @@
  * whole record or refuses.
  *
  * ── ONE HAND AT A TIME ──────────────────────────────────────────────────────────────────────────
- * `update` reads the standing row, decides and seals under ONE custody holder (`updateCustodyRow`), so no other
+ * `update` reads the standing row, decides and seals under ONE custody holder (`updateCustodyRecord`), so no other
  * writer in any process lands between the read and the write.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
 import { decodeInvite, isWalkRecord, sha256HexSync, type WalkRecord, type WalkStore } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
-import { readCustodyRow, unlockedFaceOrdinals, updateCustodyRow } from "./custody-seat.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
+import { readCustodyRecord, unlockedFaceOrdinals, updateCustodyRecord } from "./custody-seat.js";
 import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -41,7 +41,7 @@ import { larIdentityDir } from "./vessel-paths.js";
 const WALK_FILE = /^walk-h(0|[1-9]\d*)-([0-9a-f]{32})\.json$/;
 
 /** The row one hearth's walk record rests in for face `face`: keyed by a digest of its gate key. */
-export function walkRowFile(face: number, gatePubKey: string): string {
+export function walkRecordFile(face: number, gatePubKey: string): string {
   if (!Number.isSafeInteger(face) || face < 0) throw new RangeError(`node-walk-store: handle-index out of range: ${face}`);
   return `walk-h${face}-${sha256HexSync(gatePubKey.toLowerCase()).slice(0, 32)}.json`;
 }
@@ -70,14 +70,14 @@ export class WalksElsewhere extends Error {
 
 /** A row's plaintext as a whole walk record filed under its own hearth; any other shape refuses `malformed`. */
 function parseWalkFile(bytes: Uint8Array, file: string, face: number): WalkFile {
-  const malformed = (): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
+  const malformed = (): CustodyRecordUnavailable => new CustodyRecordUnavailable("identity", file, "malformed");
   let raw: unknown;
   try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { throw malformed(); }
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) throw malformed();
   const { gatePubKey, record, ...rest } = raw as Record<string, unknown>;
   if (Object.keys(rest).length > 0 || typeof gatePubKey !== "string" || !isWalkRecord(record)) throw malformed();
   // The row's name derives from the hearth it names: a record filed under another hearth's name refuses.
-  if (gatePubKey !== gatePubKey.toLowerCase() || walkRowFile(face, gatePubKey) !== file) throw malformed();
+  if (gatePubKey !== gatePubKey.toLowerCase() || walkRecordFile(face, gatePubKey) !== file) throw malformed();
   if (!agrees(gatePubKey, record)) throw malformed();
   return { gatePubKey, record };
 }
@@ -91,14 +91,14 @@ export function nodeWalkStore(opts: { readonly face: number; readonly oneHearth?
   const { face } = opts;
   return {
     async read(gatePubKey) {
-      const file = walkRowFile(face, gatePubKey);
-      const bytes = await readCustodyRow("identity", file);
+      const file = walkRecordFile(face, gatePubKey);
+      const bytes = await readCustodyRecord("identity", file);
       return bytes === null ? null : parseWalkFile(bytes, file, face).record;
     },
     async update(gatePubKey, decide) {
       const gate = gatePubKey.toLowerCase();
-      const file = walkRowFile(face, gate);
-      return updateCustodyRow<WalkRecord | null>("identity", file, (standing) => {
+      const file = walkRecordFile(face, gate);
+      return updateCustodyRecord<WalkRecord | null>("identity", file, (standing) => {
         const next = decide(standing === null ? null : parseWalkFile(standing, file, face).record);
         if (next === null) return { plaintext: null, value: null };
         // The row takes a whole record that agrees with its hearth, so the next read opens what this write sealed.
@@ -122,7 +122,7 @@ export async function listWalkRecords(): Promise<ReadonlyArray<{ readonly face: 
   for (const name of faceFileNames(larIdentityDir()).sort()) {
     const m = WALK_FILE.exec(name);
     if (!m || !open.has(Number(m[1]))) continue;
-    const bytes = await readCustodyRow("identity", name);
+    const bytes = await readCustodyRecord("identity", name);
     if (bytes !== null) out.push({ ...parseWalkFile(bytes, name, Number(m[1])), face: Number(m[1]) });
   }
   return out.sort((a, b) => a.gatePubKey.localeCompare(b.gatePubKey));

@@ -17,7 +17,7 @@
  */
 
 import type { DocHandle }                        from "@lararium/mesh";
-import type { CompositeStore, IslandToVesselMsg, LarDoc, Repo, WikiRecipe } from "@lararium/mesh";
+import type { CompositeStore, IslandToVesselMsg, LarDoc, LarTiddlerRecord, Repo, SecretHomeStore, SecretRestAnswer, WikiRecipe } from "@lararium/mesh";
 import type { TW5Engine }                        from "./tw5-vm.js";
 import type { ReceiptCapability }                        from "./receipt.js";
 
@@ -47,6 +47,9 @@ export interface IslandContext {
   faceCatalogUrl?: string | null;
   /** The face's kahua stage the manifest granted (`IslandGrants.kahuaUrl`); `bags/kahua` mounts from this alone. */
   kahuaUrl?: string | null;
+  /** The hearth's daemon working document the manifest granted (`IslandGrants.hearthWorkingUrl`, road row `L4f`); the daemon
+   *  wiki's working slot mounts it where it stands. */
+  hearthWorkingUrl?: string | null;
   /** The face the kahua stage folds under (its group and its grant); null or absent, the stage reads empty. */
   kahuaFace?: () => import("@lararium/mesh").KahuaStageFace | null;
   /** Wakes the kahua layer's re-fold when the face's lineage moves under the running island (`liveKahuaFace`). */
@@ -83,6 +86,11 @@ export interface IslandContext {
    * `cid == hash(bytes)` — content-addressed trust, never host trust.
    */
   resolveByCid?: (cid: string) => Promise<Uint8Array | null>;
+  /**
+   * The boot set this island's engine stood up from: the engine blob's CID and each plugin blob's CID, in boot order. A port that
+   * opens with `boot` receives these same bytes (`port:boot`), so a projection's engine boots from what this one booted from.
+   */
+  bootSet?: { readonly engineCid: string; readonly pluginCids: readonly string[] };
   /** The island's half of the vessel's receipt capability: a save act's result and the coherence fold wait on it. Absent where no vessel issues one. */
   receipt?: ReceiptCapability;
   /**
@@ -96,6 +104,27 @@ export interface IslandContext {
    * refuses. Present only on a session island, which holds no catalog document of its own.
    */
   viewCatalog?: (name: string) => Promise<string | null>;
+  /** The vessel's concrete disk mirror grants intersected with this recipe; absent for older/test contexts. */
+  diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery"; readonly titlePaths?: boolean; readonly tempLayer?: boolean }[];
+  /**
+   * The vessel's CONTROL document as a store (`controlStoreOf` over `grants.controlUrl`): the daemon island's control
+   * families rest here (summons, outcomes, the effect index, ward audits). Never a recipe layer and never mirrored; absent
+   * on every wiki island.
+   */
+  control?: CompositeStore;
+  /** The floor's rest key as the vessel granted it (`IslandGrants.floorKey`): the floor registry's gate. Absent: none stands. */
+  floorKey?: "stands" | "vessel-locked" | "floor-unkeyed";
+  /**
+   * A HOUSE CANON BAG'S FLOOR SNAPSHOT, as the floor this island mounted carries it: the rows of that one slug, by bag uri. Null
+   * for a bag the floor carries no snapshot of (a tier under `public`, a bag outside house canon). The floor's blobs rest public
+   * by CID, so a read door answers from here with no cap asked where the hand holds no read on the live document.
+   */
+  floorCanon?: (bag: string) => Readonly<Record<string, LarTiddlerRecord>> | null;
+  /** THE VESSEL'S SECRET HOME, on the daemon island alone (`islandSecretHome`): never composed into a recipe, a composite
+   *  or a mirror. Absent on every wiki island and on a daemon whose vessel named no home. */
+  secretStore?: SecretHomeStore;
+  /** The vessel's rest answering whether it holds the secret home sealed; asked before each secret act. */
+  secretRest?: SecretRestAnswer;
 }
 
 /**
@@ -124,4 +153,10 @@ export interface IslandBehavior {
   onEa(ctx: IslandContext): void | Promise<void>;
   onSignal(type: string, raw: unknown, ctx: IslandContext): boolean;
   onHooAnu(ctx: IslandContext): void | Promise<void>;
+}
+
+/** The daemon island's control store, or a refusal by name: a daemon island granted no control document writes no control family. */
+export function controlOf(ctx: Pick<IslandContext, "control">): CompositeStore {
+  if (!ctx.control) throw new Error("control-home-unavailable: the daemon island carries no control document grant; the vessel stands its control document (`standControlHome`) before it opens the daemon VM");
+  return ctx.control;
 }

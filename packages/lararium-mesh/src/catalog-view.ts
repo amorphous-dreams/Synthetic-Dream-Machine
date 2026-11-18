@@ -25,6 +25,7 @@ import { FACE_CATALOG_ADDRESS_DOMAIN } from "./domains.js";
 import { materializeSharedLarDoc } from "./deterministic-doc.js";
 import { CATALOG_CORPUS_PREFIX, CATALOG_DOC_URI, CROSSROADS_DOC_URI, DAEMON_BAG_ID, LARARIUM_DOC_URI, LARES_DOC_URI, ORACLE_DOC_URI, bagUri, isBagId, recipeUri, wikiUri } from "./lar-uris.js";
 import { storedRecord } from "./stored-record.js";
+import { isHouseCanonBag } from "./kahu-canon-reach.js";
 import { ownEntry, plainField, plainRecordOrNull, type StoredLarRecord } from "./stored-value.js";
 
 /** The half of the split catalog a row rests on: `floor` (F, public) or `face` (D, the lit face's own). */
@@ -34,7 +35,7 @@ export type CatalogHalf = "floor" | "face";
 export { FACE_CATALOG_BAG_ID } from "./register-bags.js";
 
 const REALM_ROOT = bagUri("realm");
-const FLOOR_ROWS: ReadonlySet<string> = new Set([
+const FLOOR_ENTRIES: ReadonlySet<string> = new Set([
   CATALOG_DOC_URI, ORACLE_DOC_URI, CROSSROADS_DOC_URI, DAEMON_BAG_ID, LARES_DOC_URI, LARARIUM_DOC_URI, REALM_ROOT,
   // The daemon wiki's recipe and canon bag stand on the floor with the daemon document (U1): its slots are D.
   recipeUri("catalog", "daemon"),
@@ -42,30 +43,44 @@ const FLOOR_ROWS: ReadonlySet<string> = new Set([
 const WIKIS_ROOT = `${wikiUri("")}`;
 
 /** The field a bag's catalog row carries its declared read tier in (the declaring act stamps it). */
-export const CATALOG_ROW_TIER_FIELD = "cap-tier";
+export const CATALOG_ENTRY_TIER_FIELD = "cap-tier";
 
 /**
  * A PUBLIC book's row: a bag id whose row carries the exact tier `public`. Any other value, a missing field or a title
  * that names no bag fails toward the face, never toward F.
  */
 export function isPublicBagRow(title: string, row: StoredLarRecord | null | undefined): boolean {
-  return isBagId(title) && !!row && plainField(row, CATALOG_ROW_TIER_FIELD) === "public";
+  return isBagId(title) && !!row && plainField(row, CATALOG_ENTRY_TIER_FIELD) === "public";
 }
 
 /**
  * Which half a catalog row rests on. F names public, signed infrastructure: the registry's own pointers (catalog,
- * oracle, crossroads), the joined corpora, the live system canon, the realm plane's pointers and standing, the daemon
+ * oracle, crossroads), the joined corpora, the live house canon, the realm plane's pointers and standing, the daemon
  * wiki's floor half, and the floor's own vessel-only slot documents (a draft floor, a working floor), which the anon
  * lift reads and burns. Every other row (a user bag, a wiki and its recipe, a face plane, the kahua stage, a slot
  * binding, a title nothing classes) rests on the face: a row that names no class never lands on the floor. A bag row that
- * carries `cap-tier = public` (the row `bag declare --tier public` stamps) names a public book and rests on F too; given
- * no row, the title alone decides.
+ * carries `cap-tier = public` (the row `bag declare --tier public` stamps) names a public book and rests on F too, and so
+ * does a bag row the vessel itself minted at its floor (`isVeilBagRow`); given no row, the title alone decides. A house canon bag (`isHouseCanonBag`) takes no catalog row at all (it rests in the Kahu
+ * realm), and a title naming one classes to F, so no face's half ever holds a pointer to canon.
  */
+/**
+ * A VEIL ROW: a bag row the vessel itself minted at its floor, with no face (`face-reach = vessel-only`, the mark the floor's
+ * slot documents already carry). It names the vessel's OWN content (the-veil-ladder#/the-base-model: "its own local content,
+ * no group"), so it rests on the floor's half, mounts with no face worn, and no face's catalog ever lifts it. Only the exact
+ * value reads; anything else fails toward the face. THE MARK AND THE SEAL TRAVEL TOGETHER: whoever stamps it files the row's
+ * document under the floor's rest key in the same act (a `floor/slot` row of the place's daemon document, `device-daemon-docs`), since the sealed map
+ * holds a face-half document and leaves a floor-half one to its filing.
+ */
+export function isVeilBagRow(title: string, row: StoredLarRecord | null | undefined): boolean {
+  return isBagId(title) && !!row && plainField(row, "face-reach") === "vessel-only";
+}
+
 export function catalogRowHalf(title: string, row?: StoredLarRecord | null): CatalogHalf {
   if (row !== undefined && row !== null && isPublicBagRow(title, row)) return "floor";
-  if (FLOOR_ROWS.has(title)) return "floor";
+  if (row !== undefined && row !== null && isVeilBagRow(title, row)) return "floor";
+  if (FLOOR_ENTRIES.has(title) || isHouseCanonBag(title)) return "floor";
   if (title.startsWith(CATALOG_CORPUS_PREFIX) || title.startsWith(`${REALM_ROOT}/`)) return "floor";
-  if (title.startsWith(WIKIS_ROOT) && (/\/working-floor\/[^/]+\/[^/]+$/.test(title) || /\/drafts\/[^/]+$/.test(title))) return "floor";
+  if (title.startsWith(WIKIS_ROOT) && /\/drafts\/[^/]+$/.test(title)) return "floor";
   return "face";
 }
 
@@ -340,7 +355,7 @@ export interface FaceViewBook {
   /** The view a face reads and registers through: the worn face's own, else a sibling's F with its own D. */
   viewOf(group: string): DocHandle<LarDoc>;
   /** Every row any face's view reads, merged (the vessel's own bridge reading, never a face's). */
-  everyRow(): LarDoc | undefined;
+  everyEntry(): LarDoc | undefined;
 }
 
 /**
@@ -359,7 +374,7 @@ export function faceViewBook(floor: DocHandle<LarDoc>, worn: { readonly group: s
   };
   return {
     viewOf,
-    everyRow: () => {
+    everyEntry: () => {
       const docs = [worn?.view.doc() ?? floor.doc(), ...[...siblings.values()].map((v) => v.doc())].filter((d): d is LarDoc => d !== undefined);
       if (docs.length <= 1) return docs[0];
       return { ...docs[0]!, tiddlers: Object.assign({}, ...docs.map((d) => d.tiddlers)) } as LarDoc;

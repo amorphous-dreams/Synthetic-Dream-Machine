@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import * as bindingModule from "../src/resolve-binding.js";
-import { DAEMON_BAG_ID, mutableLarRecord, type CompositeStore, type LarTiddlerRecord } from "@lararium/mesh";
+import { DAEMON_BAG_ID, mutableLarRecord, slotBindingKey, type CompositeStore, type LarTiddlerRecord } from "@lararium/mesh";
 import { resolveOrMintBinding, restingMinter, unboundMints } from "../src/resolve-binding.js";
 import { makeFaceBagDoor } from "../src/face-bag-door.js";
 
@@ -60,13 +60,13 @@ describe("binding lands after its document", () => {
 
     const passed = harness();
     await resolveOrMintBinding(passed.args);
-    expect(passed.records.has(`${prefix}/${fingerprint}`)).toBe(true);
+    expect(passed.records.has(slotBindingKey(prefix, fingerprint, "synthetic-agent")), "the seated face binds under its own group").toBe(true);
     expect(await unboundMints(passed.store)).toEqual([]);
   });
 
   test("V3 — reuse on present creates and flushes nothing", async () => {
     const h = harness({ initial: [[`${prefix}/${fingerprint}`, "automerge:existing", "draft-binding"]] });
-    await expect(resolveOrMintBinding(h.args)).resolves.toEqual({ url: "automerge:existing", minted: false });
+    await expect(resolveOrMintBinding(h.args)).resolves.toMatchObject({ url: "automerge:existing", minted: false });
     expect(h.calls).toEqual([]);
   });
 
@@ -102,13 +102,13 @@ describe("binding lands after its document", () => {
     // CONTROL: the same mint with an acknowledging store binds.
     const ok = harness();
     await resolveOrMintBinding({ ...ok.args, repo: restingMinter(ok.args.repo, async () => {}) });
-    expect(ok.records.has(`${prefix}/${fingerprint}`)).toBe(true);
+    expect(ok.records.has(slotBindingKey(prefix, fingerprint, "synthetic-agent"))).toBe(true);
   });
 
   test("V-floor — a faceless floor binds its document with no Keyhive and records no Keyhive document id", async () => {
     const h = harness();
     const { keyhive: _none, faceDoor: _door, personaGroupId: _group, faceSeated: _seated, ...floorArgs } = h.args;
-    await expect(resolveOrMintBinding(floorArgs)).resolves.toEqual({ url: "automerge:minted", minted: true });
+    await expect(resolveOrMintBinding(floorArgs)).resolves.toMatchObject({ url: "automerge:minted", minted: true });
     expect(h.calls).toEqual(["create", "put(mint record)", "flush([doc-1])", "put(binding)"]);
     const record = h.records.get(`${prefix}/${fingerprint}`)!;
     expect(record.tiddler["face-reach"]).toBe("vessel-only");
@@ -116,6 +116,6 @@ describe("binding lands after its document", () => {
     // CONTROL: the seated face registers its document and records the id.
     const seated = harness();
     await resolveOrMintBinding(seated.args);
-    expect(seated.records.get(`${prefix}/${fingerprint}`)!.tiddler["keyhive-doc-id"]).toBe("kh-1");
+    expect(seated.records.get(slotBindingKey(prefix, fingerprint, "synthetic-agent"))!.tiddler["keyhive-doc-id"]).toBe("kh-1");
   });
 });

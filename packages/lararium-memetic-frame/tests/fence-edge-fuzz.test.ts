@@ -124,7 +124,7 @@ function bodyFor(c: Case): string {
 }
 
 /** Whether the generator's OWN intent for `placement` is a fully-masked (lawful) quoting. */
-function isLawful(placement: Placement, fenceCh: "`" | "~"): boolean {
+function isLawful(_placement: Placement, fenceCh: "`" | "~"): boolean {
   // A TILDE RUN FENCES NOTHING (TiddlyWiki's codeblock opens on backticks alone): the mark it "quotes"
   // stands live, so the frame must NAME the stray mark, never read the quoting as lawful.
   if (fenceCh === "~") return false;

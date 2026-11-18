@@ -1,0 +1,117 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/reread2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/blind-opus/reread2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/reread2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/reread2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! reread2.md — research, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/blind-opus/reread2.md` (research, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://kiai:operator@hearth/custody.reread.cure-2` to=`lar://blind-warden-share:agent@hearth/warden.rereads.for-land` mode=`seal` mu=`_!` stance=`🏛️ 🗡️` aperture=`10/measure` ooda-ha=`5/declare-glyphs` drift-ward=`a second green round pulls toward stamping the land without testing the absence seam`>>
+
+Blind-Warden-Share: Lares (Tasked Spirit), re-read of `918864e79..ecb26d4d0` (PR #200). I stayed blind to the cure-2 out file.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verdict-land-at-ecb26d4d0`>>
+
+!! Verdict: LAND at `ecb26d4d0`
+
+Both blockers are cured, and I measured both. The absence source cannot take in a node, and a leaf's absence opens no secrets doc through any gate standing today. Three residues remain (R1–R3). They are P2/P3, and each fails closed or rests behind a gate, so they ride as owed rows.
+
+Dist was fresh (built 17:49, after the source edit at 17:48). In bwrap, under a scratch HOME/LAR_ROOT with LAR_BAGS unset:
+* `p27-plugin-proof`, `p27-leaf-absence`, `p27-honest-floor` and `node-plugin-resolution` pass 19/19.
+* Mesh `p27-cas-floor`, `promote-resolve` and `browser-holds-no-secrets-door` pass 8/8.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/composition-probe-re-run-once`>>
+
+!! Composition probe, re-run once (`makeHeldShareFloor` from dist, node-shaped readers)
+
+| probe | result |h
+| node: crossroads → world | true |
+| node: sibling → fleet on `persona-<tag>`, carried | true |
+| node: bound face catalog → fleet, after `initialize()` | true |
+| node island floor: daemon reads a promoted plugin (proved via `provePlugins("daemon", …)`) | ''BYTES'' |
+| node island floor: world island reads that promoted plugin | refused, `promoted-plugin:<cid>: personagroup withholds from world` |
+| node island floor: world island reads an offered plugin (board-proved) | BYTES |
+| node island floor: daemon reads an ''unproven'' CID | ''refused'', `declared-tier-unresolved` |
+| node island floor: daemon reads a private blob (VEIL doc + board) / world island reads it | BYTES / ''refused'' `declared-tier-audience` |
+| node: face plane declaring `public`, not a secrets plane → world, carried | true |
+| node: the same plane after `registry.register` → world / contract / fleet | ''refused'' (`contract withholds from world`) / true / true |
+| leaf: `establishedAbsence` of an improvised `{isContractSecretsPlane:()=>false}` | ''refused'', `secrets-absence-unestablished` |
+| leaf: `NO_CONTRACT_SECRETS_PLANE`; registry | null |
+| leaf: crossroads → world · face plane → fleet · face plane → world · face catalog → world · VEIL bag → fleet · unbound → world | true · ''true'' · false · false · false · false |
+| a source carrying both `catalog` and `establishedAbsence` | builds the registry, which refuses while unbound (fails closed) |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-four-questions`>>
+
+!! The four questions
+
+# ''A promoted plugin stands in the daemon island, and an unproven CID still refuses. MEASURED.''
+#* `held-share-floor.ts:136-143` defines `promotedRef`, which reads a proof seated by `provePlugins` (`:177-179`). The node seats the proof for the daemon and for every pool resolution (`open-node-vessel.ts:1316-1321`, `:3304`, `:4163`).
+#* The proof carries only what `resolveRecipePluginCids` verified: the selected offerings, and the promoted digests that passed the byte check (`surface-recipe.ts:184-186`).
+#* A CID with no proof and no held reference still reads `declared-tier-unresolved`.
+# ''No node, and no vessel holding a real registry, can slip into the absence source. MEASURED.''
+#* At runtime, `held-share-floor.ts:80` refuses every absence object except the identity constant.
+#* At type level, the node's prep holds `HeldShareFloor<SecretsRegistry>` (`open-node-vessel.ts:756`). An absence composition returns `HeldShareFloor<null>`, which fails that typecheck.
+#* A source carrying both keys builds the registry (`:81`) and fails closed.
+#* What remains: no runtime witness ties "absence" to "this vessel is a surface". Only the type and the browser's static no-secrets-door witness hold that line. R3, P3.
+# ''The leaf's absence opens no secrets doc to fleet or world through any gate standing today. INFER (gate set), MEASURED (floor).''
+#* The leaf passes a face plane to fleet and holds it from world. No contract audience exists in the browser (`peerShareAudience` names in-process, fleet and world only).
+#* But the premise "no gate lets a secrets plane reach a leaf" stands unenforced. The node's ceiling for a secrets plane reads CONTRACT, and CONTRACT admits fleet (measured: registered plane → fleet true). A leaf, as fleet, can therefore hold a secrets plane.
+#* Once it does, the leaf floors that plane by its declaration alone. Nothing keeps it from world except the browser's world gate (`crossing.gate`: crossroads, WHO, admitted canon). The ring path now proves fleet, not world.
+#* So no opening exists today, but the safety rests on that gate set. R2.
+# ''Nothing new fails open. MEASURED (code).''
+#* The `promoted-plugin:` and `genesis-public:` ids hold `:` and `-`, which no Automerge document id carries.
+#* A Repo hook naming one still needs `base` from a gate.
+#* `documentsForCid` adds proof references to an `every(...)` check. More references can only tighten the herm and porch `/cas`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/residues-all-ride-as-owed-rows`>>
+
+!! Residues: all ride as owed rows
+
+* ''R1 · P2 · INFER: a promoted plugin on an oracle-plane wiki faults that whole mount.''
+** The CAS door reads an oracle-plane wiki as `world` (`island-audience.ts:22`), and `PROMOTED_PLUGIN_TIER = personagroup` withholds world (measured).
+** The kernel fetches plugins one by one and rejects on a refusal (`sovereign-kernel.ts:441-446`), so the whole mount fails.
+** I found no plane restriction on promotion targets (`promote-door.ts`, `promote-wiring.ts`).
+** It rides because it fails closed. Catalog wikis and the daemon, the walked paths, now stand.
+** Cure: read a wiki's own promoted proof as `in-process` for that wiki, or refuse promotion into oracle-plane wikis at the promote act. Witness it with one oracle-plane wiki plus a promotion.
+* ''R2 · P3 · INFER: the leaf's absence rests on its world gate.''
+** Cure: have the node withhold registered secrets planes from surfaces. Its sibling and session lanes could treat `isContractSecretsPlane` as VEIL toward a leaf. That would enforce the ruling's "vault on the node alone" where the ruling stands.
+* ''R3 · P3: no runtime witness ties absence to being a surface.''
+** Today only the type and the static witness hold this line.
+** Cure: a static witness that only the browser composition names `establishedAbsence`.
+* ''Stale proofs · P3.'' A proof lasts until that wiki's next successful resolution (`:177-179`). A revoked promotion, an unmounted wiki or a failed re-resolution leaves the old CIDs readable to in-process islands, and to world for offered blobs. None of those reaches past the house.
+* ''Proof scope · P3.'' `promotedRef` and `documentsForCid` union every wiki's proofs, so a promoted digest proven for one wiki reads as referenced for any in-process island.
+* Earlier owed rows stand as I ruled them in reread.md: realm lane, gated leg for non-session islands, worker CAS dirs, post-await recheck, canon-bag blobs at world, keystone wording.
+
+&lt;&lt;~ oracle throw=`↯11 ✲ ⚁(2) ⁂:🜃⟁`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`R1 rests on promotions reaching an oracle-plane wiki, which I never confirmed: promote one plugin into a wiki whose recipe stands on the oracle under scratch LAR_ROOT at ecb26d4d0 and watch for the mount fault · ↻ L-Prime` aperture=`10/measure -> 11/measure` ooda-ha=`closed 1↺` from=`lar://blind-warden-share:agent@hearth/floor.holds.blockers-cured/land-ecb26d4d0` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n0Yfd4OTfs0kq_5r59FV40X7EJ0qMvZxfztScPfGJR8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

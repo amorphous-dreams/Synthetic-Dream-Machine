@@ -11,7 +11,7 @@ import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { hex, hexToBytes } from "../src/crypto.js";
 import {
-  mintPersonaRotation, personaRotationSigningBytes, personaPrefixOf,
+  mintPersonaRotation, personaRotationSigningBytes, personaPrefixOf, recoverySetCommitment,
   verifyPersonaKel, verifyPersonaKelFull,
 } from "../src/persona-kel.js";
 import { sealKeySetHash } from "../src/wax-stamp.js";
@@ -46,7 +46,7 @@ async function friendSet() {
   const keys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
   const slots = ["mine", "contact-a", "contact-b"] as const;
   const recoveryContacts = keys.map((k, i) => recoveryContactRegistrationCard(slots[i]!, k, null));
-  return { keys, recoveryContacts, hash: sealKeySetHash(keys, 2) };
+  return { keys, recoveryContacts };
 }
 
 describe("the rolling recovery commitment", () => {
@@ -68,7 +68,7 @@ describe("the rolling recovery commitment", () => {
     expect(rot.event.recoverySetHash).toBe(prov.recoverySetHash);
     expect(rot.event.prefix).toBe(personaPrefixOf((await didOf(SEEDS.op)), prov.recoverySetHash));
     // … while the ROLLING commitment grafts the friends
-    expect(rot.event.nextRecoverySetHash).toBe(friends.hash);
+    expect(rot.event.nextRecoverySetHash).toBe(recoverySetCommitment(prov.inception.prefix, friends.keys, 2));
   });
 
   test("★ THE GRAFTED SET AUTHORIZES THE NEXT ROTATION — and the OLD set cannot ★", async () => {

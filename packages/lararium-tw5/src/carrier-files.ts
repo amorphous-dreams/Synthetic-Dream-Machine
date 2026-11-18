@@ -33,7 +33,7 @@
 import { fencedSpans, maskedExec, type MaskSpan, META_OPEN_RE } from "@lararium/memetic-frame";
 /**
  * The media type comes from the ONE place that spells it. A hand-spelled constant drifts the moment
- * the real one moves, and a `type` that no longer matches simply stops projecting — no throw, no
+ * the real one moves, and a `type` that drifts from it simply stops projecting — no throw, no
  * diagnostic.
  */
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -180,7 +180,7 @@ export interface CarrierFile extends CarrierDeclaration {
  * report reads the same twice.
  */
 /**
- * ONE WALK PER TREE PER PROCESS. The enumeration reads every tracked file's opening bytes; a witness
+ * ONE WALK PER TREE PER PROCESS. The enumeration reads every tracked file's bytes; a witness
  * that asks three times pays for three walks, and two corpus laws timed out at five seconds the first
  * time they did. A git working tree does not move under a running gate, so the answer is cached by
  * resolved root. A caller that has changed the tree and needs a fresh read calls `forgetCarrierFiles`.
@@ -213,14 +213,15 @@ export function readCarrierFiles(repo: string): CarrierFile[] {
   const out: CarrierFile[] = [];
   for (const rel of tracked) {
     if (outsideCorpus(rel)) continue;
-    let text: string;
-    // A file git tracks may still refuse to read as text — a symlink to nowhere, a binary blob.
-    // Refusing to read is refusing to declare.
-    try { text = readFileSync(join(repo, rel), "utf8"); } catch { continue; }
-    // The declaration stands near the top of every carrier this corpus holds; the cheap prefilter
-    // keeps the fence mask off the several thousand files that name neither the doctype nor the type.
-    if (!text.includes("DOCTYPE") && !text.includes(CARRIER_TYPE)) continue;
-    const d = declaresCarrier(text);
+    let bytes: Buffer;
+    // A file git tracks may still refuse to read — a symlink to nowhere. Refusing to read is refusing to declare.
+    try { bytes = readFileSync(join(repo, rel)); } catch { continue; }
+    // THE PREFILTER READS BYTES, AND ONLY A FILE THAT NAMES THE DOCTYPE OR THE TYPE DECODES. Both needles spell in
+    // ASCII, and UTF-8 decoding keeps every ASCII byte as itself, so the bytes hold a needle exactly where the text
+    // would. The tracked tree carries hundreds of megabytes of maps, scans and fixtures; decoding each to a string to
+    // ask one `includes` cost the walk two seconds, charged to whichever corpus law asked first.
+    if (!bytes.includes("DOCTYPE") && !bytes.includes(CARRIER_TYPE)) continue;
+    const d = declaresCarrier(bytes.toString("utf8"));
     if (d) out.push({ path: rel, ...d });
   }
   WALKED.set(repo, out);

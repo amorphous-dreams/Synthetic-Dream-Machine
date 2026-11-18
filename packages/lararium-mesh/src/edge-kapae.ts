@@ -640,7 +640,7 @@ export function foldEdgeReadings(acts: readonly EdgeKapae[]): Map<string, EdgeRe
 }
 
 /** What a vessel's own ledger holds for one board. */
-export interface KeptEdgeRows {
+export interface KeptEdgeEntries {
   readonly acts:        readonly EdgeKapae[];
   readonly anchors:     readonly EdgeRollAnchor[];
   /** act id → the epoch that stood as this vessel's charter head when it kept an act of that same epoch. */
@@ -652,13 +652,13 @@ export interface EdgeBoardInput {
   /** The board replica this vessel holds. */
   readonly board:        LarDoc | undefined | null;
   /** This vessel's own ledger of acts and anchors it has counted for this board (`edge-ledger`). */
-  readonly kept?:        KeptEdgeRows;
+  readonly kept?:        KeptEdgeEntries;
   readonly authorityFor: (edgeId: string) => EdgeAuthority | undefined;
   /** The charter the board's quorum hand answers to. Absent → no quorum act counts. */
   readonly charter?:     EdgeCharter | null;
 }
 
-/** One read of an edge board: the reading per edge, what counted, and what the board no longer carries. */
+/** One read of an edge board: the reading per edge, what counted, and what the board has dropped. */
 export interface EdgeBoardRead {
   readonly readings: ReadonlyMap<string, EdgeReading>;
   /** Every act and anchor that counted — what the vessel keeps in its ledger. */

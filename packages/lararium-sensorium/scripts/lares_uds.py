@@ -33,32 +33,47 @@ import json
 import os
 import socket
 
+import house_root
+
 
 class LaresDaemonUnreachable(Exception):
     """No daemon holds the socket. The caller renders it; it never falls back to opening a store."""
 
 
 class LaresVerbError(Exception):
-    """The daemon ran the verb and it failed. Carries the daemon's own message."""
+    """The daemon ran the verb and it failed, or refused it by name. Carries the daemon's own message, and the
+    refusal's name in `refusal` where the vessel gave one (`vessel-locked`, `control-home-unnamed`, ...)."""
+
+    def __init__(self, message: str, refusal: "str | None" = None) -> None:
+        super().__init__(message)
+        self.refusal = refusal
+
+
+# The one next step each refusal a person can clear names, leading the message so a reader meets it first.
+_REFUSAL_NEXT = {
+    "vessel-locked": "run `lares vault unlock`, then ask again",
+    "control-home-unnamed": "this place holds no face; light one with `lares persona new 0 --name '<label>'`",
+}
+
+
+def refused(out: dict, fallback: str) -> LaresVerbError:
+    """The error a seat's `{status: "error"}` answer raises: led by the refusal's name and its next step where the
+    vessel named one (`vessel-locked: run lares vault unlock, then ask again — <the vessel's words>`)."""
+    reason = (out.get("refusal") or {}).get("reason") if isinstance(out.get("refusal"), dict) else None
+    words = out.get("errorMessage") or fallback
+    if reason in _REFUSAL_NEXT:
+        return LaresVerbError(f"{reason}: {_REFUSAL_NEXT[reason]} — {words}", reason)
+    if reason:
+        return LaresVerbError(words if reason in words else f"{reason}: {words}", reason)
+    return LaresVerbError(words)
 
 
 def data_dir() -> str:
-    """`<lares>/vessel` — the ONE env contract both sides resolve the socket under, mirroring TS
-    `larDataDir()` (vessel-paths.ts): `LAR_ROOT/data/lares/vessel` for an isolated instance, else
-    `$XDG_DATA_HOME/lares/vessel` (`XDG_DATA_HOME` is trimmed; unset/blank-after-trim ->
-    `~/.local/share/lares/vessel`).
-
-    THE CRITERION IS WHOSE IT IS. The vessel substrate belongs to the SPIRITS, so it stands in the
-    spirits' house; what belongs to the HOUSE stands at `<lararium>`. Under an isolated root every
-    directory names an XDG KIND and the two HOUSES nest inside the data kind, exactly as under XDG —
-    so a resolver one segment short opens an absent directory and reports a daemon that never answered."""
-    root = os.environ.get("LAR_ROOT")
-    if root:
-        return os.path.join(root, "data", "lares", "vessel")
-    xdg = (os.environ.get("XDG_DATA_HOME") or "").strip()
-    if not xdg:
-        xdg = os.path.join(os.path.expanduser("~"), ".local", "share")
-    return os.path.join(xdg, "lares", "vessel")
+    """`<root>/hearth/vessel` — the ONE env contract both sides resolve the socket under, mirroring TS
+    `larDataDir()` (vessel-paths.ts) through `house_root.vessel_dir()`. An unnamed `LAR_ROOT` raises
+    `HouseRootUnnamed`: a resolver that guessed a home would open an absent directory and report a daemon
+    that never answered."""
+    return house_root.vessel_dir()
 
 
 def socket_path() -> str:
@@ -86,7 +101,7 @@ def available() -> bool:
 
 
 def identity_dir() -> str:
-    """`<lares>/identity` — the SIBLING of the vessel store, mirroring TS `larIdentityDir()`.
+    """`<root>/hearth/identity` — the SIBLING of the vessel store, mirroring TS `larIdentityDir()`.
 
     A Lar's keys ARE that Lar, so the sovereign root belongs to the SPIRITS and stands beside the
     substrate rather than inside it: every substrate verb (`reset`/`regenesis`/`rebuild`) reforges the
@@ -94,7 +109,7 @@ def identity_dir() -> str:
     keeps the did this side sends and the daemon that answers agreed on ONE keypair — a second spelling
     reads a keypair the TS side never wrote and sends a did no cap resolves.
     """
-    return os.path.join(os.path.dirname(data_dir()), "identity")
+    return house_root.identity_dir()
 
 
 def operator_did() -> str:
@@ -116,6 +131,17 @@ def operator_did() -> str:
     )
 
 
+# THE SEAT KIND this process's calls carry on every request line (`"seat": "ai"`), set by the MCP seat (`lares_mcp.py`) at its
+# start; None for the operator's own tools. The vessel reads the mark, never the absence of a session: each session a marked
+# call opens wears one face inside the lent set, and one naming a face outside it refuses `face-not-lent` (lararium-node
+# `seat-hand.ts`). F7's standing ruling holds: on one machine, for the dogfood, authority rides by designation; this mark is a designation, not a proof.
+SEAT_KIND: "str | None" = None
+
+
+def _seat_mark() -> dict:
+    return {"seat": SEAT_KIND} if SEAT_KIND else {}
+
+
 def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
          requested_by: "str | None" = None) -> dict:
     """Run one verb through the @daemon and return its `output`.
@@ -132,6 +158,7 @@ def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
         "verb": verb,
         "args": args or {},
         "requestedBy": requested_by or operator_did(),
+        **_seat_mark(),
     }) + "\n"
 
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -153,7 +180,7 @@ def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
 
     out = json.loads(buf.split(b"\n", 1)[0].decode())
     if out.get("status") == "error":
-        raise LaresVerbError(out.get("errorMessage") or f"verb {verb!r} failed")
+        raise refused(out, f"verb {verb!r} failed")
     return out
 
 
@@ -161,7 +188,7 @@ def output(verb: str, args: "dict | None" = None, **kw) -> dict:
     """`call` unwrapped to the verb's own payload.
 
     The daemon returns a RECEIPT, not a bare value: `{status, requestId, results: {summary: {ok,
-    output}}}`. The receipt carries the durable record (it lands at @daemon/outcomes/<id>); `output` carries
+    output}}}`. The receipt carries the durable record (it lands at bags/control/outcomes/<id>, in the vessel's control document); `output` carries
     what the verb actually computed. Callers want the latter, so the envelope peels HERE — once — rather
     than in every caller, each reaching through four keys and each getting it subtly wrong.
     """
@@ -186,8 +213,12 @@ def _lines(sock: socket.socket):
         yield json.loads(line.decode())
 
 
-def resolve_face(*, timeout: float = 30.0) -> int:
-    """The face a sole-face vessel wears: the custody door's `face.resolve` act (one frame, one answer), as the CLI asks it."""
+def resolve_face(face: "int | None" = None, *, timeout: float = 30.0) -> int:
+    """The face a seat acts as: the custody door's `face.resolve` act under the seat's reading (`worn`), one frame, one answer.
+
+    Named none, the vessel answers the one face standing open, else the face the operator WEARS (the mounted face,
+    `lares vault unlock --face N`), never a refusal for several open. Named one, the vessel answers it only while it
+    stands open, else refuses `face-not-open` by name (LaresVerbError)."""
     path = socket_path()
     if not os.path.exists(path):
         raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
@@ -198,7 +229,8 @@ def resolve_face(*, timeout: float = 30.0) -> int:
             s.connect(path)
         except (ConnectionRefusedError, FileNotFoundError) as e:
             raise LaresDaemonUnreachable(f"lares daemon not answering at {path}: {e}") from e
-        s.sendall((json.dumps({"op": "act", "act": "face.resolve", "args": {}}) + "\n").encode())
+        args: dict = {"worn": True, **({"face": face} if face is not None else {})}
+        s.sendall((json.dumps({"op": "act", "act": "face.resolve", "args": args}) + "\n").encode())
         answer = next(_lines(s), None)
     finally:
         s.close()
@@ -224,8 +256,10 @@ def session_act(act: str, args: "dict | None" = None, *, face: "int | None" = No
     path = socket_path()
     if not os.path.exists(path):
         raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
-    if face is None:
-        face = resolve_face(timeout=timeout)
+    # EACH SESSION WEARS ONE FACE INSIDE THE LENT SET: named none, the vessel answers the face it resolves; named one, it
+    # answers that face only while it stands open (`face-not-open`). The vessel's own wall judges the lent set at the session's
+    # opening and refuses a face outside it `face-not-lent`, naming the set.
+    face = resolve_face(face, timeout=timeout)
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.settimeout(timeout)
     try:
@@ -246,7 +280,7 @@ def session_act(act: str, args: "dict | None" = None, *, face: "int | None" = No
                 return reply
             raise LaresDaemonUnreachable("the vessel closed the session without an answer")
 
-        opened = ask({"op": "session:open", "requestId": os.urandom(8).hex(), "faceRef": f"h{face}", "hand": hand})
+        opened = ask({"op": "session:open", "requestId": os.urandom(8).hex(), "faceRef": f"h{face}", "hand": hand, **_seat_mark()})
         if opened.get("kind") != "session:opened":
             raise LaresVerbError("malformed session opening from the vessel")
         envelope = {k: opened[k] for k in ("ownerEpoch", "sessionId", "generation", "faceRef")}

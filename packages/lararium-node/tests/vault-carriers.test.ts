@@ -23,7 +23,7 @@ import {
 import { ScratchCustodyIo, scratchHomes } from "./custody-io-fixture.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
 import { openOutboxKey, outboxKeyFile } from "../src/outbox-key.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 import { readFckCarrier } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 
@@ -76,8 +76,10 @@ const SOWN: Record<string, string> = {
   "identity/gate-root.bin":                  "root",
   "identity/intent-relay-key.bin": "k".repeat(32),
   "identity/intent-relay-faces.json": '{"faces":[]}',
+  "identity/secret-home.json": "x",
   [`identity/faces/${FCID}/outbox-key-h0.bin`]: "x",
   [`identity/faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
+  [`identity/faces/${FCID}/veil-lift-g${"a".repeat(64)}.json`]: "x",
   [`identity/faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`]: "x",
   [`identity/faces/${FCID}/face-anchor-g${"a".repeat(64)}.json`]: "x",
   [`identity/faces/${FCID}/face-atom-ask-${"b".repeat(64)}.bin`]: "x",
@@ -141,7 +143,7 @@ const RULED: Record<string, CustodyClass> = {
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-chunk": "floor-plain",
   // The outbox's parcels rest under the outbox key, which its face key seals in a face-hot row.
   "sealed-outbox": "outbox", "outbox-key": "face-hot",
-  "gate-root": "hot", "veil-archive": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "promoted": "face-hot", "kapae-local": "face-hot", "face-owner": "face-hot", "face-ward-key": "face-hot",
+  "gate-root": "hot", "veil-archive": "face-hot", "veil-lift": "face-hot", "face-anchor": "face-hot", "face-atom": "face-hot", "face-atom-ask": "face-hot", "promoted": "face-hot", "kapae-local": "face-hot", "face-owner": "face-hot", "face-ward-key": "face-hot",
   "fk-slots": "floor", "face-index": "floor-plain",
   // A session switch's acts name two faces together, so they rest sealed on this vessel and in no document.
   "switch-acts": "hot", "enroll-pending": "hot", "grant-pending": "hot", "recovery-contact-set": "face-hot", "admissions": "hot", "anchors": "face-hot",
@@ -151,7 +153,7 @@ const RULED: Record<string, CustodyClass> = {
   "transition-pending": "floor-plain", "transitions": "floor-plain",
   // The face root seed rests under the face's WARD key, which stays sealed while custody stands unlocked (seat-harness#/the-ward).
   "persona-root": "ward-cold", "ward-slots": "floor", "device-share": "face-cold",
-  // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).
+  // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_RECORDS`, mesh `face-authority`).
   "vessel-face-key": "face-hot", "face-proof-key": "face-cold", "face-provisional": "face-hot",
   // The fleet-join door's three rows: a face's address secret, a join half done, and the joined face's record.
   "face-address-secret": "face-hot", "fleet-join-pending": "face-hot", "face-join-record": "face-hot",
@@ -162,6 +164,8 @@ const RULED: Record<string, CustodyClass> = {
   // A hearth's own cadence key and its next key: they open for one act (kahu#/contract, engine cadence ruling).
   "cadence-key": "face-cold",
   "intent-relay-key": "cold", "intent-relay-faces": "hot",
+  // The vessel's secret home's address: opened at unlock, the home's rest maps by it (placement over patterns).
+  "secret-home": "hot",
   // One joint founding's record: public material and the judged image, read at each joint signature.
   "cofound": "face-hot",
   // A restore's own commit row: one act writes it, one act removes it (custody#/the-restore).
@@ -216,6 +220,7 @@ describe("the carrier table", () => {
       expect(at("identity", `faces/${FCID}/cofound-h0-${"5a".repeat(32)}.json`)).toMatchObject({ row: "cofound", custody: "face-hot", face: 0 });
       expect(at("identity", `faces/${FCID}/cadence-key-h0-${"7c".repeat(16)}.bin`)).toMatchObject({ row: "cadence-key", custody: "face-cold", face: 0, keyClass: "device-minted" });
       expect(at("identity", `faces/${FCID}/veil-archive-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "veil-archive", face: `group:${"a".repeat(64)}`, bare: null });
+      expect(at("identity", `faces/${FCID}/veil-lift-g${"a".repeat(64)}.json`)).toMatchObject({ row: "veil-lift", face: `group:${"a".repeat(64)}`, custody: "face-hot", bare: null });
       expect(at("identity", `faces/${FCID}/face-atom-g${"a".repeat(64)}.bin`)).toMatchObject({ row: "face-atom", face: `group:${"a".repeat(64)}`, bare: null });
       expect(at("identity", `faces/${FCID}/face-atom-ask-${"b".repeat(64)}.bin`)).toMatchObject({ row: "face-atom-ask", face: `fcid:${FCID}`, bare: null });
       expect(at("storage", "sealed/lockbox/aa.bb-cc")?.row).toBe("sealed-rest");
@@ -337,7 +342,7 @@ describe("the S key rotation reads its carriers from the table", { timeout: 30_0
     const v = await seatScratchCustody("carrier-outbox");
     try {
       const outboxKey = await openOutboxKey(0);
-      const keyPath = handleRowPathIn(v.homes.identity, outboxKeyFile(0));
+      const keyPath = handleRecordPathIn(v.homes.identity, outboxKeyFile(0));
       const keyBefore = readFileSync(keyPath);
       expect(readFckCarrier(keyBefore)).toBe("sealed");
       const parcel = sealOutboxParcel(outboxKey, "reader-one", text("a parcel"));

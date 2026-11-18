@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/canary1/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/seat-harness/canary1/` — 2 record(s) here, 2 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/canary1/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/canary1/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/seat-harness/canary1/`
+
+The scratch planning records of `.lares-scratch/seat-harness/canary1/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 2 record(s) stand here and 2 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[seat-harness/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/canary1/brief]] | brief | 2026-11-04 | `brief.md` |
+| [[final|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/canary1/final]] | hand-back | 2026-11-04 | `final.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;InhuTO0G2ODCVIkXy2tNgOsT5GSkNZ3ef0Vyh9XFkGo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/pr-tag-burn`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — PR body, 2026-11-06 (file date) — source `.lares-scratch/controller/pr-tag-burn.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/pr-tag-burn"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/pr-tag-burn"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! pr-tag-burn.md — PR body, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/pr-tag-burn.md` (PR body, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lane tag-burn (road M6, the version burn): every domain-separation signing tag and HKDF info names itself without a version (`lar-<name>`, `lares/<name>`, `lar:<name>`), one commit per tag family with its signers and verifiers together. The domain-registry witness reads zero versioned tags and gains colon and spaced spelling fixtures; the evergreen version ceiling drops 58 → 55. The registry header names the re-key: a rename re-keys every record made under the old name, and no record crosses a rename (no backward compatibility in early alpha). The custody-root golden vector re-pins to the renamed domain (HKDF-SHA256 recomputed, matching CI).
+
+Reads: Luna cold read LAND-AFTER-CURES, cures landed. Pre-push gate green; CI green at 9368a327f. Genesis format strings stay for the one labelled re-bake in the pre-rite.
+
+🤖 Generated with [[Claude Code|https://claude.com/claude-code]]
+
+https://claude.ai/code/session_01V63vwNsTbwswaievYNJosw
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XCw31Weu6xdiJ3Illzk13OldlqpbjPbGLj-BpWRETX0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

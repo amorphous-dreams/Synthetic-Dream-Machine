@@ -1,0 +1,50 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-persona/terra-final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement-persona/terra-final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-persona/terra-final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-persona/terra-final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-persona/terra-final.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-persona/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://operator:operator@workbench/persona.placement.changes` to=`lar://plane-wright:agent@workbench/persona.private.moves` ooda-ha=`5/declare-glyphs` drift-ward=`the interrupted suites leave some failures without diagnostic traces`>>
+
+Plane-Wright: Lares (Tasked Spirit): ->✶ Implemented the persona-plane placement change, with incomplete full-suite verification.
+
+->⏿ The daemon VM now exposes `personaPlane: { bagId, handle } | null` and does not add that plane to its composite. No callers needed migration: the existing persona-selves reader already opens the plane directly, and its seven tests passed.
+
+The catalog did offer an on-demand path to the plane through [[meme-verbs.ts|/home/joshu/.lares-scratch/placement-persona/wt/packages/lararium-tw5/src/meme-verbs.ts:132]], plus a cold-wiki mount path through [[vessel-residency-wiring.ts|/home/joshu/.lares-scratch/placement-persona/wt/packages/lararium-tw5/src/vessel-residency-wiring.ts:211]]. Proven persona rows now carry a `private-synced` kind; verb lookup, library mounting, cold-wiki activation, and membership scanning skip that kind. Direct URL lookup remains available to proof readers. No title or bag-name pattern selects the placement.
+
+->▶ Changed files:
+
+* [[daemon-vm-core.ts|/home/joshu/.lares-scratch/placement-persona/wt/packages/lararium-tw5/src/daemon-vm-core.ts]], [[catalog-accessor.ts|/home/joshu/.lares-scratch/placement-persona/wt/packages/lararium-tw5/src/catalog-accessor.ts]], [[vessel-residency-wiring.ts|/home/joshu/.lares-scratch/placement-persona/wt/packages/lararium-tw5/src/vessel-residency-wiring.ts]], [[worker-data-verbs.ts|/home/joshu/.lares-scratch/placement-persona/wt/packages/lararium-tw5/src/worker-data-verbs.ts]], and [[open-node-vessel.ts|/home/joshu/.lares-scratch/placement-persona/wt/packages/lararium-node/src/open-node-vessel.ts]].
+* Regression tests in [[daemon-vm-floor-crossing.test.ts|/home/joshu/.lares-scratch/placement-persona/wt/packages/lararium-tw5/tests/daemon-vm-floor-crossing.test.ts]], [[catalog-split-create.test.ts|/home/joshu/.lares-scratch/placement-persona/wt/packages/lararium-tw5/tests/catalog-split-create.test.ts]], and [[wiki-mount-private-alias.test.ts|/home/joshu/.lares-scratch/placement-persona/wt/packages/lararium-tw5/tests/wiki-mount-private-alias.test.ts]]; updated a catalog test double in [[kahu-reach-gate-envelope.test.ts|/home/joshu/.lares-scratch/placement-persona/wt/packages/lararium-tw5/tests/kahu-reach-gate-envelope.test.ts]].
+
+->↺ TW5 and node builds and typechecks passed, as did the evergreen boundary check. The focused TW5 checks passed 11 tests. The full TW5 suite finished with ''3,238 passed, 1 failed, and 6 skipped''; the failure concerned daemon protected-title ingestion.
+
+The node full suite stopped making visible progress and I interrupted it: its partial output reported ''43 failures'', with no final pass or skip counts. The separate persona-selves suite passed ''7 of 7''. The browser suite also stopped producing output and I interrupted it: its partial output reported ''19 failures'', with no final counts. Neither interrupted run produced final error traces, so I could not reliably count `secret-home-unavailable` failures separately or determine whether the other failures relate to this change. The requested red-first test attempt also stopped at stale build stamps before executing.
+
+&lt;&lt;~ oracle throw=`↯15 ✲ ⚂(3) ⁂:⟁☕🌀`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`rerun the node and browser suites to obtain complete counts and failure traces · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://plane-wright:agent@workbench/persona.placement.lands` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N9GjvRi80i2Jfbwstpq2mtxFw49aTX4XLNOETkrtjys`>>
+
+<<^ code=`&#x0004;` to=`?`>>

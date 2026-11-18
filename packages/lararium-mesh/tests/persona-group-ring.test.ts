@@ -37,7 +37,7 @@ const denyAll: FederationGate = { mayFederate: () => false };
 const allowAll: FederationGate = { mayFederate: () => true };
 
 /** One grant record as it rests on the plane — opaque to the ring, which never re-cuts a seal itself. */
-const grantFor = (key: string) => ({ kind: "face-join-grant/v1", joineeAgentIdHex: `agent-${key}`, sig: `sig-${key}` });
+const grantFor = (key: string) => ({ kind: "face-join-grant", joineeAgentIdHex: `agent-${key}`, sig: `sig-${key}` });
 
 function ring(opts?: { records?: unknown[]; verifyFails?: boolean }) {
   return makePersonaGroupIdentityRing({

@@ -13,10 +13,10 @@
  *   · A SIGNER SERVES ONE SESSION AT ONE GENERATION, AND THE OWNER'S TABLE SAYS WHETHER IT STILL STANDS.
  *     A signer keeps the owner's table and the binding its session opened on, and asks the table before
  *     every signature. No caller hands it a record: a record kept from before a close or a switch proves
- *     nothing. A session the table no longer holds at the signer's generation DROPS the signer: the close
+ *     nothing. A session the table has dropped at the signer's generation DROPS the signer: the close
  *     or the switch already happened, and this key outlived it by one call at most. A session the table
  *     holds FROZEN (mid-switch, revoked, closing) signs nothing and keeps its signer: a refused preflight
- *     returns the old generation to `live` with its facets whole, and the owner drops the signer itself
+ *     returns the standing generation to `live` with its facets whole, and the owner drops the signer itself
  *     when it fences that generation.
  *   · THE BINDING NEVER CROSSES. A session id and an owner epoch belong to the vessel, and one owner epoch
  *     serves every face. Neither enters a signed image or a certificate; the certificate names the face,
@@ -135,7 +135,7 @@ export class SessionSigner {
 
   /**
    * Sign `payload` under `purpose`. The owner's table decides whether the session still stands: a session
-   * it holds no longer, or one generation on, or under another face or profile, drops this signer; a
+   * it has dropped, or one generation on, or under another face or profile, drops this signer; a
    * session it holds frozen signs nothing and keeps it.
    */
   async sign(purpose: unknown, payload: unknown): Promise<{ readonly signature: Signature } | SessionSignerRefusal> {

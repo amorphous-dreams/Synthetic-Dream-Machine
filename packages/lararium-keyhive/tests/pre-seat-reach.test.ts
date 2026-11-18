@@ -52,7 +52,7 @@ const ctxFor = (rootDid: string, pg: { groupId: string }, reseal?: readonly stri
 });
 
 const summonsFor = async (joinee: KeyhiveProvider, edge: Awaited<ReturnType<typeof leafEdge>>) => ({
-  kind: "face-join/v1" as const,
+  kind: "face-join" as const,
   contactCard: new TextDecoder().decode(await joinee.contactCard()),
   deviceEdge: edge,
 });

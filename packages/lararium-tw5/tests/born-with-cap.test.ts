@@ -16,6 +16,7 @@ import { CompositeStore, emptyLarDoc, AutomergeDocStore, effectRecordUri, isVerb
 import type { Repo, DocHandle, LarDoc, Verb } from "@lararium/mesh";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
+import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import { plainEntries, plainRecord, tiddlerText } from "@lararium/mesh";
 
 const CATALOG_URL = "automerge:catalog-doc";
@@ -308,5 +309,26 @@ describe("M13 — a retired bag refuses writes by name and CREATE strands nothin
     const full = await r("CREATE")({ bag: src }, ctxFor("CREATE", "a2"));
     expect(full.alreadyStood).toBe(true);
     expect(full.count).toBe(1);
+  });
+});
+
+describe("CREATE — a bag that resolves elsewhere stands already", () => {
+  test("★ a house canon bag the realm resolves answers the steward alreadyStood and mints nothing ★", async () => {
+    const { repo, mintedUrls } = makeFakeRepo();
+    const realmDoc = repo.create({ tiddlers: { "lar:///ha.ka.ba/lares/x": { tiddler: { title: "lar:///ha.ka.ba/lares/x", text: "x" } } } } as unknown as LarDoc);
+    mintedUrls.length = 0;
+    const registered: string[] = [];
+    const reactor = makeActionReactorFor("CREATE", {
+      composite: new CompositeStore(),
+      reach: { repo, catalogUrl: CATALOG_URL, oracleUrl: null, systemCanonUrl: async () => String(realmDoc.url) },
+      // The Kahu steward's own hand: a CREATE over house canon reads the source itself (a top-level CREATE names no inner
+      // bag the routed gate would clear), and only a hand that holds the reach reads the realm's document.
+      kahuReach: await kahuHand(),
+      registerBag: async (bagUrl) => { registered.push(bagUrl); },
+    });
+    const result = await reactor({ bag: "lar:///ha.ka.ba/bags/lares" }, makeContext()) as Record<string, unknown>;
+    expect(result).toMatchObject({ alreadyStood: true, resolvedElsewhere: true, count: 1 });
+    expect(mintedUrls).toEqual([]);
+    expect(registered).toEqual([]);
   });
 });

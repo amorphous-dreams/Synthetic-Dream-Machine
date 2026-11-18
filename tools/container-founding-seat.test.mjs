@@ -47,7 +47,7 @@ test('a staged mesh founding refuses without the seat; the same founding succeed
     const seated = spawnSync(process.execPath, [`--import=${pathToFileURL(resolve('tools/test-ward-route.mjs')).href}`, ...args],
       { env, encoding: 'utf8', timeout: 30_000 });
     assert.equal(seated.status, 0, seated.stdout + seated.stderr);
-    assert.ok(existsSync(join(root, 'data/lares/vessel/social-bootstrap.json')));
+    assert.ok(existsSync(join(root, 'hearth/vessel/social-bootstrap.json')));
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 

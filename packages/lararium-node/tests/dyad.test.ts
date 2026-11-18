@@ -10,6 +10,8 @@
  *   D5 each protocol guard accepts its own dyad message and refuses the opposite direction.
  *   D6 the node folds its worn fleet and stands the floor's dyad door before daemon boot.
  *   D7 the browser tab keeps sibling sync current while the daemon island resolves its own board reader.
+ *   D8 the ring's door reads a fleet its standing fold never read by folding again: a face founded after the fold reads its own
+ *      edge. control: a fleet the fold holds answers off that fold, with no second fold.
  */
 import { EventEmitter } from "node:events";
 import { readFileSync } from "node:fs";
@@ -18,6 +20,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { isIslandToVesselMsg, isVesselToIslandMsg, type CapabilityRecord, type EdgeStanding } from "@lararium/mesh";
 import { vesselDyadAsker } from "../src/sovereign-island-model.js";
 import { answerDyad, nodeWorkerHandle } from "../src/worker-handle.js";
+import { ringDyadDoor, type EdgeShadowFold } from "../src/edge-shadow-ring.js";
 
 const standings: EdgeStanding[] = ["clear", "aside", "owing", "returned", "unknown"];
 
@@ -161,6 +164,29 @@ describe("the dyad capability", () => {
     expect(src.indexOf(floorDown)).toBeLessThan(src.indexOf(daemonDown));
   });
 
+  test("D8 — the ring's door folds again for a fleet its standing fold never read, so a face founded after the fold reads its own edge", async () => {
+    const W = "a".repeat(64), L = "b".repeat(64);
+    const foldOf = (roots: readonly string[]): EdgeShadowFold => ({ fleets: roots.map((fleetRoot) => ({ fleetRoot }) as unknown as EdgeShadowFold["fleets"][number]), realms: [] });
+    let roots = [W];
+    let last: EdgeShadowFold | null = null;
+    let folds = 0;
+    const ring = {
+      fold: () => last,
+      refold: async () => { folds++; last = foldOf(roots); return last; },
+      deviceStanding: (fleetRoot: string) => (last?.fleets.some((f) => f.fleetRoot === fleetRoot) ? "clear" as const : "aside" as const),
+    };
+    const door = ringDyadDoor(ring);
+    expect(await door(W, "d")).toBe("clear");
+    expect(folds).toBe(1);
+    // CONTROL: a fleet the standing fold holds answers off it, with no second fold.
+    expect(await door(W, "d")).toBe("clear");
+    expect(folds).toBe(1);
+    // A face founded after the fold: its fleet root joins the roots the ring folds, and the fold standing never read it.
+    roots = [W, L];
+    expect(await door(L, "d")).toBe("clear");
+    expect(folds).toBe(2);
+  });
+
   test("D7 — the leaf reads its fleet board for sibling sync while the daemon island reads its own board for dyad standing (a source weld)", () => {
     const src = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "open-browser-vessel.ts"), "utf8");
     const island = readFileSync(join(__dirname, "..", "..", "lararium-browser", "src", "daemon-island-start.ts"), "utf8");
@@ -199,3 +225,31 @@ describe("the dyad capability", () => {
     expect(boardReader).toMatch(/keptFromLedger\(/);
   });
 });
+
+describe("the handle hears its worker through ONE listener", () => {
+  test("a daemon island's whole record, its document store door and every later subscriber share one `message` listener on the worker; each still hears, an unsubscribe leaves alone, and the dyad still answers (control)", async () => {
+    const emitter = new EventEmitter();
+    const said: Array<Record<string, unknown>> = [];
+    const worker = Object.assign(emitter, { postMessage: (msg: unknown) => { said.push(msg as Record<string, unknown>); }, terminate: async () => 0 }) as unknown as Worker;
+    const doorHeard: unknown[] = [];
+    const handle = nodeWorkerHandle(worker, { island: "daemon", caps: {
+      dyad: () => "clear",
+      // The document store's door listens on the island's channel several times over (its answers, its askers).
+      docStore: (port) => { const stops = [1, 2, 3, 4, 5].map(() => port.listen((m) => { doorHeard.push(m); })); return () => { for (const stop of stops) stop(); }; },
+    } });
+    const heard: string[] = [];
+    const stops = ["a", "b", "c", "d", "e", "f"].map((name) => handle.listen(() => { heard.push(name); }));
+    expect(emitter.listenerCount("message"), "one listener stands on the worker, whatever the design hangs on it").toBe(1);
+    emitter.emit("message", { type: "probe" });
+    expect(heard).toEqual(["a", "b", "c", "d", "e", "f"]);
+    expect(doorHeard).toHaveLength(5);
+    stops[1]!();
+    emitter.emit("message", { type: "probe" });
+    expect(heard.slice(6), "an unsubscribe leaves alone").toEqual(["a", "c", "d", "e", "f"]);
+    // CONTROL: the record's own answers still hear the worker.
+    emitter.emit("message", ask("one-listener"));
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(said.map((m) => [m["type"], m["standing"]])).toEqual([["dyad:read", "clear"]]);
+  });
+});
+

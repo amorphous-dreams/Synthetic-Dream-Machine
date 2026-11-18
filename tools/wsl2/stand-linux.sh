@@ -175,7 +175,7 @@ ExecStart=
 ExecStart=/usr/bin/earlyoom \$EARLYOOM_ARGS -m 5 -s 50 --avoid '(^|/)(claude|codex|Xwayland|systemd)\$'"
 earlyoom_apply() { own_file "$EARLYOOM_DROPIN" "$EARLYOOM_UNIT" && sudo systemctl daemon-reload && sudo systemctl restart earlyoom; }
 # The file alone does not prove the thresholds: a restart that failed after the write leaves the daemon on
-# the old line, so an active daemon must also show `-m 5` on its command line before the step reads already.
+# its prior command line, so an active daemon must also show `-m 5` on its command line before the step reads already.
 earlyoom_live_ok() {
   [[ "$earlyoom_active" == active ]] || return 0
   tr '\0' ' ' < /proc/"$(systemctl show -p MainPID --value earlyoom 2>/dev/null)"/cmdline 2>/dev/null | grep -q -- '-m 5 '
@@ -190,7 +190,7 @@ else
   if [[ "$(cat "$EARLYOOM_DROPIN" 2>/dev/null)" == "$EARLYOOM_UNIT" ]]; then
     if earlyoom_live_ok; then
       already "earlyoom thresholds ($EARLYOOM_DROPIN)"
-    # Our drop-in is in place and the daemon still runs the old line: one restart; a line that still lacks
+    # Our drop-in stands in place and the daemon still runs a line without it: one restart; a line that still lacks
     # -m 5 names a later-sorting drop-in that overrides ExecStart, which a rewrite of ours would never change.
     elif (( DRY )); then
       plan 'systemctl restart earlyoom (drop-in in place, running line lacks -m 5)'

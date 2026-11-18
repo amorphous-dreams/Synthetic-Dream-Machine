@@ -154,7 +154,7 @@ Owner column: **E** = engine/worker, **G** = glass/page, **E+G** = both shores.
 | 14 | MED | **Browser vm shim hides errors.** `runInCtx` catches and returns `undefined`, so a module's real error surfaces as a generic TypeError. | E | `tw5-host-bridge.ts:89-99`, `boot.js:598-629` |
 | 15 | MED | **Direct wiki writes bypass the landing discipline.** `ingestCarrier`/`setTiddler` write straight in and read as hands, so the daemon's born-from-source UI and persona seeds rewrite working-layer records each boot, and `$:/lares/surface` ("never synced") falls through to the working bag *(inferred)*. | E | `tw5-vm.ts:92-120, 177`, `daemon-ui-tiddlers.ts:44` |
 | 16 | MED | **Capability bypass and verb duplication.** Wiki island cap answers `worker-trust`, against AGENTS.md's "capability layer is the only authority gate"; wiki islands run their own VerbTable though the dispatcher says only the daemon dispatches. No per-act signature or persona on glass writes. | E | `wiki-behavior.ts:150`, `verb-dispatcher.ts:1-40` |
-| 17 | LOW-MED | **Boot order.** TW5 startups run before the bag corpus lands, so bag-carried `$:/tags/StartupAction` and `$:/DefaultTiddlers` never fire *(inferred)*; `carrier-filetype` never registers `.mem`. | E | `modules/carrier-filetype.ts:47` |
+| 17 | LOW-MED | **Boot order.** TW5 startups run before the bag corpus lands, so bag-carried `$:/tags/StartupAction` and `$:/DefaultTiddlers` never fire *(inferred)*; `carrier-filetype` never registers `.mem`. ''The default story CLOSED (2026-11-11)'': no engine opens a story inside boot, and `openDefaultStory` opens the wiki's own landing at its first whole snapshot (`default-story.ts`; d3-glass-lane #/the-visible-mirror). The `$:/tags/StartupAction` re-run and the `.mem` registration stay owed. | E | `modules/carrier-filetype.ts:47` |
 | 18 | LOW-MED | **Single-tab law.** A second tab refuses without `?holder`; with it, every tab shares the daemon's single fake DOM and rid space. | G | `vessel-lock.ts`, `shared-holder-core.ts:5-6` |
 | 19 | LOW | **`$eventcatcher` delegation.** Worker `target` is the nearest rid node, not the clicked child, and fake nodes lack `closest`/`matches` *(inferred)*. | E | `tw5-projection.ts:238-252` |
 | 20 | LOW | **Dead or duplicate surfaces.** Orphaned `meme-worker-script.ts` (second VM protocol, bypasses nalu, uses `self` on node); main-thread `mountPanel`/`setPalette`/`setBootSplash` contradict §9; `fake-dom.ts` VDom converter unused; coherence sink unmounted (`main.ts` passes no `onCoherence`). | E+G | `tw5-browser-surface.ts`, `index.ts:102`, `main.ts:285-299` |
@@ -234,7 +234,7 @@ These scratch files die with this container; the probes are described well enoug
 - **#14** drop the swallowing `try/catch` in `runInCtx` (`tw5-host-bridge.ts:89-115`), or rethrow with filename. Test: a syntax error throws `SyntaxError`.
 - **#15** route `$:/lares/surface` to temp (rename to `$:/temp/lares/surface` or add a cascade rule). Add a second-boot zero-writes test to pin the foam claim.
 - **#16** replace `worker-trust` (`wiki-behavior.ts:150`) with the admin-auth gate plus keyhive check over `requestedBy`. Test: non-admin `wiki:place-verb MOVE` refused.
-- **#17** re-invoke `$:/tags/StartupAction` after `seedDrained` (`sovereign-kernel.ts:450-466`), reopen default tiddlers only if no personal StoryList landed, drop `platforms` from `carrier-filetype.ts:47`.
+- **#17** re-invoke `$:/tags/StartupAction` after `seedDrained` (`sovereign-kernel.ts:450-466`), drop `platforms` from `carrier-filetype.ts:47`. The default-story half landed: the island opens its story after `seedDrained` and keeps a landed personal StoryList; the mirror opens its story after the port's greeting.
 - Ship the scratch boot harness as `tests/genesis-boot.harness.ts`, skipped when the CAS is absent, so all of these can run in CI.
 
 ### 5.4 Revised top of the list
@@ -261,6 +261,6 @@ These scratch files die with this container; the probes are described well enoug
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vfRprhT8aDljQAawOrNPXPfiH1T-ZtAqbFfxEyCVUlU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dZbw9c3X7CUb6Sb7ZgdUX-dZz5Y0vVYji8J0Wgm0QVQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1,5 +1,5 @@
 /** Durable, per-PersonaGroup admission enablement; an absent row closes every face. */
-import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 
 export const INTENT_RELAY_FACES_FILE = "intent-relay-faces.json";
 export class IntentRelayRingMalformed extends Error { override name = "IntentRelayRingMalformed"; }
@@ -15,12 +15,12 @@ function read(bytes: Uint8Array | null): string[] {
 }
 const bytesOf = (faces: readonly string[]): Uint8Array => new TextEncoder().encode(JSON.stringify({ faces }));
 export async function enabledIntentRelayFaces(): Promise<readonly string[]> {
-  try { return read(await readCustodyRow("identity", INTENT_RELAY_FACES_FILE)); }
+  try { return read(await readCustodyRecord("identity", INTENT_RELAY_FACES_FILE)); }
   catch (error) { if (error instanceof IntentRelayRingMalformed) throw error; if (error instanceof SyntaxError || error instanceof TypeError) throw new IntentRelayRingMalformed("intent-relay-ring: malformed row", { cause: error }); throw error; }
 }
 async function set(group: string, enabled: boolean): Promise<void> {
   if (!groupReads(group)) throw new RangeError("intent-relay-ring: PersonaGroup must read as one printable token");
-  await updateCustodyRow("identity", INTENT_RELAY_FACES_FILE, (prior) => {
+  await updateCustodyRecord("identity", INTENT_RELAY_FACES_FILE, (prior) => {
     const faces = new Set(read(prior));
     if (enabled) faces.add(group); else faces.delete(group);
     return { plaintext: bytesOf([...faces].sort()), value: undefined };

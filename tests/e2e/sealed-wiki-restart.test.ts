@@ -16,9 +16,9 @@
  *   R4 — B restarts over the same root, unlocks and crosses A's gate again: the restart's hydration rests nothing clear
  *        (a sealed document's load waits for its map), and the marker reads back whole
  *   R5 — after the read-back, no store outside the projection holds the marker clear: the verb outcome ledger that carries
- *        the read's answer to the CLI rests in the daemon wiki's working slot, which seals under the lit face (U1's D
- *        half), and the daemon document rests no outcome body. The ledger's titles (`bags/daemon/outcomes/<id>`) name
- *        tiddlers that never project (`disk-projection: no`), so every byte of them rests in a store, never in `bags/`
+ *        the read's answer to the CLI rests in the vessel's control document (`bags/control/outcomes/<id>`), which seals
+ *        beside the secret home under the vessel's key, and the daemon document rests no outcome body. The control
+ *        document names no mirror (placement over patterns), so every byte of the ledger rests in a store, never in `bags/`
  *   R6 — the face's own catalog (U1's D half of the catalog) rests sealed: it opened only after the daemon island's
  *        holder stood, and the restart read the marker back through it (R4). POSITIVE FIRST: the floor's catalog, which
  *        rests clear, holds its rows' titles in its document's rest, so the scan reads a catalog's rest; then no file of
@@ -27,7 +27,8 @@
  * The suite runs only in a STAGED target: it founds two vessels and never touches a live hearth.
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { cpSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { tmpdir } from "node:os";
@@ -35,6 +36,11 @@ import { join } from "node:path";
 import { bootDocUrl, openStaged, openStagedJoinee, vesselStorageDir, type LarInstance, type StagedJoinee } from "../harness/instance.js";
 import { mintStagedNexusKey } from "../harness/vessel-key.js";
 
+// The Automerge core the repo package itself loads, for the scan's reading of a compacted rest.
+type Am = { init(): unknown; from(o: object): unknown; change(d: unknown, f: (x: Record<string, unknown>) => void): unknown; save(d: unknown): Uint8Array; loadIncremental(d: unknown, b: Uint8Array): unknown; toJS(d: unknown): unknown };
+const A = createRequire(createRequire(import.meta.url).resolve("@automerge/automerge-repo"))("@automerge/automerge") as Am;
+
+const AUTOMERGE_MAGIC = Buffer.from([0x85, 0x6f, 0x4a, 0x83]);
 const staged = process.env["LAR_TARGET"] !== "live";
 const SEALED_MARK = `sealed-heron-${process.pid}-${Date.now()}`;
 const CLEAR_MARK = `clear-heron-${process.pid}-${Date.now()}`;
@@ -56,21 +62,43 @@ function memeFile(uri: string, text: string): string {
   writeFileSync(path, `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>\n\n${text}\n`);
   return path;
 }
-/** Every file under `dir` that holds `needle`'s bytes, its path relative to `dir`. */
+/**
+ * Every file under `dir` that holds `needle`'s bytes, its path relative to `dir`: in its raw bytes, or in the document its
+ * rest decodes to. A store compacts a document's chunks into one snapshot, and a snapshot deflates every column past 256
+ * bytes, so a raw read misses a marker that rests clear there. So the chunks of each document directory (the parent of its
+ * `snapshot/` and `incremental/` folders) decode together, and each chunk of a document that decodes holding the needle
+ * reads as holding it. A sealed chunk carries no Automerge magic and decodes to nothing here.
+ */
 function filesHolding(dir: string, needle: string): string[] {
   const want = Buffer.from(needle);
-  const out: string[] = [];
+  const out = new Set<string>();
+  const docs = new Map<string, Array<{ rel: string; bytes: Buffer }>>();
   const walk = (d: string): void => {
     for (const name of readdirSync(d)) {
       const path = join(d, name);
       const st = statSync(path, { throwIfNoEntry: false });
       if (!st) continue;
-      if (st.isDirectory()) walk(path);
-      else if (st.isFile() && readFileSync(path).includes(want)) out.push(path.slice(dir.length + 1));
+      if (st.isDirectory()) { walk(path); continue; }
+      if (!st.isFile()) continue;
+      const bytes = readFileSync(path);
+      const rel = path.slice(dir.length + 1);
+      if (bytes.includes(want)) out.add(rel);
+      if (bytes.subarray(0, 4).equals(AUTOMERGE_MAGIC)) {
+        const docDir = join(d, "..");
+        docs.set(docDir, [...(docs.get(docDir) ?? []), { rel, bytes }]);
+      }
     }
   };
   walk(dir);
-  return out;
+  for (const chunks of docs.values()) {
+    let doc = A.init();
+    const loaded: string[] = [];
+    for (const c of chunks.sort((a, b) => (a.rel < b.rel ? 1 : -1))) {   // snapshot/ before incremental/
+      try { doc = A.loadIncremental(doc, new Uint8Array(c.bytes)); loaded.push(c.rel); } catch { /* not a chunk this core reads */ }
+    }
+    if (loaded.length > 0 && JSON.stringify(A.toJS(doc)).includes(needle)) for (const rel of loaded) out.add(rel);
+  }
+  return [...out].sort();
 }
 /**
  * The rows one document's rest decodes to, read by a fresh Repo over a copy of that document's shard alone (id[:2] /
@@ -93,8 +121,8 @@ async function rowsAtRest(store: string, url: string): Promise<number | null> {
   } catch { return 0; }
   finally { await repo.shutdown().catch(() => undefined); }
 }
-/** The operator's own cleartext: the bare disk projection under the root's `bags/` and `wikis/` (R1's carve-out). */
-const projected = (rel: string): boolean => rel.startsWith("bags/") || rel.startsWith("wikis/");
+/** The operator's own cleartext: the bare disk projection under the root's `projections/` (R1's carve-out). */
+const projected = (rel: string): boolean => rel.startsWith("projections/");
 /** Every file of the root OUTSIDE the disk projection that holds the sealed marker. */
 const restingClear = (root: string): string[] => filesHolding(root, SEALED_MARK).filter((rel) => !projected(rel));
 
@@ -106,6 +134,20 @@ beforeAll(async () => {
 }, 600_000);
 
 afterAll(async () => { await B2?.stopDaemonOnly(); await pair?.stop(); });
+
+test("CONTROL — the scan reads a clear marker in a compacted rest, where the snapshot deflates its columns", () => {
+  // A store compacts a document's chunks into one snapshot whenever its incremental bytes outgrow it, and a snapshot
+  // deflates every column past 256 bytes: the marker's bytes leave the file while the rest still holds it clear.
+  const store = mkdtempSync(join(tmpdir(), "compacted-rest-"));
+  let doc = A.from({ tiddlers: {} });
+  for (let i = 0; i < 64; i++) doc = A.change(doc, (d) => { (d["tiddlers"] as Record<string, unknown>)[`t${i}`] = { text: `filler ${"x".repeat(64)} ${i}` }; });
+  doc = A.change(doc, (d) => { (d["tiddlers"] as Record<string, unknown>)["m"] = { text: CLEAR_MARK }; });
+  const snapshot = A.save(doc);
+  expect(Buffer.from(snapshot).includes(Buffer.from(CLEAR_MARK)), "the plant deflates the marker").toBe(false);
+  mkdirSync(join(store, "ab", "cdef", "snapshot"), { recursive: true });
+  writeFileSync(join(store, "ab", "cdef", "snapshot", "h1"), snapshot);
+  expect(filesHolding(store, CLEAR_MARK)).toEqual(["ab/cdef/snapshot/h1"]);
+});
 
 describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a restart", () => {
   test("R1-R3 — the positive control reads a clear marker at rest; the sealed marker rests as no clear byte after a stand-down at once", async () => {
@@ -140,7 +182,7 @@ describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a 
     expect(text, B2.bootLog().slice(-3000)).toContain(SEALED_MARK);
   }, 300_000);
 
-  test("R5 — after the read-back, no store outside the disk projection holds the marker clear: the outcome ledger rests sealed under the lit face, and the daemon document rests no outcome body", async () => {
+  test("R5 — after the read-back, no store outside the disk projection holds the marker clear: the outcome ledger rests sealed in the control document, and the daemon document rests no outcome body", async () => {
     const daemonUrl = bootDocUrl(B2!, "daemon");
     expect(daemonUrl, "the boot names its daemon document").not.toBeNull();
     await B2!.stopDaemonOnly();

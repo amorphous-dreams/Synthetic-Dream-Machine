@@ -24,7 +24,9 @@ describe("each vessel's Repo stands on the sealed rest", () => {
   it("the node's standing vessel composes its Repo over the sealed rest, and its lock flushes before a signer drops", () => {
     const node = stripped(["lararium-node", "src", "open-node-vessel.ts"]);
     expect(count(node, /composeSealedRest(<[^>]*>)?\(/)).toBe(1);
-    expect(node).toMatch(/new Repo\(\{\s*storage:\s*sealedRest\.store,/);
+    // The Repo takes the sealed rest through its wire face (`wireIdentityOf`: the worn face's store id over the same store).
+    expect(node).toMatch(/wireIdentityOf\(\{\s*store:\s*sealedRest\.store,/);
+    expect(node).toMatch(/new Repo\(\{\s*storage:\s*wire\.storage,\s*peerId:\s*wire\.peerId,/);
     const uds = stripped(["lararium-node", "src", "uds-channel.ts"]);
     expect(uds).toMatch(/await opts\.beforeSignerDrops\?\.\(/);
   });
@@ -32,7 +34,8 @@ describe("each vessel's Repo stands on the sealed rest", () => {
   it("the browser's vessel worker composes its Repo over the sealed rest, and its lock flushes before the lift drops", () => {
     const browser = stripped(["lararium-browser", "src", "open-browser-vessel.ts"]);
     expect(count(browser, /composeSealedRest(<[^>]*>)?\(/)).toBe(1);
-    expect(browser).toMatch(/new Repo\(\{\s*storage:\s*sealedRest\.store,/);
+    expect(browser).toMatch(/wireIdentityOf\(\{\s*store:\s*sealedRest\.store,/);
+    expect(browser).toMatch(/new Repo\(\{\s*storage:\s*wire\.storage,\s*peerId:\s*wire\.peerId,/);
     // The lift drops its signer through its own dispose (slice 5b: the lift stack's dispose IS the lock).
     expect(browser).toMatch(/await sealedRest\.lock\(\)[\s\S]{0,300}await lifted\.dispose\(\)/);
   });
@@ -41,5 +44,25 @@ describe("each vessel's Repo stands on the sealed rest", () => {
     expect(stripped(["lararium-node", "src", "node-daemon-island.ts"])).toMatch(/docStoreDoor\s*:/);
     expect(stripped(["lararium-browser", "src", "daemon-island-start.ts"])).toMatch(/docStoreDoor\s*:/);
     expect(stripped(["lararium-keyhive", "src", "operator-daemon-behavior.ts"])).toMatch(/answerDocStoreAsks\(/);
+  });
+});
+
+describe("the node holds the lit set (sealed-store#/the-lit-set)", () => {
+  it("each sibling stands its own place session in the book, its own canon and bases keeper; a lock drops its waiting saves and handles", () => {
+    const node = stripped(["lararium-node", "src", "open-node-vessel.ts"]);
+    expect(node).toMatch(/const litSibling = \(entry: JoinedFaceAuth\): void => \{[\s\S]{0,600}standSiblingSession\(\{ group, atomKey: entry\.atom\.key \}\)/);
+    expect(node).toMatch(/for \(const sibling of siblingSessions\.values\(\)\) sibling\.seat\.book\(book\)/);
+    expect(node).toMatch(/standFaceDaemonCanon\(\{ repo, control: await readControlDoc\(\), faceRelation: relation/);
+    expect(node).toMatch(/siblingBasesKeepers\.set\(group, keepFaceBases\(/);
+    expect(node).toMatch(/const dropped = sealedRest\.forget\(owned\);[\s\S]{0,120}repo\.removeFromCache\(/);
+    expect(node).toMatch(/sealedRest\.watch\(repo, standingSaveSessionFor\)/);
+    expect(node).toMatch(/openFaces: openFaceSubjects/);
+  });
+
+  it("the island resolves each lit face's own slots and lands a face-named wave there", () => {
+    const island = stripped(["lararium-keyhive", "src", "operator-daemon-behavior.ts"]);
+    expect(island).toMatch(/faceTarget: litFaceTargetOf\(ctx\)/);
+    expect(island).toMatch(/litSiblings\.set\(key, face\)/);
+    expect(stripped(["lararium-node", "src", "joined-face-auth.ts"])).toMatch(/registerBags: deriveRegisterBags\(\{ fleets: \[\], wikiBags: litFaceOwnBags\(relation\) \}\)/);
   });
 });

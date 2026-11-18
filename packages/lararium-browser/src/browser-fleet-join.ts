@@ -23,15 +23,15 @@
  */
 import * as ed25519 from "@noble/ed25519";
 import {
-  bytesEqual, composeFleetJoinRequest, fleetJoinSealPair, hex, hexToBytes, readFleetJoinAnswer, readFleetJoinOffer,
+  bytesEqual, composeFleetJoinRequest, fleetJoinHearthOf, fleetJoinSealPair, hex, hexToBytes, readFleetJoinAnswer, readFleetJoinOffer,
   readFleetJoinRequest,
-  type FaceScope, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKeyCustody,
+  type FaceScope, type FleetJoinAnswer, type FleetJoinHearthDial, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKeyCustody,
 } from "@lararium/mesh";
 import { carriedAdmitOfFleetJoin, type CarriedAdmitPayload } from "@lararium/keyhive";
 import {
   FLEET_JOIN_STORE, idbGet, openVesselIdb,
 } from "./browser-vessel-identity.js";
-import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
+import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";
 import { heldFaces } from "./browser-face-custody.js";
 import { browserFaceAtom, browserVesselFaceTagDoor, faceAddressSecretRow, type BrowserTagDoorWard } from "./browser-face-atom.js";
 
@@ -48,16 +48,12 @@ const PENDING_PREFIX = "fleet-join-pending/";
 const pendingRow = (personaGroup: string): string => `${PENDING_PREFIX}${personaGroup}`;
 const isRefusal = (v: unknown): v is { refusal: string } => typeof v === "object" && v !== null && "refusal" in v;
 /** The face-scoped key's row, named by the face it serves: it rests under that face's own tree. */
-export const faceKeyRow = (personaGroup: string, scope: FaceScope): string => `vessel-face-key/${personaGroup}|${scope.nexus}|${scope.faceKey.toLowerCase()}`;
+export const faceKeyRecord = (personaGroup: string, scope: FaceScope): string => `vessel-face-key/${personaGroup}|${scope.nexus}|${scope.faceKey.toLowerCase()}`;
 
 /** The dial a landed answer carried, kept per face (`dial:<group>`): what the face's presentation reads at its hearth. */
-export interface KeptFleetJoinDial {
-  readonly charter:  FleetJoinAnswer["charter"];
-  readonly admit:    FleetJoinAnswer["admit"];
-  readonly carriage: FleetJoinAnswer["carriage"];
-}
+export type KeptFleetJoinDial = Pick<FleetJoinHearthDial, "charter" | "admit" | "carriage">;
 /** The row a face's kept dial rests at in the fleet-join store. */
-export const dialRow = (personaGroup: string): string => `dial:${personaGroup}`;
+export const dialRecord = (personaGroup: string): string => `dial:${personaGroup}`;
 
 /** What this browser keeps while its join stands pending; `landed` once its answer landed, awaiting the boot. */
 interface PendingJoin { readonly offer: FleetJoinOffer; readonly request: FleetJoinRequest; readonly sealSecret: string; readonly landed?: true }
@@ -84,8 +80,8 @@ function inOneTransaction<T>(db: IDBDatabase, store: string, act: (os: IDBObject
 /** The face-scoped key standing for `scope`, or `fresh` sealed there when none stands, read and written in one
  *  custody act: a key an earlier request left at rest answers again, so the same offer retries clean. */
 async function standOrStoreVesselFaceKey(idbName: string, personaGroup: string, scope: FaceScope, fresh: Uint8Array): Promise<Uint8Array> {
-  const row = faceKeyRow(personaGroup, scope);
-  return withCustodyRows(idbName, async (rows) => {
+  const row = faceKeyRecord(personaGroup, scope);
+  return withCustodyRecords(idbName, async (rows) => {
     const standing = await rows.read(row);
     if (standing === undefined) { await rows.write(row, fresh); return Uint8Array.from(fresh); }
     if (!(standing instanceof Uint8Array) || standing.length !== 32) throw new BrowserFleetJoinRefused("face-key-malformed", `the key standing for ${scope.nexus} does not read.`);
@@ -98,7 +94,7 @@ async function standOrStoreVesselFaceKey(idbName: string, personaGroup: string, 
 export function browserVesselFaceKeyCustody(idbName: string, personaGroup: string): VesselFaceKeyCustody {
   return {
     async signAsVesselFace(scope, vesselFaceKey, image) {
-      const secret = await readKeystoreRow(idbName, faceKeyRow(personaGroup, scope));
+      const secret = await readKeystoreRecord(idbName, faceKeyRecord(personaGroup, scope));
       if (!(secret instanceof Uint8Array) || secret.length !== 32) throw new BrowserFleetJoinRefused("face-key-absent", `no face-scoped key stands for ${scope.nexus}.`);
       const held = Uint8Array.from(secret);
       try {
@@ -110,7 +106,7 @@ export function browserVesselFaceKeyCustody(idbName: string, personaGroup: strin
 }
 
 async function readPending(idbName: string, personaGroup: string): Promise<PendingJoin | null> {
-  return (await readKeystoreRow(idbName, pendingRow(personaGroup)) as PendingJoin | undefined) ?? null;
+  return (await readKeystoreRecord(idbName, pendingRow(personaGroup)) as PendingJoin | undefined) ?? null;
 }
 
 /** Every face this thread holds unlocked with a join pending under its own tree: a locked face's pending row reads nowhere. */
@@ -157,7 +153,7 @@ export async function browserFleetJoinRequest(opts: {
     });
     if (isRefusal(request)) throw new BrowserFleetJoinRefused(request.refusal, "the request this browser composed does not read back.");
     const kept: PendingJoin = { offer, request, sealSecret: hex(seal.secret) };
-    await withCustodyRows(idbName, async (rows) => {
+    await withCustodyRecords(idbName, async (rows) => {
       if (await rows.read(pendingRow(offer.personaGroup)) !== undefined) throw new BrowserFleetJoinRefused("join-pending", "another fleet join for this face came to stand pending in this browser meanwhile.");
       await rows.write(pendingRow(offer.personaGroup), kept);
     });
@@ -167,7 +163,7 @@ export async function browserFleetJoinRequest(opts: {
 
 /** Clear the pending row inside one transaction, when `keep` reads it as the one to clear; answers whether it went. */
 function clearPendingWhere(idbName: string, personaGroup: string, clear: (p: PendingJoin) => boolean): Promise<boolean> {
-  return withCustodyRows(idbName, async (rows) => {
+  return withCustodyRecords(idbName, async (rows) => {
     const p = await rows.read(pendingRow(personaGroup)) as PendingJoin | undefined;
     if (!p || !clear(p)) return false;
     await rows.delete(pendingRow(personaGroup));
@@ -212,10 +208,11 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
   const { answer, addressSecret } = verified;
   const admit = carriedAdmitOfFleetJoin(answer);
   if (isRefusal(admit)) { addressSecret.fill(0); throw new BrowserFleetJoinRefused(admit.refusal, "the answer's device edge does not found this face."); }
+  const hearth = fleetJoinHearthOf(answer);
   const secretRow = faceAddressSecretRow(answer.personaGroup);
   const recordRow = `record:${answer.personaGroup}`;
   try {
-    await withCustodyRows(idbName, async (rows) => {
+    await withCustodyRecords(idbName, async (rows) => {
       const p = await rows.read(pendingRow(offer.personaGroup)) as PendingJoin | undefined;
       if (p?.request?.nonce !== request.nonce || p.request.sealKey !== request.sealKey) {
         throw new BrowserFleetJoinRefused("join-absent", "no join pending here matches the request this answer lands.");
@@ -233,7 +230,8 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
       await rows.write(secretRow, addressSecret);
       await withDb(idbName, (db) => inOneTransaction<void>(db, FLEET_JOIN_STORE, (os, _refuse, done) => {
         os.put({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants }, recordRow);
-        os.put({ charter: answer.charter, admit: answer.admit, carriage: answer.carriage } satisfies KeptFleetJoinDial, dialRow(answer.personaGroup));
+        // The dial rests where the answer carried one; a root holder that stood no gate carried none, and no row lands.
+        if (hearth !== null) os.put({ charter: hearth.charter, admit: hearth.admit, carriage: hearth.carriage } satisfies KeptFleetJoinDial, dialRecord(answer.personaGroup));
         done(undefined);
       }));
       await rows.write(pendingRow(offer.personaGroup), { ...p, landed: true } satisfies PendingJoin);

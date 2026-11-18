@@ -3,7 +3,7 @@
  * 2026-10-29 from W27: "a write lands on a working layer, and canon takes it by promotion", and the `load-into-canon`
  * refusal, which names exactly `MOVE --from wikis/<slug>/working --to bags/<slug>` with no title).
  *
- * A titled MOVE carries one family (the root, `root#…`, `root/…`). A seed that LOADs a holding onto a wiki's working
+ * A titled MOVE carries one family (the root and its component slots, by the one family law). A seed that LOADs a holding onto a wiki's working
  * layer cannot name what landed: the island's answer rides bounded past the outcome cap, and a memetic carrier's
  * record takes its name from its head, never its path (measured on the fresh-root walk). So the promotion is ONE act:
  * a MOVE naming the two bags and no title moves every live title the working layer holds, lands each in canon first,
@@ -26,7 +26,11 @@ import type { VerbContext } from "../src/verb-dispatcher.js";
 
 const canonBag = "lar:///ha.ka.ba/bags/probe";
 const workingBag = "lar:///ha.ka.ba/wikis/probe/working";
-const live = (title: string) => ({ tiddler: { title, text: `text of ${title}` }, meta: { changeId: `change:${title}` } });
+// A slot record names its root by its parent edge, as the split mints it: the family law reads that edge.
+const live = (title: string) => ({
+  tiddler: { title, text: `text of ${title}`, ...(title.includes("#") ? { "$fragment-parent": title.slice(0, title.indexOf("#")) } : {}) },
+  meta: { changeId: `change:${title}` },
+});
 const hand = { kind: "tw-local", instanceId: "test" } as const;
 const TWO = "lar:///ha.ka.ba/other/two";
 const FAMILIES = ["lar:///ha.ka.ba/bags/probe", "lar:///ha.ka.ba/bags/probe#/$postamble", "lar:///ha.ka.ba/probe/docs/one", "lar:///ha.ka.ba/other/two"];

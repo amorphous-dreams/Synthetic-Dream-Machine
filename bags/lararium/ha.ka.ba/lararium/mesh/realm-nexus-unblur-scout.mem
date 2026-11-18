@@ -110,7 +110,7 @@ NEXUS_SCOPE_INFO          = "lar:///ha.ka.ba/lares/domain/nexus-scope/v1"       
 REALM_FEED_DOMAIN = "lar/realm-feed"      cabal-realm-clock.ts:269
 ```
 
-It rides as `kind:` inside `realmFeedBytes()` (`:279-286`) over `{kind, realm, writer, epoch}`, signed at `:288`. It wears the RETIRED `lar/<name>` spelling rather than the unified `lar:///…/domain/<name>/v1` form (`domains.ts:16-18`) — read as a probable ''domain-registry witness gap'', worth its own check. Un-renameable regardless: signed bytes.
+It rides as `kind:` inside `realmFeedBytes()` (`:279-286`) over `{kind, realm, writer, epoch}`, signed at `:288`. It wears the bare `lar/<name>` spelling rather than the unified `lar:///…/domain/<name>/v1` form (`domains.ts:16-18`) — read as a probable ''domain-registry witness gap'', worth its own check. Un-renameable regardless: signed bytes.
 
 !!! Deterministic doc-url seeds (hashed into Automerge DocumentIds)
 
@@ -165,7 +165,7 @@ the record version literal "realm-bag"                                        re
 !!! On-disk paths
 
 ```
-join(laresDataHome(), "nexus")                        lararium-node/src/vessel-paths.ts:414
+join(larHearthHome(), "nexus")                        lararium-node/src/vessel-paths.ts (larSealHome)
 join(sealHome, "nexus", "carriage-consent.json")      lararium-node/src/commands/nexus-contract.ts:302
 the `bags/nexus` charter home                         nexus-refresh.ts:42 · open-node-vessel.ts
 ```
@@ -202,6 +202,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hSyj2mevBQAeGRAoxsO1VHpF3Y37nJN1fOzGoXZbOe4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NWLcqf6mvxVYN4sadnhrIEwn9k2Jl5P9gXqag_uqSh4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

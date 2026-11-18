@@ -29,7 +29,7 @@ import {
   type IslandHostShore,
 } from "@lararium/tw5";
 import {
-  makeCidResolver, islandRestGuard, vesselRestAsker, type StorageAdapterInterface,
+  makeCidResolver, islandRestGuard, vesselRestAsker, seatHouseCanon, type StorageAdapterInterface,
   type IslandMsg_Manifest,
   type IslandStorageConfig,
   type IslandToVesselMsg,
@@ -221,6 +221,8 @@ export function runSovereignWorker(
   // The runtime `casDir` (engine/plugin bytes) falls back to the sibling of its storage dir where the vessel handed none.
   const handed = (workerData ?? {}) as Partial<IslandCasData>;
   const corpusCasDir: string | null = handed.corpusCasDir ?? null;
+  // THE HOUSE CANON the vessel seated rides in with the CAS dirs: this thread's predicate reads the vessel's one set.
+  if (Array.isArray(handed.houseCanon)) seatHouseCanon(handed.houseCanon);
   if (handed.cidDir) casDir = handed.cidDir;
 
   const restsAtVessel = vesselRestAsker({
@@ -235,6 +237,7 @@ export function runSovereignWorker(
       if (msg.storage?.type === "nodefs" && !handed.cidDir) casDir = casDirFromIslandStorageDir(msg.storage.dir);
       return _buildStorage(msg.storage, restsAtVessel);
     },
+    restsAtVessel,
     // Resolve by content-address — the vessel's cas capability (basket-one #/the-fetch-door), composed here as
     // `makeCidResolver(localRead, portTransit, cacheWriteThrough)` (@lararium/mesh):
     //   · localRead — the runtime CID plane first (engine/plugin bytes), then the corpus CAS (staged

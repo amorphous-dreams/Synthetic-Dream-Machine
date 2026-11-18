@@ -18,7 +18,7 @@
  *
  * ── WHAT A RE-ISSUE ANSWERS, AND WHAT IT DOES NOT ───────────────────────────────────────────────
  * A re-issue moves a key the face still holds. A COMPROMISE of that key takes the face-key roll (a revoke and a
- * fresh admit on the Nexus's board): a thief holding the old key could sign a hand-over of its own, and the gate
+ * fresh admit on the Nexus's board): a thief holding the compromised key could sign a hand-over of its own, and the gate
  * then reads two hand-overs from one key, a fork, which refuses the line whole.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy

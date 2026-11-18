@@ -2,7 +2,7 @@
  * nexus-publish — THE OFFERING DOOR: what THIS operator publishes for others to take.
  *
  * ── WHY IT STANDS APART FROM `kahuli` ────────────────────────────────────────────────────────────
- * `kahuli` overturns what the MESH must agree on: `engineCid` (the hearth true-name, signed into every
+ * `kahuli` overturns what the MESH must agree on: `engineCid` (the engine CID, signed into every
  * device-delegation edge) and `grammarCid` (the required memetic-wikitext grammar alone). Both ratchet,
  * and an operator who advances one moves everybody's reading.
  *
@@ -43,7 +43,7 @@ const PUBLISH_USAGE: readonly string[] = [
   "             descriptor this persona signs fresh, as PUBLISHER.",
   "",
   "  --source   the offering source directory (required).",
-  "  --apply    sign the offering (when unsigned) + announce it on the crossroads plane.",
+  "  --apply    sign the offering (when unsigned) + announce it on the Nexus's publication board.",
 ];
 
 /**
@@ -51,8 +51,8 @@ const PUBLISH_USAGE: readonly string[] = [
  *
  * The read names the region a FRESH fold of `<dir>`'s blobs would carry, and the blobs themselves. A
  * read never bakes, signs, or touches bytes on disk beyond `<dir>` itself — it reports what `--apply`
- * WOULD announce, never genesis's own region (H3: genesis carries the boot set alone since the Streams
- * retirement, and was never a registry of what an operator may offer).
+ * WOULD announce, never genesis's own region (H3: genesis carries the boot set alone and names no
+ * registry of what an operator may offer).
  */
 async function publishPlugins(args: ParsedArgs): Promise<number> {
   const source = args.options["source"];

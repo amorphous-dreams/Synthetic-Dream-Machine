@@ -4,7 +4,7 @@
  *
  * ── MINTED ONCE, THEN STABLE ────────────────────────────────────────────────────────────────────
  * The first unlocked composition that asks finds no row and mints 32 random bytes into it, inside one custody hold
- * (`updateCustodyRow`): a second ask, in this process or another, reads the row the first one landed and mints
+ * (`updateCustodyRecord`): a second ask, in this process or another, reads the row the first one landed and mints
  * nothing. Every later unlock opens the same key, so a parcel sealed before a restart opens again after it.
  *
  * ── HANDED TO THE DAEMON ISLAND AT UNLOCK ───────────────────────────────────────────────────────
@@ -18,7 +18,7 @@
  * The parcels rest under the outbox key's own seal, which the rotation never reads.
  */
 import { readOutboxKey, mintOutboxKey, type OutboxKey } from "@lararium/mesh";
-import { updateCustodyRow } from "./custody-seat.js";
+import { updateCustodyRecord } from "./custody-seat.js";
 
 /** One outbox key per SENDING FACE: `outbox-key-h<N>.bin`, in that face's own directory under its key. */
 export const OUTBOX_KEY_FILE = /^outbox-key-h(0|[1-9]\d*)\.bin$/;
@@ -32,11 +32,11 @@ export class OutboxKeyUnreadable extends Error {
 
 /**
  * The outbox key of the sending face `face`: the row's bytes where it stands, a fresh key sealed into it where it does not. Refuses
- * `CustodyLocked` on a locked vessel and `CustodyRowUnavailable` on a row the seat's key does not open, before any
+ * `CustodyLocked` on a locked vessel and `CustodyRecordUnavailable` on a row the seat's key does not open, before any
  * mint.
  */
 export function openOutboxKey(face: number): Promise<OutboxKey> {
-  return updateCustodyRow<OutboxKey>("identity", outboxKeyFile(face), (standing) => {
+  return updateCustodyRecord<OutboxKey>("identity", outboxKeyFile(face), (standing) => {
     if (standing !== null) {
       const key = readOutboxKey(standing);
       if (key === null) throw new OutboxKeyUnreadable(standing.length);

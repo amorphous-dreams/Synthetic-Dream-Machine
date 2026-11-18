@@ -15,10 +15,10 @@ import { CustodyLocked, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { custodyStatus } from "../src/custody-session.js";
 import { FIXTURE_PASSPHRASE, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 
 let c: SeatedScratchCustody;
-const path = () => handleRowPathIn(c.homes.identity, outboxKeyFile(0));
+const path = () => handleRecordPathIn(c.homes.identity, outboxKeyFile(0));
 beforeEach(async () => { c = await seatScratchCustody("outbox-key"); });
 afterEach(async () => { await c.drop(); });
 
@@ -62,7 +62,7 @@ describe("the outbox key's row", () => {
     await expect(openOutboxKey(0)).rejects.toBeInstanceOf(CustodyLocked);
     expect(existsSync(path())).toBe(false);
     await c.holder.adopt(c.treeKey);
-    await c.holder.writeRow("identity", outboxKeyFile(0), new Uint8Array(16));
+    await c.holder.writeRecord("identity", outboxKeyFile(0), new Uint8Array(16));
     const before = readFileSync(path());
     await expect(openOutboxKey(0)).rejects.toBeInstanceOf(OutboxKeyUnreadable);
     expect(readFileSync(path()).equals(before)).toBe(true);

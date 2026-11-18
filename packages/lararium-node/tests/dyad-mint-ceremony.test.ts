@@ -22,6 +22,7 @@ import type { LarDoc } from "@lararium/mesh";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
@@ -33,7 +34,7 @@ const JOINEE_ATOM = new Uint8Array(32).fill(12);
 async function found(hearthTrueName: string = HEARTH_AID) {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo,
+  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo,
     vesselSeed:         FOUNDER_SEED,
     placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",
@@ -54,8 +55,8 @@ async function founderPersonaKelChain(founder: Awaited<ReturnType<typeof found>>
   return chain;
 }
 
-async function dyadSlotsOf(repo: Repo, daemonUrl: string): Promise<DyadRecord[]> {
-  const handle = await repo.find(daemonUrl as AutomergeUrl);
+async function dyadSlotsOf(repo: Repo, secretUrl: string): Promise<DyadRecord[]> {
+  const handle = await repo.find(secretUrl as AutomergeUrl);
   const doc = await handle.doc() as { tiddlers: Record<string, { tiddler?: { text?: string } }> };
   return Object.keys(doc.tiddlers)
     .filter((t) => t.startsWith(DYAD_SLOT_PREFIX))
@@ -65,7 +66,7 @@ async function dyadSlotsOf(repo: Repo, daemonUrl: string): Promise<DyadRecord[]>
 describe("the ceremony mints the dyad", () => {
   test("founding writes one atom dyad slot with a signed binding", async () => {
     const { repo, f } = await found();
-    const slots = await dyadSlotsOf(repo, f.daemonUrl);
+    const slots = await dyadSlotsOf(repo, f.secretUrl);
     expect(slots.length, "founding mints exactly one dyad").toBe(1);
 
     const atom = faceAtomKeyFromSeed(f.atomSeed, f.personaGroupId);
@@ -90,11 +91,11 @@ describe("the ceremony mints the dyad", () => {
 
   test("★ a face founded at NO hearth binds no dyad: its slot carries binding null — CONTROL: at a hearth it binds ★", async () => {
     const { repo, f } = await found("");
-    const slots = await dyadSlotsOf(repo, f.daemonUrl);
+    const slots = await dyadSlotsOf(repo, f.secretUrl);
     expect(slots).toHaveLength(1);
     expect(slots[0]!.binding).toBeNull();
     const at = await found();
-    expect((await dyadSlotsOf(at.repo, at.f.daemonUrl))[0]!.binding).not.toBeNull();
+    expect((await dyadSlotsOf(at.repo, at.f.secretUrl))[0]!.binding).not.toBeNull();
   });
 
   test("apply writes the joinee atom's dyad slot with a null binding", async () => {
@@ -113,11 +114,11 @@ describe("the ceremony mints the dyad", () => {
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
 
     const joineeRepo = new Repo({ sharePolicy: async () => true });
-    const applied = await runApplyAdmitPayload({ repo: joineeRepo, atomSeed: JOINEE_ATOM, daemonHandle: seedDaemonDoc(joineeRepo),
+    const applied = await runApplyAdmitPayload({ repo: joineeRepo, atomSeed: JOINEE_ATOM, daemonHandle: seedDaemonDoc(joineeRepo), ...memorySecretHome(joineeRepo),
       vesselDisplayName: "Ichi", payload, nexusPubkey: await pubOf(JOINEE_SEED),
     });
 
-    const slots = await dyadSlotsOf(joineeRepo, applied.daemonUrl);
+    const slots = await dyadSlotsOf(joineeRepo, applied.secretUrl);
     expect(slots.length, "the admit mints exactly one dyad on the joinee").toBe(1);
 
     const slot = slots[0]!;
@@ -130,7 +131,7 @@ describe("the ceremony mints the dyad", () => {
     // derived veil. One relationship, one record, and the slot's reading is the one that surfaces —
     // the exact union the boot read path (`openDaemon`) now walks on a live daemon doc.
     const { repo, f } = await found();
-    const handle = await repo.find(f.daemonUrl as AutomergeUrl);
+    const handle = await repo.find(f.secretUrl as AutomergeUrl);
     const doc = await handle.doc() as unknown as LarDoc;
 
     const dyads = vesselDyads(doc);

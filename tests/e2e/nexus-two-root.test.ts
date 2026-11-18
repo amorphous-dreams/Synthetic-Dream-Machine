@@ -41,7 +41,7 @@ const NODE_CWD  = join(REPO_ROOT, "packages/lararium-node");
 
 const cidOf = (text: string): string => cidV1Sha256(new TextEncoder().encode(text));
 const RELEASE = {
-  format: "lararium-release-manifest/v1",
+  format: "lararium-release-manifest",
   image: { digest: `sha256:${"ab".repeat(32)}`, platforms: ["linux/amd64"] },
   genesis: { seedCid: "5e".repeat(32) }, engine: { cid: cidOf("engine") }, grammar: { cid: cidOf("grammar") },
 };
@@ -57,7 +57,7 @@ const cards = new Map<string, string>();
 const seeds = new Map<string, string>();
 
 /** The seal home under one staged root: the household seed's charter rests here, and a carried charter beside it. */
-const sealHome = (h: Hearth): string => join(h.lar.root, "data", "lares", "nexus");
+const sealHome = (h: Hearth): string => join(h.lar.root, "hearth", "nexus");
 const seedBytes = (h: Hearth): string => readFileSync(nexusCharterDocPath(sealHome(h)), "utf8");
 const carriedBytes = (h: Hearth): string => readFileSync(nexusCharterDocPath(join(sealHome(h), "carried", aid)), "utf8");
 const file = (name: string): string => join(courier, name);

@@ -47,8 +47,8 @@ function liveLines(text) {
 }
 
 // ── A STRAGGLER LEAVES THE CORPUS SILENTLY ─────────────────────────────────────────────────────
-// The finder reads only the one spelling, so a file still on a retired DOCTYPE stops declaring: it
-// drops from the carrier list, and every law that walks that list skips it without a word. This gate
+// The finder reads only the one spelling, so a file declaring this grammar any other way stops declaring:
+// it drops from the carrier list, and every law that walks that list skips it without a word. This gate
 // asks the tracked tree instead — every live line opening `<<!DOCTYPE ` toward this grammar that does
 // not read the one declaration. A fence or an HTML comment quotes; neither counts. A DOCTYPE naming
 // some other grammar (a tree-sitter corpus teaching the sigil shape) declares no carrier of ours.

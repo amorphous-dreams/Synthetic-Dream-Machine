@@ -172,18 +172,24 @@ test("served wiki opens the TW5 search dropdown without worker errors", async ()
   assert.deepEqual(wikiWorkerErrors, [], "the served popup walk emits zero [wiki-worker] error lines");
 });
 
-// A tab whose earlier full promotion never landed holds its next boot at skinny (`mirror:began:<wiki>` in sessionStorage),
-// so no promotion snapshot lands after the person acts and nothing re-renders the sidebar. CI reached this tab by timing
-// (the stale-target walk left before its promotion landed); the walk here reaches it on purpose.
+// A tab whose earlier full boot never reached its first painted frame holds its next boot at skinny (`lares:mirror:began:<wiki>` in
+// sessionStorage): the mirror takes its whole handoff at skinny and stays there. The walk reaches that tab on purpose.
 test("a tab held at skinny opens the TW5 search dropdown without worker errors", async () => {
   wikiWorkerErrors.length = 0;
-  await page.goto(baseUrl);
-  await waitForLivePage();
-  await page.evaluate(() => {
-    const wikis = Object.keys(sessionStorage).flatMap((key) => key.match(/^mirror:(?:began|full-standing):(.+)$/)?.slice(1) ?? []);
-    if (wikis.length === 0) throw new Error("no mirror evidence names the wiki this tab shows");
-    for (const wiki of wikis) sessionStorage.setItem(`mirror:began:${wiki}`, "held-by-test");
+  // ONE BOOT SERVES THIS WALK. The tab the search walk left still shows its full mirror, and that mirror's standing record names
+  // the wiki, so the held record plants on the tab as it stands and the one reload below boots held. Two vessel boots do not fit
+  // this test's usual bound on a CI runner (each takes most of a minute there); a tab that arrives bare boots once first, under
+  // the longer bound this test names.
+  const plant = (): Promise<number> => page.evaluate(() => {
+    const wikis = Object.keys(sessionStorage).flatMap((key) => key.match(/^lares:mirror:(?:began|full-standing):(.+)$/)?.slice(1) ?? []);
+    for (const wiki of wikis) sessionStorage.setItem(`lares:mirror:began:${wiki}`, "held-by-test");
+    return wikis.length;
   });
+  if ((await plant()) === 0) {
+    await page.goto(baseUrl);
+    await waitForLivePage();
+    assert.ok((await plant()) > 0, "mirror evidence names the wiki this tab shows");
+  }
   try {
     await page.goto(baseUrl);
     await waitForLivePage();
@@ -193,7 +199,7 @@ test("a tab held at skinny opens the TW5 search dropdown without worker errors",
     const dropdown = wiki.locator(".tc-search-drop-down");
     await dropdown.waitFor({ state: "visible", timeout: 20_000 });
     // The count button carries `popup=` and the popup-handle class, so it toggles the dropdown the focus opened: its first
-    // click shuts it and its second opens it. A held tab lands no promotion snapshot to re-render the sidebar, so each read holds.
+    // click shuts it and its second opens it. A held tab stays at skinny for its life, so each read holds.
     const count = wiki.locator("button").filter({ hasText: "matches" }).first();
     await count.click();
     await dropdown.waitFor({ state: "hidden", timeout: 20_000 });
@@ -201,9 +207,9 @@ test("a tab held at skinny opens the TW5 search dropdown without worker errors",
     await dropdown.waitFor({ state: "visible", timeout: 20_000 });
     assert.deepEqual(wikiWorkerErrors, [], "the held popup walk emits zero [wiki-worker] error lines");
   } finally {
-    await page.evaluate(() => { for (const key of Object.keys(sessionStorage)) if (key.startsWith("mirror:")) sessionStorage.removeItem(key); });
+    await page.evaluate(() => { for (const key of Object.keys(sessionStorage)) if (key.startsWith("lares:mirror:")) sessionStorage.removeItem(key); });
   }
-});
+}, 240_000);   // LIVENESS: two cold vessel boots on a CI runner, the bare-tab road; the usual road boots once
 
 async function waitForLivePage(target = page): Promise<void> {
   const faults = target === page ? browserConsole.filter((line) => line.includes("[daemon-island:fault]")) : [];

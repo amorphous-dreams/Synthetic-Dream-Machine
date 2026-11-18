@@ -11,7 +11,7 @@
 
 import {
   DAEMON_BAG_ID,
-  isSystemCanonBag,
+  isHouseCanonBag,
   type CapabilityAccess,
   type CapabilityVerifyResult,
   type CapabilityVerifier,
@@ -56,16 +56,19 @@ export function makeCapVerify(verifier: CapabilityVerifier | undefined, requeste
 export function deriveRoutedCap(invocation: Verb): { access: CapabilityAccess; bagUrl: string } {
   const a = invocation.args as Record<string, unknown>;
   const pick = (k: string): string | null => (typeof a[k] === "string" ? (a[k] as string) : null);
-  // A hand asking to keep a realm-carried book seals its ask under its own worn face; the book is the realm's, and
+  // A hand asking to keep a realm-carried book seals its ask under its own daemon mount; the book is the realm's, and
   // the stewards' consent on the realm doc decides. The ask therefore answers to the asking vessel's own ground.
   if (invocation.action === "realm-bag" && a["join"] === true) return { access: "admin", bagUrl: DAEMON_BAG_ID };
   const bagUrl = pick("bagUrl") ?? pick("toBag") ?? pick("dest") ?? pick("bag") ?? pick("targetBag") ?? DAEMON_BAG_ID;
+  // A CREATE over house canon writes nothing (the realm holds its one document; another face reads the floor), so it answers
+  // to the asking vessel's own ground, never to the canon bag's cap: the seed reads clean on every face.
+  if (invocation.action === "CREATE" && isHouseCanonBag(bagUrl)) return { access: "admin", bagUrl: DAEMON_BAG_ID };
   return { access: "admin", bagUrl };
 }
 
 /**
  * The bags a routed verb names INSIDE its envelope (`wiki-act` carries its real destination and source in `args.args`):
- * the ones `deriveRoutedCap` never reads. The gate asks the Kahu predicate about each system canon one.
+ * the ones `deriveRoutedCap` never reads. The gate asks the Kahu predicate about each house canon one.
  */
 export function routedInnerBags(invocation: Verb): string[] {
   const outer = invocation.args as Record<string, unknown>;
@@ -120,7 +123,7 @@ export function routedWikiSlug(invocation: Verb): string | null {
 /**
  * THE ROUTED VERB'S GATE, the one place the keyholder island clears a verb before main (and a wiki island behind it)
  * trusts it: the cap `deriveRoutedCap` names, then — for a verifier that carries the Kahu predicate — the predicate for
- * every system canon bag the envelope names inside its args. A refusal throws and the verb is never routed. The wiki
+ * every house canon bag the envelope names inside its args. A refusal throws and the verb is never routed. The wiki
  * island's own clearance (`kahuReachClearedAtGate`) is a composition option set in code at the island's behavior, never a
  * field the envelope can carry, so nothing a caller sends lifts it.
  */
@@ -157,8 +160,8 @@ export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerif
     if (!inner.ok) throw new RoutedCapDenied(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bag}, access=${need}): ${inner.reason ?? "no grant"}`, inner.kind, inner.bagUrl);
   }
   if (verifier.kahuReach) {
-    // System canon takes the Kahu hand wherever the act writes or deletes; a COPY's read-only source asks none.
-    for (const bag of routedInnerBags(invocation)) if (isSystemCanonBag(bag) && !readOnly.has(bag)) await verifier.kahuReach(bag, invocation.action, presenter);
+    // House canon takes the Kahu hand wherever the act writes or deletes; a COPY's read-only source asks none.
+    for (const bag of routedInnerBags(invocation)) if (isHouseCanonBag(bag) && !readOnly.has(bag)) await verifier.kahuReach(bag, invocation.action, presenter);
   }
 }
 

@@ -18,7 +18,7 @@ const keyFor = (name: string, route = "/flow") => ({ hearth: name, nexus: NEXUS_
 
 /** Read a claim (anchored to `place`'s AID, over `rows`) into the stand the index files. */
 async function stood(place: TestPlace, fill: number, rows: unknown[] = rowsOf(place)): Promise<PlaceFloorPinReading> {
-  const read = readPlaceFloorPin(await claimAt(place, pinAt(fill)), { nexusHex: NEXUS_HEX, route: "/flow", kelRows: rows, standing: { via: "anchor", aid: place.aid } });
+  const read = readPlaceFloorPin(await claimAt(place, pinAt(fill)), { nexusHex: NEXUS_HEX, route: "/flow", kelEntries: rows, standing: { via: "anchor", aid: place.aid } });
   if ("refusal" in read) throw new Error(`fixture claim refuses: ${read.refusal}`);
   return read;
 }
@@ -102,6 +102,31 @@ describe("a claim files, and KEL descent replaces", () => {
       expect(ix.get(keyFor("h"))).toEqual(a.pin);
       expect(ix.forks().map((f) => f.key.startsWith("kel"))).toEqual([true]);
     }
+  });
+});
+
+describe("descent rides the hash chain; seq only cross-checks", () => {
+  test("RED: a stand whose seq disagrees with its lineage refuses stand-malformed and files nothing", async () => {
+    const ix = hearthPinIndex();
+    const p0 = foundPlace(1), p1 = rotatePlace(p0);
+    const b = await stood(p1, 11);
+    expect(ix.fileClaim("h", b.pin, { ...b.stand, seq: 0 })).toMatchObject({ filed: false, refusal: "stand-malformed" });
+    expect(ix.fileClaim("h", b.pin, { ...b.stand, seq: 2 })).toMatchObject({ filed: false, refusal: "stand-malformed" });
+    expect(ix.get(keyFor("h"))).toBeNull();
+    // CONTROL: the same stand with its agreeing seq files.
+    expect(ix.fileClaim("h", b.pin, b.stand)).toMatchObject({ filed: true, moved: "first" });
+  });
+
+  test("RED: a higher seq on a chain that does not carry the held head never replaces it: no descent, a fork", async () => {
+    const ix = hearthPinIndex();
+    const p0 = foundPlace(1), left = rotatePlace(p0, 0), right = rotatePlace(p0, 1), rightOn = rotatePlace(right, 2);
+    const l = await stood(left, 11, rowsOf(left));
+    const r2 = await stood(rightOn, 13, rowsOf(rightOn));
+    expect(file(ix, "h", l)).toMatchObject({ filed: true, moved: "first" });
+    // seq 2 sits above seq 1, but the right branch's lineage never carries the left head: descent orders nothing here.
+    expect(r2.stand.seq).toBeGreaterThan(l.stand.seq);
+    expect(file(ix, "h", r2)).toMatchObject({ filed: false, refusal: "fork" });
+    expect(ix.get(keyFor("h"))).toBeNull();
   });
 });
 
@@ -193,7 +218,7 @@ describe("a pin that rides no claim keeps the unclaimed rule (claims always use 
     const p0 = foundPlace(1), p1 = rotatePlace(p0);
     const ix = hearthPinIndex();
     const claims = [await claimAt(p1, pinAt(11)), await claimAt(p0, pinAt(10))];
-    const report = filePlaceFloorPins(ix, claims, { nexusHex: NEXUS_HEX, route: "/flow", kelRows: rowsOf(p1), standing: { via: "anchor", aid: p0.aid } });
+    const report = filePlaceFloorPins(ix, claims, { nexusHex: NEXUS_HEX, route: "/flow", kelEntries: rowsOf(p1), standing: { via: "anchor", aid: p0.aid } });
     expect(report.filed).toEqual([headOf(p1).signerKey]);
     expect(report.held).toEqual(["rollback"]);
     expect(dialPinKeyOf(headOf(p1).signerKey, pinAt(11)).hearth).toBe(headOf(p1).signerKey);

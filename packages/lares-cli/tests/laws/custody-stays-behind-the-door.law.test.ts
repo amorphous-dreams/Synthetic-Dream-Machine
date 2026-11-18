@@ -178,10 +178,10 @@ function literalsOf(source: string): string[] {
 type RowName = { readonly segment: string } | { readonly literal: string };
 function rowName(row: (typeof SEALED_ROWS)[number]): RowName | null {
   // A face row rests at faces/<fcid>/<file>: the file's own matcher names it, never the shared `faces` directory.
-  if (row.under !== "" && row.faceRow === undefined) return { segment: row.under };
+  if (row.under !== "" && row.faceRecord === undefined) return { segment: row.under };
   // The longest literal the matcher spells names the file; a short run (`h`, `json`) names nothing by itself.
-  const longest = literalsOf(row.faceRow ? row.faceRow.inner.source.replace(/^\^\(\?:/, "").replace(/\)\$$/, "") : row.match.source).sort((a, b) => b.length - a.length)[0] ?? "";
-  return longest.replace(/[.\-_]/g, "").length >= (row.faceRow ? 4 : 6) ? { literal: longest } : null;
+  const longest = literalsOf(row.faceRecord ? row.faceRecord.inner.source.replace(/^\^\(\?:/, "").replace(/\)\$$/, "") : row.match.source).sort((a, b) => b.length - a.length)[0] ?? "";
+  return longest.replace(/[.\-_]/g, "").length >= (row.faceRecord ? 4 : 6) ? { literal: longest } : null;
 }
 /** Whether one spelled string names the row: the subtree as a path segment of it, or the file's literal inside it. */
 function names(name: RowName, spelled: string): boolean {
@@ -239,7 +239,7 @@ describe("L12 · custody writes stay behind the sealed door", () => {
     expect(SEALED_ROWS.filter((r) => rowName(r) === null).map((r) => r.row)).toEqual([]);
     expect(HOLDER_WRITES.length).toBeGreaterThanOrEqual(3);
     expect(SEAT_DOORS.length).toBeGreaterThanOrEqual(HOLDER_WRITES.length);
-    for (const door of SEAT_DOORS) expect(door).toMatch(/CustodyRow$/);
+    for (const door of SEAT_DOORS) expect(door).toMatch(/CustodyRecord$/);
     expect(SEALED_WRITER_DOORS.length).toBeGreaterThanOrEqual(3);
     expect(WRITER_MODULES.length).toBeGreaterThan(8);
     expect([...WRITER_FUNCTIONS].filter(([, fns]) => fns.length === 0).map(([path]) => relative(NODE_SRC, path))).toEqual([]);

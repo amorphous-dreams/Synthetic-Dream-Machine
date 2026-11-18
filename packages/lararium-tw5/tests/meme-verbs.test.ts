@@ -9,7 +9,7 @@
  * cannot write fails loud, naming the bag. `base` carries the writer's merge base; stale reads CONFLICT.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, NoWorkingLayerRefusal, bagUri, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { CompositeStore, NoWorkingLayerRefusal, bagUri, carrierHashOf, overrideBaseOf, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 import { effectiveRecipe } from "../src/recipe-planes.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, MEME_LIST_PAGE, type MemeVerbOptions } from "../src/meme-verbs.js";
@@ -181,6 +181,35 @@ describe("meme-put — a named recipe (an edit AS that wiki)", () => {
     expect(await store.get(URI)).toBeTruthy();
     expect((await store.get(URI))?.tiddler["bag"]).toBeUndefined();
     expect(r.wiki.store.size).toBe(0);
+  });
+
+  test("a face that holds no writer's seat in the wiki's workbench lands its put in its own personal layer, and the answer names the layer", async () => {
+    const r = rig();
+    const working = wikiSlotUri("elyncia", "working"), personal = wikiSlotUri("elyncia", "personal");
+    r.recipes.set(recipeUri("catalog", "elyncia"), { tiddler: { title: recipeUri("catalog", "elyncia"), "bag-stack": bagUri("elyncia"), "writable-bag": working } });
+    // A reader's seat: the workbench stands and reads, and this face writes none of it.
+    const bench = new MemoryTiddlerStore(working), margin = new MemoryTiddlerStore(personal);
+    r.slots.set("elyncia/working", bench); r.slots.set("elyncia/personal", margin);
+    const unseated = { ...r.opts, writeSlot: async () => "personal" as const };
+    capCalls.length = 0;
+    const receipt = await makeMemePutReactor(unseated)({ recipe: "elyncia", uri: URI, text: meme(["a"]) }, ctx());
+    expect(receipt["decision"]).toBe("ingest");
+    expect(receipt["bag"], "the answer names the bag the put landed in").toBe(personal);
+    expect(receipt["layer"]).toBe("personal");
+    expect(await margin.get(URI), "the save rests in the face's personal layer").toBeTruthy();
+    expect(await bench.get(URI), "the workbench takes no byte of it").toBeNull();
+    expect(capCalls.filter((c) => c.access === "admin").map((c) => c.bag), "the write cap gates the layer that takes the write").toEqual([personal]);
+    // The wiki's own read answers it back: the personal layer rides above the workbench in the stack.
+    const got = await makeMemeGetReactor(unseated)({ recipe: "elyncia", uri: URI }, ctx());
+    expect((got["meme"] as { text?: string } | null)?.text).toContain("! a");
+    // CONTROL: a face that holds a writer's seat lands in the workbench, and its answer says so.
+    const bench2 = new MemoryTiddlerStore(working), margin2 = new MemoryTiddlerStore(personal);
+    r.slots.set("elyncia/working", bench2); r.slots.set("elyncia/personal", margin2);
+    const seated = await makeMemePutReactor({ ...r.opts, writeSlot: async () => "working" as const })({ recipe: "elyncia", uri: URI, text: meme(["a"]) }, ctx());
+    expect(seated["bag"]).toBe(working);
+    expect(seated["layer"]).toBe("working");
+    expect(await bench2.get(URI)).toBeTruthy();
+    expect(await margin2.get(URI)).toBeNull();
   });
 
   test("a recipe whose writable bag the island mounts writable lands through the composite", async () => {
@@ -361,7 +390,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     const { canon } = stacked(r);
     await land(canon, bagUri("garden"), ["a"]);
     const working = r.slots.get("garden/working")!;
-    await working.put({ tiddler: { title: `${URI}#/extra`, text: "a child the working layer holds alone" }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: wikiSlotUri("garden", "working") });
+    await working.put({ tiddler: { title: `${URI}#/extra`, text: "a child the working layer holds alone", "$fragment-parent": URI }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: wikiSlotUri("garden", "working") });
     const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
     expect(gone["tombstoned"]).toContain(`${URI}#/extra`);
     expect((await working.get(`${URI}#/extra`))?.meta?.deleted).toBe(true);
@@ -371,7 +400,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     const r = rig();
     const { canon, draft } = stacked(r);
     await land(canon, bagUri("garden"), ["a"]);
-    await draft.put({ tiddler: { title: `${URI}#/b`, text: "a draft child over canon" }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: wikiSlotUri("garden", "draft") });
+    await draft.put({ tiddler: { title: `${URI}#/b`, text: "a draft child over canon", "$fragment-parent": URI }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: wikiSlotUri("garden", "draft") });
     const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
     expect(gone).toMatchObject({ decision: "removed", readFrom: bagUri("garden") });
     expect([...(gone["tombstonedIn"] as string[])].sort()).toEqual([wikiSlotUri("garden", "draft"), wikiSlotUri("garden", "working")].sort());
@@ -408,7 +437,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     const r = rig();
     const { canon, draft } = stacked(r);
     await land(draft, wikiSlotUri("garden", "draft"), ["b"]);
-    await canon.put({ tiddler: { title: `${URI}#/secret`, text: "a child canon holds" }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: bagUri("garden") });
+    await canon.put({ tiddler: { title: `${URI}#/secret`, text: "a child canon holds", "$fragment-parent": URI }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: bagUri("garden") });
     const blind: VerbContext = { ...ctx(), cap: async (access, bag) => (access === "read" && bag === bagUri("garden") ? { ok: false, reason: "no read" } : { ok: true }) };
     await expect(makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, blind)).rejects.toThrow(new RegExp(`cap-denied: read on ${bagUri("garden").replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}`));
     expect((await draft.get(URI))?.meta?.deleted).toBeFalsy();
@@ -856,5 +885,61 @@ describe("the recipe readers agree", () => {
     delete docs["automerge:cat"]![OWN];
     expect((await options().recipeOf("lares"))?.tiddler["bag-stack"]).toBe("default");
     docs["automerge:cat"]![OWN] = mk(OWN, "own");
+  });
+});
+
+describe("meme-put — THE FORK REMEMBERS ITS BASE at the meme door (override-base.ts)", () => {
+  /** A wiki `garden` over its canon; its working slot the resolver hands back. */
+  const garden = (r: Rig) => {
+    const working = wikiSlotUri("garden", "working");
+    r.recipes.set(recipeUri("catalog", "garden"), { tiddler: { title: recipeUri("catalog", "garden"), "bag-stack": `${bagUri("lares")} ${bagUri("garden")}`, "writable-bag": working } });
+    const canon = new MemoryTiddlerStore(bagUri("garden"));
+    r.reached.set(bagUri("garden"), canon);
+    const layer = new MemoryTiddlerStore(working);
+    r.slots.set("garden/working", layer);
+    return { canon, layer, working };
+  };
+  const seedCanon = async (canon: MemoryTiddlerStore, slots: readonly string[]) =>
+    placeMeme({ uri: URI, text: meme(slots) }, storeMemeSink(canon, bagUri("garden"), { kind: "canon-hydrate", receipt: "t" }));
+
+  test("★ a put through --recipe into the working layer over a title canon holds names canon's carrier identity, and a later put keeps it ★", async () => {
+    const r = rig();
+    const { canon, layer } = garden(r);
+    await seedCanon(canon, ["a"]);
+    const canonHash = carrierHashOf((await canon.get(URI))!.tiddler);
+    await makeMemePutReactor(r.opts)({ recipe: "garden", uri: URI, text: meme(["a", "b"]) }, ctx());
+    expect(overrideBaseOf(await layer.get(URI)), "the working copy forked from canon names no base: canon's fresher warning can never read").toBe(canonHash);
+    expect(overrideBaseOf(await layer.get(`${URI}#/a`)), "a slot canon holds forks from canon's slot").toBe(carrierHashOf((await canon.get(`${URI}#/a`))!.tiddler));
+    expect(overrideBaseOf(await layer.get(`${URI}#/b`)), "a slot canon holds none of names no base").toBeNull();
+    // Canon moves under the copy; a re-put of the copy keeps the base it FORKED from, never canon's new identity.
+    await seedCanon(canon, ["a", "moved"]);
+    await makeMemePutReactor(r.opts)({ recipe: "garden", uri: URI, text: meme(["a", "b", "c"]) }, ctx("r2"));
+    expect(overrideBaseOf(await layer.get(URI)), "a later write of the copy dropped or re-forked the base it forked from").toBe(canonHash);
+  });
+
+  test("★ a put by slot (--bag wikis/<slug>/working) stamps the same base ★", async () => {
+    const r = rig();
+    const { canon, layer, working } = garden(r);
+    await seedCanon(canon, ["a"]);
+    await makeMemePutReactor(r.opts)({ bag: working, uri: URI, text: meme(["a", "b"]) }, ctx());
+    expect(overrideBaseOf(await layer.get(URI))).toBe(carrierHashOf((await canon.get(URI))!.tiddler));
+  });
+
+  test("CONTROL: a working-only title (canon holds none) names no base", async () => {
+    const r = rig();
+    const { layer } = garden(r);
+    await makeMemePutReactor(r.opts)({ recipe: "garden", uri: URI, text: meme(["a"]) }, ctx());
+    expect(overrideBaseOf(await layer.get(URI))).toBeNull();
+  });
+
+  test("CONTROL: a put into the face's personal layer forks no override (only the working layer does)", async () => {
+    const r = rig();
+    const { canon } = garden(r);
+    await seedCanon(canon, ["a"]);
+    const margin = new MemoryTiddlerStore(wikiSlotUri("garden", "personal"));
+    r.slots.set("garden/personal", margin);
+    await makeMemePutReactor({ ...r.opts, writeSlot: async () => "personal" as const })({ recipe: "garden", uri: URI, text: meme(["a", "b"]) }, ctx());
+    expect(await margin.get(URI)).toBeTruthy();
+    expect(overrideBaseOf(await margin.get(URI))).toBeNull();
   });
 });

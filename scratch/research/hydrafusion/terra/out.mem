@@ -1,0 +1,123 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/terra/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/hydrafusion/terra/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/terra/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/terra/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/hydrafusion/terra/out.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/terra/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/project-hydrafusion-and-our-swarm-2026-10-28`>>
+
+! Project HydraFusion and our swarm — 2026-10-28
+
+Ink-Clerk · evidence read; REASONED marks judgments and proposals. GitHub documentation without a publication date is cited with its access date, 2026-10-28. Local documents are cited by path and their stated date, or access date when undated.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/existence-and-present-status`>>
+
+!! Existence and present status
+
+''SOURCED — Yes.'' GitHub announced [[Project HydraFusion|https://github.blog/ai-and-ml/project-hydrafusion-frontier-quality-via-multi-model-orchestration/]] on 2026-09-04 as a Copilot research preview for runtime multi-model orchestration. On 2026-10-28 GitHub announced [[Copilot Fusion|https://github.blog/changelog/2026-10-28-route-and-orchestrate-models-with-github-copilot-fusion/]] as generally available, combining HydraFusion orchestration with Auto selection; preview selections transition to corresponding Fusion effort levels. This report distinguishes the original research design from the present product.
+
+''REASONED — The important correction:'' Fusion coordinates model executions within a task, but GitHub explicitly says it works separately from subagents and does not start them. It is therefore an adaptive model-workflow component, not evidence of a replacement for our lane controller or multi-worktree swarm. [[Fusion documentation|https://docs.github.com/en/enterprise-cloud%40latest/copilot/concepts/models/copilot-fusion]], accessed 2026-10-28.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-it-is-availability-and-price`>>
+
+!! What it is, availability and price
+
+* ''SOURCED:'' The original preview selected an execution plan balancing quality, cost and latency; it used capability signals for reasoning, coding, debugging and tools. It initially launched in CLI on all plans, then expanded to VS Code and the Copilot app. [[Announcement, 2026-09-04|https://github.blog/ai-and-ml/project-hydrafusion-frontier-quality-via-multi-model-orchestration/]]; [[expansion, 2026-09-30|https://github.blog/changelog/2026-09-30-hydrafusion-in-vs-code-and-the-github-copilot-app/]].
+* ''SOURCED:'' Fusion is GA on all Copilot plans in VS Code, Copilot app, CLI and JetBrains, subject to plan and administrative model policies; select Fusion and Standard, High or Max effort. Models and patterns can change; if none of Fusion's models are available, it does not appear in the picker. [[GA announcement, 2026-10-28|https://github.blog/changelog/2026-10-28-route-and-orchestrate-models-with-github-copilot-fusion/]]; [[docs, accessed 2026-10-28|https://docs.github.com/en/enterprise-cloud%40latest/copilot/concepts/models/copilot-fusion]].
+* ''SOURCED:'' On usage-based billing, each model used is charged at its standard token-based rate; there is no separate Fusion fee. Multiple model calls can consume more AI credits than a single-model task. Paid plans receive 30% off Fusion model costs through 2026-11-30. This is not a flat per-agent price. [[Fusion docs, accessed 2026-10-28|https://docs.github.com/en/enterprise-cloud%40latest/copilot/concepts/models/copilot-fusion]]; [[individual billing, accessed 2026-10-28|https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing]].
+* ''SOURCED / REASONED — legacy annual:'' GitHub says existing Pro/Pro+ annual subscribers who stayed on legacy billing retain premium-request multipliers until their annual plan ends, but also says legacy annual users ''do not receive new models and features''. Fusion's GA announcement says all plans without explicitly resolving that exception. Consequently, do ''not'' assume the operator's legacy annual account can use Fusion: the legacy restriction points against access, but the sources do not explicitly name Fusion. Check the picker and obtain GitHub confirmation before budgeting or changing plans. Nor does the general legacy per-prompt CLI rule establish Fusion's multiplier or billing across its internal legs. [[Legacy changes|https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/what-changed-with-billing]]; [[legacy multipliers|https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/model-multipliers-for-annual-plans]]; [[legacy requests|https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/copilot-requests]], all accessed 2026-10-28; [[GA announcement, 2026-10-28|https://github.blog/changelog/2026-10-28-route-and-orchestrate-models-with-github-copilot-fusion/]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/architecture`>>
+
+!! Architecture
+
+* ''SOURCED:'' For each prompt Fusion selects models, effort and an execution pattern: ''Single'' solves directly; ''Cascade'' drafts, judges and accepts or escalates to a stronger repair; ''Critique'' drafts, reviews and revises. The GA diagram describes a fresh-start repair and a read-only critic that can approve or request revision. [[GA announcement, 2026-10-28|https://github.blog/changelog/2026-10-28-route-and-orchestrate-models-with-github-copilot-fusion/]].
+* ''SOURCED:'' In the preview the critic was a different model family, read-only, and the drafter revised once. October's update described parallel critics, tool-based workspace inspection, stage-specific reasoning effort and a possible judge in Cascade; these are dated preview details, not guarantees of today's every-run behavior. [[2026-09-30|https://github.blog/changelog/2026-09-30-hydrafusion-in-vs-code-and-the-github-copilot-app/]]; [[2026-10-14|https://github.blog/changelog/2026-10-14-hydrafusion-updates-and-new-max-option/]].
+* ''SOURCED:'' GitHub describes selecting the least complex workflow expected to meet the task's needs, validating model bindings, availability and fallback behavior before execution. It does not publish a complete routing policy or a fixed fallback order. Preview pool and effort assignments are time-sensitive. [[Announcement, 2026-09-04|https://github.blog/ai-and-ml/project-hydrafusion-frontier-quality-via-multi-model-orchestration/]]; [[update, 2026-10-14|https://github.blog/changelog/2026-10-14-hydrafusion-updates-and-new-max-option/]].
+* ''SOURCED:'' Fusion keeps the main conversation on the same model when possible to preserve cached tokens; assisting models get the context they need. The initial research description says solver steps share the workspace and review contexts are isolated; later critique can inspect the workspace using tools. GitHub does not specify a durable cross-agent memory system or separate worktree per role. [[Fusion docs, accessed 2026-10-28|https://docs.github.com/en/enterprise-cloud%40latest/copilot/concepts/models/copilot-fusion]]; [[initial design, 2026-09-04|https://github.blog/ai-and-ml/project-hydrafusion-frontier-quality-via-multi-model-orchestration/]]; [[updated critique, 2026-10-14|https://github.blog/changelog/2026-10-14-hydrafusion-updates-and-new-max-option/]].
+* ''REASONED:'' The described roles are solver, judge, repairer and critic, not a documented persistent planner/worker fleet or merge authority. A quality gate is a model-workflow decision, not evidence of a human approval or a CI land gate. No Fusion-specific human checkpoint, public orchestration API, MCP endpoint, or Actions integration was established by these sources. Copilot's broader features must not be mistaken for Fusion-specific guarantees.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verification-safety-and-failure`>>
+
+!! Verification, safety and failure
+
+* ''SOURCED:'' The initial design describes isolated review, permission-aware solver execution, explicit timeouts and cancellation per leg, routing validation, accounting for retries and fallbacks, and no patch applied when cancelled or validation fails. It says the runtime records each leg's role, outcome, cost, latency and diagnostics internally. [[Research announcement, 2026-09-04|https://github.blog/ai-and-ml/project-hydrafusion-frontier-quality-via-multi-model-orchestration/]].
+* ''SOURCED — material qualification:'' Current Fusion documentation warns that when a draft is discarded, workspace edits it already made are ''not automatically undone''. Treat the initial fail-safe claim as scoped to its described patch application, not as a rollback guarantee for every tool edit. Review the actual diff before committing. [[Fusion docs, accessed 2026-10-28|https://docs.github.com/en/enterprise-cloud%40latest/copilot/concepts/models/copilot-fusion]].
+* ''SOURCED / REASONED:'' Progress updates became more frequent during preview, but internal per-leg recording does not prove that users receive a complete per-leg spend export. The sources do not establish Fusion-specific hard per-task spending caps, a particular OS sandbox, mandatory test execution, or visibility of all fallback details. Host permissions and external tests remain necessary controls. [[2026-09-30 update|https://github.blog/changelog/2026-09-30-hydrafusion-in-vs-code-and-the-github-copilot-app/]]; [[initial design, 2026-09-04|https://github.blog/ai-and-ml/project-hydrafusion-frontier-quality-via-multi-model-orchestration/]].
+* ''SOURCED:'' Legacy billing supports budget alerts and a $0 budget with stop-usage enabled to prevent paid overages, and usage reports show premium-request use. These are account/product budgets, not proof of a Fusion per-task cap. [[Legacy billing overview, accessed 2026-10-28|https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/github-copilot-premium-requests]].
+* ''SOURCED / REASONED:'' GitHub's controlled preview comparisons reported estimated cost savings but mixed quality differences versus an Opus 5 baseline across three benchmarks; the evaluation used particular policies, benchmarks and pricing assumptions. The results do not establish savings or equal quality on our codebase. [[Research announcement, 2026-09-04|https://github.blog/ai-and-ml/project-hydrafusion-frontier-quality-via-multi-model-orchestration/]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/collision-pono-pattern-integrities`>>
+
+!! Collision: pono pattern integrities
+
+''SOURCED — Our baseline:'' [[swarm law|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem]] (accessed 2026-10-28), [[K17-R brief, crew/fences/seven refinements|/home/joshu/.lares-scratch/k17-r/brief.md]] (2026-10-28), [[controller research|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/research/codex-controller-2026.mem]] (2026-10-25), and [[roster research|/home/joshu/.lares-scratch/research/model-roster/out2.md]] (2026-10-28) define the comparison. The current brief requires non-ephemeral Codex seats for accounting; the older controller research's ephemeral-reader suggestion is a probe, not the later law. The roster says Terra's build quality remains unproven locally and Luna's security limitations warrant stronger review.
+
+| Their pattern | Our pattern | REASONED — stronger integrity and why |h
+| Adaptive Single/Cascade/Critique per prompt | Named models by role and risk, pool floor | Theirs holds cost-sensitive selection more flexibly; ours holds accountable, reproducible seat assignment. Neither proves better quality without matched tests. |
+| Independent critic and revision | Cold second lineage, lead reads every build; Sol 6.1 for sensitive slices | Ours holds clearer independent accountability and risk-specific scrutiny; Fusion's selected reviewer may share a lineage with another existing seat, so count correlation. |
+| Judge accepts or escalates | Evidence-backed rulings, reader findings to lead, controller rules on forks | Theirs holds a useful bounded escalation pattern; ours holds governance stronger because the rationale can be inspected and challenged. |
+| Shared workspace; discarded draft edits may remain | One writer per isolated worktree, walled readers | Ours holds custody stronger; a discarded proposal cannot be assumed clean even inside Fusion. |
+| Internal per-leg cost and timeout principles | `spend.py` reads tool logs, pool floor, handback names seats | Each holds part: complete leg accounting is the right aspiration; ours has an explicit cross-tool audit path. Its Copilot premium-request parser is not established as accounting for AI-credit Fusion legs. |
+| Model critique and quality gate | Red test as separate commit, lead suites, CI, held-out cells and train | Ours holds a stronger land-evidence chain. A model judge is not an executable regression or final-head verdict. |
+| One coherent response with progress | Explicit handback, controller reads diffs and aftermath | Ours holds inspectability stronger; theirs reduces intermediate noise. Keep underlying evidence available. |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/patterns-worth-borrowing`>>
+
+!! Patterns worth borrowing
+
+# ''REASONED — Selective escalation:'' For a bounded read or diagnosis, start with the assigned inexpensive reader; escalate to a separately named stronger seat only on explicit failure criteria (missing evidence, security exposure, inconsistent findings). The lead records the trigger and result; the controller keeps its existing authority and pool floor.
+# ''REASONED — Critique against actual state:'' Give a cold reviewer the exact head, diff, test evidence and read-only access; request concrete counterexamples, not a summary of the builder's story. Preserve the existing second-lineage and sensitive-slice rules.
+# ''REASONED — Effort follows the leg:'' Compare lower-effort drafting with higher-effort review on matched slices, while explicitly pinning model and effort. The roster's unproven Terra assumption makes a measured trial more honest than broad adoption.
+# ''REASONED — Account for the whole attempt:'' Include failed, timed-out, cancelled, retried and fallback legs in the lane record. First validate Copilot's actual local log and billing report against `spend.py`; do not treat a missing closing premium-request line as zero or convert AI credits to premium requests.
+# ''REASONED — Bounded execution and state check:'' Record timeout, termination, final head and dirty diff for each seat; inspect and quarantine unexpected edits even after a discarded draft. Keep the one-writer fence and stop on refused commands.
+# ''REASONED — Evaluate routing:'' Replay matched, well-scoped tasks on fixed heads, score correctness and independent findings with held-out cells, and record complete spend, latency and failures. Tune only on a separate set; compare against the existing crew, not a benchmark headline.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/integration-options`>>
+
+!! Integration options
+
+| Option | REASONED — cost, risk and lean |h
+| ''Adopt as a seat'' | Pilot one read-only, well-scoped Aftermath or diagnosis alongside the existing Copilot read. Cost is account-specific AI credits or, if legacy access is confirmed, an unknown Fusion premium-request charge; measure from billing and logs. Risk: hidden model composition can correlate with other reviewers; picker availability, isolation and spend accounting need verification. ''Lean: small fenced experiment only after eligibility and metering are established.'' |
+| ''Controller of a lane'' | Possible orchestration overhead and multiplied model costs; no documented persistent lane governance or subagent launch. Shared-state leftovers, opaque routing and unproven integration jeopardize custody and reproducible land decisions. ''Lean: no; retain Opus/controller and Sonnet lead.'' |
+| ''Borrow ideas only'' | Engineering and evaluation time, plus trial calls; risk of a cheap judge missing hard failures or multiplying review overhead. Apply escalation, leg accounting and bounded execution under our existing law. ''Lean: yes, with measured gates.'' |
+| ''Ignore'' | No implementation or subscription cost; foregoes possible efficiency and independent findings. ''Lean: defer product adoption if access or trustworthy accounting cannot be verified, but retain the architectural lessons.'' |
+
+''REASONED — First decision:'' Verify entitlement and a disposable read-only run's billed usage against GitHub's account report and the actual local log; then compare a handful of fixed-head tasks against our current reader on findings, elapsed time and full cost. No repository writes or plan changes are needed to establish the evidence.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oS22b20giD6blhfJNt4gX-sLoTh-Vml2VQ7oOiDGVPg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

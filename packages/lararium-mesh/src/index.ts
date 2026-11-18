@@ -36,7 +36,7 @@ export type { Heads, Doc as AutomergeDoc } from "@automerge/automerge";
 export * from "./base-doc.js";
 export * from "./stored-value.js";
 export * from "./stored-record.js";
-export * from "./catalog-row.js";
+export * from "./catalog-entry.js";
 export * from "./floor-manifest.js";
 export * from "./cas.js";
 export * from "./lar-camera.js";
@@ -86,12 +86,16 @@ export * from "./ward-cosign-gate.js";
 export * from "./ward-answer.js";
 export * from "./vessel-face-tag.js";
 export * from "./kahua-stage.js";
+export * from "./kahua-staged.js";
 export * from "./promote.js";
 export * from "./promote-kapae.js";
 export * from "./promote-board.js";
+export * from "./swarm-lei-rite.js";
 export * from "./swarm-tiddlers.js";
+export * from "./swarm-tessera.js";
 export * from "./swarm-board.js";
 export * from "./swarm-door.js";
+export * from "./kukulu-vouch.js";
 export * from "./face-relation.js";
 export * from "./promote-door.js";
 export * from "./promote-command.js";
@@ -124,6 +128,7 @@ export * from "./agile-digest.js";
 export * from "./projection-registry.js";
 export * from "./readiness.js";
 export * from "./lar-uris.js";
+export { PROJECTION_FILTER, PROJECTION_FILTER_TEXT, projectionFilterTitle, filterSelects, projectionWithheld, ProjectionFilterUnreadable, type ProjectionClass, type ProjectionFilterText } from "./projection-filter.js";
 export * from "./boot-resolver.js";
 export * from "./plane-labels.js";
 export * from "./capture/branch-frontier.js";
@@ -133,6 +138,8 @@ export * from "./text-stream-adapter.js";
 export * from "./sensorium-pc.js";
 export * from "./aperture-selector.js";
 export * from "./epoch-lease.js";
+export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
+export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
 export { holderSessionProofBytes, signHolderSessionProof, verifyHolderSessionProof } from "./holder-session-proof.js";
@@ -153,7 +160,10 @@ export * from "./recipe.js";
 export * from "./flow.js";
 export { bagStackFromRec } from "./bag-stack-from-rec.js";
 export * from "./composite-store.js";
+export * from "./carrier-form.js";
+export * from "./override-base.js";
 export * from "./find-or-throw.js";
+export { stoodDocumentBytes, landStoodDocument, landBindingDocuments } from "./stood-document.js";
 export * from "./sensorium-consistency.js";
 export * from "./sensorium-contract.js";
 export * from "./sensorium-fusion.js";
@@ -169,6 +179,9 @@ export * from "./capture-nalu.js";
 export * from "./capture/capture-engine.js";
 export * from "./projection-nalu.js";
 export * from "./host-task.js";
+export * from "./iris.js";
+export * from "./lent-faces.js";
+export * from "./chore-ask.js";
 export * from "./gate-tuning.js";
 export * from "./lar-event-bus.js";
 export * from "./social-tiddlers.js";
@@ -244,10 +257,12 @@ export { DEFAULT_FEDERATION_POSTURE } from "./federation-gate.js";
 export * from "./quorum-entry.js";
 export * from "./sealed-box.js";
 export * from "./ed25519-door.js";
+export * from "./veil-lift.js";
 export * from "./kapae-antigen.js";
 export { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey, ANTIGEN_ENTRY_PREFIX } from "./antigen-board.js";
 // The operator MEMBERS-registry — the Kapae-antigen's ALLOW-twin (members{} ⊥ blocked{}); contracts, never identities.
 export * from "./carriage-registry.js";
+export * from "./carriage-log.js";
 // The root of one Nexus as a vessel holds it, and the one door a presented admit reads through: the socket
 // seat, the raise and the admit bundle hand the verifier a held root, never a roster of their own making.
 export {
@@ -290,11 +305,13 @@ export { RECIPE_PLANES, effectiveRecipe, recipeRecordStands } from "./recipe-pla
 export type { EffectiveRecipe, RecipePlane } from "./recipe-planes.js";
 export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surface-recipe.js";
 export type { WikiRecipeDerivation } from "./surface-recipe.js";
-export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival } from "./island-repo.js";
+export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival, markWikiIslandPeer, wikiIslandPeersOf } from "./island-repo.js";
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
-export { answerReceiptWithHeads, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
+export { wireIdentityOf, seatDialLeg } from "./wire-identity.js";
+export type { WireIdentity, WireAlias, WireLegAt, WireLegSeat, WireLegRefusal, WornFace } from "./wire-identity.js";
+export { answerReceiptWithHeads, receiptInStore, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
 export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter, SessionSignDoor } from "./capability-record.js";
-export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, answerIslandAsks, receiptSettlement, RECORD_ASKS } from "./capability-record.js";
+export { islandCustodyWriter, answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, answerIslandAsks, receiptSettlement, RECORD_ASKS } from "./capability-record.js";
 export { SessionSignBook, standingSessionSeat, type BookedSession, type BookedSessionSigner } from "./session-sign-book.js";
 export { GatedSyncLeg, oneWayDocumentsGate, carriesPrototypeKeyReason } from "./gated-sync-leg.js";
 export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, docPrototypeKeyFault, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
@@ -355,7 +372,7 @@ export * from "./nexus-partial.js";
 export * from "./roll-circle.js";
 // PRIVATE AUTHORITY FOR THE FACE PROOF, named here by its first caller: the device removal door, which signs a
 // certificate withdrawal beside each dyad raise (`device-removal`).
-export { withdrawKey, foldWithdrawals, heldWithdrawals, learnWithdrawals, isWithdrawalMemory, FACE_PROOF_CUSTODY_ROWS } from "./face-authority.js";
+export { withdrawKey, foldWithdrawals, heldWithdrawals, learnWithdrawals, isWithdrawalMemory, FACE_PROOF_CUSTODY_RECORDS } from "./face-authority.js";
 export {
   NEXUS_KEY_HAND_OVER_DOMAIN, NEXUS_KEY_HAND_OVER_PREFIX, NEXUS_KEY_LINE_BOUND,
   nexusKeyHandOverBytes, nexusKeyHandOverId, nexusKeyHandOverKey, signNexusKeyHandOver, readNexusKeyHandOver,
@@ -376,6 +393,9 @@ export { requestCertificate, issueCertificate, mintVesselFaceKey, checkVesselCha
 export type { VesselFaceKeyCustody, MintedKey, VesselChainVerdict } from "./face-authority.js";
 export type { VesselFaceCertificate, VesselFaceCertificateRequest, VesselFaceKey, FaceKey } from "./face-proof-subjects.js";
 export * from "./fleet-join.js";
+// THE SEAT a face's root holder gives one joining device (the tag law, the admission, the edge): one core for the node's
+// `device-admit` and the browser's `browser-fleet-root`.
+export * from "./device-seat.js";
 // THE JOINED VESSEL'S SESSION, named here by its first caller: the node's joined-face proof (`joined-face-proof`)
 // hands it the vessel's own certificate, grant, key and custody door. The session table stays private to the mesh.
 export { openJoinedFaceSession, prepareJoinedFace, type JoinedFaceTarget } from "./session-face.js";
@@ -393,7 +413,7 @@ export type { FloorKeyDoor, CustodyRootDoor, GateRootDoor } from "./gate-bundle.
 // (the carriage registry and the hearth dial pin); the floor's signed announcement, read only against a pin its reader
 // already holds (no caller yet; it stands for the floor's announce route).
 export {
-  SEALED_FRAME_VERSION, SEALED_KINDS, SEALED_HEADER_BYTES, SEALED_SEAL_OVERHEAD, SEALED_PART_BODY_MAX, SEALED_MESSAGE_MAX_BYTES,
+  SEALED_FRAME_TAG, SEALED_KINDS, SEALED_HEADER_BYTES, SEALED_SEAL_OVERHEAD, SEALED_PART_BODY_MAX, SEALED_MESSAGE_MAX_BYTES,
   SEALED_CONCURRENT_MAX, SEALED_BUFFER_MAX_BYTES, SEALED_REFUSALS, SealedIdsSpent, sealedParts, sealedWriter, sealedReader,
 } from "./sealed-carriage.js";
 export type { SealedKind, SealedMessage, SealedRefusal, SealedReader } from "./sealed-carriage.js";
@@ -403,7 +423,7 @@ export type { ChannelSocket, ChannelCloseReason, GateChannelBounds, GateSessionC
 // client adapter files it, and the fleet-join answer carries it signed (house ruling "The admit's gate pin").
 export {
   HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, FLOOR_CARD_KEL_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody,
-  readHearthFloorProofBody, fileSessionClaims, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard, verifyHearthFloorCard,
+  readHearthFloorProofBody, fileSessionClaims, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard, FLOOR_CARD_CARRIAGE_KIND, floorCardCarriageText, readFloorCardCarriage, verifyHearthFloorCard,
   fileHearthFloorCard, lastSyncNote,
 } from "./hearth-floor-pins.js";
 export type { ClaimDoor, HearthFloorCard, HearthFloorProof, FloorAnchor, VerifiedFloorCard, FloorCardFiling } from "./hearth-floor-pins.js";
@@ -424,10 +444,10 @@ export type {
   AdmitGatePinRefusal, DialPinKey, HearthPinIndex, PlaceClaimStand, PlaceClaimFiling, PlaceClaimFork, PlaceKelForkNote,
 } from "./admit-gate-pin.js";
 export {
-  FLOOR_ANNOUNCEMENT_VERSION, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
-  gateAnnouncementImage, signFloorAnnouncement, readFloorAnnouncement,
+  FLOOR_ANNOUNCEMENT_KIND, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
+  gateAnnouncementImage, floorAnnouncementDigest, signFloorAnnouncement, readFloorAnnouncement, foldFloorAnnouncements,
 } from "./floor-announcement.js";
-export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnnouncementRefusal } from "./floor-announcement.js";
+export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnnouncementRefusal, FloorAnnouncementStanding, FloorAnnouncementSetAside } from "./floor-announcement.js";
 // THE GATE AND ITS DIAL, named here by their callers: the node's gate server stands `makeFaceGate` per (Nexus, route)
 // behind the upgrade's knock and its first flight, the composer derives each bundle, and the dialers speak
 // `dialFaceGate` over their own sockets.
@@ -455,9 +475,9 @@ export { wsDialSocket } from "./ws-dial-socket.js";
 export type { WsFactory, WsFactoryOptions, WsLike } from "./ws-dial-socket.js";
 // The one Noise bound the node's gate server caps a frame at (`face-gate-server`); the handshake doors stay out.
 export { NOISE_MAX_MESSAGE_BYTES, MIN_MESSAGE1_BYTES, MIN_MESSAGE2_BYTES } from "./noise-ik.js";
-// THE GATE'S MEMORY DOOR, named here by the vessel that answers it over its custody seat (`gate-memory-rows`).
-export { GATE_MEMORY_ROW_MAX_BYTES, storedWithdrawals, GateMemoryRowTorn } from "./gate-withdrawal-store.js";
-export type { GateMemoryRows } from "./gate-withdrawal-store.js";
+// THE GATE'S MEMORY DOOR, named here by the vessel that answers it over its custody seat (`gate-memory-records`).
+export { GATE_MEMORY_RECORD_MAX_BYTES, storedWithdrawals, GateMemoryRecordTorn } from "./gate-withdrawal-store.js";
+export type { GateMemoryRecords } from "./gate-withdrawal-store.js";
 export * from "./device-removal.js";
 export * from "./re-anchoring.js";
 export * from "./realm-steward-map.js";
@@ -465,8 +485,12 @@ export * from "./chartered-classes.js";
 export * from "./promotion-approval.js";
 export * from "./kahu-cabal-admission.js";
 export * from "./kahu-canon-reach.js";
+export * from "./house-canon-doc.js";
 export * from "./floor-release.js";
 export * from "./floor-answer.js";
+export * from "./floor-pin.js";
+export * from "./canon-offer.js";
+export * from "./family.js";
 export * from "./lineage-rank.js";
 export * from "./admission-price.js";
 export * from "./vouch-dag.js";
@@ -487,11 +511,12 @@ export * from "./handle-announce.js";
 export * from "./who-face.js";
 export * from "./who-face-cap.js";
 export * from "./deterministic-doc.js";
-export * from "./face-working-address.js";
+export { standFaceDaemonCanon, type FaceDaemonCanon } from "./face-daemon-canon.js";
 export * from "./catalog-view.js";
 export { pinnedDoc, PINNED_ACTOR } from "./pinned-doc.js";
 export * from "./cabal-realm-clock.js";
 export * from "./realm-bag.js";
+export * from "./workbench.js";
 export * from "./protected-doc-guard.js";
 export * from "./realm-index.js";
 export * from "./me-circle.js";
@@ -580,7 +605,7 @@ export { waitHandle, LOCAL_READY_MS } from "./wait-handle.js";
 
 // The registered bag set, derived from the persona BINDING — founded stays private, admitted carries the fleet's.
 export type { FleetMembership, RegisterBagsInput } from "./register-bags.js";
-export { deriveRegisterBags, catalogNamedBags, isVesselGround, wornFaceWikiBags, DAEMON_WIKI_SLOT_BAGS, type WikiSlotBags } from "./register-bags.js";
+export { deriveRegisterBags, catalogNamedBags, isVesselGround, wornFaceWikiBags, standingDaemonCanonBag, litFaceOwnBags, DAEMON_WIKI_SLOT_BAGS, type WikiSlotBags } from "./register-bags.js";
 export * from "./persona-scope.js";
 export * from "./persona-planes.js";
 export * from "./holdings-witness.js";
@@ -649,7 +674,11 @@ export * from "./lockbox-wrap.js";
 export * from "./content-key-holder.js";
 export * from "./sealed-doc-store.js";
 export * from "./sealed-rest.js";
+export { deviceDaemonDocs, vesselHeldBagOf, daemonSlotTitle, hearthDaemonOf, DAEMON_SLOT_PREFIX, FLOOR_REGISTRY_ROOT, FLOOR_SLOT_ROOT, FLOOR_DAEMON_SLOT_ROOT, floorSlotTitle, floorDaemonSlotTitle, isFloorRegistryTitle, floorSlotOf, type DeviceDaemonDocs, type LitDeviceFace, type LitDeviceFaces } from "./device-daemon-docs.js";
 export * from "./published-bag-key.js";
+export * from "./held-rest-key.js";
+export { floorRegistryOf, floorRefusalOf, FloorUnavailable, FLOOR_UNAVAILABLE, FLOOR_UNKEYED, type FloorRegistry, type FloorKeyRefusal } from "./floor-registry.js";
+export * from "./secret-home.js";
 export * from "./memory-section.js";
 export * from "./face-bundle.js";
 export * from "./face-log-view.js";
@@ -664,3 +693,5 @@ export * from "./promote-panel-api.js";
 
 
 export * from "./promote-main-verbs.js";
+export * from "./share-config.js";
+export * from "./face-label.js";

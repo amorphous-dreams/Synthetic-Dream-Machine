@@ -143,19 +143,44 @@ export function hearthCrossingOf(at: {
   readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null;
   /** Open the worn face's proven planes at the own-hearth crossing (`provenCrossingPlanes`); true where the gate widened. */
   readonly openFacePlanes: (urls: readonly unknown[]) => boolean;
+  /**
+   * Open the HEARTH'S DAEMON WORKING DOCUMENT at the own-hearth crossing (road row `L4f`): the url the worn face's signed
+   * log names for this device (`provenHearthDaemon`). Answers the document id the gate now federates, which the vessel's
+   * share verdict lets reach the relay; null at every other crossing (a guest page), for an absent name, a torn url or a
+   * reserved document.
+   */
+  readonly openHearthDaemon: (url: unknown) => DocumentId | null;
 } {
   const ownHearth = isOwnHearthCrossing(at);
   const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(at.hearthCanonDocs, at.nexusPubkey) : {};
-  if (!at.pinnedGatePubKey) return { ownHearth, hearthCanon, gate: null, openFacePlanes: () => false };
+  if (!at.pinnedGatePubKey) return { ownHearth, hearthCanon, gate: null, openFacePlanes: () => false, openHearthDaemon: () => null };
   const boards = new DeterministicFederationGate(at.nexusPubkey);
-  if (!ownHearth) return { ownHearth, hearthCanon, gate: boards, openFacePlanes: () => false };
+  if (!ownHearth) return { ownHearth, hearthCanon, gate: boards, openFacePlanes: () => false, openHearthDaemon: () => null };
   const gate = new HearthCanonGate(boards, hearthCanon);
   const openFacePlanes = (urls: readonly unknown[]): boolean => {
     const ids = facePlaneDocIds(urls, at.nexusPubkey);
     gate.admitPlanes(ids);
     return ids.size > 0;
   };
-  return { ownHearth, hearthCanon, gate, openFacePlanes };
+  const openHearthDaemon = (url: unknown): DocumentId | null => {
+    const [id] = [...facePlaneDocIds([url], at.nexusPubkey)];
+    if (id === undefined) return null;
+    gate.admitPlanes(new Set([id]));
+    return id;
+  };
+  return { ownHearth, hearthCanon, gate, openFacePlanes, openHearthDaemon };
+}
+
+/**
+ * THE HEARTH'S DAEMON WORKING DOCUMENT AS THE FACE'S SIGNED LOG NAMES IT FOR THIS DEVICE (road row `L4f`). The root holder's
+ * admit door signs the name into the device's `device-edge` act, and the face proof folds it (`hearthDaemons`); the
+ * bootstrap carries no copy, so nothing unsigned names the document. Null where the log names none for `deviceKey`, or
+ * names a torn url.
+ */
+export function provenHearthDaemon(projection: { readonly hearthDaemons?: Readonly<Record<string, string>> }, deviceKey: string | null | undefined): string | null {
+  if (!deviceKey) return null;
+  const url = projection.hearthDaemons?.[deviceKey.toLowerCase()];
+  return typeof url === "string" && isValidAutomergeUrl(url) ? url : null;
 }
 
 /** The slice of a vessel catalog handle the seating reads and writes. */

@@ -189,8 +189,16 @@ logs_have() {
 # THE PROBE MUST CROSS THE SOCKET. A first draft used `vessel read` — "the pure inspection that starts
 # nothing", which reads local files and answers true while the verb channel is still deaf. The probe
 # rides a DAEMON-ROUTED verb, so a pass means a verb actually completed.
+#
+# A HERM STANDS AS A PLACE WITH NO FACE, and a place with no face answers only its floor
+# (packages/lararium-node/src/floor-verbs.ts: the control document mints with the face): `residency`
+# (`bag stats`) refuses `control-home-unnamed` there on every poll, so the herm's probe rides
+# `unbound-docs` (`vessel unbound`) instead, a read-only floor query that still crosses the socket.
 answers() {
-  $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js bag stats --json >/dev/null 2>&1
+  case "$1" in
+    herm-*) $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js vessel unbound >/dev/null 2>&1 ;;
+    *)      $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js bag stats --json >/dev/null 2>&1 ;;
+  esac
 }
 
 # WHY A HEARTH NEVER ANSWERED, in the words the boot used.
@@ -1537,7 +1545,7 @@ run_climb() {
   step "NEG b — a TORN charter REFUSES, and never falls to the floor"
   local OWN_BEFORE OWN_AFTER
   OWN_BEFORE=$(logs_count '\[nexus\] island .* \(own\)' lararium-a)
-  $COMPOSE exec -T lararium-a sh -c 'sed -i "s/nexus-[0-9a-f]\\{64\\}/nexus-ZZZTORNZZZ/g" /state/data/lares/nexus/founding-roster.mem' 2>/dev/null
+  $COMPOSE exec -T lararium-a sh -c 'sed -i "s/nexus-[0-9a-f]\\{64\\}/nexus-ZZZTORNZZZ/g" /state/hearth/nexus/founding-roster.mem' 2>/dev/null
   $COMPOSE restart lararium-a >/dev/null 2>&1
   # THE VESSEL IS EXPECTED TO DIE HERE, and `restart: on-failure:8` means it dies eight times. Wait for
   # the refusal to appear rather than for an exit, so a cure that refuses WITHOUT dying still reads.
@@ -1587,12 +1595,12 @@ run_seal() {
   # frame's own magic leads the file. A bare archive would lead with keyhive's bytes. No vessel-wide Keyhive archive stands.
   step "★ the anchors, the roster line and the veil archive lead with their face's seal ★"
   local ROW HEAD BARE="" VEIL_ROWS
-  VEIL_ROWS=$($COMPOSE exec -T lararium-a sh -c 'ls -1 /state/data/lares/identity/faces/*/ 2>/dev/null' 2>/dev/null | tr -d '\r' | grep -E '^veil-archive-g[0-9a-f]{64}\.bin$' || true)
+  VEIL_ROWS=$($COMPOSE exec -T lararium-a sh -c 'ls -1 /state/hearth/identity/faces/*/ 2>/dev/null' 2>/dev/null | tr -d '\r' | grep -E '^veil-archive-g[0-9a-f]{64}\.bin$' || true)
   [ -n "$VEIL_ROWS" ] || BARE=" veil-archive-g<64 lowercase hex>.bin (missing)"
-  ROSTER_ROW=$($COMPOSE exec -T lararium-a sh -c 'ls -1A /state/data/lares/identity/faces/*/ 2>/dev/null' 2>/dev/null | tr -d '\r' | grep -E '^\.persona-roster-h0\.json$' | head -1 || true)
+  ROSTER_ROW=$($COMPOSE exec -T lararium-a sh -c 'ls -1A /state/hearth/identity/faces/*/ 2>/dev/null' 2>/dev/null | tr -d '\r' | grep -E '^\.persona-roster-h0\.json$' | head -1 || true)
   [ -n "$ROSTER_ROW" ] || BARE="$BARE persona-roster-h0 (missing)"
   for ROW in anchors-h0.json $ROSTER_ROW $VEIL_ROWS; do
-    HEAD=$($COMPOSE exec -T lararium-a sh -c "head -c 14 /state/data/lares/identity/faces/*/$ROW 2>/dev/null" 2>/dev/null | tr -d '\r')
+    HEAD=$($COMPOSE exec -T lararium-a sh -c "head -c 14 /state/hearth/identity/faces/*/$ROW 2>/dev/null" 2>/dev/null | tr -d '\r')
     [ "$HEAD" = "lares-fck-seal" ] || BARE="$BARE $ROW"
   done
   if [ -z "$BARE" ]; then ok
@@ -2050,7 +2058,7 @@ run_board() {
   step "NEG c — B's charter is TORN: she REFUSES, and never reads as no-nexus"
   local OWN_BEFORE OWN_AFTER
   OWN_BEFORE=$(logs_count '\[nexus\] island .* \(own\)' lararium-b)
-  $COMPOSE exec -T lararium-b sh -c 'sed -i "s/nexus-[0-9a-f]\\{64\\}/nexus-ZZZTORNZZZ/g" /state/data/lares/nexus/founding-roster.mem' 2>/dev/null
+  $COMPOSE exec -T lararium-b sh -c 'sed -i "s/nexus-[0-9a-f]\\{64\\}/nexus-ZZZTORNZZZ/g" /state/hearth/nexus/founding-roster.mem' 2>/dev/null
   $COMPOSE restart lararium-b >/dev/null 2>&1
   local d=$((SECONDS + 180)) tornseen=0
   while [ "$SECONDS" -lt "$d" ]; do

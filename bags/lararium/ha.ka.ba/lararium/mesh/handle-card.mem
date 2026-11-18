@@ -38,7 +38,7 @@ signed".
 # ''1-of-1 is the degenerate case that IS the personal face.'' The same shape all the way down — no special
 civic tier. `mintHandleInception` keeps the single-owner path ergonomic as sugar over a one-member set.
 # ''The field's own vocabulary (Deseriis, improper names).'' A many-present name is a MULTIPLE-USE NAME
-(Luther Blissett — hundreds shared one, then retired it); a chartered set is a COLLECTIVE PSEUDONYM (Wu Ming
+(Luther Blissett — hundreds shared one, then laid it down); a chartered set is a COLLECTIVE PSEUDONYM (Wu Ming
 — a controlled group). The 1-of-1-that-many-present and the k-of-n-chartered ARE those two forms.
 
 <<~/ahu>>
@@ -230,7 +230,7 @@ their own key "the owner's head", under any bytes for a signature, builds a chai
 whole. So a reader with no resolver trusts the inception's Handle key alone. A chain carrying any later step
 answers `handle-rotation-unverified`: at `verifyHandleCard`, at `recognizeHandle`, at `acceptHandleUpdate`, at
 the card fold, at `HandleBook`, at `verifyAttestation`, at `headHandleKey` and `currentOwnerSet`. No such
-reader ever falls back to the inception key either, since a later step may lawfully have retired it. One step
+reader ever falls back to the inception key either, since a later step may lawfully rotate it out. One step
 carries its own proof and reads `burned` here: a self-burn standing directly on the inception, which the
 inception's own Handle key signed.
 * ''Tier-2 — board-checked presentation authority'' (`verifyHandleKelFull`, `resolvedHeadHandleKey`,
@@ -295,6 +295,6 @@ forgery rides it too and dies at the recogniser, and the writer's arity itself s
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yfwn3u3TCh_vOUilN8qJ8tFM7Zif9b_w4G7FHN7RCvQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gV2KPkQlFxJIgKiQtaYBj1Y-otmde0JqGqitJq-f7jI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

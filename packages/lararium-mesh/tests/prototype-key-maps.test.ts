@@ -132,7 +132,7 @@ describe("B2: a merge over an existing record refuses a prototype key by name, n
     ["a meta key", '{"tiddler":{"title":"lar:///t/b2","text":"x"},"meta":{"__proto__":"v"}}'],
   ])("RED: %s on a put over an existing record", async (_n, json) => {
     const repo = new Repo();
-    const store = new AutomergeDocStore(repo.create<LarDoc>({ schemaVersion: "0.1", tiddlers: {} }));
+    const store = new AutomergeDocStore(repo.create<LarDoc>({ tiddlers: {} }));
     await store.put({ tiddler: { title: "lar:///t/b2", text: "first" } });
     let thrown: unknown;
     try { await store.put(JSON.parse(json)); } catch (e) { thrown = e; }
@@ -141,7 +141,7 @@ describe("B2: a merge over an existing record refuses a prototype key by name, n
   });
   test("CONTROL: a `constructor` field and a `prototype` meta key merge over an existing record and stand", async () => {
     const repo = new Repo();
-    const store = new AutomergeDocStore(repo.create<LarDoc>({ schemaVersion: "0.1", tiddlers: {} }));
+    const store = new AutomergeDocStore(repo.create<LarDoc>({ tiddlers: {} }));
     await store.put({ tiddler: { title: "lar:///t/b2", text: "first" } });
     await store.put(JSON.parse('{"tiddler":{"title":"lar:///t/b2","text":"x","constructor":"v"},"meta":{"prototype":"m"}}'));
     const got = (await store.get("lar:///t/b2"))!;

@@ -4,7 +4,8 @@
  * The ruling (`lar:///ha.ka.ba/lares/docs/stable-founding-road` #/rulings, one owner per registry): the release
  * answer names the Nexus AID, the charter epoch, the release before it and the floor manifest CID. The steward
  * seals it under its own signing domain (`floor-release`), the cabal's promotion approval over the manifest's EXACT
- * BYTES rides attached, and the crossroads board carries it. A herm carries the answer and signs nothing.
+ * BYTES rides attached, and the Nexus's publication board (`publicationDocUrl`) carries it, a board no recipe mounts and no
+ * mirror names. A herm carries the answer and signs nothing.
  *
  * THE BODY. `canonicalJsonBytes({kind, nexus, epoch, prior, manifest})`, `kind` the signing domain itself. The
  * release's CID names the body's own canonical bytes (sha-256 hex); it keys the board row (`$:/lar/floor-release/<cid>`)
@@ -24,7 +25,7 @@
  *
  * WHAT IT NEVER DECIDES. It holds no key, reads no clock and keeps no store; signers arrive injected, the board
  * arrives as a doc, the manifest's bytes arrive from the caller's CAS. Which release a face ACCEPTS stays a person's
- * act (road `W26`): this module answers only which releases COUNT and where the chain stands.
+ * act of the VESSEL (`floor-pin`, one pin per vessel and Nexus): this module answers only which releases COUNT and where the chain stands.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
  */
@@ -42,7 +43,7 @@ export { FLOOR_RELEASE_DOMAIN };
 /** The surface and purpose the cabal's promotion approval names for a release. */
 export const FLOOR_RELEASE_SURFACE = "floor-release" as const;
 
-/** The tiddler prefix a release lands under on the crossroads board, keyed by the release CID. */
+/** The tiddler prefix a release lands under on the publication board, keyed by the release CID. */
 export const FLOOR_RELEASE_PREFIX = "$:/lar/floor-release/" as const;
 
 const HEX64 = /^[0-9a-f]{64}$/;
@@ -230,7 +231,7 @@ export function writeFloorRelease(draft: LarDoc, release: FloorRelease): void {
 }
 
 /** Every record a board carries under the release prefix, as the unread JSON beside the CID its key names. A torn row drops. */
-export function floorReleaseRowsFromBoard(doc: LarDoc | undefined | null): Array<{ readonly keyCid: string; readonly record: unknown }> {
+export function floorReleaseEntriesFromBoard(doc: LarDoc | undefined | null): Array<{ readonly keyCid: string; readonly record: unknown }> {
   const out: Array<{ keyCid: string; record: unknown }> = [];
   for (const [title, row] of Object.entries(doc?.tiddlers ?? {})) {
     if (!title.startsWith(FLOOR_RELEASE_PREFIX)) continue;
@@ -241,19 +242,21 @@ export function floorReleaseRowsFromBoard(doc: LarDoc | undefined | null): Array
   return out;
 }
 
+/** Every variant names the releases that COUNT (`counted`, each verified and chained to the Nexus's first): a vessel's
+ *  accept walks `prior` through them from its pin to the release it takes (`floor-pin`). */
 export type FloorReleaseStanding =
-  | { readonly standing: "absent"; readonly head: null; readonly refused: readonly FloorReleaseRefused[] }
-  | { readonly standing: "released"; readonly head: FloorRelease; readonly refused: readonly FloorReleaseRefused[] }
-  | { readonly standing: "unsettled"; readonly head: null; readonly heads: readonly string[]; readonly refused: readonly FloorReleaseRefused[] };
+  | { readonly standing: "absent"; readonly head: null; readonly counted: readonly FloorRelease[]; readonly refused: readonly FloorReleaseRefused[] }
+  | { readonly standing: "released"; readonly head: FloorRelease; readonly counted: readonly FloorRelease[]; readonly refused: readonly FloorReleaseRefused[] }
+  | { readonly standing: "unsettled"; readonly head: null; readonly heads: readonly string[]; readonly counted: readonly FloorRelease[]; readonly refused: readonly FloorReleaseRefused[] };
 
 /** A row the fold set aside, and why: a reader names the refusal rather than reading a refusal as an absence. */
 export interface FloorReleaseRefused { readonly keyCid: string; readonly reason: FloorReleaseRefusal | "manifest-unavailable" | "prior-unknown"; readonly detail?: string }
 
 /**
-
+ * Fold a board's rows into where the chain stands. A release COUNTS where it verifies whole (its manifest's exact
  * bytes resolved by `manifestBytesOf`, its lineage proving the roster of its epoch) AND it opens the chain (`prior` null)
  * or links to a release that counts. The head stands as the counted release no other counted release names; two heads
- * read `unsettled`, and a face accepts neither until the cabal settles the fork (the KERI watcher shape). Each row
+ * read `unsettled`, and a vessel accepts neither until the cabal settles the fork (the KERI watcher shape). Each row
  * the fold sets aside rides `refused` with its reason.
  */
 export async function foldFloorReleases(args: {
@@ -283,9 +286,10 @@ export async function foldFloorReleases(args: {
     }
   }
   for (const [cid, r] of verified) if (!counted.has(cid)) refused.push({ keyCid: cid, reason: "prior-unknown", detail: `its prior ${r.body.prior} stands in no counted release` });
-  if (counted.size === 0) return { standing: "absent", head: null, refused };
-  const cited = new Set([...counted.values()].map((r) => r.body.prior).filter((p): p is string => p !== null));
+  const chain = [...counted.values()];
+  if (counted.size === 0) return { standing: "absent", head: null, counted: chain, refused };
+  const cited = new Set(chain.map((r) => r.body.prior).filter((p): p is string => p !== null));
   const heads = [...counted.keys()].filter((cid) => !cited.has(cid)).sort();
-  if (heads.length === 1) return { standing: "released", head: counted.get(heads[0]!)!, refused };
-  return { standing: "unsettled", head: null, heads, refused };
+  if (heads.length === 1) return { standing: "released", head: counted.get(heads[0]!)!, counted: chain, refused };
+  return { standing: "unsettled", head: null, heads, counted: chain, refused };
 }

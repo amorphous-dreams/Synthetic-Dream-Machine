@@ -1,0 +1,45 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/controller/scouts/` — 0 record(s) here, 26 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/controller/scouts/`
+
+The scratch planning records of `.lares-scratch/controller/scouts/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 0 record(s) stand here and 26 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[controller/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[cut-reads/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]] | 14 |
+| [[domain-sweep/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/domain-sweep/index]] | 1 |
+| [[flow-contract/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/flow-contract/index]] | 1 |
+| [[godmethod-lift/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/godmethod-lift/index]] | 1 |
+| [[memory-stage/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/memory-stage/index]] | 2 |
+| [[merge-queue/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/merge-queue/index]] | 1 |
+| [[nym-map/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/nym-map/index]] | 1 |
+| [[test-only-laws/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/test-only-laws/index]] | 1 |
+| [[testability/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/index]] | 4 |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IUoyD5wzPsaUjDu5hHQixvVSZzTQ38Ohz5q4Dv2mvaQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

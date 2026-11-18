@@ -1,0 +1,137 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/memory-stage/pronaos-architecture`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/memory-stage/pronaos-architecture.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/memory-stage/pronaos-architecture"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/memory-stage/pronaos-architecture"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! pronaos-architecture.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/memory-stage/pronaos-architecture.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/memory-stage/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/pronaos-scout-lares-pronaos-lararium-architectur`>>
+
+! Pronaos-Scout: Lares (Tasked Spirit) — pronaos + lararium architecture, memory-stage scout (2026-10-31)
+
+Read-only. Grounds: canon read whole (pronaos.mem, pronaos-carriers.mem), road sections by grep, session-contract #/the-hands, wiki-layer-ontology (daemon wiki), code read at the cited lines. TESTIMONY marks what I inferred without running. Nothing booted.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-what-pronaos-is`>>
+
+!! 1. What pronaos is
+
+Pronaos = a lararium's own "first face": the arrival page, the arrival descriptor (`/.well-known/lar`), `/genesis/seed.json`, seed-named CAS members. "Only a lararium lights a Pronaos" (pronaos.mem #/the-placement); a herm may only carry bytes by CID (mirror) or post an unsigned waymark. Status line in the carrier reads PROPOSED, yet #/the-first-arrival marks the node adapter BUILT (`pronaos-adapter.ts`, `pronaos-composition.ts`). It holds public delivery only: no persona, no document, no VEIL read, no admission. Five relations never grant one another: name, secure origin, peer key, route, capability.
+
+Canon vocabulary: "anon floor" appears as the lease/veil floor (lararium-identity) and as the "waking floor" (waking-floor.mem): every boot rests at the floor until a human unlocks; the floor still serves the arrival page.
+
+```
+ name / LAN / QR
+   -> Compitum (roads meet)
+   -> HERM floor (every vessel; carriage, CID bulb, optional waymark)   <- anon floor, faceless place
+   -> PRONAOS (lararium only: / , /assets, /genesis/*, /.well-known/lar) <- served by the NODE http server
+   -> LARARIUM inner house (face/persona, bags, working layers, custody)  <- opens only after unlock + face
+
+ node (root holder)                              browser (leaf)
+  place founded (faceless, floor)                  page from node origin (or Vite dev)
+  found --hearth: place + persona 0 + charter      browser vessel at floor: IDB identity, NO face
+  daemon @ ws://:port/ws, UDS rendezvous           passphrase slot (B1) -> fleet-join request
+  vault unlock -> face lit                         paste answer -> land -> reboot on admit
+         \__ fleet join: offer (node) -> request (browser) -> answer (node) -> land (browser) __/
+                       one face, two vessels, sync over relay ws
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-full-rite-sequence-canon-vs-code`>>
+
+!! 2. Full rite sequence, canon vs code
+
+Canon carriers: road #/Steps item 4 (human route on a TTY; test door), #/rulings (A face's secrets never rest clear; browser leaf holds a slot first), session-contract, waking-floor, pronaos #/first-arrival. Cmd map in `packages/lares-cli/src/commands/vessel.ts:100-210`.
+
+| # | Step | Command / UI act | Canon | Code today | Harness drives? |h
+| 0 | scratch root | `export LAR_ROOT=~/.lares-scratch/<lane>/root`; `genesis/` must exist under it (or `LAR_GENESIS`) | road Steps 1 | env only; no copier (gap G6) | yes |
+| 1 | build | `pnpm -r build`, `build:tw5-vendor`, `stamp-build`; web build writes `.pronaos-build/pronaos-artifact.json` (`lararium-web/vite.config.ts:8`) | road Steps 3 | exists | yes |
+| 2 | found place | `lares vessel found` (faceless place, mints vessel key, custody from birth) | founding; `found.ts:105-111` | TTY route (`custody-prompt.ts`) | operator on TTY; harness: `tools/test-scratch-marker.mjs`, `tools/seed-test-custody.mjs`, `found --skip-build` |
+| 2b | or hearth founding | `found --hearth --name <label>`: place + persona 0 + one-seat seed charter + face (`found.ts:17`, `found-hearth.ts:194`). Alternatively `persona new 0 --name` lights the face (`persona.ts` personaNew, `init.ts:514`) | stable founding act | exists | same as 2 |
+| 3 | stand | `lares vessel stand` (daemon detached, `stand.ts:254`: `node dist/src/main.js --port --root`) | every boot at floor | exists; needs `LAR_SAME_ORIGIN=true` and `LAR_PRONAOS_WEB_ROOT`+`LAR_PRONAOS_ARTIFACT_RECORD` to serve a page; stand passes none | yes |
+| 4 | unlock | `lares vault unlock` (custody frame; `vault.ts:209`) | waking-floor; "node unlocks once per boot" (road :201) | exists | operator TTY; harness `tools/unlock-test-custody.mjs` on marked scratch root |
+| 5 | seed corpus | `lares vessel seed` (`vessel.ts:127`) | founding rite = found · stand · seed | exists | yes |
+| 6 | page arrives | open the node origin | pronaos #/first-arrival, #/declared-path | built, but only if step 3 envs set (`pronaos-composition.ts:110-140`, `main.ts:291`); otherwise 404 at `/` with a boot notice (`pronaosShoreBootNotice`, :96) | yes |
+| 7 | browser at floor | page boots a browser vessel: IDB identity, no face. Dials a relay only with `?relay=ws://…` (`lararium-web/src/main.ts:365`, `live-status.ts:45`); with none it says "PURE LOCAL BOOT" and prints `not pinned · ws://host/ws` (:556) | rungs 0-1, road :417 | built | harness via Playwright |
+| 8 | browser slot | passphrase/paper slot form (`main.ts:116-139`) before any face secret (`B1`) | #/rulings, road :199-200 | built | UI act; operator types passphrase (a test could, TESTIMONY: not measured) |
+| 9 | offer | node: `lares fleet join offer --out offer.json` (`fleet.ts:81`) | face-proof chain; "fleet join serves every face" | built | needs unlocked face; operator hand (custody) |
+| 10 | request | browser: paste offer (`main.ts:299-319`, `browserFleetJoinRequest`) | browser-fleet-join.ts header | built | UI act |
+| 11 | answer | node: `lares fleet join answer <request> --out answer.json` (`fleet.ts:94-98`) | same | built | operator hand |
+| 12 | land | browser: paste answer; `browserFleetJoinLand` then re-boot on admit (`main.ts:221`) | same | built | UI act |
+| 13 | settle | `browserFleetJoinSettle` after boot stands | same | built | auto |
+
+Agents may only drive 0-3, 5, 6, 7 through the test door; 2, 4, 8, 9, 11 are the operator's hand under the road (:66 "the operator performs each founding and custody act"). Gate 4 interacts: after 2-3 a harness reads `gate key:` from the log.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-walk-gaps`>>
+
+!! 3. Walk gaps
+
+| Gap | Cause (code) | Ruling canon | Row |h
+| G1 daemon port 404 at `/`; wiki only from Vite | `composePronaosFromEnv` returns null unless both `LAR_PRONAOS_*` set (`pronaos-composition.ts:68-81,110`); `stand.ts:254` sets neither; record generated only by web build / Docker | pronaos #/first-arrival ("the first arrival trusts the lararium's own origin"), waking-floor #/arrival-page | None owns the cold-start default. Road FW names W4/W5/W7 only (:609). Docker compose carries it (`tools/pronaos-runtime-wiring.mjs`). |
+| G2 page faceless, not joined | page dials no relay unless `?relay=` (`live-status.ts:45`); `sameOriginRelayUrl` only decorates a row (`main.ts:556`); join is by courier files by design | road :199-201, session-contract | Rung 2 node half waits on ONE FACE (road :417-419); no row for "same-origin default relay". |
+| G3 page edit to disk unmeasured | chain: browser wiki -> relay -> node doc -> projector to `<root>/wikis/<slug>/working` (`bag-paths.ts:138`, `disk-projector.ts`) | wiki-layer-ontology daemon-wiki ahu, road FW | `FW` / W5 / W7 (:609): "the walk drives a mirror edit on the joined leaf and reads the hearth's wikis/&lt;slug>/working". Rung 2 durability receipt owed. |
+| G4 lares MCP dead | two causes found: (a) `~/.claude.json` mcpServers.lares args point at a deleted /tmp worktree copy; (b) `~/.venv` holds mcp 1.28.1 while the repo pins `mcp==2.3.0` (`requirements.txt:20`) and `lares_mcp.py` imports `mcp.server.mcpserver`, absent there (measured: ModuleNotFoundError). Also no LAR_ROOT in the config env, so it would bind the operator's default XDG vessel socket, not a scratch root (`lares_uds.py:46-81`). | session-contract #/the-hands (two doors, one contract); mcp-resolve.ts header | None. F11 owes seat/grant/Mask; no row for config hygiene. |
+| G5 cold start: genesis copied by hand | `LAR_GENESIS` else `<root>/genesis` (`found.ts` header); no stage tool copies it | road Steps 1 | None. |
+| G6 stand needs `LAR_SAME_ORIGIN` | explicit declaration law (`lares-config.ts:158`, `lan-address.ts:187`) | pronaos #/the-five-relations | None (deliberate refusal, but a stand default would cure with a flag). |
+| G7 unlock after every stand | by law: every boot rests at the floor | road :201, waking-floor | By ruling; "bounded ember" stays design input (road :177 ember). Not a bug. |
+| G8 `persona new` wedges while vessel stands ("store door is still held") | TESTIMONY (not reproduced): `personaNew` routes `persona-new` via `storeVerb` (`persona.ts`, `store-door-verbs.ts:571`), which rides the UDS when `udsSocketPresent()`; `StoreHeld` surfaces when the socket path (hash of `larDataDir`) differs from the standing vessel's, e.g. LAR_ROOT/&#45;-root mismatch, or the vessel at floor refuses face founding. Lead: compare `udsSocketPath()` in both shells. | store-door.ts header | None. |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-daemon-wiki-as-memory-stage`>>
+
+!! 4. Daemon wiki as memory-stage
+
+Canon already says it: wiki-layer-ontology "The daemon wiki" ahu: <code>&#64;daemon</code> HOLDS THE WORKING-MEMORY STAGE, "the one place work crosses between hands must land on disk to read, diff or commit." Its working layer projects to `<LAR_ROOT>/wikis/daemon/` (`bag-paths.ts:132-138`; `open-daemon-vm.ts:82`, `node-daemon-island.ts:68`); the daemon bag beneath (`bags/daemon`) is control plane and stays unmirrored. So: design tracking = tiddlers/memes in the daemon wiki's working layer, addressed `lar:` URIs.
+
+Door: `lares meme put|get|list|delete|project <uri> --recipe default [--base <hash>]` (`meme.ts` header :4-41; `--recipe default` = the daemon's own wiki). MCP twin in `packages/lararium-sensorium/scripts/lares_mcp.py` (1309 lines, read): tools `meme_put/get/list/delete/project` (lines 885-960) take exactly one of `recipe`/`bag` (container law), ride `lares_uds.call` over the UDS rendezvous derived from `LAR_ROOT` (`lares_uds.py:46-81`), `requestedBy` = the vessel's verifying key by designation (:100-113), no Mask, no profile. Also exposed: pour/sweep/recall/status/worldline/kapae/un_kapae/rejim/analyze/ki/li/jing/couple_r/forecast/mismatch/flow/plane_record (sensorium; the mempalace line is BURNED per memory, so these may refuse), `wiki` switcher, and sense lifecycle (roster..purge). `DaemonCoordinator` holds no store; `main()` refuses with no daemon socket. To bind a scratch vessel the MCP entry needs `env: {LAR_ROOT: ...}`.
+
+Law for an AI writing there: session-contract #/the-hands. A spirit holds a seat, not a key; its writes land in the working layer and reach a bag only by a person's residency move; a standing seat drafts and never signs authority changes (vault, admit, kapae, face switch, residency move into a bag). Wikis-first writes (operator 2026-09-13, memory `project_projection_is_a_deliberate_act`): `wikis/*/working` is the AI surface; `bags/` by promotion only. TWO UNBUILT PARTS, measured: (1) `meme promote` holds admin false (`meme.ts:1109`, `holdsAdmin: async () => false`), so canon promotion is gated; (2) the profile gate and Mask are owed (`F11`, session-contract "OWED": a watcher or tab session runs face rows as its face; the MCP seat has no standing-grant mount). Memory file `project_projection_is_a_deliberate_act` says `wikis/` never produced a file; still true here (`git ls-files wikis` = 0, dir absent): the memory is current.
+
+Landing in git: `.gitignore` ignores only `wikis/scratch/`; a scratch `LAR_ROOT` keeps `wikis/daemon/` outside the repo, so git landing = the operator copying/promoting the projected files (no verb does it). That fits "operator-triggered at first".
+
+Custody: writes need an unlocked face; MCP "opens nothing while the vessel rests at the floor" (session-contract). A floor vessel runs only faceless-floor verbs (TESTIMONY on whether `meme put --recipe default` clears at the floor: `open-daemon-vm` floor verifier admits "a verb the vessel's own presence channel took" on a bag it registered; the daemon wiki is that bag, so likely yes; verify).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-smallest-ordered-build-rows`>>
+
+!! 5. Smallest ordered build rows (red-first, none touches custody)
+
+Order: R1 -> R2 -> R3 -> R4 -> R5. R1-R3 are small disjoint-file lane work.
+
+| Row | Size | Files | Merges/reorders | Red-first shape |h
+| R1 stand serves the page | S | `lares-cli/src/commands/stand.ts:254` (env), `pronaos-composition.ts` | New row beside `FW`; independent | Red: stage a scratch root with built dist+record, `stand`, `GET /` must be 200 `text/html`; today 404 + `NO PRONAOS SHORE` notice. Control: no built web -> notice stays. Env derived only when both files exist; `LAR_SAME_ORIGIN` declared by `stand --with-page` flag. |
+| R2 same-origin default relay | S | `lararium-web/src/live-status.ts:45`, `main.ts:365,556` | Closes rung-1 to rung-2 gap; precedes FW/W5 | Red: page served by node with no `?relay=` must dial `sameOriginRelayUrl`; today logs PURE LOCAL BOOT. Control: opened from file:// or Vite keeps local boot. |
+| R3 MCP seat bind | S | `lararium-mempalace/src/spawn-resolve`, `mcp-resolve.ts`, `lares home tend` MCP wire; `requirements` check | Rides `F11` (seat) and the surface-parity witness | Red: `resolveLaresMcp()` for a scratch `LAR_ROOT` returns env with `LAR_ROOT`, and an import probe of `mcp.server.mcpserver` fails by name when the venv holds mcp&lt;2.3 (today a silent "Connection closed"). Then `meme_put recipe=default` + `lares meme get` read the same bytes. |
+| R4 stage walk (the loop) | M | `tools/browser-weld/` new walk, `tools/browser-ci.sh`; join step by operator-hand or test door | IS `FW`/W5/W7 (:609); needs `ONE FACE` working layer for rung 2's node half | Red: joined browser edits a tiddler in `daemon` wiki -> file appears at `<LAR_ROOT>/wikis/daemon/...mem` and `lares meme get --recipe default` returns it, and a CLI `meme put` shows in the page. Weaken: kill relay -> no file. |
+| R5 spirit seat profile + Mask | M | `uds-session-door.ts`, `lares_uds.py`, session profile table | IS `F11` | Red: an MCP-seat session calling a vault/admit/face-switch verb must refuse by profile; `meme_put` carries a Mask field. Needed before agents write outside scratch. |
+| (R6, later) promotion verb | M | `meme.ts:1109`, `meme-promote.ts` | Wikis-first writes row (road :611), lands last | Red: `meme promote` of a working-layer meme by an operator with admin moves it into a bag as a residency move with an unchanged `lar:` URI. |
+
+Smallest set that closes the stated loop: R1, R2, R3, R4. Everything above in 2 that needs a human hand (2, 4, 8, 9, 11) stays the operator's; the loop's harness half uses the test door.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;R-EMSO2sey_x-bdn0lrJfdxClCGRKwweXK1Pm908vhU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

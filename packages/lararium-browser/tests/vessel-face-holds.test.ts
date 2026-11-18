@@ -59,6 +59,30 @@ async function deriveTime(idbName: string, f: string, route: typeof PASS | typeo
 }
 
 describe("a session wears a face only by its own unlock", () => {
+  test("FH0 RED a faceless tab that arrives while a VEIL FLOOR lights waits for the light and admits, wearing none", async () => {
+    // The veil floor lights no face (the-veil-ladder#/the-base-model): no unlock stands between a second tab and it, so the
+    // tab waits out the light instead of refusing. (Measured in a real browser: a third tab opened while the surviving tab
+    // re-lit the vessel refused `face-lighting` and never settled its mirror.)
+    const idbName = `holds-veil-${crypto.randomUUID()}`;
+    let open: () => void = () => undefined;
+    const gate = new Promise<void>((r) => { open = r; });
+    const house = await stand(idbName, async () => { await gate; return { face: null as never, close: async () => undefined }; });
+    const a = house.open({ tabId: "tab-a" });
+    const lit = house.admit(a.sessionId, { ask: async () => PASS });
+    const b = house.open({ tabId: "tab-b" });
+    const bAsks: HouseAsk[] = [];
+    const bAdmit = house.admit(b.sessionId, { ask: async (q) => { bAsks.push(q); return PASS; } });
+    bAdmit.catch(() => undefined);
+    await sleep(50);
+    open();
+    await lit;
+    await expect(bAdmit, "the second tab admits once the floor stands").resolves.toBeDefined();
+    expect(bAsks, "a veil floor asks the second tab nothing").toEqual([]);
+    expect(house.session(b.sessionId).admission).toBe("admitted");
+    expect(house.session(b.sessionId).face).toBeNull();
+    expect(house.session(a.sessionId).face).toBeNull();
+  }, SLOW);
+
   test("FH1 RED a faceless second tab into a founding wears no face — CONTROL: the founder wears it, a later right route admits", async () => {
     const idbName = `holds-founding-${crypto.randomUUID()}`;
     const founded = face("founded");

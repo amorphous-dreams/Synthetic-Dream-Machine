@@ -1,5 +1,5 @@
 /**
- * M1 — the identity home resolves in the SPIRITS' house, the ONE resolver. No migration
+ * M1 — the identity home resolves in the hearth, the ONE resolver. No migration
  * arm and no second spelling: an empty home re-derives a fresh device key.
  */
 import { mkdtempSync, mkdirSync, writeFileSync, existsSync, rmSync } from "node:fs";
@@ -22,25 +22,21 @@ describe("identity home (M1)", () => {
   let root: string;
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-identity-home-"));
-    setEnv("LAR_ROOT", undefined);          // exercise the real XDG arm, not the isolated one
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "data"));
+    setEnv("LAR_ROOT", root);               // the named house root, the one arm there is
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("larIdentityDir resolves in the spirits' house — beside the seal", () => {
-    // THE CRITERION IS WHOSE IT IS. A Lar's keys ARE that Lar, so the sovereign root belongs to the
-    // SPIRITS and stands at `<lares>/identity`, beside the Nexus seal. What belongs to the HOUSE — the
-    // acquired shelf, the sensoriums — stands at `<lararium>`. `reset` spares identity by targeting the
-    // vessel SUBDIR, so the two sit as siblings and never as parent and child.
-    expect(larIdentityDir()).toBe(join(root, "data", "lares", "identity"));
+  test("larIdentityDir resolves in the hearth — beside the seal and the vessel store", () => {
+    // The sovereign root stands at `<root>/hearth/identity`, beside the Nexus seal. `reset` spares identity
+    // by targeting the vessel SUBDIR, so the two sit as siblings and never as parent and child.
+    expect(larIdentityDir()).toBe(join(root, "hearth", "identity"));
   });
 
   test("ONE address answers — a key sitting anywhere else stays unread and untouched", async () => {
-    const elsewhere = join(root, "data", "lares", ".lararium-identity"); // a sibling that is not the home
+    const elsewhere = join(root, "hearth", ".lararium-identity"); // a sibling that is not the home
     mkdirSync(elsewhere, { recursive: true });
     writeFileSync(join(elsewhere, ".vessel-key.json"), JSON.stringify({ verifyingKey: "x", signingKey: "x" }));
 
@@ -54,11 +50,11 @@ describe("identity home (M1)", () => {
 });
 
 describe("Follow-on 3 — identityDir() takes NO dataDir (the removed footgun)", () => {
-  // `identityDir()` (node-vessel-identity.ts) used to take a `dataDir` parameter and silently IGNORE it,
-  // resolving purely off `LAR_ROOT`/XDG env vars — the exact footgun `persona-ring-cross-operator-admit
+  // `identityDir()` (node-vessel-identity.ts) once took a `dataDir` parameter and silently IGNORED it,
+  // resolving purely off the env — the exact footgun `persona-ring-cross-operator-admit
   // .test.ts` measured live: a caller isolating a `dataDir` per simulated vessel, in-process, with no
-  // matching `LAR_ROOT` mutation, silently read/wrote the REAL, non-isolated
-  // `~/.local/share/lares/identity` home instead of its intended isolated one.
+  // matching `LAR_ROOT` mutation, silently read/wrote the identity home of whatever house the process
+  // named instead of its intended isolated one.
   //
   // RED-FIRST, stated as the COLLISION the pre-fix code could produce: two callers passing DISTINCT
   // `dataDir`s, with no `LAR_ROOT` difference between them, resolved to the SAME identity home — an
@@ -80,7 +76,7 @@ describe("Follow-on 3 — identityDir() takes NO dataDir (the removed footgun)",
     // SAFETY FIRST: `@ts-expect-error` disarms the type CHECK, not the JS call itself — an extra argument
     // is silently ignored at runtime (not a JS error), so this still calls the real function. Wrap it in an
     // isolated LAR_ROOT so the "believed-isolated path" argument, once ignored, resolves somewhere
-    // throwaway rather than the operator's real `~/.local/share/lares/identity`.
+    // throwaway rather than the operator's real house.
     const isolated = mkdtempSync(join(tmpdir(), "lares-identity-compilegate-"));
     try {
       await withLarRoot(isolated, async () => {

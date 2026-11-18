@@ -261,7 +261,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 # ''Two-timestamp pattern'': For efficient delta sync, retain both `row_time` (merge semantics) and `local_row_time` (peer-seen state). Conflation causes proxy divergence.
 # ''Deterministic tie-breaking'': A deterministic, total-order comparator must resolve concurrent edits at the same logical time.
 # ''CRDTs work in centralized systems too'': Git provides the canonical example.
-# ''Performance no longer blocks adoption'': Modern CRDTs handle 100KB documents efficiently. 6 million text edits/second in Rust (Diamond Types).
+# ''Performance leaves adoption unblocked'': Modern CRDTs handle 100KB documents efficiently. 6 million text edits/second in Rust (Diamond Types).
 
 ''Named Patterns:''
 * HLC (Hybrid Logical Clock) — combines wall clock with Lamport counter for causal correctness
@@ -666,6 +666,6 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;v4PX0EBW9yTAEcgHM-YUHfUIYG7i4a5OVBn7LpKRk5U`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;W6R23lOY_c_WlYD_fRfdbyGzxyKdMYNv4B-qwcSVQA8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -123,6 +123,55 @@ describe("resolveDiskMirrors — a per-wiki grant's root splits by the slug's or
   });
 });
 
+// ONE FOLDER FOR A WORKBENCH (cabal-realm#/the-workbench; operator, 2026-11-14): a wiki's workbench stands as ONE document on a
+// vessel, so its mirror rests in one folder whichever seated writer wears, and a sourced wiki's rests beside its canon source,
+// in the repo workspace. Nothing face-private lands beside a canon source.
+describe("resolveDiskMirrors — one folder answers a workbench, and nothing face-private rests beside a canon source", () => {
+  const A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2";
+  /** The node's own grant shape for a wiki's four instance slots, under one worn face. */
+  const grant = (face: string | null, workspaces: Record<string, string> = {}): DiskMirrorGrant => [
+    { bagId: "working", mirrorRoot: "/state/wikis", scope: "working", wikiSlot: "working", sourcedRoots: { lares: "/checkout/wikis" }, workspaceRoots: workspaces },
+    { bagId: "personal", mirrorRoot: "/state/personal", scope: "personal", wikiSlot: "personal", faceFolder: () => face },
+    { bagId: "draft", mirrorRoot: "/state/wikis", scope: "draft", wikiSlot: "draft", mirrorClass: "recovery" },
+    { bagId: "temp", mirrorRoot: "/state/wikis", scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: ["lares", "notes"] },
+  ];
+  const slots = (slug: string): string[] => (["working", "personal", "draft", "temp"] as const).map((k) => wikiSlotUri(slug, k));
+  const rootOf = (g: DiskMirrorGrant, slug: string, kind: "working" | "personal" | "draft" | "temp" = "working"): string | undefined =>
+    resolveDiskMirrors(g, slots(slug), slug).find((m) => m.bagId === wikiSlotUri(slug, kind))?.mirrorRoot;
+  test("two faces of one vessel resolve ONE folder for one wiki, and it names no face", () => {
+    expect(rootOf(grant(A), "notes")).toBe("/state/wikis/notes");
+    expect(rootOf(grant(B), "notes")).toBe("/state/wikis/notes");
+    expect(rootOf(grant(null), "notes")).toBe("/state/wikis/notes");
+  });
+  test("a sourced wiki's workbench rests beside its canon source for ANY face's wear: no face alone writes back", () => {
+    expect(rootOf(grant(A), "lares")).toBe("/checkout/wikis/lares");
+    expect(rootOf(grant(B), "lares")).toBe("/checkout/wikis/lares");
+  });
+  test("nothing face-private lands beside the canon source: personal, draft and temp of a sourced wiki rest under the state root, and no checkout path names a face", () => {
+    for (const face of [A, B]) {
+      const resolved = resolveDiskMirrors(grant(face), slots("lares"), "lares");
+      expect(rootOf(grant(face), "lares", "personal")).toBe(`/state/personal/${face}/lares`);
+      expect(rootOf(grant(face), "lares", "draft")).toBe("/state/wikis/lares/recovery");
+      expect(rootOf(grant(face), "lares", "temp")).toBe("/state/wikis/lares/temp");
+      const inCheckout = resolved.filter((m) => m.mirrorRoot.startsWith("/checkout/"));
+      expect(inCheckout.map((m) => m.bagId), "the workbench alone rests in the checkout").toEqual([wikiSlotUri("lares", "working")]);
+      for (const m of inCheckout) expect(m.mirrorRoot).not.toContain(face);
+    }
+    // The daemon wiki, face-private whole, resolves no per-wiki mirror through this grant at all.
+    expect(resolveDiskMirrors(grant(A), slots("daemon"), "daemon").filter((m) => m.mirrorRoot.startsWith("/checkout/"))).toEqual([]);
+  });
+  test("a mount that designates no working mirror (a face with no writer's seat) writes nothing into the workbench's folder", () => {
+    const unseated = resolveDiskMirrors(grant(A), slots("lares").filter((s) => s !== wikiSlotUri("lares", "working")), "lares");
+    expect(unseated.some((m) => m.bagId === wikiSlotUri("lares", "working"))).toBe(false);
+    expect(unseated.some((m) => m.mirrorRoot.startsWith("/checkout/"))).toBe(false);
+    expect(unseated.find((m) => m.bagId === wikiSlotUri("lares", "personal"))?.mirrorRoot).toBe(`/state/personal/${A}/lares`);
+  });
+  test("CONTROL: a shared wiki's workbench under an operator workspace keeps its one folder, and the resolved entry carries none of the grant's resolvers", () => {
+    expect(rootOf(grant(A, { notes: "/lar/workspaces/field-notes" }), "notes")).toBe("/lar/workspaces/field-notes");
+    expect(Object.keys(resolveDiskMirrors(grant(A), [wikiSlotUri("notes", "working")], "notes")[0]!).sort()).toEqual(["bagId", "mirrorRoot", "scope", "wikiSlot"]);
+  });
+});
+
 test("a recovery grant sites designated drafts separately from working", () => {
   const draft = wikiSlotUri("garden", "draft");
   const working = wikiSlotUri("garden", "working");

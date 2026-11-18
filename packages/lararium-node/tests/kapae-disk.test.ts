@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CompositeStore, wikiSlotUri } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
-import { daemonWorkingMirror, kahuaFaceFolder } from "../src/bag-paths.js";
+import { daemonWorkingMirror, daemonFaceFolder } from "../src/bag-paths.js";
 import { LarDiskProjector } from "../src/disk-projector.js";
 
 const bag = wikiSlotUri("daemon", "working");
@@ -26,7 +26,7 @@ async function rig() {
   });
   const internal = projector as unknown as { flush(b: string, t: string): Promise<void>; reconcile(t: string): Promise<void> };
   await internal.flush(bag, title);
-  const stem = join(root, "wikis", kahuaFaceFolder(tag), "ha.ka.ba/t/daemon/shadow-test");
+  const stem = join(root, "wikis", daemonFaceFolder(tag), "ha.ka.ba/t/daemon/shadow-test");
   return { store, internal, stem };
 }
 

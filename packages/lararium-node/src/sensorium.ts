@@ -451,7 +451,7 @@ export interface ResolvedServeSpawn {
  * Build the default holder spawn for a python `serve` palace store: resolve the venv-aware python
  * + helper script (lazily, per spawn, via `resolveSpawn`), then run `<python> <script> serve
  * --palace <dir>` with PYTHONPATH reaching the mempalace submodule. structurepalace + formpalace share
- * this verbatim — the only divergence was the resolve fn, lifted to a parameter here.
+ * this verbatim; the resolve fn rides as the one parameter that differs between them.
  */
 export function makeServeSpawn(resolveSpawn: () => ResolvedServeSpawn, opts: { readonly palaceless?: boolean } = {}): PalaceHolderSpawn {
   return (canonicalDir: string): PalaceHolderProc => {
@@ -902,8 +902,8 @@ export function _liveContentHolderCount(): number {
  * formpalace — the FORM store's surface, held as a PLACEHOLDER that stores nothing and answers empty.
  *
  * PLACEHOLDER SHIM (operator ruling 2026-10-31, Train Q, row Q6 — the one ruled exception to the
- * no-shims law). The harvester burn retired the move-skeleton emitter and the Python form encoder that
- * filled this store, so the form plane has no producer. The surface keeps its export shape for its
+ * no-shims law). No move-skeleton emitter or Python form encoder fills
+ * this store, so the form plane has no producer. The surface keeps its export shape for its
  * callers (the recall fuse's form leg, the worldline form pre-fetch, `lares-query`): `encodeStore`
  * records nothing and reports a zero-dimension result, `query` and `filter` answer `[]`, `get` answers
  * `null`, and no holder process spawns. The sensorium arc returns the real store; that arc waits on the

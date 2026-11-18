@@ -37,4 +37,4 @@ export function promoteMainVerbs({ api, push }: { api: PromotePanelApi; push: (d
  * the fresh snapshot), while the door's own reactor of the same name serves its socket and CLI road alone. Any other shared name is a clash
  * and the verb table refuses it.
  */
-export const PROMOTE_PANEL_OWNED_ROWS: ReadonlySet<string> = new Set(["promote-commit", "promote-drop", "kapae-raise", "kapae-lower"]);
+export const PROMOTE_PANEL_OWNED_VERBS: ReadonlySet<string> = new Set(["promote-commit", "promote-drop", "kapae-raise", "kapae-lower"]);

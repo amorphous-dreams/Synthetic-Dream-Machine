@@ -35,12 +35,12 @@ import {
   HOSTING_GRANT_SESSION_KIND, decodeInvite, encodeInvite, issueGrant, mintHostToken, mintHostingAct, popInvite, readFckCarrier, walkOver,
   type LarSessionMsg, type LeafIdentity, type WalkFault, type WalkRecord,
 } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
-import { writeCustodyRow } from "../src/custody-seat.js";
+import { CustodyLocked, CustodyRecordUnavailable } from "../src/custody-holder.js";
+import { writeCustodyRecord } from "../src/custody-seat.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
-import { listWalkRecords, nodeWalkStore, walkRowFile, WalksElsewhere } from "../src/node-walk-store.js";
+import { listWalkRecords, nodeWalkStore, walkRecordFile, WalksElsewhere } from "../src/node-walk-store.js";
 import { runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
-import { handleRowPath, faceRowNames } from "./face-paths.js";
+import { handleRecordPath, faceRecordNames } from "./face-paths.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { FIXTURE_PASSPHRASE, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { findFace, readFaceIndexSync } from "../src/face-index.js";
@@ -54,7 +54,7 @@ const RECORD: WalkRecord = {
   nexusAid: AID, relay: RELAY, invite: CARRIED_INVITE,
   carried: [{ cid: "blake3:" + "ab".repeat(32), ref: "cd".repeat(32), key: "9f".repeat(32) }],
 };
-const rowPath = (gate = GATE): string => handleRowPath(walkRowFile(0, gate));
+const rowPath = (gate = GATE): string => handleRecordPath(walkRecordFile(0, gate));
 
 const drops: Array<() => Promise<void>> = [];
 afterEach(async () => { for (const drop of drops.splice(0).reverse()) await drop(); });
@@ -77,7 +77,7 @@ describe("a walk record at rest", () => {
     const file = readFileSync(rowPath());
     expect(readFckCarrier(file)).toBe("sealed");
     for (const secret of [RELAY, CARRIED_INVITE, "5a".repeat(32), "9f".repeat(32), GATE]) expect(file.includes(Buffer.from(secret)), secret).toBe(false);
-    expect(faceRowNames().filter((n) => n.startsWith("walk-")).every((n) => /^walk-h0-[0-9a-f]{32}\.json$/.test(n))).toBe(true);
+    expect(faceRecordNames().filter((n) => n.startsWith("walk-")).every((n) => /^walk-h0-[0-9a-f]{32}\.json$/.test(n))).toBe(true);
     expect(await store().read(GATE)).toEqual(RECORD);
     expect(await listWalkRecords()).toEqual([{ face: 0, gatePubKey: GATE, record: RECORD }]);
   });
@@ -94,10 +94,10 @@ describe("a walk record at rest", () => {
     expect(readFileSync(rowPath()).equals(foreign)).toBe(false);                   // two keys, two encodings
     copyFileSync(bPath, rowPath());
     const read = await refusal(store().read(GATE));
-    expect(read).toBeInstanceOf(CustodyRowUnavailable);
-    expect(read).toMatchObject({ home: "identity", file: walkRowFile(0, GATE) });
-    expect(await refusal(listWalkRecords())).toBeInstanceOf(CustodyRowUnavailable);
-    expect(await refusal(put(GATE, { nexusAid: AID }))).toBeInstanceOf(CustodyRowUnavailable);   // a wallet never lands over it
+    expect(read).toBeInstanceOf(CustodyRecordUnavailable);
+    expect(read).toMatchObject({ home: "identity", file: walkRecordFile(0, GATE) });
+    expect(await refusal(listWalkRecords())).toBeInstanceOf(CustodyRecordUnavailable);
+    expect(await refusal(put(GATE, { nexusAid: AID }))).toBeInstanceOf(CustodyRecordUnavailable);   // a wallet never lands over it
     expect(readFileSync(rowPath()).equals(foreign)).toBe(true);
     const aRow = rowPath();
     as(b);
@@ -116,9 +116,9 @@ describe("a walk record at rest", () => {
     moved[moved.length - 1] = moved[moved.length - 1]! ^ 0x01;
     for (const standing of [moved, Buffer.from(JSON.stringify({ gatePubKey: GATE, record: RECORD }))]) {
       writeFileSync(rowPath(), standing);
-      expect(await refusal(store().read(GATE))).toBeInstanceOf(CustodyRowUnavailable);
-      expect(await refusal(listWalkRecords())).toBeInstanceOf(CustodyRowUnavailable);
-      expect(await refusal(put(GATE, RECORD))).toBeInstanceOf(CustodyRowUnavailable);
+      expect(await refusal(store().read(GATE))).toBeInstanceOf(CustodyRecordUnavailable);
+      expect(await refusal(listWalkRecords())).toBeInstanceOf(CustodyRecordUnavailable);
+      expect(await refusal(put(GATE, RECORD))).toBeInstanceOf(CustodyRecordUnavailable);
       expect(readFileSync(rowPath()).equals(standing)).toBe(true);
     }
     writeFileSync(rowPath(), sealed);                                              // the true row again: the sealed writer replaces only what the key sealed
@@ -135,12 +135,12 @@ describe("a walk record at rest", () => {
       { gatePubKey: GATE, record: { nexusAid: AID, grant: { nexusAid: "nexus-" + "b".repeat(64), leaf: "ab".repeat(32), epoch: "e".repeat(64), lineage: "d".repeat(64), survived: 0, from: "host", tag: "f".repeat(128) } } },
     ];
     for (const shape of shapes) {
-      await writeCustodyRow("identity", walkRowFile(0, GATE), enc(shape));              // sealed under the right key, of the wrong shape
+      await writeCustodyRecord("identity", walkRecordFile(0, GATE), enc(shape));              // sealed under the right key, of the wrong shape
       expect(await refusal(store().read(GATE))).toMatchObject({ reading: "malformed" });
       expect(await refusal(listWalkRecords())).toMatchObject({ reading: "malformed" });
       expect(await refusal(put(GATE, RECORD))).toMatchObject({ reading: "malformed" });
     }
-    await writeCustodyRow("identity", walkRowFile(0, GATE), enc({ gatePubKey: GATE, record: RECORD }));   // control: the true shape opens again
+    await writeCustodyRecord("identity", walkRecordFile(0, GATE), enc({ gatePubKey: GATE, record: RECORD }));   // control: the true shape opens again
     writeFileSync(join(rowPath(), "..", "a-stray-name.txt"), "not a row");
     expect(await listWalkRecords()).toEqual([{ face: 0, gatePubKey: GATE, record: RECORD }]);
     // An update whose decision answers a malformed record seals nothing, and the standing row stays.
@@ -173,15 +173,15 @@ describe("a walk record at rest", () => {
     expect(nodeWalkStore.length).toBe(1);
     expect(listWalkRecords.length).toBe(0);
     expect(await listWalkRecords()).toEqual([]); // no face row, walking nowhere
-    expect(faceRowNames().some((n) => n.startsWith("walk-"))).toBe(false);
+    expect(faceRecordNames().some((n) => n.startsWith("walk-"))).toBe(false);
     await put(GATE, RECORD);
     expect(readFckCarrier(readFileSync(rowPath()))).toBe("sealed");
     expect(rowPath().startsWith(join(c.homes.identity, "faces"))).toBe(true);
     // A row that cannot open refuses the listing; it never reads as walking nowhere.
     writeFileSync(rowPath(), "bare row");
     const listed = await refusal(listWalkRecords());
-    expect(listed).toBeInstanceOf(CustodyRowUnavailable);
-    expect(listed).toMatchObject({ home: "identity", file: walkRowFile(0, GATE) });
+    expect(listed).toBeInstanceOf(CustodyRecordUnavailable);
+    expect(listed).toMatchObject({ home: "identity", file: walkRecordFile(0, GATE) });
   });
 
   test("W6 — the walk acts keep, answer and re-present through the door's context", async () => {

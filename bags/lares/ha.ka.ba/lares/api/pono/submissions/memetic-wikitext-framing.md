@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;3SXpNmbwPez4yeY9Y7ZvFWx5GGwpI8FDllwhHfGVF2s"
+source-check: "ni:///sha-256;WMW5I_d59ZsUF-s2H4_i08W2mSJeAf6zgEc4xyagTL8"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -1023,9 +1023,9 @@ standing on those words.
 The grammar's own carriage rides the `$` prefix TiddlyWiki keeps for whoever stands the wiki, and the
 emitter drops that whole namespace from the declaration.
 
-A namespace rather than a list, because a list forgets. Two carriage parts once sat in no list at all:
-each one read as structure with nothing denying it, so each emitted into the declaration AND rebuilt as
-structure — an author's value came back undefined and the projection stopped settling. A prefix cannot
+A namespace rather than a list, because a list forgets. A carriage part that sits in no list at all
+reads as structure with nothing denying it, so it emits into the declaration AND rebuilds as
+structure — an author's value comes back undefined and the projection never settles. A prefix cannot
 forget a member.
 
 **The exclusion states where structure lives, not what TOML permits.** A quoted key carries any
@@ -1074,8 +1074,8 @@ Graceful parsing says NO parse breaks badly: a carrier missing its frame still y
 missing its declaration still dispatches. **That mercy carries load and it hides files.**
 
 A carrier that lost its address gets skipped by every instrument that walks the corpus by `uri-path` — the
-check witness, the coordinate witness, the round-trip witness — each at `if (!uri) continue`. Seventeen
-carriers once sat outside all three at once while every one of them reported itself as corpus-wide.
+check witness, the coordinate witness, the round-trip witness — each at `if (!uri) continue`. Such a
+carrier sits outside all three at once while every one of them reports itself as corpus-wide.
 
 So a carrier's health reads as a **gradient**, never a verdict. Every `.mem` source reads as a carrier;
 the reader names the marks it carries and the marks it lacks. `uri-path` names a meme address and `bag`

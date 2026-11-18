@@ -171,7 +171,7 @@ carry it.
 
 <<~ scale name=`domain` ranks=```inside-automerge ~ docs · wiki-CRDTs (the proximal/internal order): Automerge logical time owns causal order — `<counter,actorId>` · `getHeads` · the `drifted` frontier. FfzClock NEVER carries causal order here, and an `ffzCompare` LWW total-order MUST NOT drive a fork/revocation verdict inside the CRDT (that manufactures a global-now the mesh cannot hold) -> the-worldline ~ the agent worldline (NO Automerge actor — spirits mine into the daemon's sole replica): its causal PARTIAL order rides the ''reified edge-DAG'' (#/attribution) — a `spawned` edge = happened-before, no-edge-between-siblings = concurrent, handback closes the interval (the twin-reunion). FfzClock keyed on the HANDLE carries the worldline's RHYTHMIC POSITION only (where-in-the-cadence, a membership coordinate — NOT a freshness/decay scalar; any freshness a wiki keeps rides its memes, never this clock), never the causal verdict — by code its `ffzCompare` reads a total-order LWW that can never answer concurrent (no merge-ancestry), so causal CANNOT ride it; the concurrent-capable causal read rides `worldlineCompare` (`worldline-causal.ts`) over ITC stamps (`itc.ts`). The clock's `actorId` slot carries the worldline HANDLE, never the Automerge actor (the slot keeps its name for wire-compat, `ffz-clock.ts`). A separate `LarTickCounter` carries a monotonic cross-source join key -> other-domains ~ all other non-Automerge domains (external streams: game · Mudlet · video · DAW · market feed; capability-leases): FfzClock carries the rhythmic grain per FFZ_PROFILE, pulled across the causal-island boundary inward. The domain-general primitive lives at "lar:///ha.ka.ba/lararium/mesh/ffz-clock"```>>
 
-''The retired over-claim stays retired'' (across both domains): FfzClock measures
+''FfzClock claims no causal order'' (across both domains): FfzClock measures
 //tempo/grain//, never //who-acted-first// as a CRDT verdict. Inside Automerge, Automerge
 rules; on the worldline, the merge-topology rules and FfzClock's LWW only paces the
 grain. The Fuller-Fontany-Zelenka Chronometer earns its name as the ''rhythm'' of the
@@ -420,6 +420,6 @@ attribute to the spirit that moved them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EIT0bF1NrbHLsfRuMafRbQZXA3jy2t36qw0btd6Uqu0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vhh-Q8-p71IZi7ilDIzNvU5PeT-JwfoX0mc3Hm4Je0o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

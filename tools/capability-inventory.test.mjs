@@ -79,6 +79,10 @@ test("CONTROL: the comment scanner keeps a `/*` inside a string or after `//` fr
   assert.equal(rx.endsIn, "code");
   assert.equal(stripComments("const a = 1; /* never closed\nconst b = 2;").endsIn, "block");
   assert.equal(stripComments("const a = 2 / 3 / 4;\nconst b = x / y; // note /*").endsIn, "code");
+  // A template nested inside a template's `${…}` closes where it opened, and the outer template reads on past it.
+  const nested = stripComments("const m = `a ${t ? `b \\`x\\` ${u} c` : \"d\"} e ${{ k: 1 }.k}`; // gone\nconst e = answerReceipt(caps, m);");
+  assert.deepEqual([...nested], ["const m = `a ${t ? `b \\`x\\` ${u} c` : \"d\"} e ${{ k: 1 }.k}`; ", "const e = answerReceipt(caps, m);"]);
+  assert.equal(nested.endsIn, "code");
 });
 
 test("CONTROL: a widened capability, a new, extra or departed seam and a new ask each read red by name; an equal table reads clean", () => {

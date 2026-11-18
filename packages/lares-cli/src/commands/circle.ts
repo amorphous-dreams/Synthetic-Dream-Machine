@@ -32,7 +32,7 @@ import {
   type HandleCard,
 } from "@lararium/mesh";
 import { parseHandleCardCarriage } from "../handle-carriage.js";
-import { bookFace, faceRootKey, loadHandleBook, saveHandleBook } from "../sealed-rows.js";
+import { bookFace, faceRootKey, loadHandleBook, saveHandleBook } from "../sealed-records.js";
 import { actingFace } from "../face-option.js";
 import { makeDaemonCircleStore } from "../daemon-circle-store.js";
 import { vesselDid } from "../env.js";

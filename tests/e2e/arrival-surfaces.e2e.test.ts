@@ -54,7 +54,7 @@ function preparedWeb(): Record<string, string> {
   writeFileSync(join(web, "index.html"), '<!doctype html><title>arrival</title><script type="module" src="/assets/wiki.worker-arrival.js"></script>');
   writeFileSync(join(web, "assets/wiki.worker-arrival.js"), "self.postMessage('arrival')");
   const record = {
-    schema: "lararium-pronaos-artifact/v1",
+    schema: "lararium-pronaos-artifact",
     routes: files.map(([path, file, contentType, cache]) => ({
       path, file, contentType, cache,
       sha256: createHash("sha256").update(readFileSync(join(web, file))).digest("hex"),

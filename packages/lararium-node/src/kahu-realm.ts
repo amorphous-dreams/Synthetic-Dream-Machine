@@ -27,28 +27,56 @@ import {
   LARARIUM_DOC_URI, LARES_DOC_URI, deterministicDocUrl, faceAtomKeyFromSeed, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
   canonicalJson, parseRealmBagRegistration, realmBagRegistrationCounts, realmBagRegistrationsFromDoc, realmDocUrl, signRealmBagRegistration,
   writeRealmBagRegistration, ed25519SignerFromSeed, admittedKeyOf, followNexusKeyLine, kahuCabalActsFromBoard, realmBagKey, foundingRoster, nexusAidOf,
+  houseCanonBagsSeated, houseCanonSlugsSeated, seatHouseCanon,
   type LarDoc, type ProtectedDocClass, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
 import { createHmac } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { atomicWriteFileSync } from "./fs-atomic.js";
+import { projectionRoots } from "./bag-paths.js";
+import { daemonBagsDir } from "./lares-config.js";
 import { mintNexusLeaf } from "./nexus-leaf.js";
 import { nexusKeyPublicOf, readNexusKeys } from "./face-key-custody.js";
+import { CustodyLocked } from "./custody-holder.js";
 import { keyLineAt } from "./nexus-carriage.js";
 import { NexusCabalError, cabalCore } from "./commands/nexus-cabal.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { nexusCharterDocPath, readNexusDoc } from "./nexus-doc.js";
 
-/** The system bags the Kahu cabal keeps live. */
-export const KAHU_REALM_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
+/**
+ * The house canon the Kahu cabal keeps live: the ONE derived set (`houseCanonBagsSeated`, mesh kahu-canon-reach), read at
+ * each call so the set a vessel seats at boot off its disk-sourced holdings is the set the realm lands and stands.
+ */
+export function kahuRealmBags(): readonly string[] { return houseCanonBagsSeated(); }
+
+/**
+ * SEAT THE HOUSE CANON off this vessel's checkout: every holding whose source dir stands under the canon source the daemon
+ * resolves (`projectionRoots(...).sourcedSlugs()`, the same reading the seed's `canonIsDisk` makes), the public board
+ * excepted. A scratch house with no checkout seats the system canon alone. Returns the seated slugs.
+ */
+export function seatHouseCanonFromCheckout(canonBags: string = daemonBagsDir()): string[] {
+  seatHouseCanon(projectionRoots({ projectionRoot: canonBags, canonBags }).sourcedSlugs());
+  return houseCanonSlugsSeated();
+}
 
 /** THE ONE ACCESSOR for the face whose per-Nexus key stewards the Kahu realm. Pairs with `kahuRealmGroup`; road `P21` swaps both. */
 export function kahuRealmHandleIndex(): number { return 0; }
 
-/** The live documents a vessel holds, by bag; a field stays absent where this vessel holds none. */
-export interface KahuCanonDocs { readonly lares?: AutomergeUrl; readonly lararium?: AutomergeUrl }
+/**
+ * The live documents a vessel holds, by bag; a field stays absent where this vessel holds none. `bags` names every house
+ * canon document that stands (the system canon among them); `lares` and `lararium` name the two the keel mounts by name.
+ */
+export interface KahuCanonDocs { readonly lares?: AutomergeUrl; readonly lararium?: AutomergeUrl; readonly bags?: Readonly<Record<string, AutomergeUrl>> }
+
+/** The canon docs a standing map names: every bag, and the system canon by name. */
+function canonDocsOf(standing: ReadonlyMap<string, { readonly docUrl: string }>): KahuCanonDocs {
+  const bags: Record<string, AutomergeUrl> = {};
+  for (const [bag, rec] of standing) bags[bag] = rec.docUrl as AutomergeUrl;
+  const lares = urlOf(standing, LARES_DOC_URI), lararium = urlOf(standing, LARARIUM_DOC_URI);
+  return { ...(lares ? { lares } : {}), ...(lararium ? { lararium } : {}), ...(Object.keys(bags).length > 0 ? { bags } : {}) };
+}
 
 /**
  * THE FOUNDING MINTS A KAHU BAG'S DOCUMENT AT THE STEWARD'S OWN DERIVATION: a MAC under the steward's per-Nexus seed over
@@ -159,7 +187,7 @@ async function stewardRows(doc: LarDoc | undefined | null, nexus: string, line: 
   const rows = new Map<string, RealmBagRegistration[]>();
   for (const rec of realmBagRegistrationsFromDoc(doc)) {
     if (rec.keptBy.length !== 1 || !line.keys.has(rec.keptBy[0]!.toLowerCase())) continue;
-    if (!KAHU_REALM_BAGS.includes(rec.bagUri)) continue;
+    if (!kahuRealmBags().includes(rec.bagUri)) continue;
     if (!(await realmBagRegistrationCounts(rec, nexus))) continue;
     rows.set(rec.bagUri, [...(rows.get(rec.bagUri) ?? []), rec]);
   }
@@ -182,7 +210,7 @@ async function standKahuRegistrations(
   const rows = await stewardRows(realm.doc(), nexus, line);
   const standing = new Map<string, RealmBagRegistration>();
   const restored: string[] = [], equivocal: string[] = [];
-  for (const bagUri of KAHU_REALM_BAGS) {
+  for (const bagUri of kahuRealmBags()) {
     const onRegistry = rows.get(bagUri) ?? [];
     let kept = await keptRegistration(sealHome, nexus, bagUri, line);
     if (!kept) {
@@ -240,24 +268,42 @@ export async function landKahuRealm(opts: {
   if (equivocal.length > 0) {
     throw new NexusCabalError(`the Kahu realm's registry holds the steward's seals over two documents for ${equivocal.join(", ")}, and this hearth keeps no registration to pin one; restore the kept registration (<sealHome>/nexus/kahu-realm/) before founding again`);
   }
-  const registered: string[] = [...restored];
-  let signer: StewardSigner | null = null;
-  for (const bagUri of KAHU_REALM_BAGS) {
-    if (standing.has(bagUri)) continue;
-    signer ??= opts.steward ? await opts.steward(core.nexus) : await line.signHead();
-    const doc = await materializeSharedLarDoc(opts.repo, await kahuBagDocUrl(core.nexus, bagUri), bagUri);
-    const rec = await signRealmBagRegistration({ realmId: core.nexus, bagUri, docUrl: doc.url, readTier: "contract" }, [signer]);
-    if (!(await realmBagRegistrationCounts(rec, core.nexus))) throw new NexusCabalError(`the Kahu realm's registration of ${bagUri} counts nothing: the steward's seal does not verify`);
-    // KEPT BEFORE IT IS PUBLISHED: no registry row of the steward's ever stands without the hearth's own copy.
-    keepKahuRegistration(opts.sealHome, rec);
-    realm.change((draft) => writeRealmBagRegistration(draft, rec, signer!.signer, true));
-    registered.push(bagUri);
-  }
-  if (signer && "done" in signer) (signer as { done: () => void }).done();
+  const registered: string[] = [...restored, ...await landUnstood({ repo: opts.repo, sealHome: opts.sealHome, nexus: core.nexus, realm, standing, line, ...(opts.steward ? { steward: opts.steward } : {}) })];
   const { standing: landed } = await standKahuRegistrations(realm, opts.sealHome, core.nexus, line);
-  const lares = urlOf(landed, LARES_DOC_URI), lararium = urlOf(landed, LARARIUM_DOC_URI);
-  if (!lares || !lararium) throw new NexusCabalError("the Kahu realm's registrations did not fold to standing");
-  return { nexus: core.nexus, docs: { lares, lararium }, registered };
+  const docs = canonDocsOf(landed);
+  if (!docs.lares || !docs.lararium || kahuRealmBags().some((bag) => !landed.has(bag))) throw new NexusCabalError("the Kahu realm's registrations did not fold to standing");
+  return { nexus: core.nexus, docs: { lares: docs.lares, lararium: docs.lararium, bags: docs.bags ?? {} }, registered };
+}
+
+/**
+ * Mint and register, at the CONTRACT tier, every house canon bag the realm does not yet stand: one document per bag at the
+ * steward's own derivation (`kahuBagDocUrl`), kept before it publishes. The founding calls it, and so does the steward's
+ * boot (`standKahuCanon`), so a house canon bag the checkout gained since the founding lands in the realm on the steward's
+ * next boot, never as a catalog row. Returns the bags it registered.
+ */
+async function landUnstood(opts: {
+  readonly repo: Repo; readonly sealHome: string; readonly nexus: string;
+  readonly realm: { change(fn: (d: LarDoc) => void): void };
+  readonly standing: ReadonlyMap<string, RealmBagRegistration>; readonly line: KahuStewardLine;
+  readonly steward?: (nexusAid: string) => Promise<StewardSigner>; readonly skip?: readonly string[];
+}): Promise<string[]> {
+  const registered: string[] = [];
+  let signer: StewardSigner | null = null;
+  try {
+    for (const bagUri of kahuRealmBags()) {
+      if (opts.standing.has(bagUri) || opts.skip?.includes(bagUri)) continue;
+      signer ??= opts.steward ? await opts.steward(opts.nexus) : await opts.line.signHead();
+      const doc = await materializeSharedLarDoc(opts.repo, await kahuBagDocUrl(opts.nexus, bagUri), bagUri);
+      const rec = await signRealmBagRegistration({ realmId: opts.nexus, bagUri, docUrl: doc.url, readTier: "contract" }, [signer]);
+      if (!(await realmBagRegistrationCounts(rec, opts.nexus))) throw new NexusCabalError(`the Kahu realm's registration of ${bagUri} counts nothing: the steward's seal does not verify`);
+      // KEPT BEFORE IT IS PUBLISHED: no registry row of the steward's ever stands without the hearth's own copy.
+      keepKahuRegistration(opts.sealHome, rec);
+      const by = signer.signer;
+      opts.realm.change((draft) => writeRealmBagRegistration(draft, rec, by, true));
+      registered.push(bagUri);
+    }
+  } finally { if (signer && "done" in signer) (signer as { done: () => void }).done(); }
+  return registered;
 }
 
 /**
@@ -279,10 +325,19 @@ export async function standKahuCanon(opts: {
   const realm = await materializeSharedLarDoc(opts.repo, realmDocUrl(core.nexus), "realm");
   const line = await kahuStewardLine(opts.sealHome, core.nexus, core.handle.doc());
   if (line === null) return {};
-  const { standing, restored } = await standKahuRegistrations(realm, opts.sealHome, core.nexus, line);
-  if (restored.length > 0) console.log(`[kahu-realm] the steward restored its own registration of ${restored.join(", ")} on the realm doc`);
-  const lares = urlOf(standing, LARES_DOC_URI), lararium = urlOf(standing, LARARIUM_DOC_URI);
-  return { ...(lares ? { lares } : {}), ...(lararium ? { lararium } : {}) };
+  const first = await standKahuRegistrations(realm, opts.sealHome, core.nexus, line);
+  if (first.restored.length > 0) console.log(`[kahu-realm] the steward restored its own registration of ${first.restored.join(", ")} on the realm doc`);
+  // THE STEWARD LANDS WHAT THE SET GAINED: a house canon bag the checkout carries that the founding never saw mints and
+  // registers here, at contract. Only a bag with NO trace lands: never the system canon (the founding's own), never a bag the
+  // hearth keeps a registration file for (a file that fails to verify stands none, never re-minted over), never an
+  // equivocal one.
+  const skip = kahuRealmBags().filter((bag) => bag === LARES_DOC_URI || bag === LARARIUM_DOC_URI || first.equivocal.includes(bag) || existsSync(keptRegistrationPath(opts.sealHome, core.nexus, bag)));
+  const gained = kahuRealmBags().some((bag) => !first.standing.has(bag) && !skip.includes(bag))
+    ? await landUnstood({ repo: opts.repo, sealHome: opts.sealHome, nexus: core.nexus, realm, standing: first.standing, line, skip })
+    : [];
+  if (gained.length > 0) console.log(`[kahu-realm] the steward landed house canon ${gained.join(", ")} in the realm at contract`);
+  const standing = gained.length > 0 ? (await standKahuRegistrations(realm, opts.sealHome, core.nexus, line)).standing : first.standing;
+  return canonDocsOf(standing);
 }
 
 /**
@@ -302,19 +357,29 @@ export async function admitCanonDocs(
   if (!seed) return {};
   const vesselKey = faceAtomKeyFromSeed(seed, personaGroupId).key;
   const docs = await stand({ repo, sealHome, vesselKey, personaGroupId });
-  return { ...(docs.lares ? { [LARES_DOC_URI]: docs.lares } : {}), ...(docs.lararium ? { [LARARIUM_DOC_URI]: docs.lararium } : {}) };
+  return { ...(docs.bags ?? {}), ...(docs.lares ? { [LARES_DOC_URI]: docs.lares } : {}), ...(docs.lararium ? { [LARARIUM_DOC_URI]: docs.lararium } : {}) };
 }
 
 /** The face this hearth wears under sealed custody: the founding face's anchors' group (the composer's own reading); a locked or faceless place names none. */
 export async function hearthCustodyGroup(): Promise<string | null> {
-  return (await loadIdentityAnchors(0).catch(() => null))?.personaGroupId ?? null;
+  return faceCustodyGroup(0);
+}
+
+/**
+ * The group of ONE face this hearth holds, by its index: the group an admit that seats a device of THAT face reads the
+ * realm's canon for (`admitCanonDocs`). The hearth's wire hands house canon to a session of a face the Kahu cabal admitted
+ * and to no other, so an admit names canon by the face it seats, never by the founding face. A face the hearth holds no
+ * anchors for names none.
+ */
+export async function faceCustodyGroup(face: number): Promise<string | null> {
+  return (await loadIdentityAnchors(face).catch(() => null))?.personaGroupId ?? null;
 }
 
 
 /** The document ids of the live system documents this vessel holds: the Kahu canon a realm gate closes (road `P26`). */
 export function kahuCanonDocIds(canon: KahuCanonDocs): ReadonlySet<string> {
   const ids = new Set<string>();
-  for (const url of [canon.lares, canon.lararium]) {
+  for (const url of [canon.lares, canon.lararium, ...Object.values(canon.bags ?? {})]) {
     if (!url) continue;
     try { ids.add(String(interpretAsDocumentId(url))); } catch { /* a malformed url names nothing */ }
   }
@@ -341,7 +406,7 @@ export function kahuHandAtWire(input: {
   readonly kahuStanding: boolean;
 }): boolean {
   if (!input.kahuStanding || !input.faceProven || input.custodyGroup === null) return false;
-  if (!input.canon.lares && !input.canon.lararium) return false;
+  if (!input.canon.lares && !input.canon.lararium && Object.keys(input.canon.bags ?? {}).length === 0) return false;
   const session = input.session;
   if (!session || session.class !== "same-operator" || !session.face) return false;
   return session.face.personaGroup.toLowerCase() === input.custodyGroup.toLowerCase();
@@ -463,8 +528,11 @@ const absent = (err: unknown): boolean => (err as { code?: unknown } | null)?.co
  * re-read): a directory, a kept registration, a key or a charter that would not read is named here, so the holder can mark
  * its classification INCOMPLETE rather than take a partial count as truth. An absent path is no failure.
  */
-async function readKahuProtected(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<{ readonly homes: ReadonlyMap<string, string | null>; readonly failures: readonly string[] }> {
+async function readKahuProtected(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<{ readonly homes: ReadonlyMap<string, string | null>; readonly failures: readonly string[]; readonly locked: number }> {
   const failures: string[] = [];
+  // How many of the failures a LOCKED VAULT caused (a key read that waits on the unlock): the count stays incomplete either
+  // way, and the holder words a count that only the lock holds back as locked, never as torn.
+  let locked = 0;
   const ids = new Map<string, string | null>(opts.canon ? [...kahuCanonDocIds(opts.canon)].map((id) => [id, null] as const) : []);
   const add = (url: string, nexus: string, where: string): void => {
     try { const id = String(interpretAsDocumentId(url as AutomergeUrl)); if (!ids.has(id) || ids.get(id) === null) ids.set(id, nexus); }
@@ -494,19 +562,21 @@ async function readKahuProtected(opts: { readonly sealHome: string; readonly can
         let rec: RealmBagRegistration | null = null;
         try { rec = parseRealmBagRegistration(readFileSync(at, "utf8")); } catch (err) { failures.push(`${at} would not read: ${String(err)}`); continue; }
         if (rec === null) { failures.push(`${at} reads as no registration`); continue; }
-        if (KAHU_REALM_BAGS.includes(rec.bagUri)) add(rec.docUrl, nexus, at);
+        // EVERY KEPT REGISTRATION classes its document: a bag that left the house canon since keeps its class (no removal
+        // ever declassifies a canon document).
+        add(rec.docUrl, nexus, at);
       }
     }
   }
   for (const nexus of nexuses) {
     let seeds: Uint8Array[] = [];
     try { seeds = await readNexusKeys(kahuRealmHandleIndex(), nexus); }
-    catch (err) { failures.push(`persona zero's keys at ${nexus.slice(0, 18)}… would not read: ${String(err)}`); seeds = []; }
+    catch (err) { failures.push(`persona zero's keys at ${nexus.slice(0, 18)}… would not read: ${String(err)}`); if (err instanceof CustodyLocked) locked++; seeds = []; }
     try {
-      for (const seed of seeds) for (const bagUri of KAHU_REALM_BAGS) add(kahuBagDocUrlFrom(seed, nexus, bagUri), nexus, `the derivation at ${nexus.slice(0, 18)}…`);
+      for (const seed of seeds) for (const bagUri of kahuRealmBags()) add(kahuBagDocUrlFrom(seed, nexus, bagUri), nexus, `the derivation at ${nexus.slice(0, 18)}…`);
     } finally { for (const seed of seeds) seed.fill(0); }
   }
-  return { homes: ids, failures };
+  return { homes: ids, failures, locked };
 }
 
 /** What the protected readings read off the Kahu canon holder (`kahuProtectedHolder`). */
@@ -527,18 +597,24 @@ export interface KahuProtectedReadings {
 export function protectedDocsOver(
   holder: () => KahuProtectedReadings | null,
   vesselPrivate: { ids(): ReadonlySet<string>; torn(): boolean },
+  /** Every wiki's realm workbench the vessel ledger names (cabal-realm#/the-workbench), by document id → realm id. The map
+   *  answers a new object only when the ledger moved, so the memo holds across asks. */
+  workbenches?: () => ReadonlyMap<string, string>,
 ): { ids(): ReadonlyMap<string, ProtectedDocClass>; settled(): Promise<void>; pending(): boolean; incomplete(): boolean } {
   const none: ReadonlyMap<string, "kahu-canon"> = new Map();
-  let memo: { kahu: ReadonlyMap<string, ProtectedDocClass>; priv: ReadonlySet<string>; size: number; map: ReadonlyMap<string, ProtectedDocClass> } | null = null;
+  const noBench: ReadonlyMap<string, string> = new Map();
+  let memo: { kahu: ReadonlyMap<string, ProtectedDocClass>; priv: ReadonlySet<string>; size: number; bench: ReadonlyMap<string, string>; map: ReadonlyMap<string, ProtectedDocClass> } | null = null;
   return {
     ids: () => {
       const kahu = holder()?.ids() ?? none;
       const priv = vesselPrivate.ids();
-      if (memo && memo.kahu === kahu && memo.priv === priv && memo.size === priv.size) return memo.map;
+      const bench = workbenches?.() ?? noBench;
+      if (memo && memo.kahu === kahu && memo.priv === priv && memo.size === priv.size && memo.bench === bench) return memo.map;
       const map = new Map<string, ProtectedDocClass>();
+      for (const id of bench.keys()) map.set(id, "realm-workbench");
       for (const id of priv) map.set(id, "vessel-private");
       for (const [id, cls] of kahu) map.set(id, cls);
-      memo = { kahu, priv, size: priv.size, map };
+      memo = { kahu, priv, size: priv.size, bench, map };
       return map;
     },
     settled: () => holder()?.settled() ?? Promise.resolve(),
@@ -577,13 +653,16 @@ export function kahuProtectedHolder(opts: {
     if (closed) return;
     let read: Awaited<ReturnType<typeof readKahuProtected>>;
     try { read = await readKahuProtected({ sealHome: opts.sealHome, canon: opts.canon() }); }
-    catch (err) { read = { homes: new Map(), failures: [`the recount threw: ${String(err)}`] }; }
+    catch (err) { read = { homes: new Map(), failures: [`the recount threw: ${String(err)}`], locked: 0 }; }
     if (read.failures.length > 0) {
       const was = incomplete;
       incomplete = true;
       if (!said) {
         said = true;
-        console.error(`[kahu-realm] ⚠ THE PROTECTED CANON COUNT IS INCOMPLETE (${read.failures.length} read failure(s): ${read.failures.slice(0, 3).join("; ")}): every document is withheld from every wire peer until a recount reads whole; the next classification write or board change retries it`);
+        // A LOCKED VAULT IS NO TORN COUNT. Where every failure waits on the unlock (an ordinary locked boot), the line says
+        // so plainly; any other failure raises the alarm. The ward reads the same either way: nothing crosses uncounted.
+        if (read.locked === read.failures.length) console.log(`[kahu-realm] the protected canon stands LOCKED, UNCOUNTED (${read.locked} key read(s) wait on the vault: ${read.failures.slice(0, 3).join("; ")}): every document stays withheld from every wire peer until the unlock's recount reads whole`);
+        else console.error(`[kahu-realm] ⚠ THE PROTECTED CANON COUNT IS INCOMPLETE (${read.failures.length} read failure(s): ${read.failures.slice(0, 3).join("; ")}): every document is withheld from every wire peer until a recount reads whole; the next classification write or board change retries it`);
       }
       if (!was) { try { opts.onChange?.(); } catch { /* a listener never breaks the count */ } }
       return;

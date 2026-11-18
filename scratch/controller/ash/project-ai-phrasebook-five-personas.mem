@@ -1,0 +1,97 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ash/project-ai-phrasebook-five-personas`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-08-28 (file date) — source `.lares-scratch/controller/ash/project_ai_phrasebook_five_personas.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ash/project-ai-phrasebook-five-personas"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ash/project-ai-phrasebook-five-personas"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! project_ai_phrasebook_five_personas.md — plan, 2026-08-28
+
+Verbatim scratch record `.lares-scratch/controller/ash/project_ai_phrasebook_five_personas.md` (plan, file date 2026-08-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ash/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+---
+name: project-ai-phrasebook-five-personas
+description: The AI phrasebook's 13 Voices stand as 5 move-sets (Ground/Frame/Widen/Make/Check) — behavior-not-biography, per-turn calls, many-in-a-turn; ruled asymmetry #4 in the design law
+metadata:
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/type-project`>>
+
+!! type: project
+
+`bags/lares/latent.attention.relation/agents/api/ai-phrasebook.mem` `#personas` carries ''five'' move-sets, not the elder seed's thirteen Voices: ''Ground · Frame · Widen · Make · Check'', addressed as ''Scope · Source · Wildcard · Draft · Review'' (rows stand in FIRST-READER order: Frame·Ground·Widen·Make·Check) (operator-ruled 2026-08-28, crossing two candidate registers). The elder (`noosphere-boot.md` `#voice-house`) KEEPS its thirteen — this is a ruled divergence, not a sync gap.
+
+''Why (measured, 2026-08-28 research pass):''
+* ''Identity enactment'' — a biography persona has the model infer behaviour nobody wrote. "You are a research librarian" dropped Claude Opus code correctness 0.92→0.67 with 12 refusals + 55 in-character disclaimers off a prompt instructing neither (arXiv 2607.17420).
+* ''Personas buy shape, never accuracy'' — 162 roles × ~2,400 questions × 4 model families: no gain, small loss; best-role-per-question beats random by nothing (Zheng et al., EMNLP Findings 2024, arXiv 2311.10054).
+* ''A held persona decays'' — >⅓ self-consistency gone by turn 8–12; mechanically, the self-description loses attention to recent text. So calls ''expire at end of turn'' and MANY MAY HOLD ONE TURN. Industry locks one-per-session; we do the opposite, and this is the evidenced side (dynamic role assignment > fixed homogeneous roles, arXiv 2601.17152).
+* `Make ~ checks nothing it made` seats the ''generation–verification gap'' structurally — Check re-reads the ARTIFACT, never the plan.
+
+''ROW SHAPE IS THE PATTERN INTEGRITY — match the elder's, field for field:'' `name/ trigger/ moves/ relation/ phase/ guards/ yield/ register/` + a ` ~ ` aside of `·`-joined doing-phrases. ''Type = role, `name/` = the addressable pet-name.'' The declination rides the aside's SECOND CLAUSE — never a ninth key the elder lacks. `Named-Persona` carries Default/Renamed/Side-Work (no `Masked`).
+
+''THE NAME LEADS ITS SPAN — never a turn-level label.'' A persona name fires ANYWHERE in a turn, as often as l-space pulls, and MUST precede the content it names: a forward mark sits in the context every following token reads and STEERS generation toward that basin; an appended one only scores finished text. Same law as the confidence vow leading its claim and the loop marker leading its phase — three forward-seeded instruments, one pattern integrity. A call governs THE SPAN IT LEADS, not the turn.
+
+''THE ROSTER AND THE LOOP CORRESPOND AT NO POINT.'' Two five-counts = the Law of Fives holding twice, never one law stated twice. `phase/` names where a move-set sits AT REST; a persona MAY hold any loop phase. A 1:1 mapping collapses two instruments into one and leaves neither able to contradict the other — operator caught exactly this.
+
+''ALL ARGUMENT LIVES IN THE DESIGN MEME, NEVER IN THE PHRASEBOOK.'' A frozen phrasebook that explains itself has started keeping a record; the warm surface keeps records. Numbers, citations and rationale go in `ai-phrasebook-design.mem` — the phrasebook states law only. Operator caught this too. See &#91;[feedback_evergreen_no_archaeology]], &#91;[feedback_outward_facing_register]].
+
+''NAMING LAW — a pet-name must be a CONVENTIONAL VEHICLE and MUST NOT denote an animate agent.'' Novel vehicles (Anvil/Plumbline/Magpie) process as COMPARISON — every reader pays structural-alignment cost every time; conventional ones process as CATEGORIZATION, free (Bowdle & Gentner, Psych Review 112(1)). Conventionality lives SOLELY IN THE VEHICLE. Animate names steer off the Assistant Axis → identifying-as-other-entities + theatrical register (arXiv 2601.10387). No job titles, no idioms (BELF exclusion class). `Redline` DISQUALIFIED (US racial-housing discrimination). Known accepted strains: `Source` collides with source-code for SWE; `Review` carries the role-noun "reviewer".
+
+''NAMING WAS NEVER THE ANTI-COLLAPSE MECHANISM — THE EXPIRY IS.'' Six Thinking Hats used the most artificial labels available (colours) //expressly// to split ego from mode, and STILL collapses in the field: "David is a black thinker". What we hold that it lacks: a hat is assigned per person per meeting; a call expires with the span it leads. Corroborated — the persona-drift paper retitled to ''Instruction (In)Stability'' (arXiv 2402.10962): the decay hits ANY standing instruction.
+
+''GUARDS MUST BITE AT BEAT GRAIN'' (one move, one sentence) because the seed licenses mid-span firing. Audit found 3 of 5 leaking: `scope-creep` needs a span, `flatness` needs a SET, `sealed-close`/`broken-panel` are TURN-POSITION faults. Re-cut to `assumed-and-silent-fork` / `pleasing-and-false-alternative` / `verdict-without-a-joint`.
+
+''A SAME-PASS CHECK MUST SEND VERIFICATION OUTWARD.'' Intrinsic self-correction without external feedback fails and can degrade output (arXiv 2310.01798). `yield/checkable-clue` is the cure — a clue the operator takes to contact, never a verdict on the artifact it just watched get built.
+
+''A NAME RIDES INLINE AT IRREGULAR INTERVALS.'' Hyland: transition marker (relation between clauses) vs frame marker (staging). A name on a schedule HAS BECOME A HEADING whatever its content — regularity IS staging information.
+
+''WIDEN IS THE STRUCTURAL MISFIT, flagged on 3 independent instruments'' — `Contrast` is the only non-PRESENTATIONAL RST relation among the five; Frame↔Widen collide in-span (both open, `fork` ≈ `oppose`); it resisted naming in every register. Cure: `oppose` moved Widen→Check; Widen is purely generative.
+
+''NO `phase/` VALUE MAY SHARE A WORD WITH A LOOP PHASE'' — Make is `phase/design`, not `phase/act`. One shared token is all a false bijection needs.
+
+''TYPES ARE VERBS, `pull/` NOT `phase/`:'' `Frames/Scope · Grounds/Source · Leaps/Wildcard · Makes/Draft · Checks/Review`. Field set: `name/ trigger/ moves/ relation/ pull/ guards/ yield/ register/` + ` ~ ` aside. NO `pull/` value may share a word with a loop phase.
+
+''COMPOSITION REPLACES THE MASK LAYER — 5×5.'' `#your-own-story` holds SUPPLIED personas via `Yours(Type Params)`, same 8 fields with ''`wears/` where the base rows carry `role/`''. ''BOTH lead with the NAME'' — `Persona(Name Params)`, e.g. `Persona Scope "role/Frames …"` and `Persona Builder "wears/all-five …"`; the elder leads with the office (`~Persona Gatekeeper "name/Lares …"`). Surfacing form `Name (Role)` — e.g. `Builder (Makes)`, `Builder (Checks)`, `Strategist (Leaps)`. ''The name WEIGHTS what the span reaches for; the role WEIGHTS how it moves; THE GUARD RIDES THE ROLE.'' Never "what it knows" — that seats a persistent domain store the architecture never holds — a supplied domain never buys its way out of the move-set's guard. A supplied Persona MUST wear a role to surface: a bare domain name IS the identity claim the roster exists to refuse. Seeded example: a telecom finance dept — Builder · Analyst · Collaborator · Presenter · Strategist, each demonstrating itself in-character under a named role rather than being described.
+
+''AFTERMATH SWEEP (2026-08-28) — the memegraph holds NO other Persona-row carrier.'' The `voices` / `masks` families carry PROSE, never rows; `packages/**` `Persona*` symbols are the CRYPTO persona (PersonaGroupRoot, petname), a different sense entirely — do not sweep them together. The named-mask carriers ALREADY wrote name-first (`Ink-Clerk (Lorekeeper)`, `Tide-Caller (Hierophant)`, `Mischief-Muse (Muse)` in their `role` fields), so ''the boot roster was the outlier and the inversion CLOSED a divergence''. `~Named-Persona` keeps `(Type Params)` in both seeds — its rows (Default/Earned/Masked) name kinds, not addressees.
+
+''NO MARKDOWN SEEDS — RULED 2026-08-28.'' A seed rendered to .md spoke three grammars at once (md headings / memetic-wikitext sigils / TW5 procedures) and served no reader. `noosphere-boot.md`, the phrasebook's .md twin, both sidecars, `transposeSeed`, `lares carrier project-seed` and `seed-parity-witness` are all DELETED. ''Both CLAUDE.md adapters now <code>&#64;bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem</code>.'' Do NOT recreate a markdown seed.
+
+''THE SUBMISSION PROJECTION SURVIVES AND IS DIFFERENT'' — `lares carrier project-md` / `projectSubmission` / PROJECT-MD wiki verb / the submissions shelf + `tools/submission-parity.mjs`. It renders a SPEC carrier (lar-uri, memetic-wikitext…) for a standards reviewer taught no grammar. Never confuse the two doors. ''The shelf stood 5-of-5 red at HEAD before any of this — another track's in-flight work, verified by rebuilding HEAD's projector.''
+
+''NEVER hand-roll the block check — call `bccOf` from <code>&#64;lararium/tw5/carrier-check</code>.'' A python reimplementation self-verified and I still shipped a stale stamp twice; `tests/carrier-shape.test.ts` is what catches it. Any sed/edit of a `.mem` MUST be followed by a `bccOf` restamp.
+
+''BOOT POINTERS — four harnesses, one law (`packages/lares-cli/src/boot-pointer.ts`).'' A pointer aimed at a missing file FAILS SILENTLY: the harness wakes, finds nothing, reports a clean start. So ''presence never satisfies the check — a pointer counts as tended only when it names THE CARRIER.'' Creates the file and its dirs when absent, re-aims a wrong one, backs up what it replaces. All four wires ride `lares vessel stand --init`.
+* `~/.claude/CLAUDE.md` → <code>&#64;&lt;abs path></code> (Claude expands &#64;-includes)
+* `~/.codex/AGENTS.md` → `-> [noosphere-boot.mem](<abs>)` — serves the Codex CLI ''and'' the `openai.chatgpt` VS Code extension
+* `~/.copilot/copilot-instructions.md` → `Always load -> [...]`
+* ''VS Code user scope = `~/.copilot/instructions/` (`applyTo`) + `~/.claude/rules/` (`paths`)'' — NOT the profile `prompts` folder, which is an earlier scheme and now INERT. Confirmed in the Insiders build's own source table (`source:"copilot-personal", storage:"user"`), not from docs alone.
+
+''MEASURE INSTRUMENTS, DON'T REIMPLEMENT THEM.'' Three times in one session I hand-rolled a check the house already owns: two stale block-check stamps shipped (one committed), and one INVENTED library defect — a regex grabbed the first `ni:///sha-256;` in a file, which in a library carrier sits inside quoted source-text. `verifyBcc` reads through a fence mask; my regex did not. ''All 8 library carriers verify clean and `carrier-shape` already globs `bags/**/*.mem` — library was never exempt.''
+
+''How to apply:'' never re-add a 13-roster to the phrasebook, and never write a persona as "you are a…". Warrant stays on the confidence number + drift-guard; a persona governs SHAPE only. `Widen` deliberately carries 6 of the 13 old guards — that asymmetry is the finding (persona framing helps open-ended work, hurts accuracy work), not sloppy packing.
+
+''The correspondence stays checkable.'' `bags/lares/ha.ka.ba/lares/docs/ai-phrasebook-design.mem` publishes a position-for-position table; this is now ''ruled asymmetry #4 at position 11 (cardinality)''. Any further roster change MUST update that table or the design law asserts a carry that does not hold. See &#91;[project_one_name_one_relation]], &#91;[feedback_derive_dont_enumerate]].
+
+''Digest re-stamp (both carriers):'' `ni:///sha-256;<b64url>` after <code>&lt;&lt;^ code="&amp;#x0003;" >></code> covers STX→ETX ''inclusive'' (`packages/lararium-tw5/src/carrier-check.ts`, `bccOfSpan`). Edit a `.mem` body → recompute, or the stamp goes stale silently. No `tools/` script does this; recompute in-place.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EhUT-a73KEHGjnWXBNnomWuLGEFWr25-t9HBa6h2Oc8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

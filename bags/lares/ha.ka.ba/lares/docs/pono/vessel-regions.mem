@@ -23,7 +23,7 @@ One closure in `packages/lararium-node/src/open-node-vessel.ts` — `prepareNode
 
 ''This carrier names every region by SYMBOL, never by line.'' The file moves under an active boot rewrite, and a symbol survives a move that a line number does not.
 
-''The boot stands in two phases, and the plan reads on top of them.'' `standNodeFloor` claims the store before any Repo opens and returns a `NodeFloor`; the floor reads no private row. `SovereignReaders` gathers the boot's named private-row reads behind one seam (other private reads, such as the persona-root seed, keep their own custody paths): a composition handed readers stands sovereign, and a composition handed none stands at the floor and runs no reader. `packages/lararium-node/src/main.ts` stands the floor once and composes over it (`composeStanding` · `composeOrFloor` · `recompose`).
+''The boot stands in two phases, and the plan reads on top of them.'' `standNodeFloor` claims the store before any Repo opens and returns a `NodeFloor`; the floor reads no private record. `SovereignReaders` gathers the boot's named private-record reads behind one seam (other private reads, such as the persona-root seed, keep their own custody paths): a composition handed readers stands sovereign, and a composition handed none stands at the floor and runs no reader. `packages/lararium-node/src/main.ts` stands the floor once and composes over it (`composeStanding` · `composeOrFloor` · `recompose`).
 
 ''The closure reads as seven regions.'' Three lifts come out of ③, ⑥ and ⑦; ⑤ stands apart as the Herm shore; and regions ①–④ share ONE object the closure hides — a share-verdict authority — which this plan exists to name. A split that cuts anywhere else moves lines and buys nothing.
 
@@ -41,7 +41,7 @@ The sovereign seam read · `readHearthDialPin` · the worn mount, read through t
 
 The closure constructs the Repo (`new Repo`) after those declarations, and the holders that fill the cells stand later in the closure. ''The window between stays deliberately inert for the outside lanes'': the unarmed federation and sibling gates deny their lanes until their holders stand, while the antigen ring and the in-process island lane keep their own rules (a null antigen ring denies nobody). Posture holds no cell here; `ownPlacePosture` (`socket-sorter.ts`) reads it fresh.
 
-Two things the window once held stand in the floor phase: the store claim (`standNodeFloor`) and the private-row reads (`SovereignReaders`).
+Two things the window once held stand in the floor phase: the store claim (`standNodeFloor`) and the private-record reads (`SovereignReaders`).
 
 !!! ② Repo + the share verdict + reverdict
 
@@ -89,7 +89,7 @@ The carriage serve-loop over Socket B, the carriage relay stand, the vessel's `c
 
 Regions ①②③④ co-own the verdict cells: `antigenRing` · `selfSlotFedGate` · `realmPlane` · `nexusMembership` · `sealRegistry` · `siblings` · `siblingGate` · `peerIdentifierMap` · `peerClassMap` · `peerWalkerBoard` · `ownCarriageBoard` · `ownHostingDocs`. `peerContractNymMap` and `charterHearthPeers` feed the realm charter consult (`makeRealmCharterConsult`) beside them.
 
-''The object hiding in this file stands as a SHARE-VERDICT AUTHORITY'' holding those cells, and it wants ONE mutation protocol: every verdict-changing write reaches `reverdict()`. Named paths already reverdict: reconnects and the store-door rows funnel through `afterRoll`, the membership and realm holders reverdict through their `onRefold` callbacks, and the `realm-bag` verb calls it directly. The `cad-seal` verb registers a sealed plane with no reverdict after it, so the protocol does not yet hold for every writer. Existing tests pin the realm callback, the Repo's stale-verdict behaviour and the after-roll call shape (`realm-refold-reverdict.test.ts` · `requested-doc-stale-verdict.test.ts` · `after-roll-awaited.test.ts`, under `packages/lararium-node/tests/`), and a comment states the rule beside `reverdict`. No type holds it. ''Extracting the authority converts that invariant from a habit into an API'' (a setter that reverdicts, never a public field), which gives the whole return on the region work.
+''The object hiding in this file stands as a SHARE-VERDICT AUTHORITY'' holding those cells, and it wants ONE mutation protocol: every verdict-changing write reaches `reverdict()`. Named paths already reverdict: reconnects and the store-door verbs funnel through `afterRoll`, the membership and realm holders reverdict through their `onRefold` callbacks, and the `realm-bag` verb calls it directly. The `cad-seal` verb registers a sealed plane with no reverdict after it, so the protocol does not yet hold for every writer. Existing tests pin the realm callback, the Repo's stale-verdict behaviour and the after-roll call shape (`realm-refold-reverdict.test.ts` · `requested-doc-stale-verdict.test.ts` · `after-roll-awaited.test.ts`, under `packages/lararium-node/tests/`), and a comment states the rule beside `reverdict`. No type holds it. ''Extracting the authority converts that invariant from a habit into an API'' (a setter that reverdicts, never a public field), which gives the whole return on the region work.
 
 ''The browser holds none of the holders this authority gathers'' — no antigen ring holder, no membership board, no seal registry, no realm plane, and no `shareConfigChanged` path — though it carries a federation gate, a sibling gate and a share config of its own (`open-browser-vessel.ts`). So the authority extracts as a NODE module first and reaches the browser only when a browser vessel gains any of those holders. The three clean lifts reach both substrates immediately.
 
@@ -140,6 +140,6 @@ A tasked spirit's walk at this codebase's grain, never a human's; the hours stan
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PMhHoca6B1f3PozdxoX1n4h1SZwG2hQw8xV5_8jasSc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pxfsxyRIZByXp0oCzBW_5ppwjhnVYjrZ_fMZ9HveSxE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

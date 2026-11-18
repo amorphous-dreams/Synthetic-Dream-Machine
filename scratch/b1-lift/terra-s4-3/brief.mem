@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-3/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s4-3/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-3/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-3/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s4-3/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/terra-build-seat-terra-s4-3-b1-lift-slice-4-gree`>>
+
+! Terra build seat terra-s4-3 — b1-lift slice 4: green the custody seam, the page's floor choice, the broker's control wait
+
+Worktree: /home/joshu/.lares-scratch/b1-lift/wt, branch feature/green-jello-dinosaur-5&#45;-b1-lift, head 7b637a5b5 (reds). You build; you do NOT commit. Never `git stash`, never `--no-verify`, never touch test files.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edit-only-these-files`>>
+
+!! Edit ONLY these files
+# packages/lararium-web/src/workers/vessel-host.ts
+# packages/lararium-web/src/vessel-port.ts
+# packages/lararium-web/src/floor-tab.ts (NEW)
+# packages/lararium-web/src/ceremony-page.ts
+# packages/lararium-web/src/main.ts
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/reds-to-turn-green`>>
+
+!! Reds to turn green (read them first; they bind)
+* packages/lararium-web/tests/vessel-host-follower.test.ts FB7, FB7b (they skip where the engine fires no MessagePort close; the cure must still land), FB8, FB9, FB4, FB4b stay green
+* packages/lararium-web/tests/vessel-port.test.ts (the two new RED tests at the end; every earlier test stays green)
+* packages/lararium-web/tests/floor-tab.test.ts FT1-FT4
+* packages/lararium-web/tests/ceremony-page.test.ts CP1 + CONTROL
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-to-build`>>
+
+!! What to build
+A. vessel-host.ts, `case "port:want"`: after wiring `port1.onmessage`, add `port1.addEventListener("close", () => c.lost("port-closed"))` (the engine fires it where it does). One comment line: the minted connection hears its tab go by its port's close where the engine fires one, its page's `page:life` pagehide, and its lifetime lock.
+B. vessel-port.ts:
+* export `vesselWorkerOfPort(port: MessagePort): VesselWorkerLike` — postMessage -> port.postMessage(msg, transfer); addEventListener("message", l) -> port.addEventListener("message", l) then port.start(); addEventListener("error", l) -> port.addEventListener("messageerror", l); terminate() -> port.close(). Doc: a follower tab's road to the owner's vessel worker over the port the broker handed it.
+* the returned port gains `mintPort(wantId: string, tabSession: string): Promise<MessagePort | null>`: posts `{ t: "port:want", wantId, tabSession }`, holds a pending entry keyed by wantId; the message switch gains `case "port:minted"`: resolve that wantId's entry with `msg.port ?? null` and delete it; a reply for no pending wantId settles nothing. The owner's page never reads the port; it offers it.
+C. floor-tab.ts (NEW), export `standFloorTab(env)` and its env type, exactly as tests/floor-tab.test.ts calls it:
+env = { locks: { request(name, opts, cb) } (navigator.locks shape), lockName, tabSession, broker: { post(msg: PageToBroker, transfer?), listen(listener(msg: BrokerToPage, ports)) => stop }, pageLife: PageLifeFeed, lead(): { mintPort(wantId, tabSession): Promise&lt;MessagePort|null> }, follow(port: MessagePort): void }.
+* role starts "asking". `locks.request(lockName, { ifAvailable: true }, async (lock) => ...)`: lock granted -> role "owner", `door = env.lead()` once, then hold the lock for the page's life (await a promise that never settles: the platform releases it when the page goes). lock null -> role "claiming", post `{ t: "vessel:claim", tabSession }`.
+* broker listener: `vessel:want` heard while owner -> `door.mintPort(claimId, tabSession)`; a port -> post `{ t: "vessel:offer", claimId }` with transfer [port]; null -> offer nothing. Any other role ignores wants. `vessel:port` with msg.tabSession === env.tabSession while claiming, with a port -> role "follower", `env.follow(ports[0])` (a claim spends once: later ports follow nothing). `vessel:absent` -> console.warn naming it.
+* pageLife "pagehide" while claiming -> post `{ t: "vessel:withdraw", tabSession }`. Any other role posts nothing (a follower's own vessel port carries its leaving word).
+* `role()` returns the current role. Header comment: the 2026-11-06 ruling (every tab carries a live session), one owner per store by the lock, a follower opens its own session over its brokered port, the broker hands ports and carries no traffic.
+D. ceremony-page.ts, `standCeremonyBroker(env?: { isSecureContext: boolean; container: ServiceWorkerContainer-like | null })`, default `{ isSecureContext: window.isSecureContext, container: "serviceWorker" in navigator ? navigator.serviceWorker : null }`. Refusal via pageCeremonyRefusal({ isSecureContext, hasServiceWorker: container !== null }). Register as now; then THE BROKER STANDS ONLY OVER A PAGE IT CONTROLS: if `container.controller` stands, return `{ worker: container.controller }`; else wait for `controllerchange` (an event, never a timer) and return `{ worker: container.controller }`. Keep the refusal on a thrown register. Update the doc comment (a first-load page: active before claimed; the broker's matchAll reads controlled windows alone).
+E. main.ts (page wiring; `node tools/page-entry-witness.mjs` must still exit 0):
+* `?holder` leaves the page: delete the `sharedHolderUrl` const and its comment, the `shared-holder.worker.ts?sharedworker&url` import, `...(sharedHolderUrl ? ...)` in the hello boot, the `spawnHolder` handler, and the `!sharedHolderUrl &&` guard. (The host's holder spawn stays for the next step.)
+* Replace THE TAB TOPOLOGY (G4) block and `standFollowerMirror`/`followerMirror` with `standFloorTab`: lockName `${vesselLockName(VESSEL_IDB)}:leader`; tabSession `crypto.randomUUID()`; broker from `await standCeremonyBroker()` (on a refusal, lead alone as today: no floor choice without a broker) with `post: (m, t) => worker.postMessage(m, t ?? [])` and `listen` over `navigator.serviceWorker`'s "message" event (`(e) => l(e.data, e.ports)`); pageLife `pageLifeOf(window, document)`; `lead: () => { void lead(boot); return { mintPort: (w, s) => leading ? leading.vessel.mintPort(w, s) : Promise.resolve(null) }; }`; `follow: (port) => { void lead(boot, port); }`.
+* `lead(boot, port?)` and `standVessel(handlers, port?)`: with a port, `standVesselPort(vesselWorkerOfPort(port), handlers)` instead of `new Worker(...)`; the rest of lead runs unchanged (the follower's own hello, its own session and unlock, its own mirror). Set `data-lar-tab` to "owner" or "follower".
+* Drop the `binding.startsWith("tab:")` topology branch in onPortMessage (all bindings go to pagePortDelivery). Remove imports main.ts no longer uses (standTabTopology, Lend, makePortTransport if unused, etc.). Leave src/glass/* files themselves untouched.
+* The ceremony's broker for asks keeps working (paintAsk/openCeremony read the same broker).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/checks`>>
+
+!! Checks (report counts verbatim)
+* <code>pnpm &#45;-filter &#64;lararium/web exec tsc &#45;-noEmit -p .</code> (or the package's typecheck script) clean
+* `node tools/page-entry-witness.mjs` exit 0
+* Browser-mode vitest: lead runs (do not run it).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/report`>>
+
+!! Report (out.md)
+Files changed (subset of the five above), typecheck + witness results, any reading of the brief you had to choose, anything left undone and why.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6r-dDFXcWmdbLfgIkT9LYeGeXUYGZWYgANU3WI8kWUk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

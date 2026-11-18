@@ -2,8 +2,7 @@
  * IdentitySlot — pluggable DID-based identity abstraction.
  *
  * Shaped for DID-backed providers (an AT Protocol DID, an OAuth handle mapped to did:web). No production
- * implementation stands: the Keyhive slot retired with K23 (stable-founding-road), since a self-DID verifier
- * binds no presenter; a slot that binds one joins a PROVED peer or session presenter to the share decision.
+ * implementation stands: a self-DID verifier binds no presenter (stable-founding-road K23); a slot that binds one joins a PROVED peer or session presenter to the share decision.
  *
  * STATUS NOTE: Keyhive runs
  * LIVE at the OPERATOR level (bootDaemonKeyhive Gates A/B/C, the sealed face gate,

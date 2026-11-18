@@ -7,6 +7,7 @@ import {
   fleetJoinSealPair, hex, readFleetJoinRequest,
 } from "@lararium/mesh";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const isRefusal = (v: unknown): boolean => typeof v === "object" && v !== null && Object.hasOwn(v, "refusal");
 const seed = (n: number) => new Uint8Array(32).fill(n);
@@ -18,8 +19,9 @@ const key = async (s: Uint8Array) => hex(await ed.getPublicKeyAsync(s));
 describe("fleet-join request uses the selected face", () => {
   test("the founded atom's request reads; place, face B and unnamed requests refuse", async () => {
     const placeKey = await key(placeSeed);
-    const founded = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1),
-      repo: new Repo(), atomSeed, placeVerifyingKey: placeKey, vesselDisplayName: "requester",
+    const repo = new Repo();
+    const founded = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo),
+      repo, atomSeed, placeVerifyingKey: placeKey, vesselDisplayName: "requester",
       binding: { mode: "self-stood", signerSeed: placeSeed }, hearthTrueName: "",
       nexusPubkey: placeKey,
     });

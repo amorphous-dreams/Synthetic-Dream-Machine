@@ -18,6 +18,10 @@
     "./browser-daemon-island": {
       "import": "./dist/browser-daemon-island.js"
     },
+    "./custody-proof": {
+      "import": "./dist/browser-custody-proof.js",
+      "types": "./dist/browser-custody-proof.d.ts"
+    },
     "./connect-buffer": {
       "import": "./dist/connect-buffer.js",
       "types": "./dist/connect-buffer.d.ts"
@@ -40,6 +44,7 @@
     "clean": "node ../../tools/clean-output.mjs dist",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test": "vitest run"
   },
   "dependencies": {

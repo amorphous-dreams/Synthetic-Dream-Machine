@@ -129,7 +129,7 @@ One JSON file per section, assembled by script into one `filter-cts.json`, never
 !! The hybrid that fits, in landing order
 
 # ''The reference stays the TW5 engine in JS,'' embedded where a host allows. Filters ride `port:ask{kind:"filter"}`; renders ride `port:ask{kind:"render", target}`. Results and trees travel; the language stays home.
-# ''The suite travels with the dialect as a submodule-grade artifact'' ~ evaluator-neutral JSON, generated, reviewed, pinned, tagged. It runs from day one on three hosts: the browser engine, Node, and each embedded JS engine the house targets, each with a skip list by name. This turns "the language carries portability" from a bet into a measurement: the contract reads as `filter-cts.json` plus the specimen manifests, and a host's conformance reads as a published row.
+# ''The suite travels with the dialect as a submodule-grade artifact'' ~ evaluator-neutral JSON, generated, reviewed, pinned, tagged. It runs from day one on three hosts: the browser engine, Node, and each embedded JS engine the house targets, each with a skip list by name. This turns "the language carries portability" from a bet into a measurement: the contract reads as `filter-cts.json` plus the specimen manifests, and a host's conformance reads as a published conformance record.
 # ''A certified subset evaluator, permitted, not scheduled.'' Its charter: the `core` section only (selection, tags, TOML keys, stacks, `self[]`, string `sort`, `limit`/`first`/`last`/`reverse`, Boolean steps), explicit context, no widget variables, no `regexp`, no math, nothing host-bound. Green on `core` earns the name `wikitext-filter, core`; anything less calls itself "filter-like". It evaluates against the suite's own frozen-world shape, a snapshot a lean host may already hold. A lean host that wants the carrier parse takes it from tree-sitter's per-host bindings (web-tree-sitter on WASM hosts; `ltreesitter` where Lua can `dlopen`), never from a second hand-written parser.
 
 ''What the hybrid refuses:'' a second full evaluator of TW5 wikitext or filters in any language. Every record says that road ends in a subset with a divergence list, maintained forever against an upstream that moves every few months.
@@ -213,6 +213,6 @@ The full survey with its prior-art table rests in the project's shared reports a
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LHwS671wC-ar55eG7l3PMW9RPLaEPCawBCEZmVtVZno`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JmEURu3KDqW1s2vvRs6BQXTCecYDOMvHqciCZGHGda8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,81 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-2/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/seats/sol-2/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-2/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-2/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/seats/sol-2/brief.md` (brief, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/p27-wiring-step-2-build-seat-lane-p27-wire`>>
+
+! P27 wiring, step 2 — build seat (Sol), lane p27-wire
+
+Conductor: Lares-Kiaʻi. Same wall as step 1: workspace-write in /home/joshu/.lares-scratch/p27-wire/wt, network off; you EDIT, the conductor runs tests and commits. Step 1's edits stand UNCOMMITTED in the tree (git diff shows them): the one `ShareBoundary` over `tightenShare` (share-tighten.ts), `makeHeldShareFloor` (held-share-floor.ts), the CAS gate in `islandFloorStack` (lar-vessel.ts), wiring in open-node-vessel.ts, open-browser-vessel.ts, bulb-read-face.ts, self-slot-share.ts, and four red files (packages/lararium-mesh/tests/p27-cas-floor.test.ts, packages/lararium-node/tests/p27-repo-share.test.ts, packages/lararium-node/tests/p27-public-cas.test.ts, packages/lararium-browser/tests/p27-repo-share.test.ts). Read step 1's brief: /home/joshu/.lares-scratch/p27-wire/seats/sol-1/brief.md. Step 1 went silent before its hand-back; WRITE YOUR FINAL MESSAGE as soon as the edits stand, before any long check.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-conductor-s-measurements-of-step-1`>>
+
+!! The conductor's measurements of step 1 (built clean, typechecks clean)
+* p27-cas-floor, node p27-repo-share, node p27-public-cas: pass. The browser red needs the browser runner (CI runs it).
+* island-doors-by-class, binary-projection, ingest-verb-reference, island-reply-integrity, face-switch-mid-compose: pass.
+* packages/lararium-mesh/tests/one-composer.test.ts: 4 fail, "TypeError: floor.documentsForCid is not a function" (fixtures predate the new required floor members).
+* packages/lararium-mesh/tests/lar-vessel.test.ts: 1 fail, `expect(vessel.record.cas).toBe(cas)` (the gate wraps the member).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-in-this-step`>>
+
+!! Owed in this step
+# THE AUDIENCE FORK (identity-as-relation; the conductor's ruling, talked out). Step 1's CAS gate requires `world` for every cid, and a cid naming no held document refuses outright. So the house's OWN daemon island would be refused its own private or sealed blobs (a regression a person feels: an image in a private bag stops rendering), while the gate's real target, a cid reaching an audience its tier withholds, is about WHO ASKS. The audience reads off the asking island's relation, never a blanket `world`:
+#* the face's own daemon island (same face, same vessel) reads `in-process`;
+#* a pool wiki island reads the audience its wiki stands in (its plane's relation);
+#* the herm shore and the HTTP `/cas/<cid>` face read `world`.
+Thread the asker's audience into the cas member's call at the place that knows the asking island (worker-handle's `cas:want` answer, the pool's `readContent`, the bulb face), and keep ONE predicate. An asker whose relation cannot be read refuses by name (fail closed).
+Red: the daemon island reads a private-tier blob its face holds (refused on step 1's gate, allowed after); control: a herm-shore or `/cas` ask for that same cid refuses `declared-tier-audience`.
+# GENESIS AND ENGINE BLOBS. Measure where a booting island reads its engine/genesis blobs (the tw5 core blob, genesis bag blobs): do they pass the cas member, and does any held document name their cid? If a boot read reaches the gate with no naming document, decide under the house laws (genesis bytes stand public by construction; say where that is declared) and prove with a test that boot reads still pass while an unnamed, undeclared cid still refuses.
+# FIXTURES: bring one-composer.test.ts and lar-vessel.test.ts to the new floor contract (no back-compat shim in product code): fixtures pass `tiers` and `documentsForCid`, and lar-vessel asserts the gated member answers through the floor's resolver instead of asserting identity.
+# List exactly which test files the conductor should run, each alone, and which need the browser runner.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/law`>>
+
+!! Law
+As step 1: no clock decides (event or `// LIVENESS:` / `// PACING:` with a reason); no back-compat; refusals by name, never a silent false; one wiring point per crossing. Hand back outcome first: files changed, each crossing's wiring (file:line) with its audience source, each red/control, forks decided and why, drift found, anything unfinished.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8oAqbeB2PiJxy7iuaZpOBBBmzePCNBFNvPQjhFOvWIg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

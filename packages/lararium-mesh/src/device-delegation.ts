@@ -59,8 +59,8 @@ export interface DeviceDelegationRootHalf {
   readonly deviceDid:           LarDid;
   /** raw 32-byte Ed25519 verifying-key hex (64, lowercase) of the delegate vessel. */
   readonly deviceVerifyingKey:  string;
-  /** the hearth true-name this edge binds the vessel TO — the engine blob's public True Name
-   *  (the genesis engineCid), or "" if hearth-agnostic. The binding IS (vessel × hearthTrueName). */
+  /** the hearth true name this edge binds the vessel TO: the seed-charter Nexus AID of the hearth it stands at, or ""
+   *  on a gateless leaf (no hearth stands there, by design). Never an engine CID: an engine move leaves every edge whole. */
   readonly hearthTrueName:             string;
   /** the FACE LEASE epoch this grant binds to — a verified signed value (1-15 decimal digits).
    *  The grant goes stale when the resource's epoch rolls past it (non-renewal). The epoch is a
@@ -130,7 +130,7 @@ function fieldError(d: Partial<DeviceDelegationRootHalf>, complete = true): stri
 export async function buildDeviceDelegationRootHalf(args: {
   personaRootSeed:    Uint8Array; // the PERSONA ROOT's 32-byte Ed25519 seed — the HUMAN's side, and the signer
   deviceVerifyingKey: string;     // raw Ed25519 verifying-key hex (64, lowercase) of the delegate
-  hearthTrueName:            string;     // hearth true-name (genesis CID), or "" if place-agnostic
+  hearthTrueName:            string;     // hearth true name (the seed-charter Nexus AID), or "" on a gateless leaf
   boundEpoch:         number;     // the face's signed lease epoch this grant binds to (non-negative integer)
 }): Promise<DeviceDelegationRootHalf> {
   const personaRootDid = didFromVerifyingKey(hex(await ed25519.getPublicKeyAsync(args.personaRootSeed)));
@@ -175,8 +175,8 @@ export async function buildDeviceDelegation(args: {
  *
  * MANDATORY PIN: `expectedOperatorDid` is the trusted operator root the edge MUST chain to.
  * A clear result proves the edge was signed by THAT root for THIS delegate — designation
- * carries authority, no ambient fallback. (verify proving only "someone signed" was the
- * confused-deputy bait the verification swarm flagged; the pin is now a required argument.)
+ * carries authority, no ambient fallback. (A verify proving only "someone signed" baits a
+ * confused deputy, so the pin rides as a required argument.)
  *
  * Lease: pass `opts.expectedEpoch` (the face's verified signed lease epoch) to enforce
  * non-renewal; an epoch-free edge then refuses because it carries no lease proof.

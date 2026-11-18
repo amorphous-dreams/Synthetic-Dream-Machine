@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/recut-gates-design`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-t3/recut-gates-design.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/recut-gates-design"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/recut-gates-design"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! recut-gates-design.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-t3/recut-gates-design.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/recut-gates-design-wave-0-t19-t22-t27`>>
+
+! recut-gates ~ design (threat sketch), wave 0: T19 · T22 · T27
+
+Gates-Wright: Lares (Tasked Spirit). Worktree `~/.lares-scratch/recut-gates/wt`, cut at a39b1f5df, provisioned
+(submodule TiddlyWiki5 from the local reference; `mempalace` refused: its reference clone stands absent and the
+fallback dials GitHub, so it stays uninitialised; install + build green). Line numbers read at a39b1f5df.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/authority-inputs-source-proof-where-the-law-live`>>
+
+!! Authority inputs ~ source · proof · where the law lives · what fails closed
+
+| # | Input | Source today | What proves it | Law lives in (verifier) | Fails closed how (after cure) |h
+| A1 | carried Nexus posture | `gateReadings` cell (`open-node-vessel.ts:1272`), written only by `gateNexuses` (:1531), read by `postureOf` (:1285) for the drop and the knock sorter (`vessel-gates.ts:58`) | the charter this vessel holds per carried Nexus, read off disk (`readEveryCarried`) | ONE sweep owner holds the cell; `socketsNoLongerHeld` + the gate sorter read only its current readings | a read that fails reads as NOTHING CARRIED: readings `[]`, every carried posture reads private, carried gates stand down and their seated sockets close; the own Nexus keeps its own fresh read |
+| A2 | which gates stand | `syncStood` map, `standSyncGates` (:1558), fired un-awaited and unserialized from the arm (:3317) and the membership refold (:1321) | the same readings A1 | sweep owner: one serial turn chain, coalesced, each turn reads fresh when it starts | an older read never lands last; a turn after `close()` stands nothing |
+| A3 | seated sockets of a gate that stands down | none: `StoodGate.unstand()` (`face-gate-server.ts:391`) deletes the path, seated sockets stay | the gate that seated them | `faceGateServer`: each socket remembers the gate entry that seated it; `unstand()` terminates them | unstand ends every socket that gate seated (sync gates, intent relay, floor gates alike) |
+| A4 | share inputs `antigenRing` / `edgeShadows` / `kahuProtected` | forward `let`s, null until stood (:994, :1015, :834); null reads deny-nobody / aside-nobody / withhold-nothing | the holder having stood | `selfSlotShareDecision` (wire + sibling lanes) and `protectedDocGuard` | null = UNSTOOD = withhold by name on every wire and sibling lane; a stood-but-empty holder passes a named inert value (`stood, bans nobody`) distinct from null |
+| A5 | `keel.systemCanon` | optional in `VesselKeel` (`open-vessel-core.ts:112`); browser keel omits it | type | the keel type | REQUIRED; a keel that holds no canon says `async () => ({})` by name |
+| A6 | the fetch (cas) door | process-global `setCasDoor` at :1653, its stand-down pushed only at :1865 | the composition that set it | `stood` list: the down pushes in the statement after the set | a boot refused between them leaves no door: a late ask reads a miss |
+| A7 | gate routes on the shared dispatcher | `opts.dispatcher.registerUpgrade` inside a sweep that a teardown never stops | the live composition | sweep owner `close()` (pushed with the knocks entry) checked after every await; a relay stood after close closes | a torn composition registers nothing; the next composition's routes stand |
+| A8 | island doors (dyad :2134, custody :2531, u1's session-sign) | stand-downs pushed AFTER the daemon island's entry (:1877), so they drop first | the island they answer | one "island doors" entry pushed BEFORE the daemon island's entry | the island shuts, THEN its doors close; no in-flight export reads a nulled door |
+
+Not authority inputs here, named so nothing reads as covered: posture never enters the share verdict
+(`self-slot-share.ts` header); per-dial admits read the held root fresh (`vessel-gates.ts:44-46`), so a stale gate
+never admits a revoked presenter. The exposure T19 closes stays posture + socket lifetime on the public shelf.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shape`>>
+
+!! Shape (the lean the brief named, settled down the ladder)
+
+* ''The gate sweep owner'' (`gateSweep`, a transport-free stage in `lararium-mesh`, ports named by capability): `readCarried()`,
+`ownNexus()`, a `GateSeat` port (`stand(nexus)` / `unstand(nexus)`, the node binds `faceGateServer` + dispatcher),
+`dropNoLongerHeld(postureOf)`, `afterTurn()` (same-operator sweep, relay planes, intent relay). One serial turn:
+''refresh readings → drop → unstand gone / stand new → after''. Methods: `refold()` (queue a turn, coalesced),
+`readings()` / `postureOf(nexus)` (the one cell), `close()`. Both refold paths (membership :1319, realm plane :1411)
+and `floorGates` ask the owner, so `gateReadings` keeps one writer. `reverdict()` stays synchronous and first (it
+reads no posture). The floor (non-sovereign) runs refresh + drop and stands no sync gate, as today.
+* ''`faceGateServer` unstand closes seated sockets'' (A3), the substrate half of "serves a gate".
+* ''T22'': `SelfSlotShareInput.shadow` and `.protectedDocs` turn required (null allowed, meaning unstood); a pure
+`unstoodShareInputs(input): readonly string[]` names each null input, and a non-empty answer withholds on the wire
+and sibling lanes; in-process islands pass (canon P26: the house's own islands stand inside the house). The composer
+reads `kahuProtected === null` as `incomplete()`. Named inert constants (`NO_BANS`, `NOBODY_ASIDE`) replace the
+absent fields in the 13 test files that call the verdict. `systemCanon` turns required; the browser keel names none.
+* ''T27'': three placement edits in the composer (A6, A7 via the owner's `close()`, A8), no new module.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/reds`>>
+
+!! Reds (each its own commit, control beside it)
+
+# T19-a `face-gate-server.test.ts`: stand, seat a socket, `unstand()`; RED the socket stays open / CONTROL a second gate's socket stays.
+# T19-b whole boot (the row's own red): a lararium carrying an OPEN Nexus seats a stranger at its sync gate; the carried
+charter tightens to private; one refold; RED the stranger's socket still stands after that refold settles /
+CONTROLS an own-Nexus flip closes as today, a herm keeps the stranger. Same file: un-carry the Nexus (gate stands down,
+socket stays: A3 through the composer), and the realm-plane refold path (:1411), which never re-sweeps.
+# T19-c read failure: `readEveryCarried` throws on a refold; RED the carried gate and its stranger stay / CONTROL the own gate stays.
+# T19-d ordering: two refolds, the first read slower; RED the older read lands last and re-stands an un-carried gate.
+# T22-a `self-slot-share.test.ts` table: wire peer + federatable doc + each of `antigenRing` / `shadow` null; RED allowed / CONTROL the named inert value allows as today; in-process peer with nulls allows.
+# T22-b composer: `kahuProtected` null reads withhold-all (red at the guard as the composer binds it).
+# T22-c floor-on-a-stale-store: share verdict, empty protected ids, a dialed peer, the Kahu canon id must deny. MEASURE FIRST: if it stands green (the shelf never carries the canon id), the row retires that clause, said plainly.
+# T27-a refused boot between :1653 and :1865 (`sovereign.walkRecords` rejects): RED `fetchThroughCasDoor` still answers the dead composition's bytes / CONTROL a refusal after :1865 misses.
+# T27-b teardown with a sweep in flight (slow carried read): RED the fake dispatcher holds a sync route after teardown and a second composition's `registerUpgrade` throws "already owned" / CONTROL no sweep in flight, `held()` zero (the two-phase-boot baseline).
+# T27-c door order: spy the door setters and the daemon island's shutdown; RED dyad/custody null before shutdown / CONTROL the fetch door already nulls after it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/overlap`>>
+
+!! Overlap
+
+* u1 (`git diff $(merge-base) HEAD`, base 27bc0cb6b, unrebased): `open-node-vessel.ts` +15 (import, a result field,
+the session-sign door stood at its ~1694, after-boot field) and `worker-handle.ts` +40 (the fifth door). The brief's
+"u1 no longer touches this file" measures FALSE. No hunk meets mine textually; A8's "island doors" entry must take
+u1's `setSessionSignDoor(null)` once u1 lands (land order: whichever lands second carries it).
+* T9 (instance doors) later turns A6/A8's setters into record fields; this lane keeps the slots, T9 changes what they clear.
+* T5 owns the pure `postureOf`/`gateNexuses` lift and the case-fold dedup row; the sweep owner takes the CELL only.
+* T6 (boot characterization) should pin the owner's turn order once both stand.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;blxxg7o-_8sDEBeF9byEIU1hfVdZnZm841w50BzAmL4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -497,25 +497,27 @@ test("RED: a poll whose milliseconds pass the timer limit refuses by name; a law
 });
 
 test("RED: --wait on a branch no held-out driver measures ends at its CI verdict and says so, held-out UNREAD never green; CONTROL: a branch the workflow measures keeps waiting", async () => {
-  const lane = ["feature/**", "!feature/green-jello-dinosaur-5--**", "main"];
+  const lane = ["develop", "main"];
   const T = { ...GREEN_TABLE(), heldRuns: [], heldRunsAtSha: [] };
-  const r = await door(T, ["--wait", "--branch", "feature/green-jello-dinosaur-5--x"], { heldOutPatterns: lane });
+  const r = await door(T, ["--wait", "--branch", "develop--x"], { heldOutPatterns: lane });
   assert.equal(r.code, 0, r.out + r.err);
   assert.match(r.out, /held-out: UNREAD/);
   assert.match(r.out, /raises no run on this branch/);
   assert.ok(!/held-out: GREEN/.test(r.out));
   assert.deepEqual(r.slept, []);
   // CONTROL: a branch the push patterns include still waits for the held-out run.
-  const c = await door({ ...T, heldRuns: (n) => (n < 3 ? [] : [mkHeld()]), heldRunsAtSha: [], "view:22": heldGreenView() }, ["--wait", "--branch", "feature/other"], { heldOutPatterns: lane });
+  const c = await door({ ...T, heldRuns: (n) => (n < 3 ? [] : [mkHeld()]), heldRunsAtSha: [], "view:22": heldGreenView() }, ["--wait", "--branch", "develop"], { heldOutPatterns: lane });
   assert.equal(c.code, 0, c.out + c.err);
   assert.ok(c.slept.length >= 2);
   assert.match(c.out, /held-out: GREEN/);
-  assert.deepEqual([heldOutMeasures("main", lane), heldOutMeasures("feature/green-jello-dinosaur-5", lane), heldOutMeasures("feature/green-jello-dinosaur-5--tools-ci", lane)], [true, true, false]);
+  assert.deepEqual([heldOutMeasures("main", lane), heldOutMeasures("develop", lane), heldOutMeasures("develop--tools-ci", lane), heldOutMeasures("feature/other", lane)], [true, true, false, false]);
 });
 
-test("heldOutBranchPatterns reads the real held-out.yml: lane branches excluded, the span and feature branches included", () => {
+test("heldOutBranchPatterns reads the real held-out.yml: develop and main included, lane branches excluded", () => {
   const p = heldOutBranchPatterns();
   assert.ok(Array.isArray(p) && p.length >= 2, String(p));
-  assert.equal(heldOutMeasures("feature/green-jello-dinosaur-5--a", p), false);
-  assert.equal(heldOutMeasures("feature/green-jello-dinosaur-5", p), true);
+  assert.equal(heldOutMeasures("develop--a", p), false);
+  assert.equal(heldOutMeasures("lane/a", p), false);
+  assert.equal(heldOutMeasures("develop", p), true);
+  assert.equal(heldOutMeasures("main", p), true);
 });

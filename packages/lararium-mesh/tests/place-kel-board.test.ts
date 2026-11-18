@@ -8,7 +8,7 @@ import { mintPlaceInception, mintPlaceRotation } from "../src/vessel-kel.js";
 
 const seed = (n: number) => new Uint8Array(32).fill(n);
 const key = (n: number) => hex(ed25519.getPublicKey(seed(n)));
-const emptyBoard = (): LarDoc => ({ schemaVersion: "lar/1", tiddlers: {} } as unknown as LarDoc);
+const emptyBoard = (): LarDoc => ({ tiddlers: {} } as unknown as LarDoc);
 const chain = () => {
   const start = mintPlaceInception({ signerSeed: seed(1), coldVerifyingKey: key(2) });
   const one = mintPlaceRotation({ chain: [start.event], coldSeed: seed(2), newSignerKey: key(3), nextColdVerifyingKey: key(4) });

@@ -7,6 +7,8 @@
  */
 import { describe, test, expect } from "vitest";
 import { phoneSeatExplanation, readsWebKitSevenDay, type PhoneSeatHost } from "../src/phone-seat.js";
+import manifestText from "../public/manifest.webmanifest?raw";
+import indexHtml from "../index.html?raw";
 
 const safariPhone: PhoneSeatHost = {
   isSecureContext: true, standalone: false, displayModeStandalone: false,
@@ -48,5 +50,33 @@ describe("the seed-at-rest line — one status line, two spellings", () => {
     expect(seedRestStatus(undefined)).toBe("seed: no passkey wrap on record");
     expect(seedRestStatus({ keyClass: "cloud-synced" })).toBe("seed: wrapped under a passkey (cloud-synced)");
     expect(seedRestStatus({ keyClass: "device-minted" })).toBe("seed: wrapped under a passkey (device-minted)");
+  });
+});
+
+describe("the install surface the phone seat offers stands whole", () => {
+  const decodes = async (src: string): Promise<boolean> => {
+    const img = new Image();
+    img.src = src;
+    try { await img.decode(); return true; } catch { return false; }
+  };
+
+  test("every manifest icon decodes as an image, and the page names its own icon so no browser asks the hearth for /favicon.ico", async () => {
+    const icons = (JSON.parse(manifestText) as { icons: Array<{ src: string }> }).icons;
+    expect(icons.length).toBeGreaterThan(0);
+    for (const icon of icons) expect(await decodes(icon.src), `the manifest icon decodes: ${icon.src.slice(0, 48)}…`).toBe(true);
+    const page = new DOMParser().parseFromString(indexHtml, "text/html");
+    const link = page.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    expect(link, "index.html carries a link rel=icon").not.toBeNull();
+    expect(await decodes(link!.getAttribute("href")!), "the page icon decodes").toBe(true);
+    // CONTROL: the probe tells a torn image from a whole one (a bare `#` ends a data URL at its fragment).
+    expect(await decodes('data:image/svg+xml,%3Csvg%20xmlns="http://www.w3.org/2000/svg"%20viewBox="0%200%208%208"%3E%3Crect%20width="8"%20height="8"%20fill="%23000"/%3E%3C/svg%3E')).toBe(true);
+    expect(await decodes('data:image/svg+xml,%3Csvg%20xmlns="http://www.w3.org/2000/svg"%20viewBox="0%200%208%208"%3E%3Crect%20width="8"%20height="8"%20fill="#000"/%3E%3C/svg%3E')).toBe(false);
+  });
+
+  test("the page declares itself installable by the standard name beside Apple's own", () => {
+    const page = new DOMParser().parseFromString(indexHtml, "text/html");
+    expect(page.querySelector('meta[name="mobile-web-app-capable"]')?.getAttribute("content")).toBe("yes");
+    // CONTROL: Apple's name stays for the engines that read it alone.
+    expect(page.querySelector('meta[name="apple-mobile-web-app-capable"]')?.getAttribute("content")).toBe("yes");
   });
 });

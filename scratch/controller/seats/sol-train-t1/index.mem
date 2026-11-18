@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t1/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/controller/seats/sol-train-t1/` — 3 record(s) here, 3 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t1/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t1/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/controller/seats/sol-train-t1/`
+
+The scratch planning records of `.lares-scratch/controller/seats/sol-train-t1/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 3 record(s) stand here and 3 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[controller/seats/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t1/brief]] | brief | 2026-10-31 | `brief.md` |
+| [[recut-custody-design|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t1/recut-custody-design]] | plan | 2026-10-31 | `recut-custody-design.md` |
+| [[u1-threat-sketch|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t1/u1-threat-sketch]] | plan | 2026-10-31 | `u1-threat-sketch.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_PRiPa13rwJXeLgmE7aBbfdTVEwFkC3Q46q-fJwF2uU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

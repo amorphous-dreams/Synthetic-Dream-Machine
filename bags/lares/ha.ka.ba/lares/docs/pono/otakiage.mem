@@ -131,7 +131,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 # ''`removeMeme` — the carrier's own removal.'' `place-meme.ts` `removeMeme`: "THE REMOVAL — the meme's whole group (root · `#slot` fragments · `/path` children) tombstones" — one law every skin calls, so a root leaving through a browser's trash icon takes its fragments with it.
 # ''`tombstoneInBag` against `removeInBag`.'' `composite-store.ts` `tombstoneInBag` hides a title in one writable bag (the kāpae hide — the record stands, shadowed); `removeInBag` names the other, "HARD-remove a title from one bag (ABSENT — falls through)". ''Two erase tiers, exactly as the field's disciplines run them.''
-# ''The synced tree's per-path base.'' `synced-tree.ts` `SyncedTree.set` lands one carrier's path and two hashes, and `SyncedTree.deleteAt` unlinks that path's row before it returns; another path's base stands. A projector's flush can then read the absence at the path it observed. The CHANGELOG carries the earlier failure under ''EVERY OBSERVATION BUT THE DAEMON'S OWN VANISHED''.
+# ''The synced tree's per-path base.'' `synced-tree.ts` `SyncedTree.set` lands one carrier's path and two hashes, and `SyncedTree.deleteAt` unlinks that path's entry before it returns; another path's base stands. A projector's flush can then read the absence at the path it observed. The CHANGELOG carries the earlier failure under ''EVERY OBSERVATION BUT THE DAEMON'S OWN VANISHED''.
 
 ''And the carrier's own honest residue.'' `deserializer.ts` `expandRefs`: a slot whose child record left keeps the call — "missing child: keep the marker — honest residue, never invented bytes". `templates/ahu/html` then renders that as `unresolved` against `arriving` against `empty`. ''The house already refuses to let an absence read as a nothing.''
 
@@ -467,6 +467,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6xyFl199pz3JfNP6_pfySkuqlXADucf5kqATbM581wY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RLKivyyZuf2YdUAp7t-OC5KChrbJ3q5refOsSjtWmF8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

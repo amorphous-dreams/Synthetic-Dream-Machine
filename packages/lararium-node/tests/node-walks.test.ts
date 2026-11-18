@@ -17,7 +17,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { encodeInvite, mintHostToken, takeInvite } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
-import { faceRowNames } from "./face-paths.js";
+import { faceRecordNames } from "./face-paths.js";
 import { carriedSet } from "../src/carried-set.js";
 import { nodeWalkStore } from "../src/node-walk-store.js";
 import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.js";
@@ -45,6 +45,6 @@ describe("N — a node vessel walks like any leaf", () => {
     await takeInvite(nodeWalkStore({ face: 0 }), mint());
     expect(await carriedSet(sealHome)).toEqual(before);
     expect(existsSync(join(sealHome, "nexus.json"))).toBe(false);
-    expect(faceRowNames().filter((n) => n.startsWith("walk-"))).toHaveLength(1);
+    expect(faceRecordNames().filter((n) => n.startsWith("walk-"))).toHaveLength(1);
   });
 });

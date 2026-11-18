@@ -81,8 +81,8 @@ export function portHolderPids(port: number): number[] {
 // PACING: polls revisit holder and resource state; those observations or a declared budget settle the wait.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-/** `forced` is GONE (M3): this door never forced a stop, so the field never read true, and a reader
- *  that still branched on it was dead code pretending to be a decision. */
+/** No `forced` field: this door never forces a stop, so a reader that branched on one would be dead
+ *  code pretending to be a decision. */
 export interface StopResult { stopped: boolean }
 
 /**
@@ -121,11 +121,11 @@ export interface StopIncumbentOpts {
    * Reads true while the REAL HOLDER still stands — never the port alone (H5). `main.ts`'s own
    * shutdown closes the http listener (which frees this port) as its very FIRST step, well before
    * main-flush, the wiki islands, or the daemon island ever ack their own teardown — so a caller that
-   * declared "stopped" the instant the port freed was reporting `stopped: true` over a vessel that kept
+   * declared "stopped" the instant the port freed would report `stopped: true` over a vessel that keeps
    * running for seconds afterward. A caller that knows the store (`commands/read.ts`'s `cmdStop`) wires
    * this to the UDS rendezvous liveness check (`udsAlive`/`whoHolds`, the vessel's own claim on its
    * store, released only with the process) so `stopped: true` prints only once that claim lets go.
-   * Omitted, this door falls back to its old port-probe reading alone — but see `holderAlive`'s FLOOR
+   * Omitted, this door falls back to the port-probe reading alone — but see `holderAlive`'s FLOOR
    * below, which always applies regardless.
    */
   readonly holderAlive?: (pids: readonly number[]) => Promise<boolean>;

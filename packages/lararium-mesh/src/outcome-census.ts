@@ -1,7 +1,7 @@
 /**
  * THE OUTCOME CENSUS (K20): no outcome the daemon document keeps pairs a requester with a key it must not rest beside.
  *
- * A face row (`STORE_DOOR_FACE_ROWS`) answers on the session's socket alone, so ANY outcome under one of those verbs
+ * A face row (`STORE_DOOR_FACE_VERBS`) answers on the session's socket alone, so ANY outcome under one of those verbs
  * reads as a linkage: it says the row's answer rested in a document the face fleet syncs. Every other outcome reads as a
  * linkage when its bytes carry one of the keys the caller names (a face's per-Nexus leaf, its bond, a vouch's signer)
  * beside a requester: a top-level `requested-by` or session `face`, or anywhere in its body (a nested result, an error's

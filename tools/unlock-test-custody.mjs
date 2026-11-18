@@ -66,7 +66,7 @@ export async function sendCustodyFrame(root, frame) {
 export async function unlockTestCustody(root, act = "unlock", face = undefined) {
   const dir = resolve(root);
   // A staged vessel mounts its founding face, h0, for the life of the unlock when it holds one: the unlock NAMES the face the composition mounts.
-  if (face === undefined && existsSync(join(dir, "data", "lares", "identity", "face-index.json"))) face = 0;
+  if (face === undefined && existsSync(join(dir, "hearth", "identity", "face-index.json"))) face = 0;
   refuseUnmarked(dir);
   const frame = act === "lock" ? { op: "lock" }
     : act === "status" ? { op: "custody" }

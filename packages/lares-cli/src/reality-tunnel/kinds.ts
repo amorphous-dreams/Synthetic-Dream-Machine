@@ -112,6 +112,85 @@ export const copilotHook = (event: string, base: string, command: Json): Transfo
     hooks[event] = converge(list, mentionsScript(base), command);
   });
 
+// ── The house's hooks folder: a hook file names no script under it that no row declares ───────────────────────
+
+const isObject = (v: unknown): v is Json => v !== null && typeof v === "object" && !Array.isArray(v);
+const jsonHooks = (cur: string | null): Json | null => {
+  if (cur === null || cur.trim() === "" || jsonForeign(cur)) return null;
+  const hooks = (JSON.parse(cur) as Json)["hooks"];
+  return isObject(hooks) ? hooks : null;
+};
+
+/** The scripts under the house's hooks folder that a value names and no row declares for its target, by file name. */
+export type Strays = (v: unknown) => string[];
+export const strays = (folder: string, declared: readonly string[]): Strays => {
+  const re = new RegExp(`${folder.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/([A-Za-z0-9._-]+)`, "g");
+  return (v) => {
+    const text = typeof v === "string" ? v : JSON.stringify(v ?? null);
+    return [...new Set([...text.matchAll(re)].map((m) => m[1]!))].filter((name) => !declared.includes(name)).sort();
+  };
+};
+
+/**
+ * A JSON hook file (Claude's `settings.json`, Copilot's `hooks/lares.json`): under every event, each command that names
+ * a stray leaves, a group and an event left empty go with it, and every other command stands. An absent file stays absent.
+ */
+export const jsonHooksOwned = (stray: Strays) => ({
+  lifts: (cur: string | null): string[] => stray(jsonHooks(cur)),
+  transform: ((cur) => {
+    const before = jsonHooks(cur);
+    if (before === null || stray(before).length === 0) return cur;
+    const names = (v: unknown): boolean => stray(v).length > 0;
+    const hooks: Json = {};
+    for (const [event, held] of Object.entries(before)) {
+      if (!Array.isArray(held)) { hooks[event] = held; continue; }
+      const kept = held
+        .map((m: unknown) => (isObject(m) && Array.isArray(m["hooks"]) ? { ...m, hooks: m["hooks"].filter((c) => !names(c)) } : m))
+        .filter((m: unknown) => (isObject(m) && Array.isArray(m["hooks"]) ? m["hooks"].length > 0 : !names(m)));
+      if (kept.length > 0) hooks[event] = kept;
+    }
+    return `${JSON.stringify({ ...(JSON.parse(cur!) as Json), hooks }, null, 2)}\n`;
+  }) as Transform,
+});
+
+/**
+ * Codex's `[[hooks.<event>]]` blocks: every block whose commands name a stray leaves, under any event. A block that
+ * carries a stray beside another command, and a stray standing in any other TOML shape, stand outside the house's
+ * ownership.
+ */
+export const tomlHooksOwned = (stray: Strays) => {
+  const lifts = (cur: string | null): string[] => (cur === null ? [] : stray((tomlTryParse(cur) ?? {})["hooks"]));
+  const transform: Transform = (cur) => {
+    if (cur === null || lifts(cur).length === 0) return cur;
+    const lines = cur.split("\n");
+    const out: string[] = [];
+    for (let i = 0; i < lines.length; i++) {
+      const m = /^\[\[hooks\.([A-Za-z]+)\]\]$/.exec(lines[i]!.trim());
+      if (m) {
+        let j = i + 1;
+        while (j < lines.length && (!lines[j]!.trimStart().startsWith("[") || lines[j]!.trim() === `[[hooks.${m[1]}.hooks]]`)) j++;
+        if (stray(lines.slice(i, j).join("\n")).length > 0) { i = j - 1; continue; }
+      }
+      out.push(lines[i]!);
+    }
+    return tidy(out.join("\n"));
+  };
+  const foreign = (cur: string | null): string | null => {
+    const shape = tomlShapeForeign("hooks", "table")(cur);
+    if (cur === null || shape || lifts(cur).length === 0) return shape;
+    const events = (tomlTryParse(cur) ?? {})["hooks"] as Record<string, unknown>;
+    for (const [event, groups] of Object.entries(events)) {
+      for (const g of (Array.isArray(groups) ? groups : []) as Array<{ hooks?: unknown[] }>) {
+        if (stray(g).length > 0 && (g.hooks ?? []).some((h) => stray(h).length === 0)) {
+          return `a [[hooks.${event}]] block shares a house hook script no row declares with another command; the house rewrites none of it`;
+        }
+      }
+    }
+    return lifts(transform(cur)).length > 0 ? "names a house hook script no row declares in a shape the house rewrites none of" : null;
+  };
+  return { lifts, transform, foreign };
+};
+
 // ── Text ────────────────────────────────────────────────────────────────────────────────────────
 
 /**

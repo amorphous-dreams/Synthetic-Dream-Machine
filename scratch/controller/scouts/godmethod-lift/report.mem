@@ -1,0 +1,100 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/godmethod-lift/report`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/godmethod-lift/report.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/godmethod-lift/report"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/godmethod-lift/report"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! report.md — hand-back, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/godmethod-lift/report.md` (hand-back, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/godmethod-lift/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+> AMENDED 2026-10-31 (operator): the "node host shell" below reads as shared CAP-STACK stages behind capability-named ports (browser vessels use these caps and may take a node-like role). Only substrate bindings (thread kind, store kind, socket server) stay per-host. C5 cuts a capability shell, never a node shell; C6 carries R1-R19 stages too.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/god-method-lift-map-preparenodebooton`>>
+
+! God-method lift map: prepareNodeBootOn (open-node-vessel.ts:709-3546)
+Lift-Seer (cold Opus reader), 2026-10-31. Read-only skim; line ranges hold, per-stage claims rest on excerpts. Written to disk by the controller (subagent write refused).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tl-dr`>>
+
+!! TL;DR
+# The function fuses two jobs: a NODE HOST SHELL (R1-R19: Repo, WS face-gates, share verdict, membership/antigen/edge-shadow holders, dials, relays) and a VesselOrchestration FACTORY (R22-R35: keel, wikiSlot, openDaemon, wireVerbs, afterDaemon, makePool, afterLive). The shared composeCoreVessel (lararium-tw5/src/core-caps.ts:51) already sequences that contract for both vessels: the seam exists.
+# Hidden shared state: ~40 forward-declared lets (share policy 997-1021 reads 15); `let x!` boot cells (1697-1795); four process-global doors in worker-handle.ts (setRestDoor/setCasDoor/setDyadDoor/setCustodyWriteDoor): two vessels in one process clobber each other's doors, which is why tests enter only through a whole boot.
+# VM lifts stay narrow. TS->TW5 already works: plugin-build/ compiles any TS with a /*\ module-type \*/ header to CJS (46 modules ship so). The *-vm startup modules (worldline-read-vm.ts, query-derive-vm.ts) set the pattern: host ships data in, VM computes. Candidates: verb-provider math (2690-3036: computeMismatch, signalOrExtract, couple/crystallizeSignal) and wireVerbs' wiki-act slot routing. NEVER: transport/custody/keys (R10, R15, R24, R29, R30, rekey/cad-seal verbs). Syncadaptor/saver ruled out (glass mirror censusPreloads refuses; bootTrustedModules admits only library). MIRROR HAZARD: shared-plugin code loads in the mirror too; custody-adjacent VM code rides a daemon-only plugin chosen by recipe in resolveNodeIslandPluginCids (2569).
+# The bigger win: pure modules + shared isomorphic stages. open-browser-vessel.ts bootUnderLock (490-1887) hand-repeats island resolution (584), climb (649), dyads (858), catalog (928), residency (950), PersonaGroup ring (1456), sibling channel (1488), wiki-switch/persona/face verbs (1521-1736), founding/admit.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/substrate`>>
+
+!! Substrate
+Node host shell -> composeCoreVessel -> openDaemonVmCore -> worker_threads daemon island (node-daemon-island.ts -> runSovereignKernel -> TW5Engine.boot). The island holds the face-atom seed (daemonAuth), Keyhive, sealed store; asks host for rest/cas/dyad/custody-write over its port. VesselIslandPool spawns one worker per wiki. Browser vessel Worker/SharedWorker runs the same kernel over IDB/OPFS. Page mirror (glass-mirror.ts:46) boots one guarded engine behind MIRROR_TOKEN, no syncer, fed by the port alone.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ranked-cuts`>>
+
+!! Ranked cuts (each red-first)
+# C1 doors instance-owned: one VesselDoors object into nodeWorkerHandle. HOST, S. Red: two handles answer distinct asks. WAITS u1.
+# C2 BootCells: typed cells replacing `let x!`, refusing read-before-set by name. S.
+# C3 ShareInputs: one cell feeding the already-pure selfSlotShareDecision; decision-table tests. WAITS ralias.
+# C4 pure readers: bootstrap parse + torn-face check (1868-1905), daemonAuth builder (2527-2566), diskMirrorGrant (3332), boot pin list (3247), postureOf/contractHolds/gateNexuses, wiki-act routing, backupDoor's three cloned askIslandMemory getters (3478-3540, delete dup). R23/R30/R35/R36 touched by no lane: can start now.
+# C5 split host shell from orchestration -> node-orchestration.ts (NodeShell port + cells); characterization tests first.
+# C6 shared isomorphic stages, one stage per PR into mesh (transport-free) or tw5 (keel), deleting the browser twin in the same PR; ports named by capability, never host.
+# C7 verb math -> daemon-only *-vm startup module; py/fs pipe stays host.
+# Deletion candidates: peerContractNymMap (875, nothing fills it; surface to operator), "bridge until O1" catalogForViews (863).
+C1-C4 open seams, no behavior change, can land before the founding; C5-C7 ride the stage-cut.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/laws`>>
+
+!! Laws
+No key on a surface blocks VM lifts of R10, R15, R22 systemCanon, R24, R29, R30, R33. One owner per registry: global doors break it per process; C1 cures. No global now: the pool's mountSilenceMs/mountStallMs should arrive as injected deadlines. Sovereign-worker primacy (functor-discipline.mem#/sovereign-worker) argues for C7.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lane-collisions`>>
+
+!! Lane collisions
+u1 (uncommitted): worker-handle.ts fifth door (123-155), hunks 1697, 3477, 3642 -> collides C1, C2.
+ralias (589ac5d3f): hunks 848-900 (R4 guard), 1804 (R21), 1897 (systemCanon), 2235, 2640 -> collides C3 and the keel split.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks`>>
+
+!! Forks (lean)
+# Shared stages home: mesh + tw5, no new package.
+# Witness pinning the mirror plugin set never holds a daemon-only title: yes.
+# Verb providers to VM or py: only matrix shaping to VM; sensorium state stays py.
+# peerContractNymMap: surface to operator.
+# C1-C4 before founding: yes, each a whole model.
+# Order: C4-safe readers now, C1 after u1, C3 after ralias.
+
+Testimony: edge-ring and browser twins not diffed line by line; "~800 lines collapse" an estimate. Read openDaemon 2101-2468 whole before C5.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PZfj6PDmtV1AiwincDipg2QsdjWrIxRxFGbvM7wnZtk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

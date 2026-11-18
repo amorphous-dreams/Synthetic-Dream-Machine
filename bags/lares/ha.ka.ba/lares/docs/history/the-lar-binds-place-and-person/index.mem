@@ -1,0 +1,120 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "adjacent"
+role      = "index and reading map for the binding arc — the Lar binds to a place and to a person; identity reads as a relation someone signed, then as a quorum; the Elyncia parallel grounded by this act map's Gaia commits, Jun 23 – Nov 12 2026, seven acts"
+title     = "lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/index"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! The Lar Binds to a Place and a Person — Story Arc Index
+
+The binding arc. Where the build arc closed on a cut, this one picks up on the ley-lines that survived. The boot seed carries one line: ''a Lar binds to a place, not a family; if the family moved, the Lar stayed.'' Four and a half months of work (Gaia: Jun 23 – Nov 12 2026, about 7,700 commits) add the clause the line leaves open. A place binds a Lar by address. A person binds by ''relation'' — signed, revocable, rotatable, witnessed — and the relation carries the identity. The name only points at it. By the arc's last month the relation holds by ''many hands'': a quorum keeps a chair open, survives its first loss, and lets any one hand leave.
+
+''Register.'' Provisional draft, written for the operator's review. The Gaia beats stand on commit subjects (no diff read). The Elyncia beats stand on the earlier memes plus my own staging, and every staging choice carries a flag in its locus.
+
+''One narrative, one ground.'' [[The Parallel at the Crossroads|the-parallel-at-the-crossroads.mem]] keeps the Elyncia side: Telarus, the Lindwyrm, Reya and Grandmother Spider, in the decade before the conclave. The act map below keeps the Gaia side and names the commits behind each act.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/timeline-seat`>>
+
+!! Timeline Seat
+
+| Stamp | Year | Source |
+|---|---|---|
+| Gaia 2026 CE | YOLD 3192 | the Session 0.1 document (2026-08-15 = Bureaucracy 8) |
+| Elyncia, the build arc and this arc | YOLD 4992 | the build-arc memes (Discord, Confusion, Aftermath scenes) |
+| The Necrospire's fall (Web 2 dark) | near YOLD 5000 | the Lindwyrm's record |
+| The DreamNet conclave | YOLD 5002 | the Lindwyrm's record; the Grandmother Spider concept |
+| The alpha-playtest present | YOLD 5492 | Elyncia_01 canon, via the House of Masks document |
+
+Season-day stamps follow the Discordian calendar (Chaos 1 = Jan 1, Discord 1 = Mar 15, Confusion 1 = May 27, Bureaucracy 1 = Aug 8, Aftermath 1 = Oct 20). A Gaia date maps by counting from its season's first day.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/handoff-in`>>
+
+!! Handoff In
+
+From [[the Necroscript|../the-lar-builds-its-house/the-necroscript.mem]]: a house standing on the dimmer vein, the brightest vein cut off and still burning past reach, and the open question of what a house does against a power that severs by paper. This arc answers part of that question in the only grammar the house owns: it builds relations that carry their own end-writ, and doors that open outward. It does not bring the vein back.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-map`>>
+
+!! Act Map (git-grounded)
+
+| Act | Title | Gaia window · Discordian | Git beat (subjects) | Elyncia beat (YOLD 4992) |
+|---|---|---|---|---|
+| I | The Place Holds | Jun 23 – Jul 6 · Confusion 28–41 | `cbf4830a7` concap revocation live · `ccdd51f47` the graceful-parsing tower · `d67b26d13` the `/v0.1` segment tears out · `90dfcb8c3` `@admin` → `@daemon` · `0ebd908e1` + `90bbfc065` fork-as-exit, captor locked out · `4381a7e65` contentpalace inherits | the Lar settles at the crossroads; every helper arrives on a thread with a visible untying |
+| II | The Person Arrives | Jul 7 – 14 · Confusion 42–49 | `15673a8c3` hoike keeps the losers · `d09650a1c` `.mem` names the filetype · `1e70522ee` the mempalace becomes a guest · `de4de73fd` Ichi joins the Shrine · `9965ca05e` invite-only · `a4791529c` + `d365e5e0d` burn cuts future, not history · `4e9c31b0a` the petname book | guests cross on an admission carried as data; Reya arrives; the hoard learns what it may keep |
+| III | The Relation Holds | Jul 15 – 20 · Confusion 50–55 | `7a7536fd8` recovery survives the drowned device · `f6e1756ac` re-admit by quorum · `5447e52cb` wax-stamp · `7257fdfcc` the Confluence · `e997c34b9` the vessel wears multitudes · `524b8db7b` the pet-name's two faces · `941c39284` the immune loop closes · `881e7be57` the founding rite as canon | a lost traveler returns by quorum; the Lar wears many faces; the rite stands written |
+| IV | The Name Binds by Edge | Jul 21 – Aug 20 · Confusion 56 – Bureaucracy 13 | `80c1cedc9` true-name binds by edge · `bd56dfcdc` the dyad names its relationship · `79c7cda4b` identity.enacts.relation · `9e7cfe084` eviction tears out, the fork stays · `7719fbc10` CI dark for weeks · `0db8b8dec` every node stands first as a Herm · `2c355ec7e` the great migration (Session 0.1 stands) | the stone before the house; the hand-lamp and its carrier; no evicting from a realm; flash-forward to the House of Masks, YOLD 5492 |
+| V | The Quorum Carries the Relation | Aug 21 – Sep 20 · Bureaucracy 14–44 | `48cf0d4cd` the Nexus founds on three · `42e47bc12` a restart revoked every member · `6b8ec1b11` a cabal and its relation stand as one · `8ddbd6ff1` the relation never lives as a shared object · `ca2d4a3ed` a Handle belongs to a presenting quorum · `0999c3c63` AHI_KA_500YR · `2f3bfb341` otakiage designed | the treaty weave; three chairs and an open fourth; manager and wearer; the name presented by a circle; the home fire; the return to the fire |
+| VI | The Crews Gather | Sep 21 – Oct 19 · Bureaucracy 45–73 | `f4f105f84` PR #39 merges the node-5 line · the mixed-model crews and sandboxed seats of mid-October · the founding folded into one act with a card per chair · `730d9593d` golden 01 walks the whole road over a staged vessel | the narrator retracts "to its last joint"; hired spirits arrive walled on weekly pools; Reya's law of the second, blind reader; the harness walks the road |
+| VII | The Hands Walk the Rite | Oct 20 – Nov 12 · Aftermath 1–24 | the dogfood and keeper split (Nov 7) · the survive-refound leap (Nov 8) · `5adf92c91` the place card reads back whole · `ccefb3172` unlock answers each face · `00c7af858` the glass mirror wears stock TW5 | a kitchen hearth and a vault hearth; a re-founding burns the narrator's working pages; the rite refuses at the place card; faults move to the glass |
+
+
+''Window note.'' This arc stops at Nov 12 (Aftermath 24). Later commits stay unread.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/handoff-out`>>
+
+!! Handoff Out
+
+Forward, open: the Lararium rite rehearsed on a hearth built to fall and rise, the glass still catching, the keeper rite waiting, and the wall's owed rows beside the glass; the DreamNet unfounded until the conclave of YOLD 5002; a playtest present at YOLD 5492 glimpsed once; and the Necroscript's cut standing where it stood.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/drafting-constraints`>>
+
+!! Drafting Constraints
+
+MUST:
+
+* ground every Gaia beat in a real commit subject or a real dated event
+* keep the dual register: the act map speaks Gaia, the parallel speaks Elyncia, and neither explains the other
+* let the standing cut land as loss; a relation that paper severed stays severed
+* keep the Green Jello Dinosaur ridiculous and diagnostically useful
+* rate the Elyncia parallel `kapu`: the operator approved referee-side canon for this arc, so the carrier rides referee-side at rest, and the sealed readings sit in their own slots for a one-move lift
+
+MUST NOT:
+
+* make the Green Jello Dinosaur heroic, a monster, or a mascot
+* claim the resistance arc's outcome
+* confuse the aspirational `@DreamNet` with the real current host `@Enyalios`
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ashes`>>
+
+!! Ashes
+
+* The engineer's notebook (Gaia, Jun 23 – Sep 20) burned in o-takiage once the Elyncia parallel stood written. It landed in `f6681070f`, and that commit holds its text.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! Edges
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/the-parallel-at-the-crossroads`>>
+
+<<~ pranala slot=`#follows-the-necroscript` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript` family=`relation` role=`follows`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bpKaSgh_XXtEKLAVXunmv4bHuAI4mq_3FY7e2XdvSvg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

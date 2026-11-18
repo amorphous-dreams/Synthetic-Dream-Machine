@@ -84,7 +84,7 @@ describe("lares nexus offering inspect — CLI boundary", () => {
     expect(await cmdNexus(args(["offering", "inspect", offered.offeringCid], { json: true }))).toBe(0);
     const payload = JSON.parse(out.join("")) as { ok: boolean; data: Record<string, any> };
     expect(payload.ok).toBe(true);
-    expect(payload.data.transport).toEqual({ status: "complete", source: "local-crossroads", remoteFetch: false });
+    expect(payload.data.transport).toEqual({ status: "complete", source: "local-publication-board", remoteFetch: false });
     expect(payload.data.inspection).toEqual({ status: "verified", byteStatus: "complete", adoption: "not-requested" });
     expect(payload.data.bytes.held).toEqual([offered.offering.blobs[0]!.sha256]);
     expect(payload.data.antigen).toEqual({ status: "unavailable", reason: "not-configured" });

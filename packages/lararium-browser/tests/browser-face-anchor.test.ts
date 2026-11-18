@@ -2,8 +2,8 @@
 import { describe, expect, test } from "vitest";
 import { mintFaceAnchor } from "@lararium/mesh";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
-import { faceAnchorRow, keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "../src/browser-face-anchor.js";
-import { readKeystoreRow } from "../src/browser-custody.js";
+import { faceAnchorRecord, keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "../src/browser-face-anchor.js";
+import { readKeystoreRecord } from "../src/browser-custody.js";
 
 const GROUP_A = "group-a";
 const GROUP_B = "group-b";
@@ -17,7 +17,7 @@ describe("browser face anchor custody", () => {
     await keepBrowserFaceAnchor(idbName, anchor);
     expect(await loadBrowserFaceAnchor(idbName, GROUP_A)).toEqual(anchor);
     expect(await requireBrowserFaceAnchor(idbName, GROUP_A)).toEqual(anchor);
-    expect(await readKeystoreRow(idbName, faceAnchorRow(GROUP_A))).toBeInstanceOf(Uint8Array);
+    expect(await readKeystoreRecord(idbName, faceAnchorRecord(GROUP_A))).toBeInstanceOf(Uint8Array);
   });
 
   test("A2 require refuses anchor-missing by group name", async () => {

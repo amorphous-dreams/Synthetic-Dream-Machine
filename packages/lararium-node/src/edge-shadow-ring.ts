@@ -111,11 +111,16 @@ export interface EdgeShadowRing extends ShadowConsult {
 /**
  * THE DYAD CAPABILITY the vessel serves its daemon island off this ring. A fold a board's move overtook publishes nothing, so
  * the door asks again; three folds each overtaken leave the reading dark, and a dark reading answers `aside`. A board move
- * turns the reading dark at once (`follow`), so an ask that follows a move never reads the fold from before it.
+ * turns the reading dark at once (`follow`), so an ask that follows a move never reads the fold from before it. The fleets a
+ * fold reads are the faces' roots as they stand when it runs, so a fleet the standing fold never read (a face founded after it)
+ * folds again once before the door answers: absence from an older fold names no shadow.
  */
 export function ringDyadDoor(ring: Pick<EdgeShadowRing, "fold" | "refold" | "deviceStanding">): (fleetRoot: string, deviceKey: string) => Promise<EdgeStanding> {
   return async (fleetRoot, deviceKey) => {
     for (let tries = 0; tries < 3 && !ring.fold(); tries++) {
+      try { await ring.refold(); } catch { return "aside"; }
+    }
+    if (ring.fold()?.fleets.some((f) => f.fleetRoot === bare(fleetRoot)) === false) {
       try { await ring.refold(); } catch { return "aside"; }
     }
     return ring.deviceStanding(fleetRoot, deviceKey);

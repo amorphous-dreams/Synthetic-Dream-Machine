@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-dbe579a5e59b93e1bb3fec8e56ad6efad2649d37`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-02 (file date) — source `.lares-scratch/controller/ship/l4-stage-dbe579a5e59b93e1bb3fec8e56ad6efad2649d37.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-dbe579a5e59b93e1bb3fec8e56ad6efad2649d37"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-dbe579a5e59b93e1bb3fec8e56ad6efad2649d37"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! l4-stage-dbe579a5e59b93e1bb3fec8e56ad6efad2649d37.md — plan, 2026-11-02
+
+Verbatim scratch record `.lares-scratch/controller/ship/l4-stage-dbe579a5e59b93e1bb3fec8e56ad6efad2649d37.md` (plan, file date 2026-11-02); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+dbe579a5e59b93e1bb3fec8e56ad6efad2649d37
+read: blind Opus security read HOLD (H1 genesis query) on 69dd7072d → cures → focused Opus re-read SHIP on f45e00f33; operator rulings push dbe579a5e (no ?genesis= query, LOW-2/3/4, proposal lifts once, meme promote/kāpae + lift tension) read by Codex Luna SHIP (all five) + controller read of the genesis burn diff (0730376b1: seed off the hearth's own /genesis, no URL key, R1 kept). CI 41478182903 green on rerun (first attempt red on household-https witness only, files untouched by the lane, 694/694 node tests green; rerun once per flake law). Owed: lift-once guard keys on title (racing door instances / batch) — LOW, recorded.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0ZG4BEZ5rVYQrm56BEi6tcf0MIkEHItpk3RSQt5PpnU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

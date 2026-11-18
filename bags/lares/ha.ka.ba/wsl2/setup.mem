@@ -240,7 +240,7 @@ wsl -d <Distro>
 ```
 
 ```sh
-tools/wsl2/witness.sh                       # every row ok; the Windows stand's memory and swap now read live
+tools/wsl2/witness.sh                       # every check ok; the Windows stand's memory and swap now read live
 ```
 
 The update swaps the engine, never the distro: files, `/etc/wsl.conf`, the stand's drop-in all stay. When `--compact` refuses — a Running line, or an engine below 3.0.1 — the community `diskpart` recipe in section 3 does the same job from an Administrator window. Nothing in this sequence passes `-Sparse`, and nothing unregisters a distro.
@@ -290,7 +290,7 @@ The registered path comes from the registry, never from memory: `Get-ItemPropert
 | `--export --format vhd` | the whole disk image, free space included | the vhdx's size | faster | any PC, WSL 2 only |
 | file copy | identical bytes | the vhdx's size | fastest | this machine; the VM must be down |
 
-`--import-in-place` and the `--vhd` pair arrived with the Store build (0.58, 2022); `--export --format` and `--manage --set-default-user` with 2.x — all present before 3.0.1, so a restore never waits on the update. None of them carries `%UserProfile%\.wslconfig` (the device record in `~/.infrastructure` snapshots it), the registry row (a fresh import rebuilds it), or Docker Desktop's own distro. A rhythm: monthly, and before every compact or major `wsl --update`.
+`--import-in-place` and the `--vhd` pair arrived with the Store build (0.58, 2022); `--export --format` and `--manage --set-default-user` with 2.x — all present before 3.0.1, so a restore never waits on the update. None of them carries `%UserProfile%\.wslconfig` (the device record in `~/.infrastructure` snapshots it), the registry entry (a fresh import rebuilds it), or Docker Desktop's own distro. A rhythm: monthly, and before every compact or major `wsl --update`.
 
 <<~/ahu>>
 
@@ -311,5 +311,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1yPF-x_ffx8FF-1Y16chr6ec-BCxyDTdi6GEMDPuFJk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P1m3JDB_lVqWZyyCp-kYH-ZO_lSHstma1jD81HALM5E`>>
 <<^ code=`&#x0004;` to=`?`>>

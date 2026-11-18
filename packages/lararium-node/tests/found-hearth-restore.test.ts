@@ -35,7 +35,7 @@ import { listPersonaRosterLines, makeNodePersonaPetnameStore } from "../src/node
 import { ownedStore } from "../src/owned-store.js";
 import { readLocalPersonaKelChain } from "../src/local-persona-kel.js";
 import { heldSeatKey } from "../src/seat-key-store.js";
-import { faceRowNames } from "./face-paths.js";
+import { faceRecordNames } from "./face-paths.js";
 import { RESTORE_PENDING_FILE } from "../src/vault-carriers.js";
 import { larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";
 import { foundHearthDirect } from "./found-route.js";
@@ -80,7 +80,7 @@ async function cutAndDestroy(label: string, name: string): Promise<Bundle> {
   const cut = await cutFaceBundle({
     face: 0, bundleKey,
     door: {
-      wornFace: () => 0, ownEdgeShadowed: async () => false,
+      mountFace: () => 0, ownEdgeShadowed: async () => false,
       cutMemory: async (to) => ({ section: Buffer.from(sealMemorySection([], to)).toString("base64"), holds: [] }),
       kel: (p) => withRepo((repo) => readLocalPersonaKelChain(repo, p)),
       memoryDoor: null, importMemory: null,
@@ -95,7 +95,7 @@ const refusalOf = async (p: Promise<unknown>): Promise<string> => {
   const e = await p.then(() => null, (err: unknown) => err);
   return e === null ? "LANDED" : e instanceof HearthFoundingRefused ? e.restoreRefusal ?? "hearth-founding-refused" : `threw: ${(e as Error).message.slice(0, 160)}`;
 };
-const pendingStands = (): boolean => faceRowNames().some((n) => RESTORE_PENDING_FILE.test(n));
+const pendingStands = (): boolean => faceRecordNames().some((n) => RESTORE_PENDING_FILE.test(n));
 const stopAtCard = async (cards: ReadonlyArray<{ readonly chair: string }>): Promise<void> => { if (cards[0]?.chair === "place") return; throw new Error("the card did not read back"); };
 
 describe("a restore as persona zero, through the founding act", () => {

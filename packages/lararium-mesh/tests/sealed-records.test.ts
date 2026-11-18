@@ -13,7 +13,7 @@ import {
   type ContentKey, type KeyVersionId, type SealContext, type SealedAddress,
 } from "../src/sealed-chunk.js";
 import {
-  authorizeFromManifest, bagLocatorOf, encodeLockboxPayload, entryLocatorOf, factOfRecord, indexRowsOf, joinProofOf,
+  authorizeFromManifest, bagLocatorOf, encodeLockboxPayload, entryLocatorOf, factOfRecord, indexEntriesOf, joinProofOf,
   joinProven, readLockboxPayload, readRecord, recordIdOf, signRecord,
   type BagLocator, type CheckpointBody, type KeyVersionBody, type KeyVersionPrivate, type ManifestBody, type ManifestEntry,
   type RecordId, type RecordKind, type RecordSigner, type SealedRecord, type VerifiedRecord, type WriterStanding,
@@ -393,7 +393,7 @@ describe("a verified manifest entry authorizes its address", async () => {
     expect(() => { (manifest.body as { entries: ManifestEntry[] }).entries = []; }).toThrow(TypeError);
     expect(() => { (manifest.certificate.scope as { nexus: string }).nexus = "nexus-other"; }).toThrow(TypeError);
     expect(authorizeFromManifest(manifest, k1, change1.context)?.address).toBe(change1.chunk.address);
-    expect(indexRowsOf(manifest)[0]!.address).toBe(change1.chunk.address);
+    expect(indexEntriesOf(manifest)[0]!.address).toBe(change1.chunk.address);
     // The carried record a reader handed in stays the caller's own: a change to it after the read changes no verified reading.
     const mine = { kind: "manifest" as const, body: structuredClone(body), sealed: carried.sealed };
     const verified = read(mine);
@@ -407,7 +407,7 @@ describe("a verified manifest entry authorizes its address", async () => {
     expect(authorizeFromManifest(lookalike, k1, change1.context)).toBeNull();
     const unverified = { kind: "manifest", id: manifest.id, body, private: MANIFEST_WRITER, certificate: manifest.certificate } as VerifiedRecord<"manifest">;
     expect(authorizeFromManifest(unverified, k1, change1.context)).toBeNull();
-    expect(() => indexRowsOf(lookalike)).toThrow(/verified/);
+    expect(() => indexEntriesOf(lookalike)).toThrow(/verified/);
   });
 
   it("a writer that lists another value under an entry's locator opens nothing with it", async () => {
@@ -435,7 +435,7 @@ describe("a verified manifest entry authorizes its address", async () => {
 
   it("a verified manifest yields the chunk index rows a later step persists", () => {
     const manifest = read();
-    const rows = indexRowsOf(manifest);
+    const rows = indexEntriesOf(manifest);
     expect(rows.map((r) => r.address)).toEqual([change1.chunk.address, change2.chunk.address, blob.chunk.address]);
     expect(rows[1]).toEqual({ bag: LOCATOR, keyVersion: v1, role: "change", address: change2.chunk.address, locator: change2.entry.locator, parents: [change1.chunk.address], manifest: manifest.id });
     expect(Object.keys(rows[0]!).sort()).toEqual(["address", "bag", "keyVersion", "locator", "manifest", "parents", "role"]);

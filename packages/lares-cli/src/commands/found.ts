@@ -2,7 +2,7 @@
  * `lares vessel found` — bootstrap a new Lararium node.
  *
  * Thin shim over `runInit` from @lararium/node. Idempotent; pass --force to
- * re-seed when the social bootstrap already lives on disk (<lares>/vessel — see larBootstrapPath).
+ * re-seed when the social bootstrap already lives on disk (<root>/hearth/vessel — see larBootstrapPath).
  *
  * A FOUNDING RUNS WITH NO VESSEL STANDING. It holds the store for its act (`ownedStore`), so a vessel standing
  * on the same store refuses it by name, before any key mints and before any byte of the store moves.
@@ -93,7 +93,7 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
   seatNewFaceRoute();
   // ONLY an explicit --root sets LAR_ROOT (never a default — that would defeat the ~/.lares uplift).
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
-  // storage (runtime) → <lares>/vessel (larDataDir); genesis (the baked seed) stays corpus-relative.
+  // storage (runtime) → <root>/hearth/vessel (larDataDir); genesis (the baked seed) stays corpus-relative.
   const storageDir = args.options["storage"] ?? larDataDir();
   const genesisDir = args.options["genesis"] ?? larGenesisDir();   // --genesis → LAR_GENESIS → <root>/genesis
   try {
@@ -150,7 +150,9 @@ async function foundHearth(args: ParsedArgs, at: { storageDir: string; genesisDi
       ...(args.flags["force"] ? { force: true } : {}),
       name, ...(chair ? { chair } : {}), ...(restore ? { restore } : {}),
       placeFoundingCard: { readBack: async (card, fingerprint, generation) => {
-        if (args.flags["json"] !== true) process.stdout.write("2 cards print in order: PLACE (generation 0), then chair.\n");
+        if (args.flags["json"] !== true) process.stdout.write(`2 cold-key cards print next: first PLACE (this hearth's own card), then the chair ${chair || "you named"}.\n`
+          + "Write each card's three code lines on paper before you type them back; the card backs up that chair's next key, and nothing keeps it for you.\n"
+          + "The confirm words let two people check they hold the same card; never type them here.\n");
         await readBack(args, [{ chair: "place", seed: card.seed, digest: card.digest }], generation, fingerprint);
       } },
       readBack: async (cards, fingerprint) => { printed = await readBack(args, cards, 1, fingerprint); },

@@ -1,0 +1,58 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-build-push/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-build-push/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-build-push/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-build-push/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-build-push/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-build-push/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Build-Push: Lares (Tasked Spirit). A read-only zero-trust scout of the path to the first live Lararium. Repo: /home/joshu/Synthetic-Dream-Machine. Read the span (origin/feature/green-jello-dinosaur-5, ffe05bc79) and these lane branches via `git show <branch>:<path>` / `git diff`: &#45;-b1-seal (8fb9675ee), &#45;-b1-lift (83ca74cca), &#45;-secrets-store (ddc16316e, local branch in /home/joshu/.lares-scratch/secrets-store/wt), &#45;-canon-rulings (039e703bd: the road's #/the-order and #/rulings 2026-11-06). Write nothing. Mark every claim MEASURED (file:line) or INFER. Trust no comment, test or canon claim the code does not bear out.
+
+The order to the rite (road #/the-order rank 1): b1-seal and b1-lift finish their slices and merge (b1-seal into b1-lift, then the span); the joined node+browser founding gate; the phone walk (iPhone + Android; probe at /home/joshu/.lares-scratch/b1-lift/probe/); the pre-rite (image rebuild at the landed head, old homes moved aside, compose projection confirmed); the operator's rite. The owed rows before the rite: L23, L24, L25, L26, L27, L28, K22, K23, P27, G54, G55, B7 (read each row in the road on &#45;-canon-rulings). Lane designs: bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem #/the-swarm-slices, the B1 carrier browser-vessel-lift.mem on &#45;-b1-lift, /home/joshu/.lares-scratch/b1-seal/catalog-split-map.md, /home/joshu/.lares-scratch/b1-lift/design.md.
+
+Settle, ranked by how far each could move the rite:
+# THE CHAINLESS FACE. secrets-store's registry seals only while the face's Nexus chain stands. Does any founding, unlock, join or first-boot path need a share crossing BEFORE the face's chain stands (node and browser)? Can any path stand a secrets store on a chainless face? Which of (a) refuse every crossing until the chain stands, (b) a chainless face holds no store, so "no secrets" stands established, does the code favour, and what red proves (b)'s premise?
+# THE MERGE. What conflicts or semantic collisions wait in b1-seal -> b1-lift -> span (and secrets-store, cut from b1-seal): shared hunks in the two vessel composers, the ward-worker first-message race (fixed differently on B1 and S3b; the span holds S3b's: listen first, load nothing until an act), the catalog split vs b1-lift's per-face keys.
+# THE REMAINING SLICES. b1-lift slices 4 (SharedWorker house + the floor's service-worker port broker + Pronaos routes), 5b (one composeVessel with the node), 6 (ownerEpoch, durable txId ledger), 7 (durability reading); b1-seal's owed list (two-face node e2e, herm-on-F e2e, a locked vessel's bag-list, sibling face rows under their own chain, a lit face's draft slot before its seat, `nexus realm-bags` outcome-unknown at a locked floor, the working-attach-refusal control, the browser twin of the catalog split, the tails). Size each; flag any that the rite does not actually need versus one it cannot stand without.
+# THE FOUNDING GATE AND THE PHONE WALK. What exists of the joined node+browser founding gate and the phone capability probe; what is missing.
+# THE OWED ROWS. For each pre-rite row: built, half-built, or unbuilt; its size; whether the rite's own path calls it. Name any row whose absence leaves a hole the rite opens (custody, a key across a port, a clear write at rest, a cross-face crossing).
+# ANY OTHER UNCERTAINTY you find on the path: a red waiting in CI (note: a heavy test nexus-client-dial timed out once on a canon-only run over green code; see /home/joshu/.lares-scratch/controller/terra-dial-fault/final.md), a witness the lanes dodge, a ruling the code contradicts.
+Final message under 1300 words: a ranked critical path to the rite with sizes, then the uncertainties left UNSETTLED and what would settle each.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mGStvf4Ghpu0v_jccGv3NLL_-YooU6DP-L0YTkE343g`>>
+
+<<^ code=`&#x0004;` to=`?`>>

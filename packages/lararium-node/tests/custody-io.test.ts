@@ -34,9 +34,6 @@ function setEnv(k: string, v: string | undefined): void {
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), "lar-custody-io-"));
   setEnv("LAR_ROOT", root);
-  setEnv("XDG_STATE_HOME", join(root, "state"));
-  setEnv("XDG_DATA_HOME", join(root, "state"));
-  setEnv("XDG_CONFIG_HOME", join(root, "config"));
   // The homes are the vessel's own resolvers' answers under the scratch LAR_ROOT, so the production paths and the port agree.
   homes = vesselCustodyHomes();
   expect(homes.identity.startsWith(root)).toBe(true);

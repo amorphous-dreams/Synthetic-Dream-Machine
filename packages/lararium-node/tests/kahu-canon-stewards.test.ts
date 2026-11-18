@@ -79,7 +79,7 @@ describe("the Kahu canon reads only its charter's steward", () => {
   };
   /** One real founding for the file; each case opens the hearth's store on it and reads the genuine registrations off the kept files. */
   async function scene(fn: (s: Scene) => Promise<void>): Promise<void> {
-    founded ??= withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") })).then(() => undefined);
+    founded ??= withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") })).then(() => undefined);
     await founded;
     await withLarRoot(r, async () => {
       const vesselKey = await loadVesselVerifyingKey();
@@ -107,11 +107,11 @@ describe("the Kahu canon reads only its charter's steward", () => {
   test("S3 — CONTROL: the founding stands the registered documents; a bag the steward never sealed stands none", async () => {
     await scene(async ({ repo, aid, realm, genuine, lararium, stand }) => {
       expect(genuine.keptBy).toHaveLength(1);
-      expect(await stand()).toEqual({ lares: genuine.docUrl, lararium: lararium.docUrl });
+      expect(await stand()).toEqual({ lares: genuine.docUrl, lararium: lararium.docUrl, bags: { [LARES_DOC_URI]: genuine.docUrl, [LARARIUM_DOC_URI]: lararium.docUrl } });
       const hand = await sibling(78);
       const stray = await signRealmBagRegistration({ realmId: aid, bagUri: "lar:///ha.ka.ba/bags/stray", docUrl: await freshDoc(repo), readTier: "contract" }, [hand]);
       realm.change((d) => writeRealmBagRegistration(d, stray, hand.signer, true));
-      expect(await stand()).toEqual({ lares: genuine.docUrl, lararium: lararium.docUrl });
+      expect(await stand()).toEqual({ lares: genuine.docUrl, lararium: lararium.docUrl, bags: { [LARES_DOC_URI]: genuine.docUrl, [LARARIUM_DOC_URI]: lararium.docUrl } });
     });
   });
 
@@ -121,7 +121,7 @@ describe("the Kahu canon reads only its charter's steward", () => {
       const rec = await signRealmBagRegistration({ realmId: aid, bagUri: LARES_DOC_URI, docUrl: await freshDoc(repo), readTier: "contract" }, [hand]);
       realm.change((d) => writeRealmBagRegistration(d, rec, hand.signer, true));
       expect((await foldRealmBags(realm.doc(), aid)).get(LARES_DOC_URI), "the plain fold reads two docs under one name as none").toBeUndefined();
-      expect(await stand()).toEqual({ lares: genuine.docUrl, lararium: lararium.docUrl });
+      expect(await stand()).toEqual({ lares: genuine.docUrl, lararium: lararium.docUrl, bags: { [LARES_DOC_URI]: genuine.docUrl, [LARARIUM_DOC_URI]: lararium.docUrl } });
     });
   });
 

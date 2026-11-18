@@ -10,7 +10,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-boot-custody
  */
 import type { Credential } from "@lararium/mesh";
-import type { BrowserCustodyClear, UnsettledRow } from "./browser-custody.js";
+import type { BrowserCustodyClear, UnsettledRecord } from "./browser-custody.js";
 import {
   BrowserCustodyRefused,
   CLEAR_CUSTODY_CLEARS,
@@ -33,8 +33,8 @@ export type CustodyAnswer = Credential | null;
 export type BootCustodyVerdict =
   | { readonly reading: "clear" }
   | { readonly reading: "held" }
-  | { readonly reading: "opens"; readonly slot: string; readonly unsettled: readonly UnsettledRow[] }
-  | { readonly reading: "bound"; readonly slot: string; readonly unsettled: readonly UnsettledRow[] }
+  | { readonly reading: "opens"; readonly slot: string; readonly unsettled: readonly UnsettledRecord[] }
+  | { readonly reading: "bound"; readonly slot: string; readonly unsettled: readonly UnsettledRecord[] }
   | { readonly reading: "declined" }
   | { readonly reading: "no-slot-opens"; readonly attempts: number; readonly notes: readonly string[] }
   | { readonly reading: "unreadable"; readonly why: string };

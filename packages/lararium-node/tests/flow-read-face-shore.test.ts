@@ -23,7 +23,7 @@ import { floorGates, presenter, pullFloor as pullFromFloor } from "./flow-floor-
 const SEED   = new Uint8Array(32).fill(7);
 
 const GENESIS = {
-  format: "lararium-genesis-seed/v1", actorSeed: "ab".repeat(16),
+  format: "lararium-genesis-seed", actorSeed: "ab".repeat(16),
   blobs: { "lar:///core": { id: "core", version: "1", sha256: "c".repeat(64), mimeType: "application/javascript" } },
   tiddlers: {
     "lar:///seeded": { tiddler: { title: "lar:///seeded", text: "seed value" } },
@@ -79,7 +79,7 @@ async function pullFloor(mount: (args: Parameters<typeof mountFlowReadFace>[0]) 
 const projectSeeded = async (doc: LarDoc) => {
   const tiddlers: Record<string, unknown> = {};
   for (const title of Object.keys(GENESIS.tiddlers).sort()) if (doc.tiddlers?.[title] !== undefined) tiddlers[title] = plainRecord(doc.tiddlers[title]!);
-  return exportFlowSnapshot(pinnedDoc({ schemaVersion: doc.schemaVersion, blobs: {}, tiddlers } as unknown as Record<string, unknown>));
+  return exportFlowSnapshot(pinnedDoc({ blobs: {}, tiddlers } as unknown as Record<string, unknown>));
 };
 const mountAsMain: Parameters<typeof pullFloor>[0] = (a) => mountFlowReadFace({ ...a, exportSnapshot: (doc) => projectSeeded(doc as LarDoc) });
 

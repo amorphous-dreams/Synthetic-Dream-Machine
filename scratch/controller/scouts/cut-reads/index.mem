@@ -1,0 +1,50 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/controller/scouts/cut-reads/` — 14 record(s) here, 14 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/controller/scouts/cut-reads/`
+
+The scratch planning records of `.lares-scratch/controller/scouts/cut-reads/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 14 record(s) stand here and 14 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[controller/scouts/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[collide|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/collide]] | plan | 2026-10-31 | `COLLIDE.md` |
+| [[common|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/common]] | plan | 2026-10-31 | `COMMON.md` |
+| [[b1-pure-readers-collide|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b1-pure-readers-collide]] | research | 2026-10-31 | `b1-pure-readers-collide.md` |
+| [[b1-pure-readers|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b1-pure-readers]] | research | 2026-10-31 | `b1-pure-readers.md` |
+| [[b2-doors-cells-collide|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b2-doors-cells-collide]] | plan | 2026-10-31 | `b2-doors-cells-collide.md` |
+| [[b2-doors-cells|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b2-doors-cells]] | plan | 2026-10-31 | `b2-doors-cells.md` |
+| [[b3-capstack-stages-collide|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b3-capstack-stages-collide]] | plan | 2026-10-31 | `b3-capstack-stages-collide.md` |
+| [[b3-capstack-stages|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b3-capstack-stages]] | plan | 2026-10-31 | `b3-capstack-stages.md` |
+| [[b4-orchestration-collide|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b4-orchestration-collide]] | plan | 2026-10-31 | `b4-orchestration-collide.md` |
+| [[b4-orchestration|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b4-orchestration]] | plan | 2026-10-31 | `b4-orchestration.md` |
+| [[b5-browser-twins-collide|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b5-browser-twins-collide]] | plan | 2026-10-31 | `b5-browser-twins-collide.md` |
+| [[b5-browser-twins|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b5-browser-twins]] | plan | 2026-10-31 | `b5-browser-twins.md` |
+| [[b6-exports-homes-bridge-collide|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b6-exports-homes-bridge-collide]] | plan | 2026-10-31 | `b6-exports-homes-bridge-collide.md` |
+| [[b6-exports-homes-bridge|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b6-exports-homes-bridge]] | plan | 2026-10-31 | `b6-exports-homes-bridge.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fVrRxsQV5TPVLZO1EzAZRbKxUALVBIDy0ZJjN_CtT44`>>
+
+<<^ code=`&#x0004;` to=`?`>>

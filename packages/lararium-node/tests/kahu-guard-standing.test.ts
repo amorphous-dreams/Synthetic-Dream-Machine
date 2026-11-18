@@ -21,7 +21,7 @@
  *       TORN, "never confused with 'own'"): a charter file that stands with a malformed body, beside a retained alias,
  *       marks the count INCOMPLETE and withholds. CONTROL: with no charter file at all the count reads whole.
  */
-import { afterAll, describe, expect, test } from "vitest";
+import { afterAll, describe, expect, test, vi } from "vitest";
 import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -171,7 +171,12 @@ describe("the guard serves the standing count and each document's own home", () 
       const charter = nexusCharterDocPath(sealHome);
       mkdirSync(join(charter, ".."), { recursive: true });
       writeFileSync(charter, "this body reads as no charter");
-      await holder.recount();
+      const alarm = vi.spyOn(console, "error").mockImplementation(() => {});
+      try {
+        await holder.recount();
+        // CONTROL for the locked wording: a read that fails for any cause but a locked vault still raises the alarm line.
+        expect(alarm.mock.calls.map((c) => c.map(String).join(" ")).some((l) => /THE PROTECTED CANON COUNT IS INCOMPLETE \(1 read failure\(s\)/.test(l))).toBe(true);
+      } finally { alarm.mockRestore(); }
       expect(holder.incomplete(), "T6b: a standing charter that cannot be read tears the count").toBe(true);
       expect(await guard.withholds("same-face-leaf", idOf(canon)), "T6b: the retained canon withholds").toBe(true);
       expect(await guard.withholds("same-face-leaf", book), "T6b: every document withholds").toBe(true);

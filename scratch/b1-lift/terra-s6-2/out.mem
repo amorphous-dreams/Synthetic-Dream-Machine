@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-2/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s6-2/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-2/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-2/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s6-2/out.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Diff summary:
+* Added SV3 to the existing surface harness, covering sender-only control results, frame fan-out, and unknown-event result fan-out.
+* Recorded control-event senders before dispatch; routed matching results once to their sender, removed entries on result or session loss, and retained lit-face fan-out for unknown event IDs. Preserved the existing per-session fan-out work.
+
+Exact test name:
+* surface traffic reaches each session over its own port > SV3 — a control result answers its sender alone
+
+Verification:
+* <code>pnpm &#45;-filter &#64;lararium/web exec tsc &#45;-noEmit -p .</code> passed.
+* Browser checks: lead runs. SV3 was written before the host change; browser-mode red/green execution was not run in this seat.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QrblAQHnr2GaWZeo-gvjbEH7CPskE4U6c12TJF_K7jQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
 #!/bin/sh
 # unlock-staged-container — open a STAGED vessel's key inside its standing container, through the test door.
 #
-#   unlock-staged-container.sh <container> [<root inside the container>]     (root defaults to /state)
+#   unlock-staged-container.sh <container> [<root inside the container>]     (root defaults to /lar, the surface's house root)
 #
 # EVERY BOOT RESTS AT THE FLOOR holding no vessel key, and only a terminal opens one (`lares vault unlock`; no
 # flag, env var or pipe carries a credential). A container harness holds no terminal, so it opens a vessel it
@@ -21,7 +21,7 @@ set -eu
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 [ "$#" -ge 1 ] && [ "$#" -le 2 ] && [ -n "$1" ] || { echo "usage: tools/unlock-staged-container.sh <container> [<root inside the container>]" >&2; exit 2; }
 CONTAINER=$1
-STATE=${2:-/state}
+STATE=${2:-/lar}
 
 DOOR=$(mktemp -d "${TMPDIR:-/tmp}/staged-unlock.XXXXXX")
 trap 'rm -rf -- "$DOOR"' EXIT HUP INT TERM

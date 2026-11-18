@@ -31,6 +31,8 @@ export interface CeremonyAskSpec {
   /** The PersonaGroup the ask speaks for; null names this browser itself. Required: an ask with none refuses `ask-face-absent`. */
   readonly face: string | null;
   readonly passkeys?: readonly CeremonyPasskey[];
+  /** A card ask's printed card: it rides the ceremony's brokered port alone, never the page's word. */
+  readonly card?: readonly string[];
 }
 
 /** What the door tells the page: the public ask, and its settling. */
@@ -49,9 +51,9 @@ export function checkAskFace(kind: CeremonyAskKind, face: unknown): string | nul
 
 const hexOf = (bytes: ArrayBuffer): string => [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, "0")).join("");
 
-/** The routes an ask offers: the ward and a first bind take a passphrase alone; an unlock or a clear takes a passkey too, where one stands. */
+/** The routes an ask offers: the ward, a first bind and a card take typed text alone; an unlock or a clear takes a passkey too, where one stands. */
 export function routesFor(kind: CeremonyAskKind, passkeys: readonly CeremonyPasskey[]): readonly CeremonyRoute[] {
-  return kind === "ward" || kind === "bind-first" || passkeys.length === 0 ? ["passphrase"] : ["passphrase", "passkey"];
+  return kind === "ward" || kind === "bind-first" || kind === "card" || passkeys.length === 0 ? ["passphrase"] : ["passphrase", "passkey"];
 }
 
 /** Decode one answer for one ask. Every byte the answer carried zero-fills before this returns. */
@@ -108,7 +110,8 @@ export function standCeremonyDoor(post: (msg: DoorToPage) => void) {
       const passkeys = spec.passkeys ?? [];
       const words = spec.words ?? "";
       const digest = hexOf(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify([askId, spec.kind, spec.act]))));
-      const ask: CeremonyAsk = { t: "ask", askId, kind: spec.kind, act: spec.act, digest, face, routes: routesFor(spec.kind, passkeys), passkeys, words };
+      const ask: CeremonyAsk = { t: "ask", askId, kind: spec.kind, act: spec.act, digest, face, routes: routesFor(spec.kind, passkeys), passkeys, words,
+        ...(spec.kind === "card" && spec.card ? { card: [...spec.card] } : {}) };
       return new Promise<Credential | null>((resolve, reject) => {
         pending.set(askId, { ask, resolve, reject, port: null });
         post({ t: "ask", askId, kind: spec.kind, act: spec.act, words, face });
@@ -132,6 +135,10 @@ export function standCeremonyDoor(post: (msg: DoorToPage) => void) {
     refused(askId: string, refusal: string): void {
       const held = settle(askId);
       held?.reject(new CeremonyRefused(refusal));
+    },
+    /** The asks that still wait, in the order raised: public words alone, and whether a ceremony window holds each one's port. */
+    pending(): readonly { readonly askId: string; readonly kind: CeremonyAskKind; readonly act: string; readonly face: string | null; readonly ceremony: "unopened" | "open" }[] {
+      return [...pending.values()].map((p) => ({ askId: p.ask.askId, kind: p.ask.kind, act: p.ask.act, face: p.ask.face, ceremony: p.port ? "open" as const : "unopened" as const }));
     },
   };
 }

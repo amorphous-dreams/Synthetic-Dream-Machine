@@ -16,6 +16,10 @@
       "import": "./dist/bures-metric.js",
       "types": "./dist/bures-metric.d.ts"
     },
+    "./wire-names": {
+      "import": "./dist/wire-names.js",
+      "types": "./dist/wire-names.d.ts"
+    },
     "./record-port": {
       "import": "./dist/record-port.js",
       "types": "./dist/record-port.d.ts"
@@ -27,6 +31,10 @@
     "./lar-camera": {
       "import": "./dist/lar-camera.js",
       "types": "./dist/lar-camera.d.ts"
+    },
+    "./family": {
+      "import": "./dist/family.js",
+      "types": "./dist/family.d.ts"
     },
     "./carrier-type": {
       "import": "./dist/carrier-type.js",
@@ -47,6 +55,10 @@
     "./cascade": {
       "import": "./dist/cascade.js",
       "types": "./dist/cascade.d.ts"
+    },
+    "./keyslot-door": {
+      "import": "./dist/keyslot-door.js",
+      "types": "./dist/keyslot-door.d.ts"
     },
     "./crypto": {
       "import": "./dist/crypto.js",
@@ -132,6 +144,18 @@
       "import": "./dist/sensorium-fusion.js",
       "types": "./dist/sensorium-fusion.d.ts"
     },
+    "./iris": {
+      "import": "./dist/iris.js",
+      "types": "./dist/iris.d.ts"
+    },
+    "./lent-faces": {
+      "import": "./dist/lent-faces.js",
+      "types": "./dist/lent-faces.d.ts"
+    },
+    "./chore-ask": {
+      "import": "./dist/chore-ask.js",
+      "types": "./dist/chore-ask.d.ts"
+    },
     "./host-task": {
       "import": "./dist/host-task.js",
       "types": "./dist/host-task.d.ts"
@@ -147,6 +171,10 @@
     "./worldline": {
       "import": "./dist/worldline.js",
       "types": "./dist/worldline.d.ts"
+    },
+    "./projection-filter": {
+      "import": "./dist/projection-filter.js",
+      "types": "./dist/projection-filter.d.ts"
     }
   },
   "main": "./dist/index.js",
@@ -155,6 +183,7 @@
     "clean": "node ../../tools/clean-output.mjs dist",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test": "vitest run",
     "dev": "tsx src/index.ts"
   },

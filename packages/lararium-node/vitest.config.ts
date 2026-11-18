@@ -26,6 +26,9 @@ export const THRASHERS = [
 
 /** The suites the serial project takes. Kept complete by the reader that imports {@link THRASHERS}. */
 export const heavy = [
+  // a real floor composition and a sovereign one, each with its worker island: the locked floor reaches for no sealed document
+  "tests/locked-floor-loads-no-sealed.test.ts",
+  "tests/floor-key-one-reading.test.ts",
   // binds a real HTTP listener to prove the desk-named Web root serves GET / as 200
   "tests/pronaos-desk.test.ts",
   // real WebSocketServer + Repo + sealed-gate crossings
@@ -35,6 +38,8 @@ export const heavy = [
   // a real worker thread: the herm's daemon door settles a receipt round (L29 mirror)
   "tests/herm-daemon-settlement.test.ts",
   "tests/nexus-client-dial.test.ts",
+  // a real WebSocketServer under the engine's own server adapter: a gate's leg seats each dialing peer (V6)
+  "tests/face-wire-alias.test.ts",
   "tests/nexus-client-dial-listener-order.test.ts",
   "tests/live-wire-node-crossing.test.ts",
   "tests/crossing-matrix.test.ts",
@@ -115,6 +120,8 @@ export const heavy = [
   "tests/dial-presentation-joinee.test.ts",
   // A raw HTTP listener that answers the upgrade as a gate stand-in, so the node dial socket meets real frames.
   "tests/node-dial-socket.test.ts",
+  // A real unix-socket listener: the pūlama's session ends with its connection and releases the custody claim it held.
+  "tests/pulama-session-drops-with-socket.test.ts",
   // The herm's relay port on a real HTTP listener: persona-KEL drops over HTTP, silence for every upgrade.
   "tests/herm-relay-port.test.ts",
   // Full `openNodeVessel` boots (nested daemon and wiki islands) with no dial: a founded sovereign node lights its face cell,
@@ -134,7 +141,7 @@ export const mainExclude = ["tests/e2e/**", ...heavy];
  * The suites' custody: a when-needed seat that founds or opens a scratch custody at the first sealed row a suite
  * touches under its own temp root (`tests/support/scratch-custody-setup.ts`). Both projects load it.
  */
-const setupFiles = ["tests/support/scratch-custody-setup.ts"];
+const setupFiles = ["../../tools/vitest-scratch-house.mjs", "tests/support/scratch-custody-setup.ts"];
 /**
  * Room for a founding. A vector that reaches a sealed row under a fresh root founds that root's custody first, and
  * the founding derives a key from a passphrase (about half a second alone, several under a loaded run). The default

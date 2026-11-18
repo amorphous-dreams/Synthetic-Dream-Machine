@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/final2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-25 (file date) — source `.lares-scratch/research/seat-scout/sol/final2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/final2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/final2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final2.md — research, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/seat-scout/sol/final2.md` (research, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Seatwright: Lares (Tasked Spirit) · Ink-Clerk
+
+->↺ I wrote the wave-two handback to [[out2.md|/home/joshu/.lares-scratch/research/seat-scout/sol/out2.md]]. It contains 802 words. I made no repo writes and ran no suites.
+
+&lt;&lt;~ lares yield from="lar:&#47;/sol:agent@seat-scout/ratchet.written.handed" -> to="?">>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y4AkIEeOoQibixmpkO8lwgTeOozHbQVPpdksrsei5Zw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -30,11 +30,11 @@ import {
 import * as circleStoreModule from "../src/node-circle-store.js";
 import { loadNodeHandleBook, saveNodeHandleBook, HANDLE_BOOK_FILE, handleBookFile } from "../src/node-circle-store.js";
 import * as nodeBarrel from "../src/index.js";
-import { CustodyLocked, CustodyRowUnavailable, CustodyRowUnknown, makeCustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, CustodyRecordUnknown, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
 import { carrierCensus, carrierTable } from "../src/vault-carriers.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -65,7 +65,7 @@ async function bookOf(...indexes: number[]): Promise<{ book: HandleBook; nyms: s
 
 let c: SeatedScratchCustody;
 const FILE = handleBookFile(0);
-const at = (file: string): string => HANDLE_BOOK_FILE.test(file) ? handleRowPathIn(c.homes.identity, file) : join(c.homes.identity, file);
+const at = (file: string): string => HANDLE_BOOK_FILE.test(file) ? handleRecordPathIn(c.homes.identity, file) : join(c.homes.identity, file);
 beforeEach(async () => { c = await seatScratchCustody("circles"); });
 afterEach(async () => { await c.drop(); });
 
@@ -87,7 +87,7 @@ describe("the handle-book row", () => {
     const snapshot = structuredClone(book.snapshot());
     const forged = snapshot.records.findIndex((r) => r.nym === nyms[0]);
     (snapshot.records[forged]!.accepted[0] as { glamour: string }).glamour = "forged";
-    await c.holder.writeRow("identity", FILE, enc(snapshot));
+    await c.holder.writeRecord("identity", FILE, enc(snapshot));
     const restored = await loadNodeHandleBook(0);
     expect(restored.isRecognized(nyms[0]!)).toBe(false);
     expect(restored.isRecognized(nyms[1]!)).toBe(true);   // control
@@ -105,7 +105,7 @@ describe("the handle-book row", () => {
       ["bare", Buffer.from(JSON.stringify(book.snapshot())), /reads bare/],
     ] as const) {
       writeFileSync(at(FILE), bytes);
-      await expect(loadNodeHandleBook(0), label).rejects.toThrow(CustodyRowUnavailable);
+      await expect(loadNodeHandleBook(0), label).rejects.toThrow(CustodyRecordUnavailable);
       await expect(loadNodeHandleBook(0), label).rejects.toThrow(reads);
       await expect(saveNodeHandleBook(0, new HandleBook()), label).rejects.toThrow();
       expect(readFileSync(at(FILE)).equals(bytes), `${label}: the bytes at rest never moved`).toBe(true);
@@ -116,7 +116,7 @@ describe("the handle-book row", () => {
 
   test("C4 a row that opens to another shape refuses malformed", async () => {
     for (const shape of ["not json", JSON.stringify({ era: "scalar-handle-book-0", records: [] }), JSON.stringify({ era: HANDLE_BOOK_SNAPSHOT_ERA }), "[]", "null"]) {
-      await c.holder.writeRow("identity", FILE, new TextEncoder().encode(shape));
+      await c.holder.writeRecord("identity", FILE, new TextEncoder().encode(shape));
       await expect(loadNodeHandleBook(0), shape).rejects.toThrow(/\.handle-book-h0\.json reads malformed/);
     }
     // a record that lost its shape refuses the whole book: a restore that skipped it would let the next save erase it
@@ -128,14 +128,14 @@ describe("the handle-book row", () => {
     ]) {
       const snapshot = structuredClone(book.snapshot()) as unknown as { records: Array<Record<string, unknown>> };
       bend(snapshot.records[0]!);
-      await c.holder.writeRow("identity", FILE, enc(snapshot));
+      await c.holder.writeRecord("identity", FILE, enc(snapshot));
       const standing = readFileSync(at(FILE));
       await expect(loadNodeHandleBook(0)).rejects.toThrow(/\.handle-book-h0\.json reads malformed/);
       // A SAVE NEVER LANDS OVER A ROW THAT TURNED UNREADABLE since its caller loaded the book
       await expect(saveNodeHandleBook(0, book)).rejects.toThrow(/\.handle-book-h0\.json reads malformed/);
       expect(readFileSync(at(FILE)).equals(standing)).toBe(true);
     }
-    await c.holder.writeRow("identity", FILE, enc({ era: HANDLE_BOOK_SNAPSHOT_ERA, records: [] }));
+    await c.holder.writeRecord("identity", FILE, enc({ era: HANDLE_BOOK_SNAPSHOT_ERA, records: [] }));
     expect((await loadNodeHandleBook(0)).nyms()).toEqual([]);   // control
     await saveNodeHandleBook(0, book);                              // control: over a whole snapshot the save lands
     expect((await loadNodeHandleBook(0)).nyms().sort()).toEqual([...nyms].sort());
@@ -178,7 +178,7 @@ describe("the follow graph holds one home", () => {
     // control: the handle-book stands as a row, as an export and behind the custody door
     expect(carrierTable().filter((r) => r.writer === "node-circle-store").map((r) => r.row)).toEqual(["handle-book"]);
     expect(typeof nodeBarrel.loadNodeHandleBook).toBe("function");
-    await c.holder.writeRow("identity", FILE, enc({ era: HANDLE_BOOK_SNAPSHOT_ERA, records: [] }));
+    await c.holder.writeRecord("identity", FILE, enc({ era: HANDLE_BOOK_SNAPSHOT_ERA, records: [] }));
     expect(carrierCensus(c.homes).map((e) => e.row)).toContain("handle-book");
 
     expect(carrierTable().some((r) => r.row === "circles")).toBe(false);
@@ -187,7 +187,7 @@ describe("the follow graph holds one home", () => {
     expect("CIRCLES_FILE" in nodeBarrel).toBe(false);
     writeFileSync(at(FOLLOW), "{}");
     expect(carrierCensus(c.homes).some((e) => e.file === FOLLOW)).toBe(false);
-    await expect(c.holder.readRow("identity", FOLLOW)).rejects.toBeInstanceOf(CustodyRowUnknown);
-    await expect(c.holder.writeRow("identity", FOLLOW, enc({}))).rejects.toBeInstanceOf(CustodyRowUnknown);
+    await expect(c.holder.readRecord("identity", FOLLOW)).rejects.toBeInstanceOf(CustodyRecordUnknown);
+    await expect(c.holder.writeRecord("identity", FOLLOW, enc({}))).rejects.toBeInstanceOf(CustodyRecordUnknown);
   });
 });

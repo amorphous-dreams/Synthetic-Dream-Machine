@@ -47,11 +47,11 @@ on:
       - "wikis/**"
       - "CHANGELOG.md"
   pull_request:
-    branches: [main]
+    branches: [develop, main]
   # MERGE QUEUE HOOK (not wired yet). A native merge queue raises `merge_group` on the group's merge ref. When it lands, add here
   #   merge_group:
   #     types: [checks_requested]
-  #     branches: [feature/green-jello-dinosaur-5]
+  #     branches: [develop]
   # and add `gh-readonly-queue/**` to the push `branches-ignore` above, so a group raises ONE run, not two. No job guards
   # `merge_group` off (the fork guard below reads only `pull_request`), so the queue's run would raise the same ten jobs.
   # A controller runs CI by hand on a lane head whose own push the ignore list skipped: a meme-only head never
@@ -147,6 +147,12 @@ jobs:
       - name: Typecheck all packages
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm -r typecheck
+      # `pnpm -r typecheck` reads source alone (every tsconfig.json excludes tests/), and vitest's esbuild checks no
+      # types, so each package's tests typecheck here against its ceiling (tools/typecheck-tests-baseline.json): new
+      # drift reads red, the standing drift burns down, and the witness turns --strict once every ceiling reads zero.
+      - name: Typecheck every package's tests (ratchet)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: tools/typecheck-tests-witness.sh
       - name: noosphere-boot.mem stands where the hooks load it
         if: ${{ !cancelled() }}
         run: |
@@ -290,6 +296,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container: ${{ matrix.container }}
+    env:
+      # The keep's session parity (KS5) needs rsync and zstd, which the Playwright image lacks and uid 1001 cannot install;
+      # the witness cell `rest` (a bare runner) installs them and runs KS5, and the cli-mesh cell names it so.
+      LARES_KS5_RUNS_IN: ${{ matrix.cell == 'cli-mesh' && 'witness-cell-rest' || '' }}
     strategy:
       # A red cell must never cancel its siblings: the gate needs every cell's answer to tell one red
       # from one that never got to answer.
@@ -316,10 +326,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # `doctype-render-parity` proves a property of one past sweep by reading its two fixed
-          # forms from committed fixtures (`fixtures/doctype-render-parity/`), never from history —
-          # a depth-1 checkout runs it the same as a whole one. No other suite or witness reads git
-          # history, so the default shallow checkout stands.
+          # No suite or witness reads git history, so the default shallow checkout stands.
           # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
           # root. Without them the tw5 build cannot run, so every downstream job fails on an
           # artifact the repo never had a chance to produce.
@@ -355,30 +362,48 @@ jobs:
       # ONE LIST. The suite's own dependencies live in `packages/lararium-sensorium/requirements.txt`,
       # which the root `requirements.txt` (the operator's ~/.venv manifest) includes. The root list's
       # prose-tier NLP stack stays out: it needs downloaded models and the router degrades through it.
+      #
+      # THE HOLDER INTERPRETER. A bare-runner cell stands the venv on setup-python's 3.12. A container cell stands it on
+      # the image's own python3: the job container mounts the runner's hostedtoolcache, and setup-python's build there
+      # links the runner image's OpenSSL, which the Playwright image's libraries do not carry, so its `ssl` cannot import
+      # and pip cannot reach PyPI. The image's python3 carries ssl and no pip (Ubuntu splits ensurepip into python3-venv,
+      # which uid 1001 cannot install), so the venv step bootstraps pip with get-pip.py.
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: ${{ !matrix.container }}
         id: py
         with:
           python-version: '3.12'
+      - name: Name the holder interpreter (it must carry ssl)
+        id: interp
+        run: |
+          python3 -c 'import ssl' || { echo "::error::$(command -v python3) carries no ssl module: the holder venv's pip cannot reach PyPI"; exit 1; }
+          echo "python-version=$(python3 -c 'import platform; print(platform.python_version())')" >> "$GITHUB_OUTPUT"
       - id: mempalace-pin
         run: echo "sha=$(git rev-parse HEAD:mempalace)" >> "$GITHUB_OUTPUT"
 
-      # The key carries the exact interpreter PATCH: a restored venv's bin/python3 symlinks to the hostedtoolcache path of the patch that built
-      # it, so on a runner carrying another 3.12.x it dangles (exit 127).
+      # The key carries the exact interpreter PATCH: a restored venv's bin/python3 symlinks to the interpreter that built it
+      # (the hostedtoolcache path of that patch, or the image's /usr/bin/python3), so under another patch it dangles (exit 127).
       - name: Cache the holder venv
         id: venv-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.venv
-          key: holder-venv-${{ runner.os }}-${{ matrix.container && 'pwimage' || 'host' }}-py${{ steps.py.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
+          key: holder-venv-${{ runner.os }}-${{ matrix.container && 'pwimage' || 'host' }}-py${{ steps.interp.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
       - name: Stand the holder venv (~/.venv)
         env:
           CACHE_HIT: ${{ steps.venv-cache.outputs.cache-hit }}
         run: |
-          # A restored venv whose interpreter does not answer is no venv: stand it again (belt beside the patch-keyed cache).
-          if [ "$CACHE_HIT" = 'true' ] && ~/.venv/bin/python3 -V >/dev/null 2>&1; then exit 0; fi
+          # A restored venv whose interpreter does not answer, or answers without ssl, is no venv: stand it again (belt beside the patch-keyed cache).
+          if [ "$CACHE_HIT" = 'true' ] && ~/.venv/bin/python3 -c 'import ssl' >/dev/null 2>&1; then exit 0; fi
           rm -rf ~/.venv
-          python3 -m venv ~/.venv
-          ~/.venv/bin/python3 -m pip install --upgrade pip
+          if python3 -c 'import ensurepip' >/dev/null 2>&1; then
+            python3 -m venv ~/.venv
+            ~/.venv/bin/python3 -m pip install --upgrade pip
+          else
+            python3 -m venv --without-pip ~/.venv
+            ~/.venv/bin/python3 -c "import sys, urllib.request; sys.stdout.buffer.write(urllib.request.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" > "$RUNNER_TEMP/get-pip.py"
+            ~/.venv/bin/python3 "$RUNNER_TEMP/get-pip.py"
+          fi
           ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
       - name: Witness the holder answers
         id: holder
@@ -535,6 +560,13 @@ jobs:
           sudo apt-get install --no-install-recommends -y bubblewrap
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           bwrap --unshare-user --unshare-pid --ro-bind / / --proc /proc --dev /dev --tmpfs /tmp -- /usr/bin/true
+      # THE KEEP'S SESSION PARITY (KS5) runs here: it reads bin/sync's own mirror half against the keep's port, byte for byte, and
+      # needs rsync and zstd, which this bare runner installs (the cli-mesh cell's container cannot).
+      - name: Prove the keep's session mirror byte-equal to bin/sync's (KS5)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.cell == 'rest' }}
+        run: |
+          sudo apt-get install --no-install-recommends -y rsync zstd
+          cd packages/lares-cli && npx vitest run tests/keep-sessions.test.ts -t KS5
       - name: Run this cell
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: node tools/ci-cells.mjs run-witness "${{ matrix.cell }}" --out "$RUNNER_TEMP/cell"

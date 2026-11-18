@@ -97,7 +97,7 @@ Each ability implies all abilities below it in this ladder, EXCEPT:
 alone, at every call site in the tree — so a reader meeting these four rungs meets doctrine, never a
 switch some handler runs. The gate proves WHO may act; the ladder says WHAT the acting would amount to, and
 nothing yet narrows an action by verb. ''Naming a code constant here would send a reader looking for a
-gate they cannot find'' — exactly what a pointer naming a retired file does.
+gate they cannot find'' — exactly what a pointer naming an absent file does.
 
 ```toml
 # Ordered least → most privileged. Keyhive-native verbs. Doctrine, not a code constant.
@@ -278,6 +278,6 @@ the crypto gate, not instead of it.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xu5uoQuxF6R4UbPA2BKd2YV95l5ILwEI63k6H69u2X0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UaRuJ3T8gdD8bV2Sw9P5H5LJzxFUUQQJAMRtHw_7dkM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

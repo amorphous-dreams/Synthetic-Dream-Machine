@@ -1,7 +1,7 @@
 /** The record port binds one island's store, log, asks, and clockless presence. */
 import {
   readPortVesselMsg, mkPortAnswer, mkPortChanges, mkPortPresence, mkPortReset,
-  mkPortSnapshot, mkPortWritten,
+  mkPortBoot, mkPortSnapshot, mkPortWritten, PORT_BOOT_CHUNK_BYTES,
   type PortMsg_Open, type PortMsg_Ask, type PortMsg_Write, type PortMsg_Written, type PortWireRecord,
 } from "@lararium/mesh/record-port";
 import { isVerbRefusal, requireKahuReach, type CapTier, type KahuReachSource, type LarTiddlerRecord, type Verb } from "@lararium/mesh";
@@ -17,6 +17,7 @@ import { toBlocks, toLabelHtml, toText, type Block } from "./recording-serialise
 import { mountCamera } from "./tw5-camera.js";
 import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js";
 import { VerbTable, type VerbContext } from "./verb-dispatcher.js";
+import { checkFilter, pageFilterAnswer, type FilterRow } from "./filter-page.js";
 
 export interface RecordPortOptions {
   authority?: (req: InvokeRequest) => AuthorityResult;
@@ -169,7 +170,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       return table;
     }
     const table = new VerbTable();
-    registerActionReactors(table, { composite: ctx.composite, tw5: makeTw5Deserializer(ctx.tw5),
+    registerActionReactors(table, { composite: ctx.composite, diskMirrors: ctx.diskMirrors ?? [], tw5: makeTw5Deserializer(ctx.tw5),
       ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
       ...(opts.kahuReach ? { kahuReach: () => opts.kahuReach?.(portId)?.() ?? null } : {}) });
     verbs.set(portId, table);
@@ -239,6 +240,33 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     });
     for (const port of ports.values()) postEntries(ctx, port, logged);
   };
+  /**
+   * Hand the port this island's boot set: the engine blob, then each plugin blob, verbatim from the island's own CAS, each re-hashed
+   * against its CID before a byte leaves. A member the CAS cannot answer true ends the handoff with nothing more sent, and the
+   * projection names the member it never received. Returns false when the port closed or its face moved while the bytes resolved.
+   */
+  const postBoot = async (msg: PortMsg_Open, ctx: IslandContext, port: OpenPort): Promise<boolean> => {
+    const set = ctx.bootSet;
+    if (!set || !ctx.resolveByCid) return true;
+    const cids = [set.engineCid, ...set.pluginCids];
+    for (let member = 1; member <= cids.length; member++) {
+      const cid = cids[member - 1]!.toLowerCase();
+      const bytes = await ctx.resolveByCid(cid);
+      if (!faceHolds(port) || ports.get(msg.portId) !== port) return false;
+      if (!bytes) return true;
+      const digest = await crypto.subtle.digest("SHA-256", new Uint8Array(bytes));
+      if (!faceHolds(port) || ports.get(msg.portId) !== port) return false;
+      if (Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("") !== cid) return true;
+      const n = Math.max(1, Math.ceil(bytes.byteLength / PORT_BOOT_CHUNK_BYTES));
+      for (let i = 1; i <= n; i++) {
+        const part = bytes.subarray((i - 1) * PORT_BOOT_CHUNK_BYTES, i * PORT_BOOT_CHUNK_BYTES);
+        let binary = "";
+        for (let offset = 0; offset < part.length; offset += 32768) binary += String.fromCharCode(...part.subarray(offset, offset + 32768));
+        ctx.post(mkPortBoot({ portId: msg.portId, cid, role: member === 1 ? "engine" : "plugin", member, members: cids.length, i, n, bytesBase64: btoa(binary) }));
+      }
+    }
+    return true;
+  };
   const open = async (msg: PortMsg_Open, ctx: IslandContext, port: OpenPort): Promise<void> => {
     if (msg.since) {
       const answer = log.changesSince(msg.since, port.shape);
@@ -248,6 +276,9 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       const reservation = log.openSnapshot(port.shape, [], msg.maxBatchBytes, port.baseSeq);
       port.snapshotId = reservation.snapshotId;
       try {
+        // THE BOOT HANDOFF rides ahead of the snapshot: a projection that boots its own engine receives this island's boot set whole
+        // before any record, so its engine unpacks the same plugins this one did (`port:boot`).
+        if (msg.boot && !(await postBoot(msg, ctx, port))) return;
         const entries = await ctx.composite.entries();
         if (!faceHolds(port) || ports.get(msg.portId) !== port) return;
         const records = entries.filter(entry => visible(entry.title, port) && !port.dirty.has(entry.title)).map(entry => {
@@ -314,7 +345,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
     try { granted = port.open.edits === true && opts.mayEdit?.(msg.portId, port.boundActor) === true; }
     catch { /* A failed lookup grants nothing. */ }
     if (!granted) { answer("refused", [], [], "edits-not-granted"); return; }
-    // An explicit bag is no edit of the wiki: the composer must lend the bag, and a system canon bag also meets
+    // An explicit bag is no edit of the wiki: the composer must lend the bag, and a house canon bag also meets
     // the Kahu predicate the verbs meet.
     for (const bag of new Set(msg.records.flatMap(record => record.bag ? [record.bag] : []))) {
       let lent = false;
@@ -408,8 +439,25 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       drop(msg.portId); return;
     }
     if (msg.kind === "filter") {
-      try { answered(ctx.tw5.$tw.wiki.filterTiddlers(msg.subject ?? "").filter(title => visible(title, port))); }
-      catch { refused("filter-unavailable"); }
+      // ONE BOUNDED PAGE, never the whole array: the page law the daemon's `wiki-filter` verb answers (`filter-page.ts`) caps rows
+      // and bytes and names a cursor to continue; a filter the engine cannot parse refuses by name before it runs.
+      try {
+        const wiki = ctx.tw5.$tw.wiki;
+        const filter = msg.subject ?? "";
+        checkFilter(wiki, filter);
+        const titles = wiki.filterTiddlers(filter).filter(title => visible(title, port));
+        const names = msg.fields;
+        const rowOf = names === undefined ? undefined : (title: string): FilterRow => {
+          const held = (wiki.getTiddler(title) as { getFieldStrings?: () => Record<string, string> } | undefined)?.getFieldStrings?.() ?? {};
+          const fields: Record<string, string> = {};
+          for (const name of names) if (typeof held[name] === "string") fields[name] = held[name]!;
+          return { title, fields };
+        };
+        const page = pageFilterAnswer(titles, { ...(msg.after === undefined ? {} : { after: msg.after }),
+          ...(msg.limit === undefined ? {} : { limit: msg.limit }), ...(msg.maxBytes === undefined ? {} : { maxBytes: msg.maxBytes }),
+          ...(rowOf ? { rowOf } : {}) });
+        answered({ ...(page.rows ? { rows: page.rows } : { titles: page.titles }), total: page.total, next: page.next, asOf: page.asOf });
+      } catch (error) { refused(isVerbRefusal(error) ? error.reason : "filter-unavailable"); }
     } else if (msg.kind === "load") {
       const titles = msg.titles ?? (msg.subject ? [msg.subject] : []);
       const results = [];

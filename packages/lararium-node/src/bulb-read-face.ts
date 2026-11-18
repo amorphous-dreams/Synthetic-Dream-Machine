@@ -59,7 +59,7 @@ export interface RealmShoreBook {
 }
 
 /**
- * THE CARRIER'S OWN LANE — the books a Herm folds off its crossroads-plane replica.
+ * THE CARRIER'S OWN LANE — the books a Herm folds off its realm-announce board replica.
  *
  * A Herm holds no charter, so it stands in no realm and folds no registration: the realm lane above named
  * nothing on the one vessel it was built for (measured — `nexus realm-bags` on the Herm read `bags: []` while
@@ -69,14 +69,15 @@ export interface RealmShoreBook {
  * book this carrier never replicated answers nothing — a rejected find withholds, never serves.
  */
 export async function announcedRealmBooks(opts: {
-  readonly crossroadsDoc: () => LarDoc | null | undefined;
+  /** The Nexus's realm-announce board (`realmAnnounceDocUrl`), never the crossroads bag. */
+  readonly announceDoc:   () => LarDoc | null | undefined;
   readonly findBook:      (docUrl: string) => Promise<LarDoc | null>;
   /** Fired once per ask with what the board named and what this carrier could actually read — the one place
    *  an operator sees WHY a public body draws a 404 (no announce · an unreplicated book · an empty book). */
   readonly onLog?:        (line: string) => void;
 }): Promise<RealmShoreBook[]> {
   const books: RealmShoreBook[] = [];
-  const announcements = publicRealmBooksFromDoc(opts.crossroadsDoc());
+  const announcements = publicRealmBooksFromDoc(opts.announceDoc());
   opts.onLog?.(`announce lane: ${announcements.length} PUBLIC book(s) on the board`);
   for (const announced of announcements) {
     const doc = await opts.findBook(announced.docUrl).catch(() => null);
@@ -98,7 +99,7 @@ export async function announcedRealmBooks(opts: {
  *
  *   · THE REGISTRATION ROAD — every registration this vessel's realm plane carries, at the tier the
  *     registration DECLARED. A vessel that stands in no realm folds nothing here.
- *   · THE ANNOUNCE ROAD — the PUBLIC books the crossroads-plane board names (`announcedRealmBooks`).
+ *   · THE ANNOUNCE ROAD — the PUBLIC books the realm-announce board names (`announcedRealmBooks`).
  *
  * THE REGISTRATION WINS THE COLLISION. A bag the registration road already named never takes a second entry
  * off the board, so a stale PUBLIC announce can never re-tier a book whose registration reads CONTRACT here.
@@ -107,7 +108,7 @@ export async function announcedRealmBooks(opts: {
 export async function hermRealmShoreBooks(opts: {
   readonly realmStanding: () => Promise<ReadonlyMap<string, { bagUri: string; docUrl: string; readTier: CapTier }>>;
   readonly findDoc:       (docUrl: string) => Promise<LarDoc | null>;
-  readonly crossroadsDoc: () => LarDoc | null | undefined;
+  readonly announceDoc:   () => LarDoc | null | undefined;
   readonly onLog?:        (line: string) => void;
 }): Promise<RealmShoreBook[]> {
   const books: RealmShoreBook[] = [];
@@ -123,7 +124,7 @@ export async function hermRealmShoreBooks(opts: {
     });
   }
   const announced = await announcedRealmBooks({
-    crossroadsDoc: opts.crossroadsDoc,
+    announceDoc:   opts.announceDoc,
     findBook:      opts.findDoc,
     ...(opts.onLog ? { onLog: opts.onLog } : {}),
   });

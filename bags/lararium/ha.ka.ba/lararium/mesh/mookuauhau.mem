@@ -65,7 +65,7 @@ The kin that each solve one facet, citably, so the house adopts rather than rein
 
 | Cousin | What it solves | Where it grafts |
 |---|---|---|
-| ''UCAN'' (ucan-wg/spec) | DAG delegation chains rooted at the resource owner; //delegate without sharing the key// | the internal `device-admit/v1` edge's shape |
+| ''UCAN'' (ucan-wg/spec) | DAG delegation chains rooted at the resource owner; //delegate without sharing the key// | the internal `device-admit` edge's shape |
 | ''Willow / Meadowcap'' (willowprotocol.org) | communal-vs-owned namespaces · area/prefix-restricted ''read-caps'' | the veil / anon-read FLOW tier |
 | ''Veilid'' (veilid.com) | ''peer-identity ⊥ user-identity'' · transport via private routes | Plane-A transport-sovereignty carrying its own key |
 | ''Goblins / OCapN / E'' (spritely.institute) | capability-as-identity · ''petnames'' over crypto IDs · CapTP | the petname-constellation identity (fork ①); cap heals by revoke |
@@ -109,6 +109,6 @@ No one has made ''one composition primitive serve simultaneously as the code-wir
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7Jb8K0kxIsiN3PNI0UDHM9o-_SuTqHamzxKqQXlGJPo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CEz__X4ChSE5uXB9wY-89fhzVYzOTFsizFzOO1ZPK2M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

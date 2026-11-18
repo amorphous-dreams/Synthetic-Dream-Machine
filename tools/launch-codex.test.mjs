@@ -250,7 +250,8 @@ test("run: a real launch appends the law once, logs the attempt, spawns codex wi
   assert.match(calls[0].opts.env.TMPDIR, /lares-broker\/seats\/seat-[A-Za-z0-9]+\/\.tmp$/, "TMPDIR sits in the broker-owned dir");
   assert.ok(calls[0].args.at(-1).endsWith(brief) && /^SEAT-MARKER [0-9a-f-]{36}\n\n/.test(calls[0].args.at(-1)), "the brief rides last, law included, behind the seat's own marker");
   assert.equal(readFileSync(join(w.seatDir, "attempts.log"), "utf8").trim().split("\n").length, 2);
-  assert.match(out.join("\n"), /SEAT-LAUNCHED .*pid 4242.*until \[ -f .*done-[0-9a-f-]+ \]/s);
+  assert.match(out.join("\n"), /SEAT-LAUNCHED .*pid 4242.*done-[0-9a-f-]+/s);
+  assert.doesNotMatch(out.join("\n"), /until \[/);
 });
 
 test("lead law launch twice", () => {
@@ -1312,3 +1313,20 @@ test("RED: the pool refuses two newer recordless rollouts; CONTROL one skip and 
   rmSync(home, { recursive: true, force: true });
 });
 
+
+test("canary targets this checkout, and launcher header explains the broker copy and completion marker", () => {
+  const brief = canaryBrief();
+  assert.ok(brief.includes(fileURLToPath(new URL("./launch-codex.mjs", import.meta.url))));
+  for (const path of brief.match(/Read (\S+) in 40-line/g) ?? []) assert.ok(existsSync(path.slice(5, -11)), path);
+  const header = readFileSync(fileURLToPath(new URL("./launch-codex.mjs", import.meta.url)), "utf8").split("*/")[0];
+  assert.match(header, /done-<uuid>/);
+  assert.match(header, /only.*brief\.md/i);
+  assert.match(header, /in place/i);
+});
+
+test("relaunch replaces an older law even when the seat changes mode", () => {
+  const law = seatLaw(readFileSync(CANON, "utf8"));
+  const result = appendSeatLaw("# brief\nwork\n\n## LEAD LAW (old)\nold rule\n", law);
+  assert.doesNotMatch(result, /old rule|## LEAD LAW/);
+  assert.ok(result.includes(law));
+});

@@ -66,7 +66,7 @@ The boot seed (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>) seat
 
 <<~ ahu slot=`#/the-research`>>
 
-!! Open research ~ each row names its instrument
+!! Open research ~ each item names its instrument
 
 * ''Scout quality across breadths.'' One medium sweep stands measured; thorough sweeps and Plan's designs, each run both ways and judged against the files, widen the sample.
 * ''A linkless checkout.'' Under `core.symlinks=false` each link reads as a path string, so the import and Codex's override would load the path, never the seed; `lares repo read` and the witness name it red. The clone stands under WSL or another host that links, and the Windows host takes the home radius alone; a Windows probe measures the hosts where a native clone stands, before any founding leans on one.
@@ -74,11 +74,11 @@ The boot seed (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>) seat
 * ''The seed's own `@` tokens.'' The witness guards them; a grammar call follows only if one ever resolves.
 * ''VS Code agent mode.'' It reads `CLAUDE.md` only under `chat.useClaudeMdFile`, and its include behavior stands unmeasured; a probe for the seed's final hash settles both.
 * ''Copilot's cloud agent and code review.'' Whether either reads `CLAUDE.md`'s include, and whether code review cuts an instruction file short; a pull-request probe for the seed's final hash.
-* ''Seats outside the clone for Codex and Copilot.'' Each host loads a personal instruction file beside the project's with no exclude, so a personal seed would seat twice inside the clone; the row stays open until a host offers an exclude or a per-directory scope.
+* ''Seats outside the clone for Codex and Copilot.'' Each host loads a personal instruction file beside the project's with no exclude, so a personal seed would seat twice inside the clone; the item stays open until a host offers an exclude or a per-directory scope.
 * ''Codex trust in a worktree.'' A worktree under a trusted root reads the hash; an untrusted path seats nothing and says nothing, and the witness reads files, never trust. A probe from each new worktree root reads the hash.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mLXx08KTmG2eF4TzIClYADmN9Fw8FjIcaKwhDZkCFY0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;J-W93YfbL02jwdRkFFkXnVCEozYZ1--Y7LcQ6aXPzu4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

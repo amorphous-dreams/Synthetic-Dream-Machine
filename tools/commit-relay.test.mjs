@@ -5,13 +5,13 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync
 import { createServer } from 'node:net';
 import os from 'node:os';
 import { createHash, randomBytes } from 'node:crypto';
-import { checkBrokerRoot, ensureLaneDir, ensureStageRoot, goPathFor, laneId, checkGrantedRoots } from './broker-root.mjs';
+import { checkBrokerRoot, ensureLaneDir, ensureStageRoot, leiPathFor, laneId, checkGrantedRoots } from './broker-root.mjs';
 const scratchOf = (home) => path.join(realpathSync(home), '.lares-scratch');
 import { execFileSync, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { openHeld, openHeldSync } from './held-dir.mjs';
-import { addWorktree, brokerEnv, commitWithReceipt, pushWithGo, readSafe, verifyReceipt } from './seat-broker.mjs';
+import { addWorktree, brokerEnv, commitWithReceipt, pushWithLei, readSafe, verifyReceipt } from './seat-broker.mjs';
 import { runCheckSeat, runInstallSeat, signReceipt, HAVE_BWRAP } from './seat-walls.mjs';
 
 const script = fileURLToPath(new URL('./commit-relay.mjs', import.meta.url));
@@ -33,8 +33,8 @@ function setup() {
   execFileSync('git', ['init', '--bare', remote], { stdio: 'ignore' }); git('remote', 'add', 'origin', remote);
   writeFileSync(path.join(lane, 'message'), 'relay test\n');
   const request = (id, data) => writeFileSync(path.join(lane, 'relay', `req-${id}.json`), typeof data === 'string' ? data : JSON.stringify(data));
-  const brokerRoot = path.join(home, '.local/state/lares-broker'); const goFile = goPathFor(brokerRoot, lane);
-  const ensureGo = () => ensureLaneDir(brokerRoot, 'go', lane, { realHome: realpathSync(home), guarded: [lane, wt, scratchOf(home)] });
+  const brokerRoot = path.join(home, '.local/state/lares-broker'); const leiFile = leiPathFor(brokerRoot, lane);
+  const ensureLei = () => ensureLaneDir(brokerRoot, 'lei', lane, { realHome: realpathSync(home), guarded: [lane, wt, scratchOf(home)] });
   const launcher = path.join(home, 'launcher.mjs'); writeFileSync(launcher, `import { writeFileSync } from 'node:fs';
 writeFileSync(${JSON.stringify(path.join(root, 'argv.json'))}, JSON.stringify(process.argv.slice(2)));
 console.log('SEAT-LAUNCHED 123');
@@ -47,9 +47,9 @@ console.log('SEAT-LAUNCHED 123');
   const brokerArgs = ['--installer', path.join(bin, 'pnpm'), '--store-dir', storeDir, '--cache-dir', cacheDir, '--checks', checksFile, '--author-name', 'Relay', '--author-email', 'relay@example.invalid'];
   const run = () => { const r = spawnSync(process.execPath, [script, '--lane-root', lane, '--worktree', wt, '--branch', 'relay-test', '--launcher', launcher, ...brokerArgs, '--remote-url', remote, '--once'], { encoding: 'utf8', env: relayEnv }); assert.equal(r.status, 0, r.stderr); return r; };
   const response = id => JSON.parse(readFileSync(path.join(lane, 'relay', `res-${id}.json`), 'utf8'));
-  const go = value => { ensureGo(); writeFileSync(goFile, value); };
-  const goText = (branch, head, dest = remote) => `${laneId(lane)}\n${branch}\n${head}\n${dest}\n`;
-  return { home, root, wt, lane, remote, git, request, run, response, go, goText, goFile, launcher, bin, relayEnv, brokerArgs };
+  const lei = value => { ensureLei(); writeFileSync(leiFile, value); };
+  const leiText = (branch, head, dest = remote) => `${laneId(lane)}\n${branch}\n${head}\n${dest}\n`;
+  return { home, root, wt, lane, remote, git, request, run, response, lei, leiText, leiFile, launcher, bin, relayEnv, brokerArgs };
 }
 
 wallTest('commit selects only requested paths', () => {
@@ -64,26 +64,26 @@ test('relative and absolute path escapes refuse', () => {
   x.request('2', { kind: 'commit', message: 'message', paths: [path.join(x.wt, 'a')] }); x.run();
   assert.equal(x.response('1').ok, false); assert.equal(x.response('2').ok, false);
 });
-test('push without controller go refuses', () => {
+test('push without a controller lei refuses', () => {
   const x = setup(); x.request('1', { kind: 'push' }); x.run();
-  assert.equal(x.response('1').output, 'no push-go from the controller');
+  assert.equal(x.response('1').output, 'no push lei from the controller');
   assert.equal(spawnSync('git', ['--git-dir', x.remote, 'rev-parse', '--verify', 'refs/heads/relay-test']).status, 128);
 });
-test('push with a different branch go refuses', () => {
-  const x = setup(); x.go('other\n'); x.request('1', { kind: 'push' }); x.run();
-  assert.equal(x.response('1').ok, false); assert.equal(existsSync(x.goFile), false, 'the go spends on the attempt');
+test('push with a different branch lei refuses', () => {
+  const x = setup(); x.lei('other\n'); x.request('1', { kind: 'push' }); x.run();
+  assert.equal(x.response('1').ok, false); assert.equal(existsSync(x.leiFile), false, 'the lei spends on the attempt');
   assert.equal(spawnSync('git', ['--git-dir', x.remote, 'rev-parse', '--verify', 'refs/heads/relay-test']).status, 128);
 });
-test('push with matching go succeeds and consumes go', () => {
-  const x = setup(); x.go(x.goText('relay-test', x.git('rev-parse', 'HEAD'))); x.request('1', { kind: 'push' }); x.run();
-  assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1'))); assert.equal(existsSync(x.goFile), false);
+test('push with a matching lei succeeds and spends the lei', () => {
+  const x = setup(); x.lei(x.leiText('relay-test', x.git('rev-parse', 'HEAD'))); x.request('1', { kind: 'push' }); x.run();
+  assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1'))); assert.equal(existsSync(x.leiFile), false);
   assert.equal(execFileSync('git', ['--git-dir', x.remote, 'rev-parse', 'refs/heads/relay-test'], { encoding: 'utf8' }).trim(), x.git('rev-parse', 'HEAD'));
 });
 wallTest('requests run in id order, completing each before the next', () => {
   const x = setup(); writeFileSync(path.join(x.wt, 'a'), 'changed\n');
-  x.request('02', { kind: 'push' }); x.request('01', { kind: 'commit', message: 'message', paths: ['a'] }); x.go(x.goText('relay-test', x.git('rev-parse', 'HEAD'))); x.run();
+  x.request('02', { kind: 'push' }); x.request('01', { kind: 'commit', message: 'message', paths: ['a'] }); x.lei(x.leiText('relay-test', x.git('rev-parse', 'HEAD'))); x.run();
   assert.equal(x.response('01').ok, true, JSON.stringify(x.response('01')));
-  assert.equal(x.response('02').ok, false); assert.match(x.response('02').output, /go head/, 'the push read the head the commit had already moved');
+  assert.equal(x.response('02').ok, false); assert.match(x.response('02').output, /lei head/, 'the push read the head the commit had already moved');
 });
 wallTest('bad JSON, unknown kinds, a message PATH field and an over-cap message refuse; inline text commits', () => {
   const x = setup(); writeFileSync(path.join(x.wt, 'a'), 'changed\n');
@@ -164,7 +164,7 @@ function brokerFixture() {
   const root = mkdtempSync(path.join(os.tmpdir(), 'broker-'));
   roots.push(root);
   const wt = path.join(root, 'wt'), remote = path.join(root, 'remote.git'), iso = path.join(root, 'iso'), receipts = new Map(), key = randomBytes(32);
-  const control = path.join(root, 'controller'), goFile = path.join(control, 'push-go');
+  const control = path.join(root, 'controller'), leiFile = path.join(control, 'push');
   for (const d of [wt, iso, control]) mkdirSync(d, { recursive: true });
   writeFileSync(path.join(control, 'secret'), 'CONTROLLER-SECRET\n', { mode: 0o600 });
   const git = (...args) => execFileSync('git', ['-C', wt, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -180,7 +180,7 @@ function brokerFixture() {
   const marker = (n) => path.join(root, `MARK-${n}`);
   const hook = (name, body) => { const f = path.join(wt, '.git', 'hooks', name); mkdirSync(path.dirname(f), { recursive: true }); writeFileSync(f, `#!/bin/sh\n${body}\n`); chmodSync(f, 0o755); };
   const markers = () => readdirSync(root).filter((n) => n.startsWith('MARK-'));
-  return { root, wt, remote, iso, receipts, key, control, goFile, git, ctx, marker, hook, markers, message: path.join(root, 'message') };
+  return { root, wt, remote, iso, receipts, key, control, leiFile, git, ctx, marker, hook, markers, message: path.join(root, 'message') };
 }
 const commitReq = (x, over = {}) => ({ paths: ['a'], message: 'broker test\n', expectHead: x.git('rev-parse', 'HEAD'), ...over });
 
@@ -203,8 +203,8 @@ test('PROOF 1 planted hooks and a credential helper never run: commit and push l
   x.git('config', 'remote.origin.pushurl', `ext::sh -c "touch '${x.marker('ext')}'"`);
   x.git('config', `url.${path.join(x.root, 'elsewhere.git')}.insteadOf`, x.remote);
   execFileSync('git', ['init', '--bare', '-q', path.join(x.root, 'elsewhere.git')]);
-  writeFileSync(x.goFile, `lane-x\nlane\n${x.git('rev-parse', 'HEAD')}\n${x.remote}\n`);
-  const p = await pushWithGo({ ...x.ctx, goFile: x.goFile });
+  writeFileSync(x.leiFile, `lane-x\nlane\n${x.git('rev-parse', 'HEAD')}\n${x.remote}\n`);
+  const p = await pushWithLei({ ...x.ctx, leiFile: x.leiFile });
   assert.equal(p.ok, true, JSON.stringify(p));
   assert.equal(execFileSync('git', ['--git-dir', x.remote, 'rev-parse', 'refs/heads/lane'], { encoding: 'utf8' }).trim(), x.git('rev-parse', 'HEAD'));
   assert.equal(spawnSync('git', ['--git-dir', path.join(x.root, 'elsewhere.git'), 'rev-parse', '--verify', 'refs/heads/lane']).status, 128, 'a lane insteadOf never redirected the push');
@@ -254,7 +254,7 @@ echo "ARGV $*" > "${log}"
 echo "CWD $(pwd)" >> "${log}"
 env | grep -E '^(NODE_OPTIONS|npm_config_|GIT_|HOME)=' >> "${log}"
 touch "${x.wt}/.git/PWNED" 2>>"${log}" && echo GITWRITE >> "${log}"
-touch "${x.goFile}" 2>>"${log}" && echo GOWRITE >> "${log}"
+touch "${x.leiFile}" 2>>"${log}" && echo LEIWRITE >> "${log}"
 cat "${x.control}/secret" 2>/dev/null | grep -q CONTROLLER-SECRET && echo CTRLREAD >> "${log}"
 if touch "${store}/ok" 2>/dev/null; then echo STOREWRITE >> "${log}"; else echo STOREREFUSED >> "${log}"; fi
 grep -q META "${cache}/metadata/pkg.jsonl" && echo CACHEREAD >> "${log}"
@@ -282,7 +282,7 @@ if echo planted >> "${cache}/metadata/pkg.jsonl" 2>/dev/null; then echo CACHEWRI
   assert.equal(readFileSync(path.join(cache, 'metadata', 'pkg.jsonl'), 'utf8'), 'META', 'the cache bytes stand unchanged');
   assert.match(seen, new RegExp(`--frozen-store .*--store-dir ${store} --cache-dir ${cache}`));
   const noCache = await runInstallSeat({ ...seat, cacheDir: undefined });
-  assert.equal(noCache.ok, false); assert.match(noCache.output, /metadata cache dir/, 'a seat without the cache refuses by name'); assert.doesNotMatch(seen, /CTRLREAD/, 'the controller dir reads as empty'); assert.doesNotMatch(seen, /GITWRITE|GOWRITE/, 'the install wrote neither git metadata nor the controller file');
+  assert.equal(noCache.ok, false); assert.match(noCache.output, /metadata cache dir/, 'a seat without the cache refuses by name'); assert.doesNotMatch(seen, /CTRLREAD/, 'the controller dir reads as empty'); assert.doesNotMatch(seen, /GITWRITE|LEIWRITE/, 'the install wrote neither git metadata nor the controller file');
   assert.equal(existsSync(path.join(x.wt, '.git', 'PWNED')), false); assert.equal(existsSync(probe), false);
 });
 
@@ -333,7 +333,7 @@ function spawn_swapper(file, secret, inTree) {
 }
 import { spawn as spawnAsync } from 'node:child_process';
 
-wallTest('PROOF 5 malicious build, test and editor config run only inside the check seat wall: no go write, no ref write, no credential read, no loopback; forged receipts refuse', async () => {
+wallTest('PROOF 5 malicious build, test and editor config run only inside the check seat wall: no lei write, no ref write, no credential read, no loopback; forged receipts refuse', async () => {
   const x = brokerFixture();
   const server = createServer((sock) => { hits.push(1); sock.destroy(); }); const hits = [];
   await new Promise((r) => server.listen(0, '127.0.0.1', r)); const port = server.address().port;
@@ -341,7 +341,7 @@ wallTest('PROOF 5 malicious build, test and editor config run only inside the ch
   const refBefore = x.git('rev-parse', 'HEAD');
   writeFileSync(path.join(x.wt, '.vscode.json'), '{"tasks":"touch /tmp/should-not-matter"}');
   const attack = `out=/work/scratch/out; : > $out
-touch '${x.goFile}' 2>/dev/null && echo GOWRITE >> $out
+touch '${x.leiFile}' 2>/dev/null && echo LEIWRITE >> $out
 git --git-dir='${x.ctx.gitDir}' update-ref refs/heads/lane ${'0'.repeat(40)} 2>/dev/null && echo REFWRITE >> $out
 cat '${cred}' 2>/dev/null >> $out
 (exec 3<>/dev/tcp/127.0.0.1/${port}) 2>/dev/null && echo LOOPBACK >> $out
@@ -352,9 +352,9 @@ exit 0`;
   server.close();
   assert.equal(r.ok, true, JSON.stringify(r));
   const out = readFileSync(path.join(r.work, 'scratch', 'out'), 'utf8');
-  assert.match(out, /WORKWRITE/, 'the seat writes inside its own work dir'); assert.doesNotMatch(out, /GOWRITE|REFWRITE|LOOPBACK|SECRET-TOKEN/);
+  assert.match(out, /WORKWRITE/, 'the seat writes inside its own work dir'); assert.doesNotMatch(out, /LEIWRITE|REFWRITE|LOOPBACK|SECRET-TOKEN/);
   assert.equal(hits.length, 0, 'the loopback listener saw no connection');
-  assert.equal(x.git('rev-parse', 'HEAD'), refBefore); assert.equal(existsSync(x.goFile), false);
+  assert.equal(x.git('rev-parse', 'HEAD'), refBefore); assert.equal(existsSync(x.leiFile), false);
   // receipts: the seat signed this tree and check set in memory; wrong-tree, short-check, another definition, a stale key and a planted receipt all refuse
   const tree = x.git('rev-parse', 'HEAD^{tree}');
   const v = (over) => verifyReceipt({ key: x.key, receipts: x.receipts, tree, requiredChecks: ['true'], definitions: defs, ...over });
@@ -369,7 +369,7 @@ exit 0`;
   assert.match(scratchSeen, /WORKWRITE/);
 });
 
-test('the commit door binds an expected old head, a clean receipt, and refuses a failing check; the push go binds branch AND head', async () => {
+test('the commit door binds an expected old head, a clean receipt, and refuses a failing check; the push lei binds branch AND head', async () => {
   const x = brokerFixture();
   writeFileSync(path.join(x.wt, 'a'), 'v2\n');
   const stale = await commitWithReceipt(x.ctx, commitReq(x, { expectHead: 'a'.repeat(40) }));
@@ -379,17 +379,17 @@ test('the commit door binds an expected old head, a clean receipt, and refuses a
   const head0 = x.git('rev-parse', 'HEAD');
   assert.equal((await commitWithReceipt(x.ctx, commitReq(x))).ok, true);
   const head1 = x.git('rev-parse', 'HEAD'); assert.notEqual(head0, head1);
-  const goOf = (lane, branch, head, dest = x.remote) => `${lane}\n${branch}\n${head}\n${dest}\n`;
-  writeFileSync(x.goFile, 'lane\n');
-  assert.match((await pushWithGo({ ...x.ctx, goFile: x.goFile })).output, /go/);
-  writeFileSync(x.goFile, goOf('lane-x', 'lane', head0)); assert.equal((await pushWithGo({ ...x.ctx, goFile: x.goFile })).ok, false);
-  assert.equal(existsSync(x.goFile), false, 'the go spends on the attempt');
-  writeFileSync(x.goFile, goOf('lane-x', 'other', head1)); assert.equal((await pushWithGo({ ...x.ctx, goFile: x.goFile })).ok, false);
-  writeFileSync(x.goFile, goOf('lane-y', 'lane', head1)); const otherLane = await pushWithGo({ ...x.ctx, goFile: x.goFile });
+  const leiOf = (lane, branch, head, dest = x.remote) => `${lane}\n${branch}\n${head}\n${dest}\n`;
+  writeFileSync(x.leiFile, 'lane\n');
+  assert.match((await pushWithLei({ ...x.ctx, leiFile: x.leiFile })).output, /lei/);
+  writeFileSync(x.leiFile, leiOf('lane-x', 'lane', head0)); assert.equal((await pushWithLei({ ...x.ctx, leiFile: x.leiFile })).ok, false);
+  assert.equal(existsSync(x.leiFile), false, 'the lei spends on the attempt');
+  writeFileSync(x.leiFile, leiOf('lane-x', 'other', head1)); assert.equal((await pushWithLei({ ...x.ctx, leiFile: x.leiFile })).ok, false);
+  writeFileSync(x.leiFile, leiOf('lane-y', 'lane', head1)); const otherLane = await pushWithLei({ ...x.ctx, leiFile: x.leiFile });
   assert.equal(otherLane.ok, false); assert.match(otherLane.output, /another lane/);
-  writeFileSync(x.goFile, goOf('lane-x', 'lane', head1, 'git@evil.example:x/y.git')); const otherDest = await pushWithGo({ ...x.ctx, goFile: x.goFile });
+  writeFileSync(x.leiFile, leiOf('lane-x', 'lane', head1, 'git@evil.example:x/y.git')); const otherDest = await pushWithLei({ ...x.ctx, leiFile: x.leiFile });
   assert.equal(otherDest.ok, false); assert.match(otherDest.output, /another remote/);
-  writeFileSync(x.goFile, goOf('lane-x', 'lane', head1)); assert.equal((await pushWithGo({ ...x.ctx, goFile: x.goFile })).ok, true);
+  writeFileSync(x.leiFile, leiOf('lane-x', 'lane', head1)); assert.equal((await pushWithLei({ ...x.ctx, leiFile: x.leiFile })).ok, true);
 });
 
 // ======================= the Terra HOLD cures =======================
@@ -485,7 +485,7 @@ test('a FIFO planted at a request name refuses by name and never stalls the brok
   const fifo = x.response('2');
   assert.equal(fifo.ok, false); assert.match(fifo.output, /req-2\.json: not a regular file \(fifo\)/);
   const control = x.response('1');
-  assert.equal(control.ok, false); assert.match(control.output, /go/i, 'the regular request reached its door');
+  assert.equal(control.ok, false); assert.match(control.output, /lei/i, 'the regular request reached its door');
   assert.doesNotMatch(control.output, /not a regular file/);
 });
 
@@ -496,7 +496,7 @@ test('RED: a request file over 1 MiB refuses by size before any read; CONTROL a 
   x.run();
   const refused = x.response('2');
   assert.equal(refused.ok, false); assert.match(refused.output, /req-2\.json: 2097152 bytes, over the 1048576-byte request limit/);
-  assert.match(x.response('1').output, /go/i, 'CONTROL: the regular request reached its door');
+  assert.match(x.response('1').output, /lei/i, 'CONTROL: the regular request reached its door');
 });
 
 test('RED: the install door names each missing flag; CONTROL a configured relay reaches the install seat', () => {
@@ -547,7 +547,7 @@ test('P1-2 a commit message with a lone surrogate or a NUL refuses; a multibyte 
 
 const relayRun = (x, env = {}, extra = []) => spawnSync(process.execPath, [script, '--lane-root', x.lane, '--worktree', x.wt, '--branch', 'relay-test', '--launcher', x.launcher, ...x.brokerArgs, '--remote-url', x.remote, ...extra, '--once'], { encoding: 'utf8', env: { ...x.relayEnv, ...env } });
 
-test('P1 the go and the broker state live under the ONE fixed broker root: a root anywhere under ~/.lares-scratch (another lane included), a symlinked component, a 0755 root and a group-writable ancestor each refuse; CONTROL passes', () => {
+test('P1 the lei and the broker state live under the ONE fixed broker root: a root anywhere under ~/.lares-scratch (another lane included), a symlinked component, a 0755 root and a group-writable ancestor each refuse; CONTROL passes', () => {
   const x = setup();
   const scratch = scratchOf(x.home);
   const otherLane = path.join(scratch, 'other-lane'); mkdirSync(otherLane);
@@ -566,14 +566,14 @@ test('P1 the go and the broker state live under the ONE fixed broker root: a roo
   r = relayRun(x);
   assert.equal(r.status, 0, r.stderr);
   const root = path.join(realpathSync(x.home), '.local/state/lares-broker');
-  for (const part of ['seats', 'go', 'iso']) assert.equal(statSync(path.join(root, part)).mode & 0o777, 0o700, `${part} is 0700`);
-  assert.ok(existsSync(path.join(root, 'go', laneId(x.lane))) && existsSync(path.join(root, 'iso', laneId(x.lane))));
+  for (const part of ['seats', 'lei', 'iso']) assert.equal(statSync(path.join(root, part)).mode & 0o777, 0o700, `${part} is 0700`);
+  assert.ok(existsSync(path.join(root, 'lei', laneId(x.lane))) && existsSync(path.join(root, 'iso', laneId(x.lane))));
 });
 
-test('P1 no caller names the go or the state path: --go-file is an unknown option, and a bad root with a missing relay/ leaves the lane byte-identical', () => {
+test('P1 no caller names the lei or the state path: --lei-file is an unknown option, and a bad root with a missing relay/ leaves the lane byte-identical', () => {
   const x = setup();
-  let r = relayRun(x, {}, ['--go-file', '/tmp/x']);
-  assert.notEqual(r.status, 0); assert.match(r.stderr, /invalid argument: --go-file/);
+  let r = relayRun(x, {}, ['--lei-file', '/tmp/x']);
+  assert.notEqual(r.status, 0); assert.match(r.stderr, /invalid argument: --lei-file/);
   rmSync(path.join(x.lane, 'relay'), { recursive: true });
   const snap = (d) => readdirSync(d, { withFileTypes: true, recursive: true }).map((e) => `${e.parentPath ?? e.path}/${e.name}${e.isFile() ? `:${createHash('sha256').update(readFileSync(path.join(e.parentPath ?? e.path, e.name))).digest('hex')}` : ''}`).sort();
   const before = snap(x.lane);
@@ -584,37 +584,39 @@ test('P1 no caller names the go or the state path: --go-file is an unknown optio
   assert.equal(existsSync(path.join(x.lane, 'relay')), false);
 });
 
-test('the controller go tool writes under the broker root, refuses a root under scratch, and the relay spends what it wrote', () => {
+test('the controller tool lei-kui strings the push lei under the broker root, refuses a root under scratch, and the relay spends what it wrote', () => {
   const x = setup();
-  const tool = fileURLToPath(new URL('./push-go.mjs', import.meta.url));
+  const tool = fileURLToPath(new URL('./push-lei.mjs', import.meta.url));
   const head = x.git('rev-parse', 'HEAD');
   const w = spawnSync(process.execPath, [tool, '--lane-root', x.lane, '--branch', 'relay-test', '--head', head, '--remote-url', x.remote], { encoding: 'utf8', env: x.relayEnv });
   assert.equal(w.status, 0, w.stderr);
-  assert.equal(readFileSync(x.goFile, 'utf8'), x.goText('relay-test', head));
+  assert.equal(readFileSync(x.leiFile, 'utf8'), x.leiText('relay-test', head));
+  assert.match(w.stdout, /^push lei strung for relay-test at [0-9a-f]{40}$/m);
   const bad = spawnSync(process.execPath, [tool, '--lane-root', x.lane, '--branch', 'relay-test', '--head', head, '--remote-url', x.remote], { encoding: 'utf8', env: { ...x.relayEnv, LARES_BROKER_ROOT: path.join(scratchOf(x.home), 'other', 'b') } });
-  assert.notEqual(bad.status, 0); assert.match(bad.stderr, /push-go refused/);
+  assert.notEqual(bad.status, 0); assert.match(bad.stderr, /push-lei refused/);
   x.request('1', { kind: 'push' }); x.run();
   assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1')));
-  assert.equal(existsSync(x.goFile), false, 'the go spends on the attempt');
+  assert.equal(existsSync(x.leiFile), false, 'the lei spends on the attempt');
 });
 
-test('P1 lane identity is a digest of the real path: two lanes sharing a base name get separate go and state, and neither consumes the other\'s go', () => {
+test('P1 lane identity is a digest of the real path: two lanes sharing a base name get separate lei and state, and neither spends the other\'s lei', () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), 'lanes-')); roots.push(dir);
   const a = path.join(dir, 'a', 'lane'), b = path.join(dir, 'b', 'lane'); mkdirSync(a, { recursive: true }); mkdirSync(b, { recursive: true });
   assert.notEqual(laneId(a), laneId(b)); assert.match(laneId(a), /^lane-[0-9a-f]{16}$/);
   assert.equal(laneId(a), laneId(a), 'stable');
-  assert.notEqual(goPathFor('/r', a), goPathFor('/r', b));
+  assert.notEqual(leiPathFor('/r', a), leiPathFor('/r', b));
+  assert.equal(leiPathFor('/r', a), path.join('/r', 'lei', laneId(a), 'push'), 'a lane\'s push lei rests at <root>/lei/<lane>/push');
   const viaLink = path.join(dir, 'link'); symlinkSync(a, viaLink);
   assert.equal(laneId(viaLink), laneId(a), 'a symlink to the lane is the same lane');
 });
 
-test('P1 a go for ANOTHER lane or another remote refuses at the relay, and the go spends: CONTROL the matching go pushes', () => {
+test('P1 a lei for ANOTHER lane or another remote refuses at the relay, and the lei spends: CONTROL the matching lei pushes', () => {
   const x = setup(); const head = x.git('rev-parse', 'HEAD');
-  x.go(x.goText('relay-test', head, 'git@evil.example:x/y.git')); x.request('1', { kind: 'push' }); x.run();
-  assert.equal(x.response('1').ok, false); assert.match(x.response('1').output, /another remote/); assert.equal(existsSync(x.goFile), false);
-  x.go(`lane-0000000000000000\nrelay-test\n${head}\n${x.remote}\n`); x.request('2', { kind: 'push' }); x.run();
+  x.lei(x.leiText('relay-test', head, 'git@evil.example:x/y.git')); x.request('1', { kind: 'push' }); x.run();
+  assert.equal(x.response('1').ok, false); assert.match(x.response('1').output, /another remote/); assert.equal(existsSync(x.leiFile), false);
+  x.lei(`lane-0000000000000000\nrelay-test\n${head}\n${x.remote}\n`); x.request('2', { kind: 'push' }); x.run();
   assert.equal(x.response('2').ok, false); assert.match(x.response('2').output, /another lane/);
-  x.go(x.goText('relay-test', head)); x.request('3', { kind: 'push' }); x.run();
+  x.lei(x.leiText('relay-test', head)); x.request('3', { kind: 'push' }); x.run();
   assert.equal(x.response('3').ok, true, JSON.stringify(x.response('3')));
 });
 

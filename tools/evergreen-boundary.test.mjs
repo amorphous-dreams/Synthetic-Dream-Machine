@@ -37,6 +37,49 @@ test("E1b old-shape names and readings fail while current refusals read clean", 
   assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
   const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
 });
+test("E1c old-shape: a parse, refusal or comment that names an older peer's build reads; present readings of age do not", () => {
+  for (const body of [
+    'throw new PulamaRefused("pulama-lend-unnamed", `the pūlama answered a session that names no lent set: it runs an older build, so rebuild it`);',
+    '// A session frame that names no lent set comes from a pūlama on an older build: it refuses by name.',
+    '/** Absent on payloads from older vessels; treated as null. */',
+    '// Additive: an older daemon build that never sends it reads exactly as before.',
+    'const why = "a frame from an older pūlama names one face";',
+  ]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "old-shape").length, 1, body);
+    const red = one(body); assert.equal(red.status, 1); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
+  }
+  const lawful = [
+    'throw new PulamaRefused(lent.refusal, `the session frame names no lent set this vessel reads (${lent.message})`);',
+    '/** Every status that counts as a run in flight; the newest five runs say nothing of an older one still running. */',
+    'console.warn("another tab holds an older version of this store open; the open waits until it closes.");',
+    '// a browser, a worker, an older Node',
+    '/** The pluggable search leg (defaults to the read-only holder client). */',
+    'throw new Error("stale build: dist was not built from the current source");',
+  ].join("\n");
+  assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
+  const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
+});
+test("E1d old-shape: a reading or comment that names an earlier shape reads; a prior revision of data does not", () => {
+  for (const body of [
+    'export type CharterShape = "absent" | "whole" | "torn" | "earlier-shape";',
+    '// THE EARLIER SHAPES, each by its own mark: one commitment per epoch.',
+    '// The previous charter shape had one commitment for the whole successor set.',
+    '// The earlier link shape named one `prevEpochCid`.',
+    '// A row that stands and does not open (torn, bare, an earlier shape) refuses.',
+    'const why = "a pre-cut shape reads by name";',
+  ]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "old-shape").length, 1, body);
+    const red = one(body); assert.equal(red.status, 1); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
+  }
+  const lawful = [
+    '// tombstone: the aside path map alone holds a pack\'s prior shape.',
+    '// the previous frame\'s posterior is this frame\'s prior.',
+    '// A source already gone (a re-entered founding recovered its seed from an earlier group row) keeps the destination.',
+    'const shape = "torn";',
+  ].join("\n");
+  assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
+  const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
+});
 test("E2 schema field is a version finding", () => {
   const body = "const record = { schemaVersion: 1 };";
   assert.equal(scanText("a.ts", body).filter(f => f.rule === "version").length, 1);

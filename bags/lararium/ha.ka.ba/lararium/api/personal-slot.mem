@@ -10,7 +10,7 @@ l-space     = "stable"
 merged-on   = "2026-06-04"
 namespace   = "&#x0950; &#x0901;"
 proposed-on = "2026-05-30"
-role        = "the personal-slot recipe slot (cross-device viewing state, PersonaGroup × recipe-fingerprint scoped) and its admin-doc-stored binding map — one ledger"
+role        = "the personal-slot recipe slot (one face's view-state and private margin over the wiki's shared workbench, PersonaGroup × recipe-fingerprint scoped, crossing that face's own devices alone) and its admin-doc-stored binding map — one ledger"
 status-why  = "the personal-slot slot stands; S7.7 cross-device remains"
 tags        = ["lar:///ha.ka.ba/lares/api/lararium/wiki-recipe", "lifecycle/standing"]
 title       = "lar:///ha.ka.ba/lararium/api/personal-slot"
@@ -62,8 +62,8 @@ Keyhive already names a `PersonaGroup`.
 ```
 1. wikis/{slug}/temp      volatile per-island, no CRDT
 2. wikis/{slug}/draft     drafts, CRDT, recipe-scoped
-3. wikis/{slug}/personal  cross-device viewing state, CRDT, PersonaGroup-scoped + recipe-scoped
-4. wikis/{slug}/working   operator's saved live edits, CRDT, recipe-scoped
+3. wikis/{slug}/personal  one face's view-state and private margin, CRDT, PersonaGroup-scoped + recipe-scoped
+4. wikis/{slug}/working   the wiki's realm workbench, CRDT, realm-scoped
 5. bags/{slug}            the wiki's canon, CRDT, mesh-shared (read-only)
 6. libraryBags[]           optional content libraries, CRDT, mesh-shared
 7. lares                  personality, CRDT, mesh-shared
@@ -73,6 +73,8 @@ Keyhive already names a `PersonaGroup`.
 Slot URI: `lar:///ha.ka.ba/wikis/{slug}/personal` — a per-wiki live layer rooted
 at the wiki's identity (`wikis/{slug}`), one per wiki. The `BagResolver` binds the
 DOC per `(PersonaGroup × recipe-fingerprint)`; the URI carries the address.
+
+''Personal holds a face's private margin'' (operator ruling 2026-11-11: //"Personal can absorb the new caps."//). The recipe reads canon → workbench → personal → draft → temp. Every wiki but the daemon's rests its `working` layer in the wiki's realm workbench, shared by every face the realm seats (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>); `personal` carries what one face keeps for itself over that shared layer: its view-state (`$:/StoryList`, `$:/state/folded/*`, `$:/palette`) and the content it shadows privately. It crosses that face's own devices alone and projects per face to `personal/<F>/{slug}/` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>).
 
 <<~/ahu>>
 
@@ -97,10 +99,11 @@ The recipe carries a Tai Chi symmetry around the wiki's canon (`bags/{slug}`):
               lararium      ┘  is structured canon, mesh-shared, read-stable
 ```
 
-''The per-wiki live layers ABOVE the canon'' (`wikis/{slug}/{temp,draft,personal,working}`)
-are keyed by `(PersonaGroup × recipe-fingerprint)`, where the fingerprint covers the
-entire below-canon stack. Two devices share above-canon state ONLY when their
-recipe-fingerprints match.
+''The per-wiki live layers ABOVE the canon'' split by key. `draft` and `personal` key by
+`(PersonaGroup × recipe-fingerprint)`, where the fingerprint covers the entire below-canon
+stack, so two devices of one face share them ONLY when their recipe-fingerprints match.
+`working` keys by the wiki's realm and slug alone, so it follows the wiki across recipe
+recomposition and reaches every face the realm seats.
 
 <<~/ahu>>
 
@@ -178,7 +181,7 @@ model these entries hold as ''first-write defaults'', not authoritative routing 
 
 !! Working document address
 
-The working document's address follows the face's relation to its wiki and slot kind, as stated at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer`>>. A recipe fingerprint and a replicated daemon binding record do not choose that address.
+The working document's address follows the wiki's realm and slug (`realmWorkbenchDocUrl`), as stated at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer`>>. A recipe fingerprint and a replicated daemon binding record do not choose that address.
 
 <<~/ahu>>
 
@@ -207,7 +210,7 @@ Five forces converge here. Each one rules out a parallel storage option.
 !!! Binding tiddler shape
 
 ```toml
-title:        lar:///ha.ka.ba/bags/daemon/personal-bindings/${fingerprintHex}
+title:        lar:///ha.ka.ba/bags/daemon/personal-bindings/${group}/${fingerprintHex}   # a seated face's binding record
 text:         "automerge:abcdef..."   # the personal-slot doc URL
 kind:         "personal-binding"
 fingerprint:  "${fingerprintHex}"
@@ -217,6 +220,8 @@ face-reach:   "vessel-only" | "face"
 keyhive-doc-id: "<Keyhive DocumentId>"
 ```
 
+''One binding record for each face.'' The daemon document serves every face a vessel holds, and two faces that read one canon compute one fingerprint. A seated face's binding record therefore carries its PersonaGroup in the title (`slotBindingKey`: `personal-bindings/${group}/${fingerprintHex}`), and each face mounts the document it minted, sealed under its own key. A binding record with no group in its title (`personal-bindings/${fingerprintHex}`) names a document the faceless floor minted; a seated face that holds no binding record of its own reads that binding record, and the Lift moves the document under the face's own binding record and removes the floor's.
+
 The text field carries the authoritative docUrl. The `kind` field tags the tiddler for filter queries (`[kind[personal-binding]]` returns all). The `fingerprint` field duplicates the title suffix for filter convenience. The `recipe-trace` field stores the inputs that produced the fingerprint — operator-facing diagnostic when a binding's recipe context needs inspection. The `minted-by` field names the device that first instantiated the binding. A mint writes no moment into the record: no wall clock decides anything a binding carries. `face-reach` records `vessel-only` or `face`. `keyhive-doc-id` holds the Keyhive DocumentId; a later process restores the provider's bag-to-document registration from this value before reusing the binding. A re-grant by a stand that holds no hand in that document (a document minted by a stand whose Archive nobody kept, as a vessel at the floor mints one) mints a fresh Keyhive document for the same docUrl and writes its DocumentId here: cap events carry a document's membership and never its creator's key agreement state, and a `vessel-only` binding gave nobody else reach through the document it replaces.
 
 !!! Per-fingerprint pair, not per-bag
@@ -225,7 +230,7 @@ One fingerprint produces TWO bindings (one for `@personal`, one for `@draft`) un
 
 !!! Tiddler vs Automerge document
 
-The bindings TIDDLERS live inside the admin doc. The `@personal` and `@draft` AUTOMERGE DOCUMENTS the bindings point to live as separate Automerge docs in the same Repo. The admin doc carries names; the named docs carry the actual operator view state.
+The bindings TIDDLERS live inside the admin doc. The `@personal` and `@draft` AUTOMERGE DOCUMENTS the bindings point to live as separate Automerge docs in the same Repo. The admin doc carries names; the named docs carry the face's actual view state and private margin.
 
 <<~/ahu>>
 
@@ -463,7 +468,7 @@ Q9 (cross-fingerprint linkage) ✅ deferred 2026-06-01 — out of Sprint 7 scope
 ''@draft binding''
 
 Q10 (`@draft` scoping) ✅ confirmed — follows the same `(PersonaGroup × recipe-fingerprint)` keying as the personal slot. Per-wiki slot URI `lar:///ha.ka.ba/wikis/{slug}/draft`, resolver-bound.
-Q11 (`@draft` per-fingerprint vs boot draft) ✅ resolved 2026-06-03 — ''slice (a).'' Operator ruled `@personal` and `@draft` bind ''together'' per-fingerprint — the #data-model intent holds. The fingerprint-keyed `@draft` ''replaces'' the boot's ad-hoc draft: the boot draft-mint site (`open-node-vessel.ts:696`) rewires to `resolveOrMintBinding({ kind: "draft-binding", … })`, so both slots converge across the operator's devices. S7.5 binds the pair; neither retires independently. The pseudocode in #vessel-boot-flow reflects this. ''Subtlety for enactment:'' the boot's existing `registerBag(draftBagId)` (`:594`) must move to (or be subsumed by) the helper's per-fingerprint `@draft` URL — the boot can no longer pre-register a fixed draft bag id ahead of fingerprint resolution.
+Q11 (`@draft` per-fingerprint vs boot draft) ✅ resolved 2026-06-03 — ''slice (a).'' Operator ruled `@personal` and `@draft` bind ''together'' per-fingerprint — the #data-model intent holds. The fingerprint-keyed `@draft` ''replaces'' the boot's ad-hoc draft: the boot draft-mint site (`open-node-vessel.ts:696`) rewires to `resolveOrMintBinding({ kind: "draft-binding", … })`, so both slots converge across the operator's devices. S7.5 binds the pair; neither retires independently. The pseudocode in #vessel-boot-flow reflects this. ''Subtlety for enactment:'' the boot's existing `registerBag(draftBagId)` (`:594`) must move to (or be subsumed by) the helper's per-fingerprint `@draft` URL — the boot never pre-registers a fixed draft bag id ahead of fingerprint resolution.
 
 ''Layering (raised + resolved 2026-06-01):'' the original `#/vessel-boot-flow` placed resolution inside `VesselIslandPool._mountWorker`. Three research spirits (codebase-grain, SE-pattern prior-art, ocap/local-first) converged unanimously on host-layer resolution with pass-through. Section rewritten accordingly; pool stays envelope-only.
 
@@ -478,7 +483,7 @@ Q11 (`@draft` per-fingerprint vs boot draft) ✅ resolved 2026-06-03 — ''slice
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer`>> ~ aligns slot addresses with the face working-layer rule
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer`>> ~ aligns slot addresses with the realm-workbench rule
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-surface`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
@@ -491,6 +496,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AWnZh0QR6KJc1XuMCaHutnh6lGQ60HnPiA1JmmDOR6M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y3jy75dgKDiqWziWRZxIavm2Sjlt-dUcrPceV-4Jm-4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

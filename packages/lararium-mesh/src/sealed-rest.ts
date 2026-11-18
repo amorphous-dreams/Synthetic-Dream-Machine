@@ -27,10 +27,12 @@ import type { DocumentValue, HolderRefusal, OpenedValue } from "./content-key-ho
 import { DOCUMENT_HANG_BOUND_MS } from "./find-or-throw.js";
 import { readSealedAddress } from "./sealed-chunk.js";
 import { SealedDocumentStore, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
+import type { HeldRestKey } from "./held-rest-key.js";
 import type { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
 import type { LarDoc } from "./base-doc.js";
 import { catalogRowHalf } from "./catalog-view.js";
+import { isHouseCanonBag } from "./kahu-canon-reach.js";
 import { isBagId } from "./lar-uris.js";
 
 // ── The book ────────────────────────────────────────────────────────────────────────────────────
@@ -61,6 +63,8 @@ export class SaveBook<S extends SaveSession = SaveSession> {
   of(documentId: string): S | null { return this.#by.get(documentId)?.session ?? null; }
   /** Who wrote a document's latest change, as booked; null: no booking stands. */
   writerOf(documentId: string): string | null { return this.#by.get(documentId)?.writer ?? null; }
+  /** Drop one document's booking (its face left the lit set). */
+  forget(documentId: string): void { this.#by.delete(documentId); }
   /** Drop every booking of one session (by id), or of every session. */
   drop(sessionId?: string): void {
     for (const [doc, b] of [...this.#by]) if (sessionId === undefined || b.session?.id === sessionId) this.#by.delete(doc);
@@ -306,7 +310,7 @@ export function answerLiveDocAsks(port: Port, liveOf: (bagId: string) => Promise
  */
 export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array | null>, opts: {
   /** V3: the island's slot resolver named `documentId` as `bagId`'s document (`announceSlotDoc`). */
-  readonly onSlot?: (bagId: string, documentId: string) => void;
+  readonly onSlot?: (bagId: string, documentId: string, floor: boolean, lifted: boolean, sibling: boolean) => void;
   /** The attached island's door stood (`docstore:answering`): what waited on it (a hydration, a held save) asks again. */
   readonly onReady?: () => void;
 } = {}): {
@@ -344,7 +348,12 @@ export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array |
 }
 
 /** Island → vessel (V3): the slot resolver named `documentId` as the document of the wiki slot `bagId`. */
-export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bagId: string; readonly documentId: string }
+/** `floor`: the vessel itself owns the document (a veil floor's wiki slot); it files held and seals under the vessel's key. */
+/** `lifted`: a face lifted a document the vessel owned (a veil floor wiki's canon) with the same id; it leaves the vessel's
+ *  class, files under the face's bag, and its seal re-files from the vessel's key to the face's. */
+/** `sibling`: the document answers for a SIBLING face of the lit set (open, not worn), never the worn face's own slot; the
+ *  vessel maps it for its seal as any slot, and the host's own layers never follow it (a face's daemon layer stays its own). */
+export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bagId: string; readonly documentId: string; readonly floor?: true; readonly lifted?: true; readonly sibling?: true }
 
 /**
  * THE SLOT RESOLVER NAMES EACH DOCUMENT IT ANSWERS (V3). A wiki's working and draft documents resolve in the daemon
@@ -352,23 +361,38 @@ export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bag
  * catalog row names either. So the island tells the vessel each slot document it answers, before any write into it, and
  * the vessel's bag map names it sealed with its bag.
  */
-export function announceSlotDoc(port: Pick<Port, "post">, bagId: string, documentId: string): void {
-  try { port.post({ type: "docstore:slot", bagId, documentId } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
+export function announceSlotDoc(port: Pick<Port, "post">, bagId: string, documentId: string, floor = false): void {
+  try { port.post({ type: "docstore:slot", bagId, documentId, ...(floor ? { floor: true as const } : {}) } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
+}
+
+/** A SIBLING FACE'S SLOT NAMES ITSELF AS THE SIBLING'S: `documentId` stands as `bagId`'s document for a lit face the vessel
+ *  does not wear (the face-named wave's target), so the vessel maps it and the host's working layer stays on its own face's. */
+export function announceSiblingSlotDoc(port: Pick<Port, "post">, bagId: string, documentId: string): void {
+  try { port.post({ type: "docstore:slot", bagId, documentId, sibling: true } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
+}
+
+/** THE LIFT NAMES A DOCUMENT IT CARRIED IN PLACE: `documentId` now stands as the face's `bagId`, released from the vessel's class. */
+export function announceLiftedDoc(port: Pick<Port, "post">, bagId: string, documentId: string): void {
+  try { port.post({ type: "docstore:slot", bagId, documentId, lifted: true } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
 }
 
 /** The vessel hears each slot notice. Returns the unsubscribe. */
-export function answerSlotNotices(port: Port, onSlot: (bagId: string, documentId: string) => void): () => void {
+export function answerSlotNotices(port: Port, onSlot: (bagId: string, documentId: string, floor: boolean, lifted: boolean, sibling: boolean) => void): () => void {
   return port.listen((raw) => {
     const m = raw as Partial<DocStoreMsg_Slot> | null;
     if (!m || m.type !== "docstore:slot" || typeof m.bagId !== "string" || typeof m.documentId !== "string") return;
-    try { onSlot(m.bagId, m.documentId); } catch { /* a listener's fault never reaches the island */ }
+    try { onSlot(m.bagId, m.documentId, m.floor === true, m.lifted === true, m.sibling === true); } catch { /* a listener's fault never reaches the island */ }
   });
 }
 
 // ── The composer ──────────────────────────────────────────────────────────────────────────────────
 /** A bag a document belongs to, and that bag's face (`faceProofSubjectRef`); a null face: the bag rests sealed and no face
  *  that could wear it has lit, so its document opens for no one and its save waits in memory. */
-export interface SealedBag { readonly bagId: string; readonly face: string | null }
+export interface SealedBag {
+  readonly bagId: string; readonly face: string | null;
+  /** The vessel's secret home: it rests sealed under this held key, with no session and no face (`held-rest-key`). */
+  readonly held?: HeldRestKey;
+}
 
 export interface SealedRest<S extends SaveSession = SaveSession> {
   /** The storage adapter the Repo stands on. */
@@ -377,9 +401,11 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
   /** A session wrote a change to `documentId`: book it. */
   wrote(documentId: string, session: S): void;
   /** Book every save of a sealed bag's document in `repo` by its change's own writer (T4), read off the save's bytes: a
-   *  change this replica made books the session standing (`standing`); a peer's change books its peer writer, its save
-   *  resting under the standing session as the rest's custodian. Returns the unsubscribe. */
-  watch(repo: Repo, standing: () => S | null): () => void;
+   *  change this replica made books the session standing FOR THAT DOCUMENT (`standing(documentId)`: the session whose subject
+   *  wears the document's bag's face, THE LIT SET); a peer's change books its peer writer, its save resting under that session
+   *  as the rest's custodian. A session that wears another face never books it: with none for its face, the save waits
+   *  (`save-unbooked`), never sealed under another face's key. Returns the unsubscribe. */
+  watch(repo: Repo, standing: (documentId: string) => S | null): () => void;
   /** A session stands (an unlock, a session's open): book every waiting save of its face and seal them. */
   rebook(session: S): Promise<number>;
   /** The lock ritual's first move: flush the Repo and the store, so every pending save lands sealed, then drop the
@@ -389,11 +415,15 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
    *  the Repo and the store flush while the island still answers, and the bookings drop. Answers how many saves still
    *  wait unbooked: those rest nowhere new, and their changes come back by sync from the replica that holds them. */
   standDown(standing: readonly S[]): Promise<number>;
+  /** A face left the lit set: its documents' waiting saves drop from memory (never to disk) and their bookings with them.
+   *  Answers how many saves dropped. */
+  forget(documentIds: readonly string[]): number;
   /** V2: does this rest hold `documentId` sealed (mapped now, mapped this process, or a sealed value at rest)? An island
    *  asks before its own store rests a byte of it (`islandRestGuard`). */
   restsSealed(documentId: string): Promise<boolean>;
   /** V3: a document's bag mapped sealed after its rest took clear chunks (a slot the map learned late): book it under
-   *  `session` and seal those chunks now, so they leave rest. Answers whether any clear chunk sealed. */
+   *  `session` and seal those chunks now, so they leave rest; a save of it that waited `save-unmapped` on this naming
+   *  seals too. Answers whether any clear chunk sealed. */
   sealMapped(documentId: string, session: S): Promise<boolean>;
 }
 
@@ -406,6 +436,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly inner: StorageAdapterInterface;
   readonly bagOf: (documentId: string) => SealedBag | null;
   readonly sessionFace: () => string | null;
+  /** THE LIT SET (`SealedDocumentPorts.openFaces`): every face open on this vessel now; absent, the worn face alone. */
+  readonly openFaces?: () => readonly string[];
   /** The worn face's subject at another anchor of the vessel's own chain (`SealedDocumentPorts.wornAt`): true only for
    *  a bag of the face the vessel wears. */
   readonly wornAt?: (face: string, subject: string) => boolean;
@@ -415,16 +447,30 @@ export function composeSealedRest<S extends SaveSession>(input: {
   /** A restart's hydration: a sealed document's load waits for its map (`SealedDocumentStore.mapMoved`) until the rest
    *  stands down (`standDown`, or the store's own `endHydration`). */
   readonly hydrates?: boolean;
+  /** The vessel's own held key where it stands open (`SealedDocumentPorts.vesselKey`): a document the veil floor minted
+   *  and a face lifted opens its floor values with it, and `sealMapped` re-files them under the face. */
+  readonly vesselKey?: () => HeldRestKey | null;
 }): SealedRest<S> {
   const book = new SaveBook<S>();
-  let watched: { readonly standing: () => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;
+  let watched: { readonly standing: (documentId: string) => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;
+  // A session wears a bag's face by its own subject, or by the worn face's subject at another anchor.
+  const wears = (face: string | null | undefined, subject: string): boolean =>
+    typeof face === "string" && (subject === face || (input.wornAt?.(face, subject) ?? false));
+  // THE LIT SET: the session standing for one document is the one that wears ITS bag's face; a session of another face never
+  // stands for it, so its save waits rather than seal under the wrong key.
+  const standingFor = (documentId: string): S | null => {
+    const session = watched?.standing(documentId) ?? null;
+    if (session === null) return null;
+    const bag = input.bagOf(documentId);
+    return bag === null || bag.held !== undefined || bag.face === null || wears(bag.face, session.subject) ? session : null;
+  };
   // T4: the save reads its change's own writer off its bytes. A change this replica made books the session standing; a
   // peer's change books its peer writer, and its save rests as received under the session that holds the rest.
   const sessionOf = (documentId: string, data?: Uint8Array): S | null => {
     if (watched !== null && data !== undefined) {
       const actors = chunkActors(data);
       const own = watched.actorOf(documentId);
-      const session = watched.standing();
+      const session = standingFor(documentId);
       // A handle not ready yet holds no change of this replica's own: what it saves arrived from a peer.
       if (actors !== null && (own === null || !actors.includes(own))) book.receive(documentId, actors.join(","), session ?? book.of(documentId));
       else if (actors !== null && session !== null) book.book(documentId, session);
@@ -434,6 +480,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   };
   const store = new SealedDocumentStore({
     inner: input.inner, bagOf: input.bagOf, sessionFace: input.sessionFace,
+    ...(input.openFaces ? { openFaces: input.openFaces } : {}),
     ...(input.wornAt ? { wornAt: input.wornAt } : {}),
     sessionOf,
     writerOf: (documentId) => book.writerOf(documentId),
@@ -442,10 +489,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
     seal: input.door.seal, open: input.door.open,
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
     ...(input.hydrates === true ? { hydrates: true } : {}),
+    ...(input.vesselKey ? { vesselKey: input.vesselKey } : {}),
   });
-  // A session names the bag's face by its own subject, or by the worn face's subject at another anchor.
-  const wears = (face: string | null | undefined, subject: string): boolean =>
-    typeof face === "string" && (subject === face || (input.wornAt?.(face, subject) ?? false));
   return {
     store, book,
     wrote(documentId, session) { if (input.bagOf(documentId) !== null) book.book(documentId, session); },
@@ -486,12 +531,23 @@ export function composeSealedRest<S extends SaveSession>(input: {
       store.endHydration();
       return store.waiting();
     },
+    forget(documentIds) {
+      const dropped = store.forget(documentIds);
+      for (const id of documentIds) book.forget(id);
+      return dropped;
+    },
     restsSealed: (documentId) => store.holdsSealed(documentId),
     async sealMapped(documentId, session) {
       const bag = input.bagOf(documentId);
       if (bag === null || !wears(bag.face, session.subject)) return false;
       if (book.of(documentId) === null) book.seal(documentId, session);
-      return store.sealClearRest(documentId);
+      const sealed = await store.sealClearRest(documentId);
+      // THE LIFT: a value still resting under the vessel's key re-files under the bag's face (`refileHeld`).
+      const refiled = (await store.refileHeld(documentId)) > 0;
+      // A SAVE THAT OUTRAN THE NAMING: a save of this document that landed while the map named no bag for it waits in
+      // memory (`save-unmapped`); the naming is the event it waited on, so it seals now, never at a stand-down.
+      if (store.waiting(documentId) > 0) await store.reseal();
+      return refiled || sealed;
     },
   };
 }
@@ -507,7 +563,9 @@ export function composeSealedRest<S extends SaveSession>(input: {
  * sealed and the floor catalog names public bags alone, so with no face lit every bag row of `catalog` that rests on a
  * face's half (`catalogRowHalf`: a user bag, a wiki, a slot binding) names a sealed bag whose face has not lit
  * (`face: null`): its document neither loads nor rests clear. A public row (`cap-tier = public`) and the floor's own rows
- * map no bag, and read as the engine wrote them.
+ * map no bag, and read as the engine wrote them. A HOUSE CANON bag (`isHouseCanonBag`) maps no bag at the floor nor under a
+ * lit face: its live document rests in the Kahu realm under the cabal's contract (the protected-doc guard keeps it), and
+ * every other face reads its floor snapshot by CID.
  */
 export function sealedBagMap(input: {
   readonly face: () => string | null;
@@ -521,7 +579,11 @@ export function sealedBagMap(input: {
     bagOf(documentId) {
       const face = input.face();
       if (face !== null) {
-        for (const bagId of input.bags()) if (ids(bagId).includes(documentId)) return { bagId, face };
+        for (const bagId of input.bags()) {
+          // HOUSE CANON seals under no face (cap-tier.mem, house canon): it rests in the Kahu realm, never on a face's half.
+          if (isHouseCanonBag(bagId)) continue;
+          if (ids(bagId).includes(documentId)) return { bagId, face };
+        }
         return null;
       }
       for (const [title, row] of Object.entries(input.catalog?.()?.tiddlers ?? {})) {

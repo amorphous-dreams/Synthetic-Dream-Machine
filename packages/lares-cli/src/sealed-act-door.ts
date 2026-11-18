@@ -23,12 +23,12 @@
  *   · an `act` answer with a `result`       the act ran inside the vessel; the result returns to the caller.
  *   · an `act` answer with a refusal        the same refusal the act throws in process, under its own class:
  *                                           `CustodyLocked` (the vessel stands locked: `lares vault unlock`),
- *                                           `CustodyRowUnavailable`, `SealedActRefused`, or a plain error.
+ *                                           `CustodyRecordUnavailable`, `SealedActRefused`, or a plain error.
  *   · any other answer, or none             no vessel's custody door stands at the socket (nothing listens, or
  *                                           another command holds the store for one act): the act runs here.
  */
 import {
-  CustodyLocked, CustodyRowUnavailable, SealedActRefused, SESSION_ACTS, runSealedAct, readHearthDialPin, larBootstrapPath, ownedStore, larDataDir,
+  CustodyLocked, CustodyRecordUnavailable, SealedActRefused, SESSION_ACTS, runSealedAct, readHearthDialPin, larBootstrapPath, ownedStore, larDataDir,
   type SealedActContext, type SealedActName, type SealedActRefusalReason,
 } from "@lararium/node";
 import { sendCustodyFrame } from "./custody-door.js";
@@ -72,7 +72,7 @@ function refusalOf(answer: Readonly<Record<string, unknown>>): Error {
   if (reason === "custody-locked") return new CustodyLocked();
   if (reason === "row-unavailable" && (refusal.home === "identity" || refusal.home === "storage" || refusal.home === "seal")
       && typeof refusal.file === "string" && typeof refusal.reading === "string") {
-    return new CustodyRowUnavailable(refusal.home, refusal.file, refusal.reading);
+    return new CustodyRecordUnavailable(refusal.home, refusal.file, refusal.reading);
   }
   if (ACT_REASONS.has(reason)) return new SealedActRefused(reason as SealedActRefusalReason, message);
   return new Error(message);

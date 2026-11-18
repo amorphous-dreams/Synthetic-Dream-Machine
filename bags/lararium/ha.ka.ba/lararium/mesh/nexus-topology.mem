@@ -185,7 +185,7 @@ Let's Encrypt ended expiration notices in 2025 and ''deleted the stored subscrib
 
 The two-name design carries its own answer to the concentration it creates: ''each Nexus can resolve for the other's attestations''. That costs nothing to arrange early and stops staying arrangeable once either name carries load alone.
 
-''AND THE UNDER-OUR-NAME / THEIR-OWN-NAME FORK DISSOLVES.'' Seat identity in the ''node key'' and bind it bidirectionally to whatever name an operator presents, and the two roads stop competing: an operator takes a name under a Nexus as a zero-friction on-ramp and swaps to their own domain later ''losing nothing''. Every surviving system built exactly that, and every system that skipped it has resisted retrofit for years — a host-scoped identity proposal open since 2018 and still draft, a migration path that carries followers and loses posts, media, blocks and bookmarks.
+''AND THE UNDER-OUR-NAME / THEIR-OWN-NAME FORK DISSOLVES.'' Seat identity in the ''node key'' and bind it bidirectionally to whatever name an operator presents, and the two roads stop competing: an operator takes a name under a Nexus as a zero-friction on-ramp and swaps to their own domain later ''losing nothing''. Every surviving system built exactly that, and every system that skipped it has resisted retrofit for years — a host-scoped identity proposal open since 2018 and still draft, an account move that carries followers and loses posts, media, blocks and bookmarks.
 
 ''The seizure record settles what philosophy only suggests.'' Twenty-three domains seized in one 2014 action took over five million subdomains dark against roughly eighteen thousand malicious nodes — 99.6% overbroad, ex parte, no notice; a 2011 action put a wrongful federal child-exploitation banner on eighty-four thousand subdomains for three days; one 2023 lawsuit ended a registrar carrying some twelve million names. ''Public-suffix listing buys cookie isolation and certificate-bucket separation and NOTHING against seizure'', which supplied every catastrophic case. The bidirectional key-to-name binding reads as the only property that survives a court order aimed at somebody else entirely.
 
@@ -233,6 +233,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tt27W7OmhE-p9flDy5Mhi1mi2nxEi4AMPPZd2ibvO7s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xhty93Tu03XlgR7LZWS_PreGz854fu1yKaMf_vk1DqA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -61,7 +61,7 @@ function fire(w: ReturnType<typeof wiki>, title: string, ifMatch?: string): Prom
   });
 }
 
-/** A root with two slot children and one `/path` child — the whole group the removal law names. */
+/** A root with two slot children, and one `/path` child that stands as its own meme (the one family law). */
 function splitMeme(w: ReturnType<typeof wiki>): void {
   w.addTiddler({ title: "lar:///t/x", type: CARRIER_TYPE, text: "<<~ kahea ahu slot=`#/a`>>\n\n<<~ kahea ahu slot=`#/b`>>", "uri-path": "t/x" } as TiddlerFields);
   w.addTiddler({ title: "lar:///t/x#/a", type: CARRIER_TYPE, text: "! a", "$fragment-parent": "lar:///t/x", $slot: "#/a" } as unknown as TiddlerFields);
@@ -78,14 +78,14 @@ describe("★ DELETE /bags/default/tiddlers/:title — the group leaves together
     expect(door.path.test("/recipes/default/tiddlers/lar%3A%2F%2F%2Ft%2Fx")).toBe(false);
   });
 
-  test("a meme root's delete takes the root, its slot fragments and its `/path` children", async () => {
+  test("a meme root's delete takes the root and its slot fragments; a `/path` child stands as its own meme and stays", async () => {
     const w = wiki();
     splitMeme(w);
     w.addTiddler({ title: "lar:///t/other", type: CARRIER_TYPE, text: "another meme", "uri-path": "t/other" } as TiddlerFields);
     const r = await fire(w, "lar:///t/x");
     expect(r.status).toBe(204);
     expect(delegated).toEqual([]);
-    expect([...w.store.keys()]).toEqual(["lar:///t/other"]);
+    expect([...w.store.keys()]).toEqual(["lar:///t/x/child", "lar:///t/other"]);
   });
 
   test("CONTROL: a plain tiddler reaches stock's handler and takes nothing else with it", async () => {

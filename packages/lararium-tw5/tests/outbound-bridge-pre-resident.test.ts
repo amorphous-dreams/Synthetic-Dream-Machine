@@ -45,6 +45,7 @@ test("repeated dispatches over one pending generation attach one fault reaction"
     addEventListener(_type: "change", fn: ChangeListener) { onChange = fn; },
     removeEventListener(_type: "change", fn: ChangeListener) { if (onChange === fn) onChange = null; },
     getTiddler: () => ({ fields: { title: "probe/reaction", text: "x" } }),
+    tiddlerExists: () => true,
   };
   let reject!: (error: Error) => void;
   const pending = new Promise<void>((_resolve, rej) => { reject = rej; });

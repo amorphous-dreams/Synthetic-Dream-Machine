@@ -27,9 +27,9 @@ async function twoLockedFaces() {
   seat = await seatScratchCustody("face-holder");
   const { holder } = seat;
   const a = await holder.foundFace({ group: personaGroupDigest(GROUP_A), slots: [slot("route-a")] });
-  await holder.writeRow("identity", faceAtomGroupFile(GROUP_A), SEED(1));
+  await holder.writeRecord("identity", faceAtomGroupFile(GROUP_A), SEED(1));
   const b = await holder.foundFace({ group: personaGroupDigest(GROUP_B), slots: [slot("route-b")] });
-  await holder.writeRow("identity", faceAtomGroupFile(GROUP_B), SEED(2));
+  await holder.writeRecord("identity", faceAtomGroupFile(GROUP_B), SEED(2));
   await holder.lockFace(a.fcid);
   await holder.lockFace(b.fcid);
   return { holder, a, b, identity: seat.homes.identity };
@@ -59,9 +59,9 @@ describe("each face opens under its own route alone", () => {
     expect((await holder.unlockFace({ group: personaGroupDigest(GROUP_A) }, cred("route-a"))).reading).toBe("opens");
     expect((await holder.unlockFace({ group: personaGroupDigest(GROUP_B) }, cred("route-a"))).reading).toBe("no-slot-opens");
     expect(holder.unlockedFaces()).toEqual([a.fcid]);
-    expect((await holder.readRow("identity", faceAtomGroupFile(GROUP_A))).reading).toBe("opens");
-    expect(await holder.readRow("identity", faceAtomGroupFile(GROUP_B))).toEqual({ reading: "locked", fcid: b.fcid });
-    await expect(holder.writeRow("identity", faceAtomGroupFile(GROUP_B), SEED(9))).rejects.toBeInstanceOf(FaceLocked);
+    expect((await holder.readRecord("identity", faceAtomGroupFile(GROUP_A))).reading).toBe("opens");
+    expect(await holder.readRecord("identity", faceAtomGroupFile(GROUP_B))).toEqual({ reading: "locked", fcid: b.fcid });
+    await expect(holder.writeRecord("identity", faceAtomGroupFile(GROUP_B), SEED(9))).rejects.toBeInstanceOf(FaceLocked);
   });
 
   test("RED: swapped index entries open a tree whose owner row disagrees, so no face seats", async () => {
@@ -72,7 +72,7 @@ describe("each face opens under its own route alone", () => {
     const opened = await holder.unlockFace({ group: personaGroupDigest(GROUP_A) }, cred("route-b"));
     expect(opened.reading).toBe("index-mismatch");
     expect(holder.unlockedFaces()).toEqual([]);
-    expect((await holder.readRow("identity", faceAtomGroupFile(GROUP_A))).reading).toBe("locked");
+    expect((await holder.readRecord("identity", faceAtomGroupFile(GROUP_A))).reading).toBe("locked");
     void faceDir;
   });
 
@@ -87,7 +87,7 @@ describe("each face opens under its own route alone", () => {
     const { a, identity } = await twoLockedFaces();
     const second = makeCustodyHolder({ io: new FsCustodyIo(seat!.homes), homes: seat!.homes });
     expect((await second.unlockFace({ fcid: a.fcid }, cred("route-a"))).reading).toBe("opens");
-    const read = await second.readRow("identity", faceAtomGroupFile(GROUP_A));
+    const read = await second.readRecord("identity", faceAtomGroupFile(GROUP_A));
     expect(read.reading).toBe("opens");
     void identity; void join;
   });
@@ -100,7 +100,7 @@ describe("a face's handle index is its ordinal", () => {
     const { holder, a, identity } = await twoLockedFaces();
     void identity;
     await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
-    await holder.writeRow("identity", "anchors-h0.json", anchorsOf(GROUP_B));
+    await holder.writeRecord("identity", "anchors-h0.json", anchorsOf(GROUP_B));
     await holder.lockFace(a.fcid);
     const bad = await holder.unlockFace({ group: personaGroupDigest(GROUP_A) }, cred("route-a"));
     expect(bad).toMatchObject({ reading: "index-mismatch" });
@@ -116,7 +116,7 @@ describe("a face's handle index is its ordinal", () => {
     seat = await seatScratchCustody("face-ordinal");
     const { holder } = seat;
     const a = await holder.foundFace({ group: personaGroupDigest(GROUP_A), slots: [slot("route-a")] });
-    await holder.writeRow("identity", "anchors-h0.json", anchorsOf(GROUP_A));
+    await holder.writeRecord("identity", "anchors-h0.json", anchorsOf(GROUP_A));
     await holder.lockFace(a.fcid);
     expect((await holder.unlockFace({ fcid: a.fcid }, cred("route-a"))).reading).toBe("opens");
   });
@@ -137,10 +137,10 @@ describe("a face's handle index is its ordinal", () => {
   test("a handle-index row rests in the face at that ordinal and no other face opens it", async () => {
     const { holder, a, b } = await twoLockedFaces();
     await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
-    await holder.writeRow("identity", "recovery-contact-set-h0.json", new TextEncoder().encode("{}"));
+    await holder.writeRecord("identity", "recovery-contact-set-h0.json", new TextEncoder().encode("{}"));
     expect(existsSync(join(faceDir(seat!.homes.identity, a.fcid), "recovery-contact-set-h0.json"))).toBe(true);
     expect(existsSync(join(faceDir(seat!.homes.identity, b.fcid), "recovery-contact-set-h0.json"))).toBe(false);
-    await expect(holder.writeRow("identity", "recovery-contact-set-h1.json", new TextEncoder().encode("{}"))).rejects.toBeInstanceOf(FaceLocked);
+    await expect(holder.writeRecord("identity", "recovery-contact-set-h1.json", new TextEncoder().encode("{}"))).rejects.toBeInstanceOf(FaceLocked);
   });
 });
 
@@ -171,9 +171,9 @@ describe("the ward holds the face root apart from unlocked custody", () => {
     const bare = loadPersonaGroupRootSeed as unknown as (i: number) => Promise<Uint8Array>;
     await expect(bare(0)).rejects.toThrow(/ward-needs-fresh-unlock/);
     // Unlocked custody's own doors refuse the warded row by name too: a script holding them reads no root.
-    await expect(holder.openColdRow("identity", ".persona-group-root-h0.json", () => 1)).rejects.toThrow(/ward-needs-fresh-unlock/);
-    await expect(holder.readRow("identity", ".persona-group-root-h0.json")).rejects.toThrow(/ward-needs-fresh-unlock/);
-    await expect(holder.writeRow("identity", ".persona-group-root-h0.json", new Uint8Array([1]))).rejects.toThrow(/ward-needs-fresh-unlock/);
+    await expect(holder.openColdRecord("identity", ".persona-group-root-h0.json", () => 1)).rejects.toThrow(/ward-needs-fresh-unlock/);
+    await expect(holder.readRecord("identity", ".persona-group-root-h0.json")).rejects.toThrow(/ward-needs-fresh-unlock/);
+    await expect(holder.writeRecord("identity", ".persona-group-root-h0.json", new Uint8Array([1]))).rejects.toThrow(/ward-needs-fresh-unlock/);
     const seed = await loadPersonaGroupRootSeed(0, wardCredential(cred(PASS)));
     expect(seed.length).toBe(32);
     await expect(bare(0)).rejects.toThrow(/ward-needs-fresh-unlock/);
@@ -210,7 +210,7 @@ describe("the ward holds the face root apart from unlocked custody", () => {
     const priv = (k.privateKey.export({ format: "jwk" }) as { d: string }).d, pub = (k.publicKey.export({ format: "jwk" }) as { x: string }).x;
     Object.assign(keypair, { signingKey: Buffer.from(priv, "base64url").toString("hex"), verifyingKey: Buffer.from(pub, "base64url").toString("hex") });
     await writeFaceCarrier({ io: s.io, key: opened.fck, treePath: faceTreePath(s.homes.identity, face.fcid), carrier, plaintext: new TextEncoder().encode(JSON.stringify(keypair)) });
-    await holder.writeRow("identity", ".persona-roster-h0.json", new TextEncoder().encode(JSON.stringify({ roots: [{ handleIndex: 0, verifyingKey: keypair.verifyingKey }] })));
+    await holder.writeRecord("identity", ".persona-roster-h0.json", new TextEncoder().encode(JSON.stringify({ roots: [{ handleIndex: 0, verifyingKey: keypair.verifyingKey }] })));
     await expect(loadPersonaGroupRootSeed(0, wardCredential(cred(PASS)))).rejects.toThrow(/ward-absent: run ward rewrap/);
 
     // An interrupted rewrap: the ward tree lands, then the root row's write fails before it lands.

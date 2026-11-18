@@ -6,11 +6,11 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh";
-import { updateCustodyRow } from "../src/custody-seat.js";
+import { updateCustodyRecord } from "../src/custody-seat.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 import { nodeSwitchActLog, readSwitchActs, SWITCH_ACT_RING, SWITCH_ACTS_FILE, SWITCH_ACTS_SET_ASIDE_CAP, SwitchActRowMalformed, switchActsSetAsideDir, trimSwitchActs } from "../src/switch-act-log.js";
 import { SwitchActsSetAsideFull } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "../src/custody-holder.js";
+import { CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { rotateCustody } from "../src/custody-session.js";
 import { makeCustodyHolder } from "../src/custody-holder.js";
@@ -54,7 +54,7 @@ describe("the switch-act row", () => {
   });
 
   test("RED: a malformed row refuses its read by name, and the next write starts the ring afresh at a reset naming why", async () => {
-    await updateCustodyRow("identity", SWITCH_ACTS_FILE, () => ({ plaintext: new TextEncoder().encode("{not json"), value: undefined }));
+    await updateCustodyRecord("identity", SWITCH_ACTS_FILE, () => ({ plaintext: new TextEncoder().encode("{not json"), value: undefined }));
     await expect(readSwitchActs()).rejects.toBeInstanceOf(SwitchActRowMalformed);
     await nodeSwitchActLog.write(intent(7));
     expect(await readSwitchActs()).toEqual([{ phase: "reset", reason: "its bytes read no JSON" }, { ...intent(7), phase: "intent" }]);
@@ -65,7 +65,7 @@ describe("the switch-act row", () => {
 
   test("RED: a list whose entries are no acts ([null], a bare number, an unknown phase) reads malformed, and the next write resets the ring", async () => {
     for (const bytes of ["[null]", "[3]", '[{"phase":"wear"}]']) {
-      await updateCustodyRow("identity", SWITCH_ACTS_FILE, () => ({ plaintext: new TextEncoder().encode(bytes), value: undefined }));
+      await updateCustodyRecord("identity", SWITCH_ACTS_FILE, () => ({ plaintext: new TextEncoder().encode(bytes), value: undefined }));
       await expect(readSwitchActs()).rejects.toBeInstanceOf(SwitchActRowMalformed);
       await nodeSwitchActLog.write(intent(9));
       expect(await readSwitchActs()).toEqual([{ phase: "reset", reason: "it holds an entry that reads as no switch act" }, { ...intent(9), phase: "intent" }]);
@@ -80,7 +80,7 @@ describe("the switch-act row", () => {
     const torn = Buffer.from(readFileSync(path));
     torn[torn.length - 1] ^= 0xff;                                           // a torn tail: the row no longer opens
     writeFileSync(path, torn);
-    await expect(readSwitchActs()).rejects.toBeInstanceOf(CustodyRowUnavailable);
+    await expect(readSwitchActs()).rejects.toBeInstanceOf(CustodyRecordUnavailable);
     await nodeSwitchActLog.write(intent(2));
     const [reset, ...rest] = await readSwitchActs();
     expect(reset).toMatchObject({ phase: "reset" });

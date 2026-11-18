@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/one-root/pr`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — PR body, 2026-11-08 (file date) — source `.lares-scratch/one-root/pr.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/one-root/pr"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/one-root/pr"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! pr.md — PR body, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/one-root/pr.md` (PR body, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/one-root/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+One named house root. `LAR_ROOT` alone (unset refuses `HouseRootUnnamed`, no XDG/home fallback), TS and Python welded. Tree: `hearth/` (the only thing a re-found clears) · `library/` · `projections/` · `config/` · `cache/` · `run/`. Private and house-minted projections (incl. `wikis/daemon-<F>`, `bags/kahua-<F>`, draft recovery) live under `projections/`; fsync'd atomic writes; the hidden-row cure; a one-way, redacted observe render of `bags/daemon` (cap/** excluded, toggle in config). Container: `LARES_HOUSE` binds hearth/projections/library/config under `/lar`; `reset` clears the hearth alone. Suites name a scratch root per worker. Operator rulings 2026-11-08 (hearth/ restructure; XDG fallback retired; face-bound daemon wiki).
+
+🤖 Generated with [[Claude Code|https://claude.com/claude-code]]
+
+https://claude.ai/code/session_01V63vwNsTbwswaievYNJosw
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H4W8S6YON35FHdJAJAV69w532eytFXk0SRnQ4MIeQRQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

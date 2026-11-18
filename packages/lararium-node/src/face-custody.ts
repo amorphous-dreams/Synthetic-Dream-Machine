@@ -37,13 +37,13 @@ export function faceCarrierFor(homes: CustodyHomes, fcid: string, file: string, 
 export async function faceCarriersOf(io: Pick<CustodyIo, "list">, homes: CustodyHomes, fcid: string): Promise<FaceCarrier[]> {
   const dir = faceDir(homes.identity, fcid);
   // A warded row rests under the face's WARD key, never its FCK: an FCK rotation re-seals none of them, and the ward tree stays as it stands.
-  const rows = carrierTable().filter((r) => r.faceRow !== undefined && r.custody !== "ward-cold");
+  const rows = carrierTable().filter((r) => r.faceRecord !== undefined && r.custody !== "ward-cold");
   const out: FaceCarrier[] = [];
   for (const path of await io.list()) {
     if (!path.startsWith(`${dir}/`)) continue;
     const file = path.slice(dir.length + 1);
     if (file === FACE_TREE_FILE || file === WARD_TREE_FILE || file.includes("/")) continue;
-    const row = rows.find((r) => r.faceRow!.inner.test(file));
+    const row = rows.find((r) => r.faceRecord!.inner.test(file));
     if (row) out.push(faceCarrierFor(homes, fcid, file, row));
   }
   return out;

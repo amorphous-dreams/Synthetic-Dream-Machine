@@ -57,13 +57,13 @@
  * after the advance), each naming the faces by their digests; the session record itself stays in memory alone.
  */
 import {
-  readBrowserCustody, unlockBrowserCustody, overwriteBrowserCustody, browserCustodyKeysHeld,
+  readBrowserCustody, unlockBrowserCustody, sealBrowserKeystore, BrowserCustodyRefused, overwriteBrowserCustody, browserCustodyKeysHeld,
 } from "./browser-custody.js";
 import { standBrowserCustody, type CustodyAnswer, type CustodyAsk } from "./browser-boot-custody.js";
 import { ambientLocks, type LockHost } from "./vessel-lock.js";
 import {
   FaceCustodyRefused, bindFirstFaceSlot, checkFaceName, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, heldFaceKeys,
-  lockFaceCustody, overwriteEveryFaceCustody, readFaceCustody, readFaceRow, unlockFaceCustody, writeFaceRow, type FaceCustodyClear,
+  lockFaceCustody, overwriteEveryFaceCustody, readFaceCustody, readFaceRecord, unlockFaceCustody, writeFaceRecord, type FaceCustodyClear,
 } from "./browser-face-custody.js";
 import type { ConfirmDoor } from "./browser-custody.js";
 
@@ -511,7 +511,14 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
           by = await placeAdmission(s, a);
         }
         if (!sessions.has(sessionId)) throw new VesselSessionRefused("lock-ended", "the session closed while it admitted");
-        if (own === null && lighting) throw new VesselSessionRefused("face-lighting");
+        // A FACELESS SESSION OVER A LIGHT IN FLIGHT waits for it. A light that stands a face (a founding, another tab's unlock)
+        // refuses this session by name as before: it wears none, and admits by its own unlock of that face. A light that
+        // stands the VEIL FLOOR wears no face, so no unlock stands between this session and it, and it admits below.
+        if (own === null && lighting) {
+          const stood = await lighting.catch(() => null);
+          if (stood === null || (typeof stood.face === "string" && stood.face.length > 0)) throw new VesselSessionRefused("face-lighting");
+          if (!sessions.has(sessionId)) throw new VesselSessionRefused("lock-ended", "the session closed while the floor lit");
+        }
         if (own === null && lit && typeof lit.face === "string" && lit.face.length > 0) {
           wear = lit.face;
           seats(wear);
@@ -587,7 +594,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
       if (switching.has(sessionId)) throw new VesselSessionRefused("session-switching");
       if (s.face === null) throw new VesselSessionRefused("session-faceless");
       const face = s.face;
-      const bytes = await act(sessionId, readFaceRow(opts.idbName, face, row).catch((e: unknown) => { throw named(e); }), true);
+      const bytes = await act(sessionId, readFaceRecord(opts.idbName, face, row).catch((e: unknown) => { throw named(e); }), true);
       if (bytes === null) throw new VesselSessionRefused("body-absent", row);
       return bytes;
     },
@@ -678,7 +685,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
       const from = s.face;
       const record = async (phase: "intent" | "outcome"): Promise<void> => {
         const body = { phase, sessionId, from: from === null ? null : await digestOf(from), to: await digestOf(to), generation: s.generation };
-        await writeFaceRow(opts.idbName, to, `face-switch/${sessionId}`, new TextEncoder().encode(JSON.stringify(body)));
+        await writeFaceRecord(opts.idbName, to, `face-switch/${sessionId}`, new TextEncoder().encode(JSON.stringify(body)));
       };
       try {
         // 2. THE INTENT, rested under the target face before the fence.
@@ -728,6 +735,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
         if (route.kind === "passkey") throw new FaceCustodyRefused("passkey-alone-refused");
         mine.add(face);
         await act(sessionId, bindFirstFaceSlot(opts.idbName, face, route), true).catch((e: unknown) => { throw named(e); });
+        await act(sessionId, bindPlaceBesideFace(route), true).catch((e: unknown) => { throw named(e); });
         return;
       }
       if (s.face !== face && !mine.has(face)) throw new VesselSessionRefused("face-not-worn", "a fleet join joins the face its session wears, or a new one");
@@ -781,7 +789,25 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
     // A face's first slot binds a human route: a passkey binds beside one, never alone.
     if (route.kind === "passkey") throw new FaceCustodyRefused("passkey-alone-refused");
     await act(s.sessionId, bindFirstFaceSlot(opts.idbName, face, route), true);
+    await act(s.sessionId, bindPlaceBesideFace(route), true);
     return { by: "bind-first", route };
+  }
+
+  /**
+   * A FACE'S FIRST BIND CLOSES THE PLACE'S OPEN WINDOW (the-veil-ladder#/the-base-model, in-house ruling 9): the one route a
+   * person gives for a face's first slot also binds the place tree where it still stands clear, as a founder's first bind
+   * does (`standFounderFace`). A face's landing mints the vessel's secret home, whose address rests under the place tree
+   * and never clear (operator ruling 2026-11-09), so the tree stands before it; the floor's rest seed and the place seed
+   * move under the same seal. A place already sealed keeps its own slots, and the light opens it by the face's route or
+   * its own (`openPlaceForLight`).
+   */
+  async function bindPlaceBesideFace(route: Exclude<CustodyAnswer, null>): Promise<void> {
+    // A first slot never stands on a passkey alone, for a face or for the place (the callers refused one above).
+    if (route.kind === "passkey") return;
+    const place = await readBrowserCustody(opts.idbName);
+    if (place.reading !== "clear") return;
+    try { await sealBrowserKeystore(opts.idbName, route); }
+    catch (error) { if (!(error instanceof BrowserCustodyRefused) || error.reading !== "already-sealed") throw error; }
   }
 
   /** A faceless session's admission over this browser's place custody: its clear reading, a first bind, or its own unlock. */

@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/ci-triage-2/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/seats/ci-triage-2/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/ci-triage-2/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/seats/ci-triage-2/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/seats/ci-triage-2/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/ci-triage-2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/handback-e2e-shard-3-4`>>
+
+!! Handback — E2E shard 3/4
+
+''UNKNOWN.'' Both logs emit the same diagnostic from `tests/e2e/boot-holds-the-store.test.ts`, so this appears to be the same test as the first run:
+
+> `boot-holds-the-store acts {"besideTheAct":"error:{\"code\":\"error\",\"message\":\"the store at … stays held by a direct lares command … for one act — run ","atClaim":"daemon","atBoot":"daemon","begun":{"atClaim":"claimed","atBoot":"boot"}}`
+
+That is the test’s diagnostic, not its failed assertion. The logs use blob/JSON reporters and do not print the assertion or error that made Vitest exit 1; the report itself is not among the supplied files. I can’t establish whether this was the only failed test or name the first failed assertion. The first triage had the same gap, so two reds do not support calling it a flake.
+
+The founder-standing changes look ''unlikely to explain a store-ownership failure''. The daemon’s founder dyad read in `operator-daemon-behavior.ts` is inside the face-join action; the seat’s `founderStanding` callback is used when processing face-join grants. This test creates and boots a vessel, then probes its store rendezvous; it does not issue a face join. A pending or refused grant could affect seating, but the supplied trace does not connect that path to the test’s store-ownership assertions.
+
+I found no known-flake note for this test under `tools/`. The shard weights give it weight ''97''; it is in the weighted `tests` shard set, not identified as a heavy-roster test. The available CI evidence does not show a green shard-3 run for this span: `e723dda17` is the base/test-door commit, not the lane head.
+
+''Next measure:'' have the lead run `tests/e2e/boot-holds-the-store.test.ts` at `5c3d032dc` and `5ba18c736`, each with a 600-second cap, and preserve the JSON report so the first failed assertion is visible. This test opens sockets and spawns a daemon, so it is ''lead runs'' under the seat law.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aQL3DHAsEdvU73w7vv2-iRsMHvL3i4gGcv1HWVDWslk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -76,7 +76,8 @@ export async function assemblePersonaGroupRing(input: PersonaGroupRingInput): Pr
     grants: {
       // The records resting on the face's own plane — the SAME plane the joinee's seat act reads (`face-seat`).
       records: async () => {
-        const store = await input.catalog.storeOf(planeBag);
+        // The plane rests as a private-synced home: the catalog's store road passes it by, its own readers take the home road.
+        const store = input.catalog.homeStoreOf ? await input.catalog.homeStoreOf(planeBag) : await input.catalog.storeOf(planeBag);
         if (!store) return [];
         const titles = (await store.listVisible()).filter((t) => t.startsWith(prefix));
         const out: unknown[] = [];

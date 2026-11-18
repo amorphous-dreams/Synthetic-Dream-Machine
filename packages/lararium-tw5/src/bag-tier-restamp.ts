@@ -15,7 +15,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/catalog-view
  */
 
-import { CATALOG_ROW_TIER_FIELD, ownEntry, plainField, storedLarRecord, tiddlerText, type CapTier } from "@lararium/mesh";
+import { CATALOG_ENTRY_TIER_FIELD, ownEntry, plainField, storedLarRecord, tiddlerText, type CapTier } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 import { stringArg } from "./handler-args.js";
@@ -35,9 +35,9 @@ export function makeRestampBagTierReactor(opts: RestampBagTierOptions): VerbReac
     const url = tiddlerText(standing);
     if (!standing || !url) return { bagUrl, status: "no-row" };
     const tier = opts.bagTier(bagUrl) === "public" ? "public" : null;
-    if ((plainField(standing, CATALOG_ROW_TIER_FIELD) ?? null) === tier) return { bagUrl, status: "unchanged", tier };
+    if ((plainField(standing, CATALOG_ENTRY_TIER_FIELD) ?? null) === tier) return { bagUrl, status: "unchanged", tier };
     handle.change((doc) => {
-      doc.tiddlers[bagUrl] = storedLarRecord(bagUrl, { text: url, kind: "oracle", ...(tier ? { [CATALOG_ROW_TIER_FIELD]: tier } : {}) }, "lares-cli:bag-declare");
+      doc.tiddlers[bagUrl] = storedLarRecord(bagUrl, { text: url, kind: "oracle", ...(tier ? { [CATALOG_ENTRY_TIER_FIELD]: tier } : {}) }, "lares-cli:bag-declare");
     });
     return { bagUrl, status: "restamped", tier };
   };

@@ -68,7 +68,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-export const SPAN = "feature/green-jello-dinosaur-5";
+export const SPAN = "develop";
 const WORKTREE_CAP = 6;
 const LAND_SUBJECT = " — merge PR #";
 const FULL = /^[0-9a-f]{40}$/;

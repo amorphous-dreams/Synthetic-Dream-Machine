@@ -8,7 +8,7 @@
  *       working store never receives it — `meme get --bag wikis/daemon/working` answers not-found.
  *   B2  the DAEMON MIRROR: a record put DIRECTLY into `wikis/daemon/working` (`--bag`, the composite
  *       sink — no bridge needed) reaches the daemon's wiki, but the daemon island mounts no disk
- *       projector and its manifest carries no `diskMirrors`, so `<root>/wikis/kahua-<tag>/…` never appears.
+ *       projector and its manifest carries no `diskMirrors`, so `<projections>/wikis/daemon-<F>/…` never appears.
  *
  * Each seam reads red for its own reason and flips loud when its wire lands (`test.fails`). The
  * CONTROLS stand green today and MUST stay green under both wires.
@@ -19,6 +19,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { privateTitlesProjected } from "../harness/placement-mirrors.js";
 import { openStaged, awaitRendezvous, daemonWikiDir, stageDir, type LarInstance } from "../harness/instance.js";
 import { expectEntry } from "../harness/journal-expect.js";
 
@@ -91,7 +92,11 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
     expect(existsSync(at), `the working wiki did not project ${at}`).toBe(true);
   });
 
-  test("CONTROL: the daemon's private bag projects NOWHERE — no bags/daemon/ under the root", () => {
-    expect(existsSync(join(lar.root, "bags", "daemon"))).toBe(false);
+  test("CONTROL: placement keeps every private home off the mirrors — no control, secret or daemon-document title projects", () => {
+    // The daemon wiki projects under the worn face's F (`wikis/daemon-<F>`, `bags/daemon-<F>`); the daemon document and the
+    // control document name no mirror (lar:///ha.ka.ba/lararium/mesh/control-home), so <projections>/bags/daemon never
+    // stands and no projected file anywhere names a private home's family.
+    expect(existsSync(join(lar.root, "projections", "bags", "daemon")), "the daemon document gained a mirror").toBe(false);
+    expect(privateTitlesProjected(lar.root), "a control, secret or daemon-document title stands in a mirror").toEqual([]);
   });
 });

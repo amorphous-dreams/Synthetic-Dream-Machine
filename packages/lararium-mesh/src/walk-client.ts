@@ -10,7 +10,7 @@
  *
  * THE WALLET FILLS AT ONCE. Once a dial stands on a grant, the walker mints its whole allowance for that epoch in
  * ONE blind batch, never one invite on demand: mint time then says nothing about when an invite is handed out.
- * Each fill first drops every token of an epoch the hearth no longer holds live, and a hand-out takes the newest.
+ * Each fill first drops every token of an epoch the hearth does not hold live, and a hand-out takes the newest.
  * The batch is blinded against the public key of the hearth's signed act for that epoch — read off the hearth's
  * hosting doc, the same act every walker reads — and kept durably before it is sent; the same batch is resent until
  * the hearth's answer finalizes. An answer whose proof does not hold under that key finalizes nothing.
@@ -274,7 +274,7 @@ export function walkOver(opts: {
   /**
    * Prune the wallet to the hearth's two live epochs — the grant's epoch and the act it rolled from — then mint the
    * whole allowance for the grant's epoch in one blind batch, or resend the batch already pending. A token from an
-   * epoch the hearth no longer holds can only meet silence, so the wallet never keeps one to hand out.
+   * epoch the hearth does not hold can only meet silence, so the wallet never keeps one to hand out.
    */
   async function fill(): Promise<void> {
     if (!opts.actFor) return;

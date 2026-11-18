@@ -3,7 +3,7 @@ import type { PortIslandToVesselMsg, PortWireRecord, PortWidthName } from "@lara
 export interface GlassWiki {
   addEventListener(type: "change", listener: (changes: Record<string, unknown>) => void): void;
   removeEventListener(type: "change", listener: (changes: Record<string, unknown>) => void): void;
-  getTiddler(title: string): { fields: Record<string, unknown> } | undefined;
+  getTiddler(title: string): { fields: Record<string, unknown>; getFieldStrings?(): Record<string, string> } | undefined;
   addTiddler(tiddler: unknown): void;
   deleteTiddler(title: string): void;
 }
@@ -28,6 +28,24 @@ export interface GlassPortOptions {
   inheritTags?: ReadonlyMap<string, readonly string[]>;
   /** Titles whose later edits waited behind a write the predecessor sent; the successor sends them once that write answers. */
   inheritDeferred?: readonly string[];
+  /**
+   * The port already stands open and its first whole snapshot already landed: the mirror's boot read it (`glass-handoff.ts`).
+   * `preloaded` names the records the engine booted with, which this adaptor holds as landed and never lands again; `held` names
+   * the records the boot census kept out of the engine's boot, which land now as ordinary records (after boot TW5 evaluates no
+   * module from a record, so a held plugin stands as data). The adaptor sends no `port:open` of its own.
+   */
+  opened?: { preloaded: readonly PortWireRecord[]; held: readonly PortWireRecord[] };
+}
+/** The one `port:open` a mirror sends, whoever sends it: the boot's handoff (with `boot`) or the adaptor's own open after a reset. */
+export function glassPortOpen(opts: Pick<GlassPortOptions, "portId" | "wikiUri" | "actor" | "width" | "fields" | "localFilter">, boot = false): Record<string, unknown> {
+  return { type: "port:open", portId: opts.portId, wikiUri: opts.wikiUri, actor: opts.actor,
+    width: opts.width, edits: true, presence: true, maxRecordBytes: 65536, maxBatchBytes: 262144,
+    ...(opts.fields ? { fields: opts.fields } : {}), ...(opts.localFilter ? { localFilter: opts.localFilter } : {}), ...(boot ? { boot: true } : {}) };
+}
+/** True for a title the glass keeps to itself: its own story and history, and the tier-local prefixes. */
+export function glassLocalTitle(title: string, localFilter: readonly string[] = []): boolean {
+  return title === "$:/StoryList" || title === "$:/HistoryList" ||
+    LOCAL.some(prefix => title === prefix || title.startsWith(`${prefix}/`)) || localFilter.some(prefix => title.startsWith(prefix));
 }
 export interface PendingWrite { txId: string; title: string; record: PortWireRecord }
 
@@ -36,12 +54,29 @@ type Pending = { before: PortWireRecord | null; title: string; optimistic: strin
   peerGeneration: number; record: PortWireRecord; echoed?: true };
 // `$:/info/*` is what this page knows of itself (its URL, its browser, its mode): a session fact, never a record the port carries.
 const LOCAL = ["$:/state", "$:/temp", "$:/status", "$:/info"];
+/** TW5's own date string (`YYYYMMDDHHMMSSmmm`, UTC), as `$tw.utils.stringifyDate` writes it. */
+const tw5Date = (date: Date): string => {
+  const pad = (n: number, width = 2) => String(n).padStart(width, "0");
+  return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}${pad(date.getUTCHours())}` +
+    `${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}${pad(date.getUTCMilliseconds(), 3)}`;
+};
+/** TW5's own list string, as `$tw.utils.stringifyList` writes it: a member holding a space rides in brackets. */
+const tw5List = (list: readonly unknown[]): string =>
+  list.map(item => { const s = String(item); return /\s/.test(s) ? `[[${s}]]` : s; }).join(" ");
+/**
+ * A record's fields as TW5's own strings, the form every engine and store reads back. `String(date)` once wrote the host's locale
+ * form ("Wed Nov 11 2026 …"), which no engine parses: the worker read a mirror-written `modified` as an invalid date, and its Recent
+ * timeline painted an empty day where the new tiddler stood. A real TW5 tiddler answers through its own `getFieldStrings`.
+ */
 const ownFields = (wiki: GlassWiki, title: string): Record<string, string> | null => {
   const tiddler = wiki.getTiddler(title);
   if (!tiddler) return null;
+  const own = typeof tiddler.getFieldStrings === "function" ? tiddler.getFieldStrings() : null;
   const fields: Record<string, string> = {};
-  for (const [key, value] of Object.entries(tiddler.fields))
-    if (key !== "title" && value !== undefined) fields[key] = Array.isArray(value) ? value.join(" ") : String(value);
+  for (const [key, value] of Object.entries(own ?? tiddler.fields)) {
+    if (key === "title" || value === undefined) continue;
+    fields[key] = typeof value === "string" ? value : value instanceof Date ? tw5Date(value) : Array.isArray(value) ? tw5List(value) : String(value);
+  }
   return fields;
 };
 const imageOf = (fields: Record<string, string> | null) => JSON.stringify(fields);
@@ -80,11 +115,7 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
   let writesSent = 0;
   let askNumber = 0;
   let closed = false;
-  // The snapshot that answers a widen widens records the port already carries; a title the person wrote since the open is not in it, and is not dropped.
-  let widening = false;
-  const local = (title: string) => title === "$:/StoryList" || title === "$:/HistoryList" ||
-    LOCAL.some(prefix => title === prefix || title.startsWith(`${prefix}/`)) ||
-    (opts.localFilter ?? []).some(prefix => title.startsWith(prefix));
+  const local = (title: string) => glassLocalTitle(title, opts.localFilter);
   const tag = (title: string, image: string) => tagged.set(title, [...(tagged.get(title) ?? []), image]);
   const optimistic = (title: string) => [...pending.values()].some(tx => tx.title === title);
   const land = (record: PortWireRecord, peer = false) => {
@@ -165,8 +196,7 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
         snapshots.delete(msg.snapshotId);
         const records = Array.from({ length: snapshot.n }, (_, i) => snapshot.chunks.get(i + 1) ?? []).flat();
         const titles = new Set(records.map(record => record.title));
-        const keepAbsent = widening; widening = false;
-        for (const title of new Set([...landed.keys(), ...resetTitles])) if (!keepAbsent && !local(title) && !titles.has(title) && !optimistic(title))
+        for (const title of new Set([...landed.keys(), ...resetTitles])) if (!local(title) && !titles.has(title) && !optimistic(title))
           land({ title, fields: {}, deleted: true });
         resetTitles.clear();
         for (const record of records) {
@@ -217,9 +247,7 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
       for (const [txId, tx] of pending) { repost.add(tx.title); settled.add(txId); }
       pending.clear(); ownTxs.clear(); heldPeer.clear(); echoSeq.clear();
       landed.clear(); omitted.clear(); tagged.clear(); snapshots.clear(); tombstones.clear();
-      transport.send({ type: "port:open", portId, wikiUri: opts.wikiUri, actor: opts.actor,
-        width: opts.width, edits: true, presence: true, maxRecordBytes: 65536, maxBatchBytes: 262144,
-        ...(opts.fields ? { fields: opts.fields } : {}), ...(opts.localFilter ? { localFilter: opts.localFilter } : {}) });
+      transport.send(glassPortOpen(opts));
     } else if (msg.type === "port:written") {
       const tx = pending.get(msg.txId);
       if (!tx) return;
@@ -278,10 +306,18 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
       for (const listener of presenceListeners) listener(msg);
     }
   };
+  // What the engine booted with stands as landed before the port's next message can arrive: a change that follows merges over it.
+  for (const record of opts.opened?.preloaded ?? []) {
+    if (local(record.title) || record.deleted) continue;
+    const fields = { ...record.fields };
+    delete fields["title"];
+    for (const key of record.omitted ?? []) delete fields[key];
+    omitted.set(record.title, [...(record.omitted ?? [])]);
+    landed.set(record.title, { ...record, fields, omitted: [...(record.omitted ?? [])] });
+  }
+  for (const record of opts.opened?.held ?? []) land(record);
   const unsubscribe = transport.onMessage(onMessage);
-  transport.send({ type: "port:open", portId, wikiUri: opts.wikiUri, actor: opts.actor,
-    width: opts.width, edits: true, presence: true, maxRecordBytes: 65536, maxBatchBytes: 262144,
-    ...(opts.fields ? { fields: opts.fields } : {}), ...(opts.localFilter ? { localFilter: opts.localFilter } : {}) });
+  if (!opts.opened) transport.send(glassPortOpen(opts));
   transport.send({ type: "port:presence", portId, actorKey: opts.actor, beat: 0 });
   for (const write of opts.adopt ?? []) {
     const fields = ownFields(wiki, write.title);
@@ -298,8 +334,6 @@ export function makeGlassPortAdaptor(opts: GlassPortOptions) {
       transport.send({ type: "port:ask", portId, askId, kind: "load", subject: title, fields: ["text"] }); });
   };
   return {
-    /** Ask the island to widen this open port in place; its fresh snapshot lands through the same listener. */
-    widen(next: GlassPortOptions["width"]): unknown { if (closed) return undefined; opts.width = next; widening = true; return transport.send({ type: "port:widen", portId, width: next }); },
     deferredTitles(): string[] { return [...deferred]; },
     /** No write stands in flight and no edit waits behind one: the port holds nothing the island has yet to answer. */
     /** How many local writes this port has sent: it only grows, so a test can wait for an edit's write to go out before it waits for quiet. */

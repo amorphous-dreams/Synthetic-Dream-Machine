@@ -26,11 +26,11 @@ seatSuiteWard();
 import { readFileSync, writeFileSync } from "node:fs";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, hex, readFckCarrier, sealRollBytes } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { handleBookFile } from "../src/node-circle-store.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootSeed, vesselPlaceSignerDoor, setMountedFace } from "../src/node-vessel-identity.js";
 import { LABEL_ARG_LIMIT, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, SNAPSHOT_ARG_LIMIT, SealedActRefused, runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
-import { handleRowPath } from "./face-paths.js";
+import { handleRecordPath } from "./face-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
 
@@ -175,19 +175,19 @@ describe("the sealed-act table", () => {
     const { snapshot } = await runSealedAct("handle-book.load", { face: 0 }, ctx) as { snapshot: { era: unknown; records: unknown[] } };
     expect(snapshot.records).toEqual([]);                              // nothing at the path: a book that recognises nobody
     await runSealedAct("handle-book.save", { face: 0, snapshot }, ctx);
-    expect(readFckCarrier(readFileSync(handleRowPath(handleBookFile(0))))).toBe("sealed");
+    expect(readFckCarrier(readFileSync(handleRecordPath(handleBookFile(0))))).toBe("sealed");
     expect(await runSealedAct("handle-book.load", { face: 0 }, ctx)).toEqual({ snapshot });
   });
 
   test("T6 — an act that meets a row it cannot open refuses under the row's name", async () => {
     const c = await vessel("acts-t6");
-    await c.holder.writeRow("identity", handleBookFile(0), new TextEncoder().encode("{}"));
-    writeFileSync(handleRowPath(handleBookFile(0)), "{\"cleartext\":true}");
+    await c.holder.writeRecord("identity", handleBookFile(0), new TextEncoder().encode("{}"));
+    writeFileSync(handleRecordPath(handleBookFile(0)), "{\"cleartext\":true}");
     const refusal = await runSealedAct("handle-book.load", { face: 0 }, ctx).catch((e: unknown) => e);
-    expect(refusal).toBeInstanceOf(CustodyRowUnavailable);
+    expect(refusal).toBeInstanceOf(CustodyRecordUnavailable);
     expect(refusal).toMatchObject({ home: "identity", file: handleBookFile(0) });
-    await expect(runSealedAct("handle-book.save", { face: 0, snapshot: { era: 1, records: [] } }, ctx)).rejects.toBeInstanceOf(CustodyRowUnavailable);
-    expect(readFileSync(handleRowPath(handleBookFile(0)), "utf8")).toBe("{\"cleartext\":true}");
+    await expect(runSealedAct("handle-book.save", { face: 0, snapshot: { era: 1, records: [] } }, ctx)).rejects.toBeInstanceOf(CustodyRecordUnavailable);
+    expect(readFileSync(handleRecordPath(handleBookFile(0)), "utf8")).toBe("{\"cleartext\":true}");
   });
 
   test("T7 — the restore's rows answer a named refusal, and a restore with no store refuses the act", async () => {

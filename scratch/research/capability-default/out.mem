@@ -1,0 +1,120 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/capability-default/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/capability-default/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/capability-default/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/capability-default/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/capability-default/out.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/capability-default/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/dreamdom-measure-the-vessel-carry-the-authority`>>
+
+! DreamDOM: measure the vessel, carry the authority
+
+Ink-Clerk · Research conducted 2026-10-28. ''SOURCED'' marks a claim supported by the adjacent URL; ''REASONED'' marks a recommendation, inference, or project-supplied premise. The operator supplied the current `glass` behavior, tier names, architecture, prerequisites, and ~106 MiB observation; this research did not independently reproduce them.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/findings-capability-request-and-evidence`>>
+
+!! Findings: capability, request, and evidence
+
+* ''SOURCED'' Feature detection tests the operation a program needs; progressive enhancement starts with a useful base and adds capabilities, whereas graceful degradation starts with a richer experience and supplies fallbacks. These describe design strategies, not a requirement that the runtime initially select the lowest tier. Presence checks can miss behavior, policy, partial implementation, and bugs; some features cannot be reliably detected in advance. [[MDN feature detection|https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Testing/Feature_detection]], [[MDN browser detection|https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Browser_detection_using_the_user_agent]].
+* ''REASONED'' Treat a capability request, a probe result, a live resource, and a performance observation as four different things. An option says what a caller wants; a successful operation says what worked at that moment; a held port or lock carries usable authority; measurements say how the actual workload behaved. None guarantees future success.
+* ''SOURCED'' `navigator.deviceMemory` exposes a coarse, rounded, clamped approximation of total device RAM, with limited browser availability; `hardwareConcurrency` can report fewer logical processors than exist. Neither tells the app its available heap or current headroom. [[Device memory|https://developer.mozilla.org/en-US/docs/Web/API/Navigator/deviceMemory]], [[hardware concurrency|https://developer.mozilla.org/en-US/docs/Web/API/Navigator/hardwareConcurrency]].
+* ''SOURCED'' UA Client Hints request browser/device identity information, and may not be available. Browser identity does not establish feature support; UA and client-hint based functionality decisions can exclude browsers that later gain the feature. [[MDN browser detection|https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Browser_detection_using_the_user_agent]].
+* ''SOURCED'' Compute Pressure reports coarse system CPU pressure, not free memory or the app's own heap. It requires a secure context, has limited availability, can be denied by Permissions Policy or unsupported on a particular device, and the specification calls for substantial changes before state transitions to reduce flipping. [[Compute Pressure API|https://developer.mozilla.org/en-US/docs/Web/API/Compute_Pressure_API]].
+* ''SOURCED'' `crossOriginIsolated` reflects cross-origin isolation and the relevant Permissions Policy; isolation enables APIs including `SharedArrayBuffer` and the experimental memory measurement API. COOP/COEP and policy affect the result. It does not establish whether DOM, workers, OPFS, locks, or the mirror work. [[MDN crossOriginIsolated|https://developer.mozilla.org/en-US/docs/Web/API/Window/crossOriginIsolated]], [[Permissions Policy|https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy/cross-origin-isolated]].
+* ''SOURCED'' `storage.estimate()` gives approximate origin usage and quota, not RAM and not a reservation. Persistent storage changes eviction treatment; it does not guarantee against user deletion, and a persistence request need not succeed. OPFS requires a secure context and sits within browser-managed storage. [[Storage API|https://developer.mozilla.org/en-US/docs/Web/API/Storage_API]], [[quotas and eviction|https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria]], [[OPFS|https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system]].
+* ''SOURCED'' `performance.measureUserAgentSpecificMemory()` estimates application memory including workers, requires secure cross-origin isolation, has limited availability, and produces implementation-dependent values not comparable across browser versions. Deprecated `performance.memory` can undercount workers and overcount shared heaps. Neither establishes available memory headroom. [[Memory measurement|https://developer.mozilla.org/en-US/docs/Web/API/Performance/measureUserAgentSpecificMemory]], [[legacy memory|https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory]].
+* ''REASONED'' Unknown telemetry means unknown, not absent. The ~106 MiB mirror measurement describes one workload and measurement method; it supplies a benchmark input, not a portable minimum-RAM cutoff. No portable, reliable browser memory-pressure event or available-heap guarantee follows from these APIs. A tab can die before JavaScript can step down.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-real-applications-reveal`>>
+
+!! What real applications reveal
+
+* ''SOURCED'' Figma tests WebGL by rendering and reading back pixels, catching broken drivers rather than trusting API presence. For WebGPU it ran compatibility tests after startup to avoid hundreds of milliseconds of blocking readback, used device blocklists during rollout, and compared performance to WebGL across devices. This supplies a real behavioral-probe precedent, as well as a pragmatic host-specific exception to capability purity. [[Figma rendering|https://www.figma.com/blog/figma-rendering-powered-by-webgpu/]].
+* ''SOURCED'' Excalidraw documents browser autosave and offline PWA support; its local storage code catches quota errors and records a quota-exceeded state. These sources establish storage/error behavior, not an automatic full/skinny rendering selector. [[Excalidraw README|https://github.com/excalidraw/excalidraw/blob/master/README.md]], [[LocalData implementation|https://github.com/excalidraw/excalidraw/blob/master/excalidraw-app/data/LocalData.ts]].
+* ''SOURCED'' Linear describes a local database and checkpoint-based delta synchronization; its description does not specify a rendering-tier selector. [[Linear delta sync|https://linear.app/now/rebuilding-delta-sync-read-path]].
+* ''SOURCED'' tldraw exposes fixed browser/platform detection and reactive environment properties; its documentation gives disabling text outlines on Safari for performance as an example. That choice addresses a specific rendering behavior and does not establish a general tier-selection algorithm. [[tldraw environment|https://tldraw.dev/sdk-features/environment]].
+* ''SOURCED'' Ink & Switch reports Automerge 3 cut memory use by over 10× in some comparisons; its Livelymerge work measured 180 ms frames against a 33 ms budget and used synchronized working copies to reduce frame cost. These demonstrate workload measurement and representation changes, not automatic tier switching. [[Automerge 3|https://www.inkandswitch.com/newsletter/dispatch-012/]], [[Livelymerge|https://www.inkandswitch.com/livelymerge/notebook/lm-05/]].
+* ''REASONED'' The reviewed sources do not establish how Obsidian Publish chooses a rendering tier, nor a shared automatic tier ladder across these products. Do not infer one from offline support or product branding. Figma's behavior tests and Ink & Switch's workload budgets offer the closest applicable evidence.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/authority-what-a-capability-object-actually-prot`>>
+
+!! Authority: what a capability object actually protects
+
+* ''SOURCED'' Object-capability systems use unforgeable object references to carry authority; attenuating wrappers can restrict what a recipient may do. JavaScript requires careful treatment of ambient authority and isolation to achieve that model. [[Agoric: Distributed Electronic Rights in JavaScript|https://papers.agoric.com/assets/pdf/papers/distributed-electronic-rights-in-javascript.pdf]], [[Agoric: Reasoning about Risk and Trust|https://papers.agoric.com/assets/pdf/papers/reasoning-about-risk-and-trust-in-an-open-world.pdf]].
+* ''SOURCED'' The browser creates entangled `MessagePort` endpoints; a port can send to its partner, can be transferred to another context, and can be closed. Transferring a transferable moves ownership instead of copying the same authority. [[MessagePort|https://developer.mozilla.org/en-US/docs/Web/API/MessagePort]], [[transferable objects|https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects]].
+* ''REASONED'' A frozen plain object with `{full: true}` remains forgeable by shape; freezing prevents mutation, not counterfeiting. Use private closure-held identity or a private `WeakMap`/`WeakSet` brand and a closed-over constructor, and validate identity at the actual privileged consumer. Better, give the mirror a narrow function or endpoint that performs its authorized operation, rather than an assertion describing authority. Never export the mint or a way to turn arbitrary caller input into a branded object.
+* ''REASONED'' A capability carries authority, not a proof that the environment will remain healthy. Keep mutable health state privately owned by the boot coordinator; expose a read-only snapshot and attenuated operations. Reject forged, copied, serialized, stale, or revoked handles. On the worker side, accept commands only on the particular transferred endpoint provisioned for that mirror; validate the protocol and authorize each operation. An arbitrary new `MessageChannel` must not gain the worker's trust.
+* ''REASONED'' This prevents ordinary callers without the reference from forging the coordinator's grant; it does not sandbox arbitrary malicious same-realm code with DOM access, monkey-patching, module access, or stolen references. A bearer can delegate a reference. Protect truth and keys with the worker boundary and its protocol; use real isolated realms/origins and constrained endowments if hostile scripts must be contained. A port alone does not make messages safe.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/measured-absence-and-stability`>>
+
+!! Measured absence and stability
+
+* ''SOURCED'' Web Locks support same-origin leader election, while BroadcastChannel communicates among same-origin contexts; a busy lock can return no lock with `ifAvailable`, which differs from an unavailable API. [[Web Locks|https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API]], [[lock request|https://developer.mozilla.org/en-US/docs/Web/API/LockManager/request]], [[BroadcastChannel|https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel]].
+* ''REASONED'' Test behavior in the execution context that uses it: create the real worker, complete a nonce round trip through the transferred port, acquire/release a uniquely named probe lock, round-trip a channel across the relevant contexts, and perform a small isolated OPFS create/write/read/delete in the worker. Clean up even on failure; never probe by modifying real CAS data. Distinguish unsupported, denied, failed, timed out, and unknown; a timeout can mean a stalled system, not permanent absence. A busy production leader lock means follower, not lack of capability.
+* ''REASONED'' Attempt full when required operations work and capacity remains unknown; build in bounded batches and observe elapsed work, long tasks, render success and responsiveness on the actual document. A single slow first paint can reflect cold caches or scheduling; record it and use a sustained, calibrated threshold, not a universal number. This cannot promise recovery from an abrupt out-of-memory kill. Avoid allocating a synthetic 106 MiB merely to test headroom.
+* ''REASONED'' When available, sustained serious/critical CPU pressure can reduce optional work; it does not prove memory exhaustion. Use actual allocation failure where catchable, sustained budget overruns, or an explicit internal resource limit to initiate a safe downgrade. Define separate enter/exit thresholds, consecutive samples, minimum dwell and cooldown; make emergency failures immediate. Keep the lower tier for the session after a resource downgrade and retry full only on a new boot or a controlled, idle retry with fresh probes, preventing oscillation. Background throttling and a hidden tab must not count as user-visible slowness.
+* ''REASONED'' Transition through a coordinator: stop new mirror work, settle or retain pending edits in the authoritative worker, revoke the old handle, discard partial DOM/mirror resources, then mount the next supported tier from worker state. Preserve navigation and edits. Serialize transitions and ignore stale callbacks using a generation number. A fallback whose own prerequisites fail cannot be claimed to work; publish an explicit unavailable state rather than inventing success.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/anti-patterns-and-incidents`>>
+
+!! Anti-patterns and incidents
+
+* ''SOURCED'' Chrome and Firefox tested three-digit version strings before version 100; Chrome reported actual site issues from the experiment. A parser that mistakes `100` for an older version can change the experience despite unchanged feature support. [[Chrome 100 release notes|https://developer.chrome.com/blog/new-in-chrome-100?hl=en]].
+* ''SOURCED'' Figma observed faulty graphics/driver behavior despite nominal WebGL availability, and added pixel readback tests; API-exists-as-proof would have let broken rendering reach users. [[Figma rendering|https://www.figma.com/blog/figma-rendering-powered-by-webgpu/]].
+* ''SOURCED'' Excalidraw users reported lost or unsaved local work and maintainers identified storage quota and browser data clearing as possible causes; a later issue challenged reassuring browser-storage wording and was closed after a change. Storage availability alone does not prove durability. [[Autosave discussion|https://github.com/excalidraw/excalidraw/discussions/6463]], [[wording issue|https://github.com/excalidraw/excalidraw/issues/10664]].
+* ''REASONED'' `?glass=...` turns a shareable navigation address into a persistent implementation-tier request; copied links can impose an old tier on a different vessel. `{glass: true}` lets any caller assert a capability. The operator supplied these current behaviors; the above examples document related failures, not a verified DreamDOM incident or a verified third-party URL-flag incident. Keep rollout/debug controls out of production capability resolution; if diagnostics need injection, confine it to a test-only composition root and never treat it as authority.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/recommended-design-one-page`>>
+
+!! Recommended design — one page
+
+''REASONED · Boot and resolve.'' The trusted composition root starts the real worker and probes DOM usability, worker/port round trip, locks, channel communication, and OPFS read/write/delete in their actual contexts. Model each prerequisite as `working`, `failed(reason)`, or `unknown`, and define each tier's explicit dependency matrix; verify the actual project implementation before filling the skinny, story and none rows. Probe failures affect only tiers that actually depend on that operation. Failure of a shared worker/OPFS prerequisite may leave no safe tier under the current architecture; do not assume worker-rendered frames work without a worker. Successful lock contention elects a follower rather than a downgrade. Storage quota failure raises a persistence problem, not automatically a rendering choice. Policy denial counts as observed unavailability in this context, not as a permanent browser defect.
+
+''REASONED · Carry.'' Mint one private, branded, revocable handle after the prerequisite probes, containing narrowly scoped mirror operations and the already-authorized port; pass it directly to the mirror constructor. The consumer checks private identity and generation. Expose a separate read-only diagnostic snapshot with evidence and reason codes; do not accept diagnostics back as authority. Keep worker commands limited and validated; keys and durable truth never leave the worker. Do not expose the handle, mint, or port on a global or in the URL. Production boot accepts no caller-supplied tier, boolean, or replacement capability.
+
+''REASONED · Default and step down.'' If full's required functional probes pass, start full automatically even if memory hints or isolation are missing. Populate in cancellable batches, measure the actual workload, and move to the highest viable next tier only after a concrete prerequisite failure or calibrated sustained resource-budget breach. Treat hints and absent optional telemetry as unknown. Track one generation, one transition at a time, separate thresholds and a session cooldown; retain authoritative worker state and unsaved edits during teardown. Surface the measured reason and any failed persistence to the user. Measurements cannot guarantee survival of catastrophic memory exhaustion; test realistic workloads and recovery on restart.
+
+''REASONED · Red tests — each plants / must read.''
+
+# Plant a fully functioning browser with no query and no boot options / read a real full mirror and usable DOM; repeat with misleading UA, missing `deviceMemory`, `crossOriginIsolated=false`, and missing pressure API / read full each time.
+# Plant `?glass=skinny`, `?glass=full`, `{glass:true}`, and a copied or frozen lookalike / read unchanged automatic resolution and rejection at the branded consumer; an arbitrary new port must receive no worker authority.
+# Plant each required operation separately failing after its API exists: worker handshake, port round trip, lock request, channel round trip, OPFS write/read / read its precise reason, cleanup, and highest tier whose documented prerequisites actually pass; if none do, read a clear unavailable state.
+# Plant a held production leader lock with a working coordinator / read follower operation, not capability absence. Plant denied OPFS or quota exhaustion / read persistence failure without falsely claiming successful durable writes.
+# Plant one slow first paint, then recovery / read no downgrade; plant calibrated sustained foreground budget breaches or a catchable allocation failure / read exactly one orderly step-down with the cause. Plant oscillating samples and hidden-tab throttling / read no flapping or spurious downgrade.
+# Plant an edit and a late asynchronous mirror callback during downgrade / read the edit from worker truth in the new tier, old handle revoked, stale callback ignored, and no duplicate mounts. Plant restart after simulated abrupt tab death / read only the last successfully persisted state, with any unpersisted work honestly identified where knowable.
+# Plant optional memory measurement rejection, pressure-policy denial, and false `persist()` / read unknown telemetry or best-effort durability, never a forged capability or automatic false claim of safety.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j6PAF2kabH3Ap8Wq5T8nyLiQWM-ZMA8IZDwlH_LhWCM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

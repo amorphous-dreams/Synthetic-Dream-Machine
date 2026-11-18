@@ -20,7 +20,7 @@ function entropy(start: number): RandomProvider {
   let n = start;
   return { getRandomValues<T extends Uint8Array<ArrayBuffer>>(a: T): T { for (let i = 0; i < a.length; i++) a[i] = n++ & 255; return a; }, randomUUID: () => "deterministic" };
 }
-const at = (r: string) => ({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") });
+const at = (r: string) => ({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") });
 
 describe("place rotation", () => {
   test("a read-back rotates twice and a fresh read sees each committed head", async () => {

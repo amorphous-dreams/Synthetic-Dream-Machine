@@ -1,0 +1,16 @@
+# A THROWAWAY vessel for tests/host-bridge-real-docker.test.ts: busybox standing idle, with a stand-in `node` that
+# reports the argv, the forwarded env and whether stdin reads a TTY. Never the lares-surface project or image; the
+# test names its own project (COMPOSE_PROJECT_NAME=lares-bridge-test-<rand>) and removes it in finally.
+services:
+  lares:
+    image: busybox:1.37
+    command: ["tail", "-f", "/dev/null"]
+    volumes:
+      - ./node:/usr/local/bin/node:ro
+  offline:
+    image: busybox:1.37
+    profiles: [offline]
+    init: true
+    entrypoint: ["/usr/local/bin/node", "packages/lares-cli/bin/lares.mjs"]
+    volumes:
+      - ./node:/usr/local/bin/node:ro

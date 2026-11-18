@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirHeld, openHeld, openHeldSync, readHeldBoundedAsync } from './held-dir.mjs';
 import { lstatSync } from 'node:fs';
 import { brokerRootPath, ensureBrokerRoot, ensureLaneDir, ensureStageRoot, laneId } from './broker-root.mjs';
-import { addWorktree, commitWithReceipt, pushWithGo, removeWorktree } from './seat-broker.mjs';
+import { addWorktree, commitWithReceipt, pushWithLei, removeWorktree } from './seat-broker.mjs';
 import { runInstallSeat, runTestSeat } from './seat-walls.mjs';
 import { RELAY_PAUSE_MS, openClaim } from './relay-claim.mjs';
 
@@ -26,15 +26,15 @@ const worktree = await realpath(options.worktree); // broker-owned
 const scratch = await realpath(path.join(os.homedir(), '.lares-scratch')); // broker-owned
 const inside = (root, target) => target !== root && !path.relative(root, target).startsWith(`..${path.sep}`) && path.relative(root, target) !== '..' && !path.isAbsolute(path.relative(root, target));
 if (!inside(scratch, worktree)) throw new Error('worktree must sit under the real home .lares-scratch');
-// THE GO AND THE BROKER'S STATE LIVE UNDER THE ONE FIXED BROKER ROOT (the same root the seat dirs use), and no caller names either path:
-// <root>/go/<lane>/push-go and <root>/iso/<lane>. One verifier (broker-root.mjs) checks the root before anything is created: ours, exactly
+// THE PUSH LEI AND THE BROKER'S STATE LIVE UNDER THE ONE FIXED BROKER ROOT (the same root the seat dirs use), and no caller names either path:
+// <root>/lei/<lane>/push and <root>/iso/<lane>. One verifier (broker-root.mjs) checks the root before anything is created: ours, exactly
 // 0700, no symlinked or group/other-writable component, nothing under ~/.lares-scratch (every lane included), no ancestor of a granted root.
 const homeReal = await realpath(os.homedir()); // broker-owned
 const brokerRoot = brokerRootPath(homeReal, process.env);
 const rootOpts = { realHome: homeReal, guarded: [lane, worktree, scratch] };
 ensureBrokerRoot(brokerRoot, rootOpts);
-const goDir = ensureLaneDir(brokerRoot, 'go', lane, rootOpts);
-const goFile = path.join(goDir, 'push-go');
+const leiDir = ensureLaneDir(brokerRoot, 'lei', lane, rootOpts);
+const leiFile = path.join(leiDir, 'push');
 const iso = ensureLaneDir(brokerRoot, 'iso', lane, rootOpts);
 // A made worktree is a GRANTED root for its builder, so it lives under the scratch tree (house law) but in a broker-owned dir no lane grants: .broker-worktrees/<lane>.
 const stageRoot = ensureStageRoot(scratch, laneId(lane));
@@ -62,7 +62,7 @@ const gitDirOf = async () => { try { const text = await readHeldAsync(worktreeHe
     throw error; } };
 const identity = () => { const read = key => (spawnSync('/usr/bin/git', ['config', '--global', key], { encoding: 'utf8', env: { PATH: '/usr/bin:/bin', HOME: os.homedir(), GIT_CONFIG_NOSYSTEM: '1' } }).stdout || '').trim(); return { name: options['author-name'] || read('user.name') || 'Relay', email: options['author-email'] || read('user.email') || 'relay@example.invalid' }; };
 const pinnedGitDir = await gitDirOf();
-const brokerCtx = async () => ({ gitDir: pinnedGitDir, laneRoot: lane, laneId: laneId(lane), worktree, worktreeHeld, iso, stageRoot, branch, author: identity(), receipts, key, remoteUrl: options['remote-url'], requiredChecks: checks.map(c => c.name), checks, bwrap: true, goFile: path.join(goDir, path.basename(goFile)) });
+const brokerCtx = async () => ({ gitDir: pinnedGitDir, laneRoot: lane, laneId: laneId(lane), worktree, worktreeHeld, iso, stageRoot, branch, author: identity(), receipts, key, remoteUrl: options['remote-url'], requiredChecks: checks.map(c => c.name), checks, bwrap: true, leiFile: path.join(leiDir, path.basename(leiFile)) });
 const cap = value => new TextDecoder().decode(Buffer.from(value).subarray(0, 8192), { stream: true });
 const result = run => ({ ok: run.status === 0, head: (git('rev-parse', '--short', 'HEAD').stdout || '').trim(), output: cap((run.stdout || '') + (run.stderr || '') + (run.error ? String(run.error) : '')) });
 
@@ -146,7 +146,7 @@ async function handle(request, onBeat) {
     return { ok: done.ok, head: done.head, output: cap(done.output) };
   }
   if (request.kind === 'push') {
-    const done = await pushWithGo(await brokerCtx());
+    const done = await pushWithLei(await brokerCtx());
     return { ok: done.ok, output: cap(done.output) };
   }
   throw new Error(`unknown kind: ${String(request.kind)}`);

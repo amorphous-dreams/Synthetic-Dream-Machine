@@ -56,7 +56,7 @@ Lares (Artificer) · Fable, tasked spirit · 2026-10-16. Research pass for the o
 
 5. **The UP-leg contract** (§3) extends `page-controls.mem#/the-wire` and `session-contract.mem#/the-holder-protocol` with: a `kind` taxonomy (`act` / `sense` / `write` / `service`), a declared-at-mount cancellation and crossing set per binding (`data-lar-on`, `data-lar-cancel`, `data-lar-keys`), as-of-act geometry on the event, reliable versus droppable classes, idempotence by `eventId` within a mount epoch, wake-on-act for sleeping actors with a parked act and a visible "waking" state, a refusal (never a spawn) for recipe wikis until the person opens them, and presence/echo rules for two surfaces on one actor.
 
-6. **Conformance gains a third family beside `filter-cts` and the camera goldens: interaction goldens.** A script of acts over a frozen world; the expected writes (records with fields), the expected messages (`tm-*` dispatched at the root), the expected answers (`applied`/`stale-target`/refusal by name) and the next keyed frame per camera. Fourteen scripts cover the roster (§5). Every DreamDOM member publishes a row, and a surface with no road for a script publishes the refusal it shows.
+6. **Conformance gains a third family beside `filter-cts` and the camera goldens: interaction goldens.** A script of acts over a frozen world; the expected writes (records with fields), the expected messages (`tm-*` dispatched at the root), the expected answers (`applied`/`stale-target`/refusal by name) and the next keyed frame per camera. Fourteen scripts cover the roster (§5). Every DreamDOM member publishes a result, and a surface with no road for a script publishes the refusal it shows.
 
 7. **Open rulings** (§9): whether a sleeping actor wakes on an act or on a frame request; whether the browser DOM sink keeps the stock edit template over `lar-field` or ships a house edit template; which root `tm-*` services become host-service requests and which refuse; whether `$eventcatcher`/`$keyboard` stay REFUSED at width none or earn a declared-keys binding; the presence lane's home; and the per-surface default width.
 
@@ -484,6 +484,6 @@ Each row names a (root template, document sink) over the one engine. **Capabilit
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rkn5lzBg8ZoTWFZbVm-Y4aYSjMFLhUXeKXIpPx9PntU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rqJMaqa0FkdygHQ5W3mYB7U9_OJYvRDnZ8E0Q6MQ6yk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

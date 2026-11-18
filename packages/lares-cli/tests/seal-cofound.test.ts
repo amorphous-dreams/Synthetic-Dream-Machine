@@ -33,7 +33,7 @@ vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
 const cidOf = (text: string): string => cidV1Sha256(new TextEncoder().encode(text));
 const seedHex = "5e".repeat(32);
 const RELEASE = {
-  format: "lararium-release-manifest/v1",
+  format: "lararium-release-manifest",
   image: { digest: `sha256:${"ab".repeat(32)}`, platforms: ["linux/amd64"] },
   genesis: { seedCid: seedHex }, engine: { cid: cidOf("engine") }, grammar: { cid: cidOf("grammar") },
 };
@@ -138,6 +138,10 @@ describe("lares nexus seal cofound", () => {
       expect((await run(nexus(["open"], { release }))).out["error"]["message"]).toMatch(/--out/);
       writeFileSync(join(courier, "bad-release.json"), JSON.stringify({ ...RELEASE, format: "another" }));
       expect((await run(nexus(["open"], { release: join(courier, "bad-release.json"), out: offerPath }))).out["error"]["message"]).toMatch(/no release manifest/);
+      // A counter-suffixed format names no release manifest: the refusal names the shape it lacks, never a version.
+      writeFileSync(join(courier, "counted-release.json"), JSON.stringify({ ...RELEASE, format: "lararium-release-manifest/v1" }));
+      const counted = (await run(nexus(["open"], { release: join(courier, "counted-release.json"), out: offerPath }))).out["error"]["message"] as string;
+      expect(counted).toMatch(/lacks the release manifest shape/);
       expect(listSeatKeys()).toHaveLength(0);
       const opened = await run(nexus(["open"], { release, out: offerPath }));
       const aSeat = opened.out["data"]["seat"] as string;

@@ -1,0 +1,49 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-access/terra-final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement-access/terra-final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-access/terra-final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-access/terra-final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-access/terra-final.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-access/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://operator:operator@workspace/access.policy.requests` to=`lar://wright:agent@workspace/vessel.boundaries.report` ooda-ha=`2/declare-aftermath` drift-ward=`suite failures limit the evidence for the completed implementation`>>
+
+Access-Wright: Lares (Tasked Spirit): The vessel-only access boundary now protects the control document and the daemon slot and canon documents it names. The holder refreshes when the control document changes and preserves IDs added for future secret-document integration.
+
+The node checks the boundary at [[open-node-vessel.ts:1330|/home/joshu/.lares-scratch/placement-access/wt/packages/lararium-node/src/open-node-vessel.ts:1330]], using [[vessel-only-share.ts|/home/joshu/.lares-scratch/placement-access/wt/packages/lararium-node/src/vessel-only-share.ts]]. The browser checks it at [[open-browser-vessel.ts:2380|/home/joshu/.lares-scratch/placement-access/wt/packages/lararium-browser/src/open-browser-vessel.ts:2380]]. Both checks precede their existing share paths and admit only the vessel’s own in-process islands.
+
+Changed files comprise those three implementation files, [[control-home.ts|/home/joshu/.lares-scratch/placement-access/wt/packages/lararium-mesh/src/control-home.ts]], [[index.ts|/home/joshu/.lares-scratch/placement-access/wt/packages/lararium-mesh/src/index.ts]], and the [[mesh|/home/joshu/.lares-scratch/placement-access/wt/packages/lararium-mesh/tests/control-home.test.ts]], [[node|/home/joshu/.lares-scratch/placement-access/wt/packages/lararium-node/tests/share-policy-is-access.test.ts]], and [[browser|/home/joshu/.lares-scratch/placement-access/wt/packages/lararium-browser/tests/browser-share-config.test.ts]] test files.
+
+Builds, stamp, all three typechecks, the focused tests, `git diff --check`, and both requested witnesses passed. The full suites did ''not'' all pass:
+
+* ''Mesh:'' 5,126 passed; 20 skipped.
+* ''Node:'' 3,259 passed; 200 failed; 3 expected failures; 51 skipped. Of the failed tests, 178 reported `secret-home-unavailable`, 13 hit read-only palace lock files, and 9 reported other failures. Nine additional suite setup failures also reported `secret-home-unavailable`.
+* ''Browser:'' 518 passed; 19 failed; 1 expected failure; 10 skipped. All 19 failed tests reported `secret-home-unavailable`.
+
+->↺ The focused browser crossing regression also passed after I moved its control subscription to the existing stand point. The remaining full-suite failures leave the requested all-green completion criterion unmet; their details remain in `/tmp/placement-node.log` and `/tmp/placement-browser-final.log`.
+
+&lt;&lt;~ oracle throw=`↯12 ✲ ⚂(3) ⁂:ᚠ⊗㐂`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`inspect the nine node failures outside secret-home and read-only lock errors before treating the full suite as green · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://wright:agent@workspace/vessel.boundaries.reported` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yX3EQ_5IJDNxv2PGpcmbEH6BEll462mCrm_iXUuDyGw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

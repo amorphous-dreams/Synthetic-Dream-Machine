@@ -2,9 +2,9 @@
  * `lares sense teardown` — completely tear down the local mempalace store and
  * the harvest idempotency state, so a re-pave starts from true zero.
  *
- * This has bitten us: a partial / interrupted re-pave leaves a half-mined chroma
+ * A partial / interrupted re-pave leaves a half-mined chroma
  * store, a stale `lar_hv` watermark that makes the next `harvest` SKIP turns it
- * thinks it already saw, and MCP servers holding the old store open. Hand-`rm`-ing
+ * thinks it already saw, and MCP servers holding the torn store open. Hand-`rm`-ing
  * the paths invites the confused-deputy trap (wipe an ambient default, miss the
  * watermark). This verb resolves every target explicitly, previews by default,
  * and removes only on `--confirm`.
@@ -34,7 +34,7 @@
 
 import { existsSync, rmSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { larHarvestDir, larHarvestStageDir, larPort } from "../env.js";
+import { larHarvestCheckpointDir, larHarvestStagingDir, larPort } from "../env.js";
 import { palaceOrgans, sensoriumTeardownDirs, memorySensoriumDir } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import { livePalaceProcs, type PalaceProc } from "../palace-procs.js";
@@ -122,8 +122,8 @@ function resolveTargets(): Target[] {
     { label: "memory sensorium (all planes + worldline KG + .worldline + manifest)", path: memRoot },
     ...organs,
     ...scratch,
-    { label: "harvest watermark (lar_hv idempotency)",        path: larHarvestDir() },
-    { label: "harvest stage (normalized transcript copies)",  path: larHarvestStageDir() },
+    { label: "harvest watermark (lar_hv idempotency)",        path: larHarvestCheckpointDir() },
+    { label: "harvest stage (normalized transcript copies)",  path: larHarvestStagingDir() },
   ];
   return raw.map((t) => ({ ...t, group: targetGroup(t.path) }));
 }
@@ -158,7 +158,7 @@ function humanBytes(n: number): string {
 /**
  * Live palace processes that BLOCK a clean teardown — not just the store-HOLDERS
  * (write-daemon / recall MCP / one-shot mine / chroma) but the SPAWNERS too (the
- * ingest hook + its `lares sense capture/subagents/telemetry` legs): a live spawner
+ * `lares sense capture/subagents/telemetry` legs): a live spawner
  * re-mints a warm daemon mid-tear and the removed dir refills → ENOTEMPTY. So the
  * refusal broadened from "holders only" to "holders OR spawners", each carrying its
  * OWN spawner so the message can teach kill-the-parent. Best-effort + advisory: a

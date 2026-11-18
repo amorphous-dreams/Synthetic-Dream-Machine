@@ -1,10 +1,10 @@
 /**
  * `lares wing-of <transcript>` — resolve the per-project WING a transcript belongs to,
- * through the ONE TS wing law (../wing-law.ts: recorded-cwd → wingFromDir). The ingest hook
- * calls this FIRST so bash and TS can never fork one session's drawers across two wings;
- * its inline-python mirror survives only as the broken-dist fallback.
+ * through the ONE TS wing law (../wing-law.ts: recorded-cwd → wingFromDir). A script
+ * that files a session calls this, so no second derivation forks one session's drawers
+ * across two wings.
  *
- * Prints the bare wing slug on the prose path (`--no-json` — what the hook consumes);
+ * Prints the bare wing slug on the prose path (`--no-json` — what a script consumes);
  * `--json` / off-TTY emits the structured payload (actor parity, ../render.ts).
  * No cwd recorded in the transcript (or its first sibling) → `not-found` exit 3,
  * FAIL LOUD so the caller's own fallback ladder takes over — never a guessed wing.
@@ -42,7 +42,7 @@ export async function cmdWingOf(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true,
     data: { wing, transcript },
-    human: () => console.log(wing),   // the bare slug — what the hook consumes
+    human: () => console.log(wing),   // the bare slug — what a script consumes
   });
   return 0;
 }

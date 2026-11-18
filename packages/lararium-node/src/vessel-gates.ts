@@ -6,7 +6,7 @@
  *   · THE SHADOW RING is the vessel's one D4 reading (`gate-shadow-ring`);
  *   · THE GRANT RING answers the PersonaGroup grant this vessel holds for a face (`gate-rings`);
  *   · THE SORTER reads this Nexus's posture alone (`socket-sorter`), and the walker's arms ship shut;
- *   · THE WITHDRAWAL MEMORY outlives a restart where the composer hands the sealed store (`gate-memory-rows`).
+ *   · THE WITHDRAWAL MEMORY outlives a restart where the composer hands the sealed store (`gate-memory-records`).
  *
  * The gate's bundle comes from the composer, derived under the tier's own root door: a sovereign route's from the
  * custody root, a floor route's from the floor key. The session table comes from the route's own consumer.

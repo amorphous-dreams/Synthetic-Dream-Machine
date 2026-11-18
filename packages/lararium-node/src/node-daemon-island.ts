@@ -19,6 +19,7 @@ import { fileJournal } from "./vessel-journal-file.js";
 import { admitJournalAppend } from "./journal-append-gate.js";
 import { larDataDir, larSealHome } from "./vessel-paths.js";
 import { readKahuCabalBoard } from "./commands/nexus-cabal.js";
+import { heldCharterSeat } from "./commands/offer-retire.js";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 
@@ -73,17 +74,20 @@ runSovereignWorker((manifest) => {
   const islandStorageDir = islandStorageDirOf(manifest);
   // THE ISOMORPHIC SEED LIFT: a NODE vessel reaches py/R, so it passes HULLS_FULL — makeDaemonBehavior's
   // ONE cap-gated seedDaemonProtocol (onEa) then seeds this vessel's FULL enactable flow-set (all three)
-  // plus the Ui/Persona/Circle seeds, from the single site. This entry seeds nothing of its own. The seeded flow-set IS this vessel's advertised enactable-list a personagroup peer reads.
+  // plus the Ui/Persona/Circle seeds, from the single site, into the daemon wiki's shadow layer. This entry seeds nothing of its own.
   const base = makeOperatorDaemonBehavior(manifest, {
-    // The daemon wiki projects to `<root>/wikis/kahua/` through the same projector a wiki island mounts
-    // (its working layer's carriers reach disk; the control-plane bag beneath holds no mirror); the
+    // The daemon wiki projects to `<projections>/wikis/daemon-<F>/` through the same projector a wiki island mounts: its working
+    // layer's records reach disk, and the control document, which no recipe composes and no mirror names, never does; the
     // option also lights the daemon's projection cap.
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal }),
     ...(receiptFromVessel ? { askReceipt: receiptFromVessel } : {}),
     ...(dyadOnVessel ? { dyadReading: dyadOnVessel } : {}),
     // THE KAHU PREDICATE'S BOARD: this vessel's charter and the admission acts its carriage board carries, read at
-    // ACCESS through the island's own repo. Every write door into system canon asks it (kahu-canon-reach).
+    // ACCESS through the island's own repo. Every write door into house canon asks it (kahu-canon-reach).
     kahuCabal:      (ctx: IslandContext) => () => readKahuCabalBoard(ctx.repo, larSealHome(), manifest.daemonAuth?.placeVerifyingKey),
+    // THE CHARTER SEAT THIS VESSEL HOLDS, read by name off the seal home at each promotion: `offer-promote` refuses
+    // `offer-retire-unseated` where it reads none, before canon moves (offering#/the-canon-offer).
+    charterSeat:    async () => heldCharterSeat(larSealHome())?.proof ?? null,
     // THE SEALED STORE'S SHORE: the content-key holder stands in this island, beside its Keyhive identities, over
     // the vessel's own `sealed/`, `cad/` and cleartext-local tiers. An island with no directory of its own gets
     // none, and its `sealed-*` verbs refuse by name.

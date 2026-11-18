@@ -16,11 +16,13 @@
 import type { TW5Engine } from "./tw5-vm.js";
 import type { IslandAdaptor } from "./island-adaptor.js";
 
-type WikiChanges = Record<string, { modified?: boolean; deleted?: boolean }>;
+/** TiddlyWiki flags each notified title `normal` (an ordinary tiddler moved) and/or `shadow` (the shadow layer moved). */
+type WikiChanges = Record<string, { modified?: boolean; deleted?: boolean; normal?: boolean; shadow?: boolean }>;
 interface BridgeWiki {
   addEventListener(type: "change", fn: (changes: WikiChanges) => void): void;
   removeEventListener(type: "change", fn: (changes: WikiChanges) => void): void;
   getTiddler(title: string): unknown;
+  tiddlerExists(title: string): boolean;
 }
 
 /** Bind live wiki notifications to the adaptor. */
@@ -57,7 +59,12 @@ export function bridgeWikiToAdaptor(tw5: TW5Engine, adaptor: IslandAdaptor): () 
     const consumed = adaptor.handleChangeDispatch(dispatch);
     for (const title of Object.keys(dispatch)) {
       if (consumed.has(title)) continue;
-      const current = wiki.getTiddler(title) ?? null;
+      // THE SHADOW LAYER RESTS IN MEMORY ALONE: a notification that moved only shadows (a plugin re-laid, the daemon's
+      // surfaces seeded as a face's planes arrive) is no hand's write, and no store hears it.
+      if (dispatch[title]?.shadow && !dispatch[title]?.normal) continue;
+      // An ordinary tiddler, never the shadow `getTiddler` answers beneath it: a hand's delete of an override lands its
+      // tombstone, and the shadow it uncovers stays in the shadow layer.
+      const current = wiki.tiddlerExists(title) ? wiki.getTiddler(title) ?? null : null;
       if (!adaptor.holdsHand(title) && adaptor.isFoam(title, current)) continue;
       if (current) {
         reactOnce(title, "save", adaptor.saveTiddler(current));

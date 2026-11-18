@@ -17,7 +17,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   carriageDocUrl, carriageEntriesFromBoard, filePlaceFloorPins, foldCarrierSet, foundingRoster, hearthPinIndex, materializeSharedLarDoc,
-  placeFloorPinsFromBoard, placeKelRowsFromBoard, signCarriageQuorum, signCarrierContract, carriageEntryCounts, carriageEntryActCid, FLOW_SOCKET_ROUTE, type LarDoc,
+  placeFloorPinsFromBoard, placeKelEntriesFromBoard, signCarriageQuorum, signCarrierContract, carriageEntryCounts, carriageEntryActCid, FLOW_SOCKET_ROUTE, type LarDoc,
   ed25519SignerFromSeed, epochSeats, rollAnchorCounts, rollAnchorsFromBoard, signRollAnchor,
 } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPlaceAid, vesselPlaceSignerDoor, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
@@ -61,7 +61,7 @@ async function filedHere(): Promise<readonly string[]> {
       const doc = await open(carriageDocUrl(r.island), "board:carriage-contracts");
       const carriers = await foldCarrierSet(carriageEntriesFromBoard(doc), r.roster);
       filed.push(...filePlaceFloorPins(hearthPinIndex(), placeFloorPinsFromBoard(doc),
-        { nexusHex: Buffer.from(r.aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelRows: placeKelRowsFromBoard(doc), standing: { via: "carrier", carriers } }).filed);
+        { nexusHex: Buffer.from(r.aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelEntries: placeKelEntriesFromBoard(doc), standing: { via: "carrier", carriers } }).filed);
     }
     return filed;
   });

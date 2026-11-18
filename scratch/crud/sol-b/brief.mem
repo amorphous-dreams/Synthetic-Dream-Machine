@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-b/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-25 (file date) — source `.lares-scratch/crud/sol-b/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-b/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/crud/sol-b/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/crud/sol-b/brief.md` (brief, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-b/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Read /home/joshu/.lares-scratch/crud/common.md first; it holds the ruling, the crud definition, the apertures and the output shape.
+
+YOUR GROUND (seat B): CANON, CONFIG AND THE MACHINERY AROUND CODE. bags/lares/ha.ka.ba/lares/api/**, bags/lares/ha.ka.ba/lares/docs/** (excluding hoike/testimony carriers and research/ records), bags/lararium/ha.ka.ba/lararium/**, CLAUDE.md, .github/workflows, docker and compose files, genesis/ manifests (e.g. genesis/unbaked.json), .gitignore, witness exception lists in tools/*-witness* and tools/evergreen-boundary.mjs, and the system aperture across the whole repo (error-kind families, version-counter conventions, rename patterns). Your twin, seat A, takes package source and tests line by line; you may cite code at the seam and system apertures.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eOYjt1MKDdoFxoOxU_mfUIO2bzgKVLULRLYc6YWG7QE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

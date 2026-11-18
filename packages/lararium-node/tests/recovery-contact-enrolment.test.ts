@@ -23,10 +23,10 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  RECOVERY_CONTACT_ENROLMENT_KIND, coldKeySeedFromCode, foldPersonaContests, recoveryContactPossessionBytes, hex, sealKeySetHash,
+  RECOVERY_CONTACT_ENROLMENT_KIND, coldKeySeedFromCode, foldPersonaContests, recoveryContactPossessionBytes, hex, recoverySetCommitment,
 } from "@lararium/mesh";
 import * as init from "../src/commands/init.js";
-import { seatedCustody, unseatCustody, writeCustodyRow } from "../src/custody-seat.js";
+import { seatedCustody, unseatCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import {
   RecoveryContactEnrolmentRefused, recoveryContactOffer, recoveryContactSetFile, recoveryContactStanding, readRecoveryContactSet, readRecoveryContactOffer, runRecoveryContactEnrolment,
 } from "../src/recovery-contact-enrolment.js";
@@ -84,7 +84,7 @@ describe("a face enrols its first recovery contacts on this vessel", () => {
     const a = await recoveryContactOffer(prefix0), b = await recoveryContactOffer(prefix0), c = await recoveryContactOffer(prefix0);
     const done = await enrol(0, [a.offer, b.offer, c.offer], 2);
     expect(done).toMatchObject({ handleIndex: 0, prefix: prefix0, threshold: 2, recoveryContacts: 3, seq: 1 });
-    expect(done.recoveryContactSetHash).toBe(sealKeySetHash([a.recoveryPubKey, b.recoveryPubKey, c.recoveryPubKey], 2));
+    expect(done.recoveryContactSetHash).toBe(recoverySetCommitment(prefix0, [a.recoveryPubKey, b.recoveryPubKey, c.recoveryPubKey], 2));
     const kel = await lineage(prefix0);
     expect(kel).toHaveLength(2);
     expect(kel[1]!.kind).toBe(RECOVERY_CONTACT_ENROLMENT_KIND);
@@ -140,9 +140,9 @@ describe("a face enrols its first recovery contacts on this vessel", () => {
     const { prefix0 } = await twoFaces();
     const trio = [await recoveryContactOffer(prefix0), await recoveryContactOffer(prefix0), await recoveryContactOffer(prefix0)];
     // The record landed and the event did not: write the record a stopped run leaves.
-    const record = { prefix: prefix0, recoveryContactSetHash: sealKeySetHash(trio.map((o) => o.recoveryPubKey), 2), threshold: 2,
+    const record = { prefix: prefix0, recoveryContactSetHash: recoverySetCommitment(prefix0, trio.map((o) => o.recoveryPubKey), 2), threshold: 2,
       recoveryContacts: trio.map((o, i) => ({ slot: i === 0 ? "contact-a" : "contact-b", label: "Recovery-contact-A (unassigned)", recoveryPubKey: o.recoveryPubKey, confirmPhrase: "" })) };
-    await writeCustodyRow("identity", recoveryContactSetFile(0), new TextEncoder().encode(JSON.stringify(record)));
+    await writeCustodyRecord("identity", recoveryContactSetFile(0), new TextEncoder().encode(JSON.stringify(record)));
     expect(await refusalOf(enrol(0, [(await recoveryContactOffer(prefix0)).offer, (await recoveryContactOffer(prefix0)).offer, (await recoveryContactOffer(prefix0)).offer], 2))).toBe("record-names-another-set");
     expect(await lineage(prefix0)).toHaveLength(1);
     expect(await withRepo((repo) => recoveryContactStanding(repo, 0))).toMatchObject({ committed: false, headSet: null, recoveryContactSetHash: record.recoveryContactSetHash });

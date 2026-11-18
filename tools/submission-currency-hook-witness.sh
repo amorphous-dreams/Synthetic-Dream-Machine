@@ -47,8 +47,7 @@ cp "$PRISM_SRC" "$WORK/$SRC_DIR/prism.mem"
 # real (bagsResolver, read-only over `--root`), so the throwaway repo needs that target too, or the
 # currency gate's scratch mirror (which mirrors only what the real repo's commit involves) never
 # finds it and reads a false DRIFT. A real committer's working tree already holds it; this mirrors
-# that reality. LOOP 7 retargeted the pin from `api/pono/RFC-2119` to `ref/RFC-2119` (the reference
-# meme Canon-Scribe's sibling work created) — mirror THAT path, not the old content meme's.
+# that reality. The pin targets the reference meme at `ref/RFC-2119`, so this mirrors THAT path.
 RFC2119_SRC="$REPO_ROOT/bags/lares/ha.ka.ba/lares/ref/RFC-2119.mem"
 [ -f "$RFC2119_SRC" ] && cp "$RFC2119_SRC" "$WORK/$REF_DIR/RFC-2119.mem"
 

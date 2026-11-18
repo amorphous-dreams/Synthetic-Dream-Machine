@@ -20,6 +20,6 @@ export default defineConfig({
     maxWorkers: 1,
     environment: "node",
     include: ["tests/laws/*.law.test.ts", "tests/reality-tunnel.test.ts"],
-    setupFiles: ["tests/laws/fixed-seed.ts"],
+    setupFiles: ["../../tools/vitest-scratch-house.mjs", "tests/laws/fixed-seed.ts"],
   },
 });

@@ -49,7 +49,9 @@ export interface BuildIslandRecipeInput {
   /** Resolved CRDT handles keyed by slot URI. temp has no entry. */
   ready: readonly RecipeReadyBinding[];
   /** Pinned system snapshots beneath the live oracle seed. */
-  floorRows?: readonly Readonly<Record<string, LarTiddlerRecord>>[];
+  floorRecords?: readonly Readonly<Record<string, LarTiddlerRecord>>[];
+  /** The face holds no writer's seat in the wiki's workbench: its `personal` slot takes the default write (cabal-realm#/the-workbench). */
+  writeSlot?: "personal";
   /** The face the kahua stage reads under; absent or null, the kahua layer stands empty. */
   kahuaFace?: () => KahuaStageFace | null;
   /** Wakes the kahua layer's re-fold when the face's lineage moves (`liveKahuaFace`). */
@@ -72,7 +74,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   adaptor: IslandAdaptor;
   stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
 } {
-  const { tw5, composite, recipe, ready, floorRows } = input;
+  const { tw5, composite, recipe, ready, floorRecords, writeSlot } = input;
   // The titles TW5's own startup pass already ran over the preloads: these never run again.
   const STARTUP_ACTIONS = "[all[shadows+tiddlers]tag[$:/tags/StartupAction]!has[draft.of]]";
   const ranAtBoot = new Set<string>(tw5.$tw.wiki.filterTiddlers(STARTUP_ACTIONS));
@@ -89,7 +91,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     const slot = slots[i]!;
     if (slot === tempSlot) {
       tempStore = new MemoryTiddlerStore();
-      composite.addLayer({ bagId: slot, store: tempStore, ...slotLayerFlags(slot, slug) });
+      composite.addLayer({ bagId: slot, store: tempStore, ...slotLayerFlags(slot, slug, writeSlot) });
       stores.push({ slot, store: tempStore });
       continue;
     }
@@ -100,13 +102,13 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     const base: LarTiddlerStore = slot === KAHUA_BAG
       ? kahuaLayerStore(handle, input.kahuaFace ?? (() => null), input.kahuaFaceWatch)
       : new AutomergeDocStore(handle, slot);
-    const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base }) : base;
+    const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRecords ?? [], base, bagId: slot }) : base;
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
     // slot's store directly, carrying the bag on the put option — never a field on the record. The
     // default (an unbagged write or tombstone) is the working slot; without its handle no default
     // writable stands. The ONE law `slotLayerFlags` spells for the host mount and this island alike.
-    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, slug) });
+    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, slug, writeSlot) });
     stores.push({ slot, store });
   }
 
@@ -130,7 +132,8 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   // pointers into the wiki on the same seed wave as the corpus, ahead of the seed checkpoint;
   // an empty write-layer pointer makes unrouted saves raise the alert-rail refusal.
   if (tempStore) {
-    const writeLayer = handleBySlot.has(wikiSlotUri(slug, "working")) ? defaultWritableSlot(slug) : "";
+    // A face that holds no writer's seat in the workbench routes its saves to its own `personal` slot, where that slot stands.
+    const writeLayer = handleBySlot.has(defaultWritableSlot(slug, writeSlot)) ? defaultWritableSlot(slug, writeSlot) : "";
     const configSeed: Record<string, string> = {
       "lar:///ha.ka.ba/lararium/config/current-wiki-bag":      writeLayer,
       "lar:///ha.ka.ba/lararium/config/current-wiki-temp":     wikiSlotUri(slug, "temp"),
@@ -179,12 +182,17 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
  * the corpus and the slot pointers both. The kernel awaits it between the recipe and `behavior.onEa`, so
  * behavior arms over a resident seed and its first write finds every slot named. An engine no recipe was
  * built over holds no checkpoint, and asking for one refuses by name: a seed nobody queued must never
- * read as a seed that landed.
+ * read as a seed that landed. `breathe` hears each slice the shore's queue lands while the seed drains: the kernel hands
+ * its progress tick, so the vessel's watchdog (which bounds the mount on PROGRESS) reads a long drain as moving and still
+ * reads a drain that lands nothing as stalled.
  */
-export function seedDrained(tw5: TW5Engine): Promise<void> {
+export function seedDrained(tw5: TW5Engine, breathe?: () => void): Promise<void> {
   const checkpoint = seedCheckpoints.get(tw5);
   if (!checkpoint) throw new Error("island-recipe: no seed checkpoint stands for this engine — build its recipe (`buildIslandRecipe`) before awaiting `seedDrained`");
-  return checkpoint;
+  if (!breathe) return checkpoint;
+  // THE DRAIN BREATHES AS IT WORKS: each slice the shore lands tells `breathe` until the checkpoint settles either way.
+  const stop = adaptors.get(tw5)?.onSliceLanded(() => breathe()) ?? (() => {});
+  return checkpoint.finally(stop);
 }
 
 const seedCheckpoints = new WeakMap<TW5Engine, Promise<void>>();

@@ -227,16 +227,16 @@ export { generateOrLoadKeypair };
  *
  * `wearPersona` writes the selector and nothing else — "only the selector pointer moves; the root never
  * does". A vessel's singular mount pins are written ONCE, by the FOUNDING face, and never move again (an
- * added compartment founds mount:false and pins none), so a reboot after a wear re-mounted the founding
- * face whatever mask was on, while the door told the operator the opposite. A pointer moved and nothing
- * followed it.
+ * added compartment founds mount:false and pins none), so a reboot that read those pins alone would mount the
+ * founding face whatever mask stands worn, while the door tells the operator the opposite. This module makes
+ * the mount follow the pointer.
  *
  * The switched face's material is not missing — it lives in that face's OWN anchors, persisted at its
  * founding: the signer DID, the persona-KEL prefix, and the SIGNED device→persona edge. All of it is
  * PUBLIC re-pin material (a verifying-key identifier, a KEL prefix, a signed grant record); no secret
  * rides here, which is why it may sit beside the doc-ids at all.
  *
- * PLATFORM-BLIND, because the bug is. It reads a `PersonaVault` — the selector and the anchors, both of
+ * PLATFORM-BLIND, because the hazard runs on every platform. It reads a `PersonaVault` — the selector and the anchors, both of
  * which every vessel class already implements — so the node fs vault and the browser IDB vault answer the
  * same question with one function rather than two that drift (the composeLararium/composeBrowser law).
  *

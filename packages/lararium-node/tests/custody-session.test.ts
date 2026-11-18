@@ -16,10 +16,10 @@ import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { CensusRefusal, OccupiedStoreRefusal, S_SEAL_MAGIC, DEVICE_DELEGATION_DOMAIN, encodeIndexRow, mintOutboxKey, readIndexRow, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
+import { CensusRefusal, OccupiedStoreRefusal, S_SEAL_MAGIC, DEVICE_DELEGATION_DOMAIN, floorRestKey, encodeIndexEntry, mintOutboxKey, readIndexEntry, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { appendFaceEntry } from "../src/face-index.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 import { custodyRootPath, custodyDerive, openCustodyRootCarrier, custodyRootFromBytes } from "../src/custody-root.js";
 import {
   bindCustodySlot, custodyStatus, CustodyFoundingRefused, foundCustody, rotateCustody, unbindCustodySlot, unlockCustody,
@@ -180,6 +180,24 @@ describe("an unbind that rotates runs as ONE act", () => {
     expect((await openCustodyRootCarrier({ io, treeKey: f.treeKey, identityDir: homes.identity })).reading).not.toBe("opens");
   });
 
+  test("RED: the FLOOR's rest key holds across a rotation of the S key: the same custody root re-seals, so every floor document still opens", async () => {
+    const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const before = floorRestKey((info) => custodyDerive(f.root, info));
+    const bound = await bindCustodySlot({ io, homes, treeKey: f.treeKey, spec: slotOf("second route") });
+    const out = await unbindCustodySlot({ io, homes, treeKey: f.treeKey, slotId: bound.slotId, rotate: [TEST_SLOT] });
+    expect(out.rotated).toBe(true);
+    expect(out.treeKey).not.toEqual(f.treeKey);
+    const opened = await openCustodyRootCarrier({ io, treeKey: out.treeKey, identityDir: homes.identity });
+    if (opened.reading !== "opens") throw new Error(`custody root reads ${opened.reading}`);
+    const after = floorRestKey((info) => custodyDerive(custodyRootFromBytes(opened.opened), info));
+    expect([...after]).toEqual([...before]);
+    // A second rotation holds it too.
+    const again = await rotateCustody({ io, homes, oldTreeKey: out.treeKey, slots: [TEST_SLOT] });
+    const reopened = await openCustodyRootCarrier({ io, treeKey: again.treeKey, identityDir: homes.identity });
+    if (reopened.reading !== "opens") throw new Error(`custody root reads ${reopened.reading}`);
+    expect([...floorRestKey((info) => custodyDerive(custodyRootFromBytes(reopened.opened), info))]).toEqual([...before]);
+  });
+
   test("RED: a sealed file no row names refuses the rotation BEFORE the unbind, so the slot stays bound and no byte moved", async () => {
     const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
     const bound = await bindCustodySlot({ io, homes, treeKey: f.treeKey, spec: slotOf("second route") });
@@ -230,7 +248,7 @@ describe("custodyStatus", () => {
   test("opens nothing: names the slots and pin kinds, reads the sealed root `sealed` and an unconverted row `bare`", async () => {
     await foundCustody({ io, homes, slots: [TEST_SLOT] });
     await appendFaceEntry(io, homes.identity, { ordinal: 0, ask: "ab".repeat(32) });
-    const anchors = handleRowPathIn(homes.identity, "anchors-h0.json");
+    const anchors = handleRecordPathIn(homes.identity, "anchors-h0.json");
     mkdirSync(join(anchors, ".."), { recursive: true });
     writeFileSync(anchors, '{"a":1}', { mode: 0o600 });
     const before = hashes(root);
@@ -248,7 +266,7 @@ describe("custodyStatus", () => {
     await foundCustody({ io, homes, slots: [TEST_SLOT] });
     writeFileSync(join(homes.identity, ".vessel-key.json"), "{}", { mode: 0o600 });
     await appendFaceEntry(io, homes.identity, { ordinal: 0, ask: "ab".repeat(32) });
-    const anchors = handleRowPathIn(homes.identity, "anchors-h0.json");
+    const anchors = handleRecordPathIn(homes.identity, "anchors-h0.json");
     mkdirSync(join(anchors, ".."), { recursive: true });
     writeFileSync(anchors, '{"a":1}', { mode: 0o600 });
     writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });
@@ -265,8 +283,8 @@ describe("custodyStatus", () => {
   test("RED: a file spelled like a plain row answers to that row's law: a rest name its bytes fail, bytes of no rest kind, and a seal no rotation re-seals, each read as a fault", async () => {
     const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
     const hex32 = (byte: string) => byte.repeat(32);
-    const row = encodeIndexRow({ bag: hex32("a1"), keyVersion: hex32("b2"), role: "blob", address: `blake3:${hex32("c3")}`, locator: hex32("d4"), parents: [], manifest: hex32("e5") } as never);
-    expect(readIndexRow(row)).not.toBeNull();                                                               // the fixture reads as a real index row
+    const row = encodeIndexEntry({ bag: hex32("a1"), keyVersion: hex32("b2"), role: "blob", address: `blake3:${hex32("c3")}`, locator: hex32("d4"), parents: [], manifest: hex32("e5") } as never);
+    expect(readIndexEntry(row)).not.toBeNull();                                                               // the fixture reads as a real index row
     const key = new TextEncoder().encode("a private key a hand dropped here");
     const index = join(homes.storage, "sealed", "index");
     mkdirSync(index, { recursive: true });
@@ -343,11 +361,11 @@ describe("custodyStatus", () => {
 
 describe("runInit seals custody from birth", () => {
   const GENESIS = join(import.meta.dirname, "..", "..", "..", "genesis");
-  test("RED: no route refuses before the first byte — CONTROL: a route leaves s-slots.bin and a sealed custody root; MUTATION: the old shape refuses", async () => {
+  test("RED: no route refuses before the first byte — CONTROL: a route leaves s-slots.bin and a sealed custody root; a face row standing with no tree refuses", async () => {
     if (!existsSync(join(GENESIS, "seed.json"))) throw new Error("no built genesis — run `pnpm --filter @lararium/node build:genesis`");
     const r = mkdtempSync(join(tmpdir(), "lar-found-seals-"));
     try {
-      const storage = join(r, "data", "lares", "vessel");
+      const storage = join(r, "hearth", "vessel");
       const genesis = join(r, "genesis");
       cpSync(GENESIS, genesis, { recursive: true, filter: (s) => !s.endsWith("social-bootstrap.json") });
       mkdirSync(storage, { recursive: true });
@@ -387,10 +405,10 @@ describe("runInit seals custody from birth", () => {
         runInit({ repo, storageDir: storage, genesisDir: genesis, force: true, custody: { slots: [] } })));
       expect(readFileSync(join(idHome, "s-slots.bin")).equals(treeBefore)).toBe(true);
 
-      // MUTATION: a founding over cleartext identity output with no tree (the old shape) refuses and moves no byte.
+      // A founding over cleartext identity output with no slot tree refuses and moves no byte.
       const old = mkdtempSync(join(tmpdir(), "lar-found-old-"));
       try {
-        const oStorage = join(old, "data", "lares", "vessel");
+        const oStorage = join(old, "hearth", "vessel");
         const oGenesis = join(old, "genesis");
         cpSync(genesis, oGenesis, { recursive: true });
         mkdirSync(oStorage, { recursive: true });

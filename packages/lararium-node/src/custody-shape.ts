@@ -53,7 +53,7 @@ export interface CustodyShapeReading {
 }
 
 /** The slot tree's row: its presence makes a home slotted. */
-const SLOT_TREE_ROW = "s-slots";
+const SLOT_TREE_RECORD = "s-slots";
 
 /** A carrier's first bytes; an unreadable carrier reads empty, which no envelope recognizes. */
 function headOf(path: string): Uint8Array {
@@ -78,7 +78,7 @@ const isSecret = (e: CarrierEntry): boolean => e.custody === "serving" || e.cust
 /** Read the shape every home stands in. Reads only. */
 export function readCustodyShape(homes: CustodyHomes, reading: CustodyShapeReading): CustodyShape {
   const census = carrierCensus(homes);
-  const tree = census.some((e) => e.row === SLOT_TREE_ROW);
+  const tree = census.some((e) => e.row === SLOT_TREE_RECORD);
   const offenders: OccupantOffender[] = [];
   const offend = (e: CarrierEntry, reason: OccupantReason): void => {
     offenders.push({ home: e.home, file: e.file, row: e.row, reason });

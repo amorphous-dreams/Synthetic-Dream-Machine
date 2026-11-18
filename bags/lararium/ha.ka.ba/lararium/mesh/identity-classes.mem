@@ -113,7 +113,7 @@ it holds stay ephemeral: they leave with that device. Joining a PersonaGroup's f
 under a persona root — gives the vessel a face whose durability lives in the root, and a binding minted at
 the floor carries its document across when a face lifts the vessel
 (`packages/lararium-keyhive/src/resolve-binding.ts`). ''Built'': the place KEL arms (`packages/lararium-mesh/src/vessel-kel.ts`). Its inception seats the online signer
-that signs the floor's five duties and commits the digest of a cold next key, which rests on the founding card alone.
+that signs the floor's six duties and commits the digest of a cold next key, which rests on the founding card alone.
 A rotation reveals that key, signs under it, seats a replacement signer and commits the following cold key; the online
 signer never selects its successor. A load of a standing key reads the chain and refuses by name where it fails to
 prove the key. A lost or stolen online signer answers by the card's rotation; a lost card beside a stolen signer
@@ -360,7 +360,7 @@ Four parts carry it:
   reveal; a compromise of the operational present cannot forge the recovery future.
 # ''Recovery signs a ROTATION EVENT, not a re-admit of the old key'' — the recovery authority signs an
   event that (a) reveals against the pre-committed recovery-key digest, (b) SEATS a FRESH operational
-  keypair the recovering vessel just minted, (c) marks the prior operational key retired, (d) hash-links
+  keypair the recovering vessel just minted, (c) marks the prior operational key rotated out, (d) hash-links
   onto the persona-KEL. This reads `rotateSealEpoch` applied at PERSONA scale
   ([[wax-stamp|lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-wax-stamp]]): reveal-the-pre-commit, seat-the-new-head,
   arm-the-next.
@@ -416,14 +416,15 @@ antigen's ban-nym (#/the-honest-edges).
 
 ''A principal that acts inside a Nexus stands on TWO separate relations, joined.'' The
 ''vessel-relation'' rides the device-delegation edge binding a vessel × its PLACE — `hearthTrueName`
-(the engine epoch) rides INSIDE the signed edge preimage (epoch-binding-surfaces
-#the-one-most-easily-missed). The ''human-relation'' rides the persona/handle KEL — the key lineage
+(the hearth's seed-charter Nexus AID; a gateless leaf states it empty) rides INSIDE the signed edge preimage
+(epoch-binding-surfaces #the-one-most-easily-missed), and no engine CID rides an edge. The ''human-relation'' rides the persona/handle KEL — the key lineage
 under a fixed identifier prefix (#/the-continuity-anchor). Neither relation alone acts: the
 ENTITY that acts names the JOIN, ''vessel-relation ⋈ human-relation''.
 
 ''The split explains WHY the two recovery-shaped motions never collide — each lands on a relation the
-other never reads.'' A ''FORWARD-REBIND'' (the kāhuli engine roll — engine-watch) re-binds the
-VESSEL-relation onto a new engine epoch, leaving every persona-KEL head untouched. A ''KEY-LOSS
+other never reads.'' A ''FORWARD-REBIND'' (a hearth moving onto a new seed charter, so a new Nexus AID) re-binds the
+VESSEL-relation onto the new true name, leaving every persona-KEL head untouched; an engine roll alone moves
+no edge (engine-watch EW-7). A ''KEY-LOSS
 RECOVERY'' (Reading-B, #/reading-b-recovery) rotates the HUMAN-relation's op-key beneath its fixed
 prefix, leaving every vessel×place edge's `hearthTrueName` untouched. One moves the place, the other
 re-keys the person; the join survives both, because they touch different relations.
@@ -493,7 +494,7 @@ The forks answered different layers all along, and the ruling seats each where i
   belongs.
   `persona new` splits nothing by default, and `--split-root` opts in.
 * ''The CONTEST: FORK C, ON THE CHAIN'' — a recovery rotation enters the prefix's OWN KEL as
-  PROVISIONAL and hardens causally. NEVER a pending-row on any board — a board of pending recoveries
+  PROVISIONAL and hardens causally. NEVER a pending entry on any board — a board of pending recoveries
   makes a compiled registry of the vulnerable (the registry filter,
   `lar:///ha.ka.ba/lares/api/pono/registry-filter`). The private VENUE stands as a recovery-contact-cabal realm
   (the subject + their chosen recovery contacts, ciphered): the realm coordinates, the chain hardens.
@@ -631,7 +632,7 @@ because the presentation still satisfies the current quorum.
   the prefix binds the GENESIS owner set (anti-swap: the name never moves), the rolling slot carries
   the CURRENT set. One signed graft event, cryptographic, no registry, no new persona bytes.
 * ''It answers both kept kue'' — a civic name's cryptographic continuity (the graft forms the chain, no
-  social hand-wave) and a crew resurrecting a name its holder can no longer cede (a k-of-n survives a
+  social hand-wave) and a crew resurrecting a name its holder cannot cede (a k-of-n survives a
   lost member; the crew forms the quorum). The willing-cede residue shrinks to "a threshold of the
   current set consents" and routes to the human floor.
 
@@ -640,7 +641,7 @@ because succession never named a new thing — the name stands as a cabal, and t
 
 ''THE FIELD NAMES BOTH FORMS'' (Deseriis, "improper names"; `api/pono/field-collision`): our
 quorum-Handle reads as a STUDIED social form, not a novelty. A ''multiple-use name'' — an open name hundreds
-present under, decentralized and idiosyncratic (Luther Blissett, 1994–99, VOLUNTARILY retired: a
+present under, decentralized and idiosyncratic (Luther Blissett, 1994–99, VOLUNTARILY laid down: a
 deliberate succession) — matches our k-of-n at large / the Dread Pirate Roberts. A ''collective pseudonym''
 — a specific controlled group behind one name (Wu Ming) — matches our chartered cabal. The vocabulary belongs to
 the field; the mechanism (grafting the presenting set, identifier fixed) belongs to this house.
@@ -694,6 +695,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BMEPXm-cQ4msmO03HBM_x6hKLnnQSShsHLyNTMdDjtU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PqCoSNcGPkl4xbERBJwpa_4ooucwUwx4BSHVzlQO5qU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

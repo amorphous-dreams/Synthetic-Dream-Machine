@@ -75,7 +75,7 @@ Operator gestures over residency travel through a six-verb action surface, ALL C
 |---|---|---|
 | ''ADD'' | Grant a tiddler residency in a target bag; source residency retained | `ADD <source-graph> TO <dest-graph>` |
 | ''COPY'' | Overwrite destination's version with source's; source retained | `COPY <source-graph> TO <dest-graph>` |
-| ''MOVE'' | For a live source, land the whole carrier group in the destination, then retract the group to absent in the source; a tombstone source carries the title's delete into a destination that holds the title live, with each tombstoned group member the destination holds, and leaves in the source a member the destination lacks; an explicit `shadow` lands the delete in a destination that holds no live title and carries every member; same-bag endpoints refuse | `MOVE <source-graph> TO <dest-graph>` |
+| ''MOVE'' | For a live source, land the whole family in the destination (the root and its component slots; a slot subject refuses `slot-without-root`, a `root/path` title stays), then retract the family to absent in the source; a tombstone source carries the title's delete into a destination that holds the title live, with each tombstoned group member the destination holds, and leaves in the source a member the destination lacks; an explicit `shadow` lands the delete in a destination that holds no live title and carries every member; same-bag endpoints refuse | `MOVE <source-graph> TO <dest-graph>` |
 | ''CLEAR'' | Empty a bag (preserve bag identity, history retained as tombstone log) | `CLEAR GRAPH <g>` |
 | ''DROP'' | Retire a bag entirely (with disposition record) | `DROP GRAPH <g>` |
 | ''LOAD'' | Bring external content into a bag from outside the mesh | `LOAD <iri> INTO GRAPH <g>` |
@@ -88,8 +88,8 @@ The M.2 verb-as-tiddler-field pipeline carries the action surface. ACTION verbs 
 
 ```
 lar:///lararium.local.vm/verbs/<requestId>   # volatile local invocation (admin VM scratch)
-lar:///ha.ka.ba/bags/daemon/summons/<requestId>   # Automerge-backed remote vessel summons
-lar:///ha.ka.ba/bags/daemon/outcomes/<requestId>  # Automerge-backed durable outcome
+lar:///ha.ka.ba/bags/control/summons/<requestId>   # remote vessel summons, in the vessel control document
+lar:///ha.ka.ba/bags/control/outcomes/<requestId>  # durable outcome, in the vessel control document
 ```
 
 An ACTION arrives as a `Verb` whose `verb` field belongs to `ACTION_VERBS` (the wire field stays "verb"; the parsed `Verb.action` carries it). Per-verb arguments ride inside the existing JSON `args` field — kebab-case on the wire, camelCase in the TypeScript discriminated union. Example ADD invocation tiddler fields:
@@ -142,7 +142,7 @@ Every ACTION writes an ''indelible effect record'' tiddler in each affected bag,
 | Archival verb | Triggers from | What gets recorded |
 |---|---|---|
 | ''accession'' | `ADD` / `COPY` (dest) / live-source `MOVE` (dest) | tiddler entered this bag at time T, by actor A, source bag B, reason R |
-| ''deaccession'' | `CLEAR` / `DROP` / `MOVE` (dest and source for a tombstone source; source for a live source) | tiddler removed from this bag with disposition (transferred / retired / destroyed / deleted-by-move-from / shadowed-by-move-from) |
+| ''deaccession'' | `CLEAR` / `DROP` / `MOVE` (dest and source for a tombstone source; source for a live source) | tiddler removed from this bag with disposition (transferred / bag-retired / destroyed / deleted-by-move-from / shadowed-by-move-from) |
 | ''transfer'' | live-source `MOVE` (cross-reference) | paired accession+deaccession sharing one transfer-id; tombstone-source `MOVE` records two deaccessions and no accession |
 | ''withdrawal'' | per-Item removal | a single replica withdrawn while Work persists in the union catalog (recipe still resolves elsewhere) |
 | ''loan'' | time-bounded ADD with TTL | temporary read residency; auto-reverts at expiry |
@@ -300,6 +300,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;--x8q2QSaigLOsMJyCU_Yt3OMSk8EUYmAL23E_iae88`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qzmD5qwP_lMlSY57g0zOpI7SJYO_hCTERE3INXuAbGs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

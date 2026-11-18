@@ -24,7 +24,7 @@
 import { afterEach, describe, expect, test } from "vitest";
 import { readyWorker } from "./fixtures/ready-worker.js";
 import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
-import { lockBrowserCustody, readBrowserCustody, readKeystoreRow, sealBrowserKeystore } from "../src/browser-custody.js";
+import { lockBrowserCustody, readBrowserCustody, readKeystoreRecord, sealBrowserKeystore } from "../src/browser-custody.js";
 import { sessionLifetimeLock, standVesselHouse, type LitVessel, type VesselHouse } from "../src/vessel-sessions.js";
 import type { CustodyAsk } from "../src/browser-boot-custody.js";
 
@@ -111,7 +111,7 @@ describe("each tab admits its own session", () => {
 
     expect(() => house.require(b.sessionId)).toThrow(/session-unadmitted/);
     let ran = false;
-    await expect(house.act(b.sessionId, async () => { ran = true; return readKeystoreRow(idbName, "vessel-key"); })).rejects.toMatchObject({ refusal: "session-unadmitted" });
+    await expect(house.act(b.sessionId, async () => { ran = true; return readKeystoreRecord(idbName, "vessel-key"); })).rejects.toMatchObject({ refusal: "session-unadmitted" });
     expect(ran, "B's act never runs, so it reads no sealed row and signs nothing").toBe(false);
     expect(b.admission).toBe("unadmitted");
     expect(house.census()).toMatchObject({ floor: "lit", sessions: 2, admitted: 1 });
@@ -145,7 +145,7 @@ describe("each tab admits its own session", () => {
     expect(v).toMatchObject({ flushed: 1, closed: 1, keys: 0 });
     expect(house.census(), "no tree key and no content key stands in the vessel").toEqual({ floor: "floor", sessions: 0, admitted: 0, treeKeys: 0, contentKeys: 0 });
     expect(await readBrowserCustody(idbName)).toMatchObject({ reading: "sealed", unlocked: false });
-    await expect(readKeystoreRow(idbName, "vessel-key")).rejects.toMatchObject({ reading: "sealed-locked" });
+    await expect(readKeystoreRecord(idbName, "vessel-key")).rejects.toMatchObject({ reading: "sealed-locked" });
 
     // A REOPENED TAB ASKS AGAIN, and the floor answers no signer meanwhile.
     const c = house.open({ tabId: "tab-c" });

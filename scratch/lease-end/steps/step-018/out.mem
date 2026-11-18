@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-018/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-018/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-018/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-018/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-018/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-018/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-18-hand-back`>>
+
+! Step 18 hand-back
+
+Head `19048159c1c5beec52f72c049e5c53dc20cb6779`; state counter stays 18; no live seats, commit, or push. Next unused relay request: 035. Requests 032–034 resolved. LIVENESS: the receipt helper's 120-second timeout names a broker that may have died; no timeout occurred this step.
+
+The uncommitted daemon-side fleet watcher follows the seat's own Repo board in `operator-daemon-behavior.ts`, shared by browser and node. It subscribes before waking on initial attachment, signals `daemonChanged` and wakes the seat on changes, and detaches on veil disposal; a stop during open does not attach. Request 032 ran the new single file red (2 failures: missing watcher). Request 033 passed the initial 2 tests; request 034 passed all 3, including a board lift that overtakes a standing read and an unchanged-aside control. `git diff --check` passes. The earlier ring callback and its test remain uncommitted and without a consumer.
+
+This does NOT establish end-to-end browser or node transport or close ingest TOCTOU: tests exercise the extracted watcher and seat together using a fake handle, not live vessel composition. The watcher retries no rejected board open after logging; prove/rework lifecycle recovery, initial attachment, changes during actual board refold, and local replica behavior in both vessels. Its change callback invalidates the seat's proof version, but `absorbCapEvents` may mutate the Keyhive before an await returns: add a guarded or serialized commit boundary and a red with control that actually exercises authority mutation. A post-await version check cannot cure this. `onRefold` may fire after rejection, so it cannot certify publication. The currently unused ring callback should be removed if direct local observation proves sufficient, or wired safely if needed.
+
+Founder lineage freshness and tri-state ring, slice-1 blind-read residues and daemon join TOCTOU, independently complete dyad census (fleet board has no roster), and `runApplyAdmitPayload`, holder-session-proof and leaf-peer-proof remain owed. Preserve roll guard and epoch fields. Run daemon tests as broker named single files with prescribed sandbox; run whole non-daemon suites before ready; e2e stays in CI. Obtain blind Opus custody read before land; no push without controller go.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xHIIwx4DcMB7wfi3-zKYa40e9Vj6UpUOp9cp4T6oA7E`>>
+
+<<^ code=`&#x0004;` to=`?`>>

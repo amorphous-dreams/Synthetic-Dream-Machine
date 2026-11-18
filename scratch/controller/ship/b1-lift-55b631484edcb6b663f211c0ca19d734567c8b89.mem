@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b1-lift-55b631484edcb6b663f211c0ca19d734567c8b89`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/ship/b1-lift-55b631484edcb6b663f211c0ca19d734567c8b89.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b1-lift-55b631484edcb6b663f211c0ca19d734567c8b89"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/b1-lift-55b631484edcb6b663f211c0ca19d734567c8b89"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b1-lift-55b631484edcb6b663f211c0ca19d734567c8b89.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/ship/b1-lift-55b631484edcb6b663f211c0ca19d734567c8b89.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP b1-lift 55b631484edcb6b663f211c0ca19d734567c8b89
+read: blind Opus over merge c98557881 (LAND-AFTER-CURES; P2-1..3 cured red-first); blind Opus (Blind-Warden-II) over c98557881..2bbfb2413 (LAND-AFTER-CURES: inbound face gate, torn-founding ward lock); cures 8bc247e9c (reds) + 55b631484 (greens) read by the controller's own diff read; CI green run 42256555201.
+owed: P3s per /home/joshu/.lares-scratch/b1-lift/blind-warden-2.md (askWardRoute bound to the lighting conn; rowFace unchecked at browserVesselFaceTagDoor and ward key sign/mint; walk:ward vs worn face; port:want before admission; liveness sweep on a timer; stale comment browser-ward-tree.ts:15-18; swept torn face's stray tree rows).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Dm7hgrfYULhJ8GDKP9rZ6uDiAh4fi6vW63bc72mOHBU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

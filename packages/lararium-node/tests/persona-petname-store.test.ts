@@ -21,7 +21,7 @@ import {
   makeNodePersonaPetnameStore, makeNodePublicHandleStore, makeNodeFsPersonaVault,
   generateOrLoadPersonaGroupRoot,
 } from "../src/node-vessel-identity.js";
-import { handleRowPath } from "./face-paths.js";
+import { handleRecordPath } from "./face-paths.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -46,9 +46,7 @@ describe("node persona pet-name stores", () => {
   const dataDir = () => root;
   beforeEach(async () => {
     root = mkdtempSync(join(tmpdir(), "lares-petname-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", root);   // the scratch house root every resolver lays its classes beneath
     seated = await seatScratchCustody("petname-store");
   });
   afterEach(async () => {
@@ -65,8 +63,8 @@ describe("node persona pet-name stores", () => {
     expect(await (await makeNodePersonaPetnameStore()).entries()).toEqual([[0, "work"], [2, "veil-one"]]);   // persists across store handles
 
     // Each label rests in its face's own identity row, never a persona-root nor a board.
-    expect(existsSync(handleRowPath(".persona-petnames-h0.json"))).toBe(true);
-    expect(existsSync(handleRowPath(".persona-petnames-h2.json"))).toBe(true);
+    expect(existsSync(handleRecordPath(".persona-petnames-h0.json"))).toBe(true);
+    expect(existsSync(handleRecordPath(".persona-petnames-h2.json"))).toBe(true);
 
     await clearOwnPersonaPetname(store, 0);
     expect(await ownPersonaPetname(store, 0)).toBeUndefined();

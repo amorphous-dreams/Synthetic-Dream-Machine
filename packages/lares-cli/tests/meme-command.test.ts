@@ -77,6 +77,13 @@ describe("memePlan — the argument law, no daemon", () => {
     expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "md", recipe: "r" })).container).toEqual({ recipe: "r" });
     expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "md", bag: "b" })).container).toEqual({ bag: "b" });
   });
+  test("RED: a store verb naming `--face` refuses `face-not-routed` rather than read or write the daemon mount's seat, and names the daemon mount it would stand in for; CONTROL: the same line with no `--face` plans", () => {
+    for (const sub of ["put", "get", "delete"] as const) {
+      expect(() => memePlan(sub, memeArgs([sub, "lar:///t/x"], { recipe: "default", face: "1" }))).toThrow(/^face-not-routed: .*daemon mount/);
+    }
+    expect(() => listPlan(memeArgs(["list"], { recipe: "default", face: "1" }))).toThrow(/^face-not-routed: .*daemon mount/);
+    expect(listPlan(memeArgs(["list"], { recipe: "default" })).args).toEqual({ recipe: "default" });
+  });
   test("★ --recipe AND --bag together refuse ★", () => {
     expect(() => memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "sdm", bag: "sdm" }))).toThrow(/one of/);
   });
@@ -191,6 +198,18 @@ describe("lares meme list — roots by default, --tree nests the slots", () => {
     expect(out.json["data"]).toEqual({ recipe: "lares", bags: ["w", "c"], unreached: ["lar:///ha.ka.ba/bags/far"], roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1", bag: "c" }] });
   });
 
+  test("a read the floor answered says so: the listing and the get each carry `floor: true` where the verb named the floor, and nothing where it named none", async () => {
+    h.reply = { bag: "lar:///ha.ka.ba/bags/lararium", floor: true, roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }], next: null };
+    const listed = await captured(() => cmdMeme(memeArgs(["list"], { bag: "lararium" })));
+    expect(listed.json["data"]).toEqual({ bag: "lar:///ha.ka.ba/bags/lararium", floor: true, roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }] });
+    h.reply = { uri: "lar:///t/a", floor: true, meme: { text: "body", canonicalHash: "sha256:1" } };
+    const got = await captured(() => cmdMeme(memeArgs(["get", "lar:///t/a"], { bag: "lararium" })));
+    expect(got.json["data"]).toEqual({ uri: "lar:///t/a", text: "body", canonicalHash: "sha256:1", floor: true });
+    // CONTROL: a live read names no floor.
+    h.reply = { uri: "lar:///t/a", meme: { text: "body", canonicalHash: "sha256:1" } };
+    expect((await captured(() => cmdMeme(memeArgs(["get", "lar:///t/a"], { bag: "lararium" })))).json["data"]).toEqual({ uri: "lar:///t/a", text: "body", canonicalHash: "sha256:1" });
+  });
+
   test("★ --recipe AND --bag together refuse; nothing reaches the wire ★", async () => {
     expect(await cmdMeme(memeArgs(["list"], { recipe: "sdm", bag: "sdm" }))).toBe(2);
     expect(h.calls).toEqual([]);
@@ -273,9 +292,9 @@ describe("lares meme check — the read-alone seat, local, no daemon", () => {
     expect(await cmdMeme(memeArgs(["check", PRISM]))).toBe(0);
     vi.restoreAllMocks();
   });
-  test("RED: a root meta holding the retired file-path reads as drift; CONTROL: the same carrier without it reads clean", async () => {
-    // Residency rides the envelope (Train Q, 2026-11-01): the check names the retired field, whatever
-    // the seal says, and the carrier stripped of it (re-sealed) reads canonical.
+  test("RED: a root meta holding file-path reads as drift; CONTROL: the same carrier without it reads clean", async () => {
+    // Residency rides the envelope: the check names the field, whatever the seal says, and the
+    // carrier stripped of it (re-sealed) reads canonical.
     const src = readFileSync(PRISM, "utf8").replace(/^file-path[ \t]*=.*\n/m, "");
     const without = stampCarrier(src);
     const withField = stampCarrier(without.replace(/^(cacheable[ \t]*=.*\n)/m, `$1file-path = "bags/x/prism.mem"\n`));

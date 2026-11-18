@@ -20,7 +20,7 @@ import { HOLDER_REFUSALS, MEMORY_OUTCOMES, type SealedBlob } from "../src/conten
 import { mintMemoryKeypair, openMemorySection, sealMemorySection, type MemoryKeypair } from "../src/memory-section.js";
 import { mintContentKey, type ContentKey, type KeyVersionId, type SealContext } from "../src/sealed-chunk.js";
 import {
-  RECORD_KINDS, entryLocatorOf, indexRowsOf, readRecord, signRecord,
+  RECORD_KINDS, entryLocatorOf, indexEntriesOf, readRecord, signRecord,
   type KeyVersionBody, type KeyVersionPrivate, type ManifestBody, type RecordSigner, type WriterStanding,
 } from "../src/sealed-records.js";
 import type { SeatRoll } from "../src/seat-duties.js";
@@ -115,7 +115,7 @@ describe("REACH APART FROM AUTHORSHIP: what a bundle's keys open, and what they 
       await fresh.store.putRecord(signed.record);
       // The thief writes the index row by hand: a row authorizes nothing.
       const row = { bag: manifest.bag, keyVersion: V, role: "blob" as const, address: forged.body.cid, locator: manifest.entries[0]!.locator, parents: [], manifest: signed.id };
-      await fresh.store.putIndexRows([row]);
+      await fresh.store.putIndexEntries([row]);
     };
     await plant(thief.signer);
     // AUTHORSHIP: the key seals valid bytes, and no honest reader counts them.

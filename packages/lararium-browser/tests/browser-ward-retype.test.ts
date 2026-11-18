@@ -14,7 +14,7 @@
  */
 import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
 import { expect, test } from "vitest";
-import { browserKeystoreCustodyIo, BrowserWardRefused, readKeystoreRow, sealBrowserKeystore } from "../src/browser-custody.js";
+import { browserKeystoreCustodyIo, BrowserWardRefused, readKeystoreRecord, sealBrowserKeystore } from "../src/browser-custody.js";
 import { browserVesselFaceTagDoor } from "../src/browser-face-atom.js";
 import * as ward from "../src/browser-ward.js";
 import { runWardAct } from "../src/ward-core.js";
@@ -101,7 +101,7 @@ test("RED: the face's sealed ward-key row from before the move stays on disk; CO
   expect(await s.io.read(`sealed/ward-sign/${s.G}`)).not.toBeNull();
   const fields = await browserVesselFaceTagDoor(s.idbName, { route: async () => PASS, spawn: core("passed") } as never)(s.G, me.key);
   expect(await s.io.read(`sealed/ward-sign/${s.G}`)).toBeNull();
-  expect(await readKeystoreRow(s.idbName, `vessel-face-tag/${s.G}`), "the tag row stands under the face's own tree").toBeInstanceOf(Uint8Array);
+  expect(await readKeystoreRecord(s.idbName, `vessel-face-tag/${s.G}`), "the tag row stands under the face's own tree").toBeInstanceOf(Uint8Array);
   expect(await ward.browserWardKeyOf(s.idbName, s.G)).toBe(fields.wardKey);
 });
 

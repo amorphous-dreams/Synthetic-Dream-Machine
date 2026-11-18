@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-wait/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/live-wait/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-wait/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/live-wait/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/live-wait/out.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-wait/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Live-Wright hand-back
+
+* Changed `packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts` to wait for new phase entries with a 20-second silence window and a 60-second ceiling. The mirror keeps its independent 20-second wait; failures retain phases and faults and identify the failed wait.
+* Added `packages/lararium-web/tests/live-wait.test.ts`, containing the shared, injectable phase wait and fake-clock tests. No sibling e2e file copies the helper.
+* Test: `node packages/lararium-web/tests/live-wait.test.ts` — 3 passed, 0 failed. No browser or e2e run; lead runs those.
+* No commit or build.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dMiKduoakcnViGC7ik57OwTL-8T2UVT0SMYjsWvCtR4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

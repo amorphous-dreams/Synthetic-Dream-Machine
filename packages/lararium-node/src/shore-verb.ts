@@ -17,6 +17,9 @@
  *   take-records   take the records' side of one standoff, named by its key
  *   restore        write a vanished file back from the records and pin its base
  *   remove         delete the vanished carrier in the wiki, by the wiki shore's own delete door
+ *   census         name every carrier the projector has not settled: each its queue still owes (`pending`) and
+ *                  each whose latest reconcile threw (`failed`), after a bounded wait for the queue to drain
+ *                  (`lares vessel census`, read before a stop)
  *
  * ONE STANDOFF, TWO DOORS. `take-records` settles a standoff toward the records, and this island's
  * projector performs it: the records' render writes over the file. Its twin, `lares shore take-disk`,
@@ -37,7 +40,7 @@ import type { LarDiskProjector } from "./disk-projector.js";
 export const SHORE_VERB = "shore";
 
 /** The acts the verb carries. */
-export const SHORE_OPS = ["list", "sense", "settle", "take-records", "restore", "remove"] as const;
+export const SHORE_OPS = ["list", "sense", "settle", "take-records", "restore", "remove", "census"] as const;
 export type ShoreOp = (typeof SHORE_OPS)[number];
 
 /**
@@ -107,6 +110,39 @@ function shoreCounts(projector: LarDiskProjector, bag: string | null): { standof
 
 const uriList = (v: unknown): string[] | null =>
   Array.isArray(v) && v.every((u) => typeof u === "string" && u !== "") ? (v as string[]) : null;
+
+/** How long a census's first page waits for the projector's queue to drain before it names what still waits. */
+export const CENSUS_SETTLE_MS = 5_000;
+
+/** One carrier the projector has not settled, as the census names it: its state, its title and its bag. */
+export interface CensusCarrier { readonly state: "pending" | "failed"; readonly uri: string; readonly bagId: string | null }
+
+/**
+ * THE CENSUS: what this island's projector has not settled, a page at a time. The first page (no `after`) waits up
+ * to `settleMs` for the queue to drain, so a routine stop reads clean; a page past it reads the state that stands.
+ * `drained` says whether the wait saw the queue drain. Rows order by state, then title, code unit by code unit.
+ */
+export async function shoreCensus(
+  projector: LarDiskProjector, after: string | null = null, settleMs = CENSUS_SETTLE_MS,
+): Promise<{ carriers: CensusCarrier[]; carrierCount: number; drained: boolean; next: string | null }> {
+  let drained = true;
+  if (after === null) {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const bound = new Promise<false>((resolve) => { timer = setTimeout(() => resolve(false), settleMs); });
+    drained = await Promise.race([projector.idle().then(() => true as const), bound]).finally(() => { if (timer) clearTimeout(timer); });
+  }
+  const { pending, failed } = projector.unsettled();
+  const failedUris = new Set(failed.map((f) => f.uri));
+  const rows = [
+    ...failed.map((f) => ({ state: "failed" as const, ...f })),
+    // A carrier whose reconcile threw and waits again reads once, as failed.
+    ...pending.filter((p) => !failedUris.has(p.uri)).map((p) => ({ state: "pending" as const, ...p })),
+  ].map((row) => ({ cursor: JSON.stringify([row.state, row.uri]), row })).sort((a, b) => byCode(a.cursor, b.cursor));
+  const behind = after === null ? rows : rows.filter((r) => r.cursor > after);
+  const taken = behind.slice(0, SHORE_LIST_PAGE);
+  const next = behind.length > taken.length ? taken[taken.length - 1]!.cursor : null;
+  return { carriers: taken.map((r) => r.row), carrierCount: rows.length, drained, next };
+}
 
 /**
  * Answer one shore act against one projector. A refusal comes back as `{ ok: false, refusal, why }` under
@@ -210,6 +246,11 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     return answer.took
       ? { ok: true, op, bag: named.bagId, uri, key, took: "records" }
       : { ok: false, op, refusal: "standoff-key-moved", why: answer.why ?? "the states moved while the answer travelled" };
+  }
+  if (op === "census") {
+    const after = args["after"] === undefined ? null : text(args["after"]);
+    if (args["after"] !== undefined && after === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "census names the page behind by the cursor the page before answered (`after`), or none for the first page" };
+    return { ok: true, op, ...(await shoreCensus(projector, after)) };
   }
   return { ok: false, op, refusal: "shore-op-unknown", why: `the shore verb carries ${SHORE_OPS.join(", ")}; it names no "${op}"` };
 }

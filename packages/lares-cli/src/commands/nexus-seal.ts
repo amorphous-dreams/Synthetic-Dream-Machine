@@ -12,7 +12,7 @@
  * ── WHY THE CHAIN IS PRE-ROTATED ────────────────────────────────────────────────────────────────
  * Every epoch commits to the digest of the key-set that will REPLACE it, before that key-set is ever
  * used (TUF ≈ KERI). A rotate reveals the pre-committed set and must match, so no seat moves without
- * notice: a kahu steps down by no longer standing, a new one takes a chair by standing, and either
+ * notice: a kahu steps down by ceasing to stand, a new one takes a chair by standing, and either
  * way the reveal is checked against a commitment made an epoch earlier. A genesis seated with no
  * commitment is a chain that can never rotate, which is why seating refuses to arm itself blind.
  *
@@ -67,7 +67,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { sealedAct } from "../sealed-act-door.js";
 import { actingFace, faceOption, FaceOptionMalformed } from "../face-option.js";
-import { sealHand, inceptHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn } from "../sealed-rows.js";
+import { sealHand, inceptHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn } from "../sealed-records.js";
 import { canPromptSecret, promptLine, promptSecret } from "../prompt-secret.js";
 import { CardReadBackRefused, readBack as printAndReadBack, type ColdCard } from "../cold-card-readback.js";
 
@@ -633,7 +633,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
 
   // REVEAL, behind the door: the next key-set the head committed rests on this vessel as sealed seat keys, and
   // the arming finds it by its digest. THE ROSTER BECOMES EXACTLY WHAT STANDS — the succession door. A kahu
-  // steps down by no longer standing; a new one takes a chair by standing and signs with a fresh key of its own.
+  // steps down by ceasing to stand; a new one takes a chair by standing and signs with a fresh key of its own.
   // Neither needs an admin verb, because the hands the head COMMITTED sign every roll: a seat moves only under
   // the quorum the prior epoch named.
   // FAIL CLOSED: a roll the law refuses writes nothing, and the keys its arming minted retire.
@@ -821,7 +821,7 @@ async function sealImport(args: ParsedArgs): Promise<number> {
                  data: { from, dest }, human: () => console.error(`lares nexus seal import: ${v.why}`) });
     return 3;
   }
-  // A sibling temp, fsync, and a rename, so a reader sees the old charter or the new one and never a torn
+  // A sibling temp, fsync, and a rename, so a reader sees the standing charter or the incoming one and never a torn
   // file. A write that faults removes its temp and refuses; the standing bytes stay.
   try {
     mkdirSync(sealHome, { recursive: true });
@@ -1010,8 +1010,8 @@ function readReleaseAddresses(path: string | undefined): ReleaseManifestAddresse
   try { m = JSON.parse(readFileSync(path, "utf8")) as Record<string, any>; }
   catch { throw new UsageError(`cannot read ${path} as a release manifest`); }
   const seed = m?.["genesis"]?.["seedCid"];
-  if (m?.["format"] !== "lararium-release-manifest/v1" || typeof seed !== "string" || !/^[0-9a-f]{64}$/.test(seed)) {
-    throw new UsageError(`${path} reads as no release manifest record (lararium-release-manifest/v1)`);
+  if (m?.["format"] !== "lararium-release-manifest" || typeof seed !== "string" || !/^[0-9a-f]{64}$/.test(seed)) {
+    throw new UsageError(`${path} reads as no release manifest record: it lacks the release manifest shape (format "lararium-release-manifest", a sha256 genesis.seedCid)`);
   }
   return { image: String(m["image"]?.["digest"] ?? ""), genesis: cidV1Sha256FromHex(seed), engine: String(m["engine"]?.["cid"] ?? ""), grammar: String(m["grammar"]?.["cid"] ?? "") };
 }

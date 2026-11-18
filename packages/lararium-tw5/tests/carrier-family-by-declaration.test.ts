@@ -105,6 +105,31 @@ describe.skipIf(wikiSkip)(`a carrier's declaration decides its family${skipNote}
     for (const line of SIDECAR.split("\n").filter((l) => l !== "")) expect(file.metaBody).toContain(line);
   });
 
+  // A `.tid` FILE FRAMES ITSELF: a header block naming its title, a blank line, then the body. A staged memory row rests so
+  // (`bags/daemon-<F>/…/<slug>.tid`), and its body holds a whole framed meme, a live head standing outside every fence.
+  const ROW = "lar:///ha.ka.ba/t/family/a-row";
+  const ROW_FILE = `title: ${ROW}\n\n${memetic(ROW)}`;
+  for (const door of ["INGEST", "LOAD"] as const) {
+    test(`${door}: a \`.tid\` whose body holds a framed meme lands as that one record, its text the body alone`, async () => {
+      const r = rig();
+      if (door === "INGEST") expect((await ingest(r, { text: ROW_FILE, ext: ".tid", uri: ROW }))["decision"]).toBe("ingest");
+      else await load(r, { text: ROW_FILE, ext: ".tid", title: ROW });
+      expect(await carriersIn(r)).toEqual([ROW]);
+      const fields = (await r.store.get(ROW))!.tiddler as Record<string, unknown>;
+      // The header names the record and never enters its text: a re-pour of the row reads the bytes a hand staged.
+      expect(String(fields["text"]).replace(/\n$/, "")).toBe(memetic(ROW).replace(/\n$/, ""));
+      expect(String(fields["text"])).not.toContain("title: ");
+    });
+  }
+  test("CONTROL: the same meme as its own `.mem` file still reaches the memetic shore, and a `.tid` with no meme lands as it did", async () => {
+    const r = rig();
+    expect((await ingest(r, { text: memetic(ROW), ext: ".mem", uri: ROW }))["decision"]).toBe("ingest");
+    expect(await carriersIn(r)).toEqual([ROW, `${ROW}#/a`]);
+    const plain = rig();
+    expect((await ingest(plain, { text: `title: ${ROW}\n\nplain words\n`, ext: ".tid", uri: ROW }))["decision"]).toBe("ingest");
+    expect(String(((await plain.store.get(ROW))!.tiddler as Record<string, unknown>)["text"]).trim()).toBe("plain words");
+  });
+
   test("markdown with no sidecar keeps its family when the head stands inside a fence", async () => {
     const r = rig();
     expect((await ingest(r, { text: TEACHES_FENCED, ext: ".md" }))["decision"]).toBe("ingest");

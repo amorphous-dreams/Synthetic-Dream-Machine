@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-boot-order/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-boot-order/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-boot-order/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-boot-order/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-boot-order/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-boot-order/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''YES.'' A sovereign vessel with an owed seat raise can issue `seat-duties` before the host working layer is mounted.
+
+* ''MEASURED'' — `openNodeVessel` prepares, then composes the vessel. The daemon cap opens the daemon, wires verbs and calls `afterDaemon`; that hook registers `workerEa.then(() => seatSettler.onFold())`. The wiki and primary mount gates also await `workerEa`, and composition finishes before `openNodeVessel` returns. The caller mounts the host layer only afterward. ([[open-node-vessel.ts:3830|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/open-node-vessel.ts:3830]], [[core-caps.ts:120|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/core-caps.ts:120]], [[core-caps.ts:158|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/core-caps.ts:158]], [[core-caps.ts:203|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/core-caps.ts:203]], [[main.ts:716|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/main.ts:716]], [[main.ts:784|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/main.ts:784]])
+
+* ''MEASURED'' — An owed, unshadowed raise causes the settler to read facts and issue the ask; board changes also trigger refolds and settling, and daemon restart registers another `workerEa` callback. There is no ask timer; two subsequent folds abandon a waiting settle, as do teardown or restart. ([[seat-settle.ts:85|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/seat-settle.ts:85]], [[edge-shadow-ring.ts:123|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/edge-shadow-ring.ts:123]], [[open-node-vessel.ts:3122|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/open-node-vessel.ts:3122]])
+
+* ''INFER'' — If the outcome arrives before the host layer is attached, the ask can remain pending even after attachment: it checks once, then rechecks on matching change events, while adding a layer forwards future events rather than replaying existing outcomes. The daemon composite initially has no default writable; the separately mounted wiki uses the assembly composite. ([[island-verb-ask.ts:87|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/island-verb-ask.ts:87]], [[composite-store.ts:139|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-mesh/src/composite-store.ts:139]], [[daemon-vm-core.ts:388|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/daemon-vm-core.ts:388]], [[core-caps.ts:165|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/core-caps.ts:165]])
+
+* ''MEASURED'' — Pool worker events enter a 20 Hz event bus and may place daemon verbs before return; store doors can issue `seat-duties`, `kahua-cap`, and `realm-feed`, while backup doors issue memory asks. The residency sweeper and boot watchdog run timers; the watchdog bounds `workerEa`, not these outcome waits. Main attaches the UDS channel only after mounting. ([[open-node-vessel.ts:3833|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/open-node-vessel.ts:3833]], [[open-node-vessel.ts:4042|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/open-node-vessel.ts:4042]], [[store-door-verbs.ts:344|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/store-door-verbs.ts:344]], [[main.ts:791|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/main.ts:791]])
+
+''MEASURED'' — The repository’s only production call to `openNodeVessel` is `main.ts`; herm uses a separate factory and also mounts before attaching its channel. Neither ordering prevents the internal callback above. ([[main.ts:656|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-node/src/main.ts:656]])
+
+''Red:'' Boot a sovereign vessel with an owed raise, hold `mountHostWorkingLayer`, let its boot-triggered `seat-duties` outcome land, then mount. Assert the ask settles or refuses by name, never hangs. ''INFER'' — This exercises the race; it was not run in this read-only seat.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uV07qCPGZwWci5OFj0dr62zJzujFX4VwZtsrLUnPHXQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

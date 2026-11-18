@@ -34,7 +34,7 @@ async function crossing() {
   const pg = await phone.createGroup();
   const edge = await buildDeviceDelegation({ personaRootSeed: seedOf(214), atomSeed: laptopSeed, hearthTrueName: "", boundEpoch: 0 });
   const ctx: FaceJoinContext = { personaRootDid: edge.personaRootDid, hearthTrueName: "", personaGroupId: pg.groupId, dyad: () => "clear", leaseEpoch: 0 };
-  const out = await runFaceJoin(phone, { kind: "face-join/v1", contactCard: new TextDecoder().decode(await laptop.contactCard()), deviceEdge: edge }, ctx);
+  const out = await runFaceJoin(phone, { kind: "face-join", contactCard: new TextDecoder().decode(await laptop.contactCard()), deviceEdge: edge }, ctx);
   if (!out.ok) throw new Error(`the fixture's own join failed: ${JSON.stringify(out)}`);
   await laptop.dispose();
   const store = recordingStore();

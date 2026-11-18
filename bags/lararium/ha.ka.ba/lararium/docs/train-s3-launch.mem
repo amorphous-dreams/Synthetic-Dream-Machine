@@ -59,7 +59,7 @@ Face-checked hydration takes a behavioural witness at the production reader, nev
 | N and W | Consume the final AID, sealed identities and production session signer; leave inception and `session-signer.ts` with their owners. |
 | O1 | Consume the verified face and scoped view after its live mount. O1 keeps the working-address bytes and session switch. |
 | S8 | Leave the selves plane and `sealed-acts.ts` with S8. Share the custody shore through its typed ports. |
-| H | Hosting HOT rows and serving rows follow their own custody classes. Step 3 seals Repo document values. |
+| H | Hosting HOT records and serving records follow their own custody classes. Step 3 seals Repo document values. |
 | X | X reads sealed restart and wrong-face refusal through the node; its driver changes no store format. |
 
 <<~/ahu>>
@@ -80,6 +80,6 @@ The roadmap's sealed-store ruling and step-3 pointer hold this cut (<<~ loulou u
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q5izRMdpXZjz-Gv2rYWs5roFm79UWOIp92kEjgGARng`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GeYJ5YdE1L14Tlq58a17NE8eGjyp7g-msNBkaVkJmvY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

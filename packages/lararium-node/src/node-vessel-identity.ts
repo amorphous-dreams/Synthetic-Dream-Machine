@@ -26,8 +26,8 @@
  * See lar:///ha.ka.ba/lares/docs/federation and api/pono/has-stack-ontology.
  *
  * Storage law — identity lives beside the runtime store:
- *   the place keypair persists to `<lares>/identity` (`larIdentityDir`), in the XDG data
- *   home BESIDE — never inside — the runtime `<lares>/vessel` store. No storage operation
+ *   the place keypair persists to `<root>/hearth/identity` (`larIdentityDir`), in the hearth
+ *   BESIDE — never inside — the runtime `<root>/hearth/vessel` store. No storage operation
  *   can reach it (they rmSync the substrate store, never the home that holds it). This realizes the
  *   law below (the key MUST NOT sit inside an Automerge doc storage path) and the
  *   keypair-wipe lesson: a destructive storage verb cannot reach identity.
@@ -42,7 +42,7 @@
  * Key file naming (inside the identity dir): `.vessel-key.json`, beside its KEL `.vessel-kel.json`. Every custody
  * name derives from the identity home alone: a host fact (a git email, a login) never picks which file a vessel
  * reads, so a changed host fact never reads a standing vessel as empty. The home itself answers "which vessel"
- * (`LAR_ROOT`, else the OS user's XDG home), and each face's rows stand in that face's own directory.
+ * (the house root `LAR_ROOT` names; an unnamed root refuses), and each face's rows stand in that face's own directory.
  * The keypair derives from a local CSPRNG — fully device-local, no external service.
  *
  * MUST NOT be placed inside any Automerge doc storage path — MUST NOT sync.
@@ -83,26 +83,26 @@ import {
 import { readBackStandsIn } from "./seal-ceremony.js";
 import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readFaceIndexSync } from "./face-index.js";
 import {
-  openedCustody, exclusiveCustody, unlockedFaceOrdinals, standingCustody, readCustodyRow, updateCustodyRow, withWardKeyCustody,
+  openedCustody, exclusiveCustody, unlockedFaceOrdinals, standingCustody, readCustodyRecord, updateCustodyRecord, withWardKeyCustody,
 } from "./custody-seat.js";
 
 /**
- * The identity dir — the ONE resolver, `<lares>/identity` (`larIdentityDir`), in the XDG
- * data home beside the `<lares>/vessel` store; the place key + face anchors are separate from vessel
- * documents and unreachable by store operations. An empty home re-derives a fresh device key — no migration arm, no legacy spelling.
+ * The identity dir — the ONE resolver, `<root>/hearth/identity` (`larIdentityDir`), in the hearth
+ * beside the `<root>/hearth/vessel` store; the place key + face anchors are separate from vessel
+ * documents and unreachable by store operations. An empty home re-derives a fresh device key.
  *
- * TAKES NO `dataDir`: this resolver answers off `LAR_ROOT`/XDG env vars alone (`larIdentityDir`), never
- * off a caller-supplied path. A `dataDir` parameter it ignored would be the footgun measured live
- * (`persona-ring-cross-operator-admit.test.ts`): a caller isolating a `dataDir` per simulated vessel,
- * in-process, with no matching `LAR_ROOT` mutation, silently reads/writes the REAL
- * `~/.local/share/lares/identity` home instead of its intended isolated one. Removing the parameter
- * (rather than honoring it) preserves the tested invariant "ONE resolver, no second spelling"
+ * TAKES NO `dataDir`: this resolver answers off `LAR_ROOT` alone (`larIdentityDir`), never
+ * off a caller-supplied path. A `dataDir` parameter it ignored would be a footgun
+ * (`persona-ring-cross-operator-admit.test.ts` guards it): a caller isolating a `dataDir` per simulated vessel,
+ * in-process, with no matching `LAR_ROOT` mutation, silently reads/writes the identity home of
+ * whatever house the process names instead of its intended isolated one. Taking no parameter
+ * (rather than honoring one) preserves the tested invariant "ONE resolver, no second spelling"
  * (`vessel-identity-home.test.ts`) — honoring it would need a SECOND address-derivation scheme to
  * keep identity separate from a caller-supplied store path, which is exactly the thing this file's storage
- * law forbids. The ONE sanctioned in-process isolation pattern is now `tests/harness/with-lar-root.ts`.
+ * law forbids. The ONE sanctioned in-process isolation pattern is `tests/harness/with-lar-root.ts`.
  */
 function identityDir(): string {
   return larIdentityDir();
@@ -594,7 +594,7 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
 //   COLD (opened for one act, then dropped): each persona ROOT (`…-h<N>.json`).
 // At the floor every door here refuses `CustodyLocked`. A hot row with nothing at its path reads as holding
 // nothing (no root, no mounted face, no label), which states a fact about a vessel that never wrote it. A row that
-// stands and does not open (torn, bare, another key's) refuses `CustodyRowUnavailable`, and so does one that
+// stands and does not open (torn, bare, another key's) refuses `CustodyRecordUnavailable`, and so does one that
 // opens to another shape. No reader folds a refusal to empty, so no act writes over a row it could not read.
 //
 // ── THE ROSTER COMMITS A ROOT ────────────────────────────────────────────────────────────────────
@@ -606,17 +606,17 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
 //     vessel's own key, so this vessel wrote it) and records its line.
 //   · A roster line whose root row went missing, or whose root row names another key, REFUSES by name at the act
 //     that needs the seed. Nothing mints over it.
-// The root's mint reads, decides and writes under one custody holder (`updateColdCustodyRow`), so two acts in two
+// The root's mint reads, decides and writes under one custody holder (`updateColdCustodyRecord`), so two acts in two
 // processes converge on one root and never write over each other's.
 
 const utf8 = new TextEncoder();
 const HEX64 = /^[0-9a-f]{64}$/;
 const isIndex = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
-const malformed = (file: string): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
-const encodeRow = (value: unknown): Uint8Array => utf8.encode(JSON.stringify(value, null, 2));
+const malformed = (file: string): CustodyRecordUnavailable => new CustodyRecordUnavailable("identity", file, "malformed");
+const encodeRecord = (value: unknown): Uint8Array => utf8.encode(JSON.stringify(value, null, 2));
 
 /** The JSON a row's plaintext carries; bytes that hold no JSON refuse `malformed`. */
-function parseRow(bytes: Uint8Array, file: string): unknown {
+function parseRecord(bytes: Uint8Array, file: string): unknown {
   try { return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
   catch { throw malformed(file); }
 }
@@ -648,7 +648,7 @@ export interface PersonaRosterLine {
 /** The roster a row's plaintext carries (ascending); nothing standing reads as no root held, any other shape refuses. */
 function parseRoster(bytes: Uint8Array | null, file: string): PersonaRosterLine[] {
   if (bytes === null) return [];
-  const roots = objectOf(parseRow(bytes, file), file)["roots"];
+  const roots = objectOf(parseRecord(bytes, file), file)["roots"];
   if (!Array.isArray(roots)) throw malformed(file);
   const seen = new Set<number>();
   const out: PersonaRosterLine[] = [];
@@ -666,7 +666,7 @@ function parseRoster(bytes: Uint8Array | null, file: string): PersonaRosterLine[
 /** One face's roster line (its own row, in its own directory); null where it holds none. */
 async function readRosterLine(handleIndex: number): Promise<PersonaRosterLine | null> {
   const file = personaRosterFileName(handleIndex);
-  return parseRoster(await readCustodyRow("identity", file), file).find((l) => l.handleIndex === handleIndex) ?? null;
+  return parseRoster(await readCustodyRecord("identity", file), file).find((l) => l.handleIndex === handleIndex) ?? null;
 }
 
 /** The roster of the faces standing UNLOCKED, ascending: each face keeps its own line, so a locked face names itself by the floor index alone. */
@@ -692,7 +692,7 @@ function verifyingKeyOfSeed(signingKeyHex: string): string {
  * names none.
  */
 function parseRootRow(bytes: Uint8Array, file: string): PersistedKeypair {
-  const raw = objectOf(parseRow(bytes, file), file);
+  const raw = objectOf(parseRecord(bytes, file), file);
   const verifyingKey = raw["verifyingKey"];
   const signingKey = raw["signingKey"];
   if (typeof verifyingKey !== "string" || !HEX64.test(verifyingKey) || typeof signingKey !== "string" || !HEX64.test(signingKey)) throw malformed(file);
@@ -709,7 +709,7 @@ async function openCommittedRoot(line: PersonaRosterLine, ward: WardCredential |
   // THE ROOT RESTS UNDER THE WARD: one fresh unlock of the face's ward key opens it for this act, and the key zeroes after.
   return withWardKeyCustody({ ordinal: line.handleIndex }, ward, (seat) => seat.open(file, (bytes) => {
     const root = parseRootRow(bytes, file);
-    if (root.verifyingKey !== line.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (root.verifyingKey !== line.verifyingKey) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
     return root;
   }), `the face root at h${line.handleIndex}`);
 }
@@ -726,18 +726,18 @@ async function commitRoot(handleIndex: number, keypair: PersistedKeypair, ward: 
   const kept = await withWardKeyCustody({ ordinal: handleIndex }, ward, (seat) => seat.update(rootFile, (bytes) => {
     if (bytes !== null) return { plaintext: null, value: { root: parseRootRow(bytes, rootFile), wrote: false } };
     const persisted = { verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey };
-    return { plaintext: encodeRow(persisted), value: { root: keypair, wrote: true } };
+    return { plaintext: encodeRecord(persisted), value: { root: keypair, wrote: true } };
   }), `the face root at h${handleIndex}`);
   const rosterFile = personaRosterFileName(handleIndex);
-  await updateCustodyRow("identity", rosterFile, (bytes) => {
+  await updateCustodyRecord("identity", rosterFile, (bytes) => {
     const roster = parseRoster(bytes, rosterFile);
     const standing = roster.find((l) => l.handleIndex === handleIndex);
     if (standing) {
-      if (standing.verifyingKey !== kept.root.verifyingKey) throw new CustodyRowUnavailable("identity", rootFile, "names-another-key");
+      if (standing.verifyingKey !== kept.root.verifyingKey) throw new CustodyRecordUnavailable("identity", rootFile, "names-another-key");
       return { plaintext: null, value: undefined };
     }
     const next = [...roster, { handleIndex, verifyingKey: kept.root.verifyingKey }].sort((a, b) => a.handleIndex - b.handleIndex);
-    return { plaintext: encodeRow({ roots: next }), value: undefined };
+    return { plaintext: encodeRecord({ roots: next }), value: undefined };
   });
   return kept;
 }
@@ -754,11 +754,11 @@ export async function landPersonaRoot(handleIndex: number, keypair: { readonly s
   // EVERY STANDING ROW READS BEFORE ANY WRITE: a roster line or an orphan root under another key refuses here, so
   // a refused landing adopts no orphan and records no line.
   const line = await readRosterLine(handleIndex) ?? undefined;
-  if (line && line.verifyingKey !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+  if (line && line.verifyingKey !== keypair.verifyingKey) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
   const orphan = line ? null : await orphanPersonaRootKey(handleIndex, ward);
-  if (orphan !== null && orphan !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+  if (orphan !== null && orphan !== keypair.verifyingKey) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
   const kept = await commitRoot(handleIndex, { signingKey: keypair.signingKey, verifyingKey: keypair.verifyingKey }, ward);
-  if (kept.root.verifyingKey !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+  if (kept.root.verifyingKey !== keypair.verifyingKey) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
 }
 
 /**
@@ -773,18 +773,26 @@ export async function orphanPersonaRootKey(handleIndex: number, ward?: WardCrede
 }
 
 /**
- * THE MOUNTED FACE is the composition's own state, never a pointer at rest and never a default face. The unlock names which face
- * the sovereign composition MOUNTS (`lares vault unlock --face N`); nothing persists that choice across a restart. With no choice
- * recorded and exactly one face standing unlocked, that face is the one mounted. A command never reads this: it names its face
- * (`--face N`), or resolves the one face standing open (`face-selector`).
+ * THE DAEMON MOUNT is the composition's own state, never a pointer at rest and never a face a session wears. The unlock may name
+ * which face the sovereign composition MOUNTS (`lares vault unlock --face N`); nothing persists that choice across a restart, and
+ * no session sets it. With no face named, the composition mounts the steward's face 0 where it stands open, else the lowest face
+ * standing open (under a pūlama, the lowest face it lends that stands lit), and lights every other open face beside it. A
+ * command never reads this: it names its face (`--face N`), or resolves the one face standing open (`face-selector`).
  */
 let mountedFace: number | undefined;
 export function setMountedFace(handleIndex: number | undefined): void { mountedFace = handleIndex; }
 
+/** The face the composition mounts among the faces standing open (ascending): the face the unlock named where it stands open,
+ *  else the first open face (the steward's face 0 where it stands open); undefined where the named face or every face rests shut. */
+function daemonMountOf(open: readonly number[]): number | undefined {
+  if (mountedFace !== undefined) return open.includes(mountedFace) ? mountedFace : undefined;
+  return open[0];
+}
+
 /**
- * WHETHER THE SOVEREIGN COMPOSITION MAY STAND: the node key (S) held AND the mounted face unlocked. A pure query: it reads the
- * seated holder and the floor index and changes nothing, so a preflight reads the same answer the composition does. A place
- * the floor index names no face for needs S alone; a place with faces and no face mounted (none, or several and none chosen)
+ * WHETHER THE SOVEREIGN COMPOSITION MAY STAND: the node key (S) held AND a daemon mount standing open. A pure query: it reads
+ * the seated holder and the floor index and changes nothing, so a preflight reads the same answer the composition does. A
+ * place the floor index names no face for needs S alone; a place whose faces all rest shut, or whose named mount rests shut,
  * stands at the floor.
  */
 export function sovereignStands(): boolean {
@@ -795,22 +803,20 @@ export function sovereignStands(): boolean {
   if (named.length === 0) return true;
   const open = new Set(holder.unlockedFaces());
   const openOrdinals = named.filter((f) => open.has(f.fcid)).map((f) => f.ordinal);
-  const mounted = mountedFace ?? (openOrdinals.length === 1 ? openOrdinals[0] : undefined);
-  return mounted !== undefined && openOrdinals.includes(mounted);
+  return daemonMountOf(openOrdinals) !== undefined;
+}
+
+/** The face the composition mounts, as `sovereignStands` reads it; undefined where none stands open. */
+export async function daemonMountOrdinal(): Promise<number | undefined> {
+  return daemonMountOf(await unlockedFaceOrdinals());
 }
 
 /** The face the unlock named for the composition to mount, or undefined where it named none. */
 export function mountedFaceOrdinal(): number | undefined { return mountedFace; }
 
-/** The composition's mount reader: the face the unlock named, else the one face standing open. It keeps no pointer. */
+/** The composition's mount reader: the daemon mount (`daemonMountOf`) over the faces standing open. It keeps no pointer. */
 function nodeMountedFaceStore(): ActivePersonaStore {
-  return {
-    async load() {
-      if (mountedFace !== undefined) return mountedFace;
-      const open = await unlockedFaceOrdinals();
-      return open.length === 1 ? open[0] : undefined;   // no inference beyond the one face standing open
-    },
-  };
+  return { load: () => daemonMountOrdinal() };
 }
 
 /**
@@ -833,7 +839,7 @@ export async function makeNodeFsPersonaVault(ward?: WardCredential): Promise<Per
         async save(keypair) {
           const kept = await commitRoot(handleIndex, keypair, warded());
           if (kept.root.verifyingKey !== keypair.verifyingKey) {
-            throw new CustodyRowUnavailable("identity", personaGroupRootFileName(handleIndex), "names-another-key");
+            throw new CustodyRecordUnavailable("identity", personaGroupRootFileName(handleIndex), "names-another-key");
           }
         },
       };
@@ -932,6 +938,8 @@ export async function listPersonaRosterLines(): Promise<readonly PersonaRosterLi
 export async function orphanPersonaRoots(): Promise<number[]> {
   const held = new Set((await readRoster()).map((l) => l.handleIndex));
   const spelled = /^\.persona-group-root-h(0|[1-9]\d*)\.json$/;
+  // NAMES ALONE over every face's directory, the lend's and the rest: an orphan root of a face outside the lend still names
+  // itself here, and the adoption that opens it acts as that face alone.
   let names: string[];
   try { names = faceFileNames(larIdentityDir()); } catch { return []; }
   const out: number[] = [];
@@ -944,13 +952,13 @@ export async function orphanPersonaRoots(): Promise<number[]> {
 
 // ── The two-layer PET-NAME stores — the own-side private label + the own-side public face ────────────
 //
-// Two DISTINCT sealed rows in each face's own directory under `<lares>/identity`:
+// Two DISTINCT sealed rows in each face's own directory under `<root>/hearth/identity`:
 //   · the PRIVATE pet-name map (`.persona-petnames-h<N>.json`) — the human's own label for their own
 //     personas, freely renamable, never PUBLICLY federated (persona-petname).
 //   · the PUBLIC handle record (`.persona-public-handles-h<N>.json`) — the vessel's memory of ITS OWN
 //     published glamour faces (index → nym/glamour/causal heads), so a re-publish extends the local frontier
 //     (persona-glamour). Distinct from the pet-name map and from the handle-book (others' nyms).
-// Each map changes under one custody holder (`updateCustodyRow`): a set or a clear reads the map, changes one
+// Each map changes under one custody holder (`updateCustodyRecord`): a set or a clear reads the map, changes one
 // entry and writes it, so two acts in two processes never drop each other's entry.
 
 /** The private pet-name map filename. */
@@ -968,7 +976,7 @@ function personaPublicHandleFileName(handleIndex: number): string {
 function parseIndexMap<T>(bytes: Uint8Array | null, file: string, field: string, shaped: (entry: unknown) => entry is T): Record<string, T> {
   const out: Record<string, T> = Object.create(null) as Record<string, T>;
   if (bytes === null) return out;
-  const map = objectOf(objectOf(parseRow(bytes, file), file)[field], file);
+  const map = objectOf(objectOf(parseRecord(bytes, file), file)[field], file);
   for (const [key, entry] of Object.entries(map)) {
     if (!/^(0|[1-9]\d*)$/.test(key) || !isIndex(Number(key)) || !shaped(entry)) throw malformed(file);
     out[key] = entry;
@@ -986,10 +994,10 @@ function changeIndexMap<T>(
   file: string, field: string, shaped: (entry: unknown) => entry is T, change: (map: Record<string, T>) => void,
 ): Promise<void> {
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-  return updateCustodyRow("identity", file, (bytes) => {
+  return updateCustodyRecord("identity", file, (bytes) => {
     const map = parseIndexMap(bytes, file, field, shaped);
     change(map);
-    return { plaintext: encodeRow({ [field]: map }), value: undefined };
+    return { plaintext: encodeRecord({ [field]: map }), value: undefined };
   });
 }
 
@@ -1002,7 +1010,7 @@ const isLabel = (entry: unknown): entry is string => typeof entry === "string";
  */
 export async function makeNodePersonaPetnameStore(): Promise<OwnPersonaPetnameStore> {
   const fileOf = (handleIndex: number): string => personaPetnameFileName(handleIndex);
-  const read = async (handleIndex: number): Promise<Record<string, string>> => parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "names", isLabel);
+  const read = async (handleIndex: number): Promise<Record<string, string>> => parseIndexMap(await readCustodyRecord("identity", fileOf(handleIndex)), fileOf(handleIndex), "names", isLabel);
   return {
     async get(handleIndex) { return (await read(handleIndex))[String(handleIndex)]; },
     set(handleIndex, petname) { return changeIndexMap(fileOf(handleIndex), "names", isLabel, (names) => { names[String(handleIndex)] = petname; }); },
@@ -1046,7 +1054,7 @@ const isDeclaration = (entry: unknown): entry is PersonaDeclaration => {
 export async function makeNodePersonaDeclarationStore(): Promise<PersonaDeclarationStore> {
   const fileOf = (handleIndex: number): string => personaDeclarationFileName(handleIndex);
   const read = async (handleIndex: number): Promise<Record<string, PersonaDeclaration>> =>
-    parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "declarations", isDeclaration);
+    parseIndexMap(await readCustodyRecord("identity", fileOf(handleIndex)), fileOf(handleIndex), "declarations", isDeclaration);
   return {
     async get(handleIndex) { return (await read(handleIndex))[String(handleIndex)]; },
     set(handleIndex, declaration) { return changeIndexMap(fileOf(handleIndex), "declarations", isDeclaration, (all) => { all[String(handleIndex)] = declaration; }); },
@@ -1076,7 +1084,7 @@ export async function makeNodePublicHandleStore(): Promise<OwnPublicHandleStore>
     return map;
   };
   const read = async (handleIndex: number): Promise<Record<string, PersonaPublicHandleRecord>> =>
-    keyed(parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "handles", isPublicHandle), fileOf(handleIndex));
+    keyed(parseIndexMap(await readCustodyRecord("identity", fileOf(handleIndex)), fileOf(handleIndex), "handles", isPublicHandle), fileOf(handleIndex));
   return {
     async load(handleIndex) { return (await read(handleIndex))[String(handleIndex)] ?? null; },
     save(record) { return changeIndexMap(fileOf(record.handleIndex), "handles", isPublicHandle, (handles) => { keyed(handles, fileOf(record.handleIndex)); handles[String(record.handleIndex)] = record; }); },

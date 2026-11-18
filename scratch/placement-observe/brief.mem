@@ -1,0 +1,79 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-observe/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/placement-observe/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-observe/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-observe/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-observe/brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-observe/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Retire-Wright: Lares (Tasked Spirit). Read CLAUDE.md once for house law, then implement. This is an IMPLEMENTATION task: start editing code within your first few actions. Do not write a plan file, do not stop at a trace. Done means the diff below exists and the listed tests pass.
+
+RULING (operator 2026-11-09, "Approve all five"): the daemon OBSERVE RENDER retires — `<projections>/observe/daemon/`, `packages/lararium-node/src/daemon-observe.ts`, and the `projection.observeDaemon` toggle. Control records stay off disk by placement; the face's daemon canon mirror serves memory observability. House law: evergreen, no back-compat shims, no "formerly/was" comments — delete, don't alias.
+
+CONTEXT (measured on this branch; nothing mounts the render any more — no mirror list grants it):
+* packages/lararium-node/src/daemon-observe.ts (136 lines) and packages/lararium-node/tests/daemon-observe.test.ts (103 lines): delete both.
+* packages/lararium-node/src/island-behaviors.ts:24 imports `mountDaemonObserve`; :121-128 filter `mirrorClass === "observe"` defs into `observes` and stop them. Remove the import, the observe filter and `observes`; `mirrorDefs` becomes `allDefs`; the early return no longer stops observes.
+* packages/lararium-node/src/bag-paths.ts:19 and :139 type `mirrorClass?: "recovery" | "observe"` → `"recovery"` only (or drop the field if "recovery" alone carries no meaning anywhere — check its readers and say which). :175-188: delete the OBSERVE PLANE block (`OBSERVE_DIR`, `daemonObserveRoot`, `isObserveProjectionPath`) once their callers go.
+* packages/lararium-node/src/index.ts:190 re-exports `isObserveProjectionPath, daemonObserveRoot, OBSERVE_DIR`: drop them.
+* packages/lararium-node/src/lares-config.ts:67-72: drop `observeDaemon` and its doc line.
+* packages/lararium-node/src/disk-projector.ts:443: drop the observe comment.
+* packages/lararium-tw5/src/daemon-vm-core.ts:183 and packages/lararium-tw5/src/island-context.ts:100, packages/lararium-mesh/src/island-protocol.ts:254,1208: the `mirrorClass` union drops "observe" (and the comment at daemon-vm-core :183 drops the observe render).
+* packages/lares-cli/src/commands/carry.ts:45 imports `OBSERVE_DIR`; :413-416 `daemonBagOmission` lists `join(projections, OBSERVE_DIR, "daemon")` as an omission root: drop that root (keep `bags/daemon` if still meaningful) and its import; update the function comment.
+* packages/lares-cli/tests/carry-verbs.test.ts:102-103 seed observe files: remove those fixtures and any assertion counting them.
+* packages/lararium-node/tests/daemon-canon-mirror.test.ts:21 asserts no "daemon-observe" scope: keep it only if the scope string still exists anywhere; otherwise drop the assertion.
+* Other observe mentions to resolve:
+packages/lares-cli/src/ingest-core.ts:21:import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjection
+packages/lares-cli/src/ingest-core.ts:155: *  `wikis/` read the same way and whose `observe/` no ingest reads. */
+packages/lares-cli/src/ingest-core.ts:158:/** The refusal a source under `<projections>/observe` raises: an observe render reads one way, ne
+packages/lares-cli/src/ingest-core.ts:159:export class ObserveIngestRefused extends Error {
+packages/lares-cli/src/ingest-core.ts:160:  override readonly name = "ObserveIngestRefused";
+packages/lares-cli/src/ingest-core.ts:162:    super(&#96;observe-ingest-refused: ${source} sits under the observe plane (projections/observe), a
+packages/lares-cli/src/ingest-core.ts:166:/** Throw {@link ObserveIngestRefused} when `source` sits under `<projections>/observe`. */
+packages/lares-cli/src/ingest-core.ts:167:export function refuseObserveSource(source: string, dirs: MirrorDirs): void {
+packages/lares-cli/src/ingest-core.ts:168:  if (dirs.projections !== undefined && isObserveProjectionPath(dirs.projections, source)) throw n
+packages/lares-cli/src/ingest-core.ts:190:  const observe = dirs.projections;
+packages/lares-cli/src/ingest-core.ts:191:  &#47;/ An observe file derives no address: whatever source names it, it never reaches a wave.
+packages/lares-cli/src/ingest-core.ts:192:  return (_root, file) => observe !== undefined && isObserveProjectionPath(observe, file) ? null :
+packages/lares-cli/src/ingest-core.ts:716:    &#47;/ The source's base that observed this very content (a carrier holds one base per path).
+packages/lares-cli/src/commands/ingest.ts:25:import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, settleIngest, ingestVerd
+packages/lares-cli/src/commands/ingest.ts:51:  &#47;/ THE OBSERVE PLANE READS ONE WAY: a source under `<projections>/observe` refuses by name be
+packages/lares-cli/src/commands/ingest.ts:52:  try { refuseObserveSource(source, dirs); } catch (err) {
+packages/lares-cli/src/commands/ingest.ts:53:    if (!(err instanceof ObserveIngestRefused)) throw err;
+packages/lararium-tw5/src/action-handler.ts:211:  readonly diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; rea
+packages/lararium-tw5/src/action-handler.ts:305:  const candidates = mirrors.filter&#40;(m) => m.bagId === action.toBag && m.mirrorClass !== "ob
+packages/lararium-node/src/temp-layer.ts:13: *              under `<projections>/observe` never reads back, an internal-volatile title never
+packages/lararium-node/src/temp-layer.ts:32:import { isObserveProjectionPath, isTempLayerInternalTitle } from "./bag-paths.js";
+packages/lararium-node/src/temp-layer.ts:129: * returns its count. A file under `<projections>/observe` refuses, an internal-volatile title
+packages/lararium-node/src/temp-layer.ts:140:  if (isObserveProjectionPath(opts.projectionsRoot, opts.mirrorRoot)) return { read, refused: 1
+packages/lararium-node/src/temp-layer.ts:143:    if (isObserveProjectionPath(opts.projectionsRoot, file)) { refused++; continue; }
+For each: if it refuses or skips an `observe/` path, delete that branch (nothing writes there now); keep anything unrelated to the render.
+* Canon: bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem:82 and any .mem/.md under bags/ or CLAUDE.md naming `observe/daemon` or `observeDaemon` (`grep -rn "observe/daemon\|observeDaemon\|daemon-observe" bags CLAUDE.md`): true the text to the face canon mirror; reseal each touched .mem with `node packages/lares-cli/bin/lares.mjs meme normalize <file>`.
+
+TESTS: after the edits, `grep -rn "daemon-observe\|observeDaemon\|OBSERVE_DIR\|isObserveProjectionPath\|daemonObserveRoot" packages tools bags CLAUDE.md` (excluding dist and node_modules) returns nothing. Build + stamp each touched package (`pnpm --filter <pkg> build && node tools/stamp-build.mjs . --pkg <short>`), typecheck each, run each touched package's directly affected test files, then the full lares-cli and lararium-node suites one at a time with `--maxWorkers=4` (stop a run that shows no output for 15 minutes and report the last file). `node tools/evergreen-boundary.mjs`, `tools/placement-residency-witness.sh`, `bash tools/bcc-witness.sh` if a .mem changed. Failures reading `secret-home-unavailable` belong to another seat: count them apart.
+
+LIMITS: only retirement edits; do not touch Keyhive, commands/init.ts, the found path, or the control-document code. No git commit, no push, no stash. Never touch ~/.lares or docker.
+
+FINAL MESSAGE: files changed/deleted, the grep result, each check with counts (secret-home-unavailable apart), anything you could not do.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;V7gmoE9KN4gmLK8L2kV40L9SuxjBs8S9lDUyMyqFTuw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

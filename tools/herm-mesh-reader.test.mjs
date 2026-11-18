@@ -38,7 +38,7 @@ test("the same act reads as frozen (the control)", async () => {
 
 test("a pointer without an act identity is refused, never read as one shared default", () => {
   assert.throws(() => actOf({ cid: "c" }), /no actCid/);
-  assert.throws(() => pointerAdvanced({ version: 1 }, { version: 2 }), /no actCid/);
+  assert.throws(() => pointerAdvanced({ cid: "a" }, { cid: "b" }), /no actCid/);
 });
 
 test("dialsOf reads the bearings a decoded FLOW-map carries", () => {

@@ -1,0 +1,69 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/test-only-laws/report`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/test-only-laws/report.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/test-only-laws/report"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/test-only-laws/report"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! report.md — hand-back, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/test-only-laws/report.md` (hand-back, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/test-only-laws/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/test-only-canon-laws-2026-11-01`>>
+
+! Test-only canon laws (Law-Seeker: Lares (Tasked Spirit)) 2026-11-01
+
+Method: read-only grep of tests/witnesses; the hook = .githooks/pre-commit -> meme-check-staged.sh (`lares meme check` over staged .mem blobs), submission-currency-staged.sh, repo-tunnel-staged.sh. Evergreen-boundary and witnesses are NOT in the hook. Probes: scratch copy of child-grade-decision.mem, one mutation each, re-stamped with normalize (scratch only), then `meme check` (scratch: /home/joshu/.lares-scratch/law-seek/). `meme check` today covers: frame/bcc re-stamp, normalize clauses (incl. bare `#slot` -> `#/slot`, auto-nesting of ahu), duplicate meta key, content after EOT, torn frame, checkCarrierLifecycle (stage-owes: open lean / fold target). It does NOT run &#45;-gradient/&#45;-edges/&#45;-grammar.
+
+Reach: CI paths-ignore skips ALL of tests/witnesses/evergreen on a meme-only push (bags/**/*.mem, ''/*.md, wikis/'', CHANGELOG.md). So reach of every TEST-ONLY row = "a meme-only push is never judged; red surfaces on the next code push, if at all".
+
+| test / witness | law | ruling carrier | tool enforces? (probe) | class | reach |h
+| meme-lifecycle-tag.test.ts | stage carries status-why >=8 chars | otakiage ruling | NO (why removed, "x": exit 0) | TEST-ONLY | meme-only push ungated |
+| same, vocabulary-closed test | only 5 stages (`lifecycle/approved` passes check as ungoverned) | otakiage | NO | TEST-ONLY | same |
+| tools/evergreen-boundary (witness) canon-history, canon-dated-history | canon in api/mesh/browser carries no history narration/dated verbs | evergreen-sweep-2026 G37 | NO (planted "used to ... landed 2026-09-01": exit 0) | TEST-ONLY (ratchet ceilings 99/1) | meme-only push ungated; ceiling breaks later on a code push |
+| tools/s-vocabulary.test.mjs (+s-vocabulary.mjs canon half) | no retired key abbreviation in canon prose | s-vocabulary / key rulings | NO (planted: exit 0) | TEST-ONLY | same |
+| sigil-alignment.test.ts + quote-positionals.mjs | unquoted `lar:` positional loses its arg | tw5-calls-colon-caveat | NO (grammar preference only, exit 0) | TEST-ONLY | same |
+| doctype-witness / doctype.mjs | every carrier opens with DOCTYPE | memetic-wikitext | NO (DOCTYPE deleted: exit 0) | WITNESS-ONLY (hole) | same |
+| type-parity-witness | `type` field = the one media type | memetic-wikitext | NO (`text/plain`: exit 0) | WITNESS-ONLY | same |
+| carrier-edges.test.ts, empty-room-witness | no more dangling edges than ceiling; cited carrier not an empty room | empty-room / edges | NO in hook (`--edges` is opt-in; planted dangling: exit 0) | TEST-ONLY by ceiling; whole-corpus, so partly CI-ONLY-BY-DESIGN | same |
+| ahu-sections-address.test.ts (closes, `#/` roots, resolves) | ahu open has close; slot roots | ahu | PARTIAL: bare `#slot` normalized by tool; missing/malformed closer is auto-rewritten, not refused (probe: noclose, <code>&lt;&lt;~/ ahu>></code> exit 0) | TOOL(partial)+TEST; hole on closer | same |
+| closing-form.test.ts | no taught closer the engine rejects | ahu | NO (<code>&lt;&lt;~/ ahu>></code> accepted) | TEST-ONLY | same |
+| frames-per-carrier, carrier-shape, meta-fence-one-spelling, child-name-blocks (`$` name: probe exit 0), frame-shape-witness, head-parity-witness | one body; head/field shape; one fence spelling | memetic-wikitext | `--gradient` has shape faults, hook never runs it; `$` name unblocked | TEST/WITNESS-ONLY | same |
+| ahu-pair-parity-witness, frame-parity, call-reach, sigil-parity, grammar-in-a-wiki, meme-corpus-roundtrip, seed-fixed-point-corpus | grammar/engine parity or round-trip over corpus | various | n/a (whole-corpus, needs built engine/wasm/wiki) | CI-ONLY-BY-DESIGN | skipped on meme-only; fine if a nightly/land-train corpus gate exists |
+| seed-definition-matches-example, bundle-tracks-source, meme-laws-library | boot seed/ahu.mem vs plugin | noosphere-boot / ahu | NO | TEST-ONLY, narrow (2 named carriers) | meme-only edit of noosphere-boot.mem or ahu.mem ungated |
+| bed-manifest-sources (reads manifests/*.json + bags paths) | declared sources exist | bed manifests | n/a | TEST (json, not ignored) | runs |
+| ci-ignored-paths.test.mjs, tree-clean, land-train tests | CI config/tool | - | n/a | not canon laws | runs |
+| no test reads CHANGELOG.md or wikis/ as a law | - | - | - | none found | - |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/test-only-list-placement-red-control`>>
+
+!! TEST-ONLY list: placement, red/control
+
+# status-why (+ closed stage vocabulary): `carrier-lifecycle.ts` checkCarrierLifecycle (already called by `meme check`); add "stage without status-why >=8" and "lifecycle/* tag outside the 5". Red: base.mem with status-why removed -> exit 1 `stage:` line. Control: ungoverned carrier (no lifecycle tag) and kind/rite stay exit 0. Test then imports the same function over carrierFiles.
+# canon-history / canon-dated-history: new evergreen class `canon`, run from the hook over staged api|mesh|browser .mem (the classify() in evergreen-boundary.mjs is already pure per-file). Red: planted "used to ... landed 2026-09-01". Control: RULED-marked date, docs/ record carrier.
+# s-vocabulary canon half: same hook seat (staged .mem through `memWords`). Red: "The VK rotation". Control: `ni:///sha-256;...VK...` content address.
+# unquoted `lar:` positional: `meme check` rule (error-grade fault; quote-positionals.mjs already has the finder). Red <code>&lt;&lt;~ loulou lar:&#47;&#47;/x>></code>; control <code>&lt;&lt;~ loulou "lar:&#47;&#47;/x">></code>.
+# DOCTYPE present, `type` = media type, closer spelling <code>&lt;&lt;~/name>></code>, `$` meta name, one body: fold into carrier-shape faults and make `meme check` fail on any shape fault of error grade (cheap: the check already reads readCarrierShape in &#45;-gradient). Red: each planted deletion above; control: base.mem.
+# dangling edge on a STAGED carrier only: `--edges` over staged files vs HEAD (new naming-nothing edges refused). Whole-corpus empty-room stays CI-only.
+
+Decision for operator: the hook runs the built CLI only; items 1-5 are pure per-file and cost no more than today's check.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OYimT8HwgN2SiaAk_476-8DY5j2BbGIbmOgvTjbvmBY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

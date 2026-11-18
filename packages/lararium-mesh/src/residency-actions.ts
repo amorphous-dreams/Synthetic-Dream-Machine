@@ -264,6 +264,16 @@ export interface IngestCarrier {
    *  integrity, no body) rather than materialize the body as a CRDT text field
    *  (content-resolution.mem Scenario B). */
   readonly skinny?:    boolean;
+  /** THE OVERRIDE BASE A CARRY RESTORES (`override-base.ts`): the carrier identity (`carrierHash`, `sha256:…`) of the
+   *  canon record a working copy forked from, as an export read it off the record's meta envelope. A wave into a wiki's working layer stamps it on the
+   *  record it lands under this title, so a bundle's override keeps its base across a re-founding. Absent for every
+   *  disk scan (a base never projects): the composite forks a fresh base where a copy lands over canon. */
+  readonly overrideBase?: string;
+  /** THE FAMILY'S OTHER BASES: a carrier lands a family of records (its root and each fragment, `<uri>#/<slot>`), and each
+   *  fragment of a working copy forked its own base, so canon may move a fragment while its root holds still. By fragment
+   *  title, each the carrier identity of the canon record that fragment forked from; a working-layer wave stamps each on the
+   *  record it lands under that title. Every key names a fragment of THIS carrier (`<uri>#…`). */
+  readonly familyBases?: Readonly<Record<string, string>>;
 }
 
 /** One vanished carrier riding an INGEST wave — a path gone from disk where a base stands. A gesture
@@ -301,6 +311,13 @@ export interface IngestAction extends ResidencyActionBase {
    *  that holds no base over records that say something else; the gate answers `conflict`, `no-base`,
    *  and a person settles it. Absent → a gesture a person named. */
   readonly unattended?: boolean;
+  /**
+   * THE FACE-NAMED WAVE (the lit set): the handle index of the face whose OWN layer this wave lands in. The handler resolves
+   * that face's document through the island's face resolver and lands only where the vessel's device table names THAT face
+   * as the document's owner; it never falls back to the worn face. Absent → the worn face's layer, and a target whose owner
+   * names another face refuses.
+   */
+  readonly face?: number;
 }
 
 export type ResidencyAction =
@@ -389,6 +406,7 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
         ...(action.deletions ? { deletions: action.deletions } : {}),
         ...(action.kapae ? { kapae: action.kapae } : {}),
         ...(action.unattended === true ? { unattended: true } : {}),
+        ...(action.face !== undefined ? { face: action.face } : {}),
       };
     default: {
       // Exhaustiveness guard: a new ResidencyAction variant that lands here without a case
@@ -401,6 +419,13 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
 
 // ── Parser ─────────────────────────────────────────────────────────────────
 
+
+/** Whether a carrier's `familyBases` spells fragment bases of that carrier alone: a plain object, each key a fragment title
+ *  of the carrier (`<uri>#…`), each value a `sha256:` carrier identity. */
+function familyBasesOf(uri: string, v: unknown): boolean {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return false;
+  return Object.entries(v as Record<string, unknown>).every(([title, base]) => title.startsWith(`${uri}#`) && typeof base === "string" && /^sha256:[0-9a-f]{64}$/.test(base));
+}
 /**
  * Parse a Verb into a ResidencyAction when the verb belongs to
  * ACTION_VERBS and all required args validate. Returns null otherwise.
@@ -456,7 +481,7 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
       for (const c of rawCarriers) {
         if (!c || typeof c !== "object") return null;
         const o = c as Record<string, unknown>;
-        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"];
+        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"]; const overrideBase = o["overrideBase"]; const familyBases = o["familyBases"];
         if (typeof uri !== "string" || !uri) return null;
         if (file !== undefined && typeof file !== "string") return null;
         // A verb NEVER inlines a body: a carrier rides EITHER an inline `text` OR a
@@ -472,7 +497,9 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
         if (meta !== undefined && typeof meta !== "string") return null;
         if (size !== undefined && typeof size !== "number") return null;
         if (skinny !== undefined && typeof skinny !== "boolean") return null;
-        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}) });
+        if (overrideBase !== undefined && (typeof overrideBase !== "string" || !/^sha256:[0-9a-f]{64}$/.test(overrideBase))) return null;
+        if (familyBases !== undefined && !familyBasesOf(uri, familyBases)) return null;
+        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}), ...(typeof overrideBase === "string" ? { overrideBase } : {}), ...(familyBases !== undefined ? { familyBases: { ...(familyBases as Record<string, string>) } } : {}) });
       }
     }
     const deletions: IngestDeletion[] = [];
@@ -503,11 +530,15 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
     // unattended and read as a person's gesture would adopt where it must stand off.
     const unattended = args["unattended"];
     if (unattended !== undefined && unattended !== true) return null;
+    // A named face reads as a whole handle index; any other spelling refuses rather than land on a face nobody named.
+    const face = args["face"];
+    if (face !== undefined && (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0)) return null;
     return {
       ...base, verb: "INGEST", sourceUri, toBag, changeId, carriers,
       ...(deletions.length > 0 ? { deletions } : {}),
       ...(kapae.length > 0 ? { kapae } : {}),
       ...(unattended === true ? { unattended: true } : {}),
+      ...(typeof face === "number" ? { face } : {}),
     };
   }
 

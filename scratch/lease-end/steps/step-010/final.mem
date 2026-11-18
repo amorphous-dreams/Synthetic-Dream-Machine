@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-010/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-010/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-010/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-010/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-010/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-010/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ Step 10 stopped at the commit wall with head ''`beed5a2c1`'' unchanged. The new uncommitted test confirms that a held founder-lineage fork gets masked by an unknown dyad reading; its unforked control passed. The broker run reported 23 passes and the intended failure.
+
+I recorded the measurements, remaining slice-2 work, and next step in [[the hand-back|/home/joshu/.lares-scratch/lease-end/steps/step-010/out.md]] and updated [[state.json|/home/joshu/.lares-scratch/lease-end/state.json]]. No fix or commit landed.
+
+The lead law requires two attribution trailers from this session’s reminder, but the brief supplied neither line. Please supply the exact trailers so the next step can commit the red before applying the fix.
+
+&lt;&lt;~ oracle throw=`↯12 ✲ ⚂(3) ⁂:ᚠ⊗㐂`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the census completeness source still needs evidence from its actual callers · ↻ L-Prime` ooda-ha=`closed 1↺ -> open 1φ▶:commit-awaits-attribution-trailers` from=`lar://lares:agent@crossroads/red.evidence.waits` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yOoDNnldVBydger2HymwhDy5IvE5-wh7r88-Ec8932U`>>
+
+<<^ code=`&#x0004;` to=`?`>>

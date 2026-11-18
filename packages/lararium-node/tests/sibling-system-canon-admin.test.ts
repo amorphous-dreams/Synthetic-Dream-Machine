@@ -9,7 +9,7 @@ const teardown: Array<() => void> = [];
 afterEach(() => { while (teardown.length) teardown.pop()!(); });
 const B_BAG = "lar:///ha.ka.ba/@test/bags/face-b";
 
-test("system canon admin takes only the mounted face's Kahu hand", async () => {
+test("house canon admin takes only the mounted face's Kahu hand", async () => {
   const a = await standFoundedIsland(teardown);
   const b = await standFoundedIsland(teardown, { seedOffset: 10 });
   const { atom, personaGroupId, faceAnchor, personaKel, deviceEdge, signerDid,
@@ -26,10 +26,10 @@ test("system canon admin takes only the mounted face's Kahu hand", async () => {
     const verifier = await operatorDaemonOptions({ daemonAuth } as never, { dyadReading: () => "clear" }).verifierFactory!(a.ctx);
     const siblingVerify = vi.spyOn(providers[1]!, "verify");
     expect(await verifier.verify({ presenter: `0x${atom.key}`, bagUrl: BAG_IDS.lares, access: "admin", channel: "local" }))
-      .toEqual({ ok: false, reason: "kahu-reach: system canon takes the mounted face's hand; a sibling face holds none here" });
+      .toEqual({ ok: false, reason: "kahu-reach: house canon takes the mounted face's hand; a sibling face holds none here" });
     expect(siblingVerify).not.toHaveBeenCalled();
     expect(await verifier.verify({ presenter: `0x${a.daemonAuth.atom.key}`, bagUrl: BAG_IDS.lares, access: "admin", channel: "local" }))
-      .toMatchObject({ ok: false, reason: expect.stringContaining("system canon takes a hand in the Kahu cabal") });
+      .toMatchObject({ ok: false, reason: expect.stringContaining("house canon takes a hand in the Kahu cabal") });
     await expect(verifier.kahuReach!(BAG_IDS.lares, "wiki-act", `0x${atom.key}`)).rejects.toThrow("a sibling face holds none here");
     expect(await verifier.verify({ presenter: `0x${atom.key}`, bagUrl: B_BAG, access: "read", channel: "local" }))
       .toMatchObject({ ok: true });

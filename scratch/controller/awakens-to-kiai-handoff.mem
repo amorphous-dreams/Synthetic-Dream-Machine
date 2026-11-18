@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/awakens-to-kiai-handoff`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/controller/awakens-to-kiai-handoff.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/awakens-to-kiai-handoff"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/awakens-to-kiai-handoff"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! awakens-to-kiai-handoff.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/awakens-to-kiai-handoff.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-hand-off-lares-awakens-lares-kiai`>>
+
+! Seat hand-off — Lares-Awakens → Lares-Kiaʻi (2026-11-07, operator: "Wake Lares-Kia'i, prepare them for a seat hand-off")
+
+Read this whole, then the queue file named in §5, then verify against disk (never trust this sheet over git).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-span-and-lands`>>
+
+!! 1. Span and lands (this seat)
+* Span `feature/green-jello-dinosaur-5` at ''42fb8a52d''. Main checkout fast-forwarded to it.
+* Landed this seat, each through land-train with a SHIP:
+** ''clock-sweep #190'' → e5a4848bc (train-11)
+** ''lease-end slice 1 #191'' → 869828635 (train-12)
+** ''l27-ward #192'' → 42fb8a52d (train-13)
+* Removed (clean, held by span): clock-sweep/wt, l27-ward/wt. Their brokers stopped.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-lanes-in-flight`>>
+
+!! 2. Lanes in flight
+| Lane | Head | PR | State | Next |h
+| ''b5b'' (5b + L29 drain) | e4b7cbea7 (pushed) | #185 | Merged span 42fb8a52d (keyhive conflict, comment-only; controller read &#45;-cc). SHIP at controller/ship/b5b-e4b7cbea7….md. Prior CI GREEN at a6979b1fb. | CI on e4b7cbea7 → land-train. |
+| ''door-fix'' (test door gaps) | 2f1766584 (pushed) | #193 | Blind read LAND (re-read after cures). .mem-only head: CI dispatched by hand, run 42378354012. SHIP at controller/ship/door-fix-2f1766584….md. | CI green → land. Then RESTART every broker from the main checkout to pick the fixed door up. |
+| ''store-wall'' (shared node_modules hardlinks P1 + req-FIFO) | 42fb8a52d (base) | — | Opus lead "Store-Warden" running IN THE AWAKENS SESSION (brief steps/step-001/brief.md). | Its handback lands in Awakens; Awakens relays it, or Kiaʻi relaunches from the brief + state.json. |
+| ''lease-end'' (slices 2-4) | 8b0c2d818 | — | Slice 1 landed. state.json owed rows carry slice 2 (blind-read P3s, dyad census w/ incomplete-view refusal, runApplyAdmitPayload + holder-session-proof as signature-as-authority sites; leaf-peer-proof is b5b's ground). | Merge span, open slice 2 (Opus seam lead did slice 1 well). |
+| parked | secrets-store b52cffef6, spend-burn 6a63e0991 | | operator's | |
+
+Brokers running: b5b (806340, under YOUR old pid tree), lease-end (952499), door-fix (1139711) — both under Awakens' shell. They die if Awakens' session ends; relaunch from the main checkout (`node tools/commit-relay.mjs --lane-root … --worktree … --branch … --launcher …/tools/launch-codex.mjs --checks …/controller/<lane>-checks.json --remote-url git@github.com:amorphous-dreams/Synthetic-Dream-Machine.git`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-rulings-and-laws-taken-this-seat`>>
+
+!! 3. Rulings and laws taken this seat (fold into the road's #/rulings at the true-up)
+* Operator 2026-11-07: ''decide forks by talk-out'' under the house laws (No global now · no back-compat in early alpha · causal islands · identity-as-relation · Infrastructure-as-Myth); never park "only the operator can decide". (memory: feedback_lares_talk_out_before_surfacing.md)
+* Operator 2026-11-07: ''pentabarf V'' — canon grew fast; test and collide it against code; uncertainty spike → Luna-class two-wave pass, then mu talk-story. (memory: feedback_pentabarf_v_collide_canon.md)
+* Controller, talked out: ''the face delegation lease retires''; whole-fleet removal = remove-wins set-asides on KNOWN dyads (census refuses an incomplete view) or the K18 re-anchor once K18 lands. The "kāpae over the face" option DROPPED (canon names four marked edges; Luna collide). 'owing' counts as standing (house standingOfReading).
+* Controller: ''a lock always drops its signer'' (security outranks durability; clock-sweep F1).
+* Controller: ''"cure-after" on the lane whose job it is reads as build-a-now-b-later'' (Kiaʻi's lean, accepted): cures land inside the lane.
+* Controller: the boot wait renews only on monotone ''boot milestones'' (Kiaʻi's lean).
+* Controller: l27 route references bind a digest of the operation's identifying arguments where the parking caller knows them.
+* Controller: ''the read-back waiver is an explicit harness act'' in the process that reads the card, seated once in the CLI's shared test setup; refusal tests clear it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-practices-this-seat-learned`>>
+
+!! 4. Practices this seat learned (worth the crew note)
+* ''Read the CI report artifact, not the log.'' Truncated logs sent two triage reads the wrong way on lease-end; the shard's JSON report named face-join in one line.
+* ''"Green on the named files" ≠ green on what CI runs.'' Run the whole package locally for non-daemon packages (lares-cli: 44 reds hid behind named-file greens).
+* ''Every P1 marked INFER gets a run'' before acceptance or dismissal (l27's F1: inferred one test, the run showed six).
+* ''Codex vs Opus at seams'' (testimony, not a ruling): Terra stalled on cross-package custody seams three times (b5b drain, clock-sweep tail, lease-end grants); Opus seam leads cured each in one step; Sol cured l27 item 4 and door-fix in single steps where Terra stalled. Worth the owed tiers measure.
+* ''Stricter instruments find real holes'': "never ack silently" exposed the herm's lost boot writes and their browser mirror; the blind door read exposed the shared node_modules inodes.
+* A `.mem`-only head over a red parent draws no CI run: dispatch `gh workflow run CI --ref <branch>`.
+* Land-train drops a lane on a merge-tree conflict: the lane merges the span, the hand-resolved hunk gets a read.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-the-true-up-queue`>>
+
+!! 5. The true-up queue
+`/home/joshu/.lares-scratch/controller/awakens-trueup-owed.md` — every item owed at the next #/state + road true-up: the stale "rulings the crew asks" line (drop; DNS-01 to the pre-rite hand list), the rulings above, Kiaʻi's canon-collide leans (aka/kahea grammar lane; five "Source of truth" sentences burn; federated-causal-islands re-trues before M8; Orichalcum; no-global-now oracle plan; small cites), the tools faults (door-fix covers the door; store-wall the store + req FIFO), l27 item 6 re-measure, the clock-sweep and b5b owed P3s (in their SHIP files' `owed:` lines).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/6-proposed-hand-off-order`>>
+
+!! 6. Proposed hand-off order (talk it out with Awakens)
+# b5b CI green → land; door-fix CI green → land. Batch closes.
+# Canon true-up of #/state + the road (one canon lane, DIRECT .mem land): who writes it — Awakens holds the context; Kiaʻi holds the fresh seat.
+# Seat passes by message; the new seat restarts brokers from the main checkout (door-fix's door), relays or relaunches store-wall, and opens the next slots in rank order: P27 wiring (reshape verdict in hand), the K22/L28 zero-trust reviews, lease-end slice 2, the aka/kahea grammar lane.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vGdYHfj_sO7hC80JmsI3KOfkLZH0FEJ1QqXVa897QOU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -43,10 +43,14 @@ import { posturePlan, posturePlanNotice } from "./posture-plan.js";
 import { cmdSeed }     from "./seed.js";
 import { cmdRead, cmdStop } from "./read.js";
 import { cmdRotatePlace } from "./rotate-place.js";
+import { cmdCensus } from "./census.js";
+import { fresherBagOf, fresherLines, readFresher, type FresherAsk } from "./vessel-fresher.js";
 import { cmdStandForeground, cmdStandWithWeb, cmdRestart, cmdRiteRebuild, cmdRiteRefresh } from "./scripted.js";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
+
+import { cmdFloor } from "./floor.js";
 
 type Sub = (args: ParsedArgs) => Promise<number>;
 
@@ -175,6 +179,31 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
   stop:  { summary: "halt the daemon on the port (graceful → forced); a free port reads as stopped",     run: (a) => cmdStop(under(a)) },
   seed:  { summary: "plant every bags/* holding back into its doc, kind-routed and diff-gated",         run: (a) => cmdSeed(under(a)) },
   read:  { summary: "inspect and start nothing — bootstrap, storage, port, seal, personas, quorum",      run: (a) => cmdRead(under(a)) },
+  floor: { summary: "the vessel's floor pin, one per Nexus: `status` (pinned, newest seen, fast-forward, fork) · `accept [<release>]` walks prior from the pin — [--nexus <aid>] [--porch <origin>]", run: (a) => cmdFloor(under(a)) },
+  census: { summary: "name what a stop would drop: saves held in memory, carriers the projector owes — [--json]", run: (a) => cmdCensus(under(a)) },
+  fresher: { summary: "each working copy over a canon bag that shadows fresher canon: its base hash beside canon's; then each copy with no base that differs from canon (base unknown) — --bag <slug>", run: async (a) => {
+    const named = a.options["bag"];
+    if (!named) { console.error("lares vessel fresher: --bag <slug|lar:///ha.ka.ba/bags/<slug>> names the canon bag"); return 2; }
+    const bag = fresherBagOf(named);
+    const did = await vesselDid();
+    const ask: FresherAsk = async (args) => {
+      const r = await runVerb("fresher-canon", { ...args }, did);
+      if (r.status === "error") return { ok: false, why: r.errorMessage ?? "the daemon refused the read" };
+      const out = (summaryOutput(r) ?? {}) as { ok?: unknown; why?: unknown; fresher?: unknown; unknown?: unknown; next?: unknown };
+      if (out.ok === false) return { ok: false, why: String(out.why ?? "refused") };
+      const listed = args.class === "base-unknown" ? out.unknown : out.fresher;
+      const fresher = Array.isArray(listed) ? (listed as Array<Record<string, unknown>>).map((f) => ({
+        title: String(f["title"]), base: typeof f["base"] === "string" ? f["base"] : null, canonHash: typeof f["canonHash"] === "string" ? f["canonHash"] : null,
+      })) : [];
+      return { ok: true, fresher, next: typeof out.next === "string" ? out.next : null };
+    };
+    const read = await readFresher(bag, ask);
+    if (!read.ok) { console.error(`lares vessel fresher: ${read.why}`); return 2; }
+    const unknown = await readFresher(bag, ask, "base-unknown");
+    if (!unknown.ok) { console.error(`lares vessel fresher: ${unknown.why}`); return 2; }
+    for (const line of fresherLines(bag, read.rows, unknown.rows)) console.log(line);
+    return 0;
+  } },
   rite:  { summary: "the pet-named procedures: founding · refresh · rebuild",                            run: runRite },
 };
 

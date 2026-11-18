@@ -39,7 +39,7 @@ Named causal island tiers 0–3; authority-first sync order; edge-island identit
 
 No observer apprehends events in Universe simultaneously.
 A node never holds the full state of a distributed system "at once."
-It holds a snapshot of previously synchronized state.
+It holds a snapshot of the last synchronized state.
 This names no limitation. This describes topology.
 
 Simultaneously apprehended: your local Automerge doc snapshot, right now.
@@ -379,6 +379,6 @@ causal-island-may = [
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_PXn3-lgbY_nftXcUZ7J4867idG6mVkFYtKQBG0YRL0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bfMAQ_9pHIGcHaOOjew0AgqYz59wSDJjOjuurpt4bsI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

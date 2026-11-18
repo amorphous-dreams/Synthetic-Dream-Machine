@@ -49,3 +49,18 @@ describe("the landing queue never cuts a family", () => {
     expect(await slicesOf((landing) => { landing.enqueueFamily([]); })).toEqual([]);
   });
 });
+
+describe("the landing queue tells each slice it lands", () => {
+  test("a drain of several slices tells its listener once per landed slice, with the rows that slice landed; a queue that lands nothing tells nothing (control)", async () => {
+    const told: number[] = [];
+    const landing = new WaveLanding(async () => {}, async () => { await new Promise<void>((resolve) => setImmediate(resolve)); }, () => {}, () => {}, (landed) => { told.push(landed); });
+    for (let i = 0; i < WaveLanding.QUOTA * 2 + 30; i++) landing.enqueue(change(`lar:///t/breath/${i}`));
+    await landing.checkpoint();
+    expect(told).toEqual([WaveLanding.QUOTA, WaveLanding.QUOTA, 30]);
+    // CONTROL: an idle queue's checkpoint settles and tells no slice.
+    const idle: number[] = [];
+    const quiet = new WaveLanding(async () => {}, async () => {}, () => {}, () => {}, (landed) => { idle.push(landed); });
+    await quiet.checkpoint();
+    expect(idle).toEqual([]);
+  });
+});

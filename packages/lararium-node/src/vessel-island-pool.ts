@@ -13,7 +13,7 @@
 
 import { join } from "path";
 import {
-  VesselIslandPoolCore,
+  VesselIslandPoolCore, houseCanonSlugsSeated,
   type Repo,
   type IslandMsg_Event,
   type LarIslandToVesselMsg,
@@ -78,6 +78,8 @@ export interface VesselIslandPoolOptions {
     | { readonly ok: true; readonly pluginCids: readonly string[] }
     | { readonly ok: false; readonly error: string }
   >;
+  /** The floor each mount stands on: the vessel's accepted pin (`@lararium/mesh` `vesselFloorCid`); null mounts genesis. */
+  floorCid?: () => string | null | Promise<string | null>;
   /** Held disk-write capability: canon bag → mirror configs this pool MAY project. */
   diskMirrorGrant?: readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean }[];
   /** Override the mount silence budget in ms (tests). */
@@ -93,7 +95,7 @@ export class VesselIslandPool extends VesselIslandPoolCore {
   constructor(options: VesselIslandPoolOptions) {
     const workerUrl   = options.workerScriptUrl ?? DEFAULT_WORKER_URL;
     const storageRoot = options.storageRoot ?? null;
-    const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null };
+    const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null, houseCanon: houseCanonSlugsSeated() };
     super({
       host: {
         spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps, casData)),
@@ -105,6 +107,7 @@ export class VesselIslandPool extends VesselIslandPoolCore {
       readContent: nodeContentReader(options.cidDir ?? null, options.caps),
       diskMirrorGrant: options.diskMirrorGrant ?? [],
       resolvePluginCids: options.resolvePluginCids,
+      ...(options.floorCid ? { floorCid: options.floorCid } : {}),
       ...(options.onWorkerEvent ? { onWorkerEvent: options.onWorkerEvent } : {}),
       ...(options.portPolicy ? { portPolicy: options.portPolicy } : {}),
       ...(options.onPortMessage ? { onPortMessage: options.onPortMessage } : {}),

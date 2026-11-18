@@ -1,0 +1,54 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-tier-source/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-tier-source/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-tier-source/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-tier-source/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-tier-source/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-tier-source/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Tier-Source: Lares (Tasked Spirit). Read-only design read. Repo: /home/joshu/Synthetic-Dream-Machine at ffe05bc79. Write nothing. Mark claims MEASURED (file:line) or INFER.
+Context: /home/joshu/.lares-scratch/controller/terra-unwired-depth/final.md (your earlier read, Q3/Q4) and bags/lararium/ha.ka.ba/lararium/mesh/cap-tier.mem + reach-plane.mem. A builder lane now wires the declared cap-tier and the CONTRACT secrets floor onto every live crossing (node repo share, browser repo share, node bulb read face, node CAS block door).
+Design, from the code:
+# A production DeclaredTierSource: how a documentId AND a CAS CID each resolve to their bag and its declared tier (bag manifests, bag-manifest.ts ~81; the per-tiddler cascade cap-tier.mem names; the bag registry). Where does a CID learn its bag? What reads torn/absent, and what must that verdict be (fail closed vs inert)?
+# ONE reusable tightening predicate: its signature, and the exact insertion point at each allowing return of the four surfaces (list each return by file:line), so a structural deny never loosens and sibling/in-process paths get the right answer (does a same-face sibling ever need tightening? does in-process?).
+# The durable secrets registry: where in the per-face sealed catalog (packages/lararium-node, the sealed store) a secrets-plane record fits, how the boot reads it before the first share verdict, and what refuses when it cannot be read.
+# The reds that must fail first, one per surface plus restart and omission.
+Final message under 900 words.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iHNmFVXtYjFjMqzUlO1--CS-oT25kV-Erxa8mpM_CTU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -18,7 +18,7 @@ import {
 } from "@lararium/mesh";
 import { browserWalkStore, browserWalkLeaf } from "../src/browser-walk.js";
 import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";
-import { readKeystoreRow } from "../src/browser-custody.js";
+import { readKeystoreRecord } from "../src/browser-custody.js";
 
 let created = 0;
 const opened = new Set<string>();
@@ -105,7 +105,7 @@ describe("the browser walk", () => {
     const face = await bindSyntheticBrowserCustodySlot(name);
     await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     const a = await browserWalkLeaf(name, AID, face);
-    const kept = await readKeystoreRow(name, `nexus-key/${face}/${AID}`);
+    const kept = await readKeystoreRecord(name, `nexus-key/${face}/${AID}`);
     expect(kept).toEqual(a.seed);
     await expect(browserWalkLeaf(name, AID, `pg-held-nowhere-${crypto.randomUUID()}`)).rejects.toThrow();
   });

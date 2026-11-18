@@ -59,7 +59,7 @@ A device holds first-class standing; the cloud serves as an optional relay.
 
 ''Lararium:'' SATISFIED between node vessels; a browser device stands built in code
 with no e2e witness. A second device mints its OWN key and joins by a signed
-device-delegation edge (`lares fleet join` carries the internal `device-admit/v1` edge from `runDeviceAdmitEdge`,
+device-delegation edge (`lares fleet join` carries the internal `device-admit` edge from `runDeviceAdmitEdge`,
 `packages/lararium-keyhive/src/ceremony-core.ts`), and its boot proves that edge at the
 Binding Gate (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts`). The e2e set carries
 the witness: two vessels of one operator sync a bag both ways
@@ -134,14 +134,14 @@ out on purpose
 The service provider cannot read user data. End-to-end encryption by default.
 Servers hold only encrypted bytes; they see membership info but not document content.
 
-''Lararium:'' PARTIAL. Identity rows rest sealed under the vessel key; document content rests in
+''Lararium:'' PARTIAL. Identity records rest sealed under the vessel key; document content rests in
 cleartext, and the sealed store's later steps seal it
 (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>).
 
 * ''Stands built:'' the custody slot tree and the custody root seal from birth
   (`packages/lararium-node/src/custody-root.ts`). The keyhive archive, each face's veil
   archive and each face's anchors rest sealed under the vessel key from a founding's first
-  write, and each row reads whole or refuses by name
+  write, and each record reads whole or refuses by name
   (`packages/lararium-node/src/vault-carriers.ts` · `custody-seat.ts`). Sibling
   devices sync through a herm over a sealed channel the herm cannot read
   (`packages/lararium-mesh/src/leaf-peer-proof.ts`). The sealed-box and ciphertext-CAS
@@ -155,7 +155,7 @@ cleartext, and the sealed store's later steps seal it
   binds no TLS).
 * ''OWED:'' the operator's ruling that every surface encrypts from the first write
   (`lararium-identity#/encrypt-from-start`, a carrier that stands PROPOSED) stays unbuilt
-  for document content. The custody rows that rest outside the vessel key, and the order
+  for document content. The custody records that rest outside the vessel key, and the order
   the sealed store's steps land in, read at
   <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`>>. A WebAuthn-PRF wrap for a browser seed stands as a primitive
   (`packages/lararium-browser/src/seed-wrap-prf.ts`) with no production caller.
@@ -310,6 +310,6 @@ transparent to the meme layer — so Beelay would slot in beneath it, where
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tUnWPy67cJ7zMX3Ro9jIB6LRedvw8hWsrtFbMApltfI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wo_xGWGxa_w6Tbr1t8IE40TjjsBGyTRmW1gT3SbEj3w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

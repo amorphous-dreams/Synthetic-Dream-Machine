@@ -5,7 +5,7 @@
  */
 import { browserKeystoreCustodyIo } from "../../src/browser-custody.js";
 import {
-  bindFirstFaceSlot, faceCustodyHeld, faceKeyOpens, faceRowPath, lockFaceCustody, readFaceRow, unlockFaceCustody, writeFaceRow,
+  bindFirstFaceSlot, faceCustodyHeld, faceKeyOpens, faceRecordPath, lockFaceCustody, readFaceRecord, unlockFaceCustody, writeFaceRecord,
 } from "../../src/browser-face-custody.js";
 
 const scope = globalThis as unknown as {
@@ -26,24 +26,24 @@ scope.addEventListener("message", (event) => {
     const io = browserKeystoreCustodyIo(idbName);
     await bindFirstFaceSlot(idbName, a, PASS_A);
     await bindFirstFaceSlot(idbName, b, PASS_B);
-    await writeFaceRow(idbName, a, "recipe/1", enc("A's recipe"));
-    await writeFaceRow(idbName, b, "ledger/1", enc("B's ledger"));
+    await writeFaceRecord(idbName, a, "recipe/1", enc("A's recipe"));
+    await writeFaceRecord(idbName, b, "ledger/1", enc("B's ledger"));
     lockFaceCustody(idbName, a);
     lockFaceCustody(idbName, b);
-    const bPath = await faceRowPath(idbName, b, "ledger/1");
+    const bPath = await faceRecordPath(idbName, b, "ledger/1");
     const bBefore = (await io.read(bPath))!.slice();
 
     await unlockFaceCustody(idbName, a, [PASS_A]);
     const heldAfterUnlockA = { a: faceCustodyHeld(idbName, a), b: faceCustodyHeld(idbName, b) };
-    const controlReadA = dec(await readFaceRow(idbName, a, "recipe/1"));
-    const bReadRefusal = await refusalOf(readFaceRow(idbName, b, "ledger/1"));
-    const bWriteRefusal = await refusalOf(writeFaceRow(idbName, b, "ledger/1", enc("A writes over B")));
+    const controlReadA = dec(await readFaceRecord(idbName, a, "recipe/1"));
+    const bReadRefusal = await refusalOf(readFaceRecord(idbName, b, "ledger/1"));
+    const bWriteRefusal = await refusalOf(writeFaceRecord(idbName, b, "ledger/1", enc("A writes over B")));
     // THE BYPASS: A's held key against B's bytes, no router between.
     const aKeyOpensB = await faceKeyOpens(idbName, a, b, "ledger/1");
     // B's ciphertext planted in A's place: A's writer meets an occupied row its key never opens, and replaces nothing.
-    const aPlanted = await faceRowPath(idbName, a, "ledger/1");
+    const aPlanted = await faceRecordPath(idbName, a, "ledger/1");
     await io.write(aPlanted, bBefore);
-    const bOccupiedReplaceRefusal = await refusalOf(writeFaceRow(idbName, a, "ledger/1", enc("A writes over B's bytes")));
+    const bOccupiedReplaceRefusal = await refusalOf(writeFaceRecord(idbName, a, "ledger/1", enc("A writes over B's bytes")));
     const planted = (await io.read(aPlanted))!;
     if (!planted.every((x, i) => x === bBefore[i])) throw new Error("the refused write moved the planted bytes");
     await io.remove(aPlanted);
@@ -51,13 +51,13 @@ scope.addEventListener("message", (event) => {
     const bMid = (await io.read(bPath))!;
     const bBytesUnchanged = bMid.length === bBefore.length && bMid.every((x, i) => x === bBefore[i]);
     // A's ciphertext copied into B's place.
-    const aPath = await faceRowPath(idbName, a, "recipe/1");
+    const aPath = await faceRecordPath(idbName, a, "recipe/1");
     const aBytes = (await io.read(aPath))!;
     await io.write(bPath, aBytes);
     const copiedIntoB = await refusalOf(faceKeyOpens(idbName, a, b, "ledger/1").then((opens) => { if (opens) return "opens"; throw Object.assign(new Error("row-unopened"), { reading: "row-unopened" }); }));
     await io.write(bPath, bBefore);
     await unlockFaceCustody(idbName, b, [PASS_B]);
-    const controlReadBAfterUnlock = dec(await readFaceRow(idbName, b, "ledger/1"));
+    const controlReadBAfterUnlock = dec(await readFaceRecord(idbName, b, "ledger/1"));
     const onWorker = typeof (globalThis as { document?: unknown }).document === "undefined";
     scope.postMessage({
       op: "isolation", onWorker, heldAfterUnlockA, controlReadA, bReadRefusal, bWriteRefusal, aKeyOpensB, bOccupiedReplaceRefusal,

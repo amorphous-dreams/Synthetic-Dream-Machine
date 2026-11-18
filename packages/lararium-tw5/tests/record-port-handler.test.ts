@@ -44,6 +44,7 @@ async function rig(options: Parameters<typeof hasRecordPort>[0] = {}, cap: Islan
     }
   }, config: { preferences: { jsonSpaces: 2 } }, wiki: {
     filterTiddlers: () => ["Ordinary", "$:/StoryList"],
+    parseFilter: () => [], getFilterRunPrefixes: () => ({}), getTiddler: () => undefined,
     makeTranscludeWidget: (_title: string, options: { document: { createTextNode: (text: string) => unknown; createElement: (tag: string) => { addEventListener: (type: string, listener: () => void) => void } } }) => {
       let heldContainer: { appendChild: (node: unknown) => void; removeChild: (node: unknown) => void } | undefined;
       let heldButton: ReturnType<typeof options.document.createElement> | undefined;

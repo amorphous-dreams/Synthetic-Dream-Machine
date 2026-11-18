@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/survive-carry-notes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-08 (file date) — source `.lares-scratch/controller/survive-carry-notes.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/survive-carry-notes"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/survive-carry-notes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! survive-carry-notes.md — plan, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/controller/survive-carry-notes.md` (plan, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/carry-verbs-inputs-2026-11-08`>>
+
+! carry-verbs inputs (wave 3), 2026-11-08
+* census (survive-lanes/sensorium-census/final.md): UNIQUE = memory/persistence (testimony + witness edges), harvest *.baseline.ndjson; mesh/{who,authority,flow} UNIQUE-if-populated (unpopulated today). REBUILDABLE = memory/{content,structure,form} via `lares sense sweep --surface all` from transcripts (~/.claude/projects survives); harvest-stage via `lares mempalace harvest`; memetic-wikitext planes have no fill path today. Export: snapshot memory/persistence dir + harvest baselines; content snapshot optional (exact embeddings).
+* re-declare list (operator asked 2026-11-08 about bags/daemon void): export pet-names, persona labels, chair labels as plaintext strings; import replays them as fresh acts under the new keys; manifest counts what bags/daemon leaves behind by kind. Verify first where renameOwnPersona and the declaration store write.
+* red: include a memory row (lar:&#47;&#47;/ha.ka.ba/kahua/memory/&lt;key>) so the bags/daemon/** title exclusion never swallows memory.
+* with no face worn, the daemon VM holds NO private kahua mirror (bag-paths.ts DaemonDiskMirror doc): memory written before a face is worn stays CRDT-only. Founding wears persona zero; name it in the walk.
+* IDEMPOTENT-BY-INTENT (operator 2026-11-08 "This needs idempotent-by-intent/isomorphic-by-intent lifts? Approve"): import re-lifts kahua stage rows through kahua-door under the NEW face's grant, keyed by row-key + content hash: a title already holding the same hash in bags/kahua reads landed (no act); a second import lands nothing; an interrupted import re-enters to the same end (journal). Working rows re-pour by content key (L9) the same way. ISOMORPHIC-BY-INTENT: the export/import verbs and the projection classes name capabilities (holds a disk store, wears a face), never a host; a browser vessel's OPFS projection reads the same tree shape. Red adds: export -> reset -> found -> import twice -> kahua holds each lifted row once, signed under the new charter.
+* FACE REMAP on import (decided 2026-11-08): a re-found mints a new face root, so the face relation F changes and projections/{wikis/daemon-&lt;oldF>, bags/kahua-&lt;oldF>} no longer match the worn face. The manifest keys each face's rows by the face's PET-NAME (the re-declare list replays it first); import maps pet-name -> the new F, re-pours working rows into wikis/daemon-&lt;newF> and re-lifts kahua rows under the new face's grant (idempotent by row-key + hash). A face in the bundle with no matching pet-name on the new vessel refuses by name (no silent merge into another face's memory).
+* CORRECTION (2026-11-08, operator: sensorium memory and the daemon wiki memory stage serve two types): the sensoriums stand at &lt;root>/sensoriums, outside the hearth, so a re-found never reaches them; carry-verbs exports NO sensorium plane for re-found survival (the persistence plane's export waits with device-loss backup, deferred). carry-verbs carries the authored memory types alone: working + kapae, draft recovery, consented temp, daemon-&lt;F>, kahua-&lt;F> re-lift, the re-declare list.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ULqUmqfGIg8bpftC2ZnYPPprgaDje7yE49ymlFqOz7M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

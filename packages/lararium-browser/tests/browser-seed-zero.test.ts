@@ -67,7 +67,7 @@ describe("c1 · a seed-deriving act leaves its root seed zeroed", () => {
     const watch = watchByteBuffers();
     try {
       // The founder face's first bind asks once; its route binds the face's tree and its ward alike.
-      await expect(openBrowserVessel({ idbName, askCustody: async () => ({ kind: "passphrase", passphrase: FIXTURE_WARD_PASSPHRASE }), askWardRoute: async () => FIXTURE_WARD_PASSPHRASE,
+      await expect(openBrowserVessel({ idbName, foundFace: true, askCustody: async () => ({ kind: "passphrase", passphrase: FIXTURE_WARD_PASSPHRASE }), askWardRoute: async () => FIXTURE_WARD_PASSPHRASE,
         onPhase: (phase: string) => { if (phase === "bootstrap-kept") throw new BootHalted(); } } as BrowserVesselOptions)).rejects.toBeInstanceOf(BootHalted);
     } finally { watch.stop(); }
     const seed = await loadBrowserPersonaRootSeed(idbName, 0, FIXTURE_WARD);

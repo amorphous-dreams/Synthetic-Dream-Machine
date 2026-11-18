@@ -87,8 +87,11 @@ test("C2 RED — the passphrase leaves detached and the fields clear; the vessel
 });
 
 test("C3 RED — an insecure context, a frame, a policy out of force and an absent broker refuse by name; CONTROL: a standing document asks", () => {
-  const ok = { isSecureContext: true, framed: false, hasServiceWorker: true, evalRuns: false };
+  const ok = { isSecureContext: true, framed: false, opened: false, hasServiceWorker: true, evalRuns: false };
   expect(ceremonyRefusal(ok)).toBeNull();
+  // AN OPENER holds a handle to this same-origin window and could read its field: the document refuses before it paints one.
+  expect(ceremonyRefusal({ ...ok, opened: true })).toBe("ceremony-has-opener");
+  expect(ceremonyRefusal({ ...ok, opened: true, framed: true }), "a frame names itself first").toBe("ceremony-framed");
   expect(ceremonyRefusal({ ...ok, isSecureContext: false, hasServiceWorker: false })).toBe("ceremony-needs-secure-context");
   expect(ceremonyRefusal({ ...ok, framed: true })).toBe("ceremony-framed");
   expect(ceremonyRefusal({ ...ok, evalRuns: true })).toBe("ceremony-csp-absent");

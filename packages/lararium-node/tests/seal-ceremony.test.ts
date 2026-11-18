@@ -39,7 +39,7 @@ import {
   rotateSealEpoch, sealKeySetHash, sealLineageHead, sealRollBytes, seatNextDigest, verifyEd25519,
   type NexusDoc, type SealEpoch,
 } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { nexusCharterDocPath, readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { verifyReserveTransition, type ReserveTransition } from "../src/reserve-transition.js";
@@ -417,9 +417,9 @@ describe("the growth rite's rows", () => {
       writeFileSync(pendingPath(), own);
       writeFileSync(pendingPath(), JSON.stringify(shape));
       const refused = await act("crossing.state").catch((e: unknown) => e);
-      expect(refused, JSON.stringify(shape).slice(0, 50)).toBeInstanceOf(CustodyRowUnavailable);
+      expect(refused, JSON.stringify(shape).slice(0, 50)).toBeInstanceOf(CustodyRecordUnavailable);
       expect(refused).toMatchObject({ home: "seal", file: TRANSITION_PENDING_FILE, reading: "malformed" });
-      expect(await why(act("crossing.seal"))).toBe("CustodyRowUnavailable");
+      expect(await why(act("crossing.seal"))).toBe("CustodyRecordUnavailable");
     }
     writeFileSync(pendingPath(), own);
     // A kept row that does not read whole refuses the seal before it commits beside it.

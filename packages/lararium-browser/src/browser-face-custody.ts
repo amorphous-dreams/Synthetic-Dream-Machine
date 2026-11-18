@@ -49,19 +49,19 @@ import {
   type Credential, type FaceCarrier, type FaceCustodyKey,
 } from "@lararium/mesh";
 import {
-  BrowserCustodyRefused, browserKeystoreCustodyIo, custodyPinOf, readBrowserCustody, withCustodyRows, type ConfirmDoor, type CustodyBindRoute,
+  BrowserCustodyRefused, browserKeystoreCustodyIo, custodyPinOf, readBrowserCustody, withCustodyRecords, type ConfirmDoor, type CustodyBindRoute,
 } from "./browser-custody.js";
-import { WARD_ROW_PREFIX } from "./ward-core.js";
+import { WARD_RECORD_PREFIX, wardRootRowsOf } from "./ward-core.js";
 
 /** The ward's roster row under the place tree (`browser-ward-tree.ts` owns its codec). */
-const PERSONA_ROSTER_ROW = "persona-root-roster";
+const PERSONA_ROSTER_RECORD = "persona-root-roster";
 
-export const FACE_INDEX_ROW = "face-index";
+export const FACE_INDEX_RECORD = "face-index";
 export const FACE_TREE_PREFIX = "face-slots/";
 export const FACE_SEALED_PREFIX = "face-sealed/";
-const ANCHOR_ROW = "anchor";
-/** A persona root rests under its face's ward (`ward/h<N>/…`), never under a face key: the row name refuses at every face door. */
-const ROOT_ROW = "persona-root";
+const ANCHOR_RECORD = "anchor";
+/** A persona root rests under its face's ward (`ward/root/<fcid>/…`), never under a face key: the row name refuses at every face door. */
+const ROOT_RECORD = "persona-root";
 const SIDECAR = ".sealing";
 const ROW_NAME = /^[A-Za-z0-9][A-Za-z0-9._:/-]*$/;
 
@@ -108,11 +108,11 @@ function checkFaceKey(face: unknown): string {
   return face;
 }
 
-function checkRow(row: string): string {
-  if (!ROW_NAME.test(row) || row === ANCHOR_ROW || row === ROOT_ROW || row.endsWith(SIDECAR) || row.split("/").some((p) => p === "" || p === "." || p === "..")) {
-    throw new FaceCustodyRefused("row-name-refused", row);
+function checkRecordName(record: string): string {
+  if (!ROW_NAME.test(record) || record === ANCHOR_RECORD || record === ROOT_RECORD || record.endsWith(SIDECAR) || record.split("/").some((p) => p === "" || p === "." || p === "..")) {
+    throw new FaceCustodyRefused("row-name-refused", record);
   }
-  return row;
+  return record;
 }
 
 // ── the key map ───────────────────────────────────────────────────────────────────────────────────
@@ -181,7 +181,7 @@ async function groupDigest(face: string): Promise<string> {
 }
 
 async function readIndex(idbName: string): Promise<IndexEntry[]> {
-  const bytes = await browserKeystoreCustodyIo(idbName).read(FACE_INDEX_ROW);
+  const bytes = await browserKeystoreCustodyIo(idbName).read(FACE_INDEX_RECORD);
   if (bytes === null) return [];
   const parsed = JSON.parse(new TextDecoder().decode(bytes)) as { entries?: unknown };
   if (!Array.isArray(parsed.entries)) throw new Error("[browser-face-custody] the face index holds no { entries } record");
@@ -189,7 +189,7 @@ async function readIndex(idbName: string): Promise<IndexEntry[]> {
 }
 
 async function writeIndex(idbName: string, entries: readonly IndexEntry[]): Promise<void> {
-  await browserKeystoreCustodyIo(idbName).write(FACE_INDEX_ROW, enc(JSON.stringify({ entries })));
+  await browserKeystoreCustodyIo(idbName).write(FACE_INDEX_RECORD, enc(JSON.stringify({ entries })));
 }
 
 async function entryOf(idbName: string, face: string): Promise<IndexEntry | null> {
@@ -206,11 +206,11 @@ function carrierOf(idbName: string, fcid: string, row: string): FaceCarrier {
 }
 
 /** The keystore row a face row rests at (for a census): resolves through the index, routing only. */
-export async function faceRowPath(idbName: string, face: string, row: string): Promise<string> {
+export async function faceRecordPath(idbName: string, face: string, row: string): Promise<string> {
   checkFaceKey(face);
   const fcid = seated.get(idbName)?.get(face)?.fcid ?? (await entryOf(idbName, face))?.fcid;
   if (!fcid) throw new FaceCustodyRefused("no-custody-slot");
-  return rowPath(fcid, checkRow(row));
+  return rowPath(fcid, checkRecordName(row));
 }
 
 // ── reading the face ──────────────────────────────────────────────────────────────────────────────
@@ -278,7 +278,7 @@ async function keyFor(idbName: string, face: string): Promise<Seated> {
 
 // ── the seal ──────────────────────────────────────────────────────────────────────────────────────
 
-async function sealRow(idbName: string, fcid: string, fck: FaceCustodyKey, row: string, plaintext: Uint8Array, face?: string): Promise<void> {
+async function sealFaceRecord(idbName: string, fcid: string, fck: FaceCustodyKey, row: string, plaintext: Uint8Array, face?: string): Promise<void> {
   const io = browserKeystoreCustodyIo(idbName);
   const carrier = carrierOf(idbName, fcid, row);
   await io.exclusive(async () => {
@@ -299,7 +299,7 @@ async function sealRow(idbName: string, fcid: string, fck: FaceCustodyKey, row: 
   });
 }
 
-function openRow(idbName: string, fcid: string, fck: FaceCustodyKey, row: string, bytes: Uint8Array | null): Uint8Array | null {
+function openFaceRecord(idbName: string, fcid: string, fck: FaceCustodyKey, row: string, bytes: Uint8Array | null): Uint8Array | null {
   if (bytes === null) return null;
   const opened = openUnderFck(fck, carrierOf(idbName, fcid, row), bytes);
   if (opened.reading !== "opens") throw new FaceCustodyRefused("row-unopened", row, opened.reading);
@@ -307,22 +307,22 @@ function openRow(idbName: string, fcid: string, fck: FaceCustodyKey, row: string
 }
 
 /** Seal one row of `face` under its own key. */
-export async function writeFaceRow(idbName: string, face: string, row: string, value: Uint8Array): Promise<void> {
-  checkRow(row);
+export async function writeFaceRecord(idbName: string, face: string, row: string, value: Uint8Array): Promise<void> {
+  checkRecordName(row);
   const { fcid, fck } = await keyFor(idbName, face);
-  try { await sealRow(idbName, fcid, fck, row, value, face); } finally { fck.fill(0); }
+  try { await sealFaceRecord(idbName, fcid, fck, row, value, face); } finally { fck.fill(0); }
 }
 
 /** Open one row of `face` under its own key; null where none rests. */
-export async function readFaceRow(idbName: string, face: string, row: string): Promise<Uint8Array | null> {
-  checkRow(row);
+export async function readFaceRecord(idbName: string, face: string, row: string): Promise<Uint8Array | null> {
+  checkRecordName(row);
   const { fcid, fck } = await keyFor(idbName, face);
-  try { return openRow(idbName, fcid, fck, row, await browserKeystoreCustodyIo(idbName).read(rowPath(fcid, row))); } finally { fck.fill(0); }
+  try { return openFaceRecord(idbName, fcid, fck, row, await browserKeystoreCustodyIo(idbName).read(rowPath(fcid, row))); } finally { fck.fill(0); }
 }
 
 /** Remove one row of `face`, only where it opens under the face's own key; answers whether one stood. */
-export async function removeFaceRow(idbName: string, face: string, row: string): Promise<boolean> {
-  checkRow(row);
+export async function removeFaceRecord(idbName: string, face: string, row: string): Promise<boolean> {
+  checkRecordName(row);
   const { fcid, fck } = await keyFor(idbName, face);
   try {
     const io = browserKeystoreCustodyIo(idbName);
@@ -330,7 +330,7 @@ export async function removeFaceRow(idbName: string, face: string, row: string):
       const path = rowPath(fcid, row);
       const standing = await io.read(path);
       if (standing === null) return false;
-      openRow(idbName, fcid, fck, row, standing)?.fill(0);
+      openFaceRecord(idbName, fcid, fck, row, standing)?.fill(0);
       await io.remove(path);
       return true;
     });
@@ -338,11 +338,11 @@ export async function removeFaceRow(idbName: string, face: string, row: string):
 }
 
 /** The rows of `face` this thread holds a key for, by name (a census for the house; never a byte). */
-export async function faceRowNames(idbName: string, face: string): Promise<string[]> {
+export async function faceRecordNames(idbName: string, face: string): Promise<string[]> {
   const { fcid, fck } = await keyFor(idbName, face);
   fck.fill(0);
   const prefix = `${FACE_SEALED_PREFIX}${fcid}/`;
-  return (await browserKeystoreCustodyIo(idbName).list()).filter((k) => k.startsWith(prefix) && !k.endsWith(SIDECAR)).map((k) => k.slice(prefix.length)).filter((r) => r !== ANCHOR_ROW).sort();
+  return (await browserKeystoreCustodyIo(idbName).list()).filter((k) => k.startsWith(prefix) && !k.endsWith(SIDECAR)).map((k) => k.slice(prefix.length)).filter((r) => r !== ANCHOR_RECORD).sort();
 }
 
 /**
@@ -354,7 +354,7 @@ export async function faceKeyOpens(idbName: string, keyFace: string, rowFace: st
   try {
     const entry = await entryOf(idbName, checkFaceName(rowFace));
     if (!entry) return false;
-    const carrier = carrierOf(idbName, entry.fcid, checkRow(row));
+    const carrier = carrierOf(idbName, entry.fcid, checkRecordName(row));
     const opened = openUnderFck(fck, carrier, await browserKeystoreCustodyIo(idbName).read(carrier.path));
     if (opened.reading !== "opens") return false;
     opened.plaintext.fill(0);
@@ -386,7 +386,7 @@ export async function bindFirstFaceSlot(idbName: string, face: string, route: Cu
     if ((await io.read(treePath(fcid))) !== null) throw new Error("[browser-face-custody] a tree already rests at a freshly minted fcid");
     await io.write(treePath(fcid), encodeSlotTree(tree));
   });
-  await sealRow(idbName, fcid, fck, ANCHOR_ROW, enc(face));
+  await sealFaceRecord(idbName, fcid, fck, ANCHOR_RECORD, enc(face));
   const group = await groupDigest(face);
   await io.exclusive(async () => {
     const entries = await readIndex(idbName);
@@ -436,7 +436,7 @@ export async function nameFace(idbName: string, unnamed: string, face: string): 
   if (!unnamed.startsWith(UNNAMED) || !held) throw new FaceCustodyRefused("face-locked", undefined, "no unnamed face stands on this thread under that key");
   const io = browserKeystoreCustodyIo(idbName);
   const group = await groupDigest(face);
-  await sealRow(idbName, held.fcid, held.fck, ANCHOR_ROW, enc(face));
+  await sealFaceRecord(idbName, held.fcid, held.fck, ANCHOR_RECORD, enc(face));
   await io.exclusive(async () => {
     const entries = await readIndex(idbName);
     if (entries.some((e) => e.group === group && !e.removed)) throw new FaceCustodyRefused("already-bound");
@@ -462,7 +462,7 @@ export async function unlockFaceCustody(idbName: string, face: string, credentia
   if (opened.reading !== "opens") return { reading: "no-slot-opens", notes: opened.notes };
   // THE INDEX ROUTES AND NEVER DECIDES: the anchor under the opened key names the face's PersonaGroup.
   let anchor: Uint8Array | null = null;
-  try { anchor = openRow(idbName, entry.fcid, opened.treeKey, ANCHOR_ROW, await browserKeystoreCustodyIo(idbName).read(rowPath(entry.fcid, ANCHOR_ROW))); } catch { anchor = null; }
+  try { anchor = openFaceRecord(idbName, entry.fcid, opened.treeKey, ANCHOR_RECORD, await browserKeystoreCustodyIo(idbName).read(rowPath(entry.fcid, ANCHOR_RECORD))); } catch { anchor = null; }
   const named = anchor === null ? null : new TextDecoder().decode(anchor);
   anchor?.fill(0);
   if (named !== face) { opened.treeKey.fill(0); throw new FaceCustodyRefused("face-index-mismatch"); }
@@ -492,34 +492,29 @@ export async function clearFaceCustody(idbName: string, face: string | null, cre
   if (opened.reading !== "opens") return { reading: "no-slot-opens", notes: opened.notes };
   // THE INDEX ROUTES AND NEVER DECIDES: the sealed anchor under the opened key names the face the clear removes, before any byte goes.
   let anchor: Uint8Array | null = null;
-  try { anchor = openRow(idbName, entry.fcid, opened.treeKey, ANCHOR_ROW, await io.read(rowPath(entry.fcid, ANCHOR_ROW))); } catch { anchor = null; }
+  try { anchor = openFaceRecord(idbName, entry.fcid, opened.treeKey, ANCHOR_RECORD, await io.read(rowPath(entry.fcid, ANCHOR_RECORD))); } catch { anchor = null; }
   opened.treeKey.fill(0);
   const anchored = anchor === null ? null : new TextDecoder().decode(anchor);
   anchor?.fill(0);
   if (anchored !== named) throw new FaceCustodyRefused("face-index-mismatch");
-  // THE FACE'S ROOT GOES WITH IT: every ward this face's tree owns (`ward/h<N>/face-tree`), its roster line under the place tree,
+  // THE FACE'S ROOT GOES WITH IT: the ward filed under this face's tree (`ward/root/<fcid>/…`), its roster line under the place tree,
   // and its ward key's rows (`ward/sign/<G>/…`). The roster needs the place tree open, so a locked one refuses before the ask.
-  const owned: number[] = [];
-  for (const r of await io.list()) {
-    const m = /^ward\/h(\d+)\/face-tree$/.exec(r);
-    if (m && new TextDecoder().decode((await io.read(r)) ?? new Uint8Array()) === entry.fcid) owned.push(Number(m[1]));
-  }
-  if (owned.length > 0) {
+  const wardPrefix = wardRootRowsOf(entry.fcid).prefix;
+  const warded = (await io.list()).some((r) => r.startsWith(wardPrefix));
+  if (warded) {
     const place = await readBrowserCustody(idbName);
-    if (place.reading === "sealed" && !place.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, PERSONA_ROSTER_ROW);
+    if (place.reading === "sealed" && !place.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, PERSONA_ROSTER_RECORD);
   }
   if (!confirm(CLEAR_FACE_QUESTION)) return { reading: "asked" };
-  if (owned.length > 0) {
-    await withCustodyRows(idbName, async (act) => {
-      const raw = await act.read(PERSONA_ROSTER_ROW) as { roots?: readonly { readonly handleIndex: number }[] } | undefined;
-      if (raw?.roots) await act.write(PERSONA_ROSTER_ROW, { roots: raw.roots.filter((l) => !owned.includes(l.handleIndex)) });
-      // THE OWNER ROW GOES LAST: a clear torn partway leaves it, so the clear run again finds the rows still standing.
-      const wardRows = (await io.list()).filter((r) => owned.some((h) => r.startsWith(`${WARD_ROW_PREFIX}h${h}/`)));
-      for (const r of wardRows) if (!r.endsWith("/face-tree")) await io.remove(r);
-      for (const r of wardRows) if (r.endsWith("/face-tree")) await io.remove(r);
+  if (warded) {
+    await withCustodyRecords(idbName, async (act) => {
+      const raw = await act.read(PERSONA_ROSTER_RECORD) as { roots?: readonly { readonly tree: string }[] } | undefined;
+      if (raw?.roots?.some((l) => l.tree === entry.fcid)) await act.write(PERSONA_ROSTER_RECORD, { roots: raw.roots.filter((l) => l.tree !== entry.fcid) });
+      // THE PATH NAMES THE FACE: a clear torn partway leaves rows under this tree, and the clear run again finds them standing.
+      for (const r of await io.list()) if (r.startsWith(wardPrefix)) await io.remove(r);
     });
   }
-  for (const r of await io.list()) if (r.startsWith(`${WARD_ROW_PREFIX}sign/${named}/`)) await io.remove(r);
+  for (const r of await io.list()) if (r.startsWith(`${WARD_RECORD_PREFIX}sign/${named}/`)) await io.remove(r);
   const rows = await io.exclusive(async () => {
     const prefix = `${FACE_SEALED_PREFIX}${entry.fcid}/`;
     const mine = (await io.list()).filter((r) => r.startsWith(prefix));

@@ -280,7 +280,7 @@ So the outline owes a ''one-sentence answer'' and makes only this claim: ''the p
 
 !! When the frame changes, LABEL rather than convert
 
-''A re-declaration lands its cost on whoever holds the most legacy and the least budget to re-observe.'' Measured outside our field: every transformation between reference frames floors WORSE than the observations it carries, so a migration ''can only relabel legacy data at degraded accuracy, never improve it''. And a technical re-declaration by a body the affected party has no standing before moves that party's legal exposure directly — with no hostile actor anywhere in the loop. ''Assume it lands harder when someone means it.''
+''A re-declaration lands its cost on whoever holds the most prior observations and the least budget to re-observe.'' Measured outside our field: every transformation between reference frames floors WORSE than the observations it carries, so a migration ''can only relabel prior data at degraded accuracy, never improve it''. And a technical re-declaration by a body the affected party has no standing before moves that party's legal exposure directly — with no hostile actor anywhere in the loop. ''Assume it lands harder when someone means it.''
 
 ''The cure found by the field that paid for it'': run BOTH declarations valid concurrently, indefinitely, with every dataset carrying its declaration as metadata. ''The burden shifts from CONVERTING your data to LABELLING it'' — the cheapest survivable ask for a party with no budget, and it preserves their original accuracy instead of grinding it through a transform.
 
@@ -325,6 +325,6 @@ model, (3) settles the sink, (4) hunts C4's counterexample, and (6) instruments 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;oUTqbr3db9QrArtVz6doqRpTDAwuKxtkG7scHPLzQL4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8AXGutFJZsvgRf2zVBabQc63NjZOXLHOlvo4V1rL_hI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

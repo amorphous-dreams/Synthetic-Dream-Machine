@@ -38,7 +38,8 @@ import {
   parseCapTier, isBagHome, bagUri, placeBag, BAG_HOMES, bagHomeTravelsWithAClone,
   type BagHome, type BagManifest,
 } from "@lararium/mesh";
-import { larBagsDir, vesselDid } from "../env.js";
+import { join } from "node:path";
+import { larBagsDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -50,10 +51,33 @@ function surveyDir(args: ParsedArgs): string {
   return args.options["dir"] ?? larBagsDir();
 }
 
+/**
+ * One bag's sighting: the survey dir first, then (with no `--dir` named) the house's projected bags, where a bag with no
+ * canon source rests (`<root>/projections/bags`). Absent from both, it refuses naming each place it read.
+ */
+function findBag(args: ParsedArgs, bag: string, roots: ReturnType<typeof bagHomeRoots>): ReturnType<typeof surveyBags>[number] {
+  const dirs = [surveyDir(args)];
+  const projections = args.options["dir"] === undefined ? larProjectionsDirOrNone() : undefined;
+  if (projections !== undefined) dirs.push(join(projections, "bags"));
+  for (const dir of dirs) {
+    const found = surveyBags(dir, roots).find((s) => s.bag === bag);
+    if (found) return found;
+  }
+  throw new BagUsageError(`no bag "${bag}" stands under ${dirs.join(" or ")}`);
+}
+
 /** The bag name. The dispatcher already shifted its own verb off, so the name sits FIRST here. */
 function bagArg(args: ParsedArgs, verb: string): string {
   const raw = (args.positional[0] ?? "").trim();
   if (!raw) throw new BagUsageError(`\`bag ${verb}\` wants a bag name (e.g. lares)`);
+  // A BAG DOOR TAKES THE BAG BY ITS SLUG OR BY ITS BAG URI (`lar:///ha.ka.ba/bags/<slug>`, the name every other door prints):
+  // the uri reads as its slug. A `lar:` uri outside the bags plane names no bag, and refuses by name.
+  if (raw.startsWith("lar:")) {
+    const prefix = bagUri("");
+    const slug = raw.startsWith(prefix) ? raw.slice(prefix.length) : "";
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) throw new BagUsageError(`\`bag ${verb}\`: ${raw} names no bag: a bag door takes a slug (book) or its bag uri (${bagUri("book")})`);
+    return slug;
+  }
   return raw.replace(/^@/, "");   // an entity name carries no marker; the kind-plane segment names it
 }
 
@@ -96,8 +120,7 @@ function existsDeclaration(dir: string, bag: string): boolean {
 export async function cmdBagShow(args: ParsedArgs): Promise<number> {
   const bag   = bagArg(args, "show");
   const roots = bagHomeRoots();
-  const found = surveyBags(surveyDir(args), roots).find((s) => s.bag === bag);
-  if (!found) throw new BagUsageError(`no bag "${bag}" stands under ${surveyDir(args)}`);
+  const found = findBag(args, bag, roots);
   const place = placeBag(found.manifest, roots);
 
   emit(args, {
@@ -129,8 +152,7 @@ export async function cmdBagShow(args: ParsedArgs): Promise<number> {
 export async function cmdBagDeclare(args: ParsedArgs): Promise<number> {
   const bag   = bagArg(args, "declare");
   const roots = bagHomeRoots();
-  const found = surveyBags(surveyDir(args), roots).find((s) => s.bag === bag);
-  if (!found) throw new BagUsageError(`no bag "${bag}" stands under ${surveyDir(args)}`);
+  const found = findBag(args, bag, roots);
 
   const tierRaw = args.options["tier"];
   const homeRaw = args.options["home"];
@@ -182,8 +204,7 @@ export async function cmdBagHome(args: ParsedArgs): Promise<number> {
   const toRaw = (args.options["to"] ?? "").trim().toLowerCase();
   if (!isBagHome(toRaw)) throw new BagUsageError(`--to expects one of ${BAG_HOMES.join(" | ")}, got "${args.options["to"] ?? ""}"`);
   const roots = bagHomeRoots();
-  const found = surveyBags(surveyDir(args), roots).find((s) => s.bag === bag);
-  if (!found) throw new BagUsageError(`no bag "${bag}" stands under ${surveyDir(args)}`);
+  const found = findBag(args, bag, roots);
 
   const next = { home: toRaw as BagHome, ...(args.options["repo"] ? { repository: args.options["repo"] } : {}) };
   if (args.flags["approve"] !== true) {

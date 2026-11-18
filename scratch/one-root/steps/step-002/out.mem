@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-002/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-08 (file date) — source `.lares-scratch/one-root/steps/step-002/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-002/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-002/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/one-root/steps/step-002/out.md` (hand-back, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-002/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-2-hand-back`>>
+
+! Step 2 hand-back
+
+Step 1 (resolvers) remains open at the launch wall. HEAD remains `fa5f50e16be2be4aaf8e06d3a3bf82dc65b74877`; no commit or push occurred, and no seat runs. The lane carries the two untracked red tests from the prior launch. This launch extended `packages/lararium-node/tests/house-root-weld.test.ts` to compare Python and TypeScript guest harvest staging alongside vessel and identity, and to expect the new root. The staging expectation uses `<root>/hearth/staging/harvest/mempalace` as an implementation choice; the next lead should confirm that choice against callers when completing the table.
+
+Broker request 002 ran that single test file: both tests failed as expected. The unset-root resolver did not refuse; both languages agreed on their old paths, which differ from the requested paths. The earlier Python unset-root red remains in `packages/lararium-sensorium/scripts/test_house_root.py`; this launch did not rerun it. No production code changed and no affected-file suite ran. The weld remains incomplete: sensoriums, configuration, library and other table entries still need coverage before implementation.
+
+The resolver inventory remains at `steps/step-001/resolver-inventory.txt`. The acquired library Python mirror lives at `packages/lararium-sensorium/scripts/testbeds/bed_manifest.py`, not at the scripts root. `larariumDataHome()` feeds both sensoriums and `library-store.ts`, so library needs a separate `<root>/library` resolver while sensoriums move under hearth. `laresDataHome()` also feeds the repository registry and bag declaration; `larHome()` feeds `lares-config.ts`; staging uses `guest_harvest.py`. Home lookups for guest mempalace, executables, model caches, and session discovery need individual classification rather than blanket replacement. The host `python3` cannot import `sensorium` with scripts alone because it lacks `mempalace.palace`; select the repository test environment when expanding the cross-language weld, without installing outside the broker.
+
+Next: finish the table-wide red weld, implement TS and Python together, migrate every affected test to scratch `LAR_ROOT`, and run every affected test file under the applicable doors. Next relay request: 003. Step 2 projections and Step 3 container remain owed; the Step 3 shim and compose changes need the controller's SHIP.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ywiybd4zDNk3mgopqJW_mNnSkC1i_Aoqz0mX_GwBIN0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

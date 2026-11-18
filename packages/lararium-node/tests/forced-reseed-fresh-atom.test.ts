@@ -2,7 +2,7 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
-import { askRowPath, faceRowNames, groupRowPath } from "./face-paths.js";
+import { askRecordPath, faceRecordNames, groupRecordPath } from "./face-paths.js";
 import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -27,7 +27,7 @@ vi.mock("../src/identity-anchors.js", async (importActual) => {
 });
 
 import { runFoundTheFace } from "../src/commands/init.js";
-import { readCustodyRow, seatedCustody, unseatCustody } from "../src/custody-seat.js";
+import { readCustodyRecord, seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { faceAtomGroupFile, loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { loadIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
 import { larBootstrapPath, larDataDir, larIdentityDir } from "../src/vessel-paths.js";
@@ -60,9 +60,9 @@ function removePlaneEntry(group: string): void {
 }
 
 async function groupRows(): Promise<Array<{ file: string; seed: Uint8Array }>> {
-  const files = faceRowNames().filter((name) => /^face-atom-g[0-9a-f]{64}\.bin$/.test(name));
+  const files = faceRecordNames().filter((name) => /^face-atom-g[0-9a-f]{64}\.bin$/.test(name));
   return Promise.all(files.map(async (file) => {
-    const seed = await readCustodyRow("identity", file);
+    const seed = await readCustodyRecord("identity", file);
     expect(seed, `${file} opens through custody`).toHaveLength(32);
     return { file, seed: seed! };
   }));
@@ -86,7 +86,7 @@ describe("a forced re-seed mints a fresh atom", () => {
       const orphan = first.personaGroupId;
       const orphanSeed = (await loadFaceAtomOfGroup(orphan))!;
       const orphanKey = faceAtomKeyFromSeed(orphanSeed, orphan).key;
-      const atomBytes = readFileSync(groupRowPath(orphan, faceAtomGroupFile(orphan)));
+      const atomBytes = readFileSync(groupRecordPath(orphan, faceAtomGroupFile(orphan)));
       const archiveBytes = readFileSync(veilArchivePath(orphan));
       removePlaneEntry(orphan);
 
@@ -97,7 +97,7 @@ describe("a forced re-seed mints a fresh atom", () => {
       const freshSeed = (await loadFaceAtomOfGroup(fresh))!;
       expect(faceAtomKeyFromSeed(freshSeed, fresh).key, "the new group mints a fresh atom key").not.toBe(orphanKey);
       expect((await loadIdentityAnchors(1))?.personaGroupId).toBe(fresh);
-      expect(readFileSync(groupRowPath(orphan, faceAtomGroupFile(orphan))).equals(atomBytes), "the orphan's group atom row keeps its bytes").toBe(true);
+      expect(readFileSync(groupRecordPath(orphan, faceAtomGroupFile(orphan))).equals(atomBytes), "the orphan's group atom row keeps its bytes").toBe(true);
       expect(readFileSync(veilArchivePath(orphan)).equals(archiveBytes), "the orphan's archive keeps its bytes").toBe(true);
       expect(readFileSync(veilArchivePath(fresh)).equals(archiveBytes), "the new archive belongs to its group").toBe(false);
 

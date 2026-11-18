@@ -124,7 +124,7 @@ describe("the faceless reader at a herm's floor gate", () => {
 
 describe("the herm's floor pin, carried signed", () => {
   const at = (w: World, h: { kel: TestPlace }, carriers: Iterable<string>) =>
-    ({ nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, kelRows: rowsOf(h.kel), standing: { via: "carrier" as const, carriers: new Set(carriers) } });
+    ({ nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, kelEntries: rowsOf(h.kel), standing: { via: "carrier" as const, carriers: new Set(carriers) } });
 
   test("CONTROL: the herm's own claim files its pin for a reader whose replica counts the herm as carrier", async () => {
     const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
@@ -230,7 +230,7 @@ describe("the gate-native carriage pull", () => {
     const pullFlow = gateNativeCarriagePull({
       pins,
       nexuses: () => [elsewhere.nexus, w.nexus, w.nexus],
-      refresh: async () => { filePlaceFloorPins(pins, placeFloorPinsFromBoard(board), { nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, kelRows: rowsOf(h.kel), standing: { via: "carrier", carriers: new Set([h.key]) } }); },
+      refresh: async () => { filePlaceFloorPins(pins, placeFloorPinsFromBoard(board), { nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, kelEntries: rowsOf(h.kel), standing: { via: "carrier", carriers: new Set([h.key]) } }); },
       presentationFor: async (nexus) => {
         asked.push(nexus);
         const arm = await placeArmFor(carriageEntriesFromBoard(board), w.held!.roster, reader.key);

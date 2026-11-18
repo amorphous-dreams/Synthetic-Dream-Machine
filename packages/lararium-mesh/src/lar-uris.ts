@@ -3,6 +3,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/lar-uris — the law this file enacts.
  */
 
+import { resolvedTitlePath } from "./projection-filter.js";
 import type { LarDoc } from "./base-doc.js";
 import { emptyLarDoc } from "./base-doc.js";
 
@@ -85,7 +86,7 @@ export function stableTagUri(name: string): string {
 // URI — the reaction-router lifts them into a structured args payload the verse-event
 // carries (#48). A GENUINE dispatch also sets the `lares-dispatch` marker field; the
 // router fires a verb verse-event ONLY on a marked tiddler, so the verb machinery's own
-// lar:-titled writes (`…/verbs/<id>` invocations, `bags/daemon/outcomes/<id>` outcomes —
+// lar:-titled writes (`…/verbs/<id>` invocations, `bags/control/outcomes/<id>` outcomes —
 // which carry a `verb` field but never the marker) stay router-inert BY CONSTRUCTION,
 // and no dispatch loop can form. The VOLATILE namespace keeps the summon tiddler
 // reaction-routable (lar: prefix) yet unpersisted/unsynced (isVolatileVmUri → the
@@ -342,46 +343,24 @@ export function parseMeshScale(s: string | null | undefined): MeshScale | undefi
 
 // ── Daemon bag + Persona bag ─────────────────────────────────────────────────
 
-/** Daemon wiki bag id — the lararium's own central daemon `daemon` bag (one-recipe model).
- *  SOVEREIGN-per-vessel: this vessel's own control-plane, never shared across vessels. */
+/** The vessel's daemon document — `bags/daemon`, SOVEREIGN-per-vessel and never shared across vessels. It holds vessel
+ *  state (bindings, the bag-doc ledger, the active-wiki marker) and names the control document; it carries no canon role
+ *  (the daemon wiki's canon follows the worn face, `daemonFaceCanonBag`) and no mirror. */
 export const DAEMON_BAG_ID    = bagUri("daemon");
+/** Vessel-private homes: hosts address these documents by bag coordinate; pages never mount them. The control home rests
+ *  every control family (`control-home.ts`); no recipe composes it and no mirror names it. */
+export const CONTROL_HOME_ID = bagUri("control");
+export const SECRET_HOME_ID = bagUri("secret");
 
-/** A title the daemon's control plane owns (`bags/daemon/**`: verb outcomes, effects, flows, cap events; and the swarm's `$:/lares/swarm/**` controls). It lands in the
- *  daemon doc alone and never projects: the daemon stays CRDT only (operator, 2026-11-01). */
-export function isControlPlaneUri(title: string): boolean {
-  return resolvedTitlePath(title).startsWith(`${DAEMON_BAG_ID}/`) || isSwarmUri(title);
-}
-
-/** The swarm's live controls (house cap, lane shares, go, lane state, roster, receipts) rest in the daemon wiki under this prefix. */
+/** The swarm's live controls (house cap, lane shares, go, lane state, roster, receipts) rest in the control document under this prefix. */
 export const SWARM_URI_PREFIX = "$:/lares/swarm/";
 
-/** True for a title that starts with `SWARM_URI_PREFIX` as spelled, or resolves under it the way `isControlPlaneUri` reads a path: a dot
- *  segment that folds the title out of the prefix still reads as the swarm's, so no spelling of either side slips past the law. */
+/** True for a title that starts with `SWARM_URI_PREFIX` as spelled, or resolves under it through a dot segment. */
 export function isSwarmUri(title: string): boolean {
   return title.startsWith(SWARM_URI_PREFIX) || resolvedTitlePath(title).startsWith(SWARM_URI_PREFIX);
 }
 
-/**
- * The path a title resolves to, read the way a reader resolves a URL: the scheme lower-cased, each percent escape decoded
- * (a malformed one keeps its bytes), and the `.` and `..` segments folded. A law that reads a title by prefix reads it
- * here first, so no spelling of a path slips past the prefix it resolves to.
- */
-export function resolvedTitlePath(title: string): string {
-  const scheme = /^[A-Za-z][A-Za-z0-9+.-]*:/.exec(title)?.[0] ?? "";
-  let rest = title.slice(scheme.length);
-  try { rest = decodeURIComponent(rest); } catch { /* a malformed escape keeps its bytes */ }
-  const segments = rest.split("/");
-  let leading = 0;
-  while (leading < segments.length && segments[leading] === "") leading++;
-  const out: string[] = Array(leading).fill("");
-  for (const segment of segments.slice(leading)) {
-    if (segment === "") continue;
-    if (segment === ".") continue;
-    if (segment === ".." && out.length > leading && out[out.length - 1] !== "") { out.pop(); continue; }
-    out.push(segment);
-  }
-  return scheme.toLowerCase() + out.join("/");
-}
+export { resolvedTitlePath };
 
 /** e.g. flowUri("crystal") → "lar:///ha.ka.ba/lararium/daemon/flows/crystal" — a Flow's
  *  pet-name IS its address: a callable, composed cap-stack tiddler in the daemon bag. */
@@ -493,23 +472,11 @@ export function nexusRegistryUri(nexusPubkey: string): string {
  * onto another Nexus's handles-face under a stable key. Federates read-open within the island; never global.
  *
  * This URI doubles as the WHO face's ORACLE-KEY on the PUBLIC plane: a crossroads-plane tiddler at this key holds
- * the face doc's automerge: URL (resolveCatalogRow), so a stranger resolves the per-Nexus WHO board through
+ * the face doc's automerge: URL (resolveCatalogEntry), so a stranger resolves the per-Nexus WHO board through
  * the crossroads plane without standing in any operator's grant graph (canon: lararium/docs/crossroads).
  */
 export function nexusHandlesUri(nexusPubkey: string): string {
   return `${NEXUS_DOC_URI}/${nexusPubkey}/handles`;
-}
-
-/**
- * Does this address name a per-Nexus WHO-face pointer — `bags/nexus/<pubkey>/handles`, exactly the
- * shape `nexusHandlesUri` mints? Shape-only, on purpose: it tells a projector "this is a WHO-board
- * pointer" without knowing WHICH pubkey or whether that pubkey resolves to a charter, an anchor, or
- * a private nexus-of-one — the RESOLVED kind is a separate fact a caller must combine with this one
- * (crossroads-charter-only-mirror). Keying on the URI shape alone would let a private-nexus-of-one's
- * throwaway pointer through just because it LOOKS like a handles record.
- */
-export function isNexusHandlesUri(uri: string): boolean {
-  return uri.startsWith(`${NEXUS_DOC_URI}/`) && uri.endsWith("/handles");
 }
 
 // ── Social plane doc-type aliases + empty constructors ────────────────────
@@ -592,7 +559,8 @@ export const HEARTH_DAEMON_URL_TIDDLER     = `${DAEMON_BAG_ID}/hearth/daemon-url
 /** Persona oracle tiddler: the PINNED signer DID ("0x"+hex) the Binding Gate verifies the edge against —
  *  self-DID for an anon (self-signed), a granting root-DID for a delegated/operator vessel. */
 export const SIGNER_DID_TIDDLER            = `${PERSONA_NAMESPACE}/binding/signer-did`;
-/** Persona oracle tiddler: the hearth true-name (engine content-CID) this vessel binds TO — the place in (vessel × hearthTrueName). */
+/** Persona oracle tiddler: the hearth true name a face's edge binds on this vessel (the seed-charter Nexus AID; the stated
+ *  empty name on a gateless leaf). It lands with the face, never with the place, and never names an engine CID. */
 export const HEARTH_TRUE_NAME_TIDDLER      = `${PERSONA_NAMESPACE}/hearth/true-name`;
 /** The prefix every OWN-PERSONA self tiddler sits under — the human's labels for their own faces, one per
  *  handle-index. The persona plane rides the PRIVATE tier: the self-slot FLEET-syncs it same-operator, and the
@@ -619,12 +587,21 @@ export const PERSONA_KEL_PREFIX_TIDDLER     = `${PERSONA_NAMESPACE}/binding/pers
 // ── personal / draft binding tiddler prefixes ───────────────────────────
 // The (PersonaGroup × recipe-fingerprint) → docUrl bindings live as tiddlers
 // under these prefixes (now persona-namespaced — PersonaGroup-scoped, cross-device).
-// One fingerprint produces THREE bindings (personal, draft, working) that
-// share a lifecycle. The binding tiddler title is `${PREFIX}/${fingerprintHex}`;
+// One fingerprint produces a personal and a draft binding that share a lifecycle. A FACE's binding tiddler rides at
+// `${PREFIX}/${group}/${fingerprintHex}` and the faceless floor's at `${PREFIX}/${fingerprintHex}` (`slotBindingKey`);
 // its `text` carries the bound URL.
 // Canon: lar:///ha.ka.ba/lararium/api/personal-slot#/core-claim
 export const PERSONAL_BINDINGS_PREFIX = `${PERSONA_NAMESPACE}/personal-bindings`;
 export const DRAFT_BINDINGS_PREFIX    = `${PERSONA_NAMESPACE}/draft-bindings`;
+
+/**
+ * The title of one (PersonaGroup × recipe-fingerprint) binding row. The daemon document serves every face a vessel holds and
+ * two faces can read one canon (one fingerprint), so a seated face's row carries its group; a row with no group names the
+ * faceless floor's document, which the Lift moves under the face that seats.
+ */
+export function slotBindingKey(prefix: string, fingerprint: string, group?: string | null): string {
+  return group ? `${prefix}/${encodeURIComponent(group)}/${fingerprint}` : `${prefix}/${fingerprint}`;
+}
 
 // ── Well-known bag slot IDs ────────────────────────────────────────────────
 // Six root docs (two planes) + in-memory leaves.
@@ -636,8 +613,8 @@ export const DRAFT_BINDINGS_PREFIX    = `${PERSONA_NAMESPACE}/draft-bindings`;
  * Per-wiki recipe slots (`temp`, `draft`, `@<wiki-slug>`, library bags) live
  * in `wiki-recipe.ts` — slot URIs in the same lar:///ha.ka.ba/bags/<name>
  * namespace. Structural slots arrive as typed IslandGrants on the manifest;
- * the lares bag rides the lararium doc's well-known tiddlers; library bags resolve
- * island-side from the catalog registry.
+ * the live `lares` and `lararium` documents rest in the Kahu realm (the realm's standing registration names them, no
+ * registry row does); every other library bag resolves island-side from the catalog registry.
  */
 export const BAG_IDS = {
   oracle:     ORACLE_DOC_URI,

@@ -19,6 +19,9 @@
 
 import {
   emptyLarDoc,
+  daemonFaceCanonBag,
+  standControlHome,
+  floorCidToMount,
   type Repo, type AutomergeUrl, type LarDoc,
   type WikiRecipe,
   type IslandMsg_Manifest,
@@ -49,6 +52,7 @@ export interface BrowserDaemonVmOptions {
   pluginCids?:      readonly string[];
   /** Canonical one-recipe model for the daemon island. */
   recipe:           WikiRecipe;
+  faceRelation?:    string | null;
   /** Typed structural capabilities (engine doc, daemon bag, the lares bag, catalog registry access). */
   grants:           IslandGrants;
   /**
@@ -116,6 +120,8 @@ export async function openBrowserDaemonVm(
   opts: BrowserDaemonVmOptions,
 ): Promise<DaemonVmCore> {
   const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, ownedDocument = false, workerScriptUrl, spawnWorker, onManifestReplay, caps } = opts;
+  const canonBag = opts.faceRelation && grants.canonUrl ? daemonFaceCanonBag(opts.faceRelation) : undefined;
+  const daemonRecipe: WikiRecipe = { ...recipe, ...(canonBag ? { canonBag } : {}) };
 
   // ── Daemon doc handle (browser strategy: find-or-create) ────────────────────
   const daemonHandle = await (async () => {
@@ -126,6 +132,8 @@ export async function openBrowserDaemonVm(
       return repo.create<LarDoc>(emptyLarDoc());
     }
   })();
+  // ── The vessel's control document, named by the daemon document (`control-home`) ──
+  const controlHandle = await standControlHome(repo, daemonHandle);
   // ── Persona doc handle (same find-or-create) — the one VM tends both bags ────
   const personaHandle = await (async () => {
     try {
@@ -147,7 +155,7 @@ export async function openBrowserDaemonVm(
   // The wrapper IS the shore — host pieces + find-or-create daemonHandle; the lifecycle and the
   // whole result surface (DaemonVmCore) live once in the core. Return it directly, no re-spread.
   return openDaemonVmCore(host, {
-    repo, daemonHandle, recipe, grants, coreHash,
+    repo, daemonHandle, controlHandle, recipe: daemonRecipe, grants, coreHash,
     ...(personaHandle ? { personaHandle } : {}),
     ...(personaBagId  ? { personaBagId }  : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),
@@ -156,6 +164,14 @@ export async function openBrowserDaemonVm(
       documentUrl: daemonUrl,
       storage: { type: "idb" as const, dbName: ownedDaemonDbName(daemonUrl) },
     } } : {}),
+    // THE VESSEL'S FLOOR PIN, off the control document (one shape with the node host): the daemon island mounts the floor this
+    // vessel accepted; a control document that reads nothing names no pin, and the island reads its genesis seed's floor.
+    floorCid: () => {
+      let doc: LarDoc | undefined;
+      try { doc = controlHandle.doc(); } catch { return null; }
+      const pick = floorCidToMount({ controlDoc: doc, nexus: null, genesis: null });
+      return pick.source === "pin" ? pick.cid : null;
+    },
     workerScriptUrl,
   });
 }

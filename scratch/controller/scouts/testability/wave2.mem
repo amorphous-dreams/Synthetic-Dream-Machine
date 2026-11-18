@@ -1,0 +1,160 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/wave2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/testability/wave2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/wave2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/wave2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! wave2.md — research, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/testability/wave2.md` (research, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/testability-scout-wave-2`>>
+
+! Testability scout, wave 2 (outside practice, searched 2026-10-31)
+
+Kilo-Scout: Lares (Tasked Spirit). Tools: WebSearch + WebFetch. Fences held: read-only on the repo, nothing run. "(fetched)" = I read the page through WebFetch; "(search)" = a search-result summary only, the page itself not read; "(memory)" = my own prior knowledge, no source this wave. Treat search-only and memory items as testimony.
+Repo pins read this wave: vitest 5.0.3 in every package.json that names it (mempalace, keyhive, browser, memetic-frame, mesh, web, sensorium, ...); TypeScript 7.0.2 (root); &#64;automerge/automerge 3.4.1; automerge-repo 2.6.0-alpha.5.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-strykerjs-and-vitest-5-the-canon-claim-has-a-d`>>
+
+!! 1. StrykerJS and vitest 5: the canon claim has a dated cause and a fix
+
+* Claim in canon (`cli-test-laws.mem` #/the-holes): "Stryker 10 ... activates no mutant at runtime: every score read the same."
+* Cause, upstream issue #6262 (fetched, closed 2026-10-23): with vitest 5 and <code>&#64;stryker-mutator/vitest-runner&#64;10.0.0</code>, runtime mutants covered by tests inside a `describe` reported Survived with 0 tests run. The runner joined suite and test names with a space into `testNamePattern`; vitest 5 joins with `>`, so the filter matched nothing. Tests outside `describe` and static mutants were not hit. https://github.com/stryker-mutator/stryker-js/issues/6262
+* Fix: release notes show v10.1.0 "support vitest v5" (#6214) and a test-name-filter fix (#6246), re-released as v10.1.1 on 2026-10-23 for a provenance fix (fetched). https://github.com/stryker-mutator/stryker-js/releases . The runner's package.json at master reads version 10.1.1, `peerDependencies.vitest ">=2.0.0"`, dev-pinned at vitest 4.1.12 (fetched). https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/vitest-runner/package.json
+* Open or recent vitest-5 issues (issue search page, fetched 2026-10-31): #6240 per-test coverage misattributed with vitest 5 (closed 2026-10-03, fix release not read); #6256 mutants with no covering test report Survived instead of NoCoverage (open since 2026-10-15); #6272 `--logLevel debug` crashes on circular JSON (open, 2026-10-24); #6236 and #6223 runner forces `pool: 'threads'` (closed 2026-10-23; v10.1.0 notes "support vitest pool options" #6268). https://github.com/stryker-mutator/stryker-js/issues?q=vitest+5
+* Consequence: the house probe that found "every score read the same" very likely ran 10.0.0 (''testimony'': the probe date and version are not in the repo). The release that fixes it is eight days old. Re-probe 10.1.1 against vitest 5.0.3 is warranted; the repo pins vitest 5.0.3 and the issue cites 5.0.3 as an affected version.
+* Runner docs (fetched): it always uses `coverageAnalysis: "perTest"` (the setting is ignored); vitest's own coverage is disabled; browser mode unsupported; in-source tests need `// Stryker disable all`. https://stryker-mutator.io/docs/stryker-js/vitest-runner/ The docs page text I fetched still said "only threads: true is supported" and may lag v10.1.0 (''conflict inside the sources; check the installed runner'').
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-inplace-sandbox-incremental-per-package`>>
+
+!! 2. inPlace, sandbox, incremental, per-package (fetched: configuration docs)
+
+https://stryker-mutator.io/docs/stryker-js/configuration/
+* `inPlace` defaults to ''false'': Stryker copies the code into a sandbox under `tempDirName` (default `.stryker-tmp`) and mutates the copy. `inPlace: true` mutates your originals and restores them afterwards, and is the mode that matches the house's burn. Inference: the revert incident came from an `inPlace: true` config or a flag in some lane; no config exists in the repo (wave 1), so the lane's config is unrecorded (''testimony'').
+* Sandbox cost knobs: `ignorePatterns` (what gets copied), `symlinkNodeModules` (default true, so no node_modules copy), `concurrency` (default cores if 4 or fewer, else cores-1; accepts "50%"). A copy of this repo would drag `bags/`, `wikis/`, `dist/` and the TiddlyWiki5 submodule unless ignored; node tests need built `dist/` (vitest-dist-guard), so the sandbox must carry `dist`. Disk: the house's WSL VHD law (`df` before provision) applies; set `tempDirName` outside the live tree only if node_modules resolution still works (docs recommend it stay inside the repo).
+* `--incremental` stores results (file `reports/stryker-incremental.json` per the config docs; the 2026 search summary quoted `reports/.mutation-incremental.json`, the blog's older name). The dry run still runs; `--force` reruns all. Stryker team advice: incremental on PRs, full run periodically. https://stryker-mutator.io/blog/announcing-incremental-mode/ (search)
+* Per-package: no documented single-package scoping from changed files found (search). A community Nx example runs Stryker per project with `--incremental` (search, unverified). A package-local `stryker.config` plus `mutate` globs is the plain route (memory).
+* `ignoreStatic` skips mutants that only run at module load; needs `perTest` (fetched). This house is full of module-level registries, so static mutants will be many.
+* Reporters: the dashboard reporter ships results to a hosted service (memory). ''Conflicts with web3-only''; use the local `html`/`json` reporters.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-alternatives-and-whether-a-hand-catalog-scales`>>
+
+!! 3. Alternatives, and whether a hand catalog scales
+
+* Only alternative found: <code>&#64;tryinget/ts-mutate</code> 0.1.0, ~40 downloads, TypeScript compiler API based (search). https://www.pkgstats.com/pkg:@tryinget/ts-mutate . Not credible as a pilot. No 2026 comparison found. Stryker remains the only mainstream TS engine (search).
+* The house's catalog (`mutants.json`, 14 entries) is the Google-style "show individual surviving mutants" idea in miniature, but at 1 human-written pair per decision it covers decisions, not code. Scale argument: Google reports raw score is hard to act on, so it surfaces specific surviving mutants in code review rather than a number; 1.1 million mutants over 70,000 diffs gave 150,000 actionable findings after probabilistic filtering (search). https://research.google/pubs/state-of-mutation-testing-at-google/ , https://arxiv.org/pdf/2103.07189 (search summaries). Reading: let Stryker enumerate, keep the catalog for the named, cross-file decisions it cannot find.
+* Cheap hybrid: Stryker scoped by `mutate` ranges (`file:start-end`, fetched in the config docs) to just the decision lines the catalog names.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-mutation-guided-pruning-and-suite-minimization`>>
+
+!! 4. Mutation-guided pruning and suite minimization
+
+* Dynamic subsumption: a mutant killed whenever another is killed is redundant; discovering it cut mutation execution time by 52.5% on average (Guimaraes et al., ICST 2020), and redundant mutants inflate the score (Papadakis et al.) (search). https://www.cin.ufpe.br/~damorim/publications/guimaraes-etal-icst2020.pdf
+* Reduction of test suites by mutation score exists as research (typeset.io paper; results not read) (search). No published production practice of "delete tests that kill no unique mutant" found. One informal proof of concept using Stryker data on Express flags redundant tests; its author doubts real-world usefulness (search). https://lakitna.medium.com/automatically-detecting-redundant-tests-be9151fdd855
+* Google's own results favour adding tests from surviving mutants over deleting (search), and report mutants coupled with real faults (search).
+* ''Conflict with house law:'' red-first demands a nonsense ''control'' beside every red. A control exists to stay green when the gate reads nothing; by construction it kills no unique mutant. Kill-set pruning would flag every control for deletion. Any pruning tool must whitelist tests named control and tests that hold a seed from a fixed bug. Also "tests that cannot fail" (24 in the CLI census) is the legitimate target: zero kills AND no control role.
+* Inference for the house: use Stryker per-test kill data as an inspection list (zero-kill tests in a mutated area), never an auto-delete.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-test-to-code-ratio-and-better-measures`>>
+
+!! 5. Test-to-code ratio and better measures
+
+* No authoritative ratio norm found this wave; searches returned commentary on coverage targets, not ratios. Fowler: coverage finds untested code but says little of test quality; assertion-free tests reach 100% (search; original page not read). https://www.thoughtworks.com/en-gb/insights/blog/are-test-coverage-metrics-overrated . Seemann: coverage is a useless target measure (search). https://blog.ploeh.dk/2015/11/16/code-coverage-is-a-useless-target-measure/ . ''Ratio norms: not found; Kent Beck/other claims remain memory-only.''
+* Better measures with a source: mutation score (and surviving-mutant lists) per Google above; Google's test-size guidance (small/medium/large) and "just say no to more end-to-end tests", the post dated 2015-04-22; the 70/20/10 split came only from a secondary source (search). https://testing.googleblog.com/2015/04/just-say-no-to-more-end-to-end-tests.html . Candidate house-measurable proxies (my proposal, no source): test runtime per claim (from `e2e-shard-weights.json` and CI reports), test-file churn co-changing with source churn (git log), flake sightings per test (owed.md), kill-per-test density from Stryker `perTest`.
+* Conclusion: the ratio is a bulk indicator, not a health measure; wave 1's 1.41 (non-comment) says where code is tested thickly, not whether it is tested well.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/6-god-function-composer-staged-boot-functional-c`>>
+
+!! 6. God-function composer: staged boot, functional core, seams, DI without frameworks
+
+* Functional core, imperative shell (Bernhardt, "Boundaries" screencast): core works on passed data; shell owns DB, network, filesystem, clock; shell has few branches and Bernhardt left it untested; commentary: close to ports and adapters and not "one giant core and shell" (search of secondary sources). https://kyle.au/notes/technology/development/functional-core-imperative-shell-pattern (search)
+* Feathers seams: "a place where you can alter behavior in your program without editing in that place"; seam types: preprocessor, link, object (secondary quotes; book text not read) (search). https://leaddev.com/technical-direction/how-refactor-legacy-systems-creating-application-seams . For TypeScript the object seam is a parameter (a passed record of ports), which needs no DI framework (memory).
+* Application to `prepareNodeBootOn` (my proposal): extract stages in dependency order, each a function `(ports, prior) => Stage`, with a `Ports` record for fs, clock, env, network; characterization test at the old function's observable boot sequence first (Feathers' "characterization tests", memory); the shell stays one thin `compose`.
+* House fit: matches "no global now" if the clock is a port; matches web3 local-first (no new service). Conflict: "Full models land early / no staged interims": a stage-cut must land whole with its ports, not as a half-injected interim; and the founding refactor will reshape boot, so the cut belongs inside it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/7-replace-polls-and-wall-clock-waits-with-events`>>
+
+!! 7. Replace polls and wall-clock waits with events (CRDT, async)
+
+* automerge-repo `DocHandle` exposes `whenReady()`, `isReady()`, `heads()` and a heads-changed `change` event (API docs v2.5.x/2.6.0-alpha.2; search). https://automerge.org/automerge-repo/classes/_automerge_automerge-repo.DocHandle.html . A test can await "heads equal" on an event instead of polling (memory plus docs; not verified against alpha.5).
+* Automerge sync protocol: peers exchange messages until `generateSyncMessage` returns nothing; a test pump that runs to quiescence is deterministic (R binding docs; search). https://ftp.fau.de/cran/web/packages/automerge/vignettes/sync-protocol.html . "Sync Chaos Lab" v0.1.0 is a seeded fault-injection harness over real Automerge 3 clients (search; unproven project). https://github.com/abc123dx/sync-chaos-lab/releases/tag/v0.1.0 . SIL Harmony PR #93 injects a settable clock for CRDT tests (search; .NET, pattern only).
+* Vitest fake timers: `vi.useFakeTimers`, `vi.advanceTimersByTimeAsync` flushes microtasks between timers; polling `waitFor` can stall under fake timers (secondary article, Jest-framed) (search). https://blog.openreplay.com/handling-time-tests-async-delays/
+* ''House fit:'' "no global now" favours an injected clock and a causal wait (an event the code emits when it lands or acks), not patching the global clock. `vi.useFakeTimers` patches globals for the whole file, which is the very global now the house forbids in product code; acceptable only for third-party timers. Where the code has no event (LandedLedger, unlock door), add one; fake timers would only hide the missing causal edge.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/8-property-based-testing-to-collapse-example-bre`>>
+
+!! 8. Property-based testing to collapse example breadth
+
+* fast-check docs: failing cases shrink to a minimal counterexample (search). https://fast-check.dev/docs/introduction/ . A Stack Builders write-up: properties are easier to maintain than many examples and avoid over-specifying, but examples still document scenarios; learning curve cost (search). No fast-check migration report with measured test-count reduction found; ploeh.dk shows an example-to-property refactor in C#/FsCheck (search). https://blog.ploeh.dk/page17/
+* The house already holds the best local evidence: 55 literal tests retired into laws, 3 files removed whole, 5 faults found (`cli-test-laws.mem`).
+* Fit: the CLI laws fix the fast-check seed (`LARES_FC_SEED`), matching "no global now/no hidden randomness"; red-first still applies: a law ships with a control and seeds from the fixed bugs. Conflict: random exploration (`LARES_FC_SEED=random`) reads as an unrepeatable red; keep it opt-in.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/9-fixtures-projects-sharding`>>
+
+!! 9. Fixtures, projects, sharding (vitest)
+
+* `test.extend` fixtures: auto fixtures, file/worker scope, `onCleanup` teardown; per-suite overrides via `test.scoped` since 3.1 (search of docs). https://vitest.dev/guide/test-context . A temp-dir fixture (create, `use(dir)`, `rm -r`) fits directly; it replaces the 1,032 hand-rolled `mkdtemp` sites over time (my proposal). Beware: `test.extend` fixtures replace explicit imports with context destructuring, a mechanical codemod.
+* `isolate` defaults true, settable per project; docs/recipes say disabling is unsafe with `vi.stubGlobal`/`vi.stubEnv` and module-state tests (search). https://vitest.dev/config/isolate.html . The house's module-level registries (74 Maps/Sets) block it until registries are injected.
+* `--shard` splits ''files'' by hash, not by cost; blob reporter + `--merge-reports` is the supported flow (search). https://main.vitest.dev/guide/improving-performance . Duration-balanced sharding exists only as a task spec, not a shipped option (search). The house's `tools/e2e-shards.mjs` + `e2e-shard-weights.json` already does cost-balanced sharding for e2e; extending it to unit shards is home-built work (''inference'').
+* Fit: CI tooling is allowed (web2 CI is fine); no outside service needed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/where-outside-practice-conflicts-with-house-law`>>
+
+!! Where outside practice conflicts with house law
+
+| Practice | Conflict | Resolution |h
+| Stryker dashboard reporter | web3-only | Local html/json reporters only |
+| `inPlace: true` | live lanes edit concurrently | Default sandbox copy; run in a throwaway worktree |
+| Kill-set pruning | red-first controls kill nothing unique | Whitelist controls and seeds; list, never delete |
+| `vi.useFakeTimers` as the fix for waits | no global now | Injected clock plus event for the causal wait |
+| Staging a refactor in slices | "Full models land early" | Land the stage-cut whole, inside the founding |
+| Random fast-check seeds in CI | repeatability | Keep fixed seed; random opt-in |
+| Test re-cut now | road: after founding (`stable-founding-road.mem:268, 849`) | Only seam-opening, no-re-cut items go early, with operator lift |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/not-found-unverified`>>
+
+!! Not found / unverified
+
+Ratio norms; fast-check migration numbers; Stryker per-package monorepo recipe from the project itself; whether Stryker 10.1.1 actually passes this repo's vitest 5.0.3 suites (needs a probe in a throwaway worktree); Feathers book text; Fowler's original page; Stryker incremental file name (two names seen).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hFuZnPWCE9TXJAELNCLR_DyNMmRRjUT54bQ08zWQl0w`>>
+
+<<^ code=`&#x0004;` to=`?`>>

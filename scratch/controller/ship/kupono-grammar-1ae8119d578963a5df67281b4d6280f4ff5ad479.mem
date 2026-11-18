@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/kupono-grammar-1ae8119d578963a5df67281b4d6280f4ff5ad479`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-01 (file date) — source `.lares-scratch/controller/ship/kupono-grammar-1ae8119d578963a5df67281b4d6280f4ff5ad479.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/kupono-grammar-1ae8119d578963a5df67281b4d6280f4ff5ad479"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/kupono-grammar-1ae8119d578963a5df67281b4d6280f4ff5ad479"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! kupono-grammar-1ae8119d578963a5df67281b4d6280f4ff5ad479.md — plan, 2026-11-01
+
+Verbatim scratch record `.lares-scratch/controller/ship/kupono-grammar-1ae8119d578963a5df67281b4d6280f4ff5ad479.md` (plan, file date 2026-11-01); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-lane-kupono-grammar-head-1ae8119d578963a5df`>>
+
+! SHIP · lane kupono-grammar · head 1ae8119d578963a5df67281b4d6280f4ff5ad479
+read: blind Opus Train-Reader-Q SHIP at c3a4bbcec (wave2/train-security-read.md); controller delta read c3a4bbcec..1ae8119d578963a5df67281b4d6280f4ff5ad479 (MED-1 grammar-cut stamps only over ok/unchecked, seal-broken refuses; LOW-1/LOW-2 reverted by operator ruling; LOW-5 pinned strict xfail, pre-existing gap gated on the road; control sigils test subfilter; boundary route through meme-ast library; history-free cut; one genesis re-bake). 2026-11-01.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JpfN-FYF-9-m_6q4XDMnGSO3XPUlwM_0RGePnqThox8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

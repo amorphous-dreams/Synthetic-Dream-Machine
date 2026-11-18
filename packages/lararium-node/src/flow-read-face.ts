@@ -13,7 +13,7 @@
  *
  * The face is NOT an HTTP face. It claims no request path, so every HTTP request for it draws the
  * vessel's closed door, exactly as a path nobody claims (pronaos#/the-rung-ladder: the flow rung answers proven
- * peers alone). It serves the herm's flow map. The FLOOR of system canon rides no pointer: the Nexus's release names
+ * peers alone). It serves the herm's flow map. The FLOOR of house canon rides no pointer: the Nexus's release names
  * it by CID (`floor-release`), served at the porch (`floor-answer-face`).
  *
  * THE PUBLISHER'S KEY IS NOT THE GATE'S. The floor bundle derives from the floor key; the pointer is signed by the
@@ -77,7 +77,7 @@ export interface FlowReadGate {
 /**
  * The floor gate source: one floor gate per Nexus on `floorRoute(FLOW_SOCKET_ROUTE)`, each seating through `sessions`.
  * A source whose Nexus set moves (a carry taken or dropped on a running vessel) names it on `onMoved`: the face then
- * asks it again, stands each gate on a path it did not stand, and stands down each path the source no longer names.
+ * asks it again, stands each gate on a path it did not stand, and stands down each path the source leaves out.
  */
 export interface FlowGateSource {
   (sessions: GateSessionTable): Promise<readonly FlowReadGate[]> | readonly FlowReadGate[];
@@ -188,7 +188,7 @@ export async function mountFlowReadFace(args: FlowGateArgs & {
   const stood = new Map<string, { readonly down: () => void }>();
   const standDownAll = (): void => { for (const held of stood.values()) held.down(); stood.clear(); };
   let disposed = false;
-  /** Stand each gate on a path not yet stood; with `prune`, stand down each path the source no longer names. */
+  /** Stand each gate on a path not yet stood; with `prune`, stand down each path the source leaves out. */
   const sweep = async (prune: boolean): Promise<void> => {
     const entries = await args.gates(registry.table);
     if (disposed) return;

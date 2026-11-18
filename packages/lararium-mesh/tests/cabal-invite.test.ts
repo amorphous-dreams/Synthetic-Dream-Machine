@@ -106,7 +106,7 @@ describe("the DreamNet opens invite-only", () => {
   });
 
   test("a payload of the wrong DOMAIN is not an invite, whatever it claims", async () => {
-    const notAnInvite = { ...(await mint()), kind: "nexus-treaty/v1" } as unknown as CabalInvite;
+    const notAnInvite = { ...(await mint()), kind: "nexus-treaty" } as unknown as CabalInvite;
     expect((await decide(notAnInvite)).refusal).toBe("no-invite");
     // The NAME, never the whole address: a literal here would be a domain written outside the registry,
     // The registry gives the invite its own unversioned name.

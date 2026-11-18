@@ -131,7 +131,7 @@ export function deriveHandle(sourceFile?: string, frontier?: string | null): str
   const m = /__agent-([^/]+?)__run-([^/]+)\.jsonl$/.exec(base);
   if (!m) return null;
   // The branch-frontier rides the RUN component (`run~frontier`), so split(".")[0] below
-  // yields the branch-specific run — two same-session forks no longer collide.
+  // yields the branch-specific run — two same-session forks never collide.
   const run = frontier ? `${m[2]}~${frontier}` : m[2];
   return `${run}.${m[1]}`;
 }

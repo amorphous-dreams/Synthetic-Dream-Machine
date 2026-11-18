@@ -32,14 +32,14 @@ import { plainRecordOrNull, type StoredLarRecord } from "./stored-value.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { bootSetIds, bootSetPluginCids, verifyCasBytesAsync, type CasBlobLike } from "./cas.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
-import { GENESIS_FLOOR_TIDDLER, readFloorManifest } from "./floor-manifest.js";
+import { GENESIS_FLOOR_TIDDLER, floorBlobCids, readFloorManifest } from "./floor-manifest.js";
 import { wikiUri } from "./lar-uris.js";
 import { selectPluginBlobs, selectedPluginCids, type OfferingLookup } from "./plugin-offering-selector.js";
 import { effectiveRecipe, type RecipePlane } from "./recipe-planes.js";
 import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.js";
 import type { DocumentFacet, FacetLayer, SessionDocumentFacets } from "./session-document-view.js";
 import {
-  ORACLE_BAG, expandRecipe, recipeFromRecord, wikiBagUri, wikiSlotKindOf,
+  ORACLE_BAG, expandRecipe, recipeFromRecord, wikiBagUri, wikiCanonOf, wikiSlotKindOf,
   type SlotUri, type WikiRecipe, type WikiSlotKind,
 } from "./wiki-recipe.js";
 
@@ -77,12 +77,15 @@ export interface SurfacePluginInputs {
 
 export interface SurfaceRecipeInput {
   readonly wikiSlug: string;
+  readonly recipe?: WikiRecipe;
   readonly planes:   VesselRecipePlanes;
   readonly face:     SurfaceFace;
   /** May this face read the bag? The grant's answer; the recipe never widens it. */
   mayRead(bag: SlotUri): boolean;
   readonly plugins:  SurfacePluginInputs;
   readonly profile:  CapabilityProfile;
+  /** The floor manifest the vessel's accepted pin names (`floor-pin` `floorCidToMount`); absent or null, the genesis floor. */
+  readonly floorCid?: string | null;
 }
 
 /** One slot of the cascade with the document it resolved to. `temp` and an unregistered library carry null. */
@@ -206,10 +209,10 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
     return tiddlerText(planes.read(plane, bag));
   };
 
-  const canon = wikiBagUri(slug);
+  const canon = wikiCanonOf(input.recipe ?? { wikiSlug: slug });
   const derived = deriveWikiRecipe({ slug, record: standing?.record, canonUrl: documentOf(canon) });
   if (!derived.ok) return refused(derived.cause === "no-such-bag" ? "wiki-unknown" : "recipe-malformed", derived.detail);
-  const recipe = derived.recipe;
+  const recipe = input.recipe ?? derived.recipe;
 
   const slots: SurfaceSlot[] = [];
   const unresolved: SlotUri[] = [];
@@ -257,8 +260,8 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
   const plugins = await resolveRecipePluginCids(recipe, input.plugins);
   if (!plugins.ok) return refused("plugins-refused", plugins.error);
 
-  // The seed's floor witness admits the manifest and both snapshots to the session's content view.
-  const floorCid = plainRecordOrNull(planes.read("oracle", GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
+  // The seed's floor witness admits the manifest and each house-canon snapshot it keys to the session's content view.
+  const floorCid = input.floorCid ?? plainRecordOrNull(planes.read("oracle", GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
   const floorCids: string[] = [];
   if (typeof floorCid === "string" && floorCid.length > 0) {
     let bytes: Uint8Array | null;
@@ -270,7 +273,7 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
     }
     const opened = readFloorManifest(bytes);
     if ("refusal" in opened) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: ${opened.refusal}: ${opened.reason}`);
-    floorCids.push(floorCid, opened.manifest.lares, opened.manifest.lararium);
+    floorCids.push(...floorBlobCids(floorCid, opened.manifest));
   }
 
   const coreHash = input.plugins.coreHash;

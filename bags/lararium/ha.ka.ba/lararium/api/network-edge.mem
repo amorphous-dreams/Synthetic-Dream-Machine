@@ -94,7 +94,7 @@ Biology inverts authenticate-then-admit. ''Hyphal anastomosis + vegetative incom
 
 * ''Dependence stands as a buildable resource (the spherical move).'' The 2026 Erdős upgrade (Ma–Shen–Xie) beat the 80-year-old bound by replacing independent coin-flips with points on a high-dimensional sphere colored by distance — //structured randomness with engineered dependence// suppresses bad structure better than i.i.d. can. Pure-anon crossings flip the i.i.d. coin; ''vouching · petname-locality · latency-clustering give correlations to DESIGN'', buying Sybil-resistance the memoryless mesh can't reach.
 * ''The lease acts as a pheromone (stigmergy) — design, UNBUILT.'' Physarum and ant trails build optimal networks with no architect: ''reinforce-by-use, decay-by-disuse''. The decaying lease does more than expire — it lays the ''trail the mesh self-prunes by''; reinforce edges carrying real sync/gossip, let unused crossings evaporate. Topology emerges and self-optimizes from local reinforce/decay alone. The built `epoch-lease` rolls a per-resource epoch and reinforces no edge by use.
-* ''Tune propagation by the contact graph, not a registry.'' Push a critical announcement's effective `R₀` ''above'' threshold (seed via high-degree relays — superspreaders) to guarantee reach; push a compromise/spam signal ''below'' threshold to contain it. ''Herd immunity'' = revocation saturation: enough islands hold a revocation that a forged credential can no longer percolate.
+* ''Tune propagation by the contact graph, not a registry.'' Push a critical announcement's effective `R₀` ''above'' threshold (seed via high-degree relays — superspreaders) to guarantee reach; push a compromise/spam signal ''below'' threshold to contain it. ''Herd immunity'' = revocation saturation: enough islands hold a revocation that a forged credential finds no path to percolate.
 
 <<~/ahu>>
 
@@ -136,6 +136,6 @@ The network ring stands UNBUILT; the mapping and the wire-answers below read as 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Tm7N-XFD38CtmuwvFtQvcHw2G4KtQGfR5NWY5tPVxQk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EzL2LSt1i0TFl4W1EPy9iFNOvou_bRuW-Z54ThIBc3A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

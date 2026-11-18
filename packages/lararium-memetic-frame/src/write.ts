@@ -119,8 +119,7 @@ export function frameCarrier(input: FrameCarrierInput): string {
  *
  *   · a matching slot — the bytes come back unchanged.
  *   · no frame, a torn frame, an ETX in a spelling outside the grammar, or the retired trailer after
- *     ETX — nothing stamps: the frame names its fault and the writer never guesses over it (the
- *     trailer migrates through `tools/grammar-cut.mjs`, which never re-seals a broken seal).
+ *     ETX — nothing stamps: the frame names its fault and the writer never guesses over it.
  *   · a stale slot — its value is REPLACED in place.
  *   · a bare ETX — the slot is MINTED.
  *

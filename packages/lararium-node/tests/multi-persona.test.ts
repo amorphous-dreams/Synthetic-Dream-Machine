@@ -12,7 +12,7 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
-import { faceRowNames, handleRowPath } from "./face-paths.js";
+import { faceRecordNames, handleRecordPath } from "./face-paths.js";
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync, readdirSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -24,7 +24,7 @@ import {
   personaRootExists, listPersonaRoots,
   setMountedFace, sovereignStands,
 } from "../src/node-vessel-identity.js";
-import { FaceNotNamed, resolveFace } from "../src/face-selector.js";
+import { FaceNotNamed, FaceNotOpen, resolveFace } from "../src/face-selector.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, type IdentityAnchors } from "../src/identity-anchors.js";
 import { readWornPersonaMount } from "../src/worn-mount.js";
 import type { DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
@@ -75,13 +75,11 @@ const anchorsFor = (n: number, withMount: boolean): IdentityAnchors => ({
 describe("multi-persona-per-vessel (#63)", () => {
   let root: string;
   let seated: Awaited<ReturnType<typeof seatScratchCustody>>;
-  const dataDir = () => root;   // identityDir ignores it — the store resolves under XDG state
+  const dataDir = () => root;   // identityDir ignores it — the store resolves under the house root
   beforeEach(async () => {
     setMountedFace(undefined);
     root = mkdtempSync(join(tmpdir(), "lares-multipersona-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", root);   // the scratch house root every resolver lays its classes beneath
     seated = await seatScratchCustody("multi-persona");
   });
   afterEach(async () => {
@@ -96,7 +94,7 @@ describe("multi-persona-per-vessel (#63)", () => {
     expect(founding.created).toBe(true);
 
     const idDir = larIdentityDir();
-    const rootFiles = faceRowNames().filter((f) => /^\.persona-group-root/.test(f));
+    const rootFiles = faceRecordNames().filter((f) => /^\.persona-group-root/.test(f));
     expect(rootFiles.length, "exactly one root file at founding").toBe(1);
     expect(rootFiles[0], "uniform keying — the founding persona carries the -h0 suffix").toMatch(/-h0\.json$/);
 
@@ -138,6 +136,23 @@ describe("multi-persona-per-vessel (#63)", () => {
     expect(await resolveFace(0)).toBe(0);   // and the other — the house beneath unchanged
     setMountedFace(1);                      // the composition's mount is not a command's choice
     await expect(resolveFace()).rejects.toBeInstanceOf(FaceNotNamed);
+  });
+
+  test("THE SEAT ACTS AS THE WORN FACE — several open and none named resolve to the mounted face; a named face answers only while open", async () => {
+    await generateOrLoadPersonaGroupRoot(0);
+    await generateOrLoadPersonaGroupRoot(1);
+    try {
+      setMountedFace(undefined);
+      await expect(resolveFace(undefined, { worn: true })).rejects.toThrow(/wears none of them[\s\S]*lares vault unlock --face N/);
+      setMountedFace(1);
+      expect(await resolveFace(undefined, { worn: true })).toBe(1);   // the face the operator wears
+      expect(await resolveFace(0, { worn: true })).toBe(0);           // a named face that stands open
+      await expect(resolveFace(7, { worn: true })).rejects.toBeInstanceOf(FaceNotOpen);
+      await expect(resolveFace(7, { worn: true })).rejects.toThrow(/face-not-open[\s\S]*h7[\s\S]*lares vault unlock --face 7/);
+      setMountedFace(5);                                              // a mount that stands shut never answers the seat
+      await expect(resolveFace(undefined, { worn: true })).rejects.toBeInstanceOf(FaceNotNamed);
+      await expect(resolveFace()).rejects.toBeInstanceOf(FaceNotNamed); // CONTROL: a command still names its face
+    } finally { setMountedFace(undefined); }
   });
 
   test("custody wall in mask form — a mount naming a face whose root the vessel does not hold stands no composition", async () => {
@@ -193,7 +208,7 @@ describe("multi-persona-per-vessel (#63)", () => {
 
     expect(await loadIdentityAnchors()).toEqual(a0);       // the founding-persona read round-trips
     expect(await loadIdentityAnchors(1)).toEqual(a1);
-    expect(existsSync(handleRowPath("anchors-h0.json"))).toBe(true);   // uniform founding spelling
+    expect(existsSync(handleRecordPath("anchors-h0.json"))).toBe(true);   // uniform founding spelling
     expect(await listAnchoredPersonas()).toEqual([0, 1]);   // the explicit roster record
   });
 

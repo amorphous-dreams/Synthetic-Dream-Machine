@@ -387,7 +387,7 @@ export class LeafPeerSession {
 
   /**
    * Re-judge the session against a KEL this leaf now carries: does the edge the peer proved with still license
-   * under its head and the lease epoch held? An edge the moved head rolled past licenses no longer. The peer's
+   * under its head and the lease epoch held? An edge the moved head rolled past licenses nothing. The peer's
    * renewed edge, if the head's rotation re-enrolled it, rides sealed to the peer alone, so only a fresh proof can
    * show it: the caller closes the session and the pair proves again. The verdict refuses nothing by itself.
    */

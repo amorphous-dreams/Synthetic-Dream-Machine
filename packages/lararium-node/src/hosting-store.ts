@@ -31,7 +31,7 @@
  * and before the answer replays as `retry` and earns the identical grant. The counts an operator reads derive
  * from the rows standing, by name; the store keeps no counter beside them.
  *
- * A ROLL keeps exactly two epochs live: the new act becomes current, the old current becomes previous, and the
+ * A ROLL keeps exactly two epochs live: the new act becomes current, the outgoing current becomes previous, and the
  * spend rows of any epoch outside those two leave. The state row commits the roll; a roll that stops before its
  * sweep leaves dead rows that the next roll sweeps, and so does a redemption that read an epoch as live and
  * sealed its spend after a roll retired it: such a row burns nothing live and leaves with the next sweep. Rolling twice kills every grant and token of the epoch
@@ -50,9 +50,9 @@ import {
   sha256HexSync, isHostingAct, hostingActCid, hostingEpochOf, mintHostingAct,
   type HostingAct, type HostingEpoch,
 } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openedCustody, readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
-import { HostingFaceAbsent, hostingDirPath, hostingFaceOf, hostingRowDir } from "./hosting-face.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
+import { openedCustody, readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
+import { HostingFaceAbsent, hostingDirPath, hostingFaceOf, hostingRecordDir } from "./hosting-face.js";
 import { ownerOnlyDir } from "./fs-atomic.js";
 
 /** The allowance cap a hearth hosts under until its operator names another. */
@@ -69,7 +69,7 @@ export interface HostingState {
 
 const utf8 = new TextEncoder();
 const HEX64 = /^[0-9a-f]{64}$/;
-const malformed = (file: string): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
+const malformed = (file: string): CustodyRecordUnavailable => new CustodyRecordUnavailable("identity", file, "malformed");
 
 /** Stand one Nexus's hosting directory in face `face` at the owner-only mode. */
 export async function standHostingDir(face: number, nexusAid: string): Promise<string> {
@@ -80,7 +80,7 @@ export async function standHostingDir(face: number, nexusAid: string): Promise<s
   return dir;
 }
 
-const stateFile = (face: number, nexusAid: string): string => `${hostingRowDir(face, nexusAid)}/state.json`;
+const stateFile = (face: number, nexusAid: string): string => `${hostingRecordDir(face, nexusAid)}/state.json`;
 
 function parseState(bytes: Uint8Array, file: string): HostingState {
   let raw: unknown;
@@ -107,7 +107,7 @@ export async function readHostingState(nexusAid: string): Promise<HostingState |
   const face = await hostingFaceOf(nexusAid, false);
   if (face === null) { await openedCustody(); return null; }
   const file = stateFile(face, nexusAid);
-  const bytes = await readCustodyRow("identity", file);
+  const bytes = await readCustodyRecord("identity", file);
   return bytes === null ? null : parseState(bytes, file);
 }
 
@@ -131,7 +131,7 @@ async function spendNames(face: number, nexusAid: string): Promise<string[]> {
   try { return readdirSync(dir).filter((n) => SPEND_FILE.test(n)); }
   catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw new CustodyRowUnavailable("identity", hostingRowDir(face, nexusAid), `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
+    throw new CustodyRecordUnavailable("identity", hostingRecordDir(face, nexusAid), `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
   }
 }
 
@@ -143,7 +143,7 @@ export class HostingStateMoved extends Error {
 
 /**
  * ROLL: sign the hearth's next hosting act in N (rolling from its current one, or its first), make it current,
- * keep the old current as previous, and remove the spend rows of every other epoch. Returns the new act — the
+ * keep the outgoing current as previous, and remove the spend rows of every other epoch. Returns the new act — the
  * caller lands it on this hearth's hosting doc in N. `cap` names a new allowance cap; absent, the standing one
  * holds. The state row reads, decides and writes under one custody holder, so two rolls never fork a state: the
  * act chains from the state this roll read, and a state another roll moved meanwhile refuses this one.
@@ -162,7 +162,7 @@ export async function rollHosting(opts: {
   const minted = await mintHostingAct({ leafSeed: opts.leafSeed, nexusAid: opts.nexusAid, prev: priorCid, cap });
   const state: HostingState = { current: minted.act, previous: prior?.current ?? null, depth: (prior?.depth ?? 0) + 1 };
   await standHostingDir(face, opts.nexusAid);
-  await updateCustodyRow("identity", file, (standing) => {
+  await updateCustodyRecord("identity", file, (standing) => {
     const held = standing === null ? null : parseState(standing, file);
     if ((held ? hostingActCid(held.current) : null) !== priorCid) throw new HostingStateMoved();
     return { plaintext: utf8.encode(JSON.stringify(state)), value: undefined };
@@ -171,9 +171,9 @@ export async function rollHosting(opts: {
   const unswept: string[] = [];
   for (const name of await spendNames(face, opts.nexusAid)) {
     if (live.has(SPEND_FILE.exec(name)![1]!)) continue;
-    const row = `${hostingRowDir(face, opts.nexusAid)}/${name}`;
-    try { await removeCustodyRow("identity", row); }
-    catch (err) { if (err instanceof CustodyRowUnavailable) unswept.push(row); else throw err; }
+    const row = `${hostingRecordDir(face, opts.nexusAid)}/${name}`;
+    try { await removeCustodyRecord("identity", row); }
+    catch (err) { if (err instanceof CustodyRecordUnavailable) unswept.push(row); else throw err; }
   }
   return { act: minted.act, state, unswept };
 }
@@ -185,7 +185,7 @@ function spendFile(face: number, nexusAid: string, epochCid: string, tag: "n" | 
   const epoch = epochCid.toLowerCase();
   if (!HEX64.test(epoch)) throw new Error("[hosting-store] a spend names its epoch by a 64-hex act id");
   // The tag in the name keeps a nonce's row and a marker's row apart; the digest hides the value itself.
-  return `${hostingRowDir(face, nexusAid)}/spent-${epoch}-${tag}-${sha256HexSync(key).slice(0, 32)}`;
+  return `${hostingRecordDir(face, nexusAid)}/spent-${epoch}-${tag}-${sha256HexSync(key).slice(0, 32)}`;
 }
 
 /** Read one spend row, decide and write it under one custody holder: the row's presence IS the burn. */
@@ -196,7 +196,7 @@ async function burn(nexusAid: string, epochCid: string, tag: "n" | "m", key: str
   await standHostingDir(face, nexusAid);
   // The row binds its own key beside its value: a digest collision in the name never reads as that key's burn.
   const line = `${tag} ${key} ${value}`;
-  return updateCustodyRow<SpendOutcome>("identity", file, (standing) => {
+  return updateCustodyRecord<SpendOutcome>("identity", file, (standing) => {
     if (standing === null) return { plaintext: utf8.encode(line), value: "fresh" };
     let held: string;
     try { held = new TextDecoder("utf-8", { fatal: true }).decode(standing); } catch { throw malformed(file); }

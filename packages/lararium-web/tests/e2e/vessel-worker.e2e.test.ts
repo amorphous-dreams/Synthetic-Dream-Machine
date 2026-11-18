@@ -64,8 +64,7 @@ test("V1/V2 — the page builds the vessel worker, the vessel founds through it,
     const pageScripts = await page.evaluate(() => performance.getEntriesByType("resource").map((e) => e.name).filter((name) => name.endsWith(".js")));
     // CONTROL for V2: the page's own thread did load scripts (the entry chunk), so an empty list reads as a blind instrument.
     assert.ok(pageScripts.some((url) => /\/assets\/index-[\w-]+\.js/.test(url)), `the instrument reads the page's own entry chunk (scripts: ${pageScripts.join(", ")})`);
-    // and a module the page's thread imports later (the mirror's glass chunk, a dynamic import), so a late load reads too.
-    assert.ok(pageScripts.some((url) => /\/assets\/glass-[\w-]+\.js/.test(url)), `the instrument reads the page's own dynamic import (scripts: ${pageScripts.join(", ")})`);
+    // The mirror imports nothing late on the page's thread (its boot set rides the port), so the entry chunk alone stands as the control.
     const vesselChunks = pageScripts.filter((url) => /\/assets\/(?:vessel-host|slim|wasm-base64)-[\w-]+\.js/.test(url));
     assert.deepEqual(vesselChunks, [], "the page's own thread requests no vessel chunk");
     assert.deepEqual(faults, [], "no page error while the vessel founds and the mirror paints");

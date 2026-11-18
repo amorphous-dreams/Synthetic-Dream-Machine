@@ -38,6 +38,24 @@ async function glass(width: "full" | "skinny" = "full", seed?: { title: string; 
 }
 
 describe.skipIf(!!wikiSkip)(`glass port adaptor over the real island${skipNote}`, () => {
+  it("glass-writes-tw5-field-strings: a mirror tiddler's date and tags reach the island as TW5's own strings; CONTROL the island engine reads the date back", async () => {
+    // The person's edit carries `modified` as a Date and `tags` as an array. `String(date)` once wrote the host's locale form, which no
+    // engine parses: the worker read the mirror's new tiddler as dated Invalid Date, and its Recent timeline painted an empty day (weld M5).
+    const g = await glass();
+    const when = new Date(Date.UTC(2026, 10, 12, 2, 56, 37, 123));
+    g.wiki.wiki.addTiddler(new g.wiki.$tw.Tiddler({ title: "Dated", text: "x", modified: when, tags: ["plain", "two words"] }));
+    await g.settle();
+    const write = g.sent.find(msg => msg.type === "port:write") as { records: Array<{ title: string; fields: Record<string, string> }> } | undefined;
+    const fields = write?.records.find(record => record.title === "Dated")?.fields;
+    expect(fields?.modified).toBe("20261112025637123");
+    expect(fields?.tags).toBe("plain [[two words]]");
+    const stored = await g.rig.composite.get("Dated");
+    expect(stored?.tiddler.modified).toBe("20261112025637123");
+    const read = new g.wiki.$tw.Tiddler(stored!.tiddler as never) as unknown as { fields: { modified: Date; tags: string[] } };
+    expect(read.fields.modified.getTime()).toBe(when.getTime());
+    expect(read.fields.tags).toEqual(["plain", "two words"]);
+  });
+
   it("glass-echo-lands-once; CONTROL foreign peer write lands once", async () => {
     const g = await glass();
     let lands = 0;

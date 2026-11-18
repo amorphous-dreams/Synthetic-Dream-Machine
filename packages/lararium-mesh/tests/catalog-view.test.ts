@@ -26,11 +26,13 @@ import { storedLarRecord } from "../src/stored-record.js";
 import { ownEntry } from "../src/stored-value.js";
 import { bagUri, CATALOG_DOC_URI, CROSSROADS_DOC_URI, ORACLE_DOC_URI, catalogCorpusEntryUri, recipeUri } from "../src/lar-uris.js";
 import { personaScopedBagIds } from "../src/persona-scope.js";
-import { wikiSlotUri, wikiWorkingFloorKey } from "../src/wiki-recipe.js";
+import { wikiSlotUri, wikiDraftDocKey } from "../src/wiki-recipe.js";
 import { catalogNamedBags } from "../src/register-bags.js";
 import {
   catalogRowHalf, faceCatalogDocUrl, openFaceCatalog, FaceCatalogRefusal, FloorWikiRefusal, facelessWikiWaits, makeCatalogView, liftFaceCatalogRows, faceViewBook,
 } from "../src/catalog-view.js";
+import { seatHouseCanon } from "../src/kahu-canon-reach.js";
+import { sealedBagMap } from "../src/sealed-rest.js";
 
 const secretA = new Uint8Array(32).fill(0xa1);
 const secretB = new Uint8Array(32).fill(0xb2);
@@ -96,7 +98,9 @@ describe("the catalog splits by face (U1)", () => {
     const plane = personaScopedBagIds("ab".repeat(32)).persona;
     const kahua = bagUri("kahua");
     const slot = wikiSlotUri("notes", "working");
-    const workingFloor = wikiWorkingFloorKey("notes", { kind: "place", aid: "Eplace" } as never);
+    // The draft floor's row, keyed by the vessel's DID: it rests on the floor half (a wiki's working layer rests in its realm
+    // workbench and takes no catalog row).
+    const workingFloor = wikiDraftDocKey("notes", `0x${"cd".repeat(32)}` as never);
     // The floor stood alone first: every row it wrote rests there.
     floor.change((doc) => {
       for (const t of [ORACLE_DOC_URI, CROSSROADS_DOC_URI, CATALOG_DOC_URI, priv, plane, kahua, slot, workingFloor]) doc.tiddlers[t] = row(t, `automerge:${t.length}`);
@@ -129,7 +133,7 @@ describe("the catalog splits by face (U1)", () => {
 
   test("NONSENSE — the classifier: floor rows name public, signed infrastructure alone; everything else routes D", () => {
     for (const t of [CATALOG_DOC_URI, ORACLE_DOC_URI, CROSSROADS_DOC_URI, catalogCorpusEntryUri("x"), bagUri("lares"), bagUri("lararium"),
-      bagUri("daemon"), recipeUri("catalog", "daemon"), `${bagUri("realm")}/realm-id`, wikiWorkingFloorKey("w", { kind: "place", aid: "E" } as never)]) {
+      bagUri("daemon"), recipeUri("catalog", "daemon"), `${bagUri("realm")}/realm-id`, wikiDraftDocKey("w", `0x${"cd".repeat(32)}` as never)]) {
       expect([t, catalogRowHalf(t)]).toEqual([t, "floor"]);
     }
     for (const t of [bagUri("anything"), bagUri("kahua"), recipeUri("catalog", "notes"), wikiSlotUri("daemon", "working"), "lar:///nowhere/at/all", ""]) {
@@ -173,7 +177,7 @@ describe("the catalog splits by face (U1)", () => {
     expect(titlesOf((await faceA).doc())).not.toContain(rowB);
     expect(titlesOf(floor.doc())).not.toContain(rowA);
     expect(titlesOf(floor.doc())).not.toContain(rowB);
-    expect(titlesOf(book.everyRow())).toEqual(expect.arrayContaining([rowA, rowB]));
+    expect(titlesOf(book.everyEntry())).toEqual(expect.arrayContaining([rowA, rowB]));
   });
 });
 
@@ -260,5 +264,59 @@ describe("a vessel that wears no face boots no user wiki", () => {
     expect(facelessWikiWaits({ wikiId: "floor-user", source: "boot-arg", wikiBagId: user, faceWorn: true, catalog })).toBeNull();
     expect(facelessWikiWaits({ wikiId: "lares", source: "boot-arg", wikiBagId: bagUri("lares"), faceWorn: false, catalog })).toBeNull();
     expect(facelessWikiWaits({ wikiId: "shelf", source: "boot-arg", wikiBagId: pub, faceWorn: false, catalog })).toBeNull();
+  });
+});
+
+describe("house canon takes no row in any face's catalog (cap-tier.mem, house canon)", () => {
+  const row = (title: string, text: string) => storedLarRecord(title, { text, kind: "oracle" }, "test");
+  const seated = <T>(run: () => T): T => { seatHouseCanon(["crossroads", "elyncia", "elyncia-referee", "sdm"]); try { return run(); } finally { seatHouseCanon([]); } };
+
+  test("HC-D1 — a house canon title classes to F, never D: a write through face A's view never lands in A's catalog", async () => {
+    const { floor, faceA, faceB } = stand();
+    const a = await faceA, b = await faceB;
+    seated(() => {
+      const viewA = makeCatalogView(floor, a);
+      for (const slug of ["sdm", "elyncia", "elyncia-referee", "lares", "lararium"]) {
+        const canon = bagUri(slug);
+        expect(catalogRowHalf(canon)).toBe("floor");
+        viewA.change((doc) => { doc.tiddlers[canon] = row(canon, `automerge:${slug}`); });
+        expect(titlesOf(a.doc())).not.toContain(canon);
+        expect(titlesOf(b.doc())).not.toContain(canon);
+      }
+      // CONTROL: the public board stays an ordinary title, and a user bag rests on the face.
+      expect(catalogRowHalf(bagUri("ledger"))).toBe("face");
+    });
+  });
+
+  test("HC-D2 — the sealed map seals no house canon bag under a lit face, and still seals its sibling user bag", () => {
+    seated(() => {
+      const canon = bagUri("elyncia"), user = bagUri("ledger");
+      const catalog = { tiddlers: { [user]: row(user, "automerge:userDoc") } } as unknown as LarDoc;
+      const map = sealedBagMap({ face: () => "face:h1", bags: () => [canon, user], catalog: () => catalog, docsOf: (b) => [b === canon ? "canonDoc" : "userDoc"] });
+      expect(map.bagOf("canonDoc")).toBeNull();
+      expect(map.bagOf("userDoc")).toEqual({ bagId: user, face: "face:h1" });
+    });
+  });
+
+  test("CONTROL — unseated, sdm is an ordinary bag title and rests on the face", () => {
+    expect(catalogRowHalf(bagUri("sdm"))).toBe("face");
+    expect(catalogRowHalf(bagUri("lares"))).toBe("floor");
+  });
+
+  test("RED VEIL — a wiki the vessel itself minted at its floor (`face-reach = vessel-only`) mounts with no face; a face-sealed one still waits", () => {
+    const veil = bagUri("tabs"), sealed = bagUri("journal");
+    const catalog = {
+      [veil]: storedLarRecord(veil, { text: "automerge:veil", kind: "oracle", "face-reach": "vessel-only" }, "test"),
+      [sealed]: storedLarRecord(sealed, { text: "automerge:sealed", kind: "oracle" }, "test"),
+    };
+    // The vessel's own content rests on the floor's half: no face ever sealed it.
+    expect(catalogRowHalf(veil, catalog[veil])).toBe("floor");
+    expect(catalogRowHalf(sealed, catalog[sealed])).toBe("face");
+    expect(facelessWikiWaits({ wikiId: "tabs", source: "boot-arg", wikiBagId: veil, faceWorn: false, catalog }), "the veil floor mounts its own wiki").toBeNull();
+    expect(facelessWikiWaits({ wikiId: "journal", source: "boot-arg", wikiBagId: sealed, faceWorn: false, catalog })?.reason).toBe("wiki-awaits-face");
+    // The mark alone decides, and only its exact value: any other value fails toward the face.
+    expect(catalogRowHalf(veil, storedLarRecord(veil, { text: "automerge:x", "face-reach": "face" }, "test"))).toBe("face");
+    // A title alone (no row in hand) still classes a user bag to the face.
+    expect(catalogRowHalf(veil)).toBe("face");
   });
 });

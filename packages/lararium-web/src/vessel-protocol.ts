@@ -10,6 +10,7 @@
  *   onPhase                           vessel → page  `phase`
  *   onFrame                           vessel → page  `frame`
  *   onControlResult                   vessel → page  `control-result`
+ *   onControlPending                  vessel → page  `control-pending`
  *   onCoherence                       vessel → page  `coherence`
  *   onPortMessage                     vessel → page  `port-msg` (a placement the vessel refused: `port:refused`)
  *   onRest                            vessel → page  `status{rest}`
@@ -25,6 +26,8 @@
  *   the fleet-join door               page → vessel  `join:offer{text}` / `join:answer{text}`, answered by `reply`
  *   the holder's SharedWorker         vessel → page  `spawn{role}`; page → vessel `spawned{port}` (transferred, never read)
  *   a boot that stops                 vessel → page  `ended{why, refusal?}` (`store-owned`: another worker owns the store)
+ *   the console door                  page → vessel  `verb{argv}`, answered by `reply` (`console-door.ts`: a held verb's exact
+ *                                     path alone crosses, never a word past it, so no secret rides this message)
  *
  * THE SESSION (`@lararium/browser` vessel-sessions.ts). The port opens one session at `hello`; the vessel answers
  * `greeting{ownerEpoch, sessionId, lifetimeLock}` (an earlier greeting the hello names and this vessel did not mint reads
@@ -60,15 +63,18 @@ export interface VesselBoot {
   readonly floorAnchor?: FloorAnchor;
   /** The fleet-join landing's admit carriage (`toAdmitCarriage`), taken once off this tab's stash. */
   readonly admitCarriage?: string;
-  /** The `?mesh=` carry-in: the leaf's coordinate seed and the raw peer list the vessel worker reads (`parseMeshPeer`). */
-  readonly meshLeaf?: { readonly coordSeed: string; readonly peers: string };
+  /** THE FOUNDING ACT (the page's founding door, an act on its own surface, never a URL): this person asks the vessel to found a face of its own over its veil floor. Absent, the
+   *  vessel stays at its floor until a fleet join overlays a face. */
+  readonly foundFace?: true;
 }
 
 /** The vessel's floor state, a public enum: `floor` (locked: public readings alone, `signer-unavailable` on asks), `lighting`, `lit`. */
 export type VesselFloor = "floor" | "lighting" | "lit";
 
 /** The seed's resting state, named and never its bytes. */
-export type SeedRest = "absent" | "wrapped-prf" | "wrapped-passphrase" | "open";
+/** `open-veil`: an unbound veil floor: no face worn and no slot bound, so the vessel's key and its floor's own key rest in
+ *  the open pre-bind window (the-veil-ladder#/the-base-model, the throwaway rung). */
+export type SeedRest = "absent" | "wrapped-prf" | "wrapped-passphrase" | "open" | "open-veil";
 
 /** Public readings alone. */
 export interface VesselStatus {
@@ -87,7 +93,7 @@ export interface VesselStatus {
     readonly activeWikiId: string;
     /** The wiki the vessel stands in for on its floor wiki, waiting on a face: its own line (`wiki-awaits-face`), or absent. */
     readonly wikiAwaits?: string;
-    readonly wikiDocUrl: string;
+    readonly wikiDocUrl: string | null;
     readonly oracleDocUrl: string | null;
   };
 }
@@ -97,6 +103,12 @@ export interface VesselError { readonly name: string; readonly message: string; 
 
 export type JoinOfferReply = { readonly kind: "request"; readonly text: string };
 /** `face` names the PersonaGroup the landed join joins: the tab selects it, so its next hello wears it. */
+/** leaf-fleet (Leaf-Wright): the root holder's replies. `faces` lists the faces this browser holds a root for; a file reply carries one file's text. */
+export type FleetRootFacesReply = { readonly kind: "faces"; readonly faces: readonly { readonly personaGroup: string; readonly label: string }[] };
+export type FleetRootFileReply = { readonly kind: "offer" | "answer" | "seat-request" | "seat-grant"; readonly text: string };
+export type FleetSeatLandReply = { readonly kind: "seat-kept"; readonly face: string };
+/** The active wiki's working layer as this vessel mounted it: the slug, and the document the vessel's composite reads it from. */
+export type WorkbenchReadingReply = { readonly kind: "workbench"; readonly slug: string; readonly bagId: string; readonly documentUrl: string | null };
 export type JoinAnswerReply = { readonly kind: "landed"; readonly carriage: string; readonly signerDid: string; readonly face: string };
 
 export type PageToVessel =
@@ -117,7 +129,22 @@ export type PageToVessel =
   | { readonly t: "read:floor"; readonly callId: string; readonly baseUrl: string }
   | { readonly t: "join:offer"; readonly callId: string; readonly text: string; readonly abandonPending: boolean }
   | { readonly t: "join:answer"; readonly callId: string; readonly text: string }
+  // ── leaf-fleet (Leaf-Wright): the fleet-join door's ROOT-HOLDER half. Files in, files out; the vessel asks the face's ward by the ceremony door. ──
+  | { readonly t: "fleet-root:faces"; readonly callId: string }
+  | { readonly t: "fleet-root:offer"; readonly callId: string; readonly personaGroup: string }
+  | { readonly t: "fleet-root:answer"; readonly callId: string; readonly personaGroup: string; readonly text: string }
+  // THE CARRIED SEAT (a second round of two files): the root holder grants a carried seat request; the joined leaf asks and lands.
+  | { readonly t: "fleet-root:seat"; readonly callId: string; readonly text: string }
+  | { readonly t: "fleet-seat:faces"; readonly callId: string }
+  | { readonly t: "fleet-seat:request"; readonly callId: string; readonly personaGroup: string }
+  | { readonly t: "fleet-seat:land"; readonly callId: string; readonly text: string }
+  // A read-only instrument: the active wiki's working layer, so two leaves of one face read one workbench address.
+  | { readonly t: "fleet-seat:workbench"; readonly callId: string }
+  // ── /leaf-fleet ──
   | { readonly t: "spawned"; readonly spawnId: string; readonly port?: MessagePort; readonly refused?: string }
+  /** THE CONSOLE DOOR: one verb by the CLI's own argv path (`["vessel", "read"]`, `["help"]`). The vessel answers it from its own
+   *  table before any unlock; `readFace` names the origin the page reads its hearth's porch at, for a row that reads the floor. */
+  | { readonly t: "verb"; readonly callId: string; readonly argv: readonly string[]; readonly readFace: string }
   | { readonly t: "walk:restart"; readonly callId: string; readonly reason: string }
   | { readonly t: "walk:ward"; readonly callId: string; readonly bytes: Uint8Array };
 
@@ -127,6 +154,8 @@ export type VesselToPage =
   | { readonly t: "phase"; readonly phase: string }
   | { readonly t: "frame"; readonly frame: ProjectionSurfaceFrame }
   | { readonly t: "control-result"; readonly surface: string; readonly result: LarMsg_ControlResult }
+  /** A resend that met its act still waiting at the vessel (`control-event-pending`): the act stands held, its result to come. */
+  | { readonly t: "control-pending"; readonly surface: string; readonly eventId: string }
   | { readonly t: "coherence"; readonly frame: CoherenceFrameWithRev }
   | { readonly t: "port-msg"; readonly binding: string; readonly islandKey: string; readonly msg: unknown }
   | { readonly t: "port:minted"; readonly wantId: string; readonly port?: MessagePort; readonly refused?: string }

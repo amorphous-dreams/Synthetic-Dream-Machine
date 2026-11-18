@@ -7,4 +7,5 @@ h1 { font-size: 1.2rem; font-weight: 600; }
 input { display: block; width: 100%; box-sizing: border-box; min-height: 44px; margin: 0.6rem 0; padding: 0.5rem 0.7rem; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: #c9d1d9; font: inherit; font-size: 16px; }
 .acts { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 button { min-height: 44px; padding: 0 0.9rem; border-radius: 8px; border: 1px solid #30363d; background: #1b2029; color: #c9d1d9; font: inherit; cursor: pointer; }
+#ceremony-card { margin: 0.8rem 0; padding: 0.7rem 0.9rem; border: 1px dashed #768390; border-radius: 8px; background: #0d1117; color: #e6edf3; font-size: 16px; letter-spacing: 0.04em; white-space: pre-wrap; word-break: break-all; }
 [hidden] { display: none !important; }

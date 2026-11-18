@@ -41,10 +41,11 @@ import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { describe, expect, test } from "vitest";
 import { custodyFrameHandler, CUSTODY_LINE } from "../src/custody-frames.js";
-import { CustodyRowUnavailable, type CustodyHolder, type HolderProof, type HolderUnlock } from "../src/custody-holder.js";
+import { CustodyRecordUnavailable, type CustodyHolder, type HolderProof, type HolderUnlock } from "../src/custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "../src/face-bundle-cut.js";
 import { runSealedAct } from "../src/sealed-acts.js";
 import { mountedFaceOrdinal, setMountedFace } from "../src/node-vessel-identity.js";
+import { listFaceCustodyIds } from "../src/identity-anchors.js";
 import { faceRouteBindDigest, FaceRouteAbsent, FaceRouteRefused, gatherFaceRoute, seatFaceRoute, withFaceRoute } from "../src/face-route.js";
 
 const RIGHT = "frames-test-passphrase-right";
@@ -89,9 +90,9 @@ function harness(opts: {
     isUnlocked: () => unlocked,
     attemptsLeft: () => 3 - spent,
     openedSlot: () => (unlocked ? "slot-1" : null),
-    readRow: async () => ({ reading: "locked" }),
-    writeRow: async () => {},
-    openColdRow: async () => { throw new Error("unused"); },
+    readRecord: async () => ({ reading: "locked" }),
+    writeRecord: async () => {},
+    openColdRecord: async () => { throw new Error("unused"); },
     derive: () => new Uint8Array(),
   } as unknown as CustodyHolder;
   const recomposed: boolean[] = [];
@@ -294,7 +295,7 @@ describe("the custody door's act frame", () => {
   });
 
   test("A7 — an act's fault answers by name with the row it met, and the door serves the next frame", async () => {
-    const h = acting(async () => { throw new CustodyRowUnavailable("identity", ".persona-roster.json", "torn"); });
+    const h = acting(async () => { throw new CustodyRecordUnavailable("identity", ".persona-roster.json", "torn"); });
     await h.send(unlockFrame(RIGHT)).answer;
     expect(await h.send({ op: "act", act: "persona.roots", args: {} }).answer).toMatchObject({
       op: "act", status: "error", refusal: { reason: "row-unavailable", home: "identity", file: ".persona-roster.json", reading: "torn" },
@@ -391,7 +392,7 @@ describe("the custody door's backup frame", () => {
     const h = cutting(async () => { throw fault; });
     await h.send(unlockFrame(RIGHT)).answer;
     expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ op: "backup", status: "error", errorMessage: "this vessel wears h0", refusal: { reason: "face-not-worn" } });
-    fault = new CustodyRowUnavailable("identity", ".persona-roster.json", "torn");
+    fault = new CustodyRecordUnavailable("identity", ".persona-roster.json", "torn");
     expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ refusal: { reason: "row-unavailable", home: "identity", file: ".persona-roster.json", reading: "torn" } });
     fault = new Error("the port closed");
     expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ refusal: { reason: "backup-failed" } });
@@ -512,5 +513,51 @@ describe("the custody state query answers beside the chain (L7)", () => {
     expect(mid).toMatchObject({ op: "custody", composing: true });
     await unlocking.answer;
     expect(await h.send({ op: "custody" }).answer).toMatchObject({ op: "custody", unlocked: true, composing: false });
+  });
+});
+
+/**
+ * The `census` frame: the saves the standing composition holds in memory, read before a stop.
+ *   N1  it answers at once with each held document by id and refusal, beside the chain and with no credential.
+ *   N2  while no composition sits it answers `held: null`, never an empty list.     control: no census wired reads null too
+ */
+describe("the census frame", () => {
+  // A held key opens every standing face unless the row names otherwise (`allFacesOpen: false`): the census reads the
+  // standing faces off this house's identity store, so the fake's open set follows that store.
+  const door = (heldSaves?: () => readonly import("@lararium/mesh").HeldSaves[] | null, unlocked = false, allFacesOpen = true) => custodyFrameHandler({
+    holder: {
+      isUnlocked: () => unlocked, openedSlot: () => null, attemptsLeft: () => 3,
+      unlockedFaces: () => (unlocked && allFacesOpen ? listFaceCustodyIds().map((f) => f.fcid) : []),
+    } as unknown as CustodyHolder,
+    testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: () => {},
+    ...(heldSaves ? { heldSaves } : {}),
+  });
+  const ask = (handle: ReturnType<typeof door>) => { const { sock, answer } = fakeSock(); expect(handle({ op: "census" }, sock)).toBe(true); return answer; };
+
+  test("N1 — each held document answers by id, refusal, count and bag, and never a body", async () => {
+    const held = [{ documentId: "doc-a", refusal: "save-unbooked" as const, saves: 2, bagId: "lar:///ha.ka.ba/bags/notes" }];
+    expect(await ask(door(() => held))).toEqual({ op: "census", held, standing: "hearth", locked: true });
+  });
+
+  test("N2 — no composition sitting answers held null; CONTROL: a door with no census wired answers null", async () => {
+    expect(await ask(door(() => null))).toEqual({ op: "census", held: null, standing: "hearth", locked: true });
+    expect(await ask(door())).toEqual({ op: "census", held: null, standing: "hearth", locked: true });
+  });
+
+  test("N3 — the census names whether the key stands shut, so a stop can say unlock first", async () => {
+    // Under a held key every standing face reads lit (the fake opens them all), so `facesLit` names each; none standing leaves it absent.
+    const lit = listFaceCustodyIds().map((f) => f.ordinal);
+    expect(await ask(door(() => [], true))).toEqual({ op: "census", held: [], standing: "hearth", locked: false, ...(lit.length > 0 ? { facesLit: lit } : {}) });
+    expect(await ask(door(() => [], false))).toMatchObject({ locked: true });
+    expect(await ask(door(() => [], false)), "a shut node key lights no face").not.toHaveProperty("facesLit");
+  });
+
+  test("N4 — under a held key, each standing face whose key stays shut answers in facesLocked; none shut leaves the field absent", async () => {
+    const shut = listFaceCustodyIds().map((f) => f.ordinal);
+    const answer = await ask(door(() => [], true, false));
+    if (shut.length > 0) expect(answer).toMatchObject({ locked: false, facesLocked: shut });
+    else expect(answer).not.toHaveProperty("facesLocked");
+    expect(await ask(door(() => [], true))).not.toHaveProperty("facesLocked");
+    expect(await ask(door(() => [], false)), "a shut node key names no face: the whole key stands locked").not.toHaveProperty("facesLocked");
   });
 });

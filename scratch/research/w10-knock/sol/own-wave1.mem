@@ -1,0 +1,51 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/own-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/w10-knock/sol/own-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/own-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/own-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! own-wave1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-knock/sol/own-wave1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Knockwright: Lares (Tasked Spirit) · Ink-Clerk / Map-Wisp / Lares (Council)
+&lt;&lt;~ lares aim from="lar:&#47;&#47;/operator.questions.the-knock" -> to="lar:&#47;&#47;/gate.evidence.guides" >>
+&lt;&lt;~ set hud="aim" mode="seal" aperture="16/arc" ooda-ha="7/declare-glyphs" drift-ward="an earlier LEAD entered the road as acceptance without an operator ruling">>
+
+->✶ ''1. Tiers. MEASURED.'' `gate-bundle.ts:128-145,186-213` binds tier, Nexus, route, and both public keys into the digest and derives a fixed HMAC knock from that digest. The floor answers the public shelf while locked; the sovereign gate seats a face or opens private sync only while unlocked (`face-proof.mem:110-122`). A faceless reader gets a floor card pin (`stable-founding-road.mem:208,337,512`); floor pins also travel through authenticated relations or signed pin sets (`face-proof.mem:84`). A joined device receives a full sovereign pin in its signed admit/fleet answer (`face-proof.mem:84`; `stable-founding-road.mem:725`). A walker receives its gate bearing with an invite (`hosting.ts:378-403`). ''LEAD.'' Matching a //public// floor pin to its public shelf discloses no private membership. A floor knock still exposes a stable destination and traffic pattern, already within the floor's public bearing. Sovereign pin distribution narrows access, yet never makes the pin a secret: a recipient can copy it.
+
+->⏿ ''2. Existing secret and first dial. MEASURED.'' The encrypted presentation, after Noise, carries an admit, hosting grant, or invite claim (`face-proof.mem:78-86`; `face-dial.ts:153-176`). Face-scoped certified keys differ per face and vessel (`face-proof.mem:42-54`); each PersonaGroup owns separate secrets (`stable-founding-road.mem:203,206`). The council holds //no// collective key of its own (`stable-founding-road.mem:204`). A staged joinee boots by its signed pin and reaches the hearth before `face-join` places the later grant on its plane (`tests/e2e/face-grant-unseated-joinee.test.ts:5-18,49-82`). The floor expressly seats no fleet lane (`face-proof.mem:122`). ''LEAD.'' No measured secret covers //every// lawful sovereign dialer before that first dial. A per-face group secret would make distinct paths per face, disclose face continuity to a log reader holding candidates, and require the gate to share or enumerate face secrets before selection. A vessel key or face-scoped certificate breaks unlinkability or arrives too late. An invite covers walkers, neither all admits nor the pre-grant joinee. A gate-wide shared key distributed with every admit would add a credential and require causal rotation and redistribution; it does not already ride the pin. Kapae and group rolls rotate face authority, not a shared gate key (`face-proof.mem:207-211,225`; `face-proof.mem:130`). No wall clock could settle replay or revocation. Let a replay buy bounded preflight work; allow application effects only after the signed finish and the gate's last learned causal state (`face-proof.mem:78-87,198,210-211`).
+
+->◇ ''3. Readers and stories. MEASURED.'' The dispatcher uses exact `<route>/<knock>` paths and refuses an unclaimed path; it decrypts one Noise flight before HTTP 101 (`face-gate-server.ts:328-332,375-415`). A household terminator logs the path; a passive TLS outsider reads neither path nor token (`face-proof.mem:183-201`). A herm sees destination, timing, sizes, and a face-scoped channel tag, while sealed contents stay hidden (`face-proof.mem:183-186`). ''LEAD.'' Anyone who reads such a log //and// holds candidate pins can map paths to Nexuses offline; a gossiping herm with those pins gains the same map. A path match proves a target, not admission or which face dialed. Repeated identical paths link visits to one gate, even when fresh Noise keys hide the vessel. For Teshima, Leilani's two chosen faces may reach Kalani's private council, but the kept-back face must receive neither its invite, council state, nor a candidate sovereign pin (`stable-founding-road.mem:204,483`). A shared terminator or colluding herm could map both dials to that council if it acquired its pin; traffic alone cannot prove that both belong to Leilani. Gaia illustration: a household proxy operator who holds a private support circle's pin could label members' visit times. Elyncia illustration: a waystone bearing a secret shrine council's pin could label journeys toward that council; neither setting grants the relay the sealed book. Both readings exceed the house's kept-back-face aspiration whenever such a reader acquires pins.
+
+->▶ ''4. Bytes and order. MEASURED.'' `face-dial.ts:159-160` sends the knock with Noise message one; `gatePath` places it in the URL (`face-gate-server.ts:328-332`). W28 freezes sealed `GATE_FRAME` tags and bounds (`w28-gate-lane.mem:34-44`); its preflight cure changes no bytes (`w28-gate-lane.mem:56`). W10 explicitly precedes X0 if its answer changes dial bytes (`stable-founding-road.mem:508,524,544`). ''LEAD.'' Changing the knock changes URL bytes on node and browser alike, outside `GATE_FRAME`; settle that change before X0 in one end state. Split its two relations conceptually: gate selection names a route, pre-filtering proves knowledge. The current segment performs both (`w28-gate-lane.mem:52-54`). Any future split needs a complete selector, trust, revocation, and denial design, with a zero-leak instrument plus a known positive.
+
+->↺ ''5. Prior art and one lean.'' [[Noise IKpsk2|https://noiseprotocol.org/noise_rev34.html]] mixes a shared secret into the handshake, but `psk2` lands after message two and cannot key this pre-101 URL. [[WireGuard mac1/mac2|https://www.wireguard.com/protocol/]] separates public-key-addressed filtering from load cookies; its `mac1` preserves the offline candidate test. [[Tor v3 client authorization|https://community.torproject.org/onion-services/advanced/client-auth/]] offers an invite-only access shape, but brings authorization key distribution. [[fwknop SPA|https://github.com/mrash/fwknop]] authenticates a hidden service through a separately shared key and replay record. [[ECH|https://datatracker.ietf.org/doc/rfc9849/]] hides an inner name from intermediaries with client-facing server cooperation, beyond this household terminator. [[Signal sealed sender|https://signal.org/blog/sealed-sender/]] derives delivery tokens from already shared profile keys and rotates them on blocking; its existing-secret pattern fits only where every authorized sender already shares that key.
+
+''LEAN:'' Retain the public-pin knock and name the sovereign metadata leak explicitly //as a proposed operator decision//, never as an accepted ruling. Keep W28's decrypt-before-101 and causal finish checks. This lean flips if a measured, gate-wide, face-neutral secret already reaches the pre-grant joinee and every other lawful sovereign dialer, rotates on removal without a clock, and survives a node/browser, terminator/herm, replay, and two-face isolation witness. `w28-gate-lane.mem:58`, `face-proof.mem:200`, and `stable-founding-road.mem:583` currently record controller acceptance; none records the operator's assent to this leak. The user introduces; the operator admits (`stable-founding-road.mem:132`).
+
+&lt;&lt;~ oracle "↯12 ✲ ⚂(3) ⁂:🜁🜄🜃">>
+&lt;&lt;~ set hud="yield" drift-ward="verify whether any new pre-join grant reaches every sovereign dialer before treating the leak as accepted · ↻ L-Prime" aperture="16/arc -> 18/theme" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;&#47;/knock.reading.awaits-ruling" -> to="?">>
+WORDS=967
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UOZ4V1kkzPJdwBGGSBeSsOtI_GTLlO4CLted1xlCFk8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

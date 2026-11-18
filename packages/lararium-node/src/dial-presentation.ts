@@ -88,7 +88,7 @@ export async function composeFaceTarget(args: DialFaceArgs): Promise<{ readonly 
  * THE TAKE CERTIFIES THE FOUNDER WHERE NO DIAL CARRIES IT. The founder's certificate at a new scope reads the root, a ward act
  * (seat-harness#/the-ward), so it issues only inside an act that carries a route: the boot dial, or a take's re-present. A
  * lararium that takes its own admit at its own Nexus dials no hearth there, so the take's route issues the certificate here,
- * through the same reading the dial makes (the kept admit, the charter's held root, the worn face's own leaf); the carriage
+ * through the same reading the dial makes (the kept admit, the charter's held root, the daemon mount's own leaf); the carriage
  * pull's presentation at that Nexus then reads it standing with no route. A joinee holds no root and certifies nothing
  * (`founder-absent`); a certificate already standing writes nothing; a founder refusal comes back by name.
  */

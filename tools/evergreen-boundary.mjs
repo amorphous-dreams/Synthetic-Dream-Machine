@@ -11,7 +11,11 @@
 //   narration  — a comment that narrates history (used to, previously, legacy, the old, back-compat, …) or names the
 //                lane, wave or slice that built its line (`Wave C`, `slice 2`, `this lane`); the `#` comments of the
 //                workflows, the Dockerfile and the root compose files join this corpus.
-//   old-shape  — source identifiers, literal readings, or comments that recognize a shape from before a format cut.
+//   old-shape  — source identifiers, literal readings, or comments that recognize a shape from before a format cut, and a
+//                comment or string literal that names an OLDER PEER (an older build, vessel, daemon, pūlama, peer, writer,
+//                client or house; a frame, payload or session from an older one) or an EARLIER SHAPE (earlier, previous
+//                or pre-cut, with one word between at most): a house runs one revision, so a parse refuses on its own
+//                terms and never by the build or the shape that wrote the bytes.
 // It reads lines, not a syntax tree, so a sink split across lines escapes it; false green is the tolerable side.
 //
 // FOUR MORE CLASSES hold the places a past shape lingers after its code burns (each over its own corpus):
@@ -44,11 +48,14 @@ import { fileURLToPath } from "node:url";
 
 export const RULES = ["version", "clock", "narration", "old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"];
 /** Today's measured open debt, per rule. RATCHET: each number may only ever come DOWN. */
-export const CEILINGS = { version: 55, clock: 53, narration: 163, "old-shape": 0, "retired-test": 6, "upgrade-delete": 0, "canon-history": 98, "canon-dated-history": 1 };
+export const CEILINGS = { version: 0, clock: 52, narration: 0, "old-shape": 0, "retired-test": 0, "upgrade-delete": 0, "canon-history": 0, "canon-dated-history": 0 };
 export const EXCEPTIONS = [
   { rule: "version", file: "packages/lararium-browser/src/browser-vessel-identity.ts", match: "const IDB_VERSION", reason: "IndexedDB's open call takes a numeric version argument; the browser API names it." },
+  { rule: "version", file: "tools/domain-registry-witness.test.mjs", match: "const names = ['lar-planted-versioned/v1'", reason: "The domain witness's self-test plants versioned domain literals in a scratch fixture to prove the witness refuses each by name." },
   { rule: "clock", file: "packages/lararium-tw5/src/wiki-draft-handlers.ts", match: "const cutoffMs =", reason: "The prune-stale report lists idle drafts for a person to read; the clock picks what the report shows, never what leaves, since nothing here prunes (operator ruling 2026-10-18)." },
   { rule: "clock", file: "packages/lararium-tw5/src/wiki-draft-handlers.ts", match: "const daysIdle =", reason: "The prune-stale report shows each draft's idle days to a person; the reading decides nothing (operator ruling 2026-10-18)." },
+  { rule: "clock", file: "packages/lararium-node/src/temp-layer.ts", match: "now: () => Date.now()", reason: "The temp layer's one clock seam: age expiry and the orphan settle window measure a file's age against wall time, the clock decides only when a settled file moves to the trash, and every housekeeping run reads it here alone." },
+  { rule: "clock", file: "packages/lares-cli/src/keep-sessions.ts", match: "now: () => Date.now()", reason: "The session mirror's one clock seam: a transcript mirrors once its file has rested idle, so a live session never copies mid-write; the reading picks when a copy happens, never what a record holds or names." },
   { rule: "clock", file: "tools/browser-ci-join.mjs", match: "Date.now() >= deadline", reason: "The join reader bounds only its own wait for a host response." },
   { rule: "clock", file: "tools/browser-ci-smoke.mjs", match: "Date.now() < deadline", count: 4, reason: "The smoke runner's four polls each bound only its own wait on the browser it drives." },
   { rule: "clock", file: "tools/browser-ci-smoke.mjs", match: "Date.now() > graceEnd", reason: "The smoke runner bounds only its own connection status poll." },
@@ -64,6 +71,8 @@ export const EXCEPTIONS = [
   { rule: "clock", file: "tools/wait-receipt.test.mjs", match: "Date.now() - t0 < 900", reason: "The silence-bound test measures only its own completion time." },
   { rule: "clock", file: "tools/wait-receipt.test.mjs", match: "const took = Date.now() - t0", reason: "The forged-claim test measures only its own completion time against the cap." },
   { rule: "retired-test", file: "packages/lararium-memetic-frame/tests/verdict.test.ts", match: "const retired: Record<string, string> = {", reason: "The frame verdict suite feeds malformed heads that a reader meets as foreign bytes; the record names input bytes." },
+  { rule: "canon-history", file: "bags/lararium/ha.ka.ba/lararium/api/action-handler.mem", match: "retired", count: 5, reason: "DROP leaves a bag retired: the bag-retired disposition at <bag>/ledger/residency/retired (effect-record.ts RETIRED_EVENT_ID) names a present state the code reads, never history." },
+  { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/wild-bytes.mem", match: "rules no back-compat and no shims", reason: "This law line states the alpha-line ruling and names the compatibility readings it bans." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Build new, then retire.", reason: "This law line names the reserved retired term it governs." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Evergreen, with no old shapes", reason: "This law line names the history words it bans." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "lives for one commit", reason: "This law line states the one-commit refusal it permits." },
@@ -85,6 +94,11 @@ const ID_NAME = /\b(?:[A-Za-z_$][\w$]*)?(?:id|Id|ID|nonce|Nonce|epoch|Epoch)\s*=
 const OLD_SHAPE_NAME = /\b(?:Legacy\w*Refus\w*|OldShape\w*|oldShape\w*|refuseLegacy\w*)\b/;
 const OLD_SHAPE_LITERAL = /^["']old-shape(?:-inception)?["']$/;
 const OLD_SHAPE_COMMENT = /retired (?:spelling|shape|layout|name)|falls? back to the retired|tolerates every grammar/i;
+// An older PEER, never an older run, version or runtime: the nouns name who wrote the bytes, so an older Node, an IndexedDB
+// store's older version and a run still in flight read nothing.
+// An earlier SHAPE, never a prior one: a pack's prior shape names a revision of data, which the house reads on purpose.
+const EARLIER_SHAPE = /\b(?:earlier|previous|pre-cut(?:over)?)[- ](?:[a-z]+ )?shapes?\b/i;
+const OLDER_PEER = /\bolder (?:(?:daemon|vessel|node|pūlama|pulama|peer) )?(?:builds?|vessels?|daemons?|peers?|pūlamas?|pulamas?|writers?|clients?|houses?|key holders?)\b|\b(?:frames?|payloads?|sessions?) from (?:an? )?older\b/i;
 
 // `statement` has its string literals blanked, so a clock named inside a string reads nothing; `keyed` keeps them,
 // so a quoted record key (`"requested-at":`) still names its field.
@@ -131,7 +145,7 @@ export function scanText(rel, text) {
     if (/\.(?:sh|py)$/.test(rel)) { if (clockSink(code)) add(finding("clock")); continue; }
     const literals = code.match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g) ?? [];
     const names = code.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g, "\"\"");
-    if (OLD_SHAPE_NAME.test(names) || literals.some(literal => OLD_SHAPE_LITERAL.test(literal)) || OLD_SHAPE_COMMENT.test(comments)) add(finding("old-shape"));
+    if (OLD_SHAPE_NAME.test(names) || literals.some(literal => OLD_SHAPE_LITERAL.test(literal) || OLDER_PEER.test(literal) || EARLIER_SHAPE.test(literal)) || OLD_SHAPE_COMMENT.test(comments) || OLDER_PEER.test(comments) || EARLIER_SHAPE.test(comments)) add(finding("old-shape"));
     if (/\bschemaVersion\b/.test(names) || /["']schemaVersion["']\s*:/.test(code) || /\[\s*["']schemaVersion["']\s*\]/.test(code) || /\b(?:version|[A-Za-z_$][\w$]*Version)\s*\??\s*:\s*(?:\d[\d_]*\b|number\b)/.test(names) || VERSION_CONST.test(names) || literals.some(literal => FORMAT.test(literal.slice(1, -1)))) add(finding("version"));
     const clockCode = code.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, "\"\"");
     if (clockSink(`${carry.clock} ${clockCode}`, `${carry.keyed} ${code}`)) add(finding("clock"));

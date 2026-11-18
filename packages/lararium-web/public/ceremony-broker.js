@@ -5,6 +5,8 @@
 // and the claim, never starts it and never reads it, and keeps no state past that hand. A claim from any document but the
 // ceremony's own, or an offer from the ceremony document, answers `ceremony:absent`.
 //
+// A page it controls not may ask it to claim (`broker:claim`); the claim grants the page nothing but this worker's own events.
+//
 // An unanswered vessel claim ends on its claimant’s withdraw or a later event that finds its client gone.
 // It imports nothing and handles no fetch: it carries no content key and serves no bytes.
 const CEREMONY_PATH = "/ceremony.html";
@@ -29,6 +31,12 @@ self.addEventListener("message", (event) => {
 const route = (event) => {
   const msg = event.data;
   const source = event.source;
+  // A PAGE THIS WORKER CONTROLS NOT ASKS FOR THE CLAIM. A registration revived after a reset's unregister (a window that outlived
+  // the burn kept this worker alive) activates no second time, so the claim `activate` makes never reaches the reloaded page.
+  if (msg && source && msg.t === "broker:claim") {
+    if (pathOf(source) === CEREMONY_PATH || pathOf(source) === null) return;
+    return self.clients.claim();
+  }
   if (msg && source && msg.t === "vessel:claim" && typeof msg.tabSession === "string") {
     const from = pathOf(source);
     if (from === CEREMONY_PATH) { source.postMessage({ t: "vessel:absent", tabSession: msg.tabSession }); return; }

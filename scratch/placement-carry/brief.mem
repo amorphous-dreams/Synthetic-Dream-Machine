@@ -1,0 +1,55 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/placement-carry/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-carry/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-carry/brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Carry-Wright: Lares (Tasked Spirit). Read CLAUDE.md once for house law, then implement. This is an IMPLEMENTATION task: start editing code within your first few actions. Do not write a plan file, do not stop at a trace. Done means the diff below exists and the listed tests pass.
+
+CONTEXT (all measured; no need to re-trace):
+* `packages/lararium-tw5/src/action-handler.ts` now refuses an INGEST whose `sourceUri` does not rest under the destination bag's granted mirror root (`assertDiskWavePlacement`, `DiskWavePlacementRefusal`, code `disk-wave-placement`).
+* `lares import` (`packages/lares-cli/src/commands/carry.ts`) ingests each wave straight from the bundle directory: the `wave(...)` helper (~line 538) calls `doors.ingest({ source: sourceDir, ... })`, and `LIVE_CARRY_DOORS.ingest` (~line 141) calls `settleIngest({ source: wave.source, ... })`. Under the new ward every such wave refuses.
+* The export side already knows each wave's mirror directory (`mirrorDir`, passed to `wave(...)`, used by `mirrorDirFileToUri`).
+
+CHANGE (make exactly this):
+# In `carry.ts`'s `wave(...)`, when `apply` is true and there are candidates or kāpae: copy each wave file from the bundle (`join(bundle.root, ...)`) into `mirrorDir` at the same relative path BEFORE calling `doors.ingest`, then pass `source: mirrorDir` (not `sourceDir`) to `doors.ingest`.
+#* Write a file only when it is absent at the destination, or present with byte-identical content. If a different file already stands there, do NOT overwrite: record it in `workTally.stoodOff` as `"<uri> (a different file stands in the mirror; left as it stands)"` and leave it out of the candidates.
+#* Write through the existing atomic writer if the CLI has one (grep `atomicWrite` / `writeFileAtomic` in packages/lares-cli/src and packages/lararium-node/src); create parent dirs; mode 0600 for files.
+#* `.kapae` shadow files copy the same way (they ride in `scan.shadows`).
+# Keep `LIVE_CARRY_DOORS.ingest` as is apart from receiving the mirror source.
+# Update the module comment of the wave helper to say: an import restores each file into its mirror, then the ingest reads it from there, so the placement ward reads a source under the bag's own mirror.
+
+TESTS (red first, in `packages/lares-cli/tests/carry-verbs.test.ts`, using its existing fake doors and scratch root):
+a. An apply import copies a wave's files into the mirror dir and calls ingest with `source` equal to that mirror dir.
+b. A mirror file that already holds different bytes stays untouched, lands in stoodOff, and is not a candidate.
+c. A re-run import (journal) writes nothing new and calls ingest with no repeated candidates.
+Then run: `cd packages/lares-cli && npx vitest run tests/carry-verbs.test.ts --maxWorkers=4`, then the full lares-cli suite with `--maxWorkers=4`; <code>pnpm &#45;-filter &#64;lares/cli build &amp;&amp; node tools/stamp-build.mjs . &#45;-pkg lares-cli</code>; <code>pnpm &#45;-filter &#64;lares/cli typecheck</code>; `node tools/evergreen-boundary.mjs`.
+
+LIMITS: edit only packages/lares-cli/src/commands/carry*.ts and packages/lares-cli/tests/carry-verbs.test.ts (plus a tiny shared helper in lares-cli if truly needed). No git commit, no push, no stash. Never touch ~/.lares or docker. If a test outside these files fails for reasons unrelated to your change, note it and continue.
+
+FINAL MESSAGE: the files changed, each test's result with counts, and anything you could not do.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lNHtMAj9otraDBdpcv9fiS2oI7k2dkuQxlKGnLvLh8E`>>
+
+<<^ code=`&#x0004;` to=`?`>>

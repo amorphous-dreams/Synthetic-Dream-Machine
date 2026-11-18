@@ -1,0 +1,69 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/ci-reds/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/ci-reds/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/ci-reds/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ci-reds-redmender-hand-back`>>
+
+! ci-reds — Redmender hand-back (CI run 43082149595 on 9baa6a506)
+
+Branch `feature/green-jello-dinosaur-5--ci-reds`, pushed. Commits:
+* `764b12383` lar:&#47;&#47;/place.key.receipts/ci-reds — reds 1 and 5 (keyhive code, census, node test)
+* `fc920d34c` lar:&#47;&#47;/stale.tests.reread/ci-reds — reds 2, 3 and 4 (stale tests)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/per-red`>>
+
+!! Per red
+
+# ''sibling-system-canon-admin (node-a).'' Test wrong, plus mixed code wording. The realm's refusal says "house canon"; the sibling-face refusals in `operator-daemon-behavior.ts` still said "system canon", although they gate `isHouseCanonBag`. Code: all three kahu-reach refusals now say "house canon". Test: assertions and title say house canon. Filename kept: `tools/e2e-shard-weights.json` points at it.
+# ''container-target (cli-mesh).'' Test wrong. Each `meme get` in `host-bridge-real-docker.test.ts` (lines 91, 92, 105, 125) now passes `--bag lares`. The stand-in `node` script scans every argument for `exit:N` / `sleep`, so the walks still work. The law stays as it was: no exception and no `intentional-bare-refusal` marker (these are not refusal vectors).
+# ''born-with-cap (web-tw5).'' Test wrong, code right. A top-level CREATE has no inner bag, so `gateRoutedVerb` never asks Kahu about it. That means `kahuReachClearedAtGate` never cleared a CREATE. `createHouseCanon` checks the `kahuReach` source itself, and with none it treats the caller as a stranger: `readsFloor`, `count: 0`. The test now passes the steward's own `kahuReach: await kahuHand()`. The steward's answer then counts the realm document's titles (1). Title renamed to "house canon … steward".
+# ''share-verbs (web-tw5).'' Test wrong. `VerbRefusal` carries `reason` across the house (about 66 test reads use it; `code` belongs to other error classes). Both refusals in the test now match on `reason`.
+# ''seed-census K15 (witness).'' Some of each:
+#* Line 425 (`siblingSlotsOf`: `vesselDid`/`mintedByHex` = the PUBLIC place key for a sibling face's resolver) was new this span. It took one of the row's 3 counted slots, so the older line 1788 showed up as open. I restructured it: `LitFaceSlotSpec` now takes `atomKey`, and `litFaceSlotDocs` builds minted-by and the DID from it, the same way the worn face labels its own slots. Reason: a sibling's binding records (`minted-by` in the worn face's daemon doc) would otherwise carry the place key, which links that face to the place.
+#* 1474 (`share-apply` salt): classified. The salt only has to differ per vessel ("reads alike on no other vessel"). The flag sits in the vessel's own control document, which no face reads, so a public per-vessel value does the job.
+#* 1788 (face-owner mount comparison): classified. The old reason text already named it.
+#* The census row now reads count 4 (367 faceless floor label, 466 floor label a lit face lifts, 1474 salt, 1788 mount comparison). Its reason no longer names the retired boot place check.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/proven-green-alone`>>
+
+!! Proven green alone
+seed-census.test.mjs 9/9 · lares-cli container-target 8/8 · tw5 share-verbs, born-with-cap 13/13, catalog-split-create 9/9 · keyhive lit-face-slots 4/4 · node sibling-system-canon-admin 1/1. Typecheck green for keyhive, tw5, node and cli. A full `pnpm -r build` plus stamp ran green in the worktree, with a scratch LAR_ROOT and no LAR_BAGS. `git status` showed no dirt under bags/ or wikis/; I did not run the tree-clean-witness script itself. host-bridge-real-docker was edited but not run (it needs `LARES_REAL_DOCKER=1`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/possible-product-bugs`>>
+
+!! Possible product bugs
+* `kahuReachClearedAtGate` vs `createHouseCanon`: a composition cleared at the gate with no `kahuReach` source answers even the steward's CREATE with `readsFloor`. That is correct today, because `deriveRoutedCap` sends house-canon CREATE to the daemon bag, which carries the source. If CREATE ever reaches a wiki island, the steward would read as a stranger. The option's doc ("asked the Kahu predicate for every system bag this verb names") still says "system".
+* In this span's source, "system canon" still names both the lares+lararium core and house canon in many comments (kahu-canon-reach.ts, action-handler.ts, verb-local-dispatch.ts). Only refusals were changed here.
+* Sibling slot resolvers write binding records into the worn face's daemon store (`daemonStore: ctx.composite`). Only device slots reach this today. If a sibling ever resolves a non-device slot, its binding rows would land in the worn face's daemon doc. Worth a look.
+* No CHANGELOG entry for the `LitFaceSlotSpec.atomKey` change.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cTylmQf7i8-RcDeAdRlEXRjnqHEqasdWk0vtXEcqJOw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -50,6 +50,23 @@ describe("★ a meme family lands as ONE change ★", () => {
     expect(seen).toEqual([`put ${ROOT}`, `put ${ROOT}#/new`, `tombstone ${ROOT}#/old`]);
   });
 
+  test("a family RETRACTS inside the one change: the keys drop to absent (never a kāpae), each fires `record: null`; CONTROL: a retract of an absent title makes no change", async () => {
+    const { store, changes, doc } = await seeded();
+    const seen: string[] = [];
+    store.subscribe((c) => seen.push(`${c.record === null ? "absent" : c.record.meta?.deleted ? "tombstone" : "put"} ${c.title}`));
+    const before = changes();
+
+    await store.writeFamily([], [], origin, { retracts: [ROOT, `${ROOT}#/old`] });
+
+    expect(changes() - before).toBe(1);
+    expect(doc().tiddlers[ROOT]).toBeUndefined();
+    expect(doc().tiddlers[`${ROOT}#/old`]).toBeUndefined();
+    expect(await store.get(ROOT)).toBeNull();
+    expect(seen).toEqual([`absent ${ROOT}`, `absent ${ROOT}#/old`]);
+    await store.writeFamily([], [], origin, { retracts: [ROOT] });
+    expect(changes() - before).toBe(1);
+  });
+
   test("CONTROL — a family whose content already stands makes no change at all", async () => {
     const { store, changes } = await seeded();
     const before = changes();

@@ -24,11 +24,11 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync,
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { carryRecordKey, ciphertextCid, readFckCarrier } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
-import { writeCustodyRow } from "../src/custody-seat.js";
+import { CustodyLocked, CustodyRecordUnavailable } from "../src/custody-holder.js";
+import { writeCustodyRecord } from "../src/custody-seat.js";
 import { depositCarried, fetchCarried, noteContact, readCarryRecord, type CarryLimits } from "../src/hosting-carry.js";
 
-import { hostingDirPath, hostingRowDir } from "../src/hosting-face.js";
+import { hostingDirPath, hostingRecordDir } from "../src/hosting-face.js";
 import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const AID = "nexus-" + "a".repeat(64);
@@ -42,7 +42,7 @@ function blob(n: number, fill: number): { cid: string; ciphertext: Uint8Array } 
 }
 const put = (b: { cid: string; ciphertext: Uint8Array }, depth = 1, limits = ROOMY, key = KEY) =>
   depositCarried({ nexusAid: AID, key, depth, ...b, limits });
-const rhythmRow = (key = KEY): string => `${hostingRowDir(0, AID)}/carry/${key}/record.json`;
+const rhythmRow = (key = KEY): string => `${hostingRecordDir(0, AID)}/carry/${key}/record.json`;
 const enc = (v: unknown): Uint8Array => new TextEncoder().encode(JSON.stringify(v));
 
 const drops: Array<() => Promise<void>> = [];
@@ -91,7 +91,7 @@ describe("the carriage at rest", () => {
     await custody("carry-k2");
     // A deposit stood its rhythm row and stopped before its blob: it counts nothing, and no value answers.
     mkdirSync(join(await guestDir(), "blobs"), { recursive: true });
-    await writeCustodyRow("identity", rhythmRow(), enc({ lastSeen: 3, gap: 0, pending: null }));
+    await writeCustodyRecord("identity", rhythmRow(), enc({ lastSeen: 3, gap: 0, pending: null }));
     const a = blob(60, 1), b = blob(30, 2);
     expect(await readCarryRecord(AID, KEY)).toMatchObject({ bytes: 0 });
     expect(await fetchCarried(AID, KEY, a.cid)).toBeNull();
@@ -123,14 +123,14 @@ describe("the carriage at rest", () => {
     // B's blob at A's path: the fetch refuses by name, where a null would read as "this hearth carries nothing".
     copyFileSync(join(bDir, "blobs", name), join(aDir, "blobs", name));
     const fetched = await refusal(fetchCarried(AID, KEY, doc.cid));
-    expect(fetched).toBeInstanceOf(CustodyRowUnavailable);
-    expect(fetched).toMatchObject({ home: "identity", file: `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}` });
+    expect(fetched).toBeInstanceOf(CustodyRecordUnavailable);
+    expect(fetched).toMatchObject({ home: "identity", file: `${hostingRecordDir(0, AID)}/carry/${KEY}/blobs/${name}` });
     // B's rhythm row at A's path: nothing reads, counts a contact or lands a deposit over it.
     copyFileSync(join(bDir, "record.json"), join(aDir, "record.json"));
     const foreign = readFileSync(join(aDir, "record.json"));
-    expect(await refusal(readCarryRecord(AID, KEY))).toBeInstanceOf(CustodyRowUnavailable);
-    expect(await refusal(noteContact(AID, KEY, 9))).toBeInstanceOf(CustodyRowUnavailable);
-    expect(await refusal(put(blob(10, 6)))).toBeInstanceOf(CustodyRowUnavailable);
+    expect(await refusal(readCarryRecord(AID, KEY))).toBeInstanceOf(CustodyRecordUnavailable);
+    expect(await refusal(noteContact(AID, KEY, 9))).toBeInstanceOf(CustodyRecordUnavailable);
+    expect(await refusal(put(blob(10, 6)))).toBeInstanceOf(CustodyRecordUnavailable);
     expect(readFileSync(join(aDir, "record.json")).equals(foreign)).toBe(true);
     expect(readdirSync(join(aDir, "blobs"))).toEqual([name]);
   });
@@ -140,11 +140,11 @@ describe("the carriage at rest", () => {
     expect(await put(blob(10, 1))).toBe("held");
     for (const shape of [{ lastSeen: 1, gap: 0 }, { lastSeen: -1, gap: 0, pending: null }, { lastSeen: 1, gap: "0", pending: null },
       { lastSeen: 1, gap: 0, pending: 1.5 }, { lastSeen: 1, gap: 0, pending: null, bytes: 10 }, [1], "x"]) {
-      await writeCustodyRow("identity", rhythmRow(), enc(shape));
+      await writeCustodyRecord("identity", rhythmRow(), enc(shape));
       expect(await refusal(readCarryRecord(AID, KEY)), JSON.stringify(shape)).toMatchObject({ reading: "malformed" });
       expect(await refusal(noteContact(AID, KEY, 2))).toMatchObject({ reading: "malformed" });
     }
-    await writeCustodyRow("identity", rhythmRow(), enc({ lastSeen: 1, gap: 0, pending: null }));   // control: the true shape reads again
+    await writeCustodyRecord("identity", rhythmRow(), enc({ lastSeen: 1, gap: 0, pending: null }));   // control: the true shape reads again
     expect(await readCarryRecord(AID, KEY)).toMatchObject({ bytes: 10 });
   });
 
@@ -186,11 +186,11 @@ describe("the carriage at rest", () => {
     expect(await put(doc)).toBe("held");                                            // CONTROL: its own row answers held
     copyFileSync(bBlob, join(await guestDir(), "blobs", name));                     // a row another face sealed, under the same name
     const again = await refusal(put(doc));
-    expect(again).toBeInstanceOf(CustodyRowUnavailable);
-    expect(again).toMatchObject({ home: "identity", file: `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}` });
+    expect(again).toBeInstanceOf(CustodyRecordUnavailable);
+    expect(again).toMatchObject({ home: "identity", file: `${hostingRecordDir(0, AID)}/carry/${KEY}/blobs/${name}` });
     // A row this vessel's key opens to OTHER bytes than its address names refuses too.
     rmSync(join(await guestDir(), "blobs", name));
-    await writeCustodyRow("identity", `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}`, new Uint8Array(40).fill(6));
+    await writeCustodyRecord("identity", `${hostingRecordDir(0, AID)}/carry/${KEY}/blobs/${name}`, new Uint8Array(40).fill(6));
     expect(await refusal(put(doc))).toMatchObject({ reading: "holds other bytes than its address names" });
   });
 

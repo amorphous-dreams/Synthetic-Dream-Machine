@@ -29,8 +29,8 @@ for new authoring.
 
 | TW5 form | Reason dropped | Lararium replacement |
 |----------|---------------|----------------------|
-| `!!field` — tiddler field accessor | Legacy data model; caused dev headaches; fields are ad-hoc string bags | `[toml:key[value]]` — query against `#meta` TOML |
-| `##index` — DataTiddler JSON index | Legacy JSON-in-tiddler pattern; fragile, opaque | `[stack:has[X]]` — query worn components (the has-stack law) |
+| `!!field` — tiddler field accessor | Fields form ad-hoc string bags with no schema | `[toml:key[value]]` — query against `#meta` TOML |
+| `##index` — DataTiddler JSON index | JSON-in-tiddler pattern; fragile, opaque | `[stack:has[X]]` — query worn components (the has-stack law) |
 | `+currentMeme` ambient variable | Dynamic scope leaks to siblings; modern systems reject ambient lookup | Explicit `meme` sigil context; or `[self[]]` for the carrier's own URI |
 | `currentTiddler` implicit | Same as above | `[self[]]` in filter expressions |
 
@@ -224,6 +224,6 @@ Systematic find-replace for authors migrating TW5 content:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y1a2vKb5A5Yi-BrJpKmIe3EAGeh1GvB1Pp4wX6nCO9k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9KgMtFXFQ0MZiJDrv6li8O_mJwX27a357boM89yD25I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

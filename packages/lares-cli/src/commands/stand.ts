@@ -183,7 +183,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   // implies" rather than "answer if something answers".
   //
   // Absence never licenses this: no marker, an unreadable one, or a writer that is gone all read
-  // `attach`, so an older vessel or a crash never becomes a restart nobody asked for. `--observe`
+  // `attach`, so a vessel that writes no marker, or a crash, never becomes a restart nobody asked for. `--observe`
   // withholds it like every other acting half.
   let liftReason: string | null = null;
   let standingReason: string | null = null;
@@ -237,7 +237,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
     } else if (!existsSync(bootstrap)) {
       nodeNote = "no bootstrap — run `lares vessel found` (or point LAR_ROOT at an initialized instance)";
     } else {
-      const dataDir = larDataDir();   // runtime → <lares>/vessel
+      const dataDir = larDataDir();   // runtime → <root>/hearth/vessel
       mkdirSync(dataDir, { recursive: true });
       const log = join(dataDir, "stand.log");
       // Readiness is SELF-ATTESTED, not requested (no web2 /health probe): the node

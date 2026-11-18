@@ -38,7 +38,7 @@ interface Staged { readonly root: string; readonly storageDir: string; readonly 
 async function stage(founded: boolean): Promise<Staged> {
   const root = mkdtempSync(join(tmpdir(), "session-sign-reach-"));
   const genesisDir = join(root, "genesis");
-  const storageDir = join(root, "data", "lares", "vessel");
+  const storageDir = join(root, "hearth", "vessel");
   cpSync(join(import.meta.dirname, "..", "..", "..", "..", "genesis"), genesisDir, { recursive: true });
   leaving.push(async () => { rmSync(root, { recursive: true, force: true }); });
   await withLarRoot(root, () => direct(runInit)({ storageDir, genesisDir, custody: TEST_CUSTODY, placeFoundingCard: { readBack: async () => {} } }));

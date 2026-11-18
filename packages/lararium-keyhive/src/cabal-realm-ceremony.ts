@@ -82,14 +82,16 @@ export interface FoundCabalRealmOpts {
 export async function foundCabalRealm(
   provider:     KeyhiveProvider,
   uri:          string,
-  substrateUrl: string,
+  // A substrate whose address derives from the realm's own name (a private cabal's workbench, `realmWorkbenchDocUrl`) reads
+  // the minted sentinel id; every other founding names its substrate up front.
+  substrateUrl: string | ((realmDocIdHex: string) => string),
   opts:         FoundCabalRealmOpts = {},
 ): Promise<CabalRealm> {
   const sentinel = await provider.createSentinelDoc(uri);
   const realm: CabalRealm = {
     realmDocIdHex:   sentinel.docIdHex,
     realmAgentIdHex: sentinel.agentIdHex,
-    substrateUrl,
+    substrateUrl:    typeof substrateUrl === "function" ? substrateUrl(sentinel.docIdHex) : substrateUrl,
     genesisUri:      uri,
   };
 
@@ -97,7 +99,7 @@ export async function foundCabalRealm(
   // "unfed", not blindness: the rite KNOWS this substrate was born and that nobody has made the
   // first offering yet. `first-realm-arc` puts the founding IN that offering, so an unfed realm is
   // a fact about the realm — never this vessel failing to look.
-  if (opts.residency) opts.residency.registerCold(substrateUrl, DEFAULT_GRAIN_TYPE, "unfed");
+  if (opts.residency) opts.residency.registerCold(realm.substrateUrl, DEFAULT_GRAIN_TYPE, "unfed");
 
   // Register this writer's maintenance-feed slot at genesis epoch 0.
   if (opts.leaseWriterId && opts.leaseSlots) {

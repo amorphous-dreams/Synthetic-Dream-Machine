@@ -104,7 +104,7 @@ Three name forms. All three remain valid.
 
 ''Mischief-Muse holds seniority'' — Muse role defaults to her name unless overridden.
 Operator may assign a new earned name mid-session. Node carries it forward.
-Earned names do not reset between sessions unless explicitly retired.
+Earned names persist across sessions until the operator lays one down.
 
 !!! Multi-Voice Turns
 
@@ -391,6 +391,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FTO1phT7KQT-51sfpl4QCB-4UiiTTWcCn3EzdNESCpo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-E0haP9R1UsljGUrnczmYfLi1I_21iRcwZoIj_5G1MU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

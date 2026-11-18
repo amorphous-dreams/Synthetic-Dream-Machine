@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l27-ward-ea8ecf729ea46ad7e2c4eaf3bf00c229dc57a39c`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/l27-ward-ea8ecf729ea46ad7e2c4eaf3bf00c229dc57a39c.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l27-ward-ea8ecf729ea46ad7e2c4eaf3bf00c229dc57a39c"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/l27-ward-ea8ecf729ea46ad7e2c4eaf3bf00c229dc57a39c"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! l27-ward-ea8ecf729ea46ad7e2c4eaf3bf00c229dc57a39c.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/l27-ward-ea8ecf729ea46ad7e2c4eaf3bf00c229dc57a39c.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP l27-ward ea8ecf729ea46ad7e2c4eaf3bf00c229dc57a39c
+read: blind Opus (Blind-Warden-Ward) over 5c3d032dc..0ce795899: LAND-AFTER-CURES (/home/joshu/.lares-scratch/l27-ward/seats/blind-opus-ward.md; item 4 references sound, no test seam reaches production); its F1 P1 confirmed by the controller's run (tests/e2e/nexus-two-root.test.ts 6 FAIL on the lane, 7/7 on the span tree) and cured at ea8ecf729 (the CLI reads its own read-back seat), controller reran nexus-two-root 7/7 + units 18/18 + build; harbor-walk docker witness green (138 s); controller ran every red and control along the lane.
+owed: re-measure item 6 after clock-sweep lands (awaitOnRolled cured there); row the dropped Kahu-gated canon-bag projection witness (harbor leg moved lares -> crossroads); P3 offline-custody O4 expectation reason.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-4kXRI8W3QQVQfu9HTf7brpaghGVVAANxunf_c1BcBk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

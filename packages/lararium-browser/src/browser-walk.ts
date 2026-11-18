@@ -16,7 +16,7 @@ import * as ed25519 from "@noble/ed25519";
 import { hex, type WalkLeaf, type WalkRecord, type WalkStore } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { browserPersonaRootHeld, faceOfVessel } from "./browser-vessel-identity.js";
-import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
+import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";
 
 /**
  * A face join must follow the island the issuing hearth resolved when it minted admission. Earlier
@@ -49,8 +49,8 @@ export function requireAdmittedFaceIsland<
  */
 export function browserWalkStore(idbName: string): WalkStore {
   return {
-    async read(gatePubKey) { return (await readKeystoreRow(idbName, `walk/${gatePubKey.toLowerCase()}`) as WalkRecord | undefined) ?? null; },
-    update(gatePubKey, decide) { return withCustodyRows(idbName, async (rows) => {
+    async read(gatePubKey) { return (await readKeystoreRecord(idbName, `walk/${gatePubKey.toLowerCase()}`) as WalkRecord | undefined) ?? null; },
+    update(gatePubKey, decide) { return withCustodyRecords(idbName, async (rows) => {
       const row = `walk/${gatePubKey.toLowerCase()}`;
       const wrote = decide((await rows.read(row) as WalkRecord | undefined) ?? null);
       // THE WALK RECORD HOLDS NO FACE SECRET (the 2026-10-19 sort, by capability): its invite, its wallet's blind tokens and the
@@ -74,7 +74,7 @@ export async function browserWalkLeaf(idbName: string, nexusAid: string, face: s
   // row stands, so an unattended walk opens no ward and asks for no route.
   if (faceOfVessel(idbName) !== face || !(await browserPersonaRootHeld(idbName, 0))) throw new Error("browser-walk: this vessel holds no root for that face, so the face presents nowhere");
   const row = `nexus-key/${face}/${nexusAid.trim().toLowerCase()}`;
-  const seed = await withCustodyRows(idbName, async (rows) => {
+  const seed = await withCustodyRecords(idbName, async (rows) => {
     const standing = await rows.read(row);
     if (standing instanceof Uint8Array && standing.length === 32) return Uint8Array.from(standing);
     if (standing !== undefined) throw new Error("browser-walk: the face's key at that Nexus stands malformed");

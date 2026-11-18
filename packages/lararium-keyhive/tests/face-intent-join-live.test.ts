@@ -53,7 +53,7 @@ describe("a face-join request rides the intents plane to the pinned hearth", () 
     const ops1 = memoryStore(), ops2 = memoryStore();
     const door1 = makeFaceIntentDoor({ ...base, atom: h1, effects: new Map([["face-join", effectFor(h1.key, ops1)]]) });
     const door2 = makeFaceIntentDoor({ ...base, atom: h2, effects: new Map([["face-join", effectFor(h2.key, ops2)]]) });
-    const summons = { kind: "face-join/v1" as const, contactCard: new TextDecoder().decode(await joinee.contactCard()), deviceEdge: joineeEdge };
+    const summons = { kind: "face-join" as const, contactCard: new TextDecoder().decode(await joinee.contactCard()), deviceEdge: joineeEdge };
     const id = await requestFaceJoin({ group: group.groupId, plane: shared.handle, atom: j, projection: { admissions: [{ deviceKey: h1.key }] }, summons, verbs });
 
     await door2.heed();

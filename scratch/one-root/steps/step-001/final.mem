@@ -1,0 +1,47 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-001/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-08 (file date) — source `.lares-scratch/one-root/steps/step-001/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-001/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-001/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/one-root/steps/step-001/final.md` (hand-back, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/one-root/steps/step-001/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://operator:operator@hearth/resolvers.changed.requested` to=`lar://agent:worker@hearth/library.decision.awaits` ooda-ha=`5/declare-glyphs` drift-ward=`the requested tree leaves acquired library placement unnamed`>>
+
+Lares (Artificer): ->✶ ->⏿ ->◇ Step 1 remains open at a library placement decision. Acquisition moves source files into the library by default, but the requested tree names no library location. Putting it under `hearth` would place those bodies inside the re-found deletion boundary.
+
+Which location should the acquired library use?
+
+# ''`projections/library`'' — preserve the acquired bodies across re-found. I lean toward this because acquisition may leave no other copy.
+# ''`hearth/library`'' — include its contents in the itemized accept-loss inventory.
+# ''Another surviving house location'' — name the location.
+
+->▶ I recorded the resolver inventory and added red tests. The TypeScript refusal and path checks failed against the existing behavior through broker request 001; the Python refusal check also failed as expected. The current cross-language weld covers vessel and identity paths only and still needs expansion. No production resolver changed, and no commit or push occurred.
+
+->↺ The [[hand-back|/home/joshu/.lares-scratch/one-root/steps/step-001/out.md]] records the remaining work. The state retains Step 1 and names relay request 002 next.
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚁(2) ⁂:⊗☕`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`inspect library-store.ts and bed_manifest.py against the chosen deletion boundary · ↻ L-Prime` ooda-ha=`closed 0↺ -> open 1φ◇:acquired-library-placement-awaits-operator` from=`lar://agent:worker@hearth/library.decision.awaits` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9BQYosS9vG9gpcH3EkdowhQOGfCStR77CFei2G9xTCg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

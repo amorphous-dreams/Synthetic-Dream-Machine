@@ -15,6 +15,7 @@
  *   - `{op:"cancel"}` withdraws an id before it is read, so it cannot be dispatched later (M8);
  *   - a set-back/set-forward `Date.now()` moves none of it — the ledger reads no clock at all.
  */
+import { controlStoreOf } from "@lararium/mesh";
 import { describe, test, expect } from "vitest";
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -78,8 +79,8 @@ async function withChannel(
   const claim = await claimStore(dir, { holder: "vessel" });
   const placed: Placed[] = [];
   const channel = startUdsChannel({
-    daemonHandle,
-    composite,
+    controlHandle: daemonHandle,
+    control: controlStoreOf(daemonHandle),
     placeVerb: (o) => { const p = o as Placed; placed.push(p); placeVerbImpl(p, daemonHandle); },
     claim,
     repo,

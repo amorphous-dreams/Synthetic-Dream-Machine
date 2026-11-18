@@ -24,7 +24,7 @@
  * an invite usable in a mesh cut off for five hundred years.
  * ── THE LEASE ASKS A TENDING QUESTION AND A CLOCK ANSWERS A DIFFERENT ONE ─────────────────────────────
  * The comment below states the intent exactly: a vouch lapses so it can be withdrawn from a mesh the
- * voucher can no longer reach. That question reads WHETHER THE VOUCHER STILL TENDS THIS — and a calendar
+ * voucher cannot reach. That question reads WHETHER THE VOUCHER STILL TENDS THIS — and a calendar
  * cannot tell a hand that feeds its vouch daily from one that abandoned it, since both age identically.
  *
  * The honest instrument decays along the GRAPH: has this voucher acted since. A wall clock stands in for
@@ -154,7 +154,7 @@ export async function decideCabalJoin(args: {
   if (inv.joinerIdentityHex !== args.joinerIdentityHex) return { admitted: false, refusal: "wrong-joiner" };
 
   // THE LEASE, READ AS A FENCE. A vouch that never lapses leaves the
-  // voucher no way to withdraw it from a mesh they can no longer reach. But the shelf life cannot be a
+  // voucher no way to withdraw it from a mesh they cannot reach. But the shelf life cannot be a
   // timestamp: the reader supplies the instant, so the party being gated would hold the dial. The
   // realm's signed charter-quorum lease epoch rises on verified advances, and raising it lapses every
   // invite bound behind it at once — no clock consulted, no message sent.

@@ -31,7 +31,7 @@ import { sealKeySetHash } from "./wax-stamp.js";
 import type { RecoveryContactRegistration } from "./recovery-registration.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import {
-  RECOVERY_CONTACT_COUNT, RECOVERY_CONTACT_THRESHOLD, mintRecoveryContactEnrolment, mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes,
+  RECOVERY_CONTACT_COUNT, RECOVERY_CONTACT_THRESHOLD, mintRecoveryContactEnrolment, mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes, recoverySetCommitment,
   type PersonaKelEvent, type PersonaRotateResult, type SealedEnrolment,
 } from "./persona-kel.js";
 
@@ -194,7 +194,7 @@ export async function provisionRecoveryCardsAtFounding(
 // ── FORK B — THRESHOLD-ATTEST recovery (identity-classes#the-two-forks) ────────────────────────────────
 // The strictest never-reconstruct: each recovery contact holds their OWN recovery keypair; inception pre-commits
 // the k-of-n DIGEST of their recovery PUBLIC keys; a rotation carries k recovery contact SIGNATURES verified against
-// that pre-commit. Recovery ROTATES a fresh op-key rather than resurrecting the old (the ruling, 2026-07-20).
+// that pre-commit. Recovery ROTATES a fresh op-key and never resurrects the lost one.
 // NOTHING reconstructs — no seed, no share, no `reconstructFromQuorum`. This path shares NOTHING with the
 // Shamir/recovery-share machinery above; it is a genuine k-of-n multisig over the persona-KEL rotation.
 
@@ -250,10 +250,10 @@ export interface RecoveryContactSigner {
 }
 
 /**
- * ATTEST-AND-ROTATE — the Reading-B recovery move (identity-classes#reading-b-recovery), replacing
- * reconstruct-then-resurrect. Gather ≥ k recovery contact SIGNATURES over the rotation event, verify them against
- * the pre-committed recovery set, and seat a FRESH operational key via a persona-KEL rotation. The old key
- * SUPERSEDES (the head advances past it); the caller kapae-shadows its membership resurrection (evict runs
+ * ATTEST-AND-ROTATE — the Reading-B recovery move (identity-classes#reading-b-recovery); nothing
+ * reconstructs and nothing resurrects. Gather ≥ k recovery contact SIGNATURES over the rotation event, verify them against
+ * the pre-committed recovery set, and seat a FRESH operational key via a persona-KEL rotation. The lost key
+ * stays SUPERSEDED (the head advances past it); the caller kapae-shadows its membership resurrection (evict runs
  * forward-only). NOTHING reconstructs — the recovery contacts each sign independently; no seed or share assembles,
  * so no transient impersonation-of-the-recovery-authority window opens (the Fork-A tradeoff, closed).
  *
@@ -278,8 +278,9 @@ export async function attestAndRotate(input: {
    *  digest with the rotation, so rotation and re-enrolment land as one act. Absent, the rotation enrols no one. */
   readonly enrolments?: readonly SealedEnrolment[];
 }): Promise<PersonaRotateResult> {
+  // A GRAFT COMMITS UNDER THE FACE'S PREFIX (`recoverySetCommitment`): two faces that graft one set show two digests.
   const nextRecoverySetHash = input.next
-    ? sealKeySetHash(input.next.recoveryContacts.map((g) => g.recoveryPubKey), input.next.threshold)
+    ? recoverySetCommitment(input.head.prefix, input.next.recoveryContacts.map((g) => g.recoveryPubKey), input.next.threshold)
     : input.head.nextRecoverySetHash;
   const bytes = personaRotationSigningBytes(input.head, input.freshOpKeyDid, nextRecoverySetHash, input.provisional ?? false, input.enrolments ?? []);
   const rotationSigs: QuorumSignature[] = [];
@@ -411,7 +412,9 @@ export async function enrolRecoveryContacts(input: {
   if (!apart.ok) {
     return refuse("recovery-contact-key-serves-another-face", `the recovery contact key ${apart.key.slice(0, 16)}… already serves the face at handle-index ${apart.handleIndex}: a recovery contact cuts a fresh key for each face`);
   }
-  const recoveryContactSetHash = sealKeySetHash(keys, threshold);
+  // THE SET COMMITS UNDER THIS FACE'S PREFIX (`recoverySetCommitment`): the same three contacts enrolled by another face,
+  // on this vessel or any other, commit an unrelated digest there.
+  const recoveryContactSetHash = recoverySetCommitment(head.prefix, keys, threshold);
   const minted = await mintRecoveryContactEnrolment({ head, recoveryContactSetHash, sign: input.sign });
   return minted.ok ? { ok: true, event: minted.event, recoveryContactSetHash } : refuse("enrolment-refused", minted.reason);
 }

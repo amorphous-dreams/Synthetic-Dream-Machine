@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-shore-read/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-shore-read/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-shore-read/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-shore-read/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-shore-read/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-shore-read/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''The supplied evidence does not identify a cause or justify a code cure.'' The failure excerpt is zero bytes, and the supplied [[full log|/home/joshu/.lares-scratch/b1-lift/ci-42178118605.log:6889]] reports a `cli-mesh` failure; it contains no `web-tw5` or `shore-writes` test result. The two failure messages and their stacks are therefore unavailable for diagnosis.
+
+* ''MEASURED:'' The new `port:minted` response is emitted only on `port:want` in [[vessel-host.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/workers/vessel-host.ts:335]]. The page’s [[vessel-port.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/vessel-port.ts:86]] switch has no case for it, but also has no default that throws. The production source has no sender of `port:want` or `vessel:claim`.
+* ''MEASURED:'' The broker sends `vessel:want` only after a `vessel:claim` at [[ceremony-broker.js|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/public/ceremony-broker.js:32]]. The ceremony’s service-worker handler ignores messages without its matching `askId` at [[ceremony.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/ceremony/ceremony.ts:80]].
+* ''MEASURED:'' The `connect` refactor retains the existing `receive` and `lost` handlers; its added branch attaches the minted port’s handler at [[vessel-host.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/workers/vessel-host.ts:338]]. The instruments report still depends on a painted surface frame at [[main.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/main.ts:526]], then an animation-frame callback at [[main.ts|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/main.ts:103]].
+* ''INFER:'' These findings do not establish that a new message or dropped handler caused either red. The broker’s new asynchronous `matchAll` before routing every message at [[ceremony-broker.js|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/public/ceremony-broker.js:19]] changes ceremony timing and remains a possible interaction, but the missing failure details do not establish it. Nor can the load-sensitive handoff establish a pre-existing fault by itself.
+
+''Minimal cure and first red: undetermined.'' First obtain the actual `web-tw5` failure output, including the assertion, timeout location, and captured page/worker errors. Then the lead should reproduce the observed failure with a targeted regression that fails before changing its cause; a file list cannot be named responsibly yet. The browser test opens a preview socket, so ''lead runs'' it. No files were written.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g-KAwBR7d7candc2jJ_rneRx4VoCuoLWtUt12KROUPk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

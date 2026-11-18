@@ -1,0 +1,51 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/final-keep`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-t3/final.keep.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/final-keep"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/final-keep"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.keep.md — hand-back, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-t3/final.keep.md` (hand-back, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Tasked Spirit). Two MEDIUM findings. Locations refer to proposed source; u1 references `1c8881c1a`.
+
+* ''MEDIUM — `packages/lararium-node/src/open-node-vessel.ts:1587`'' ([[patch|/home/joshu/.lares-scratch/controller/seats/sol-train-t3/recut-gates-141.patch:746]]): `standIntentRelay()` can register one face’s route while awaiting another face. During that wait, `intentRelay` remains null, so teardown cannot unregister its routes. A stalled read leaves a route owned after teardown, blocking the next composition’s intent-relay gate. Reproduced in process. Establish cleanup ownership before the initial asynchronous refresh.
+
+* ''MEDIUM — `packages/lararium-node/src/commands/init.ts:213`'' ([[patch|/home/joshu/.lares-scratch/controller/seats/sol-train-t3/hearth.patch:23]]): founding replaces or clears the genesis pin before custody opens and founding succeeds. A vessel pinned to seed A can attempt `found --force` on build B, refuse `CustodyLocked`, yet retain B’s pin; its unchanged store then passes boot on B. Reproduced in process. Preserve the existing pin until successful founding.
+
+(a) The null-input checks withhold documents from wire and sibling peers, including when the Kahu holder remains null; in-process controls pass. Sweep serialization prevents an older read landing last, refreshes posture before dropping strangers, and prevents late sync-gate stands after close. Gate unstand cuts seated sockets. Fetch and worker-door cleanup checks pass; the intent-relay route gap remains.
+
+(b) Descriptor fields cannot steer dialing away from the page’s origin; explicit nonempty `?relay=` wins. Declared environment and origin values remain preserved. Explicit/configured genesis paths win, and root-held seeds prevent fallback. Normal pin mismatch checks and the surface-compose witness pass. The failed-founding bypass remains.
+
+(c) No u1 delta finding. Chainless cuts carry no entries when no lockbox opens; an openable lockbox produces `chain-absent` without a section or record read. At `content-key-holder.ts:300`, the probe overwrites the opened key synchronously before returning.
+
+(d) The combined teardown registrations preserve the required order. u1’s session-sign cleanup (`open-node-vessel.ts:1703`) precedes daemon registration; #141’s island-door cleanup also precedes it. Reverse teardown shuts the islands before clearing every worker door.
+
+Validation used source-level in-process probes, including all six supplied sweep tests. Live socket/composition tests: ''lead runs''. Writing `out.md` failed with `EROFS`; the seat wall prevented persistence.
+
+''#141: HOLD''
+''hearth: HOLD''
+''u1 delta: SHIP''
+''Cross-lane door order: SHIP''
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a9UPk8rD0-22lcStNNaxq6KdisYqJIK_4_xFxXB1kHo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -31,6 +31,15 @@ const quiet = (): void => { vi.spyOn(process.stdout, "write").mockImplementation
 afterEach(() => { vi.restoreAllMocks(); });
 
 describe("promptSecret keeps the rest of a pasted chunk", () => {
+  test("a bracketed paste reads as its text: the terminal's paste markers never join the line", async () => {
+    quiet();
+    const tty = new FakeTty();
+    const first = promptSecret("a: ", tty as never);
+    tty.feed("\u001b[200~alpha\rbeta\u001b[201~\r");
+    expect(await first).toBe("alpha");
+    expect(await promptSecret("b: ", tty as never)).toBe("beta");
+  });
+
   test("one chunk of two lines answers two prompts", async () => {
     quiet();
     const tty = new FakeTty();
@@ -104,6 +113,30 @@ describe("promptSecret keeps the rest of a pasted chunk", () => {
     tty.feed("ok\r");
     await visible;
     expect(write.mock.calls.map((c) => String(c[0])).join("")).toContain("ok");
+  });
+
+  test("★ backspace erases on screen in a visible prompt: p, backspace, p reads p and shows p ★", async () => {
+    const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    const tty = new FakeTty();
+    const visible = promptLine("choose: ", tty as never);
+    tty.feed("p\u007fp\r");
+    expect(await visible).toBe("p");
+    const screen = write.mock.calls.map((c) => String(c[0])).join("").slice("choose: ".length);
+    // What a terminal shows after it applies each backspace: the erase leaves one p standing.
+    let shown = "";
+    for (const ch of screen) shown = ch === "\b" ? shown.slice(0, -1) : shown + ch;
+    expect(shown.trimEnd()).toBe("p");
+    // A backspace over nothing erases nothing; a hidden prompt writes no erase either.
+    write.mockClear();
+    const empty = promptLine("c: ", tty as never);
+    tty.feed("\u007fq\r");
+    expect(await empty).toBe("q");
+    expect(write.mock.calls.map((c) => String(c[0])).join("")).not.toContain("\b");
+    write.mockClear();
+    const secret = promptSecret("s: ", tty as never);
+    tty.feed("ab\u007f\r");
+    expect(await secret).toBe("a");
+    expect(write.mock.calls.map((c) => String(c[0])).join("")).not.toContain("\b");
   });
 
   test("control: a non-TTY stream rejects", async () => {

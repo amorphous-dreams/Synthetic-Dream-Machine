@@ -1,0 +1,5 @@
+title: $:/config/lares/ProjectionFilter
+type: text/vnd.tiddlywiki
+
+[prefix[$:/temp/]]
+[prefix[$:/state/]]

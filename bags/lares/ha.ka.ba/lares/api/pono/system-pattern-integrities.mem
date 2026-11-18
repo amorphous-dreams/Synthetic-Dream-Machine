@@ -195,12 +195,6 @@ label = "BOOTSTRAP_SCANS reads raw carrier text"
 desc  = "Grammar bootstrap reads raw carrier text from the grammar tiddler (.text) rather than pre-deserialized fragment tiddlers, breaking the bootstrap circle. See grammar-pattern-integrities.md Pattern-Integrity 2."
 ```
 
-```toml #CODEC_EX_PRE_S2_COLD_BOOT
-id    = "CODEC_EX_PRE_S2_COLD_BOOT"
-label = "Pre-S2 cold-boot filesystem read"
-desc  = "@retired: S5  Before the plain-data seed, cold boot read lararium source text directly. `build-genesis-island.ts` replaced that transition; current first boot reads only immutable seed/CAS material through its declared shore."
-```
-
 ```toml #CODEC_EX_BINARY_BLOBS
 id    = "CODEC_EX_BINARY_BLOBS"
 label = "Binary blobs for large immutable assets"
@@ -407,6 +401,6 @@ desc  = "A rejection confesses that something understood the question (siege-res
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1Prn37szMAOaEba02oWrN3x2NIcNMPg5fb-jD6tcZHw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GhpuM2OHt4tmmpYur7q6oWN3I_m33sAyhqW6D0VJaEQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

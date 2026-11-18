@@ -20,7 +20,7 @@
 
 import { writeKahuaIndex } from "./kahua-index.js";
 import { daemonDiskMirrors } from "./bag-paths.js";
-import { daemonBagsDir } from "./lares-config.js";
+import { daemonBagsDir, loadLaresConfig, tempProjectionConsented } from "./lares-config.js";
 import { parseAutomergeUrl } from "@automerge/automerge-repo";
 import { join }                                          from "path";
 import {
@@ -28,6 +28,7 @@ import {
   type WikiRecipe,
   type IslandMsg_Manifest,
   type IslandGrants,
+  wikiSlotUri,
 } from "@lararium/mesh";
 import {
   openDaemonVmCore,
@@ -37,7 +38,7 @@ import {
 import { isStillJoining, resolveBootDoc } from "./repo-helpers.js";
 import { nodeNewSyncChannel, nodeSpawnDaemonWorker } from "./worker-handle.js";
 import type { IslandCasData } from "./node-cas.js";
-import { PLANE_LABELS, personaScopeTag, type CapabilityRecord } from "@lararium/mesh";
+import { PLANE_LABELS, personaScopeTag, standControlHome, daemonFaceCanonBag, floorCidToMount, type CapabilityRecord } from "@lararium/mesh";
 
 const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.url);
 
@@ -79,6 +80,12 @@ export interface DaemonVmOptions {
   /** Typed structural capabilities: the lararium engine doc, daemon bag, the lares bag,
    *  catalog registry access. Library bags resolve island-side from the catalog registry. */
   grants:            IslandGrants;
+  /**
+   * THE FLOOR KEY, READ WHERE THE CONTROL DOCUMENT READS: asked once the control document stands, so the island's floor gate
+   * and the host's working layer read the key this composition reads (a custody that opened at the control document's stand
+   * stands the floor key too). Absent, `grants.floorKey` rides as handed.
+   */
+  floorKey?:         () => NonNullable<IslandGrants["floorKey"]>;
   /** Optional canon bag URIs for the daemon recipe. Empty by default. */
   libraryBags?:        readonly string[];
   /**
@@ -93,24 +100,15 @@ export interface DaemonVmOptions {
   casData?:          IslandCasData;
   /** D-VR-C: persist only the explicit daemon document in its owned scope. */
   ownedDocument?:    boolean;
-  /** The vessel root (`<root>/wikis/kahua/` receives the daemon wiki's working layer). */
-  rootDir?:          string;
+  /** The house's projections root (`<root>/projections`): `wikis/daemon-<F>/` receives the daemon wiki's working layer. */
+  projectionRoot?:   string;
   /** Override the daemon island script URL (tests). */
   workerScriptUrl?:  URL;
-  /**
-   * The charter-only mirror guard (crossroads WHO-board leak, 2026-09-20): true unless this vessel's
-   * resolved `nexusIdentity().kind === "charter"`. The daemon wiki's own crossroads mirror grant
-   * (below) is baked with this flag so a private-nexus-of-one's or a dialed anchor's WHO-handles
-   * pointer never disk-mirrors, while the real charter-backed crossroads library still projects.
-   * Defaults true (guard ON) — a caller that never resolved a kind gets the SAFE reading, never the
-   * open one; only an explicit `false` (a proven charter) lifts it.
-   */
-  guardCrossroadsNexusHandles?: boolean;
 }
 
 /**
  * THE FACE'S FOLDER STANCE. `faceRelation` (F) reads from the face's VERIFIED founding record alone, and the vessel names the
- * worn face (`faceGroup`) only after that proof. So: no persona plane -> `no-face`; a plane with no proof yet (a locked key, a
+ * daemon mount (`faceGroup`) only after that proof. So: no persona plane -> `no-face`; a plane with no proof yet (a locked key, a
  * joinee still syncing) -> `unproven`, mirroring no private layer until the unlocked composition proves it; a proven face
  * -> `worn`. A proven face carrying no F refuses by name: the founding act pins F, and no path derives it.
  */
@@ -121,8 +119,7 @@ export function faceRelationStance(input: { personaBagId?: string | null | undef
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, rootDir, workerScriptUrl, casData,
-          guardCrossroadsNexusHandles = true } = opts;
+  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, libraryBags, daemonAuth, storageDir, ownedDocument = false, projectionRoot, workerScriptUrl, casData } = opts;
 
   // An explicitly supplied empty path must not silently downgrade the worker to
   // memory-only storage. Omit `storageDir` when the caller intends the
@@ -141,6 +138,10 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     // flight rather than as an absent doc, and earns the grace before it gets believed.
     { tideline: "hearth-private", label: PLANE_LABELS.daemon, settled: () => repo.flush() },
   );
+  // ── The vessel's control document, beside the daemon document that names it (`control-home`) ──
+  const controlHandle = await standControlHome(repo, daemonHandle);
+  // ONE READING: the floor's key reads after the control document stood, never before it.
+  const grants: IslandGrants = opts.floorKey ? { ...opts.grants, floorKey: opts.floorKey() } : opts.grants;
   // ── Persona doc handle (same strategy) — the one VM tends both bags ──────────
   // A plane this replica already HOLDS (a joinee's admit landed it, or a sync delivered it) is read where it stands: the
   // library's boot query can answer `unavailable` for a document its own handle table already holds ready, and a held
@@ -157,18 +158,27 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   }
 
   const stance = faceRelationStance({ personaBagId, faceGroup, faceRelation });
-  if (rootDir && stance === "no-face") console.log("[kahua] no face worn; no private kahua mirrors");
-  if (rootDir && stance === "unproven") console.log("[kahua] the face's founding record stands unproven in this composition (the key rests locked or the face is still joining); no private kahua mirrors until the unlocked composition proves it");
-  if (rootDir && faceRelation && faceGroup) await writeKahuaIndex(rootDir, [{ relation: faceRelation, tag: personaScopeTag(faceGroup), label: faceLabel ?? "", group: faceGroup }]);
+  if (projectionRoot && stance === "no-face") console.log("[kahua] no face worn; no private kahua mirrors");
+  if (projectionRoot && stance === "unproven") console.log("[kahua] the face's founding record stands unproven in this composition (the key rests locked or the face is still joining); no private kahua mirrors until the unlocked composition proves it");
+  if (projectionRoot && faceRelation && faceGroup) await writeKahuaIndex(projectionRoot, [{ relation: faceRelation, tag: personaScopeTag(faceGroup), label: faceLabel ?? "", group: faceGroup }]);
 
   // The daemon holds NO standing system-bag mount: it reaches a deep target bag
   // by ACCESS per residency action (ephemeral mount, released after — the
   // edit/action split, wiki-layer-ontology#write-law). The daemon's own composite
   // stays its recipe alone — it mounts no standing write facet.
+  // The recipe designates the daemon wiki's temp layer for mirroring; the mirror stands only where the operator's consent
+  // row names the `daemon` slug (`projection.temp.daemon`).
+  // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE: `bags/daemon-<F>`, the document the face's catalog names (`grants.canonUrl`).
+  // At the floor, or before the face proves, the daemon wiki reads no canon, and the daemon document keeps no canon role.
+  const canonBag = faceRelation && grants.canonUrl ? daemonFaceCanonBag(faceRelation) : undefined;
   const recipe: WikiRecipe = {
     wikiSlug: "daemon",
+    ...(canonBag ? { canonBag } : {}),
     ...(libraryBags?.length ? { libraryBags } : {}),
+    mirrorBags: [wikiSlotUri("daemon", "temp")],
   };
+  const daemonConfig = loadLaresConfig();
+  const tempMirror = Boolean(recipe.mirrorBags?.includes(wikiSlotUri("daemon", "temp"))) && tempProjectionConsented(daemonConfig, "daemon");
   const storage = storageDir
     ? { type: "nodefs" as const, dir: join(storageDir, "daemon") }
     : undefined;
@@ -182,7 +192,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   // The wrapper IS the shore — host pieces + recipe/storage + merge-on-arrival daemonHandle;
   // the lifecycle and the whole result surface (DaemonVmCore) live once in the core.
   return openDaemonVmCore(host, {
-    repo, daemonHandle, recipe, grants, coreHash,
+    repo, daemonHandle, controlHandle, recipe, grants, coreHash,
     ...(personaHandle ? { personaHandle } : {}),
     ...(personaBagId  ? { personaBagId }  : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),
@@ -192,11 +202,21 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
       documentUrl: daemonUrl,
       storage: { type: "nodefs" as const, dir: join(storageDir!, "daemon-owned") },
     } } : {}),
-    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the worn face's working top under `<root>/wikis/kahua-<F>/`,
-    // its kahua stage under `<root>/bags/kahua-<F>/`, crossroads back to its canon source where one stands; the control
-    // plane holds none. The verified founding relation names the folders that face projects on
-    // every device; no worn face projects no private kahua layer.
-    ...(rootDir ? { diskMirrors: daemonDiskMirrors({ rootDir, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, guardCrossroadsNexusHandles }) } : {}),
+    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the daemon mount's working top under `<projections>/wikis/daemon-<F>/`,
+    // its daemon canon under `<projections>/bags/daemon-<F>/`, its kahua stage under `<projections>/bags/kahua-<F>/`, crossroads
+    // back to its canon source where one stands; the control document and the daemon document hold none. The verified founding relation names the folders that face projects on
+    // every device; no daemon mount projects no private kahua layer.
+    ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, canon: canonBag !== undefined, temp: tempMirror }) } : {}),
+    // THE VESSEL'S FLOOR PIN, off the control document that just stood: the daemon island mounts the accepted floor, so every
+    // face's `meme get|list --bag <house canon>` answers the released canon from its next composition on. A control document
+    // that reads nothing (a locked floor) names no pin, and the island reads its genesis seed's floor.
+    floorCid: () => {
+      let doc: LarDoc | undefined;
+      try { doc = controlHandle.doc(); } catch { return null; }
+      const pick = floorCidToMount({ controlDoc: doc, nexus: null, genesis: null });
+      if (pick.note) console.info(`[floor] ${pick.note}`);
+      return pick.source === "pin" ? pick.cid : null;
+    },
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
   });
 }

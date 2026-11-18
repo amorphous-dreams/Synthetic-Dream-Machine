@@ -47,7 +47,7 @@ let canon: { lares?: string; lararium?: string } = {};
 let admittedSeed: Uint8Array | null = null;
 
 async function onHearth(fn: (s: { repo: Repo; aid: string; sealHome: string; stand: () => ReturnType<typeof standKahuCanon> }) => Promise<void>): Promise<void> {
-  founded ??= withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis") })).then(() => undefined);
+  founded ??= withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") })).then(() => undefined);
   await founded;
   await withLarRoot(r, async () => {
     const vesselKey = await loadVesselVerifyingKey();

@@ -1,0 +1,116 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b1-pure-readers-collide`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/b1-pure-readers-collide.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b1-pure-readers-collide"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b1-pure-readers-collide"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b1-pure-readers-collide.md — research, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/b1-pure-readers-collide.md` (research, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b1-pure-readers-collide-2026-10-31`>>
+
+! b1-pure-readers collide (Anvil-One, Lares Tasked Spirit) 2026-10-31
+Scope this pass: finding #1 (stale carried posture) and item 6 (wiki-act twin). Items 1-5,7 and internet research NOT done (no web pass run).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ruling-1-stale-carried-nexus-posture-confirmed-n`>>
+
+!! Ruling 1: stale carried-Nexus posture = CONFIRMED, NARROWED
+Evidence (open-node-vessel.ts, main HEAD):
+* onRefold (1275-1279): sync `reverdict(); dropNoLongerHeld(); sweepSameOperator?.();` then `void resweepGates?.()` un-awaited. Called from nexus-carriage.ts refoldNow:479 (after `current = readings`) and presentNow:497.
+* dropNoLongerHeld (1258) -> postureOf (1241) -> carried branch reads `gateReadings` (1228), written ONLY by gateNexuses (1487), which runs inside standSyncGates after `await deviceBook.refresh()` (1527) and from floorGates. So the drop always sorts on the previous sweep's snapshot; async gap = deviceBook.refresh + readEveryCarried. No later drop re-runs after the sweep (dropNoLongerHeld called only at 1276 and 1367).
+* Knock sorter: vessel-gates.ts:58 `posture: () => deps.posture(at.nexus)` -> same stale postureOf. Window confirmed. The doc comment "read fresh at every sort" (vessel-gates.ts:28) holds for own Nexus only.
+Narrowing:
+* Fail direction: tightening (open->private) fails OPEN until next refold; loosening fails late. Boot: gateReadings starts [] and resweepGates is null before afterDaemon, so carried reads private (closed).
+* Second caller 1367 (realm-plane onRefold) calls dropNoLongerHeld with NO resweep at all; same staleness, never self-heals from that path.
+* Reach: strangers only (same-operator/walker skip, contracted need holds); public shelf only.
+* Floor (non-sovereign): standSyncGates returns before gateNexuses; only floorGates refreshes.
+* Unverified: whether gate unstand of an un-carried Nexus closes its seated sockets.
+* No test mentions gateReadings or dropNoLongerHeld (grep).
+Red: flip carried charter to private, fire refold with a seated stranger socket; assert closed in that refold (await resweep). Control: own-Nexus flip, herm open.
+Cure lean: resweep (or a bare gateReadings refresh from readEveryCarried) BEFORE drop, one owned awaited step; makes 1367 refresh too. Fail-closed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ruling-6-wiki-act-twin-confirmed-cut-ready-with`>>
+
+!! Ruling 6: wiki-act twin = CONFIRMED (reporter correct), CUT-READY with named parameter
+Compared handler (3047-3070) with routedWikiSlug (verb-local-dispatch.ts:98-117) line by line. Same: slot regex, daemon-slot drop before source/destination preference, MOVE-only source, LOAD/MOVE/COPY/ADD destination via `to-bag ?? bag`, nonempty explicit wiki wins.
+Differences (exactly two): (a) explicit `wiki:"daemon"`: node targets "daemon", twin returns null; (b) no slug: node falls to slotActiveWikiId, twin null (mount nothing). (b) is by design, (a) is the parity row. Minor: `String(args.verb)` vs typeof-string check, no behavioral difference. Hidden caller: only verb-dispatcher.ts:356 and the one test (wiki-act-mounts-its-wiki.test.ts:158).
+Red: seed table (verb x from/to bag class x explicit wiki) over shared pure fn, parity with both callers; named rows explicit-daemon and fallback-to-active.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/part-2-anvil-one`>>
+
+! PART 2 (items 2-4), Anvil-One
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/new-findings`>>
+
+!! New findings
+N1. SETTLED: unstanding an un-carried Nexus closes NOTHING. face-gate-server.ts:391 `unstand()` only deletes the path from the `gates` map (new knocks refuse). Seated sessions/sockets stay: syncSessions is never dropped on unstand (open-node-vessel.ts:1526 only calls held.unstand()). Only dropNoLongerHeld (strangers/contracted, needs a LATER refold after gateReadings moves) and sweepSameOperator (same-operator) close seated sockets. Compounds finding 1: un-carry leaves stranger sockets until a later refold. Same cure (refresh readings, then drop). Red: un-carry a Nexus with a seated stranger; assert closed in that refold.
+N2. MISSED WITNESS: tools/seed-census.mjs reads open-node-vessel.ts source (regexes at :12-13, :96 on `vesselIdentity.verifyingKey`, `daemonAuth.placeVerifyingKey`, `activeAtom?.key ?? ...` fallbacks). The daemonAuth cut and the askIslandMemory helper (which repeats `activeAtom?.key ?? ""`) must be re-run against it. Other source-reading tests (wire-daemon-bootstrap, face-plane-registration, residency-pin-durability, floor-fleet-lanes, etc.) matched none of the candidate keywords. tools/mesh-scenarios.sh "TORN" hits are the charter, not the face check; the face-torn message text is unwitnessed.
+N3. kahu-canon-wiring.test.ts has a THIRD regex (line ~28: `systemCanon: true` conditional) beside the two diskMirror regexes; a grant cut must keep or retarget it too.
+N4. The askIslandMemory getters capture `const vm = daemonVm` at ACCESS time (not call time); consumers read the getter at call time (reporter right), so a helper must keep the getter shell and take `atom` lazily.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verdict-rulings`>>
+
+!! Verdict rulings
+1 Torn check: CUT-READY after ralias, AGREE. Verified 1915-1929: daemon throw precedes torn throw; table over 6 parts. No hidden callers; no test or tool pins its text.
+2 daemonAuth: NEEDS-RULING, AGREE with lean (shared mesh builder, node first). Witness faced-boot-requires-proof.test.ts:91-101 pins order raise &lt; `const daemonAuth = {` &lt; `daemonVm = await openDaemonVm({` and the exact string `...(faceLit && standingAnchor ? { faceAnchor: standingAnchor } : {}),`; the cut must keep the order and retarget indexOf anchors. Plus seed-census (N2). Cheaper first step: node-local builder, mesh promotion later (fewer simultaneous witness changes) - I lean node-local first; flag as fork.
+3 diskMirrorGrant: CUT-READY, AGREE. Entry order matters (resolver consumes in order); three regexes (N3).
+4 Boot pins: NEEDS-RULING, AGREE with unify lean. No test or tool greps `boot:` reasons (grep over packages/tools/bags found only open-node-vessel.ts and open-browser-vessel.ts), so renaming reasons breaks no witness; but pinReason is observable, so rule it explicitly.
+5 postureOf/contractHolds/gateNexuses pure parts: CUT-READY; cell/ordering NEEDS-RULING, AGREE (lean now firmer: N1). Minor case-fold dedup: confirmed in code (gateNexuses dedups raw aid; postureOf lowercases) - fold in the same cut with a table row.
+7 askIslandMemory getters: CUT-READY, AGREE (N4; fold askSeatDutiesAsVessel).
+Bootstrap parse: DO-NOT-CUT separately, AGREE.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sources`>>
+
+!! Sources (date-stamped 2026-10-31; search-only, no page fetched)
+* Zanzibar "new enemy problem"/zookies, via authzed.com/blog/new-enemies and authzed.com/blog/zedtokens, plus the USENIX ATC'19 paper (search-only; summaries read in results). Lesson: order revocation before any decision made on newer data; pin a consistency point. Fits N1: our drop decides on a snapshot older than the refold that triggered it. Conflict with house law: Zanzibar's global timestamp token breaks "no global now"; the house analogue is causal order inside the serial refold chain (refresh, then drop, in one step), not a clock.
+* Feathers, Working Effectively with Legacy Code (characterization/golden master), via search summaries (patterndb-yaml golden-master page, learnagilepractices substack, Bolboaca slides; search-only, secondary). Lesson: pin observed behavior first, extract pure part, replace golden master with named tests. Fits house red-first: for ORDERING cuts (daemonAuth, gateReadings) the red/control must pin current order before the move; pure table cuts are the characterization. Conflict: a golden master that pins the stale-drop lag would enshrine the bug; characterize everything EXCEPT the finding-1 row, which goes red-first.
+* Not searched: TOCTOU in access gates, TiddlyWiki startup order, Automerge sharePolicy, DI-without-globals (out of this batch's candidates).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/merged-recommendation`>>
+
+!! Merged recommendation
+* Torn check: CUT-READY after ralias; table red over 6 parts; control floor boots, daemon throw first. Lean: cut.
+* daemonAuth: NEEDS-RULING; node-local `daemonAuthFor` first with order witness retargeted + seed-census run; mesh promotion separate lane. Lean: node-local first.
+* diskMirrorGrant: CUT-READY; table kahu x kind; retarget 3 regexes. Lean: cut to mesh beside resolveDiskMirrors.
+* Boot pins: NEEDS-RULING; lean unify, guard lararium by handle, one reason vocabulary.
+* Pure readers (postureOf/contractHeld/gateNexusSet): CUT-READY with case-fold row.
+* gateReadings cell: FIX FIRST, red-first (N1 + finding 1, both un-carry and open->private, plus the 1367 caller); then cut. Lean: awaited refresh-then-drop in one owned step.
+* Wiki-act router: CUT-READY with named explicit-daemon parameter.
+* askIslandMemory getters: CUT-READY; keep getter shells, lazy atom.
+* Bootstrap parse: DO-NOT-CUT separately.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5BwUNhPJX9-aeC0lVAcbNvwOYy2bcHicbsSDE4jDMU0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

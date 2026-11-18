@@ -18,7 +18,7 @@ import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody
 import { generateOrLoadBrowserPersonaRoot, generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet } from "../src/browser-vessel-identity.js";
 import { browserFleetJoinLand, browserFleetJoinRequest } from "../src/browser-fleet-join.js";
 import { browserWalkLeaf, browserWalkStore } from "../src/browser-walk.js";
-import { lockBrowserCustody, readBrowserCustody, readKeystoreRow, unlockBrowserCustody } from "../src/browser-custody.js";
+import { lockBrowserCustody, readBrowserCustody, readKeystoreRecord, unlockBrowserCustody } from "../src/browser-custody.js";
 import { bindFirstFaceSlot, lockFaceCustody, unlockFaceCustody } from "../src/browser-face-custody.js";
 import {
   admitCarriageCommit, custodyRootDoor, deriveGateBundle, encodeInvite, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer,
@@ -139,7 +139,7 @@ async function secretAt(idbName: string, [store, key]: [string, string], custody
       if (clear !== undefined) return clear;
     }
   } finally { db.close(); }
-  const held = await readKeystoreRow(idbName, custodyRow);
+  const held = await readKeystoreRecord(idbName, custodyRow);
   if (held === undefined) throw new Error(`no ${custodyRow} stands in either home`);
   return held;
 }
@@ -155,7 +155,7 @@ async function answerTo(root: Awaited<ReturnType<typeof pair>>, face: Awaited<Re
   const carriage = { gatePin: pin, canon: { "lar:///ha.ka.ba/bags/lares": "automerge:canon-lares" } };
   const body = {
     nonce: request.nonce, atomKey: request.atomKey, personaGroup: GROUP,
-    edge: { kind: "device-admit/v1", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: NEXUS },
+    edge: { kind: "device-admit", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: NEXUS },
     carriage,
     reach: { syncUrl: "ws://hearth.synthetic:7777/ws", islandKind: "anchor", islandScope: NEXUS },
     charter: "the hearth's charter",

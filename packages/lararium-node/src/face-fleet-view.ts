@@ -110,8 +110,9 @@ export interface FaceFleetViews {
 /**
  * One view per seated peer, its facets read off `bootstrap()` at the seat. `wornGroup` names the face this vessel
  * wears (the bootstrap's pin where none is named): its sessions also read the vessel's books (the bridge above).
+ * `daemonWorkingOf` names the daemon wiki's working slot this vessel's control document holds for a face, or null.
  */
-export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?: () => string | null, books?: () => ReadonlySet<string>, kahuaOf?: (group: string) => string | null, promoteOf?: (group: string) => string | null): FaceFleetViews {
+export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?: () => string | null, books?: () => ReadonlySet<string>, kahuaOf?: (group: string) => string | null, promoteOf?: (group: string) => string | null, daemonWorkingOf?: (group: string) => string | null): FaceFleetViews {
   const views = new Map<string, { view: SessionDocumentView; gate: FederationGate; face: string }>();
   const drop = (peerId: string): void => {
     const held = views.get(peerId);
@@ -128,14 +129,23 @@ export function faceFleetViews(bootstrap: () => BootTiddlers | null, wornGroup?:
       const view = new SessionDocumentView({ profile: "face", facets });
       // The mounted face is the caller's (sealed custody's) when it names one; the bootstrap's group text answers only where no caller does.
       const worn = wornGroup ? wornGroup() : (ownEntry(tiddlers, PERSONA_GROUP_ID_TIDDLER)?.text ?? null);
+      // THE FACE'S DAEMON WORKING SLOT (road row `L4f`): the document this vessel's control document names for the face's
+      // working slot, read at each decision (the slot may stand after the seat), reaches a session that proved that face.
+      const working = (documentId: DocumentId): boolean => {
+        if (view.closed) return false;
+        const url = daemonWorkingOf?.(face.personaGroup) ?? null;
+        if (!url) return false;
+        try { return interpretAsDocumentId(url as AutomergeUrl) === String(documentId); } catch { return false; }
+      };
       if (worn !== face.personaGroup || tiddlers === null) {
-        views.set(peerId, { view, gate: viewFederationGate(view), face: face.personaGroup });
+        const scoped = viewFederationGate(view);
+        views.set(peerId, { view, gate: { mayFederate: (documentId: DocumentId, peer?: PeerId) => scoped.mayFederate(documentId, peer) === true || working(documentId) }, face: face.personaGroup });
         return;
       }
       // THE BRIDGE: the mounted face reads the vessel's books too: its own view, plus the allow-list the catalog names (`bridgeBooks`).
       // A caller that names no books opens no bridge, so the default is shut.
       const gate: FederationGate = {
-        mayFederate: (documentId: DocumentId) => !view.closed && (view.fetch(String(documentId)).ok || (books?.().has(String(documentId)) ?? false)),
+        mayFederate: (documentId: DocumentId) => !view.closed && (view.fetch(String(documentId)).ok || (books?.().has(String(documentId)) ?? false) || working(documentId)),
       };
       views.set(peerId, { view, gate, face: face.personaGroup });
     },

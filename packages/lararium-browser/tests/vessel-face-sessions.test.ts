@@ -28,7 +28,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { bindFirstFaceSlot, faceCustodyHeld, lockFaceCustody, writeFaceRow } from "../src/browser-face-custody.js";
+import { bindFirstFaceSlot, faceCustodyHeld, lockFaceCustody, writeFaceRecord } from "../src/browser-face-custody.js";
 import { standVesselHouse, type HouseAsk, type LitVessel, type VesselHouse } from "../src/vessel-sessions.js";
 
 const SLOW = 300_000;
@@ -59,8 +59,8 @@ async function twoFaces(tag: string): Promise<{ idbName: string; a: string; b: s
   const a = face("a"), b = face("b");
   await bindFirstFaceSlot(idbName, a, PASS_A);
   await bindFirstFaceSlot(idbName, b, PASS_B);
-  await writeFaceRow(idbName, a, "recipe/1", new TextEncoder().encode("A's recipe"));
-  await writeFaceRow(idbName, b, "ledger/1", new TextEncoder().encode("B's ledger"));
+  await writeFaceRecord(idbName, a, "recipe/1", new TextEncoder().encode("A's recipe"));
+  await writeFaceRecord(idbName, b, "ledger/1", new TextEncoder().encode("B's ledger"));
   lockFaceCustody(idbName, a); lockFaceCustody(idbName, b);
   return { idbName, a, b };
 }

@@ -28,12 +28,12 @@ Four fresh reads of `K15` Wave B kept finding that other code on the same browse
 
 # ''The platform walls profiles, never one origin's contexts'' (both, MEASURED). `vessel-lock.ts` takes one Web Lock per store name on an origin and refuses `steal` in house code; MDN's Web Locks and SharedWorker pages state that any same-origin script may request, steal or reach them. Chrome's profile guidance states that anyone at the device's unlocked login may switch to any profile, so a profile walls storage and a locked OS account walls people.
 # ''A hand names a session, never a person'' (both, MEASURED). `session-contract.mem` uses //hand// for every session actor (tab, CLI run, disk watcher, spirit seat); `persona-circle.mem` forbids a human constructor. "One profile, one vessel, one hand" holds as deployment guidance and never as a cardinality law the vessel tests.
-# ''Today's per-face isolation runs as routing'' (Sol, MEASURED). The browser still seals rows under one vessel key until `K15` step 6's fence; the trust line reads honest once each face's secrets seal under its own key.
+# ''Today's per-face isolation runs as routing'' (Sol, MEASURED). The browser still seals records under one vessel key until `K15` step 6's fence; the trust line reads honest once each face's secrets seal under its own key.
 # ''Local absence proves nothing'' (Sol, MEASURED in MDN's storage-eviction guidance and `browser-vessel-identity.ts`). Origin storage can vanish whole, so a missing ledger cannot witness a clean history; peers adjudicate.
 # ''Tiers map to relations'' (both, MEASURED in `cabal-realm.mem`, `identity-enacts-relation.mem`, `bounded-reach-contract.mem`, `kahu.mem`). Realms, charters and seats separate one operator's tiers; carriage carries and reads nothing; each power needs its own grant. Shared substrate correlates tiers by metadata (LEAD).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y-PazGUfc-pKI04zMHprJCSjaURr97sft-TB6YmnKRs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yngKs53uSPnuJeju0vcuHIzlUwelw27n-1BcqSv-cGA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -14,10 +14,11 @@ import { describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
 import {
   CompositeStore, emptyLarDoc, faceCatalogDocUrl, openFaceCatalog, standLitFaceCatalog, tiddlerText, ownEntry,
-  type LarDoc, type Verb,
+  storedLarRecord, AutomergeDocStore, seatHouseCanon, type LarDoc, type Verb,
 } from "@lararium/mesh";
-import { makeActionReactorFor } from "../src/action-handler.js";
-import { makeCatalogAccessor } from "../src/catalog-accessor.js";
+import { makeActionReactorFor, HOUSE_CANON_READS_FLOOR } from "../src/action-handler.js";
+import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
+import { makeCatalogAccessor, libraryDocUrl } from "../src/catalog-accessor.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 
 const secret = new Uint8Array(32).fill(0x5c);
@@ -68,5 +69,131 @@ describe("a register act lands its row on its half", () => {
     const reactor = makeActionReactorFor("CREATE", { composite: new CompositeStore(), reach: { repo, catalogUrl: floor.url, oracleUrl: null } });
     const out = await reactor({ bag }, ctx());
     expect(tiddlerText(ownEntry(floor.doc()?.tiddlers, bag))).toBe(out.docUrl);
+  });
+});
+
+ test("private-synced placement keeps the bag off verb access and island mounts while direct readers retain it", async () => {
+  const { repo, floor } = await stand();
+  const plane = repo.create<LarDoc>(emptyLarDoc());
+  const bag = "lar:///ha.ka.ba/bags/private-group";
+  const title = "lar:///acts/example";
+  plane.change((d) => { d.tiddlers[title] = storedLarRecord(title, { text: "proof act" }, "test"); });
+  floor.change((d) => { d.tiddlers[bag] = storedLarRecord(bag, { text: plane.url, kind: "private-synced" }, "test"); });
+  const catalog = makeCatalogAccessor(repo, floor.url, null);
+  expect(await catalog.find(bag)).toBeNull();
+  expect(await catalog.storeOf(bag)).toBeNull();
+  expect(await libraryDocUrl(catalog, bag)).toBeNull();
+  expect(await catalog.urlOf(bag)).toBe(plane.url);
+  expect((await new AutomergeDocStore(plane, bag).get(title))?.tiddler.text).toBe("proof act");
+  await repo.shutdown();
+});
+
+/**
+ * HOUSE CANON TAKES NO CATALOG ROW (cap-tier.mem, house canon): every disk-sourced holding but the public board rests in the
+ * Kahu realm at contract. A seed run as h0 (the Kahu steward), then h1, then h2 mints nothing: the steward's CREATE names the
+ * realm's ONE document, any other face's CREATE answers that it reads the floor, and no half of the catalog names canon, so
+ * no face can fork it.
+ *
+ *   V1 — seed as h0, h1, h2: zero catalog rows; one document per house canon bag (the realm's); h1 and h2 read the floor
+ *   V2 — a non-steward CREATE answers resolvedElsewhere with readsFloor, never a kahu-reach red; a stranger's own write refuses
+ *   V3 — a steward whose realm registers no document refuses by name (house-canon-unlanded) and mints no row
+ *   V5 — a CREATE that names its bag house canon over a bag this island never seated refuses (house-canon-unseated), mints no row
+ *   V4 — CREATE carries no tier: a `tier` arg stamps nothing, and the board (crossroads) stays an ordinary catalog bag
+ */
+describe("house canon: one realm document, no catalog row", () => {
+  const secretOf = (n: number) => new Uint8Array(32).fill(0x10 + n);
+  const HOUSE = ["sdm", "elyncia", "elyncia-referee"];
+  async function threeFaces(realm: Record<string, string> = {}) {
+    const repo = new Repo({ network: [] });
+    const floor = repo.create<LarDoc>(emptyLarDoc());
+    const faces = await Promise.all([0, 1, 2].map((n) => openFaceCatalog(repo, faceCatalogDocUrl(secretOf(n)), secretOf(n))));
+    const steward = await kahuHand(), stranger = await strangerHand("joined-without-admission");
+    const createAs = (n: number) => makeActionReactorFor("CREATE", {
+      composite: new CompositeStore(),
+      kahuReach: n === 0 ? steward : stranger,
+      reach: { repo, catalogUrl: floor.url, faceCatalogUrl: faces[n]!.url, oracleUrl: null, systemCanonUrl: async (bag: string) => realm[bag] ?? null },
+    });
+    const rowsNaming = (bag: string) => [floor, ...faces].filter((h) => ownEntry(h.doc()?.tiddlers, bag) !== undefined).length;
+    return { repo, floor, faces, createAs, rowsNaming };
+  }
+  const seated = <T>(run: () => Promise<T>): Promise<T> => { seatHouseCanon(["crossroads", ...HOUSE]); return run().finally(() => seatHouseCanon([])); };
+
+  test("V1 — seed as h0, h1, h2: zero catalog rows, one document per house canon bag", () => seated(async () => {
+    const realm: Record<string, string> = {};
+    const { repo, createAs, rowsNaming } = await threeFaces(realm);
+    // The realm's ONE document per bag (the founding's mint, `landKahuRealm`), named to the steward by the realm's row.
+    for (const slug of HOUSE) realm[`lar:///ha.ka.ba/bags/${slug}`] = String(repo.create<LarDoc>(emptyLarDoc()).url);
+    for (const slug of HOUSE) {
+      const bag = `lar:///ha.ka.ba/bags/${slug}`;
+      for (let run = 0; run < 2; run++) {
+        expect(await createAs(0)({ bag }, ctx())).toMatchObject({ alreadyStood: true, resolvedElsewhere: true, docUrl: realm[bag], count: 0 });
+      }
+      for (const n of [1, 2]) {
+        expect(await createAs(n)({ bag }, ctx())).toMatchObject({ alreadyStood: true, resolvedElsewhere: true, readsFloor: true });
+      }
+      expect(rowsNaming(bag)).toBe(0);
+    }
+    await repo.shutdown();
+  }));
+
+  test("V2 — a non-steward CREATE reads the floor, never a kahu-reach red; its write into canon refuses", () => seated(async () => {
+    const { repo, floor, createAs, rowsNaming } = await threeFaces();
+    const bag = "lar:///ha.ka.ba/bags/sdm";
+    const out = await createAs(1)({ bag }, ctx());
+    expect(out).toMatchObject({ resolvedElsewhere: true, readsFloor: true, houseCanon: HOUSE_CANON_READS_FLOOR });
+    expect(out.docUrl).toBeUndefined();
+    expect(rowsNaming(bag)).toBe(0);
+    const clear = makeActionReactorFor("CLEAR", { composite: new CompositeStore(), kahuReach: await strangerHand("removed"), reach: { repo, catalogUrl: floor.url, oracleUrl: null } });
+    await expect(clear({ bag }, ctx())).rejects.toMatchObject({ reason: "kahu-reach" });
+    await repo.shutdown();
+  }));
+
+  test("V3 — a steward whose realm registers nothing refuses by name and mints no row", () => seated(async () => {
+    const { repo, createAs, rowsNaming } = await threeFaces();
+    const bag = "lar:///ha.ka.ba/bags/elyncia";
+    await expect(createAs(0)({ bag }, ctx())).rejects.toMatchObject({ reason: "house-canon-unlanded" });
+    expect(rowsNaming(bag)).toBe(0);
+    await repo.shutdown();
+  }));
+
+  test("V4 — CREATE carries no tier; the board stays an ordinary catalog bag", () => seated(async () => {
+    const { repo, floor, faces, createAs } = await threeFaces();
+    const bag = "lar:///ha.ka.ba/bags/private-ledger";
+    const out = await createAs(1)({ bag, tier: "vessel" }, ctx());
+    const row = ownEntry(faces[1]!.doc()?.tiddlers, bag);
+    expect(tiddlerText(row)).toBe(out.docUrl);
+    expect(JSON.stringify(row)).not.toContain("cap-tier");
+    expect(ownEntry(floor.doc()?.tiddlers, bag)).toBeUndefined();
+    const board = "lar:///ha.ka.ba/bags/crossroads";
+    const minted = await createAs(1)({ bag: board }, ctx());
+    expect(typeof minted.docUrl).toBe("string");
+    expect(minted.readsFloor).toBeUndefined();
+    await repo.shutdown();
+  }));
+
+  test("V5 — a CREATE that names its bag house canon (the seed's own disk reading) refuses on an island that never seated it, and mints no row", async () => {
+    // The seat reads the checkout once, at boot: a holding that lands under the canon source afterwards stands unseated here, and a
+    // plain CREATE would mint a catalog row for canon, the very row the realm's later document strands.
+    const { repo, createAs, rowsNaming } = await threeFaces();
+    const bag = "lar:///ha.ka.ba/bags/elyncia";
+    for (const n of [0, 1]) await expect(createAs(n)({ bag, "house-canon": true }, ctx())).rejects.toMatchObject({ reason: "house-canon-unseated" });
+    expect(rowsNaming(bag)).toBe(0);
+    // CONTROLS: the claim over a seated bag answers as house canon always does; a CREATE that claims nothing mints its ordinary row.
+    await seated(async () => {
+      expect(await createAs(1)({ bag, "house-canon": true }, ctx())).toMatchObject({ resolvedElsewhere: true, readsFloor: true });
+    });
+    const plain = await createAs(1)({ bag: "lar:///ha.ka.ba/bags/private-ledger" }, ctx());
+    expect(typeof plain.docUrl).toBe("string");
+    await repo.shutdown();
+  });
+
+  test("CONTROL — an ordinary bag still forks per face (each face's half stays sealed to the others)", async () => {
+    const { repo, createAs } = await threeFaces();
+    const bag = "lar:///ha.ka.ba/bags/private-ledger";
+    const a = await createAs(1)({ bag }, ctx());
+    const b = await createAs(2)({ bag }, ctx());
+    expect(b.alreadyStood).toBeUndefined();
+    expect(b.docUrl).not.toBe(a.docUrl);
+    await repo.shutdown();
   });
 });

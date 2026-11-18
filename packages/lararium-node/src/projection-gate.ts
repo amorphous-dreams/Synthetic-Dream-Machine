@@ -90,7 +90,7 @@
  * guards its rule 3 with a structural-slot check because a lossy render makes an
  * edit inside a dropped slot read as framing-only and never land. Here an
  * equivalence pins a base, and a base pinned over a lossy round trip would let a
- * later write replace the operator's bytes with a text that no longer carries the
+ * later write replace the operator's bytes with a text that drops the
  * slot. The guard therefore belongs where the text still exists:
  * `canonicalizeCarrierText` answers null on a lossy round trip, and this gate —
  * which holds no text to scan and must stay pure — reads that null as "no

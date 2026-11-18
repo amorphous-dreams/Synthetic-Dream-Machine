@@ -3,7 +3,7 @@
  *
  * The port carries RECORDS across the engine↔projection waist: a projection opens a port at a width, receives a
  * chunked snapshot at a stable base cursor, then changes after it, writes under a `txId`, asks the engine for
- * filters, renders, loads and invokes, and shares presence. The contract stands at
+ * filters (each answer one bounded page under a cursor), renders, loads and invokes, and shares presence. The contract stands at
  * lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract; every reader below keeps its bounds, so a malformed
  * port message vanishes at the door before any handler sees it.
  *
@@ -26,6 +26,7 @@ export const PORT_ACK      = "port:ack";
 export const PORT_WIDEN    = "port:widen";
 export const PORT_LEASE    = "port:lease";
 export const PORT_GONE     = "port:gone";
+export const PORT_BOOT     = "port:boot";
 export const PORT_SNAPSHOT = "port:snapshot";
 export const PORT_CHANGES  = "port:changes";
 export const PORT_RESET    = "port:reset";
@@ -33,7 +34,7 @@ export const PORT_WRITTEN  = "port:written";
 export const PORT_ANSWER   = "port:answer";
 
 export type PortVesselKind = typeof PORT_OPEN | typeof PORT_WRITE | typeof PORT_ASK | typeof PORT_PRESENCE | typeof PORT_CLOSE | typeof PORT_ACK | typeof PORT_WIDEN | typeof PORT_LEASE | typeof PORT_GONE;
-export type PortIslandKind = typeof PORT_SNAPSHOT | typeof PORT_CHANGES | typeof PORT_RESET | typeof PORT_WRITTEN | typeof PORT_ANSWER | typeof PORT_PRESENCE;
+export type PortIslandKind = typeof PORT_BOOT | typeof PORT_SNAPSHOT | typeof PORT_CHANGES | typeof PORT_RESET | typeof PORT_WRITTEN | typeof PORT_ANSWER | typeof PORT_PRESENCE;
 
 export type PortWidthName = "full" | "skinny" | "story" | "none";
 export type PortAskKind = "filter" | "render" | "load" | "verb" | "cas" | "invoke";
@@ -76,6 +77,11 @@ export interface PortMsg_Open {
   renders?: PortRenderForm[];
   edits?: boolean;
   presence?: boolean;
+  /**
+   * The projection boots an engine of its own from this open: the island hands its boot set (the engine blob and each plugin blob
+   * it booted from, verbatim, by CID) as `port:boot` chunks ahead of the snapshot, the way a server hands a browser its store.
+   */
+  boot?: boolean;
   maxRecordBytes: number;
   maxBatchBytes: number;
 }
@@ -102,6 +108,12 @@ export interface PortMsg_Ask {
   form?: PortRenderForm;
   renderCursor?: string;
   affordanceId?: string;
+  /** filter: the cursor a prior page answered as `next`; absent asks for the first page. */
+  after?: string;
+  /** filter: the rows one page carries at most; the island holds its own cap above it. */
+  limit?: number;
+  /** filter: the bytes one page carries at most; the island holds its own cap above it. */
+  maxBytes?: number;
 }
 
 export interface PortMsg_Ack { type: typeof PORT_ACK; portId: string; cursor: string }
@@ -123,6 +135,22 @@ export interface PortMsg_Close {
   portId: string;
 }
 
+/**
+ * One chunk of one boot-set member, verbatim bytes as the island's CAS holds them. `member` of `members` orders the set (the engine
+ * first, then each plugin blob in the island's own boot order); `i` of `n` orders the member's chunks. A receiver hashes the joined
+ * bytes against `cid` and against the names its vessel gave it; the island re-hashed them before it sent.
+ */
+export interface PortMsg_Boot {
+  type: typeof PORT_BOOT;
+  portId: string;
+  cid: string;
+  role: "engine" | "plugin";
+  member: number;
+  members: number;
+  i: number;
+  n: number;
+  bytesBase64: string;
+}
 export interface PortMsg_Snapshot {
   type: typeof PORT_SNAPSHOT;
   portId: string;
@@ -169,7 +197,7 @@ export interface PortMsg_Answer {
 }
 
 export type PortVesselToIslandMsg = PortMsg_Open | PortMsg_Write | PortMsg_Ask | PortMsg_Presence | PortMsg_Close | PortMsg_Ack | PortMsg_Widen | PortMsg_Lease | PortMsg_Gone;
-export type PortIslandToVesselMsg = PortMsg_Snapshot | PortMsg_Changes | PortMsg_Reset | PortMsg_Written | PortMsg_Answer | PortMsg_Presence;
+export type PortIslandToVesselMsg = PortMsg_Boot | PortMsg_Snapshot | PortMsg_Changes | PortMsg_Reset | PortMsg_Written | PortMsg_Answer | PortMsg_Presence;
 
 // ── Readers ─────────────────────────────────────────────────────
 
@@ -186,6 +214,9 @@ const isFields = (v: unknown): v is Record<string, string> => isRecord(v) && Obj
 const isArgs = (v: unknown): v is Record<string, string> => isRecord(v) && Object.keys(v).length <= 64
   && Object.values(v).every((x) => typeof x === "string" && new TextEncoder().encode(x).length <= 65_536);
 const PORT_BYTES_MAX = 16 * 1024 * 1024;
+/** The raw bytes one `port:boot` chunk carries, and the base64 length that bound reads as on the wire. */
+export const PORT_BOOT_CHUNK_BYTES = 196_608;
+const PORT_BOOT_CHUNK_BASE64_MAX = Math.ceil(PORT_BOOT_CHUNK_BYTES / 3) * 4;
 const WIDTHS: ReadonlySet<string> = new Set<PortWidthName>(["full", "skinny", "story", "none"]);
 const ASKS: ReadonlySet<string> = new Set<PortAskKind>(["filter", "render", "load", "verb", "cas", "invoke"]);
 const FORMS: ReadonlySet<string> = new Set<PortRenderForm>(["html", "text", "blocks", "label-html"]);
@@ -230,6 +261,7 @@ export function readPortVesselMsg(v: unknown): PortVesselToIslandMsg | null {
       if (v["renders"] !== undefined && !(Array.isArray(v["renders"]) && v["renders"].length <= 4 && v["renders"].every((f) => typeof f === "string" && FORMS.has(f)))) return null;
       if (v["edits"] !== undefined && typeof v["edits"] !== "boolean") return null;
       if (v["presence"] !== undefined && typeof v["presence"] !== "boolean") return null;
+      if (v["boot"] !== undefined && typeof v["boot"] !== "boolean") return null;
       if (!isCount(v["maxRecordBytes"]) || v["maxRecordBytes"] < 1 || v["maxRecordBytes"] > PORT_BYTES_MAX) return null;
       if (!isCount(v["maxBatchBytes"]) || v["maxBatchBytes"] < 1 || v["maxBatchBytes"] > PORT_BYTES_MAX) return null;
       return v as unknown as PortMsg_Open;
@@ -250,6 +282,9 @@ export function readPortVesselMsg(v: unknown): PortVesselToIslandMsg | null {
       if (v["renderCursor"] !== undefined && !isName(v["renderCursor"])) return null;
       if (v["affordanceId"] !== undefined && !isName(v["affordanceId"])) return null;
       if (v["kind"] === "invoke" && (v["subject"] !== undefined || !isName(v["affordanceId"]) || !isName(v["renderCursor"]))) return null;
+      if (v["after"] !== undefined && !isName(v["after"])) return null;
+      if (v["limit"] !== undefined && !(isCount(v["limit"]) && v["limit"] >= 1)) return null;
+      if (v["maxBytes"] !== undefined && !(isCount(v["maxBytes"]) && v["maxBytes"] >= 1 && v["maxBytes"] <= PORT_BYTES_MAX)) return null;
       return { type: PORT_ASK, portId: v["portId"], askId: v["askId"], kind: v["kind"],
         ...(v["subject"] === undefined ? {} : { subject: v["subject"] }),
         ...(v["titles"] === undefined ? {} : { titles: v["titles"] }),
@@ -257,7 +292,10 @@ export function readPortVesselMsg(v: unknown): PortVesselToIslandMsg | null {
         ...(v["fields"] === undefined ? {} : { fields: v["fields"] }),
         ...(v["form"] === undefined ? {} : { form: v["form"] }),
         ...(v["renderCursor"] === undefined ? {} : { renderCursor: v["renderCursor"] }),
-        ...(v["affordanceId"] === undefined ? {} : { affordanceId: v["affordanceId"] }) } as PortMsg_Ask;
+        ...(v["affordanceId"] === undefined ? {} : { affordanceId: v["affordanceId"] }),
+        ...(v["after"] === undefined ? {} : { after: v["after"] }),
+        ...(v["limit"] === undefined ? {} : { limit: v["limit"] }),
+        ...(v["maxBytes"] === undefined ? {} : { maxBytes: v["maxBytes"] }) } as PortMsg_Ask;
     case PORT_PRESENCE:
       if (!isName(v["actorKey"]) || (v["beat"] !== undefined && !isCount(v["beat"])) || (v["gone"] !== undefined && v["gone"] !== true)) return null;
       if (v["gone"] === undefined && v["beat"] === undefined) return null;   // a presence round carries its beat
@@ -279,6 +317,12 @@ export function readPortIslandMsg(v: unknown): PortIslandToVesselMsg | null {
   if (!isRecord(v) || typeof v["type"] !== "string" || !isName(v["portId"])) return null;
   if (!boundedBytes(v, 17 * 1024 * 1024)) return null;
   switch (v["type"]) {
+    case PORT_BOOT:
+      if (typeof v["cid"] !== "string" || !/^[a-f0-9]{64}$/.test(v["cid"]) || (v["role"] !== "engine" && v["role"] !== "plugin")) return null;
+      if (!isCount(v["member"]) || !isCount(v["members"]) || v["member"] < 1 || v["member"] > v["members"] || v["members"] > 4096) return null;
+      if (!isCount(v["i"]) || !isCount(v["n"]) || v["i"] < 1 || v["i"] > v["n"]) return null;
+      if (typeof v["bytesBase64"] !== "string" || v["bytesBase64"].length > PORT_BOOT_CHUNK_BASE64_MAX) return null;
+      return v as unknown as PortMsg_Boot;
     case PORT_SNAPSHOT:
       if (!isName(v["snapshotId"]) || !isName(v["baseCursor"]) || !isCount(v["i"]) || !isCount(v["n"]) || v["i"] < 1 || v["i"] > v["n"]) return null;
       if (!Array.isArray(v["records"]) || v["records"].length > 4096 || !v["records"].every(wireRecord)) return null;
@@ -310,6 +354,7 @@ export function readPortIslandMsg(v: unknown): PortIslandToVesselMsg | null {
 
 // ── Factories ───────────────────────────────────────────────────
 
+export const mkPortBoot = (m: Omit<PortMsg_Boot, "type">): PortMsg_Boot => ({ type: PORT_BOOT, ...m });
 export const mkPortSnapshot = (m: Omit<PortMsg_Snapshot, "type">): PortMsg_Snapshot => ({ type: PORT_SNAPSHOT, ...m });
 export const mkPortChanges = (m: Omit<PortMsg_Changes, "type">): PortMsg_Changes => ({ type: PORT_CHANGES, ...m });
 export const mkPortReset = (m: Omit<PortMsg_Reset, "type">): PortMsg_Reset => ({ type: PORT_RESET, ...m });

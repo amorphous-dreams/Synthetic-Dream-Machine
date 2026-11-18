@@ -51,7 +51,7 @@ mirrors kg_io's raw-sqlite-beside-chroma idiom) keeps the turn_key → structura
 since chroma cannot where-filter inside a JSON provenance list.
 
 Run with the mempalace CLI's interpreter (it has the package + chroma):
-  PYTHONPATH=<repo>/mempalace  ~/.venv/bin/python3 structurepalace_io.py serve --palace <lararium>/sensoriums/memory/structure
+  PYTHONPATH=<repo>/mempalace  ~/.venv/bin/python3 structurepalace_io.py serve --palace <root>/sensoriums/memory/structure
 """
 from __future__ import annotations
 
@@ -593,17 +593,14 @@ def _serve(palace_path: str) -> None:
 # the same graceful path the absent form collection takes.
 
 def _default_structurepalace_dir() -> str:
-    """The canonical structure plane — `<lararium>/sensoriums/memory/structure`, where `<lararium>` resolves the
-    SAME rule the TS `larariumDataHome()` (xdg-base.ts) holds: `LAR_ROOT/data/lararium` for isolated
-    instances, else `$XDG_DATA_HOME/lararium` (unset → `~/.local/share/lararium`). A sensorium belongs to
-    the HOUSE, so both tongues must name the house or capture writes one dir while recall reads another —
-    the write-only-store disease. The two views stay byte-identical, guarded by
-    test_structure_default_mirrors_xdg. A caller still passes `--palace` (designation carries the
-    authority); this default only keeps an unpassed holder landing true."""
-    from sensorium import _lararium_data_home   # local: keeps this module's import graph acyclic
+    """The canonical structure plane — `<root>/sensoriums/memory/structure`, the SAME path the TS
+    `memorySensoriumStructureDir()` (house-root.ts) names. Both tongues must name one plane or capture writes
+    one dir while recall reads another — the write-only-store disease. The two views stay byte-identical,
+    guarded by test_structure_default_mirrors_the_house_root. A caller still passes `--palace` (designation
+    carries the authority); this default only keeps an unpassed holder landing true."""
+    import house_root   # local: keeps this module's import graph acyclic
 
-    house_home = _lararium_data_home()
-    return os.path.join(house_home, "sensoriums", "memory", "structure")
+    return os.path.join(house_root.sensoriums_home(), "memory", "structure")
 
 
 def _structure_embeddings(palace_path: str, out) -> int:
@@ -655,7 +652,7 @@ def main() -> None:
         "structure-embeddings",
         help="batch readback of structure vectors keyed by verbatim_sha (the FFZ 3rd plane)",
     )
-    se.add_argument("--palace", default="", help="the structure plane dir (default: <lararium>/sensoriums/memory/structure)")
+    se.add_argument("--palace", default="", help="the structure plane dir (default: <root>/sensoriums/memory/structure)")
     se.set_defaults(fn=cmd_structure_embeddings)
     args = ap.parse_args()
     args.fn(args)

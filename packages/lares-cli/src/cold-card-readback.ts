@@ -10,7 +10,7 @@
  */
 import { COLD_KEY_CARD_DEFAULT_FIELDS, coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode } from "@lararium/mesh";
 import type { ParsedArgs } from "./parse-args.js";
-import { readBackStandsIn } from "./sealed-rows.js";
+import { readBackStandsIn } from "./sealed-records.js";
 import { canPromptSecret, promptSecret } from "./prompt-secret.js";
 
 /** One chair's cold next key, minted in this process. Its card prints once; its seed zero-fills once read back. */
@@ -19,6 +19,31 @@ export interface ColdCard { readonly chair: string; readonly seed: Uint8Array; r
 /** A read-back that refused: no terminal, a JSON run, or a card that never read back. Nothing was written. */
 export class CardReadBackRefused extends Error {
   override readonly name = "CardReadBackRefused";
+}
+
+/** A card's code holds 72 characters once its dashes and spaces drop. */
+const CODE_CHARACTERS = 72;
+const CARD_LINES = 3;
+const LINE_CHARACTERS = CODE_CHARACTERS / CARD_LINES;
+
+/**
+ * One read-back attempt gathers the card's three lines: typed one per line, pasted as three lines (the terminal
+ * hands them over one line at a time), or pasted onto one line. It stops once 72 characters stand, after three
+ * lines, on an empty line, or on a line that cannot be one card row (24 characters), so a wrong line never waits for
+ * more. The input stays hidden, so each further line names how many characters it still needs.
+ */
+async function readCardLines(chair: string): Promise<string> {
+  let code = "";
+  for (let line = 0; line < CARD_LINES; line++) {
+    const label = line === 0
+      ? `type or paste ${chair}'s three code lines (dashes and spaces optional), not the confirm words; the input stays hidden\n  `
+      : `  line ${line + 1} of ${CARD_LINES} (${CODE_CHARACTERS - code.length} characters to go): `;
+    const typed = (await promptSecret(label)).replace(/[\s-]/g, "");
+    if (typed.length === 0) break;
+    code += typed;
+    if (code.length >= CODE_CHARACTERS || typed.length !== LINE_CHARACTERS) break;
+  }
+  return code;
 }
 
 /**
@@ -51,7 +76,7 @@ export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], gen
       }
       if (standIn) continue;
       for (let tries = 0; ; tries++) {
-        const typed = (await promptSecret(`type ${card.chair}'s three code lines (dashes and spaces optional), not the confirm words`)).trim();
+        const typed = await readCardLines(card.chair);
         let back: Uint8Array | null = null;
         let reason = "reads as another card";
         try { back = coldKeySeedFromCode(typed); } catch (err) {
@@ -64,7 +89,7 @@ export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], gen
         const same = back !== null && Buffer.from(back).equals(Buffer.from(card.seed));
         back?.fill(0);
         if (same) break;
-        if (tries >= 2) throw new CardReadBackRefused(`the card for ${card.chair}: ${reason}; three attempts never matched — nothing was written; run the rite again`);
+        if (tries >= 2) throw new CardReadBackRefused(`the card for ${card.chair}: ${reason}; three attempts never matched — nothing was written; run the rite again. A new run prints new cards: discard these and write down the new ones`);
         say(`  ${reason} — try again`);
       }
     }

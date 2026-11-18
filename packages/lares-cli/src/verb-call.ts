@@ -119,7 +119,7 @@ export function refusalCode(reason: string): string {
  *                          in part. Re-running with `--change-id` lets the effect index answer
  *                          what landed without running it twice.
  *   retention-gap       — the receipt ring evicted this id's outcome past its retention bound; a
- *                          fresh `--change-id` runs it as a new change (the old one is unrecoverable).
+ *                          fresh `--change-id` runs it as a new change (the evicted one is unrecoverable).
  *   receipt-fact-torn   — the ledger's own fact for this id is unreadable; a fresh REQUEST (a
  *                          flagless re-run already mints one) is the only cure — reusing
  *                          `--change-id` names no cure here, since the torn fact is per-request,

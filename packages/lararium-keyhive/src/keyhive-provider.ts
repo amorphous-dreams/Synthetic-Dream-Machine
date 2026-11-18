@@ -503,7 +503,7 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /** The opaque name a bag's tracked chunks rest under: a digest of the bag URL and its document, so the URL
-   *  never reaches the rest. A reminted bag takes a fresh shelf, and the old one gets dropped. */
+   *  never reaches the rest. A reminted bag takes a fresh shelf, and the shelf under its prior document gets dropped. */
   private async chunkShelf(bagUrl: string, docIdHex: string): Promise<string> {
     return hexEncode(await webDigest("SHA-256", new TextEncoder().encode(`${bagUrl}\n${docIdHex}`)));
   }
@@ -896,6 +896,31 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /**
+   * Whether `agent` holds any access in the Document `docIdHex` AS THIS REPLICA READS IT. A Document this hive holds no
+   * reading of (another face's, never ingested here) answers false: a seat nobody can read seats nobody.
+   */
+  async seatedInDoc(agentIdentifierHex: string, docIdHex: string): Promise<boolean> {
+    return (await this.accessInDoc(agentIdentifierHex, docIdHex)) !== null;
+  }
+
+  /**
+   * The access `agent` holds in the Document `docIdHex` AS THIS REPLICA READS IT, lower-cased (`admin`, `read`, …), or null
+   * where it holds none or this hive holds no reading of the Document. The reading names the Document itself, never the
+   * Document this hive maps some bag to.
+   */
+  async accessInDoc(agentIdentifierHex: string, docIdHex: string): Promise<string | null> {
+    const id = `0x${docIdHex.trim().toLowerCase().replace(/^0x/, "")}`;
+    try {
+      await this.ensureIsland(id);
+      const kh = this.requireKh();
+      const docId = new KH.DocumentId(hexToBytes(id));
+      if (!(await kh.getDocument(docId))) return null;
+      const access = await kh.accessForDoc(new KH.Identifier(hexToBytes(agentIdentifierHex)), docId);
+      return access ? access.toString().toLowerCase() : null;
+    } catch { return null; }
+  }
+
+  /**
    * Whether this provider can name an agent (by Identifier hex) — a delegation to an unknown audience
    * throws, so a caller deciding WHETHER to delegate reads this first. A group agent reads known only
    * once its membership events reached this provider (the seat), never from the pinned id alone.
@@ -1008,7 +1033,7 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /** Run `leave` when this provider disposes: whatever stands over its identity (a content-key holder, a
-   *  subscription) leaves with it, so nothing keeps asking an identity that no longer stands. */
+   *  subscription) leaves with it, so nothing keeps asking a disposed identity. */
   whenDisposed(leave: () => void): void { this.leaving.push(leave); }
 
   async dispose(): Promise<void> {

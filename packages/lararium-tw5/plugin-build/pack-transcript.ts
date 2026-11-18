@@ -21,7 +21,7 @@ import { sha256HexSync } from "@lararium/mesh";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
-export const PACK_TRANSCRIPT_FORMAT = "lararium-tw5-pack-transcript/v2";
+export const PACK_TRANSCRIPT_FORMAT = "lararium-tw5-pack-transcript";
 
 export interface PackTranscript {
   format: typeof PACK_TRANSCRIPT_FORMAT;
@@ -114,7 +114,7 @@ export function resolveTw5Version(resolveFrom: string): string {
 
 export function writePackTranscript(pathname: string, transcript: PackTranscript): void {
   if (transcript.format !== PACK_TRANSCRIPT_FORMAT) {
-    throw new Error(`[pack-transcript] unexpected format: ${transcript.format}`);
+    throw new Error(`[pack-transcript] the transcript names the format ${JSON.stringify(transcript.format)}: it lacks the pack transcript shape (${JSON.stringify(PACK_TRANSCRIPT_FORMAT)})`);
   }
   mkdirSync(path.dirname(pathname), { recursive: true });
   writeFileSync(pathname, JSON.stringify(transcript, null, 2) + "\n", "utf8");
@@ -124,7 +124,7 @@ export function readPackTranscript(pathname: string): PackTranscript {
   const text = readFileSync(pathname, "utf8");
   const t = JSON.parse(text) as PackTranscript;
   if (t.format !== PACK_TRANSCRIPT_FORMAT) {
-    throw new Error(`[pack-transcript] unsupported format: ${t.format}`);
+    throw new Error(`[pack-transcript] the transcript names the format ${JSON.stringify(t.format)}: it lacks the pack transcript shape (${JSON.stringify(PACK_TRANSCRIPT_FORMAT)})`);
   }
   return t;
 }

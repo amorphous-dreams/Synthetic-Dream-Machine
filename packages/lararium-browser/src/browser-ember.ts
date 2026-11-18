@@ -15,7 +15,7 @@
  * takes it as a port (`EmberExchange`) and keeps the row, its door and its refusals.
  */
 import { verifyEd25519 } from "@lararium/mesh";
-import { FaceCustodyRefused, readFaceCustody, readFaceRow, writeFaceRow } from "./browser-face-custody.js";
+import { FaceCustodyRefused, readFaceCustody, readFaceRecord, writeFaceRecord } from "./browser-face-custody.js";
 
 /** The ember pin's group: the public point of a secret, and the secret's answer to a blinded point. */
 export interface EmberExchange {
@@ -45,7 +45,7 @@ export function emberAskBytes(hearth: string, blinded: Uint8Array): Uint8Array {
   return out;
 }
 
-async function emberRow(hearth: string): Promise<string> {
+async function emberRecord(hearth: string): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", enc(hearth)));
   return `ember/${[...digest].map((b) => b.toString(16).padStart(2, "0")).join("")}`;
 }
@@ -55,20 +55,20 @@ export async function mintEmber(idbName: string, face: string, hearth: string, h
   if (hearthKey.length !== 32) throw new Error("[browser-ember] a hearth's ask key reads 32 bytes");
   const status = await readFaceCustody(idbName, face);
   if (status.reading !== "bound") throw new FaceCustodyRefused("no-custody-slot");
-  const row = await emberRow(hearth);
-  if ((await readFaceRow(idbName, face, row)) !== null) throw new EmberRefused("ember-stands");
+  const row = await emberRecord(hearth);
+  if ((await readFaceRecord(idbName, face, row)) !== null) throw new EmberRefused("ember-stands");
   const secret = crypto.getRandomValues(new Uint8Array(32));
   const value = new Uint8Array(64);
   value.set(secret); value.set(hearthKey, 32);
   try {
-    await writeFaceRow(idbName, face, row, value);
+    await writeFaceRecord(idbName, face, row, value);
     return { point: exchange.publicOf(secret) };
   } finally { secret.fill(0); value.fill(0); }
 }
 
 /** Answer one signed ask from `hearth`, while `face` stands unlocked on this thread. */
 export async function answerEmberAsk(idbName: string, face: string, ask: EmberAsk, exchange: EmberExchange): Promise<Uint8Array> {
-  const value = await readFaceRow(idbName, face, await emberRow(ask.hearth));
+  const value = await readFaceRecord(idbName, face, await emberRecord(ask.hearth));
   if (value === null) throw new EmberRefused("ember-absent");
   try {
     const secret = value.subarray(0, 32), hearthKey = value.subarray(32, 64);

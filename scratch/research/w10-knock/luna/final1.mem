@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/final1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/w10-knock/luna/final1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/final1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/final1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-knock/luna/final1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Ink-Clerk): I saved the handback to [[out.md|/home/joshu/.lares-scratch/research/w10-knock/luna/out.md]]. It separates measured evidence from the lead, stays under 1,100 words, and ends with `WORDS=1092`. I made no repo writes and ran no suites.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UN_8j_FaklDKG6IbVhKJspCkIsZZP8mphNGKn4rPAZI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

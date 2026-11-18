@@ -9,8 +9,8 @@ import { faceFilePathSync, readFaceIndexSync } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
 import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@lararium/mesh";
 import { identityHomeClosure } from "./identity-home-closure.js";
-import { CustodyRowUnavailable } from "./custody-holder.js";
-import { readCustodyRow, unlockedFaceOrdinals, writeCustodyRow } from "./custody-seat.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
+import { readCustodyRecord, unlockedFaceOrdinals, writeCustodyRecord } from "./custody-seat.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 
 // The IdentityAnchors SHAPE + the AnchorStore shore lift to @lararium/mesh (platform-blind); this node
@@ -24,13 +24,13 @@ export type { IdentityAnchors } from "@lararium/mesh";
 // anchors, no matching root.
 const anchorsFile = (handleIndex: number): string => `anchors-h${handleIndex}.json`;
 
-type RowReader = typeof readCustodyRow;
+type RecordReader = typeof readCustodyRecord;
 const utf8 = new TextEncoder();
 const text = (bytes: Uint8Array): string => new TextDecoder().decode(bytes);
 
 /** A row that opened and does not hold its own shape: named, never read as absent. */
-function malformed(file: string): CustodyRowUnavailable {
-  return new CustodyRowUnavailable("identity", file, "malformed");
+function malformed(file: string): CustodyRecordUnavailable {
+  return new CustodyRecordUnavailable("identity", file, "malformed");
 }
 
 /**
@@ -60,12 +60,12 @@ export async function persistIdentityAnchors(anchors: IdentityAnchors, handleInd
   // a silent chmod would hide the misconfiguration an operator wants to see.
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   warnIfIdentityHomeOpen();
-  await writeCustodyRow("identity", anchorsFile(handleIndex), utf8.encode(JSON.stringify(anchors, null, 2)));
+  await writeCustodyRecord("identity", anchorsFile(handleIndex), utf8.encode(JSON.stringify(anchors, null, 2)));
 }
 
 /** Read ONE persona's anchor set back, or null when the index holds no persona. `handleIndex` selects which
  *  persona (0 = founding). */
-export async function loadIdentityAnchors(handleIndex = 0, read: RowReader = readCustodyRow): Promise<IdentityAnchors | null> {
+export async function loadIdentityAnchors(handleIndex = 0, read: RecordReader = readCustodyRecord): Promise<IdentityAnchors | null> {
   const file = anchorsFile(handleIndex);
   const bytes = await read("identity", file);
   if (bytes === null) return null;
@@ -81,7 +81,7 @@ export async function loadIdentityAnchors(handleIndex = 0, read: RowReader = rea
  * that face's own directory, so no shared roster names them; a face that rests locked names itself through the floor index alone
  * (`listFaceOrdinals`) and its anchors read once it unlocks.
  */
-export async function listAnchoredPersonas(read: RowReader = readCustodyRow): Promise<number[]> {
+export async function listAnchoredPersonas(read: RecordReader = readCustodyRecord): Promise<number[]> {
   const out: number[] = [];
   for (const handleIndex of await unlockedFaceOrdinals()) {
     if (await read("identity", anchorsFile(handleIndex)) !== null) out.push(handleIndex);
@@ -93,6 +93,13 @@ export async function listAnchoredPersonas(read: RowReader = readCustodyRow): Pr
 export function listFaceOrdinals(): number[] {
   const out: number[] = [];
   readFaceIndexSync(larIdentityDir()).faces.forEach((f, ordinal) => { if ("fcid" in f) out.push(ordinal); });
+  return out;
+}
+
+/** Each standing face's ordinal beside its custody id, off the floor index. */
+export function listFaceCustodyIds(): Array<{ readonly ordinal: number; readonly fcid: string }> {
+  const out: Array<{ ordinal: number; fcid: string }> = [];
+  readFaceIndexSync(larIdentityDir()).faces.forEach((f, ordinal) => { if ("fcid" in f) out.push({ ordinal, fcid: f.fcid }); });
   return out;
 }
 
@@ -113,12 +120,12 @@ export function veilArchivePath(personaGroup: string): string {
  *  keyed to the card that veil presented stops opening and its creator seats nobody. */
 export async function persistVeilArchive(bytes: Uint8Array, personaGroup: string): Promise<void> {
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-  await writeCustodyRow("identity", veilArchiveFile(personaGroup), bytes);
+  await writeCustodyRecord("identity", veilArchiveFile(personaGroup), bytes);
 }
 
 /** ONE face's veil archive, or null when none stands. */
 export function loadVeilArchive(personaGroup: string): Promise<Uint8Array | null> {
-  return readCustodyRow("identity", veilArchiveFile(personaGroup));
+  return readCustodyRecord("identity", veilArchiveFile(personaGroup));
 }
 
 /** The node AnchorStore: the shore the PersonaVault carries. `save` writes the face's own anchors row;

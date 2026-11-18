@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/w10-mu/sol/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-mu/sol/final.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Muwright: Lares (Tasked Spirit), Ink-Clerk: ->↺ I wrote the joint lean, measured gate shapes, canon reading, and proposed named-leak sentence to [[out2.md|/home/joshu/.lares-scratch/research/w10-mu/sol/out2.md]]. The handback runs 915 words. The repo stayed read-only; I ran no suites.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;34MUFZSiXPpY2IgWWDqXRmZhPixncLtRVseAeFtYy6c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

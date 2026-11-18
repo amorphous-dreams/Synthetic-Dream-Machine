@@ -1,26 +1,26 @@
 /** Device-local promotion records, sealed under the browser's custody slot. */
 import { EMPTY_LEDGER, EMPTY_KAPAE_LOCAL, decodeLedger, decodeKapaeLocal, encodeLedger, encodeKapaeLocal, sha256HexBytesSync } from "@lararium/mesh";
 import type { PromotionLedger, KapaeLocal } from "@lararium/mesh";
-import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
+import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";
 import { OPFS_CAS_DIR } from "./browser-genesis.js";
 
-export function promotedRow(group: string): string {
+export function promotedRecord(group: string): string {
   if (!group) throw new Error("promoted row names no PersonaGroup");
   return `promoted/${group}`;
 }
-export function kapaeRow(group: string): string {
+export function kapaeRecord(group: string): string {
   if (!group) throw new Error("kāpae row names no PersonaGroup");
   return `kapae/${group}`;
 }
 
 export function browserPromoteStores(idbName: string, group: string) {
-  const ledgerRow = promotedRow(group), localRow = kapaeRow(group);
+  const ledgerRow = promotedRecord(group), localRow = kapaeRecord(group);
   return {
     ledger: {
-      async read() { const bytes = await readKeystoreRow(idbName, ledgerRow); return bytes === undefined ? EMPTY_LEDGER : decodeLedger(bytes as Uint8Array); },
-      async write(value: PromotionLedger) { await withCustodyRows(idbName, rows => rows.write(ledgerRow, encodeLedger(value))); },
+      async read() { const bytes = await readKeystoreRecord(idbName, ledgerRow); return bytes === undefined ? EMPTY_LEDGER : decodeLedger(bytes as Uint8Array); },
+      async write(value: PromotionLedger) { await withCustodyRecords(idbName, rows => rows.write(ledgerRow, encodeLedger(value))); },
       // One exclusive keystore hold across the read, the decision and the write: two commits never lose each other.
-      update: (fn: (standing: PromotionLedger) => PromotionLedger): Promise<PromotionLedger> => withCustodyRows(idbName, async rows => {
+      update: (fn: (standing: PromotionLedger) => PromotionLedger): Promise<PromotionLedger> => withCustodyRecords(idbName, async rows => {
         const bytes = await rows.read(ledgerRow);
         const next = fn(bytes === undefined ? EMPTY_LEDGER : decodeLedger(bytes as Uint8Array));
         await rows.write(ledgerRow, encodeLedger(next));
@@ -28,9 +28,9 @@ export function browserPromoteStores(idbName: string, group: string) {
       }),
     },
     local: {
-      async read() { const bytes = await readKeystoreRow(idbName, localRow); return bytes === undefined ? EMPTY_KAPAE_LOCAL : decodeKapaeLocal(bytes as Uint8Array); },
-      async write(value: KapaeLocal) { await withCustodyRows(idbName, rows => rows.write(localRow, encodeKapaeLocal(value))); },
-      update: (fn: (standing: KapaeLocal) => KapaeLocal): Promise<KapaeLocal> => withCustodyRows(idbName, async rows => {
+      async read() { const bytes = await readKeystoreRecord(idbName, localRow); return bytes === undefined ? EMPTY_KAPAE_LOCAL : decodeKapaeLocal(bytes as Uint8Array); },
+      async write(value: KapaeLocal) { await withCustodyRecords(idbName, rows => rows.write(localRow, encodeKapaeLocal(value))); },
+      update: (fn: (standing: KapaeLocal) => KapaeLocal): Promise<KapaeLocal> => withCustodyRecords(idbName, async rows => {
         const bytes = await rows.read(localRow);
         const next = fn(bytes === undefined ? EMPTY_KAPAE_LOCAL : decodeKapaeLocal(bytes as Uint8Array));
         await rows.write(localRow, encodeKapaeLocal(next));

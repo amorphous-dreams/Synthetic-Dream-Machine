@@ -27,6 +27,8 @@ import {
 } from "./lar-uris.js";
 import { headsEqual } from "./wiki-recipe.js";
 import { assertStorableTitle } from "./title-law.js";
+import { OVERRIDE_BASE_META, isWorkingLayerBag, overrideBaseOf } from "./override-base.js";
+import { carrierHashOf } from "./carrier-form.js";
 import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
 
 /** Two flat field bags hold the same keys and the same values (each value read as its string). */
@@ -246,7 +248,62 @@ export class CompositeStore implements LarTiddlerStore {
     const store = this._writeTargetFor(options?.bag, "put");
     const retired = this._refuseRetired(store, [record], "put");
     if (retired) await retired;
-    return store.put(record, origin, this._writeOptionsFor(options, store, "put"));
+    const writeOptions = this._writeOptionsFor(options, store, "put");
+    // A write into any layer but a working one begins inside the call, as it always has.
+    if (!this._forksOverrides(store)) return store.put(record, origin, writeOptions);
+    const [based] = this._withOverrideBasesNow(store, [record]);
+    return store.put(based!, origin, writeOptions);
+  }
+
+  /**
+   * THE FORK REMEMBERS ITS BASE (`override-base.ts`). A write into a wiki's WORKING layer of a title a lower layer holds
+   * live forks an override; the record lands naming the hash of the lower record's text (`meta.overrideBase`). A later
+   * write of a title the working layer already holds carries the base it named forward (a store that replaces records
+   * whole keeps it so); a record that names its own base keeps it. A working-only title,
+   * a tombstone, and a write into any other layer pass untouched.
+   */
+  /** Whether a write into `store` lands on a wiki's working layer, where a write of a title canon holds forks an override. */
+  private _forksOverrides(store: LarTiddlerStore): boolean {
+    const layer = this.layers.find((l) => l.store === store);
+    return layer !== undefined && isWorkingLayerBag(layer.bagId);
+  }
+
+  /**
+   * The fork stamp, read in ONE synchronous stretch: a working write NEVER waits on a read. Each layer answers through its
+   * `readNow`; the walk runs from the working layer down, and where a layer offers no synchronous read (a folded stage, a
+   * store behind a worker) the base stays unknown and the record lands unstamped. An await here would move the write out
+   * of the island's dispatch, and a held lower document's read waits until its face stands lit, so a page's save would
+   * wait with it. The base serves as an instrument, never a gate: a copy that names none simply raises no fresher warning.
+   */
+  private _withOverrideBasesNow(store: LarTiddlerStore, puts: readonly LarTiddlerRecord[]): readonly LarTiddlerRecord[] {
+    type Now = { readNow?: (title: string) => { record: LarTiddlerRecord | null } };
+    const at = this.layers.findIndex((l) => l.store === store);
+    if (at < 0) return puts;
+    const stores = this.layers.slice(0, at + 1).map((l) => l.store as unknown as Now);
+    /** A layer's record now; undefined where the layer reads nothing synchronously (the base stays unknown). */
+    const read = (i: number, title: string): LarTiddlerRecord | null | undefined => {
+      const reader = stores[i]!.readNow;
+      if (typeof reader !== "function") return undefined;
+      try { return reader.call(stores[i], title).record; } catch { return undefined; }
+    };
+    return puts.map((record) => {
+      if (record.meta?.deleted === true || overrideBaseOf(record) !== null) return record;
+      const title = record.tiddler.title;
+      const held = read(at, title);
+      if (held === undefined) return record;
+      let base: string | null = null;
+      if (held && !held.meta?.deleted) base = overrideBaseOf(held);
+      else {
+        for (let i = at - 1; i >= 0; i--) {
+          const lower = read(i, title);
+          if (lower === undefined) { base = null; break; }
+          if (lower === null) continue;
+          if (!lower.meta?.deleted) base = carrierHashOf(lower.tiddler);
+          break;
+        }
+      }
+      return base === null ? record : { ...record, meta: { ...(record.meta ?? {}), [OVERRIDE_BASE_META]: base } };
+    });
   }
 
   /**
@@ -265,9 +322,12 @@ export class CompositeStore implements LarTiddlerStore {
     const { store, retired } = this._familyChecks(puts, tombstones, options);
     if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
-    if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, writeOptions);
-    for (const record of puts) await store.put(record, origin, writeOptions);
+    // The fork stamp reads in one synchronous stretch (`readNow`), so the layer's write still begins inside the call.
+    const based = !this._forksOverrides(store) ? puts : this._withOverrideBasesNow(store, puts);
+    if (typeof store.writeFamily === "function") return store.writeFamily(based, tombstones, origin, writeOptions);
+    for (const record of based) await store.put(record, origin, writeOptions);
     for (const title of tombstones) await store.tombstone(title, origin, writeOptions);
+    for (const title of options?.retracts ?? []) await store.remove(title, origin);
   }
 
   /** One listener that throws never starves the listeners after it: each hears every change. */
@@ -294,7 +354,7 @@ export class CompositeStore implements LarTiddlerStore {
     const store = this._writeTargetFor(options?.bag, "writeFamily");
     for (const record of puts) assertStorableTitle(record.tiddler.title);
     for (const title of tombstones) assertStorableTitle(title);
-    return { store, retired: this._refuseRetired(store, puts, "writeFamily", tombstones) };
+    return { store, retired: this._refuseRetired(store, puts, "writeFamily", [...tombstones, ...(options?.retracts ?? [])]) };
   }
 
   /**

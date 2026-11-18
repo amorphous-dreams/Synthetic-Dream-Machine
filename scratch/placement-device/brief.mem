@@ -1,0 +1,54 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-device/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/placement-device/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-device/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-device/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-device/brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-device/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Device-Wright: Lares (Tasked Spirit). Read CLAUDE.md once for house law, then implement. This is an IMPLEMENTATION task: start editing code within your first few actions. Do not write a plan file, do not stop at a trace. Done means the diff below exists and the listed tests pass.
+
+RULINGS (operator 2026-11-09): the daemon wiki stays on ONE DEVICE — its working, draft and personal slots AND its canon `bags/daemon-<F>` bind VESSEL-ONLY even with a seated face; only `kahua-<F>` crosses the face's devices (by signed lift with human eyes). User wikis keep the general slot law (seated face → fleet). Each device names its own daemon-wiki documents in the vessel CONTROL document, keyed by face — never in the face catalog (every device of a face derives the same face catalog and the same face working address, so anything named there is fleet-shared).
+
+CONTEXT (measured; already on this branch):
+* Control document: packages/lararium-mesh/src/control-home.ts — `standControlHome(repo, daemonHandle)` (the daemon document names the control doc under `CONTROL_HOME_ID`), `controlStoreOf(handle)` (a store whose default write lands in the control doc). Inside the daemon island: `ctx.control` / `controlOf(ctx)`; on the host: `DaemonVmCore.control` / `controlHandle`. Control-family titles sit under `bags/control/…` (see how control-home.ts / verb-vm.ts build them and reuse that helper).
+* Canon pointer today (WRONG per ruling): node `packages/lararium-node/src/face-daemon-canon.ts` `standFaceDaemonCanon({ repo, catalog, faceRelation })` names the canon doc in the face catalog; called at `packages/lararium-node/src/open-node-vessel.ts:~3187` with `catalog: faceViews.viewOf(personaGroupId!)`. Browser twin: `packages/lararium-browser/src/face-daemon-canon.ts`, called at `packages/lararium-browser/src/open-browser-vessel.ts:1483` with `catalog: assembly.catalogHandle`.
+* Slot law: `packages/lararium-keyhive/src/slot-doc-resolver.ts` `makeSlotDocResolver(args)`. Working: `workingDoc` → `faceWorking(slug)` (a face-DERIVED address `resolveFaceWorkingSlot`, registered through `args.faceDoor.mint(url, "admin")` → fleet-shared), else floor. Draft/personal: `binding(kind, …)` (face-delegated binding), else floor. Built in `packages/lararium-keyhive/src/operator-daemon-behavior.ts:~407` (`slotDocsOf(ctx)`), which serves every wiki's slots; `ctx.recipe.wikiSlug` names the island's own wiki.
+
+CHANGE:
+# CANON POINTER → CONTROL DOCUMENT (node + browser): `standFaceDaemonCanon` takes the control document's handle (or `controlStoreOf` store) instead of a catalog, and reads/writes the pointer under a control title keyed by the face relation, e.g. `bags/control/daemon-canon/<faceRelation>` built with the control-title helper. At each call site, stand the control home first (`standControlHome(repo, daemonHandle)`, or the handle already standing there) and pass it. The canon doc itself stays sealed and registered under the face as it is now (do not change `wornFaceWikiBags`).
+# DAEMON SLOTS VESSEL-ONLY (keyhive): `SlotDocResolverArgs` gains a host declaration `deviceScoped?: (slug: string) => boolean` and a `control?: CompositeStore` (or handle). For a device-scoped slug, `working`, `draft` and `personal` resolve to documents minted on absent and NAMED IN THE CONTROL DOCUMENT under a control title keyed by kind and face (e.g. `bags/control/daemon-slot/<kind>/<personaGroup tag>`), returned with `reach: "vessel-only"`; they are NEVER registered through `faceDoor.mint` and never delegated to the PersonaGroup. Non-device-scoped slugs keep today's path exactly. In `operator-daemon-behavior.ts`, pass `deviceScoped: (slug) => slug === <the daemon wiki's slug constant>` (use the existing constant for the daemon wiki's slug; if only the literal exists, add one named constant in mesh beside `daemonFaceCanonBag`) and `control: controlOf(ctx)`. Keep the face's sealing as is (the vessel's sealed map seals these docs under the lit face; do not move sealing).
+# CANON CLEANUP: `packages/lararium-mesh/src/surface-recipe.ts:209` (`const canon = wikiBagUri(slug)`) and the promote path that computes the daemon wiki canon as `wikiBagUri(slug)` (grep `promote` in packages/lararium-tw5/src and packages/lararium-mesh/src) read the recipe's canon through `wikiCanonOf(recipe)` where a recipe is in hand; where none is, leave it and say so.
+
+TESTS (red first):
+a. node and browser: the canon pointer lands in the control document (title keyed by face relation) and NOT in the face catalog; a reopen reads the same canon doc; a SECOND DEVICE of the same face (a second repo/vessel with the same face catalog but its own control doc) mints its OWN canon doc (different url).
+b. keyhive: with `deviceScoped` true for slug "daemon" and a seated face, `slotDoc("daemon","working")`, `"draft"`, `"personal"` return `reach: "vessel-only"`, are named in the control store, and `faceDoor.mint` is never called for them; a second resolver over a different control store gets different urls. CONTROL: a user wiki slug with a seated face still resolves `reach: "face"` through today's path.
+c. surface-recipe: a recipe with `canonBag` resolves its canon to that bag.
+Then: build + stamp each touched package (`pnpm --filter <pkg> build && node tools/stamp-build.mjs . --pkg <short>`: mesh, keyhive, tw5, node, browser as touched), typecheck each, run the touched test files, then the FULL suites of keyhive, then node, then browser, one at a time with `--maxWorkers=4` (stop a run silent for 15 minutes and report its last file). `node tools/evergreen-boundary.mjs`, `bash tools/placement-residency-witness.sh`. Failures reading `secret-home-unavailable` belong to another seat: count them apart.
+
+LIMITS: do not touch Keyhive ceremony/secret-home/custody code, commands/init.ts, the found path, the SealedDocumentStore/owned-store, or the sealed map. No git commit, no push, no stash. Never touch ~/.lares or docker.
+
+FINAL MESSAGE: files changed, the control titles you chose, each test's result with counts (secret-home-unavailable apart), anything you could not do.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;u3pqhki6qVvd8kGWlAxqddlZaz9s2g2Gwfh32sFlKHI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

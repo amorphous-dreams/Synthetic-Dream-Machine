@@ -1,5 +1,5 @@
 /**
- * ward-route-after-gate — a co-signed ward act (a kāpae lower, the house cap, a push go) asks its route only once the gate lets the
+ * ward-route-after-gate — a co-signed ward act (a kāpae lower, the house cap, a push lei) asks its route only once the gate lets the
  * act run (row 7, S3b). The gate's judgement needs no root, so the row runs first with no route: on a face of two devices with no
  * answer it refuses `ward-awaiting-cosign` and no passphrase gets asked; where the act will run, the row's signer names
  * `ward-needs-fresh-unlock`, the route gets gathered ONCE, and the row runs again under its one-use ticket.
@@ -110,7 +110,7 @@ describe("a co-signed ward act on a standing vessel", () => {
 
   it("CONTROL: the house cap and a go ride the same order; a lane share, which no gate holds, asks its route first", async () => {
     vi.mocked(udsAlive).mockResolvedValue(true);
-    for (const [verb, args] of [["swarm-cap-set", { value: 7, face: 0 }], ["swarm-go-issue", { branch: "b", head: "a".repeat(40), face: 0 }]] as const) {
+    for (const [verb, args] of [["swarm-cap-set", { value: 7, face: 0 }], ["swarm-lei-kui", { branch: "b", head: "a".repeat(40), face: 0 }]] as const) {
       asked = 0; acted.length = 0; answers = [{ refused: "ward-awaiting-cosign: " + "c".repeat(64), refusal: "swarm-refused" }];
       await expect(storeVerb(verb, { ...args })).rejects.toThrow(/ward-awaiting-cosign/);
       expect(asked).toBe(0);

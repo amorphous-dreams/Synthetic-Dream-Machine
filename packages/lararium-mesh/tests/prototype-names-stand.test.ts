@@ -195,7 +195,7 @@ describe("CONTROL: `__proto__` alone refuses by name, on every path", () => {
 
   test("a 3.5.0 local `__proto__` write names its refusal, never a bare RangeError", async () => {
     const repo = new Repo();
-    const store = new AutomergeDocStore(repo.create<LarDoc>({ schemaVersion: "0.1", tiddlers: {} } as never));
+    const store = new AutomergeDocStore(repo.create<LarDoc>({ tiddlers: {} } as never));
     for (const record of [{ tiddler: { title: "__proto__" } }, JSON.parse('{"tiddler":{"title":"lar:///t","__proto__":"v"}}'), JSON.parse('{"tiddler":{"title":"lar:///t"},"meta":{"__proto__":"v"}}')]) {
       let thrown: unknown;
       try { await store.put(record, ORIGIN); } catch (e) { thrown = e; }

@@ -39,10 +39,16 @@ verification witness.
 ''The split carries the portability.'' A build step that reached for `fs` inside layer B would bind the
 artifact's shape to one host, and every host must agree on the artifact exactly.
 
-''What does NOT belong here.'' Corpus memes load at runtime through the bag store's recipe stack, and
-the runtime document urls each vessel keeps (its crossroads pointer in its own catalog; the live system documents in
-the Kahu realm's registrations) never enter the island. Neither counts as genesis material: the vessel carries the first as
-content and discovers the second as state.
+''The floor rides the bake.'' Beside the engine and the plugins, the runner cuts the genesis floor (`cutGenesisFloor`,
+`packages/lararium-node/src/genesis-floor.ts`): one history-free snapshot per public house-canon bag, read from the checkout's tracked
+carriers (`bags/lares` and `bags/lararium` always; every other holding but the public board `crossroads`, and only where the bag's own
+`meta.mem` declares `cap-tier = "public"`, so the referee's `contract` bag `elyncia-referee` keys no snapshot), each addressed by
+CID under one manifest the seed names (`genesis-cid-floor`). Every wiki's recipe composes that floor read-only through
+`@oracle`, so the canon carriers reach every vessel as static content before any document syncs.
+
+''What does NOT belong here.'' The LIVE house-canon documents and the runtime document urls each vessel keeps (its crossroads
+pointer in its own catalog; the live house-canon documents in the Kahu realm's registrations) never enter the island. The bake
+reads carriers and never a document: a vessel carries the floor as content and discovers the live documents as state.
 
 <<~/ahu>>
 
@@ -77,7 +83,7 @@ The build prints three CIDs and seals each into the seed as a witness tiddler, a
 three tiers of one thing:
 
 |!Region |!What it folds |!What advancing it means |
-|`engineCid` |the TW5 core — the hearth true-name |the SLOW ratchet; it re-binds membership mesh-wide and rides inside every signed device-delegation preimage |
+|`engineCid` |the TW5 core — the engine a place boots |the SLOW ratchet; it moves the engine under every vessel of a mesh, and no device-delegation edge signs it (an edge's `hearthTrueName` names the seed-charter Nexus AID) |
 |`grammarCid` |the required grammar ALONE |marked to RETIRE — the grammar holds no versions (kahu#/contract); retirement owed in code, pending a scout's measurement of its consumers |
 |`pluginsCid` |the plugin-class blobs the bake packs — neither the grammar nor the base seed |a REGION, never a kāhuli tier — an operator's own offerings travel by `nexus publish`, and plugin drift never counts as grammar drift |
 
@@ -121,6 +127,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9fqxlho0ZrTaqnB5f5_d_QXa5NVRqNSGKzX4yLx4CFA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;c3xdajNF9c0u8NJ8wofTSstaUx3G0o3gXOV4fmRF1as`>>
 
 <<^ code=`&#x0004;` to=`?`>>

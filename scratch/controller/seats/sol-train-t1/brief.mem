@@ -1,0 +1,65 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t1/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-t1/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t1/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t1/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-t1/brief.md` (brief, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t1/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Train-Reader T1: Lares (Tasked Spirit). You give ONE Sol read over a whole train before it lands. Operator ruling: Sol reads whole trains, never single lanes, and the read pool runs low, so read the delta beside this brief and nothing wider. The repo at /home/joshu/Synthetic-Dream-Machine holds the span at a39b1f5df. Read files there for context.
+
+The train lands in this order:
+# #139 testlever: tools and CI only. The stat sits in testlever-139.stat. Skim it for anything that weakens a land guard. No custody read.
+# #140 u1, custody class (u1-140.patch; threat sketch u1-threat-sketch.md). A face's session reaches the sealed store:
+#* a sign door: the island holds no session key; a `session:call` books request id and verb against its session on main; the island's `session:sign` reads that booking alone; `signer(invocation)`;
+#* the sealed-* verbs gate on the invocation's face (this closes a cross-face cleartext read in sealed-open);
+#* only Nexus-anchored sessions seal (`session-anchor-place`);
+#* `holdsWrite` accepts only certificates under the vessel's own chain;
+#* F7: owed removal rolls settle before a seal, and `roll-owed` refuses a head that comes before an owed raise (mesh content-key-holder.ts).
+# #138 recut-custody, custody class (recut-custody-138.patch). Custody files carry fixed names:
+#* no source recognises the old `-<login>` names;
+#* a host fact (git global email) never picks a file;
+#* boot over an old tree refuses with "no key file" and mints nothing.
+
+Answer:
+(a) Does any HIGH stand in u1? Try a forged or replayed booking, a retried id, a booking outliving its session, a foreign face through any sealed-* verb, and a seal racing an arriving roll. MEASURE where you can probe.
+(b) Does any HIGH stand in #138? Can any path still derive a custody file name from a host fact, or mint over an old tree?
+(c) Cross-lane: u1 adds a fifth door in worker-handle.ts; #138 touches node-vessel-identity.ts and vault-carriers.ts. Do they meet (the signer's identity load, a custody path the sign door reads)? The two patches share no file.
+Name each finding HIGH, MEDIUM or LOW with file:line. End with SHIP or HOLD.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* Write `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1W7l8OKTS6LUC_pIJcmjqqXJIUytmxteHkOfTy7M8-0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

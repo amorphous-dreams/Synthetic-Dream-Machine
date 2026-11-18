@@ -219,7 +219,7 @@ describe("a value opens only through a verified manifest", () => {
     const two = await seal(a!, "value two");
     const rows = await a!.store.rowsOf(one.founding);
     const forged = { ...rows.find((r) => r.address === one.body.cid)!, address: two.body.cid };
-    await a!.store.putIndexRows([forged]);
+    await a!.store.putIndexEntries([forged]);
     expect((await a!.store.rowsOf(one.founding)).length).toBe(3);   // the forged row rests
     a!.restart();
     // The honest row still opens value one; the forged row names an address its manifest never listed there.
@@ -232,7 +232,7 @@ describe("a value opens only through a verified manifest", () => {
     const key = [...w.docs.values()][0]!.payload.slice(-32);
     const ghost = "ee".repeat(32);
     const locator = entryLocatorOf(key as never, { bagId: BAG, keyVersion: one.body.keyVersion, role: "blob", logicalRef: hexToBytes(ghost) });
-    await a!.store.putIndexRows([{ ...rows.find((r) => r.address === one.body.cid)!, locator }]);
+    await a!.store.putIndexEntries([{ ...rows.find((r) => r.address === one.body.cid)!, locator }]);
     expect((await a!.store.rowsAt(one.founding, one.body.keyVersion, locator)).length).toBe(1);   // the forged row rests where the holder looks
     expect(await opens(a!, ghost)).toBe("REFUSED:reference-unknown");
   });

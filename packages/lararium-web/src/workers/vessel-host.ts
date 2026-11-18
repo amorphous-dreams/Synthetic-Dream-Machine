@@ -37,18 +37,25 @@
  * admitted session lights its provider through the lit vessel's provider door, and its last drops it. A fleet join acts as the session's own
  * face alone, or binds a new face's first slot by the session's own route, under the session's fence; its keys drop with the
  * session, and the landed answer names the face the tab selects next.
+ *
+ * THE CONSOLE DOOR ANSWERS BEFORE ANY UNLOCK (`verb`, `console-rows.ts`): its rows read public standing alone, so the host
+ * answers them for a session still asking, and for a connection that holds none. Every other request keeps its wait on admission.
  */
 declare const __LAR_WALK_DOOR__: boolean;
 import {
   openBrowserVessel, readBrowserCustody, readBrowserSeedWrap,
   parseAdmitCarriage, toAdmitCarriage, readBrowserCustodyPasskeys, readFaceCustodyPasskeys, browserWardSign,
+  browserFleetRootDoor, openBrowserSecretHome, browserSeatGrant, browserSeatRequest, browserSeatGrantLand, browserJoinedFaces,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces, wardAskWords,
   type BrowserVesselResult, type ProjectionSurfaceFrame, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
 } from "@lararium/browser";
-import { didFromVerifyingKey, foldLarFrame, parseMeshPeer, readLarFrame, type MeshPeer } from "@lararium/mesh";
+import { didFromVerifyingKey, foldLarFrame, mountedDocumentId, readLarFrame, slugFromUri, wikiSlotUri } from "@lararium/mesh";
 import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
 import { CeremonyRefused, standCeremonyDoor } from "./ceremony-door.js";
+import { ceremonyPlaceCard, PlaceCardRefused } from "./place-card.js";
+import { ConsoleRefused, standConsoleVerbs } from "../console-verbs.js";
+import { vesselConsoleRows } from "./console-rows.js";
 
 export interface VesselScope {
   postMessage(msg: VesselToPage, transfer?: Transferable[]): void;
@@ -57,7 +64,7 @@ export interface VesselScope {
 const errorOf = (err: unknown): VesselError => ({
   name: err instanceof Error ? err.name : "Error",
   message: err instanceof Error ? err.message : String(err),
-  ...(err instanceof BrowserFleetJoinRefused || err instanceof CeremonyRefused || err instanceof VesselSessionRefused ? { refusal: err.refusal } : {}),
+  ...(err instanceof BrowserFleetJoinRefused || err instanceof CeremonyRefused || err instanceof VesselSessionRefused || err instanceof PlaceCardRefused || err instanceof ConsoleRefused ? { refusal: err.refusal } : {}),
 });
 
 export interface VesselHostEnv {
@@ -171,7 +178,9 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   const seedRestOf = async (idbName: string, face: string | null): Promise<{ seedRest: SeedRest; seedWrapClass?: string }> => {
     const custody = await readBrowserCustody(idbName);
     if (custody.reading === "sealed") return { seedRest: "wrapped-passphrase" };
-    const wrap = face === null ? undefined : await readBrowserSeedWrap(idbName, face);
+    // THE UNBOUND VEIL SAYS SO: no face worn and no slot bound, so the key and the floor's own key rest open (the pre-bind window).
+    if (face === null) return { seedRest: "open-veil" };
+    const wrap = await readBrowserSeedWrap(idbName, face);
     return wrap ? { seedRest: "wrapped-prf", seedWrapClass: wrap.keyClass } : { seedRest: "open" };
   };
 
@@ -224,11 +233,14 @@ export function standVesselHost(env: VesselHostEnv = {}) {
         const target = owner ? conns.get(owner) : undefined;
         if (target && wearsLitFace(target)) target.post({ t: "port-msg", binding, islandKey, msg });
       }),
+      // THE FOUNDING'S PLACE CARD rides this session's ceremony door: the card shows in the ceremony document alone, and the
+      // place KEL arms only once the person types it back.
+      placeFoundingCard: ceremonyPlaceCard(conn.door),
       ...(b.relayUrl ? { relayUrl: b.relayUrl } : {}),
       ...(b.floorCard ? { floorCard: b.floorCard } : {}),
       ...(b.floorAnchor ? { floorAnchor: b.floorAnchor } : {}),
       ...(admit ? { admit } : {}),
-      ...(b.meshLeaf ? { meshLeaf: { coordSeed: b.meshLeaf.coordSeed, peers: b.meshLeaf.peers.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null) } } : {}),
+      ...(b.foundFace ? { foundFace: true } : {}),
     });
     litVessel = result;
     } catch (err) {
@@ -360,6 +372,15 @@ export function standVesselHost(env: VesselHostEnv = {}) {
         await vessel();
         return admitted!.catch(() => { throw new VesselSessionRefused("session-unadmitted"); });
       };
+      // ── leaf-fleet (Leaf-Wright): the root holder's door over the lit vessel (`browser-fleet-root`) ──
+      const fleetRoot = async (asker: Conn) => {
+        const v = await litFaceVessel();
+        return browserFleetRootDoor({
+          idbName, repo: v.repo, kelIsland: v.kelIsland, askWard: (act) => askWardOf(asker)(act),
+          extraDocs: async () => [(await openBrowserSecretHome(idbName, v.repo).catch(() => null))?.handle.doc()],
+        });
+      };
+      // ── /leaf-fleet ──
       const reply = (callId: string, work: () => Promise<unknown>): void => {
         void work().then((value) => post({ t: "reply", callId, ok: true, value }), (err: unknown) => post({ t: "reply", callId, ok: false, error: errorOf(err) }));
       };
@@ -440,14 +461,18 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               return;
             case "control-event": {
               const sessionId = conn.session?.sessionId;
+              const eventId = msg.ev.eventId;
+              // AN EVENTID NAMES ONE PENDING ACT: a second event under it would take the first one's result. The resend draws a
+              // named, causal reply instead (dreamdom-port-contract #/retry-law): the act still waits here, so the page's retry
+              // bound counts that send as acknowledged. The act holds its id from the moment it arrives, before the lit vessel
+              // answers, so a resend that lands while the first send still waits on the light reads it pending too.
+              if (controlSenders.has(eventId)) { conn.post({ t: "control-pending", surface: msg.surface, eventId }); return; }
+              controlSenders.set(eventId, conn);
+              const release = (): void => { if (controlSenders.get(eventId) === conn) controlSenders.delete(eventId); };
               void litFaceVessel().then((v) => {
                 if (!sessionId || conn.session?.sessionId !== sessionId) throw new VesselSessionRefused("session-unadmitted");
-                // AN EVENTID NAMES ONE PENDING ACT: a second event under it would take the first one's result.
-                if (controlSenders.has(msg.ev.eventId)) throw new Error(`control-event-pending: the event ${msg.ev.eventId} already waits on its result`);
-                controlSenders.set(msg.ev.eventId, conn);
-                try { v.sendControlEvent(msg.surface, msg.ev); }
-                catch (err) { if (controlSenders.get(msg.ev.eventId) === conn) controlSenders.delete(msg.ev.eventId); throw err; }
-              }).catch(refusedQuietly("a control event"));
+                v.sendControlEvent(msg.surface, msg.ev);
+              }).catch((err: unknown) => { release(); refusedQuietly("a control event")(err); });
               return;
             }
             case "set-surface": void litFaceVessel().then((v) => v.setActiveSurface(msg.surface)).catch(refusedQuietly("a surface switch")); return;
@@ -486,6 +511,46 @@ export function standVesselHost(env: VesselHostEnv = {}) {
             case "read:floor": reply(msg.callId, async () => (await vessel()).readFloor(msg.baseUrl)); return;
             case "join:offer": reply(msg.callId, async () => { const { h, s } = await own(); return join.offer(conn, h, s, msg.text, msg.abandonPending); }); return;
             case "join:answer": reply(msg.callId, async () => { const { h, s } = await own(); return join.answer(h, s, msg.text); }); return;
+            // ── leaf-fleet (Leaf-Wright): the root holder's half. The ward ask rides this connection's ceremony door, once per answer. ──
+            case "fleet-root:faces": reply(msg.callId, async () => ({ kind: "faces", faces: await (await fleetRoot(conn)).faces() })); return;
+            case "fleet-root:offer": reply(msg.callId, async () => ({ kind: "offer", text: JSON.stringify(await (await fleetRoot(conn)).offer(msg.personaGroup), null, 2) })); return;
+            case "fleet-root:answer": reply(msg.callId, async () => {
+              const { h, s } = await own();
+              const answer = await h.faceAct(s.sessionId, msg.personaGroup, async () => (await fleetRoot(conn)).answer(msg.personaGroup, JSON.parse(msg.text) as unknown));
+              return { kind: "answer", text: JSON.stringify(answer) };
+            }); return;
+            case "fleet-root:seat": reply(msg.callId, async () => { const v = await litFaceVessel(); return { kind: "seat-grant", text: JSON.stringify(await browserSeatGrant({ idbName, repo: v.repo, request: JSON.parse(msg.text) as unknown })) }; }); return;
+            case "fleet-seat:faces": reply(msg.callId, async () => ({ kind: "faces", faces: await browserJoinedFaces(idbName) })); return;
+            case "fleet-seat:request": reply(msg.callId, async () => { const v = await vessel(); return { kind: "seat-request", text: JSON.stringify(await browserSeatRequest({ idbName, repo: v.repo, personaGroup: msg.personaGroup })) }; }); return;
+            case "fleet-seat:land": reply(msg.callId, async () => { const v = await vessel(); const face = (await browserSeatGrantLand({ idbName, repo: v.repo, grant: JSON.parse(msg.text) as unknown, ground: v.seatGround() })).personaGroup;
+              // THE SEAT READS ITS GRANT AT THE NEXT BOOT: the kept grant lifts the face at this browser's place (its session stands only at
+              // boot, so the page re-enters it), and the daemon island's seat finds the grant at its first pass.
+              return { kind: "seat-kept", face }; }); return;
+            case "fleet-seat:workbench": reply(msg.callId, async () => {
+              const v = await vessel();
+              const slug = slugFromUri(v.activeWikiId);
+              const bagId = wikiSlotUri(slug, "working");
+              const documentId = v.store.hasBag(bagId) ? mountedDocumentId(v.store.storeForBag(bagId)) : null;
+              return { kind: "workbench", slug, bagId, documentUrl: documentId ? `automerge:${documentId}` : null };
+            }); return;
+            // ── /leaf-fleet ──
+            case "verb":
+              // THE CONSOLE DOOR: the vessel's own table, read as the house stands at this call. It waits on no admission.
+              reply(msg.callId, async () => {
+                if (!Array.isArray(msg.argv) || !msg.argv.every((word) => typeof word === "string")) throw new ConsoleRefused("usage", "a verb crosses as its argv path, one word per string");
+                return standConsoleVerbs(() => vesselConsoleRows({
+                  idbName: () => firstBoot ? idbName : null,
+                  house: async () => house ? house.catch(() => null) : null,
+                  session: () => conn.session,
+                  lit: () => litVessel,
+                  wearsLit: () => wearsLitFace(conn),
+                  asks: () => conn.door.pending(),
+                  relayUrl: () => firstBoot?.relayUrl ?? null,
+                  seedRest: (face) => seedRestOf(idbName, face),
+                  readFace: typeof msg.readFace === "string" ? msg.readFace : "",
+                })).run(msg.argv);
+              });
+              return;
             case "walk:restart":
               // A harness-only door, compiled out of every default build.
               if (!(typeof __LAR_WALK_DOOR__ !== "undefined" && __LAR_WALK_DOOR__)) { post({ t: "reply", callId: msg.callId, ok: false, error: { name: "Error", message: "walk-door-absent" } }); return; }

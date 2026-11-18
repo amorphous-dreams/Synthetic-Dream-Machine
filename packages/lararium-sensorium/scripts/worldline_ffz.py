@@ -71,37 +71,19 @@ def worldline_turn_order(worldline_store, root, as_of=None) -> list:
 
 
 def _iter_turn_vectors(content_stores, wanted):
-    """Yield (turn_key, vector) pairs. SCOPED when `wanted` (a turn-key set) rides in — a targeted
-    chroma $in read pulls ONLY the braids being stamped (never the whole corpus, so a kapae'd/idle
-    tail of unrelated blocks never gets scanned). `wanted=None` keeps the full `scan` (back-compat)."""
-    from content_io import TURN_KEY_META
-
+    """Yield (turn_key, vector) pairs for the turn-keys in `wanted` alone — a targeted chroma $in read
+    pulls ONLY the braids being stamped (never the whole corpus, so a kapae'd/idle tail of unrelated
+    blocks never gets read)."""
     for store in content_stores:
-        if wanted is not None:
-            for tk, vecs in store.vectors_for_turns(wanted).items():
-                for emb in vecs:
-                    yield tk, emb
-            continue
-        offset = 0
-        while True:
-            page = store.scan(offset, 256)
-            recs = page.get("records") or []
-            for r in recs:
-                tk = str((r.get("metadata") or {}).get(TURN_KEY_META, "")).strip()
-                emb = r.get("embedding")
-                if tk and emb is not None:
-                    yield tk, emb
-            nxt = page.get("next")
-            if nxt is None:
-                break
-            offset = nxt
+        for tk, vecs in store.vectors_for_turns(wanted).items():
+            for emb in vecs:
+                yield tk, emb
 
 
-def collect_turn_vectors(content_stores, wanted=None) -> dict:
-    """A `turn_key -> mean vector` map. A turn lands as one-or-more blocks (chunks) sharing a
-    `lar_turn_key`; this AVERAGES a turn's chunk vectors into one turn vector (the turn's centroid in
-    embedding space). When `wanted` (a turn-key set) rides in, the pull SCOPES to those braids via a
-    chroma $in read; else it full-scans (back-compat). Skips a block with no key or no vector."""
+def collect_turn_vectors(content_stores, wanted) -> dict:
+    """A `turn_key -> mean vector` map over the turn-keys in `wanted`. A turn lands as one-or-more
+    blocks (chunks) sharing a `lar_turn_key`; this AVERAGES a turn's chunk vectors into one turn vector
+    (the turn's centroid in embedding space). The pull SCOPES to those braids via a chroma $in read."""
     sums: dict = {}
     counts: dict = {}
     for tk, emb in _iter_turn_vectors(content_stores, wanted):

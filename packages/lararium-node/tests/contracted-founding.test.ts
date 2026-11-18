@@ -20,6 +20,7 @@ import {
 } from "@lararium/mesh";
 import { runFoundingCeremony } from "@lararium/keyhive";
 import { testVesselTag, testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const OPERATOR_SEED = new Uint8Array(32).fill(11);   // the CONTRACTING operator's persona root
 const HERM_SEED     = new Uint8Array(32).fill(22);   // the face atom the operator delegates to
@@ -51,7 +52,7 @@ async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
 
 async function found(binding: Parameters<typeof runFoundingCeremony>[0]["binding"], _atomKey: string, repo = new Repo({ sharePolicy: async () => true })) {
   const placeKey = await pubOf(PLACE_SEED);
-  return runFoundingCeremony({ vesselTag: testVesselTagDoor(1), repo,
+  return runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo,
     vesselSeed: PLACE_SEED,
     placeVerifyingKey: placeKey,
     vesselDisplayName: "herm",
@@ -120,8 +121,8 @@ describe("a contracted founding carries its binding instead of signing it", () =
     const repo = new Repo({ sharePolicy: async () => true });
     const f = await found({ mode: "contracted", ...b }, deviceKey, repo);
     expect(f.groupSecretSeal).toEqual(b.groupSecretSeal);
-    const daemon = await repo.find<LarDoc>(f.daemonUrl as never);
-    const rested = JSON.parse(tiddlerText(daemon.doc()?.tiddlers?.[groupSecretSealTitle(f.personaGroupId)]) ?? "null");
+    const secret = await repo.find<LarDoc>(f.secretUrl as never);
+    const rested = JSON.parse(tiddlerText(secret.doc()?.tiddlers?.[groupSecretSealTitle(f.personaGroupId)]) ?? "null");
     expect(rested).toEqual(b.groupSecretSeal);
     expect(groupSecretOpenerFromSeed(HERM_SEED).seal(rested)).toEqual(personaGroupSecret(OPERATOR_SEED, b.personaKelPrefix));
     expect(groupSecretOpenerFromSeed(OPERATOR_SEED).seal(rested)).toBeNull();

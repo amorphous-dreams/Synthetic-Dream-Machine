@@ -30,7 +30,7 @@ export const hostingDigest = (nexusAid: string): string => sha256HexSync(nexusAi
 export const hostingRoot = (face: number): string => `hosting-h${face}`;
 
 /** One Nexus's hosting directory in face `face`, as the logical name the custody rows resolve (identity home). */
-export const hostingRowDir = (face: number, nexusAid: string): string => `${hostingRoot(face)}/${hostingDigest(nexusAid)}`;
+export const hostingRecordDir = (face: number, nexusAid: string): string => `${hostingRoot(face)}/${hostingDigest(nexusAid)}`;
 
 /** The face that holds hosting for `nexusAid`, by directory name; null where none does. Reads names alone. */
 export function hostingFaceHolding(nexusAid: string): number | null {

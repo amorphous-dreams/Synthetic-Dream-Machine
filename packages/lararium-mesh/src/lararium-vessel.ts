@@ -70,7 +70,8 @@ export interface VesselResult<TPool, TDaemon> {
   activeWikiSource: "boot-arg" | "daemon-marker" | "floor";
   /** The wiki this composition refused by name and stands in for on its floor wiki, waiting on a face (`wiki-awaits-face`); null where none waits. */
   wikiAwaitsFace:   FloorWikiRefusal | null;
-  wikiDocUrl:       string;
+  /** The wiki canon document this vessel mounted; null where a house canon wiki stands on the floor alone. */
+  wikiDocUrl:       string | null;
   catalogHandleUrl: string;
   /**
    * This vessel's OWN daemon doc — the plane a caller writes a verb SUMMONS onto.

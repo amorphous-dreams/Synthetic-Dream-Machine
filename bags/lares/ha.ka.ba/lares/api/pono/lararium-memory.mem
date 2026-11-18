@@ -216,8 +216,8 @@ Memory Sensorium custody and typed-occurrence ledger.
 occurrence, evidence revision, parser identity and receipt, then join it to the
 owned Content view without changing verbatim source bytes. The hook→Lararium→
 daemon-plane→decompose→hand-back route remains a proposed integration for grammar
-that needs TW5. A legacy `lar_*` stamp or a parsed meme alone does not advance
-the new typed-content or semantic frontier. Preserve raw text and drift when a
+that needs TW5. A `lar_*` stamp or a parsed meme alone does not advance
+the typed-content or semantic frontier. Preserve raw text and drift when a
 reading cannot earn that frontier.
 
 <<~/ahu>>
@@ -264,6 +264,6 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QpL9NZe6Q4dPP4-8hmZjdizbqU1lakmWmsxccTyUXCk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2RVPspxkWVs0HP5IoPiRxsjNmBK86AIku3KkmncL2Lw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,64 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/lease-end/steps/` — 1 record(s) here, 57 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/lease-end/steps/`
+
+The scratch planning records of `.lares-scratch/lease-end/steps/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 1 record(s) stand here and 57 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[lease-end/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[step-001/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-001/index]] | 3 |
+| [[step-002/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/index]] | 3 |
+| [[step-003/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-003/index]] | 3 |
+| [[step-004/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-004/index]] | 3 |
+| [[step-005/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-005/index]] | 3 |
+| [[step-006/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-006/index]] | 3 |
+| [[step-007/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-007/index]] | 3 |
+| [[step-008/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/index]] | 3 |
+| [[step-009/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-009/index]] | 2 |
+| [[step-010/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-010/index]] | 3 |
+| [[step-011/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-011/index]] | 3 |
+| [[step-012/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-012/index]] | 3 |
+| [[step-013/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-013/index]] | 3 |
+| [[step-014/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-014/index]] | 3 |
+| [[step-015/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-015/index]] | 3 |
+| [[step-016/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-016/index]] | 3 |
+| [[step-017/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-017/index]] | 3 |
+| [[step-018/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-018/index]] | 3 |
+| [[step-019/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/index]] | 3 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[step-020-out|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-020-out]] | plan | 2026-11-07 | `step-020-out.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JsI-LJXmS7KorZ8ZmCL5QLyjeTnxoSPsw_v-L0E6ygo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

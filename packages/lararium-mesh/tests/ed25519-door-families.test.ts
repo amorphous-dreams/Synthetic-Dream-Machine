@@ -349,7 +349,7 @@ bothHands("re-anchoring attestor (verifiedAttestors)", async (attestor) => {
 
 bothHands("plugin build attestation (verifyPluginAttestation)", async (builder) => {
   const build = {
-    format: "lararium-tw5-plugin-build/v1", canonicalTitle: "$:/plugins/lares/memetic-wikitext",
+    format: "lararium-tw5-plugin-build", canonicalTitle: "$:/plugins/lares/memetic-wikitext",
     moduleManifestPath: "dist-plugin/module-manifest.json", moduleManifestSha256: "a".repeat(64),
     packTranscriptPath: "dist-plugin/pack-transcript.json", packTranscriptSha256: "b".repeat(64),
     moduleCount: 23, packedTiddlerCount: 115, pluginJsonSha256: "c".repeat(64),

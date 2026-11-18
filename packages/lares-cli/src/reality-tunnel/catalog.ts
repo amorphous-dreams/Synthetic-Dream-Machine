@@ -11,8 +11,8 @@ import { dirname, join, relative } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import type { External, Item, Radius } from "./engine.js";
 import {
-  claudeHook, copilotHook, headLine, jsonFloor, jsonForeign, jsonIncludes, jsonSet, owned, seedless, 
-  tomlHook, tomlHookForeign, tomlMcpServer, tomlShapeForeign, tomlTableForeign, tomlTableKey, tomlTableUnset, tomlTopFloor,
+  claudeHook, copilotHook, headLine, jsonFloor, jsonForeign, jsonHooksOwned, jsonIncludes, jsonSet, owned, seedless, strays,
+  tomlHook, tomlHookForeign, tomlHooksOwned, tomlMcpServer, tomlShapeForeign, tomlTableForeign, tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "./kinds.js";
 import { homesOf, type Homes } from "./homes.js";
 import { resolveLaresMcp, seatAbsentCause, type LaresMcpCommand } from "../mcp-resolve.js";
@@ -22,7 +22,11 @@ export const RULE_MARKER = "<!-- written by lares";
 export const SCOUT_MARKER = "# projected by";
 
 type Spec = Record<string, unknown> & { id: string; host: string; kind: string; file: string; what: string };
-export interface Declared { readonly seed: string; readonly repo: Spec[]; readonly home: Spec[] }
+/**
+ * `home` rows name what every operator home holds. `hooks` names the house's hooks folder: every script a home row
+ * names stands under it, and a `*-hooks-owned` row keeps its hook file free of any script there that no row declares.
+ */
+export interface Declared { readonly seed: string; readonly hooks: string; readonly repo: Spec[]; readonly home: Spec[] }
 
 /** Reads one repo-relative file, or null when it stands absent: the working tree, or the index for `--staged`. */
 export type TextOf = (rel: string) => string | null;
@@ -34,9 +38,13 @@ export function declared(repo: string, textOf: TextOf = treeText(repo)): Declare
   if (text === null) throw new Error(`${CARRIER} stands absent`);
   const m = /^```toml reality-tunnel\n([\s\S]*?)^```/m.exec(text);
   if (!m) throw new Error(`${CARRIER} carries no \`toml reality-tunnel\` fence`);
-  const d = parseToml(m[1]!) as { seed?: string; repo?: Spec[]; home?: Spec[] };
+  const d = parseToml(m[1]!) as { seed?: string; hooks?: string; repo?: Spec[]; home?: Spec[] };
   if (typeof d.seed !== "string") throw new Error(`${CARRIER}: the tunnel names no seed`);
-  return { seed: d.seed, repo: d.repo ?? [], home: d.home ?? [] };
+  if (typeof d.hooks !== "string" || d.hooks === "") throw new Error(`${CARRIER}: the tunnel names no hooks folder`);
+  const home = d.home ?? [];
+  const outside = home.find((s) => typeof s["script"] === "string" && !s["script"].startsWith(`${d.hooks}/`));
+  if (outside) throw new Error(`${CARRIER}: home item ${outside.id} names a script outside the house's hooks folder ${d.hooks}`);
+  return { seed: d.seed, hooks: d.hooks, repo: d.repo ?? [], home };
 }
 
 /** The main clone a tree belongs to: the parent of git's common dir, or the tree itself. */
@@ -192,8 +200,12 @@ export function homeItems(ctx: HomeContext, d: Declared = declared(ctx.repo)): I
   return out;
 }
 
+/** The scripts under the house's hooks folder that a value names and no home row declares for this row's host and file. */
+const straysOf = (s: Spec, d: Declared) =>
+  strays(d.hooks, d.home.filter((h) => h.host === s.host && h.file === s.file && typeof h["script"] === "string").map((h) => String(h["script"]).split("/").at(-1)!));
+
 function homeItem(
-  s: Spec, path: string, home: string, clone: string, _d: Declared, script: string, mcp: LaresMcpCommand | null,
+  s: Spec, path: string, home: string, clone: string, d: Declared, script: string, mcp: LaresMcpCommand | null,
   common: Partial<Item>, ctx: HomeContext,
 ): Item {
   const base = (rest: Partial<Item>): Item => item("home", s, path, { ...common, ...rest });
@@ -224,6 +236,8 @@ function homeItem(
       const shared = tomlHookForeign(str(s, "event"), name);
       return base({ transform: tomlHook(str(s, "event"), name, script, timeout), foreign: (cur) => tomlShapeForeign("hooks", "table")(cur) ?? shared(cur) });
     }
+    case "json-hooks-owned": return base({ ...jsonHooksOwned(straysOf(s, d)), foreign: jsonForeign });
+    case "toml-hooks-owned": return base(tomlHooksOwned(straysOf(s, d)));
     case "toml-table-key": return base({ transform: tomlTableKey(str(s, "table"), str(s, "key"), s["value"] as string), foreign: tomlTableForeign(str(s, "table")) });
     case "toml-table-unset": return base({ transform: tomlTableUnset(str(s, "table"), str(s, "key")), foreign: tomlTableForeign(str(s, "table")) });
     case "seedless": return base({ transform: seedless() });

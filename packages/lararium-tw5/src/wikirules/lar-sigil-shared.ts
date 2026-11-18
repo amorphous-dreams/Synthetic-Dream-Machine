@@ -202,8 +202,8 @@ export function matchCompoundSigilAt(
   const hasBang = m[1] !== undefined;
   const word1 = m[2]!;
   // A `<<~!` pragma spelling reaches this dispatch ONLY for a head the grammar kinds `pragma` /
-  // `pragma-alias` (wehe/kumu/helu/widget and their mirrors) — every other head's bang never
-  // matched here before this dispatch widened to admit it, and still does not.
+  // `pragma-alias` (wehe/kumu/helu/widget and their mirrors) — every other head's bang
+  // matches nothing here.
   if (hasBang && !pragmaKindNames.has(word1)) return null;
   // PRANALA CARRIES TWO TYPED ENDS. This reader hands back one undifferentiated `rest`, and an edge
   // needs its `from` told apart from its `to`: whoever reads whichever address comes first reads the
@@ -239,8 +239,8 @@ export function matchCompoundSigilAt(
  * ── ONE READER, AND THE PAIR ARE PLAIN ATTRIBUTES ────────────────────────────────────────────────
  * The pair carries the relation (the kupono cut): no arrow stands between the ends, so `from`, `to`
  * and `slot` read as ordinary named values through `readSigilAttrs`, the reader every other sigil's
- * values go through. A bespoke pair regex beside it was a second spelling of the same grammar, free
- * to drift from the first. Either order of `from` and `to` reads; a pranala naming no `from` or no
+ * values go through. A bespoke pair regex beside it would be a second spelling of the same grammar,
+ * free to drift from the first. Either order of `from` and `to` reads; a pranala naming no `from` or no
  * `to` opens nothing.
  */
 /** The opener's head word, standing alone; `sigilOpenEnd` says where the call ends. */
@@ -328,9 +328,9 @@ function quotedSpansOf(source: string): MaskSpan[] {
  * scan cannot do at all.
  *
  * ── AND A QUOTED SIGIL OPENS NOTHING ────────────────────────────────────────────────────────────
- * Measured over 700 carriers: teaching docs write `<<~ ahu #example>>` and `# <<~/ahu>>` inside
- * fences, and 15 captures ENDED at a closer the operator was merely SHOWING — a section truncated
- * mid-body while the render read clean. Quoted spans mask, the fence-mask law every other structural
+ * Teaching docs write `<<~ ahu #example>>` and `# <<~/ahu>>` inside fences; an unmasked scan ENDS a
+ * capture at a closer the operator is merely SHOWING — a section truncated mid-body while the render
+ * reads clean. Quoted spans mask, the fence-mask law every other structural
  * scanner on this shore already keeps.
  *
  * `ahu-scan` holds this same pairing — masked scan, balanced stack — for the ingest and split paths.

@@ -254,7 +254,7 @@ export function readNexusActPartial(parsed: unknown): NexusActPartial | null {
     for (const raw of kelRaw) { const event = decodePlaceKelEvent(raw); if (event === null) return null; kel.push(event); }
     // The claim reads whole at its exact shape and names a pin at THIS Nexus's flow route; the judge reads it against the place.
     const claim = a["claim"];
-    const shaped = readPlaceFloorPin(claim, { nexusHex: utf8Hex(p["aid"]), route: FLOW_SOCKET_ROUTE, kelRows: kel, standing: { via: "carrier", carriers: new Set([entry.nym]) } });
+    const shaped = readPlaceFloorPin(claim, { nexusHex: utf8Hex(p["aid"]), route: FLOW_SOCKET_ROUTE, kelEntries: kel, standing: { via: "carrier", carriers: new Set([entry.nym]) } });
     if ("refusal" in shaped) return null;
     return { kind: NEXUS_PARTIAL_KIND, aid: p["aid"], subject: { kind: "nym", nym: entry.nym },
       act: { family: "carry", entry, claim: claim as PlaceFloorPinStatement, kel } };

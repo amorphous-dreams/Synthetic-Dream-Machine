@@ -43,7 +43,7 @@ import { plainField, ownEntry, isPrototypeKey } from "./stored-value.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { storedRecord } from "./stored-record.js";
 import type { FloorManifest, FloorSnapshot } from "./floor-manifest.js";
-import { GENESIS_FLOOR_TIDDLER, floorManifestBytes, floorManifestCid } from "./floor-manifest.js";
+import { GENESIS_FLOOR_TIDDLER, floorManifestBytes, floorManifestCid, floorSlugs } from "./floor-manifest.js";
 
 // ---------------------------------------------------------------------------
 // Shared attestation contract
@@ -56,7 +56,7 @@ import { GENESIS_FLOOR_TIDDLER, floorManifestBytes, floorManifestCid } from "./f
  * builder and the plugin build pipeline speak the same type without coupling
  * @lararium/node to @lararium/tw5 at the type level.
  *
- * Format string: "lararium-tw5-plugin-build/v1"
+ * Format string: "lararium-tw5-plugin-build"
  */
 export interface PluginBuildAttestation {
   readonly format:                  string;
@@ -145,7 +145,18 @@ export type GenesisBlobKind =
   | "grammar"   // the memetic-wikitext grammar — REQUIRED, and kāhuli's GRAMMAR tier
   | "base"      // required base seed (API/shadow tiddlers) — ships, ratchets nothing
   | "plugin"   // an operator's own offering, layered on top of the required base
+  | "stock"    // a stock TW5 plugin (the vanilla and snowwhite themes) packed from the core's own TW5 revision — ships, ratchets nothing
   | "floor";   // history-free corpus snapshots and their manifest
+
+/**
+ * THE STOCK CLASS READS FROM THE TITLE'S OWN NAMESPACE. TiddlyWiki reserves `$:/themes/tiddlywiki/`, `$:/plugins/tiddlywiki/` and
+ * `$:/languages/` for the plugins its own tree ships; a blob the bake packs under one of them came from the vendored TW5 the core
+ * blob renders from (`build-tw5-themes.ts`), so it rides the engine's revision and moves no operator's plugin epoch. One site holds
+ * the rule, because the mint and the verify both reach it.
+ */
+export function isStockTw5PluginTitle(title: string): boolean {
+  return title.startsWith("$:/themes/tiddlywiki/") || title.startsWith("$:/plugins/tiddlywiki/") || title.startsWith("$:/languages/");
+}
 
 export interface GenesisPluginEntry {
   readonly id:          string;
@@ -186,7 +197,8 @@ export interface GenesisInputs {
   readonly coreSha256?:   string;
   /** Vendored plugin blobs. Must include the Lares memetic-wikitext plugin. */
   readonly plugins:       readonly GenesisPluginEntry[];
-  readonly floor?: { readonly manifest: FloorManifest; readonly lares: FloorSnapshot; readonly lararium: FloorSnapshot };
+  /** The genesis floor: its manifest and one snapshot per slug the manifest keys (`floor-<slug>` blobs). */
+  readonly floor?: { readonly manifest: FloorManifest; readonly snapshots: Readonly<Record<string, FloorSnapshot>> };
 }
 
 // ---------------------------------------------------------------------------
@@ -209,7 +221,7 @@ export interface GenesisInputs {
  *
  * The three region CIDs are INPUTS (content functions), not derived from the saved
  * bytes — so the witness tiddlers carry them in a SINGLE write pass. No self-referential
- * fixpoint: the old "strip the genesis-cid tiddler → hash === preSha256" dance is gone.
+ * fixpoint: no witness strips itself out to re-hash the rest.
  */
 export interface GenesisArtifact {
   readonly bytes:      Uint8Array;
@@ -244,7 +256,13 @@ export interface GenesisArtifact {
 // The plain-data genesis seed (genesis is data, not a baked CRDT)
 // ---------------------------------------------------------------------------
 
-export const GENESIS_SEED_FORMAT = "lararium-genesis-seed/v1" as const;
+import { GENESIS_SEED_FORMAT } from "./wire-names.js";
+export { GENESIS_SEED_FORMAT };
+
+/** What a seed naming another format lacks: the genesis seed's own shape name. */
+export function genesisSeedFormatLack(format: unknown): string {
+  return `the seed names the format ${JSON.stringify(format)}: it lacks the genesis seed shape (${JSON.stringify(GENESIS_SEED_FORMAT)})`;
+}
 
 /**
  * A SEED CARRIES NO VERSION. Its format names its shape, and its bytes name themselves (the seed CID); a version
@@ -275,14 +293,14 @@ const GENESIS_BLOB_CID = /^[0-9a-f]{64}$/;
 /**
  * Derive the logical CAS inventory from the immutable seed.
  *
- * The inventory remains a useful in-memory bulb/public-wire payload, but it is
- * no longer a second boot file.  This function is deliberately strict: a seed
+ * The inventory serves as an in-memory bulb/public-wire payload, never a
+ * second boot file.  This function is deliberately strict: a seed
  * with a malformed blob row, duplicate CID, or missing region witness cannot
  * quietly turn into an empty or widened CAS set.
  */
 export function genesisCasManifestFromSeed(seed: GenesisSeed): GenesisCasManifest {
   if (!seed || seed.format !== GENESIS_SEED_FORMAT) {
-    throw new Error(`[genesis-derive] unsupported seed format: ${String(seed?.format)}`);
+    throw new Error(`[genesis-derive] ${genesisSeedFormatLack(seed?.format)}`);
   }
   if (genesisSeedCarriesAVersion(seed)) throw new Error("[genesis-derive] the seed carries a version; a seed carries none");
   if (!seed.blobs || typeof seed.blobs !== "object" || Array.isArray(seed.blobs)) {
@@ -353,11 +371,11 @@ export function validateGenesisBundleCoherence(
   manifest: GenesisCasManifest,
 ): void {
   if (seed.format !== GENESIS_SEED_FORMAT) {
-    throw new Error(`[genesis-coherence] unsupported seed format: ${String(seed.format)}`);
+    throw new Error(`[genesis-coherence] ${genesisSeedFormatLack(seed.format)}`);
   }
   if (genesisSeedCarriesAVersion(seed)) throw new Error("[genesis-coherence] the seed carries a version; a seed carries none");
   if (manifest.format !== GENESIS_CAS_MANIFEST_FORMAT) {
-    throw new Error(`[genesis-coherence] unsupported manifest format: ${String(manifest.format)}`);
+    throw new Error(`[genesis-coherence] the CAS manifest names the format ${JSON.stringify(manifest.format)}: it lacks the genesis CAS shape (${JSON.stringify(GENESIS_CAS_MANIFEST_FORMAT)})`);
   }
 
   const seedRows = Object.entries(seed.blobs)
@@ -471,7 +489,7 @@ export function oracleGenesisDocUrl(): AutomergeUrl {
  * blob DESCRIPTOR for a human to read, where a wrong label misleads nobody's identity.
  */
 export function computeEngineCid(coreSha256: string): string {
-  return cidV1Sha256(utf8Bytes(`engine/v1\ncore-sha256:${coreSha256}`));
+  return cidV1Sha256(utf8Bytes(`lararium-engine\ncore-sha256:${coreSha256}`));
 }
 
 /**
@@ -501,7 +519,7 @@ const isBaseSeed = (p: RegionEntry): boolean => p.kind === "base";
  * A plugin added here moves THIS operator's plugin epoch and nothing further.
  */
 export function computePluginsCid(plugins: readonly RegionEntry[]): string {
-  return foldRegion("plugins/v1", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p) && p.kind !== "floor"));
+  return foldRegion("lararium-plugins", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p) && p.kind !== "floor" && p.kind !== "stock"));
 }
 
 /**
@@ -513,6 +531,9 @@ export function computePluginsCid(plugins: readonly RegionEntry[]): string {
  * together let one operator's extra plugin overturn EVERYBODY's grammar: the same false schism the region
  * CIDs were split to prevent, arriving through the composition instead of through a version label.
  *
+ * STOCK TW5 PLUGINS SIT IN NEITHER: the vendored themes ride the core's own TW5 revision, so a bump that moves them moves the
+ * engine blob (the slow ratchet) beside them, and an operator's plugin epoch never reads them.
+ *
  * BASE SEED SITS IN NEITHER. `lararium-boot-shadows` is not a plugin at all — it is the API/shadow tiddler
  * seed that rides beside the lares + lararium bags. It ships as a required blob, attested by its manifest
  * sha; a change to it moves the ISLAND, never an epoch, because it binds no membership and no reading.
@@ -521,7 +542,7 @@ export function computePluginsCid(plugins: readonly RegionEntry[]): string {
  * call sites is a rule that drifts, and a drifted region reads as a corrupt genesis.
  */
 export function computeGrammarCid(plugins: readonly RegionEntry[]): string {
-  return foldRegion("grammar/v1", plugins.filter(isGrammar));
+  return foldRegion("lararium-grammar", plugins.filter(isGrammar));
 }
 
 // ---------------------------------------------------------------------------
@@ -535,6 +556,11 @@ export function computeGrammarCid(plugins: readonly RegionEntry[]): string {
  * from the tag their PersonaGroup mints, so no name for them exists when this seed is built, and a genesis
  * every vessel shares can describe no plane belonging to one person. They describe themselves at founding,
  * where the knowledge lives.
+ *
+ * `readPolicy` LABELS WHAT GENESIS CARRIES, and no reader gates on it. For `lares` and `lararium` it names the floor every
+ * vessel holds (the snapshot the floor manifest keys by CID, public to every DreamNet user), never the live document: that
+ * rests in the Kahu realm at contract (`landKahuRealm`, cap-tier.mem #/house-canon), and its read-cap rides the realm
+ * registration's `readTier`, never this descriptor.
  */
 const ROOT_BAGS = [
   { bagId: ORACLE_DOC_URI,     label: "ha — runtime system island (Oracle)",       readPolicy: "public",  writePolicy: "private" },
@@ -546,6 +572,17 @@ const ROOT_BAGS = [
 // ---------------------------------------------------------------------------
 // Core builder
 // ---------------------------------------------------------------------------
+
+/** Each slug the manifest keys paired with its snapshot, slugs sorted; a snapshot the manifest names no CID for, or one whose CID differs, refuses the build. */
+function floorSnapshotsInOrder(manifest: FloorManifest, snapshots: Readonly<Record<string, FloorSnapshot>>): Array<readonly [string, FloorSnapshot]> {
+  const slugs = floorSlugs(manifest);
+  if (Object.keys(snapshots).length !== slugs.length) throw new Error(`[genesis] floor snapshots (${Object.keys(snapshots).sort().join(",")}) differ from the manifest's slugs (${slugs.join(",")})`);
+  return slugs.map((slug) => {
+    const snap = Object.hasOwn(snapshots, slug) ? snapshots[slug] : undefined;
+    if (!snap || snap.cid !== manifest.snapshots[slug]) throw new Error(`[genesis] floor snapshot ${slug} differs from its manifest CID`);
+    return [slug, snap] as const;
+  });
+}
 
 /**
  * buildGenesisSeed() — assemble the oracle doc's initial state as PLAIN DATA.
@@ -585,15 +622,14 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
   }
 
   if (inputs.floor) {
-    const { manifest, lares, lararium } = inputs.floor;
+    const { manifest, snapshots } = inputs.floor;
     const expected = { engine: computeEngineCid(coreSha), grammar: computeGrammarCid(inputs.plugins), plugins: computePluginsCid(inputs.plugins) };
     for (const name of ["engine", "grammar", "plugins"] as const) {
       if (manifest[name] !== expected[name]) throw new Error(`[genesis] floor ${name} CID mismatch: floor=${manifest[name]} artifact=${expected[name]}`);
     }
     for (const [id, snapshot, mimeType] of [
       ["floor-manifest", { cid: floorManifestCid(manifest), bytes: floorManifestBytes(manifest) }, "application/vnd.lararium.floor-manifest+json"],
-      ["floor-lares", lares, "application/vnd.lararium.floor-snapshot"],
-      ["floor-lararium", lararium, "application/vnd.lararium.floor-snapshot"],
+      ...floorSnapshotsInOrder(manifest, snapshots).map(([slug, snap]) => [`floor-${slug}`, snap, "application/vnd.lararium.floor-snapshot"] as const),
     ] as const) {
       // METADATA alone, as every genesis blob row: the bytes ride genesis/cas/<cid> (casEntries below).
       blobs[id] = { id, version: "1", sha256: snapshot.cid, mimeType, kind: "floor" };
@@ -711,8 +747,6 @@ export function materializeGenesisDoc(seed: GenesisSeed): Uint8Array {
   let doc = automergeInit<LarDoc>({ actor: seed.actorSeed });
   doc = automergeChange(doc, { time: 0 }, d => {
     const r = d as unknown as Record<string, unknown>;
-    // The oracle document keeps the shape every lar document carries (`base-doc.ts`); the seed itself names none.
-    r["schemaVersion"] = "0.1";
     const blobs: Record<string, unknown> = {};
     // A seed key naming the prototype chain would seat a prototype here: it refuses by name (KEEP: a live hostile form).
     for (const k of Object.keys(seed.blobs).sort()) {
@@ -747,7 +781,7 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
   const grammarCid = computeGrammarCid(inputs.plugins);
   const pluginsCid = computePluginsCid(inputs.plugins);
 
-  // The CAS plane: the bytes the CRDT no longer carries, keyed by sha256 (the CID). EVERY vendored blob
+  // The CAS plane: the bytes the CRDT leaves out, keyed by sha256 (the CID). EVERY vendored blob
   // ships — grammar, base seed and operator plugins alike. Which REGION a blob names is a separate
   // question from whether it travels: the base seed rides here and stands in no region at all.
   // The build sink writes each to genesis/cas/<cid>; the loader mirrors them by manifest.
@@ -756,8 +790,7 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
     ...inputs.plugins.map((p) => ({ cid: p.sha256, bytes: p.blob })),
     ...(inputs.floor ? [
       { cid: floorManifestCid(inputs.floor.manifest), bytes: floorManifestBytes(inputs.floor.manifest) },
-      { cid: inputs.floor.lares.cid, bytes: inputs.floor.lares.bytes },
-      { cid: inputs.floor.lararium.cid, bytes: inputs.floor.lararium.bytes },
+      ...floorSnapshotsInOrder(inputs.floor.manifest, inputs.floor.snapshots).map(([, snap]) => ({ cid: snap.cid, bytes: snap.bytes })),
     ] : []),
   ];
   const casManifest = genesisCasManifestFromSeed(seed);

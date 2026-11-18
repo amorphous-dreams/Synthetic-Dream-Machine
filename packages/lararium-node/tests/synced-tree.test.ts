@@ -102,6 +102,18 @@ describe("synced-tree — the base holds two sides", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  test("a base carries the document its records side read, across a reload; a writer that names none leaves none", () => {
+    const { dir, p } = fresh();
+    const t = new SyncedTree(p);
+    t.set("k", AT, contentHash("render"), contentHash("render"), "automerge:face-a");
+    t.set("plain", AT, contentHash("render"));
+    const reloaded = new SyncedTree(p);
+    expect(reloaded.baseAt("k", AT)).toEqual({ path: AT, disk: contentHash("render"), records: contentHash("render"), doc: "automerge:face-a" });
+    expect(reloaded.baseAt("plain", AT)).toEqual({ path: AT, disk: contentHash("render"), records: contentHash("render") });
+    expect("doc" in reloaded.baseAt("plain", AT)!).toBe(false);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
   test("a disk standing in another framing pins two hashes, and both survive a reload", () => {
     const { dir, p } = fresh();
     const t = new SyncedTree(p);

@@ -13,7 +13,7 @@ import type { PublicArtifactPublication } from "@lararium/mesh";
 const bytes = new TextEncoder().encode("operator-published bytes");
 const cid = `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
 const publication = (): PublicArtifactPublication => ({
-  schema: "lararium-pronaos-public-artifact/v1",
+  schema: "lararium-pronaos-public-artifact",
   operator: { id: "house-operator", authentication: "local-operator" },
   artifactCid: cid,
   integrity: cid,

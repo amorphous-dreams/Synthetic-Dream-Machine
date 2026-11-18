@@ -171,7 +171,7 @@ the loss of the household's identity, or a browser is forced to wait on a cloud 
 open its own local story.
 
 Operators SHALL need to withdraw or leave a contracted subtree without losing self. Success means the
-next renewal or admission attempt no longer receives the withdrawn evidence, while existing documents,
+next renewal or admission attempt receives none of the withdrawn evidence, while existing documents,
 keys, local projections, and peer relations remain inspectable and portable. Failure means withdrawal
 deletes a key, strands local content, or leaves a stale public roster asserting that the operator still
 belongs. The household SHALL need no public list of every operator: a verifier sees only the DNS evidence
@@ -257,6 +257,6 @@ before any deployment path opens.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3SvLgOa7X2iWdGMI2r8WAhKCcd-e3ZF3Rfq_zpLM7TA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Hb8o-mbBRnN_lkj3EqgEAq75BkrcE_FpBj0Vou8s5ZU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -52,7 +52,7 @@ void                       ← discard type; supertype of all types in contravar
                              Signals: this function's result is not useful.
 
 false                      ← bottom type; SUBTYPE of ALL types; uninhabited.
-                             No value of type false exists. Used to type
+                             No value of type false exists. It types
                              expressions that never return (infinite loops,
                              unconditional failure, etc.).
 ```
@@ -187,6 +187,6 @@ See `uefn-scene` for the `reaction:subscribable` edge format and `KumuSubscribab
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BZEpwl6CZMorL_FerM5Ohz2wr3y-6NmXxgQjisRuf2g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nwzC5hLcmgTZzvupZ7VhN93-wKuQ32IrvYpcV2c-uZU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

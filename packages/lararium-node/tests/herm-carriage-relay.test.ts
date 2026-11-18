@@ -25,7 +25,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import {
-  composeVessel, dialEntryToRecord, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, hearthPinIndex, filePlaceFloorPins, placeFloorPinsFromBoard, placeKelRowsFromBoard, memoryBackedWithdrawals,
+  composeVessel, dialEntryToRecord, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, hearthPinIndex, filePlaceFloorPins, placeFloorPinsFromBoard, placeKelEntriesFromBoard, memoryBackedWithdrawals,
   FLOW_SOCKET_ROUTE, pullAndVerifyFlow, CARRIAGE_PIN_ABSENT,
   type CapModule, type CarriageEntry, type HearthPinIndex, type LarDoc, type MeshPalaceDoc,
 } from "@lararium/mesh";
@@ -72,7 +72,7 @@ function readingOf(w: World, acts: readonly CarriageEntry[]): CarriedNexusReadin
 
 /** One shared carriage board, as every replica of it would converge: a plain doc and a handle over it. */
 function boardOf(): { doc: LarDoc; handle: { doc(): LarDoc; change(fn: (d: LarDoc) => void): void } } {
-  const doc = { schemaVersion: "0.1", tiddlers: {} } as LarDoc;
+  const doc = { tiddlers: {} } as LarDoc;
   return { doc, handle: { doc: () => doc, change: (fn) => fn(doc) } };
 }
 
@@ -80,7 +80,7 @@ function boardOf(): { doc: LarDoc; handle: { doc(): LarDoc; change(fn: (d: LarDo
 async function stand(h: Herm, w: World, readings: () => Promise<readonly CarriedNexusReading[]>, board: ReturnType<typeof boardOf>, opts: { tiddlers?: MeshPalaceDoc["tiddlers"]; peers?: Array<{ endpoint: string; gatePubKey: string }> } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   disposers.push(() => repo.shutdown().catch(() => {}));
-  const handle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: opts.tiddlers ?? {} });
+  const handle = repo.create<MeshPalaceDoc>({ tiddlers: opts.tiddlers ?? {} });
   const door = floorKeyDoor(rootOf(`herm ${h.label}`));
   const server = createServer();
   servers.push(server);
@@ -233,7 +233,7 @@ describe("the herm relay and carriage peering, gate-native, at one explicit Nexu
     const pins = hearthPinIndex();
     const carriers = new Set(acts.map((act) => act.nym));
     filePlaceFloorPins(pins, placeFloorPinsFromBoard(board.doc), {
-      nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, kelRows: placeKelRowsFromBoard(board.doc), standing: { via: "carrier", carriers },
+      nexusHex: w.pin.nexus, route: FLOW_SOCKET_ROUTE, kelEntries: placeKelEntriesFromBoard(board.doc), standing: { via: "carrier", carriers },
     });
     return pins.get({ hearth: relayTwo.key, nexus: w.pin.nexus, route: FLOW_SOCKET_ROUTE, tier: "floor" });
   }

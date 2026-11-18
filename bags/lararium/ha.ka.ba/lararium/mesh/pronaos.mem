@@ -139,7 +139,7 @@ descriptor hold one dispatcher key, so one vessel can never answer the well-know
 the waymark knob refuses: its arrival rides its Pronaos. Its readiness answer, `/api/health`, binds on a lararium
 alone; on a herm that path draws the closed door, since a readiness answer describes the self.
 
-''THE FLOOR STANDS ON NO RUNG.'' The floor carries the shared system rows its manifest names, as history-free content-addressed snapshots. It answers by the Nexus's release at the porch, to the name a reader brings: `GET /floor/<Nexus AID>` hands over the release rows the Nexus's crossroads board carries (each with the charter's epoch lineage), and `GET /cas/<cid>` the blobs the head release names. Every other name, an AID this vessel does not answer for and a wrong method draw the one closed door. A seated Kahu key seals the release as the steward, the cabal's approval of the manifest's exact bytes rides attached, and a herm carries and presents it without signing it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/floor-release); a reader verifies the lineage, the seal, the approval and every blob's CID itself, and no tender name reaches a stranger. The vessel's own gate still admits only proven peers to its flow-map socket.
+''THE FLOOR STANDS ON NO RUNG.'' The floor carries one history-free content-addressed snapshot per house-canon bag, as its manifest names them. It answers by the Nexus's release at the porch, to the name a reader brings: `GET /floor/<Nexus AID>` hands over the release entries the Nexus's publication board carries (each with the charter's epoch lineage), and `GET /cas/<cid>` the blobs the head release names. Every other name, an AID this vessel does not answer for and a wrong method draw the one closed door. A seated Kahu key seals the release as the steward, the cabal's approval of the manifest's exact bytes rides attached, and a herm carries and presents it without signing it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/floor-release); a reader verifies the lineage, the seal, the approval and every blob's CID itself, and no tender name reaches a stranger. The vessel's own gate still admits only proven peers to its flow-map socket.
 
 ''THE BULB CARRIES THE COAL ALONE'' (operator-ruled; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps`>>).
 The bulb carries the genesis seed and the CAS blobs that seed names, and nothing that names a house or a Nexus —
@@ -162,7 +162,7 @@ capability    permits a particular action
 
 No relation grants the next. DNS and certificate custody can withhold or alter an outward signpost; they cannot
 claim a peer key, read a private bag, resolve a merge, or admit a member. A peer key survives a name move. Cache
-presence carries a previously acquired response, never authority, membership, freshness truth, or causal order.
+presence carries an already-acquired response, never authority, membership, freshness truth, or causal order.
 
 <<~/ahu>>
 
@@ -274,6 +274,13 @@ descriptor, the seed and every seed-named member off the house's own origin, ver
 dials a mirror, and mints the device's own key (`kindle.ts#pullArrival`). `pullArrival` stands as a LIBRARY call,
 exported beside `pullBulb`; no CLI verb carries it. The composition reads no standing and no archive and runs
 before the boot reads either, so a house at its waking floor serves all of it.
+
+''The arrival names the page alone.'' A device opens the house's page URL with no query string and no fragment. The page
+asks its own origin for this descriptor and, where the origin answers as a lararium's Pronaos, dials that origin's relay; no
+URL names a relay. The hearth's floor card travels as a one-line file the banner prints, and the place AID travels apart on a
+line of its own; a person carries each to the page's carriage door (paste, file or QR), where it rests per origin. The
+fragment stays the wiki's own permalink (`lararium-web/src/live-status.ts`, `lararium-node/src/lan-address.ts`). A composition
+whose relay origin differs from its web origin stands owed: the descriptor names no relay.
 
 ''The descriptor never carries the floor's announcement.'' That announcement speaks to PEERS over the socket or
 relay, once per carried Nexus, and never at `/.well-known/lar`
@@ -393,12 +400,12 @@ without making any approach keeper of every archive, persona, or causal island i
 <<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/lares-viales`>>
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
-<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate`>> — serves seed bytes and history-free floor rows
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate`>> — serves seed bytes and history-free floor records
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane`>> — carries answer authority without herm signatures
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model`>> — presents the steward-signed per-Nexus answer
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SZKtHIHPP7a7stUT3S-JDNXxnVbrfhc6FJd4x19CeoA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Aem40xt244-JNr6e6MNDo5AP8d5WBIyfXTvlyySbimc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

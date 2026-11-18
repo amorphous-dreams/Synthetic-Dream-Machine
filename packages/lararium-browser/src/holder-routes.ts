@@ -12,6 +12,7 @@ export const HOLDER_ROUTES = {
 
   // The record port streams records to the tab whose session holds its lease.
   // A reply without a lease drops by name (`no-port-lease`).
+  "port:boot": "port",
   "port:snapshot": "port",
   "port:changes": "port",
   "port:reset": "port",
@@ -36,6 +37,8 @@ export const HOLDER_ROUTES = {
   "daemon:face-settled": "owner",
   "daemon:residency-op": "owner",
   "daemon:wiki-alert": "owner",
+  // A floor's verb answer reaches the vessel whose verb door waits on it.
+  "daemon:floor-answer": "owner",
   "cas:want": "owner",
   "dyad:ask": "owner",
   "receipt:request": "owner",

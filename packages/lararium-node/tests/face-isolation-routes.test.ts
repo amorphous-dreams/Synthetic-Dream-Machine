@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
 import { FaceAtomConflict, mintFaceAtomSeed } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
-import { readCustodyRow, seatedCustody, unseatCustody, writeCustodyRow } from "../src/custody-seat.js";
+import { readCustodyRecord, seatedCustody, unseatCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import { faceAtomGroupFile, keepFaceAtom, loadFaceAtom, loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { FaceLocked } from "../src/custody-holder.js";
 import { faceDir } from "../src/face-index.js";
@@ -65,13 +65,13 @@ describe("face isolation at the node's routes", () => {
 
   test("the key that unlocks A refuses to open B's atom row (each face's rows seal under its own custody key)", async () => {
     await twoFaces(async () => {
-      await expect(readCustodyRow("identity", faceAtomGroupFile(GROUP_B))).rejects.toBeInstanceOf(FaceLocked);
+      await expect(readCustodyRecord("identity", faceAtomGroupFile(GROUP_B))).rejects.toBeInstanceOf(FaceLocked);
     }, true);
   });
 
   test("the key that unlocks A refuses to replace B's atom row around the face-atom door", async () => {
     await twoFaces(async ({ rowB, bytesB }) => {
-      await expect(writeCustodyRow("identity", faceAtomGroupFile(GROUP_B), mintFaceAtomSeed())).rejects.toBeInstanceOf(FaceLocked);
+      await expect(writeCustodyRecord("identity", faceAtomGroupFile(GROUP_B), mintFaceAtomSeed())).rejects.toBeInstanceOf(FaceLocked);
       expect(readFileSync(rowB)).toEqual(bytesB);
     }, true);
   });

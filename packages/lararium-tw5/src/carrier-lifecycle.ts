@@ -190,7 +190,7 @@ export function checkCarrierLifecycle(text: string): string[] {
   }
 
   // A FOLDED CARRIER HOLDS POINTERS ALONE. Its argument has moved to a standing home, and each slot
-  // says which one — so a reader arriving at the old address reaches the content in one hop.
+  // says which one — so a reader arriving at the folded address reaches the content in one hop.
   if (stage === "folded") {
     for (const s of slots) {
       if (POINTER_SLOTS.has(s.name)) continue;

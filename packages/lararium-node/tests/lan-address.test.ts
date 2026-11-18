@@ -78,9 +78,11 @@ describe("the reach-faces a vessel answers on", () => {
         webOrigin: "http://192.168.1.42:5173",
         flowOrigin: "http://192.168.1.42:8080",
       }),
-      wsUrl: wsUrlForOrigin(face.origin), floorCard: "Y2FyZA",
     });
-    expect(url).toBe("http://192.168.1.42:5173/?relay=ws://192.168.1.42:8080/ws#floor=Y2FyZA");
+    // RED (no query string as an override, no fragment): the page URL names its origin and nothing else.
+    expect(url).toBe("http://192.168.1.42:5173/");
+    expect(new URL(url).search).toBe("");
+    expect(new URL(url).hash).toBe("");
     expect(url).not.toContain("localhost");
   });
 
@@ -98,9 +100,9 @@ describe("the reach-faces a vessel answers on", () => {
     expect(flowOriginForFace(declared, { sameOrigin: true }, "lararium")).toBe("https://enyalios.home.amorphousdreams.net");
     // The relay under the SAME name carries wss (mixed-content-safe from an https page).
     expect(wsUrlForOrigin(declared.origin)).toBe("wss://enyalios.home.amorphousdreams.net/ws");
-    // The whole crossing URL: web surface over https, relay over wss, one name.
-    expect(crossingUrl({ webOrigin: webOriginForFace(declared, 5173, { sameOrigin: true }), wsUrl: wsUrlForOrigin(declared.origin), floorCard: null }))
-      .toBe("https://enyalios.home.amorphousdreams.net/?relay=wss://enyalios.home.amorphousdreams.net/ws");
+    // The page a device opens: the web surface over https; the page dials the relay its own origin answers with.
+    expect(crossingUrl({ webOrigin: webOriginForFace(declared, 5173, { sameOrigin: true }) }))
+      .toBe("https://enyalios.home.amorphousdreams.net/");
   });
 
   test("split household composition names Web and flow independently from the relay", () => {

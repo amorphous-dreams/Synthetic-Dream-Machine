@@ -21,7 +21,7 @@
 export interface RosterStanding {
   /** Whether any chair stands at all. */
   readonly seated:    boolean;
-  /** Chairs that may go dark before the quorum can no longer be reached. */
+  /** Chairs that may go dark while the quorum stays reachable. */
   readonly tolerance: number;
   /** A quorum that survives no loss at all. */
   readonly fragile:   boolean;

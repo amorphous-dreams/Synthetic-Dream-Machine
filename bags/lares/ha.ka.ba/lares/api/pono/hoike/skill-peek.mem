@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-role      = "verbatim peek of the retired ~/.claude/skills/hoike files (SKILL.md, hoike.md) — kept as typed text/markdown slots so the skill can be rebuilt from the memegraph; the live law and practice stand at hoike.mem and hoike/SKILL.mem"
+role      = "verbatim peek of the hoike skill files (SKILL.md, hoike.md) — kept as typed text/markdown slots so the skill can be rebuilt from the memegraph; the live law and practice stand at hoike.mem and hoike/SKILL.mem"
 title     = "lar:///ha.ka.ba/lares/api/pono/hoike/skill-peek"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/hoike/skill-peek"
@@ -14,7 +14,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/hoike/skill-peek"
 
 ! hoike — skill peek
 
-The retired skill files, word for word, each a typed `text/markdown` slot. Their old frame spellings sit inside fences and frame nothing. Rebuild the skill from these and from <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike/SKILL`>>.
+The skill files, word for word, each a typed `text/markdown` slot. The frame spellings inside the fences frame nothing. Rebuild the skill from these and from <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike/SKILL`>>.
 
 <<~ ahu slot=`#/skill`>>
 
@@ -260,6 +260,6 @@ The layer carries the Eduyot pattern: minority opinions kept with attribution so
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gtad_Qx-BYP5pnMRlvr3-PQPD2U5OW57tR7VSSNS-vA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;x4Cg5g8tOpw-JpMKYgVifQ0tmxLnYNkcYRDQ6vfqrc4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

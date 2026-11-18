@@ -1,0 +1,69 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-browser/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/placement-browser/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-browser/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-browser/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-browser/brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-browser/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Canon-Wright: Lares (Tasked Spirit). Read CLAUDE.md once for house law, then implement. This is an IMPLEMENTATION task: start editing code within your first few actions. Do not write a plan file, do not stop at a trace. Done means the diff below exists and the listed tests pass.
+
+RULING: the daemon wiki's canon follows the worn face: `bags/daemon-<F>` (`daemonFaceCanonBag(faceRelation)`), never `bags/daemon`. Node already does it; you build the BROWSER twin.
+
+CONTEXT (measured; already landed on this branch, do not re-build): mesh carries `WikiRecipe.canonBag`, `wikiCanonOf`, `daemonFaceCanonBag`, `IslandGrants.canonUrl`, and the sovereign kernel's slotUrl branch. Node's pattern, in packages/lararium-node/src/open-daemon-vm.ts:158-170:
+```
+  // by ACCESS per residency action (ephemeral mount, released after — the
+  // edit/action split, wiki-layer-ontology#write-law). The daemon's own composite
+  // stays its recipe alone — it mounts no standing write facet.
+  // The recipe designates the daemon wiki's temp layer for mirroring; the mirror stands only where the operator's consent
+  // row names the `daemon` slug (`projection.temp.daemon`).
+  // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE: `bags/daemon-<F>`, the document the face's catalog names (`grants.canonUrl`).
+  // At the floor, or before the face proves, the daemon wiki reads no canon, and the daemon document keeps no canon role.
+  const canonBag = faceRelation && grants.canonUrl ? daemonFaceCanonBag(faceRelation) : undefined;
+  const recipe: WikiRecipe = {
+    wikiSlug: "daemon",
+    ...(canonBag ? { canonBag } : {}),
+    ...(libraryBags?.length ? { libraryBags } : {}),
+    mirrorBags: [wikiSlotUri("daemon", "temp")],
+```
+and node stands the canon document in packages/lararium-node/src/face-daemon-canon.ts (`standFaceDaemonCanon({ repo, catalog, faceRelation })`: read the document URL the face's catalog names under `bags/daemon-<F>`, else create one and name it there), called at open-node-vessel.ts:3184-3187 once the worn face proves, and passes `canonUrl` in the daemon VM grants (open-node-vessel.ts ~3314).
+Browser today: packages/lararium-browser/src/open-browser-vessel.ts:1794-1803 builds the daemon VM with `recipe: { wikiSlug: "daemon" }` and grants { islandUrl, wikiUrl, catalogUrl, kahuaUrl? } — no canonUrl. The worn face proves at ~1473-1481 (`proof = proveFaceFromLog(...)`); `faceRelationOf(proof.projection)` (from &#64;lararium/mesh) gives the relation. packages/lararium-browser/src/open-browser-daemon-vm.ts takes `recipe` and `grants` (line ~119) and builds the VM.
+
+CHANGE:
+# Add packages/lararium-browser/src/face-daemon-canon.ts: the browser twin of standFaceDaemonCanon (same contract; import shared pieces from &#64;lararium/mesh; do not import from &#64;lararium/node). If the logic is identical, prefer moving the shared function into &#64;lararium/mesh ONLY if node's copy can import it unchanged — otherwise keep a twin.
+# open-browser-vessel.ts: after the worn face proves, compute `wornRelation = faceRelationOf(proof.projection)`; when it stands, stand the face's daemon canon over the catalog handle the browser uses for that face's rows (find where the browser writes face catalog rows — e.g. the `assembly.catalogHandle.change(...)` calls ~1371-1372 — and use the same handle the node calls the face's view; say which in your final message). Pass `canonUrl: daemonCanon.url` in the daemon VM grants block (~1795).
+# open-browser-daemon-vm.ts: mirror node — `canonBag = faceRelation && grants.canonUrl ? daemonFaceCanonBag(faceRelation) : undefined`, and the recipe carries `canonBag` when it stands. Thread `faceRelation` in through the opts.
+# The browser holds no disk mirrors: no mirror work.
+
+TESTS (red first, in packages/lararium-browser/tests, beside the existing daemon-VM / browser-island tests; reuse their fixtures):
+a. With a worn, proved face, the daemon VM's recipe names `canonBag` = `bags/daemon-<F>` and its grants carry `canonUrl` naming the face's canon document.
+b. CONTROL: at the floor (no worn face), no `canonBag` and no `canonUrl`.
+c. A second open of the same face reads the SAME canon document (named in the catalog the first time).
+Then: <code>pnpm &#45;-filter &#64;lararium/browser build &amp;&amp; node tools/stamp-build.mjs . &#45;-pkg lararium-browser</code> (and mesh if touched), typecheck each touched package, the touched test files, then the full browser suite with `--maxWorkers=4` (if it stalls past 15 minutes with no output, stop it and report the last file it ran), and `packages/lararium-node/tests/daemon-canon-mirror.test.ts` stays green. `node tools/evergreen-boundary.mjs`. Failures reading `secret-home-unavailable` belong to another seat: count them apart.
+
+LIMITS — must NOT touch: the persona-plane mount lines in open-browser-vessel.ts (another seat's ground), the mesh recipe/kernel/register-bags code already landed, anything under packages/lararium-node or packages/lararium-keyhive (except reading). No git commit, no push, no stash. Never touch ~/.lares or docker.
+
+FINAL MESSAGE: files changed, which catalog handle you used and why, each test's result with counts, anything you could not do.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EXRqmu_Hw__U2Vj5T5V9_4ciJJ2EZ8vmxVrp4fnBN48`>>
+
+<<^ code=`&#x0004;` to=`?`>>

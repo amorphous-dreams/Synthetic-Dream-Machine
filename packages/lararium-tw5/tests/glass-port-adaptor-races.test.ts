@@ -208,23 +208,27 @@ describe.skipIf(!!wikiSkip)(`glass port ordered races${skipNote}`, () => {
     expect(g.writes()).toHaveLength(1);
   });
 
-  it("a widen's snapshot keeps a title written after the open; CONTROL a plain snapshot still drops an absent title", async () => {
-    const g = await glass("skinny");
-    g.snapshot("first", 1, 1, [{ title: "Base", fields: { text: "base" }, seq: 1 }]);
-    await g.flush();
-    g.wiki.setTiddler({ title: "Draft of 'New'", text: "typed" });
-    await g.flush();
-    const write = g.writes()[0];
-    g.deliver({ type: "port:written", txId: write.txId, status: "applied", applied: ["Draft of 'New'"], failed: [] });
-    await g.flush();
-    g.adaptor.widen("full");
-    g.snapshot("widened", 1, 1, [{ title: "Base", fields: { text: "base", tags: "x" }, seq: 1 }]);   // taken before the draft landed
-    await g.flush();
-    expect(g.text("Draft of 'New'")).toBe("typed");
-    expect(g.wiki.wiki.getTiddler("Base")?.fields.tags).toBeTruthy();
-    g.snapshot("plain", 1, 1, [{ title: "Base", fields: { text: "base", tags: "x" }, seq: 2 }]);
-    await g.flush();
-    expect(g.text("Draft of 'New'")).toBeUndefined();   // CONTROL: an ordinary snapshot is the whole truth and drops it
+  it("an adaptor over a port the boot already opened sends no open, holds the booted records as landed, and lands the held ones; CONTROL a fresh adaptor opens", async () => {
+    const wiki = await bootTestWiki();
+    wiki.setTiddler({ title: "Booted", text: "from the handoff" });
+    await pump();
+    const sent: any[] = [];
+    const listeners = new Set<(msg: any) => void>();
+    const adaptor = makeGlassPortAdaptor({ wiki: wiki.wiki, Tiddler: wiki.$tw.Tiddler,
+      transport: { send(msg) { sent.push(msg); }, onMessage(listener) { listeners.add(listener); return () => { listeners.delete(listener); }; } },
+      portId: "p", wikiUri: "wiki", actor: "me", width: "full", mintTx: () => "tx-1",
+      opened: { preloaded: [{ title: "Booted", fields: { text: "from the handoff" }, seq: 1 }], held: [{ title: "Held", fields: { text: "inert" }, seq: 2 }] } });
+    await pump();
+    expect(sent.filter(msg => msg.type === "port:open")).toEqual([]);
+    expect(sent.filter(msg => msg.type === "port:write")).toEqual([]);          // neither the booted record nor the held landing posts itself
+    expect(wiki.wiki.getTiddler("Held")?.fields.text).toBe("inert");
+    // A whole snapshot that lacks the booted title drops it: the adaptor held it as landed.
+    for (const listener of listeners) listener({ type: "port:snapshot", portId: "p", snapshotId: "s", baseCursor: "b", i: 1, n: 1, records: [] });
+    await pump();
+    expect(wiki.wiki.getTiddler("Booted")).toBeUndefined();
+    adaptor.close();
+    const g = await glass();
+    expect(g.sent.filter(msg => msg.type === "port:open")).toHaveLength(1);       // CONTROL
   });
 
   it("keystrokes on one title send one write at a time and the next carries the latest text; CONTROL another title sends at once", async () => {

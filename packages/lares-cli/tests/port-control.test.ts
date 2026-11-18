@@ -4,8 +4,7 @@
  *
  * Proven:
  *   · RED: a delayed flush (the port frees only well past the declared grace) keeps `stopIncumbent` PENDING —
- *     it never calls SIGKILL, however long the grace has been spent. Reverted to the old escalate-to-SIGKILL
- *     shape, this test catches the escalation (a SIGKILL call lands before the port frees) — the mutation bites.
+ *     it never calls SIGKILL, however long the grace has been spent (a SIGKILL landing before the port frees reads red).
  *   · CONTROL: a port that frees inside the grace resolves `{ stopped: true, forced: false }` off one SIGTERM.
  *   · a held port with no discoverable owner FAILS LOUD before any signal sends.
  *   · `waitForPortBudgeted`: RED — a phase that never completes exhausts ITS OWN budget and refuses, naming the
@@ -57,22 +56,6 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     expect(kill).not.toHaveBeenCalledWith(expect.anything(), "SIGKILL");
     expect(kill).toHaveBeenCalledTimes(1);          // one SIGTERM, never a second signal of any kind
     expect(pastGraceHeldPids).toEqual([4242]);       // the report fired — the wait kept going anyway
-  });
-
-  it("MUTATION PROOF: the old escalate-to-SIGKILL shape would have failed the RED test above", async () => {
-    const kill = vi.fn();
-    const heldUntil = Date.now() + 300;
-    const probe = async () => Date.now() < heldUntil;
-    const holderPids = () => [4242];
-
-    // Re-enact the retired shape by hand: SIGTERM, wait out a short grace, then SIGKILL — exactly the
-    // escalation `stopIncumbent` no longer performs.
-    const graceMs = 40;
-    kill(4242, "SIGTERM");
-    await new Promise((r) => setTimeout(r, graceMs + 10));
-    if (await probe(PORT)) kill(4242, "SIGKILL");   // the fault this door retired
-
-    expect(kill).toHaveBeenCalledWith(4242, "SIGKILL");   // proves the OLD shape would bite the RED assertion
   });
 
   it("CONTROL: a port that frees inside the grace resolves off one SIGTERM, no further waiting", async () => {
@@ -153,16 +136,6 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     expect(kill).toHaveBeenNthCalledWith(2, 4242, "SIGTERM");
   });
 
-  it("H5′ MUTATION PROOF: re-reading the port at past-grace reaches nobody", async () => {
-    // Enact the mutant by hand: naming the held pids off a past-grace `holderPids(port)` call, against the
-    // SAME port-frees-before-holder-exits timeline above.
-    let portFreed = true;   // by the time grace would fire, main.ts's own ordering already froze the port
-    const holderPids = () => (portFreed ? [] : [4242]);
-    const heldAtPastGrace = holderPids();
-    expect(heldAtPastGrace).toEqual([]);   // nobody to cut — the retired re-read shape's own fault
-    void portFreed;
-  });
-
   it("without `cut`, past grace delivers no second signal at all (the default stays report-only)", async () => {
     const kill = vi.fn();
     const heldUntil = Date.now() + 300;
@@ -196,16 +169,6 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     const elapsed = performance.now() - t0;
     expect(result).toEqual<StopResult>({ stopped: true });
     expect(elapsed).toBeGreaterThanOrEqual(25);   // proves it did NOT return the instant the port read free
-  });
-
-  it("H5 MUTATION PROOF: a port-only reading (no `holderAlive` wired) would have reported `stopped:true` early", async () => {
-    const kill = vi.fn();
-    const portFree = true;
-    const probe = async () => !portFree;
-    // Re-enact the retired port-only shape by hand: the very first probe already reads free.
-    const stoppedImmediately = !(await probe(PORT));
-    expect(stoppedImmediately).toBe(true);   // proves the OLD shape would call this "stopped" with the holder still live
-    void kill;
   });
 
   it("H5: the signalled pids' own liveness is the unconditional FLOOR under `holderAlive`", async () => {

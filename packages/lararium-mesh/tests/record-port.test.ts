@@ -40,6 +40,15 @@ describe("the record port reads whole at the island door", () => {
     expect(readPortVesselMsg({ ...ask, args: { bag: "é".repeat(32769) } })).toBeNull();
     expect(readPortVesselMsg({ ...ask, args: { bag: 1 } })).toBeNull();
   });
+  test("port-ask-filter-bounds: a filter ask carries a cursor, a row cap and a byte cap; a cap that reads as no count vanishes; CONTROL: a bare filter ask passes", () => {
+    const ask = { type: "port:ask", portId: "p1", askId: "f", kind: "filter", subject: "[tag[x]]" };
+    expect(readPortVesselMsg(ask)).toEqual(ask);
+    expect(readPortVesselMsg({ ...ask, after: "32.0123456789abcdef", limit: 8, maxBytes: 4096 })).toEqual({ ...ask, after: "32.0123456789abcdef", limit: 8, maxBytes: 4096 });
+    expect(readPortVesselMsg({ ...ask, limit: 0 })).toBeNull();
+    expect(readPortVesselMsg({ ...ask, limit: "8" })).toBeNull();
+    expect(readPortVesselMsg({ ...ask, maxBytes: -1 })).toBeNull();
+    expect(readPortVesselMsg({ ...ask, after: "" })).toBeNull();
+  });
   test("presence carries a beat or a gone mark, never neither", () => {
     expect(isVesselToIslandMsg({ type: PORT_PRESENCE, portId: "p1", actorKey: "a" })).toBe(false);
     expect(isVesselToIslandMsg({ type: PORT_PRESENCE, portId: "p1", actorKey: "a", beat: 3 })).toBe(true);

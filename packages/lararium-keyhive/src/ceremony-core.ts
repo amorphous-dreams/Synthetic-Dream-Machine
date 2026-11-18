@@ -44,7 +44,7 @@
 
 import type { Repo } from "@lararium/mesh";
 import {
-  IDENTITIES_NAMESPACE, DAEMON_BAG_ID,
+  IDENTITIES_NAMESPACE, SECRET_HOME_ID,
   MESH_CABAL_SENTINEL_URI,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   HEARTH_DAEMON_URL_TIDDLER,
@@ -70,7 +70,9 @@ import { KeyhiveProvider } from "./keyhive-provider.js";
 import { FacelessKeyhiveRefused } from "./boot-daemon-keyhive.js";
 import { InMemoryEventStore } from "./event-store.js";
 import { capEventTitle, absorbCapEvents } from "./daemon-event-store.js";
+import type { SecretRestCapability } from "./daemon-event-store.js";
 import type { DeviceAdmitPayload } from "./index.js";
+import { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
 import { readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
 
 async function checkpointKey(seed: Uint8Array, domain: string): Promise<CryptoKey> {
@@ -141,6 +143,10 @@ export type FoundingBinding =
 
 export interface FoundingCeremonyInput {
   repo:                Repo;
+  /** A caller-held secret document whose storage never rests plaintext; absence refuses before founding. */
+  secretHandle?:       ReturnType<typeof seedDaemonDoc>;
+  /** Trusted storage capability for that secret document. */
+  secretRest?:         SecretRestCapability;
   /** The PUBLIC place key; never a face identity. */
   placeVerifyingKey: string;
   /** Display name for the device identity tiddler. */
@@ -148,8 +154,8 @@ export interface FoundingCeremonyInput {
   /** HOW this founding binds its device — the two modes `vessel-standing` names. REQUIRED: every
    *  founding binds, and the mode says whether this vessel signs its own binding or carries one. */
   binding: FoundingBinding;
-  /** The hearth true-name (engine content-CID) this vessel binds TO — the place in (vessel × hearthTrueName).
-   *  REQUIRED: a founding with no place to bind to is no founding. */
+  /** The hearth true name this vessel's edge binds TO: the seed-charter Nexus AID of the hearth it stands at, or the
+   *  stated empty name of a gateless leaf (no hearth stands there). Never an engine CID: the engine moves, the name stays. */
   hearthTrueName:      string;
   /** The Nexus pubkey (this node's own gate key) the per-Nexus persona-KEL board derives from. The founding
    *  seats the KEL INCEPTION onto that board so the very first boot walks the identifier→head mapping locally.
@@ -169,6 +175,8 @@ export interface FoundingCeremonyResult {
   sessionsUrl:           string;
   intentsUrl:            string;
   daemonUrl:              string;
+  /** The vessel-held secret document; no page recipe or disk mirror mounts it. */
+  secretUrl:              string;
   /** The mounted PersonaGroup plane's doc URL — founded alongside the daemon bag. */
   personaUrl:             string;
   /** That plane's BAG ID, derived from the PersonaGroup's own id. One name, everywhere it is reached. */
@@ -215,11 +223,10 @@ export interface FoundingCeremonyResult {
 //
 // Canon: lar:///ha.ka.ba/lares/api/pono/waking-floor · lar:///ha.ka.ba/lararium/mesh/identity-classes
 
-/** What a place-founding needs: a key, a name, and the hearth it stands at. No persona anywhere. */
+/** What a place-founding needs: the repo its daemon document stands in. No persona anywhere, and no hearth: a place binds
+ *  no hearth until a face lands, and the face's own edge then states the true name (`mountFace`, the admit's landing). */
 export interface PlaceFoundingInput {
   repo:               Repo;
-  /** The hearth true-name (engine content-CID) this place stands at. */
-  hearthTrueName:     string;
 }
 
 export interface PlaceFoundingResult {
@@ -238,21 +245,25 @@ export interface PlaceFoundingResult {
  * by founding rather than by falling.
  */
 export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFoundingResult> {
-  const { repo, hearthTrueName } = input;
+  const { repo } = input;
 
+  // THE PLACE WRITES NOTHING SECRET: the vessel's secret home enrolls on its own sealed rest (the store's one holder), and
+  // a place founding neither creates nor names it.
+  // NO TRUE NAME LANDS HERE. The true-name record states the hearth a FACE's edge binds (the seed-charter Nexus AID, or
+  // the stated empty name of a leaf), so it lands with the face. A place alone binds no hearth and writes none.
   const daemonHandle = seedDaemonDoc(repo);
-
-  daemonHandle.change((doc) => {
-    doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
-      tiddler: { title: HEARTH_TRUE_NAME_TIDDLER, text: hearthTrueName, kind: "hearth-true-name" },
-      meta: { authority: "lares-init" },
-    });
-  });
 
   return {
     daemonUrl: daemonHandle.url as string,
     daemonHandle,
   };
+}
+
+async function requireSecretHandle(secretHandle: ReturnType<typeof seedDaemonDoc> | undefined, daemonHandle: ReturnType<typeof seedDaemonDoc>, rest: SecretRestCapability | undefined): Promise<ReturnType<typeof seedDaemonDoc>> {
+  if (!secretHandle) throw new Error("secret-home-unavailable: the vessel did not supply its secret document");
+  if (secretHandle.url === daemonHandle.url) throw new Error("secret-home-shared: the secret document must differ from the daemon document");
+  if (!rest || !await rest.assertSealed()) throw new Error("secret-home-unavailable: the secret document has no confirmed sealed rest");
+  return secretHandle;
 }
 
 /**
@@ -269,6 +280,9 @@ export interface FaceFoundingInput {
   repo:               Repo;
   /** The daemon handle the place-founding stood. The face writes its pins into the SAME island. */
   daemonHandle:       ReturnType<typeof seedDaemonDoc>;
+  /** The place's separately held secret document. Absence refuses before any secret write. */
+  secretHandle?:      ReturnType<typeof seedDaemonDoc>;
+  secretRest?:        SecretRestCapability;
   placeVerifyingKey: string;
   vesselDisplayName:  string;
   /** The random atom seed held for this PersonaGroup. */
@@ -323,6 +337,7 @@ const FACE_FOUNDING_CHECKPOINT_PREFIX = "lar:///ha.ka.ba/dreamnet/face-founding-
 type FaceCheckpoint = {
   /** What the founding was asked: a checkpoint answers only that same ask. */
   scope: string;
+  secretUrl: string;
   result: Omit<FaceFoundingResult, "atomSeed" | "veilArchive"> & { veilArchive: string };
   dyad: DyadRecord;
   mount: boolean;
@@ -343,13 +358,14 @@ export async function retireFaceCheckpoint(handle: ReturnType<typeof seedDaemonD
   if (ownEntry(handle.doc()?.tiddlers, title)) handle.change((doc) => { delete doc.tiddlers[title]; });
 }
 
-async function landFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, checkpoint: FaceCheckpoint): Promise<void> {
+async function landFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, secretHandle: ReturnType<typeof seedDaemonDoc>, checkpoint: FaceCheckpoint): Promise<void> {
   const result = checkpoint.result;
   const events = new InMemoryEventStore();
   for (const e of checkpoint.events) await events.put({ hash: e.hash, variant: e.variant, bytes: base64ToBytes(e.bytes), ...(e.island ? { island: e.island } : {}) });
-  await flushCapEvents(events, handle, result.personaGroupId);
-  handle.change((doc) => {
+  await flushCapEvents(events, secretHandle, result.personaGroupId);
+  secretHandle.change((doc) => {
     writeGroupSecretSeal(doc, result.personaGroupId, result.groupSecretSeal);
+    writeDyad(doc, checkpoint.dyad);
   });
   if (!checkpoint.mount) return;
   handle.change((doc) => {
@@ -361,7 +377,6 @@ async function landFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, chec
     });
   });
   handle.change((doc) => {
-    writeDyad(doc, checkpoint.dyad);
     doc.tiddlers[SIGNER_DID_TIDDLER] = storedRecord({
       tiddler: { title: SIGNER_DID_TIDDLER, text: result.signerDid, kind: "operator-root-did" }, meta: { authority: "lares-init" },
     });
@@ -373,14 +388,14 @@ async function landFaceCheckpoint(handle: ReturnType<typeof seedDaemonDoc>, chec
     doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER] = storedRecord({
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...result.founderEdge }, meta: { authority: "lares-init" },
     });
-    // The hearth the mounted face binds: its edge's true name, which a place founding wrote before any hearth stood.
+    // The hearth the mounted face binds: its edge's true name. This write lands the record first; a place founding writes none.
     doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
       tiddler: { title: HEARTH_TRUE_NAME_TIDDLER, text: result.founderEdge.hearthTrueName, kind: "hearth-true-name" }, meta: { authority: "lares-init" },
     });
   });
 }
 
-/** Rest a device's PersonaGroup secret seal on its daemon doc, keyed by the group. Call inside `change()`. */
+/** Rest a device's PersonaGroup secret seal in the secret document. Call inside `change()`. */
 function writeGroupSecretSeal(
   doc: { tiddlers: StoredTiddlers }, personaGroupId: string, seal: GroupSecretSeal, authority = "lares-init",
 ): void {
@@ -444,14 +459,18 @@ async function landFaceGenesis(input: { repo: Repo; binding: FoundingBinding; at
  */
 export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundingResult> {
   const { repo, daemonHandle, vesselDisplayName, placeVerifyingKey } = input;
+  const secretHandle = await requireSecretHandle(input.secretHandle, daemonHandle, input.secretRest);
   const atomSeed = input.atomSeed ?? mintFaceAtomSeed();
   const atom = faceAtomKeyFromSeed(atomSeed, "founding");
   if (atom.key === placeVerifyingKey.toLowerCase()) throw new Error("[founding] the place key cannot stand as a face atom");
   const foundingScope = JSON.stringify([input.hearthTrueName, input.binding.mode, input.binding.mode === "contracted" ? input.binding.personaKelPrefix : null, input.mount !== false, ...(input.askDigest === undefined ? [] : [input.askDigest])]);
-  const prior = await readFaceCheckpoint(daemonHandle, atomSeed, foundingScope);
+  // THE CHECKPOINT RESTS IN THE SECRET HOME (operator ruling A5): it carries the seal, the dyad and the cap events.
+  const prior = await readFaceCheckpoint(secretHandle, atomSeed, foundingScope);
   if (prior) {
+    if (prior.secretUrl !== secretHandle.url) throw new Error("secret-home-mismatch: the founding checkpoint names another secret document");
     if (!prior.result.intentsUrl) throw new Error("[founding] checkpoint names no intents plane; re-found the face.");
-    await landFaceCheckpoint(daemonHandle, prior);
+    await requireSecretHandle(secretHandle, daemonHandle, input.secretRest);
+    await landFaceCheckpoint(daemonHandle, secretHandle, prior);
     const resumed = { ...prior.result, atomSeed, veilArchive: base64ToBytes(prior.result.veilArchive) };
     await landFaceGenesis({ repo, binding: input.binding, atomSeed, vesselTag: input.vesselTag, face: resumed });
     return resumed;
@@ -652,28 +671,30 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const events = (await store.list()).filter((e) => !standing.has(e.hash)).map((e) => ({ hash: e.hash, variant: e.variant, bytes: bytesToBase64(e.bytes), ...(e.island ? { island: e.island } : {}) }));
   const { atomSeed: _heldSeed, ...publicResult } = result;
   await landFaceGenesis({ repo, binding: input.binding, atomSeed, vesselTag: input.vesselTag, face: result });
-  const checkpoint: FaceCheckpoint = { scope: foundingScope, result: { ...publicResult, veilArchive: bytesToBase64(veilArchive) }, dyad: dyadRecord, mount, events };
+  const checkpoint: FaceCheckpoint = { scope: foundingScope, secretUrl: secretHandle.url, result: { ...publicResult, veilArchive: bytesToBase64(veilArchive) }, dyad: dyadRecord, mount, events };
   const checkpointText = await sealCheckpoint(checkpoint, atomSeed);
   const foundingCheckpointTitle = `${FACE_FOUNDING_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
-  daemonHandle.change((doc) => {
+  await requireSecretHandle(secretHandle, daemonHandle, input.secretRest);
+  secretHandle.change((doc) => {
     const title = foundingCheckpointTitle;
     doc.tiddlers[title] = storedRecord({ tiddler: { title, text: checkpointText, kind: "face-founding-checkpoint" }, meta: { authority: "lares-init" } });
   });
-  await landFaceCheckpoint(daemonHandle, checkpoint);
+  await requireSecretHandle(secretHandle, daemonHandle, input.secretRest);
+  await landFaceCheckpoint(daemonHandle, secretHandle, checkpoint);
   return result;
 }
 
-/** Write an event store's cap events into the daemon doc in DaemonEventStore-compatible form. Idempotent. */
+/** Write an event store's cap events into the secret document. Idempotent. */
 async function flushCapEvents(
   store: InMemoryEventStore,
-  daemonHandle: ReturnType<typeof seedDaemonDoc>,
+  secretHandle: ReturnType<typeof seedDaemonDoc>,
   face: string,
   authority = "lares-init",
 ): Promise<void> {
   for (const evt of await store.list()) {
     const hash    = hexEncode(await webDigest("SHA-256", evt.bytes));
     const title   = capEventTitle(face, hash);
-    daemonHandle.change((doc) => {
+    secretHandle.change((doc) => {
       if (!ownEntry(doc.tiddlers, title)) {
         doc.tiddlers[title] = storedRecord({
           tiddler: {
@@ -698,15 +719,17 @@ async function flushCapEvents(
   }
 }
 
-/** Read the daemon doc's cap events back into a fresh store, so a later ceremony resumes the same lattice. */
+/** Read the secret document's cap events back into a fresh store for replay. */
 export async function replayCapEvents(
-  daemonHandle: ReturnType<typeof seedDaemonDoc>,
+  secretHandle: ReturnType<typeof seedDaemonDoc>,
   face: string,
+  secretRest?: SecretRestCapability,
 ): Promise<InMemoryEventStore> {
+  if (!secretRest || !await secretRest.assertSealed()) throw new Error("secret-home-unavailable: replay requires confirmed sealed rest");
   const store = new InMemoryEventStore();
-  const doc   = daemonHandle.doc();
+  const doc   = secretHandle.doc();
   for (const [title, rec] of plainEntries(doc?.tiddlers)) {
-    if (!title.startsWith(`${DAEMON_BAG_ID}/cap/`)) continue;
+    if (!title.startsWith(`${SECRET_HOME_ID}/cap/`)) continue;
     if (rec?.meta?.deleted) continue;
     const fields = rec?.tiddler as Record<string, string> | undefined;
     if (fields?.["face"] !== face || !fields["text"] || !fields["variant"] || !fields["hash"]) continue;
@@ -732,13 +755,13 @@ export async function replayCapEvents(
 export async function runFoundingCeremony(
   input: FoundingCeremonyInput,
 ): Promise<FoundingCeremonyResult> {
-  const place = await foundThePlace({
-    repo:           input.repo,
-    hearthTrueName: input.hearthTrueName,
-  });
+  if (!input.secretHandle || !input.secretRest || !await input.secretRest.assertSealed()) throw new Error("secret-home-unavailable: founding requires a separately held secret document with sealed rest");
+  const place = await foundThePlace({ repo: input.repo });
   const face = await foundTheFace({
     repo:               input.repo,
     daemonHandle:       place.daemonHandle,
+    secretHandle:       input.secretHandle,
+    secretRest:         input.secretRest,
     placeVerifyingKey: input.placeVerifyingKey,
     vesselDisplayName:  input.vesselDisplayName,
     binding:            input.binding,
@@ -749,6 +772,7 @@ export async function runFoundingCeremony(
   });
   return {
     daemonUrl:       place.daemonUrl,
+    secretUrl:       input.secretHandle.url as string,
     ...face,
   };
 }
@@ -772,7 +796,7 @@ export interface DeviceAdmitEdgeInput {
   /** Signed persona records to carry to the joinee's daemon doc. */
   personaActs:           readonly unknown[];
   edgeFrontier: { readonly records: readonly unknown[]; readonly snapshots: readonly (readonly [string, readonly string[]])[] };
-  /** The hearth true-name (engine CID) the joinee binds TO. */
+  /** The hearth true name the joinee's edge binds TO (the root holder's seed-charter Nexus AID; "" from a gateless leaf). */
   hearthTrueName:         string;
   /** The face's PersonaGroup (a Keyhive group's id) and the MeshCabal sentinel the founding seated it in. */
   personaGroupId:   string;
@@ -796,7 +820,7 @@ export interface DeviceAdmitEdgeInput {
 }
 
 /**
- * Produce a device-admit/v1 payload for the UPGRADE event: the founder's PersonaGroup root SIGNS
+ * Produce a device-admit payload for the UPGRADE event: the founder's PersonaGroup root SIGNS
  * a root→joinee delegation root half for the joinee's atom key. The joinee countersigns it before storage.
  */
 export async function runDeviceAdmitEdge(
@@ -841,7 +865,7 @@ export async function runDeviceAdmitEdge(
     boundEpoch:         input.boundEpoch ?? 0,
   });
   const issued: DeviceAdmitPayload = {
-    kind:                   "device-admit/v1",
+    kind:                   DEVICE_ADMIT_KIND,
     signerDid:              deviceEdge.personaRootDid,
     personaKelPrefix:       input.personaKelPrefix,
     personaKelChain:        input.personaKelChain,
@@ -868,6 +892,9 @@ export async function runDeviceAdmitEdge(
 export interface ApplyAdmitInput {
   repo:                 Repo;
   daemonHandle:         ReturnType<typeof seedDaemonDoc>;
+  /** The joinee's separately held secret document. */
+  secretHandle?:        ReturnType<typeof seedDaemonDoc>;
+  secretRest?:          SecretRestCapability;
   /** The joinee's atom seed, which signs its edge and contact card. */
   atomSeed:           Uint8Array;
   vesselDisplayName:  string;
@@ -897,6 +924,7 @@ export interface ApplyAdmitResult {
   promoteUrl:    string | null;
   faceRelation: string | null;
   daemonUrl:      string;
+  secretUrl:      string;
   /** The PersonaGroup plane's doc URL the joinee resolves — the founder's shared doc
    *  (membership-sync) when the payload carries it, else a fresh local seed. */
   personaUrl:     string;
@@ -933,7 +961,7 @@ export async function retireApplyCheckpoint(handle: ReturnType<typeof seedDaemon
 }
 
 /**
- * Apply a device-admit/v1 payload to bootstrap a second vessel.
+ * Apply a device-admit payload to bootstrap a second vessel.
  * Seeds social docs identically to the founding path, then writes oracle
  * tiddlers and cap events from the payload so boot Gates B and C pass.
  */
@@ -941,17 +969,20 @@ export async function runApplyAdmitPayload(
   input: ApplyAdmitInput,
 ): Promise<ApplyAdmitResult> {
   const { repo, vesselDisplayName, payload, atomSeed, daemonHandle } = input;
+  const secretHandle = await requireSecretHandle(input.secretHandle, daemonHandle, input.secretRest);
   if (!(atomSeed instanceof Uint8Array) || atomSeed.length !== 32) throw new FacelessKeyhiveRefused();
   const atom = faceAtomKeyFromSeed(atomSeed, payload.personaGroupId);
   const mount = input.mount !== false;
   const applyScope = JSON.stringify([payload.deviceEdge, payload.personaKelPrefix, payload.hearthTrueName, payload.personaGroupId, mount]);
-  const checkpoint = await readApplyCheckpoint(daemonHandle, atomSeed, applyScope);
+  const checkpoint = await readApplyCheckpoint(secretHandle, atomSeed, applyScope);
+  if (checkpoint && checkpoint.result.secretUrl !== secretHandle.url) throw new Error("secret-home-mismatch: the admission checkpoint names another secret document");
 
   // Fail-closed: the binding is the joinee's whole authority — a missing field MUST halt,
   // never write a half-bound daemon doc (the confused-deputy / mycelium-PCD hole). The persona-KEL PREFIX
   // is part of that authority now: the joinee's Binding Gate pins it, so a payload with no pin would admit a
   // vessel that boots with nothing to walk (a fail-closed halt) — refuse it here, precisely, instead.
-  if (!payload.signerDid || !payload.deviceEdge || !payload.hearthTrueName || !payload.personaKelPrefix) {
+  // leaf-fleet (Leaf-Wright): the true name rides STATED, a hearth's name or "" where the root holder stood no gate; absent still refuses.
+  if (!payload.signerDid || !payload.deviceEdge || typeof payload.hearthTrueName !== "string" || !payload.personaKelPrefix) {
     throw new Error("[ceremony] runApplyAdmitPayload: payload lacks signerDid/deviceEdge/hearthTrueName/personaKelPrefix — refusing to admit.");
   }
   // The KEL chain and shared document are required for a joined face.
@@ -1059,7 +1090,7 @@ export async function runApplyAdmitPayload(
       sessionsUrl: sessionsHandle.url as string,
       intentsUrl: sharedIntentsUrl,
       kahuaUrl: kahuaPlaneUrl(carriedLog, payload.personaGroupId), promoteUrl: promotePlaneUrl(carriedLog, payload.personaGroupId), faceRelation: faceRelationOf(carriedLog),
-      daemonUrl: daemonHandle.url as string,
+      daemonUrl: daemonHandle.url as string, secretUrl: secretHandle.url as string,
       personaUrl, personaBagId,
       hearthDaemonUrl: payload.hearthDaemonUrl,
       deviceEdge: fullEdge,
@@ -1068,7 +1099,8 @@ export async function runApplyAdmitPayload(
     const stored: ApplyCheckpoint = { scope: applyScope, result: { ...result, archive: bytesToBase64(archive) }, events };
     const checkpointText = await sealCheckpoint(stored, atomSeed);
     const applyCheckpointTitle = `${APPLY_ADMIT_CHECKPOINT_PREFIX}${await checkpointId(atomSeed)}`;
-    daemonHandle.change((doc) => {
+    await requireSecretHandle(secretHandle, daemonHandle, input.secretRest);
+    secretHandle.change((doc) => {
       const title = applyCheckpointTitle;
       doc.tiddlers[title] = storedRecord({
         tiddler: { title, text: checkpointText, kind: "apply-admit-checkpoint" },
@@ -1080,11 +1112,18 @@ export async function runApplyAdmitPayload(
   // Write the joinee's BINDING into its own daemon doc — the pinned signer, the hearth true-name,
   // and the root→joinee edge (mirrors the founding write). The joinee boots through its Binding
   // Gate on these alone: verifyDeviceDelegation(edge, signerDid) — no cap events, no Beelay.
-  daemonHandle.change((doc) => {
-    for (const act of payload.personaActs) writePersonaAct(doc, act as Parameters<typeof writePersonaAct>[1]);
+  await requireSecretHandle(secretHandle, daemonHandle, input.secretRest);
+  secretHandle.change((doc) => {
     writeDyad(doc, joineeDyad);
+    writeGroupSecretSeal(doc, payload.personaGroupId, seal, "lares-init-admit");
+    // THE CARRIED PERSONA ACTS, kept in the vessel's secret home until the face's PersonaGroup plane syncs: a joined face
+    // proves from the plane and these together. They never rest in the daemon document. A write into this device's replica
+    // of the plane is unsound before it syncs: the founder minted the plane's root map, and a replica that does not descend
+    // from that history would mint a concurrent root, whose acts the merge hides behind the founder's.
+    for (const act of payload.personaActs) writePersonaAct(doc, act as Parameters<typeof writePersonaAct>[1]);
+  });
+  daemonHandle.change((doc) => {
     if (!mount) {
-      writeGroupSecretSeal(doc, payload.personaGroupId, seal, "lares-init-admit");
       return;
     }
     doc.tiddlers[SIGNER_DID_TIDDLER] = storedRecord({
@@ -1099,7 +1138,6 @@ export async function runApplyAdmitPayload(
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...fullEdge },
       meta: { authority: "lares-init-admit" },
     });
-    writeGroupSecretSeal(doc, payload.personaGroupId, seal, "lares-init-admit");
     // The joinee's veil tag IS the carried group doc id (the split's second moment) — persisted under
     // the same tiddler the founder's minted tag rides, so ONE boot rule stands either veil.
     // The PINNED identifier — the joinee's Binding Gate walks THIS to the current head op-key (the founder's
@@ -1173,8 +1211,7 @@ export async function runApplyAdmitPayload(
   // THE INGEST IS THE READING. The wire hands bare bytes, but this keyhive parses them back into events and
   // fires the handler above, which stamps the true variant and self-attributes the island — the record is
   // typed because the vessel took the events, never because the founder labelled them.
-  if (payload.capEvents?.length) {
-    await flushCapEvents(capStore, daemonHandle, payload.personaGroupId, "lares-init-admit");
-  }
+  await requireSecretHandle(secretHandle, daemonHandle, input.secretRest);
+  await flushCapEvents(capStore, secretHandle, payload.personaGroupId, "lares-init-admit");
   return result;
 }

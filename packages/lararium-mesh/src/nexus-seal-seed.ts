@@ -17,7 +17,7 @@
  * face, which excludes them by definition. A reader who takes the two for one word publishes a muster roll
  * while meaning to publish a device.
  *
- * WHAT REMAINS FUSED IS AUTHORITY, NOT STORAGE. The disk doc now carries seal · kahu · practice in three
+ * WHAT REMAINS FUSED IS AUTHORITY, NOT STORAGE. The disk doc carries seal · kahu · practice in three
  * fenced blocks at three cadences, so no write clobbers a joint it never meant to touch. But no threshold
  * gates any of those writes, and one operator command still moves kahu and seal together — so the warning
  * above stands undischarged: four amendment costs, one hand.

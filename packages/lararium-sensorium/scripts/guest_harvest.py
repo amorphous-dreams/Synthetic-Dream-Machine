@@ -64,21 +64,13 @@ def mempalace_exe():
     return local if os.path.exists(local) else exe
 
 
-def _lar_state_home():
-    """`$XDG_STATE_HOME/lares` (or a `LAR_ROOT` sandbox's `state/`). Mirrors `vessel-paths.ts::larStateHome`."""
-    root = os.environ.get("LAR_ROOT")
-    if root:
-        return os.path.join(root, "state")
-    xdg = (os.environ.get("XDG_STATE_HOME") or "").strip()
-    base = xdg or os.path.join(os.path.expanduser("~"), ".local", "state")
-    return os.path.join(base, "lares")
-
-
 def default_stage_root():
-    """The guest Mempalace lane beneath the one canonical stage root — mirrors
-    `larHarvestStageDir()/mempalace`. The thin TS coordinator passes `--stage-root` explicitly; this
-    default keeps the script runnable standalone."""
-    return os.path.join(_lar_state_home(), "harvest-stage", "mempalace")
+    """The guest Mempalace lane beneath the one harvest staging root — mirrors
+    `larHarvestStagingDir()/mempalace` (`<root>/hearth/staging/harvest/mempalace`). The thin TS coordinator
+    passes `--stage-root` explicitly; this default keeps the script runnable standalone. An unnamed
+    `LAR_ROOT` raises `HouseRootUnnamed`."""
+    import house_root
+    return os.path.join(house_root.harvest_staging_dir(), "mempalace")
 
 
 def _scripts_dir():

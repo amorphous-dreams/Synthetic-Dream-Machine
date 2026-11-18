@@ -17,7 +17,9 @@
  *                                                the seat quorum's admission into the Kahu cabal, on the
  *                                                carriage board under its own prefix (`commands/nexus-cabal`)
  *   nexus-release                                the steward's seal of a floor release, with the cabal's approval of the
- *                                                manifest's exact bytes, landed on the crossroads board (`commands/nexus-release`)
+ *                                                manifest's exact bytes, landed on the publication board (`commands/nexus-release`)
+ *   floor-cut                                    the floor the next release names, cut from live house canon (`commands/floor-cut`)
+ *   offer-retire                                 a charter seat's retire of a promoted canon offer (`commands/offer-retire`)
  *   nexus-posture                                the per-Nexus federation posture joint (`nexus-doc`)
  *   nexus-admit-take                             a carried admit bundle's offline take + live re-present
  *                                                (`admit-bundle`)
@@ -34,13 +36,14 @@
  *   persona-new                                  a face onto a standing place (`commands/init`)
  *   persona-lease                                a signed lease advance for a face (`commands/persona-lease`)
  *   persona-kel-head                             a persona-KEL head off the local board (`local-persona-kel`)
- *   nexus-publish                                the Crossroads offering (`commands/nexus-publish`)
- *   nexus-offering-inspect                       one carried offering, read off the Crossroads board
+ *   nexus-publish                                an offering onto the publication board (`commands/nexus-publish`)
+ *   nexus-offering-inspect                       one carried offering, read off the publication board
  *                                                (`commands/nexus-offering-inspect`)
  *   raise-sign                                   a raise grant off the carriage board (`commands/raise-sign`)
- *   kahua-mint · kahua-propose · kahua-lift · kahua-withdraw · kahua-carry · kahua-read
- *                                                a face's kahua stage: its pin, a proposal, the operator's lift and
- *                                                withdraw (cap read off the island, grant out of custody), reads (`commands/kahua`)
+ *   kahua-mint · kahua-propose · kahua-stage · kahua-lift · kahua-withdraw · kahua-carry · kahua-read
+ *                                                a face's kahua stage: its pin, a proposal, a row staged into the face's
+ *                                                local canon (unsigned), the operator's lift of a staged row and withdraw
+ *                                                (cap read off the island, grant out of custody), reads (`commands/kahua`)
  *
  * A REFUSAL is an answer, never a fault: it comes back as `{ refused, refusal }` (the door's words, and the name
  * the row refuses under), so the CLI names it exactly as the direct path does. A row hands back what its command prints; the command's own process prints it, so a row that ran
@@ -62,7 +65,7 @@
  */
 
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused } from "@lararium/mesh";
+import { WardRefused, CanonOfferRefused, type FloorRemount } from "@lararium/mesh";
 
 /** The route a row's own ticket resolved to, carried beside its arguments under a key no wire spells (seat-harness#/the-ward). */
 const WARD_ARG: unique symbol = Symbol("ward");
@@ -80,19 +83,23 @@ function withWard(verb: string, row: Row): Row {
     return row(ward ? Object.assign({ ...args }, { [WARD_ARG]: ward }) : args);
   };
 }
+import { unlockedFaceOrdinals } from "./custody-seat.js";
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
+import { runRiteVerb, type RiteAction } from "./commands/rite.js";
 import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
 import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
-import type { Repo } from "@automerge/automerge-repo";
-import { readFileSync } from "node:fs";
+import type { DocHandle, Repo } from "@automerge/automerge-repo";
+import type { LarDoc } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
-import { join } from "node:path";
 import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runFloorRelease } from "./commands/nexus-release.js";
+import { runFloorCut } from "./commands/floor-cut.js";
+import { runOfferRetire } from "./commands/offer-retire.js";
+import { runFloorAccept, runFloorStatus, FloorRefused } from "./commands/floor.js";
 import { casDirForStorage } from "./node-cas.js";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
@@ -101,7 +108,7 @@ import { runPersonaLease, PersonaLeaseError } from "./commands/persona-lease.js"
 import { runIntentCommand, IntentRefused, type IntentCommandOptions } from "./commands/intent.js";
 import { runIntentRelayCommand } from "./commands/intent-relay.js";
 import { runKahuaCommand, KahuaRefused, type KahuaAction } from "./commands/kahua.js";
-import { FaceNotNamed, faceRowArgs } from "./face-selector.js";
+import { FaceNotNamed, faceVerbArgs } from "./face-selector.js";
 import { runEdgeRollAnchors, rollAnchorFace, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError, type WornFleet } from "./commands/edge-seats.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-cosign.js";
@@ -116,7 +123,7 @@ import { runNexusInspectOffering, NexusOfferingInspectError } from "./commands/n
 import { runRaiseSign, RaiseSignError } from "./commands/raise-sign.js";
 import { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
 import { ownedStore } from "./owned-store.js";
-import { larDataDir } from "./vessel-paths.js";
+import { larDataDir, readCatalogPointer } from "./vessel-paths.js";
 import { readNexusDoc, writeNexusPractice } from "./nexus-doc.js";
 import { takeAdmitBundle, AdmitBundleError } from "./admit-bundle.js";
 import { takeCarryBundle, CarryBundleError } from "./carry-bundle.js";
@@ -161,6 +168,29 @@ export interface StoreDoorDeps {
   readonly wornFleet?: () => WornFleet | undefined;
   /** The daemon wiki the swarm's controls rest in, where a daemon stands; absent on a direct act, which refuses every swarm row by name. */
   readonly swarmWiki?: SwarmWikiPort;
+  /**
+   * The face the standing composition MOUNTS in its daemon island (lit and proved), by handle index; null where none stands
+   * lit. A face's stage read (`kahua-read`) answers `mount` and `mounted` off it, so the seed and the import lay a face's private mirrors only into the one face whose
+   * daemon working document the composition holds. Absent on a direct act, whose answers carry no `worn`.
+   */
+  readonly mountFace?: () => number | null;
+  /**
+   * Raise the reboot-pending alert in every live wiki after a floor accept (`@lararium/mesh` `raiseFloorAlert`); answers the
+   * wikis it reached. Absent on a direct act, which holds no live wiki: the accepted floor mounts at the next boot.
+   */
+  readonly floorAlert?: (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]>;
+  /**
+   * A face's local canon `bags/daemon-<F>` by relation, as the standing vessel opens it (`faceCanonThroughControl`): a kahua
+   * lift reads its staged row there and `kahua-stage` writes one. Absent on a direct act, whose lift refuses
+   * `kahua-lift-unstaged`.
+   */
+  readonly faceCanon?: (relation: string) => Promise<DocHandle<LarDoc> | null>;
+  /**
+   * Light a face beside the worn one in the standing composition (the lit set): its provider stands, so its stage reads and
+   * a wave may name it. A face `persona-new` founds on a standing vessel lights at its birth, its custody already open.
+   * Absent on a direct act and at the floor, where no composition stands to light it in.
+   */
+  readonly lightFace?: (handleIndex: number) => Promise<void>;
 }
 
 /**
@@ -177,7 +207,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-prior-anchor", "nexus-members-list",
-  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release",
+  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-cut", "offer-retire", "floor-status", "floor-accept",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
   "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
@@ -185,9 +215,10 @@ export const STORE_DOOR_VERBS = [
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status", "intent-relay-rotate",
-  "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
+  "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
-  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-go-issue",
+  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
+  "rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -200,22 +231,23 @@ export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
  * steward's seat acts, the place's key-side duties, a face's founding, the relay key's rotation, the refold, and reads
  * of what the place holds.
  */
-export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([
+export const STORE_DOOR_FACE_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([
   "edge-kapae", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
   "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-lease", "nexus-publish", "raise-sign",
   "intent-issue", "intent-show", "intent-ask", "intent-answer", "intent-steer", "intent-root",
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status",
-  "kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
+  "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
-  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-go-issue",
+  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
+  "rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer",
 ]);
 
 /**
  * The kahua rows a person's hand alone runs: the stage's pin, a lift and a withdraw. A session the `seat` hand opened (a
  * spirit) refuses each one at the socket (`handOnlyActs`), so an AI seat proposes and reads and never lifts.
  */
-export const KAHUA_OPERATOR_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]);
+export const KAHUA_OPERATOR_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]);
 
 /** A seat session refuses these before custody reads; a client names its own hand, so this gate remains advisory, as for the existing operator rows. */
 export const PROMOTE_HAND_CODES: ReadonlyMap<string, string> = new Map([
@@ -223,19 +255,22 @@ export const PROMOTE_HAND_CODES: ReadonlyMap<string, string> = new Map([
   ["kapae-raise", "kapae-needs-hand"], ["kapae-lower", "kapae-needs-hand"],
 ]);
 
-/** The swarm rows only a hand runs (the house cap, a lane share, a go); `swarm-show` stays open to a seat. Advisory like the promote codes: the ward binds them. */
+/** The swarm rows only a hand runs (the house cap, a lane share, a lei); `swarm-show` stays open to a seat. Advisory like the promote codes: the ward binds them. */
 export const SWARM_HAND_CODES: ReadonlyMap<string, string> = new Map(Object.entries(SWARM_VERB_HAND_CODES));
 
-/** The socket's one hand-only table: every code a seat session refuses, promote and swarm together. */
-export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES]);
+/** The floor's accept moves the vessel's floor: a person's act alone (w26-floor-lane#/the-vessel-pin); a seat reads the status. */
+export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([["floor-accept", "floor-needs-hand"]]);
+
+/** The socket's one hand-only table: every code a seat session refuses, promote, swarm and floor together. */
+export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES]);
 /** The acts a seat session refuses at the socket: the kahua operator rows (`beyond-profile`) and every row of the code table. */
-export const STORE_DOOR_HAND_ONLY_ACTS: ReadonlySet<string> = new Set([...KAHUA_OPERATOR_ROWS, ...STORE_DOOR_HAND_CODES.keys()]);
+export const STORE_DOOR_HAND_ONLY_ACTS: ReadonlySet<string> = new Set([...KAHUA_OPERATOR_VERBS, ...STORE_DOOR_HAND_CODES.keys()]);
 
 /**
  * The face a face row names: `face`, else `handleIndex`; undefined where it names none. The two naming different faces
  * refuse `face-row-other-face` (`FaceNotNamed`): one choice, never split between two spellings.
  */
-export function storeRowFace(args: Readonly<Record<string, unknown>>): number | undefined {
+export function storeVerbFace(args: Readonly<Record<string, unknown>>): number | undefined {
   const named = (["face", "handleIndex"] as const).map((key) => args[key])
     .filter((v): v is number => typeof v === "number" && Number.isSafeInteger(v) && v >= 0);
   if (named.some((v) => v !== named[0])) {
@@ -247,7 +282,7 @@ export function storeRowFace(args: Readonly<Record<string, unknown>>): number | 
 type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, unknown>>;
 
 /** A face row that wore no session, or named a face its session did not wear. */
-export class FaceRowRefused extends Error {}
+export class FaceVerbRefused extends Error {}
 
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
@@ -256,7 +291,7 @@ const REFUSALS = [
   CarryBundleError,
   IntentRefused,
   KahuaRefused, PromoteRefused, KapaeRefused, SwarmRefused,
-  FaceRowRefused,
+  FaceVerbRefused, FloorRefused, CanonOfferRefused,
 ] as const;
 
 const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
@@ -289,6 +324,8 @@ async function answer(verb: string, run: () => Promise<Record<string, unknown>>)
   try { return { verb, ...(await run()) }; }
   catch (err) {
     if (err instanceof FaceRouteRefused) return { verb, refused: err.message, refusal: "face-route-refused" };
+    // A floor door's refusal carries its own name (`floor-no-charter`, `floor-cut-thin`): the row answers under it, never the verb's.
+    if (err instanceof FloorRefused) return { verb, refused: err.message, refusal: err.refusal };
     if (REFUSALS.some((R) => err instanceof R)) return { verb, refused: (err as Error).message, refusal: storeRefusalName(verb) };
     throw err;
   }
@@ -302,12 +339,12 @@ function need(verb: string, args: Readonly<Record<string, unknown>>, key: string
 }
 
 /** The rows over one holder, by verb. */
-function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
-  const rows = storeDoorRowsBare(deps);
+function storeDoorVerbs(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
+  const rows = storeDoorVerbsBare(deps);
   return Object.fromEntries(Object.entries(rows).map(([verb, row]) => [verb, withWard(verb, row)])) as Record<StoreDoorVerb, Row>;
 }
 
-function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
+function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   const { storageDir, sealHome, repo } = deps;
   /** The worn fleet the composer lent, as the edge-seat rows spread it; none on a direct act. */
   const wornOf = (): { worn?: WornFleet } => { const worn = deps.wornFleet?.(); return worn ? { worn } : {}; };
@@ -336,7 +373,7 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     const parent = args["parent"] === null || args["parent"] === "none" ? null : str(args["parent"]);
     return runKahuaCommand({ repo, ...opt("catalogUrl", deps.catalogUrl), action, ...opt("ward", wardOf(args)),
       ...opt("face", int(args["face"])), ...opt("title", str(args["title"])),
-      ...opt("text", typeof args["text"] === "string" ? args["text"] : undefined),
+      ...opt("text", typeof args["text"] === "string" ? args["text"] : undefined), ...opt("digest", str(args["digest"])),
       ...opt("fields", args["fields"] && typeof args["fields"] === "object" && !Array.isArray(args["fields"]) ? args["fields"] as Record<string, string> : undefined),
       ...opt("taint", list(args["taint"])),
       ...opt("sources", Array.isArray(args["sources"]) ? args["sources"] as { title: string; revision: string }[] : undefined),
@@ -345,36 +382,54 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("proposals", args["proposals"]), ...opt("session", str(args["session"])),
       ...opt("history", args["history"] === true ? true : undefined),
       ...opt("cids", list(args["cids"])), ...opt("all", args["all"] === true ? true : undefined),
-      ...opt("cap", kahuaCap),
+      ...opt("cap", kahuaCap), ...opt("faceCanon", deps.faceCanon), ...opt("mount", deps.mountFace),
+      ...opt("lent", deps.mountFace ? async () => unlockedFaceOrdinals().catch(() => null) : undefined),
     });
   };
-  const promoteRow = (action: PromoteCommandRequest["action"], args: Readonly<Record<string, unknown>>) =>
+  const promoteVerb = (action: PromoteCommandRequest["action"], args: Readonly<Record<string, unknown>>) =>
     runPromoteVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("restartWiki", deps.restartWiki), ...opt("ward", wardOf(args)) });
-  const swarmRow = (action: "show" | "cap-set" | "share-set" | "go-issue", args: Readonly<Record<string, unknown>>) =>
+  const swarmVerb = (action: "show" | "cap-set" | "share-set" | "lei-kui" | "lei-unstring" | "lei-restring", args: Readonly<Record<string, unknown>>) =>
     runSwarmVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, ...opt("wiki", deps.swarmWiki), ...opt("ward", wardOf(args)) });
+  const riteVerb = (action: RiteAction, args: Readonly<Record<string, unknown>>) =>
+    runRiteVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, ...opt("wiki", deps.swarmWiki) });
   return {
-    "swarm-show": (args) => answer("swarm-show", () => swarmRow("show", args)),
-    "swarm-cap-set": (args) => answer("swarm-cap-set", () => swarmRow("cap-set", args)),
-    "swarm-share-set": (args) => answer("swarm-share-set", () => swarmRow("share-set", args)),
-    "swarm-go-issue": (args) => answer("swarm-go-issue", () => swarmRow("go-issue", args)),
-    "promote-prepare": (args) => answer("promote-prepare", () => promoteRow("prepare", args)),
-    "promote-commit": (args) => answer("promote-commit", () => promoteRow("commit", args)),
-    "promote-drop": (args) => answer("promote-drop", () => promoteRow("drop", args)),
-    "promote-orphan": (args) => answer("promote-orphan", () => promoteRow("orphan", args)),
-    "promote-list": (args) => answer("promote-list", () => promoteRow("list", args)),
-    "kapae-raise": (args) => answer("kapae-raise", () => promoteRow("raise", args)),
-    "kapae-lower": (args) => answer("kapae-lower", () => promoteRow("lower", args)),
-    "kapae-flag": (args) => answer("kapae-flag", () => promoteRow("flag", args)),
+    "rite-begin": (args) => answer("rite-begin", () => riteVerb("begin", args)),
+    "rite-land": (args) => answer("rite-land", () => riteVerb("land", args)),
+    "rite-receipts": (args) => answer("rite-receipts", () => riteVerb("receipts", args)),
+    "rite-receipt": (args) => answer("rite-receipt", () => riteVerb("receipt", args)),
+    "rite-offer": (args) => answer("rite-offer", () => riteVerb("offer", args)),
+    "swarm-show": (args) => answer("swarm-show", () => swarmVerb("show", args)),
+    "swarm-cap-set": (args) => answer("swarm-cap-set", () => swarmVerb("cap-set", args)),
+    "swarm-share-set": (args) => answer("swarm-share-set", () => swarmVerb("share-set", args)),
+    "swarm-lei-kui": (args) => answer("swarm-lei-kui", () => swarmVerb("lei-kui", args)),
+    "swarm-lei-unstring": (args) => answer("swarm-lei-unstring", () => swarmVerb("lei-unstring", args)),
+    "swarm-lei-restring": (args) => answer("swarm-lei-restring", () => swarmVerb("lei-restring", args)),
+    "promote-prepare": (args) => answer("promote-prepare", () => promoteVerb("prepare", args)),
+    "promote-commit": (args) => answer("promote-commit", () => promoteVerb("commit", args)),
+    "promote-drop": (args) => answer("promote-drop", () => promoteVerb("drop", args)),
+    "promote-orphan": (args) => answer("promote-orphan", () => promoteVerb("orphan", args)),
+    "promote-list": (args) => answer("promote-list", () => promoteVerb("list", args)),
+    "kapae-raise": (args) => answer("kapae-raise", () => promoteVerb("raise", args)),
+    "kapae-lower": (args) => answer("kapae-lower", () => promoteVerb("lower", args)),
+    "kapae-flag": (args) => answer("kapae-flag", () => promoteVerb("flag", args)),
     "intent-relay-enable": (args) => answer("intent-relay-enable", async () => { const result = await runIntentRelayCommand({ action: "enable", ...relayFace(args) }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
     "intent-relay-disable": (args) => answer("intent-relay-disable", async () => { const result = await runIntentRelayCommand({ action: "disable", ...relayFace(args) }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
     "intent-relay-status": (args) => answer("intent-relay-status", () => runIntentRelayCommand({ action: "status", ...relayFace(args) })),
     "intent-relay-rotate": () => answer("intent-relay-rotate", async () => { const result = await runIntentRelayCommand({ action: "rotate" }); if (deps.onRolled) await awaitOnRolled(deps.onRolled()); return result; }),
     "kahua-mint": (args) => answer("kahua-mint", () => kahua("mint", args)),
     "kahua-propose": (args) => answer("kahua-propose", () => kahua("propose", args)),
+    "kahua-stage": (args) => answer("kahua-stage", () => kahua("stage", args)),
     "kahua-lift": (args) => answer("kahua-lift", () => kahua("lift", args)),
     "kahua-withdraw": (args) => answer("kahua-withdraw", () => kahua("withdraw", args)),
     "kahua-carry": (args) => answer("kahua-carry", () => kahua("carry", args)),
-    "kahua-read": (args) => answer("kahua-read", () => kahua(args["action"] === "get" ? "get" : "list", args)),
+    "kahua-read": (args) => answer("kahua-read", async () => {
+      const read = await kahua(args["action"] === "get" ? "get" : args["action"] === "staged" ? "staged" : "list", args);
+      // THE DAEMON MOUNT, named as such: the read answers the face it names, and beside it the one face the daemon island
+      // mounts (`mount`) and whether this face stands as it (`mounted`); the daemon's working layer holds the mount's document.
+      const face = int(args["face"]);
+      const mount = deps.mountFace?.() ?? null;
+      return deps.mountFace && face !== undefined ? { ...read, mount, mounted: mount === face } : read;
+    }),
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
     "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),
     "intent-ask": (args) => answer("intent-ask", () => intent("ask", args)),
@@ -513,6 +568,37 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "nexus-release": (args) => answer("nexus-release", async () => ({
       ...(await runFloorRelease({
         repo, sealHome, manifestFile: need("nexus-release", args, "manifestFile"), approval: args["approval"], casDir: casDirForStorage(storageDir), ...opt("aid", str(args["aid"])),
+      })),
+    })),
+
+    // THE RELEASE WIRING (offering#/the-canon-offer): cut the floor the next release names from LIVE house canon, so a release after
+    // a promotion carries the promoted rows. It stages the floor in this hearth's CAS and writes the manifest file; it lands nothing.
+    // THE OFFER'S RETIRE (offering#/the-canon-offer): a seat of the charter held here retires an offer canon now carries. A retire
+    // only counts where a charter seat sealed it, and the seat keys rest beside this door, never in the island that wrote canon.
+    // A replica that trails the promotion past the wait's bound answers `canon-trails` with `pending`: an answer, never a refusal.
+    "offer-retire": (args) => answer("offer-retire", async () => ({
+      ...(await runOfferRetire({
+        repo, sealHome, cid: need("offer-retire", args, "cid"), ...opt("aid", str(args["aid"])), ...opt("catalogUrl", deps.catalogUrl),
+        // The heads the promotion answered: the retire waits until this door's replica of canon contains them.
+        ...(args["after"] !== undefined ? { after: Array.isArray(args["after"]) ? (args["after"] as unknown[]).map(String) : [] } : {}),
+        ...(Array.isArray(args["over"]) ? { over: (args["over"] as unknown[]).filter((o): o is { title: string; canon: string | null } =>
+          typeof o === "object" && o !== null && typeof (o as { title?: unknown }).title === "string") } : {}),
+      })),
+    })),
+    "floor-cut": (args) => answer("floor-cut", async () => ({
+      ...(await runFloorCut({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), out: need("floor-cut", args, "out"), ...opt("aid", str(args["aid"])), ...opt("catalogUrl", deps.catalogUrl),
+        ...(Array.isArray(args["thin"]) ? { thin: (args["thin"] as unknown[]).filter((s): s is string => typeof s === "string") } : {}) })),
+    })),
+
+    // THE VESSEL'S FLOOR PIN (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus) in the control home, moved only by
+    // the accept, which walks `prior` from the pin. Both rows answer the mesh's own decision; a refusal rides as data.
+    "floor-status": (args) => answer("floor-status", async () => ({
+      ...(await runFloorStatus({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])) })),
+    })),
+    "floor-accept": (args) => answer("floor-accept", async () => ({
+      ...(await runFloorAccept({
+        repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])),
+        ...opt("target", str(args["release"])), ...opt("floorAlert", deps.floorAlert),
       })),
     })),
 
@@ -674,8 +760,19 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "persona-lease": (args) => answer("persona-lease", async () => ({
       ...(await runPersonaLease({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)) })),
     })),
+    // A FACE BORN ON A STANDING VESSEL LIGHTS AT ITS BIRTH: its founding opens its custody, and the composition lights it beside
+    // the daemon mount, so its stage reads and a carry reads it with no second unlock. The daemon mount itself needs no light. The
+    // founding stands whatever the light answers: a light that refuses rides the answer by name (`lightRefused`), never as a
+    // founding that failed, so the face still takes its pet-name.
     "persona-new": (args) => answer("persona-new", async () => {
-      return withFaceRoute(str(args["faceRouteRef"]), "persona-new", faceRouteBindDigest("persona-new", args), async () => ({ ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)) })) }));
+      const handleIndex = int(args["handleIndex"]);
+      const founded = await withFaceRoute(str(args["faceRouteRef"]), "persona-new", faceRouteBindDigest("persona-new", args), async () => ({ ...(await runFoundTheFace({ repo, ...opt("handleIndex", handleIndex), ...opt("ward", wardOf(args)) })) }));
+      const worn = deps.mountFace?.() ?? null;
+      const born = handleIndex ?? 0;
+      if (deps.lightFace === undefined || worn === null || born === worn) return founded;
+      try { await deps.lightFace(born); }
+      catch (e) { return { ...founded, lit: false, lightRefused: e instanceof Error ? e.message : String(e) }; }
+      return { ...founded, lit: true };
     }),
     // M12′/L11: the SAME board resolves BOTH the head op-key and that head's KEL seq, off ONE materialize
     // (`makeLocalPersonaKelHeadAndSeqResolver`), so head and seq never straddle a sync landing between two
@@ -702,18 +799,18 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
  * `session:act`, and the vessel's main thread hands it that face (its ordinal, beside the presenter the session door
  * verified; `DaemonVmCore.runAsFace`), which the row reads from `worn` alone. Its answer returns on that session's socket. A row naming another face (by `face` or `handleIndex`) refuses `face-row-other-face`;
  * a face row that rode no session (a surface act, host code, a synced summons) refuses `face-row-rides-a-session`.
- * Every row naming none acts as the worn face, so no row falls back to the one face open or to face 0.
+ * Every row naming none acts as the daemon mount, so no row falls back to the one face open or to face 0.
  */
 export function storeDoorReactors(deps: StoreDoorDeps): Record<StoreDoorVerb, VerbReactor> {
-  const rows = storeDoorRows(deps);
+  const rows = storeDoorVerbs(deps);
   const bound = { ...rows } as Record<StoreDoorVerb, VerbReactor>;
-  for (const verb of STORE_DOOR_FACE_ROWS) {
+  for (const verb of STORE_DOOR_FACE_VERBS) {
     const row = rows[verb];
     bound[verb] = (args, context) => answer(verb, async () => {
       const worn = context.worn;
-      if (!worn) throw new FaceRowRefused(`face-row-rides-a-session: "${verb}" acts as a face, and rides a session of that face`);
-      const named = faceRowArgs(args, worn.ordinal);
-      if (named === null) throw new FaceRowRefused(`face-row-other-face: this session wears face h${worn.ordinal}; "${verb}" names another`);
+      if (!worn) throw new FaceVerbRefused(`face-row-rides-a-session: "${verb}" acts as a face, and rides a session of that face`);
+      const named = faceVerbArgs(args, worn.ordinal);
+      if (named === null) throw new FaceVerbRefused(`face-row-other-face: this session wears face h${worn.ordinal}; "${verb}" names another`);
       const { verb: _echo, ...output } = await row(named);
       return output;
     });
@@ -757,9 +854,7 @@ export async function storeDoorDirect(
 ): Promise<Record<string, unknown>> {
   const storageDir = opts.storageDir ?? larDataDir();
   return await ownedStore(storageDir, (repo) => {
-    // The direct holder reads the catalog named beside the store it owns. An unnamed store carries no canon.
-    let catalogUrl: string | undefined;
-    try { catalogUrl = readFileSync(join(storageDir, "catalog-url"), "utf8").trim() || undefined; } catch { /* No catalog stands. */ }
-    return storeDoorRows({ storageDir, sealHome: opts.sealHome, repo, catalogUrl })[verb](args);
+    // The direct holder reads the catalog named beside the store it owns (`readCatalogPointer`). An unnamed store carries no canon.
+    return storeDoorVerbs({ storageDir, sealHome: opts.sealHome, repo, catalogUrl: readCatalogPointer(storageDir) ?? undefined })[verb](args);
   });
 }

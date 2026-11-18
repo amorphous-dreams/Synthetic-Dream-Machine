@@ -177,7 +177,7 @@ export async function cmdRead(args: ParsedArgs): Promise<number> {
 /** Node health — bootstrap presence, storage size, port probe, retention. Pure local inspection. */
 async function cmdReadNode(args: ParsedArgs): Promise<number> {
 
-  const storage   = larDataDir();   // runtime → <lares>/vessel
+  const storage   = larDataDir();   // runtime → <root>/hearth/vessel
   const bootstrap = larBootstrapPath();
   const portRaw   = process.env["LAR_PORT"] ?? "8080";
   const port      = Number(portRaw);
