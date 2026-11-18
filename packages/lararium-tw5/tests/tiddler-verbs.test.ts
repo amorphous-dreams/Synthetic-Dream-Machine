@@ -339,7 +339,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);
     const spends: string[] = [];
-    const execLei = { spend: async (land: { wiki: string; title: string; writer: string }) => {
+    const execLei = { spend: async (land: { wiki: string; title: string; writer?: string }) => {
       if (land.title !== "Lei startup") throw new SwarmRefused("swarm-lei-out-of-scope", "the lei names no such title");
       spends.push(`${land.wiki}|${land.title}|${land.writer}`);
       return { lei: "c".repeat(64), n: spends.length };
