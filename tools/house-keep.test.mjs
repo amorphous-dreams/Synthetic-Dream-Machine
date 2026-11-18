@@ -13,7 +13,7 @@
 //       the same commit under `devices/<name>-<id8>/` (a scratch Claude home, sanitized); sessions that move over the unmoved
 //       house spend the lei's second return through the vessel's own `rite begin` over the standing bundle, push, and land par.
 //   H4  THE RESTORE DRILL: the exporting house goes down; a brand-new scratch house founds under the same pet-name, imports the
-//       bundle out of a FRESH CLONE of the remote, and `carry-parity` reads par against the census taken before the down. A
+//       bundle out of a FRESH CLONE of the remote, and `census-drill` reads par against the census taken before the down. A
 //       clone with one byte flipped refuses first (`bundle-hash-mismatch`), and nothing of it lands.
 //
 // Each house stands under its own marked scratch LAR_ROOT through the test custody doors; no LAR_BAGS, no docker, and the
@@ -33,7 +33,7 @@ import { daemonStood } from "./daemon-stood.mjs";
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
 const nodeMain = join(repo, "packages/lararium-node/dist/src/main.js");
-const tool = join(repo, "tools/carry-parity.mjs");
+const tool = join(repo, "tools/census-drill.mjs");
 
 const freePort = () => new Promise((resolve) => {
   const s = createServer();
