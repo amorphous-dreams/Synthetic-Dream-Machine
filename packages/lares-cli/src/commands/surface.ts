@@ -9,6 +9,9 @@
  *
  *   - `init [--face N]`: make the worn (or named) face's root a pool; a second run changes nothing and says "already".
  *   - `check [--face N]`: the roster witness over the repo standing here (or the named face's pool); exit 1 names each breach.
+ *   - `open [--face N] [--launch]`: print (and run) `code -n <face root> <realm pools>`; writes no workspace file.
+ *   - `commit [--face N] [-m <seam>]`: stage only the paths whose disk bytes equal the synced base, and commit them under a
+ *     `lar:` subject naming no face; a path standing off reads apart by name and stays unstaged. Never pushes.
  *
  * Meme: lar:///ha.ka.ba/kahua/memory/project/face-pools
  */
@@ -17,14 +20,14 @@ import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSy
 import { join, relative, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
 import {
-  faceRoot, faceSegmentRefusal, HOUSE_IGNORED, FACES_PROJECTION_DIR, FACE_LABELS_DIR, SyncedTree,
+  faceRoot, faceSegmentRefusal, HOUSE_IGNORED, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
   larProjectionsHome, larConfigHome,
 } from "@lararium/node";
-import { ownPersonaPetname } from "@lararium/mesh";
+import { ownPersonaPetname, carrierHash, digestsEqual } from "@lararium/mesh";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { actingFace, faceOption, FaceOptionMalformed } from "../face-option.js";
-import { openSyncedTree } from "../ingest-core.js";
+import { openSyncedTree, readCarrierText } from "../ingest-core.js";
 import { sealedPetnameStore } from "../sealed-records.js";
 import { makeFleetPetnameStore } from "../daemon-persona-store.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -230,9 +233,182 @@ export function surfaceCheck(top: string, projections: string, config: string): 
   return breaches;
 }
 
+// ── open ───────────────────────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * THE REALM POOLS A FACE BELONGS TO, as its own root reads them: each wiki slug it keeps a margin or a recovery folder for
+ * (`margins/<slug>/`, `recovery/<slug>/`), mapped to that wiki's workbench mirror `projections/wikis/<slug>/` where it
+ * stands. A slug whose workbench stands nowhere names no root.
+ */
+export function realmPools(projections: string, root: string): string[] {
+  const slugs = new Set<string>();
+  for (const plane of [FACE_PLANES.margins, FACE_PLANES.recovery]) {
+    let names: string[] = [];
+    try { names = readdirSync(join(root, plane)); } catch { /* no such plane yet */ }
+    for (const n of names) { try { if (statSync(join(root, plane, n)).isDirectory()) slugs.add(n); } catch { /* left since the listing */ } }
+  }
+  return [...slugs].sort().map((s) => join(projections, "wikis", s)).filter((p) => { try { return statSync(p).isDirectory(); } catch { return false; } });
+}
+
+/** The one window line: `code -n` over the face's root, then its realm pools. */
+export function surfaceOpenArgv(root: string, pools: readonly string[]): string[] {
+  return ["code", "-n", root, ...pools];
+}
+
+/** A word as a POSIX shell reads it back unchanged. */
+const shellWord = (w: string): string => /^[A-Za-z0-9_./:=@%+-]+$/.test(w) ? w : `'${w.replace(/'/g, `'\\''`)}'`;
+
+// ── commit ─────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** A path the commit left unstaged, and why. */
+export interface SurfaceApart { readonly path: string; readonly why: string }
+
+/** What one commit did. */
+export interface SurfaceCommitResult {
+  /** The paths it staged and committed (posix, relative to the pool). */
+  readonly staged: readonly string[];
+  /** The carrier URIs whose bytes it kept. */
+  readonly carriers: readonly string[];
+  /** The content paths it kept as removals (the house holds no base there). */
+  readonly removed: readonly string[];
+  /** The paths standing off the house, each named. */
+  readonly apart: readonly SurfaceApart[];
+  /** The commit it made, or null where nothing agreed. */
+  readonly commit: string | null;
+  readonly subject: string | null;
+}
+
+/** The changed paths `git status` reads in the pool, posix and relative (a rename yields both its paths). */
+function changedPaths(root: string): string[] {
+  const r = surfaceGit(root, ["status", "--porcelain=v1", "-z", "--untracked-files=all"]);
+  if (r.code !== 0) throw new SurfaceRefused("surface-git-status-failed", `git status in ${root} answered ${r.code}: ${r.err.trim()}`);
+  const tokens = r.out.split("\0");
+  const out: string[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i]!;
+    if (t.length < 4) continue;
+    out.push(t.slice(3));
+    if (t[0] === "R" || t[0] === "C") { const from = tokens[++i]; if (from) out.push(from); }
+  }
+  return [...new Set(out)];
+}
+
+/** Whether the house agrees with the carrier whose content file rests at `file`: its URI where it does, else why not. */
+type Agreement = { readonly ok: true; readonly uri: string | null } | { readonly ok: false; readonly why: string };
+
+/**
+ * THE AGREEMENT TEST, as the ingest gesture's scan reads a file: the carrier's bytes (utf8 text, or base64 for a binary
+ * one) with its `.meta` sidecar folded in, hashed whole, against the disk side of each base standing at that very path.
+ * A file gone from disk agrees only where no base stands there (the house already removed it); where one stands, the
+ * shore holds it pending.
+ */
+function agreementAt(file: string, bases: ReadonlyMap<string, ReadonlyArray<{ readonly uri: string; readonly base: SyncedBase }>>): Agreement {
+  const standing = bases.get(resolve(file)) ?? []; // the one spelling a base carries (`syncedPath`: absolute, normalized, symlinks unread)
+  if (!existsSync(file)) {
+    return standing.length === 0
+      ? { ok: true, uri: null }
+      : { ok: false, why: "vanished where a base stands: the shore holds it pending (`lares shore`)" };
+  }
+  if (standing.length === 0) return { ok: false, why: "no base: the house holds no agreement at this path" };
+  let text: string;
+  try { ({ text } = readCarrierText(file)); } catch { return { ok: false, why: "unreadable on disk" }; }
+  let meta: string | undefined;
+  try { if (existsSync(`${file}.meta`)) meta = readFileSync(`${file}.meta`, "utf8"); } catch { /* no readable sidecar */ }
+  const disk = carrierHash(text, meta);
+  const agreed = standing.find((s) => digestsEqual(disk, s.base.disk));
+  return agreed !== undefined
+    ? { ok: true, uri: agreed.uri }
+    : { ok: false, why: "stands off its base: the disk moved since the house agreed (`lares shore`)" };
+}
+
+/** A seam names one slug. */
+const SEAM = /^[a-z0-9][a-z0-9-]*$/;
+/** The seam a commit by hand names where none is given. */
+export const HAND_SEAM = "by-hand";
+
+/**
+ * KEEP THE SITTING: stage only the pool paths the house already agrees with, and commit them under
+ * `lar:///surface.keeps.the-sitting/<seam> — N carriers`, the carrier URIs in the body, the author from the pool's local
+ * config. A `.meta` sidecar rides with its carrier. A path the operator staged by hand that stands off stays staged and
+ * out of this commit (the commit names its paths). Never pushes.
+ */
+export function surfaceCommit(root: string, tree: SyncedTree, seam: string = HAND_SEAM): SurfaceCommitResult {
+  if (!SEAM.test(seam)) throw new SurfaceRefused("surface-seam-malformed", `a seam names one slug (a-z, 0-9, -), never ${JSON.stringify(seam)}`);
+  if (!existsSync(join(root, ".git"))) throw new SurfaceRefused("surface-no-pool", `no face pool stands at ${root}: run \`lares surface init\``);
+  const bases = new Map<string, Array<{ uri: string; base: SyncedBase }>>();
+  for (const row of tree.rows()) {
+    const list = bases.get(row.base.path) ?? [];
+    list.push({ uri: row.uri, base: row.base });
+    bases.set(row.base.path, list);
+  }
+  const staged: string[] = [], apart: SurfaceApart[] = [], removed: string[] = [];
+  const carriers = new Set<string>();
+  for (const rel of changedPaths(root).sort()) {
+    const content = rel.endsWith(".meta") ? rel.slice(0, -".meta".length) : rel;
+    const agreement = agreementAt(join(root, ...content.split("/")), bases);
+    if (!agreement.ok) { apart.push({ path: rel, why: agreement.why }); continue; }
+    staged.push(rel);
+    if (agreement.uri !== null) carriers.add(agreement.uri);
+    else if (content === rel) removed.push(rel);
+  }
+  if (staged.length === 0) return { staged, carriers: [], removed, apart, commit: null, subject: null };
+  const add = surfaceGit(root, ["--literal-pathspecs", "add", "-A", "--", ...staged]);
+  if (add.code !== 0) throw new SurfaceRefused("surface-git-add-failed", `git add in ${root} answered ${add.code}: ${add.err.trim()}`);
+  const kept = [...carriers].sort();
+  const subject = `lar:///surface.keeps.the-sitting/${seam} — ${kept.length + removed.length} carriers`;
+  const message = [subject, "", ...kept, ...removed.map((r) => `Removed: ${r}`), ""].join("\n");
+  const commit = surfaceGit(root, ["--literal-pathspecs", "commit", "-q", "-F", "-", "--", ...staged], message);
+  if (commit.code !== 0) throw new SurfaceRefused("surface-commit-refused", `git commit in ${root} answered ${commit.code}${commit.err.trim() ? `: ${commit.err.trim()}` : ""} (the pre-commit roster check runs first: \`lares surface check\`)`);
+  const head = surfaceGit(root, ["rev-parse", "HEAD"]).out.trim();
+  return { staged, carriers: kept, removed, apart, commit: head, subject };
+}
+
 // ── the command ────────────────────────────────────────────────────────────────────────────────────────────
 
-const SUB_DOORS = ["init", "check"] as const;
+const SUB_DOORS = ["init", "check", "open", "commit"] as const;
+
+async function cmdOpen(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
+  const face = await doors.face(args);
+  const projections = doors.projections();
+  const root = faceRoot(projections, face.petname);
+  if (!existsSync(root)) throw new SurfaceRefused("surface-no-pool", `the face "${face.petname}" holds no root at ${root} yet: run \`lares surface init\``);
+  const argv = surfaceOpenArgv(root, realmPools(projections, root));
+  const line = argv.map(shellWord).join(" ");
+  const launch = args.flags["launch"] === true;
+  const code = launch ? doors.launch(argv) : 0;
+  emit(args, {
+    ok: code === 0,
+    data: { face: face.index, argv, launched: launch, ...(launch ? { exit: code } : {}) },
+    ...(code === 0 ? {} : { error: { code: "surface-launch-failed", message: `${line} answered ${code}` } }),
+    human: () => console.log(line),
+  });
+  return code === 0 ? 0 : 1;
+}
+
+/** The seam a commit names: `-m <seam>` or `--message <seam>`, else the hand's. */
+function seamOf(args: ParsedArgs): string {
+  const at = args.positional.indexOf("-m");
+  const named = at !== -1 ? args.positional[at + 1] : args.options["message"];
+  return named ?? HAND_SEAM;
+}
+
+async function cmdCommit(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
+  const seam = seamOf(args);
+  if (!SEAM.test(seam)) return refuseUsage(args, "surface commit", helpLines("surface commit"), `-m names the seam, one slug (a-z, 0-9, -), never ${JSON.stringify(seam)}`);
+  const face = await doors.face(args);
+  const root = faceRoot(doors.projections(), face.petname);
+  const result = surfaceCommit(root, doors.tree(), seam);
+  emit(args, {
+    ok: true,
+    data: { ...result },
+    human: () => {
+      if (result.commit === null) console.log(`lares surface commit: nothing the house agrees with stands changed in ${root}`);
+      else { console.log(`lares surface commit: ${result.subject}`); console.log(`  ${result.commit.slice(0, 12)}  ${result.staged.length} path(s)`); }
+      for (const a of result.apart) console.log(`  apart ${a.path}: ${a.why}`);
+    },
+  });
+  return 0;
+}
 
 async function cmdInit(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
   const face = await doors.face(args);
@@ -283,6 +459,8 @@ export async function cmdSurface(args: ParsedArgs, doors: SurfaceDoors = LIVE_SU
   try {
     switch (verb) {
       case "init": return await cmdInit(args, doors);
+      case "open": return await cmdOpen(args, doors);
+      case "commit": return await cmdCommit(args, doors);
       default: return await cmdCheck(args, doors);
     }
   } catch (err) {
