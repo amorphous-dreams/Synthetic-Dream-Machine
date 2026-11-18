@@ -21,7 +21,7 @@
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  NEXUS_AID_PATTERN, publicationDocUrl, floorAnswerOf, floorReleaseEntriesFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest, floorBlobCids,
+  NEXUS_AID_PATTERN, publicationDocUrl, floorAnswerOf, floorReleaseEntriesFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest, readFloorOffering, floorBlobCids,
   type LarDoc,
 } from "@lararium/mesh";
 import { CAS_BLOB_RE, answerClosedDoor } from "./bulb-routes.js";
@@ -31,7 +31,7 @@ import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 /** The porch route a Nexus's answer rides, as the SERVER matches it: one AID, captured. */
 export const FLOOR_ROUTE_RE = /^\/floor\/(nexus-[0-9a-f]{64})$/;
 
-/** The cids the chain's head release names: its manifest and each snapshot the manifest names (one per house-canon bag). Empty while no release counts. */
+/** The cids the chain's head release names: its manifest, each snapshot the manifest names (one per house-canon bag), its plugins offering and each blob the offering carries. Empty while no release counts. */
 export async function releasedFloorCids(opts: {
   readonly board:  LarDoc | undefined | null;
   readonly nexus:  string;
@@ -45,7 +45,13 @@ export async function releasedFloorCids(opts: {
   const cids = new Set<string>([standing.head.body.manifest]);
   const bytes = readVerifiedCasBlobFromFs(standing.head.body.manifest, opts.casDir);
   const manifest = bytes ? readFloorManifest(bytes) : null;
-  if (manifest && "manifest" in manifest) for (const cid of floorBlobCids(standing.head.body.manifest, manifest.manifest)) cids.add(cid);
+  if (manifest && "manifest" in manifest) {
+    // The plugins offering the release names, where this CAS holds it, widens the set to each blob it carries.
+    const offeringBytes = readVerifiedCasBlobFromFs(manifest.manifest.plugins, opts.casDir);
+    const offering = offeringBytes ? readFloorOffering(offeringBytes, manifest.manifest.plugins) : null;
+    const offered = offering && "offering" in offering ? offering.offering : undefined;
+    for (const cid of floorBlobCids(standing.head.body.manifest, manifest.manifest, offered)) cids.add(cid);
+  }
   return cids;
 }
 

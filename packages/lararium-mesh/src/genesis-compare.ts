@@ -6,7 +6,8 @@
  * every function stays pure and reads only what its caller hands it, so the boot line, the charter-free status
  * read, the kūkulu and the floor shadow read (vessel-island-pool-core) all print the same per-ratchet words.
  *
- * THE FOUR RATCHETS. `engine`, `grammar` and `plugins` name the folded digests (`computeEngineCid`,
+ * THE FOUR RATCHETS. `engine`, `grammar` and `plugins` name the folded digests (on a pinned floor, grammar and plugins read
+ * through its plugins offering: the floor names no grammar field) (`computeEngineCid`,
  * `computeGrammarCid`, `computePluginsCid`); `floor` names the floor manifest CID. The founding record's folded
  * digests RECOMPUTE from its own blobs (through `regionEntriesOf`, the one mapping the mint's verify reads), never
  * from its witness tiddlers, so a record whose witness drifted from its bytes reads by its bytes. The floor has no
@@ -20,6 +21,9 @@ import type { LarBlobEntry } from "./base-doc.js";
 import { ENGINE_CORE_ID } from "./base-doc.js";
 import { GENESIS_FLOOR_TIDDLER, type FloorManifest } from "./floor-manifest.js";
 import { computeEngineCid, computeGrammarCid, computePluginsCid, regionEntriesOf, type GenesisSeed } from "./genesis-doc.js";
+import { verifyFloorOfferingSet } from "./floor-offering.js";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
+import type { PluginOffering } from "./plugin-offering.js";
 import { isPlainMap, ownEntry, plainValue, type StoredTiddlers } from "./stored-value.js";
 
 /** The ratchets, in the order every line names them. */
@@ -51,10 +55,15 @@ export interface StoredGenesisRecord {
  */
 export type GenesisRecordLike = StoredGenesisRecord | Partial<Pick<GenesisSeed, "blobs" | "tiddlers">>;
 
-/** The pinned floor as the comparison reads it: its manifest CID and its three folded fields. */
+/**
+ * The pinned floor as the comparison reads it: its manifest CID, its engine fold and plugins offering address, and the
+ * offering itself where its bytes read (null or absent where they did not). The floor names no grammar: the parser's bytes
+ * ride the offering, so the offering decides both the grammar and the plugins readings.
+ */
 export interface FloorPinLike {
   readonly manifestCid: string;
-  readonly manifest: Pick<FloorManifest, "engine" | "grammar" | "plugins">;
+  readonly manifest: Pick<FloorManifest, "engine" | "plugins">;
+  readonly offering?: Pick<PluginOffering, "blobs"> | null;
 }
 
 /**
@@ -77,13 +86,40 @@ export function foundingRecordDigests(record: GenesisRecordLike): GenesisDigests
   });
 }
 
-/** The digests a pinned floor names: its manifest's three folded fields and the manifest CID as the floor. */
-export function floorPinDigests(manifestCid: string, manifest: FloorPinLike["manifest"]): GenesisDigests {
+/**
+ * The digests a pinned floor names: its engine fold and the manifest CID as the floor. Grammar and plugins come from the
+ * offering read against the founding record (`offeringReadings`), absent where the caller hands none: the manifest's
+ * `plugins` names an offering record, never a fold, so it never stands in for one.
+ */
+export function floorPinDigests(
+  manifestCid: string,
+  manifest: FloorPinLike["manifest"],
+  offered: { readonly grammar: string | null; readonly plugins: string | null } = { grammar: null, plugins: null },
+): GenesisDigests {
   const field = (v: string): string | null => (typeof v === "string" && v.length > 0 ? v : null);
   return Object.freeze({
-    engine: field(manifest.engine), grammar: field(manifest.grammar), plugins: field(manifest.plugins),
+    engine: field(manifest.engine), grammar: offered.grammar, plugins: offered.plugins,
     floor: field(manifestCid),
   });
+}
+
+/**
+ * The grammar and plugins a pinned floor's offering reads as, beside the founding record: the record's own digest where the
+ * offering carries the same bytes (the parser's for grammar, the whole boot set for plugins), else the offering's address
+ * (so it reads moved); absent where no offering read or the record holds no blobs.
+ */
+function offeringReadings(record: GenesisRecordLike, digests: GenesisDigests, pin: FloorPinLike): { readonly grammar: string | null; readonly plugins: string | null } {
+  const blobs = record.blobs ?? null;
+  if (!pin.offering || !blobs) return { grammar: null, plugins: null };
+  const rows = Object.values(blobs).filter((b): b is LarBlobEntry => Boolean(b) && typeof b.mimeType === "string")
+    .map((b) => ({ id: b.id, version: b.version ?? "", sha256: b.sha256, mimeType: b.mimeType }));
+  const moved = `offering ${pin.manifest.plugins}`;
+  const parser = ownEntry(blobs, LARES_MEMETIC_WIKITEXT_PLUGIN_URI);
+  const offeredParser = pin.offering.blobs.find((b) => b.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI);
+  return {
+    grammar: digests.grammar === null ? null : parser && offeredParser && offeredParser.sha256 === parser.sha256 ? digests.grammar : moved,
+    plugins: digests.plugins === null ? null : verifyFloorOfferingSet(pin.offering, rows) === null ? digests.plugins : moved,
+  };
 }
 
 /** Read each ratchet of the founding record against another side. */
@@ -127,6 +163,8 @@ export function compareSeedToFoundingRecord(input: {
   return Object.freeze({
     record,
     seed: input.seed ? compareGenesisDigests(record, foundingRecordDigests(input.seed)) : null,
-    floorPin: input.floorPin ? compareGenesisDigests(record, floorPinDigests(input.floorPin.manifestCid, input.floorPin.manifest)) : null,
+    floorPin: input.floorPin
+      ? compareGenesisDigests(record, floorPinDigests(input.floorPin.manifestCid, input.floorPin.manifest, offeringReadings(input.record, record, input.floorPin)))
+      : null,
   });
 }

@@ -35,6 +35,8 @@ export interface BrowserFloorBinding {
   readonly nexusPin:        string | null | undefined;
   readonly baseUrl:         string;
   readonly genesisManifest: string | null;
+  /** The blob ids every mount needs, off this vessel's island (`floorRequiredBlobIds`). */
+  readonly requiredBlobIds: readonly string[];
   readonly raiseAlert:      (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]> | readonly string[];
   readonly fetchFn?:        typeof fetch;
   /** The local CAS: OPFS by default. */
@@ -67,7 +69,7 @@ export function browserFloorPorts(b: BrowserFloorBinding): (FloorPinPorts & { re
   const alerted: string[] = [];
   return {
     alerted,
-    home, nexus, genesisManifest: b.genesisManifest,
+    home, nexus, genesisManifest: b.genesisManifest, requiredBlobIds: b.requiredBlobIds,
     rows: async () => {
       const res = await doFetch(`${origin}/floor/${nexus}`);
       if (!res.ok) throw new Error(`floor-porch-silent: the porch answered ${res.status}`);

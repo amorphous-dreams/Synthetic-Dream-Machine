@@ -10,7 +10,7 @@ const rows = {
   "lar:///ha.ka.ba/lares/api/probe": { tiddler: { title: "lar:///ha.ka.ba/lares/api/probe", text: "probe" } },
   "lar:///ha.ka.ba/lares/api/second": { tiddler: { title: "lar:///ha.ka.ba/lares/api/second", text: "second" } },
 };
-const manifest: FloorManifest = { format: "lararium-floor", engine: "engine", grammar: "grammar", plugins: "plugins", snapshots: { lararium: "b".repeat(64), lares: "a".repeat(64), sdm: "c".repeat(64) } };
+const manifest: FloorManifest = { format: "lararium-floor", engine: "engine", plugins: "f".repeat(64), snapshots: { lararium: "b".repeat(64), lares: "a".repeat(64), sdm: "c".repeat(64) } };
 
 describe("floor manifest and snapshots", () => {
   test("cuts canonical history-free snapshots and refuses a key/title split", () => {
@@ -51,7 +51,7 @@ describe("floor manifest and snapshots", () => {
   });
   test("a format with a counter suffix refuses by the shape it lacks, and the refusal names no version", () => {
     for (const format of ["lararium-floor/v1", "lararium-floor/v2"]) {
-      const text = JSON.stringify({ format, engine: "engine", grammar: "grammar", plugins: "plugins", snapshots: manifest.snapshots });
+      const text = JSON.stringify({ format, engine: "engine", plugins: "f".repeat(64), snapshots: manifest.snapshots });
       const read = readFloorManifest(new TextEncoder().encode(text));
       expect(read).toMatchObject({ refusal: "floor-manifest-format" });
       const reason = "reason" in read ? read.reason : "";

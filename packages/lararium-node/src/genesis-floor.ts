@@ -26,7 +26,7 @@ export function genesisFloorSlugs(repoRoot: string): string[] {
 
 type Rows = Record<string, { tiddler: { title: string; [key: string]: unknown } }>;
 
-export function cutGenesisFloor(opts: { repoRoot: string; engine: string; grammar: string; plugins: string }): {
+export function cutGenesisFloor(opts: { repoRoot: string; engine: string; plugins: string }): {
   manifest: FloorManifest; manifestCid: string; manifestBytes: Uint8Array;
   snapshots: Record<string, FloorSnapshot>; rows: Record<string, number>;
 } {
@@ -74,7 +74,7 @@ export function cutGenesisFloor(opts: { repoRoot: string; engine: string; gramma
   const rows: Record<string, number> = {};
   for (const slug of slugs) { snapshots[slug] = cutFloorSnapshot(bags[slug]!); rows[slug] = Object.keys(bags[slug]!).length; }
   const manifest: FloorManifest = {
-    format: FLOOR_MANIFEST_FORMAT, engine: opts.engine, grammar: opts.grammar, plugins: opts.plugins,
+    format: FLOOR_MANIFEST_FORMAT, engine: opts.engine, plugins: opts.plugins,
     snapshots: Object.fromEntries(slugs.map((slug) => [slug, snapshots[slug]!.cid])),
   };
   const manifestBytes = floorManifestBytes(manifest);

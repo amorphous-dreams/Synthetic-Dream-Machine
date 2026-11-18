@@ -13,7 +13,7 @@ import { cutGenesisFloor } from "../src/genesis-floor.js";
 import { openFloorSnapshot } from "@lararium/mesh";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
-const opts = (repoRoot: string) => ({ repoRoot, engine: "engine", grammar: "grammar", plugins: "plugins" });
+const opts = (repoRoot: string) => ({ repoRoot, engine: "engine", plugins: "b".repeat(64) });
 let root = "";
 afterEach(() => { if (root) rmSync(root, { recursive: true, force: true }); root = ""; fixtureFiles = []; forgetCarrierFiles(); });
 
