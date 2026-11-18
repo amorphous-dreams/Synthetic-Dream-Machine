@@ -362,30 +362,48 @@ jobs:
       # ONE LIST. The suite's own dependencies live in `packages/lararium-sensorium/requirements.txt`,
       # which the root `requirements.txt` (the operator's ~/.venv manifest) includes. The root list's
       # prose-tier NLP stack stays out: it needs downloaded models and the router degrades through it.
+      #
+      # THE HOLDER INTERPRETER. A bare-runner cell stands the venv on setup-python's 3.12. A container cell stands it on
+      # the image's own python3: the job container mounts the runner's hostedtoolcache, and setup-python's build there
+      # links the runner image's OpenSSL, which the Playwright image's libraries do not carry, so its `ssl` cannot import
+      # and pip cannot reach PyPI. The image's python3 carries ssl and no pip (Ubuntu splits ensurepip into python3-venv,
+      # which uid 1001 cannot install), so the venv step bootstraps pip with get-pip.py.
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: ${{ !matrix.container }}
         id: py
         with:
           python-version: '3.12'
+      - name: Name the holder interpreter (it must carry ssl)
+        id: interp
+        run: |
+          python3 -c 'import ssl' || { echo "::error::$(command -v python3) carries no ssl module: the holder venv's pip cannot reach PyPI"; exit 1; }
+          echo "python-version=$(python3 -c 'import platform; print(platform.python_version())')" >> "$GITHUB_OUTPUT"
       - id: mempalace-pin
         run: echo "sha=$(git rev-parse HEAD:mempalace)" >> "$GITHUB_OUTPUT"
 
-      # The key carries the exact interpreter PATCH: a restored venv's bin/python3 symlinks to the hostedtoolcache path of the patch that built
-      # it, so on a runner carrying another 3.12.x it dangles (exit 127).
+      # The key carries the exact interpreter PATCH: a restored venv's bin/python3 symlinks to the interpreter that built it
+      # (the hostedtoolcache path of that patch, or the image's /usr/bin/python3), so under another patch it dangles (exit 127).
       - name: Cache the holder venv
         id: venv-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.venv
-          key: holder-venv-${{ runner.os }}-${{ matrix.container && 'pwimage' || 'host' }}-py${{ steps.py.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
+          key: holder-venv-${{ runner.os }}-${{ matrix.container && 'pwimage' || 'host' }}-py${{ steps.interp.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
       - name: Stand the holder venv (~/.venv)
         env:
           CACHE_HIT: ${{ steps.venv-cache.outputs.cache-hit }}
         run: |
-          # A restored venv whose interpreter does not answer is no venv: stand it again (belt beside the patch-keyed cache).
-          if [ "$CACHE_HIT" = 'true' ] && ~/.venv/bin/python3 -V >/dev/null 2>&1; then exit 0; fi
+          # A restored venv whose interpreter does not answer, or answers without ssl, is no venv: stand it again (belt beside the patch-keyed cache).
+          if [ "$CACHE_HIT" = 'true' ] && ~/.venv/bin/python3 -c 'import ssl' >/dev/null 2>&1; then exit 0; fi
           rm -rf ~/.venv
-          python3 -m venv ~/.venv
-          ~/.venv/bin/python3 -m pip install --upgrade pip
+          if python3 -c 'import ensurepip' >/dev/null 2>&1; then
+            python3 -m venv ~/.venv
+            ~/.venv/bin/python3 -m pip install --upgrade pip
+          else
+            python3 -m venv --without-pip ~/.venv
+            ~/.venv/bin/python3 -c "import sys, urllib.request; sys.stdout.buffer.write(urllib.request.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" > "$RUNNER_TEMP/get-pip.py"
+            ~/.venv/bin/python3 "$RUNNER_TEMP/get-pip.py"
+          fi
           ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
       - name: Witness the holder answers
         id: holder
