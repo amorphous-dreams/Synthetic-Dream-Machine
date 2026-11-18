@@ -30,8 +30,8 @@
  *
  * IMPORT (previews by default; `--apply` writes):
  *   1. verifies the whole bundle before touching anything (`verifyBundle`), and opens the keep seat it carries with the passphrase
- *      or paper sheet the human supplies, then the roster (a wrong route refuses by name, before anything moves); on apply, a house
- *      that rests no keep pair seats the bundle's, so its next keep seals to the same pair;
+ *      or paper sheet the human supplies, then the roster (a wrong route refuses by name, before anything moves); at the end of a
+ *      whole apply, a house that rests no keep pair seats the bundle's, so its next keep seals to the same pair;
  *   2. replays the re-declare list as fresh acts (pet-name, Handle, seat and chair) where the vessel's face holds none;
  *   3. maps each bundle face's pet-name to the ONE face on this vessel that carries it, refusing by name where none or
  *      two do (never a silent merge into another face's memory);
@@ -846,7 +846,6 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   }
   let bundle: VerifiedBundle;
   try { bundle = openBundle(sealed, opening.secret); } finally { opening.secret.fill(0); }
-  if (apply) adoptKeepSeat(seat);
   const { manifest, redeclare } = bundle;
   // THE ORDER GUARD: the walk runs found -> up -> lay -> import. An import lands its rows over the canon the lay
   // laid, so its bag rows meet the checkout's canon at INGEST's three-way gate and stand off where they diverge; over
@@ -1237,6 +1236,9 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   let sharesLanded = false;
   if (apply && allShares.length > 0 && doors.landShares !== undefined) sharesLanded = (await doors.landShares().catch(() => null)) !== null;
 
+  // THE PAIR SEATS LAST: only a whole apply seats the bundle's keep pair where this house rests none, so a restore that refused
+  // anywhere above leaves the house's config as it stood.
+  if (apply) adoptKeepSeat(seat);
   return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, waiting, warnings, benchWaiting, personalWaiting, kahuaWaiting, daemonWaiting, shares: { written: carriedShares.map((r) => r.slug), landed: sharesLanded } };
 }
 
