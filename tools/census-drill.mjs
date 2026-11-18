@@ -51,8 +51,8 @@ import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "
 import { join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-export const CENSUS_SCHEMA = "lar-carry-census/1";
-export const RECEIPT_SCHEMA = "lar-carry-parity/1";
+export const CENSUS_SCHEMA = "lar-census";
+export const RECEIPT_SCHEMA = "lar-census-compare";
 /**
  * The plain records a census reads: non-system, no `uri-path` (a meme reads in `memes`, its slot records `<uri>#/…` under its
  * root's hash), and outside the records each house mints for itself: bag plumbing under `lar:///ha.ka.ba/bags/` (descriptors,

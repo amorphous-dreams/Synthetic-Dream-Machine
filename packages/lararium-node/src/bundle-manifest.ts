@@ -36,7 +36,7 @@ import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { join, posix, sep } from "node:path";
 
 /** The schema a bundle names; an import refuses any other. */
-export const BUNDLE_SCHEMA = "lar-carry/1";
+export const BUNDLE_SCHEMA = "lar-house-bundle";
 export const MANIFEST_FILE = "manifest.json";
 export const REDECLARE_FILE = "re-declare.json";
 export const KAHUA_HEADS_FILE = "kahua-heads.json";

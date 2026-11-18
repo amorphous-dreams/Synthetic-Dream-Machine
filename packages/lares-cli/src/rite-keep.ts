@@ -2,7 +2,7 @@
  * rite-keep — the keep rite's vessel half: the house lays its authored memory into one of the operator's bound workspaces.
  *
  * A workspace stands as a directory the operator bound by hand (`<root>/workspaces/<name>`; the host shim binds it at
- * `/lar/workspaces/<name>`), here a clone of the operator's own private repo. The keep cuts a `lar-carry/1` bundle (the same
+ * `/lar/workspaces/<name>`), here a clone of the operator's own private repo. The keep cuts a `lar-house-bundle` bundle (the same
  * cut `lares export` makes: cleartext, keyed by pet-name, the one tree a new house imports) and rests it at `<workspace>/<into>`,
  * replacing the bundle an earlier keep left there, so the repo's history diffs file by file.
  *
