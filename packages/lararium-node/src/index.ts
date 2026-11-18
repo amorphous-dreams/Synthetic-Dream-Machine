@@ -197,9 +197,9 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
-export { PERSONAL_PROJECTION_DIR, personalFaceRoot, workspaceRootsOf } from "./bag-paths.js";
+export { workspaceRootsOf, FACES_PROJECTION_DIR, FACE_PLANES, faceSegment, faceSegmentRefusal, FaceSegmentRefused, faceRoot, faceMarginsRoot, type FaceSite, type FaceSegmentCode } from "./bag-paths.js";
 export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, isTempLayerInternalTitle, TEMP_LAYER_DIR,
-  daemonFaceFolder, isDaemonFaceFolder, kahuaFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
+  isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";
 
@@ -212,7 +212,7 @@ export type { FoundHearthOptions, FoundHearthResult, HearthCard } from "./comman
 export { buildCardBody, CardRestoreRefused, CARD_REFUSALS } from "./face-card-restore.js";
 // THE FACE LABELS: each face's pet-name and its copies' override bases, in plaintext outside every mirror (`face-labels`).
 export { FACE_LABELS_DIR, FACE_LABEL_SCHEMA, FACE_BASES_SCHEMA, faceLabelsDir, faceLabelPath, faceBasesPath, readFaceLabel, writeFaceLabel, labelledRelations,
-  moveFaceLabelFile, readFaceBases, writeFaceBases, basesOfDoc, keepFaceBases, type FaceLabel, type KeptDoc, type KeptDocState } from "./face-labels.js";
+  moveFaceLabelFile, faceSiteOf, readFaceBases, writeFaceBases, basesOfDoc, keepFaceBases, type FaceLabel, type KeptDoc, type KeptDocState } from "./face-labels.js";
 export type { CardRefusal, FaceNamed, PresentedCard } from "./face-card-restore.js";
 // The live read path onto `mesh/dyad` — a vessel enumerates the relationships it already holds.
 export { makeBagTierReader, bagNameFromBagUrl } from "./vessel-bag-tier.js";
