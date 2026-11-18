@@ -2,7 +2,9 @@
  * `lares meme` — ONE FAMILY FOR EVERY LAW OVER MEME TEXT.
  *
  *   put <uri> (--recipe <slug> | --bag <slug>) [--base <hash>] [--file <path>]
- *   get <uri> (--recipe <slug> | --bag <slug>)
+ *   get <uri> (--recipe <slug> | --bag <slug>) [--json]   — the carrier on stdout (a pipe too), `base: …` on stderr
+ *   patch <uri> (--recipe <slug> | --bag <slug>) --slot '#/x' (--append <file> | --replace <file>) --base <hash>
+ *                                                 — one slot's body through the put's own gate, resealed
  *   list (--recipe <slug> | --bag <slug>) [--tree]
  *   delete <uri> (--recipe <slug> | --bag <slug>) [--if-match <hash>]
  *   normalize <file.mem ...> [--grammar]
@@ -104,6 +106,9 @@ import { LocalWaitExpired } from "../local-connector.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
 import { helpLines } from "../command-help.js";
+import {
+  bccOffset, duplicateKeyOffsets, frameFaultOffset, headOffset, postEotOffset, problemLine, type ProblemSeverity,
+} from "../problems.js";
 import { promoteCarrier, type PromotionSeat, type PromotionMove } from "./meme-promote.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -130,7 +135,7 @@ export interface ProjectPlan {
   readonly container: Record<string, string>;
 }
 
-const SUBS = ["put", "get", "list", "delete", "normalize", "check", "sitting", "project", "promote", "offer"] as const;
+const SUBS = ["put", "get", "patch", "list", "delete", "normalize", "check", "sitting", "project", "promote", "offer"] as const;
 type Sub = typeof SUBS[number];
 
 function usage(): void { for (const line of helpLines("meme")) console.error(line); }
@@ -208,8 +213,19 @@ export function projectPlan(args: ParsedArgs): ProjectPlan {
   return { seat: "daemon", to: target, file: source, container: cont };
 }
 
-export async function cmdMeme(args: ParsedArgs): Promise<number> {
-  const sub = args.positional[0];
+/**
+ * `meme get` ANSWERS THE CARRIER, ON A TERMINAL AND THROUGH A PIPE (the operator's ruling, ai-surface-road, 2026-11-17): a
+ * named exception to the house-wide non-terminal JSON policy (`render.ts` `wantsJson`). Only an explicit `--json` asks for
+ * the envelope; `--no-json` stays a working alias of the default. A refusal goes to stderr in prose, so a redirect never
+ * saves an error as a meme.
+ */
+export function carrierFirst(args: ParsedArgs): ParsedArgs {
+  return { ...args, flags: { ...args.flags, json: args.flags["json"] === true } };
+}
+
+export async function cmdMeme(given: ParsedArgs): Promise<number> {
+  const sub = given.positional[0];
+  const args = sub === "get" ? carrierFirst(given) : given;
   if (!(SUBS as readonly string[]).includes(sub ?? "")) {
     if (sub) console.error(`lares meme: unknown sub-verb "${sub}"`);
     usage();
@@ -219,6 +235,7 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
     switch (sub as Sub) {
       case "put":       return await memePut(args);
       case "get":       return await memeGet(args);
+      case "patch":     return await memePatch(args);
       case "list":      return await memeList(args);
       case "delete":    return await memeDelete(args);
       case "normalize": return normalizeFiles(args, true);
@@ -322,11 +339,67 @@ async function memeGet(args: ParsedArgs): Promise<number> {
     requestId: result.requestId,
     // `floor`: the bag's floor snapshot answered (this face holds no read on the live house canon document).
     data: { uri: plan.args["uri"], text: meme.text, canonicalHash: meme.canonicalHash, ...(fromFloor ? { floor: true } : {}) },
-    // The text alone reaches stdout on a terminal, or under `--no-json`: a redirect leaves stdout no terminal, where the answer
-    // is JSON, so `lares meme get <uri> --recipe <slug> --no-json > file` carries the meme. The base rides stderr.
+    // The text alone reaches stdout, a terminal or a redirect alike (`carrierFirst`), so `lares meme get <uri> --recipe <slug>
+    // > file` carries the meme. The base rides stderr as one line, `base: sha256:…`, for the writer's `--base`.
     human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); if (fromFloor) console.error(FLOOR_READ_NOTE); },
   });
   return 0;
+}
+
+/**
+ * THE PATCH'S ARGUMENT LAW, with no daemon in reach: a uri, a container, `--slot '#/name'`, exactly one of `--append <file>` or
+ * `--replace <file>`, and `--base <hash>` (a patch edits bytes the writer read, so a blind one refuses before the wire).
+ */
+export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; readonly args: Record<string, string>; readonly file: string; readonly mode: "append" | "replace" } {
+  refuseFace(args, "meme patch");
+  const uri = args.positional[1];
+  if (!uri) throw new UsageError("a uri is required (e.g. `lares meme patch lar:///ha.ka.ba/... --slot '#/x' --append note.txt --base <hash> --recipe <slug>`)");
+  const out: Record<string, string> = { uri, ...containerArgs(args, "meme patch", "write") };
+  // Each flag reads by its literal name, so the accepts row answers for it (no computed read).
+  const trimmed = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
+  const slot = trimmed(args.options["slot"]);
+  if (!slot) throw new UsageError("--slot '#/name' names the slot whose body moves (`lares meme list --recipe <slug> --tree` names the slots a meme holds)");
+  const append = trimmed(args.options["append"]);
+  const replace = trimmed(args.options["replace"]);
+  if (Boolean(append) === Boolean(replace)) throw new UsageError("name exactly one of --append <file> (a paragraph at the end of the slot's body) or --replace <file> (the slot's whole body)");
+  const base = trimmed(args.options["base"]);
+  if (!base) throw new UsageError("--base <hash> is required: the canonical hash `lares meme get` prints on stderr (`base: sha256:…`)");
+  out["slot"] = slot;
+  out["base"] = base;
+  return { verb: "meme-patch", args: out, file: append || replace, mode: append ? "append" : "replace" };
+}
+
+async function memePatch(args: ParsedArgs): Promise<number> {
+  const plan = patchPlan(args);
+  let body: string;
+  try { body = readFileSync(plan.file, "utf8"); } catch { throw new UsageError(`cannot read --${plan.mode} ${plan.file}`); }
+  const result = await runVerb(plan.verb, { ...plan.args, [plan.mode]: body }, await vesselDid());
+  const outcome = readVerbOutcome(result);
+  if (!outcome.ok) {
+    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme patch: ${outcome.error}`) });
+    return exitFor(code);
+  }
+  const receipt = outcome.output;
+  const decision = String(receipt["decision"] ?? "");
+  const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
+  const ok = decision === "ingest" || decision === "noop";
+  const code = ok ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
+  const where = `${plan.args["uri"]}${plan.args["slot"]}`;
+  emit(args, {
+    ok,
+    requestId: result.requestId,
+    data: receipt,
+    ...(ok ? {} : { error: { code, message: decision === "absent" ? `no meme at ${plan.args["uri"]}` : `${decision}: ${warnings[0] ?? receipt["reason"] ?? where}` } }),
+    human: () => {
+      if (!ok) { console.error(`lares meme patch: ${decision === "absent" ? `no meme at ${plan.args["uri"]}` : warnings[0] ?? `${decision}: ${where}`}`); return; }
+      console.log(`${decision}: ${where}`);
+      if (typeof receipt["bag"] === "string") console.log(`  in ${receipt["bag"]}${receipt["layer"] === "personal" ? " (your personal layer)" : ""}`);
+      for (const w of warnings) console.log(`  ! ${w}`);
+      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
+    },
+  });
+  return exitFor(code);
 }
 
 /** One listed root, as the verb answers it. */
@@ -458,10 +531,24 @@ function checkFiles(args: ParsedArgs): number {
   const sitting = reading("sitting");
   const ate = [gradient.ate, edges.ate, sitting.ate].filter((f): f is string => typeof f === "string");
   const files = [...(ate.length > 0 ? args.positional.slice(1) : namedFiles(args, "check")), ...ate];
+  const problems = problemsFormat(args);
+  if (problems && (gradient.on || edges.on || sitting.on)) {
+    throw new UsageError("lares meme check --format=problems reads the normalize law alone — drop --gradient, --edges and --sitting");
+  }
   if (gradient.on) return surveyGradient(files);
   if (edges.on) return surveyEdges(files);
   if (sitting.on) return surveySitting(files);
-  return normalizeFiles(args, false);
+  return normalizeFiles(args, false, problems);
+}
+
+/**
+ * `--format=problems`: one `path:line:col: severity: code: message` line per diagnostic, the shape a
+ * `tasks.json` problem matcher reads (lar:///ha.ka.ba/lares/cli/problems). Absent, the human report.
+ */
+function problemsFormat(args: ParsedArgs): boolean {
+  if (!("format" in args.options) && !("format" in args.flags)) return false;
+  if (args.options["format"] === "problems") return true;
+  throw new UsageError("lares meme check --format=problems — `problems` names the one format this door reads");
 }
 
 /**
@@ -476,8 +563,20 @@ function checkFiles(args: ParsedArgs): number {
  * success. A dirty carrier nobody named reads two ways — yours and forgotten, or nobody's — and this
  * door cannot tell which. So it NAMES them and carries on: a warning a caller can weigh, never a
  * refusal that would block a legitimate partial sweep.
+ *
+ * ── `problems` SPEAKS THE SAME READING IN THE MATCHER'S SHAPE ──────────────────────────────────
+ * Read alone with `--format=problems`, every human line falls silent and each diagnostic prints once as
+ * `path:line:col: severity: code: message` (problems.ts), the exit unchanged. The unnamed-dirty reading
+ * names files nobody named, so it stays in the human report alone.
  */
-function normalizeFiles(args: ParsedArgs, write: boolean): number {
+function normalizeFiles(args: ParsedArgs, write: boolean, problems = false): number {
+  if (write && ("format" in args.options || "format" in args.flags)) {
+    throw new UsageError("lares meme normalize takes no --format — `lares meme check --format=problems` reads the law alone");
+  }
+  const say = problems ? (_line: string): void => {} : (line: string): void => console.log(line);
+  const report = (f: string, src: string, offset: number | null, severity: ProblemSeverity, code: string, message: string): void => {
+    if (problems) console.log(problemLine(f, src, offset, severity, code, message));
+  };
   // `--grammar` applies GRAMMAR-authority clauses (authored bytes — e.g. a call site's `:` vs `=`
   // separator) alongside the FRAME clauses that always apply. Default: grammar clauses are
   // PROPOSED, named per site, and move no byte — parse-args eats a following bare token as the
@@ -494,8 +593,10 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
   let faulted = 0;
 
   // Named under BOTH seats: the read-alone run is the one a caller reads before deciding to stamp.
+  // The problems shape reads the named files alone, so it never asks git (whose refusal outside a tree
+  // would otherwise reach the matcher's stream).
   let unnamed: string[] = [];
-  try {
+  if (!problems) try {
     const dirty = String(execFileSync("git", ["diff", "--name-only", "--", "*.mem"], { encoding: "utf8" }))
       .split("\n").filter(Boolean);
     unnamed = dirty.filter((d: string) => !files.some((p) => p.endsWith(d) || d.endsWith(p)));
@@ -508,8 +609,9 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // stage law below still reads whatever meta it declares.
     const frame = memeticVerdict(src);   // the house verdict: torn where the frame's meta read and TOML's part
     if (frame.kind === "bare") {
-      console.log(`bare: ${f}`);
-      console.log("  ⚠ bare data — no frame stands (no head, no STX/ETX, no release); not a meme. WARNING: UNSTABLE");
+      say(`bare: ${f}`);
+      say("  ⚠ bare data — no frame stands (no head, no STX/ETX, no release); not a meme. WARNING: UNSTABLE");
+      report(f, src, null, "warning", "bare", "bare data — no frame stands (no head, no STX/ETX, no release); not a meme. WARNING: UNSTABLE");
     }
     const res = frame.kind === "bare"
       ? { text: src, changed: false, notes: [], flags: [], grammarChanged: false, grammarNotes: [], faults: [] }
@@ -521,16 +623,22 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // wording) from the clause itself.
     if (res.grammarChanged) {
       grammarDrifted++;
-      console.log(`${grammar ? "grammar applied" : "grammar preference"}: ${f}`);
-      for (const gn of res.grammarNotes) console.log(`  ~ ${gn}`);
+      say(`${grammar ? "grammar applied" : "grammar preference"}: ${f}`);
+      for (const gn of res.grammarNotes) {
+        say(`  ~ ${gn}`);
+        report(f, src, null, "info", "grammar", gn);
+      }
     }
 
     // Flags surface whether or not the carrier rewrote — advisory triage the law will NOT auto-fix
     // (e.g. a register value off the band ladder).
     if (res.flags.length > 0) {
       flagged++;
-      console.log(`flagged: ${f}`);
-      for (const fl of res.flags) console.log(`  ⚠ ${fl}`);
+      say(`flagged: ${f}`);
+      for (const fl of res.flags) {
+        say(`  ⚠ ${fl}`);
+        report(f, src, null, "warning", "flag", fl);
+      }
     }
 
     // THE STAGE LAW BINDS ONLY WHERE THE TAG STANDS. An untagged carrier — law, record, reference,
@@ -540,8 +648,11 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     const stage = checkCarrierLifecycle(src);
     if (stage.length > 0) {
       faulted++;
-      console.log(`stage: ${f}`);
-      for (const fault of stage) console.log(`  ✗ ${fault}`);
+      say(`stage: ${f}`);
+      for (const fault of stage) {
+        say(`  ✗ ${fault}`);
+        report(f, src, null, "error", "stage", fault);
+      }
     }
 
     // THE CHECK COVERS THE BODY, SO IT IS PART OF BEING CANONICAL. Framing rides inside the checked
@@ -559,18 +670,24 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // whose meaning normalize cannot choose — reads non-canonical on both seats and stamps nothing.
     if (res.faults.length > 0) {
       faulted++;
-      console.log(`fault: ${f}`);
-      for (const fault of res.faults) console.log(`  ✗ ${fault.code}: ${fault.message}`);
+      say(`fault: ${f}`);
+      const keyAt = duplicateKeyOffsets(src);
+      res.faults.forEach((fault, i) => {
+        say(`  ✗ ${fault.code}: ${fault.message}`);
+        report(f, src, keyAt.length === res.faults.length ? keyAt[i]! : null, "error", fault.code, fault.message);
+      });
       continue;
     }
 
     if (frame.kind === "torn") {
       faulted++;
-      console.log(`torn: ${f}`);
+      say(`torn: ${f}`);
       for (const fault of frame.faults) {
-        console.log(fault.kind === "no-etx"
-          ? "  ✗ the frame opens and never closes — no block check can cover an unbounded span; close the frame by hand"
-          : `  ✗ ${fault.message}`);
+        const message = fault.kind === "no-etx"
+          ? "the frame opens and never closes — no block check can cover an unbounded span; close the frame by hand"
+          : fault.message;
+        say(`  ✗ ${message}`);
+        report(f, src, frameFaultOffset(src, fault), "error", fault.kind, message);
       }
       continue;
     }
@@ -579,8 +696,10 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // the sealed root meta never names — a reading named aloud on both seats, never a fault: no gesture
     // can choose the address the meta should have sealed.
     if (frame.kind === "head-unbound") {
-      console.log(`head-unbound: ${f}`);
-      console.log(`  ⚠ the head names ${frame.unbound.map((e) => `\`${e}=\``).join(" and ")} where the sealed root meta names none — the block check never reaches it; seal a \`title\`${frame.unbound.includes("namespace") ? " and `namespace`" : ""} in the root meta`);
+      say(`head-unbound: ${f}`);
+      const message = `the head names ${frame.unbound.map((e) => `\`${e}=\``).join(" and ")} where the sealed root meta names none — the block check never reaches it; seal a \`title\`${frame.unbound.includes("namespace") ? " and `namespace`" : ""} in the root meta`;
+      say(`  ⚠ ${message}`);
+      report(f, src, headOffset(src), "warning", "head-unbound", message);
     }
 
     // EOT closes the carrier. Bytes after it are outside every recoverable frame boundary and may
@@ -590,8 +709,9 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     const afterEot = classifyPostEot(res.text);
     if (afterEot?.kind === "foreign") {
       faulted++;
-      console.log(`boundary: ${f}`);
-      console.log("  ✗ content follows the terminating EOT mark — separate the carrier by hand; normalization refused to guess");
+      say(`boundary: ${f}`);
+      say("  ✗ content follows the terminating EOT mark — separate the carrier by hand; normalization refused to guess");
+      report(f, src, postEotOffset(src), "error", "post-eot", "content follows the terminating EOT mark — separate the carrier by hand; normalization refused to guess");
       continue;
     }
 
@@ -603,32 +723,42 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
 
     if (write) {
       writeFileSync(isAbsolute(f) ? f : join(process.cwd(), f), stamped);
-      console.log(`normalized: ${f}`);
+      say(`normalized: ${f}`);
     } else {
-      console.log(`would normalize: ${f}`);
+      say(`would normalize: ${f}`);
     }
-    for (const n of res.notes) console.log(`  - ${n}`);
+    for (const n of res.notes) {
+      say(`  - ${n}`);
+      report(f, src, null, "error", "drift", `${n} — \`lares meme normalize\` applies it`);
+    }
     if (stamped !== res.text) {
       // MINTED and RE-STAMPED are different facts, and a reader owes the difference: one carrier held a
       // stale check, the other held none at all.
       const act = standing === "unchecked"
         ? (write ? "minted over the body it follows" : "would mint over the body it follows")
         : (write ? "re-stamped over the body it follows" : "would re-stamp over the body it follows");
-      console.log(`  - block check ${act}`);
-      if (frame.kind === "stale") console.log(`  - stale: stored ${frame.stored} · computed ${frame.computed}`);
+      say(`  - block check ${act}`);
+      if (frame.kind === "stale") say(`  - stale: stored ${frame.stored} · computed ${frame.computed}`);
+      if (frame.kind === "stale") {
+        report(f, src, bccOffset(src), "error", "stale-bcc", `the block check covers other bytes — stored ${frame.stored} · computed ${frame.computed}; \`lares meme normalize\` re-stamps it`);
+      } else if (standing === "unchecked") {
+        report(f, src, null, "error", "unchecked", "the frame holds no block check — `lares meme normalize` mints one over the body it follows");
+      } else {
+        report(f, src, bccOffset(src), "error", "restamp", "the block check would re-stamp over the body normalize leaves — `lares meme normalize` applies both");
+      }
     }
   }
 
   if (unnamed.length > 0) {
-    console.log("\n  ⚠ dirty and NOT named on this run — read each before stamping it:");
-    for (const u of unnamed) console.log(`      ${u}`);
+    say("\n  ⚠ dirty and NOT named on this run — read each before stamping it:");
+    for (const u of unnamed) say(`      ${u}`);
   }
 
   const tail = (flagged > 0 ? ` (${flagged} flagged for triage)` : "")
     + (faulted > 0 ? ` (${faulted} standing off its declared stage)` : "")
     + (grammarDrifted > 0 ? ` (${grammarDrifted} carrying a grammar preference${grammar ? "" : " — rerun with --grammar to apply"})` : "");
   if (drifted === 0) {
-    console.log(faulted === 0
+    say(faulted === 0
       ? `all ${files.length} carrier(s) canonical.${tail}`
       : `no carrier(s) normalized; ${faulted} boundary/stage fault(s) remain.${tail}`);
     // A STAGE FAULT FAILS THE READ-ALONE SEAT even where every byte reads canonical — the two say
@@ -638,7 +768,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // never trips a CI gate or pre-commit hook forever.
     return faulted === 0 ? 0 : 1;
   }
-  console.log(`${drifted} of ${files.length} carrier(s) drifted.${tail}`);
+  say(`${drifted} of ${files.length} carrier(s) drifted.${tail}`);
   // Read alone, FRAME drift fails loud so a CI gate or pre-commit hook catches un-normalized
   // carriers. Flags stay advisory (needs-triage); GRAMMAR drift is a preference, never a gate
   // failure — `drifted` above counts only FRAME-authority changes (frame clauses + the block-check

@@ -43,6 +43,7 @@
 
 import {
   type Verb,
+  type ChoreReceiptMark,
   type CompositeStore,
   type CapabilityVerifier,
   type VerbTargetResult,
@@ -55,11 +56,12 @@ import {
   wikiSlugOfBag,
   ControlHomeUnavailable,
 } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
-import { runLocalVerb, gateRoutedVerb, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
+import { runLocalVerb, gateRoutedVerb, refuseSeatCanonRouted, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
 
 export interface VerbContext {
   readonly daemon: CompositeStore;
@@ -76,6 +78,12 @@ export interface VerbContext {
    * delegate, a payload or a tiddler.
    */
   readonly worn?: SessionWorn;
+  /**
+   * The asker's hand (`seat`, `cli`, `tab`), as the vessel's own door read it and the island booked it with the act. Absent
+   * for an ask no door read (a synced summons, content). A house canon write door refuses a `seat` asker by name
+   * (`seat-canon-reach`); never read off args, a payload or a tiddler.
+   */
+  readonly asker?: Hand;
   readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
 }
 
@@ -276,6 +284,10 @@ export interface VerbDispatcherOptions {
   /** True for a verb the vessel's own presence channel took; the verifier reads it as `channel: "local"`. */
   readonly localOf?: (invocation: Verb) => boolean;
   readonly surfaceOf?: (invocation: Verb) => boolean;
+  /** The asker's hand the island booked for this exact act; absent where no door read one. */
+  readonly askerOf?: (invocation: Verb) => Hand | undefined;
+  /** The chore's receipt mark the island booked for this exact act; the outcome carries it. Absent where none. */
+  readonly choreOf?: (invocation: Verb) => ChoreReceiptMark | undefined;
   /** Route a verb to main. `signal` aborts when the dispatcher gives up on the ask (a mount that timed out), so the router drops what it holds for it. */
   readonly routeFn?:  (invocation: Verb, signal?: AbortSignal) => Promise<Record<string, unknown>>;
 }
@@ -336,6 +348,7 @@ export class VerbDispatcher {
         ...(this.opts.presenterOf ? { presenterOf: this.opts.presenterOf } : {}),
         ...(this.opts.localOf ? { localOf: this.opts.localOf } : {}),
         ...(this.opts.surfaceOf ? { surfaceOf: this.opts.surfaceOf } : {}),
+        ...(this.opts.askerOf ? { askerOf: this.opts.askerOf } : {}),
       });
     }
     if (this.opts.routeFn) {
@@ -361,6 +374,8 @@ export class VerbDispatcher {
     // A wiki-addressing envelope meets the fence by its presenter. Any other routed ask that did not arrive local (a
     // synced summons, content) names no presenter that can wear a face here, so the fence reads it as naming none.
     this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, surface: given !== undefined || this.opts.surfaceOf?.(invocation) === true, cap: makeCapVerify(this.opts.verifier, presenter, local) }, routedAddressesWiki(invocation) || !local);
+    // A face row (`given`) rides a session the door cleared; a placed ask carries the asker the island booked with it.
+    if (given === undefined) refuseSeatCanonRouted(invocation, this.opts.askerOf?.(invocation));
     // Verify-then-delegate: the keyholder worker gates the cap BEFORE
     // routing to main; main then trusts the worker→main channel as the
     // capability (project_verification_placement). Enforced only when a
@@ -470,6 +485,7 @@ export class VerbDispatcher {
           invocation, status: "error",
           errorMessage: `effect "${effectKey}" indexes a prior outcome ("${priorRequestId}") that is no longer retained`,
           refusal: "retention-gap",
+          ...this.markOf(invocation),
         });
         removeVerb(this.opts.daemonVm, invocation.title);
         return;
@@ -478,14 +494,20 @@ export class VerbDispatcher {
       if (priorDigest === inputDigest && this.replayAdmitted(invocation)) {
         const priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>;
         await copyEffectOutcome(this.opts.daemonVm, this.opts.control, invocation, {
-          priorRequestId, priorResults, inputDigest,
+          priorRequestId, priorResults, inputDigest, ...this.markOf(invocation),
         });
         return;
       }
       if (priorDigest !== inputDigest) console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
     }
 
-    await dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, signal));
+    await dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, signal), this.opts.choreOf?.(invocation));
+  }
+
+  /** The chore mark the island booked for this act, as an outcome's spread (empty where none). */
+  private markOf(invocation: Verb): { chore?: ChoreReceiptMark } {
+    const chore = this.opts.choreOf?.(invocation);
+    return chore !== undefined ? { chore } : {};
   }
 
   start(): void {
@@ -534,7 +556,7 @@ export class VerbDispatcher {
           // Effect dedup (D1): a distinct requestId naming the SAME effect skips the
           // handler entirely when a prior done attempt's digest matches; see above.
           if (invocation.effectKey) return this.dispatchWithEffectDedup(invocation, abort.signal);
-          return dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, abort.signal));
+          return dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, abort.signal), this.opts.choreOf?.(invocation));
         }).catch((err) => {
           console.error("[verb-dispatcher] verb dispatch crashed:", err);
         }).finally(() => {
