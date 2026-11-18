@@ -24,7 +24,7 @@ import { mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   bindKeepSlot, decodeKeepSeat, encodeKeepSeat, mintKeepSeat, openKeepSecret,
-  type ConfirmedPaperPin, type Credential, type KeepSeat, type KeepSecretOpening,
+  type ConfirmedPaperPin, type Credential, type KeepSeat, type KeepSecretOpening, type PinSpec, type SlotSpec,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 import { atomicWriteFileSync, larConfigHome } from "@lararium/node";
@@ -125,6 +125,26 @@ export async function bindKeepPaper(openWith: readonly Credential[], confirmed: 
   if (b.reading !== "bound") return b.reading;
   writeResting(b.seat, resting.lastRoster);
   return "bound";
+}
+
+/**
+ * THE READ-BACK'S MOMENT: a bind whose new slot holds a paper sheet just read back word for word (`vault bind --paper`) binds a
+ * paper slot beside the keep seat's passphrase, opened by the route the bind already took, and says so. A bind of any other
+ * route, no seat, or a route that opens no keep slot binds nothing; the keep stands as it stood.
+ */
+export async function keepSlotAtBind(openWith: readonly Credential[], spec: SlotSpec, say: (line: string) => void): Promise<"bound" | "no-paper" | "no-seat" | "no-slot-opens" | "seat-torn" | "unbound"> {
+  const paper = spec.pins.find((p): p is Extract<PinSpec, { kind: "paper" }> => p.kind === "paper");
+  if (paper === undefined) return "no-paper";
+  try {
+    const b = await bindKeepPaper(openWith, paper.confirmed);
+    if (b === "bound") say("keep: this paper sheet now opens the keep pair too; a restore opens the keep's roster with it or the passphrase");
+    else if (b === "no-slot-opens") say("keep: the route this bind took opens no slot of the keep pair, so the sheet joins no keep slot; bind it again under the passphrase the keep seated with");
+    else if (b === "seat-torn") say("keep: the keep pair's seat stands torn; the sheet joins no keep slot");
+    return b;
+  } catch (e) {
+    say(`keep: the sheet joined no keep slot (${e instanceof Error ? e.message : String(e)})`);
+    return "unbound";
+  }
 }
 
 /** Open the keep secret under what the human presents. */

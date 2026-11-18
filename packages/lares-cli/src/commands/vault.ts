@@ -32,7 +32,7 @@ import { helpLines } from "../command-help.js";
 import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { offerKeepLei, type KeepOfferPorts } from "../keep-at-unlock.js";
-import { seatKeepAtUnlock } from "../keep-seat.js";
+import { keepSlotAtBind, seatKeepAtUnlock } from "../keep-seat.js";
 import { configuredKeepWorkspace } from "../keep-config.js";
 import { canPromptSecret } from "../prompt-secret.js";
 import { storeFailure, storeVerb } from "../store-door.js";
@@ -585,6 +585,8 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
     const spec = await gatherNewSlot(`lares vault bind --face ${face}`, args.flags["paper"] ? "paper" : "passphrase");
     const out = await bindFaceSlot({ io, homes, fcid: f.fcid, fck: f.fck, spec });
     emit(args, { ok: true, data: { face, slotId: out.slotId, slots: out.tree.slots.length }, human: () => console.log(`bound: slot ${out.slotId} now opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree is untouched.`) });
+    // A PAPER SHEET JUST READ BACK joins the keep pair too, opened by the route this bind took (`../keep-seat.ts`).
+    await keepSlotAtBind(faceCreds, spec, keepSay(args));
     return 0;
   }
   const creds = await gatherCredentials("lares vault bind", { kind: "vessel" });
@@ -596,6 +598,7 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
     ok: true, data: { slotId: out.slotId, slots: out.tree.slots.length },
     human: () => console.log(`bound: slot ${out.slotId} now opens the vessel key (${out.tree.slots.length} slot(s) stand).`),
   });
+  await keepSlotAtBind(creds, spec, keepSay(args));
   return 0;
 }
 
