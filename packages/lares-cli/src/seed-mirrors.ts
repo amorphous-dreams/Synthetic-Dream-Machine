@@ -66,7 +66,7 @@ import { dirname, join, resolve } from "node:path";
 import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
 import {
   larProjectionsHome, larConfigHome, mirrorDirFileToUri, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug,
-  daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, PERSONAL_PROJECTION_DIR,
+  daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, PERSONAL_PROJECTION_DIR, houseIgnored,
 } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh";
 import { LIVE_CARRY_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
@@ -258,7 +258,8 @@ export function kahuaConfirmPrompt(count: number): string {
 const isStray = (rel: string): boolean => rel.includes(".lar-tmp-");
 const folders = (dir: string): string[] => { try { return readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".")).map((e) => e.name).sort(); } catch { return []; } };
 
-/** Every plain file under `dir` (posix rel paths, sorted), the top dirs `skipTop` names left out; an absent dir reads empty. */
+/** Every plain file under `dir` (posix rel paths, sorted), the top dirs `skipTop` names and every path `HOUSE_IGNORED` names left
+ *  out; an absent dir reads empty. */
 export function mirrorFiles(dir: string, skipTop: readonly string[] = []): string[] {
   const out: string[] = [];
   const visit = (abs: string, rel: string): void => {
@@ -269,7 +270,7 @@ export function mirrorFiles(dir: string, skipTop: readonly string[] = []): strin
       if (rel === "" && skipTop.includes(name)) continue;
       const st = lstatSync(a);
       if (st.isDirectory()) visit(a, r);
-      else if (st.isFile() && !isStray(r)) out.push(r);
+      else if (st.isFile() && !isStray(r) && houseIgnored(r) === null) out.push(r);
     }
   };
   visit(dir, "");

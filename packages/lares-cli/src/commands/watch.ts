@@ -40,6 +40,7 @@
 
 import { watch as fsWatch, writeFileSync, rmSync, type FSWatcher } from "node:fs";
 import { join, isAbsolute } from "node:path";
+import { houseIgnored } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { exitFor, emit } from "../render.js";
 import { udsAlive, udsSocketPath } from "../local-connector.js";
@@ -65,7 +66,8 @@ const COOKIE_TIMEOUT_MS   = 2_000; // a live backend echoes our own write well u
 function isNoise(rel: string): boolean {
   if (rel.endsWith(".meta")) return true;
   if (rel.includes(".lararium-projection")) return true;
-  if (rel.includes("/.git/") || rel.startsWith(".git/")) return true;
+  if (houseIgnored(rel) !== null) return true;                 // HOUSE_IGNORED: `.git`, `.vscode`, `.shore`, `temp`, orphans, atomic temps
+  if (rel.includes("/.git/")) return true;
   const base = rel.split("/").pop() ?? rel;
   if (base.startsWith(".") || base.endsWith("~") || base.endsWith(".swp") || base === "4913") return true;
   return false;

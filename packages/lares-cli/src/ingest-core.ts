@@ -16,9 +16,9 @@
  */
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { join, resolve, sep, extname } from "node:path";
+import { join, resolve, sep, extname, relative } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow, houseIgnored } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -161,7 +161,9 @@ function listSourceFiles(source: string): string[] | null {
     // A `.meta` sidecar carries a content file's fields — it lands WITH that
     // file at the shore, never as a standalone carrier.
     .filter((f) => !f.endsWith(".meta"))
-    .filter((f) => f !== bagDeclaration);
+    .filter((f) => f !== bagDeclaration)
+    // THE ONE LIST THE HOUSE IGNORES (`HOUSE_IGNORED`): a workspace's tooling, the shore's renders, orphan folders, atomic temps.
+    .filter((f) => houseIgnored(relative(source, f)) === null);
 }
 
 /** Derive a file's carrier-root URI for one mirror plane (bags/ canon vs

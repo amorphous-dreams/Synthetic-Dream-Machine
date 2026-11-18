@@ -10,6 +10,7 @@
 import { resolve as resolvePath, join as joinPath, dirname, basename, extname, isAbsolute, sep } from "path";
 import { existsSync, readFileSync, readdirSync, realpathSync } from "fs";
 import { stripMemeExt, wikiSlotUri, projectionWithheld, daemonFaceCanonBag, KAHUA_BAG, CROSSROADS_DOC_URI, type ProjectionClass } from "@lararium/mesh";
+import { ORPHAN_FOLDER_SUFFIX } from "@lararium/mesh/family";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -383,6 +384,34 @@ export function bagsFileToUri(instanceRoot: string, filePath: string): string | 
  */
 export function wikisFileToUri(instanceRoot: string, filePath: string): string | null {
   return mirrorDirFileToUri(joinPath(instanceRoot, "wikis"), filePath);
+}
+
+// ── What the house ignores inside a mirror ──────────────────────────────────
+
+/**
+ * THE ONE LIST THE HOUSE IGNORES inside every mirror folder: what no scan reads back, no watcher wakes on, no export carries,
+ * no import restores and no adoption copies. Paths read posix, relative to the mirror's holding folder (the wave's source):
+ *
+ *   - `topDirs`: a workspace's own tooling at the top (`.git`, `.vscode`), the shore's render of a stand-off (`.shore`, for
+ *     `lares shore diff`), and the `temp` layer, which mirrors its own bag beside a working folder;
+ *   - `dirSuffixes`: an orphan slot's folder (`<root-stem>.orphans/`): the projector writes it beside its root, and the
+ *     family's root carries those slots home;
+ *   - `tempFile`: the atomic writer's temp (`fs-atomic.ts`: `<path>.<pid>.<uuid>.tmp`, or `<path>.<pid>.tmp` for a sync write).
+ */
+export const HOUSE_IGNORED = {
+  topDirs: [".git", ".vscode", ".shore", TEMP_LAYER_DIR] as readonly string[],
+  dirSuffixes: [ORPHAN_FOLDER_SUFFIX] as readonly string[],
+  tempFile: /\.\d+(?:\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?\.tmp$/,
+} as const;
+
+/** Why the house ignores the file at `rel` (posix, relative to its mirror's holding folder), or null where it reads. */
+export function houseIgnored(rel: string): string | null {
+  const segments = rel.split(/[\\/]/).filter((s) => s !== "" && s !== ".");
+  if (segments.length === 0) return null;
+  if (segments.length > 1 && HOUSE_IGNORED.topDirs.includes(segments[0]!)) return `${segments[0]}/ holds no record of this house's (HOUSE_IGNORED)`;
+  if (segments.slice(0, -1).some((d) => HOUSE_IGNORED.dirSuffixes.some((x) => d.endsWith(x)))) return "an orphan slot's folder: its family's root carries it (HOUSE_IGNORED)";
+  if (HOUSE_IGNORED.tempFile.test(segments[segments.length - 1]!)) return "an atomic writer's temp (HOUSE_IGNORED)";
+  return null;
 }
 
 // ── Siting run backward (the mirror seed's and the watcher's read) ──────────
