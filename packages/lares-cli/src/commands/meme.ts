@@ -2,7 +2,7 @@
  * `lares meme` — ONE FAMILY FOR EVERY LAW OVER MEME TEXT.
  *
  *   put <uri> (--recipe <slug> | --bag <slug>) [--base <hash>] [--file <path>]
- *   get <uri> (--recipe <slug> | --bag <slug>)
+ *   get <uri> (--recipe <slug> | --bag <slug>) [--json]   — the carrier on stdout (a pipe too), `base: …` on stderr
  *   list (--recipe <slug> | --bag <slug>) [--tree]
  *   delete <uri> (--recipe <slug> | --bag <slug>) [--if-match <hash>]
  *   normalize <file.mem ...> [--grammar]
@@ -208,8 +208,19 @@ export function projectPlan(args: ParsedArgs): ProjectPlan {
   return { seat: "daemon", to: target, file: source, container: cont };
 }
 
-export async function cmdMeme(args: ParsedArgs): Promise<number> {
-  const sub = args.positional[0];
+/**
+ * `meme get` ANSWERS THE CARRIER, ON A TERMINAL AND THROUGH A PIPE (the operator's ruling, ai-surface-road, 2026-11-17): a
+ * named exception to the house-wide non-terminal JSON policy (`render.ts` `wantsJson`). Only an explicit `--json` asks for
+ * the envelope; `--no-json` stays a working alias of the default. A refusal goes to stderr in prose, so a redirect never
+ * saves an error as a meme.
+ */
+export function carrierFirst(args: ParsedArgs): ParsedArgs {
+  return { ...args, flags: { ...args.flags, json: args.flags["json"] === true } };
+}
+
+export async function cmdMeme(given: ParsedArgs): Promise<number> {
+  const sub = given.positional[0];
+  const args = sub === "get" ? carrierFirst(given) : given;
   if (!(SUBS as readonly string[]).includes(sub ?? "")) {
     if (sub) console.error(`lares meme: unknown sub-verb "${sub}"`);
     usage();
@@ -322,8 +333,8 @@ async function memeGet(args: ParsedArgs): Promise<number> {
     requestId: result.requestId,
     // `floor`: the bag's floor snapshot answered (this face holds no read on the live house canon document).
     data: { uri: plan.args["uri"], text: meme.text, canonicalHash: meme.canonicalHash, ...(fromFloor ? { floor: true } : {}) },
-    // The text alone reaches stdout on a terminal, or under `--no-json`: a redirect leaves stdout no terminal, where the answer
-    // is JSON, so `lares meme get <uri> --recipe <slug> --no-json > file` carries the meme. The base rides stderr.
+    // The text alone reaches stdout, a terminal or a redirect alike (`carrierFirst`), so `lares meme get <uri> --recipe <slug>
+    // > file` carries the meme. The base rides stderr as one line, `base: sha256:…`, for the writer's `--base`.
     human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); if (fromFloor) console.error(FLOOR_READ_NOTE); },
   });
   return 0;
