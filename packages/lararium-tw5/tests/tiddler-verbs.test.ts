@@ -308,6 +308,30 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/feedback/x", text: "y" }, ctx())).toMatchObject({ decision: "put" });
   });
 
+  test("RED: the code-class wall burns: a module field, a script type, a system title and a system tag land natively for every asker; a seat-asked StartupAction tag offers (seat-startup-offer) and lands nothing; CONTROL the operator's hand and no asker land it", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const as = (asker?: "seat" | "cli"): VerbContext => ({ ...ctx(), ...(asker ? { asker } : {}) });
+    for (const asker of ["seat", "cli", undefined] as const) {
+      for (const [i, shape] of [
+        { title: "$:/config/x", text: "y" }, { title: "Mod", fields: { "module-type": "startup" } }, { title: "Js", fields: { type: "application/javascript" } },
+        { title: "Plug", fields: { "plugin-type": "plugin" } }, { title: "Glob", fields: { tags: "$:/tags/Global" } }, { title: "Near", tagsAdd: "$:/tags/StartupActionX" },
+      ].entries()) {
+        const title = `${shape.title} ${asker ?? "none"} ${i}`;
+        expect(await put({ ...A, ...shape, title }, as(asker)), `${title} lands natively`).toMatchObject({ decision: "put" });
+      }
+    }
+    for (const tagged of [{ tagsAdd: "$:/tags/StartupAction" }, { fields: { tags: "memory [[$:/tags/StartupAction/Browser]]" } }]) {
+      await expect(put({ ...A, title: "Startup seat", ...tagged }, as("seat"))).rejects.toMatchObject({ reason: "seat-startup-offer" });
+      expect(r.engine.wiki.getTiddler("Startup seat")).toBeUndefined();
+    }
+    await expect(put({ ...A, title: "Note 06", tagsAdd: "$:/tags/StartupAction" }, as("seat"))).rejects.toMatchObject({ reason: "seat-startup-offer" });
+    expect(r.engine.wiki.getTiddler("Note 06")?.fields["tags"]).toEqual(["memory"]);
+    for (const asker of ["cli", undefined] as const) {
+      expect(await put({ ...A, title: `Startup ${asker ?? "none"}`, tagsAdd: "$:/tags/StartupAction" }, as(asker))).toMatchObject({ decision: "put" });
+    }
+  });
+
   test("★ slot-level-put witness: a tiddler put on a meme family's `#/slot` either refuses by name or leaves the carrier sealed; it never lands bytes the block check no longer covers ★", async () => {
     const r = await rig();
     const sealed = stampCarrier(memeText(["a", "b"]));
