@@ -45,7 +45,7 @@ export async function readFresher(bag: string, ask: FresherAsk, cls: FresherClas
 /**
  * One line per copy: the title, the base it forked from and the canon standing now. The second class follows in its own
  * section, where any copy stands in it: each copy that names no base and differs from canon, `  <title>  base unknown ->
- * <canon>`, a review list of copies that may hide fresher canon (a carry from a house that stamped no base leaves these).
+ * <canon>`, a review list of copies that may hide fresher canon (a working row that travelled without its base leaves these).
  */
 export function fresherLines(bag: string, rows: readonly FresherRow[], unknown: readonly FresherRow[] = []): string[] {
   const short = (h: string | null): string => (h === null ? "(none)" : h.length > 23 ? `${h.slice(0, 23)}…` : h);

@@ -503,7 +503,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     if (held) return held;
     let read: Readonly<Record<string, string>> = {};
     try { read = await doors.overrideBases(workingBag); }
-    catch (e) { omissions.push({ kind: "override-bases-unread", detail: `the daemon's override-bases read did not answer for ${workingBag} (${e instanceof Error ? e.message : String(e)}): the daemon may not reach that layer, or may run a build without the read. Its working rows travel WITHOUT their override bases, and each copy forks a fresh base off the canon standing where it lands, so canon's fresher-than-the-copy warning may stay silent for them after the import` }); }
+    catch (e) { omissions.push({ kind: "override-bases-unread", detail: `the daemon's override-bases read did not answer for ${workingBag} (${e instanceof Error ? e.message : String(e)}): the daemon may not reach that layer. Its working rows travel WITHOUT their override bases, and each copy forks a fresh base off the canon standing where it lands, so canon's fresher-than-the-copy warning may stay silent for them after the import` }); }
     basesOf.set(workingBag, read);
     return read;
   };
