@@ -9,6 +9,9 @@
  *        above the production floor (N 2^17, r 8, p 1, 32 bytes). CONTROL: the custody slot's own derivation reads that floor.
  *   KK2  RED: two seats minted under one passphrase carry distinct salts and distinct public halves.
  *   KK3  RED: a paper slot bound beside the passphrase opens the same secret, and derives through no passphrase KDF.
+ *   KK4  RED: the remote-carried passphrase slot costs MORE than custody: its route first stretches at the pinned remote cost
+ *        (N 2^18, r 8, p 2: 256 MiB of working set, the most a laptop and a browser tab both hold), then derives at custody's
+ *        own, so a guess against the remote copy pays both. CONTROL: the custody slot derives at custody's cost alone.
  */
 import { describe, expect, test, vi } from "vitest";
 import { bindSlot, confirmPaperPin, draftPaperPin, mintKdfPort, nobleKdf, type ScryptCost } from "../src/keyslot.js";
@@ -74,5 +77,18 @@ describe("the keep seat's passphrase slot costs what custody costs", () => {
     expect(byPaper.reading).toBe("opens");
     expect(paper.costs, "the paper slot derives through no passphrase KDF").toEqual([]);
     expect(Buffer.from((byPaper as { secret: Uint8Array }).secret).equals(Buffer.from((byPass as { secret: Uint8Array }).secret))).toBe(true);
+  });
+
+  test("KK4 RED: the keep's passphrase route stretches at the pinned remote cost before custody's own", async () => {
+    const custody = recordingPort();
+    await bindSlot(null, mintTreeKey(), { t: 1, pins: [PASS] }, custody.port);
+    expect(custody.costs, "CONTROL: custody derives at its cost alone").toEqual([FLOOR]);
+    const { mintKeepSeat } = await import("../src/keep-seat.js");
+    const keep = recordingPort();
+    await mintKeepSeat({ t: 1, pins: [PASS] }, keep.port);
+    const REMOTE = { N: 1 << 18, r: 8, p: 2, dkLen: 32 };
+    expect(keep.costs.map((c) => ({ ...c })), "the keep's route stretches at the remote cost, then derives at custody's").toEqual([REMOTE, FLOOR]);
+    expect(REMOTE.N * REMOTE.r * REMOTE.p).toBeGreaterThan(FLOOR.N * FLOOR.r * FLOOR.p);
+    expect(128 * REMOTE.N * REMOTE.r, "the working set stays at 256 MiB").toBe(256 * 1024 * 1024);
   });
 });

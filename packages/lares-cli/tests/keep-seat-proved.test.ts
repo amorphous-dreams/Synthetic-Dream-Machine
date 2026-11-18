@@ -11,6 +11,9 @@
  *   KP2  RED: an `already-unlocked` answer seats nothing, whatever the route.
  *   KP3  RED: a 2-of-2 opener (passphrase and paper) seats a 2-of-2 keep slot: the passphrase alone opens nothing.
  *   KP4  RED: a later proved unlock whose route opens no slot of the resting seat warns by name; one that opens says nothing.
+ *   KP5  RED: a mint under a weak passphrase seats and WARNS by name (`keep-passphrase-weak`), never refuses.
+ *   KP6  RED: `lares vault reseat` mints a fresh pair under the route custody proves; a wrong route refuses and the seat stands.
+ *   KP7  RED: `lares vault unbind` (the custody passphrase changing) re-seats the keep under the staying route that proved it.
  */
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -96,5 +99,39 @@ describe("the keep pair seats under the proved route alone", () => {
     const warned: string[] = [];
     expect(await seats.seatKeepAtUnlock({ reading: "opens", opener: [0] }, [{ kind: "passphrase", passphrase: "a changed passphrase" }], (l) => warned.push(l))).toBe("resting-unopened");
     expect(warned.join("\n")).toMatch(/keep-seat-unopened/);
+  });
+
+  test("KP5 RED: a weak passphrase seats and warns by name", async () => {
+    const said: string[] = [];
+    expect(await seats.seatKeepAtUnlock({ reading: "opens", opener: [0] }, [{ kind: "passphrase", passphrase: "hunter2" }], (l) => said.push(l))).toBe("seated");
+    expect(said.join("\n")).toMatch(/keep-passphrase-weak/);
+  });
+
+  test("KP6 RED: vault reseat mints a fresh pair under the proved route; a wrong route refuses and the seat stands", async () => {
+    const homes = vesselCustodyHomes();
+    await foundCustody({ io: new FsCustodyIo(homes), homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: PW }] }] });
+    await seats.seatKeepAtUnlock({ reading: "opens", opener: [0] }, [{ kind: "passphrase", passphrase: PW }], () => {});
+    const before = Buffer.from(seats.readKeepSeat()!.publicKey).toString("hex");
+    answers.push("p", TYPO, "n");
+    expect(await cmdVault(parseArgs(["vault", "reseat", "--json"])), "a wrong route refuses").toBe(1);
+    expect(Buffer.from(seats.readKeepSeat()!.publicKey).toString("hex")).toBe(before);
+    answers.push("p", PW, "n");
+    expect(await cmdVault(parseArgs(["vault", "reseat", "--json"]))).toBe(0);
+    expect(Buffer.from(seats.readKeepSeat()!.publicKey).toString("hex"), "a fresh pair").not.toBe(before);
+    expect(await opens([{ kind: "passphrase", passphrase: PW }])).toBe("opens");
+  });
+
+  test("KP7 RED: vault unbind re-seats the keep under the staying route", async () => {
+    const PW2 = "the steward's new words";
+    const homes = vesselCustodyHomes();
+    await foundCustody({ io: new FsCustodyIo(homes), homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: PW }] }, { t: 1, pins: [{ kind: "passphrase", passphrase: PW2 }] }] });
+    await seats.seatKeepAtUnlock({ reading: "opens", opener: [0] }, [{ kind: "passphrase", passphrase: PW }], () => {});
+    const { custodyStatus } = await import("@lararium/node");
+    const s = await custodyStatus({ io: new FsCustodyIo(homes), homes });
+    const first = s.tree.reading === "readable" ? s.tree.slots[0]!.id : "";
+    answers.push("p", PW2, "n");
+    expect(await cmdVault(parseArgs(["vault", "unbind", first, "--json"]))).toBe(0);
+    expect(await opens([{ kind: "passphrase", passphrase: PW2 }]), "the staying route opens the re-seated keep").toBe("opens");
+    expect(await opens([{ kind: "passphrase", passphrase: PW }]), "the removed passphrase opens the new keep no more").toBe("no-slot-opens");
   });
 });
