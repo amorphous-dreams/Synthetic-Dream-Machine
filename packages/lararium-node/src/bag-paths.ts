@@ -565,7 +565,8 @@ export interface WorkspaceEntry { readonly slug: string; readonly kind: "bag" | 
  * slug to `<root>/workspaces/<name>` (the host shim binds `/lar/workspaces/<name>`), where that directory stands. The operator
  * names each workspace, and one resting inside the repository checkout binds: the checkout counts as the cabal's working
  * surface (founding road rank 4j). A workspace that resolves inside the hearth refuses by name, and so does a slug whose source
- * stands in the canon source: its one workbench folder rests beside that source and takes no workspace. A
+ * stands in the canon source: its one workbench folder already rests beside that source, in the working surface, so a second
+ * workspace would split one workbench across two folders. A
  * workspace with no directory standing (no bind) waits by name, and its workbench projects under the projections root.
  */
 export function workspaceRootsOf(opts: {
@@ -582,7 +583,7 @@ export function workspaceRootsOf(opts: {
     const name = row.workspace?.trim();
     if (row.kind !== "wiki" || !name) continue;
     if (!/^[a-z0-9][a-z0-9._-]{0,63}$/.test(name) || name === "." || name === "..") { refused.push(`${row.slug}: workspace "${name}" names no workspace`); continue; }
-    if (opts.sourcedSlugs.includes(row.slug)) { refused.push(`${row.slug}: workbench-checkout-sourced (its source stands in the checkout)`); continue; }
+    if (opts.sourcedSlugs.includes(row.slug)) { refused.push(`${row.slug}: workbench-checkout-sourced (its one workbench folder rests beside its canon source, in the working surface)`); continue; }
     const dir = real(joinPath(opts.workspacesHome, name));
     if (dir === null) { unbound.push(`${row.slug}: workspace "${name}" stands unbound (no ${joinPath(opts.workspacesHome, name)})`); continue; }
     if (within(dir, hearth)) { refused.push(`${row.slug}: workspace "${name}" resolves inside the hearth (${dir})`); continue; }
