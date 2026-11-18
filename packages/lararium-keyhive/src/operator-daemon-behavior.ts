@@ -20,7 +20,7 @@ import {
   makeWikiPinReactor, makeWikiUnpinReactor,
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
-  makeMemePutReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
+  makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
   makeWardAlertReactor, fileWardRefusal,
   makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
@@ -989,6 +989,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }, realmCanonUrlOf(ctx)), writeSlot: (slug: string) => slotDocsOf(ctx).writeSlot(slug), ...(kahuReach ? { kahuReach } : {}) };
       registry.register("meme-put", makeMemePutReactor(memeOpts), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-get", makeMemeGetReactor(memeOpts), { summary: "Read a meme back as text + the canonical hash a writer hands back as its base.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("meme-patch", makeMemePatchReactor(memeOpts), { summary: "Edit one slot's body (`append` a paragraph at its end, or `replace` it whole) against `base`, the canonical hash last read; lands through meme-put's own gate and reseals. A stale base refuses `stale-base`, an absent slot `slot-missing`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-list", makeMemeListReactor(memeOpts), { summary: "List every meme root a seat holds with its canonical hash; `tree` nests the slot tree.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-delete", makeMemeDeleteReactor(memeOpts), { summary: "Remove a meme's whole group; `base` = the canonical hash last read, stale → conflict.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-project", makeMemeProjectReactor(memeOpts), { summary: "Project a meme root to a target — mem · md · html · tid · json — as { uri, to, text, contentType, meta? }; the anchor renders every target in-VM, a recipe or bag target projects mem · md.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
@@ -1606,6 +1607,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           };
         });
         const control = controlOf(ctx);
+        const unshare = Array.isArray(args["unshare"]) ? (args["unshare"] as unknown[]).filter((s): s is string => typeof s === "string") : [];
         const ORIGIN = { kind: "lares-verb", requestId: "share-apply" } as const;
         const applied = await applyShares({
           rows: () => readShareEntries(control), faces,
@@ -1648,6 +1650,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const restsUnderOwner = daemonAuth.registerBags.includes(wikiSlotUri(row.slug, "working"));
             return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, seated: landed.seated, removed: landed.removed, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
           },
+          // THE UNSHARE TAKES THE READER BACK: the owner's hive revokes the grantee's agent from the bag, by the pair (the delegation id
+          // lived only in the process that made it).
+          ...(unshare.length > 0 ? { unshare } : {}),
+          revoke: async (g) => {
+            const owner = holderOf(g.ownerGroup), grantee = holderOf(g.granteeGroup);
+            if (!owner || !grantee) throw new VerbRefusal("share-face-shut", "share-face-shut: a face of this grant stands shut here");
+            const { id } = await owner.receiveContactCard(await grantee.contactCard());
+            await owner.revokeAudience(g.bag, id);
+          },
           grant: async (g) => {
             const owner = holderOf(g.ownerGroup), grantee = holderOf(g.granteeGroup);
             if (!owner || !grantee) throw new VerbRefusal("share-face-shut", "share-face-shut: a face of this grant stands shut here");
@@ -1662,7 +1673,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             return { fresh: !held };
           },
         });
-        return { ok: true, ...applied, waiting: [...applied.waiting], workbenches: applied.workbenches.map((w) => ({ ...w, removed: [...w.removed] })) };
+        return { ok: true, ...applied, waiting: [...applied.waiting], ...(applied.standing ? { standing: [...applied.standing] } : {}), workbenches: applied.workbenches.map((w) => ({ ...w, removed: [...w.removed] })) };
       }, { summary: "Land the share config: lift each shared bag's row into each lit grantee's catalog half and delegate it from its owner's hive; a shut face's grant waits behind an opaque flag.", surfaces: [VERB_SURFACE.cli] });
       // THE SEAT A CARRY ACT ASKS (cabal-realm#/the-workbench): a seed or an import lays a workbench once, at the wear of a face
       // that holds a writer's seat there. This answers the worn face's write layer for a wiki and whether the vessel's ledger

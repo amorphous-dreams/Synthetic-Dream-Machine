@@ -12,8 +12,8 @@
 # ── WHY A RED HERE NEVER MEANS "BAKE NOW" BY ITSELF ─────────────────────────────────────────────
 # A bake counts as an ACT, never a build step. It moves the seed's actor and the grammar address. A
 # store founded on the earlier seed reloads its stored oracle island and keeps serving that island's
-# grammar and floor until it accepts a floor or the house restores into a new founding; only a new
-# founding reads the new seed. Where the engine blob moved, the bake moves the engine every newly
+# grammar and engine. Accepting a floor carries canon alone; grammar and engine reach a standing house
+# only by the adopt act or a keep restore into a new founding; only a new founding reads the new seed. Where the engine blob moved, the bake moves the engine every newly
 # founded vessel of the mesh boots (no edge signs it: an edge names its hearth's Nexus AID).
 # So the house bakes ON PURPOSE, in one labelled `GENESIS RE-BAKE` commit, and a lane that changes the
 # plugin may lawfully leave the bake to a later hand. This witness exists so that span never stands

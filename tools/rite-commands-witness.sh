@@ -25,6 +25,8 @@ cd "$(dirname "$0")/.."
 
 python3 - <<'PY'
 import os, re, json, pathlib, subprocess, sys
+sys.path.insert(0, str(pathlib.Path("tools").resolve()))
+from code_scan import mask_non_code
 
 # EVERY RITE, not only the founding one. A rite states commands as CLAIMS a reader resolves the next
 # move from, and that property belongs to the tending rite too — it asks to be walked end to end, each
@@ -142,17 +144,35 @@ def _subvar(body: str) -> str:
     bound = set(re.findall(r'\b(?:const|let)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)*positional\[0\]', body))
     return _SUBVAR if not bound else rf'(?:{_SUBVAR[3:-1]}|\b(?:{"|".join(sorted(map(re.escape, bound)))})\b)'
 
-def dispatches(body: str, sub: str) -> bool:
-    s = re.escape(sub)
-    return bool(re.search(rf'case\s+["\'`]{s}["\'`]\s*:', body)
-                or re.search(rf'(?m)^\s*["\'`]?{s}["\'`]?\s*:\s*{_HANDLER}', body)
-                or re.search(rf'{_subvar(body)}\s*[=!]==?\s*["\'`]{s}["\'`]', body))
-
+# ── AND IT READS AT A CODE POSITION, NEVER IN PROSE ─────────────────────────────────────────────
+# A `case "admit":` left in a comment over a retired branch, or a usage string that spells `admit: cmdAdmit`, reads
+# exactly like a live dispatch to a regex over raw text. Each shape matches the raw body (its key sits inside quotes)
+# and counts only where the same span, with comments and strings masked (tools/code_scan.py), still carries the
+# shape's code half: the `case` keyword, the colon and its handler, the comparison against the sub-door variable.
 def dispatch_keys(body: str) -> set:
-    """Every sub-door a module answers — the same derivation the check above runs, read forward."""
-    return ({m for m in re.findall(r'case\s+["\'`]([a-z][a-z0-9_-]*)["\'`]\s*:', body)}
-            | {m for m in re.findall(rf'(?m)^\s*["\'`]?([a-z][a-z0-9_-]*)["\'`]?\s*:\s*{_HANDLER}', body)}
-            | {m for m in re.findall(rf'{_subvar(body)}\s*[=!]==?\s*["\'`]([a-z][a-z0-9_-]*)["\'`]', body)})
+    """Every sub-door a module answers, read at dispatch positions in code alone."""
+    code = mask_non_code(body)
+    subvar = _subvar(code)
+    shapes = (
+        (r'case\s+["\'`]([a-z][a-z0-9_-]*)["\'`]\s*:', r'\bcase\s+:'),
+        (rf'(?m)^\s*["\'`]?([a-z][a-z0-9_-]*)["\'`]?\s*:\s*{_HANDLER}', rf':\s*{_HANDLER}'),
+        (rf'{subvar}\s*[=!]==?\s*["\'`]([a-z][a-z0-9_-]*)["\'`]', rf'{subvar}\s*[=!]==?'),
+    )
+    found = set()
+    for pattern, code_half in shapes:
+        for m in re.finditer(pattern, body):
+            if re.search(code_half, code[m.start():m.end()]):
+                found.add(m.group(1))
+    return found
+
+def dispatches(body: str, sub: str) -> bool:
+    return sub in dispatch_keys(body)
+
+# AN EMPTY CENSUS CHECKS NOTHING. Rites that parse to zero instructed commands (a re-laid fence, a moved prefix) would
+# walk the loop below zero times and print "every instructed command resolves" over a reading of nothing.
+if not cmds:
+    print("[rite-commands] the rites instruct NO command — the census reads `lares <verb>` and shim lines; nothing was checked.")
+    sys.exit(1)
 
 for c in cmds:
     parts = c.split()
@@ -164,7 +184,10 @@ for c in cmds:
     sub = parts[1]
     module = CMDS_DIR / f"{verb}.ts"
     if not module.exists():
-        continue                      # the door dispatches elsewhere; the top verb already answered
+        # A SUB-DOOR WITH NO MODULE READS RED BY NAME. The skip that stood here waved through every sub-word of a verb
+        # whose module moved or vanished, so the rite's `lares ghost walk` read green while nothing read `walk`.
+        fail.append(f"{c!r} — commands/{verb}.ts is absent; `{sub}` has no mapped module")
+        continue
     subs_checked += 1
     if not dispatches(module.read_text(), sub):
         fail.append(f"{c!r} — `{sub}` names no dispatch branch in commands/{verb}.ts")
@@ -199,7 +222,10 @@ if unscanned and os.environ.get("GITHUB_ACTIONS") == "true":
     fail.append(f"{', '.join(unscanned)} — absent on a runner that checks submodules out; the python half went unscanned")
 cited = sorted({m for m in re.findall(r'`([a-zA-Z_][a-zA-Z0-9_]*(?:#[a-zA-Z][a-zA-Z0-9_]*)?)`', rite)
                 if re.search(r'[a-z][A-Z]|#', m)})
-ghosts = [c for c in cited if c.split("#")[-1] not in blob]
+# A NAME, NEVER A SUBSTRING. `sealKey` sits inside `sealKeySetHash`, so a substring test kept a truncated or renamed
+# citation alive on any longer name that starts with it. The scan still reads comments and strings: the rites cite
+# notation (`hN`) and wire values (`CPUExecutionProvider`) that code holds only there.
+ghosts = [c for c in cited if not re.search(rf'(?<![A-Za-z0-9_$]){re.escape(c.split("#")[-1])}(?![A-Za-z0-9_$])', blob)]
 for g in ghosts:
     if unscanned:
         print(f"[rite-commands] UNREAD `{g}` — found in no scanned source, and {', '.join(unscanned)} "
@@ -211,8 +237,16 @@ for g in ghosts:
 # A door count reports a collapse an operator cannot feel: the fan-out lives one level below the
 # number, so a surface halved by doors may not have moved at all. Both figures ride together — either
 # alone flatters — and both DERIVE, so neither can go stale in a file somebody has to remember.
+# A CENSUS THAT CRASHED READS NO SURFACE, never a surface of zero doors.
 doors_json = subprocess.run(["node", BIN, "help", "--json"], capture_output=True, text=True)
-doors = json.loads(doors_json.stdout)["data"]["entries"] if doors_json.returncode == 0 else []
+try:
+    doors = json.loads(doors_json.stdout)["data"]["entries"] if doors_json.returncode == 0 else []
+except (ValueError, KeyError, TypeError):
+    doors = []
+if not doors:
+    print(f"[rite-commands] the built binary's `help --json` did not answer a door census (exit {doors_json.returncode}) — "
+          "the surface figure is underivable.")
+    sys.exit(1)
 addressable = 0
 for d in doors:
     module = CMDS_DIR / f"{d['name']}.ts"

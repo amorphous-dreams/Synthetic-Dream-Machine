@@ -2,7 +2,6 @@
   "browser": {
     "browserName": "chromium",
     "launchOptions": {
-      "executablePath": "/home/joshu/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome",
       "args": [
         "--no-sandbox",
         "--disable-gpu",

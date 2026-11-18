@@ -20,7 +20,8 @@ import { stopIncumbent, probePort } from "../port-control.js";
 import { udsAlive } from "../local-connector.js";
 import { existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport } from "@lararium/node";
+import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport, readFloorShadowFile } from "@lararium/node";
+import { floorShadowLine } from "@lararium/mesh";
 import { read as readIntent, Ledger } from "../reality-tunnel/engine.js";
 import { homeItems } from "../reality-tunnel/catalog.js";
 import { resolveHomes } from "../reality-tunnel/homes.js";
@@ -204,6 +205,11 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
     memoryGuards: guards.map((r) => ({ id: r.id, path: r.path, state: r.state })),
     memoryGuardsHeld: guardsHeld,
   };
+  // THE FLOOR SHADOW COUNT (backlog-awakens 3a): the tally each boot's mounts keep beside the vessel store, read from the
+  // file whether or not the vessel stands. The operator flips mounts onto the floor once this reads clean.
+  const shadow = readFloorShadowFile(storage);
+  data["floorShadow"] = shadow;
+  const shadowLine = floorShadowLine(shadow);
   let residencyLine: string | null = null;
 
   // C.4 — when the daemon is reachable, ask it for a residency snapshot. The CLI
@@ -243,6 +249,7 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
       console.log(`  storage:     ${storageStr}`);
       console.log(`  port ${port}:  ${portInUse ? "in use (node likely running)" : "free"}`);
       if (residencyLine) console.log(`  residency:   ${residencyLine}`);
+      console.log(`  ${shadowLine}`);
       console.log(guardsHeld
         ? `  memory:      ${guards.length} retention guard(s) at their maximum`
         : `  memory:      ${guards.filter((r) => r.state !== "aligned").map((r) => r.id).join(", ")} below the maximum — \`lares home tend\` raises them`);

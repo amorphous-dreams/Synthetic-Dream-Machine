@@ -67,7 +67,7 @@ test("P1 the census and its compare receipt name their format, never count it: `
   assert.equal(CENSUS_SCHEMA, "lar-census");
   assert.equal(RECEIPT_SCHEMA, "lar-census-compare");
   assert.equal(compareCensus([reading()], [reading()]).schema, "lar-census-compare");
-  assert.throws(() => compareCensus([{ ...reading(), schema: "lar-carry-census/1" }], [reading()]), /not lar-census/, "a reading under the numbered name refuses: no back-compat reader");
+  assert.throws(() => compareCensus([{ ...reading(), schema: "lar-census-foreign" }], [reading()]), /not lar-census/, "a reading under any other schema refuses: no back-compat reader");
 });
 
 test("P1 a missing, a changed and an extra row each read red under their class and key", () => {
