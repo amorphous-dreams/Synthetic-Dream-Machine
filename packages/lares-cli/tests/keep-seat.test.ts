@@ -9,8 +9,12 @@
  *   KQ1  RED: after a seat and a cut, no file under the house root or the bundle holds the keep secret (raw, hex or base64), and
  *        no `config/keep-key` stands. CONTROL: the secret opens under the route, and the content a person wrote reads in clear.
  *   KQ2  RED: a cut with no credential seals (no marker, no terminal: any ask would refuse), and its roster opens under the route.
- *   KQ3  RED: a restore under a wrong passphrase refuses by name before anything moves; the right one opens the roster.
- *   KQ4  RED: a restore from the bundle alone onto a fresh house root (no config carried) opens with the passphrase.
+ *   KQ3  RED: a restore under a wrong passphrase refuses by name before any door is touched (every door watched, the route's
+ *        own aside) and seats nothing; the right one opens the roster.
+ *   KQ4  RED: a restore from the bundle alone onto a fresh house root (no config carried) applies with the passphrase, and the
+ *        fresh house seats the bundle's pair, so its next keep seals to the same pair.
+ *   KQ5  RED: a restore that refuses after the roster opened (an unlaid canon) seats no pair: the adoption lands at the end of
+ *        a whole apply alone.
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -33,6 +37,15 @@ const WRONG: Credential[] = [{ kind: "passphrase", passphrase: "not the route" }
 let root: string, out: string;
 const put = (rel: string, text: string): void => { const p = join(root, ...rel.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, text); };
 const tid = (title: string, text: string): string => `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`;
+
+/** Wrap every door so a call to any of them (the route's own door aside) lands in `calls`. */
+function watched<T extends object>(d: T, calls: string[]): T {
+  return new Proxy(d, { get(target, key, recv) {
+    const v = Reflect.get(target, key, recv) as unknown;
+    if (typeof v !== "function" || key === "keepRoute") return v;
+    return (...a: unknown[]) => { calls.push(String(key)); return (v as (...x: unknown[]) => unknown).apply(target, a); };
+  } });
+}
 
 function doors(faces: BundleVesselFace[], shares: ShareEntry[], route?: readonly Credential[]): BundleDoors & { written: ShareEntry[][] } {
   const written: ShareEntry[][] = [];
@@ -118,9 +131,13 @@ describe("the keep seals its roster to a pair whose secret rests under the human
 
   test("KQ3 RED: a wrong passphrase refuses by name before anything moves; CONTROL: the right one opens the roster", async () => {
     await houseExport(out, { acceptOmissions: true, doors: doors(oldFaces(), SHARES) });
+    const calls: string[] = [];
+    rmSync(join(root, "config"), { recursive: true, force: true });
     const refused = doors(newFaces(), [], WRONG);
-    await expect(houseImport(out, { apply: true, doors: refused })).rejects.toThrow(/keep-route-refused/);
+    await expect(houseImport(out, { apply: true, doors: watched(refused, calls) })).rejects.toThrow(/keep-route-refused/);
+    expect(calls, "a refused route touches no door").toEqual([]);
     expect(refused.written).toEqual([]);
+    expect(existsSync(join(root, "config", "keep-seat.json")), "a refused route seats no pair").toBe(false);
     const right = await houseImport(out, { apply: false, doors: doors(newFaces(), [], RIGHT) });
     expect(right.shares.written).toEqual(["notes"]);
   });
@@ -131,9 +148,24 @@ describe("the keep seals its roster to a pair whose secret rests under the human
     try {
       process.env["LAR_ROOT"] = fresh;
       expect(existsSync(join(fresh, "config"))).toBe(false);
-      const imported = await houseImport(out, { apply: false, doors: doors(newFaces(), [], RIGHT) });
+      const imported = await houseImport(out, { apply: true, doors: doors(newFaces(), [], RIGHT) });
+      expect(imported.applied).toBe(true);
       expect(imported.faceMap).toEqual({ "otter-face": 0, "kestrel-face": 1 });
       expect(JSON.parse(readFileSync(join(out, MANIFEST_FILE), "utf8")).faces).toEqual([{ key: "f0" }, { key: "f1" }]);
+      const seated = JSON.parse(readFileSync(join(fresh, "config", "keep-seat.json"), "utf8")) as { publicKey: string };
+      const carried = JSON.parse(readFileSync(join(out, "keep-seat.json"), "utf8")) as { publicKey: string };
+      expect(seated.publicKey, "the fresh house seats the pair the bundle carried").toBe(carried.publicKey);
+    } finally { rmSync(fresh, { recursive: true, force: true }); }
+  });
+
+  test("KQ5 RED: a restore that refuses after the roster opened seats no pair", async () => {
+    await houseExport(out, { acceptOmissions: true, doors: doors(oldFaces(), SHARES) });
+    const fresh = mkdtempSync(join(tmpdir(), "lar-keep-seat-fresh-"));
+    try {
+      process.env["LAR_ROOT"] = fresh;
+      const unlaid = { ...doors(newFaces(), [], RIGHT), unseeded: () => ["lares"] };
+      await expect(houseImport(out, { apply: true, doors: unlaid })).rejects.toThrow(/carry-canon-unseeded/);
+      expect(existsSync(join(fresh, "config", "keep-seat.json")), "a refused apply seats no pair").toBe(false);
     } finally { rmSync(fresh, { recursive: true, force: true }); }
   });
 });
