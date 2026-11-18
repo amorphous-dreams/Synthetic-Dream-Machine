@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
-import { graphNumbers, liveFiles, mergeGroupOnly, runsPerLanePush, readJobs, triggers, widestConcurrent } from "./ci-graph.mjs";
+import { evalExpr, eventContext, graphNumbers, liveFiles, mergeGroupOnly, REQUIRED_CHECKS, runPlan, runsPerLanePush, readJobs, triggers, widestConcurrent } from "./ci-graph.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CAP = 10;
@@ -129,4 +129,77 @@ test("G5 CONTROL: a merge_group-only job joins the merge_group run's graph and n
   assert.equal(graphNumbers("x.yml", { "x.yml": text }).total, 6);
   assert.equal(graphNumbers("x.yml", { "x.yml": text }, { event: "merge_group" }).total, 7);
   assert.equal(mergeGroupOnly("${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}"), false);
+});
+
+// ── DOORSTEP QUICK, FORD FULL (the operator's ruling, 2026-11-18) ────────────────────────────────
+// A push to a lane branch (`develop--*`, `lane/*`, the names held-out.yml and tools/disk-guard.mjs read) runs the Quick gates
+// alone. The full battery runs on `merge_group`, on a push to `develop` or `main`, on a fork's pull request and by hand.
+// Every required check still reports on a lane head, or no lane enters the queue.
+
+const ran = (plan) => plan.filter((j) => j.state === "run").map((j) => j.key);
+const FULL = [
+  ["merge_group", eventContext("merge_group")],
+  ["a push to develop", eventContext("push", { branch: "develop" })],
+  ["a push to main", eventContext("push", { branch: "main" })],
+  ["a push to a feature span", eventContext("push", { branch: "feature/green-jello-dinosaur-5" })],
+  ["a dispatch on a lane branch", eventContext("workflow_dispatch", { branch: "develop--ford-quick" })],
+  ["a fork's pull request", eventContext("pull_request", { fork: true })],
+];
+const LANES = ["develop--ford-quick", "lane/x"];
+
+test("D0 CONTROL: the run reader evaluates guards, implicit success() and always() over a planted graph", () => {
+  const text = `on:\n  push:\njobs:\n  a:\n    name: A\n    if: \${{ !startsWith(github.ref, 'refs/heads/lane/') }}\n  b:\n    name: B\n    needs: a\n  c:\n    name: C\n    needs: a\n    if: \${{ always() && github.event_name == 'push' }}\n`;
+  const at = (branch) => runPlan("x.yml", { "x.yml": text }, eventContext("push", { branch })).map((j) => `${j.key}:${j.state}`);
+  assert.deepEqual(at("develop"), ["a:run", "b:run", "c:run"]);
+  assert.deepEqual(at("lane/x"), ["a:skipped", "b:skipped", "c:run"], "b skips behind a (implicit success()); c's always() runs it");
+  assert.equal(evalExpr("${{ github.event_name == 'PUSH' }}", eventContext("push")), true, "== compares case-blind");
+  assert.throws(() => evalExpr("${{ hashFiles('x') }}", eventContext("push")), /does not know hashFiles/);
+  assert.throws(() => evalExpr("${{ a < b }}", eventContext("push")), /does not know/);
+});
+
+test("D0b CONTROL: a skipped caller raises its own name alone, a running one raises `Caller / Callee` with the caller's inputs", () => {
+  const caller = (guard) => `on:\n  push:\njobs:\n  e:\n    name: E\n    if: \${{ ${guard} }}\n    uses: ./.github/workflows/y.yml\n    with:\n      flag: \${{ github.event_name == 'push' }}\n`;
+  const callee = `on:\n  workflow_call:\njobs:\n  m:\n    name: M\n    steps:\n      - name: one\n        if: \${{ inputs.flag }}\n        run: x\n      - name: two\n        if: \${{ !inputs.flag }}\n        run: x\n`;
+  const on = runPlan("x.yml", { "x.yml": caller("true"), "y.yml": callee }, eventContext("push"));
+  assert.deepEqual(on.map((j) => [j.name, j.state, j.steps]), [["E / M", "run", ["one"]]]);
+  const off = runPlan("x.yml", { "x.yml": caller("false"), "y.yml": callee }, eventContext("push"));
+  assert.deepEqual(off.map((j) => j.name), ["E"], "the callee's check never appears under a skipped caller");
+});
+
+test("D1 RED: a lane push runs the Quick gates alone; the e2e gate answers on its doorstep step and walks no shard", () => {
+  const files = liveFiles(ROOT);
+  for (const branch of LANES) {
+    const plan = runPlan("ci.yml", files, eventContext("push", { branch }));
+    assert.deepEqual(ran(plan), ["quick", "e2e/merge"], `${branch}: ${ran(plan).join(", ")}`);
+    const merge = plan.find((j) => j.key === "e2e/merge");
+    assert.equal(merge.steps.length, 1, `${branch}: the e2e gate walks ${merge.steps.join(" · ")} on a lane push`);
+    assert.match(merge.steps[0], /^Doorstep/, "the one step the e2e gate walks on a lane push names the doorstep");
+  }
+});
+
+test("D2 RED: merge_group, develop and main pushes, a feature span's push, a dispatch and a fork's PR run every job", () => {
+  const files = liveFiles(ROOT);
+  const every = readJobs(files["ci.yml"]).length - 1 + readJobs(files["e2e-shards.yml"]).length;
+  for (const [what, ctx] of FULL) {
+    const plan = runPlan("ci.yml", files, ctx);
+    assert.equal(plan.length, every, `${what}: a job went missing`);
+    assert.deepEqual(plan.filter((j) => j.state !== "run").map((j) => j.key), [], `${what} skips a job`);
+    const merge = plan.find((j) => j.key === "e2e/merge");
+    assert.ok(merge.steps.includes("Merge gate — fails closed on any missing, empty, red or mismatched shard"), `${what}: the e2e merge gate walks no gate`);
+    assert.ok(!merge.steps.some((s) => /^Doorstep/.test(s ?? "")), `${what}: the doorstep step answers on a full run`);
+  }
+  // The same-repository pull request still raises nothing: the push owns its sha.
+  assert.deepEqual(ran(runPlan("ci.yml", files, eventContext("pull_request", { fork: false }))), []);
+});
+
+test("D3 RED: every required check stands defined ONCE and reports on a lane push (run or skipped), and runs on every full event", () => {
+  const files = liveFiles(ROOT);
+  for (const [what, ctx] of [...LANES.map((b) => [b, eventContext("push", { branch: b })]), ...FULL]) {
+    const plan = runPlan("ci.yml", files, ctx);
+    for (const name of REQUIRED_CHECKS) {
+      const twins = plan.filter((j) => j.name === name);
+      assert.equal(twins.length, 1, `${what}: the required check "${name}" stands ${twins.length} times (0 reads "expected" forever; 2 lets a skipped twin answer for a red one)`);
+      if (FULL.some(([w]) => w === what)) assert.equal(twins[0].state, "run", `${what}: the required check "${name}" skips on a full run`);
+    }
+  }
 });
