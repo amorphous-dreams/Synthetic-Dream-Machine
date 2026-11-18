@@ -7,6 +7,7 @@
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { spawn } from "node:child_process";
+import { createConnection } from "node:net";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -124,6 +125,20 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
     child.stdout!.on("data", onData);
   });
 
+  /** Resolves once the holder has reached every caller that connected before this one: it asks for a drain (see
+   *  holder-child.mjs) and the holder takes callers in order. A holder told to leave drops any caller it has not yet
+   *  reached, so a tally read off its stdout stands whole only past this. The drain's own `asked` counts as one more. */
+  const drainedBy = (child: ReturnType<typeof holderChild>, path: string) => new Promise<void>((res) => {
+    let heard = "";
+    const sock = createConnection(path, () => sock.write("x"));
+    sock.on("error", () => undefined);
+    const onData = (chunk: Buffer): void => {
+      heard += chunk.toString();
+      if (heard.includes("drained")) { child.stdout!.off("data", onData); sock.destroy(); res(); }
+    };
+    child.stdout!.on("data", onData);
+  });
+
   // THE WINDOW RESTS ON A HANDSHAKE, NEVER ON THE CLOCK. The first process says it holds; the second starts its wait;
   // the first says each time a contender reaches it, and gets told to leave once the contender has come back past
   // two whole looks (a look reaches the holder three times). The look budget plays no part here (the next case
@@ -196,9 +211,12 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
       // THE HOLDER'S OWN TALLY, read whole once it leaves. A look reaches the holder four times: twice to find it
       // live (the claim's ask and the contender's), once to watch for its release, and once more after the
       // hang-up to see that it still answers. A look that ended on the hang-up alone would reach it three times.
+      // The holder leaves only once it has reached every caller (a refused contender's last asks can still wait unread
+      // when it refuses), never by the clock.
+      await drainedBy(child, io.claimPath());
       child.kill("SIGTERM");
       await saidAll;
-      expect(said.split("asked").length - 1).toBe(4 * (maxWaits + 1));
+      expect(said.split("asked").length - 1).toBe(4 * (maxWaits + 1) + 1);   // + the drain's own
     } finally { child.kill("SIGKILL"); }
   });
 
