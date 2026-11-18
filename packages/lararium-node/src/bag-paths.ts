@@ -3,12 +3,13 @@
  *
  * The named-bag layout (`bags/NAME`) makes per-scope path computation
  * derivable from the bag scope alone. No oracle tiddler `path-filter` field
- * needed. Factories are pure functions; no I/O, no module state.
+ * needed. The siting factories stay pure (no I/O, no module state); the read-back (`siteFileToTitle`) reads a file's own
+ * stated title, and `projectionRoots` reads the canon source once.
  */
 
-import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
-import { readdirSync, realpathSync } from "fs";
-import { stripMemeExt, wikiSlotUri, projectionWithheld, daemonFaceCanonBag, KAHUA_BAG, CROSSROADS_DOC_URI } from "@lararium/mesh";
+import { resolve as resolvePath, join as joinPath, dirname, basename, extname, isAbsolute, sep } from "path";
+import { existsSync, readFileSync, readdirSync, realpathSync } from "fs";
+import { stripMemeExt, wikiSlotUri, projectionWithheld, daemonFaceCanonBag, KAHUA_BAG, CROSSROADS_DOC_URI, type ProjectionClass } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -382,6 +383,117 @@ export function bagsFileToUri(instanceRoot: string, filePath: string): string | 
  */
 export function wikisFileToUri(instanceRoot: string, filePath: string): string | null {
   return mirrorDirFileToUri(joinPath(instanceRoot, "wikis"), filePath);
+}
+
+// ── Siting run backward (the mirror seed's and the watcher's read) ──────────
+
+/** One mirror plane a file reads back against. */
+export interface SiteMirror {
+  /** The plane dir whose first segment names the holding slot (`<projections>/wikis`, `<projections>/personal/<F>`): that
+   *  segment never enters a title. */
+  readonly planeDir: string;
+  /** The holding mirror sites a foreign title at its own `/` path (`BagMirrorConfig.titlePaths`, the kahua stage). */
+  readonly titlePaths?: boolean;
+  /** Rule 0: the carrier a synced base names at this exact path (`SyncedTree.uriAt`), where the caller holds a tree. */
+  readonly uriAt?: (path: string) => string | null;
+  /** The projection classes the mirror reads under (a temp mirror: `["temp"]`); the base filter always reads. */
+  readonly classes?: readonly ProjectionClass[];
+}
+
+/** A file's title, with the rule that read it, or why no rule reads it. */
+export type FileSiting =
+  | { readonly title: string; readonly by: "base" | "loci" | "title-path" | "in-band" | "filename" }
+  | { readonly why: string };
+
+/** The `title` a TiddlyWiki field block (a `.tid` header, a `.meta` sidecar) states, read up to its first blank line. */
+function fieldBlockTitle(text: string): string | undefined {
+  for (const line of text.split("\n")) {
+    if (line.trim() === "") break;
+    const m = /^([^:\s]+)\s*:\s*(.*)$/.exec(line);
+    if (!m) break;
+    if (m[1] === "title") return m[2]!.trim();
+  }
+  return undefined;
+}
+
+/** The `title` a `.mem` carrier's toml meta fence states (a basic string, escapes read as JSON reads them). */
+function memTitle(text: string): string | undefined {
+  const fence = /^```toml meta[ \t]*\r?\n([\s\S]*?)^```/m.exec(text);
+  const line = fence ? /^title\s*=\s*("(?:[^"\\\r\n]|\\.)*")\s*$/m.exec(fence[1]!) : null;
+  if (!line) return undefined;
+  try { const t: unknown = JSON.parse(line[1]!); return typeof t === "string" ? t : undefined; } catch { return undefined; }
+}
+
+/** The title a file states of itself: a content file's `.meta` sidecar first, else its own `.tid` header, `.json` record or
+ *  `.mem` meta fence. Undefined where it states none or would not read. */
+function inBandTitle(file: string, ext: string): string | undefined {
+  try {
+    if (existsSync(`${file}.meta`)) return fieldBlockTitle(readFileSync(`${file}.meta`, "utf8"));
+    if (ext === ".tid") return fieldBlockTitle(readFileSync(file, "utf8"));
+    if (ext === ".mem") return memTitle(readFileSync(file, "utf8"));
+    if (ext === ".json") {
+      const parsed: unknown = JSON.parse(readFileSync(file, "utf8"));
+      const t = ((Array.isArray(parsed) ? parsed[0] : parsed) as { title?: unknown } | null | undefined)?.title;
+      return typeof t === "string" ? t : undefined;
+    }
+  } catch { /* a file that will not read states nothing */ }
+  return undefined;
+}
+
+/**
+ * TiddlyWiki's filename decode, the last resort: the flatten turned `$:/` into `$__` and every other `/ \ < > ~ : " | ? * ^`
+ * into `_`. A system title (`$__…`) reads its `_` back as `/`, the separator its namespace runs on; any other name keeps its
+ * `_` as it stands. A colliding title's `_1` stays in the name.
+ */
+function filenameTitle(namePath: string): string {
+  return namePath.startsWith("$__") ? `$:/${namePath.slice(3).replace(/_/g, "/")}` : namePath;
+}
+
+/**
+ * THE PROJECTOR'S SITING RUN BACKWARD: the title a mirror file reads back under, or why it reads none. The precedence inverts
+ * the projector's (`disk-projector.ts` flush: a FileSystemPaths rule, the loci law, the title-path siting, TW5's flatten):
+ *
+ *   (0) a synced base standing at this exact path names its carrier (`uriAt`): whatever rule or uniquifier sited it
+ *   (1) the loci rule (`mirrorDirFileToUri`)
+ *   (2) on a title-path mirror, the path inside the holding folder minus its extension
+ *   (3) the title the file states of itself (`.meta` sidecar, `.tid` header, `.json` record, `.mem` toml `title`)
+ *   (4) TiddlyWiki's filename decode, last: the flatten loses `/` and `:` alike (both become `_`)
+ *
+ * A `lar:` title the file states off its own loci path refuses by name (the loci law sites it elsewhere, and a stray copy never
+ * re-addresses itself), and so does a title the projection filter keeps off disk, the bag's own declaration (`meta.mem` at a
+ * holding folder's root: disk-owned, never a record), a file outside any holding folder, and a file with no filetype extension.
+ */
+export function siteFileToTitle(mirror: SiteMirror, file: string): FileSiting {
+  const plane = resolvePath(mirror.planeDir);
+  const abs = resolvePath(file);
+  if (!abs.startsWith(plane + sep)) return { why: `stands outside the mirror plane ${plane}` };
+  const rel = abs.slice(plane.length + 1).split(sep);
+  if (rel.length < 2) return { why: `stands outside any holding folder of ${plane}` };
+  const interior = rel.slice(1).join("/");
+  if (interior.endsWith(".meta")) return { why: "a .meta sidecar rides with its content file" };
+  if (interior === "meta.mem") return { why: "the bag's own declaration stays disk-owned and never reads back as a record" };
+  const ext = extname(interior);
+  if (ext === "") return { why: "carries no filetype extension, so no siting reads it" };
+  const withheld = (title: string): FileSiting | null => projectionWithheld(title, mirror.classes ?? [])
+    ? { why: `${title} stays off disk by the projection filter, so its file reads back as nothing` } : null;
+  const sited = (title: string, by: Extract<FileSiting, { title: string }>["by"]): FileSiting => withheld(title) ?? { title, by };
+
+  const based = mirror.uriAt?.(abs) ?? null;
+  if (based !== null) return sited(based, "base");
+  const loci = mirrorDirFileToUri(plane, abs);
+  if (loci !== null) return sited(loci, "loci");
+  const stated = inBandTitle(abs, ext);
+  if (stated !== undefined && stated.startsWith("lar:")) {
+    const home = carrierBaseRelPath(stated);
+    return { why: `states the title ${stated}, which the loci law sites ${home === null ? "at no file" : `at ${home}${ext}`}, not here` };
+  }
+  const namePath = interior.slice(0, interior.length - ext.length);
+  if (mirror.titlePaths) {
+    const path = titleRelPath(namePath);
+    if (path !== null) return sited(path, "title-path");
+  }
+  if (stated !== undefined && stated !== "") return sited(stated, "in-band");
+  return sited(filenameTitle(namePath), "filename");
 }
 
 // ── Workspaces (cabal-realm#/the-workbench) ─────────────────────────────────
