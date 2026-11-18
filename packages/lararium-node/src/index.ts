@@ -201,6 +201,10 @@ export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase 
 export { workspaceRootsOf, FACES_PROJECTION_DIR, FACE_PLANES, faceSegment, faceSegmentRefusal, FaceSegmentRefused, faceRoot, faceMarginsRoot, type FaceSite, type FaceSegmentCode } from "./bag-paths.js";
 export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, isTempLayerInternalTitle, TEMP_LAYER_DIR,
   isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
+// The drain, one seat (face-pools W1, W2): the CLI's `lares watch` and the vessel's host over the worn face's pool.
+export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolWatch, poolCommitSeam, stageEditsSinceSitting, wakeStageLine, shoreLookPorts,
+  WATCHED_PLANES, SITTING_CLOSE_PREFIX, POOL_SETTLE_MS, type DrainSeat, type FacePoolWatch, type FacePoolPorts, type FacePoolWatchOptions, type SeamReading,
+  type SittingClose, type StageEdit, type WatchState, type GitRun } from "./watch-core.js";
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";
 
