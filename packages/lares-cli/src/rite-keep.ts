@@ -2,7 +2,7 @@
  * rite-keep — the keep rite's vessel half: the house lays its authored memory into one of the operator's bound workspaces.
  *
  * A workspace stands as a directory the operator bound by hand (`<root>/workspaces/<name>`; the host shim binds it at
- * `/lar/workspaces/<name>`), here a clone of the operator's own private repo. The keep cuts a `lar-carry/1` bundle (the same
+ * `/lar/workspaces/<name>`), here a clone of the operator's own private repo. The keep cuts a `lar-house-bundle` bundle (the same
  * cut `lares export` makes: cleartext, keyed by pet-name, the one tree a new house imports) and rests it at `<workspace>/<into>`,
  * replacing the bundle an earlier keep left there, so the repo's history diffs file by file.
  *
@@ -37,7 +37,7 @@ import { basename, dirname, join, relative, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { WORKSPACE_NAME_RE } from "@lararium/mesh";
 import { larHearthHome, larWorkspacesHome } from "@lararium/node";
-import { CARRY_SCHEMA, MANIFEST_FILE, sha256Hex, unsafeRelPath, verifyBundle, type CarryManifest } from "./carry-manifest.js";
+import { BUNDLE_SCHEMA, MANIFEST_FILE, sha256Hex, unsafeRelPath, verifyBundle, type BundleManifest } from "./bundle-manifest.js";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
 
 export const RITE_KEEP = "keep";
@@ -65,9 +65,9 @@ export interface KeepWikiPorts {
 export interface KeepPorts {
   /** One store row, answered by the vessel that stands. */
   row(verb: "swarm-show" | "rite-receipt" | "rite-begin", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
-  /** Cut a bundle at `dest`, a fresh path inside `workspace`, and answer its manifest (`carryExport`). `woken` names the cold
+  /** Cut a bundle at `dest`, a fresh path inside `workspace`, and answer its manifest (`houseExport`). `woken` names the cold
    *  wikis the wake held before the cut: each projected its pages, so the cut names none of them cold. */
-  cut(dest: string, opts: { readonly workspace: string; readonly acceptOmissions: boolean; readonly woken?: readonly string[] }): Promise<CarryManifest>;
+  cut(dest: string, opts: { readonly workspace: string; readonly acceptOmissions: boolean; readonly woken?: readonly string[] }): Promise<BundleManifest>;
   /** The wiki switcher the wake walks. Absent: no wiki wakes, and the cut names every cold one. */
   readonly wikis?: KeepWikiPorts;
   /**
@@ -128,7 +128,7 @@ export type KeepFace = { readonly face?: number; readonly faceBy?: KeepFaceBy };
 
 export type KeepResult = KeepFace & (
   | { readonly kept: true; readonly workspace: string; readonly into: string; readonly dest: string; readonly bundleId: string; readonly tessera: string; readonly lei: string; readonly n: number;
-      readonly faces: readonly string[]; readonly counts: CarryManifest["counts"]; readonly omissions: CarryManifest["omissions"] }
+      readonly faces: readonly string[]; readonly counts: BundleManifest["counts"]; readonly omissions: BundleManifest["omissions"] }
   | { readonly kept: false; readonly standing: true; readonly workspace: string; readonly into: string; readonly dest: string; readonly bundleId: string });
 
 const within = (child: string, parent: string): boolean => child === parent || child.startsWith(parent.endsWith(sep) ? parent : parent + sep);
@@ -195,7 +195,7 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     // A KEEP REPLACES A KEEP ALONE: a directory that holds no bundle manifest belongs to the operator, and so does a file.
     let schema: unknown = null;
     try { schema = lstatSync(target).isDirectory() ? (JSON.parse(readFileSync(join(target, MANIFEST_FILE), "utf8")) as { schema?: unknown }).schema : null; } catch { schema = null; }
-    if (schema !== CARRY_SCHEMA) throw new KeepRefused("keep-dest-foreign", `${target} stands and holds no ${CARRY_SCHEMA} bundle; a keep replaces only the bundle an earlier keep left, so name another place with --into`);
+    if (schema !== BUNDLE_SCHEMA) throw new KeepRefused("keep-dest-foreign", `${target} stands and holds no ${BUNDLE_SCHEMA} bundle; a keep replaces only the bundle an earlier keep left, so name another place with --into`);
   }
   // THE FACE THE KEEP ACTS AS: the one the line names, else the keep's face, one per house (the face whose keep lei stands,
   // else h0), whoever wears. THE LINE FIRST: with no lei standing, no byte of memory leaves its mirror.
@@ -249,7 +249,7 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
       rmSync(staging, { recursive: true, force: true });
       return { kept: false, standing: true, workspace: name, into, dest: target, bundleId, ...acting };
     }
-    const receipt = await ports.row("rite-receipt", { tree: bundleId, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(CARRY_SCHEMA), ...face });
+    const receipt = await ports.row("rite-receipt", { tree: bundleId, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(BUNDLE_SCHEMA), ...face });
     if (!receipt.ok) throw keepRowRefused(receipt, acting.face!);
     // THE VESSEL READS THE TREE ITSELF: the begin names where the cut stands, never only the id this seat heard.
     const staged = relative(wsDir, staging).split(sep).join("/");

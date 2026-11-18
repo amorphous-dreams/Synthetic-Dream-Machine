@@ -1,18 +1,18 @@
 /**
- * `lares export <dest> [--accept-omissions]` — the command face of `carryExport` (`./carry.ts`).
+ * `lares export <dest> [--accept-omissions]` — the command face of `houseExport` (`./house-bundle.ts`).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
-import { carryExport, carryRefusal, LIVE_CARRY_DOORS, type CarryDoors, type CarryExportResult } from "./carry.js";
+import { houseExport, bundleRefusal, LIVE_BUNDLE_DOORS, type BundleDoors, type HouseExportResult } from "./house-bundle.js";
 
-export async function cmdExport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY_DOORS): Promise<number> {
+export async function cmdExport(args: ParsedArgs, doors: BundleDoors = LIVE_BUNDLE_DOORS): Promise<number> {
   const dest = args.positional[0];
   if (!dest) { console.error("usage: lares export <dest> [--accept-omissions]"); return 2; }
-  let result: CarryExportResult;
-  try { result = await carryExport(dest, { acceptOmissions: args.flags["accept-omissions"] === true, doors }); }
-  catch (e) { return carryRefusal(args, "export", e); }
+  let result: HouseExportResult;
+  try { result = await houseExport(dest, { acceptOmissions: args.flags["accept-omissions"] === true, doors }); }
+  catch (e) { return bundleRefusal(args, "export", e); }
   const m = result.manifest;
   emit(args, {
     ok: true,

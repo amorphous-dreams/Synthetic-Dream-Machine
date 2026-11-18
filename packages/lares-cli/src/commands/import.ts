@@ -1,18 +1,18 @@
 /**
- * `lares import <dest> [--apply]` — the command face of `carryImport` (`./carry.ts`).
+ * `lares import <dest> [--apply]` — the command face of `houseImport` (`./house-bundle.ts`).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
-import { carryImport, carryRefusal, unlockItLine, LIVE_CARRY_DOORS, type CarryDoors, type CarryImportResult } from "./carry.js";
+import { houseImport, bundleRefusal, unlockItLine, LIVE_BUNDLE_DOORS, type BundleDoors, type HouseImportResult } from "./house-bundle.js";
 
-export async function cmdImport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY_DOORS): Promise<number> {
+export async function cmdImport(args: ParsedArgs, doors: BundleDoors = LIVE_BUNDLE_DOORS): Promise<number> {
   const src = args.positional[0];
   if (!src) { console.error("usage: lares import <dest> [--apply]"); return 2; }
-  let result: CarryImportResult;
-  try { result = await carryImport(src, { apply: args.flags["apply"] === true, doors }); }
-  catch (e) { return carryRefusal(args, "import", e); }
+  let result: HouseImportResult;
+  try { result = await houseImport(src, { apply: args.flags["apply"] === true, doors }); }
+  catch (e) { return bundleRefusal(args, "import", e); }
   const all = Object.values(result.tallies);
   const refused = all.reduce((n, t) => n + t.refused.length, 0), stood = all.reduce((n, t) => n + t.stoodOff.length, 0);
   const code = refused > 0 ? exitFor("verb-error") : stood > 0 ? exitFor("conflict") : 0;

@@ -19,7 +19,10 @@
  *   lock     every session drops and every key zero-fills.
  *   status   lit or not, the faces open, the sessions standing, attempts left, the image the host reported; while lit, the
  *            admitted digests and the ended ones. Opens nothing.
- *   image    THE HOST'S REPORT of the image digest it raises (the kūkulu gate's input port).
+ *   image    THE HOST'S REPORT of the image digest it raises (the kūkulu gate's input port), with an optional seed line: the
+ *            seed that image offers beside the founding record, ratchet by ratchet, as the host read it (D1). The pūlama
+ *            opens no document, so it names the line and never computes it; `status` and `admit` repeat it, and no admitted
+ *            row carries it: admission moves nothing.
  *   tessera  the tessera halves the pūlama witnessed, as they rest: `rite-begun` for each kūkulu it served, `rite-landed`
  *            for each that composed; and, while lit, the admitted images with each one's count of re-services.
  *
@@ -59,7 +62,9 @@ export function pulamaHandDoor(a: {
   const { holder, server } = a;
   const log = a.onLog ?? (() => {});
   let chain: Promise<unknown> = Promise.resolve();
-  const status = () => ({ lit: holder.isUnlocked(), faces: holder.unlockedFaces().length, sessions: server.sessions(), attemptsLeft: holder.attemptsLeft(), image: a.image.raised() });
+  // THE SEED LINE the host reported beside the image; a later report with no line clears it.
+  let seed: string | null = null;
+  const status = () => ({ lit: holder.isUnlocked(), faces: holder.unlockedFaces().length, sessions: server.sessions(), attemptsLeft: holder.attemptsLeft(), image: a.image.raised(), ...(seed !== null ? { seed } : {}) });
   /** The admitted digests and the ended ones, read under the pūlama's key: an unlit pūlama names none. */
   const admissionDigests = async () => {
     if (!a.admissions || !holder.isUnlocked()) return {};
@@ -129,9 +134,11 @@ export function pulamaHandDoor(a: {
       case "status": return { op: "status", ...status(), ...await admissionDigests() };
       case "image": {
         if (typeof f["digest"] !== "string") return { op: "image", reading: "malformed" };
+        if (f["seed"] !== undefined && typeof f["seed"] !== "string") return { op: "image", reading: "malformed" };
         try { a.image.report(f["digest"]); } catch { return { op: "image", reading: "malformed" }; }
-        log("the host reported an image digest");
-        return { op: "image", reading: "reported", image: a.image.raised() };
+        seed = typeof f["seed"] === "string" && f["seed"].trim() !== "" ? f["seed"].trim() : null;
+        log(seed !== null ? "the host reported an image digest and the seed it offers" : "the host reported an image digest");
+        return { op: "image", reading: "reported", image: a.image.raised(), ...(seed !== null ? { seed } : {}) };
       }
       case "tessera": {
         const halves: unknown[] = [];

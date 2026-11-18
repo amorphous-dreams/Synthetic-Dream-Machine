@@ -18,16 +18,16 @@ export {
   meshSensoriumDir, meshWhoDir, meshAuthorityDir, meshFlowDir,
 } from "./vessel-paths.js";
 export { atomicWriteFileSync } from "./fs-atomic.js";
-// The carry bundle's one reader: the shape, the hashes, and the verify that proves a bundle whole. It stands beneath the
+// The house bundle's one reader: the shape, the hashes, and the verify that proves a bundle whole. It stands beneath the
 // vessel, so the vessel derives a keep's bundle id from the staged tree itself (`commands/rite.ts#keepStagedTree`).
 export {
-  CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, CarryBundleRefused,
+  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, BundleVerifyRefused,
   sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder,
-} from "./carry-manifest.js";
+} from "./bundle-manifest.js";
 export type {
-  CarryLayer, CarryFile, CarryRow, CarryFace, CarryOmission, CarryManifest, CarryRedeclareFace, CarryShareEntry, CarryRedeclare,
-  CarryKahuaHead, VerifiedBundle,
-} from "./carry-manifest.js";
+  BundleLayer, BundleFile, BundleRow, BundleFace, BundleOmission, BundleManifest, BundleRedeclareFace, BundleShareEntry, BundleRedeclare,
+  BundleKahuaHead, VerifiedBundle,
+} from "./bundle-manifest.js";
 export { fileJournal } from "./vessel-journal-file.js";
 
 // The Erisian date: `ddate(1)` where it stands (it carries holydays, exclamations, X-Day and the whole
@@ -186,6 +186,7 @@ export type { FaceGateServer, GateSessionRegistry, SeatedGateSession, StoodGate,
 export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
+export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile } from "./floor-shadow-file.js";
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
 export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, listFaceOrdinals, persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";

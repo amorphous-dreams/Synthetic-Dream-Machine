@@ -418,3 +418,41 @@ describe("RED unadmit-never-answers-unadmitted-with-no-tombstone-resting", () =>
     expect(await s.admissions.admitted(IMAGE, by)).toBeNull();
   });
 });
+
+describe("RED pulama-admit-names-the-seed-the-image-offers (D1)", () => {
+  const SEED = "seed (offered) " + "5".repeat(64) + ": a newer seed waits: engine same · grammar moved · plugins same · floor same";
+
+  test("the host's report carries the seed line beside the image; status and the admission answer name it before and after the route; the admitted row carries none of it", async () => {
+    const s = await stand();
+    expect(await s.door({ op: "image", digest: IMAGE, seed: SEED })).toMatchObject({ reading: "reported", image: IMAGE, seed: SEED });
+    expect(await s.door({ op: "status" })).toMatchObject({ image: IMAGE, seed: SEED });
+    // THE VERB: the route's prompt names the seed line beside the image, so the hand reads what waits before it admits.
+    const asked: string[] = [];
+    const answer = await runHandVerb("admit", undefined, { ask: (frame) => s.door(frame), route: async (label) => { asked.push(label); return FIXTURE_PASSPHRASE; } });
+    expect(asked[0]).toContain(IMAGE);
+    expect(asked[0]).toContain(SEED);
+    expect(answer).toMatchObject({ op: "admit", reading: "admitted", admitted: IMAGE, seed: SEED });
+    // ADMISSION MOVES NOTHING: the admitted row and both tessera halves carry no seed field.
+    const row = JSON.parse((await s.records.read(pulamaAdmittedTitle(IMAGE)))!) as SignedPulamaAdmit;
+    expect(JSON.stringify(row)).not.toContain("seed");
+    const tessera = String(answer["tessera"]);
+    for (const half of ["guest", "host"] as const) expect(await s.records.read(pulamaAdmitTesseraTitle(tessera, half))).not.toContain("seed");
+    // The verb line: the seed rides a structured frame `{ digest, seed }`, never trailing words; a bare digest stays valid.
+    const ports = { ask: (frame: Readonly<Record<string, unknown>>) => s.door(frame), route: async () => FIXTURE_PASSPHRASE };
+    expect(await runHandVerb("image", JSON.stringify({ digest: OTHER, seed: SEED }), ports)).toMatchObject({ reading: "reported", image: OTHER, seed: SEED });
+    await expect(runHandVerb("image", [OTHER, ...SEED.split(" ")], ports)).rejects.toBeInstanceOf(PulamaVerbUsage);
+    await expect(runHandVerb("image", JSON.stringify({ digest: OTHER, seed: 7 }), ports)).rejects.toBeInstanceOf(PulamaVerbUsage);
+    const bare = await runHandVerb("image", IMAGE, ports);
+    expect(bare).toMatchObject({ reading: "reported", image: IMAGE });
+    expect(bare["seed"]).toBeUndefined();
+  });
+
+  test("CONTROL: a report with no seed line clears the earlier one; status and the answer then name no seed", async () => {
+    const s = await stand();
+    await s.door({ op: "image", digest: IMAGE, seed: SEED });
+    await s.door({ op: "image", digest: OTHER });
+    const status = await s.door({ op: "status" });
+    expect(status["seed"]).toBeUndefined();
+    expect(status).toMatchObject({ image: OTHER });
+  });
+});
