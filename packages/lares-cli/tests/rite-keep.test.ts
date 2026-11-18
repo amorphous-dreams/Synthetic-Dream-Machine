@@ -210,7 +210,7 @@ describe("the keep rite, vessel half", () => {
     const seat = rig({ mount: 0 });
     const c = await riteKeep({ ...seat.ports, houseFaces: async () => ({ open: [0, 1], shut: [] }) }, { workspace: "backup", face: 1 }).catch((e: unknown) => e as { code: string; message: string });
     expect(c).toMatchObject({ code: "chore-face-not-mounted" });
-    expect(c.message).toMatch(/the keep belongs to the operator's hand/);
+    expect((c as { message: string }).message).toMatch(/the keep belongs to the operator's hand/);
     // CONTROL: every face open and read, none standing: the plain absent refusal names h0's kui.
     const none = rig({ leiOn: {} });
     await expect(riteKeep({ ...none.ports, houseFaces: async () => ({ open: [0], shut: [] }) }, { workspace: "backup" })).rejects.toThrow(/lares lei kui --rite keep --branch backup --returns <n> --face 0/);
