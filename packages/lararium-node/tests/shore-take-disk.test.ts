@@ -5,8 +5,8 @@
  * sides moved past the mirror's base, so the carrier stands off as `both-moved` under one key and one
  * alert. `lares ingest` of the mirror file reads that conflict and lands nothing. `take-records` settles
  * the standoff toward the records. Its twin, `take-disk`, settles it toward the disk: under the key, the
- * file's words land in the records, merged slot by slot with the records' own edit against the base's words
- * (the hand's line and the holding copy's line both stand), the file holds the merged words, the base pins and
+ * file's words land in the records, merged slot by slot with the records' own edit against the base's words,
+ * read from the mirror's own git history (the hand's line and the holding copy's line both stand), the file holds the merged words, the base pins and
  * the alert clears. Two edits at one place refuse by name (`slot-conflict`), and nothing writes or lands.
  *
  * The key reaches the one state its giver read, on both sides: another key, a file that moved since, and
@@ -16,6 +16,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { ShoreRig, RIG_BAG, coreBlobSkip } from "./shore-rig.js";
+import { runGit } from "../src/watch-core.js";
 import { syncedTreeKey } from "../src/synced-tree.js";
 import { answerShore } from "../src/shore-verb.js";
 import { takeDisk, type TakeDiskDeps } from "../../lares-cli/src/shore-take-disk.js";
@@ -63,6 +64,15 @@ describe.skipIf(coreBlobSkip)("a both-moved standoff settles toward the disk und
     rig = await ShoreRig.stand(4);
     await rig.ingest();
     await rig.boot();
+    // THE MIRROR'S OWN GIT HISTORY holds the base's words in clear (a face pool's sitting commit, in a live house):
+    // the mirror as the boot laid it commits once, so take-disk reads each carrier's base from that commit.
+    const pool = (...args: string[]): void => {
+      const r = runGit(["-c", "user.name=pet", "-c", "user.email=pet@face.invalid", "-c", "commit.gpgsign=false", ...args], rig.bagDir);
+      if (r.code !== 0) throw new Error(`git ${args.join(" ")}: ${r.stderr}`);
+    };
+    pool("init", "-q");
+    pool("add", "-A");
+    pool("commit", "-q", "-m", "lar:///pool.closes.the-sitting/lock — the sitting closes");
   }, 300_000);
   afterAll(async () => { await rig?.close(); });
 

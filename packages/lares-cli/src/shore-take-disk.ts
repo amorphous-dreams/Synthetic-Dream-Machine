@@ -12,14 +12,15 @@
  *   2. THE FILE. The file at the standoff's path gets read through the scan's own door, and its hash must
  *      equal the disk state the key folded. A file that moved since refuses by name.
  *   2b. THE MERGE. Where the records moved too, their edit must not drown under the file's. The door reads
- *      the base's words (the synced tree keeps them beside the row, `SyncedTree.bodyAt`) and the render the
+ *      the base's words from the file's own git history (the face pool's commit whose blob hashes to the base
+ *      the key folded, `basePoolText`; the synced tree holds hashes alone) and the render the
  *      island weighed under the key (`render`), and merges the three through the one seal merge
  *      (`shore-merge.ts` over `@lararium/mesh/meme-merge`, the module git's `.mem` driver reads too): a slot only one side moved
  *      takes that side, a slot both moved line-merges alone, and a `.mem` re-seals. A clean merge writes the
  *      file whole (temp, then rename) and the merged words ride the wave; a slot both sides moved into
- *      overlap refuses by name (`slot-conflict`), and nothing writes or lands on either side. A carrier
- *      whose base kept no words (a row pinned before bases kept them), a sidecar or a pointer lands the file
- *      whole, and the answer says so (`merge`).
+ *      overlap refuses by name (`slot-conflict`), and nothing writes or lands on either side. A file in no
+ *      git history, a pool with no commit holding the base, a sidecar or a binary body lands the file whole,
+ *      and the answer says so (`merge`).
  *   3. THE RECORDS. The file rides one INGEST wave whose base names the records the key folded. The gate
  *      lands the disk's words where the records still stand at that state (rule 4), and answers `conflict`
  *      where they moved since: nothing lands, and the standoff that stands keeps its own key.
@@ -32,9 +33,9 @@
  */
 
 import { statSync } from "node:fs";
-import { atomicWriteFileSync, contentHash, syncedTreeKey, type SyncedTree } from "@lararium/node";
+import { atomicWriteFileSync, contentHash, syncedTreeKey, type GitRun, type SyncedTree } from "@lararium/node";
 import { digestsEqual, mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh";
-import { mergeStandoffSides } from "./shore-merge.js";
+import { basePoolText, mergeStandoffSides } from "./shore-merge.js";
 import { carrierCasFlagged, declaredType } from "./cas-stage.js";
 import { scanFiles, settleIngest, submitIngest, type ScanRow, type SubmitIngestOpts } from "./ingest-core.js";
 import { readShoreList, type ShoreAnswer } from "./shore-core.js";
@@ -54,6 +55,8 @@ export interface TakeDiskDeps {
   readonly root: string;
   readonly did: string;
   readonly submit?: (o: SubmitIngestOpts) => Promise<SubmitResult>;
+  /** The git run the base read takes in the file's pool; absent, `runGit`. */
+  readonly git?: GitRun;
 }
 
 /**
@@ -96,8 +99,9 @@ async function mergeSides(
   if (treeBase === null || !digestsEqual(treeBase.disk, foldedDisk)) {
     return { ok: false, refusal: "standoff-key-moved", why: `the base at ${path} moved since the key was read; \`lares shore\` names the standoff's present key` };
   }
-  const baseText = deps.tree.bodyAt(syncedTreeKey(bag, uri), path);
-  if (baseText === null) return whole("the base kept no words to merge against (pinned before bases kept them)");
+  const pooled = basePoolText(path, foldedDisk, deps.git);
+  if (pooled.text === null) return whole(pooled.why);
+  const baseText = pooled.text;
   const answer = await deps.ask({ op: "render", uri, key, bag });
   if (!answer.ok) {
     if (answer.refusal === "standoff-render-unheld" || answer.refusal === "shore-op-unknown") return whole(answer.why ?? "the island holds no render of the records' side");

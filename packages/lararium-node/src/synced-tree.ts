@@ -52,21 +52,12 @@
  * wiki. The agreement a base records holds between a file and ONE document's records, so a projector that reads
  * another document treats the file as that other document's (`disk-projector.ts`, `otherDocument`). A writer that
  * names no document (the ingest gesture, a mirror over a store with none) leaves `doc` off the row.
- *
- * A BASE KEEPS ITS WORDS BESIDE IT, where its writer held them. A three-way merge needs the base's TEXT, not its
- * hash: `lares shore take-disk` merges the file and the records' render slot by slot against the last agreement
- * (`@lararium/mesh/meme-merge`). So a writer that holds the agreed text of a carrier with no sidecar (the projector's
- * write and its byte-skip, the ingest gesture's landing) hands it in, and it rests in its own file beside the row
- * (`<row>.body`, outside every row read). A body answers only while its hash equals the base's disk side
- * (`bodyAt`): a torn write, a sibling's later row or a crash between the two files reads as no body, never as a
- * wrong one. A row re-pinned at the same disk bytes keeps its body; a row pinned at other bytes with no body
- * handed in sheds the one it held; the body leaves with its row.
  */
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, readdirSync, unlinkSync, statSync } from "fs";
 import { join, resolve } from "path";
 import { randomBytes } from "crypto";
-import { tagDigest, formatDigest, sha256HexSync, digestsEqual } from "@lararium/mesh";
+import { tagDigest, formatDigest, sha256HexSync } from "@lararium/mesh";
 
 /** A text's tagged sha256 digest (`sha256:<hex>`) — the body-only hash the projector's byte-skip compares. */
 export function contentHash(text: string): string {
@@ -121,8 +112,6 @@ const stem = (s: string): string => sha256HexSync(s).slice(0, 32);
 /** A row's file name: its carrier, then its path. The name never moves, so a write replaces the row whole,
  *  and every row of one carrier shares the leading stem. */
 const rowFile = (key: string, path: string): string => `${stem(key)}.${stem(path)}.json`;
-/** The file a row's agreed words rest in, beside the row: its name never matches `ROW_NAME`, so no row read meets it. */
-const bodyFile = (key: string, path: string): string => `${stem(key)}.${stem(path)}.body`;
 /** One row's place inside an instance's map. */
 const rowId = (key: string, path: string): string => `${key}\0${path}`;
 /** A row file's name, as against a temp file or a stranger's. */
@@ -264,54 +253,11 @@ export class SyncedTree {
    * byte-identical skip). `doc` names the document whose records the agreement read, where the writer holds one.
    * The carrier's bases at other paths stand as they stood.
    */
-  set(key: string, file: string, diskHash: string, recordsHash: string = diskHash, doc?: string, body?: string): void {
+  set(key: string, file: string, diskHash: string, recordsHash: string = diskHash, doc?: string): void {
     const row: Row = { key, base: { path: syncedPath(file), disk: diskHash, records: recordsHash, ...(doc !== undefined && doc !== "" ? { doc } : {}) } };
     const before = this.map.get(rowId(key, row.base.path)) ?? null;
     this.put(row);
-    if (!this.land(row)) { this.takeBack(key, row.base.path, before); return; }
-    if (body !== undefined) this.landBody(key, row.base.path, body);
-    // Pinned at other bytes with no words handed in: the body the row held names an agreement that left.
-    else if (before === null || !digestsEqual(before.base.disk, diskHash)) this.dropBody(key, row.base.path);
-  }
-
-  /**
-   * THE AGREED WORDS AT `file`: the text the disk held when the base there was pinned, where its writer handed it
-   * in, and only while its hash still equals that base's disk side. Null where no base stands, no body rests, or
-   * the body names another agreement.
-   */
-  bodyAt(key: string, file: string): string | null {
-    const path = syncedPath(file);
-    const base = this.map.get(rowId(key, path))?.base;
-    if (base === undefined) return null;
-    let body: string | undefined;
-    if (this.dirPath === null) body = this.bodies.get(rowId(key, path));
-    else {
-      try { body = readFileSync(join(this.dirPath, bodyFile(key, path)), "utf8"); } catch { body = undefined; }
-    }
-    return body !== undefined && digestsEqual(contentHash(body), base.disk) ? body : null;
-  }
-
-  /** The bodies an in-memory tree holds (a tree with no directory). */
-  private readonly bodies = new Map<string, string>();
-
-  /** A row's agreed words land whole beside it (a temp file, then a rename). A refusal leaves no body: the merge reads none. */
-  private landBody(key: string, path: string, body: string): void {
-    if (this.dirPath === null) { this.bodies.set(rowId(key, path), body); return; }
-    const name = join(this.dirPath, bodyFile(key, path));
-    const tmp = join(this.dirPath, `.body.${process.pid}.${++SyncedTree.writeSeq}.${randomBytes(4).toString("hex")}.tmp`);
-    try {
-      writeFileSync(tmp, body, "utf-8");
-      renameSync(tmp, name);
-    } catch {
-      try { unlinkSync(tmp); } catch { /* it never landed */ }
-      this.dropBody(key, path);
-    }
-  }
-
-  /** A row's agreed words leave. One that already left needs no word. */
-  private dropBody(key: string, path: string): void {
-    if (this.dirPath === null) { this.bodies.delete(rowId(key, path)); return; }
-    try { unlinkSync(join(this.dirPath, bodyFile(key, path))); } catch { /* absent, or the disk keeps it: its hash still guards every read */ }
+    if (!this.land(row)) this.takeBack(key, row.base.path, before);
   }
 
   /**
@@ -333,7 +279,6 @@ export class SyncedTree {
     const path = syncedPath(file);
     const before = this.map.get(rowId(key, path)) ?? null;
     this.drop(key, path);
-    this.dropBody(key, path);
     if (this.dirPath === null) return;
     const name = join(this.dirPath, rowFile(key, path));
     try { unlinkSync(name); } catch (err) {

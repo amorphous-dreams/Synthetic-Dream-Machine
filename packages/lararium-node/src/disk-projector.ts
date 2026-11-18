@@ -909,7 +909,7 @@ export class LarDiskProjector {
       }
       for (const [path, { body, key }] of wanted) {
         const hash = carrierHash(body);
-        if (safeReadEquals(path, body)) { this.pin(mirror.bagId, key, path, hash, hash, body); continue; }
+        if (safeReadEquals(path, body)) { this.pin(mirror.bagId, key, path, hash); continue; }
         // A file a hand left at this path stays: the base alone vouches for bytes the projector may replace.
         if (existsSync(path)) {
           const base = this.ownBaseAt(mirror.bagId, key, path);
@@ -921,7 +921,7 @@ export class LarDiskProjector {
         try {
           mkdirSync(dirname(path), { recursive: true });
           this.atomicWrite(path, body);
-          this.pin(mirror.bagId, key, path, hash, hash, body);
+          this.pin(mirror.bagId, key, path, hash);
         } finally { this.writing.delete(key); }
       }
       if (!existsSync(folder)) continue;
@@ -1164,10 +1164,9 @@ export class LarDiskProjector {
     return this.syncedTree.bases(syncedTreeKey(bagId, uri)).filter((base) => !this.otherDocument(bagId, base));
   }
 
-  /** Pin an agreement between the file at `path` and this document's records; `body` hands in the agreed text of a
-   *  carrier with no sidecar, so a three-way merge (`shore take-disk`) reads the base's words. */
-  private pin(bagId: string, uri: string, path: string, diskHash: string, recordsHash: string = diskHash, body?: string): void {
-    this.syncedTree.set(syncedTreeKey(bagId, uri), path, diskHash, recordsHash, this.docOf(bagId), body);
+  /** Pin an agreement between the file at `path` and this document's records. */
+  private pin(bagId: string, uri: string, path: string, diskHash: string, recordsHash: string = diskHash): void {
+    this.syncedTree.set(syncedTreeKey(bagId, uri), path, diskHash, recordsHash, this.docOf(bagId));
   }
 
   /** The base at `path` leaves, unless it names another document: that row stays with the file it vouches for. */
@@ -1956,8 +1955,8 @@ export class LarDiskProjector {
     const obsHash    = carrierHash(output, metaBody);             // whole-carrier, for the Synced tree
     const metaPath   = metaBody !== undefined ? candidate + ".meta" : null;
     const metaInSync = metaPath === null || (existsSync(metaPath) && safeReadEquals(metaPath, metaBody!));
-    /** The agreed words a base keeps beside it: a text carrier with no sidecar alone (`SyncedTree.bodyAt`). */
-    const agreedText = metaPath === null && !bodyPending && typeof writeBytes === "string" ? writeBytes : undefined;
+    /** The records' render as text a line merge reads: a text carrier with no sidecar alone (`standoffRender`). */
+    const renderText = metaPath === null && !bodyPending && typeof writeBytes === "string" ? writeBytes : undefined;
 
     // ── THE HOMES THIS CARRIER LEFT ─────────────────────────────────────────
     // A siting rule that moved the carrier leaves its files at the earlier path. Two memories name that
@@ -1982,7 +1981,7 @@ export class LarDiskProjector {
         : contentHash(readFileSync(candidate, "utf-8")) === outputHash);
       if (bodyInSync && metaInSync) {
         // Another document's file already says what these records render: its own base stays, and nothing writes.
-        if (!this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate))) this.pin(bagId, tiddlerUri, candidate, obsHash, obsHash, agreedText);
+        if (!this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate))) this.pin(bagId, tiddlerUri, candidate, obsHash);
         this._leaveStandoff(bagId, tiddlerUri);
         this._leavePending(bagId, tiddlerUri);
         if (mirror.mirrorClass !== "recovery") await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
@@ -2082,7 +2081,7 @@ export class LarDiskProjector {
         // later disk edit from a later record edit. A base that already names this agreement stays put.
         if (decision.reason === "canonical-equivalent" && diskHash !== null && !another
             && !(base !== null && base.disk === diskHash && base.records === gateRecords)) {
-          this.pin(bagId, tiddlerUri, candidate, diskHash, gateRecords, metaPath === null && onDisk !== null && !isBinary ? onDisk.body : undefined);
+          this.pin(bagId, tiddlerUri, candidate, diskHash, gateRecords);
         }
         // A PENDING POINTER'S SIDECAR STANDS AS THE RECORDS RENDER IT, and no base stands here: that
         // agreement holds a sidecar alone, and its base says so. A base that already stands stays: where
@@ -2110,7 +2109,7 @@ export class LarDiskProjector {
         // that meets the standoff it already raised stays quiet; the write still stands down.
         this._enterStandoff(mirror.bagId, tiddlerUri, standoff, "sides", reason,
           { path: candidate, disk: diskHash, records: gateRecords, ...(base !== null ? { base: { disk: base.disk, records: base.records } } : {}) });
-        if (agreedText !== undefined && !another) this.standoffRenders.set(key, { standoff, text: agreedText });
+        if (renderText !== undefined && !another) this.standoffRenders.set(key, { standoff, text: renderText });
         return;
       }
     }
@@ -2140,7 +2139,7 @@ export class LarDiskProjector {
       // THE KĀPAE LOWERED: the carrier writes back, so a shadow standing at its stem leaves with the raise.
       LarDiskProjector.lowerShadowAt(candidate.slice(0, candidate.length - extname(candidate).length) + KAPAE_EXT);
       // The observation names the WHOLE carrier; under a pending body it names the sidecar alone.
-      this.pin(bagId, tiddlerUri, candidate, gateRecords, gateRecords, agreedText);
+      this.pin(bagId, tiddlerUri, candidate, gateRecords);
       // A bag counts as projected once a file of it stands: a pending body with no sidecar wrote nothing yet.
       if ((!bodyPending || metaPath !== null) && !this.projectedBags.has(bagId)) {
         this.projectedBags.add(bagId);
