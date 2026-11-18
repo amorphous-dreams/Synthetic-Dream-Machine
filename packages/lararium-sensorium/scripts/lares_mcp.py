@@ -123,8 +123,9 @@ WIKI_VERBS = ("wiki",)
 # over a file with no daemon, so they hold NO MCP tool — the MCP mirrors the daemon-seated verbs only, and
 # the fixture names that allowance as `local_seat`. THE CONTAINER LAW: exactly one of `recipe`/`bag` names
 # where the meme lands; neither, or both, refuses as `no-container` before the wire. `recipe: "default"`
-# names the host's ANCHOR (@daemon's own wiki; never "the active wiki"); `recipe: <slug>` = an edit AS that wiki (its top bag); `bag: <slug>` = a
-# residency placement (fails loud if the island cannot write it). Slugs ride BARE (`sdm`, `lares`), carried
+# names the host's ANCHOR (@daemon's own wiki; never "the active wiki"); `recipe: <slug>` = an edit AS that wiki (its writable bag, or the face's
+# `personal` layer of it without a writer's seat); `bag: <slug>` = a residency placement (fails loud if the island cannot
+# write it; a house canon bag from this seat refuses `seat-canon-reach`). Slugs ride BARE (`sdm`, `lares`), carried
 # as written. All three ride `lares_uds.call` to the @daemon — never a store (the single-writer law).
 MEME_VERBS = ("meme_put", "meme_get", "meme_list", "meme_delete", "meme_project")
 
@@ -1035,9 +1036,14 @@ def build_mcp(coordinator: LaresCoordinator):
     def meme_put(uri: str, text: str, recipe: "str | None" = None, bag: "str | None" = None,
                  base: "str | None" = None) -> dict:
         """PLACE a meme's `text` at its `lar:` `uri` through the island's Confluence gate — mirrors
-        `lares meme put`. CONTAINER LAW: name exactly one of `recipe` (an edit AS that wiki; lands in its top
-        bag; `"default"` names the @daemon's own wiki) / `bag` (a residency placement; fails loud if the
-        island cannot write it); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). `base` carries the
+        `lares meme put`. CONTAINER LAW: name exactly one of `recipe` (an edit AS that wiki; lands in the wiki's
+        writable bag, its working layer, or this face's own `personal` layer of the wiki where it holds no writer's
+        seat there, and the receipt's `bag` and `layer` say which; `"default"` names the @daemon's own wiki) / `bag` (a
+        residency placement; fails loud if the island cannot write it); neither, or both, refuses as `no-container`.
+        Slugs ride bare (`sdm`, `lares`). THE SEAT'S CANON FENCE: this seat never writes house canon live, so a `bag`
+        naming a house canon bag (`lares`, `lararium`, every disk-sourced holding but the public board) refuses
+        `seat-canon-reach`; edit through the wiki instead (`recipe=<slug>`, a copy-up), then `meme_offer` the record
+        toward the canon bag, and the steward promotes. `base` carries the
         canonical hash the writer read back from `meme_get` — the merge base: stale → the receipt's
         `decision` reads "conflict"; absent → adopt. Returns the receipt {uri, decision, grade, landed,
         tombstoned, canonicalHash, warnings, diagnostics} for a write that stands (`ingest`, or `noop` where the
@@ -1259,7 +1265,8 @@ def build_mcp(coordinator: LaresCoordinator):
         (or one TiddlyWiki list string); every field the patch leaves unnamed stays as it stood, so a field or tag patch
         never touches the text and a text put keeps the fields. `base` carries the `hash` read from `tiddler_get`: a
         record that moved past it lands nothing. `create=True` lands only where no tiddler stands. The write lands in the
-        wiki's WORKING layer (`wiki_status` names it), never canon. Returns {recipe, title, decision, bag, created,
+        wiki's WORKING layer (`wiki_status` names it), never canon: a write this seat aims at a house canon bag refuses
+        `seat-canon-reach` (the seat edits canon through `meme_put(recipe=...)` and `meme_offer`). Returns {recipe, title, decision, bag, created,
         changed, hash, textHash, position}: `decision` reads `put`, or `noop` where the record already says it.
         A WRITE THAT NEVER LANDED RAISES: `conflict` (a stale `base`; the error names the live hash) and `exists`.
         THE FENCES, each refused by name: a meme root or slot takes a field or tag patch here, and its text, type or

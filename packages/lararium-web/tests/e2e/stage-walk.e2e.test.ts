@@ -336,7 +336,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(moved, "a page save moved files under the hearth's projection").toEqual([]);
     const holding = [...after.keys()].filter((f) => { try { return readFileSync(f, "utf8").includes(body); } catch { return false; } });
     expect(holding).toEqual([]);
-    for (const args of [["meme", "get", title, "--bag", "lares"], ["meme", "get", title, "--recipe", "default"]] as const) {
+    for (const args of [["meme", "get", title, "--bag", "lares", "--json"], ["meme", "get", title, "--recipe", "default", "--json"]] as const) {
       const r = await hearth!.cli(args);
       expect(r.code, `${args.join(" ")}: ${r.stdout.slice(0, 300)}`).toBe(3);
       expect(r.stdout).toMatch(/not-found/);
@@ -362,7 +362,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     const got = await hearth!.cli(["kahua", "get", DRAFT.title]);
     expect(got.code, got.stderr).toBe(0);
     expect((JSON.parse(got.stdout) as { item: unknown }).item).toBeNull();
-    const meme = await hearth!.cli(["meme", "get", DRAFT.title, "--recipe", "default"]);
+    const meme = await hearth!.cli(["meme", "get", DRAFT.title, "--recipe", "default", "--json"]);
     expect(meme.stdout, meme.stdout.slice(0, 300)).toMatch(/not-found/);
   });
 

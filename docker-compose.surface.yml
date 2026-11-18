@@ -22,12 +22,11 @@
 #               /lar/cache (container filesystem) and /lar/run (tmpfs) stay inside the container: scratch and
 #               levers, never the host's.
 #               Back the house root up separately. It never rides an image layer, a build arg or an env var.
-#   /workspace  the editable corpus: the canon SOURCE a seeding reads (LAR_BAGS=/workspace/bags). A bag whose source
+#   /workspace  the editable corpus: the canon SOURCE a lay reads (LAR_BAGS=/workspace/bags). A bag whose source
 #               stands here projects back here, and the wiki it composes to wikis/; no private plane ever does (operator
-#               ruling 2026-11-01; lararium-node `projectionRoots`). It binds the HOUSE CANON CLONE, a clone pinned to
-#               `develop` or a release that moves by an explicit act alone (`node tools/house-canon.mjs move`, then
-#               `lares vessel seed`; operator ruling D4, 2026-11-18), never a developer's working checkout, whose branch
-#               switch would move the house's canon; the one dev install names its working checkout by LARES_DEV_INSTALL=1.
+#               ruling 2026-11-01; lararium-node `projectionRoots`). It binds the workspace the operator names, a
+#               projection target; for the Kahu cabal the repo checkout, the working surface, so canon write-back lands
+#               in source control (operator ruling 2026-11-18, decisions#/ruled-workspaces).
 #
 # Required (no default, so a forgotten one fails loud instead of siting state in the wrong place):
 #   LARES_HOUSE       the host house root, absolute; its hearth, sensoriums, projections, library and config bind
@@ -35,7 +34,7 @@
 #                     (put it on a LOCAL LINUX filesystem; on Win11 keep it inside the WSL distro, never /mnt/c — see
 #                     the hazards below). The host shim makes the five directories as the operator before it stands
 #                     a container, so the engine never makes one owned by root.
-#   LARES_WORKSPACE   host path mounted at /workspace: the house canon clone (founding-runbook#/prepare)
+#   LARES_WORKSPACE   host path mounted at /workspace: the workspace the operator names (founding-runbook#/prepare)
 # The env file that names them rests at ~/.lares/lares-surface.env, outside every bind; the host shim refuses an env
 # file inside any of LARES_HOUSE's five binds.
 # Optional:
@@ -175,7 +174,7 @@ x-vessel: &vessel
       source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/config
       target: /lar/config
     - type: bind
-      source: ${LARES_WORKSPACE:?set LARES_WORKSPACE to the house canon clone on the host}
+      source: ${LARES_WORKSPACE:?set LARES_WORKSPACE to the workspace on the host}
       target: /workspace
   # The explicit roots. The image bakes the same; they are restated so a reader of THIS file sees the contract.
   # The mirrors split by origin: a bag present under LAR_BAGS projects back to it (its wiki to LAR_WIKIS's tree), and
@@ -237,7 +236,7 @@ services:
         source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/config
         target: /lar/config
       - type: bind
-        source: ${LARES_WORKSPACE:?set LARES_WORKSPACE to the house canon clone on the host}
+        source: ${LARES_WORKSPACE:?set LARES_WORKSPACE to the workspace on the host}
         target: /workspace
       # The pūlama's socket directory: mounted in the vessel and the pūlama alone. `bind.create_host_path` makes it on a
       # house that never enabled the pūlama, where it stands empty and the vessel never dials it.

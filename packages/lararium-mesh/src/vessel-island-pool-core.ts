@@ -56,6 +56,12 @@ import type {
 import type { WikiMountSpec, WikiRecipe } from "./wiki-recipe.js";
 import type { ResidencyTemperature } from "./bag-residency.js";
 import { SessionDocumentView } from "./session-document-view.js";
+import type { LarDoc } from "./base-doc.js";
+import { genesisFloorCidOf } from "./floor-pin.js";
+import {
+  floorShadowLine, floorShadowReadingLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally,
+  type FloorShadowStore, type FloorShadowTally,
+} from "./floor-shadow.js";
 import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.js";
 import { facetsOfSurfaceRecipe, resolvedSlotsOf, type SurfaceRecipe } from "./surface-recipe.js";
 import { ORACLE_BAG } from "./wiki-recipe.js";
@@ -339,6 +345,14 @@ export interface VesselIslandPoolCoreOptions {
    * draws `content-store-absent` for every address.
    */
   readContent?: (cid: string) => Uint8Array | null | Promise<Uint8Array | null>;
+  /**
+   * THE FOUNDING RECORD (the vessel's genesis island document): the blobs every wiki island serves, and the genesis floor
+   * its seed witness names. Present, each wiki mount runs the floor shadow read (`floor-shadow`) once per boot and floor:
+   * the floor it stands on beside the record's own folds. The read never moves serving. Absent, no shadow read runs.
+   */
+  foundingRecord?: () => LarDoc | null | undefined;
+  /** Where the shadow tally rests between boots; absent, the tally lives for this pool alone. */
+  floorShadow?: FloorShadowStore;
   /** Override the mount silence budget in ms (tests). */
   mountSilenceMs?: number;
   /** Override the mount progress-stall budget in ms (default 3x silence). */
@@ -386,6 +400,12 @@ export class VesselIslandPoolCore {
   private readonly _floorCid: VesselIslandPoolCoreOptions["floorCid"];
   private readonly _onEa:           ((wikiId: string) => void) | null;
   private readonly _readContent:    VesselIslandPoolCoreOptions["readContent"] | null;
+  private readonly _foundingRecord: VesselIslandPoolCoreOptions["foundingRecord"] | null;
+  private readonly _floorShadow:    FloorShadowStore | null;
+  /** The floors this pool's boot already shadow-read: one reading per boot and floor, however many wikis mount. */
+  private readonly _shadowRead = new Set<string>();
+  private _shadowTally: FloorShadowTally | null = null;
+  private _shadowChain: Promise<void> = Promise.resolve();
   private readonly _portDoor: ReturnType<typeof makePortDoor>;
   private readonly _onPortMessage: VesselIslandPoolCoreOptions["onPortMessage"];
   private readonly _onPortDrop: VesselIslandPoolCoreOptions["onPortDrop"];
@@ -429,6 +449,8 @@ export class VesselIslandPoolCore {
     this._floorCid = opts.floorCid;
     this._onEa            = opts.onEa ?? null;
     this._readContent     = opts.readContent ?? null;
+    this._foundingRecord  = opts.foundingRecord ?? null;
+    this._floorShadow     = opts.floorShadow ?? null;
     this._portDoor = makePortDoor({ ...(opts.portPolicy ? { policy: opts.portPolicy } : {}),
       post: (scope, msg) => {
         const slot = this._slots.get(scope);
@@ -670,6 +692,37 @@ export class VesselIslandPoolCore {
     return this.has(wikiId);
   }
 
+  /** The floor shadow tally as this pool last folded it; null before any wiki mounted with a founding record. */
+  floorShadowTally(): FloorShadowTally | null { return this._shadowTally; }
+
+  /** Read one floor beside the founding record, once per boot and floor; fold, keep and print. Never throws. The readings run
+   *  one after another on one chain, so the store's load and save never race; a mount fires this and does not wait. */
+  private _shadowReadFloor(pinned: string | null, coreHash: string | null): Promise<void> {
+    const founding = this._foundingRecord;
+    if (!founding) return Promise.resolve();
+    let record: LarDoc | null | undefined;
+    try { record = founding(); } catch { record = null; }
+    const manifestCid = pinned ?? genesisFloorCidOf(record);
+    const key = manifestCid ?? "";
+    if (this._shadowRead.has(key)) return this._shadowChain;
+    this._shadowRead.add(key);
+    this._shadowChain = this._shadowChain.then(async () => {
+      try {
+        const reading = await readFloorShadow({ manifestCid, readBytes: this._readContent ?? null, islandBlobs: record?.blobs, coreSha256: coreHash });
+        const prior = this._floorShadow ? readFloorShadowTally(await this._floorShadow.load()) : this._shadowTally;
+        const tally = foldFloorShadowTally(prior, reading);
+        this._shadowTally = tally;
+        if (this._floorShadow) await this._floorShadow.save(tally);
+        if (reading.verdict === "mismatch") console.warn(floorShadowReadingLine(reading));
+        else console.info(floorShadowReadingLine(reading));
+        console.info(floorShadowLine(tally));
+      } catch (err) {
+        console.info(`[floor shadow] the tally could not be kept: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    });
+    return this._shadowChain;
+  }
+
   private _failuresOf(wikiId: string): number { return this._mountFailures.get(wikiId) ?? 0; }
   private _countMountFailure(wikiId: string): void { this._mountFailures.set(wikiId, this._failuresOf(wikiId) + 1); }
 
@@ -716,6 +769,10 @@ export class VesselIslandPoolCore {
     const floorCid = plan.surface ? (plan.surface.mount.recipe.floorCids[0] ?? null) : ((await this._floorCid?.()) ?? null);
     // The mirror of a wiki island reads the plugin list the island booted with, never a second resolution that an offering change could move.
     if (!plan.surface && plan.coreHash) this._bootInputs.set(wikiId, { coreCid: plan.coreHash, pluginCids });
+    // THE FLOOR SHADOW READ (backlog-awakens 3a): the floor this wiki stands on, beside the founding record it serves. It
+    // only reads and records; the manifest below still carries the same floor and the island serves as before. NEVER ON THE
+    // BOOT PATH: serving never waits on its answer, so a content reader or tally store that hangs stalls no mount.
+    if (!plan.surface) void this._shadowReadFloor(floorCid, plan.coreHash);
 
     // THE FENCE READS BEFORE ANY VIEW ATTACHES. A session that ended or switched while the plugins resolved,
     // or a pool that began to close, opens no channel at all.

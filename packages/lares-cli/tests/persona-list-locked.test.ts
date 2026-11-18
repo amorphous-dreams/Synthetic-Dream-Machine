@@ -2,9 +2,9 @@
  * A locked `persona list` prints the public indices the floor index names and nothing a face keeps private; a face that
  * unlocks shows its name. A vessel with no face standing has nothing to show and refuses naming the unlock.
  */
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { cpSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { cmdPersona } from "../src/commands/persona.js";
 import { cmdVessel } from "../src/commands/vessel.js";
@@ -13,12 +13,11 @@ import { seatedCustody } from "@lararium/node";
 vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
 describe("a locked persona list", () => {
+  let house: IsolatedHouse;
   let root: string;
-  let prior: string | undefined;
   beforeEach(async () => {
-    prior = process.env["LAR_ROOT"];
-    root = mkdtempSync(join(tmpdir(), "lares-list-locked-"));
-    process.env["LAR_ROOT"] = root;
+    house = openIsolatedHouse();
+    root = house.root;
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
     cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
@@ -27,8 +26,7 @@ describe("a locked persona list", () => {
   });
   afterEach(() => {
     vi.restoreAllMocks();
-    if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-    rmSync(root, { recursive: true, force: true });
+    house.close();
   });
 
 

@@ -243,7 +243,7 @@ case "$verb" in
       --bag|--recipe) [ "$#" -eq 2 ] || die "get takes one --bag or --recipe slug" ;;
       *) die "get takes --bag <slug> or --recipe <slug>" ;;
     esac
-    json_verb meme get "$uri" "$@" ;;
+    json_verb meme get "$uri" "$@" --json ;;
   info)
     slug=$(wiki_slug)
     # The runner shares the node's network namespace, so its origin names the node by localhost.

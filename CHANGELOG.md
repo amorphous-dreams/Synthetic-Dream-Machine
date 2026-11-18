@@ -4,12 +4,35 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 ## Unreleased
 
-### One root per face, keyed by pet name
+### The flow unblurred: lay and the house bundle, wear inside the lend, the AI's writing surface, the floor's two truths
 
 **Breaking**
+- **`meme get` answers the carrier.** `lares meme get` prints the meme's carrier by default, through a pipe too, with its `base: sha256:…` line on stderr; `--json` returns the envelope. A script that parsed the old envelope passes `--json`.
+- **The words unblur.** `lares vessel seed` reads `lares vessel lay`; the carry's command and manifest read the house bundle (`commands/house-bundle.ts`, `bundle-manifest.ts`), and `tools/carry-parity.mjs` reads `tools/census-drill.mjs`. Schemas carry names, never numbers: `lar-carry/1` reads `lar-house-bundle`, `lar-carry-census/1` reads `lar-census`, `lar-carry-parity/1` reads `lar-census-compare`. A keep pushed under the old tag gets one fresh `lares rite keep` to re-lay it.
+- **The last numbered tags take names,** and the evergreen witness reads any minted `name/<digits>` tag as red: `lar-face-label/1` reads `lar-face-label`, `lar-face-bases/1` reads `lar-face-bases`, `lar-kahua-pending/1` reads `lar-kahua-pending`. A stored record under an old tag reads as none; on the new build, stand the vessel and run `lares persona list` before any re-found or lay, so each face's label and bases re-mint, and the next `lares vessel lay --apply` rewrites the kahua pending list.
+- **The shim's canon-clone warning retires** with the workspaces ruling (road rank 4j): neither shim nor the compose reads `LARES_DEV_INSTALL`.
+- **The gates fail closed.** Typecheck, mesh coverage, rite commands and the symbol-anchor witness stop passing on prose, empty input or a crash.
+- **An AI seat's write to house canon refuses `seat-canon-reach`** at every door; the seat offers, never writes, and the chore mark persists. The CLI asks as an AI seat wherever a harness mark stands in its environment (`CLAUDECODE`, `CODEX_SANDBOX`, `CODEX_SANDBOX_NETWORK_DISABLED`), so `lares meme put|delete --bag lares`, the residency and routed doors, and a seat-asked `offer promote` run from an AI shell refuse as the MCP seat does.
+- **`vault unlock` never opens around a pūlama.** With the daemon down in a house a pūlama keeps, the unlock refuses `offline-beside-pulama`.
 - **Each face's private planes rest in one root named by its pet name:** `projections/faces/<pet name>/` holds `wiki/` (the daemon working layer), `canon/` (the daemon canon), `stage/` (the kahua stage), `margins/<slug>/`, `recovery/<slug>/` and `temp/<slug>/`. The house writes no `wikis/daemon-<F>`, `bags/daemon-<F>`, `bags/kahua-<F>` or `personal/<F>` folder, and a shared wiki's drafts and temp leave `wikis/<slug>/`. A shared workbench and every domain bag stay in their realm pool, one copy whichever face wears; no file that links faces rests under `faces/`. Burn the old folders by hand at the re-stand, after one `lares vessel lay --apply` reads any hand edits back.
-- **A re-found keeps the same root.** The re-minted face under the same pet name finds its root where it stands, so the seed lays it in place: no adoption copy, no move to ashes. A root no face carries refuses `seed-face-unmatched`, and a pet name that meets another face's without case refuses `face-segment-collision`. A pet name holding `/`, `\`, `:`, NUL or a leading dot makes no root, each refused by name. A rename moves the root.
-- **The carry bundle keys drafts and temp by face:** `faces/<fk>/drafts/<slug>/` and `faces/<fk>/temp/<slug>/` (the daemon wiki's temp as `temp/daemon`); `wikis/<slug>/drafts` and `wikis/<slug>/temp` leave. The seed and import results drop `adoptions`, `ashes` and `ashesLeft`; ashes take a burned pet name alone.
+- **A re-found keeps the same root.** The re-minted face under the same pet name finds its root where it stands, so the lay lays it in place: no adoption copy, no move to ashes. A root no face carries refuses `seed-face-unmatched`, and a pet name that meets another face's without case refuses `face-segment-collision`. A pet name holding `/`, `\`, `:`, NUL or a leading dot makes no root, each refused by name. A rename moves the root.
+- **The house bundle keys drafts and temp by face:** `faces/<fk>/drafts/<slug>/` and `faces/<fk>/temp/<slug>/` (the daemon wiki's temp as `temp/daemon`); `wikis/<slug>/drafts` and `wikis/<slug>/temp` leave. The lay and import results drop `adoptions`, `ashes` and `ashesLeft`; ashes take a burned pet name alone.
+
+**Added**
+- **`lares wear N`** moves the daemon mount inside the lent set and asks no route (the frame `{op: "wear", face}`; an AI seat refuses `seat-wears-no-face`). Route prompts name the face that owns them, the keep acts as the keep's face (the face whose keep lei already stands, else h0) whoever wears, and `lares pulama unadmit <digest>` takes an admission back.
+- **`lares meme patch`** edits one slot through the put's own gate: `--slot '#/x'` with `--append <file>` or `--replace <file>`, under `--base <hash>`.
+- **`share --remove` takes back the grant it delegated,** or refuses naming what still reads through it.
+- **The cadence offer** (`@lararium/mesh` `cadence-offer`): a pure slice where the cadence threshold alone offers engines, never an endorsement. `engineWindow` folds signed offers and release denies against an inception and answers the engines or one refusal (`cadence-offer-malformed`, `-foreign-inception`, `-foreign-signer`, `-unsigned`, `-chain-broken`).
+- **The floor reads two truths.** The boot, `lares floor status`, the kūkulu and `pulama admit` name the founding record beside the seed it offered; each mount reads its pinned floor beside the founding record off the boot path, keeping a count the operator reads.
+- **The land rule stands as a house witness:** one sha, one verdict.
+- **The pūlama's image report carries a seed.** `pulama-main image '{"digest":…,"seed":…}'` names the seed the image offers beside its digest, and status, admit and the admit prompt carry its line; a bare `image <digest>` reads the seed absent, as before.
+
+**Fixed**
+- **A mount the opening chose slides, never drops.** Locking the face that `unlock --all` (or the lowest face) mounted slides the mount to another open face, never down to the floor while a face stands open; a wear whose rollback also fails drops the node key and answers `held: false`.
+- **The keep lei reads over every face the house holds,** so a lei on a shut face still counts.
+- **A confirmed cold-key card leaves the screen,** and a minted wiki stands held, so its census reads at once.
+- **`lares cas` reads the daemon's protect set,** the bulb names the founding record, and the seed witness's header trues to canon alone.
+- **The repository tidies:** the dead Python package and dev scripts burn, and the MCP and Playwright configs drop their pinned browser path.
 
 ### Every branch settles: the O-TAKIAGE, the genesis re-bake, Freyja's lore, the Loom kept home
 

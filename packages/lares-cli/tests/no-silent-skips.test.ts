@@ -5,9 +5,9 @@
  * working tiddler (`My Notes.tid`, `Room 4.tid`, `Time_ dusk.tid`, `$__config_Foo.tid`) in a face's daemon mirror never
  * read back, and after a re-found every plain-title working tiddler dropped, with no line said. These vectors hold:
  *
- *   S1  the mirror seed's lay reads plain-title files back under their in-band titles (`Time: dusk`, not `Time_ dusk`)
+ *   S1  the mirror lay reads plain-title files back under their in-band titles (`Time: dusk`, not `Time_ dusk`)
  *   S2  every skip carries its file and its reason, and `skipped + rows == files` holds over a scan
- *   S3  the seed's lines print each skip, file and reason
+ *   S3  the lay's lines print each skip, file and reason
  *   S4  a personal-margin file under `lares watch` (`fileToUriForSource`) derives its title: a loci `.mem` and a plain one
  *   S5  `lares watch` prints its skips even when no candidate rides the wave
  *   S6  the mirror walk honours HOUSE_IGNORED: no `.git/`, `.vscode/`, `.shore/`, atomic temp or `.orphans/` file rides
@@ -49,7 +49,7 @@ const probe = (asked: string[]) => async (o: { candidates: readonly { uri: strin
 };
 
 describe("no silent skips", () => {
-  test("S1 — the mirror seed's lay reads every plain-title working tiddler back under its in-band title", async () => {
+  test("S1 — the mirror lay reads every plain-title working tiddler back under its in-band title", async () => {
     daemonMirror();
     const asked: string[] = [];
     const wave: MirrorWave = { source: P(`faces/hearth-one/wiki`), uriDir: P("faces/hearth-one"), toBag: WORKING, skipTop: ["temp"] };
@@ -73,7 +73,7 @@ describe("no silent skips", () => {
     expect(skipLines(scan.skipped)).toEqual(scan.skipped.map((s) => expect.stringContaining(s.file)));
   });
 
-  test("S3 — the seed's lines print each skip, file and reason", () => {
+  test("S3 — the lay's lines print each skip, file and reason", () => {
     const r: MirrorSeedResult = {
       applied: true, minted: [], any: true, benchWaiting: [],
       kahua: { preview: [], lifted: [], pending: [], waiting: [], refused: [] }, waiting: [], refusals: [],

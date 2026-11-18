@@ -25,6 +25,16 @@ name: CI
 # every job stands guarded off on the same-repository `pull_request` event; a fork's pull request has no push here and runs
 # whole. The native merge queue on `develop` raises `merge_group` on each group's merge commit, and every job runs there
 # (the fork guard reads `pull_request` alone): the queue's run reads a lane on top of every lane queued ahead of it.
+#
+# DOORSTEP QUICK, FORD FULL (the operator's ruling, 2026-11-18). A push to a LANE branch (`develop--*`, `lane/*`) runs the
+# Quick gates alone: the test cells, the witness cells, the e2e shards and the Test and Witnesses gates stand guarded off
+# by their job-level `if:`, and the e2e merge gate answers on its doorstep step (e2e-shards.yml's `doorstep` input). The
+# full battery runs on `merge_group`, on a push to `develop` or `main` (and any other branch, a feature span's among them),
+# on a fork's pull request, and by `workflow_dispatch` for a lane that wants a whole reading before it queues. Each lane
+# push ran all ten jobs, and the queue's runs waited behind them for hours inside the account's twenty. The four checks
+# the `develop` ruleset requires still report on a lane head: `Quick gates` runs; `Test` and `Witnesses` report skipped
+# (GitHub reads a skipped required check as passing); `E2E / Merge shard reports` runs its one doorstep step and passes,
+# because a called job's check bears that name only while the caller runs. tools/ci-graph.test.mjs (D1-D3) holds all of it.
 # Defense-in-depth, not a single flag: build-freshness (CI, authoritative) is
 # backed by the always-on plugin-artifact-parity unit test in `test` (local-first,
 # runs in every `pnpm test`). Dropping one gate does not open the hole.
@@ -140,6 +150,14 @@ jobs:
       - name: Every dependency names ONE version
         if: ${{ !cancelled() }}
         run: tools/exact-deps-witness.sh
+      # A misspelt trailer key drops a record line silently (`Braking:` renders nowhere in tools/changelog-render.mjs). The
+      # checkout stands shallow, so this step alone fetches the base's history (no blobs) and reads the range from the merge
+      # base. A push to develop itself reads an empty range. This costs no build.
+      - name: Every trailer key names a known key
+        if: ${{ !cancelled() }}
+        run: |
+          git fetch --no-tags --filter=blob:none --unshallow origin "${{ github.base_ref || 'develop' }}"
+          node tools/trailer-keys.mjs "$(git merge-base FETCH_HEAD HEAD)..HEAD"
       - name: Generated artifacts must be fresh (build emits no tracked diff)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
@@ -299,7 +317,7 @@ jobs:
   # named `Test` below is the gate: it fails closed on any missing, empty, red or unexpected cell.
   test-cells:
     name: Test cell ${{ matrix.cell }}
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container: ${{ matrix.container }}
@@ -458,7 +476,7 @@ jobs:
     name: Test
     needs: test-cells
     # Runs whatever the cells answered: a gate skipped by one red cell would read as nothing to report.
-    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) }}
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -510,7 +528,7 @@ jobs:
   # them and fails closed on any missing, red or unexpected cell log.
   witness-cells:
     name: Witness cell ${{ matrix.cell }}
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/'))) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
@@ -589,7 +607,7 @@ jobs:
   witnesses:
     name: Witnesses
     needs: [quick, witness-cells]
-    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) }}
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -645,4 +663,6 @@ jobs:
     name: E2E
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
     uses: ./.github/workflows/e2e-shards.yml
+    with:
+      doorstep: ${{ (github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/'))) }}
 

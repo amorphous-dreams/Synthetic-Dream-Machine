@@ -80,7 +80,7 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
   }, 600_000);
 
   test("a daemon-wiki write and a kahua lift each project under the face's kahua name, and the daemon bag projects no control or house title", async () => {
-    // Trued from the seed form: `vessel seed` reads the canon source, which a scratch LAR_ROOT holds empty, and the
+    // `vessel lay` reads the canon source, which a scratch LAR_ROOT holds empty, and the
     // fleet bag projects under its own bag id (`bags/kahua`), never a folder of its own beside the face root. A write to each layer drives
     // its projection; the face rides the folder name alone.
     const source = join(hearth!.root, "stage-row.mem");

@@ -198,14 +198,14 @@ Straight to the operator, at once: a classifier refusal; a destroy-class act pas
 
 A carrier's ETX mark carries the block check over the span it closes, so every body edit moves the `bcc=` line. Two branches that edit one carrier's body far apart, each re-sealed, merge clean in the body and conflict on that one line. `tools/mem-merge-driver.mjs` takes that conflict: `.gitattributes` names `*.mem merge=mem-seal`, and git calls the driver with the base, ours, theirs, the path and the marker size. The driver runs git's own three-way merge over the three sides with the ETX seal set bare; a clean merge there means the seal alone conflicted, so it takes the merged body, runs the normalize law `lares meme normalize` runs (the frame canonical, the block check minted over the body it follows) and writes the sealed carrier. Every other case (a body hunk that conflicts, a frame normalize faults, a span no check covers, a checkout whose build stands absent) writes git's own conflict over the original three sides and stops the merge, as a merge with no driver stops.
 
-The driver reads this checkout's build (`packages/lararium-memetic-frame/dist`, `packages/lararium-tw5/dist`), so a fresh clone builds before it merges carriers. A clone installs it once, from the checkout root; the config lands in the clone's shared config, so every worktree of the clone runs its own tree's driver:
+The driver reads this checkout's build (`packages/lararium-memetic-frame/dist`, `packages/lararium-tw5/dist`), so a fresh clone builds before it merges carriers. `lares repo tend` seats it, and the root build (`pnpm build`) runs that tend: the reality tunnel declares both keys (lar:///ha.ka.ba/lares/cli/reality-tunnel, `git.merge-driver-name` and `git.merge-driver`), and the tend writes them through `git config --local` into the clone's shared config, so every worktree of the clone runs its own tree's driver. The tend says `set` or `already set` beside each key and its value, and a second tend writes nothing. The keys it seats:
 
 ```sh
 git config merge.mem-seal.name "a .mem conflict on its seal alone re-seals"
 git config merge.mem-seal.driver "node tools/mem-merge-driver.mjs %O %A %B %P %L"
 ```
 
-A clone without the install merges carriers with git's text merge, since git reads an undefined driver as the plain text merge; the seal conflict then stops the merge, and `lares meme normalize <file>` re-seals by hand once the bodies stand merged. Proof: `node --test tools/mem-merge-driver.test.mjs` (scratch repositories, git alone red on the seal, the driver green, a body conflict and an unsealable frame left standing).
+`lares repo read` names a clone that lacks them as drift; the commit gate (`lares repo read --staged`) reads them absent, since a commit carries no git config. A clone without the tend merges carriers with git's text merge, since git reads an undefined driver as the plain text merge; the seal conflict then stops the merge, and `lares meme normalize <file>` re-seals by hand once the bodies stand merged. Proof: `node --test tools/mem-merge-driver.test.mjs` (scratch repositories, git alone red on the seal, the driver green, a body conflict and an unsealable frame left standing).
 
 <<~/ahu>>
 
@@ -231,6 +231,6 @@ A clone without the install merges carriers with git's text merge, since git rea
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JKXWQ9P_9dsssQbGWdZTvW7CYLFTLLuPXq-_ZAK15j0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2Iu2X5NRnypFZiYFw7exEojeBu6pfILmFUG-Ju88z0g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

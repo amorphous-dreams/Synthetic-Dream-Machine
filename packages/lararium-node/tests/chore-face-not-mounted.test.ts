@@ -69,8 +69,9 @@ async function stand() {
     lentOrdinals: async () => [0, 1],
     placeVerb: (o) => {
       placed.push(o);
+      // The worker stamps the mark its placement carried, as the island's dispatcher does (`writeOutcome`).
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-worker",
-        batchMode: "best-effort", results: { summary: { ok: true, output: { landed: true } } } });
+        batchMode: "best-effort", results: { summary: { ok: true, output: { landed: true } } }, ...(o.chore ? { chore: o.chore } : {}) });
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
     } }));
   const connect = async (): Promise<Peer> => {
@@ -146,4 +147,45 @@ test("CONTROL: reads keep their path from the h1 session (a meme read, a recall)
     expect(reply["chore"], verb).toBeUndefined();
   }
   expect(v.placed.map((p) => p.verb)).toEqual(["meme-get", "recall", "floor-status"]);
+});
+
+// THE ASKER RIDES THE PLACEMENT (seat-canon-reach, T4-2): the door hands the hand it read (`seat` off the seat kind, `cli`
+// for the operator's own line, the session's own hand) to the placed ask, so the reactor's context can name it. Never read
+// off the frame: a line naming its own `asker` places under the hand the door read.
+const askerOf = (p: unknown): unknown => (p as { asker?: unknown }).asker;
+
+test("RED: the AI seat's one-shot meme write places with asker seat; the operator's line with asker cli", async () => {
+  const v = await stand();
+  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai" });
+  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop" });
+  expect(v.placed.map(askerOf)).toEqual(["seat", "cli"]);
+});
+
+test("RED: a frame naming its own asker never chooses it: an unmarked line claiming asker tab places as cli; a seat line claiming cli places as seat", async () => {
+  const v = await stand();
+  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop", asker: "tab" });
+  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai", asker: "cli" });
+  expect(v.placed.map(askerOf)).toEqual(["cli", "seat"]);
+});
+
+test("RED: a session's call places with the session's own hand; CONTROL: a read from the session places with it too", async () => {
+  const v = await stand();
+  const opened = await v.peer.ask({ op: "session:open", requestId: "open-tab", faceRef: "h0", hand: "tab" });
+  const env = { ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] };
+  await v.peer.ask({ op: "session:call", ...env, requestId: "put-hand", verb: "meme-put", args: MEME });
+  await v.peer.ask({ op: "session:call", ...env, requestId: "read-hand", verb: "meme-get", args: {} });
+  expect(v.placed.map(askerOf)).toEqual(["tab", "tab"]);
+});
+
+// THE MARK RESTS WITH THE WRITE (T4-5): the chore mark rides the placement into the durable outcome, and a receipt read on a
+// fresh connection (a reconnect, `lares receipt <id>`) answers it, not the socket's answer alone.
+test("RED: the seat's meme write places with its chore mark, and a later receipt read answers that mark; CONTROL: a read carries none", async () => {
+  const v = await stand();
+  const mark = { acting: 0, asker: "seat", session: null };
+  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "put-mark" });
+  expect((v.placed[0] as { chore?: unknown }).chore).toEqual(mark);
+  expect(await v.oneShot({ op: "receipt", requestId: "put-mark" })).toMatchObject({ requestId: "put-mark", state: "done", chore: mark });
+  await v.oneShot({ verb: "meme-get", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "get-mark" });
+  expect((v.placed[1] as { chore?: unknown }).chore).toBeUndefined();
+  expect(await v.oneShot({ op: "receipt", requestId: "get-mark" })).not.toHaveProperty("chore");
 });

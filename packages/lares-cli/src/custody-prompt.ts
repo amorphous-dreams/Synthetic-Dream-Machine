@@ -81,22 +81,34 @@ async function readSheets(label: string): Promise<string[]> {
   return sheets;
 }
 
-/** One credential, read hidden: a passphrase, or the sheets of a held paper pin. */
-async function readCredential(route: Route): Promise<Credential> {
-  if (route === "passphrase") return { kind: "passphrase", passphrase: await promptSecret("passphrase: ") };
-  return { kind: "paper", sheets: await readSheets("paper") };
+/** One credential, read hidden: a passphrase, or the sheets of a held paper pin, each named for whose key it opens. */
+async function readCredential(route: Route, owner: string): Promise<Credential> {
+  if (route === "passphrase") return { kind: "passphrase", passphrase: await promptSecret(`${owner} passphrase: `) };
+  return { kind: "paper", sheets: await readSheets(`${owner} paper`) };
+}
+
+/**
+ * WHOSE ROUTE A PROMPT ASKS: the vessel's (the node key), a face's (its own tree, by handle index), or a backup bundle's. The
+ * question a person reads names it, so a route typed under it never lands on a key it was not meant for.
+ */
+export type RouteOwner = { readonly kind: "vessel" } | { readonly kind: "face"; readonly ordinal: number } | { readonly kind: "bundle" };
+
+/** The owner as a possessive the prompt reads: "the vessel's", "face h1's", "the backup bundle's". */
+export function routeOwnerName(owner: RouteOwner): string {
+  return owner.kind === "vessel" ? "the vessel's" : owner.kind === "face" ? `face h${owner.ordinal}'s` : "the backup bundle's";
 }
 
 /**
  * The credentials that open the S key. One credential per pass; a slot of several pins asks for more. Refuses with no TTY.
  * Nothing read here is stored beyond the returned array, which the caller hands to `unlockCustody` and drops.
  */
-export async function gatherCredentials(verb: string, opts: { readonly route?: Route } = {}): Promise<Credential[]> {
+export async function gatherCredentials(verb: string, owner: RouteOwner, opts: { readonly route?: Route } = {}): Promise<Credential[]> {
   requireTty(verb);
+  const named = routeOwnerName(owner);
   const out: Credential[] = [];
   for (;;) {
-    const [route] = opts.route ? [opts.route] : await askRoute("open with", false);
-    const credential = await readCredential(route!);
+    const [route] = opts.route ? [opts.route] : await askRoute(`open ${named} key with`, false);
+    const credential = await readCredential(route!, named);
     if (out.length > 0 && credential.kind === "passphrase" && credential.passphrase === "") say("  blank extra passphrase skipped.");
     else out.push(credential);
     const more = (await promptLine("another pin? only a slot sealed with several pins needs one [y/N]: ")).trim().toLowerCase();

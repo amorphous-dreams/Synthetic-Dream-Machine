@@ -6,9 +6,13 @@
  *   node dist/src/pulama-main.js light              the operator lights it: reads the route on a real terminal, no echo
  *   node dist/src/pulama-main.js admit [face]       the operator admits the image the host reports: reads the route on a real
  *                                                   terminal, proves it against the lit holder, opens nothing
+ *   node dist/src/pulama-main.js unadmit <digest>   the operator ends an image's admission: reads the route on a real terminal,
+ *                                                   proves it, and rests a signed tombstone naming the admission's tessera
  *   node dist/src/pulama-main.js lock               drop every session, zero-fill every key
  *   node dist/src/pulama-main.js status             lit or not, faces open, sessions, attempts left, the reported image
- *   node dist/src/pulama-main.js image <digest>     the host shim reports the image digest it raises
+ *   node dist/src/pulama-main.js image <digest>     the host shim reports the image digest it raises; as
+ *                                                   `image '{"digest":…,"seed":…}'` it carries beside it the seed line the
+ *                                                   host read (the seed that image offers beside the founding record)
  *   node dist/src/pulama-main.js tessera            print the pūlama's signed tessera halves
  *
  * Environment (every name required for `serve`; the hand verbs need `LAR_PULAMA_HAND` alone):

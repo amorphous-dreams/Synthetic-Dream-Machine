@@ -746,3 +746,18 @@ describe("installCasSweep — M7″ the production sweep threads a live `current
   });
 });
 
+
+describe("installCasSweep — the daemon names its protect set to a reader (the one union, never re-derived)", () => {
+  test("the `cas-protect` verb answers the exact set the sweep guards: seed blobs and the stored island's together", async () => {
+    const seedBlob = blob("a seed-named engine blob"), islandBlob = blob("a blob only the stored island names");
+    const verbs = new Map<string, (a: Record<string, unknown>) => Promise<Record<string, unknown>>>();
+    const installed = installCasSweep({
+      registry: { register: (name, handler) => { verbs.set(name, handler); } },
+      casDir, references: () => [], protect: new Set([seedBlob.cid, islandBlob.cid]),
+      pins: () => [], realmClock: () => clockAt(5), currentFence: () => 0, log: () => {},
+    });
+    const answer = await verbs.get("cas-protect")?.({});
+    expect(answer?.["protect"]).toEqual([islandBlob.cid, seedBlob.cid].sort());
+    installed.stop();
+  });
+});

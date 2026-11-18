@@ -9,25 +9,21 @@
  *      `<root>/genesis`, never the shared tree's.
  */
 
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { bakePlan } from "../src/commands/scripted.js";
 
+let house: IsolatedHouse;
 let root: string;
-let savedRoot: string | undefined;
 
 beforeEach(() => {
-  savedRoot = process.env["LAR_ROOT"];
-  root = mkdtempSync(join(tmpdir(), "lares-bake-plan-"));
-  process.env["LAR_ROOT"] = root;
+  house = openIsolatedHouse();
+  root = house.root;
 });
 
 afterEach(() => {
-  if (savedRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = savedRoot;
-  rmSync(root, { recursive: true, force: true });
+  house.close();
 });
 
 describe("bakePlan — the bake reads the plugin that stands", () => {

@@ -8,7 +8,7 @@
 //
 // WHAT IT NEVER TOUCHES: a root outside a scratch prefix, the checkout's tracked tree, a real home, the host shim,
 // Docker (the image leg alone reaches the shim and Docker, inside the scope its own line names). It drops LAR_BAGS and LAR_GENESIS from its own environment, mints its root under the stage dir, copies the
-// checkout's `bags/` into the root's own canon source (so the steward's seed lays house canon) and runs under a scratch HOME.
+// checkout's `bags/` into the root's own canon source (so the steward's lay lays house canon) and runs under a scratch HOME.
 //
 // THE RECEIPT (`<out>/rite-report.json`, human lines beside it in `rite-report.txt`): the git head, the runbook
 // carrier's hash and seal, the walker's own hash, a row per step, and a digest over the outcomes a replay compares.

@@ -54,6 +54,13 @@ export interface ShareApplyDeps {
    * already held that delegation (the roster's own read), so a replay counts as no move; a port that answers nothing reads fresh.
    */
   readonly grant: (g: OwedGrant & { readonly ownerGroup: string; readonly granteeGroup: string }) => Promise<void | { readonly fresh?: boolean }>;
+  /**
+   * Take `bag` back from the grantee's hive at the owner's (both lit): the undoing of `grant`. Only a landing that names `unshare`
+   * calls it. Absent, an unshared row's grants stay standing and the landing names them (`standing`).
+   */
+  readonly revoke?: (g: OwedGrant & { readonly ownerGroup: string; readonly granteeGroup: string }) => Promise<void>;
+  /** The slugs whose rows the operator unshares now: their grants revoke instead of landing, and their workbenches seat no one. The rows still stand in `rows` for this landing. */
+  readonly unshare?: readonly string[];
   /** `has` (optional) reads whether a grant's flag stood before this landing: a grant that waited counts as a move when it lands. */
   readonly flag: { set(title: string): Promise<void>; clear(title: string): Promise<void>; has?(title: string): Promise<boolean> };
   /** A vessel-own salt, so the opaque flag reads alike on no other vessel. */
@@ -108,6 +115,10 @@ export interface ShareApplied {
    * stood on this vessel): the row owes nothing this landing can read, and the door says so by slug.
    */
   readonly unowned: readonly string[];
+  /** Grants an unshare took back (`revoke`); absent where no slug rode `unshare`. */
+  readonly revoked?: number;
+  /** Each unshared slug whose landed grants this landing could not take back (an owner or grantee stands shut, no door to revoke, or the revoke refused): they still read. */
+  readonly standing?: readonly string[];
 }
 
 /**
@@ -165,7 +176,22 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     }
     return null;
   };
-  const grants = owedGrants({ rows, faces: deps.faces, ownerOf, houseCanon: isHouseCanonBag });
+  const owed = owedGrants({ rows, faces: deps.faces, ownerOf, houseCanon: isHouseCanonBag });
+  // AN UNSHARED ROW TAKES ITS LANDED GRANTS BACK: the owner's hive revokes each reader the row named, and no delegation lands.
+  const unshared = new Set((deps.unshare ?? []).map((slug) => rows.find((r) => r.slug === slug)).filter((r): r is ShareEntry => r !== undefined).map(shareEntryBag));
+  const grants = owed.filter((g) => !unshared.has(g.bag));
+  let revoked = 0;
+  const standingBags = new Set<string>();
+  for (const bag of unshared) {
+    if (isHouseCanonBag(bag)) continue;
+    if (ownerOf(bag) === null) { standingBags.add(bag); continue; }
+    for (const g of owed.filter((o) => o.bag === bag)) {
+      const owner = deps.faces.find((f) => f.handleIndex === g.owner), grantee = deps.faces.find((f) => f.handleIndex === g.grantee);
+      if (!owner?.group || !grantee?.group || !halves.get(g.owner) || !deps.revoke) { standingBags.add(bag); continue; }
+      try { await deps.revoke({ ...g, ownerGroup: owner.group, granteeGroup: grantee.group }); revoked++; await deps.flag.clear(sharePendingTitle(g, deps.salt)); }
+      catch (e) { standingBags.add(bag); deps.log?.(`[share-apply] revoke ${g.bag} h${g.owner} -> h${g.grantee} refused: ${e instanceof Error ? e.message : String(e)}`); }
+    }
+  }
   const t0 = performance.now();
   deps.log?.(`[share-apply] ${rows.length} row(s), ${deps.faces.filter((f) => f.group).length} lit face(s), ${grants.length} grant(s) owed`);
   let granted = 0, pending = 0, carried = 0, moved = 0;
@@ -202,7 +228,7 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   const workbenches: ShareWorkbenchLanded[] = [];
   if (deps.workbench) {
     for (const row of rows) {
-      if (row.kind !== "wiki") continue;
+      if (row.kind !== "wiki" || (deps.unshare ?? []).includes(row.slug)) continue;
       const bag = shareEntryBag(row);
       // THE OWNER: the face whose realm the ledger binds the slug under; a slug bound under a face that stands shut waits for
       // its light. Where no face stood the wiki yet, the canon's owner founds it, and a house canon wiki's lander does.
@@ -228,5 +254,6 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   for (const row of rows) for (const name of resolveShare({ bag: shareEntryBag(row), rows, faces: deps.faces }).waiting) waiting.add(name);
   deps.log?.(`[share-apply] done in ${Math.round(performance.now() - t0)}ms: ${granted} granted (${carried} carried to a face's next wear), ${lifted} lifted, ${pending} pending, ${workbenches.length} workbench(es)`);
   const unowned = rows.filter((row) => !isHouseCanonBag(shareEntryBag(row)) && ownerOf(shareEntryBag(row)) === null).map((row) => row.slug).sort();
-  return { granted, moved, pending, carried, lifted, waiting: [...waiting].sort(), workbenches, unowned };
+  const standing = rows.filter((r) => standingBags.has(shareEntryBag(r)) && (deps.unshare ?? []).includes(r.slug)).map((r) => r.slug).sort();
+  return { granted, moved, pending, carried, lifted, waiting: [...waiting].sort(), workbenches, unowned, ...(deps.unshare ? { revoked, standing } : {}) };
 }
