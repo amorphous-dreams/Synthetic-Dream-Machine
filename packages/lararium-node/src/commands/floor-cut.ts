@@ -80,8 +80,8 @@ export async function runFloorCutOver(opts: {
   readonly bagTier:     (slug: string) => CapTier | null;
   /** Slugs the steward names thin on purpose: each cuts though its live rows count under half the prior snapshot's. */
   readonly thin?:       readonly string[];
-  /** The engine digest this vessel's genesis floor names; a prior whose engine differs refuses `floor-engine-unoffered`. */
-  readonly genesisEngine?: () => Promise<string | null> | string | null;
+  /** The engine digest this vessel's genesis floor names; a prior whose engine differs refuses `floor-engine-unoffered`. Required. */
+  readonly genesisEngine: () => Promise<string | null> | string | null;
 }): Promise<FloorCutResult> {
   const out = await cutReleaseFloor({
     prior: async () => {
@@ -99,7 +99,7 @@ export async function runFloorCutOver(opts: {
     tier: opts.bagTier,
     blob: async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
     stage: async (blobs) => { writeCasEntriesFs(blobs.map((b) => ({ cid: b.cid, bytes: b.bytes })), opts.casDir); },
-    ...(opts.genesisEngine ? { genesisEngine: opts.genesisEngine } : {}),
+    genesisEngine: opts.genesisEngine,
   }, { ...(opts.thin ? { thin: opts.thin } : {}) }).catch((e: unknown) => {
     if (e instanceof FloorCutThin) throw new FloorRefused(e.refusal, e.message);
     if (e instanceof FloorManifestRefusal && e.code === "floor-engine-unoffered") throw new FloorRefused(e.code, e.message);
