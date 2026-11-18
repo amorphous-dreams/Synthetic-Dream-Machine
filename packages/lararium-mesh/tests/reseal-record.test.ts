@@ -291,3 +291,46 @@ describe("a head after the removal still owes the replacement: the nearest remov
     expect(judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0, v1, v2, v3]), keys: s.keyMap(0, 1, 2, 3), manifests })).toEqual({ verdict: "complete" });
   });
 });
+
+describe("the replacement names the same logical entry it replaced, and the same hand wrote it", () => {
+  const OTHER_PHOTO = "b".repeat(64);
+  /** A founding and one removal, both counted; P rests under the founding, the replacement under the removal. */
+  async function rolled() {
+    const s = await keyShore(2);
+    const lineage = s.lineageOf([await s.version(0, [], 0, { kind: "founding" }), await s.version(1, [0], 0, { kind: "removal", acts: ["raise-1"] })]);
+    return { s, lineage, fromP: s.address(0, PHOTO) };
+  }
+
+  it("CONTROL: a record naming P's role and reference, with both keys and both manifests in hand, reads complete; without the successor's key, `to` stays unverified", async () => {
+    const { s, lineage, fromP } = await rolled();
+    const toP = s.address(1, PHOTO);
+    const record = await s.reseal(1, 0, { from: fromP, to: toP, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"], role: "blob", ref: PHOTO });
+    const manifests = [await s.manifest(0, PHOTO, fromP), await s.manifest(1, PHOTO, toP)];
+    expect(judgeReseal(record, { bagId: BAG, lineage, keys: s.keyMap(0, 1), manifests })).toEqual({ verdict: "complete" });
+    expect(judgeReseal(record, { bagId: BAG, lineage, keys: s.keyMap(0), manifests })).toEqual({ verdict: "unverified", missing: ["to"] });
+  });
+
+  it("\"Q REPLACED P\" FOR UNRELATED VALUES: the successor's manifest names `to` under Q's entry, never P's, so `to` refuses `reseal-unbound`", async () => {
+    const { s, lineage, fromP } = await rolled();
+    const toQ = s.address(1, OTHER_PHOTO, "another photo");
+    const record = await s.reseal(1, 0, { from: fromP, to: toQ, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"], role: "blob", ref: PHOTO });
+    const manifests = [await s.manifest(0, PHOTO, fromP), await s.manifest(1, OTHER_PHOTO, toQ)];
+    expect(judgeReseal(record, { bagId: BAG, lineage, keys: s.keyMap(0, 1), manifests })).toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "to" });
+  });
+
+  it("a record whose entry is not its own reference's entry under the replaced key refuses `reseal-unbound` (binding `from`)", async () => {
+    const { s, lineage, fromP } = await rolled();
+    const toQ = s.address(1, OTHER_PHOTO);
+    const record = await s.reseal(1, 0, { from: fromP, to: toQ, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"], role: "blob", ref: OTHER_PHOTO });
+    const manifests = [await s.manifest(0, PHOTO, fromP), await s.manifest(1, OTHER_PHOTO, toQ)];
+    expect(judgeReseal(record, { bagId: BAG, lineage, keys: s.keyMap(0, 1), manifests })).toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "from" });
+  });
+
+  it("a replacement another hand's manifest names refuses `reseal-unbound` (binding `to`): the re-seal's signer wrote no such replacement", async () => {
+    const { s, lineage, fromP } = await rolled();
+    const toP = s.address(1, PHOTO);
+    const record = await s.reseal(1, 0, { from: fromP, to: toP, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"], role: "blob", ref: PHOTO });
+    const manifests = [await s.manifest(0, PHOTO, fromP), await s.manifest(1, PHOTO, toP, s.y.signer)];
+    expect(judgeReseal(record, { bagId: BAG, lineage, keys: s.keyMap(0, 1), manifests })).toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "to" });
+  });
+});
