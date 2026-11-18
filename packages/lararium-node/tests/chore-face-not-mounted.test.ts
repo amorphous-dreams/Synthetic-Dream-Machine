@@ -69,8 +69,10 @@ async function stand() {
     lentOrdinals: async () => [0, 1],
     placeVerb: (o) => {
       placed.push(o);
+      // The worker stamps the mark its placement carried, as the island's dispatcher does (`writeOutcome`).
+      const chore = (o as { chore?: unknown }).chore;
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-worker",
-        batchMode: "best-effort", results: { summary: { ok: true, output: { landed: true } } } });
+        batchMode: "best-effort", results: { summary: { ok: true, output: { landed: true } } }, ...(chore ? { chore } : {}) } as Parameters<typeof concludeVerb>[0]);
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
     } }));
   const connect = async (): Promise<Peer> => {
@@ -174,4 +176,17 @@ test("RED: a session's call places with the session's own hand; CONTROL: a read 
   await v.peer.ask({ op: "session:call", ...env, requestId: "put-hand", verb: "meme-put", args: MEME });
   await v.peer.ask({ op: "session:call", ...env, requestId: "read-hand", verb: "meme-get", args: {} });
   expect(v.placed.map(askerOf)).toEqual(["tab", "tab"]);
+});
+
+// THE MARK RESTS WITH THE WRITE (T4-5): the chore mark rides the placement into the durable outcome, and a receipt read on a
+// fresh connection (a reconnect, `lares receipt <id>`) answers it, not the socket's answer alone.
+test("RED: the seat's meme write places with its chore mark, and a later receipt read answers that mark; CONTROL: a read carries none", async () => {
+  const v = await stand();
+  const mark = { acting: 0, asker: "seat", session: null };
+  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "put-mark" });
+  expect((v.placed[0] as { chore?: unknown }).chore).toEqual(mark);
+  expect(await v.oneShot({ op: "receipt", requestId: "put-mark" })).toMatchObject({ requestId: "put-mark", state: "done", chore: mark });
+  await v.oneShot({ verb: "meme-get", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "get-mark" });
+  expect((v.placed[1] as { chore?: unknown }).chore).toBeUndefined();
+  expect(await v.oneShot({ op: "receipt", requestId: "get-mark" })).not.toHaveProperty("chore");
 });
