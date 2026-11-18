@@ -4508,6 +4508,7 @@ async function prepareNodeBootOn(
       mountStallMs:   360_000,
       // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): each mount reads the pin afresh; no pin mounts genesis.
       floorCid: () => vesselFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+      foundingRecord: () => assembly.islandHandle.doc(), // the floor shadow read: each mount reads its floor beside the founding record, serving unchanged
       resolvePluginCids: (recipe) => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe,
