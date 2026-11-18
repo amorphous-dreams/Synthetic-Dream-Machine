@@ -12,7 +12,7 @@
  */
 
 import { wardTicketFor } from "./ward-door.js";
-import { ControlHomeUnavailable, VESSEL_LOCKED, type Credential } from "@lararium/mesh";
+import { ControlHomeUnavailable, newRequestId, VESSEL_LOCKED, type Credential, type SessionReceipt } from "@lararium/mesh";
 import { storeDoorDirect, storeVerbFace, storeVerbGatesFirst, StoreHeld, STORE_DOOR_FACE_VERBS, type StoreDoorVerb } from "@lararium/node";
 import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { sealedAct } from "./sealed-act-door.js";
@@ -50,6 +50,9 @@ async function invokeAbortable(
  * answers by the vessel's own name, and a row the vessel could not run throws `RoutedVerbRefused` with its words and
  * the refusal's own name. The act carries no flat timer of its own: the door's budgeted wait bounds it, and the vessel
  * bounds its clearance (`LocalWaitExpired` serves the maintenance frame alone).
+ * THE DOOR OWNS THE ACT'S REQUEST ID: it mints one per act and the act rides it, so a socket that goes once the act was
+ * sent throws {@link SessionActAnswerLost} naming that id and the face, and {@link sessionActReceipt} reads the outcome
+ * under it. A socket that went before the session opened sent nothing, and reads `DaemonUnreachable`.
  */
 async function invokeInSession(
   verb: string, args: Record<string, unknown>, face: number,
@@ -65,8 +68,9 @@ async function invokeInSession(
   }
   const abort = () => { void session.close(); };
   opts.signal.addEventListener("abort", abort, { once: true });
+  const requestId = newRequestId();
   try {
-    const answer = await session.act(verb, args);
+    const { answer } = await session.act(verb, args, { requestId });
     if (answer["status"] === "error") {
       const reason = typeof answer["reason"] === "string" ? answer["reason"] : undefined;
       throw new RoutedVerbRefused(typeof answer["errorMessage"] === "string" ? answer["errorMessage"] : reason ?? `${verb} failed`, reason);
@@ -75,13 +79,46 @@ async function invokeInSession(
     return output !== null && typeof output === "object" && !Array.isArray(output) ? output as Record<string, unknown> : {};
   }
   catch (e) {
-    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    if (e instanceof UdsUnreachable) throw new SessionActAnswerLost(verb, face, requestId);
     if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
     throw e;
   } finally {
     opts.signal.removeEventListener("abort", abort);
     await session.close().catch(() => { /* the socket already went */ });
   }
+}
+
+/**
+ * A FACE ROW'S ANSWER WENT WITH ITS SOCKET: the act was sent under `requestId` on a session of face `face`, and no answer
+ * came back. It may have run, so this reads outcome-unknown, never a verdict; the face's receipt under the id tells.
+ */
+export class SessionActAnswerLost extends Error {
+  override readonly name = "SessionActAnswerLost";
+  constructor(readonly verb: string, readonly face: number, readonly requestId: string) {
+    super(`"${verb}" on face h${face} lost its answer with the socket; outcome unknown. Its receipt rides request ${requestId}.`);
+  }
+}
+
+/**
+ * RECOVER A FACE ROW'S OUTCOME BY ITS ID: open a session of face `face` and read the receipt the act under `requestId`
+ * left (the vessel scopes it to the face). The answer body rode the lost socket alone, so the receipt carries the outcome
+ * the vessel recorded, never the body. Throws `DaemonUnreachable` where no vessel answers.
+ */
+export async function sessionActReceipt(face: number, requestId: string): Promise<SessionReceipt> {
+  if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
+  let session: Awaited<ReturnType<typeof openLocalSession>>;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
+    throw e;
+  }
+  try { return await session.receipt(requestId); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    throw e;
+  }
+  finally { await session.close().catch(() => { /* the socket already went */ }); }
 }
 
 /**
@@ -266,6 +303,9 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
   }
   if (err instanceof StoreHeld) return { code: "store-held", message, hint: "another holder holds this store: a standing vessel, or a command mid-act. Run again once it has gone." };
   if (err instanceof SlowBootTimeout) return { code: "store-door-timeout", message, hint: "the vessel's store door gave no answer inside its budget. `lares vessel read` names what holds it." };
+  if (err instanceof SessionActAnswerLost) {
+    return { code: "outcome-unknown", message, hint: `the act may have run; read its receipt under request ${err.requestId} on a session of face h${err.face} before running it again.` };
+  }
   if (err instanceof LocalWaitExpired || err instanceof DaemonUnreachable) {
     const f = verbFailure(err);
     return { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) };

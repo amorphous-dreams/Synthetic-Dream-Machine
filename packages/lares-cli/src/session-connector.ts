@@ -8,13 +8,21 @@ export class SessionRefused extends Error {
   constructor(readonly refusal: string, readonly closed = false) { super(`local session refused: ${refusal}${closed ? " (the session closed)" : ""}`); }
 }
 
+/** A session act's answer and the request id it rode, which recovers its outcome when an answer goes with the socket. */
+export interface SessionActResult {
+  readonly requestId: string;
+  readonly answer: Record<string, unknown>;
+}
+
 export interface LocalSession {
   call(verb: string, args: Record<string, unknown>, opts?: { requestId?: string; effectKey?: string; timeoutMs?: number }): Promise<Record<string, unknown>>;
   /**
    * Run one sealed act that acts as a face (`SESSION_ACTS`) as THIS session's face: the vessel's custody door runs it and
-   * answers as an `act` frame does (`{ op, act, result }` or `{ status: "error", refusal }`).
+   * answers as an `act` frame does (`{ op, act, result }` or `{ status: "error", refusal }`), beside the request id the act
+   * rode. THE CALLER OWNS THAT ID: it names one stable id per act (`opts.requestId`, else one mints here), so an answer
+   * the socket lost recovers under it (`receipt`, on a session of the same face; a retry under it reads the act that ran).
    */
-  act(act: string, args: Record<string, unknown>): Promise<Record<string, unknown>>;
+  act(act: string, args: Record<string, unknown>, opts?: { requestId?: string }): Promise<SessionActResult>;
   receipt(requestId: string): Promise<SessionReceipt>;
   cancel(requestId: string): Promise<SessionReceipt>;
   /**
@@ -103,10 +111,11 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
       if (answer.status === "unknown") throw new LocalWaitExpired(verb, timeoutMs, requestId);
       return answer;
     },
-    async act(act, args) {
-      const answer = await send({ op: "session:act", ...bound(), act, args }, newRequestId());
+    async act(act, args, actOpts = {}) {
+      const requestId = actOpts.requestId ?? newRequestId();
+      const answer = await send({ op: "session:act", ...bound(), act, args }, requestId);
       if (answer.kind !== "session:act-result" || !answer.answer || typeof answer.answer !== "object") throw new Error("malformed act result from local channel");
-      return answer.answer as Record<string, unknown>;
+      return { requestId, answer: answer.answer as Record<string, unknown> };
     },
     receipt: (requestId) => query("session:receipt", requestId),
     async switch(target) {
