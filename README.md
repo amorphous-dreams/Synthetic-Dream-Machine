@@ -159,7 +159,7 @@ A Lararium house reads its canon (`bags/`, `wikis/`) from the directory `LARES_W
 node tools/house-canon.mjs stand            # clone the origin to ~/.lares-canon, detached at develop
 # LARES_WORKSPACE=$HOME/.lares-canon        # in ~/.lares/lares-surface.env
 node tools/house-canon.mjs move             # fetch and check out the pin (--pin <branch|tag|commit> re-pins)
-lares vessel seed                           # the standing house reads the moved canon
+lares vessel lay                            # the standing house reads the moved canon
 node tools/house-canon.mjs read             # the pin, the commit, the write-back the clone holds
 ```
 
