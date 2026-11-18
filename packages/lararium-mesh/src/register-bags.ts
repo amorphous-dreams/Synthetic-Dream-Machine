@@ -42,7 +42,7 @@
 
 import { type LarDoc, tiddlerText } from "./base-doc.js";
 import { BAG_IDS, CATALOG_DOC_URI, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
-import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
+import { isFaceScopedBag, personaScopedBagIds, personaSelvesBagIdFor } from "./persona-scope.js";
 import { ownEntry } from "./stored-value.js";
 import { houseCanonBagsSeated, isHouseCanonBag } from "./kahu-canon-reach.js";
 import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
@@ -122,7 +122,7 @@ export function isVesselGround(bag: string): boolean {
  * The bags this vessel registers, derived — its ground, its wiki, and the union over the groups it stands in.
  *
  * Each membership contributes THE WHOLE FACE — its persona plane and the circles, identities, sessions and intents
- * that travel with it, all five derived off the one tag that group's doc id yields — plus every bag that
+ * that travel with it, all five derived off the one tag that group's doc id yields, and its selves record — plus every bag that
  * group's catalog names. Order stays stable and duplicates collapse, so two vessels in the same groups
  * produce one comparable set, and two groups naming a bag in common register it once.
  */
@@ -134,9 +134,10 @@ export function deriveRegisterBags(input: RegisterBagsInput): string[] {
   const out: string[] = [...OWN_GROUND, ...(input.systemCanon === true ? houseCanonBagsSeated() : []), ...wikiBags];
   for (const fleet of input.fleets) {
     const face = personaScopedBagIds(fleet.personaGroupId);
-    // The catalog names every face's planes; a group registers ITS four (above) and never another face's, which the derived shape
-    // recognises without any list of the others.
-    out.push(face.persona, face.circles, face.identities, face.sessions, face.intents, ...(fleet.catalogNamed ?? []).filter((bag) => !isFaceScopedBag(bag)));
+    // The catalog names every face's planes; a group registers ITS own (above) and its selves record, and never another face's,
+    // which the derived shape recognises without any list of the others.
+    out.push(face.persona, face.circles, face.identities, face.sessions, face.intents, personaSelvesBagIdFor(fleet.personaGroupId),
+      ...(fleet.catalogNamed ?? []).filter((bag) => !isFaceScopedBag(bag)));
   }
   return [...new Set(out)];
 }

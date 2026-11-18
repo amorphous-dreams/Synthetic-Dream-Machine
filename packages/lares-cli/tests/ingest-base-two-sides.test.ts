@@ -142,7 +142,7 @@ describe("a base stands at one path", () => {
     const gone = join(root, "bags", "@x", "ha.ka.ba", "lares", "api", "gone.mem");
     const goneUri = "lar:///ha.ka.ba/lares/api/gone";
     tree.set(syncedTreeKey(BAG, goneUri), join(root, "bags", "@x", "ruled", "gone.mem"), carrierHash("gone"));
-    expect(scanFiles(root, [gone], BAG, tree, bagsFileToUri)).toMatchObject({ rows: [], skipped: [gone] });
+    expect(scanFiles(root, [gone], BAG, tree, bagsFileToUri)).toMatchObject({ rows: [], skipped: [{ file: gone, why: expect.any(String) }] });
     tree.set(syncedTreeKey(BAG, goneUri), gone, carrierHash("gone"));
     expect(scanFiles(root, [gone], BAG, tree, bagsFileToUri).rows.map((r) => r.status)).toEqual(["deleted"]);
   });

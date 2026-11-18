@@ -16,8 +16,8 @@
 
 /** The folder, under a vessel's plaintext projections root, the labels rest in. */
 export const FACE_LABELS_DIR = "face-labels";
-export const FACE_LABEL_SCHEMA = "lar-face-label/1";
-export const FACE_BASES_SCHEMA = "lar-face-bases/1";
+export const FACE_LABEL_SCHEMA = "lar-face-label";
+export const FACE_BASES_SCHEMA = "lar-face-bases";
 
 /** One label: the pet-name a face relation wore when it last stood or a door last read it. */
 export interface FaceLabel {

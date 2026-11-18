@@ -56,10 +56,9 @@
 # refuses. With no vessel standing, `down` runs as it always has.
 #
 # LARES_HOUSE and LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (KEY=VALUE
-# lines, as compose reads them). LARES_WORKSPACE names the HOUSE CANON CLONE (`node tools/house-canon.mjs stand`): a clone
-# pinned by its own `lares.canonPin` config, so a branch switch in a working checkout never moves the house's canon. A
-# LARES_WORKSPACE that names a repository with no pin reads as a working checkout, and every stand warns by name, unless
-# LARES_DEV_INSTALL=1 names the one dev install, whose canon write-back lands in source control by design. Neither standing refuses by name, and so does a LARES_HOUSE that reads relative.
+# lines, as compose reads them). LARES_WORKSPACE names the workspace the house lays canon from and projects into, a
+# projection target the operator names; for the Kahu cabal it names the repo checkout, the working surface
+# (founding-runbook#/prepare). Neither standing refuses by name, and so does a LARES_HOUSE that reads relative.
 # LARES_HOUSE names the ONE host house root: its hearth, sensoriums, projections, library and config bind under /lar,
 # and this shim makes those five directories as the operator before any container stands. THE ENV FILE RESTS OUTSIDE EVERY
 # BIND, at `~/.lares/lares-surface.env`, the same file the MCP seat's resolver reads to know the hearth stands in this
@@ -195,7 +194,7 @@ remember_worn_face() { # the argv of a `vault unlock` that landed
 }
 
 # The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached: it opens every face the
-# credential opens (`--all`) and wears the last worn face again (or face 0); without one, name that command. A refused or
+# credential opens (`--all`), then `lares wear` takes the last worn face again (or face 0); without one, name both commands. A refused or
 # abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it. A hint never names the
 # bare command that fails on a vessel of several faces.
 unlock_or_name() {
@@ -205,18 +204,25 @@ unlock_or_name() {
     # UNDER A PŪLAMA THE ROUTE GOES TO THE PŪLAMA ALONE. The vessel's own unlock asks nothing there (it redials the
     # pūlama), so it runs detached from this terminal: an image that prompts anyway reads no keystroke.
     # shellcheck disable=SC2046
-    waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all --face "$wear" </dev/null && return 0
+    if waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all </dev/null; then
+      # shellcheck disable=SC2046
+      waited_exec $(pass_env) -T lares node "$CLI" wear "$wear" </dev/null || printf 'lares-container: the vessel opened, but h%s stands outside the lent set or locked; wear another face with `lares-container.sh wear N`\n' "$wear" >&2
+      return 0
+    fi
     printf '%s\n' 'lares-container: the vessel stands at the floor, unserved by the pūlama; read it with `lares-container.sh pulama status`, light it with `lares-container.sh pulama light`, admit the image that stands with `lares-container.sh pulama admit`, or raise a served vessel with `lares rite kukulu`' >&2
     return 0
   fi
   if [ -n "$HAVE_TTY" ]; then
-    printf 'lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens, wearing h%s)\n' "$wear" >&2
+    printf 'lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens, then wear h%s)\n' "$wear" >&2
     # shellcheck disable=SC2046
-    if ! waited_exec $(pass_env) lares node "$CLI" vault unlock --all --face "$wear"; then
-      printf 'lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.sh vault unlock --all --face %s`, or one face with `lares-container.sh vault unlock --face N`\n' "$wear" >&2
+    if ! waited_exec $(pass_env) lares node "$CLI" vault unlock --all; then
+      printf 'lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.sh vault unlock --all`, then `lares-container.sh wear %s`\n' "$wear" >&2
+    # shellcheck disable=SC2046
+    elif ! waited_exec $(pass_env) -T lares node "$CLI" wear "$wear" </dev/null; then
+      printf 'lares-container: the vessel opened, but h%s stands locked or outside the lent set; wear another face with `lares-container.sh wear N`\n' "$wear" >&2
     fi
   else
-    printf 'lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.sh vault unlock --all --face %s (every face the credential opens, wearing h%s; one face: --face N)\n' "$wear" "$wear" >&2
+    printf 'lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.sh vault unlock --all, then lares-container.sh wear %s (every face the credential opens, then wear h%s; another face: wear N)\n' "$wear" "$wear" >&2
   fi
 }
 
@@ -231,17 +237,7 @@ if GIT_REV=$(git -C "$SHIM_DIR" rev-parse HEAD 2>/dev/null) && [ -n "$GIT_REV" ]
 else
   GIT_REV=""
 fi
-# A working checkout named as LARES_WORKSPACE moves the house's canon with every branch switch there (founding-runbook
-# #/prepare). A corpus with no repository, a pinned canon clone and the named dev install read nothing.
-warn_workspace_canon() {
-  [ "$(value_of LARES_DEV_INSTALL)" != 1 ] || return 0
-  ws=$(value_of LARES_WORKSPACE)
-  git -C "$ws" rev-parse --git-dir >/dev/null 2>&1 || return 0
-  [ -z "$(git -C "$ws" config --get lares.canonPin 2>/dev/null)" ] || return 0
-  printf 'lares-container: LARES_WORKSPACE (%s) names a working checkout, so a branch switch there moves this house'"'"'s canon; stand a canon clone (`node tools/house-canon.mjs stand`) and name it, or set LARES_DEV_INSTALL=1 for the one dev install\n' "$ws" >&2
-}
 warn_image_revision() {
-  warn_workspace_canon
   if [ -z "$GIT_REV" ]; then
     printf '%s\n' 'lares-container: no git checkout answers here, so the image revision check is skipped' >&2
     return 0
@@ -592,7 +588,16 @@ case "$verb" in
         done
         # shellcheck disable=SC2046
         compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" admit "$@" ;;
-      *) die "pulama takes up, down, light, admit, lock, status or tessera" ;;
+      unadmit)
+        # unadmit ends one image's admission: the route proves on a real terminal inside the pūlama, and a signed
+        # tombstone naming the admission's tessera rests; the gate then reads pulama-image-unadmitted.
+        [ "$#" -eq 2 ] || die "pulama unadmit takes one image digest (sha256:<64 hex>)"
+        case "$2" in sha256:*) hex=${2#sha256:} ;; *) die "pulama unadmit takes one image digest (sha256:<64 hex>)" ;; esac
+        case "$hex" in *[!0-9a-f]*|'') die "pulama unadmit takes one image digest (sha256:<64 hex>)" ;; esac
+        [ "${#hex}" -eq 64 ] || die "pulama unadmit takes one image digest (sha256:<64 hex>)"
+        # shellcheck disable=SC2046
+        compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" unadmit "$2" ;;
+      *) die "pulama takes up, down, light, admit, unadmit, lock, status or tessera" ;;
     esac ;;
   reset)
     [ "$#" -eq 0 ] || die "reset takes no arguments"
@@ -668,6 +673,14 @@ case "$verb" in
       rite) route_cli "$verb" "$@" ;;
       *) route_cli "$verb" "$@" ;;
     esac ;;
+  wear)
+    # `lares wear N` moves the daemon mount inside the lent set and asks no route; a wear that landed names the face the
+    # operator wears, which the shim keeps for the next stand.
+    if route_cli "$verb" "$@"; then rc=0; else rc=$?; fi
+    if [ "$rc" -eq 0 ]; then
+      for arg in "$@"; do case "$arg" in ''|*[!0-9]*) ;; *) remember_worn_face --face "$arg"; break ;; esac; done
+    fi
+    exit "$rc" ;;
   vault)
     # A `vault unlock --face N` that landed names the face the operator wears: the shim keeps it for the next stand.
     # Under a pūlama the unlock runs detached from this terminal: the route goes to the pūlama (pulama light), never

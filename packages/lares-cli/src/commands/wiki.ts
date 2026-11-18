@@ -103,6 +103,20 @@ export async function cmdWikiList(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
+/** The hold a mint takes: held within the budget, or a named refusal that evicts nothing. */
+async function holdTheMint(slug: string, did: string): Promise<{ held: boolean; note: string }> {
+  const active = await call("wiki-active", {}, did);
+  const live = (active.status === "error" ? null : summaryOutput(active)) as { held?: unknown; pinBudget?: unknown } | null;
+  const holds = Array.isArray(live?.held) ? live.held.map(String) : [];
+  const budget = typeof live?.pinBudget === "number" ? live.pinBudget : null;
+  if (budget !== null && holds.length >= budget && !holds.includes(slug)) {
+    return { held: false, note: `not held: the hold budget stands full (${holds.length}/${budget}: ${holds.join(", ")}); \`lares wiki release <slug>\` frees one, then \`lares wiki hold ${slug}\` holds this wiki` };
+  }
+  const r = await call("wiki-hold", { slug }, did, { timeoutMs: 30_000 });
+  const held = r.status !== "error" && (summaryOutput(r) as { held?: unknown } | null)?.held === true;
+  return { held, note: held ? `held (rotatable pin)` : `not held: ${r.errorMessage ?? "the wiki would not activate"}; \`lares wiki hold ${slug}\` retries` };
+}
+
 export async function cmdWikiInit(args: ParsedArgs): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
@@ -117,8 +131,10 @@ export async function cmdWikiInit(args: ParsedArgs): Promise<number> {
     return 4;
   }
   const result = summaryOutput(r) ?? {};
+  // The mint holds the wiki it mints (a cold grain reads `document-unavailable` until held); a wiki that already stood is left as it was.
+  const hold = result["status"] === "minted" || result["status"] === "completed-partial" ? await holdTheMint(slug, did) : null;
   emit(args, {
-    ok: true, requestId: r.requestId, data: { slug, ...result },
+    ok: true, requestId: r.requestId, data: { slug, ...result, ...(hold ? { held: hold.held, holdNote: hold.note } : {}) },
     human: () => {
       console.log("");
       console.log(`wiki: ${slug}`);
@@ -128,6 +144,7 @@ export async function cmdWikiInit(args: ParsedArgs): Promise<number> {
       console.log(`  draft URI: ${result["draftBagId"]}`);
       console.log(`  draft doc: ${result["draftDocUrl"]}`);
       console.log(`  recipe:    ${result["recipeUri"]}`);
+      if (hold) console.log(`  hold:      ${hold.note}`);
       console.log("");
     },
   });

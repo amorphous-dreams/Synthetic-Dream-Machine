@@ -23,9 +23,7 @@
  * `nexus-seal-rotate-anchor` own that, and they keep importing `cmdNexus` from this same door.
  */
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
@@ -41,15 +39,15 @@ const VERBS = [
 ] as const;
 
 describe("lares nexus — every verb reaches its door", () => {
-  let root: string;
+  let house: IsolatedHouse;
   let said: string[];
   const saved: Record<string, string | undefined> = {};
-  const ENV = ["LAR_ROOT", "LAR_SEAL_HOME", "LAR_DATA_DIR"];
+  const ENV = ["LAR_SEAL_HOME", "LAR_DATA_DIR"];
 
   /** Both channels. The door speaks JSON to a pipe and prose to a person; a reach test must hear both. */
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "lares-verb-reach-"));
-    for (const k of ENV) { saved[k] = process.env[k]; process.env[k] = root; }
+    house = openIsolatedHouse();
+    for (const k of ENV) { saved[k] = process.env[k]; process.env[k] = house.root; }
     said = [];
     vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { said.push(a.join(" ")); });
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { said.push(a.join(" ")); });
@@ -58,7 +56,7 @@ describe("lares nexus — every verb reaches its door", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     for (const k of ENV) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]!; }
-    rmSync(root, { recursive: true, force: true });
+    house.close();
   });
 
   /** Run a door and return everything it said. A THROW is still a reach — the verb found its handler

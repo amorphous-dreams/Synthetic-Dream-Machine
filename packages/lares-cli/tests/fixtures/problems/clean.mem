@@ -1,0 +1,23 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/test/problems-fixture`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+l-space  = "adjacent"
+title    = "lar:///ha.ka.ba/lares/test/problems-fixture"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/test/problems-fixture"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Problems fixture
+
+A carrier the problems goldens read: clean as it stands, and the seed of each fault they tear into it.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qnF6uQ-mRjsPw8x7bmg81E_WlLyVVRf3HkV6e5Nv2iE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

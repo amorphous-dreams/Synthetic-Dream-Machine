@@ -18,16 +18,16 @@ export {
   meshSensoriumDir, meshWhoDir, meshAuthorityDir, meshFlowDir,
 } from "./vessel-paths.js";
 export { atomicWriteFileSync } from "./fs-atomic.js";
-// The carry bundle's one reader: the shape, the hashes, and the verify that proves a bundle whole. It stands beneath the
+// The house bundle's one reader: the shape, the hashes, and the verify that proves a bundle whole. It stands beneath the
 // vessel, so the vessel derives a keep's bundle id from the staged tree itself (`commands/rite.ts#keepStagedTree`).
 export {
-  CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, CarryBundleRefused,
+  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, BundleVerifyRefused,
   sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder,
-} from "./carry-manifest.js";
+} from "./bundle-manifest.js";
 export type {
-  CarryLayer, CarryFile, CarryRow, CarryFace, CarryOmission, CarryManifest, CarryRedeclareFace, CarryShareEntry, CarryRedeclare,
-  CarryKahuaHead, VerifiedBundle,
-} from "./carry-manifest.js";
+  BundleLayer, BundleFile, BundleRow, BundleFace, BundleOmission, BundleManifest, BundleRedeclareFace, BundleShareEntry, BundleRedeclare,
+  BundleKahuaHead, VerifiedBundle,
+} from "./bundle-manifest.js";
 export { fileJournal } from "./vessel-journal-file.js";
 
 // The Erisian date: `ddate(1)` where it stands (it carries holydays, exclamations, X-Day and the whole
@@ -186,6 +186,7 @@ export type { FaceGateServer, GateSessionRegistry, SeatedGateSession, StoodGate,
 export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
+export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile } from "./floor-shadow-file.js";
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
 export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, listFaceOrdinals, persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
@@ -198,7 +199,7 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
 export { PERSONAL_PROJECTION_DIR, personalFaceRoot, workspaceRootsOf } from "./bag-paths.js";
-export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, isTempLayerInternalTitle, TEMP_LAYER_DIR,
+export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, isTempLayerInternalTitle, TEMP_LAYER_DIR,
   daemonFaceFolder, isDaemonFaceFolder, kahuaFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";

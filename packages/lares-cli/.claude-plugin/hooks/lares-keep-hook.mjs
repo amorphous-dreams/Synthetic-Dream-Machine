@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*
  * SessionEnd keeps the house: each Claude Code session's end runs `lares rite keep --if-due`, the keep that carries the house
- * and this device's sessions into the operator's repo under a keep lei (lar:///ha.ka.ba/kahua/memory/project/cross-and-keep).
+ * and this device's sessions into the operator's repo under a keep lei (lar:///ha.ka.ba/kahua/memory/project/evergreen-keep).
  *
  * A SessionEnd hook holds a short budget and a keep cuts, commits and pushes, so the hook STARTS the keep and leaves: the
  * keep runs on in its own session, and its lines land in the state home's log (`$XDG_STATE_HOME/lares/keep-hook.log`, the

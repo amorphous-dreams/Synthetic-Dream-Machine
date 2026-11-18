@@ -37,7 +37,8 @@
  */
 
 import { PERSONA_MEMBERSHIP_PREFIX } from "./lar-uris.js";
-import { personaBagIdFor, personaScopeTag } from "./persona-scope.js";
+import { personaBagIdFor, personaScopeTag, personaSelvesBagIdFor } from "./persona-scope.js";
+import { deterministicDocUrl } from "./deterministic-doc.js";
 
 /** One PersonaGroup's private plane: the group it belongs to, and the doc that carries it. */
 export interface PersonaPlaneRef {
@@ -173,4 +174,66 @@ export function personaMembershipEntries(plane: PersonaPlaneRef): PlaneEntry[] {
     { title: `${PERSONA_MEMBERSHIP_PREFIX}/${personaScopeTag(plane.personaGroupId)}`, text: plane.personaGroupId },
     { title: personaBagIdFor(plane.personaGroupId),                                    text: plane.url },
   ];
+}
+
+// ── THE SELVES RECORD: A FACE'S OWN NAMES, BESIDE ITS PLANE ─────────────────────────────────────────
+
+/**
+ * One face's SELVES RECORD (persona-selves-sealed#/design): the document that holds the face's two own names, split off
+ * the plane by document. The plane stays clear and holds the signed public acts the locked floor folds; the record rests
+ * sealed under the face's key group and opens after the lift. Its bag registers with the capability ring per membership
+ * (`register-bags`), beside the plane and never under the plane's path.
+ */
+export interface SelvesRecordRef {
+  /** The PersonaGroup whose record this is. */
+  readonly personaGroupId: string;
+  /** The record's own bag (`personaSelvesBagIdFor`). */
+  readonly bagId: string;
+  /** The record's ONE document, every vessel of the face computing it alike. */
+  readonly url: string;
+}
+
+/** The address family of the selves records: one document per face, named off the face's tag. */
+const SELVES_RECORD_URI = "lar:///ha.ka.ba/lararium/persona-selves-record" as const;
+
+/**
+ * A face's selves record, derived off its group. The document derives off the plane's tag, so every vessel of the face
+ * finds the same record with no url carried and no mint race (a blank under the derived id merges with every replica,
+ * as the kahua stage's does), and its address names the group's MAC alone: no pet-name, no group id.
+ */
+export function selvesRecordOf(personaGroupId: string): SelvesRecordRef {
+  return {
+    personaGroupId,
+    bagId: personaSelvesBagIdFor(personaGroupId),
+    url: deterministicDocUrl(`${SELVES_RECORD_URI}/${personaScopeTag(personaGroupId)}`),
+  };
+}
+
+/** One face lit on a vessel, as the bag map reads it: its group and the subject its session wears. */
+export interface LitSelvesFace { readonly group: string | null; readonly face: string | null }
+
+/**
+ * The sealed bag a vessel files `documentId` under when it holds a carried face's selves record, or null when no carried
+ * face's record holds it. ONE RECORD, ONE FACE: the record files under its own face's subject while that face stands lit,
+ * and under no face while it stands shut, so its document neither loads nor rests clear until the lift
+ * (`sealedBagMap`'s floor law). Never under another face's subject: the map reads the record's own group alone.
+ */
+export function selvesRecordBagOf(
+  documentId: string, carried: readonly string[], lit: readonly LitSelvesFace[],
+): { readonly bagId: string; readonly face: string | null } | null {
+  for (const group of carried) {
+    const record = selvesRecordOf(group);
+    if (record.url.slice("automerge:".length) !== documentId) continue;
+    return { bagId: record.bagId, face: lit.find((f) => f.group === group)?.face ?? null };
+  }
+  return null;
+}
+
+/**
+ * Where a selves record rests by the bag its vessel files it under: `sealed` under a lit face, `shut` under none (the
+ * face stands unlifted, so the record neither opens nor takes a name), `clear` where no sealed bag names it.
+ */
+export function selvesRestOf(bag: { readonly face: string | null } | null): "clear" | "sealed" | "shut" {
+  if (bag === null) return "clear";
+  return bag.face === null ? "shut" : "sealed";
 }

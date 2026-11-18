@@ -67,9 +67,16 @@ async function slots(): Promise<{ id: string }[]> {
 
 const run = (...argv: string[]): Promise<number> => cmdVault(parseArgs(["vault", ...argv, "--json"]));
 
+/** The pūlama's signals: this suite stands no pūlama, so none of them may leak in from the operator's own house. */
+const PULAMA_KEYS = ["HOME", "LARES_PULAMA", "LAR_PULAMA_SOCKET"] as const;
+let priorEnv: Record<string, string | undefined> = {};
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "vault-door-"));
   process.env["LAR_ROOT"] = root;
+  priorEnv = Object.fromEntries(PULAMA_KEYS.map((k) => [k, process.env[k]]));
+  process.env["HOME"] = join(root, "operator");
+  delete process.env["LARES_PULAMA"];
+  delete process.env["LAR_PULAMA_SOCKET"];
   tty = true; answers.length = 0; out = []; err = [];
   vi.spyOn(console, "log").mockImplementation((...a) => { out.push(a.join(" ")); });
   vi.spyOn(console, "error").mockImplementation((...a) => { err.push(a.join(" ")); });
@@ -77,7 +84,11 @@ beforeEach(async () => {
   const homes = vesselCustodyHomes();
   await foundCustody({ io: new FsCustodyIo(homes), homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: PW }] }] });
 });
-afterEach(() => { vi.restoreAllMocks(); delete process.env["LAR_ROOT"]; rmSync(root, { recursive: true, force: true }); });
+afterEach(() => {
+  vi.restoreAllMocks(); delete process.env["LAR_ROOT"];
+  for (const k of PULAMA_KEYS) { if (priorEnv[k] === undefined) delete process.env[k]; else process.env[k] = priorEnv[k]; }
+  rmSync(root, { recursive: true, force: true });
+});
 
 describe("vault door — a credential rides a TTY alone", () => {
   it("★ with no TTY, unlock/bind/unbind refuse BY NAME and write nothing ★", async () => {

@@ -9,7 +9,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/verb-vm
  */
 
-import type { BatchMode, CompositeStore, Verb, VerbTargetResult } from "@lararium/mesh";
+import type { BatchMode, ChoreReceiptMark, CompositeStore, Verb, VerbTargetResult } from "@lararium/mesh";
 import {
   EFFECT_URI_PREFIX, VERB_RESULT_KEY, concludeVerb, buildVerb, buildRunningPatch,
   canonicalJsonBytes, sha256HexBytesSync, verbInputDigest, isVerbRefusal, ControlHomeUnavailable,
@@ -155,6 +155,8 @@ export async function writeOutcome(
     /** Machine-readable refusal reason (e.g. "retention-gap") — additive alongside
      *  `errorMessage`; see `concludeVerb`. */
     refusal?:      string;
+    /** The chore's receipt mark the island booked with this ask; it rests in the outcome beside the result. */
+    chore?:        ChoreReceiptMark;
   },
 ): Promise<void> {
   const origin = { kind: "lares-verb" as const, requestId: opts.invocation.requestId };
@@ -183,6 +185,7 @@ export async function writeOutcome(
     },
     ...(opts.errorMessage !== undefined && { errorMessage: opts.errorMessage }),
     ...(opts.refusal      !== undefined && { refusal:      opts.refusal }),
+    ...(opts.chore        !== undefined && { chore:        opts.chore }),
     inputDigest,
     ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
   });
@@ -216,7 +219,7 @@ export async function copyEffectOutcome(
   tw5: TW5Engine,
   control: CompositeStore,
   invocation: Verb,
-  opts: { priorRequestId: string; priorResults: Record<string, VerbTargetResult>; inputDigest: string },
+  opts: { priorRequestId: string; priorResults: Record<string, VerbTargetResult>; inputDigest: string; chore?: ChoreReceiptMark },
 ): Promise<void> {
   const origin = { kind: "lares-verb" as const, requestId: invocation.requestId };
   const outcome = concludeVerb({
@@ -230,6 +233,7 @@ export async function copyEffectOutcome(
     inputDigest: opts.inputDigest,
     ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
     effectOf:    opts.priorRequestId,
+    ...(opts.chore !== undefined && { chore: opts.chore }),
   });
   await control.put(outcome, origin);
   removeVerb(tw5, invocation.title);
@@ -258,15 +262,17 @@ export async function dispatchVerb(
   control: CompositeStore,
   invocation: Verb,
   run: () => Promise<Record<string, unknown>>,
+  chore?: ChoreReceiptMark,
 ): Promise<void> {
   patchVerb(tw5, invocation.title, buildRunningPatch());
+  const mark = chore !== undefined ? { chore } : {};
 
   try {
     const result = await run();
-    await writeOutcome(control, { invocation, status: "done", result });
+    await writeOutcome(control, { invocation, status: "done", result, ...mark });
   } catch (err) {
     await writeOutcome(control, {
-      invocation, status: "error", errorMessage: errorText(err),
+      invocation, status: "error", errorMessage: errorText(err), ...mark,
       // A reactor that refuses by name hands its machine-read reason to the outcome; a plain
       // failure carries none. An act that wrote a control fact on a place with no readable control
       // document refuses by that document's name (`control-home-unnamed`, `vessel-locked`).

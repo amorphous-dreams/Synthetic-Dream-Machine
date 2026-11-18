@@ -173,9 +173,9 @@ function readPackedTiddlers(path: string): PackedTiddlers {
 }
 
 /**
- * The founding act, then the genesis pin. The pin moves ONLY when a founding succeeds (`skipped: false`): a founding
- * that refuses (custody locked, an occupied store) leaves the earlier pin standing, so the store it left unchanged
- * still boots against the seed it was founded on.
+ * The founding act, then the seed witness (`genesis-pin.json`). The seed witness moves ONLY when a founding succeeds
+ * (`skipped: false`): a founding that refuses (custody locked, an occupied store) leaves the earlier seed witness
+ * standing, so the store it left unchanged still boots against the seed it was founded on.
  */
 export async function runInit(opts: InitOptions): Promise<InitResult> {
   const result = await runInitAct(opts);

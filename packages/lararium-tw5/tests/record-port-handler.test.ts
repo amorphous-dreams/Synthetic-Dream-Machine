@@ -8,6 +8,9 @@ import type { IslandContext } from "../src/island-context.js";
 import type { IslandCap } from "../src/island-caps.js";
 import { makeWikiBehavior } from "../src/wiki-behavior.js";
 import { VerbTable } from "../src/verb-dispatcher.js";
+import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
+
+const kahuReachOfTab = await kahuHand();
 
 const origin = { kind: "tw-local", instanceId: "foreign" } as const;
 const settle = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
@@ -264,6 +267,18 @@ describe("record port handler", () => {
     await r.send({ type: "port:write", portId: "p", txId: "user-1", records: [{ title: "Mine", fields: { text: "x" }, bag: "second" }] });
     expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "user-1", status: "applied" });
     expect(await user.get("Mine")).not.toBeNull();
+    await r.close();
+  });
+
+  test("port-write-tab-meets-kahu-alone (seat-canon-reach control): a tab whose hand holds the Kahu cabal lands its write in canon; the seat gate adds nothing to the record port", async () => {
+    const canon = "lar:///ha.ka.ba/bags/lares";
+    const r = await rig({ kahuReach: () => kahuReachOfTab });
+    const canonStore = new MemoryTiddlerStore(canon);
+    r.composite.addLayer({ bagId: canon, store: canonStore, writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    await r.send({ type: "port:write", portId: "p", txId: "canon-tab", records: [{ title: "Canon", fields: { text: "x" }, bag: canon }] });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ txId: "canon-tab", status: "applied" });
+    expect(await canonStore.get("Canon")).not.toBeNull();
     await r.close();
   });
 

@@ -8,7 +8,16 @@
  *
  * The readings come off the real IndexedDB rows of the vessel's repo and daemon stores: every `documents` row
  * carries `[documentId, kind, id]`; `snapshot` and `incremental` chunks load to one Automerge document whose heads
- * are read here, `sync-state` rows name the peer storage id they rest for.
+ * are read here, `sync-state` rows name the peer storage id they rest for. Each store also rests its own store id under a
+ * one-segment key (`storage-adapter-id`; the vessel's wire-scoped store one per scope, `storage-adapter-id-<scope>`).
+ *
+ * A RETURNING PEER NAMES A STORE THIS ORIGIN HOLDS. A pure local boot meets only the house's own islands (the daemon
+ * island's owned store, each wiki island's store), and each presents the store id its own IndexedDB store rests, the same
+ * id at every boot. WHICH of a returning peer's sync rows rest stays the engine's timing, not a law: it saves one pending
+ * sync state per peer store (a later document's state replaces an earlier one's inside the save window), and the vessel's
+ * sealed rest drops a sync state for a document whose bag maps. So a boot can close holding no row at all for an island it
+ * met, and the next boot rests that island's first row. The peer law reads every row's peer against the store ids the
+ * origin holds: a row for a store no store here rests is a peer that will not return.
  *
  * A SEALED DOCUMENT RESTS AS CIPHERTEXT (its chunks open `SEALED_CHUNK_MARK`: the vessel's held homes; or a pointer at the
  * holder's sealed value: a face's sealed documents, which a self-founded face's lift seals at its place), and no key reaches this reader, so its heads stay unread here: it reads by presence (minted, dropped) and
@@ -16,8 +25,8 @@
  * READER, never in the vessel.
  *
  *   B1 — CONTROL: a saved edit between boots moves a Document's heads (the instrument reads a real write)
- *   B2 — the second and third boot hold every Document's heads, mint no Document, and add no peer row for a peer
- *        the second boot did not already hold
+ *   B2 — the second and third boot hold every Document's heads and mint no Document, and no boot rests a sync row
+ *        for a peer whose store this origin does not hold
  *   B3 — no island's store rests a clear copy of a Document the vessel holds sealed (a wiki island renders pages and
  *        holds no custody document)
  *
@@ -73,18 +82,28 @@ const dump = (page: Page): Promise<Row[]> => page.evaluate(async () => {
   return out;
 });
 
-interface Reading { readonly heads: Map<string, string>; readonly sealed: Map<string, string>; readonly peers: Set<string> }
+interface Reading { readonly heads: Map<string, string>; readonly sealed: Map<string, string>; readonly peers: Set<string>; readonly stores: Set<string> }
 
 /** A face's sealed document rests a POINTER at its sealed value (the holder keeps the value itself): `lares-sealed-value:<address>`. */
 const SEALED_POINTER = new TextEncoder().encode("lares-sealed-value:");
 /** Whether a chunk rests sealed: it opens with the sealed-chunk mark or names a sealed value, never Automerge's own magic. */
 const sealedChunk = (c: Uint8Array): boolean => SEALED_CHUNK_MARK.every((b, i) => c[i] === b) || SEALED_POINTER.every((b, i) => c[i] === b);
 
-/** Heads per Document (store plus document id) and the peer ids the sync rows rest for. */
+/** The engine's own key for a store's id: bare, or `storage-adapter-id-<scope>` at the vessel's wire-scoped store. */
+const STORE_ID_KEY = "storage-adapter-id";
+/** The store id a sync row's peer names: the vessel's scoped store files it as `<scope>.<store id>`, an island's bare. */
+const storeOf = (peer: string): string => peer.slice(peer.lastIndexOf(".") + 1);
+
+/** Heads per Document (store plus document id), the peer ids the sync rows rest for, and the store ids the origin's stores rest. */
 function read(rows: readonly Row[]): Reading {
   const chunks = new Map<string, { snaps: Uint8Array[]; incs: Uint8Array[] }>();
   const peers = new Set<string>();
+  const stores = new Set<string>();
   for (const { store, key, bytes } of rows) {
+    if (key.length === 1) {
+      if (String(key[0]).startsWith(STORE_ID_KEY)) stores.add(new TextDecoder().decode(Uint8Array.from(bytes)));
+      continue;
+    }
     const [docId, kind, id] = key as [string, string, string];
     const k = `${store}|${docId}`;
     if (kind === "sync-state") { peers.add(String(id)); continue; }
@@ -104,7 +123,7 @@ function read(rows: readonly Row[]): Reading {
     for (const c of all) doc = A.loadIncremental(doc, c);
     heads.set(k, JSON.stringify(A.getHeads(doc)));
   }
-  return { heads, sealed, peers };
+  return { heads, sealed, peers, stores };
 }
 
 const live = (page: Page) => page.waitForFunction(() => [...document.querySelectorAll("#phases .phase")].some((p) => p.textContent === "live"), undefined, { timeout: 60_000 });
@@ -169,9 +188,10 @@ test("B1/B2 — a browser vessel's second and third boot hold every Document's h
       const drifted = [...after.heads].filter(([k, h]) => before.heads.get(k) !== h).map(([k]) => k);
       assert.deepEqual(drifted, [], `${label} adds no content head to any Document`);
     }
-    for (const [label, before, after] of [["boot 2", edited, two], ["boot 3", two, three]] as const) {
-      const fresh = [...after.peers].filter((p) => !before.peers.has(p));
-      assert.deepEqual(fresh, [], `${label} rests no sync row for a peer the boot before did not already hold`);
+    assert.ok(edited.stores.size > 0, "the reader finds the store ids the origin's stores rest (the peer law reads against them)");
+    for (const [label, r] of [["boot 1", edited], ["boot 2", two], ["boot 3", three]] as const) {
+      const strangers = [...r.peers].filter((p) => !r.stores.has(storeOf(p)));
+      assert.deepEqual(strangers, [], `${label} rests no sync row for a peer whose store this origin does not hold (a peer that will not return)`);
     }
     assert.deepEqual(faults, [], "no page error in three boots");
   } finally { await context.close(); }

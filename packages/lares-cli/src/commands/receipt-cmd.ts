@@ -125,7 +125,7 @@ async function runReadOnlyDoor(
     : answer.errorMessage ?? `request ${requestId} reads "${answer.state}"`;
   emit(args, {
     ok, requestId,
-    data: { state: answer.state, ...withdrawn, ...(answer.results !== undefined ? { results: answer.results } : {}) },
+    data: { state: answer.state, ...withdrawn, ...(answer.results !== undefined ? { results: answer.results } : {}), ...(answer.chore !== undefined ? { chore: answer.chore } : {}) },
     ...(ok ? {} : { error: { code, message, ...(hint !== undefined ? { hint } : {}) } }),
     human: () => {
       console.log(verb === "cancel"
@@ -134,6 +134,7 @@ async function runReadOnlyDoor(
       if (code === "cancel-lost") console.log(`  ${message}`);
       if (answer.errorMessage !== undefined) console.log(`  ${answer.errorMessage}`);
       if (hint !== undefined) console.log(`  ${hint}`);
+      if (answer.chore !== undefined) console.log(`  acting h${answer.chore.acting} · asker ${answer.chore.asker}${answer.chore.session !== null ? ` · session ${answer.chore.session}` : ""}`);
       if (answer.results !== undefined) console.log(`  results: ${JSON.stringify(answer.results)}`);
     },
   });

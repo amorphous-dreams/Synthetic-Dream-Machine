@@ -216,7 +216,7 @@ interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly 
 
 async function main(): Promise<void> {
   const { port, storageDir, genesisDir, genesis, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
-  // A vessel founded on the build's shipped seed refuses a boot that resolves another (genesis-resolve, the pin).
+  // The seed witness names this boot's seed beside the founding seed: a differing seed reads as an offer, never a refusal (genesis-resolve).
   console.log(checkGenesisPin(storageDir, genesis));
   // LAN discovery stays OFF unless the operator turns it. An empty value reads as unset, so a compose file may
   // pass the variable through; any other word refuses by name before a face listens.
@@ -476,7 +476,7 @@ async function main(): Promise<void> {
   });
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,
-    ...(pulama !== null && standBy !== null ? { pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.isUnlocked() ? null : (standBy.waits() ?? pulama.waits()) }), dial: () => standBy.dial() } } : {}),
+    ...(pulama !== null && standBy !== null ? { pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.isUnlocked() ? null : (standBy.waits() ?? pulama.waits()) }), dial: () => standBy.dial(), lent: () => pulama.lends() } } : {}),
     lightFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.lightFace(ordinal); },
     dropFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.dropFace(ordinal); },
     // A SEALED ROW'S ACT RUNS HERE, on the main thread, against the one seated holder: the act table decides

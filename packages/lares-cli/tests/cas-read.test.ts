@@ -142,3 +142,24 @@ describe("★ the genesis seed's three answers reach the report ★", () => {
     expect(line).not.toMatch(/UNKNOWN/);
   });
 });
+
+describe("the report reads the daemon's protect set, the seed and the stored island together", () => {
+  test("a blob only the stored island names reads `protected: true` when the daemon's set rides the read; CONTROL: without it, the seed alone leaves it false", () => {
+    const root = mkdtempSync(join(tmpdir(), "lr-cas-island-"));
+    dirs.push(root);
+    const casDir = join(root, "cas");
+    mkdirSync(casDir, { recursive: true });
+    const seeded = "engine core the seed names", island = "engine core only the stored island names";
+    for (const s of [seeded, island]) writeFileSync(join(casDir, cidOf(s)), s);
+    const genesisDir = join(root, "genesis");
+    mkdirSync(genesisDir, { recursive: true });
+    writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(seedFor(cidOf(seeded))));
+    const base = { casDir, bagsDir: join(root, "bags"), wikisDir: join(root, "wikis"), genesisDir };
+    const bare = readCas(base);
+    expect(bare.entries.find((e) => e.cid === cidOf(island))?.protected).toBe(false);
+    const withDaemon = readCas({ ...base, protect: [cidOf(seeded), cidOf(island)] } as CasOpts);
+    expect(withDaemon.entries.find((e) => e.cid === cidOf(island))?.protected).toBe(true);
+    expect(withDaemon.entries.find((e) => e.cid === cidOf(seeded))?.protected).toBe(true);
+    expect(withDaemon.protected.sort()).toEqual([cidOf(seeded), cidOf(island)].sort());
+  });
+});
