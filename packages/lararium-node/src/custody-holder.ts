@@ -54,7 +54,8 @@ import { openCustodyNodeKey, unlockCustody } from "./custody-session.js";
 import { carrierTable, sSlotsPath, type CarrierRow, type CustodyHome, type CustodyHomes, type FaceSelector } from "./vault-carriers.js";
 
 export type HolderUnlock =
-  | { readonly reading: "opens"; readonly slot: string }
+  /** `opener` names, by index into the credentials the unlock received, the ones the custody open proved. */
+  | { readonly reading: "opens"; readonly slot: string; readonly opener: readonly number[] }
   | { readonly reading: "already-unlocked" }
   | { readonly reading: "no-slot-opens"; readonly attemptsLeft: number }
   | { readonly reading: "attempts-spent" }
@@ -359,7 +360,9 @@ export function makeCustodyHolder(a: {
     slot = result.slot;
     keyOpened();
     // The node key opens alone: no face key hangs from it. A face opens by its own unlock (`unlockFace`, `unlockFaces`).
-    return { reading: "opens", slot };
+    // THE OPENER, by index into what the unlock received: the offering's order differs, so each offered credential maps back.
+    const opener = result.opener.map((i) => credentials.indexOf(charge.offered[i]!)).filter((i) => i >= 0);
+    return { reading: "opens", slot, opener };
   };
   const doProve = async (credentials: readonly Credential[]): Promise<HolderProof> => {
     if (treeKey === null || !accepting) return { reading: "locked" };

@@ -23,7 +23,7 @@ import { createHmac } from "node:crypto";
 import { mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  bindKeepSlot, decodeKeepSeat, encodeKeepSeat, mintKeepSeat, openKeepSecret,
+  bindKeepSlot, confirmHeldPaper, decodeKeepSeat, encodeKeepSeat, mintKeepSeat, openKeepSecret,
   type ConfirmedPaperPin, type Credential, type KeepSeat, type KeepSecretOpening, type PinSpec, type SlotSpec,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
@@ -76,33 +76,59 @@ export function bundleSeatText(seat: KeepSeat): string {
   return encodeKeepSeat(seat);
 }
 
+/** A credential as a pin of the keep's own slot: a passphrase as typed, a paper sheet as read back (it recovered its secret). */
+function pinOf(c: Credential): PinSpec | null {
+  if (c.kind === "passphrase") return c.passphrase === "" ? null : { kind: "passphrase", passphrase: c.passphrase };
+  if (c.kind === "paper") return { kind: "paper", confirmed: confirmHeldPaper(c.sheets) };
+  return null;
+}
+
 /**
- * Seat the house's keep pair under the passphrase in hand, where none rests. A seat that rests stays (its pair already sealed
- * keeps a restore opens); a route that carries no passphrase seats nothing.
+ * Seat the house's keep pair under the PROVED route alone (`opener`: the credentials the custody open named), where none rests:
+ * one slot holding every pin of the opener, at its threshold, so a custody slot of two pins seats a keep slot of the same two,
+ * never the passphrase alone. Right after the mint the seat opens under that route, or nothing rests and the refusal names it.
  */
-export async function seatKeepPair(credentials: readonly Credential[]): Promise<{ readonly seated: boolean; readonly seat: KeepSeat | null }> {
+export async function seatKeepPair(opener: readonly Credential[]): Promise<{ readonly seated: boolean; readonly seat: KeepSeat | null }> {
   const resting = readResting();
   if (resting !== null) return { seated: false, seat: resting.seat };
-  const passphrase = credentials.find((c): c is Extract<Credential, { kind: "passphrase" }> => c.kind === "passphrase" && c.passphrase !== "");
-  if (passphrase === undefined) return { seated: false, seat: null };
-  const seat = await mintKeepSeat({ t: 1, pins: [{ kind: "passphrase", passphrase: passphrase.passphrase }] }, nativeKdf);
+  const pins = opener.map(pinOf);
+  if (pins.length === 0 || pins.some((p) => p === null)) return { seated: false, seat: null };
+  const seat = await mintKeepSeat({ t: pins.length, pins: pins as PinSpec[] }, nativeKdf);
+  // THE SELF-CHECK: the seat opens under the very route it seated under before it rests, so no mint locks a restore out.
+  const check = await openKeepSecret(seat, opener, nativeKdf);
+  if (check.reading !== "opens") throw new KeepSeatRefused("keep-seat-unchecked", `the keep pair minted under this route did not open under it (${check.reading}); nothing rests`);
+  check.secret.fill(0);
   writeResting(seat, null);
   return { seated: true, seat };
 }
 
+/** What the custody open answered an unlock: `opens` with its opener, or a reading that proved nothing. */
+export interface CustodyOpenAnswer { readonly reading: string; readonly opener?: readonly number[] }
+
 /**
- * THE UNLOCK'S MOMENT: an unlock that opened under a passphrase seats the keep pair under it where none rests, and says so. A
- * route with no passphrase, or a seat that rests, leaves the house as it stood; a seat that would not write warns and waits.
+ * THE UNLOCK'S MOMENT. Only an answer that OPENED proves a route: `already-unlocked` tested nothing, so it seats nothing and checks
+ * nothing. From an opening, the credentials it names as its opener seat the keep pair where none rests (a passkey among them seats
+ * nothing: the keep binds human routes alone); where a seat rests, the opener must open it, and a seat it does not open warns by
+ * name (`keep-seat-unopened`): the house's custody route moved and the keep still seals to the old one, so run `lares vault reseat`.
  */
-export async function seatKeepAtUnlock(route: readonly Credential[], say: (line: string) => void): Promise<"seated" | "resting" | "no-passphrase" | "unseated"> {
+export async function seatKeepAtUnlock(answer: CustodyOpenAnswer, route: readonly Credential[], say: (line: string) => void): Promise<"seated" | "resting" | "resting-unopened" | "unproved" | "unseatable" | "unseated"> {
+  if (answer.reading !== "opens" || !Array.isArray(answer.opener) || answer.opener.length === 0) return "unproved";
+  const opener = answer.opener.map((i) => route[i]).filter((c): c is Credential => c !== undefined);
+  if (opener.length !== answer.opener.length) return "unproved";
   try {
-    if (readResting() !== null) return "resting";
-    const { seated } = await seatKeepPair(route);
-    if (!seated) return "no-passphrase";
-    say(`keep: the keep pair seats under this passphrase (${keepSeatPath()}); a keep's roster seals to it, and a restore opens it with this passphrase`);
+    const resting = readResting();
+    if (resting !== null) {
+      const o = await openKeepSecret(resting.seat, opener, nativeKdf);
+      if (o.reading === "opens") { o.secret.fill(0); return "resting"; }
+      say(`keep: keep-seat-unopened: the route this unlock proved opens no slot of the keep pair at ${keepSeatPath()}, so a restore would ask for a route the steward may no longer hold; run \`lares vault reseat\` to seat a fresh pair under this route`);
+      return "resting-unopened";
+    }
+    const { seated } = await seatKeepPair(opener);
+    if (!seated) return "unseatable";
+    say(`keep: the keep pair seats under the route this unlock proved (${keepSeatPath()}); a keep's roster seals to it, and a restore opens it with that same route`);
     return "seated";
   } catch (e) {
-    say(`keep: the keep pair did not seat (${e instanceof Error ? e.message : String(e)}); the next unlock seats it`);
+    say(`keep: the keep pair did not seat (${e instanceof Error ? e.message : String(e)}); the next proved unlock seats it`);
     return "unseated";
   }
 }

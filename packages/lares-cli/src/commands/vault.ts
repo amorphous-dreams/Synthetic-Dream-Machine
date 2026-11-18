@@ -378,14 +378,14 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
       // THE HOUSE KEEPS ITSELF: where the config names a keep workspace, the same act offers its keep lei under this one route,
       // and the keep pair seats under this passphrase where none rests (`../keep-seat.ts`).
       await offerKeepLei(keepOfferPorts(args), { workspace: configuredKeepWorkspace(), route: creds });
-      await seatKeepAtUnlock(creds, keepSay(args));
+      await seatKeepAtUnlock({ reading: String(a["reading"]), ...(Array.isArray(a["opener"]) ? { opener: a["opener"] as number[] } : {}) }, creds, keepSay(args));
     }
     return ok ? 0 : 1;
   }
   const u = await openOrRefuse(args, "unlock", homes, io, creds);
   if (!u) return 1;
   // THE PASSPHRASE STANDS PROVED: the keep pair seats under it where none rests, with no vessel standing as with one.
-  await seatKeepAtUnlock(creds, keepSay(args));
+  await seatKeepAtUnlock(u, creds, keepSay(args));
   emit(args, {
     ok: true, data: { reading: "opens", slot: u.slot, held: false },
     human: () => console.log(`slot ${u.slot} opens the vessel key. No vessel stands on this store, so nothing holds it open — stand the vessel (\`lares vessel stand\`), then run \`lares vault unlock\` again.`),

@@ -177,7 +177,7 @@ export function makePulamaHolder(a: {
     refused = null;
     channel.onClose(() => drop(stood));
     fire(openedListeners);
-    return { reading: "opens", slot: stood.standing.slot ?? "pulama" };
+    return { reading: "opens", slot: stood.standing.slot ?? "pulama", opener: [] };
   };
 
   const reading = async (op: string, args: Readonly<Record<string, unknown>>): Promise<RecordReading> => {

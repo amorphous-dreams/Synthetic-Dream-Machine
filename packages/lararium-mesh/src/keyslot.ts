@@ -336,7 +336,9 @@ export type Credential =
   | { readonly kind: "passkey"; readonly credentialId: Uint8Array; readonly prfOutput: Uint8Array };
 
 export type TreeKeyUnlock =
-  | { readonly reading: "opens"; readonly treeKey: TreeKey; readonly slot: string }
+  /** `opener` names, by index into the credentials presented, the ones whose pins yielded the slot's shares: the PROVED
+   *  route, apart from any typo offered beside it. It carries indexes alone, never a credential. */
+  | { readonly reading: "opens"; readonly treeKey: TreeKey; readonly slot: string; readonly opener: readonly number[] }
   /** The credentials open no slot. `notes` names credentials that never reached a pin and NEVER quotes one: a note
    *  carries no word of a sheet and no character of a passphrase, so a caller may print or log it. (a sheet that fails its
    *  checksum, say); a passphrase that simply does not unwrap leaves no note, since the AEAD cannot say why. */
@@ -364,17 +366,23 @@ export function openPasskeyPin(slot: SlotRecord, pinIndex: number, prfOutput: Ui
 export async function openTreeKey(tree: SlotTree, credentials: readonly Credential[], kdf: KdfPort): Promise<TreeKeyUnlock> {
   const derive = deriveOf(kdf);
   const notes: string[] = [];
-  const paperSecrets: Uint8Array[] = [];
-  for (const c of credentials) {
+  const paperSecrets: Array<{ readonly secret: Uint8Array; readonly at: number }> = [];
+  for (const [at, c] of credentials.entries()) {
     if (c.kind !== "paper") continue;
-    try { paperSecrets.push(combineMnemonics(c.sheets)); } catch { notes.push("a paper credential reads no secret: its sheets fail their own check (a mistyped word, a missing sheet, or sheets of two sets)"); }
+    try { paperSecrets.push({ secret: combineMnemonics(c.sheets), at }); } catch { notes.push("a paper credential reads no secret: its sheets fail their own check (a mistyped word, a missing sheet, or sheets of two sets)"); }
   }
-  // NFKC-equal spellings derive the same material, so each distinct route rides once.
-  const passphrases = [...new Set(credentials.flatMap((c) => (c.kind === "passphrase" ? [c.passphrase.normalize("NFKC")] : [])))];
+  // NFKC-equal spellings derive the same material, so each distinct route rides once, named by the first credential spelling it.
+  const passphrases: Array<{ readonly route: string; readonly at: number }> = [];
+  for (const [at, c] of credentials.entries()) {
+    if (c.kind !== "passphrase") continue;
+    const route = c.passphrase.normalize("NFKC");
+    if (!passphrases.some((p) => p.route === route)) passphrases.push({ route, at });
+  }
 
   for (const slot of tree.slots) {
     const slotId = fromHex(slot.id, SLOT_ID_LENGTH, "slot id");
     const shares: ShareBytes[] = [];
+    const opener: number[] = [];
     // ONE ROUTE, ONE PIN: a passphrase that opened one pin of this slot cannot open another, so it never derives again here.
     const spent = new Set<number>();
     for (const [i, pin] of slot.pins.entries()) {
@@ -383,10 +391,10 @@ export async function openTreeKey(tree: SlotTree, credentials: readonly Credenti
       const wrapped = fromHex(pin.wrapped, SHARE_LENGTH + TAG_LENGTH, "wrapped share");
       const aad = pinAad(slotId, i, pin.kind);
       if (pin.kind === "passkey") {
-        for (const c of credentials) {
+        for (const [at, c] of credentials.entries()) {
           if (c.kind !== "passkey" || hex(c.credentialId) !== hex(pin.credentialId) || c.prfOutput.length !== 32) continue;
           const share = tryUnwrap(passkeyKey(c.prfOutput, slotId, i), nonce, aad, wrapped);
-          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); break; }
+          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); opener.push(at); break; }
         }
         continue;
       }
@@ -395,14 +403,14 @@ export async function openTreeKey(tree: SlotTree, credentials: readonly Credenti
         const salt = fromHex(pin.salt, SALT_LENGTH, "pin salt");
         for (const [j, p] of passphrases.entries()) {
           if (spent.has(j)) continue;
-          const share = tryUnwrap(wrapKey(await passphraseMaterial(p, salt, derive), slotId), nonce, aad, wrapped);
-          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); spent.add(j); break; }
+          const share = tryUnwrap(wrapKey(await passphraseMaterial(p.route, salt, derive), slotId), nonce, aad, wrapped);
+          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); spent.add(j); opener.push(p.at); break; }
         }
         continue;
       }
       for (const m of paperSecrets) {
-        const share = tryUnwrap(wrapKey(m, slotId), nonce, aad, wrapped);
-        if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); break; }
+        const share = tryUnwrap(wrapKey(m.secret, slotId), nonce, aad, wrapped);
+        if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); opener.push(m.at); break; }
       }
     }
     if (shares.length < slot.t) continue;
@@ -413,7 +421,7 @@ export async function openTreeKey(tree: SlotTree, credentials: readonly Credenti
     );
     if (treeKey === null) continue;
     const opened = adoptUnwrappedTreeKey(treeKey);
-    if (treeKeyAnswersCheck(opened, tree.keyCheck)) return { reading: "opens", treeKey: opened, slot: slot.id };
+    if (treeKeyAnswersCheck(opened, tree.keyCheck)) return { reading: "opens", treeKey: opened, slot: slot.id, opener: opener.slice(0, slot.t) };
     notes.push(`slot ${slot.id} unwraps a tree key this tree does not commit to; it opens nothing`);
   }
   return { reading: "no-slot-opens", notes };

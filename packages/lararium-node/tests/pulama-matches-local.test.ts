@@ -33,7 +33,7 @@ async function stand() {
   const face = await fx.local.foundFace({ group: personaGroupDigest(GROUP), ordinal: 0, slots: fixtureSlots });
   expect((await fx.kept.unlockFace({ fcid: face.fcid }, fixtureRoute)).reading).toBe("opens");
   const remote = fx.vessel();
-  expect(await remote.unlock([])).toEqual({ reading: "opens", slot: "pulama" });
+  expect(await remote.unlock([])).toEqual({ reading: "opens", slot: "pulama", opener: [] });
   /** Run one call on the in-process holder, then on the vessel's side of the pūlama, and hold the two answers equal. */
   const both = async <T>(run: (holder: CustodyHolder) => Promise<T> | T): Promise<unknown> => {
     const local = await outcome(() => run(fx!.local));
