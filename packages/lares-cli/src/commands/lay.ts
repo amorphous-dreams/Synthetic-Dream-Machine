@@ -1,7 +1,7 @@
 /**
- * `lares vessel seed` — plant the disk holdings into the vessel's canon.
+ * `lares vessel lay` — lay the disk holdings into the vessel's canon.
  *
- * THE WORD: seed lays every disk mirror back into the layer it mirrors; import carries a bundle onto this hearth's
+ * THE WORD: `lay` lays every disk mirror back into the layer it mirrors; import carries a bundle onto this hearth's
  * faces by pet-name. Two legs: the HOLDINGS leg lays the checkout's canon (`bags/<slug>`) back into each canon bag, and
  * then the MIRRORS leg (`seed-mirrors.ts`) lays every mirror under the projections root back into its one layer (face
  * working and canon, house bags, other wikis' working), adopts a former face's folders by pet-name after a
@@ -13,18 +13,18 @@
  * diff-gated `ingest` gesture into its canon bag, after a CREATE that converges on the bag that stands (a bag that
  * resolves anywhere, the realm's house canon included, mints nothing). No name list picks the road: in the vessel
  * `LAR_BAGS=/workspace/bags`, so every holding the checkout carries rides it. A holding whose canon source stands
- * elsewhere takes no road, and the seed names it.
+ * elsewhere takes no road, and the lay names it.
  *
- * A SEED NEVER WRITES A WIKI'S WORKING LAYER. INGEST lands canon alone, through its three-way gate (disk, synced base,
+ * A LAY NEVER WRITES A WIKI'S WORKING LAYER. INGEST lands canon alone, through its three-way gate (disk, synced base,
  * canon render), and the recipe stack decides what shows: a working copy keeps shadowing the canon under it. Where the
- * seed moved canon past the text a copy forked from, it warns per title that canon stands fresher (`override-bases.ts`)
+ * lay moved canon past the text a copy forked from, it warns per title that canon stands fresher (`override-bases.ts`)
  * and writes nothing. A working-only title never promotes, and a title gone from disk stands pending at the shore.
- * LOAD + MOVE stays the human promotion door; the seed never walks it.
+ * LOAD + MOVE stays the human promotion door; the lay never walks it.
  *
  * IDEMPOTENT (causal-island law): each run converges from whatever state it finds — a virgin Synced tree reads
  * everything NEW; a converged tree no-ops per holding.
  *
- *   lares vessel seed [--apply] [--yes] [--lift-kahua <N>]   — preview per holding by default (the ingest posture);
+ *   lares vessel lay [--apply] [--yes] [--lift-kahua <N>]   — preview per holding by default (the ingest posture);
  *                                          a bare --yes lifts nothing in kahua: a typed count on a TTY, or --lift-kahua N
  */
 
@@ -40,19 +40,19 @@ import { cmdAct } from "./act.js";
 import { LIVE_MIRROR_DOORS, type MirrorDoors } from "../seed-mirrors.js";
 import { runMirrors } from "../seed-mirror-leg.js";
 
-export interface SeedHolding {
+export interface LayHolding {
   readonly holding: string;               // "lares"
   readonly source: string;                // "<bags dir>/lares"
   readonly toBag: string;                 // "lar:///ha.ka.ba/bags/lares"
   readonly gesture: "ingest" | "skip" | "floor";    // the road taken (`floor`: house canon this face reads, never writes)
   readonly exitCode: number;              // the gesture's verdict for this holding
   readonly reason?: string;               // why a holding took no road
-  readonly fresher?: FresherCanonReading; // working copies that shadow a canon record this seed moved past their base
+  readonly fresher?: FresherCanonReading; // working copies that shadow a canon record this lay moved past their base
 }
 
 export { discoverHoldings, canonIsDisk } from "../holdings.js";
 
-/** The seed's word for a house canon holding on a face outside the Kahu cabal (action-handler `HOUSE_CANON_READS_FLOOR`). */
+/** The lay's word for a house canon holding on a face outside the Kahu cabal (action-handler `HOUSE_CANON_READS_FLOOR`). */
 export const HOUSE_CANON_FLOOR_REASON = "house canon, written by the Kahu steward (h0); this face reads the floor";
 import { canonIsDisk, discoverHoldings } from "../holdings.js";
 
@@ -60,18 +60,18 @@ import { canonIsDisk, discoverHoldings } from "../holdings.js";
  * Feed ONE holding into its canon. A disk-sourced holding: CREATE (applied runs only; it converges on the bag that
  * stands), then the diff-gated INGEST. A preview sends the INGEST preview alone and mutates nothing.
  */
-export async function seedHolding(
+export async function layHolding(
   args: ParsedArgs,
   h: { holding: string; source: string; toBag: string },
   diskSourced: boolean = canonIsDisk(h),
-): Promise<SeedHolding> {
+): Promise<LayHolding> {
   if (!diskSourced) {
-    return { ...h, gesture: "skip", exitCode: 0, reason: "its canon source stands off disk (not under the canon source the daemon reads, or a private plane): the seed feeds disk canon alone" };
+    return { ...h, gesture: "skip", exitCode: 0, reason: "its canon source stands off disk (not under the canon source the daemon reads, or a private plane): the lay feeds disk canon alone" };
   }
   if (args.flags["apply"]) {
     // THE SEED'S DISK READING RIDES THE CREATE (`ActClaims.houseCanon`): a disk-sourced holding other than the board stands as
     // house canon (`houseCanonSlugs`), so an island that never seated it (the holding landed after the vessel booted) refuses
-    // `house-canon-unseated` and mints no catalog row, where a plain CREATE would strand the seeded rows outside the realm.
+    // `house-canon-unseated` and mints no catalog row, where a plain CREATE would strand the laid rows outside the realm.
     const created = await foldCreateOutput(args, () => cmdAct({
       command: "act",
       positional: ["CREATE"],
@@ -80,7 +80,7 @@ export async function seedHolding(
     }, { houseCanon: houseCanonSlugs([h.holding]).includes(h.holding) }));
     if (created.code !== 0) return { ...h, gesture: "ingest", exitCode: created.code };
     // HOUSE CANON ON A FACE OUTSIDE THE KAHU CABAL: the CREATE answered that this face reads the floor, so the INGEST
-    // writes nothing (the steward alone writes canon live) and the seed names the state, clean.
+    // writes nothing (the steward alone writes canon live) and the lay names the state, clean.
     if (created.readsFloor) return { ...h, gesture: "floor", exitCode: 0, reason: HOUSE_CANON_FLOOR_REASON };
   }
   // New content SURFACES for the operator to grade: without `--yes` the ingest gate asks; `--yes` (the operator's
@@ -97,7 +97,7 @@ export async function seedHolding(
 
 /**
  * THE SHORE FLOOD, ANSWERED ONCE. A wave tombstones no carrier: a title gone from disk (a branch switch drops many)
- * stands pending at the shore. The seed counts what stands pending per bag it fed and prints the one batch answer per
+ * stands pending at the shore. The lay counts what stands pending per bag it fed and prints the one batch answer per
  * bag, so a person answers once rather than carrier by carrier.
  */
 export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknown>>, bags: readonly string[]): string[] {
@@ -107,13 +107,13 @@ export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknow
     if (bags.includes(bag)) counts.set(bag, (counts.get(bag) ?? 0) + 1);
   }
   return [...counts].sort(([a], [b]) => (a < b ? -1 : 1)).map(([bag, n]) =>
-    `seed: ${n} pending removal(s) in ${bag}: the files left disk and nothing tombstoned; answer once with \`lares shore remove --all --count ${n} --bag ${bag}\` (or \`restore --all --count ${n} --bag ${bag}\`)`);
+    `lay: ${n} pending removal(s) in ${bag}: the files left disk and nothing tombstoned; answer once with \`lares shore remove --all --count ${n} --bag ${bag}\` (or \`restore --all --count ${n} --bag ${bag}\`)`);
 }
 
 /** How many fresher-canon titles a report names before it counts the rest. */
 export const SEED_FRESHER_NAMES = 8;
 
-/** The CLI already uses performance.now() for process-local liveness budgets; seed durations share that monotonic clock. */
+/** The CLI already uses performance.now() for process-local liveness budgets; lay durations share that monotonic clock. */
 function elapsedText(ms: number): string {
   const seconds = Math.floor(ms / 1000);
   return seconds >= 60 ? `${Math.floor(seconds / 60)}m${String(seconds % 60).padStart(2, "0")}s` : `${seconds}s`;
@@ -159,8 +159,8 @@ export function createReadsFloor(lines: readonly string[]): boolean {
 /**
  * Run the CREATE and hear its answer on BOTH mouths `act` speaks through: the human lines ride `console.log` (folded to one
  * line unless --verbose), and off a terminal the one JSON line rides `process.stdout.write` (`emit`). The JSON line passes
- * through to the caller untouched and the fold listens beside it, so a seed in a pipe, a seat or a harness hears `readsFloor`
- * exactly as a seed at a terminal does.
+ * through to the caller untouched and the fold listens beside it, so a lay in a pipe, a seat or a harness hears `readsFloor`
+ * exactly as a lay at a terminal does.
  */
 async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): Promise<CreateFold> {
   const lines: string[] = [];
@@ -183,29 +183,29 @@ async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): P
   } finally { console.log = log; process.stdout.write = write; }
 }
 
-/** Run the mirror leg off the seed's own flags: `--apply`, `--lift-kahua <N>`, `--json`. */
+/** Run the mirror leg off the lay's own flags: `--apply`, `--lift-kahua <N>`, `--json`. */
 export function runMirrorLeg(args: ParsedArgs, doors: MirrorDoors, opts: { kahuaOnly?: boolean } = {}): Promise<number> {
   return runMirrors({ apply: args.flags["apply"] === true, liftKahua: args.options["lift-kahua"], json: args.flags["json"] === true, ...(opts.kahuaOnly ? { kahuaOnly: true } : {}) }, doors);
 }
 
-export async function cmdSeed(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS): Promise<number> {
+export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS): Promise<number> {
   const bagsDir = larBagsDir();
   const holdings = discoverHoldings(bagsDir);
   if (holdings.length === 0) {
     emit(args, {
       ok: false,
       error: { code: "not-found", message: `no holdings under ${bagsDir}` },
-      human: () => console.error(`lares vessel seed: no holdings under ${bagsDir}`),
+      human: () => console.error(`lares vessel lay: no holdings under ${bagsDir}`),
     });
     return 3;
   }
-  const ledger: SeedHolding[] = [];
+  const ledger: LayHolding[] = [];
   const started = performance.now();
   for (const h of holdings) {
     const carriers = countCarriers(h.source);
-    console.log(`seed ${h.holding}: ${carriers} files…`);
+    console.log(`lay ${h.holding}: ${carriers} files…`);
     const holdingStarted = performance.now();
-    const row = await seedHolding(args, h);
+    const row = await layHolding(args, h);
     ledger.push(row);
     if (row.gesture === "skip") { console.log(`- ${h.holding}: no road · ${row.reason}`); continue; }
     if (row.gesture === "floor") { console.log(`· ${h.holding}: ${row.reason}`); continue; }
@@ -214,7 +214,7 @@ export async function cmdSeed(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_
   }
   const failed = ledger.filter((h) => h.exitCode !== 0);
   for (const h of failed) console.error(`  ${h.holding}: ${h.gesture} failed (exit ${h.exitCode})`);
-  // THE FRESHER CANON: working copies keep shadowing the canon this seed moved; the word names them, nothing writes.
+  // THE FRESHER CANON: working copies keep shadowing the canon this lay moved; the word names them, nothing writes.
   const fresher = ledger.flatMap((h) => (h.fresher?.titles ?? []).map((t) => `${h.holding}:${t}`));
   const fresherCount = ledger.reduce((n, h) => n + (h.fresher?.count ?? 0), 0);
   if (fresherCount > 0) {
@@ -228,10 +228,10 @@ export async function cmdSeed(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_
       const did = await vesselDid();
       const listed = await readShoreList((a) => askShore(a, did), { op: "list" });
       if (listed.ok) for (const line of pendingRemovalLines(listed.pending, fed.map((h) => h.toBag))) console.log(line);
-    } catch { /* the shore unread: the seed's own verdict stands; `lares shore` reads it */ }
+    } catch { /* the shore unread: the lay's own verdict stands; `lares shore` reads it */ }
   }
   const offDisk = ledger.filter((h) => h.gesture === "skip").length;
-  console.log(`seed: ${fed.length - failed.length}/${fed.length} holdings${floorRead > 0 ? ` · ${floorRead} read the floor` : ""}${offDisk > 0 ? ` · ${offDisk} off disk` : ""} · ${elapsedText(performance.now() - started)}`);
+  console.log(`lay: ${fed.length - failed.length}/${fed.length} holdings${floorRead > 0 ? ` · ${floorRead} read the floor` : ""}${offDisk > 0 ? ` · ${offDisk} off disk` : ""} · ${elapsedText(performance.now() - started)}`);
   // THE MIRRORS LEG, after canon stands: every mirror under the projections root back into its one layer.
   const mirrors = await runMirrorLeg(args, mirrorDoors);
   return failed.length === 0 && mirrors === 0 ? 0 : 1;

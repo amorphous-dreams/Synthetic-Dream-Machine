@@ -128,7 +128,7 @@ export const FACE_LAYER_WAITS = /\bface-unresolved\b|\bdocument-unavailable\b/;
 
 /**
  * A WHOLE-WAVE REFUSAL, FOLDED INTO ROWS: where INGEST refuses a wave whole (the island answers one error for the act), each
- * candidate and each kapae shadow it carried reads refused under that one answer. The seed's lay door and the import's ingest
+ * candidate and each kapae shadow it carried reads refused under that one answer. The lay's lay door and the import's ingest
  * door both fold through here, so a wave the island refuses whole reads alike at both: a face-named wave refused with a
  * `FACE_LAYER_WAITS` answer waits by name, and any other refusal stands named row by row, never a bare throw.
  */
@@ -138,9 +138,9 @@ export function foldWaveRefusal(why: string, candidates: ReadonlyArray<{ readonl
   return { refused: candidates.map((c) => ({ uri: c.uri, why })), kapaeRefused: kapae.map((t) => ({ uri: t, why })) };
 }
 
-/** The words a SHUT face reads: unlock it, then seed (or import) again. A named expected state, never a stand-off, and it
- *  never blocks the faces that stand open (THE LIT SET: one seed lays every open face, each in its own layer). */
-export function unlockItLine(face: { readonly handleIndex: number; readonly petname: string | null }, verb: "seed" | "import"): string {
+/** The words a SHUT face reads: unlock it, then lay (or import) again. A named expected state, never a stand-off, and it
+ *  never blocks the faces that stand open (THE LIT SET: one lay lays every open face, each in its own layer). */
+export function unlockItLine(face: { readonly handleIndex: number; readonly petname: string | null }, verb: "lay" | "import"): string {
   return `${face.petname ?? `h${face.handleIndex}`} stays shut: \`lares vault unlock --face ${face.handleIndex}\`, then ${verb} again`;
 }
 
@@ -193,8 +193,8 @@ export interface CarryDoors {
   /** Mint a WIKI through the wiki door (`init-wiki`: its canon, its draft and its recipe row), idempotent. Absent: `mintBag`. */
   readonly mintWiki?: (slug: string) => Promise<void>;
   /**
-   * The disk-sourced holdings whose canon this vessel never seeded (no synced base stands for any carrier of the bag).
-   * An import lands its rows over seeded canon alone, so it refuses while one stands unseeded. Absent: no guard.
+   * The disk-sourced holdings whose canon this vessel never laid (no synced base stands for any carrier of the bag).
+   * An import lands its rows over laid canon alone, so it refuses while one stands unlaid. Absent: no guard.
    */
   readonly unseeded?: () => readonly string[];
   /**
@@ -254,7 +254,7 @@ async function liveFaces(): Promise<CarryVesselFace[]> {
       ...(mounted !== undefined ? { mounted } : {}),
     });
   }
-  // THE FACE LABELS: each named face's relation and pet-name rest in plaintext outside the hearth, so a seed after a
+  // THE FACE LABELS: each named face's relation and pet-name rest in plaintext outside the hearth, so a lay after a
   // re-founding adopts a former face's folders by pet-name from disk alone (`face-labels.ts`).
   writeFaceLabels(out);
   return out;
@@ -806,7 +806,7 @@ export interface CarryImportResult {
   readonly ashesLeft: ReadonlyArray<{ readonly relation: string; readonly why: string }>;
   /** The bundle faces whose face here stands SHUT: nothing of theirs laid into any layer; unlock each and import again. */
   readonly waiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number }>;
-  /** What a preview names that the apply would refuse (an unseeded canon), each with its cure. */
+  /** What a preview names that the apply would refuse (an unlaid canon), each with its cure. */
   readonly warnings: readonly string[];
 }
 
@@ -821,14 +821,14 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const { doors, apply } = opts;
   const bundle: VerifiedBundle = verifyBundle(resolve(src));
   const { manifest, redeclare } = bundle;
-  // THE ORDER GUARD: the walk runs found -> up -> seed -> import. An import lands its rows over the canon the seed
+  // THE ORDER GUARD: the walk runs found -> up -> lay -> import. An import lands its rows over the canon the lay
   // laid, so its bag rows meet the checkout's canon at INGEST's three-way gate and stand off where they diverge; over
-  // an unseeded canon the import's rows would land as the canon itself, and the seed after would stand off against
-  // them. It refuses by name rather than seeding itself: a seed asks the operator to grade new canon, and an import
+  // an unlaid canon the import's rows would land as the canon itself, and the lay after would stand off against
+  // them. It refuses by name rather than laying canon itself: a lay asks the operator to grade new canon, and an import
   // never takes that answer for them.
   // A PREVIEW READS THE SAME GUARD AS A WARNING: it names what the apply would refuse, and plans on.
   const unseeded = doors.unseeded ? doors.unseeded() : [];
-  const unseededWhy = `the canon of ${unseeded.join(", ")} stands unseeded on this vessel, and an import lands over seeded canon alone: run \`lares vessel seed --apply\` first, then import again`;
+  const unseededWhy = `the canon of ${unseeded.join(", ")} stands unlaid on this vessel, and an import lands over laid canon alone: run \`lares vessel lay --apply\` first, then import again`;
   if (apply && unseeded.length > 0) throw new CarryRefused("carry-canon-unseeded", unseededWhy);
   const warnings: string[] = unseeded.length > 0 ? [`carry-canon-unseeded: ${unseededWhy}`] : [];
   const projections = larProjectionsHome();
@@ -888,7 +888,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const journal = openJournal(manifest.bundleId, [...target.values()].map((f) => f.relation).filter((r): r is string => r !== null), apply);
   if (apply) for (const p of planned) journal.mark(`redeclare:${p.row.face}`, `h${p.handleIndex}`);
 
-  // THE LIT SET, as the seed reads it: every bundle face whose face here stands OPEN lands its working and face-canon rows (and
+  // THE LIT SET, as the lay reads it: every bundle face whose face here stands OPEN lands its working and face-canon rows (and
   // its drafts and temp) in that face's own layer: the daemon mount's through the ordinary wave, each other open face's through a
   // wave naming it (the island lands it only where that face owns the document, never on the daemon mount). A bundle face whose
   // face here stands SHUT waits, named; nothing of its memory lands anywhere. Kahua heads lift each under its own face's grant.
@@ -981,7 +981,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
       } else { held.set(uri, false); pending.push({ uri, to, bytes }); }
     }
     const readMeta = (path: string): Buffer | null => (existsSync(`${path}.meta`) ? readFileSync(`${path}.meta`) : null);
-    // The mirror holding every file of a row byte for byte holds its record: already landed (the seed laid it), never planned.
+    // The mirror holding every file of a row byte for byte holds its record: already landed (the lay laid it), never planned.
     // A LAYER THIS IMPORT MINTS (a slug the vessel did not hold) holds nothing yet, so its mirror vouches for no record: every
     // row rides to INGEST, and the mirror's own file still stands unwritten over.
     const already = new Set<string>(freshLayer ? [] : [...held].filter(([uri, all]) => all && !differing.has(uri)).map(([uri]) => uri));
@@ -1020,7 +1020,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
       if (faceArg.face === undefined || !FACE_LAYER_WAITS.test(why)) { unrestore(new Set()); throw e; }
       answer = { landed: [], unanswered: [], conflicts: [], kapaeRaised: [], ...foldWaveRefusal(why, candidates, kapae) };
     }
-    // A WAVE NAMING A FACE THE ISLAND OPENS NO LAYER FOR waits by name, as the seed's does: nothing of it landed anywhere.
+    // A WAVE NAMING A FACE THE ISLAND OPENS NO LAYER FOR waits by name, as the lay's does: nothing of it landed anywhere.
     const refusedAll = [...answer.refused, ...answer.kapaeRefused];
     if (faceArg.face !== undefined && answer.landed.length === 0 && answer.kapaeRaised.length === 0 && refusedAll.length > 0 && refusedAll.every((c) => FACE_LAYER_WAITS.test(c.why))) {
       workTally.planned -= candidates.length; shadowTally.planned -= kapae.length;
@@ -1181,7 +1181,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     const slugs = [...new Set(personalFiles.map((p) => p.split("/")[3]!))].sort();
     for (const slug of slugs) {
       const files = personalFiles.filter((p) => p.startsWith(`faces/${bf.key}/personal/${slug}/`));
-      // A MARGIN OF A WIKI NO FACE STOOD HERE WAITS FOR THE WIKI, as the seed's does: a share row names another face its owner,
+      // A MARGIN OF A WIKI NO FACE STOOD HERE WAITS FOR THE WIKI, as the lay's does: a share row names another face its owner,
       // and the wiki mints at that owner's wear; until then this face's margin mounts no wiki and lands nowhere.
       const stands = !unminted.has(slug) && (doors.sourced?.(slug) === true || (heldNow ??= await doors.heldSlugs()).has(slug)
         || (freshSlugs.has(slug) && (!apply || journal.done.has(`mint:${slug}`))));
@@ -1234,7 +1234,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   };
 
   // ASHES: a former face whose label names a bundle face's pet-name moves out of the live mirror set once this import landed
-  // with NOTHING pending AND its folders hold nothing the bundle never carried (the seed adopts the rest first).
+  // with NOTHING pending AND its folders hold nothing the bundle never carried (the lay adopts the rest first).
   const ashes: Array<{ relation: string; moved: string[] }> = [];
   const ashesLeft: Array<{ relation: string; why: string }> = [];
   const left = Object.values(tallies).reduce((n, t) => n + t.stoodOff.length + t.refused.length, 0);
@@ -1247,7 +1247,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
       if (unworn.has(bf.key)) { ashesLeft.push({ relation: r, why: unlockItLine({ handleIndex: target.get(bf.key)!.handleIndex, petname: bf.petname }, "import") }); continue; }
       if (left > 0) { ashesLeft.push({ relation: r, why: `the import left ${left} row(s) standing off or refused; settle them and import again` }); continue; }
       const { beyond } = weigh(r, bf.key);
-      if (beyond > 0) { ashesLeft.push({ relation: r, why: `its folders hold ${beyond} file(s) the bundle never carried: \`lares vessel seed --apply\` adopts them by pet-name first` }); continue; }
+      if (beyond > 0) { ashesLeft.push({ relation: r, why: `its folders hold ${beyond} file(s) the bundle never carried: \`lares vessel lay --apply\` adopts them by pet-name first` }); continue; }
       if (!apply) continue;
       const moved = moveFaceToAshes(projections, r);
       if ("left" in moved) ashesLeft.push({ relation: r, why: moved.left }); else ashes.push({ relation: r, moved: [...moved.moved] });

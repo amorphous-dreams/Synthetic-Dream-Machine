@@ -419,11 +419,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
   },
   vessel: {
-    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|seed|read|census|fresher|floor|rite> [flags]",
+    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|lay|read|census|fresher|floor|rite> [flags]",
     synopsis:
       "THE VESSEL DOOR — one namespace over the vessel's own causal island. Four primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
-      "halts it on the port · `seed` lays every disk mirror back into the layer it mirrors (each disk-sourced " +
+      "halts it on the port · `lay` lays every disk mirror back into the layer it mirrors (each disk-sourced " +
       "bags/* holding into its canon through INGEST, then every mirror under the projections root into its one layer, a former " +
       "face's folders adopted by pet-name; kahua lifts only on a typed count or --lift-kahua N; import carries a bundle onto this hearth's faces by pet-name) · `read` inspects and starts nothing. Compositions ride " +
       "`vessel rite <petname>`, so a new cap-stack arrives as a rite rather than another top-level verb. " +
@@ -431,10 +431,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares vessel stand                      # idempotent boot, attach-or-start, and REPORT",
       "lares vessel read --palaces             # health, plus the palace-organ table",
-      "lares vessel seed --apply --yes         # plant every holding (idempotent)",
-      "lares vessel seed --apply --verbose     # keep full CREATE detail",
+      "lares vessel lay --apply --yes          # lay every holding (idempotent)",
+      "lares vessel lay --apply --verbose      # keep full CREATE detail",
       "lares vessel fresher --bag sdm          # each working copy's base hash beside the canon hash standing now",
-      "lares vessel seed --apply --lift-kahua 3   # also lift the 3 kahua items the preview named",
+      "lares vessel lay --apply --lift-kahua 3    # also lift the 3 kahua items the preview named",
       "lares vessel rite refresh               # the post-code-change cure: build · stop · stand",
       "lares vessel floor status               # the vessel's floor pin: pinned release, newest seen, fast-forward, fork",
       "lares vessel floor accept [<release>]   # walk prior from the pin to the release (or the sole newest)",
@@ -448,7 +448,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "stand --init         found a vessel where the root holds none — writes LAR_ROOT alone; the operator's homes ride `lares home`, the mempalace sidecar `mempalace install`",
       "read --palaces       the palace-organ health table (mempalace · structure · form · mesh)",
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
-      "seed --lift-kahua <N>  lift the kahua items the seed previewed when N equals their count (a bare --yes lifts none)",
+      "lay --lift-kahua <N>  lift the kahua items the lay previewed when N equals their count (a bare --yes lifts none)",
     ],
     next: ["lares vessel read --palaces", "lares sense pour --all"],
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
@@ -924,6 +924,29 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares persona list", "lares vessel read"],
   },
 
+  "vessel lay": {
+    usage: "usage: lares vessel lay [--apply] [--yes] [--verbose] [--lift-kahua <N>]",
+    synopsis:
+      "Lay every disk mirror back into the layer it mirrors: each disk-sourced bags/* holding into its canon through " +
+      "INGEST's three-way gate, then every mirror under the projections root into its one layer, a former face's folders " +
+      "adopted by pet-name. A bare run previews per holding and writes nothing; `--apply` lands; kahua lifts only on a " +
+      "typed count or `--lift-kahua N`. Idempotent: a second lay lands nothing. Seed names the genesis offer alone; the " +
+      "canon act lays.",
+    examples: [
+      "lares vessel lay                           # preview every holding; writes nothing",
+      "lares vessel lay --apply --yes             # lay every holding (idempotent)",
+      "lares vessel lay --apply --lift-kahua 3    # also lift the 3 kahua items the preview named",
+    ],
+    flags: [
+      "--apply              land what the preview names",
+      "--yes                answer the canon prompt yes (kahua lifts none on --yes alone)",
+      "--verbose            keep full CREATE detail",
+      "--lift-kahua <N>     lift the kahua items the lay previewed when N equals their count",
+    ],
+    next: ["lares shore", "lares vessel read"],
+    meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
+  },
+
   "vessel rite": {
     usage: "usage: lares vessel rite <founding|refresh|rebuild>",
     synopsis:
@@ -931,11 +954,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "LAR_ROOT and nothing else, so a machine's onboarding reads as three acts at three doors (`lares repo tend` · " +
       "`lares home tend` · `lares vessel rite founding`).",
     examples: [
-      "lares vessel rite founding        # found · stand · seed",
+      "lares vessel rite founding        # found · stand · lay",
       "lares vessel rite refresh         # the post-code-change cure: build · stop · stand",
       "lares vessel rite rebuild         # re-derive · stand",
     ],
-    flags: ["founding   found · stand · seed", "refresh    build · stop · stand", "rebuild    re-derive · stand"],
+    flags: ["founding   found · stand · lay", "refresh    build · stop · stand", "rebuild    re-derive · stand"],
     next: ["lares vessel read", "lares home read"],
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
   },

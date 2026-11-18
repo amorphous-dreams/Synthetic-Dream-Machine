@@ -89,7 +89,7 @@ test('the D4 property: a branch switch in the working checkout leaves the house 
   assert.equal(readFileSync(join(at, 'bags/lares/a.mem'), 'utf8'), 'one\n');
 });
 
-test('move fetches and checks out the pin\'s new commit, and names `lares vessel seed` as the next act', (t) => {
+test('move fetches and checks out the pin\'s new commit, and names `lares vessel lay` as the next act', (t) => {
   const w = world(t);
   const at = join(w.root, 'canon');
   const before = w.json(['stand', '--at', at, '--from', w.origin]).head;
@@ -99,7 +99,7 @@ test('move fetches and checks out the pin\'s new commit, and names `lares vessel
   assert.equal(out.to, after);
   assert.deepEqual(out.changed, ['bags/lares/a.mem']);
   assert.equal(readFileSync(join(at, 'bags/lares/a.mem'), 'utf8'), 'two\n');
-  assert.match(out.next.join('\n'), /lares vessel seed/);
+  assert.match(out.next.join('\n'), /lares vessel lay/);
   const again = w.json(['move', '--at', at, '--json']);
   assert.equal(again.from, again.to);
   assert.deepEqual(again.changed, []);

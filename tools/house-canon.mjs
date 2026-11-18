@@ -18,7 +18,7 @@
 //   move   fetches the origin and checks out the pin's commit (`--pin` re-pins: a branch, a tag or a commit). The house's
 //          write-back rests in the clone's working tree, so a clone holding any change or untracked file refuses and
 //          names each path; nothing moves until a hand commits those paths for review or discards them. The next act
-//          stays the operator's: `lares vessel seed`, so the standing house reads the moved canon.
+//          stays the operator's: `lares vessel lay`, so the standing house reads the moved canon.
 //   read   names the clone, its pin and commit, the commit its last fetch saw for the pin, the write-back it holds, and
 //          what LARES_WORKSPACE (the environment, else ~/.lares/lares-surface.env) names: this clone, a working
 //          checkout (the one dev install, whose write-back lands in source control by design) or another place.
@@ -132,7 +132,7 @@ export function stand({ at = defaultAt(), pin = DEFAULT_PIN, from, cwd = process
     at, pin, origin, head: commit,
     next: [
       `LARES_WORKSPACE=${at}   # in ~/.lares/lares-surface.env, or exported in this shell`,
-      "a standing house reads it at its next `up`, then `lares vessel seed`; a new house founds against it",
+      "a standing house reads it at its next `up`, then `lares vessel lay`; a new house founds against it",
     ],
   };
 }
@@ -159,7 +159,7 @@ export function move({ at = defaultAt(), pin } = {}) {
   if (want !== recorded) git(at, ["config", PIN_KEY, want]);
   return {
     at, pin: want, from, to, changed,
-    next: from === to ? [] : ["lares vessel seed   # the standing house reads the moved canon"],
+    next: from === to ? [] : ["lares vessel lay   # the standing house reads the moved canon"],
   };
 }
 

@@ -1,5 +1,5 @@
 /**
- * seed-holdings — `lares vessel seed`'s holdings map (seed.ts discoverHoldings).
+ * lay-holdings — `lares vessel lay`'s holdings map (lay.ts discoverHoldings).
  *
  * The map DISCOVERS every dir under the bags dir, never hardcodes: files, dotted
  * entries, and a missing bags dir all stay out; order sorts stable; each holding
@@ -13,7 +13,7 @@ import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { discoverHoldings, cmdSeed } from "../src/commands/seed.js";
+import { discoverHoldings, cmdLay } from "../src/commands/lay.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 vi.mock("../src/commands/act.js", () => ({ cmdAct: vi.fn(async () => { console.log("CREATE block line one"); console.log("CREATE block line two"); return 0; }) }));
@@ -22,7 +22,7 @@ vi.mock("../src/commands/ingest.js", () => ({ cmdIngest: vi.fn(async () => 0) })
 let root: string;
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lares-seed-holdings-"));
+  root = mkdtempSync(join(tmpdir(), "lares-lay-holdings-"));
 });
 
 afterEach(() => {
@@ -30,7 +30,7 @@ afterEach(() => {
 });
 
 describe("discoverHoldings — the discovered holdings map", () => {
-  test("seed names each holding's load, completion, retry outcome, and total duration", async () => {
+  test("lay names each holding's load, completion, retry outcome, and total duration", async () => {
     const bags = join(root, "bags");
     mkdirSync(join(bags, "notes"), { recursive: true });
     writeFileSync(join(bags, "notes", "one.mem"), "one");
@@ -43,13 +43,13 @@ describe("discoverHoldings — the discovered holdings map", () => {
     console.log = (...a: unknown[]) => { lines.push(a.join(" ")); };
     console.error = (...a: unknown[]) => { errors.push(a.join(" ")); };
     try {
-      const code = await cmdSeed({ command: "vessel", positional: [], options: {}, flags: { apply: true, json: false } } as unknown as ParsedArgs);
+      const code = await cmdLay({ command: "vessel", positional: [], options: {}, flags: { apply: true, json: false } } as unknown as ParsedArgs);
       expect(code).toBe(0);
-      expect(lines).toContain("seed notes: 1 files…");
+      expect(lines).toContain("lay notes: 1 files…");
       expect(lines.some((line) => /^✓ notes: 1 files · \d+s · retry safe$/.test(line))).toBe(true);
       expect(lines.filter((line) => line.startsWith("  CREATE "))).toHaveLength(1);
       expect(lines.some((line) => line.includes("CREATE block line one · CREATE block line two"))).toBe(true);
-      expect(lines.at(-1)).toMatch(/^seed: 1\/1 holdings · \d+s$/);
+      expect(lines.at(-1)).toMatch(/^lay: 1\/1 holdings · \d+s$/);
       expect(errors).toEqual([]);
     } finally {
       console.log = log; console.error = error;
@@ -83,9 +83,9 @@ describe("discoverHoldings — the discovered holdings map", () => {
     expect(discoverHoldings(join(root, "nope"))).toEqual([]);
   });
 
-  test("★ the seed reads the BAGS cap: with LAR_BAGS apart from LAR_ROOT it names the bags mount, never <root>/bags ★", async () => {
+  test("★ the lay reads the BAGS cap: with LAR_BAGS apart from LAR_ROOT it names the bags mount, never <root>/bags ★", async () => {
     // The container's shape: state on one mount, corpus on another. `<root>/bags` holds a decoy holding that a
-    // root-joined read would find and plant; the bags mount stands empty, so the seed must answer not-found
+    // root-joined read would find and plant; the bags mount stands empty, so the lay must answer not-found
     // and NAME the bags mount. (An empty mount keeps this vector off the daemon: no holding, no gesture.)
     const stateRoot = join(root, "state");
     const bagsMount = join(root, "workspace", "bags");
@@ -98,7 +98,7 @@ describe("discoverHoldings — the discovered holdings map", () => {
     const realError = console.error;
     console.error = (...a: unknown[]) => { errors.push(a.join(" ")); };
     try {
-      const code = await cmdSeed({ command: "vessel", positional: [], options: {}, flags: { json: false } } as unknown as ParsedArgs);
+      const code = await cmdLay({ command: "vessel", positional: [], options: {}, flags: { json: false } } as unknown as ParsedArgs);
       expect(code).toBe(3);
       expect(errors.join("\n")).toContain(`no holdings under ${bagsMount}`);
       // CONTROL: with no LAR_BAGS the cap falls to `<LAR_ROOT>/bags`, where the decoy stands as a holding.

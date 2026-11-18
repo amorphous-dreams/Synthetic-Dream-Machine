@@ -127,7 +127,7 @@ describe("the carry verbs", () => {
     await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
     const guarded = { ...after.doors(), unseeded: () => ["sdm", "crossroads"] };
-    await expect(carryImport(out, { apply: true, doors: guarded })).rejects.toThrow(/carry-canon-unseeded|stands unseeded.*lares vessel seed --apply/);
+    await expect(carryImport(out, { apply: true, doors: guarded })).rejects.toThrow(/carry-canon-unseeded|stands unlaid.*lares vessel lay --apply/);
     expect(after.waves).toEqual([]);
     await expect(carryImport(out, { apply: false, doors: guarded })).resolves.toMatchObject({ applied: false });
     // CONTROL: seeded canon (nothing unseeded) imports.
@@ -199,7 +199,7 @@ describe("the carry verbs", () => {
     // The garden mirror still holds the rose the bundle carries, byte for byte.
     const preview = await carryImport(out, { apply: false, doors: { ...after.doors(), unseeded: () => ["sdm"] } });
     expect(preview.tallies.bag).toMatchObject({ already: 1, planned: 0 });
-    expect(preview.warnings).toEqual([expect.stringMatching(/^carry-canon-unseeded: the canon of sdm stands unseeded[\s\S]*lares vessel seed --apply/)]);
+    expect(preview.warnings).toEqual([expect.stringMatching(/^carry-canon-unseeded: the canon of sdm stands unlaid[\s\S]*lares vessel lay --apply/)]);
     expect(after.waves).toEqual([]);
     // CONTROL: the apply still refuses by name.
     await expect(carryImport(out, { apply: true, doors: { ...after.doors(), unseeded: () => ["sdm"] } })).rejects.toThrow(/carry-canon-unseeded/);
