@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-test-refactor-swarm-controls-at-standing`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "test-refactor"
+order    = "2830"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-test-refactor-swarm-controls-at-standing"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-test-refactor-swarm-controls-at-standing"
+```
+
+* ''Swarm controls at standing'' (operator ruling, 2026-11-04): wiki tiddlers that alter swarm control read valid only when the vessel or the hand signs them, and item 7 lands at standing before founding.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UxarBaqnHXJ5KuDRnCQMmgCM8AF8aPMqHDo9XaGl3Rs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

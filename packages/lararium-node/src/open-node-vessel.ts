@@ -34,7 +34,7 @@ import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { larBootstrapPath, larCatalogUrlPath, larProjectionsHome, larConfigHome, larWorkspacesHome, larHearthHome } from "./vessel-paths.js";
 import { createAfterRoll } from "./after-roll-chain.js";
-import { join, dirname, resolve as resolvePath } from "path";
+import { join } from "path";
 import type { Server }                  from "node:http";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import type { DocHandle, AutomergeUrl, DocumentId, PeerId } from "@automerge/automerge-repo";
@@ -4464,13 +4464,14 @@ async function prepareNodeBootOn(
     // projections root (`<root>/projections`), outside the hearth a re-founding clears.
     const projectionRoot = larProjectionsHome();
     const projection = projectionRoots({ projectionRoot, canonBags: daemonBagsDir() });
-    // THE WORKSPACES the share rows name (`$LAR_ROOT/config/share.tid`): each bound dir under `<root>/workspaces`; one inside the
-    // checkout or the hearth, or for a checkout-sourced slug, refuses by name and its workbench projects under projections.
+    // THE WORKSPACES the share rows name (`$LAR_ROOT/config/share.tid`): each bound dir under `<root>/workspaces`, one inside the
+    // checkout included (the cabal's working surface); one inside the hearth, or for a checkout-sourced slug, refuses by name
+    // and its workbench projects under projections.
     const workspaces = (() => {
       const path = join(larConfigHome(), SHARE_CONFIG_FILE);
       let rows: ShareEntry[] = [];
       try { rows = existsSync(path) ? parseShareFile(readFileSync(path, "utf8")) : []; } catch (err) { console.warn(`[workspaces] the share file reads as none: ${String(err)}`); }
-      const read = workspaceRootsOf({ rows, workspacesHome: larWorkspacesHome(), checkoutRoot: dirname(resolvePath(daemonBagsDir())), hearth: larHearthHome(), sourcedSlugs: projection.sourcedSlugs() });
+      const read = workspaceRootsOf({ rows, workspacesHome: larWorkspacesHome(), hearth: larHearthHome(), sourcedSlugs: projection.sourcedSlugs() });
       for (const line of read.refused) console.warn(`[workspaces] refused: ${line}`);
       for (const line of read.unbound) console.warn(`[workspaces] ${line}`);
       return read;
@@ -4497,7 +4498,7 @@ async function prepareNodeBootOn(
       // wikiSlot). The authority (the wikis base) stays static here; designation
       // rides the recipe's mirrorBags.
       // A wiki's working slot rests in its realm workbench (cabal-realm#/the-workbench); a share row may root its mirror in an
-      // operator workspace (`/lar/workspaces/<name>`), never inside the checkout or the hearth (`workspaceRootsOf`).
+      // operator workspace (`/lar/workspaces/<name>`), the checkout included and never inside the hearth (`workspaceRootsOf`).
       // ONE FOLDER ANSWERS A WORKBENCH, whichever seated writer wears: `<projections>/wikis/<slug>`, and a sourced slug's beside
       // its canon source (`<source>/../wikis/<slug>`, the repo workspace: git tracks it). No face relation enters that path.
       { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots },

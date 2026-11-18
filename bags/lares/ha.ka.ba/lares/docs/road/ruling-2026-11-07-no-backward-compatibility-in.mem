@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-07-no-backward-compatibility-in`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-07"
+order    = "1680"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-07-no-backward-compatibility-in"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-07-no-backward-compatibility-in"
+```
+
+* ''No backward compatibility in early alpha'' (operator, 2026-11-07: //"'no backward compatability needed in early alpha' remains house law."//). A rename, a re-key or a shape change carries no record across it, and every CRDT doc re-genesises until the founding bake (`X0`); the registry's domain renames re-key their records under this law.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z8iqobmBpmVSACzeM2d-omkH-FosWeq_yJwhB3ldmR8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

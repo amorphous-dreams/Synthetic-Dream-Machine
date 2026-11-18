@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-no-global-now-wall-clock-never-decides`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "no-global-now"
+order    = "0130"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-no-global-now-wall-clock-never-decides"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-no-global-now-wall-clock-never-decides"
+```
+
+* ''A wall clock never decides whether an act runs.'' Abandonment, revocation and expiry ride causal events; a timer serves only its holder's own liveness, and a device clock may sit under an adversary's hand. Web2.5 timers (TLS acceptance, OAuth tokens) sit at the edge of the causal island.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;e6AdWVcTmOy3zN2xErpMhfUdc2_IhxK1tqXtjidtbd8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

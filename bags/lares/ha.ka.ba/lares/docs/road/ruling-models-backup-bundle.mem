@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-models-backup-bundle`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "models"
+order    = "0700"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-models-backup-bundle"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-models-backup-bundle"
+```
+
+* ''The backup bundle'': a bundle holds ONE face, sealed under a route the person holds, and carries that face's root with its own lines and no key of any seat. Its memory rides as content keys, sealed inside the key island: a bundle opens every surviving value ever sealed under a version it carries, values written after its cut included, and no version minted later. A restore runs as a recovery act that takes a fresh veil and a new seat, and one face on a new device reads as the same audience for the versions that face already held (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NeHsCmP4kA2G8fBJyupmHiomLvNjW-6UcfSbS9zGkiM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

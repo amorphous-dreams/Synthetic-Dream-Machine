@@ -411,7 +411,7 @@ $verb = [string]$args[0]
 $rest = @(); if ($args.Count -gt 1) { $rest = @($args[1..($args.Count - 1)]) }
 
 # A WORKSPACE (cabal-realm#/the-workbench): bound read-write at /lar/workspaces/<name>, from `--workspace <name>=<dir>` and from
-# LARES_WORKSPACES (`;`-separated `<name>=<dir>` pairs). One inside the checkout, LARES_WORKSPACE or LARES_HOUSE/hearth refuses.
+# LARES_WORKSPACES (`;`-separated `<name>=<dir>` pairs). One inside LARES_HOUSE/hearth refuses; the checkout and LARES_WORKSPACE bind (rank 4j).
 $script:WorkspaceNames = @()
 function Test-Within([string]$child, [string]$parent) {
   $c = $child.TrimEnd('/', '\'); $p = $parent.TrimEnd('/', '\')
@@ -427,9 +427,6 @@ function WorkspaceBind([string]$pair) {
   $real = (Get-Item $wdir).ResolveLinkTarget($true)
   $real = if ($real) { $real.FullName } else { (Resolve-Path $wdir).Path }
   $real = $real.TrimEnd('/', '\')
-  if (Test-Within $real ([System.IO.Path]::GetFullPath($Root))) { Die "--workspace $name refuses $real — it rests inside the checkout ($Root)" }
-  $ws = ValueOf 'LARES_WORKSPACE'
-  if ($ws -and (Test-Within $real ([System.IO.Path]::GetFullPath($ws)))) { Die "--workspace $name refuses $real — it rests inside LARES_WORKSPACE ($ws)" }
   if (Test-Within $real ([System.IO.Path]::GetFullPath((Join-Path $House 'hearth')))) { Die "--workspace $name refuses $real — it rests inside the hearth" }
   if ($real.Contains("`n")) { Die '--workspace refuses a path that holds a newline' }
   $script:WorkspaceNames += $name
@@ -451,8 +448,14 @@ function StandPulama {
   & docker compose @Base --profile pulama up -d --no-recreate pulama
   if ($LASTEXITCODE -ne 0) { Die 'the pūlama did not stand; nothing raised' }
   $digest = ImageDigest
-  & docker compose @Base --profile pulama exec -T pulama node $PulamaMain image $digest
-  if ($LASTEXITCODE -ne 0) { Die "the pūlama refused the image digest $digest; nothing raised" }
+  # The image offers its seed beside its digest: a one-shot of the image (no house mounted) prints the whole frame on one
+  # stdout line; a read that prints no frame falls back to the bare digest, so a seed read never blocks a stand.
+  $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
+  $frame = ''
+  try { $frame = ((& docker run --rm -e LAR_ROOT=/lar $image node $Cli vessel floor seed --genesis /app/genesis --image $digest 2>$null) | Select-Object -Last 1) } catch { $frame = '' }
+  $report = if ("$frame".StartsWith('{')) { "$frame" } else { $digest }
+  & docker compose @Base --profile pulama exec -T pulama node $PulamaMain image $report
+  if ($LASTEXITCODE -ne 0) { Die "the pūlama refused the image report for $digest; nothing raised" }
 }
 # Does a pūlama run beside the vessel? It reads the container itself, whatever LARES_PULAMA now says: running, absent, or
 # unknown where the ps fails.

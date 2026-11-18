@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-first-ceremony-reach-on-the-day`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "first-ceremony"
+order    = "0550"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-first-ceremony-reach-on-the-day"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-first-ceremony-reach-on-the-day"
+```
+
+* ''Reach on the day'': LAN only. The public domain's Handle table comes later.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Vtyl39Q4ghiKSgsa71bSrv9mzpl3DMi9-m9067sJKnQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

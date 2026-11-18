@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-18-custody-and-identity-read`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-10-18"
+order    = "0910"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-18-custody-and-identity-read"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-10-18-custody-and-identity-read"
+```
+
+* ''Custody and identity read by capability, never by host'' (operator ruling, 2026-10-19: //"I consider node and browser isomorphic-by-intent. Eventually, a browser-vessel somewhere may grow comparable capabilities to a node vessel, and this pattern cascades outwards to all future vessels."//). Three rules hold on every vessel, present and planned: a vessel meets each face through that face's atom alone, its veil signing every dial, join, enrolment, sibling channel and daemon proof made on that face's behalf, never one device-wide key; a vessel holds a place signer exactly while it stands a floor, for the floor's allowlisted duties, under the pre-rotated place KEL; and a faceless vessel reading another's floor proves nothing private, reading the public shelf under the floor card's pin. A node's daemon auth, device-key signer, sibling enrolment and group-secret opener read the one vessel seed today (`open-node-vessel.ts`), and a browser's do the same (`open-browser-vessel.ts`); each is a bond owed, carried by `K15`. The lend follows the same rule: one lend-and-wear contract rests in the mesh (`packages/lararium-mesh/src/lent-faces.ts`, rank 2b), and each host binds its own light (the pūlama on the node, the tab's custody ask on the browser) and its own lend source (the pūlama's admission on the node, PersonaGroup membership on the browser), with no type or port naming a host.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OeTwOL6hTyZLB-V2qkJDLYyocO-dG05scIBc3bv5LaQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

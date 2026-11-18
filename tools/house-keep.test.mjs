@@ -225,10 +225,8 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     // ── H4: THE RESTORE DRILL: a brand-new house, a fresh clone, an import, par ─────────────────────────────────
     const fresh = await standHouse("new", "steward");
     houses.push(fresh);
-    // THE KEEP KEY CROSSES BY HAND: the bundle's roster rests sealed under the key the old house's config holds, so the new house
-    // takes a copy of it before the import (the runbook's 11a copies `config/keep-key` the same way).
-    mkdirSync(join(fresh.root, "config"), { recursive: true });
-    cpSync(join(old.root, "config", "keep-key"), join(fresh.root, "config", "keep-key"));
+    // NO KEY CROSSES BY HAND: the bundle carries the keep seat beside its roster, and the steward's route (the staged root's test
+    // route here, a passphrase or paper sheet on a terminal) opens it at the import.
     const restore = join(scratch, "restore");
     git(scratch, "clone", "-q", "--branch", "main", remote, restore);
     assert.ok(existsSync(join(restore, "house", "manifest.json")));

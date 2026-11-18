@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-31-test-re-cut-moves-before`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-10-31"
+order    = "1060"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-31-test-re-cut-moves-before"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-10-31-test-re-cut-moves-before"
+```
+
+* ''The test re-cut moves before the founding'' (operator ruling, 2026-10-31: //"Approve lifting the test re-cut ordering to before founding"//). This lifts the 2026-10-29 ruling that set the re-cut after the founding (#/rulings, the test refactor). Red-first commits, the train's merged-tree run, CI as the verdict and one Sol read per train stay. Train T carries it (#/stride-t-recut).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xLrHXdg8UcsLzMjhtT9IOihROkgtpcJShKKImf0HJjk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

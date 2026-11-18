@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-models-hands`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "models"
+order    = "0730"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-models-hands"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-models-hands"
+```
+
+* ''The hands'': every hand opens a session. A tasked spirit comes down to an AI, a Mask and the vessel seat, attended or standing; the vessel seat serves as a spirit's system identity, carrying and witnessing while the act presents the worn face's proof; a Mask counts as no pet-name. The door carries and the hand authorizes, over one verb table, and a standing seat never signs an act that changes who holds authority (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MsxdCVGF8uCgcRVjmc6JzWpCD5LFhxHFr16Z1VW9lMg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-first-ceremony-browser-leaf-holds-a`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "first-ceremony"
+order    = "0610"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-first-ceremony-browser-leaf-holds-a"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-first-ceremony-browser-leaf-holds-a"
+```
+
+* ''A browser leaf holds a passphrase or paper slot before it holds a persona root''; the mint refuses without one.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RS_Fo_liKVRRtEaPx85YG4zNAeiFROc12CNhtkOe-1c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

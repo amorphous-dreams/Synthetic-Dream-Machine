@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-one-route-for-place`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-06-defaults"
+order    = "1560"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-one-route-for-place"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-one-route-for-place"
+```
+
+* ''One route for place and face'' (operator, 2026-11-06, approving the house's defaults). At the browser founding one typed route binds both the place tree and the founder face's tree; the two trees stay independently keyed and wrapped (one human prompt, two keys), and the node asks for each tree each time. Carrier: `pono/browser-vessel-lift` and custody, carried by the b1 lanes' carriers at their land.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7xDLxohpjBhfoTpp62PyaU9vWadykRLb7QljRbtS_Gk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

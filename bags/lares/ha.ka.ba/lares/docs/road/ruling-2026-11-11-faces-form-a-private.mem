@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-faces-form-a-private`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-11"
+order    = "2030"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-faces-form-a-private"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-11-faces-form-a-private"
+```
+
+* ''Faces form a private cabal of one'' (operator, 2026-11-11: //"the multitude of faces reads as a private cabal for 1 human. Pattern integrities!"//). One human's faces sharing a bag or a wiki enact the cabal grammar at the scale of one person: the charter names the share, the membership names the faces, and no parallel ACL stands beside it. An unshared wiki founds a private cabal of one (`privateCabalRealmId(face, slug)`). OWED: the share config (`$:/config/lares/share/<slug>`, `share-config.ts`) still resolves face-to-face shares through its own resolver, beside the cabal's read scope.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ibiT1mIoaVl8ID8QXjZUJtz5FQSUIRXX5i43aGK1fWE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

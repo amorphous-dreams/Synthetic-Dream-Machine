@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-same-face-tabs-share-one`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-06-defaults"
+order    = "1530"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-same-face-tabs-share-one"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-same-face-tabs-share-one"
+```
+
+* ''Same-face tabs share one provider'' (operator, 2026-11-06, approving the house's defaults). One Keyhive provider per face lights at that face's first unlock; each later tab proves its own unlock; the face's last session closing drains in-flight verification, then drops the provider and its keys. Carriers: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/k19-hive-lane#/the-slices`>>, and `pono/browser-vessel-lift`, carried by the b1 lanes' carriers at their land.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zY5LpZV6p9Ewrd7NyczC1c0eYRX4cGpIEyEO2qJdjj0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -8,8 +8,9 @@
  *        any path; the manifest's faces carry their path key alone and its rows name a face by that key; no path carries a
  *        `.git/` a mirror held. CONTROL: the content a person wrote reads in clear, and the house that cut it opens the roster
  *        again: the import maps each pet-name to its face and the share rows travel.
- *   KS2  RED: a house that holds no keep key refuses the import by name, naming where the key rests, before anything moves.
- *   KS3  a re-cut of an unmoved house names the same bundle (the seal derives its salt, so an unmoved keep spends nothing).
+ *   KS2  RED: an import with no route to open the bundle's keep seat (no terminal, no staged root) refuses by name before anything
+ *        moves; the bundle carries no loose key, so nothing else opens its roster.
+ *   KS3  a re-cut of an unmoved house names the same bundle (the seat keeps its last seal, so an unmoved keep spends nothing).
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -82,7 +83,7 @@ describe("the keep bundle seals its roster", () => {
     expect(existsSync(join(out, "re-declare.json")), "the re-declare list rests sealed, never as plain JSON").toBe(false);
     // CONTROL: the content a person wrote travels as a plain file a person reads.
     expect(paths.some((p) => bundleBytes(out, p).toString("utf8").includes("the pond at dusk"))).toBe(true);
-    // CONTROL: the house that cut it holds the key, so its import opens the roster: each pet-name finds its face, the share rows land.
+    // CONTROL: the staged root's route opens the seat the bundle carries, so its import opens the roster: each pet-name finds its face, the share rows land.
     const after = doors([
       { handleIndex: 0, petname: "otter-face", relation: G1, handle: null, seat: false, chair: null, kahua: [], mounted: true },
       { handleIndex: 1, petname: "kestrel-face", relation: G2, handle: null, seat: false, chair: null, kahua: [], mounted: false },
@@ -92,11 +93,12 @@ describe("the keep bundle seals its roster", () => {
     expect(imported.shares.written).toEqual(["notes"]);
   });
 
-  test("KS2 RED: a house holding no keep key refuses the import by name before anything moves", async () => {
+  test("KS2 RED: an import with no route to the bundle's keep seat refuses by name before anything moves", async () => {
     await houseExport(out, { acceptOmissions: true, doors: doors(oldFaces(), SHARES) });
     rmSync(join(root, "config"), { recursive: true, force: true });
+    rmSync(join(root, ".lar-test-scratch"));
     const after = doors(oldFaces(), []);
-    await expect(houseImport(out, { apply: true, doors: after })).rejects.toThrow(/keep-key-absent/);
+    await expect(houseImport(out, { apply: true, doors: after })).rejects.toThrow(/keep-route-absent/);
     expect(after.written).toEqual([]);
   });
 

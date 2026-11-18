@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-18-each-realm-stands-under`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-10-18"
+order    = "0950"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-18-each-realm-stands-under"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-10-18-each-realm-stands-under"
+```
+
+* ''Each realm stands under one charter, a seed's or a Nexus's'' (operator ruling, 2026-10-18). A council that meets at one hearth stands under that hearth's seed charter, and its guests' chosen faces walk there with no Nexus founded; a council two hearths carry stands under the Nexus those two found fresh, since a Nexus names the operators' relationship (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>> #/edge-hands). A guest sees every realm its worn face stands in.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UqiNjDaGyT53FrDKGjV6gd3EAq8jUjXZ8D5NB6ZfJzQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

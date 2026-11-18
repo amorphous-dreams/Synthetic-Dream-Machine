@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-fork-resolve-act`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2430"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-fork-resolve-act"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-fork-resolve-act"
+```
+
+* ''The fork-resolve act'' (house ruling under the operator's delegation, 2026-10-14). A fork stays a fork, and every reader names the branch it follows; no clock, no longest chain and no third-party quorum picks a branch. Two acts resolve one. ABANDON: a seal record a branch's own quorum signs at its head, closing that branch for every reader who holds it, erasing nothing and touching no sibling. REUNION: one canonical image naming the scope AID, both held heads sorted, and the new seats, threshold and successor commitments, signed by each branch's quorum at its head over identical bytes; the verifier proves both heads inside the same AID's lineages from a common ancestor, and the record becomes the common head. A seal record's predecessors form a sorted set of one or two, built before the fence; until the reunion verifier lands, a two-predecessor record refuses `REUNION_UNBUILT`. The reason: a split household reunites only by a paper both halves sign. The ruling flips on a fork that neither branch's quorum can still sign for.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;71f1ohau5ToCNtYsIvcY1q5RIBCpoLEpLbK-ZZpZRpE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

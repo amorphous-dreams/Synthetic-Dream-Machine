@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-09-plain-text-survives-to`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-09"
+order    = "2000"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-09-plain-text-survives-to"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-09-plain-text-survives-to"
+```
+
+* ''Plain text survives to disk'' (operator, 2026-11-10: //"The state of play now is 'Dogfood our code into a self-improving AI-Operator alignment harness' so some things must wait. The 'plain text survives to disk' law holds because how do we recover running data between alpha refound otherwise (& this lesson carries forwards, etc)."//). The plaintext projection survives every re-founding by design, so running data recovers across alpha re-foundings (`lares export` and `import`, a reset that keeps `projections/`), and the law carries forward past alpha. Work beyond the truths it needs waits behind the dogfood harness. <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/core-claim`>>.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9qZcz8uUlXPWpWHb1GmQsiqbLASJ4StfzWEuJ0XY6cM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

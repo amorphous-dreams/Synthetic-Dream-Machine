@@ -4,6 +4,9 @@
  *   light    read the route on a real terminal, hand it to the hand door: the one act that opens a key
  *   admit    read the route on a real terminal, hand it to the hand door: the route PROVES against the lit holder (it opens
  *            nothing), and the image the host reports rests admitted, so a vessel raised from it wakes served
+ *   lei      `lei kui|restring|unstring '<terms>'`: read the route on a real terminal, hand it to the hand door with the lei's
+ *            terms (one JSON object: `face`, `rite`, `branch`, and `returns` · `reach` · `head` · `after` · `confirm` · `lei`
+ *            as the act needs): the face root signs one record there, and the answer carries it for the vessel to land
  *   lock · status · tessera · image <digest> | image '{"digest","seed"}'   one frame each, no route
  *
  * ── A ROUTE RIDES A REAL TERMINAL AND NOTHING ELSE ──────────────────────────────────────────────
@@ -70,7 +73,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | unadmit <image digest> | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | unadmit <image digest> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -105,6 +108,22 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     if (standing["lit"] !== true) return { op: "unadmit", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then unadmit" };
     const passphrase = await ports.route(`pūlama route, to unadmit ${arg}: `, "an unadmission");
     return ports.ask({ op: "unadmit", image: arg, credentials: [{ kind: "passphrase", passphrase }] });
+  }
+  if (verb === "lei") {
+    // THE LINE: an act and one JSON object of terms, nothing more; a route never rides it.
+    if (!Array.isArray(arg) || arg.length !== 2) throw new PulamaVerbUsage();
+    const [act, raw] = arg as readonly string[];
+    if (act !== "kui" && act !== "restring" && act !== "unstring") throw new PulamaVerbUsage();
+    let terms: unknown;
+    try { terms = JSON.parse(raw!); } catch { throw new PulamaVerbUsage(); }
+    if (typeof terms !== "object" || terms === null || Array.isArray(terms) || "credentials" in terms || "op" in terms || "act" in terms) throw new PulamaVerbUsage();
+    const t = terms as Record<string, unknown>;
+    // THE DOOR READS FIRST: an unlit pūlama refuses here, before anybody types a route.
+    const standing = await ports.ask({ op: "status" });
+    if (standing["lit"] !== true) return { op: "lei", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then string the lei" };
+    const what = act === "unstring" ? `unstring the ${String(t["rite"])} lei ${String(t["lei"])}` : `${act} a ${String(t["rite"])} lei`;
+    const passphrase = await ports.route(`pūlama route, to ${what} at "${String(t["branch"])}" for h${String(t["face"])}: `, "a lei");
+    return ports.ask({ op: "lei", act, ...t, credentials: [{ kind: "passphrase", passphrase }] });
   }
   if ((verb === "lock" || verb === "status" || verb === "tessera") && arg === undefined) return ports.ask({ op: verb });
   if (verb === "image" && typeof arg === "string") {

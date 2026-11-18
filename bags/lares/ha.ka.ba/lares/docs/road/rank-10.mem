@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-10`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0310"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-10"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-10"
+```
+
+| 10 | WAVE TWO | `L17-2a` the relay to named wikis | The tiddler door's verbs reach every named wiki, the shared house and topic wikis the dogfood writes among them. |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;f2IJWjlPQjQ3WTiURUhVt_Bg5-x5416iqILfiU1V5Kg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

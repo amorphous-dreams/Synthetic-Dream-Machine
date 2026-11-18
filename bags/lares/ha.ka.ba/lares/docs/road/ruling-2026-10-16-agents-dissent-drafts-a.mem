@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-16-agents-dissent-drafts-a`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-10-16"
+order    = "0790"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-16-agents-dissent-drafts-a"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-10-16-agents-dissent-drafts-a"
+```
+
+* ''An agent's dissent drafts; a person's ask edits'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract`>> #/the-hands): an agent never overrides a person's edit, and a person's direct ask to edit a tiddler makes the edit the person's own act, bounded by the ask and the asker's authority.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3soGDCReh8FQwtfUNh00RCIq3mYG7Fy4tssm5Aesq9U`>>
+
+<<^ code=`&#x0004;` to=`?`>>

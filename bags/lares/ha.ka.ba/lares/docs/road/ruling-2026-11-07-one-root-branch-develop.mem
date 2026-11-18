@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-07-one-root-branch-develop`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-07"
+order    = "1880"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-07-one-root-branch-develop"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-07-one-root-branch-develop"
+```
+
+* ''One root branch, `develop`'' (operator, 2026-11-07: //"So MU the workspace question."// and, truing it, //"the primary repo here will just serve `develop` until the roadmap clears, no split needed, we dogfood and develop on one checked out root-nbrach `develop`, then PR back to main after milestones."//). PR #218 carried the span to `main` (`e844e0d8b`, 2026-11-17), and `develop` stands cut from it at the same commit: the main repo checks out one root branch, `develop`, where the house both dogfoods and develops until the roadmap clears; lanes branch off `develop` and land into it, the live wiki's writes land there as source-control write-back, and `main` carries releases (operator, 2026-11-17: //"Now spirits and changes can get working branches merged into a living `develop` and we can plan 'releases' from main in full CICD modern software fashion!"//), each planned and cut by a pull request from `develop`, the release plan owed at lar:///ha.ka.ba/kahua/memory/project/develop-flow.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;J9sA8FRoQSKEP18oGBjdGzx3kcHCb-bXLcbB0hFrvyM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

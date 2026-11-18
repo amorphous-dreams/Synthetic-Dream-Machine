@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-40`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0670"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-40"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-40"
+```
+
+| 40 | AFTER | the sensorium's return: `G47`, `G48`, `G49`, the band-ladder residue, the capture lane's era | Held behind the working Lararium by ruling (#/the-road, off this road). |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;baTvus8cf604wxnVptuwD_YH_uCP8LF86T840Vg2utI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

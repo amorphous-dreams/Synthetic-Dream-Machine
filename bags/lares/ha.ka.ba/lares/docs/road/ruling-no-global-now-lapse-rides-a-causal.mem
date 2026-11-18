@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-no-global-now-lapse-rides-a-causal`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "no-global-now"
+order    = "0140"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-no-global-now-lapse-rides-a-causal"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-no-global-now-lapse-rides-a-causal"
+```
+
+* ''Lapse rides a causal fence'': an epoch roll, a burn marker, or causal supersession at a verified relation fence. A replica missing that history reports an incomplete view, never "expired"; quiet never means lapse.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dffF7dmiP0K4pWh77ak3XQ1tnpq2g67aRNKjWKfhsWs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

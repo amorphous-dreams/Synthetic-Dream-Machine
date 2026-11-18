@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-planes-oracle-answer`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "planes"
+order    = "0270"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-planes-oracle-answer"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-planes-oracle-answer"
+```
+
+* ''Oracle answer'': one public answer per Nexus, signed by that Nexus's Kahu steward; a herm carries and presents it and signs nothing public. The engine floor rides as one shared content-addressed bake, and each answer names its floor CID (operator ruling).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Me2BujGpIeYFzDs-nt6WUAqUbUdQ9oqqQiykag_FIQQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

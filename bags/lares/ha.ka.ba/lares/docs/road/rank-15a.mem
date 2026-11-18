@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-15a`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0410"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-15a"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-15a"
+```
+
+| 15a | AFTER, ahead of rank 16 | `K7` the re-cut, per-document units under a house manifest (one moved page moves one unit id, an import of one face's units lands that face alone; `bundle-manifest.ts`, `commands/house-bundle.ts`, `rite-keep.ts`), then `K8` the sealed unit, cleartext to the operator's own hands and sealed past them (`packages/lares-cli/src/keep-seal.ts`) | The keep must stand whole before `L35` burns the flat store, since the daemon wiki then holds the only copy of every session's memory. |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Vxu3HxnVvlTpL53fzKszriZRxy6dIpbONu6Pvs5P9t4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-test-refactor-drain-pacing-and-request`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "test-refactor"
+order    = "2750"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-test-refactor-drain-pacing-and-request"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-test-refactor-drain-pacing-and-request"
+```
+
+* ''Drain pacing and request law'' (operator ruling, 2026-11-04): the Drain runs one latest-state queue across all hand titles, paced by durable acknowledgements and lifecycle requests, with no timer and no syncer.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZuNuFLgqbe5S_OetlL5gligp6j4jhCH_2VzzS1erKjs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

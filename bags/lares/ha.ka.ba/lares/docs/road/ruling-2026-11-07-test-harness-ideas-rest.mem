@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-07-test-harness-ideas-rest`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-07"
+order    = "1720"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-07-test-harness-ideas-rest"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-07-test-harness-ideas-rest"
+```
+
+* ''The test harness ideas rest until the Lararium stands'' (operator, to Lares-Awakens, 2026-11-06/07: //"Set the test harness ideas down, we'll dogfood those into the Lararium once it stands."//). New test-harness ideas wait for the standing Lararium and enter it by dogfooding, beside `L30`; before standing, the harness takes only the cures a lane's work needs.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OUNOpEIslG-u_0dZGEw8GbS2qyoHLe7qiGnYkeKL2s0`>>
+
+<<^ code=`&#x0004;` to=`?`>>
