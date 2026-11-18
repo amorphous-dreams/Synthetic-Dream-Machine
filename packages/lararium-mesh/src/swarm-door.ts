@@ -1,18 +1,25 @@
 /**
- * swarm-door — the hand-only verbs over the swarm model: `show`, `cap-set`, `share-set`, `lei-kui`, `lei-unstring`, `lei-restring`.
+ * swarm-door — the hand-only verbs over the swarm model: `show`, `cap-set`, `share-set`, `lei-kui`, `lei-unstring`, `lei-restring`,
+ * `lei-land`.
  *
  * ADVISORY at this slice: a client names its own hand, so the socket gate (`SWARM_VERB_HAND_CODES`) and the `who` check here refuse a
  * seat but cannot bind a script holding the face's custody; the ward slice binds them. The signer arrives as a `SwarmSignerPort`, so
  * the ward's signer replaces the face's root signer without touching a verb.
  *
  * With no standing daemon wiki every act, `show` too, refuses by name and writes nothing: no flat-file fallback.
+ *
+ * A HAND RECORD LANDS (`lei-land`): under a pūlama the vessel holds no face root, so the hand signs a lei or an unstring at the
+ * pūlama's hand door, sign-only, and the vessel lands that record here. The door verifies it against the face's grant and group,
+ * then runs the act it names (`lei-kui`, `lei-unstring`) over the record's own signature: the same checks, the same co-sign gate
+ * (a push lei waits on a second device here, at landing), the same row. The vessel signs nothing of its own.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { readSwarmBoard, readSwarmBoardAct, signSwarmCap, signSwarmShare, swarmBoardActCid, swarmCapHead, type SignedSwarmBoardAct, type SwarmBoardFace } from "./swarm-board.js";
 import {
   SwarmRefused, readLei, readLeiChain, swarmLeiReturnedPrefix, swarmLeiUnstrungTitle, signSwarmAct, swarmActCid, swarmCapRefusal, swarmLeiHead, swarmLeiRecordTitle, swarmShareRefusal, swarmShareTitle,
-  type SwarmSignerPort, type SwarmTrust, type SwarmLeiReach, type SwarmLeiTerms, type SwarmWikiPort,
+  verifySwarmRecord, type SignedSwarmAct, type SwarmSignerPort, type SwarmTrust, type SwarmLeiReach, type SwarmLeiTerms, type SwarmWikiPort,
 } from "./swarm-tiddlers.js";
+import { canonicalJsonBytes } from "./crypto.js";
 import { isSwarmLeiRite, leiRiteCosigns, wardLeiVerb, type SwarmLeiRite } from "./swarm-lei-rite.js";
 import { cosignPortWitness, WardActAlreadyRun, wardCosignGate, type WardCosignAct, type WardCosignPort } from "./ward-cosign-gate.js";
 import { WARD_GATE_DECIDED } from "./ward-door-decided.js";
@@ -48,7 +55,10 @@ export type SwarmRequest =
   /** RESTRING: supersede the standing lei with a newer one. The door reads the line's tip and strings the new lei after it (a
    *  `lei-kui` whose `after` the door fills), so the newer lei's own signed row names the one it supersedes. */
   | { readonly action: "lei-restring"; readonly rite: SwarmLeiRite; readonly branch: string;
-      readonly reach?: SwarmLeiReach; readonly returns?: number; readonly head?: string; readonly confirm?: boolean };
+      readonly reach?: SwarmLeiReach; readonly returns?: number; readonly head?: string; readonly confirm?: boolean }
+  /** LAND A HAND RECORD: a lei (a kui, or a restring the hand signed after the tip it read) or an unstring the hand signed apart,
+   *  as a `SignedSwarmAct` or its JSON text. The door verifies it, then runs the act it names over the record's own signature. */
+  | { readonly action: "lei-land"; readonly record: unknown };
 
 export interface SwarmDoorDeps {
   readonly group: string;
@@ -86,6 +96,29 @@ function leiFollowRefusal(chain: Awaited<ReturnType<typeof readLeiChain>>, branc
   return null;
 }
 
+/**
+ * The hand record a landing names, verified against the face: its body a lei or an unstring, its group the face's, its signature
+ * over its own body by a key the face trusts as its hand, at the row its body names. Anything else refuses
+ * `swarm-hand-record-unverified` by the reading it failed.
+ */
+function verifiedHandRecord(raw: unknown, deps: SwarmDoorDeps): SignedSwarmAct {
+  const unverified = (why: string): SwarmRefused => new SwarmRefused("swarm-hand-record-unverified", `the hand record ${why}; nothing landed`);
+  let text = "";
+  try { text = typeof raw === "string" ? raw : JSON.stringify(raw) ?? ""; } catch { /* a record that forms no JSON reads as no record */ }
+  const parsed = ((): unknown => { try { return JSON.parse(text); } catch { return null; } })();
+  const body = typeof parsed === "object" && parsed !== null ? (parsed as { readonly body?: unknown }).body : undefined;
+  const b = (typeof body === "object" && body !== null ? body : {}) as { readonly act?: unknown; readonly rite?: unknown; readonly branch?: unknown; readonly lei?: unknown };
+  if (b.act !== "lei" && b.act !== "lei-unstrung") throw unverified("names no lei and no unstring");
+  let title: string;
+  try { title = b.act === "lei" ? swarmLeiRecordTitle(b.rite as SwarmLeiRite, b.branch as string, swarmActCid(parsed as SignedSwarmAct)) : swarmLeiUnstrungTitle(b.lei as string); }
+  catch { throw unverified("reads shape"); }
+  const read = verifySwarmRecord(text, title, deps.trust, deps.group);
+  if (!read.ok) throw unverified(`reads ${read.refusal}`);
+  return read.act;
+}
+
+const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((x, i) => x === b[i]);
+
 export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Promise<Record<string, unknown>> {
   const wiki = deps.wiki;
   if (!wiki) throw new SwarmRefused("swarm-no-daemon", "no standing daemon: swarm controls need the founded wiki");
@@ -118,6 +151,20 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     };
   }
   if (deps.who.kind !== "hand") throw new SwarmRefused("swarm-needs-hand", "a hand must decide");
+  if (req.action === "lei-land") {
+    const record = verifiedHandRecord(req.record, deps), body = record.body, cid = swarmActCid(record);
+    // THE RECORD'S OWN SIGNATURE SIGNS: the act this door composes must spell the very bytes the hand signed, or nothing lands.
+    const hand: SwarmSignerPort = { key: record.signer, sign: async (bytes) => {
+      if (!sameBytes(bytes, canonicalJsonBytes(body))) throw new SwarmRefused("swarm-hand-record-mismatch", "the act this door would land differs from the one the hand signed");
+      return record.sig;
+    } };
+    const landing: SwarmDoorDeps = { ...deps, signer: hand };
+    if (body.act === "lei-unstrung") return { ...await swarmCommand({ action: "lei-unstring", rite: body.rite, branch: body.branch, lei: body.lei }, landing), landed: cid };
+    if (body.act !== "lei") throw new SwarmRefused("swarm-hand-record-unverified", "the hand record names no lei and no unstring; nothing landed");
+    const terms = body.reach === "wide" ? { reach: "wide" as const, returns: body.returns } : { reach: "head" as const, head: body.head };
+    // The hand wrote the count into the record it signed, so a large one stands confirmed by that signature (the hand door asks it).
+    return { ...await swarmCommand({ action: "lei-kui", rite: body.rite, branch: body.branch, after: body.after, ...terms, confirm: true }, landing), landed: cid };
+  }
   if (!deps.face.grant(deps.signer.key.toLowerCase())) throw new SwarmRefused("swarm-signer-not-grant", "the signer holds no grant of this face");
   if (req.action === "lei-unstring") {
     if (!isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push, kukulu or keep)");

@@ -4,6 +4,10 @@
  * The cap and the shares land on the face-private promote board (a sibling record family), and a lei lands in the daemon wiki under
  * `$:/lares/swarm/`. The signer is the face's root seed, loaded only for the rows that sign; `show` reads and never touches the seed.
  * The wiki is checked first: with no standing daemon every row refuses by name before a face loads.
+ *
+ * A kui or an unstring row that carries `signed` lands a HAND RECORD: the hand signed it at the pūlama's hand door, where the
+ * face root rests, so this row opens no ward and loads no seed; the swarm door's `lei-land` verifies the record against the face
+ * and runs the act it names over the record's own signature (a restring lands as the kui after the tip it names).
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { wardRootSigner } from "../ward-signer.js";
@@ -39,7 +43,8 @@ export async function runSwarmVerb(opts: {
   // a co-signed act the gate holds (the house cap, a lei) asks no route at all.
   let signing: SwarmSignerPort = { key: "", sign: async () => { throw new SwarmRefused("swarm-show-signs-nothing", "show holds no signer"); } };
   const wardRefusal = (e: unknown): unknown => (e instanceof Error && /^ward-/.test(e.message) ? new SwarmRefused(e.message.split(":")[0]!, e.message) : e);
-  if (opts.action !== "show") {
+  const handRecord = (opts.action === "lei-kui" || opts.action === "lei-unstring") && opts.args["signed"] !== undefined;
+  if (opts.action !== "show" && !handRecord) {
     const key = await loadPersonaGroupRootVerifyingKey(index);
     if (!key) throw new Error(`[ward-signer] this vessel holds no root at h${index}: a joinee signs as its device, never as the root`);
     signing = { key, sign: async (bytes) => {
@@ -48,7 +53,8 @@ export async function runSwarmVerb(opts: {
     } };
   }
   const str = (key: string): string => (typeof opts.args[key] === "string" ? opts.args[key] as string : "");
-  const request: SwarmRequest = opts.action === "show" ? { action: "show", ...(str("branch") ? { rite: opts.args["rite"] as SwarmLeiRite, branch: str("branch"), ...(str("head") ? { head: str("head") } : {}) } : {}) }
+  const request: SwarmRequest = handRecord ? { action: "lei-land", record: opts.args["signed"] }
+    : opts.action === "show" ? { action: "show", ...(str("branch") ? { rite: opts.args["rite"] as SwarmLeiRite, branch: str("branch"), ...(str("head") ? { head: str("head") } : {}) } : {}) }
     : opts.action === "cap-set" ? { action: "cap-set", value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
     : opts.action === "share-set" ? { action: "share-set", lane: str("lane"), value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
     // An unstring names its lei by cid; the hand signs the record and no co-sign waits.
