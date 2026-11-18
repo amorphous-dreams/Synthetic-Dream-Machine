@@ -132,7 +132,7 @@ describe.skipIf(wikiSkip)(`the rendered tiddler${skipNote}`, () => {
     const r = await rig([{ title: "Echo", type: "text/vnd.tiddlywiki", projection: "rendered", text: "x{{Echo.rendered}}" }]);
     await settle();
     await settle();
-    expect(r.writesOf("Echo.rendered").length).toBe(1);
+    expect(r.writesOf("Echo.rendered").map((w) => w["text"])).toEqual(["x"]);
     r.stop();
   }, 60_000);
 

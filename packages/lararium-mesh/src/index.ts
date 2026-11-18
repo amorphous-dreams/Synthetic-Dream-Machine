@@ -488,6 +488,7 @@ export * from "./promotion-approval.js";
 export * from "./kahu-cabal-admission.js";
 export * from "./kahu-canon-reach.js";
 export * from "./seat-startup-offer.js";
+export * from "./rendered-derives.js";
 export * from "./house-canon-doc.js";
 export * from "./floor-release.js";
 export * from "./floor-answer.js";
