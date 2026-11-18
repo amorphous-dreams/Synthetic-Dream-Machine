@@ -540,11 +540,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   meme: {
-    usage: "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
+    usage: "usage: lares meme <put | get | patch | list | delete | normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
     synopsis:
       "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: " +
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
-      "reach; `put` · `get` · `list` · `delete` · `project` to any other target, or from a `lar:` uri, ride " +
+      "reach; `put` · `get` · `patch` · `list` · `delete` · `project` to any other target, or from a `lar:` uri, ride " +
       "the daemon verb. Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
       "the named wiki; " +
       "`--bag` places into that bag and REFUSES when this island cannot write it; `--realm <id>` beside " +
@@ -552,7 +552,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "`--base` carries the " +
       "canonical hash last read — a record that moved past it CONFLICTS and nothing lands.",
     examples: [
-      "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # text on stdout, the base on stderr",
+      "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # the carrier on stdout (a pipe too), the base on stderr; --json for the envelope",
+      "lares meme patch lar:///ha.ka.ba/... --recipe lares --slot '#/x' --append note.txt --base <hash>  # one slot's body through the put's gate, resealed",
       "lares meme put lar:///ha.ka.ba/... --recipe lares --file note.mem     # land a framed meme through the gate",
       "lares meme list --recipe lares --tree                                  # every root the wiki resolves, each slot tree nested",
       "lares meme list --bag lares                                            # every root that one bag holds",
@@ -569,7 +570,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
       "--bag <slug>       a residency placement into that bag (refused when this island cannot write it)",
-      "--base <hash>      (put) the canonical hash last read; stale → conflict, nothing lands",
+      "--json             (get) the envelope {uri, text, canonicalHash}; the carrier otherwise, on a terminal or a pipe",
+      "--base <hash>      (put, patch) the canonical hash last read; required on patch; stale → conflict, nothing lands",
+      "--slot <#/name>    (patch) the slot whose body moves",
+      "--append <file>    (patch) a paragraph at the end of the slot's body",
+      "--replace <file>   (patch) the slot's whole body",
       "--if-match <hash>  (delete) the canonical hash last read; stale → conflict, nothing moves",
       "--file <path>      (put) the meme text (stdin when absent)",
       "--tree             (list) nest each root's slot tree; roots + canonical hash alone otherwise. " +
