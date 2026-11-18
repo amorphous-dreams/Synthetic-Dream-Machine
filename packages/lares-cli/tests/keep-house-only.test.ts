@@ -10,14 +10,18 @@
  *   H3  a plain export (no keep) over the checkout's workbench carries it as before, and names no `elsewhere`.
  */
 import { checkHouseTeardown } from "./support/check-house-teardown.js";
+import { plantKeptSeat } from "./support/kept-seat.js";
 import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { houseExport, type BundleDoors } from "../src/commands/house-bundle.js";
 import { verifyBundle } from "../src/bundle-manifest.js";
+
+// A restore opens the keep seat at the remote cost (`support/kept-seat.ts`): a case takes seconds, not milliseconds.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
 const F1 = "11111111-1111-4111-8111-111111111111";
 const tid = (title: string, text: string): string => `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`;
@@ -42,10 +46,11 @@ function doors(canonWikis: string): BundleDoors {
   };
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   house = openScratch({ gitConfig: "private" });
   root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "keep house-only suite\n");
+  await plantKeptSeat(root);
   out = join(root, "workspaces", "backup", "house");
   mkdirSync(dirname(out), { recursive: true });
   // House-only classes: the face's daemon working layer, its kahua stage, a user wiki's workbench, a minted bag.

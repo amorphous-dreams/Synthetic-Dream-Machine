@@ -14,9 +14,10 @@
  *   C7  a diverged id stands off (working through the gate, kahua by body digest) and never overwrites.
  *   C8  preview writes nothing; a re-declare row replays as fresh acts on an unnamed face.
  */
+import { plantKeptSeat } from "./support/kept-seat.js";
 import { checkHouseTeardown } from "./support/check-house-teardown.js";
 import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
-import { describe, test, expect, beforeEach, afterEach } from "vitest";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdirSync, mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync, readdirSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -31,6 +32,9 @@ import { openKeepSeat } from "../src/keep-seat.js";
 import { TEST_ROUTE_PASSPHRASE } from "../src/offline-custody.js";
 import type { CensusReading } from "../src/commands/census.js";
 import type { BundleKahuaHead } from "../src/bundle-manifest.js";
+
+// A restore opens the keep seat at the remote cost (`support/kept-seat.ts`): a case takes seconds, not milliseconds.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
 const F1 = "11111111-1111-4111-8111-111111111111";
 const F2 = "22222222-2222-4222-8222-222222222222";
@@ -124,10 +128,11 @@ function refound(over: Partial<BundleVesselFace> = {}): FakeVessel {
   return new FakeVessel([{ handleIndex: 0, petname: "hearth-one", relation: F2, ...over }], "new-grant");
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   house = openScratch({ gitConfig: "private" });
   root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "house bundle suite\n");
+  await plantKeptSeat(root);
   out = join(house.home, "export", "bundle");
   mkdirSync(dirname(out));
   seedHouse();

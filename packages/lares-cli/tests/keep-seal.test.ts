@@ -12,13 +12,17 @@
  *        moves; the bundle carries no loose key, so nothing else opens its roster.
  *   KS3  a re-cut of an unmoved house names the same bundle (the seat keeps its last seal, so an unmoved keep spends nothing).
  */
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { plantKeptSeat } from "./support/kept-seat.js";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import type { ShareEntry } from "@lararium/mesh";
 import { houseExport, houseImport, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
 import { walkBundle, bundleBytes, MANIFEST_FILE } from "../src/bundle-manifest.js";
+
+// A restore opens the keep seat at the remote cost (`support/kept-seat.ts`): a case takes seconds, not milliseconds.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
 const F1 = "11111111-1111-4111-8111-111111111111";
 const F2 = "22222222-2222-4222-8222-222222222222";
@@ -53,10 +57,11 @@ const oldFaces = (): BundleVesselFace[] => [
 ];
 const SHARES: ShareEntry[] = [{ slug: "notes", kind: "wiki", read: "kestrel-face", write: "otter-face", owner: "otter-face" } as ShareEntry];
 
-beforeEach(() => {
+beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "lar-keep-seal-"));
   writeFileSync(join(root, ".lar-test-scratch"), "keep seal suite\n");
   process.env["LAR_ROOT"] = root;
+  await plantKeptSeat(root);
   out = join(mkdtempSync(join(tmpdir(), "lar-keep-seal-out-")), "bundle");
   put("projections/faces/otter-face/wiki/ha.ka.ba/notes/pond.tid", tid("lar:///ha.ka.ba/notes/pond", "the pond at dusk"));
   put("projections/faces/kestrel-face/wiki/ha.ka.ba/notes/reed.tid", tid("lar:///ha.ka.ba/notes/reed", "a reed bends"));

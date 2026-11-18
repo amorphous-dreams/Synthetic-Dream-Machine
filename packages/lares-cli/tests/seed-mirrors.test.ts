@@ -37,9 +37,10 @@
  *   M24 a file no rule reads names itself and its reason in the lay's lines
  *   M25 HOUSE_IGNORED reaches the bundle: an export carries no `.git/` (a face root's own pool), a lay reads none
  */
+import { plantKeptSeat } from "./support/kept-seat.js";
 import { checkHouseTeardown } from "./support/check-house-teardown.js";
 import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
-import { describe, test, expect, beforeEach, afterEach } from "vitest";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, sep } from "node:path";
 import { createHash } from "node:crypto";
@@ -55,6 +56,9 @@ import type { BundleKahuaHead } from "../src/bundle-manifest.js";
 import { openBundle, readBundleSeat, verifyBundle } from "../src/bundle-manifest.js";
 import { openKeepSeat } from "../src/keep-seat.js";
 import { TEST_ROUTE_PASSPHRASE } from "../src/offline-custody.js";
+
+// A restore opens the keep seat at the remote cost (`support/kept-seat.ts`): a case takes seconds, not milliseconds.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
 const F1 = "11111111-1111-4111-8111-111111111111";
 const F2 = "22222222-2222-4222-8222-222222222222";
@@ -296,10 +300,11 @@ function refound(faces: Array<Partial<BundleVesselFace> & { handleIndex: number 
   return new FakeHouse(faces, "new-grant", F2);
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   house = openScratch({ gitConfig: "private" });
   root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "seed-mirrors suite\n");
+  await plantKeptSeat(root);
   out = join(house.home, "export", "bundle");
   mkdirSync(dirname(out));
   oldDisk();
