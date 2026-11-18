@@ -112,8 +112,9 @@ import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type D
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
 import { projectionRoots, workspaceRootsOf, FACES_PROJECTION_DIR, faceRoot } from "./bag-paths.js";
-import { armFacePoolWatch, shoreLookPorts, type FacePoolWatch } from "./watch-core.js";
-import { newRequestId } from "@lararium/mesh";
+import { armFacePoolWatch, type FacePoolWatch } from "./watch-core.js";
+import { islandIngestSubmit, poolIngestPorts } from "./ingest-scan.js";
+import { newRequestId, KAHUA_BAG } from "@lararium/mesh";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
@@ -936,6 +937,8 @@ async function prepareNodeBootOn(
   /** THE WORN FACE'S FOLDER under `faces/` (its pet-name segment, `faceSiteOf`): the face-rooted grants (margins, drafts, temp)
    *  read it at each mount; null while no face stands lit or its pet name makes no folder. */
   let wornFaceSegment: string | null = null;
+  /** THE WORN FACE'S DAEMON CANON BAG (`bags/daemon-<F>`), where it stands registered: the pool's `canon/` waves land there. */
+  let wornFaceCanonBag: string | null = null;
   /** THE WATCH over the worn face's pool (`watch-core`, face-pools W1, W2): armed at after-live, downed at teardown and stand-down. */
   let facePoolWatch: FacePoolWatch | null = null;
   /** The folder a face's pet name makes under `faces/`, or null (named in the log) where it makes none. The label names the pet
@@ -3483,6 +3486,7 @@ async function prepareNodeBootOn(
     // its bag stands registered (`standingDaemonCanonBag`), and the map names it before the canon's document moves a byte.
     const faceStandsLit = faceLit && !!personaGroupId && wornFaceProved;
     const canonBagId = standingDaemonCanonBag({ lit: faceStandsLit, faceRelation: wornRelation });
+    wornFaceCanonBag = canonBagId && wornRelation ? canonBagId : null;
     const faceWikiBags = wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}) });
     // A house canon bag in this set never seals under the face: the map skips it (`sealedBagMap`, cap-tier.mem house canon).
     sealedCells.bags = () => faceWikiBags.sealed;
@@ -4612,17 +4616,23 @@ async function prepareNodeBootOn(
     const stopPromoteWatch = promoteWiringRef?.watch();
     if (stopPromoteWatch) stood.push({ what: "the promote watcher", down: stopPromoteWatch });
     // THE WATCH OVER THE WORN FACE'S POOL (face-pools W1, W2): armed here, off the boot path (the arm hands back at once), over
-    // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and hands each settled wave to the daemon island's
-    // disk shore (`shoreLookPorts`). A teardown (a lock, or a wear that moves the mount) sets the face down: the final wave,
-    // then the pool's commit seam; the stand-down runs the same as a down (`facePoolStandDown`).
+    // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and lands each settled wave by itself
+    // (`poolIngestPorts`): an UNATTENDED INGEST wave per plane on the daemon island (`islandIngestSubmit`), the working layer
+    // under `wiki/`, the face's daemon canon under `canon/`, the kahua stage under `stage/`, each where the island grants
+    // its mirror. A stand-off (both moved, or no base over records that say something else), a vanish and a margin go to the
+    // island's disk shore (`shore` op `sense`). A teardown (a lock, or a wear that moves the mount) sets the face down: the
+    // final wave, then the pool's commit seam; the stand-down runs the same as a down (`facePoolStandDown`).
     if (wornFaceSegment !== null) {
       const pool = faceRoot(larProjectionsHome(), wornFaceSegment);
+      const requestedBy = `0x${activeAtom?.key ?? ""}`;
       const sense = (uris?: readonly string[]): Promise<unknown> => islandAsk(daemonHolder)((ports) => askIslandVerb({
         ...ports, verb: "shore", args: { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) },
-        requestedBy: `0x${activeAtom?.key ?? ""}`, requestId: newRequestId(),
+        requestedBy, requestId: newRequestId(),
       })).answer;
+      const submit = islandIngestSubmit((verb, args, requestId) => islandAsk(daemonHolder)((ports) => askIslandVerb({ ...ports, verb, args, requestedBy, requestId })).answer);
       const log = (line: string): void => console.log(`[faces] ${line}`);
-      const watch = armFacePoolWatch({ pool, ports: shoreLookPorts(pool, sense, log), log });
+      const bags = { wiki: DAEMON_WORKING_SLOT, stage: KAHUA_BAG, ...(wornFaceCanonBag !== null ? { canon: wornFaceCanonBag } : {}) };
+      const watch = armFacePoolWatch({ pool, ports: poolIngestPorts({ pool, bags, submit, sense, did: requestedBy, log }), log });
       facePoolWatch = watch;
       stood.push({ what: "the face pool's watch", down: async () => { await watch.down("lock"); if (facePoolWatch === watch) facePoolWatch = null; } });
     }
