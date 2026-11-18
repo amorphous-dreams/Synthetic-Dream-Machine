@@ -1,0 +1,70 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/provenance-publication`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils/provenance-publication"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/provenance-publication"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "optional custody, rights, attribution and release procedure"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/bearing`>>
+! Provenance and Publication
+
+Record the origin, permissions, edits and distribution conditions for each public derivative. File availability, visual resemblance and attribution text do not themselves grant reproduction rights. Preserve the distinction between artwork content and publication metadata.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/record`>>
+!! Record the source and handoff
+
+* Identify the original creator and source when supported by evidence.
+* Record license, permissions, conditions, restrictions and unresolved rights separately.
+* Name human and model contributions accurately: generation, interpretation, selection, compositing, typesetting and other edits.
+* Record operator approval for publication; approval to edit is not automatically permission to distribute.
+* Preserve a source or editable master where authorized; identify each flattened export and its crop, color profile and dimensions.
+* Carry required credits and exact links in each publication context that needs them. A caption, file metadata and embedded graphic may separate when reposted.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/card`>>
+!! Release card
+
+```toml
+[work]
+title = "work title"
+source = "stable reference or unknown"
+creator = "verified creator or unknown"
+rights = "documented grant and terms; otherwise unresolved"
+contributions = ["record human and model actions"]
+editable_master = "verified artifact reference"
+publication_image = "verified export reference"
+credit = "exact attribution and any required links"
+alt_text = "description of final visible image"
+platform_requirements = "verified limits and crop policy"
+release_approval = "operator authorization"
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/checks`>>
+!! Before publication
+
+* Verify literal credit strings and URLs. Generated typography may misspell them; use direct typesetting or inspection where needed.
+* Describe the actual image in alt text. Attribution and alt text serve different purposes.
+* Identify simulated media as appearances unless manufacture is documented.
+* Check crop, dimensions, color, platform character limits and accessibility against the final export.
+* Do not claim that uploading, generating or packaging an export means it has been posted.
+* Where rights or source statements conflict, retain the uncertainty and obtain an appropriate ruling.
+
+Refer to [[Reference Roles|ha.ka.ba/lares/api/art-sigils/reference-roles]] and [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]].
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZSTL8JLVmHFwRfDXo0_WxaTYvue2tb_wXmLNQZZRDSA`>>
+<<^ code=`&#x0004;` to=`?`>>
