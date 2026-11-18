@@ -35,6 +35,7 @@ import {
   type DaemonMsg_WorldlineTrajectoryRequest,
   type BatchMode,
   type Verb,
+  type Hand,
   type CapabilityVerifier,
   type CaptureEngine,
   type CapturePost,
@@ -199,6 +200,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv)) } : {}),
         localOf: (inv: Verb) => localAsks.has(inv),
         surfaceOf: (inv: Verb) => localAsks.isSurface(inv),
+        askerOf: (inv: Verb) => localAsks.askerOf(inv),
       });
       _dispatcher.start();
       // A local id serves its own invocation alone: it retires once the verb concludes and its tiddler leaves the VM.
@@ -244,7 +246,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
             ...(msg.face      ? { face:       msg.face                  } : {}),
           });
-          if (placedAskIsLocal(msg)) localAsks.add({ requestId: placed, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy, origin: msg.origin === "surface" ? "surface" : "channel" });
+          if (placedAskIsLocal(msg)) localAsks.add({ requestId: placed, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy, origin: msg.origin === "surface" ? "surface" : "channel", ...(msg.asker ? { asker: msg.asker } : {}) });
         }
         return true;
       }
@@ -380,7 +382,11 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
 }
 
 /** One placed ask, as the local book reads it: its id and the act it names. */
-export interface LocalAsk { readonly requestId: string; readonly action: string; readonly args: unknown; readonly requestedBy: string; readonly origin?: "channel" | "surface" }
+export interface LocalAsk {
+  readonly requestId: string; readonly action: string; readonly args: unknown; readonly requestedBy: string; readonly origin?: "channel" | "surface";
+  /** The asker's hand the vessel's door read (`DaemonMsg_PlaceVerb.asker`); booked with the act, lent to no other. */
+  readonly asker?: Hand;
+}
 
 /**
  * THE LOCAL ASKS, each the exact invocation the vessel's channel or a surface leg placed, standing only while it does
@@ -399,14 +405,16 @@ export function makeLocalAskBook(bound = 4096): {
   add(ask: LocalAsk): void;
   has(ask: LocalAsk): boolean;
   isSurface(ask: LocalAsk): boolean;
+  askerOf(ask: LocalAsk): Hand | undefined;
   onWikiChange(changes: Record<string, { deleted?: boolean }>): void;
 } {
-  const acts = new Map<string, { act: string; origin?: "channel" | "surface" }>();
+  const acts = new Map<string, { act: string; origin?: "channel" | "surface"; asker?: Hand }>();
   const actOf = (ask: LocalAsk): string => canonicalJson([ask.action, JSON.parse(JSON.stringify(ask.args ?? {})), ask.requestedBy]);
   return {
-    add: (ask) => { acts.delete(ask.requestId); acts.set(ask.requestId, { act: actOf(ask), ...(ask.origin ? { origin: ask.origin } : {}) }); if (acts.size > bound) acts.delete(acts.keys().next().value as string); },
+    add: (ask) => { acts.delete(ask.requestId); acts.set(ask.requestId, { act: actOf(ask), ...(ask.origin ? { origin: ask.origin } : {}), ...(ask.asker ? { asker: ask.asker } : {}) }); if (acts.size > bound) acts.delete(acts.keys().next().value as string); },
     has: (ask) => acts.get(ask.requestId)?.act === actOf(ask),
     isSurface: (ask) => { const entry = acts.get(ask.requestId); return entry?.origin === "surface" && entry.act === actOf(ask); },
+    askerOf: (ask) => { const entry = acts.get(ask.requestId); return entry !== undefined && entry.act === actOf(ask) ? entry.asker : undefined; },
     onWikiChange: (changes) => {
       for (const [title, change] of Object.entries(changes)) {
         if (change?.deleted && title.startsWith(VERB_URI_PREFIX)) acts.delete(title.slice(VERB_URI_PREFIX.length));

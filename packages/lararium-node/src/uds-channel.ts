@@ -124,7 +124,7 @@ export interface UdsChannelOptions {
    * document, which this channel awaits through `control`. For a session call, the seat supplies
    * `requestedBy` from the verified presenter and `face` from the verified proof subject.
    */
-  readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; ordinal?: number; effectKey?: string }) => void;
+  readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; ordinal?: number; asker?: Hand; effectKey?: string }) => void;
   /** The ask under this id concluded here (its outcome read, or its wait ended): main's booking for it retires. */
   readonly retireAsk?: (requestId: string) => void;
   /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
@@ -221,6 +221,9 @@ interface Invocation {
   face?: string;
   /** The session's face on this vessel (its ordinal); set by the session door alone, never read off a frame. */
   ordinal?: number;
+  /** The asker's hand as this door read it (the session's own hand, or `seat`/`cli` off the one-shot line's seat kind); set
+   *  by the door alone, never read off a frame, and handed to the placed ask so the reactor's context names it. */
+  asker?: Hand;
 }
 
 /** A read-only receipt query — `{op:"receipt", requestId}`. Never reaches `placeVerb`; see H1. */
@@ -872,6 +875,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       requestId,
       ...(inv.face !== undefined && { face: inv.face }),
       ...(inv.face !== undefined && inv.ordinal !== undefined && { ordinal: inv.ordinal }),
+      ...(inv.asker !== undefined && { asker: inv.asker }),
       ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
     });
     try { return await awaitOutcome(inv.verb, requestId, inv.timeoutMs); }
@@ -1137,7 +1141,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       const closed = () => resolve();
       sock.once("close", closed);
       handle({ verb: frame["verb"], args, requestId: faceScopedId(face, requestId),
-        requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject, ordinal: state.supply!.ordinal,
+        requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject, ordinal: state.supply!.ordinal, asker: state.hand ?? "cli",
         ...(typeof frame["effectKey"] === "string" && { effectKey: faceScopedId(face, frame["effectKey"]) }),
         ...(typeof frame["timeoutMs"] === "number" && { timeoutMs: frame["timeoutMs"] }) }, sock, requestId,
         () => { sock.off("close", closed); resolve(); }, chore?.ok ? chore.mark : undefined);
@@ -1396,6 +1400,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       const oneShot = { ...(parsed as Invocation) };
       delete oneShot.face;
       delete oneShot.ordinal;
+      delete oneShot.asker;
       const inv: Invocation = sessionRequestId === undefined ? oneShot : parsed as Invocation;
       if (!inv.verb || !inv.requestedBy) return fail("verb + requestedBy required");
       // A ROW THAT ACTS AS A FACE RIDES THAT FACE'S SESSION: the maintenance frame carries no face, so it serves none.
@@ -1419,6 +1424,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // naming a face outside the set refuses by name before any dispatch; the operator's hand (no seat kind) names any open
         // face. The set reads async, so the check rides this deferred tick, and only where a seat names a face.
         const seat = seatKindOf(parsed);
+        // THE ASKER THE DOOR READ rides the placed ask (`ctx.asker`): the one-shot line's seat kind, `cli` without one.
+        if (sessionRequestId === undefined) inv.asker = seat !== null ? "seat" : "cli";
         const named = namedFaceOf(inv.args);
         const mount = mountOf();
         // NO SILENT STEWARD (`chore-face`): a one-shot chore designates its face (the face it names, or with none named the

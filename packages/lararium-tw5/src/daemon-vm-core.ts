@@ -89,6 +89,7 @@ import {
   type DaemonMsg_ResidencyOp,
   type DaemonMsg_WikiAlert,
   type BatchMode,
+  type Hand,
   type IslandMsg_Ea,
   type IslandMsg_TeardownAck,
   isTeardownFault,
@@ -217,6 +218,8 @@ export interface VesselPlaceVerbRequest {
   face?:        string;
   /** The session's face on this vessel (its ordinal), beside `face`; a session seat alone supplies it. */
   ordinal?:     number;
+  /** The asker's hand the vessel's door read (`seat`, `cli`, `tab`); the island books it with the act (`ctx.asker`). */
+  asker?:       Hand;
   requestId?:   string;
   targets?:     readonly string[];
   batchMode?:   string;
@@ -903,6 +906,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         ...(o.listenable      ? { listenable: o.listenable } : {}),
         ...(o.effectKey       ? { effectKey: o.effectKey } : {}),
         ...(o.face            ? { face: o.face } : {}),
+        ...(o.asker           ? { asker: o.asker } : {}),
       }));
     },
     placeTelemetry: (turnText: string, sourceFile: string, frontier?: readonly string[], turnKey?: string, chunkIndex?: number) => {

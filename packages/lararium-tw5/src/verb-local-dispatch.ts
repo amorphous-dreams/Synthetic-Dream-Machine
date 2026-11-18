@@ -17,6 +17,7 @@ import {
   type CapabilityVerifier,
   type CompositeStore,
   type Verb,
+  type Hand,
 } from "@lararium/mesh";
 import { wikiSlugOfBag } from "@lararium/mesh";
 import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
@@ -34,6 +35,8 @@ export interface RunLocalVerbOptions {
   readonly surfaceOf?: (invocation: Verb) => boolean;
   /** The face a session wore for this ask, as the vessel's main thread booked it; absent where none. */
   readonly wornOf?: (invocation: Verb) => SessionWorn | undefined;
+  /** The asker's hand the island booked for this ask (`VerbContext.asker`); absent where none. */
+  readonly askerOf?: (invocation: Verb) => Hand | undefined;
 }
 
 export function makeCapVerify(verifier: CapabilityVerifier | undefined, requestedBy: string, local = false): CapVerify {
@@ -176,5 +179,6 @@ export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions):
   const local = opts.localOf?.(invocation) ?? false;
   const cap = makeCapVerify(opts.verifier, presenter, local);
   const worn = opts.wornOf?.(invocation);
-  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, surface: opts.surfaceOf?.(invocation) === true, ...(worn ? { worn } : {}), ...(opts.signal ? { signal: opts.signal } : {}) });
+  const asker = opts.askerOf?.(invocation);
+  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, surface: opts.surfaceOf?.(invocation) === true, ...(worn ? { worn } : {}), ...(asker ? { asker } : {}), ...(opts.signal ? { signal: opts.signal } : {}) });
 }

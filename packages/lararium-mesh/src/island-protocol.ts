@@ -62,6 +62,7 @@
 
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { FaceAnchor } from "./face-anchor.js";
+import type { Hand } from "./session-contract.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
@@ -400,6 +401,12 @@ export interface DaemonMsg_PlaceVerb {
   args: Record<string, unknown>;
   requestedBy: string;
   face?: string;
+  /**
+   * The asker's hand as the vessel's own door read it (`seat` off a seat-marked line, `cli` for the operator's line, a
+   * session's own hand). Absent for an ask no door read (content, a synced summons). The island books it with the act and
+   * hands it to the reactor as `ctx.asker`; nothing reads it off args, a payload or a tiddler.
+   */
+  asker?: Hand;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -1314,6 +1321,7 @@ export function mkDaemonPlaceVerb(opts: {
   args: Record<string, unknown>;
   requestedBy: string;
   face?: string;
+  asker?: Hand;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -1335,6 +1343,7 @@ export function mkDaemonPlaceVerb(opts: {
   if (opts.listenable)       msg.listenable = opts.listenable;
   if (opts.effectKey)        msg.effectKey  = opts.effectKey;
   if (opts.face)             msg.face       = opts.face;
+  if (opts.asker)            msg.asker      = opts.asker;
   return msg;
 }
 

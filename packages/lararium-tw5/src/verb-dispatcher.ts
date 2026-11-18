@@ -43,6 +43,7 @@
 
 import {
   type Verb,
+  type Hand,
   type CompositeStore,
   type CapabilityVerifier,
   type VerbTargetResult,
@@ -76,6 +77,12 @@ export interface VerbContext {
    * delegate, a payload or a tiddler.
    */
   readonly worn?: SessionWorn;
+  /**
+   * The asker's hand (`seat`, `cli`, `tab`), as the vessel's own door read it and the island booked it with the act. Absent
+   * for an ask no door read (a synced summons, content). A house canon write door refuses a `seat` asker by name
+   * (`seat-canon-reach`); never read off args, a payload or a tiddler.
+   */
+  readonly asker?: Hand;
   readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
 }
 
@@ -276,6 +283,8 @@ export interface VerbDispatcherOptions {
   /** True for a verb the vessel's own presence channel took; the verifier reads it as `channel: "local"`. */
   readonly localOf?: (invocation: Verb) => boolean;
   readonly surfaceOf?: (invocation: Verb) => boolean;
+  /** The asker's hand the island booked for this exact act; absent where no door read one. */
+  readonly askerOf?: (invocation: Verb) => Hand | undefined;
   /** Route a verb to main. `signal` aborts when the dispatcher gives up on the ask (a mount that timed out), so the router drops what it holds for it. */
   readonly routeFn?:  (invocation: Verb, signal?: AbortSignal) => Promise<Record<string, unknown>>;
 }
@@ -336,6 +345,7 @@ export class VerbDispatcher {
         ...(this.opts.presenterOf ? { presenterOf: this.opts.presenterOf } : {}),
         ...(this.opts.localOf ? { localOf: this.opts.localOf } : {}),
         ...(this.opts.surfaceOf ? { surfaceOf: this.opts.surfaceOf } : {}),
+        ...(this.opts.askerOf ? { askerOf: this.opts.askerOf } : {}),
       });
     }
     if (this.opts.routeFn) {
