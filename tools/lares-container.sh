@@ -367,10 +367,12 @@ tty_flag() { if [ -z "$HAVE_TTY" ]; then printf -- '-T'; fi; }
 # THE ATTACH READS BOTH ENDS. Piped stdin never attaches; and a piped stdout never attaches either, since a pseudo-
 # terminal would fold stderr into stdout and turn every newline into CRLF, so `lares … --json | jq` would read noise.
 
-# DISPLAY AND DEBUG RIDE BY NAME. Each of these the caller's environment sets crosses into the vessel as `-e NAME`
-# (compose reads the value from this environment), so no value rides argv; no other name crosses, and no credential.
+# DISPLAY, DEBUG AND THE SEAT MARK RIDE BY NAME. Each of these the caller's environment sets crosses into the vessel as
+# `-e NAME` (compose reads the value from this environment), so no value rides argv; no other name crosses, and no
+# credential. The harness marks (CLAUDECODE, CODEX_SANDBOX, CODEX_SANDBOX_NETWORK_DISABLED) make the CLI ask as an AI
+# seat (#231's seat-canon-reach); a process's ancestry cannot cross the container boundary, so the mark is its one carrier.
 pass_env() {
-  for name in NO_COLOR TERM COLORTERM LARES_DEBUG; do
+  for name in NO_COLOR TERM COLORTERM LARES_DEBUG CLAUDECODE CODEX_SANDBOX CODEX_SANDBOX_NETWORK_DISABLED; do
     eval "isset=\${$name+x}"
     if [ -n "$isset" ]; then printf -- '-e %s ' "$name"; fi
   done
