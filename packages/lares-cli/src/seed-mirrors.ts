@@ -226,7 +226,7 @@ export interface MirrorSeedResult {
 // ── kahua pending ──────────────────────────────────────────────────────────────────────────────────────────────
 
 export const KAHUA_PENDING_FILE = "kahua-pending.json";
-const KAHUA_PENDING_SCHEMA = "lar-kahua-pending/1";
+const KAHUA_PENDING_SCHEMA = "lar-kahua-pending";
 
 /** `<root>/config/kahua-pending.json`: the config class survives a restart and a reset, and never sits in the hearth. */
 export function kahuaPendingPath(): string {
