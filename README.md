@@ -163,7 +163,7 @@ lares vessel lay                            # the standing house reads the works
 
 #### The seal merge driver
 
-Two branches that each re-seal one carrier conflict on its `bcc=` seal line even when their bodies merge clean. `.gitattributes` routes `*.mem` through `tools/mem-merge-driver.mjs`, which re-seals a seal-only conflict and leaves every other conflict standing. Install it once per clone, from the checkout root, after a build:
+Two branches that each re-seal one carrier conflict on its `bcc=` seal line even when their bodies merge clean. `.gitattributes` routes `*.mem` through `tools/mem-merge-driver.mjs`, which re-seals a seal-only conflict and leaves every other conflict standing. `pnpm build` ends with `lares repo tend`, which seats the driver in the clone's shared git config (every worktree of the clone reads it) and says `set` or `already set` for each key; run `lares repo tend` again any time to check. The keys it writes:
 
 ```sh
 git config merge.mem-seal.name "a .mem conflict on its seal alone re-seals"
