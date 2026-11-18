@@ -4240,9 +4240,11 @@ async function prepareNodeBootOn(
     // one would strip the engine and plugin blobs of their only guard and let the vessel eat its own
     // genesis. A manifest that stands and will not read withholds the sweep entirely; an ABSENT manifest
     // keeps its empty set, because a vessel holding no manifest holds no genesis blobs to lose.
-    const genesisProtect = genesisProtectSet(genesisDir);
+    // The STORED oracle island joins the set: the vessel reloads it under its fixed doc id and serves grammar and
+    // floor from the blobs it names, blobs a rebuilt image's seed need not name. The set reads the union.
+    const genesisProtect = genesisProtectSet(genesisDir, assembly.islandHandle.doc());
     if (genesisProtect === "unreadable") {
-      console.warn("[cas-sweep] the genesis seed stands but will not derive — withholding the sweep. Nothing sweeps until it reads, so no genesis blob can age out unprotected. Repair or remove the malformed seed.");
+      console.warn("[cas-sweep] the genesis seed or the stored oracle island stands but will not derive — withholding the sweep. Nothing sweeps until both read, so no genesis blob can age out unprotected. Repair or remove the malformed seed.");
     } else {
       // M7″: `storeClaim.bootEpoch` is REQUIRED on a vessel-held claim (never undefined, never a guessed
       // 0) — the epoch THIS vessel's own boot bumped once, at claim time (step 0, above). Epoch 0 HOLDS
