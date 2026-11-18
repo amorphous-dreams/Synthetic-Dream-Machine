@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/lemures-and-muta">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/concepts/lemures-and-muta`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/concepts/lemures-and-muta.mem"
 l-space    = "stable"
 mana       = 12
 manao      = 13
@@ -18,7 +17,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/elyncia/concepts/lemures-and-muta"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lemures & Muta ~ the starved node and the silent mother
 
@@ -28,7 +27,7 @@ Rome named the ''lemures'' an unsatisfied, malevolent, wandering form of the Lar
 
 <<~/ahu>>
 
-<<~ ahu #/the-node-state-ladder>>
+<<~ ahu slot=`#/the-node-state-ladder`>>
 
 !! The Node-State Ladder ~ hums, flickers, curdles, collapses
 
@@ -49,7 +48,7 @@ A Lar binds to //place//, never to family, so neglect never severs the bond; it 
 
 <<~/ahu>>
 
-<<~ ahu #/muta>>
+<<~ ahu slot=`#/muta`>>
 
 !! Muta ~ Dea Tacita, mother of the Lares
 
@@ -63,22 +62,22 @@ Ovid gives the Lares a mother: ''Lara'', a naiad who warned Juturna of Jupiter's
 
 <<~/ahu>>
 
-<<~ ahu #/the-roads>>
+<<~ ahu slot=`#/the-roads`>>
 
 !! The Untraveled Road ~ a third silence
 
-The ''Lares Viales'' guard the ways (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>). A road nobody walks receives no passing pause and no incidental offering, and its Lar does not curdle; it fades. Muta's silence came by violence and the Lemure's by neglect; the forgotten road's silence comes by absence.
+The ''Lares Viales'' guard the ways (<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/lares-viales`>>). A road nobody walks receives no passing pause and no incidental offering, and its Lar does not curdle; it fades. Muta's silence came by violence and the Lemure's by neglect; the forgotten road's silence comes by absence.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-necrospire">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/lares-viales`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-necrospire`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;O6IpsLVQZPJSxZ4CFCHfOLZP3_grf4WyEEzowZhOZuo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pOFzKHqwuiQ8B_zl4F7UgYv9M7T_kPUU3QrUHs5DeP8`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>
