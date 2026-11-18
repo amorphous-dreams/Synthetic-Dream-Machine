@@ -3,21 +3,21 @@
  * operator to the Stable founding act (`lares found --hearth --name '<label>'`), which founds persona zero with the hearth;
  * it never names `persona new 0` there.
  */
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { cmdPersona } from "../src/commands/persona.js";
 
 describe("persona new on a place with no face", () => {
-  let house: IsolatedHouse;
+  let house: Scratch;
   beforeEach(() => {
-    house = openIsolatedHouse();
+    house = openScratch();
     writeFileSync(join(house.root, ".lar-test-scratch"), "");
   });
   afterEach(() => {
     vi.restoreAllMocks();
-    house.close();
+    closeScratch(house);
   });
 
   test("the refusal names `lares found --hearth --name`, never `persona new 0`", async () => {

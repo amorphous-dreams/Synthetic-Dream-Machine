@@ -13,7 +13,7 @@
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { cpSync, existsSync, writeFileSync } from "node:fs";
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { join } from "node:path";
 import { cmdVessel } from "../src/commands/vessel.js";
 import { cmdPersona } from "../src/commands/persona.js";
@@ -32,12 +32,12 @@ const lastJson = (lines: string[]): Record<string, any> =>
   JSON.parse(lines.filter((l) => l.trim().startsWith("{")).at(-1) ?? "{}");
 
 describe("lares vessel found --hearth", () => {
-  let house: IsolatedHouse;
+  let house: Scratch;
   let root: string;
   let wire: string[];
   beforeEach(() => {
     seatReadBackStandIn(true); // Explicit harness authority for the positive founding/read-back controls.
-    house = openIsolatedHouse();
+    house = openScratch();
     root = house.root;
     cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
     wire = [];
@@ -48,7 +48,7 @@ describe("lares vessel found --hearth", () => {
   afterEach(() => {
     seatReadBackStandIn(false);
     vi.restoreAllMocks();
-    house.close();
+    closeScratch(house);
   });
 
   test("D1 — on a staged root it answers the AID, one seat, PRIVATE, and the stood-in card's code; persona zero stands", async () => {

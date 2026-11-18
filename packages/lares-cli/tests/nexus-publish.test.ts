@@ -17,7 +17,7 @@ import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 seatSuiteWard();
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { cpSync, mkdirSync, writeFileSync } from "node:fs";
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { join } from "node:path";
 import { sha256HexBytesSync } from "@lararium/mesh";
 import { cmdNexus } from "../src/commands/nexus.js";
@@ -51,13 +51,13 @@ function offeringSourceDir(root: string): string {
 }
 
 describe("lares nexus publish — the operator's own collection, apart from the ratchets", () => {
-  let house: IsolatedHouse;
+  let house: Scratch;
   let root: string;
   let errs: string[];
   let logs: string[];
 
   beforeEach(() => {
-    house = openIsolatedHouse();
+    house = openScratch();
     root = house.root;
     errs = []; logs = [];
     vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { errs.push(a.join(" ")); });
@@ -65,7 +65,7 @@ describe("lares nexus publish — the operator's own collection, apart from the 
   });
   afterEach(() => {
     vi.restoreAllMocks();
-    house.close();
+    closeScratch(house);
   });
 
   test("★ `publish plugins` with no --source refuses through usage, never genesis ★", async () => {

@@ -9,7 +9,7 @@
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { join } from "node:path";
 import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
@@ -19,13 +19,13 @@ const run = (positional: string[], options: Record<string, string> = {}): Parsed
   ({ command: "nexus", positional, options, flags: { json: true } } as unknown as ParsedArgs);
 
 describe("lares nexus cabal", () => {
-  let house: IsolatedHouse;
+  let house: Scratch;
   let root: string;
   let said: string[];
   const saved: Record<string, string | undefined> = {};
   const ENV = ["LAR_SEAL_HOME", "LAR_DATA_DIR"];
   beforeEach(() => {
-    house = openIsolatedHouse();
+    house = openScratch();
     root = house.root;
     for (const k of ENV) { saved[k] = process.env[k]; process.env[k] = root; }
     said = [];
@@ -36,7 +36,7 @@ describe("lares nexus cabal", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     for (const k of ENV) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]!; }
-    house.close();
+    closeScratch(house);
   });
   const answer = async (a: ParsedArgs): Promise<{ code: number; out: string }> => {
     said = [];

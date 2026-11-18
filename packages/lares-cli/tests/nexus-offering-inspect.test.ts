@@ -1,7 +1,7 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cpSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -20,15 +20,15 @@ vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 const args = (positional: string[], flags: Record<string, boolean> = {}): ParsedArgs =>
   ({ command: "nexus", positional, options: {}, flags } as unknown as ParsedArgs);
 
-let house: IsolatedHouse;
+let house: Scratch;
 let root: string;
 
 beforeEach(() => {
-  house = openIsolatedHouse();
+  house = openScratch();
   root = house.root;
 });
 afterEach(() => {
-  house.close();
+  closeScratch(house);
 });
 
 /** An UNSIGNED offering source directory (H3, F2-3) — `offering.json` plus the one blob's bytes

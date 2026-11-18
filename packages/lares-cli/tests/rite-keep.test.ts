@@ -15,7 +15,7 @@
  *       keep lei already stands, else h0), names it on every row and in its answer; a named `--face N` rides as named; the lei
  *       hint names the keep's face.
  */
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -25,7 +25,7 @@ import type { RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { RiteUsage, keepPlan } from "../src/commands/rite.js";
 import { parseArgs } from "../src/parse-args.js";
 
-let house: IsolatedHouse;
+let house: Scratch;
 let root: string;
 const TESSERA = "e".repeat(64), LEI = "d".repeat(64);
 
@@ -70,7 +70,7 @@ const workspace = (): string => join(root, "workspaces", "backup");
 const refusal = async (run: Promise<unknown>): Promise<string> => run.then(() => "no refusal", (e: unknown) => (e instanceof KeepRefused ? e.code : `threw ${String(e)}`));
 
 beforeEach(() => {
-  house = openIsolatedHouse();
+  house = openScratch();
   root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "keep suite\n");
   mkdirSync(join(root, "hearth"), { recursive: true });
@@ -78,7 +78,7 @@ beforeEach(() => {
   writeFileSync(join(workspace(), ".git", "HEAD"), "ref: refs/heads/main\n");
   writeFileSync(join(workspace(), "README.md"), "the operator's own backup repo\n");
 });
-afterEach(() => { house.close(); });
+afterEach(() => { closeScratch(house); });
 
 describe("the keep rite, vessel half", () => {
   test("K0 RED: the bundle the keep cuts names its format, never counts it: `lar-house-bundle`, no `/N`; CONTROL: a manifest under the numbered name refuses, with no back-compat reader", () => {

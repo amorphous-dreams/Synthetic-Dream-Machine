@@ -2,7 +2,7 @@
  * A locked `persona list` prints the public indices the floor index names and nothing a face keeps private; a face that
  * unlocks shows its name. A vessel with no face standing has nothing to show and refuses naming the unlock.
  */
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { cpSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -13,10 +13,10 @@ import { seatedCustody } from "@lararium/node";
 vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
 describe("a locked persona list", () => {
-  let house: IsolatedHouse;
+  let house: Scratch;
   let root: string;
   beforeEach(async () => {
-    house = openIsolatedHouse();
+    house = openScratch();
     root = house.root;
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -26,7 +26,7 @@ describe("a locked persona list", () => {
   });
   afterEach(() => {
     vi.restoreAllMocks();
-    house.close();
+    closeScratch(house);
   });
 
 
