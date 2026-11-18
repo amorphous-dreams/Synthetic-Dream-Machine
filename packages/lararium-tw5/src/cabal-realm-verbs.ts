@@ -28,6 +28,7 @@
 
 import {
   realmLeaseSlotsFromBoard, realmFeedWrite, realmFeedSlotValue, cabalRealmMaintenanceProvenance, readFaceLeafBond, readRealmFeedAsk, VerbRefusal,
+  CONTROL_HOME_ID, defaultCryptoProvider, sha256Hex,
   type LarTiddlerStore, type LarTiddlerRecord, type LarDoc,
 } from "@lararium/mesh";
 import { storedRecord, type StoredTiddlers } from "@lararium/mesh";
@@ -39,6 +40,13 @@ export type ResolveDaemonStore = () => Promise<LarTiddlerStore>;
 export interface CabalRealmVerbOptions {
   readonly resolveStore: ResolveDaemonStore;
 }
+
+/**
+ * THE FEED'S DEVICE-LOCAL RECEIPTS (K20): `<control home>/ledger/realm-feed/<requestId>`, in the vessel's control document,
+ * which no peer syncs and no mirror names. Each names the realm, the epoch its roll reached and the sha-256 of the slot it
+ * rolled, and never the leaf or the presenting face: the owner who holds the leaf proves the tie by recomputing the digest.
+ */
+export const REALM_FEED_RECEIPT_PREFIX = `${CONTROL_HOME_ID}/ledger/realm-feed/`;
 
 /** A 64-hex realm doc id — a stray value never becomes a lease prefix. */
 const REALM_RE = /^[0-9a-f]{64}$/;
@@ -87,7 +95,8 @@ export function makeRealmFeedReactor(opts: CabalRealmVerbOptions): VerbReactor {
       : readFaceLeafBond(args["bond"], { presenter: context.presenter, writer, realm });
     if (!bond.ok) throw new VerbRefusal("writer-not-presenter", `writer-not-presenter: realm-feed's writer is bound to the presenter by its face→leaf bond (${bond.reason})`);
     // THE PRESENT HAND: the bond's atom signed this very request, so no bond replays as a feed.
-    if (!readRealmFeedAsk(args["askSig"], bond.bond, context.invocation?.requestId ?? "")) {
+    const requestId = context.invocation?.requestId ?? "";
+    if (!readRealmFeedAsk(args["askSig"], bond.bond, requestId)) {
       throw new VerbRefusal("feed-ask-unsigned", "feed-ask-unsigned: a feed carries its face's signature over its own request; a bond alone proves no present hand");
     }
     // The slot lands under the bond's own spelling of the leaf: one leaf, one slot.
@@ -102,6 +111,15 @@ export function makeRealmFeedReactor(opts: CabalRealmVerbOptions): VerbReactor {
       meta: { authority: "lares-verb" },
     };
     await store.put(next, { kind: "lares-verb", requestId: `realm-feed-${realm.slice(0, 8)}-${feed.epoch}` });
+
+    // THE RECEIPT LANDS RIGHT AFTER THE SLOT, under this feed's own request id, so a receipt that stands says its slot
+    // landed. It rests on this device alone (the control document), and names the roll by the slot's digest, not its leaf.
+    const slotDigest = await sha256Hex(new TextEncoder().encode(feed.slotUri), defaultCryptoProvider);
+    const receipt: LarTiddlerRecord = {
+      tiddler: { title: `${REALM_FEED_RECEIPT_PREFIX}${requestId}`, realm, epoch: String(feed.epoch), "slot-digest": slotDigest } as LarTiddlerRecord["tiddler"],
+      meta: { authority: "lares-verb" },
+    };
+    await store.put(receipt, { kind: "lares-verb", requestId });
 
     // THE ANSWER PAIRS NOTHING: an outcome names its presenter, so it carries neither the leaf nor the epoch the slot
     // carries; the clock reads the slots.
