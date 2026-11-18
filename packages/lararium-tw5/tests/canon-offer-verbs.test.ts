@@ -13,7 +13,7 @@
 import { beforeAll, describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
 import { AutomergeDocStore, CompositeStore, bagUri, carrierHashOf, emptyLarDoc, faceAtomKeyFromSeed, isVerbRefusal, OVERRIDE_BASE_META, type LarDoc, type Verb } from "@lararium/mesh";
-import type { KahuReachSource, OfferSeat, OfferSigner } from "@lararium/mesh";
+import type { Hand, KahuReachSource, OfferSeat, OfferSigner } from "@lararium/mesh";
 import { seatedCharter, type SeatedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { makeOfferMakeReactor, makeOfferListReactor, makeOfferPromoteReactor, makeOfferShowReactor, type CanonOfferVerbOptions } from "../src/canon-offer-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -79,6 +79,41 @@ async function rig() {
 const reasonOf = async (go: () => Promise<unknown>): Promise<string | null> => {
   try { await go(); return null; } catch (e) { return isVerbRefusal(e) ? e.reason : `(${e instanceof Error ? e.message : String(e)})`; }
 };
+
+describe("seat-canon-reach at the promote door: the AI seat offers, the operator's own hand promotes", () => {
+  const askedBy = (composite: CompositeStore, asker?: Hand): VerbContext => ({ ...ctxOf(composite), ...(asker ? { asker } : {}) } as VerbContext);
+
+  test("RED: a seat-asked promote under the mount's Kahu chair refuses seat-canon-reach, names the operator's own hand, and moves no byte", async () => {
+    const r = await rig();
+    try {
+      const made = await makeOfferMakeReactor(r.opts(await kahuHand(), await atom(41)))({ bag: "lares", titles: [T] }, askedBy(r.composite, "seat"));
+      expect(made).toMatchObject({ ok: true, landed: true });                                    // CONTROL: the seat may offer
+      const heads = r.canon.headsNow();
+      let message = "";
+      const reason = await reasonOf(async () => {
+        try { return await makeOfferPromoteReactor(r.opts(await kahuHand(), await atom(40)))({ cid: made["cid"] }, askedBy(r.composite, "seat")); }
+        catch (e) { message = e instanceof Error ? e.message : String(e); throw e; }
+      });
+      expect(reason).toBe("seat-canon-reach");
+      expect(message).toMatch(/operator's own/);
+      expect(message).not.toMatch(/meme_offer/);
+      expect(r.canon.headsNow()).toEqual(heads);
+      expect((await r.canon.get(T))?.tiddler.text).toBe("canon says");
+    } finally { await r.repo.shutdown(); }
+  });
+
+  test("CONTROL: the operator's CLI hand and a Kahu-hand tab promote the same offer", async () => {
+    for (const asker of ["cli", "tab"] as const) {
+      const r = await rig();
+      try {
+        const made = await makeOfferMakeReactor(r.opts(await kahuHand(), await atom(41)))({ bag: "lares", titles: [T] }, askedBy(r.composite, asker));
+        const promoted = await makeOfferPromoteReactor(r.opts(await kahuHand(), await atom(40)))({ cid: made["cid"] }, askedBy(r.composite, asker));
+        expect(promoted, asker).toMatchObject({ ok: true, moved: true, wrote: [T] });
+        expect((await r.canon.get(T))?.tiddler.text, asker).toBe("the engineer says");
+      } finally { await r.repo.shutdown(); }
+    }
+  });
+});
 
 describe("the offer verbs", () => {
   test("RED: an unadmitted face offers; a stranger's promote refuses kahu-reach; the steward promotes and retires; a replay lands nothing", async () => {

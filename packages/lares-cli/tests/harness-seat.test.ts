@@ -49,6 +49,15 @@ describe("the harness's own mark makes the CLI's asker the seat", () => {
     expect(marked!({ CLAUDECODE: "" , CODEX_SANDBOX: "" })).toBe(false);
   });
 
+  test("RED: the suite clears every harness mark from its own environment, so a run inside an AI harness reads as CI does: a line naming no env sends no seat", async () => {
+    const marks = (connector as unknown as { HARNESS_SEAT_MARKS?: readonly string[] }).HARNESS_SEAT_MARKS;
+    expect(marks).toBeDefined();
+    for (const mark of marks!) expect(process.env[mark], mark).toBeUndefined();
+    const v = await vessel();
+    await invokeLocal("meme-put", { bag: "lares" }, "0xme", { dataDir: v.dataDir });
+    expect(v.lines[0]).not.toHaveProperty("seat");
+  });
+
   test("RED: under the harness's mark the one-shot line carries seat ai; CONTROL: the operator's terminal sends none", async () => {
     const v = await vessel();
     await invokeLocal("meme-put", { bag: "lares" }, "0xme", { dataDir: v.dataDir, env: { CLAUDECODE: "1" } } as never);
