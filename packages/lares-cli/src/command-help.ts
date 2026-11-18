@@ -451,6 +451,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
       "lay --lift-kahua <N>  lift the kahua items the lay previewed when N equals their count (a bare --yes lifts none)",
       "floor seed --genesis <dir>  the genesis dir whose seed reads (else LAR_GENESIS through the one resolver; an image carries /app/genesis); --json carries `seed`, the line the pūlama takes",
+      "floor seed --image <digest>  print the whole pūlama frame {\"digest\",\"seed\"} as the one stdout line (wins over --json); a shim hands it to `pulama-main image '<frame>'` unparsed",
     ],
     next: ["lares vessel read --palaces", "lares sense pour --all"],
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",

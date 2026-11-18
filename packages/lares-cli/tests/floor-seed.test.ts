@@ -13,6 +13,7 @@ import { genesisSeedCid } from "@lararium/node";
 import { floorSeedRead, readSeedOffered } from "../src/seed-offered.js";
 import { cmdFloor, floorSeedLines } from "../src/commands/floor.js";
 import { parseArgs } from "../src/parse-args.js";
+import { COMMANDS, unknownFlags } from "../src/bin/lares.js";
 
 const SHIPPED = join(repoRoot, "genesis");
 const shippedBytes = (): Buffer => readFileSync(join(SHIPPED, "seed.json"));
@@ -50,10 +51,55 @@ describe("`lares vessel floor seed` prints the read", () => {
     expect(answer.ok).toBe(true);
     expect(answer.data["genesis"]).toBe(dir);
     expect(answer.data["offered"]).toEqual({ cid, digests: foundingRecordDigests(shipped()) });
-    expect(String(answer.data["seed"])).toMatch(new RegExp(`^seed ${cid}: `));
+    // The scratch house stands unfounded and no daemon answers: no house reads the record, so it reads at boot.
+    expect(answer.data["seed"]).toBe(`seed ${cid} offered; the founding record reads at boot`);
     const lines = floorSeedLines({ genesis: dir, offered: { cid, digests: foundingRecordDigests(shipped()) }, offer: null, ratchets: null, recordUnread: "no vessel answers", seed: `seed ${cid}: the founding record unread here (no vessel answers)` });
     expect(lines).toContain(`  seed (offered):  ${cid} at ${dir}`);
     expect(lines).toContain("  founding record: unread here (no vessel answers)");
+  });
+});
+
+/** One cmdFloor run's stdout and exit code. */
+async function floorRun(...line: string[]): Promise<{ code: number; out: string }> {
+  const out: string[] = [];
+  const write = process.stdout.write.bind(process.stdout);
+  process.stdout.write = ((chunk: string | Uint8Array) => { out.push(String(chunk)); return true; }) as typeof process.stdout.write;
+  try { return { code: await cmdFloor(parseArgs(["floor", ...line])), out: out.join("") }; }
+  finally { process.stdout.write = write; }
+}
+
+describe("`floor seed --image <digest>` prints the whole pūlama frame (the shim passes it straight on)", () => {
+  test("RED: one stdout line, exactly {digest, seed}; with --json beside it --image wins, the frame being the machine line", async () => {
+    const dir = genesisDirWith(shippedBytes());
+    const cid = genesisSeedCid(new Uint8Array(shippedBytes()));
+    const frame = JSON.stringify({ digest: "sha256:abc123", seed: `seed ${cid} offered; the founding record reads at boot` });
+    const bare = await floorRun("seed", "--genesis", dir, "--image", "sha256:abc123");
+    expect(bare).toEqual({ code: 0, out: `${frame}\n` });
+    const both = await floorRun("seed", "--genesis", dir, "--image", "sha256:abc123", "--json");
+    expect(both).toEqual({ code: 0, out: `${frame}\n` });
+  });
+
+  test("CONTROL: an empty --image refuses by name and prints no frame; the vessel row accepts --image", async () => {
+    const dir = genesisDirWith(shippedBytes());
+    const empty = await floorRun("seed", "--genesis", dir, "--image", " ", "--json");
+    expect(empty.code).toBe(2);
+    expect(empty.out).not.toContain("\"digest\"");
+    const vessel = COMMANDS.find((c) => c.name === "vessel")!;
+    expect(unknownFlags(vessel, parseArgs(["vessel", "floor", "seed", "--genesis", dir, "--image", "sha256:abc"]))).toEqual([]);
+  });
+});
+
+describe("no house answers: the founding record reads at boot, never as a fault", () => {
+  test("RED: a read with no house names the seed offered and the record at boot; CONTROL: a house that answers and cannot read keeps the unread form", async () => {
+    const dir = genesisDirWith(shippedBytes());
+    const cid = genesisSeedCid(new Uint8Array(shippedBytes()));
+    const none = await floorSeedRead({ genesisDir: dir, record: async () => ({ noHouse: true }) });
+    expect(none.seed).toBe(`seed ${cid} offered; the founding record reads at boot`);
+    expect(none.offer).toBeNull();
+    expect(none.recordUnread).toBeUndefined();
+    expect(floorSeedLines(none)).toContain("  founding record: reads at boot (no house answers here)");
+    const unread = await floorSeedRead({ genesisDir: dir, record: async () => ({ unread: "the fold refused a blob row" }) });
+    expect(unread.seed).toBe(`seed ${cid}: the founding record unread here (the fold refused a blob row)`);
   });
 });
 
