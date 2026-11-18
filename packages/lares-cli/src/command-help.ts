@@ -438,6 +438,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vessel rite refresh               # the post-code-change cure: build · stop · stand",
       "lares vessel floor status               # the vessel's floor pin: pinned release, newest seen, fast-forward, fork",
       "lares vessel floor accept [<release>]   # walk prior from the pin to the release (or the sole newest)",
+      "lares vessel floor seed [--genesis <dir>]  # the seed a genesis dir offers (CID, digests) beside the founding record; moves nothing",
     ],
     flags: [
       "stand --foreground   this terminal owns the node (no Vite)",
@@ -449,6 +450,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "read --palaces       the palace-organ health table (mempalace · structure · form · mesh)",
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
       "lay --lift-kahua <N>  lift the kahua items the lay previewed when N equals their count (a bare --yes lifts none)",
+      "floor seed --genesis <dir>  the genesis dir whose seed reads (else LAR_GENESIS through the one resolver; an image carries /app/genesis); --json carries `seed`, the line the pūlama takes",
+      "floor seed --image <digest>  print the whole pūlama frame {\"digest\",\"seed\"} as the one stdout line (wins over --json); a shim hands it to `pulama-main image '<frame>'` unparsed",
     ],
     next: ["lares vessel read --palaces", "lares sense pour --all"],
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",

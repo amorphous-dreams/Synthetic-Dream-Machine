@@ -59,7 +59,7 @@ export interface PromotionAssertion {
   /** The subject's canonical hash AT CROSSING (`ni:///sha-256;…`). An address is stable and its bytes are
    *  versioned; this pins WHICH bytes crossed, which is the claim git alone cannot make. */
   readonly carrierHash:  string;
-  /** The digest of the seated statement that approved these exact bytes; a crossing into `@crossroads`
+  /** The digest of the seated statement that approved these exact bytes; a crossing into `crossroads`
    *  carries one, and a crossing into a vessel's own canon bag carries none. */
   readonly approvalStatementDigest?: string;
   /** The bag the record left. */

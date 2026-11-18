@@ -34,6 +34,7 @@ import { fixtureKey } from "./fixture-keys.js";
 import { seatChairs } from "./seat-fixture.js";
 import { seatOwnCharter, presentFace } from "./acting-face-fixture.js";
 import { seedFaceAtom } from "./atom-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -65,10 +66,9 @@ async function seedDaemonBootstrap(): Promise<void> {
   });
 }
 
-beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-join-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
+// The house stands once per file (kept-house): a founding's worth of derivations per case ran past the 10 s hook
+// default on a loaded runner. Each case takes its own copy, so no case reads another's crossings.
+const house = keepHouse("lares-join-", async () => {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot();
   await seedFaceAtom(0);
@@ -76,6 +76,12 @@ beforeEach(async () => {
   // The realm stands under this vessel's own charter, and the acting face's key there vouches.
   await seatOwnCharter([0]);
   face = await presentFace(0);
+});
+beforeEach(() => {
+  root = mkdtempSync(join(tmpdir(), "lares-join-"));
+  priorLarRoot = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = root;
+  house.into(root);
 });
 let face: string;
 afterEach(async () => {

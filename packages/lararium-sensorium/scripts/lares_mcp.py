@@ -204,7 +204,7 @@ VERB_SEATS = {
     # The tiddler door — the reads run the wiki's own engine and move nothing; a put patches one record in the working
     # layer against a base (a re-put restores) and a delete lands a kāpae tombstone a re-put restores; all stay on the
     # face's own daemon wiki → HOTL. The vessel's own gates decide reach (the face's cap, the Kahu predicate, the
-    # family and code-class fences); the seat adds none of its own.
+    # family fence, and the one wall a seat keeps: its startup action offers); the seat adds none of its own.
     "wiki_filter": (True, False),       # run a TiddlyWiki filter, one bounded page — a read → HOTL
     "tiddler_get": (True, False),       # one record with its fields and its base hash — a read → HOTL
     "wiki_render": (True, False),       # wikify a title or a span to text or html — a read → HOTL
@@ -1043,7 +1043,10 @@ def build_mcp(coordinator: LaresCoordinator):
         Slugs ride bare (`sdm`, `lares`). THE SEAT'S CANON FENCE: this seat never writes house canon live, so a `bag`
         naming a house canon bag (`lares`, `lararium`, every disk-sourced holding but the public board) refuses
         `seat-canon-reach`; edit through the wiki instead (`recipe=<slug>`, a copy-up), then `meme_offer` the record
-        toward the canon bag, and the steward promotes. `base` carries the
+        toward the canon bag, and the steward promotes. THE ONE WALL A SEAT KEEPS: a meme whose records carry a
+        `$:/tags/StartupAction` tag (or one beneath it) refuses `seat-startup-offer` and lands nothing, since a wiki's
+        startup action runs in the operator's tab and rides the operator's own hand; every other record lands
+        natively. `base` carries the
         canonical hash the writer read back from `meme_get` — the merge base: stale → the receipt's
         `decision` reads "conflict"; absent → adopt. Returns the receipt {uri, decision, grade, landed,
         tombstoned, canonicalHash, warnings, diagnostics} for a write that stands (`ingest`, or `noop` where the
@@ -1270,8 +1273,10 @@ def build_mcp(coordinator: LaresCoordinator):
         changed, hash, textHash, position}: `decision` reads `put`, or `noop` where the record already says it.
         A WRITE THAT NEVER LANDED RAISES: `conflict` (a stale `base`; the error names the live hash) and `exists`.
         THE FENCES, each refused by name: a meme root or slot takes a field or tag patch here, and its text, type or
-        carriage fields refuse `tiddler-put-in-a-family` (use `meme_put`); a `$:/` title or tag, a module or plugin
-        field, a script type refuse `tiddler-put-code-class`; a title that stays home refuses `tiddler-withheld`; a
+        carriage fields refuse `tiddler-put-in-a-family` (use `meme_put`); a record carrying a `$:/tags/StartupAction`
+        tag (or one beneath it) refuses `seat-startup-offer`, since a wiki's startup action runs in the operator's tab
+        and rides the operator's own hand (land it untagged, as data); every other shape lands natively, a `$:/` title
+        or tag, a module or plugin field and a script type alike; a title that stays home refuses `tiddler-withheld`; a
         title under the memory stage reads one or two lowercase, hyphen-joined path segments (`stage-path-shape`). CONTAINER LAW: exactly one of `recipe` /
         `bag`; this phase answers `recipe="default"`."""
         args: dict = {**_meme_container("tiddler_put", recipe, bag), "title": title}

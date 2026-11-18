@@ -1,9 +1,13 @@
 /**
- * meme-put-at-slug.test — an `@`-prefixed slug through `meme-put` (the checks-owed witness).
+ * meme-put-at-slug.test — a leading `@` on a slug at the meme doors reads as the slug (state/decisions, "Naming freedom
+ * and the `@` marker").
  *
- * `bagUriOf` hands a bare slug to `bagUri`, so `bag: "@sdm"` reads as the bag `lar:///ha.ka.ba/bags/@sdm`. This pins what the
- * door does with it today: it never misroutes (no put lands in the daemon bag or any other layer) and it refuses by name,
- * `holds no writable layer`, exactly as a plain unknown slug does (the control). A recipe `@sdm` names no wiki and refuses.
+ * An entity name carries no marker; the kind-plane segment names it. `bag declare` already drops a leading `@`
+ * (bag-declare-cmd.ts `bagArg`), so the content doors read the same name the same way: `bag: "@notes"` lands in the bag
+ * `notes`, and `recipe: "@sdm"` resolves the wiki `sdm`. A bag URI passes through untouched.
+ *
+ *   AT1 RED  bag `@daemon` lands in `lar:///ha.ka.ba/bags/daemon`, alike to the bare slug beside it (the control)
+ *   AT2 RED  recipe `@sdm` asks the registry for `sdm`, never `@sdm`
  */
 import { describe, test, expect } from "vitest";
 import { CompositeStore, bagUri } from "@lararium/mesh";
@@ -19,28 +23,34 @@ function rig() {
   const composite = new CompositeStore();
   const daemon = new MemoryTiddlerStore(bagUri("daemon"));
   composite.addLayer({ bagId: bagUri("daemon"), store: daemon, writable: true });
-  const opts: MemeVerbOptions = { composite, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as unknown as MemeVerbOptions["tw5"] };
-  return { opts, daemon };
+  const asked: string[] = [];
+  const opts: MemeVerbOptions = {
+    composite,
+    tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as unknown as MemeVerbOptions["tw5"],
+    recipeOf: async (slug) => { asked.push(slug); return null; },
+  };
+  return { opts, daemon, asked };
 }
-const refusal = async (opts: MemeVerbOptions, args: Record<string, unknown>): Promise<string> => {
+const put = async (opts: MemeVerbOptions, args: Record<string, unknown>): Promise<string> => {
   try { await makeMemePutReactor(opts)({ uri: URI, text: meme, ...args }, ctx()); return "(landed)"; }
   catch (e) { return e instanceof Error ? e.message : String(e); }
 };
 
-describe("meme-put with an @-prefixed slug", () => {
-  test("bag `@sdm` refuses by name, alike to a plain unknown slug beside it, and lands nothing", async () => {
+describe("meme-put reads a leading @ on a slug as the slug", () => {
+  test("AT1 — bag `@daemon` lands in the bag `daemon`; CONTROL: the bare slug lands there too", async () => {
+    const control = rig();
+    expect(await put(control.opts, { bag: "daemon" })).toBe("(landed)");
+    expect(await control.daemon.get(URI)).not.toBeNull();
     const r = rig();
-    const said = await refusal(r.opts, { bag: "@sdm" });
-    expect(said).toContain(`"${bagUri("@sdm")}"`);
-    expect(said).toContain("holds no writable layer");
-    expect(said.replace("@sdm", "SLUG")).toBe((await refusal(r.opts, { bag: "sdm" })).replace("sdm", "SLUG"));
-    expect(await r.daemon.get(URI)).toBeNull();
+    expect(await put(r.opts, { bag: "@daemon" })).toBe("(landed)");
+    expect(await r.daemon.get(URI)).not.toBeNull();
   });
 
-  test("recipe `@sdm` refuses and lands nothing", async () => {
+  test("AT2 — recipe `@sdm` asks the registry for the wiki `sdm`", async () => {
     const r = rig();
-    const said = await refusal(r.opts, { recipe: "@sdm" });
-    expect(said).toContain('recipe "@sdm" not found in any registry plane');
+    const said = await put(r.opts, { recipe: "@sdm" });
+    expect(r.asked).toEqual(["sdm"]);
+    expect(said).toContain('recipe "sdm" not found in any registry plane');
     expect(await r.daemon.get(URI)).toBeNull();
   });
 });

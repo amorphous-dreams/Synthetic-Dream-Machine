@@ -52,6 +52,8 @@ import { moveFaceToAshes } from "../src/ashes.js";
 import { fileToUriForSource } from "../src/ingest-core.js";
 import { runMirrorLeg } from "../src/commands/lay.js";
 import type { BundleKahuaHead } from "../src/bundle-manifest.js";
+import { openBundle, verifyBundle } from "../src/bundle-manifest.js";
+import { readKeepKey } from "../src/keep-key.js";
 
 const F1 = "11111111-1111-4111-8111-111111111111";
 const F2 = "22222222-2222-4222-8222-222222222222";
@@ -877,7 +879,8 @@ describe("the lay lays every mirror back into its one layer", () => {
     expect(manifest.rows.filter((r) => r.layer === "wiki-working").map((r) => [r.title, r.face]).sort()).toEqual([[SOURCED, null], [DRAFTED, null]].sort());
     expect(manifest.rows.filter((r) => r.layer === "personal").map((r) => [r.title, r.face, r.bag])).toEqual([[MARGIN, "engineer", "lar:///ha.ka.ba/wikis/lares/personal"]]);
     expect(manifest.files.some((f) => f.path.includes("$__")), "a view-state carrier never travels").toBe(false);
-    const redeclare = JSON.parse(readFileSync(join(out, "re-declare.json"), "utf8")) as { shares?: unknown };
+    // The re-declare list rests sealed under the house's keep key; the house that cut it opens it.
+    const redeclare = openBundle(verifyBundle(out), readKeepKey()!).redeclare;
     expect(redeclare.shares, "the share row travels beside the workbench it seats, owner and seats by pet-name").toEqual([{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }]);
 
     // A RE-FOUNDING, with the mirrors gone (the bundle alone carries them): the engineer imports first.

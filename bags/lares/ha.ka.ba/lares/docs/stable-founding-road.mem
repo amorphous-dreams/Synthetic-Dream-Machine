@@ -31,8 +31,8 @@ reads the boot seed and then this carrier can pick up any thread: the instrument
 (#/cold-start), the order a free slot takes (#/the-order), the rulings (#/rulings), the design decisions that shape unbuilt work (#/decisions),
 the six paths in one order (#/the-road), every open item in the stride that holds it (#/the-loops indexes the strides),
 each train's commits in order (#/the-trains), the lanes that run beside the road (#/side-lanes), the fresh
-start (#/fresh-start), and what the operator owns (#/open). Landed work reads in git and the
-CHANGELOG, never here. No count rests here: each reading names the instrument that takes it. Law lives in
+start (#/fresh-start), and what the operator owns (#/open). Landed work reads in git and its
+commit trailers, never here. No count rests here: each reading names the instrument that takes it. Law lives in
 its own carrier, and this carrier points there.
 
 ''Full models land early'' (operator ruling; quote license: //"Full caps now … Full models in early, so we don't code churn later."//). The road takes no staging by milestone: a slice builds its whole model, with its whole capability reach, in the place the order gives it, and no slice ships a narrower interim that a later slice must re-cut.
@@ -157,7 +157,7 @@ The operator set these landmarks in a coffee talk (2026-11-06: //"M6 before the 
 
 !! The leaps ~ the walk to the dogfood stand, in flowstate (operator, 2026-11-11)
 
-Each leap lands a whole model under the gate of #/rulings (2026-11-11, the leaps run in flowstate); its law lives in the carrier it names, and this section keeps the order and the items still owed. Landed work reads in git and the CHANGELOG; the lanes in flight and their heads read in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff#/state`>>; #/the-order ranks every leap still owed.
+Each leap lands a whole model under the gate of #/rulings (2026-11-11, the leaps run in flowstate); its law lives in the carrier it names, and this section keeps the order and the items still owed. Landed work reads in git and its commit trailers (`node tools/changelog-render.mjs <from>..<to>`); the lanes in flight and their heads read in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff#/state`>>; #/the-order ranks every leap still owed.
 
 !!! Landed, one line each
 * ''Leap 0, the clockless sweep'' (`e2fc2158c`, its bake `6d2f476f3`): no version literal, a KEL ordered by hash-chain descent with `seq` as a cross-check, a floor announcement linked by `prior`, the IndexedDB version a pinned platform constant.
@@ -1596,6 +1596,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cWIcVLCHQGWtL9muazvR8FmK2L-rV0RLCCFIlZztLjo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xy39Uq67jdyLD-anY8zx0O62Fzo9-zPqZ-lYAQR6fqw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

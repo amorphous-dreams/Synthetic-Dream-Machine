@@ -292,7 +292,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await put({ ...A, title: "Note 04", fields: { status: "done" }, base: live }, ctx())).toMatchObject({ decision: "put" });
   });
 
-  test("tiddler-put fences: the face's write cap decides, a family member's text stays at the meme door, code-bearing shapes refuse by name", async () => {
+  test("tiddler-put fences: the face's write cap decides, a family member's text stays at the meme door, a title that stays home refuses by name", async () => {
     const r = await rig();
     await placeMeme({ uri: MEME, text: memeText(["a"]) }, wikiMemeSink(r.engine.wiki));
     const put = makeTiddlerPutReactor(r.opts);
@@ -300,12 +300,33 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await expect(put({ ...A, title: MEME, text: "bare" }, ctx())).rejects.toMatchObject({ reason: "tiddler-put-in-a-family" });
     await expect(put({ ...A, title: `${MEME}#/a`, text: "bare" }, ctx())).rejects.toMatchObject({ reason: "tiddler-put-in-a-family" });
     expect(await put({ ...A, title: MEME, fields: { status: "ripe" }, tagsAdd: "memory" }, ctx())).toMatchObject({ decision: "put", position: "root" });
-    for (const bad of [
-      { title: "$:/config/x", text: "y" }, { title: "Mod", fields: { "module-type": "startup" } }, { title: "Js", fields: { type: "application/javascript" } },
-      { title: "Tagged", tagsAdd: "$:/tags/StartupAction" }, { title: "Tagged", fields: { tags: "$:/tags/Global" } }, { title: "$:/temp/lares/secret", text: "y" },
-    ]) await expect(put({ ...A, ...bad }, ctx())).rejects.toMatchObject({ reason: expect.stringMatching(/^(tiddler-put-code-class|tiddler-withheld)$/) });
+    await expect(put({ ...A, title: "$:/temp/lares/secret", text: "y" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
     await expect(put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/Feedback/x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "stage-path-shape" });
     expect(await put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/feedback/x", text: "y" }, ctx())).toMatchObject({ decision: "put" });
+  });
+
+  test("RED: the code-class wall burns: a module field, a script type, a system title and a system tag land natively for every asker; a seat-asked StartupAction tag offers (seat-startup-offer) and lands nothing; CONTROL the operator's hand and no asker land it", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const as = (asker?: "seat" | "cli"): VerbContext => ({ ...ctx(), ...(asker ? { asker } : {}) });
+    for (const asker of ["seat", "cli", undefined] as const) {
+      for (const [i, shape] of [
+        { title: "$:/config/x", text: "y" }, { title: "Mod", fields: { "module-type": "startup" } }, { title: "Js", fields: { type: "application/javascript" } },
+        { title: "Plug", fields: { "plugin-type": "plugin" } }, { title: "Glob", fields: { tags: "$:/tags/Global" } }, { title: "Near", tagsAdd: "$:/tags/StartupActionX" },
+      ].entries()) {
+        const title = `${shape.title} ${asker ?? "none"} ${i}`;
+        expect(await put({ ...A, ...shape, title }, as(asker)), `${title} lands natively`).toMatchObject({ decision: "put" });
+      }
+    }
+    for (const tagged of [{ tagsAdd: "$:/tags/StartupAction" }, { fields: { tags: "memory [[$:/tags/StartupAction/Browser]]" } }]) {
+      await expect(put({ ...A, title: "Startup seat", ...tagged }, as("seat"))).rejects.toMatchObject({ reason: "seat-startup-offer" });
+      expect(r.engine.wiki.getTiddler("Startup seat")).toBeUndefined();
+    }
+    await expect(put({ ...A, title: "Note 06", tagsAdd: "$:/tags/StartupAction" }, as("seat"))).rejects.toMatchObject({ reason: "seat-startup-offer" });
+    expect(r.engine.wiki.getTiddler("Note 06")?.fields["tags"]).toEqual(["memory"]);
+    for (const asker of ["cli", undefined] as const) {
+      expect(await put({ ...A, title: `Startup ${asker ?? "none"}`, tagsAdd: "$:/tags/StartupAction" }, as(asker))).toMatchObject({ decision: "put" });
+    }
   });
 
   test("★ slot-level-put witness: a tiddler put on a meme family's `#/slot` either refuses by name or leaves the carrier sealed; it never lands bytes the block check no longer covers ★", async () => {

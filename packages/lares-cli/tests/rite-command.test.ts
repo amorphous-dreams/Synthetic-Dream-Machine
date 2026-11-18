@@ -6,7 +6,13 @@
  * vessel that stands after lands the host half. Every port here answers from a FAKE: no shim runs, no container, no git.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
-import { describe, expect, it } from "vitest";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
+import { repoRoot } from "@lararium/mesh/node";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, foundingRecordDigests, type GenesisDigests, type GenesisRecordLike } from "@lararium/mesh";
+import { genesisSeedCid } from "@lararium/node";
+import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
 import { RiteUsage, hostRowLine, ritePlan } from "../src/commands/rite.js";
 import { kukuluSeedLine, riteKukulu, type RitePorts, type RiteVerbAnswer } from "../src/rite-kukulu.js";
@@ -231,5 +237,39 @@ describe("the kūkulu names the seed the image offers beside the founding record
     expect(f.said).toContain("kūkulu: the host reads no founding record beside the seed this image offers; the rite goes on, and moves no ratchet");
     expect(out.code).toBe(0);
     expect(out.data["seed"]).toBeUndefined();
+  });
+});
+
+describe("the kūkulu's seed port reads the genesis dir the image carries (the host seed read)", () => {
+  const SHIPPED = join(repoRoot, "genesis");
+  const shippedBytes = (): Buffer => readFileSync(join(SHIPPED, "seed.json"));
+  const record = (): GenesisDigests => foundingRecordDigests(JSON.parse(shippedBytes().toString("utf8")) as GenesisRecordLike);
+  const scratch: string[] = [];
+  afterEach(() => { for (const d of scratch.splice(0)) rmSync(d, { recursive: true, force: true }); });
+  const genesisDirWith = (bytes: string | Buffer): string => {
+    const root = mkdtempSync("/tmp/lares-kukulu-seed-"); scratch.push(root);
+    mkdirSync(join(root, "genesis")); writeFileSync(join(root, "genesis", "seed.json"), bytes);
+    return join(root, "genesis");
+  };
+
+  it("RED: the wired port says the seed the genesis dir offers, by its CID, beside the founding record the house answers", async () => {
+    const dir = genesisDirWith(shippedBytes());
+    const cid = genesisSeedCid(new Uint8Array(shippedBytes()));
+    const f = fakes();
+    const out = await riteKukulu({ ...f.ports, seedOffer: hostSeedOfferPort({ genesisDir: dir, record: async () => ({ record: record() }) }) }, {});
+    expect(f.said).toContain(`kūkulu: the image at ${HEAD} offers seed ${cid}: same on every ratchet as the founding record`);
+    expect(out.data["seed"]).toEqual({ cid, ratchets: "engine same · grammar same · plugins same · floor same" });
+  });
+
+  it("CONTROL: a newer seed names what waits; a house that answers no founding record leaves the port null, and the rite goes on", async () => {
+    const seed = JSON.parse(shippedBytes().toString("utf8")) as { blobs: Record<string, Record<string, unknown>> };
+    const moved = JSON.stringify({ ...seed, blobs: { ...seed.blobs, [LARES_MEMETIC_WIKITEXT_PLUGIN_URI]: { ...seed.blobs[LARES_MEMETIC_WIKITEXT_PLUGIN_URI], sha256: "f".repeat(64) } } });
+    const f = fakes();
+    await riteKukulu({ ...f.ports, seedOffer: hostSeedOfferPort({ genesisDir: genesisDirWith(moved), record: async () => ({ record: record() }) }) }, {});
+    expect(f.said.join("\n")).toContain("a newer seed waits: engine same · grammar moved · plugins same · floor same; the founding record keeps serving, and the kūkulu moves no ratchet");
+    const g = fakes();
+    const out = await riteKukulu({ ...g.ports, seedOffer: hostSeedOfferPort({ genesisDir: genesisDirWith(shippedBytes()), record: async () => ({ unread: "no vessel answers" }) }) }, {});
+    expect(g.said).toContain("kūkulu: the host reads no founding record beside the seed this image offers; the rite goes on, and moves no ratchet");
+    expect(out.code).toBe(0);
   });
 });

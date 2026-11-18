@@ -268,7 +268,7 @@ export interface IslandMsg_Manifest {
   /**
    * Serializable disk mirror configs for island-hosted LarDiskProjector.
    * Each entry carries `bagId`, `mirrorRoot` (absolute path), and `scope`
-   * (e.g. "@lares", "@lararium") so the island can reconstruct `BagMirrorConfig`
+   * (e.g. "daemon", "kahua") so the island can reconstruct `BagMirrorConfig`
    * via `namedBagMirror(scope, mirrorRoot)` from `bag-paths`.
    * Absent = no disk projection for this island.
    */

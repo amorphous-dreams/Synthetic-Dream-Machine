@@ -19,7 +19,7 @@ import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, verifyBundle, zeroCounts, type BundleFile, type BundleManifest } from "../src/bundle-manifest.js";
+import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sealRedeclare, sha256Hex, verifyBundle, zeroCounts, type BundleFile, type BundleManifest } from "../src/bundle-manifest.js";
 import { KEEP_CHECK, KeepRefused, riteKeep, type KeepPorts } from "../src/rite-keep.js";
 import type { RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { RiteUsage, keepPlan } from "../src/commands/rite.js";
@@ -32,18 +32,20 @@ const TESSERA = "e".repeat(64), LEI = "d".repeat(64);
 /** A whole, small bundle at `dest`, as an export leaves one: every file hashed, the id over the file list. */
 function writeBundle(dest: string, notes: Readonly<Record<string, string>>): BundleManifest {
   const files: BundleFile[] = [];
-  const put = (rel: string, text: string): void => {
+  const put = (rel: string, text: string | Buffer): void => {
     const abs = join(dest, ...rel.split("/"));
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, text);
     files.push({ path: rel, sha256: sha256Hex(text), bytes: Buffer.byteLength(text) });
   };
   for (const [name, text] of Object.entries(notes)) put(`faces/f0/working/${name}.tid`, text);
-  put(REDECLARE_FILE, `${JSON.stringify({ schema: BUNDLE_SCHEMA, faces: [{ face: "f0", handleIndex: 0, petname: "steward", handle: null, seat: false, chair: null }] })}\n`);
+  // The roster rides sealed under a keep key; the vessel half proves the bundle whole with no key.
+  put(REDECLARE_FILE, sealRedeclare(new Uint8Array(32).fill(7), { schema: BUNDLE_SCHEMA, faces: [{ face: "f0", handleIndex: 0, petname: "steward", handle: null, seat: false, chair: null }] }));
   files.sort((a, b) => (a.path < b.path ? -1 : 1));
-  const manifest: BundleManifest = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: [{ key: "f0", petname: "steward" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] };
-  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`);
-  return manifest;
+  const onDisk = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: [{ key: "f0" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] };
+  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify(onDisk, null, 2)}\n`);
+  // The cut answers the opened view: each face by its pet-name.
+  return { ...onDisk, faces: [{ key: "f0", petname: "steward" }] } as BundleManifest;
 }
 
 /** The vessel's rows and the cut, recorded; `lei` names what the keep line reads, `begin` what the begin row answers. */

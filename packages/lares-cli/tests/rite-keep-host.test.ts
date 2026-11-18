@@ -71,7 +71,7 @@ function writeBundle(dest: string, notes: Readonly<Record<string, string>>): str
   }
   files.sort((a, b) => (a.path < b.path ? -1 : 1));
   const bundleId = bundleIdOf(files);
-  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ schema: BUNDLE_SCHEMA, bundleId, faces: [{ key: "f0", petname: "steward" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] }, null, 2)}\n`);
+  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ schema: BUNDLE_SCHEMA, bundleId, faces: [{ key: "f0" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] }, null, 2)}\n`);
   return bundleId;
 }
 
@@ -250,6 +250,21 @@ describe("the keep rite, host half", () => {
     expect(out).toMatchObject({ code: 0, data: { pushed: true, par: true } });
     expect(must(r.remote, "log", "--format=%s", "main").split("\n")).toEqual([`keep ${String(out.data["bundleId"])}`, "elsewhere", "guard"]);
     expect(existsSync(join(r.ws, "README"))).toBe(true);
+  });
+
+  test("KH17 RED: a keep commit carries the fixed neutral author and committer the code names, never the host's ambient git identity, and the rebase over a moved upstream keeps it; CONTROL: another clone's own commit keeps its own identity", async () => {
+    const r = rig();
+    const other = join(scratch, "other");
+    must(scratch, "clone", "-q", r.remote, other);
+    writeFileSync(join(other, "README"), "another device's note\n");
+    must(other, "add", "README");
+    must(other, "commit", "-q", "-m", "elsewhere");
+    must(other, "push", "-q", "origin", "HEAD:refs/heads/main");
+    const out = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(out).toMatchObject({ code: 0, data: { pushed: true, par: true } });
+    const who = must(r.remote, "log", "--format=%an <%ae>|%cn <%ce>", "main").split("\n");
+    expect(who[0], "the keep commit names the keep, never the operator").toBe("Lares Keep <keep@lares.invalid>|Lares Keep <keep@lares.invalid>");
+    expect(who[1], "CONTROL: the other clone's commit carries the identity its own config names").toBe("Keeper <keeper@example.invalid>|Keeper <keeper@example.invalid>");
   });
 
   test("KH8 RED: beside the container house the host reads the workspace's directory from LARES_WORKSPACES; a name it never pairs, or a relative dir, refuses by name", () => {

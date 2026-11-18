@@ -33,7 +33,7 @@ Load bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem, then read and enact bags/
 
 ''Where the train stands.'' D0 and D1 stand on the feature branch: the genesis boot harness, the engine mends, the baselines, the `lar:` camera contract (`packages/lararium-mesh/src/lar-camera.ts`), the island's keyed frames and answered acts, the page sink with its plate, the declared cancellation, the toggle family, the root services, the three page controls, the IME rules, files, drops, order, keys and routes, with goldens 01 to 13 green on both harnesses. The session that takes the seat next starts at D2 (`dreamdom-roadmap#/the-order`, the record port), reads D0's and D1's ''Owed'' lines first, keeps the lane law of `controller-handoff#/the-lane-law`, and holds the daemon surface's ten questions (`daemon-surface#/the-talk-story`) and the roadmap's open rulings for the operator. Two design notes ride with it: the daemon surface talk-story, and a research task for the very end of the train, an ''infinite canvas'' camera beside `lar:story` (whole-frame keyed surfaces placed on a pannable, zoomable plane, one key per placed surface and a `lar:layout` membership key, the sink morphing only visible tiles), scouted only after every enactment lands.
 
-''What "done" reads as.'' Every phase of `dreamdom-roadmap#/the-order` landed or held by name; every DreamDOM surface publishing its conformance record; and the tree, the carriers and the changelog reading as if DreamDOM had always stood this way.
+''What "done" reads as.'' Every phase of `dreamdom-roadmap#/the-order` landed or held by name; every DreamDOM surface publishing its conformance record; and the tree, the carriers and the change record reading as if DreamDOM had always stood this way.
 
 <<~/ahu>>
 
@@ -93,7 +93,7 @@ Every phase of the roadmap and every slice inside a phase walks all five. A loop
 * ''The sweep.'' The spirit that did not build the piece reads the landed diff adversarially and names each finding; the lead closes or answers every one before the next flow. A lane closes its span with one more sweep over everything it landed.
 * ''O-takiage.'' Burn what the phase superseded: old wire messages, old sinks, dead dials, scaffold tests. Retired paths get burned, never tolerated (#/the-evergreen-law).
 * ''Recursive o-takiage.'' A witness that catches burned names lives only as scaffolding: build it, run it green, then burn the witness itself and any list of retired names in the phase's final aftermath commit. Git keeps the proof.
-* ''Canon in the same commit.'' Each commit carries its canon lines; `dreamdom` and `dreamdom-roadmap` stay true as the phase lands (the roadmap keeps only what stays owed; landed work reads in git and the changelog). Changelog bullets name what a person can do.
+* ''Canon in the same commit.'' Each commit carries its canon lines; `dreamdom` and `dreamdom-roadmap` stay true as the phase lands (the roadmap keeps only what stays owed; landed work reads in git and its commit trailers). A `Changed:` or `Breaking:` trailer names what a person can do.
 * ''Close the loop back to observe.'' What the phase learned seeds the next phase's observation.
 
 <<~/ahu>>
@@ -210,6 +210,6 @@ The train's final handback adds the conformance records each DreamDOM surface pu
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ueBgOJVTzY0SnNK3FJz5RwONOuF4lB_GxzyROhvcEus`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;80UTO4KhhfBH3rYJRyJ3PN0u-KRiYeoaVbia_Pad3xI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

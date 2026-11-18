@@ -101,6 +101,17 @@ export function personaBagIdFor(personaGroupId: string): string {
 }
 
 /**
+ * The bag id of ONE PersonaGroup's SELVES RECORD: the document that holds the face's two own names (its pet-name and its
+ * declared Handle), split off its plane by document (persona-selves-sealed#/design). It derives off the same tag as the
+ * plane, so the address names the group's MAC and no one: never a pet-name, never the group id itself. A DISTINCT bag
+ * beside the plane, never a path under it (persona-circle: "Distinct BAGS, never one bag with paths"): the plane stays
+ * clear for the locked floor to fold, and this bag rests sealed under the face's key group.
+ */
+export function personaSelvesBagIdFor(personaGroupId: string): string {
+  return bagUri(`selves-${personaScopeTag(personaGroupId)}`);
+}
+
+/**
  * Whether a bag SLUG names some PersonaGroup's plane — the family rule, in one place.
  *
  * It matches the derived SHAPE — `persona-` plus exactly the tag's hex width, lowercase — rather than the
@@ -180,17 +191,18 @@ export function personaSiblingBagIds(personaBagId: string): PersonaScopedBags | 
 }
 
 /**
- * Whether a bag id names ANY face's plane or one of its siblings (persona, circles, identities, sessions or intents), by the derived shape alone.
+ * Whether a bag id names ANY face's plane or one of its siblings (persona, circles, identities, sessions or intents), or its
+ * selves record, by the derived shape alone.
  * A reader that must keep one face's reading apart from every other asks THIS, not a list of the other faces a mutable document names.
  */
 export function isFaceScopedBag(bagId: string): boolean {
   const slug = identitySlug(bagId) ?? bagId;
-  return new RegExp(`^(persona|circles|identities|sessions|intents)-[0-9a-f]{${PERSONA_SCOPE_TAG_HEX}}$`).test(slug);
+  return new RegExp(`^(persona|circles|identities|sessions|intents|selves)-[0-9a-f]{${PERSONA_SCOPE_TAG_HEX}}$`).test(slug);
 }
 
-/** The tag a face-scoped bag id of ANY of the five families carries, or null. */
+/** The tag a face-scoped bag id of ANY of the five families, or of a selves record, carries, or null. */
 export function faceTagOfBag(bagId: string): string | null {
   const slug = identitySlug(bagId) ?? bagId;
-  const m = new RegExp(`^(?:persona|circles|identities|sessions|intents)-([0-9a-f]{${PERSONA_SCOPE_TAG_HEX}})$`).exec(slug);
+  const m = new RegExp(`^(?:persona|circles|identities|sessions|intents|selves)-([0-9a-f]{${PERSONA_SCOPE_TAG_HEX}})$`).exec(slug);
   return m ? m[1]! : null;
 }

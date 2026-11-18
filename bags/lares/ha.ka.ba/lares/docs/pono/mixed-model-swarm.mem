@@ -95,7 +95,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 # ''A span fault stops the queue once.'' A red the span carries goes at once to ONE cure lane. Queued lanes push, rerun and re-merge nothing until the cure lands; then each merges once and pushes once. A failed job reruns ONCE as a flake candidate; a second red on the same test names a fault.
 # ''A feature waits on its dependency unbuilt, or stacks.'' A feature that needs another lane's land starts after that land, or stacks on that lane's branch and lands in the same batch. It never builds ahead and rests while the span moves.
 # ''Done means the story walks.'' The hand-back names the story and the one walk that proves it: the one e2e file, or a live stand where a vessel class carries it. A capability no walk proves stands "specified", never built (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>> #/wiring-an-unreached-module).
-# ''The record rides with the capability'': each feature PR hands the controller its changelog bullet and road-item text; the lane edits neither file.
+# ''The record rides with the capability'': each lane commit carries its own `Changed:` or `Breaking:` trailer for what a person can do (`tools/changelog-render.mjs` renders them), and each feature PR hands the controller its road-item text; the lane edits no road file.
 <<~/ahu>>
 
 <<~ ahu slot=`#/the-tiers`>>
@@ -177,7 +177,7 @@ A premium request counts per prompt, never per tool call.
 * ''A pick carries a lane commit by commit'': `node tools/lane-pick.mjs <base>..<lane>` cherry-picks the range onto the checkout's branch, takes the span's side on a generated artifact (naming the rebuild owed) and on an evergreen ceiling or exception conflict (naming the lane's intended counts), re-seals a seal-only meme conflict with `lares meme normalize`, skips an empty commit, and stops by name on any other conflict with the pick left open for a hand; its JSON receipt names each step.
 * ''A picked span pushes through its gate'': `node tools/span-push.mjs <branch>` runs the pins a canon-touching push still owes (`node --test tools/rite-walk.test.mjs`, `bash tools/bcc-witness.sh`, `bash tools/evergreen-boundary-witness.sh`) and refuses on red by name, then pushes a change whose every path the CI ignore list skips (`tools/ci-ignored-paths.json`) at once, since that push raises no run and cancels none. Any other push (code, the emergency path past the queue) reads CI once per active status and refuses while any run flies on the branch (UNREADABLE exits 10 and never reads as clear), and pushes only past both.
 * ''The controller lands in batches'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/state). A batch forms once two or more features read green; a lone green feature drains as a batch of one when no other lane has a feature nearing green, and a span-fault cure or shared ground other lanes build on lands at once. The queue groups a batch's pull requests; past the queue, one train reads every green lane merged over the span as it stands: the shared packages' suites, `tools/witness-all.sh`, evergreen and the tallies (a suite log with no "Test Files" line reads red; a dirty tree reads red); each lane's CI carried the e2e. The land writes one commit per lane, chained, each with the train's merge tree, so the span's last tree equals the train's tree. The span pushes only while no run flies on it, and the land cancels the CI runs its lane-branch pushes start. A lane on an older base lands when the span moved only by lands since (subjects carrying ` — merge PR #N`).
-* ''Road commits'' (road items, o-takiage moves, changelog bullets, `#/state`) ride behind a batch, never between queued lands.
+* ''Road commits'' (road items, o-takiage moves, `#/state`) ride behind a batch, never between queued lands.
 * ''After each land'' the build cache caps at 15GB (`docker builder prune -f --max-used-space 15GB`); no image or system prune without the operator's word.
 * ''Job-minutes make the CI currency'': every CI change reports total job-minutes beside the critical path, and the fewest, fullest cells win while the critical path stays at or under the slowest e2e shard.
 
@@ -301,6 +301,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Df4bwLMVzi5ndN05UujCgTaLrp5nP_XXMXECZiMoKm4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ambOlze9UWe7b7NLRhyENsFS9UxBUsiWTyYKdXFScf4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

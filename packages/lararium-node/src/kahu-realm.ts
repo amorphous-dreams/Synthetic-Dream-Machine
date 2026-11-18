@@ -341,7 +341,7 @@ export async function standKahuCanon(opts: {
 }
 
 /**
- * THE CANON DOCUMENTS A HEARTH NAMES TO A JOINEE — `@lares` and `@lararium` by bag title, as the Kahu realm's registry
+ * THE CANON DOCUMENTS A HEARTH NAMES TO A JOINEE — `lares` and `lararium` by bag title, as the Kahu realm's registry
  * stands them for the face this hearth wears: the one read the keel mounts them by (`standKahuCanon`). A catalog never
  * names them (the realm registry owns the system bags; one owner per registry), so a list read off catalog titles named
  * nothing on every hearth and every joined leaf read "the admit names no hearth canon" (walk R4). They ride the

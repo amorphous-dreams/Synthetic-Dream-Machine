@@ -127,6 +127,7 @@ import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, 
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { vesselOnlyShareVerdict, vesselOnlyClass } from "./vessel-only-share.js";
 import { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, type LitDeviceFaces } from "@lararium/mesh";
+import { selvesRecordBagOf, selvesRestOf, type SelvesRecordRef } from "@lararium/mesh";
 import { vesselOnlyBook } from "@lararium/mesh";
 import { classDeviceLedgers, readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
@@ -1025,10 +1026,16 @@ async function prepareNodeBootOn(
   // keeps. Enrollment or an open (`secret-home-store`) names it here before the Repo moves a byte of it; it maps with no
   // face and no session, and no page recipe, disk mirror or peer ever reaches it.
   const secretHomes = vesselHeldHomes();
+  // EACH CARRIED FACE'S SELVES RECORD (persona-selves-sealed#/design): the faces whose plane a proof vouched for (seated once
+  // `provenPlanes` stands, below). Each record files under its OWN face while that face stands lit, and under none while it
+  // stands shut, so it neither loads nor rests clear until the lift and the floor never reads it (`selvesRecordBagOf`).
+  let carriedSelves: () => readonly string[] = () => [];
   const sealedBagOf = (documentId: string): SealedBag | null => {
     // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the browser's one order).
     const held = vesselHeldBagOf(deviceDocs, secretHomes, litDevices(), documentId);
     if (held !== undefined) return held;
+    const selves = selvesRecordBagOf(documentId, carriedSelves(), litDevices());
+    if (selves !== null) return selves;
     const face = sealedCells.face();
     const named = face === null ? "none" : `${face.slice(0, 16)}… ${sealedCells.bags().map((b) => `${b}=${sealedMap.docOf(b)?.slice(0, 8) ?? "?"}`).join(" ")}`;
     if (named !== sealedMapNamed) { sealedMapNamed = named; console.log(`[sealed-rest] the map names: ${named}`); }
@@ -1142,6 +1149,7 @@ async function prepareNodeBootOn(
   // The persona planes a face proof vouched for, by group: the mounted face's own, and each anchored face's whose held log names its url.
   // Registration and every reader of a face's plane (the selves plane, the bag list) read THIS, never the bootstrap's list.
   const provenPlanes = new Map<string, string>();
+  carriedSelves = () => [...provenPlanes.keys()];
   // The live system documents THIS vessel holds, named by the Kahu realm at boot (`standKahuCanon`): empty outside the cabal.
   let kahuCanon: KahuCanonDocs = {};
   // The custody group's Kahu admission as the carriage board reads NOW (`watchKahuStanding`): the wire consult and the
@@ -2394,7 +2402,8 @@ async function prepareNodeBootOn(
   // per-island plugin-offering resolution (makePool's pool, and the daemon VM's own recipe).
   let publicationHandle: DocHandle<LarDoc> | undefined;
   let bootstrap!: VesselBootstrap;         // captured in loadGenesis
-  let personaSelves: PersonaSelvesPlane | null = null;   // the carried faces' planes, built at the first ask
+  let personaSelves: PersonaSelvesPlane | null = null;   // the carried faces' selves records, built at the first ask
+  let selvesCatalogRow: ((record: SelvesRecordRef) => void) | null = null;   // each record's row in its own face's catalog
   let slotActiveWikiId = "";               // captured in wikiSlot
   let activeWikiSource: "boot-arg" | "daemon-marker" | "floor" = "boot-arg";
   let wikiAwaitsFace: FloorWikiRefusal | null = null;   // captured in wikiSlot
@@ -3348,6 +3357,8 @@ async function prepareNodeBootOn(
       });
     };
     const registerInCatalog = registerInCatalogOf(personaGroupId);
+    // EACH FACE'S SELVES RECORD lands its row in that face's own catalog, the first time this Repo stands it.
+    selvesCatalogRow = (record) => registerInCatalogOf(record.personaGroupId)(record.bagId, record.url, true);
     // EVERY PLANE FAMILY REGISTERS THROUGH A FACE PROOF: a face this boot does not wear registers its persona plane only where its
     // own sealed anchor, the verified KEL and its signed log vouch for that url (`proveFaceFromLog`, no device seat to prove);
     // a bootstrap entry no proof backs registers nothing.
@@ -4604,8 +4615,9 @@ async function prepareNodeBootOn(
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
-    // EVERY carried face's own plane, each reached by the group that face's sealed anchors name: a name of one
-    // face lands on that face's plane and on no other's.
+    // EVERY carried face's own selves record, each reached by the group that face's sealed anchors name: a name of one
+    // face lands in that face's record and in no other's. Each record answers the rest the bag map files it under, read
+    // live: sealed under its lit face, shut until its face lifts, clear where nothing maps it.
     personaSelves:   () => (personaSelves ??= provenPlanes.size > 0
       ? repoPersonaSelvesPlane(repo, [...provenPlanes].map(([personaGroupId, url]) => ({ personaGroupId, url })), async () => {
           const faces: { handleIndex: number; personaGroupId: string }[] = [];
@@ -4614,6 +4626,9 @@ async function prepareNodeBootOn(
             if (anchors) faces.push({ handleIndex, personaGroupId: anchors.personaGroupId });
           }
           return faces;
+        }, {
+          restOf: (documentId) => selvesRestOf(sealedBagOf(documentId)),
+          opened: (record) => { selvesCatalogRow?.(record); },
         })
       : null),
     // A thunk: the dial's gate key settles before any act runs. No walk dial re-presents in the daemon, so a taken
