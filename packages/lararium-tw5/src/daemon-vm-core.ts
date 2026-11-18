@@ -20,6 +20,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-vm-core
  */
 
+import { wearOf } from "@lararium/mesh";
 import {
   canonicalJson,
   DAEMON_BAG_ID,
@@ -87,6 +88,7 @@ import {
   type WorldlineEdgeClose,
   type DaemonMsg_EvictRequest,
   type DaemonMsg_ResidencyOp,
+  type DaemonMsg_WearActorRequest,
   type DaemonMsg_WikiAlert,
   type BatchMode,
   type ChoreReceiptMark,
@@ -207,6 +209,12 @@ export interface DaemonVmCoreOptions {
   askLivenessMs?: number;
   /** Override the ea progress-stall budget in ms (default 3x silence). */
   eaStallMs?:      number;
+  /**
+   * The PersonaGroup the vessel's worn face maps a session's ordinal to (the mounted face, or a lit sibling), or null where
+   * it maps none. A session's placed act carries it to the island (`DaemonMsg_PlaceVerb.worn`), so a tool-door write names
+   * that face on its origin. Absent, or null for an ordinal: the act carries no group, and its writes ride the engine's actor.
+   */
+  wornGroupOf?:    (ordinal: number) => string | null;
 }
 
 /** Unified placeVerb request — union of node + browser fields. */
@@ -432,7 +440,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
 
   // ── Vessel composite (cap-event writes) ─────────────────────────────────────
   const composite  = new CompositeStore();
-  const daemonStore = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID);
+  const daemonStore = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID, wearOf(repo));
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true, defaultWritable: false });
   daemonStore.markSyncComplete();
   // Hold the persona plane directly for proof readers; no verb reads or writes it through the composite.
@@ -674,6 +682,18 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       return;
     }
 
+    if (raw.type === "daemon:wear-actor-request") {
+      // THE ISLAND'S ACTOR, derived here: the main Repo's seated door (`seatRepoWear`, the vessel's wire identity) derives it
+      // under the island's own replica, and the actor alone crosses back. A main Repo with no seat refuses by name.
+      const msg = raw as DaemonMsg_WearActorRequest;
+      const door = wearOf(repo).wear!;
+      door.actor(msg.face, msg.documentId, msg.replica).then(
+        (actor) => worker.post({ type: "daemon:wear-actor-result", requestId: msg.requestId, actor }),
+        (err: unknown) => worker.post({ type: "daemon:wear-actor-result", requestId: msg.requestId, refusal: (err as { reason?: unknown })?.reason === undefined ? "worn-face-unwritable" : String((err as { reason: unknown }).reason) }),
+      );
+      return;
+    }
+
     if (raw.type === "daemon:residency-op") {
       // Sovereign-worker: the worker's residency verb (pin/unpin/register-cold) granted
       // policy; main executes the mechanism on the BagStowage. Ack regardless.
@@ -711,7 +731,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       // vessel's own channel). Any other delegate keeps the claim it names and reads non-local. Only the delegate of
       // the act booked spends the booking: one naming another verb or other args under that id leaves it standing.
       const booked = sessionAsks.get(msg.requestId);
-      const worn: SessionWorn | undefined = booked && booked.act === actOf(msg.verb, msg.args) ? { ordinal: booked.ordinal, presenter: booked.presenter } : undefined;
+      const worn: SessionWorn | undefined = booked && booked.act === actOf(msg.verb, msg.args) ? { ordinal: booked.ordinal, presenter: booked.presenter, ...(booked.group !== undefined ? { group: booked.group } : {}) } : undefined;
       if (worn) sessionAsks.delete(msg.requestId);
       const invocationLike = {
         title:       `${DAEMON_BAG_ID}/delegate/${msg.requestId}`,
@@ -841,7 +861,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     }
     if (!binding.workingUrl) throw new HostWorkingBindingRefusal(slot, new Error("the island named no working document for the daemon wiki"));
     const handle = await findOrThrow(repo, binding.workingUrl, `${slot} (the host's daemon working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
-    const store = new AutomergeDocStore(handle, slot);
+    const store = new AutomergeDocStore(handle, slot, wearOf(repo));
     composite.addLayer({ bagId: slot, store, writable: true, defaultWritable: true });
     store.markSyncComplete();
     if (composite.defaultWritableBagId() !== slot) throw new NoWorkingLayerRefusal("Mounting the host working layer", "The mounted daemon working layer did not become the default writable; restart the vessel.");
@@ -851,7 +871,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     const slot = wikiSlotUri("daemon", "working");
     if (!composite.hasBag(slot) || mountedDocumentId(composite.storeForBag(slot)) === documentIdOfUrl(url)) return;
     const handle = await findOrThrow(repo, url, `${slot} (the island's working document)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
-    const store = new AutomergeDocStore(handle, slot);
+    const store = new AutomergeDocStore(handle, slot, wearOf(repo));
     if (rebindWorkingLayer(composite, slot, store)) {
       store.markSyncComplete();
       console.log(`[daemon] the host working layer follows the island onto ${url.slice(0, 22)}…`);
@@ -894,10 +914,15 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     },
     placeVerb: (o: VesselPlaceVerbRequest) => {
       if (o.origin === "channel" && o.face && o.requestId && o.requestedBy && o.ordinal !== undefined && Number.isSafeInteger(o.ordinal) && o.ordinal >= 0) {
-        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, act: actOf(o.verb, o.args) });
+        const group = opts.wornGroupOf?.(o.ordinal) ?? null;
+        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, ...(group !== null ? { group } : {}), act: actOf(o.verb, o.args) });
         if (sessionAsks.size > 4096) sessionAsks.delete(sessionAsks.keys().next().value as string);
       }
+      // THE SESSION'S FACE RIDES THE ACT INTO THE ISLAND: the ordinal, the presenter its door verified, and the group the
+      // vessel's worn face maps the ordinal to. Booked the same way as the delegate's worn face above.
+      const booked = o.requestId ? sessionAsks.get(o.requestId) : undefined;
       worker.post(mkDaemonPlaceVerb({
+        ...(booked ? { worn: { ordinal: booked.ordinal, presenter: booked.presenter, ...(booked.group !== undefined ? { group: booked.group } : {}) } } : {}),
         origin:      o.origin,
         verb:        o.verb,
         args:        o.args,

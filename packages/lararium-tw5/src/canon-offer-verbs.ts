@@ -17,6 +17,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer
  */
+import { wearOf } from "@lararium/mesh";
 import {
   AutomergeDocStore, CanonOfferRefused, VerbRefusal, bagUri, findOrThrow, isHouseCanonBag, offerCanonRecords, resolveHouseCanon, promoteCanonOffer, readCanonOffers, requireKahuReach,
   showCanonOffer, workingLayerOfCanon,
@@ -73,7 +74,7 @@ async function canonStoreOf(opts: CanonOfferVerbOptions, bag: string): Promise<L
   const answer = await resolveHouseCanon<LarTiddlerStore>(bag, { realm: reach?.systemCanonUrl, row: () => makeBagAccess(opts).read(bag) });
   if (answer === null) return null;
   if ("row" in answer) return answer.row;
-  return new AutomergeDocStore(await findOrThrow(reach!.repo, answer.realm, `${bag} (the Kahu realm's live canon)`), bag);
+  return new AutomergeDocStore(await findOrThrow(reach!.repo, answer.realm, `${bag} (the Kahu realm's live canon)`), bag, wearOf(reach!.repo));
 }
 
 /** Run a door, answering a named refusal as data (`refusal`, `why`), the way the action verbs answer theirs. */

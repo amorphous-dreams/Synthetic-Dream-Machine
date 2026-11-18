@@ -253,6 +253,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private readonly actRemovals = new Map<string, ActRemoval>();
   /** The rest holds of the acts this change dispatch began; they rest with what the dispatch marked. */
   private readonly actHolds: Array<{ hold: ReceiptHold; members: readonly string[] }> = [];
+  /**
+   * THE FACE A TOOL DOOR'S HAND WORE, by title: a verb that lands a record through the wiki (`wiki.addTiddler`) names
+   * its session's face here before the hand, and the drain's write of that title carries it on its origin
+   * (`ChangeOrigin.face`), so the record lands under the face's actor. It stands until a write of the title is taken
+   * (or the title settles with nothing to write), so a refused write retries under the same face.
+   */
+  private readonly handFaces = new Map<string, string | null>();
   /** Parallel-draft persistence in flight. */
   private readonly surfacings = new Set<Promise<void>>();
 
@@ -1431,7 +1438,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * its slot children; its refusal keeps the source in the wiki and the title owed, named on the rail under itself and its target.
    */
   private async _flushRemoval(title: string, removal: ActRemoval): Promise<void> {
-    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
+    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId, ...this._handFace(title) };
     const ackBefore = this.writeAcks.get(title) ?? 0;
     if (removal.recovery) {
       try { await this._issueGroup(removal.bag, this._handBaseFor(title, removal.bag), [removal.recovery], [], origin); }
@@ -1534,6 +1541,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       : this.resident && !this.unlanded.has(title) && same(state, landed ? landed.tiddler : null));
     if (!placedByFamily) this.familyPlaced.delete(title);
     if (settled) {
+      this.handFaces.delete(title);
       if (this.handed.get(title) === state) this.handed.delete(title);
       if (!this.sent.has(title)) this.handBase.delete(title);
       this.lastFlushWrote.set(title, false);
@@ -1541,7 +1549,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this._clearUnsaved(title);
       return;
     }
-    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
+    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId, ...this._handFace(title) };
     const ackBefore = this.writeAcks.get(title) ?? 0;
     let writeBag: string | undefined;
     let task: Promise<void>;
@@ -1616,6 +1624,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       // an equal state already stood (a noop). A noop fires no envelope, so no return wave lands over `sent`
       // and none clears `unlanded`: only an acknowledged write stands ahead of the ledger.
       const acknowledged = (this.writeAcks.get(title) ?? 0) > ackBefore;
+      // The write of this hand stood: the face it wore leaves with it, and the title's next hand names its own.
+      if (origin.face !== undefined && this.handFaces.get(title) === origin.face) this.handFaces.delete(title);
       this.lastFlushWrote.set(title, acknowledged);
       if (writeBag) this.lastWriteBag.set(title, writeBag);
       if (acknowledged) this.unlanded.add(title);
@@ -1655,6 +1665,20 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   //
   // So the refusal sits HERE, in the module the law names, ahead of the cascade — the cascade routes
   // among bags and stays the operator's to edit, and no edit of it may re-open this.
+
+  /**
+   * NAME THE FACE THE NEXT HAND OF `title` WEARS: a tool door that lands a record through the wiki calls this before its
+   * `addTiddler` (or `deleteTiddler`). `undefined` clears it, so a hand no session made rides the engine's actor.
+   */
+  wearNext(title: string, face: string | null | undefined): void {
+    if (face === undefined) this.handFaces.delete(title);
+    else this.handFaces.set(title, face);
+  }
+
+  /** The origin field naming the face the title's pending hand wore, or nothing. */
+  private _handFace(title: string): { readonly face?: string | null } {
+    return this.handFaces.has(title) ? { face: this.handFaces.get(title)! } : {};
+  }
 
   saveTiddler(tiddler: unknown): Promise<void> {
     const fields = extractFields(this.tw5, tiddler);

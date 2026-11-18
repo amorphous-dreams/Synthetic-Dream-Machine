@@ -17,6 +17,7 @@
  * grow into init/PersonaGroup/genesis/corpus/residency.
  */
 
+import { wearOf } from "./repo-wear.js";
 import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
 import type { LarOpenPhase } from "./lararium-vessel.js";
 import { CompositeStore } from "./composite-store.js";
@@ -166,12 +167,12 @@ function documentIdFromUrl(url: string): string {
 const blankDoc = (repo: Repo): DocHandle<LarDoc> => repo.create<LarDoc>(emptyLarDoc());
 
 /** Canon layer (the lararium and lares bags): writable, defaultWritable:false. */
-function addSubstrateLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>): void {
-  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: true, defaultWritable: false });
+function addSubstrateLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>, repo: Repo): void {
+  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId, wearOf(repo)), writable: true, defaultWritable: false });
 }
 /** Read-only layer (catalog registry, corpus bags). */
-function addReadOnlyLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>): void {
-  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
+function addReadOnlyLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>, repo: Repo): void {
+  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId, wearOf(repo)), writable: false });
 }
 
 /**
@@ -184,11 +185,11 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   const emit = (p: LarOpenPhase) => keel.onPhase?.(p);
 
   const composite = new CompositeStore();
-  addReadOnlyLayer(composite, BAG_IDS.catalog, catalogHandle);
+  addReadOnlyLayer(composite, BAG_IDS.catalog, catalogHandle, repo);
 
   // ── genesis island (REQUIRED — coreless boot deleted) + the bootstrap it carries ──
   const { islandHandle, coreHash, bootstrap } = await loadGenesis();
-  addSubstrateLayer(composite, BAG_IDS.oracle, islandHandle);
+  addSubstrateLayer(composite, BAG_IDS.oracle, islandHandle, repo);
   // The lares and lararium bags — the LIVE system documents, mounted only from what the shore names (`keel.systemCanon`):
   // the Kahu realm's standing registrations on a vessel whose cabal admitted its group. No catalog row names either bag.
   // The named documents resolve through the tideline resolver, never the blank-mint fallback: a document that has not
@@ -201,7 +202,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
     });
     if (!isStillJoining(resolved)) {
       laresHandle = resolved;
-      addSubstrateLayer(composite, BAG_IDS.lares, laresHandle);
+      addSubstrateLayer(composite, BAG_IDS.lares, laresHandle, repo);
     }
   }
   let larariumHandle: DocHandle<LarDoc> | null = null;
@@ -211,7 +212,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
     });
     if (!isStillJoining(resolved)) {
       larariumHandle = resolved;
-      addSubstrateLayer(composite, BAG_IDS.lararium, larariumHandle);
+      addSubstrateLayer(composite, BAG_IDS.lararium, larariumHandle, repo);
     }
   }
   const existingRef = tiddlerText(ownEntry(catalogHandle.doc()?.tiddlers, ORACLE_DOC_URI)) ?? null;
@@ -249,7 +250,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         // condemn's quarantine (real integrity evidence already stands on the base verdict).
         const promoted = keel.recoverCleanTail ? await keel.recoverCleanTail(verdict) : null;
         if (promoted && promoted.status === "ok") {
-          composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId), writable: true, defaultWritable: false });
+          composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId, wearOf(repo)), writable: true, defaultWritable: false });
           const cut = promoted.cleanTail;
           entries.push({ bagId, documentId, status: "promoted", reason: cut ? `clean-tail: kept ${cut.kept}, moved ${cut.movedAside.length} aside` : "clean-tail recovery" });
           return;
@@ -259,7 +260,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         entries.push({ bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
         // Read-only blank stands in — the plane reads empty until L4 rematerializes it,
         // and no write forks a placeholder the real doc will later reconcile against.
-        composite.addLayer({ bagId, store: new AutomergeDocStore(blankDoc(repo), bagId), writable: false });
+        composite.addLayer({ bagId, store: new AutomergeDocStore(blankDoc(repo), bagId, wearOf(repo)), writable: false });
         return;
       }
       if (isUnresolved(verdict)) {
@@ -269,11 +270,11 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         // later reconcile against) — a read-only blank, named `pending`, until a later
         // re-probe (doctor, or an operator receipt) actually decides.
         entries.push({ bagId, documentId, status: "pending", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
-        composite.addLayer({ bagId, store: new AutomergeDocStore(blankDoc(repo), bagId), writable: false });
+        composite.addLayer({ bagId, store: new AutomergeDocStore(blankDoc(repo), bagId, wearOf(repo)), writable: false });
         return;
       }
     }
-    composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId), writable: true, defaultWritable: false });
+    composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId, wearOf(repo)), writable: true, defaultWritable: false });
     entries.push({ bagId, documentId, status: "mounted" });
   };
   // A PLACE names no social plane, so each mount rides its own url standing. A faceless vessel carries
@@ -352,11 +353,11 @@ export async function mountWikiSlot(
   const workingHandle = workingUrl === null ? null : await findOrThrow(repo, workingUrl, `${workingSlot} (working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
   const writeSlot = await resolveWriteSlot?.(canonAddress);
   const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug, writeSlot);
-  if (wikiHandle) composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId), ...flags(slot.wikiBagId) });
-  if (workingHandle) composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot), ...flags(workingSlot) });
+  if (wikiHandle) composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId, wearOf(repo)), ...flags(slot.wikiBagId) });
+  if (workingHandle) composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot, wearOf(repo)), ...flags(workingSlot) });
 
   const draftHandle = await waitHandle<LarDoc>(await resolveDraft(canonAddress) as AutomergeUrl, () => blankDoc(repo));
-  composite.addLayer({ bagId: slot.draftBagId, store: new AutomergeDocStore(draftHandle, slot.draftBagId), ...flags(slot.draftBagId) });
+  composite.addLayer({ bagId: slot.draftBagId, store: new AutomergeDocStore(draftHandle, slot.draftBagId, wearOf(repo)), ...flags(slot.draftBagId) });
 
   const tempSlot = wikiSlotUri(slot.wikiSlug, "temp");
   composite.addLayer({ bagId: tempSlot, store: keel.tempStore(), ...flags(tempSlot) });

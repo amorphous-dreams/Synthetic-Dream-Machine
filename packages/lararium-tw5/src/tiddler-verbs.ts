@@ -66,6 +66,8 @@ import { localFilter } from "./record-port-projection.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
+import { wornOrigin } from "./verb-dispatcher.js";
+import { wikiWearsNext } from "./island-recipe.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
 export interface TiddlerVerbOptions {
@@ -551,6 +553,8 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
     const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
     if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
     // The record lands through the live wiki, so the in-wiki cascade routes it to the working layer as a person's edit would.
+    // THE FACE CROSSES THE HOP: the shore's write of this title carries the session's worn face on its origin.
+    wikiWearsNext(opts.tw5, title, wornOrigin(ctx.worn).face);
     wiki.addTiddler(new Tiddler(next));
     const landed = readRecord(wiki.getTiddler(title)!).fields;
     return answer("put", { created: !standing, changed, hash: hashOf(landed), textHash: textHashOf(landed) });
@@ -613,7 +617,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
 
     // THE LANDING: each layer takes its members as ONE change (tombstones and retracts together), and the shore lands
     // that change in the wiki as one grain. A record no layer holds leaves through the live wiki, as a hand's delete.
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const perBag = new Map<string, { tombstones: string[]; retracts: string[] }>();
     const byHand: string[] = [];
     for (const row of read.acts) {
@@ -626,7 +630,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     for (const [landing, group] of perBag) {
       await opts.composite.writeFamily([], group.tombstones, origin, { bag: landing as never, ...(group.retracts.length > 0 ? { retracts: group.retracts } : {}) });
     }
-    for (const member of byHand) wiki.deleteTiddler(member);
+    for (const member of byHand) { wikiWearsNext(opts.tw5, member, wornOrigin(ctx.worn).face); wiki.deleteTiddler(member); }
     return { recipe: "default", title, decision: "removed", mode, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
   };
 }
