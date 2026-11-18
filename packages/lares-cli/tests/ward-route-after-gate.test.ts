@@ -47,7 +47,7 @@ beforeEach(() => {
   seatWardGatherer(async () => { asked += 1; return [{ kind: "passphrase" as const, passphrase: "typed for this act" }]; });
   vi.mocked(openLocalSession).mockImplementation(async ({ faceRef }) => ({
     faceRef,
-    act: async (act: string, args: Record<string, unknown>) => { acted.push(args); return { status: "done", output: { verb: act, ...(answers.shift() ?? { lowered: true }) } }; },
+    act: async (act: string, args: Record<string, unknown>) => { acted.push(args); return { requestId: "r", answer: { status: "done", output: { verb: act, ...(answers.shift() ?? { lowered: true }) } } }; },
     call: async () => { throw new Error("a face row never rides session:call"); },
     close: async () => undefined,
   }) as never);
@@ -82,9 +82,9 @@ describe("a co-signed ward act on a standing vessel", () => {
       faceRef,
       act: async (_act: string, args: Record<string, unknown>) => {
         acted.push(args); calls += 1;
-        return calls === 1
+        return { requestId: `r${calls}`, answer: calls === 1
           ? { status: "error", errorMessage: "ward-needs-fresh-unlock: ward-needs-fresh-unlock: the panel's kāpae-lower rests under the face's ward", reason: "kapae-refused" }
-          : { status: "done", output: { verb: "kapae-lower", done: "kapae-lower" } };
+          : { status: "done", output: { verb: "kapae-lower", done: "kapae-lower" } } };
       },
       call: async () => { throw new Error("a face row never rides session:call"); },
       close: async () => undefined,
@@ -99,7 +99,7 @@ describe("a co-signed ward act on a standing vessel", () => {
     vi.mocked(udsAlive).mockResolvedValue(true);
     vi.mocked(openLocalSession).mockImplementation(async ({ faceRef }) => ({
       faceRef,
-      act: async (_act: string, args: Record<string, unknown>) => { acted.push(args); return { status: "error", errorMessage: "ward-awaiting-cosign: " + "c".repeat(64), reason: "kapae-refused" }; },
+      act: async (_act: string, args: Record<string, unknown>) => { acted.push(args); return { requestId: "r", answer: { status: "error", errorMessage: "ward-awaiting-cosign: " + "c".repeat(64), reason: "kapae-refused" } }; },
       call: async () => { throw new Error("a face row never rides session:call"); },
       close: async () => undefined,
     }) as never);

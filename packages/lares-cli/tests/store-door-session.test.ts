@@ -58,7 +58,7 @@ beforeEach(() => {
       faceRef, act: async (act: string, args: Record<string, unknown>, opts?: { requestId?: string }) => {
         acted.push({ act, args }); actIds.push(opts?.requestId);
         if (loseAnswer) throw new UdsUnreachable("local session socket closed");
-        return answerOf(act);
+        return { requestId: opts?.requestId ?? "minted-here", answer: answerOf(act) };
       },
       receipt: async (requestId: string) => { receiptsRead.push(requestId); return { requestId, status: "done" }; },
       call: async () => { throw new Error("a face row never rides session:call"); },

@@ -199,10 +199,10 @@ const shadowText = (page: Page) => page.evaluate(() => document.getElementById("
 // the same two frames from node, so the read stands on the house's own door and no host interpreter.
 async function seatRead(title: string): Promise<Record<string, unknown>> {
   const { openLocalSession } = await import(join(REPO, "packages/lares-cli/dist/src/session-connector.js")) as {
-    openLocalSession: (o: { faceRef: string; hand?: string; dataDir?: string | null }) => Promise<{ act(act: string, args: Record<string, unknown>): Promise<Record<string, unknown>>; close(): Promise<void> }>;
+    openLocalSession: (o: { faceRef: string; hand?: string; dataDir?: string | null }) => Promise<{ act(act: string, args: Record<string, unknown>): Promise<{ answer: Record<string, unknown> }>; close(): Promise<void> }>;
   };
   const session = await openLocalSession({ faceRef: "h0", hand: "seat", dataDir: join(hearth!.root, "hearth/vessel") });
-  try { return await session.act("kahua-read", { action: "get", title }); }
+  try { return (await session.act("kahua-read", { action: "get", title })).answer; }
   finally { await session.close(); }
 }
 
