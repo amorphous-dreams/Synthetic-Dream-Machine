@@ -411,7 +411,7 @@ $verb = [string]$args[0]
 $rest = @(); if ($args.Count -gt 1) { $rest = @($args[1..($args.Count - 1)]) }
 
 # A WORKSPACE (cabal-realm#/the-workbench): bound read-write at /lar/workspaces/<name>, from `--workspace <name>=<dir>` and from
-# LARES_WORKSPACES (`;`-separated `<name>=<dir>` pairs). One inside the checkout, LARES_WORKSPACE or LARES_HOUSE/hearth refuses.
+# LARES_WORKSPACES (`;`-separated `<name>=<dir>` pairs). One inside LARES_HOUSE/hearth refuses; the checkout and LARES_WORKSPACE bind (rank 4j).
 $script:WorkspaceNames = @()
 function Test-Within([string]$child, [string]$parent) {
   $c = $child.TrimEnd('/', '\'); $p = $parent.TrimEnd('/', '\')
@@ -427,9 +427,6 @@ function WorkspaceBind([string]$pair) {
   $real = (Get-Item $wdir).ResolveLinkTarget($true)
   $real = if ($real) { $real.FullName } else { (Resolve-Path $wdir).Path }
   $real = $real.TrimEnd('/', '\')
-  if (Test-Within $real ([System.IO.Path]::GetFullPath($Root))) { Die "--workspace $name refuses $real — it rests inside the checkout ($Root)" }
-  $ws = ValueOf 'LARES_WORKSPACE'
-  if ($ws -and (Test-Within $real ([System.IO.Path]::GetFullPath($ws)))) { Die "--workspace $name refuses $real — it rests inside LARES_WORKSPACE ($ws)" }
   if (Test-Within $real ([System.IO.Path]::GetFullPath((Join-Path $House 'hearth')))) { Die "--workspace $name refuses $real — it rests inside the hearth" }
   if ($real.Contains("`n")) { Die '--workspace refuses a path that holds a newline' }
   $script:WorkspaceNames += $name

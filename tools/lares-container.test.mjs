@@ -706,11 +706,10 @@ for (const [name, shim] of shims) {
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test(`${name}: a workspace inside the checkout or the hearth refuses by name, before docker runs`, async () => {
-    const inCheckout = await run(shim, ["up", "--workspace", `tree=${join(ROOT, "tools")}`], { env: MOUNTS });
-    assert.equal(inCheckout.status, 2);
-    assert.match(inCheckout.stderr, /inside the checkout/);
-    assert.equal(inCheckout.calls, "");
+  test(`${name}: a workspace inside the hearth refuses by name, before docker runs; the checkout binds like any directory (rank 4j)`, async () => {
+    const inCheckout = await run(shim, ["up", "--workspace", `tree=${join(ROOT, "tools")}`], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' } });
+    assert.equal(inCheckout.status, 0, inCheckout.stderr);
+    assert.match(inCheckout.calls, /target: \/lar\/workspaces\/tree/);
     const inHearth = await run(shim, ["up", "--workspace", "deep=@HOUSE@/hearth"], { env: MOUNTS });
     assert.equal(inHearth.status, 2);
     assert.match(inHearth.stderr, /inside the hearth/);
