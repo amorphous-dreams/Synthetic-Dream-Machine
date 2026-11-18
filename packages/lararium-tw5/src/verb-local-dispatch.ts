@@ -38,6 +38,8 @@ export interface RunLocalVerbOptions {
   readonly wornOf?: (invocation: Verb) => SessionWorn | undefined;
   /** The asker's hand the island booked for this ask (`VerbContext.asker`); absent where none. */
   readonly askerOf?: (invocation: Verb) => Hand | undefined;
+  /** The vessel's exec-lei port (`VerbContext.execLei`): a write door spends a standing exec lei's return through it. */
+  readonly execLei?: import("@lararium/mesh").ExecLeiPort;
 }
 
 export function makeCapVerify(verifier: CapabilityVerifier | undefined, requestedBy: string, local = false): CapVerify {
@@ -198,5 +200,5 @@ export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions):
   const cap = makeCapVerify(opts.verifier, presenter, local);
   const worn = opts.wornOf?.(invocation);
   const asker = opts.askerOf?.(invocation);
-  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, surface: opts.surfaceOf?.(invocation) === true, ...(worn ? { worn } : {}), ...(asker ? { asker } : {}), ...(opts.signal ? { signal: opts.signal } : {}) });
+  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, surface: opts.surfaceOf?.(invocation) === true, ...(worn ? { worn } : {}), ...(asker ? { asker } : {}), ...(opts.execLei ? { execLei: opts.execLei } : {}), ...(opts.signal ? { signal: opts.signal } : {}) });
 }

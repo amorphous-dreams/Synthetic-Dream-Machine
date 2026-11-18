@@ -28,7 +28,7 @@
  * title or tag, a module or plugin field and a script type alike (the island holds a document's code as data; its code
  * comes from the floor-admitted preloads alone). A RENDERED TIDDLER (`rendered-from`) takes no put and no delete here:
  * only the renderer writes it, and both refuse `rendered-derives`. THE ONE WALL A SEAT KEEPS: a seat-asked put carrying a
- * `$:/tags/StartupAction*` tag refuses `seat-startup-offer` (a wiki's startup action runs in the operator's tab), and the
+ * record the mesh's one executable-class list names refuses `seat-startup-offer` (it runs in the operator's tab), and the
  * operator's own hand lands it. No action string and no `tm-*` message rides this door (the `act` ask, phase 2).
  *
  * THE FAMILY LAW (`@lararium/mesh/family`) DECIDES WHERE A RECORD STANDS AND WHAT A DELETE MOVES. `position` and
@@ -56,7 +56,7 @@
  */
 
 import {
-  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseRenderedWrite, refuseSeatStartupAction, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -548,13 +548,14 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
     if ((place.position !== "plain" && structural.length > 0) || joinsFamily) {
       throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares meme put\` (meme_put) lands a family's text through the Confluence gate. A field or tag patch on a standing root or slot lands here.`);
     }
-    refuseSeatStartupAction(title, tags, "tiddler put", ctx.asker);
     // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or one that would land carrying `rendered-from`, refuses.
     refuseRenderedWrite(title, before, next, "tiddler put");
     refuseMalformedStagePath(title);
 
     const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
     if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
+    // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei.
+    await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: "default", port: ctx.execLei });
     // The record lands through the live wiki, so the in-wiki cascade routes it to the working layer as a person's edit would.
     // THE FACE CROSSES THE HOP: the shore's write of this title carries the session's worn face on its origin.
     wikiWearsNext(opts.tw5, title, wornOrigin(ctx.worn).face);

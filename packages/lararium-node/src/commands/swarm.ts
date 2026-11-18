@@ -10,6 +10,7 @@
  * and runs the act it names over the record's own signature (a restring lands as the kui after the tip it names).
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
+import type { ExecLeiScope } from "@lararium/mesh";
 import { wardRootSigner } from "../ward-signer.js";
 import { loadPersonaGroupRootVerifyingKey } from "../node-vessel-identity.js";
 import type { WardCredential } from "../ward-credential.js";
@@ -64,6 +65,7 @@ export async function runSwarmVerb(opts: {
         ...(opts.args["reach"] !== undefined ? { reach: opts.args["reach"] as SwarmLeiReach } : {}),
         ...(opts.args["returns"] !== undefined ? { returns: opts.args["returns"] as number } : {}),
         ...(opts.args["head"] !== undefined ? { head: opts.args["head"] as string } : {}),
+        ...(opts.args["scope"] !== undefined ? { scope: opts.args["scope"] as ExecLeiScope } : {}),
         ...(opts.args["confirm"] === true ? { confirm: true } : {}) }
     // `rite` names the lei's one power (push or kukulu); the door refuses a lei that names none. `after` names the lei this one
     // follows on its rite's line at the branch (`show` reads it), null for the first there; an absent one refuses.
@@ -73,6 +75,7 @@ export async function runSwarmVerb(opts: {
         ...(opts.args["reach"] !== undefined ? { reach: opts.args["reach"] as SwarmLeiReach } : {}),
         ...(opts.args["returns"] !== undefined ? { returns: opts.args["returns"] as number } : {}),
         ...(opts.args["head"] !== undefined ? { head: opts.args["head"] as string } : {}),
+        ...(opts.args["scope"] !== undefined ? { scope: opts.args["scope"] as ExecLeiScope } : {}),
         ...(opts.args["confirm"] === true ? { confirm: true } : {}) };
   return await swarmCommand(request, {
     group, face: { group, grant }, signer: signing, epoch: () => face.lineage[face.lineage.length - 1]!.epoch, wiki: opts.wiki,

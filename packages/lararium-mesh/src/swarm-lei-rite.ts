@@ -7,13 +7,14 @@
  *
  * `push` sends a branch out; `kukulu` raises the vessel again around its hearth (a re-stand); `keep` lays the house's authored
  * memory, cut as a carry bundle, into one of the operator's bound workspaces (its `branch` names that workspace, its head and
- * tree the bundle's id).
+ * tree the bundle's id); `exec` lets an executable record another writer landed run (`exec-lei.ts`: the lei names one wiki, a
+ * writer, and a title set or one class of the executable-class list; each spend names the record's title and content cid).
  *
  * THE LIST STAYS CAPPED at the acts the boot core verifies. It names powers, never conditions: a rite carries no argument,
  * and the field grows into no policy language.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
-export const SWARM_LEI_RITES = ["push", "kukulu", "keep"] as const;
+export const SWARM_LEI_RITES = ["push", "kukulu", "keep", "exec"] as const;
 export type SwarmLeiRite = typeof SWARM_LEI_RITES[number];
 export type WardLeiVerb = `ward-${SwarmLeiRite}-lei`;
 
@@ -23,6 +24,7 @@ export const isSwarmLeiRite = (x: unknown): x is SwarmLeiRite => typeof x === "s
  * THE CO-SIGN WEIGHS REACH. A second device of the face co-signs an act whose effect leaves the device: a `push` sends a
  * branch out, so a push lei waits on its co-sign; a `kukulu` raises the vessel again where it stands, so a kukulu lei waits on
  * none; a `keep` writes into a workspace on this device, a directory the operator bound by hand, so a keep lei waits on none.
+ * An `exec` lei lets a record run in a vessel on this device (the tab or the node island), so it waits on none either.
  * The ward guards the stringing of every lei, whatever its rite.
  */
 export const SWARM_LEI_COSIGNED_RITES: readonly SwarmLeiRite[] = ["push"];
@@ -30,3 +32,11 @@ export const leiRiteCosigns = (rite: SwarmLeiRite): boolean => SWARM_LEI_COSIGNE
 
 /** The ward verb a lei of this rite asks its co-sign under, where its rite co-signs (`leiRiteCosigns`). */
 export const wardLeiVerb = (rite: SwarmLeiRite): WardLeiVerb => `ward-${rite}-lei`;
+
+/**
+ * THE TESTIMONY WEIGHS A TREE. A rite that runs at a head (`push`, `kukulu`, `keep`) spends only beside a passing receipt for that
+ * head's tree (`returnLei`). An `exec` spend names a record, never a tree of commits: the hand's signed lei, scoped to the record,
+ * stands as its consent, and its spend runs the scope check instead (`spendExecLei`).
+ */
+export const SWARM_LEI_TESTIFIED_RITES: readonly SwarmLeiRite[] = ["push", "kukulu", "keep"];
+export const leiRiteTestifies = (rite: SwarmLeiRite): boolean => SWARM_LEI_TESTIFIED_RITES.includes(rite);

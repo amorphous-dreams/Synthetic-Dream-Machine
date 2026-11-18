@@ -208,7 +208,7 @@ export interface PlaceMemeInput {
    *  over records that say something else, and answers `conflict`, `no-base` (`ingest-gate`, rule 4½). */
   readonly unattended?: boolean;
   /** Reads every record an `ingest` decision would land, before the first lands; a throw lands nothing (a door's own wall). */
-  readonly vet?: (records: readonly Record<string, unknown>[]) => void;
+  readonly vet?: (records: readonly Record<string, unknown>[]) => void | Promise<void>;
 }
 
 export interface PlaceMemeReceipt {
@@ -529,7 +529,7 @@ export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<
 
   if (decision.kind !== "ingest") return receiptOfNonIngest(uri, currentRenderHash, decision);
   const grade = gradeOf(decision.diagnostics);
-  input.vet?.(decision.records);
+  await input.vet?.(decision.records);
 
   const lands: string[] = [];
   for (const fields of decision.records) {
