@@ -34,9 +34,9 @@ A node founded by one operator stands as a SEED. A Nexus stands when two operato
 
 !! Fresh state
 
-A fresh founding needs only a fresh house root (`LARES_HOUSE`) and this household's house canon clone at `/workspace` (#/prepare). For an older installation, move its homes aside by hand before founding again, as the stable founding road directs. No CLI pave or wipe command stands.
+A fresh founding needs only a fresh house root (`LARES_HOUSE`) and the workspace the operator names at `/workspace` (#/prepare). For an older installation, move its homes aside by hand before founding again, as the stable founding road directs. No CLI pave or wipe command stands.
 
-''Do'': prepare the first operator's fresh house root (`LARES_HOUSE`, bound at `/lar`) and point `/workspace` at the house canon clone (#/prepare), then follow this walk.
+''Do'': prepare the first operator's fresh house root (`LARES_HOUSE`, bound at `/lar`) and name the workspace `/workspace` binds (#/prepare), then follow this walk.
 
 ''See'': the repo carries the corpus and genesis; the new house root holds no prior vessel home.
 
@@ -48,23 +48,22 @@ A fresh founding needs only a fresh house root (`LARES_HOUSE`) and this househol
 
 !! 2 · Prepare the machine
 
-All code runs in Docker. The host keeps the shell shim, hooks, mounts, editor, and custody copies. Use a local filesystem for every mount; keep the house root outside the repository and separate from `/workspace`, which points at the house canon clone. The vessel image carries code and genesis, never household state. The app receives no Docker socket.
+All code runs in Docker. The host keeps the shell shim, hooks, mounts, editor, and custody copies. Use a local filesystem for every mount; keep the house root outside the repository and separate from `/workspace`, which binds the workspace the operator names. The vessel image carries code and genesis, never household state. The app receives no Docker socket.
 
-Set `LARES_HOUSE` to the first operator's house root (an absolute path; its `hearth/`, `sensoriums/`, `projections/`, `library/` and `config/` bind at `/lar` in the container) and `LARES_WORKSPACE` to the house canon clone, which holds tracked `bags/` and receives `wikis/`. Export both paths in this shell before running the host preparation commands, or name them in `~/.lares/lares-surface.env`, which rests outside every bind (the checkout carries none; the shim refuses an env file inside one of the house's binds). On Windows, keep every mount inside the WSL distro; a new operator there walks <<~ loulou uri=`lar:///ha.ka.ba/wsl2/new-hearth`>>, which strings the host runbook, this walk's steps 2, 5 and 6, the keep and the MCP seat into one order, with the house root at `~/.lares` (the root the restore in 11a names). Keep a terminal attached for founding and custody credentials; the CLI refuses a credential act without a TTY.
+Set `LARES_HOUSE` to the first operator's house root (an absolute path; its `hearth/`, `sensoriums/`, `projections/`, `library/` and `config/` bind at `/lar` in the container) and `LARES_WORKSPACE` to the workspace the house lays canon from and projects into, which holds tracked `bags/` and receives `wikis/`. Export both paths in this shell before running the host preparation commands, or name them in `~/.lares/lares-surface.env`, which rests outside every bind (the checkout carries none; the shim refuses an env file inside one of the house's binds). On Windows, keep every mount inside the WSL distro; a new operator there walks <<~ loulou uri=`lar:///ha.ka.ba/wsl2/new-hearth`>>, which strings the host runbook, this walk's steps 2, 5 and 6, the keep and the MCP seat into one order, with the house root at `~/.lares` (the root the restore in 11a names). Keep a terminal attached for founding and custody credentials; the CLI refuses a credential act without a TTY.
 
 ''Do'': build the product image and create the house root.
 
 ```sh
 export LARES_HOUSE="$HOME/lares-house"
-node tools/house-canon.mjs stand
-export LARES_WORKSPACE="$HOME/.lares-canon"
+export LARES_WORKSPACE="$PWD"
 mkdir -p "$LARES_HOUSE"
 tools/lares-container.sh build
 ```
 
-''The house reads a pinned canon clone, never a working checkout.'' The vessel reads canon from `/workspace` and its disk mirror writes canon edits back there, so the directory `LARES_WORKSPACE` names moves the house's canon whenever its tree moves. `node tools/house-canon.mjs stand` clones the origin of the checkout it runs in to `~/.lares-canon` (`--at` names another place, `--from` another origin), checks out the pin (`develop` by default; `--pin` names a branch, a tag or a commit) with HEAD detached, and records the pin in the clone's own git config; it refuses a place that already holds files, one inside the working checkout, and one inside `LARES_HOUSE`. A developer's branch switch, rebase or merge in a working checkout then leaves the house's canon where it stands. The canon moves by an explicit act alone: `node tools/house-canon.mjs move` fetches the origin and checks out the pin's commit (`--pin` re-pins), then `lares vessel lay` lets the standing house read it. The house's write-back rests in the clone's working tree as uncommitted changes; `move` refuses while the clone holds any, naming each path, so a hand first commits them on a branch for review or discards them. `node tools/house-canon.mjs read` names the pin, the commit, the held write-back, and whether `LARES_WORKSPACE` names this clone, a working checkout, or another place.
+''Workspaces receive the house's projection.'' The operator names each workspace, and the house projects bags, wikis and rendered artifacts into it; `LARES_WORKSPACE` names the one the vessel binds at `/workspace`, where it lays canon from and where its disk mirror writes canon edits back. For the Kahu cabal that workspace names the repo checkout: the working surface, with a live Lararium projecting into it and canon edits landing in the tracked `bags/` and `wikis/` as source-control write-back. No carve-out, no flag and no required canon clone stand; another operator names a corpus directory of their own. `node tools/house-canon.mjs` stays as a tool where a separate pinned clone serves a house, never a requirement.
 
-''The one dev install.'' A developer working on canon itself MAY name the working checkout as `LARES_WORKSPACE` for one install: canon edits then land in the tracked `bags/` and `wikis/` as source-control write-back, by design, and a branch switch there moves that install's canon with it. Every other house reads a canon clone. It names itself with `LARES_DEV_INSTALL=1` in the surface env; without it, every stand warns that `LARES_WORKSPACE` names a working checkout.
+''Read-back follows descent.'' The house remembers the commit it last laid canon from. A fast-forward of the workspace's commit flows in with no ingest act; a fork (a branch switch, a rebase, a reset) holds the house's canon and asks one plain question: take the workspace's canon, or re-project the house's over it? Uncommitted edits stand as hints to the Confluence, and a vanished file waits as a pending removal until a person answers. What notices the workspace's commit moving stands owed (no watcher runs by default); until it lands, `lares vessel lay` reads moved canon by an explicit act.
 
 Run these from the root of the household checkout; the house path shown stands as an example, and any local directory outside the checkout serves. `build` rebuilds the vessel image, every package the vessel runs, from the committed checkout: it runs `docker compose build lares` through the env file (a bare `docker compose build` reads no `lares-surface.env` and refuses on `LARES_HOUSE`) and bakes the checkout's HEAD into the image's revision label; a checkout holding uncommitted tracked changes refuses, so commit first. The shim makes the house's five bound classes before a container stands. Under PowerShell, assign `$env:LARES_HOUSE` and `$env:LARES_WORKSPACE` before calling the `.ps1` shim.
 
@@ -72,7 +71,7 @@ Use `tools/lares-container.sh` on Unix-like hosts or `tools/lares-container.ps1`
 
 ''The host `lares` answers through the container house.'' With `LAR_ROOT` unset and `~/.lares/lares-surface.env` standing, the host's own `lares <verb>` hands every vessel verb to the checkout's `tools/lares-container.sh` with the same argv, so `lares up`, `lares vessel read` and `lares meme get … --json | jq` work from the WSL shell as the shim lines below do; the exit code and stdout pass through untouched, and no socket crosses the container wall. Host verbs stay on the host: `home`, `repo`, `help` and every `--help`, `wing-of`, `mempalace`, and `meme normalize|check|project <file> --to md`; `lares --help` marks each verb `host`, `vessel` or `mixed`. A credential verb (`vault unlock|bind|unbind`, `found`) refuses by name without a terminal. With neither `LAR_ROOT` nor the env file, a vessel verb refuses in two lines naming both cures. A path argument (`export <dest>`, `import <bundle>`, `vault backup --out <file>`, `ingest --source <dir>`, …) reads from the host, relative paths and `~` included, and crosses in the vessel's spelling: `$LARES_HOUSE/<class>` reads at `/lar/<class>` and `$LARES_WORKSPACE` at `/workspace`; a path already spelled `/lar/…` or `/workspace/…` passes as written, and a host path outside those mounts refuses by name before docker runs, so `lares export "$LARES_HOUSE/config/carry/bundle-one"` and the shim's `/lar/config/carry/bundle-one` name one place. A Ctrl+C or a lone SIGTERM stops the act inside the vessel too: the shim stops the tagged process it exec'd, or the run container it named. A shell that names `LAR_ROOT` (a scratch house, a suite, the container itself) never forwards. Windows runs `lares` inside WSL.
 
-''See'': Docker reports a successful image build; the house root exists and the canon clone holds tracked `bags/` at its pin (`node tools/house-canon.mjs read`).
+''See'': Docker reports a successful image build; the house root exists and the workspace holds tracked `bags/`.
 
 ''Proves'': the host has the image and durable homes required by the compose surface.
 
@@ -591,6 +590,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9RF68pchBydL_XePw04UP8V-hA9dWNGqgzE7EexiHA8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_RxXLknMb21p027qbnI58b-rLbKiy3ISe3H1VlEJp8k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

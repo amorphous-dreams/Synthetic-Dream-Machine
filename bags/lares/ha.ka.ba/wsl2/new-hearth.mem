@@ -138,7 +138,7 @@ id -u; id -g                                       # 1000 and 1000 match the def
 
 Write `<linux-user>` out: the file takes no `~` and no `$HOME`, and a relative `LARES_HOUSE` refuses. `LARES_PULAMA=1` joins it in step 10, once the face stands.
 
-''The workspace today.'' `LARES_WORKSPACE` names your checkout, so a live edit to house canon writes back into its tracked `bags/` and `wikis/`; commit those changes (or move them onto a branch) before each image build. A house reading a separate canon clone, pinned and moved by an explicit pull, stands as the coming shape; when it lands, this line names that clone instead.
+''The workspace takes the projection.'' `LARES_WORKSPACE` names your checkout, the working surface: the house lays canon from it and projects back into it, so a live edit to house canon writes into its tracked `bags/` and `wikis/`; commit those changes (or move them onto a branch) before each image build. Read-back follows descent: a fast-forward of the checkout flows in, and a fork (a branch switch, a rebase, a reset) holds the house's canon and asks which side stands. What notices the checkout's commit moving stands owed; until it lands, `vessel lay` reads moved canon by an explicit act (founding runbook #/prepare).
 
 <<~/ahu>>
 
@@ -263,6 +263,6 @@ In the session, `/mcp` lists `lares` connected, and the session opens on the boo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;biqk_9LGt_9ETUzNAX40HiW49qgQEajKhuegpk_IjUM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;El3-bg-CFECQ_naDiMME4ey_4vzYnPaiS2mF1YFq2tY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
