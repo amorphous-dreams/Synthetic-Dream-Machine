@@ -66,13 +66,14 @@ import { dirname, join, resolve } from "node:path";
 import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
 import {
   larProjectionsHome, larConfigHome, mirrorDirFileToUri, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug,
-  daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, PERSONAL_PROJECTION_DIR,
+  daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, PERSONAL_PROJECTION_DIR, houseIgnored,
+  type FileSiting, type SyncedTree,
 } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh";
 import { LIVE_BUNDLE_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type BundleDoors, type BundleVesselFace } from "./commands/house-bundle.js";
 import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
-import { scanFiles, candidatesOf, settleIngest, openSyncedTree, submitIngest, carriedBasesOf, type SubmitIngestOpts } from "./ingest-core.js";
+import { scanFiles, skipLines, siteMirrorFile, candidatesOf, settleIngest, openSyncedTree, submitIngest, carriedBasesOf, type SubmitIngestOpts, type ScanSkip } from "./ingest-core.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { vesselDid } from "./env.js";
 import { canonIsDisk } from "./holdings.js";
@@ -115,6 +116,8 @@ export interface MirrorLaid {
   readonly conflicts: ReadonlyArray<{ readonly uri: string; readonly why: string }>;
   readonly refused: ReadonlyArray<{ readonly uri: string; readonly why: string }>;
   readonly unanswered: readonly string[];
+  /** NO SILENT SKIPS: each file the scan read no carrier from, with why (`ScanResult.skipped`). */
+  readonly skipped: readonly ScanSkip[];
 }
 
 /** The doors the mirror leg reaches a vessel through, injectable so a test drives them with no vessel standing. */
@@ -175,6 +178,8 @@ export interface MirrorLayerTally {
   kapae: number;
   stoodOff: string[];
   refused: string[];
+  /** The files the wave read no carrier from, each with why. */
+  skipped: ScanSkip[];
 }
 
 export interface MirrorSeedResult {
@@ -258,7 +263,8 @@ export function kahuaConfirmPrompt(count: number): string {
 const isStray = (rel: string): boolean => rel.includes(".lar-tmp-");
 const folders = (dir: string): string[] => { try { return readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".")).map((e) => e.name).sort(); } catch { return []; } };
 
-/** Every plain file under `dir` (posix rel paths, sorted), the top dirs `skipTop` names left out; an absent dir reads empty. */
+/** Every plain file under `dir` (posix rel paths, sorted), the top dirs `skipTop` names and every path `HOUSE_IGNORED` names left
+ *  out; an absent dir reads empty. */
 export function mirrorFiles(dir: string, skipTop: readonly string[] = []): string[] {
   const out: string[] = [];
   const visit = (abs: string, rel: string): void => {
@@ -269,7 +275,7 @@ export function mirrorFiles(dir: string, skipTop: readonly string[] = []): strin
       if (rel === "" && skipTop.includes(name)) continue;
       const st = lstatSync(a);
       if (st.isDirectory()) visit(a, r);
-      else if (st.isFile() && !isStray(r)) out.push(r);
+      else if (st.isFile() && !isStray(r) && houseIgnored(r) === null) out.push(r);
     }
   };
   visit(dir, "");
@@ -479,11 +485,11 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
         for (const r of owners) markPartial(r, `its daemon memory lays at h${wave.face}'s own wear`);
         return;
       }
-      const t: MirrorLayerTally = { mirror: label, toBag: wave.toBag, planned: laid.planned.length, landed: laid.landed.length, kapae: laid.kapaeRaised.length, stoodOff: [], refused: [] };
+      const t: MirrorLayerTally = { mirror: label, toBag: wave.toBag, planned: laid.planned.length, landed: laid.landed.length, kapae: laid.kapaeRaised.length, stoodOff: [], refused: [], skipped: [...(laid.skipped ?? [])] };
       for (const c of laid.conflicts) t.stoodOff.push(`${c.uri} (${c.why})`);
       for (const c of laid.refused) t.refused.push(`${c.uri} (${c.why})`);
       for (const u of laid.unanswered) t.refused.push(`${u} (no answer; lay again)`);
-      if (t.planned + t.landed + t.kapae + t.stoodOff.length + t.refused.length > 0 || laid.kapae.length > 0) layers.push(t);
+      if (t.planned + t.landed + t.kapae + t.stoodOff.length + t.refused.length + t.skipped.length > 0 || laid.kapae.length > 0) layers.push(t);
       if (t.stoodOff.length + t.refused.length > 0) for (const r of owners) markPartial(r, `${label} left ${t.stoodOff.length} stand-off(s) and ${t.refused.length} refusal(s)`);
     };
 
@@ -738,9 +744,10 @@ export function mirrorLines(r: MirrorSeedResult): { out: string[]; err: string[]
   }
   for (const b of r.minted) out.push(`  ${r.applied ? "minted" : "would mint"} ${b} (this vessel held no such wiki)`);
   for (const t of r.layers) {
-    out.push(`  ${t.mirror} -> ${t.toBag}: ${r.applied ? `landed ${t.landed}` : `would land ${t.planned}`}${t.kapae > 0 ? ` · kāpae ${t.kapae}` : ""} · stood off ${t.stoodOff.length} · refused ${t.refused.length}`);
+    out.push(`  ${t.mirror} -> ${t.toBag}: ${r.applied ? `landed ${t.landed}` : `would land ${t.planned}`}${t.kapae > 0 ? ` · kāpae ${t.kapae}` : ""} · stood off ${t.stoodOff.length} · refused ${t.refused.length}${t.skipped.length > 0 ? ` · skipped ${t.skipped.length}` : ""}`);
     for (const s of t.stoodOff) err.push(`    stands off: ${s}`);
     for (const s of t.refused) err.push(`    refused: ${s}`);
+    for (const line of skipLines(t.skipped)) err.push(`    ${line}`);
   }
   if (r.files.placed + r.files.planned > 0) out.push(`  drafts and temp: ${r.applied ? `placed ${r.files.placed}` : `would place ${r.files.planned}`}`);
   for (const s of r.files.stoodOff) err.push(`    stands off: ${s}`);
@@ -779,6 +786,16 @@ export interface LayPorts {
 export const LIVE_LAY_PORTS: LayPorts = { did: vesselDid, submit: submitIngest };
 
 /**
+ * THE TITLE A WAVE'S FILE READS BACK UNDER, or why it reads none: the projector's siting run backward (`siteFileToTitle`) over
+ * the wave's plane, the vessel's synced base first. A plain-title working tiddler (`My Notes.tid`, `Time_ dusk.tid` stating
+ * `Time: dusk`) reads home under its own title, so a re-found's lay lands it beside the loci carriers instead of dropping it.
+ * A personal layer's view state reads back only where a base stands at its path (`siteMirrorFile`).
+ */
+export function siteWaveFile(wave: Pick<MirrorWave, "uriDir" | "toBag">, file: string, tree: SyncedTree): FileSiting {
+  return siteMirrorFile(wave.uriDir, file, tree, wave.toBag.endsWith("/personal"));
+}
+
+/**
  * Lay one folder through INGEST's three-way gate against the vessel's synced base: a carrier whose disk equals its base
  * takes no wave (the second lay lands nothing), a moved one lands, and one whose records moved too stands off. The wave
  * rides unattended, so a file that holds no base over records that say something else stands off rather than adopting.
@@ -786,7 +803,7 @@ export const LIVE_LAY_PORTS: LayPorts = { did: vesselDid, submit: submitIngest }
 export async function liveLay(wave: MirrorWave, apply: boolean, ports: LayPorts = LIVE_LAY_PORTS): Promise<MirrorLaid> {
   const tree = openSyncedTree();
   const abs = mirrorFiles(wave.source, wave.skipTop).filter((r) => !r.endsWith(".meta")).map((r) => join(wave.source, ...r.split("/")));
-  const scan = scanFiles(wave.source, abs, wave.toBag, tree, (_r, f) => mirrorDirFileToUri(wave.uriDir, f));
+  const scan = scanFiles(wave.source, abs, wave.toBag, tree, (_r, f) => { const s = siteWaveFile(wave, f, tree); return "why" in s ? s : s.title; });
   const bases = wave.bases ?? {};
   const candidates = candidatesOf(scan.rows).map((r) => ({ ...r, ...carriedBasesOf(r.uri, bases) }));
   const kapae = scan.shadows ?? [];
@@ -794,7 +811,7 @@ export async function liveLay(wave: MirrorWave, apply: boolean, ports: LayPorts 
     ...scan.rows.filter((r) => r.status === "non-nfc").map((r) => ({ uri: r.uri, why: "non-NFC bytes" })),
     ...(scan.refusedShadows ?? []).map((r) => ({ uri: r.file, why: r.refusal })),
   ];
-  const read: MirrorLaid = { planned: candidates.map((c) => c.uri), kapae, landed: [], kapaeRaised: [], conflicts: [], refused, unanswered: [] };
+  const read: MirrorLaid = { planned: candidates.map((c) => c.uri), kapae, landed: [], kapaeRaised: [], conflicts: [], refused, unanswered: [], skipped: scan.skipped };
   if (!apply || (candidates.length === 0 && kapae.length === 0)) return read;
   const settled = await settleIngest({
     source: wave.source, toBag: wave.toBag, candidates, did: await ports.did(), unattended: true,
