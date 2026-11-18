@@ -84,7 +84,7 @@ export interface PromotionSeat {
   /** THE RESIDENCY MOVE, injected — the whole-carrier-group transfer, land-then-retract, title preserved. */
   move(move: PromotionMove): Promise<{ ok: true; moved: number } | { ok: false; reason: string }>;
   sign(bytes: Uint8Array): Promise<string>;
-  /** The current charter's seated verdict over the exact carrier bytes; asked only of a crossing into `@crossroads`. */
+  /** The current charter's seated verdict over the exact carrier bytes; asked only of a crossing into `crossroads`. */
   verifyApproval(approval: unknown, bytes: Uint8Array): PromotionApprovalVerdict | Promise<PromotionApprovalVerdict>;
 }
 
@@ -98,7 +98,7 @@ export interface PromotionPlan {
   readonly fromBag?: string;
   /** The canon bag crossed into — the cap is read against this name. */
   readonly destBag?: string;
-  /** The seated approval a crossing into `@crossroads` carries. */
+  /** The seated approval a crossing into `crossroads` carries. */
   readonly approval?: unknown;
 }
 
@@ -217,7 +217,7 @@ export async function promoteCarrier(plan: PromotionPlan, seat: PromotionSeat): 
     return { ok: false, reason: `the subject stands at ${tags.filter((t) => t.startsWith("lifecycle/")).join(", ")} — only a carrier that has SETTLED crosses into canon` };
   }
 
-  // A crossing into `@crossroads` publishes for the Nexus, so the charter's seats approve its exact bytes
+  // A crossing into `crossroads` publishes for the Nexus, so the charter's seats approve its exact bytes
   // before anything moves; a crossing into the vessel's own canon asks no charter.
   let approvalStatementDigest: string | undefined;
   if (destBag === CROSSROADS_BAG) {
