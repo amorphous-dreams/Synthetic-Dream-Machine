@@ -608,6 +608,30 @@ export class KeyhiveProvider implements CapabilityProvider {
     if (!audience || !bagUrl) {
       throw new Error(`revoke(): no audience/bag tracked for delegationId ${delegationId.slice(0, 16)}…`);
     }
+    const bytes = await this.revokeMemberOfBag(bagUrl, audience);
+    // This delegation is revoked — drop local tracking so a re-revoke fails loud rather than re-firing.
+    this.delegations.delete(delegationId);
+    this.delegationAudience.delete(delegationId);
+    this.delegationBag.delete(delegationId);
+    return { bytes };
+  }
+
+  /**
+   * Take one audience back from one bag by the pair, with no delegation id: the id lives in this process's memory, and a
+   * share removal lands in a process that never made the delegation. `revoked` where the revocation fired; `none` where this
+   * hive holds no such bag, so no delegation of its own stands there. Every tracked delegation of the pair drops with it.
+   */
+  async revokeAudience(bagUrl: string, audience: string): Promise<"revoked" | "none"> {
+    if (!this.bagToDocId.get(bagUrl)) return "none";
+    await this.revokeMemberOfBag(bagUrl, audience);
+    for (const [id, who] of [...this.delegationAudience]) {
+      if (who !== audience || this.delegationBag.get(id) !== bagUrl) continue;
+      this.delegations.delete(id); this.delegationAudience.delete(id); this.delegationBag.delete(id);
+    }
+    return "revoked";
+  }
+
+  private async revokeMemberOfBag(bagUrl: string, audience: string): Promise<Uint8Array> {
     const docIdHex = this.bagToDocId.get(bagUrl);
     if (!docIdHex) throw new Error(`revoke(): bag not registered: ${bagUrl}`);
     const docId = new KH.DocumentId(hexToBytes(docIdHex));
@@ -625,12 +649,7 @@ export class KeyhiveProvider implements CapabilityProvider {
       throw new Error("revoke(): revokeMember produced no revocation events");
     }
     // Mirror delegate()'s "signature as id"; the events themselves ride the event_handler → EventStore.
-    const bytes = revocations[0]!.signature;
-    // This delegation is revoked — drop local tracking so a re-revoke fails loud rather than re-firing.
-    this.delegations.delete(delegationId);
-    this.delegationAudience.delete(delegationId);
-    this.delegationBag.delete(delegationId);
-    return { bytes };
+    return revocations[0]!.signature;
   }
 
   async verify(args: VerifyArgs): Promise<VerifyResult> {
