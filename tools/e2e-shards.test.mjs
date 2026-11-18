@@ -626,7 +626,8 @@ test("ci.yml takes its e2e verdict from the shard workflow, and runs no unsharde
   assert.doesNotMatch(code, /test:e2e/, "ci.yml runs the unsharded e2e set beside the shards: two verdicts for one push");
   // The callee declares the door, keeps its lane trigger, and keeps a concurrency group apart from the caller's.
   const shards = read("e2e-shards.yml");
-  assert.match(shards, /^  workflow_call: \{\}$/m, "e2e-shards.yml declares no workflow_call: ci.yml's call would refuse at startup");
+  assert.match(shards, /^  workflow_call:\n    inputs:\n      doorstep:\n        type: boolean\n        default: false$/m, "e2e-shards.yml declares no workflow_call with its doorstep input: ci.yml's call would refuse at startup");
+  assert.match(block, /^    with:\n      doorstep: \$\{\{ .+ \}\}$/m, "the e2e job hands the shard workflow no doorstep verdict");
   assert.match(shards, /^  push:\n    branches: \["ci\/\*\*"\]$/m, "the lane push trigger left");
   const group = (yml) => /^concurrency:\n(?:\s*#.*\n)*  group: (\S+)-\$\{\{ github\.ref \}\}$/m.exec(yml)?.[1];
   assert.equal(group(ci), "ci");
