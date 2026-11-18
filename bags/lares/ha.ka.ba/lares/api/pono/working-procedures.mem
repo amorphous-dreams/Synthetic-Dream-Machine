@@ -7,7 +7,7 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-role      = "working procedures — the standing law for any hand that tests, wires or measures in this tree: red-first test design in eight moves, the ladder for wiring a module that stands designed, tested and unreached, the instruments that read green while they report something false, how a fork settles, the working agreements that bind every spirit, and the rulings they rest on"
+role      = "working procedures — the standing law for any hand that tests, wires or measures in this tree: red-first test design in eight moves, the ladder for wiring a module that stands designed, tested and unreached, the instruments that read green while they report something false, how a fork settles, the seal merge a carrier conflict on its seal alone takes, the working agreements that bind every spirit, and the rulings they rest on"
 title     = "lar:///ha.ka.ba/lares/api/pono/working-procedures"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/working-procedures"
@@ -192,6 +192,23 @@ Straight to the operator, at once: a classifier refusal; a destroy-class act pas
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-seal-merge`>>
+
+!! The seal merge ~ a carrier conflict on its seal alone re-seals
+
+A carrier's ETX mark carries the block check over the span it closes, so every body edit moves the `bcc=` line. Two branches that edit one carrier's body far apart, each re-sealed, merge clean in the body and conflict on that one line. `tools/mem-merge-driver.mjs` takes that conflict: `.gitattributes` names `*.mem merge=mem-seal`, and git calls the driver with the base, ours, theirs, the path and the marker size. The driver runs git's own three-way merge over the three sides with the ETX seal set bare; a clean merge there means the seal alone conflicted, so it takes the merged body, runs the normalize law `lares meme normalize` runs (the frame canonical, the block check minted over the body it follows) and writes the sealed carrier. Every other case (a body hunk that conflicts, a frame normalize faults, a span no check covers, a checkout whose build stands absent) writes git's own conflict over the original three sides and stops the merge, as a merge with no driver stops.
+
+The driver reads this checkout's build (`packages/lararium-memetic-frame/dist`, `packages/lararium-tw5/dist`), so a fresh clone builds before it merges carriers. A clone installs it once, from the checkout root; the config lands in the clone's shared config, so every worktree of the clone runs its own tree's driver:
+
+```sh
+git config merge.mem-seal.name "a .mem conflict on its seal alone re-seals"
+git config merge.mem-seal.driver "node tools/mem-merge-driver.mjs %O %A %B %P %L"
+```
+
+A clone without the install merges carriers with git's text merge, since git reads an undefined driver as the plain text merge; the seal conflict then stops the merge, and `lares meme normalize <file>` re-seals by hand once the bodies stand merged. Proof: `node --test tools/mem-merge-driver.test.mjs` (scratch repositories, git alone red on the seal, the driver green, a body conflict and an unsealable frame left standing).
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/rulings`>>
 
 !! Rulings ~ the operator's words the agreements rest on
@@ -199,6 +216,7 @@ Straight to the operator, at once: a classifier refusal; a destroy-class act pas
 # 2026-10-16: early alpha until a third human; evergreen with no old shapes; recursive o-takiage.
 # 2026-10-25: the commit that moves a shape may refuse the old spelling by name; the next commit burns that refusal.
 # 2026-10-14, 2026-10-30: forks settle down the ladder of #/forks.
+# 2026-11-18: a `.mem` conflict that touches only `bcc=` seal lines resolves by taking the bodies and re-sealing with `lares meme normalize` (lar:///ha.ka.ba/kahua/memory/research/two-hearths-flow#/rulings, D6); #/the-seal-merge.
 
 <<~/ahu>>
 
@@ -213,6 +231,6 @@ Straight to the operator, at once: a classifier refusal; a destroy-class act pas
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;i9xF66DrlKmI-m0ViGQEentkwfTwItzjJO37Z4q6rzg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JKXWQ9P_9dsssQbGWdZTvW7CYLFTLLuPXq-_ZAK15j0`>>
 
 <<^ code=`&#x0004;` to=`?`>>
