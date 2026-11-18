@@ -22,12 +22,13 @@
  * the signature, an adopted seat) takes it back at the next proved unlock, which opens the seat anyway.
  *
  * AN UNMOVED HOUSE CUTS THE SAME BUNDLE. A seal to a public half draws fresh randomness, so the seat keeps its last seal beside a
- * digest of the roster it covers (keyed by the public half; ciphertext and a digest, never the roster): a re-cut of the same
- * roster to the same pair hands back the same bytes, and an unmoved keep spends nothing.
+ * digest of the roster it covers and a vouch over both, each keyed by the house's signing seed (ciphertext and keyed digests,
+ * never the roster): a re-cut of the same roster hands back the same bytes only where the vouch answers, so bytes swapped into
+ * the config home re-seal instead of shipping, and an unmoved keep spends nothing.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { createHmac } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -48,7 +49,7 @@ export class KeepSeatRefused extends Error {
 }
 
 /** The last roster seal the seat keeps: a digest of the roster under the public half, and the sealed bytes. */
-interface LastRosterSeal { readonly digest: string; readonly sealed: string }
+interface LastRosterSeal { readonly digest: string; readonly sealed: string; readonly vouch?: string }
 
 /** Where the house's keep seat rests. */
 export function keepSeatPath(): string {
@@ -72,7 +73,9 @@ function readResting(): RestingSeat | null {
   try {
     const raw = JSON.parse(text) as { lastRoster?: { digest?: unknown; sealed?: unknown }; signingSeed?: unknown; route?: unknown };
     testRoute = raw.route === "test";
-    if (typeof raw.lastRoster?.digest === "string" && typeof raw.lastRoster.sealed === "string") lastRoster = { digest: raw.lastRoster.digest, sealed: raw.lastRoster.sealed };
+    if (typeof raw.lastRoster?.digest === "string" && typeof raw.lastRoster.sealed === "string") {
+      lastRoster = { digest: raw.lastRoster.digest, sealed: raw.lastRoster.sealed, ...(typeof (raw.lastRoster as { vouch?: unknown }).vouch === "string" ? { vouch: (raw.lastRoster as { vouch: string }).vouch } : {}) };
+    }
     if (typeof raw.signingSeed === "string" && /^[0-9a-f]{64}$/.test(raw.signingSeed)) signingSeed = Uint8Array.from(Buffer.from(raw.signingSeed, "hex"));
   } catch { /* the seat read whole above */ }
   return { seat: read.seat, lastRoster, signingSeed, testRoute };
@@ -280,15 +283,23 @@ export async function keepSeatForCut(): Promise<CutSeat> {
   throw new KeepSeatRefused("keep-seat-absent", `this house rests no keep pair at ${keepSeatPath()}, and a cut seals the roster to one: run \`lares vault unlock\` with the steward's passphrase, which seats it, then cut again`);
 }
 
-/** Seal the roster for a cut: the last seal again where the roster and the pair stand unmoved, else a fresh seal kept for next time. */
-export function sealRosterForCut(seat: KeepSeat, redeclare: BundleRedeclare): Buffer {
-  const digest = createHmac("sha256", seat.publicKey).update(REDECLARE_FILE).update(redeclareBytes(redeclare)).digest("hex");
+/**
+ * Seal the roster for a cut: the last seal again where the roster and the pair stand unmoved AND the house's own vouch answers the
+ * cached bytes, else a fresh seal kept (and vouched) for next time.
+ */
+export function sealRosterForCut(cut: CutSeat, redeclare: BundleRedeclare): Buffer {
+  const { seat, signingSeed } = cut;
+  const digest = createHmac("sha256", signingSeed).update("lar-keep-roster").update(REDECLARE_FILE).update(redeclareBytes(redeclare)).digest("hex");
+  const vouchOf = (sealed: Buffer): string => createHmac("sha256", signingSeed).update("lar-keep-roster-seal").update(digest).update(sealed).digest("hex");
   const resting = readResting();
-  if (resting !== null && resting.lastRoster?.digest === digest && Buffer.from(resting.seat.publicKey).equals(Buffer.from(seat.publicKey))) {
-    return Buffer.from(resting.lastRoster.sealed, "base64");
+  const samePair = resting !== null && Buffer.from(resting.seat.publicKey).equals(Buffer.from(seat.publicKey));
+  if (samePair && resting.lastRoster?.digest === digest && typeof resting.lastRoster.vouch === "string") {
+    const cached = Buffer.from(resting.lastRoster.sealed, "base64");
+    const expected = Buffer.from(vouchOf(cached), "hex"), held = Buffer.from(resting.lastRoster.vouch, "hex");
+    if (held.length === expected.length && timingSafeEqual(held, expected)) return cached;
   }
   const sealed = sealRedeclare(seat.publicKey, redeclare);
-  if (resting !== null && Buffer.from(resting.seat.publicKey).equals(Buffer.from(seat.publicKey))) writeResting(resting.seat, { digest, sealed: sealed.toString("base64") }, resting.signingSeed, resting.testRoute);
+  if (samePair) writeResting(resting.seat, { digest, sealed: sealed.toString("base64"), vouch: vouchOf(sealed) }, resting.signingSeed, resting.testRoute);
   return sealed;
 }
 

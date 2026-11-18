@@ -7,9 +7,14 @@
  * a passphrase slot and a paper slot, derives it. The seat ({public half, wrapped tree}) travels in the bundle beside the roster,
  * so a restore needs the passphrase or the paper sheet and no file carried by hand.
  *
- * DOMAIN-SEPARATED FROM EVERY FACE. The seat's tree wraps its OWN random key, under its own random slot ids and its own random
- * passphrase salts: no face tree's slot, salt or key opens it. The X25519 secret derives from that key under `KEEP_PAIR_INFO`,
- * and the roster seals under `KEEP_ROSTER_INFO`, so neither fuses with another protocol's derivation.
+ * APART FROM EVERY FACE BY ITS OWN KEYS, NOT BY A WRAP DOMAIN. The seat's slots wrap under keyslot's one `slot-wrap` info, as
+ * every tree's do; what keeps them apart is the seat's OWN random key, its own random slot ids, its own random passphrase salts
+ * and its own stretch salt: no face tree's slot, salt or key opens it. The derivations FROM that key carry domains of their own:
+ * the X25519 secret under `KEEP_PAIR_INFO`, the signing seed under `KEEP_SIGN_INFO`, the roster seal under `KEEP_ROSTER_INFO`
+ * and the cut's signature under `KEEP_CUT_DOMAIN`, so none fuses with another protocol's.
+ *
+ * BOUNDED. A keep binds at most `KEEP_MAX_SLOTS` slots and `KEEP_MAX_PINS` pins in all; a seat read off a remote with more reads
+ * `unreadable`, so a crafted seat spends no restore past what a house binds.
  *
  * THE COST OF A GUESS. The wrapped secret rides the remote, so the passphrase slot meets offline guessing: each passphrase first
  * stretches at keyslot's remote cost under the seat's own random salt (`stretchForRemote`), then derives at the custody
@@ -36,6 +41,11 @@ export interface KeepSeat {
 }
 
 const STRETCH_SALT_LENGTH = 16;
+/** The most slots a keep seat binds (a passphrase, a paper sheet, the routes a re-seat leaves room for). */
+export const KEEP_MAX_SLOTS = 8;
+/** The most pins a keep seat holds across all its slots. */
+export const KEEP_MAX_PINS = 16;
+const pinsOf = (tree: SlotTree): number => tree.slots.reduce((n, s) => n + s.pins.length, 0);
 
 /** The seat's passphrases stretched at the remote cost; every other credential as presented. */
 async function stretchedCredentials(salt: Uint8Array, credentials: readonly Credential[], kdf: KdfPort): Promise<Credential[]> {
@@ -138,6 +148,9 @@ export async function openKeepSecret(seat: KeepSeat, credentials: readonly Crede
 
 /** Bind one more slot (a paper sheet beside the passphrase, say) over the seat's own key, opened by `openWith`. */
 export async function bindKeepSlot(seat: KeepSeat, openWith: readonly Credential[], spec: SlotSpec, kdf: KdfPort): Promise<KeepSlotBinding> {
+  if (seat.slots.slots.length >= KEEP_MAX_SLOTS || pinsOf(seat.slots) + spec.pins.length > KEEP_MAX_PINS) {
+    throw new Error(`keep-seat: a keep binds at most ${KEEP_MAX_SLOTS} slots and ${KEEP_MAX_PINS} pins; re-seat it (\`lares vault reseat\`) to start fresh`);
+  }
   const o = await openTree(seat, openWith, kdf);
   if ("reading" in o) return o;
   try { return { reading: "bound", seat: { publicKey: seat.publicKey, stretchSalt: seat.stretchSalt, slots: await bindSlot(seat.slots, o.treeKey, await stretchedSpec(seat.stretchSalt, spec, kdf), kdf) } }; }
@@ -189,5 +202,6 @@ export function decodeKeepSeat(text: string): KeepSeatReading {
   if (typeof stretchSalt !== "string" || !/^[0-9a-f]{32}$/.test(stretchSalt)) return { reading: "unreadable", why: "the seat names no 16-byte stretch salt" };
   const tree = decodeSlotTree(new TextEncoder().encode(JSON.stringify(slots ?? null)));
   if (tree.reading !== "readable") return { reading: "unreadable", why: tree.reading === "unreadable" ? tree.why : "the seat holds no slot tree" };
+  if (tree.tree.slots.length > KEEP_MAX_SLOTS || pinsOf(tree.tree) > KEEP_MAX_PINS) return { reading: "unreadable", why: `the seat names more than the ${KEEP_MAX_SLOTS} slots or ${KEEP_MAX_PINS} pins a keep binds` };
   return { reading: "readable", seat: { publicKey: hexToBytes(publicKey), stretchSalt: hexToBytes(stretchSalt), slots: tree.tree } };
 }

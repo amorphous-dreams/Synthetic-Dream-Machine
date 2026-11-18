@@ -93,6 +93,11 @@ function deriveOf(kdf: KdfPort): Derive {
   return derive;
 }
 const SLOT_KEY_LENGTH = 32;
+/** The most slots a tree holds: a bind past it refuses, and a tree read off disk or a remote with more reads `unreadable`, so a
+ *  crafted tree spends no open past what a house binds. */
+export const MAX_SLOTS = 64;
+/** The most pins a slot holds (its shares' x-coordinates ride one byte). */
+const MAX_PINS = 255;
 const PAPER_SECRET_LENGTH = 32;
 const SLOT_ID_LENGTH = 16;
 const SALT_LENGTH = 16;
@@ -262,7 +267,8 @@ export async function bindSlot(tree: SlotTree | null, treeKey: TreeKey, spec: Sl
   if (!Number.isInteger(spec.t) || spec.t < 1 || spec.t > spec.pins.length) {
     throw new Error(`keyslot: a slot's threshold must be an integer in 1..${spec.pins.length} (its pin count); got ${spec.t}`);
   }
-  if (spec.pins.length > 255) throw new Error("keyslot: a slot holds at most 255 pins");
+  if (spec.pins.length > MAX_PINS) throw new Error(`keyslot: a slot holds at most ${MAX_PINS} pins`);
+  if ((tree?.slots.length ?? 0) >= MAX_SLOTS) throw new Error(`keyslot: a tree holds at most ${MAX_SLOTS} slots`);
   // THE PASSKEY STAYS OPTIONAL (operator, 2026-10-29): a tree never holds a passkey as its only route. The bind reads the whole
   // tree, the slots that stand and the one binding: a passkey slot beside a passphrase or paper slot binds; a tree that would
   // open by a passkey alone refuses by name. A local-first island weighs the human's easy path through a centralized
@@ -478,12 +484,14 @@ export function decodeSlotTree(bytes: Uint8Array | null): SlotTreeReading {
     fromHex(raw.keyCheck as string, TREE_CHECK_LENGTH, "the tree's tree key check");
     if (!Array.isArray(raw.slots)) throw new Error("the tree names no slots");
     if (raw.slots.length === 0) throw new Error("a tree with no slot holds no human route");
+    if (raw.slots.length > MAX_SLOTS) throw new Error(`the tree names ${raw.slots.length} slots, more than the ${MAX_SLOTS} any bind makes`);
     const slots = raw.slots.map((s: Record<string, unknown>, si: number): SlotRecord => {
       const where = `slot ${si + 1}`;
       fromHex(s.id as string, SLOT_ID_LENGTH, `${where} id`);
       fromHex(s.nonce as string, NONCE_LENGTH, `${where} nonce`);
       fromHex(s.wrappedKey as string, TREE_KEY_LENGTH + TAG_LENGTH, `${where} wrapped tree key`);
       if (!Array.isArray(s.pins) || s.pins.length === 0) throw new Error(`${where} holds no pin`);
+      if (s.pins.length > MAX_PINS) throw new Error(`${where} names ${s.pins.length} pins, more than the ${MAX_PINS} a slot holds`);
       if (!Number.isInteger(s.t) || (s.t as number) < 1 || (s.t as number) > s.pins.length) throw new Error(`${where} threshold lies outside 1..${s.pins.length}`);
       const pins = (s.pins as Record<string, unknown>[]).map((p, pi): PinRecord => {
         const pw = `${where} pin ${pi + 1}`;

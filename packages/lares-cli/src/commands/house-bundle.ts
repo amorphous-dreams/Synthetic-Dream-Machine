@@ -643,7 +643,8 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
 
   // THE KEEP PAIR the roster seals to, read before any byte stages: a house that rests none refuses the cut by name.
-  const { seat, signingSeed } = await seatAct(keepSeatForCut);
+  const cutSeat = await seatAct(keepSeatForCut);
+  const { seat, signingSeed } = cutSeat;
   // WRITE BESIDE THE DEST, VERIFY, THEN MOVE INTO PLACE.
   const staging = join(dirname(target), `.${basename(target)}.lar-tmp-${randomBytes(6).toString("hex")}`);
   mkdirSync(staging, { recursive: true });
@@ -685,7 +686,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     };
     // THE ROSTER RIDES SEALED to the keep pair's public half: a remote the bundle reaches crosses to another vessel, and the cut
     // asks for no credential. The pair rides beside it, its secret wrapped under the human's routes.
-    const sealedRoster = sealRosterForCut(seat, redeclare);
+    const sealedRoster = sealRosterForCut(cutSeat, redeclare);
     put(REDECLARE_FILE, sealedRoster);
     put(KEEP_SEAT_FILE, bundleSeatText(seat));
     files.sort((a, b) => (a.path < b.path ? -1 : 1));
