@@ -402,7 +402,7 @@ describe("the loop", () => {
     const controlDoc = emptyLarDoc();
     const local = new Map<string, Uint8Array>([[gl.cid, gl.bytes], [gr.cid, gr.bytes], [gCid, gBytes]]);
     const pinPorts: FloorPinPorts = {
-      home, nexus: c.aid, genesisManifest: gCid,
+      home, nexus: c.aid, genesisManifest: gCid, requiredBlobIds: [offering.offering.blobs[0]!.id],
       rows: async () => [{ keyCid: release.cid, record: JSON.parse(JSON.stringify(release)) as unknown }],
       fetchCas: async (cid) => local.get(cid) ?? cas.get(cid) ?? null,
       stage: async (blobs) => { for (const b of blobs) local.set(b.cid, b.bytes); },

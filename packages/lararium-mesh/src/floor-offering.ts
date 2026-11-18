@@ -10,12 +10,15 @@
  *
  * `resolveFloorWhole` reads the floor as a taker must before it lands or accepts it: the manifest and snapshots
  * (`resolveFloor`), then the offering record, verified as any offering is (`verifyPluginOffering`: shape, provenance,
- * signature, fold), then each blob it carries, re-hashed. A mount keeps reading the snapshots alone.
+ * signature, fold), then each blob it carries, re-hashed, and refuses an offering that drops a blob every mount needs
+ * (`floorRequiredBlobIds`): a release may change the plugins a floor offers, never what a mount boots on. A mount keeps
+ * reading the snapshots alone.
  */
 import { sha256BytesSync, sha256HexBytesSync, utf8Bytes } from "./crypto.js";
 import { PLUGIN_OFFERING_DOMAIN } from "./domains.js";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "./ed25519-door.js";
 import { ENGINE_CORE_ID } from "./base-doc.js";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
 import { computePluginsCid } from "./genesis-doc.js";
 import { FLOOR_OFFERING_BLOB_ID, FLOOR_OFFERING_MIME, floorOfferingSetDiff, resolveFloor, type ResolvedFloor } from "./floor-manifest.js";
 import {
@@ -49,7 +52,20 @@ export async function signFloorOffering(args: { readonly blobs: readonly Offered
   return { offering, bytes, cid: sha256HexBytesSync(bytes) };
 }
 
-export type FloorOfferingRefusal = "floor-offering-refused";
+export type FloorOfferingRefusal = "floor-offering-refused" | "floor-offering-incomplete";
+
+/** The classes the bake declares REQUIRED (`GenesisBlobKind`): the memetic-wikitext parser and the base seed. No mount boots without them. */
+export const FLOOR_REQUIRED_BLOB_KINDS: readonly string[] = ["grammar", "base"];
+
+/**
+ * The blob ids every mount needs, read off a vessel's own island blob rows: each row whose declared class the bake names
+ * required, and the memetic-wikitext parser always, by its own URI. Sorted.
+ */
+export function floorRequiredBlobIds(blobs: Readonly<Record<string, { readonly id: string; readonly kind?: string | undefined }>> | undefined | null): string[] {
+  const ids = new Set<string>([LARES_MEMETIC_WIKITEXT_PLUGIN_URI]);
+  for (const row of Object.values(blobs ?? {})) if (row && typeof row.kind === "string" && FLOOR_REQUIRED_BLOB_KINDS.includes(row.kind)) ids.add(row.id);
+  return [...ids].sort();
+}
 
 /** Read an offering record off its bytes: they hash to `cid` and encode canonically. Verification stays the caller's (async). */
 export function readFloorOffering(bytes: Uint8Array, cid: string):
@@ -108,7 +124,11 @@ export function verifyFloorOfferingSet(
 }
 
 /** Resolve a floor whole, offering and blobs included, re-hashing every byte. Never throws. */
-export async function resolveFloorWhole(manifestCid: string, resolveByCid: (cid: string) => Promise<Uint8Array | null>): Promise<
+export async function resolveFloorWhole(
+  manifestCid: string,
+  resolveByCid: (cid: string) => Promise<Uint8Array | null>,
+  opts: { /** The ids every mount needs (`floorRequiredBlobIds`); an offering lacking any refuses `floor-offering-incomplete`. */ readonly required: readonly string[] },
+): Promise<
   | (ResolvedFloor & { readonly offering: PluginOffering })
   | { readonly refusal: Exclude<Awaited<ReturnType<typeof resolveFloor>>, ResolvedFloor>["refusal"] | FloorOfferingRefusal; readonly reason: string }> {
   const floor = await resolveFloor(manifestCid, resolveByCid);
@@ -121,6 +141,9 @@ export async function resolveFloorWhole(manifestCid: string, resolveByCid: (cid:
     if ("refusal" in read) return read;
     const verdict = await verifyPluginOffering(read.offering);
     if (!verdict.ok) return { refusal: "floor-offering-refused", reason: `${verdict.code}: ${verdict.reason}` };
+    const offeredIds = new Set(read.offering.blobs.map((b) => b.id));
+    const missing = opts.required.filter((id) => !offeredIds.has(id));
+    if (missing.length > 0) return { refusal: "floor-offering-incomplete", reason: `the plugins offering drops what every mount needs: ${missing.join(", ")}` };
     for (const blob of floorOfferingBlobsOf(read.offering)) {
       const blobBytes = await resolveByCid(blob.sha256);
       if (!blobBytes) return { refusal: "floor-absent", reason: `Floor blob ${blob.id} absent: ${blob.sha256}` };

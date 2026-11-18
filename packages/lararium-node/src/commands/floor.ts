@@ -19,7 +19,7 @@
  */
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  acceptFloorRelease, floorReleaseEntriesFromBoard, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
+  acceptFloorRelease, floorReleaseEntriesFromBoard, floorRequiredBlobIds, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
   oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
   type FloorAcceptOutcome, type FloorPinPorts, type FloorRemount, type FloorStatus, type LarDoc,
 } from "@lararium/mesh";
@@ -80,7 +80,8 @@ export async function nodeFloorPorts(opts: NodeFloorOptions): Promise<FloorPinPo
   const nexus = nexusAidOf(readNexusDoc(home));
   if (nexus === null) throw new FloorRefused("floor-no-charter", "this vessel stands in no Nexus charter, so it holds no floor pin past genesis");
   const daemonUrl = bootstrapDaemonUrl();
-  const genesisManifest = genesisFloorCidOf((await storedGenesisIsland(opts.repo)).doc());
+  const island = (await storedGenesisIsland(opts.repo)).doc();
+  const genesisManifest = genesisFloorCidOf(island);
   if (genesisManifest === null) throw new FloorRefused("floor-no-genesis", "this vessel's genesis seed names no floor");
   let control;
   try { control = await readControlHome(opts.repo, await opts.repo.find<LarDoc>(daemonUrl as AutomergeUrl)); }
@@ -91,6 +92,7 @@ export async function nodeFloorPorts(opts: NodeFloorOptions): Promise<FloorPinPo
   return {
     alerted,
     home: control, nexus, genesisManifest,
+    requiredBlobIds: floorRequiredBlobIds(island?.blobs),
     rows: async () => floorReleaseEntriesFromBoard(board.doc()),
     fetchCas: async (cid) => {
       const local = readVerifiedCasBlobFromFs(cid, opts.casDir);

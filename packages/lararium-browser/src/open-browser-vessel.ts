@@ -94,7 +94,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { foundTheFace, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  standControlHome, vesselFloorCid, raiseFloorAlert, genesisFloorCidOf, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  standControlHome, vesselFloorCid, raiseFloorAlert, genesisFloorCidOf, floorRequiredBlobIds, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, faceRelationOf,
   standFaceDaemonCanon, type FaceDaemonCanon, type WideningRead,
 } from "@lararium/mesh";
@@ -2669,6 +2669,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     nexusPin: flowNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null }),
     home: () => watchedControl,
     genesisManifest: genesisFloorCidOf(result.assembly.islandHandle?.doc()),
+    requiredBlobIds: floorRequiredBlobIds(result.assembly.islandHandle?.doc()?.blobs),
     raiseAlert: (remount) => raiseFloorAlert(vmManager, remount),
   });
 

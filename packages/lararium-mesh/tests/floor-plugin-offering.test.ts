@@ -79,7 +79,7 @@ describe("the floor's plugin offering", () => {
   test("resolving whole reads the offering, verifies it, and re-hashes each blob, naming what is absent or refused", async () => {
     const { signed, manifestCid, cas } = await fixture();
     const fetch = async (cid: string) => cas.get(cid) ?? null;
-    expect(await resolveFloorWhole(manifestCid, fetch)).toMatchObject({ offering: signed.offering });
+    expect(await resolveFloorWhole(manifestCid, fetch, { required: [] })).toMatchObject({ offering: signed.offering });
     // The mount's snapshot read stays as it stood: it reads no offering.
     const asked: string[] = [];
     await resolveFloor(manifestCid, async (cid) => { asked.push(cid); return cas.get(cid) ?? null; });
@@ -87,13 +87,13 @@ describe("the floor's plugin offering", () => {
 
     const stock = sha256HexBytesSync(bytesOf("stock"));
     cas.delete(stock);
-    expect(await resolveFloorWhole(manifestCid, fetch)).toMatchObject({ refusal: "floor-absent", reason: expect.stringContaining("vanilla") });
+    expect(await resolveFloorWhole(manifestCid, fetch, { required: [] })).toMatchObject({ refusal: "floor-absent", reason: expect.stringContaining("vanilla") });
     cas.set(stock, Uint8Array.of(1));
-    expect(await resolveFloorWhole(manifestCid, fetch)).toMatchObject({ refusal: "floor-absent", reason: expect.stringContaining("vanilla") });
+    expect(await resolveFloorWhole(manifestCid, fetch, { required: [] })).toMatchObject({ refusal: "floor-absent", reason: expect.stringContaining("vanilla") });
     cas.set(stock, bytesOf("stock"));
 
     cas.delete(signed.cid);
-    expect(await resolveFloorWhole(manifestCid, fetch)).toMatchObject({ refusal: "floor-absent", reason: expect.stringContaining("offering") });
+    expect(await resolveFloorWhole(manifestCid, fetch, { required: [] })).toMatchObject({ refusal: "floor-absent", reason: expect.stringContaining("offering") });
 
     // A forged signature under its own CID: the record reads, the taker's verify refuses it by its code.
     const forged = { ...signed.offering, sig: "0".repeat(128) };
@@ -102,7 +102,7 @@ describe("the floor's plugin offering", () => {
     const m2: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), plugins: forgedCid, snapshots: (await fixture()).manifest.snapshots };
     const f2 = await fixture();
     f2.cas.set(forgedCid, forgedBytes); f2.cas.set(floorManifestCid(m2), floorManifestBytes(m2));
-    expect(await resolveFloorWhole(floorManifestCid(m2), async (cid) => f2.cas.get(cid) ?? null))
+    expect(await resolveFloorWhole(floorManifestCid(m2), async (cid) => f2.cas.get(cid) ?? null, { required: [] }))
       .toMatchObject({ refusal: "floor-offering-refused", reason: expect.stringContaining("bad-signature") });
   });
 

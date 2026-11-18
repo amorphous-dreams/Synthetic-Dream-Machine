@@ -63,7 +63,7 @@ function browserBinding(c: OneSeat, releases: readonly FloorRelease[], cas: Map<
   const local = new Map<string, Uint8Array>();
   const alerts: FloorRemount[] = [];
   const binding: BrowserFloorBinding = {
-    baseUrl: BASE, nexusPin: pinOf(c.aid), home: () => home, genesisManifest: GENESIS,
+    baseUrl: BASE, nexusPin: pinOf(c.aid), home: () => home, genesisManifest: GENESIS, requiredBlobIds: [OFFERING.offering.blobs[0]!.id],
     fetchFn: porch(c.aid, releases, cas),
     readLocal: async (cid) => local.get(cid) ?? null,
     writeLocal: async (blobs) => { for (const b of blobs) local.set(b.cid, b.bytes); },
@@ -74,7 +74,7 @@ function browserBinding(c: OneSeat, releases: readonly FloorRelease[], cas: Map<
 /** A node-shaped binding: board rows read straight, a local CAS, no porch. */
 function nodeShaped(c: OneSeat, releases: readonly FloorRelease[], cas: Map<string, Uint8Array>, home: FloorPinHome): FloorPinPorts {
   return {
-    home, nexus: c.aid, genesisManifest: GENESIS,
+    home, nexus: c.aid, genesisManifest: GENESIS, requiredBlobIds: [OFFERING.offering.blobs[0]!.id],
     rows: async () => releases.map((r) => ({ keyCid: r.cid, record: r })),
     fetchCas: async (cid) => cas.get(cid) ?? null,
     stage: async () => {},

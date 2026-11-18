@@ -199,6 +199,7 @@ export const FLOOR_ACCEPT_REFUSALS = [
   "floor-not-descendant",   // the named release does not descend from the pin (another branch, or a rollback)
   "floor-bytes-absent",     // the release's floor does not stand whole in reach (manifest, snapshots, plugins offering and its blobs, each re-hashed)
   "floor-offering-refused", // the release's plugins offering reads but does not verify (shape, provenance, signature or fold)
+  "floor-offering-incomplete", // the release's plugins offering drops a blob every mount needs (the parser, the base seed)
 ] as const;
 export type FloorAcceptRefusal = (typeof FLOOR_ACCEPT_REFUSALS)[number];
 
@@ -288,6 +289,8 @@ export interface FloorPinPorts {
   readonly nexus:           string;
   /** The genesis floor's manifest CID (the island document's seed witness). */
   readonly genesisManifest: string;
+  /** The blob ids every mount needs, off this vessel's island (`floorRequiredBlobIds`): an accepted floor's offering keeps each. */
+  readonly requiredBlobIds: readonly string[];
   /** The release rows in reach: a board replica, or a porch answer. */
   readonly rows:            () => Promise<ReadonlyArray<{ readonly keyCid: string; readonly record: unknown }>>;
   /** Bytes by CID from wherever this host reaches them; the readers re-hash every byte. */
@@ -333,9 +336,10 @@ export async function acceptFloorRelease(ports: FloorPinPorts, target?: string):
     const bytes = await ports.fetchCas(cid).catch(() => null);
     if (bytes) blobs.set(cid, bytes);
     return bytes;
-  });
+  }, { required: ports.requiredBlobIds });
   if ("refusal" in floor) {
-    return { ok: false, refusal: floor.refusal === "floor-offering-refused" ? "floor-offering-refused" : "floor-bytes-absent", detail: `${floor.refusal}: ${floor.reason}` };
+    const refusal = floor.refusal === "floor-offering-refused" || floor.refusal === "floor-offering-incomplete" ? floor.refusal : "floor-bytes-absent";
+    return { ok: false, refusal, detail: `${floor.refusal}: ${floor.reason}` };
   }
   const staged = floorBlobCids(decision.pin.manifest, floor.manifest, floor.offering);
   await ports.stage(staged.map((cid) => ({ cid, bytes: blobs.get(cid)! })));
