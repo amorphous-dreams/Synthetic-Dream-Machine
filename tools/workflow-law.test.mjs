@@ -187,8 +187,11 @@ test("WL7 RED: the canon doorstep reads ci.yml's scope job in every job a canon-
     assert.ok(job, `ci.yml lost the ${id} job`);
     const needs = job.keys.find((k) => k.startsWith("needs:")) ?? "";
     assert.match(needs, /\bscope\b/, `${id} does not list scope in its needs`);
-    const reads = job.keys.filter((k) => /^(if|doorstep):/.test(k)).join("\n") + "\n" + text.slice(text.indexOf(`\n  ${id}:\n`)).split(/\n  [a-z][\w-]*:\n/)[0].match(/^ {6}doorstep: .*$/m)?.[0];
-    assert.match(reads, /github\.event_name == 'push' && \([^)]*needs\.scope\.outputs\.canon == 'true'/, `${id} reads no canon doorstep off the scope job, or reads it off another event than a push`);
+    // The cells and gates read it in their `if:`; the e2e caller runs on every push and hands it on as its `doorstep` input.
+    const head = text.indexOf(`\n  ${id}:\n`) + 1;
+    const block = text.slice(head).split(/\n(?=  [a-z][\w-]*:\n)/)[0];
+    const reads = id === "e2e" ? /^ {6}doorstep: (.*)$/m.exec(block)?.[1] ?? "" : job.keys.find((k) => k.startsWith("if:")) ?? "";
+    assert.match(reads, /github\.event_name == 'push' && \(.*\bneeds\.scope\.outputs\.canon == 'true'\)\)/, `${id} reads no canon doorstep off the scope job, or reads it off another event than a push`);
   }
   // The quick job stands beside the scope read, never behind it: the doorstep's one heavy job does not wait on a diff.
   assert.ok(!(jobs.get("quick").keys.find((k) => k.startsWith("needs:")) ?? "").includes("scope"), "the quick job waits on the scope read");
