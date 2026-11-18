@@ -54,7 +54,7 @@ describe("M1 — a workspace binds in the working surface and never rests inside
         { slug: "later", kind: "wiki", workspace: "not-bound" },
         { slug: "a-bag", kind: "bag", workspace: "field-notes" },
       ],
-      workspacesHome: h.workspaces, checkoutRoot: h.checkout, hearth: h.hearth, sourcedSlugs: ["sdm"],
+      workspacesHome: h.workspaces, hearth: h.hearth, sourcedSlugs: ["sdm"],
     });
     expect(Object.keys(read.roots).sort()).toEqual(["notes", "tree"]);
     expect(read.roots["notes"]).toMatch(/workspaces\/field-notes$/);

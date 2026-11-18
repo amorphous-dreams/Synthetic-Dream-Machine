@@ -562,22 +562,21 @@ export interface WorkspaceEntry { readonly slug: string; readonly kind: "bag" | 
 
 /**
  * THE WORKSPACE ROOTS a shared wiki's workbench mirror may rest in: each `kind: "wiki"` share row naming a workspace maps its
- * slug to `<root>/workspaces/<name>` (the host shim binds `/lar/workspaces/<name>`), where that directory stands. A workspace
- * that resolves inside the checkout (`checkoutRoot`) or inside the hearth refuses by name, and so does a slug whose source
+ * slug to `<root>/workspaces/<name>` (the host shim binds `/lar/workspaces/<name>`), where that directory stands. The operator
+ * names each workspace, and one resting inside the repository checkout binds: the checkout counts as the cabal's working
+ * surface (founding road rank 4j). A workspace that resolves inside the hearth refuses by name, and so does a slug whose source
  * stands in the canon source: its one workbench folder rests beside that source and takes no workspace. A
  * workspace with no directory standing (no bind) waits by name, and its workbench projects under the projections root.
  */
 export function workspaceRootsOf(opts: {
   readonly rows: readonly WorkspaceEntry[];
   readonly workspacesHome: string;
-  readonly checkoutRoot: string | null;
   readonly hearth: string;
   readonly sourcedSlugs: readonly string[];
 }): { readonly roots: Readonly<Record<string, string>>; readonly refused: readonly string[]; readonly unbound: readonly string[] } {
   const roots: Record<string, string> = {};
   const refused: string[] = [], unbound: string[] = [];
   const real = (p: string): string | null => { try { return realpathSync(p); } catch { return null; } };
-  const checkout = opts.checkoutRoot ? real(opts.checkoutRoot) ?? resolvePath(opts.checkoutRoot) : null;
   const hearth = real(opts.hearth) ?? resolvePath(opts.hearth);
   for (const row of opts.rows) {
     const name = row.workspace?.trim();
@@ -586,7 +585,6 @@ export function workspaceRootsOf(opts: {
     if (opts.sourcedSlugs.includes(row.slug)) { refused.push(`${row.slug}: workbench-checkout-sourced (its source stands in the checkout)`); continue; }
     const dir = real(joinPath(opts.workspacesHome, name));
     if (dir === null) { unbound.push(`${row.slug}: workspace "${name}" stands unbound (no ${joinPath(opts.workspacesHome, name)})`); continue; }
-    if (checkout !== null && within(dir, checkout)) { refused.push(`${row.slug}: workspace "${name}" resolves inside the checkout (${dir})`); continue; }
     if (within(dir, hearth)) { refused.push(`${row.slug}: workspace "${name}" resolves inside the hearth (${dir})`); continue; }
     roots[row.slug] = dir;
   }
