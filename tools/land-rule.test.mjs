@@ -97,6 +97,8 @@ test("a required check that fails, skips or never ran holds by name (exit 1); a 
   for (const [patch, said] of [
     [{ Test: { conclusion: "failure" } }, /Test reads failure/],
     [{ "Quick gates": { conclusion: "skipped" } }, /Quick gates reads skipped/],
+    // A lane push runs the Quick gates alone (doorstep quick): Test and Witnesses report skipped, which GitHub's queue reads as passing and this rule never does.
+    [{ Test: { conclusion: "skipped" }, Witnesses: { conclusion: "skipped" } }, /Test reads skipped; .*Witnesses reads skipped/],
     [{ "E2E / Merge shard reports": { drop: true } }, /no job named E2E \/ Merge shard reports/],
   ]) {
     const v = await landRule({ sha: SHA }, hands({ view: { jobs: jobs(patch) } }));
@@ -168,4 +170,29 @@ test("the door: a short or absent sha refuses as usage (exit 2) before any read;
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("WELD: the rule's checks read exactly the ci-graph REQUIRED_CHECKS the ruleset names", async () => {
+  const { REQUIRED_CHECKS } = await import("./ci-graph.mjs");
+  assert.deepEqual(RULE.requiredChecks, REQUIRED_CHECKS);
+});
+
+test("a sha's merge_group run decides over a newer lane or doorstep run of the same sha", async () => {
+  const runs = [
+    { databaseId: 42, status: "completed", conclusion: "success", event: "merge_group" },
+    { databaseId: 44, status: "completed", conclusion: "success", event: "push" },
+  ];
+  const h = hands({ runs });
+  const v = await landRule({ sha: SHA }, h);
+  assert.equal(v.word, "LAND");
+  assert.ok(h.calls.includes("run view 42 --json jobs"));
+});
+
+test("a doorstep run (a push, Test and Witnesses skipped) holds and says plainly that its green reads quick-only", async () => {
+  const runs = [{ databaseId: 44, status: "completed", conclusion: "success", event: "push" }];
+  const v = await landRule({ sha: SHA }, hands({ runs, view: { jobs: jobs({ Test: { conclusion: "skipped" }, Witnesses: { conclusion: "skipped" } }) } }));
+  assert.equal(v.word, "HOLD");
+  assert.equal(v.code, 1);
+  assert.match(v.line, /doorstep run reads quick-only/);
+  assert.match(v.line, /merge_group/);
 });
