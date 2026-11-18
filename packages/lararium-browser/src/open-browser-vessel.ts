@@ -27,7 +27,7 @@ import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import { browserDeviceFiling } from "./browser-device-filing.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFaces, type SecretHome, type SealedBag } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFaces, type SecretHome, type SealedBag, selvesRecordBagOf } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import { standBrowserFloorKey } from "./browser-floor-key.js";
 import { browserSeatKept, type SeatVerifyGround } from "./browser-fleet-seat.js";   // leaf-fleet (Leaf-Finisher)
@@ -773,8 +773,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     catalog: () => sealedCells.catalog(),
     docsOf: (bagId) => [...deviceDocs.docsOf(bagId, litDevices()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
-  // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the node's one order), then the map.
-  const sealedBagOf = (documentId: string): SealedBag | null => filing.bagOf(documentId) ?? sealedMap.bagOf(documentId);
+  // EACH CARRIED FACE'S SELVES RECORD (persona-selves-sealed#/design, the node's law): the faces the bootstrap names a plane
+  // for (seated once the bootstrap stands, below). A record files under its own face while that face's lift stands, under
+  // none otherwise, so it rides the fleet sync to this vessel and rests sealed, never clear, and the floor never reads it.
+  let carriedSelves: () => readonly string[] = () => [];
+  // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the node's one order), then each
+  // carried face's selves record, then the map.
+  const sealedBagOf = (documentId: string): SealedBag | null =>
+    filing.bagOf(documentId) ?? selvesRecordBagOf(documentId, carriedSelves(), litDevices()) ?? sealedMap.bagOf(documentId);
   const docStorePort = docStorePortCell(async (bagId) => {
     const documentId = sealedMap.docOf(bagId);
     const handle = documentId ? (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId] : undefined;
@@ -1034,6 +1040,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
 
   const bootKeyWrites: BootKeyWrites = {};
   let bootstrap = bootKeys.bootstrap;
+  carriedSelves = () => (bootstrap?.personaPlanes ?? []).map((plane) => plane.personaGroupId);
   // AN ADMIT SUPERSEDES AN ANON BOOTSTRAP. A vessel MUST boot anon first — it needs a key before anyone
   // can admit that key — so the admit ALWAYS arrives at a vessel that already founded its own group. The
   // anon founding is not a competing state; it is the FLOOR the admit lifts the vessel from. Gating the
