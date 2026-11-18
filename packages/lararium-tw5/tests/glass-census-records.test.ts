@@ -51,6 +51,16 @@ describe("the record census ~ which of the wiki's own records the mirror's engin
     expect(titles(census.preloaded)).toEqual(["$:/note", "$:/near"]);
     expect(census.refused).toEqual([]);
   });
+  test("RED: the tab half — a startup record the vessel admits (the wearing face's own, or one a standing exec lei spent a return for) boots with the engine; one it does not admit waits and raises a notice (`startup-offer`); CONTROL: with no admission asked every startup record waits with no alert, as before", () => {
+    const records = [record("$:/on-start", { tags: "$:/tags/StartupAction", text: "x" }), record("$:/on-browser", { tags: "Other [[$:/tags/StartupAction/Browser]]", text: "x" }), record("$:/note", { text: "n" })];
+    const admitted = censusRecords(records, boot, true, [], new Set(), new Set(["$:/on-start"]));
+    expect(titles(admitted.preloaded)).toEqual(["$:/on-start", "$:/note"]);
+    expect(titles(admitted.held)).toEqual(["$:/on-browser"]);
+    expect(kinds(admitted)).toEqual({ "$:/on-browser": "startup-offer" });
+    const blind = censusRecords(records, boot, true);
+    expect(titles(blind.held)).toEqual(["$:/on-start", "$:/on-browser"]);
+    expect(blind.refused).toEqual([]);
+  });
   test("a record sharing its title with a module the boot set packs waits out the boot with no alert, so the engine's module stays defined; CONTROL a record over a plain shadow boots", () => {
     const house = { title: "house", "plugin-type": "plugin", text: packed({ "lar:///modules/deserializer": { "module-type": "library", type: "application/javascript", text: "" }, "$:/config/x": { text: "shadow" } }) };
     const modules = bootSetModuleTitles([house, { title: "$:/loose.js", "module-type": "utils", text: "" }]);
