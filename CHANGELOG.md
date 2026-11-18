@@ -14,7 +14,6 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 - **An AI seat's write to house canon refuses `seat-canon-reach`** at every door; the seat offers, never writes, and the chore mark persists. The CLI asks as an AI seat wherever a harness mark stands in its environment (`CLAUDECODE`, `CODEX_SANDBOX`, `CODEX_SANDBOX_NETWORK_DISABLED`), so `lares meme put|delete --bag lares`, the residency and routed doors, and a seat-asked `offer promote` run from an AI shell refuse as the MCP seat does.
 - **`vault unlock` never opens around a pūlama.** With the daemon down in a house a pūlama keeps, the unlock refuses `offline-beside-pulama`.
 - **`meme put` naming `@sdm`** as bag or recipe refuses by name and lands nothing.
-- **The pūlama's admit and kūkulu frame names the image as `{digest, seed}`;** a caller sending a bare image digest sends the new frame.
 
 **Added**
 - **`lares wear N`** moves the daemon mount inside the lent set and asks no route (the frame `{op: "wear", face}`; an AI seat refuses `seat-wears-no-face`). Route prompts name the face that owns them, the keep acts as the keep's face (the face whose keep lei already stands, else h0) whoever wears, and `lares pulama unadmit <digest>` takes an admission back.
@@ -23,6 +22,7 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 - **The cadence offer** (`@lararium/mesh` `cadence-offer`): a pure slice where the cadence threshold alone offers engines, never an endorsement. `engineWindow` folds signed offers and release denies against an inception and answers the engines or one refusal (`cadence-offer-malformed`, `-foreign-inception`, `-foreign-signer`, `-unsigned`, `-chain-broken`).
 - **The floor reads two truths.** The boot, `lares floor status`, the kūkulu and `pulama admit` name the founding record beside the seed it offered; each mount reads its pinned floor beside the founding record off the boot path, keeping a count the operator reads.
 - **The land rule stands as a house witness:** one sha, one verdict.
+- **The pūlama's image report carries a seed.** `pulama-main image '{"digest":…,"seed":…}'` names the seed the image offers beside its digest, and status, admit and the admit prompt carry its line; a bare `image <digest>` reads the seed absent, as before.
 
 **Fixed**
 - **A mount the opening chose slides, never drops.** Locking the face that `unlock --all` (or the lowest face) mounted slides the mount to another open face, never down to the floor while a face stands open; a wear whose rollback also fails drops the node key and answers `held: false`.
