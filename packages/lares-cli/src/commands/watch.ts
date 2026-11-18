@@ -182,7 +182,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     buffer.clear();
 
     const tree = openSyncedTree();     // fresh read — the projection moves under us
-    const { rows, skipped } = scanFiles(root, [...files], toBag, tree, fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() }));
+    const { rows, skipped } = scanFiles(root, [...files], toBag, tree, fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() }, tree));
     const candidates = candidatesOf(rows);
 
     // A vanished address whose path scans present again has RETURNED (a checkout that re-creates the

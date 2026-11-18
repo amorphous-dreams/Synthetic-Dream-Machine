@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname, relative } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow, houseIgnored } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow, houseIgnored, siteFileToTitle, PERSONAL_PROJECTION_DIR, type FileSiting } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -198,19 +198,49 @@ export interface MirrorDirs { readonly bags: string; readonly wikis: string; rea
  * target bag stays the caller's (`--to`); the plane only drives the URI.
  * `dirs` defaults to `<root>/bags` and `<root>/wikis`; the returned function derives against `dirs`
  * and ignores the root its caller hands it.
+ *
+ * A FACE'S PERSONAL MARGINS (`<projections>/personal/<F>/<slug>/…`) read as their own plane: `personal/<F>` holds the slots,
+ * the wiki's slug names the holding folder. Every plane reads through the projector's siting run backward (`siteMirrorFile`),
+ * so a plain-title file derives its title as a loci carrier derives its address; `tree` lends rule 0, the base at the path.
  */
 export function fileToUriForSource(
   root: string, source: string,
   dirs: MirrorDirs = { bags: join(root, "bags"), wikis: join(root, "wikis") },
+  tree?: SyncedTree,
 ): FileToUriFn {
   const abs = resolve(source);
   const under = (dir: string): boolean => { const r = resolve(dir); return abs === r || abs.startsWith(r + sep); };
+  const personal = dirs.projections === undefined ? null : resolve(dirs.projections, PERSONAL_PROJECTION_DIR);
+  if (personal !== null && under(personal)) {
+    return (_root, file) => {
+      const face = resolve(file).slice(personal.length + 1).split(sep)[0] ?? "";
+      if (!resolve(file).startsWith(personal + sep) || face === "") return { why: `stands outside any face's margins under ${personal}` };
+      return titleOf(siteMirrorFile(join(personal, face), file, tree, true));
+    };
+  }
   const projected = dirs.projections === undefined ? null
     : under(join(dirs.projections, "wikis")) ? join(dirs.projections, "wikis")
     : under(join(dirs.projections, "bags")) ? join(dirs.projections, "bags")
     : null;
   const dir = projected ?? (under(dirs.wikis) ? dirs.wikis : dirs.bags);
-  return (_root, file) => mirrorDirFileToUri(dir, file);
+  return (_root, file) => titleOf(siteMirrorFile(dir, file, tree, false));
+}
+
+/** A siting as a `FileToUriFn` answers it: the title, or the `{ why }` the scan's skip carries. */
+const titleOf = (sited: FileSiting): string | { readonly why: string } => ("why" in sited ? { why: sited.why } : sited.title);
+
+/**
+ * THE TITLE A MIRROR FILE READS BACK UNDER, or why it reads none: the projector's siting run backward (`siteFileToTitle`) over
+ * one plane, the synced base at the file's path first where a tree stands. A PERSONAL LAYER'S VIEW STATE (a `$:/` title: the
+ * story list, a fold state) reads back only where a base stands at its path: one the house never agreed there stays with the
+ * face that set it, as an adoption never copies one.
+ */
+export function siteMirrorFile(planeDir: string, file: string, tree: SyncedTree | undefined, personal: boolean): FileSiting {
+  const sited = siteFileToTitle({ planeDir, ...(tree !== undefined ? { uriAt: (path: string) => tree.uriAt(path) } : {}) }, file);
+  if (personal && "title" in sited && sited.by !== "base" && sited.title.startsWith("$:/")) {
+    return { why: `${sited.title} names a personal layer's view state, which stays with the face that set it` };
+  }
+  return sited;
 }
 
 /**

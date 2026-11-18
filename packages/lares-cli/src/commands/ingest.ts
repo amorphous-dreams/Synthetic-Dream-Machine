@@ -63,7 +63,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
   // scan — observations only, never a work queue
   const projections = larProjectionsDirOrNone();
   const dirs = { bags: larBagsDir(), wikis: larWikisDir(), ...(projections !== undefined ? { projections } : {}) };
-  const scan = scanSource(root, source, toBag, tree, fileToUriForSource(root, source, dirs));
+  const scan = scanSource(root, source, toBag, tree, fileToUriForSource(root, source, dirs, tree));
   if (scan === null) {
     emit(args, { ok: false, error: { code: "usage", message: `source "${source}" does not resolve` }, human: () => console.error(`lares ingest: source "${source}" does not resolve`) });
     return exitFor("usage");

@@ -67,13 +67,13 @@ import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
 import {
   larProjectionsHome, larConfigHome, mirrorDirFileToUri, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug,
   daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, PERSONAL_PROJECTION_DIR, houseIgnored,
-  siteFileToTitle, type FileSiting, type SyncedTree,
+  type FileSiting, type SyncedTree,
 } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh";
 import { LIVE_CARRY_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
 import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
-import { scanFiles, skipLines, candidatesOf, settleIngest, openSyncedTree, submitIngest, carriedBasesOf, type SubmitIngestOpts, type ScanSkip } from "./ingest-core.js";
+import { scanFiles, skipLines, siteMirrorFile, candidatesOf, settleIngest, openSyncedTree, submitIngest, carriedBasesOf, type SubmitIngestOpts, type ScanSkip } from "./ingest-core.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { vesselDid } from "./env.js";
 import { canonIsDisk } from "./holdings.js";
@@ -789,15 +789,10 @@ export const LIVE_LAY_PORTS: LayPorts = { did: vesselDid, submit: submitIngest }
  * THE TITLE A WAVE'S FILE READS BACK UNDER, or why it reads none: the projector's siting run backward (`siteFileToTitle`) over
  * the wave's plane, the vessel's synced base first. A plain-title working tiddler (`My Notes.tid`, `Time_ dusk.tid` stating
  * `Time: dusk`) reads home under its own title, so a re-found's seed lands it beside the loci carriers instead of dropping it.
- * A PERSONAL LAYER'S VIEW STATE (a `$:/` title: the story list, a fold state) reads back only where a base stands at its path:
- * one the house never agreed there stays with the face that set it, as an adoption never copies one.
+ * A personal layer's view state reads back only where a base stands at its path (`siteMirrorFile`).
  */
 export function siteWaveFile(wave: Pick<MirrorWave, "uriDir" | "toBag">, file: string, tree: SyncedTree): FileSiting {
-  const sited = siteFileToTitle({ planeDir: wave.uriDir, uriAt: (path) => tree.uriAt(path) }, file);
-  if ("title" in sited && sited.by !== "base" && sited.title.startsWith("$:/") && wave.toBag.endsWith("/personal")) {
-    return { why: `${sited.title} names a personal layer's view state, which stays with the face that set it` };
-  }
-  return sited;
+  return siteMirrorFile(wave.uriDir, file, tree, wave.toBag.endsWith("/personal"));
 }
 
 /**
