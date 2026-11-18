@@ -22,11 +22,11 @@ export { atomicWriteFileSync } from "./fs-atomic.js";
 // vessel, so the vessel derives a keep's bundle id from the staged tree itself (`commands/rite.ts#keepStagedTree`).
 export {
   BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, BundleVerifyRefused,
-  sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder,
+  sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder, openBundle, sealRedeclare, KEEP_SEAL_BAG,
 } from "./bundle-manifest.js";
 export type {
   BundleLayer, BundleFile, BundleRow, BundleFace, BundleOmission, BundleManifest, BundleRedeclareFace, BundleShareEntry, BundleRedeclare,
-  BundleKahuaHead, VerifiedBundle,
+  BundleKahuaHead, VerifiedBundle, SealedBundle, BundleDiskManifest, BundleFaceKey,
 } from "./bundle-manifest.js";
 export { fileJournal } from "./vessel-journal-file.js";
 
