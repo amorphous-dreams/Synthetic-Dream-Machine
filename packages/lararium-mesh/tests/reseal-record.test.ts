@@ -116,8 +116,9 @@ describe("a forged or unsigned re-seal record refuses by name", () => {
     const replaced = await a.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: a.signer });
     if ("refusal" in replaced) throw new Error(said(replaced));
     const [record] = await a.store.records("re-seal");
-    // A forgery points the replacement at the old ciphertext: its id moves, so its sealed part opens under no id it names.
-    const forged = { ...record!, body: { ...record!.body, to: photo.body.cid as SealedAddress } };
+    // A forgery points the replacement at another body's ciphertext: its id moves, so its sealed part opens under no id it names.
+    const other = await seal(a, "a photo of somewhere else");
+    const forged = { ...record!, body: { ...record!.body, to: other.body.cid as SealedAddress } };
     await handOver(a, b);
     await b.store.putRecord(forged);
     const verdicts = await b.holder.judgeReseals(BAG);

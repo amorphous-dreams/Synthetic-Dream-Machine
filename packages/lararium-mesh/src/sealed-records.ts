@@ -1,6 +1,6 @@
 /**
  * sealed-records — the records that name and order sealed values: the key version, the manifest, the
- * checkpoint, the hand-over, the memory-import, and the lockbox payload.
+ * checkpoint, the hand-over, the memory-import, the re-seal, and the lockbox payload.
  *
  * EACH SIGNED RECORD HOLDS A CLEAR PART AND A SEALED PART. The clear part carries what a carrier needs to
  * index and nothing that names a person: opaque ids, addresses and links. The sealed part carries the record's
@@ -30,7 +30,7 @@ import { canonicalJson, hex, hexToBytes, utf8Bytes, type RandomProvider } from "
 import {
   CONTENT_KEY_JOIN_PROOF_INFO, CONTENT_KEY_VERSION_DOMAIN, SEALED_BAG_LOCATOR_INFO, SEALED_CHECKPOINT_DOMAIN,
   SEALED_ENTRY_LOCATOR_INFO, SEALED_HAND_OVER_DOMAIN, SEALED_LOCKBOX_DOMAIN, SEALED_MANIFEST_DOMAIN, SEALED_MEMORY_IMPORT_DOMAIN,
-  SEALED_RECORD_AUTHORSHIP_DOMAIN,
+  SEALED_RECORD_AUTHORSHIP_DOMAIN, SEALED_RESEAL_DOMAIN,
 } from "./domains.js";
 import {
   faceProofSubjectRef, own, placeProofSubjectRef, readPlaceSessionCertificate, readPlaceSessionSignature, readSessionCertificate, readSessionSignature,
@@ -57,11 +57,11 @@ const isHex64 = (value: unknown): value is string => typeof value === "string" &
 export const readBagLocator = (value: unknown): BagLocator | null => (isHex64(value) ? (value as BagLocator) : null);
 export const readRecordId = (value: unknown): RecordId | null => (isHex64(value) ? (value as RecordId) : null);
 
-export const RECORD_KINDS = ["key-version", "manifest", "checkpoint", "hand-over", "memory-import"] as const;
+export const RECORD_KINDS = ["key-version", "manifest", "checkpoint", "hand-over", "memory-import", "re-seal"] as const;
 export type RecordKind = (typeof RECORD_KINDS)[number];
 const KIND_DOMAINS: Readonly<Record<RecordKind, string>> = Object.freeze({
   "key-version": CONTENT_KEY_VERSION_DOMAIN, manifest: SEALED_MANIFEST_DOMAIN, checkpoint: SEALED_CHECKPOINT_DOMAIN,
-  "hand-over": SEALED_HAND_OVER_DOMAIN, "memory-import": SEALED_MEMORY_IMPORT_DOMAIN,
+  "hand-over": SEALED_HAND_OVER_DOMAIN, "memory-import": SEALED_MEMORY_IMPORT_DOMAIN, "re-seal": SEALED_RESEAL_DOMAIN,
 });
 
 // ── Keyed derivations ───────────────────────────────────────────────────────────────────────────
@@ -136,7 +136,25 @@ export interface MemoryImportBody {
   /** The version imported, and the version the record seals under: every reader of it verifies the record. */
   readonly keyVersion: KeyVersionId;
 }
-export interface RecordBodies { "key-version": KeyVersionBody; manifest: ManifestBody; checkpoint: CheckpointBody; "hand-over": HandOverBody; "memory-import": MemoryImportBody }
+/**
+ * A re-seal: one replacement a roll's successor re-sealed (the road's #/rulings, the re-seal proof). The face session that
+ * writes the replacement signs it, one record per replacement, so a reader offline through the roll learns which value
+ * replaced which and whose hand re-sealed it. It rides under the successor it seals under.
+ */
+export interface ResealBody {
+  readonly bag:        BagLocator;
+  /** The removal successor the replacement seals under, and the version the record rides under. */
+  readonly keyVersion: KeyVersionId;
+  /** The version the replaced value sealed under. */
+  readonly replaced:   KeyVersionId;
+  /** The replaced value's ciphertext address. */
+  readonly from:       SealedAddress;
+  /** The replacement's ciphertext address. */
+  readonly to:         SealedAddress;
+  /** The logical entry it replaces: the entry locator the replaced version's manifest names the value by. */
+  readonly entry:      string;
+}
+export interface RecordBodies { "key-version": KeyVersionBody; manifest: ManifestBody; checkpoint: CheckpointBody; "hand-over": HandOverBody; "memory-import": MemoryImportBody; "re-seal": ResealBody }
 
 // ── The private parts ───────────────────────────────────────────────────────────────────────────
 export interface KeyVersionPrivate {
@@ -165,7 +183,12 @@ export interface MemoryImportPrivate {
   /** The seat that holds the version by recovery: its identifier on the key shore. Sealed, since it names a party. */
   readonly seat: string;
 }
-export interface RecordPrivates { "key-version": KeyVersionPrivate; manifest: ManifestPrivate; checkpoint: CheckpointPrivate; "hand-over": HandOverPrivate; "memory-import": MemoryImportPrivate }
+export interface ResealPrivate {
+  /** The removal acts that authorized the roll: raises the successor answers, unique, sorted, never empty. Sealed, as the
+   *  key version's own cause rests. */
+  readonly acts: readonly string[];
+}
+export interface RecordPrivates { "key-version": KeyVersionPrivate; manifest: ManifestPrivate; checkpoint: CheckpointPrivate; "hand-over": HandOverPrivate; "memory-import": MemoryImportPrivate; "re-seal": ResealPrivate }
 
 /** A record as it travels and rests: the clear part and the sealed part. */
 export interface SealedRecord<K extends RecordKind = RecordKind> {
@@ -285,10 +308,19 @@ function readMemoryImportBody(value: unknown): MemoryImportBody | null {
   const bag = readBagLocator(value["bag"]), keyVersion = readKeyVersionId(value["keyVersion"]);
   return bag === null || keyVersion === null ? null : { bag, keyVersion };
 }
+function readResealBody(value: unknown): ResealBody | null {
+  if (!isRecord(value) || !exactKeys(value, ["bag", "keyVersion", "replaced", "from", "to", "entry"])) return null;
+  const bag = readBagLocator(value["bag"]), keyVersion = readKeyVersionId(value["keyVersion"]), replaced = readKeyVersionId(value["replaced"]);
+  const from = readSealedAddress(value["from"]), to = readSealedAddress(value["to"]);
+  if (bag === null || keyVersion === null || replaced === null || from === null || to === null || !isHex64(value["entry"])) return null;
+  // A replacement moves a value to another version and another ciphertext.
+  if (keyVersion === replaced || from === to) return null;
+  return { bag, keyVersion, replaced, from, to, entry: value["entry"] };
+}
 function readBody<K extends RecordKind>(kind: K, value: unknown): RecordBodies[K] | null {
   try {
     const read = kind === "key-version" ? readKeyVersionBody(value) : kind === "manifest" ? readManifestBody(value) : kind === "checkpoint" ? readCheckpointBody(value)
-      : kind === "hand-over" ? readHandOverBody(value) : kind === "memory-import" ? readMemoryImportBody(value) : null;
+      : kind === "hand-over" ? readHandOverBody(value) : kind === "memory-import" ? readMemoryImportBody(value) : kind === "re-seal" ? readResealBody(value) : null;
     return read as RecordBodies[K] | null;
   } catch { return null; }
 }
@@ -337,6 +369,11 @@ function readPrivate<K extends RecordKind>(kind: K, value: unknown, body: Record
       const seat = nonEmptyText(value["seat"]);
       return (seat === null ? null : { seat }) as RecordPrivates[K] | null;
     }
+    if (kind === "re-seal") {
+      if (!isRecord(value) || !exactKeys(value, ["acts"])) return null;
+      const acts = readActs(value["acts"]);
+      return (acts === null || !acts.every((act) => nonEmptyText(act) !== null) ? null : { acts }) as RecordPrivates[K] | null;
+    }
     if (kind !== "checkpoint") return null;
     if (!isRecord(value) || !exactKeys(value, ["frontier"])) return null;
     const frontier = sortedUnique(value["frontier"], nonEmptyText);
@@ -368,6 +405,10 @@ function bodyImage<K extends RecordKind>(kind: K, body: RecordBodies[K]): Uint8A
     const b = body as MemoryImportBody;
     return sealedImage(KIND_DOMAINS[kind], hexToBytes(b.bag), hexToBytes(b.keyVersion));
   }
+  if (kind === "re-seal") {
+    const b = body as ResealBody;
+    return sealedImage(KIND_DOMAINS[kind], hexToBytes(b.bag), hexToBytes(b.keyVersion), hexToBytes(b.replaced), addressBytes(b.from), addressBytes(b.to), hexToBytes(b.entry));
+  }
   const b = body as CheckpointBody;
   return sealedImage(KIND_DOMAINS[kind], hexToBytes(b.bag), hexToBytes(b.keyVersion), hexToBytes(b.span), utf8Bytes(b.base), addressBytes(b.address), listField(b.covers.map(addressBytes)));
 }
@@ -380,6 +421,7 @@ function privateImage<K extends RecordKind>(kind: K, value: RecordPrivates[K]): 
   if (kind === "manifest") return sealedImage("", utf8Bytes((value as ManifestPrivate).writer));
   if (kind === "hand-over") return sealedImage("", utf8Bytes((value as HandOverPrivate).reader));
   if (kind === "memory-import") return sealedImage("", utf8Bytes((value as MemoryImportPrivate).seat));
+  if (kind === "re-seal") return sealedImage("", listField((value as ResealPrivate).acts.map((act) => utf8Bytes(act))));
   return sealedImage("", listField((value as CheckpointPrivate).frontier.map((id) => utf8Bytes(id))));
 }
 
@@ -532,6 +574,70 @@ export function authorizeFromManifest(manifest: VerifiedRecord<"manifest">, key:
     if (hits.length === 0 || hits.some((entry) => entry.address !== hits[0]!.address)) return null;
     return authorizeAddress(hits[0]!.address, "manifest-entry");
   } catch { return null; }
+}
+
+// ── The re-seal's bindings ─────────────────────────────────────────────────────────────────────
+/** A binding a re-seal record makes: its successor's removal cause, the replaced version's ancestry, the replaced value's
+ *  address under its entry, and the replacement's address under the successor. */
+export const RESEAL_BINDINGS = ["successor", "replaced", "from", "to"] as const;
+export type ResealBinding = (typeof RESEAL_BINDINGS)[number];
+/**
+ * What a reader judges of one verified re-seal record against the history it holds. `complete`: every binding stands on
+ * a record the reader verified. `unverified`: no binding broke, and the history it lacks leaves the named ones unread (a
+ * missing parent never reads as complete). `refused`: a binding the reader holds the history for does not stand.
+ */
+export type ResealVerdict =
+  | { readonly verdict: "complete" }
+  | { readonly verdict: "unverified"; readonly missing: readonly ResealBinding[] }
+  | { readonly verdict: "refused"; readonly refusal: "reseal-unbound"; readonly binding: ResealBinding };
+
+/**
+ * Judge a VERIFIED re-seal record against the verified key versions and manifests a reader holds. A version or manifest
+ * that never passed `readRecord` counts as history the reader lacks.
+ */
+export function judgeReseal(record: VerifiedRecord<"re-seal">, held: {
+  readonly versions: ReadonlyMap<KeyVersionId, VerifiedRecord<"key-version">>;
+  readonly manifests: readonly VerifiedRecord<"manifest">[];
+}): ResealVerdict {
+  if (!VERIFIED.has(record) || record.kind !== "re-seal") throw new TypeError("sealed-records: only a verified re-seal record reads its bindings");
+  const { bag, keyVersion, replaced, from, to, entry } = record.body;
+  const versionOf = (id: KeyVersionId): VerifiedRecord<"key-version"> | null => {
+    const one = held.versions.get(id);
+    return one !== undefined && VERIFIED.has(one) && one.body.bag === bag && one.body.keyVersion === id ? one : null;
+  };
+  const manifestsUnder = (id: KeyVersionId): VerifiedRecord<"manifest">[] =>
+    held.manifests.filter((m) => VERIFIED.has(m) && m.kind === "manifest" && m.body.bag === bag && m.body.keyVersion === id);
+  const missing: ResealBinding[] = [];
+  const unbound = (binding: ResealBinding): ResealVerdict => ({ verdict: "refused", refusal: "reseal-unbound", binding });
+  // THE SUCCESSOR: a removal version whose cause names every act the record cites.
+  const successor = versionOf(keyVersion);
+  if (successor === null) missing.push("successor", "replaced");
+  else {
+    const cause = successor.private.cause;
+    if (cause.kind !== "removal" || !record.private.acts.every((act) => cause.acts.includes(act))) return unbound("successor");
+    // THE REPLACED VERSION stands upstream of the successor. A walk that meets a version the reader never verified leaves
+    // the binding unread, never complete.
+    const seen = new Set<KeyVersionId>();
+    const queue = [...successor.body.parents];
+    let found = false, gap = false;
+    while (queue.length > 0) {
+      const id = queue.shift()!;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      if (id === replaced) { found = true; break; }
+      const one = versionOf(id);
+      if (one === null) { gap = true; continue; }
+      queue.push(...one.body.parents);
+    }
+    if (!found) { if (gap) missing.push("replaced"); else return unbound("replaced"); }
+  }
+  // THE REPLACED VALUE: a manifest under the replaced version names its address under the entry the record names.
+  const fromEntries = manifestsUnder(replaced).flatMap((m) => m.body.entries).filter((e) => e.address === from);
+  if (fromEntries.length === 0) missing.push("from");
+  else if (!fromEntries.some((e) => e.locator === entry)) return unbound("from");
+  // THE REPLACEMENT: a manifest under the successor names its address.
+  if (!manifestsUnder(keyVersion).some((m) => m.body.entries.some((e) => e.address === to))) missing.push("to");
+  return missing.length === 0 ? { verdict: "complete" } : { verdict: "unverified", missing };
 }
 
 // ── The lockbox payload ─────────────────────────────────────────────────────────────────────────
