@@ -74,9 +74,20 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     if (args.flags["remove"] === true) {
       if (!standing) { doors.err(`lares ${kind} share: no row stands for ${slug}; nothing to unshare`); return 2; }
       if (standing.kind !== kind) { doors.err(`lares ${kind} share: ${slug} stands shared as a ${standing.kind} row; unshare it through its door (\`lares ${standing.kind} share ${slug} --remove\`)`); return 2; }
+      // THE UNSHARE TAKES THE LANDED GRANTS BACK, with the row still standing in the control document (the landing reads it
+      // there): the owner's hive revokes each reader the row delegated to. A grant it cannot revoke here (an owner or grantee
+      // face stands shut) still reads, so the door refuses to answer "unshared", names the slug, and leaves the row where it stands.
+      const taken = await doors.verb("share-apply", { faces: faces.map((f) => ({ handleIndex: f.handleIndex, petname: f.petname })), unshare: [slug] });
+      const stillReads = Array.isArray(taken?.["standing"]) ? taken["standing"] as string[] : [];
+      if (stillReads.includes(slug)) {
+        doors.err(`lares ${kind} share: ${slug} stays shared. A grant its row landed still reads, and this vessel cannot revoke it while the owner's face or a grantee's face stands shut here.`);
+        doors.err(`  The row stays in config/${SHARE_CONFIG_FILE} and the control document. Light the faces (\`lares vault unlock --face N\`), then run \`lares ${kind} share ${slug} --remove\` again.`);
+        return 1;
+      }
       const rest = rows.filter((r) => r.slug !== slug);
       doors.file.write(serializeShareFile(rest));
       doors.out(`share: ${kind} ${slug} unshared; its row leaves config/${SHARE_CONFIG_FILE}`);
+      if (taken !== null) doors.out(`  revoked: ${Number(taken["revoked"] ?? 0)} grant(s) the row had landed`);
       const removed = await doors.verb("share-set", { slug, remove: true });
       if (removed === null) doors.out("  no vessel stands: the next boot reconciles the file into the control document, the file winning");
       return 0;
