@@ -1,7 +1,7 @@
 /** Once the read-back confirms a cold-key card, the card's printed lines leave the terminal (a paste of the scrollback never carries them). */
 import { afterEach, expect, test, vi } from "vitest";
 import { seatReadBackStandIn } from "@lararium/node";
-import { coldKeyCardLines, coldKeyCode, COLD_KEY_CARD_DEFAULT_FIELDS } from "@lararium/mesh";
+import { coldKeyCardLines, coldKeyCode } from "@lararium/mesh";
 import { readBack } from "../src/cold-card-readback.js";
 import * as prompt from "../src/prompt-secret.js";
 
