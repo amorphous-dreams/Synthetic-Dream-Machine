@@ -208,22 +208,24 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
       expect(asks.map((a) => a.pollMs)).toEqual(Array(maxWaits + 1).fill(pollMs));
       expect(ran).toBe(false);
       expect(existsSync(io.claimPath())).toBe(true);   // CONTROL: the live claim stood untouched
-      // THE HOLDER'S OWN TALLY, read whole once it leaves. A look reaches the holder four times: twice to find it
-      // live (the claim's ask and the contender's), once to watch for its release, and once more after the
-      // hang-up to see that it still answers. A look that ended on the hang-up alone would reach it three times.
-      // The holder leaves only once it has reached every caller (a refused contender's last asks can still wait unread
-      // when it refuses), never by the clock.
+      // THE HOLDER'S OWN TALLY, read whole once it leaves. A look reaches the holder five times: twice to find it
+      // live (the claim's ask and the contender's), once to watch for its release, once more after the hang-up to
+      // see that it still answers, and once when its wait ends, so a holder that left during the wait spends no
+      // look. A look that ended on the hang-up alone would reach it three times. The holder leaves only once it has
+      // reached every caller (a refused contender's last asks can still wait unread when it refuses), never by the clock.
       await drainedBy(child, io.claimPath());
       child.kill("SIGTERM");
       await saidAll;
-      expect(said.split("asked").length - 1).toBe(4 * (maxWaits + 1) + 1);   // + the drain's own
+      expect(said.split("asked").length - 1).toBe(5 * (maxWaits + 1) + 1);   // + the drain's own
     } finally { child.kill("SIGKILL"); }
   });
 
   test("RED: a holder that leaves during the last wait spends no look: the contender enters, never refuses — CONTROL: one that stays refuses", async () => {
     // maxWaits 0: the budget holds ONE look. The holder leaves inside that look's wait (the port's wait releases only
     // once it exited), so the look ends on the name falling quiet and the contender claims it rather than naming a
-    // live holder that no longer answers.
+    // live holder that no longer answers. THE HOLDER LEAVES ONLY AFTER THE LOOK HAS ASKED, NEVER BY THE CLOCK: it is
+    // told to go once it has heard all four of the look's callers (the claim's ask, the contender's, the release-watch
+    // and the ask after the hang-up), so it still answered every ask the wait began with and leaves during the wait.
     let onAsk: () => void = () => undefined;
     const pace = () => new Promise<void>((release) => { onAsk = release; asked(); });
     let asked: () => void = () => undefined;
@@ -232,9 +234,11 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
     const child = holderChild(io.claimPath());
     try {
       await heldBy(child);
+      const lookAsked = askedOf(child, 4);
       let ran = false;
       const second = io.exclusive(async () => { ran = true; });
       await askedOnce;
+      await lookAsked;
       child.kill("SIGTERM");
       await gone(child);
       onAsk();
