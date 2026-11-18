@@ -371,13 +371,26 @@ export function cancelRequest(requestId: string, opts: { dataDir?: string | null
   return readOnlyQuery("cancel", requestId, opts);
 }
 
+/**
+ * THE HARNESS'S OWN MARK, read and never minted: true where the environment carries a mark an AI harness sets on the
+ * shells it runs (Claude Code's `CLAUDECODE=1`; Codex's sandbox marks, `CODEX_SANDBOX` and `CODEX_SANDBOX_NETWORK_DISABLED`).
+ * A CLI line asked from such a shell is the AI seat asking, so it carries the seat's mark (`seat: "ai"`) and meets the
+ * seat's gates (`seat-canon-reach`, the lend's face wall). The operator's own terminal carries none. The mark stays a
+ * designation, never a proof (`seat-hand`): it closes the honest road, not a hostile one.
+ */
+export function harnessSeatMarked(env: NodeJS.ProcessEnv = process.env): boolean {
+  if (env["CLAUDECODE"] === "1") return true;
+  return Boolean(env["CODEX_SANDBOX"]) || Boolean(env["CODEX_SANDBOX_NETWORK_DISABLED"]);
+}
+
 export async function invokeLocal(
   verb:        string,
   args:        Record<string, unknown>,
   requestedBy: string,
-  opts:        SubmitOptions & { readonly dataDir?: string | null; readonly signal?: AbortSignal } = {},
+  opts:        SubmitOptions & { readonly dataDir?: string | null; readonly signal?: AbortSignal; readonly env?: NodeJS.ProcessEnv } = {},
 ): Promise<SubmitResult> {
   const socketPath = udsSocketPath(opts.dataDir);
+  const seat = harnessSeatMarked(opts.env ?? process.env);
   const timeoutMs  = opts.timeoutMs ?? 30_000;
   // THE REQUEST ID RIDES BEFORE DISPATCH, NEVER AFTER. A caller-generated nonce (never one the vessel
   // mints on read) is the one thing that survives a lost response: this call's own local wait may end
@@ -412,7 +425,7 @@ export async function invokeLocal(
       // THE ASK RIDES WITH THE INVOCATION. The daemon runs its own servo, and a caller that knows its
       // pass runs long — a bulk backfill over a whole corpus — can only say so if the number crosses.
       // Left off the wire, this side waited an hour while the daemon cut the same pass at two minutes.
-      sock.write(JSON.stringify({ verb, args, requestedBy, timeoutMs, requestId, ...(opts.effectKey !== undefined && { effectKey: opts.effectKey }) }) + "\n");
+      sock.write(JSON.stringify({ verb, args, requestedBy, timeoutMs, requestId, ...(opts.effectKey !== undefined && { effectKey: opts.effectKey }), ...(seat && { seat: "ai" }) }) + "\n");
     });
     sock.on("data", (chunk: string) => {
       buf += chunk;
