@@ -3,6 +3,8 @@
  *
  *   put <uri> (--recipe <slug> | --bag <slug>) [--base <hash>] [--file <path>]
  *   get <uri> (--recipe <slug> | --bag <slug>) [--json]   — the carrier on stdout (a pipe too), `base: …` on stderr
+ *   patch <uri> (--recipe <slug> | --bag <slug>) --slot '#/x' (--append <file> | --replace <file>) --base <hash>
+ *                                                 — one slot's body through the put's own gate, resealed
  *   list (--recipe <slug> | --bag <slug>) [--tree]
  *   delete <uri> (--recipe <slug> | --bag <slug>) [--if-match <hash>]
  *   normalize <file.mem ...> [--grammar]
@@ -130,7 +132,7 @@ export interface ProjectPlan {
   readonly container: Record<string, string>;
 }
 
-const SUBS = ["put", "get", "list", "delete", "normalize", "check", "sitting", "project", "promote", "offer"] as const;
+const SUBS = ["put", "get", "patch", "list", "delete", "normalize", "check", "sitting", "project", "promote", "offer"] as const;
 type Sub = typeof SUBS[number];
 
 function usage(): void { for (const line of helpLines("meme")) console.error(line); }
@@ -230,6 +232,7 @@ export async function cmdMeme(given: ParsedArgs): Promise<number> {
     switch (sub as Sub) {
       case "put":       return await memePut(args);
       case "get":       return await memeGet(args);
+      case "patch":     return await memePatch(args);
       case "list":      return await memeList(args);
       case "delete":    return await memeDelete(args);
       case "normalize": return normalizeFiles(args, true);
@@ -338,6 +341,61 @@ async function memeGet(args: ParsedArgs): Promise<number> {
     human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); if (fromFloor) console.error(FLOOR_READ_NOTE); },
   });
   return 0;
+}
+
+/**
+ * THE PATCH'S ARGUMENT LAW, with no daemon in reach: a uri, a container, `--slot '#/name'`, exactly one of `--append <file>` or
+ * `--replace <file>`, and `--base <hash>` (a patch edits bytes the writer read, so a blind one refuses before the wire).
+ */
+export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; readonly args: Record<string, string>; readonly file: string; readonly mode: "append" | "replace" } {
+  refuseFace(args, "meme patch");
+  const uri = args.positional[1];
+  if (!uri) throw new UsageError("a uri is required (e.g. `lares meme patch lar:///ha.ka.ba/... --slot '#/x' --append note.txt --base <hash> --recipe <slug>`)");
+  const out: Record<string, string> = { uri, ...containerArgs(args, "meme patch", "write") };
+  const opt = (name: string): string => (typeof args.options[name] === "string" ? (args.options[name] as string).trim() : "");
+  const slot = opt("slot");
+  if (!slot) throw new UsageError("--slot '#/name' names the slot whose body moves (`lares meme list --tree` names the slots a meme holds)");
+  const append = opt("append");
+  const replace = opt("replace");
+  if (Boolean(append) === Boolean(replace)) throw new UsageError("name exactly one of --append <file> (a paragraph at the end of the slot's body) or --replace <file> (the slot's whole body)");
+  const base = opt("base");
+  if (!base) throw new UsageError("--base <hash> is required: the canonical hash `lares meme get` prints on stderr (`base: sha256:…`)");
+  out["slot"] = slot;
+  out["base"] = base;
+  return { verb: "meme-patch", args: out, file: append || replace, mode: append ? "append" : "replace" };
+}
+
+async function memePatch(args: ParsedArgs): Promise<number> {
+  const plan = patchPlan(args);
+  let body: string;
+  try { body = readFileSync(plan.file, "utf8"); } catch { throw new UsageError(`cannot read --${plan.mode} ${plan.file}`); }
+  const result = await runVerb(plan.verb, { ...plan.args, [plan.mode]: body }, await vesselDid());
+  const outcome = readVerbOutcome(result);
+  if (!outcome.ok) {
+    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme patch: ${outcome.error}`) });
+    return exitFor(code);
+  }
+  const receipt = outcome.output;
+  const decision = String(receipt["decision"] ?? "");
+  const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
+  const ok = decision === "ingest" || decision === "noop";
+  const code = ok ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
+  const where = `${plan.args["uri"]}${plan.args["slot"]}`;
+  emit(args, {
+    ok,
+    requestId: result.requestId,
+    data: receipt,
+    ...(ok ? {} : { error: { code, message: decision === "absent" ? `no meme at ${plan.args["uri"]}` : `${decision}: ${warnings[0] ?? receipt["reason"] ?? where}` } }),
+    human: () => {
+      if (!ok) { console.error(`lares meme patch: ${decision === "absent" ? `no meme at ${plan.args["uri"]}` : warnings[0] ?? `${decision}: ${where}`}`); return; }
+      console.log(`${decision}: ${where}`);
+      if (typeof receipt["bag"] === "string") console.log(`  in ${receipt["bag"]}${receipt["layer"] === "personal" ? " (your personal layer)" : ""}`);
+      for (const w of warnings) console.log(`  ! ${w}`);
+      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
+    },
+  });
+  return exitFor(code);
 }
 
 /** One listed root, as the verb answers it. */
