@@ -189,7 +189,7 @@ export function makeOfferPromoteReactor(opts: CanonOfferVerbOptions): VerbReacto
     const out = await promoteCanonOffer({
       ...ports,
       canon: canonOf,
-      requireReach: (bag) => requireKahuReach(bag, opts.kahuReach, "offer promote"),
+      requireReach: (bag) => requireKahuReach(bag, opts.kahuReach, "offer promote", ctx.asker),
       seat: async () => (opts.seat ? opts.seat() : null),
       canonWrite: async (bag) => {
         const store = await canonOf(bag);

@@ -371,6 +371,8 @@ export const SEALED_OUTBOX_PARCEL_DOMAIN = mint("sealed-outbox-parcel");
 export const SEALED_OUTBOX_KEY_INFO = mint("sealed-outbox-key");
 /** A MEMORY-IMPORT RECORD: its clear part hashes to the record id under this name. */
 export const SEALED_MEMORY_IMPORT_DOMAIN = mint("sealed-memory-import");
+/** A RE-SEAL RECORD: one replacement a roll's successor re-sealed; its clear part hashes to the record id under this name. */
+export const SEALED_RESEAL_DOMAIN = mint("sealed-re-seal");
 /** A backup bundle's MEMORY SECTION: the image of its entries, each a bag's id, its locator, a key version
  *  id and that version's content key. */
 export const SEALED_MEMORY_SECTION_DOMAIN = mint("sealed-memory-section");

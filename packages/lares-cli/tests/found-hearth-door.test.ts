@@ -12,8 +12,8 @@
  *        slot, and a body that opens and reads as no face (the restore's own `bundle-inconsistent`).
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { cpSync, existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { cpSync, existsSync, writeFileSync } from "node:fs";
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { join } from "node:path";
 import { cmdVessel } from "../src/commands/vessel.js";
 import { cmdPersona } from "../src/commands/persona.js";
@@ -32,14 +32,13 @@ const lastJson = (lines: string[]): Record<string, any> =>
   JSON.parse(lines.filter((l) => l.trim().startsWith("{")).at(-1) ?? "{}");
 
 describe("lares vessel found --hearth", () => {
+  let house: IsolatedHouse;
   let root: string;
-  let prior: string | undefined;
   let wire: string[];
   beforeEach(() => {
     seatReadBackStandIn(true); // Explicit harness authority for the positive founding/read-back controls.
-    root = mkdtempSync(join(tmpdir(), "lares-found-hearth-door-"));
-    prior = process.env["LAR_ROOT"];
-    process.env["LAR_ROOT"] = root;
+    house = openIsolatedHouse();
+    root = house.root;
     cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
     wire = [];
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { wire.push(String(chunk)); return true; });
@@ -49,8 +48,7 @@ describe("lares vessel found --hearth", () => {
   afterEach(() => {
     seatReadBackStandIn(false);
     vi.restoreAllMocks();
-    if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-    rmSync(root, { recursive: true, force: true });
+    house.close();
   });
 
   test("D1 — on a staged root it answers the AID, one seat, PRIVATE, and the stood-in card's code; persona zero stands", async () => {

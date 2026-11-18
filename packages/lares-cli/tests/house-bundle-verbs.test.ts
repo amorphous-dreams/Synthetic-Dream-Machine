@@ -14,6 +14,8 @@
  *   C7  a diverged id stands off (working through the gate, kahua by body digest) and never overwrites.
  *   C8  preview writes nothing; a re-declare row replays as fresh acts on an unnamed face.
  */
+import { checkHouseTeardown } from "./support/check-house-teardown.js";
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { mkdirSync, mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync, readdirSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -88,6 +90,7 @@ class FakeVessel {
   }
 }
 
+let house: IsolatedHouse;
 let root: string, out: string;
 const put = (rel: string, text: string): void => { const p = join(root, ...rel.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, text); };
 const tid = (title: string, text: string): string => `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`;
@@ -114,13 +117,16 @@ function refound(over: Partial<BundleVesselFace> = {}): FakeVessel {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lar-house-bundle-"));
+  house = openIsolatedHouse({ home: true, gitConfig: true });
+  root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "house bundle suite\n");
-  process.env["LAR_ROOT"] = root;
-  out = join(mkdtempSync(join(tmpdir(), "lar-house-bundle-out-")), "bundle");
+  out = join(house.scratchDir, "export", "bundle");
+  mkdirSync(dirname(out));
   seedHouse();
 });
-afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); });
+afterEach(() => { house.close(); });
+
+checkHouseTeardown();
 
 describe("the house bundle verbs", () => {
   test("★ an import over unseeded disk canon refuses by name and names the seed; a preview reads on ★", async () => {

@@ -2,7 +2,7 @@
  * hearth-canon — what an admitted leaf takes from ITS OWN HEARTH beyond the public boards.
  *
  * A leaf that a hearth admitted wears that hearth's face, and the wiki it opens there reads the hearth's
- * base canon: the `@lares` and `@lararium` documents. The carried admit NAMES those documents by url
+ * base canon: the `lares` and `lararium` documents. The carried admit NAMES those documents by url
  * (`hearthCanonDocs`), the way it names the persona plane and the hearth's door: a pointer per relation,
  * carried by the act that makes the relation. The cross-operator gate federates the public boards alone, so
  * without the names a carrier the hearth holds never reaches the page.
@@ -191,7 +191,7 @@ export interface CatalogRegistry {
 
 /**
  * Seat the admitted canon on this vessel's own catalog: each named title points at the document the
- * admit named. The keel and every island resolve `@lares` and `@lararium` off that catalog, so the leaf's
+ * admit named. The keel and every island resolve `lares` and `lararium` off that catalog, so the leaf's
  * wiki mounts the hearth's canon. One change carries every pointer that differs; a replica that already
  * names them takes no write.
  */

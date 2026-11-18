@@ -32,12 +32,11 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
-import { riteKukulu, type RitePorts, type RiteVerbAnswer, type SeedOffer } from "../rite-kukulu.js";
-import { foundingRecordDigests, type GenesisDigests, type GenesisRecordLike } from "@lararium/mesh";
-import { createHash } from "node:crypto";
+import { riteKukulu, type RitePorts, type RiteVerbAnswer } from "../rite-kukulu.js";
+import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
-import { KeepRefused, keepWorkspaceDir, mountLine, riteKeep, type KeepPorts } from "../rite-keep.js";
-import { sealedAct } from "../sealed-act-door.js";
+import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
+import { houseFaces } from "../custody-door.js";
 import { riteKeepHost, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../rite-keep-host.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "../surface-env.js";
 import { configuredKeepWorkspace } from "../keep-config.js";
@@ -111,8 +110,8 @@ const KEEP_PORTS: KeepPorts = {
     try { return { ok: true, output: (await storeVerb(verb, rowArgs)).output }; }
     catch (err) { const failure = storeFailure(err); return { ok: false, code: failure.code, message: failure.message }; }
   },
-  // A KEEP NAMING NO FACE ACTS AS THE DAEMON MOUNT: the seat's reading of `face.resolve`, which refuses by name at the floor.
-  mountFace: async () => (await sealedAct<{ face: number }>("face.resolve", { worn: true })).face,
+  // A KEEP NAMING NO FACE ACTS AS THE KEEP'S FACE, read over the faces the house holds (the custody door's census, open and shut).
+  houseFaces: async () => houseFaces(),
   cut: async (dest, opts) => (await houseExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_BUNDLE_DOORS, workspace: opts.workspace, houseOnly: true, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) })).manifest,
   // THE WIKI SWITCHER the wake walks: the catalog (`list-wikis`), the live state (`wiki-active`), and the rotatable pin.
   wikis: {
@@ -154,7 +153,7 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
   try {
     const out = await riteKeep(KEEP_PORTS, plan);
     emit(args, { ok: true, data: out, human: () => {
-      if (out.faceBy === "mount" && out.face !== undefined) console.log(`keep: ${mountLine(out.face)}`);
+      if (out.faceBy === "keep" && out.face !== undefined) console.log(`keep: ${keepFaceLine(out.face)}`);
       if (!out.kept) { console.log(`keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`); return; }
       console.log(`keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest} (faces: ${out.faces.join(", ") || "(none)"}), return ${out.n} of the keep lei spent`);
       for (const o of out.omissions) console.log(`  left behind: ${o.kind}${o.count !== undefined ? ` (${o.count})` : ""} — ${o.detail}`);
@@ -232,32 +231,24 @@ export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer", row
   ["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...flagsOf(rowArgs)];
 
 /**
- * The founding record beside the seed the image offers: the record's digests from the vessel's own floor status (it answers
- * them charter-free), the seed's from this checkout's `genesis/seed.json` (the shim builds the image from this clean
- * checkout, so its seed stands at the head). Null where either does not read. Reads only.
+ * The founding record beside the seed the image offers, through the host's one seed read (`../seed-offered.ts`, the read
+ * `lares vessel floor seed` prints): the seed from this checkout's genesis dir (the shim builds the image from this clean
+ * checkout, and the image carries that dir at `/app/genesis`), the record's digests from the vessel's own floor status (it
+ * answers them charter-free). Null where either does not read. Reads only.
  */
-async function hostSeedOffer(): Promise<SeedOffer | null> {
-  try { return await hostSeedOfferRead(); }
-  catch { return null; }   // a read-only line never stops the rite
-}
-
-async function hostSeedOfferRead(): Promise<SeedOffer | null> {
-  const status = await cliVerb(["vessel", "floor", "status"]);
-  const genesis = status.ok ? status.output["genesis"] as { record?: GenesisDigests; unread?: string } | undefined : undefined;
-  const record = genesis?.unread === undefined ? genesis?.record : undefined;
-  if (!record) return null;
-  let bytes: Buffer;
-  try { bytes = readFileSync(join(CHECKOUT, "genesis", "seed.json")); } catch { return null; }
-  let body: GenesisRecordLike;
-  try { body = JSON.parse(bytes.toString("utf8")) as GenesisRecordLike; } catch { return null; }
-  return { record, seed: { cid: createHash("sha256").update(bytes).digest("hex"), digests: foundingRecordDigests(body) } };
-}
+const hostSeedOffer = hostSeedOfferPort({
+  genesisDir: join(CHECKOUT, "genesis"),
+  record: async () => {
+    const status = await cliVerb(["vessel", "floor", "status"]);
+    return status.ok ? foundingRecordFromStatus(status.output, "the vessel's floor status names no founding record") : { unread: status.message };
+  },
+});
 
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
 function hostPorts(runShim: (verb: string) => Promise<number>, say: (line: string) => void, image: () => Promise<string | null>): RitePorts {
   return {
     image,
-    seedOffer: () => hostSeedOffer(),
+    seedOffer: (head) => hostSeedOffer(head).catch(() => null),   // a read-only line never stops the rite
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
     shim: (verb) => runShim(verb),

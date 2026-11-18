@@ -438,6 +438,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vessel rite refresh               # the post-code-change cure: build · stop · stand",
       "lares vessel floor status               # the vessel's floor pin: pinned release, newest seen, fast-forward, fork",
       "lares vessel floor accept [<release>]   # walk prior from the pin to the release (or the sole newest)",
+      "lares vessel floor seed [--genesis <dir>]  # the seed a genesis dir offers (CID, digests) beside the founding record; moves nothing",
     ],
     flags: [
       "stand --foreground   this terminal owns the node (no Vite)",
@@ -449,6 +450,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "read --palaces       the palace-organ health table (mempalace · structure · form · mesh)",
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
       "lay --lift-kahua <N>  lift the kahua items the lay previewed when N equals their count (a bare --yes lifts none)",
+      "floor seed --genesis <dir>  the genesis dir whose seed reads (else LAR_GENESIS through the one resolver; an image carries /app/genesis); --json carries `seed`, the line the pūlama takes",
     ],
     next: ["lares vessel read --palaces", "lares sense pour --all"],
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
@@ -540,11 +542,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   meme: {
-    usage: "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
+    usage: "usage: lares meme <put | get | patch | list | delete | normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
     synopsis:
       "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: " +
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
-      "reach; `put` · `get` · `list` · `delete` · `project` to any other target, or from a `lar:` uri, ride " +
+      "reach; `put` · `get` · `patch` · `list` · `delete` · `project` to any other target, or from a `lar:` uri, ride " +
       "the daemon verb. Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
       "the named wiki; " +
       "`--bag` places into that bag and REFUSES when this island cannot write it; `--realm <id>` beside " +
@@ -552,7 +554,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "`--base` carries the " +
       "canonical hash last read — a record that moved past it CONFLICTS and nothing lands.",
     examples: [
-      "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # text on stdout, the base on stderr",
+      "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # the carrier on stdout (a pipe too), the base on stderr; --json for the envelope",
+      "lares meme patch lar:///ha.ka.ba/... --recipe lares --slot '#/x' --append note.txt --base <hash>  # one slot's body through the put's gate, resealed",
       "lares meme put lar:///ha.ka.ba/... --recipe lares --file note.mem     # land a framed meme through the gate",
       "lares meme list --recipe lares --tree                                  # every root the wiki resolves, each slot tree nested",
       "lares meme list --bag lares                                            # every root that one bag holds",
@@ -569,7 +572,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
       "--bag <slug>       a residency placement into that bag (refused when this island cannot write it)",
-      "--base <hash>      (put) the canonical hash last read; stale → conflict, nothing lands",
+      "--json             (get) the envelope {uri, text, canonicalHash}; the carrier otherwise, on a terminal or a pipe",
+      "--base <hash>      (put, patch) the canonical hash last read; required on patch; stale → conflict, nothing lands",
+      "--slot <#/name>    (patch) the slot whose body moves",
+      "--append <file>    (patch) a paragraph at the end of the slot's body",
+      "--replace <file>   (patch) the slot's whole body",
       "--if-match <hash>  (delete) the canonical hash last read; stale → conflict, nothing moves",
       "--file <path>      (put) the meme text (stdin when absent)",
       "--tree             (list) nest each root's slot tree; roots + canonical hash alone otherwise. " +
@@ -582,6 +589,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--over-fresher     (offer promote) the steward's explicit choice to land an offer canon moved under (\"canon is fresher\")",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",
+      "--format=problems  (check) one `path:line:col: severity: code: message` line per diagnostic, for an " +
+        "editor's problem matcher (lar:///ha.ka.ba/lares/cli/problems); a clean file prints nothing, the exit stays",
       "--grammar          (normalize/check) also apply GRAMMAR-authority clauses (authored spelling, " +
         "e.g. a call site's `:` vs `=`) — default reports them as a preference and moves no byte",
       "--to <mem|md|html|tid|json>   (project) the render target",
@@ -793,6 +802,22 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "unlock | bind | unbind | backup | restore read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
     ],
     next: ["lares vault status", "lares vault unlock"],
+  },
+
+  wear: {
+    usage: "usage: lares wear <N>   (N names a face standing open, a whole number from 0; `--face N` reads the same)",
+    synopsis:
+      "UNLOCK OPENS CUSTODY; WEAR CHOOSES THE FACE. The vessel's mount moves to face hN, a face already standing open " +
+      "(under a pūlama, one the pūlama lends), and the vessel composes again on it. A wear asks no route and carries none. " +
+      "A vessel holding no key refuses `custody-locked` and names `lares vault unlock`; a composition that refuses wears " +
+      "the face it left, and the vessel key stays held.",
+    examples: [
+      "lares wear 1                           # move the mount to face h1, a face already standing open",
+      "lares wear --face 0                    # the same move, the face named by flag",
+    ],
+    flags: ["--face <N>         the face to wear, read where no positional names one"],
+    next: ["lares vault status", "lares vault unlock   # a vessel holding no key opens here first"],
+    meme: "lar:///ha.ka.ba/lares/docs/pono/the-worn-house",
   },
 
   cabal: {

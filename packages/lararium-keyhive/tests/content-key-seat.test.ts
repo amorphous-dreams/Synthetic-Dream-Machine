@@ -18,15 +18,16 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  ScriptedSeatRolls, SealedStore, ed25519SignerFromSeed, hex, memorySealedStoreRest, signSeatRoll, utf8Bytes,
+  SealedStore, ed25519SignerFromSeed, hex, memorySealedStoreRest, signSeatRoll, utf8Bytes,
   makeIslandRepo, materializeSharedLarDoc, fleetEdgeBoardDocUrl, emptyLarDoc, ed25519VerifyingKeyFromSeed,
-  type EdgeStanding, type RecordSigner, type RollOutcome, type SealedAddress, type SealedStoreRest, type SeatRoll,
+  type RecordSigner, type RollOutcome, type SealedAddress, type SeatRoll,
 } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore, announceSeatRoll, keyhiveSeatShore, runSeatDuties, seatContentKeys, type ContentKeySeat } from "../src/index.js";
 import { boardDyadReader } from "../src/board-dyad-reader.js";
 import { fleetFixture } from "./fleet-fixture.js";
+import { fleet, type Device } from "./content-key-fleet.js";
 import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
-import { chain, pair, signHex, type Chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
+import { chain, pair, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
 
 const BAG = "lar:///ha.ka.ba/@test/bags/garden-notes";
 const SCOPE = "ab".repeat(32);                                        // a fleet root, as a seat roll names its scope
@@ -34,73 +35,6 @@ const NEXUS = "nexus-test-one";
 const text = (b: Uint8Array) => new TextDecoder().decode(b);
 const said = (r: object): string => ("refusal" in r ? `${(r as { refusal: string }).refusal}${(r as { cause?: string }).cause ? `:${(r as { cause?: string }).cause}` : ""}` : "OK");
 const bare = (id: string) => id.toLowerCase().replace(/^0x/, "");
-
-interface Device {
-  readonly name: string;
-  readonly seed: number;
-  readonly events: InMemoryEventStore;
-  provider: KeyhiveProvider;
-  readonly id: string;
-  readonly archives: Uint8Array[];
-  readonly rest: SealedStoreRest;
-  readonly values: Map<SealedAddress, Uint8Array>;
-  readonly chain: Chain;
-  readonly signer: RecordSigner;
-  readonly rolls: ScriptedSeatRolls;
-  readonly standing: Map<string, EdgeStanding>;
-  readonly raises: Set<string>;
-  readonly reports: RollOutcome[];
-  standingOf?: (member: string) => Promise<EdgeStanding>;
-  signs: boolean;
-  seat: ContentKeySeat;
-  /** Stand the seat afresh over the same rest. */
-  reseat(): ContentKeySeat;
-}
-
-/** A fleet of devices in one PersonaGroup: `founder` creates the group and seats the rest. */
-async function fleet(base: number, names: readonly string[]): Promise<{ group: string; devices: Device[]; ship(from: Device, to: Device): Promise<void>; everything(from: Device): Promise<Uint8Array[]> }> {
-  const devices: Device[] = [];
-  let group = "";
-  for (const [i, name] of names.entries()) {
-    const events = new InMemoryEventStore();
-    const provider = new KeyhiveProvider();
-    await provider.init({ seed: new Uint8Array(32).fill(base + i), eventStore: events });
-    const c = await chain(`${name}-${base}`, NEXUS);
-    const signer: RecordSigner = {
-      certificate: c.sessionCertificate,
-      sign: async (purpose, payload) => ({ signature: await signHex(sessionSignatureImage(purpose, c.scope, c.sessionCertificate.sessionKey, payload), c.session) }),
-    };
-    const d: Device = {
-      name, seed: base + i, events, provider, id: await provider.vesselIdentifierHex(), archives: [], rest: memorySealedStoreRest(), values: new Map(),
-      chain: c, signer, rolls: new ScriptedSeatRolls(), standing: new Map(), raises: new Set(), reports: [], signs: true,
-      seat: undefined as unknown as ContentKeySeat,
-      reseat() {
-        d.seat = seatContentKeys({
-          providers: [d.provider], rest: d.rest,
-          values: { read: async (a) => d.values.get(a) ?? null, write: async (a, bytes) => { d.values.set(a, Uint8Array.from(bytes)); } },
-          restArchive: async (p) => { d.archives.push(await (p as KeyhiveProvider).exportArchive()); },
-          group: { groupId: group, scope: SCOPE },
-          bags: () => [BAG],
-          standingOf: (member) => d.standingOf ? d.standingOf(member) : d.standing.get(bare(member)) ?? "clear",
-          countedRaises: () => d.raises,
-          session: { signer: () => (d.signs ? d.signer : null), standing: { holdsWrite: () => true } },
-          report: (o) => { d.reports.push(o); },
-          subscribe: (sink) => d.rolls.subscribe(sink),
-        });
-        return d.seat;
-      },
-    };
-    devices.push(d);
-  }
-  for (const a of devices) for (const b of devices) if (a !== b) await a.provider.receiveContactCard(await b.provider.contactCard());
-  const founder = devices[0]!;
-  group = (await founder.provider.createGroup()).groupId;
-  for (const d of devices.slice(1)) await founder.provider.addGroupMember(d.id, group);
-  const ship = async (from: Device, to: Device): Promise<void> => { await to.provider.ingestPeerEvents(await from.provider.eventsForPeer(to.id)); };
-  for (const d of devices.slice(1)) await ship(founder, d);
-  for (const d of devices) d.reseat();
-  return { group, devices, ship, everything: async (from) => { await from.provider.settleEvents(); return (await from.events.list()).map((r) => r.bytes); } };
-}
 
 async function seal(d: Device, plaintext: string, history?: "shareable" | "closed") {
   const r = await d.seat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes(plaintext), signer: d.signs ? d.signer : null, ...(history ? { founding: { history } } : {}) });

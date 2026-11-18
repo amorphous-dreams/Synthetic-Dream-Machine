@@ -58,7 +58,7 @@ export function setFoundingRoute(gather: FoundingRoute): void { gatherRoute = ga
  * on a TTY by default. A test installs its own; no flag and no env var carries it.
  */
 export type BundleRoute = () => Promise<readonly Credential[]>;
-let gatherBundle: BundleRoute = () => gatherCredentials("lares vessel found --hearth --restore");
+let gatherBundle: BundleRoute = () => gatherCredentials("lares vessel found --hearth --restore", { kind: "bundle" });
 export function setFoundingBundleRoute(gather: BundleRoute): void { gatherBundle = gather; }
 
 /** The refusals a founding names on one line each, with their advice; every other error keeps its own voice. */

@@ -16,9 +16,9 @@
  */
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { join, resolve, sep, extname } from "node:path";
+import { join, resolve, sep, extname, relative } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow, houseIgnored, siteFileToTitle, PERSONAL_PROJECTION_DIR, type FileSiting } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -93,9 +93,23 @@ export function carriedBasesOf(uri: string, bases: Readonly<Record<string, strin
   };
 }
 
+/** A file a scan read no carrier from, and why: every file a scan lists lands as a row, a shadow, or one of these. */
+export interface ScanSkip {
+  readonly file: string;
+  readonly why:  string;
+}
+
+/** The lines a person reads for a scan's skips: each file beside its reason, never a bare count. */
+export function skipLines(skipped: readonly ScanSkip[]): string[] {
+  return skipped.map((s) => `skips: ${s.file} (${s.why})`);
+}
+
 export interface ScanResult {
   readonly rows:    ScanRow[];
-  readonly skipped: string[];
+  /** NO SILENT SKIPS: each file the scan read no carrier from, named with why. Over a source holding no kāpae shadow,
+   *  `skipped.length + rows.length` equals the files the scan was handed (a shadow speaks in `shadows` or
+   *  `refusedShadows`, and a carrier its own shadow stands beside rides out under that shadow's raise). */
+  readonly skipped: ScanSkip[];
   /** R2 — the rename-deletions a FULL scan discovered (each `renamed` row's gone
    *  source), threaded into the INGEST wave's `deletions[]` so the island pairs
    *  them and re-homes records. Absent on a partial (watcher) scan, which pairs
@@ -161,13 +175,16 @@ function listSourceFiles(source: string): string[] | null {
     // A `.meta` sidecar carries a content file's fields — it lands WITH that
     // file at the shore, never as a standalone carrier.
     .filter((f) => !f.endsWith(".meta"))
-    .filter((f) => f !== bagDeclaration);
+    .filter((f) => f !== bagDeclaration)
+    // THE ONE LIST THE HOUSE IGNORES (`HOUSE_IGNORED`): a workspace's tooling, the shore's renders, orphan folders, atomic temps.
+    .filter((f) => houseIgnored(relative(source, f)) === null);
 }
 
 /** Derive a file's carrier-root URI for one mirror plane (bags/ canon vs
  *  wikis/ working write-layer). The watcher and CLI both feed a source; this
- *  names which address reverse-derivation a row carries. */
-export type FileToUriFn = (root: string, file: string) => string | null;
+ *  names which address reverse-derivation a row carries. A file no rule reads answers null, or `{ why }` naming the reason
+ *  the scan's skip carries (a bare null reads "no address derives"). */
+export type FileToUriFn = (root: string, file: string) => string | null | { readonly why: string };
 
 /** The mirror directories a vessel reads — `LAR_BAGS` / `LAR_WIKIS` (cli `larBagsDir()` / `larWikisDir()`),
  *  which may sit outside `LAR_ROOT`, and the house's projections root (`<root>/projections`), whose `bags/` and
@@ -181,19 +198,49 @@ export interface MirrorDirs { readonly bags: string; readonly wikis: string; rea
  * target bag stays the caller's (`--to`); the plane only drives the URI.
  * `dirs` defaults to `<root>/bags` and `<root>/wikis`; the returned function derives against `dirs`
  * and ignores the root its caller hands it.
+ *
+ * A FACE'S PERSONAL MARGINS (`<projections>/personal/<F>/<slug>/…`) read as their own plane: `personal/<F>` holds the slots,
+ * the wiki's slug names the holding folder. Every plane reads through the projector's siting run backward (`siteMirrorFile`),
+ * so a plain-title file derives its title as a loci carrier derives its address; `tree` lends rule 0, the base at the path.
  */
 export function fileToUriForSource(
   root: string, source: string,
   dirs: MirrorDirs = { bags: join(root, "bags"), wikis: join(root, "wikis") },
+  tree?: SyncedTree,
 ): FileToUriFn {
   const abs = resolve(source);
   const under = (dir: string): boolean => { const r = resolve(dir); return abs === r || abs.startsWith(r + sep); };
+  const personal = dirs.projections === undefined ? null : resolve(dirs.projections, PERSONAL_PROJECTION_DIR);
+  if (personal !== null && under(personal)) {
+    return (_root, file) => {
+      const face = resolve(file).slice(personal.length + 1).split(sep)[0] ?? "";
+      if (!resolve(file).startsWith(personal + sep) || face === "") return { why: `stands outside any face's margins under ${personal}` };
+      return titleOf(siteMirrorFile(join(personal, face), file, tree, true));
+    };
+  }
   const projected = dirs.projections === undefined ? null
     : under(join(dirs.projections, "wikis")) ? join(dirs.projections, "wikis")
     : under(join(dirs.projections, "bags")) ? join(dirs.projections, "bags")
     : null;
   const dir = projected ?? (under(dirs.wikis) ? dirs.wikis : dirs.bags);
-  return (_root, file) => mirrorDirFileToUri(dir, file);
+  return (_root, file) => titleOf(siteMirrorFile(dir, file, tree, false));
+}
+
+/** A siting as a `FileToUriFn` answers it: the title, or the `{ why }` the scan's skip carries. */
+const titleOf = (sited: FileSiting): string | { readonly why: string } => ("why" in sited ? { why: sited.why } : sited.title);
+
+/**
+ * THE TITLE A MIRROR FILE READS BACK UNDER, or why it reads none: the projector's siting run backward (`siteFileToTitle`) over
+ * one plane, the synced base at the file's path first where a tree stands. A PERSONAL LAYER'S VIEW STATE (a `$:/` title: the
+ * story list, a fold state) reads back only where a base stands at its path: one the house never agreed there stays with the
+ * face that set it, as an adoption never copies one.
+ */
+export function siteMirrorFile(planeDir: string, file: string, tree: SyncedTree | undefined, personal: boolean): FileSiting {
+  const sited = siteFileToTitle({ planeDir, ...(tree !== undefined ? { uriAt: (path: string) => tree.uriAt(path) } : {}) }, file);
+  if (personal && "title" in sited && sited.by !== "base" && sited.title.startsWith("$:/")) {
+    return { why: `${sited.title} names a personal layer's view state, which stays with the face that set it` };
+  }
+  return sited;
 }
 
 /**
@@ -210,17 +257,18 @@ export function scanFiles(
   fileToUri: FileToUriFn = bagsFileToUri,
 ): ScanResult {
   const rows: ScanRow[] = [];
-  const skipped: string[] = [];
+  const skipped: ScanSkip[] = [];
   const shadows = new Set<string>();
   const refusedShadows: Array<{ file: string; refusal: string }> = [];
   for (const file of files) {
-    const uri = fileToUri(root, file);
-    if (!uri) { skipped.push(file); continue; }
+    const sited = fileToUri(root, file);
+    if (sited === null || typeof sited !== "string") { skipped.push({ file, why: sited?.why ?? "no address derives from its path" }); continue; }
+    const uri = sited;
     const ext = extname(file);
     // A KĀPAE SHADOW speaks an exclusion: it names a title and carries no record of its own.
     if (ext === KAPAE_EXT) {
       let text: string;
-      try { text = readFileSync(file, "utf8"); } catch { continue; }   // a shadow gone from disk speaks nothing
+      try { text = readFileSync(file, "utf8"); } catch { skipped.push({ file, why: "a kāpae shadow gone from disk speaks nothing" }); continue; }
       const read = readKapaeShadow(text);
       if ("refusal" in read) { refusedShadows.push({ file, refusal: read.refusal }); continue; }
       if (read.title !== uri) { refusedShadows.push({ file, refusal: "kapae-shadow-title-disagrees-with-siting" }); continue; }
@@ -235,7 +283,7 @@ export function scanFiles(
       // until a person answers). A gone path that holds no base skips: no agreement ever stood there.
       const goneSynced = tree.baseAt(syncedTreeKey(toBag, uri), file)?.disk ?? null;
       if (goneSynced !== null) rows.push({ file, uri, text: "", diskHash: "", syncedHash: goneSynced, status: "deleted", ext });
-      else skipped.push(file);
+      else skipped.push({ file, why: "gone from disk, and no base ever stood at its path" });
       continue;
     }
     // The NFC shore assertion (spec: memetic-wikitext-framing #carrier-bytes) — foreign
@@ -269,8 +317,7 @@ export function scanFiles(
     rows.push({ file, uri, text, diskHash, syncedHash, ...(syncedRecordsHash !== undefined ? { syncedRecordsHash } : {}), status, ext, binary, ...(meta !== undefined ? { meta } : {}) });
   }
   // REMOVE-WINS INSIDE ONE EXPORT: a carrier standing beside the shadow of its own title carries nothing.
-  const kept = shadows.size > 0 ? rows.filter((row) => !shadows.has(row.uri)) : rows;
-  return {
+  const kept = shadows.size > 0 ? rows.filter((row) => !shadows.has(row.uri)) : rows;  return {
     rows: kept, skipped,
     ...(shadows.size > 0 ? { shadows: [...shadows].sort() } : {}),
     ...(refusedShadows.length > 0 ? { refusedShadows } : {}),
