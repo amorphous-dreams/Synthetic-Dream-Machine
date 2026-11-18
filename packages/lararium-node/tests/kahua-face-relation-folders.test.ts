@@ -1,17 +1,19 @@
 /**
- * kahua-face-relation-folders — the face's kahua folders take the opaque relation id F, never a tag derived from keys or group.
+ * kahua-face-relation-folders — the face's private folders take its PET NAME, never its relation id and never a tag derived from
+ * keys or group.
  *
- * Operator law (2026-11-02): no pet-names, no key-derived names that move, in dir structure. The wiki projects to
- * `<projections>/wikis/daemon-<F>` and the stage to `<projections>/bags/kahua-<F>`. The old derived tag burns with no back-compat: the
- * pre-`F` spelling refuses by name. The label index is a DISK view regenerated from the face records and never read to decide.
+ * Operator ruling (2026-11-18, "one pool per face keyed by pet name"), superseding 2026-11-02's relation-keyed folders: a relation
+ * id changes at every re-found, so a relation-keyed folder orphans; the pet name carries across. The wiki projects to
+ * `<projections>/faces/<pet name>/wiki` and the stage to `<projections>/faces/<pet name>/stage`. The label index is a DISK view
+ * regenerated from the face records and never read to decide.
  *
- * Reds: the folders name F; a group change (rotation or recovery) leaves the folder where it stood; the old tag-shaped folder
- * refuses; `kahuaFaceTag` leaves the module. Controls: two faces' F never collide; a tag-free state root stays free of
- * `kahua-<tag>` dirs; the index lists F with its tag, label and group and decides nothing.
+ * Reds: the folders name the pet name; a group change (rotation or recovery) and a re-found (a new relation) leave the folder
+ * where it stood; `kahuaFaceTag` leaves the module. Controls: two faces never share a folder; the index lists F with its tag,
+ * label and group and decides nothing.
  */
 import { describe, expect, test } from "vitest";
 import * as paths from "../src/bag-paths.js";
-import { daemonWorkingMirror, kahuaFaceFolder, isKahuaFaceFolder, kahuaStageMirror } from "../src/bag-paths.js";
+import { daemonWorkingMirror, faceSegment, kahuaStageMirror } from "../src/bag-paths.js";
 import { kahuaIndexToml, writeKahuaIndex } from "../src/kahua-index.js";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -20,19 +22,15 @@ import { join } from "node:path";
 const F1 = "7b0f6c1e-4a52-4d3b-9c18-2e5a6f0d8b31", F2 = "5d2c9e70-1b3a-4f68-8a47-c0e91d3b7a25";
 const OLD_TAG = "2a1f0c9e4b7d";
 
-describe("the folder names F", () => {
-  test("RED: wiki and stage mirrors take kahua-<F>", () => {
-    expect(kahuaFaceFolder(F1)).toBe(`kahua-${F1}`);
-    expect(daemonWorkingMirror("/state", F1).mirrorRoot).toBe(`/state/wikis/daemon-${F1}`);
-    expect(kahuaStageMirror("/state", F1).mirrorRoot).toBe(`/state/bags/kahua-${F1}`);
+describe("the folder names the pet name", () => {
+  test("RED: wiki and stage mirrors rest in the face's root; a new relation under the same pet name keeps them", () => {
+    expect(daemonWorkingMirror("/state", { relation: F1, segment: "home" }).mirrorRoot).toBe("/state/faces/home/wiki");
+    expect(kahuaStageMirror("/state", { relation: F1, segment: "home" }).mirrorRoot).toBe("/state/faces/home/stage");
+    expect(kahuaStageMirror("/state", { relation: F2, segment: "home" }).mirrorRoot).toBe("/state/faces/home/stage");
   });
   test("CONTROL: two faces never share a folder", () => {
-    expect(kahuaFaceFolder(F1)).not.toBe(kahuaFaceFolder(F2));
-    expect(isKahuaFaceFolder(`kahua-${F1}`)).toBe(true);
-  });
-  test("RED: the old derived tag refuses by name, and its folder shape reads as no kahua folder", () => {
-    expect(() => kahuaFaceFolder(OLD_TAG)).toThrowError(/relation/);
-    expect(isKahuaFaceFolder(`kahua-${OLD_TAG}`)).toBe(false);
+    expect(() => faceSegment("HOME", ["home"])).toThrowError(/face-segment-collision/);
+    expect(faceSegment("work", ["home"])).not.toBe(faceSegment("home", ["work"]));
   });
   test("RED: kahuaFaceTag burned (no key-derived name remains in the module)", () => {
     expect("kahuaFaceTag" in paths).toBe(false);
@@ -58,7 +56,7 @@ describe("the label index is a convenience view", () => {
     const after = kahuaIndexToml([{ relation: F1, tag: "t1", label: "home", group: "g-new" }]);
     expect(after).toContain('group = "g-new"');
     expect(before.replace("g-old", "g-new")).toBe(after);
-    expect(kahuaFaceFolder(F1)).toBe(`kahua-${F1}`);
+    expect(kahuaStageMirror("/state", { relation: F1, segment: "home" }).mirrorRoot).toBe("/state/faces/home/stage");
   });
 });
 

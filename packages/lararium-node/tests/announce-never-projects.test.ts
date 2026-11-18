@@ -42,8 +42,8 @@ async function projectEveryTitle(r: Repo, boards: readonly AutomergeUrl[], bagDo
   const root = mkdtempSync(join(tmpdir(), "lar-announce-mirror-"));
   roots.push(root);
   const mirrors = [
-    ...daemonDiskMirrors({ projectionRoot: join(root, "faceless"), canonBags: join(root, "absent"), faceRelation: null }),
-    ...daemonDiskMirrors({ projectionRoot: join(root, "faced"), canonBags: join(root, "absent"), faceRelation: F, canon: true, temp: true }),
+    ...daemonDiskMirrors({ projectionRoot: join(root, "faceless"), canonBags: join(root, "absent"), face: null }),
+    ...daemonDiskMirrors({ projectionRoot: join(root, "faced"), canonBags: join(root, "absent"), face: { relation: F, segment: "Heron" }, canon: true, temp: true }),
   ];
   const held = async (bagId: string, uri: string) => {
     const url = bagDocs.get(bagId);

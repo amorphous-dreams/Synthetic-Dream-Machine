@@ -127,13 +127,15 @@ describe("resolveDiskMirrors — a per-wiki grant's root splits by the slug's or
 // vessel, so its mirror rests in one folder whichever seated writer wears, and a sourced wiki's rests beside its canon source,
 // in the repo workspace. Nothing face-private lands beside a canon source.
 describe("resolveDiskMirrors — one folder answers a workbench, and nothing face-private rests beside a canon source", () => {
-  const A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2";
-  /** The node's own grant shape for a wiki's four instance slots, under one worn face. */
+  /** Two faces' roots, by pet name (`faces/<pet name>`). */
+  const A = "Heron", B = "Egret";
+  /** The node's own grant shape for a wiki's four instance slots, under one worn face: the workbench in its realm pool, the
+   *  face-private three in the wearing face's root. */
   const grant = (face: string | null, workspaces: Record<string, string> = {}): DiskMirrorGrant => [
     { bagId: "working", mirrorRoot: "/state/wikis", scope: "working", wikiSlot: "working", sourcedRoots: { lares: "/checkout/wikis" }, workspaceRoots: workspaces },
-    { bagId: "personal", mirrorRoot: "/state/personal", scope: "personal", wikiSlot: "personal", faceFolder: () => face },
-    { bagId: "draft", mirrorRoot: "/state/wikis", scope: "draft", wikiSlot: "draft", mirrorClass: "recovery" },
-    { bagId: "temp", mirrorRoot: "/state/wikis", scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: ["lares", "notes"] },
+    { bagId: "personal", mirrorRoot: "/state/faces", scope: "personal", wikiSlot: "personal", faceFolder: () => face },
+    { bagId: "draft", mirrorRoot: "/state/faces", scope: "draft", wikiSlot: "draft", mirrorClass: "recovery", faceFolder: () => face },
+    { bagId: "temp", mirrorRoot: "/state/faces", scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: ["lares", "notes"], faceFolder: () => face },
   ];
   const slots = (slug: string): string[] => (["working", "personal", "draft", "temp"] as const).map((k) => wikiSlotUri(slug, k));
   const rootOf = (g: DiskMirrorGrant, slug: string, kind: "working" | "personal" | "draft" | "temp" = "working"): string | undefined =>
@@ -147,12 +149,12 @@ describe("resolveDiskMirrors — one folder answers a workbench, and nothing fac
     expect(rootOf(grant(A), "lares")).toBe("/checkout/wikis/lares");
     expect(rootOf(grant(B), "lares")).toBe("/checkout/wikis/lares");
   });
-  test("nothing face-private lands beside the canon source: personal, draft and temp of a sourced wiki rest under the state root, and no checkout path names a face", () => {
+  test("nothing face-private lands beside the canon source: personal, draft and temp of a sourced wiki rest in the wearing face's root, and no checkout path names a face", () => {
     for (const face of [A, B]) {
       const resolved = resolveDiskMirrors(grant(face), slots("lares"), "lares");
-      expect(rootOf(grant(face), "lares", "personal")).toBe(`/state/personal/${face}/lares`);
-      expect(rootOf(grant(face), "lares", "draft")).toBe("/state/wikis/lares/recovery");
-      expect(rootOf(grant(face), "lares", "temp")).toBe("/state/wikis/lares/temp");
+      expect(rootOf(grant(face), "lares", "personal")).toBe(`/state/faces/${face}/margins/lares`);
+      expect(rootOf(grant(face), "lares", "draft")).toBe(`/state/faces/${face}/recovery/lares`);
+      expect(rootOf(grant(face), "lares", "temp")).toBe(`/state/faces/${face}/temp/lares`);
       const inCheckout = resolved.filter((m) => m.mirrorRoot.startsWith("/checkout/"));
       expect(inCheckout.map((m) => m.bagId), "the workbench alone rests in the checkout").toEqual([wikiSlotUri("lares", "working")]);
       for (const m of inCheckout) expect(m.mirrorRoot).not.toContain(face);
@@ -164,7 +166,7 @@ describe("resolveDiskMirrors — one folder answers a workbench, and nothing fac
     const unseated = resolveDiskMirrors(grant(A), slots("lares").filter((s) => s !== wikiSlotUri("lares", "working")), "lares");
     expect(unseated.some((m) => m.bagId === wikiSlotUri("lares", "working"))).toBe(false);
     expect(unseated.some((m) => m.mirrorRoot.startsWith("/checkout/"))).toBe(false);
-    expect(unseated.find((m) => m.bagId === wikiSlotUri("lares", "personal"))?.mirrorRoot).toBe(`/state/personal/${A}/lares`);
+    expect(unseated.find((m) => m.bagId === wikiSlotUri("lares", "personal"))?.mirrorRoot).toBe(`/state/faces/${A}/margins/lares`);
   });
   test("CONTROL: a shared wiki's workbench under an operator workspace keeps its one folder, and the resolved entry carries none of the grant's resolvers", () => {
     expect(rootOf(grant(A, { notes: "/lar/workspaces/field-notes" }), "notes")).toBe("/lar/workspaces/field-notes");

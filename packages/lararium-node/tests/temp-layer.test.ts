@@ -124,10 +124,10 @@ describe("the consent grant", () => {
 
   test("the daemon wiki's temp mirror stands beside its working top only under consent", () => {
     const face = "0b0e7f3a-1c2d-4e5f-8a9b-0c1d2e3f4a5b";
-    const base = { projectionRoot: "/p", canonBags: "/canon", faceRelation: face };
+    const base = { projectionRoot: "/p", canonBags: "/canon", face: { relation: face, segment: "Heron" } };
     expect(daemonDiskMirrors(base).some((m) => m.bagId === wikiSlotUri("daemon", "temp"))).toBe(false);
     const temp = daemonDiskMirrors({ ...base, temp: true }).find((m) => m.bagId === wikiSlotUri("daemon", "temp"));
-    expect(temp).toMatchObject({ mirrorRoot: `/p/wikis/daemon-${face}/temp`, mirrorClass: "recovery", tempLayer: true });
+    expect(temp).toMatchObject({ mirrorRoot: "/p/faces/Heron/wiki/temp", mirrorClass: "recovery", tempLayer: true });
   });
 });
 
