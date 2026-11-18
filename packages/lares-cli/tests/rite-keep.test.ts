@@ -46,12 +46,15 @@ function writeBundle(dest: string, notes: Readonly<Record<string, string>>): Car
 }
 
 /** The vessel's rows and the cut, recorded; `lei` names what the keep line reads, `begin` what the begin row answers. */
-function rig(over: { lei?: Record<string, unknown>; leiOn?: Record<number, Record<string, unknown>>; begin?: RiteVerbAnswer; notes?: Record<string, string> } = {}) {
+function rig(over: { lei?: Record<string, unknown>; leiOn?: Record<number, Record<string, unknown>>; begin?: RiteVerbAnswer; notes?: Record<string, string>; mount?: number } = {}) {
   const calls: string[] = [], stagedAtBegin: string[] = [];
   const state = { notes: over.notes ?? { heron: "remember the heron\n" }, begin: over.begin, lei: over.lei ?? { standing: true, reach: "wide", returnsLeft: 2, after: LEI } };
   const ports: KeepPorts = {
     row: async (verb, args) => {
       calls.push(`${verb} ${JSON.stringify(args)}`);
+      // THE DOOR'S CHORE GATE: a row asked as a face other than the daemon mount refuses, naming both.
+      const mount = over.mount ?? 0;
+      if (typeof args["face"] === "number" && args["face"] !== mount) return { ok: false, code: "chore-face-not-mounted", message: `chore-face-not-mounted: asked as h${String(args["face"])}, the daemon mount runs h${mount}` };
       if (verb === "swarm-show") return { ok: true, output: { lei: over.leiOn !== undefined ? (over.leiOn[Number(args["face"])] ?? { standing: false, refusal: "absent", after: null }) : state.lei } };
       if (verb === "rite-receipt") return { ok: true, output: { tree: args["tree"], verdict: "pass" } };
       if (typeof args["staged"] === "string") stagedAtBegin.push(verifyBundle(join(workspace(), ...String(args["staged"]).split("/"))).manifest.bundleId);
@@ -106,7 +109,7 @@ describe("the keep rite, vessel half", () => {
     expect(readdirSync(workspace()).sort()).toEqual([".git", "README.md", "house"]);
     expect(readFileSync(join(workspace(), "README.md"), "utf8")).toBe("the operator's own backup repo\n");
     // `--into` names another place inside the workspace, and a face rides each row.
-    const deep = rig();
+    const deep = rig({ mount: 1 });
     const there = await riteKeep(deep.ports, { workspace: "backup", into: "devices/one/house", face: 1, acceptOmissions: true });
     expect(there.dest).toBe(join(workspace(), "devices", "one", "house"));
     expect(deep.calls[0]).toBe(`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 1 })}`);
@@ -172,27 +175,44 @@ describe("the keep rite, vessel half", () => {
     expect(plan("--workspace", "backup", "--into", "devices/one/house", "--accept-omissions", "--face", "1")).toEqual({ workspace: "backup", into: "devices/one/house", acceptOmissions: true, face: 1 });
   });
 
-  test("K8 keep-reads-the-keep-face-whoever-wears: the face whose keep lei stands acts on every row, else h0; a named face rides as named", async () => {
+  test("K8 keep-reads-the-keep-face: the face whose keep line stands acts on every row, else h0; a face the door will not read names itself", async () => {
     const STANDING = { standing: true, reach: "wide", returnsLeft: 3, tip: LEI };
-    // The lei stands on h1 (strung while h1 wore): whoever wears now, the keep reads h0, finds none, reads h1, and acts as h1.
-    const r = rig({ leiOn: { 1: STANDING } });
-    const out = await riteKeep({ ...r.ports, openFaces: async () => [0, 1, 2] }, { workspace: "backup" });
+    // The lei stands on h1 and h1 wears: h0's line refuses at the door's gate, h1's stands, and the keep acts as h1.
+    const r = rig({ leiOn: { 1: STANDING }, mount: 1 });
+    const out = await riteKeep({ ...r.ports, houseFaces: async () => ({ open: [0, 1], shut: [] }) }, { workspace: "backup" });
     expect(out).toMatchObject({ kept: true, face: 1, faceBy: "keep" });
     const rows = r.calls.filter((c) => !c.startsWith("cut"));
     expect(rows[0]).toBe(`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 0 })}`);
-    expect(rows.slice(1).every((c) => c.includes('"face":1'))).toBe(true);
     expect(rows.slice(1).map((c) => c.split(" ")[0])).toEqual(["swarm-show", "rite-receipt", "rite-begin"]);
+    expect(rows.slice(1).every((c) => c.includes('"face":1'))).toBe(true);
     // The lei stands on h0: the keep acts as h0 and reads no other face.
     const zero = rig({ leiOn: { 0: STANDING } });
-    expect(await riteKeep({ ...zero.ports, openFaces: async () => [1, 0] }, { workspace: "backup" })).toMatchObject({ face: 0, faceBy: "keep" });
+    expect(await riteKeep({ ...zero.ports, houseFaces: async () => ({ open: [1, 0], shut: [] }) }, { workspace: "backup" })).toMatchObject({ face: 0, faceBy: "keep" });
     expect(zero.calls.filter((c) => c.startsWith("swarm-show"))).toHaveLength(1);
     // A named face rides as named.
-    const named = rig();
-    const two = await riteKeep({ ...named.ports, openFaces: async () => [0, 1] }, { workspace: "backup", into: "elsewhere", face: 2 });
+    const named = rig({ mount: 2 });
+    const two = await riteKeep({ ...named.ports, houseFaces: async () => ({ open: [0, 1, 2], shut: [] }) }, { workspace: "backup", into: "elsewhere", face: 2 });
     expect(two).toMatchObject({ face: 2, faceBy: "named" });
     expect(named.calls[0]).toBe(`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 2 })}`);
-    // None stands anywhere: the hint names h0, the keep's face.
+  });
+
+  test("K9 keep-names-a-lei-it-cannot-see: none read standing while a face stands shut, or its line refused, names `lares rite keep --face N`; a row refused at the chore gate says the keep belongs to the operator's hand", async () => {
+    // h2 stands shut: a lei may stand there, so the refusal names it and the line that keeps as it.
+    const shut = rig({ leiOn: {} });
+    const a = await riteKeep({ ...shut.ports, houseFaces: async () => ({ open: [0], shut: [2] }) }, { workspace: "backup" }).catch((e: unknown) => e as Error);
+    expect((a as Error).message).toMatch(/a keep lei may stand on a face not open \(h2\)/);
+    expect((a as Error).message).toMatch(/lares rite keep --face N/);
+    // h1 stands open, and its line refused at the gate (h0 wears): the same naming.
+    const gated = rig({ leiOn: {} });
+    const b = await riteKeep({ ...gated.ports, houseFaces: async () => ({ open: [0, 1], shut: [] }) }, { workspace: "backup" }).catch((e: unknown) => e as Error);
+    expect((b as Error).message).toMatch(/a keep lei may stand on a face not read \(h1\)/);
+    // A named face the mount does not wear refuses at the chore gate, and the refusal says whose act the keep is.
+    const seat = rig({ mount: 0 });
+    const c = await riteKeep({ ...seat.ports, houseFaces: async () => ({ open: [0, 1], shut: [] }) }, { workspace: "backup", face: 1 }).catch((e: unknown) => e as { code: string; message: string });
+    expect(c).toMatchObject({ code: "chore-face-not-mounted" });
+    expect(c.message).toMatch(/the keep belongs to the operator's hand/);
+    // CONTROL: every face open and read, none standing: the plain absent refusal names h0's kui.
     const none = rig({ leiOn: {} });
-    await expect(riteKeep({ ...none.ports, openFaces: async () => [1] }, { workspace: "backup" })).rejects.toThrow(/lares lei kui --rite keep --branch backup --returns <n> --face 0/);
+    await expect(riteKeep({ ...none.ports, houseFaces: async () => ({ open: [0], shut: [] }) }, { workspace: "backup" })).rejects.toThrow(/lares lei kui --rite keep --branch backup --returns <n> --face 0/);
   });
 });

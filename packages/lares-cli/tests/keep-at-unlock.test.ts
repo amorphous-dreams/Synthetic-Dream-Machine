@@ -23,7 +23,7 @@ import { wardTicketFor } from "../src/ward-door.js";
 
 const ROUTE: Credential[] = [{ kind: "passphrase", passphrase: "test-founding-passphrase" }];
 
-function rig(over: { lei?: Record<string, unknown>; leiOn?: Record<number, Record<string, unknown>>; yes?: boolean; terminal?: boolean; open?: readonly number[] } = {}) {
+function rig(over: { lei?: Record<string, unknown>; leiOn?: Record<number, Record<string, unknown>>; yes?: boolean; terminal?: boolean; open?: readonly number[]; shut?: readonly number[]; mount?: number } = {}) {
   const calls: string[] = [], said: string[] = [], asked: string[] = [], routes: (readonly Credential[])[] = [];
   const ports: KeepOfferPorts = {
     canAsk: () => over.terminal !== false,
@@ -31,6 +31,8 @@ function rig(over: { lei?: Record<string, unknown>; leiOn?: Record<number, Recor
     row: async (verb, args, route) => {
       calls.push(`${verb} ${JSON.stringify(args)}`);
       if (route !== undefined) routes.push(route);
+      // THE DOOR'S CHORE GATE: a line asked as a face other than the daemon mount refuses.
+      if (over.mount !== undefined && args["face"] !== over.mount) return { ok: false, code: "chore-face-not-mounted", message: "chore-face-not-mounted" };
       if (verb === "swarm-show") {
         const per = over.leiOn?.[Number(args["face"])];
         return { ok: true, output: { lei: per ?? over.lei ?? { standing: false, refusal: "absent", after: null } } };
@@ -38,7 +40,7 @@ function rig(over: { lei?: Record<string, unknown>; leiOn?: Record<number, Recor
       return { ok: true, output: { cid: "c".repeat(64), rite: "keep", branch: args["branch"], returns: args["returns"] } };
     },
     say: (line) => { said.push(line); },
-    ...(over.open === undefined ? {} : { openFaces: async () => over.open! }),
+    ...(over.open === undefined ? {} : { houseFaces: async () => ({ open: over.open!, shut: over.shut ?? [] }) }),
   };
   return { calls, said, asked, routes, ports };
 }
@@ -112,5 +114,20 @@ describe("the keep lei at unlock", () => {
     expect(none.asked[0]).toMatch(/face h0's ward/);
     // The unlock never names the keep's face: no `face` option rides the offer.
     expect("face" in ({} as Parameters<typeof offerKeepLei>[1])).toBe(false);
+  });
+
+  test("U5 the offer fires only while every face stands open and every line reads, none standing; otherwise it stays quiet", async () => {
+    // A face stands shut: a lei may stand there, so the unlock asks nothing and strings nothing.
+    const shut = rig({ open: [0], shut: [2] });
+    expect(await offerKeepLei(shut.ports, { workspace: "backup", route: ROUTE })).toMatchObject({ offered: false, strung: false, why: "faces-unread" });
+    expect(shut.asked).toEqual([]);
+    expect(shut.calls.filter((c) => c.startsWith("swarm-lei-kui"))).toEqual([]);
+    // Every face open, and h1's line refused at the gate (h0 wears): it stays quiet as well.
+    const gated = rig({ open: [0, 1], mount: 0 });
+    expect(await offerKeepLei(gated.ports, { workspace: "backup", route: ROUTE })).toMatchObject({ offered: false, why: "faces-unread" });
+    expect(gated.asked).toEqual([]);
+    // CONTROL: one face, open and read, none standing: the offer asks and strings as h0.
+    const one = rig({ open: [0], mount: 0 });
+    expect(await offerKeepLei(one.ports, { workspace: "backup", route: ROUTE })).toMatchObject({ offered: true, strung: true, face: 0 });
   });
 });
