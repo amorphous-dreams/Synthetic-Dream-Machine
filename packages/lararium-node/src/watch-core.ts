@@ -353,32 +353,5 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
   };
 }
 
-// ── the vessel's ports: the shore look ─────────────────────────────────────────────────────────────────────────
-
-/**
- * THE VESSEL'S WAVE, ITS SHORE LOOK. The vessel holds no INGEST scan of its own (that leg stands in the CLI, `ingest-core`),
- * so its waves hand each touched carrier to the disk shore's `sense` (`shore-verb.ts`): the projector weighs the disk against
- * the records, a moved file stands off at the shore by its key, a vanished one stands pending, and a person (or `lares shore
- * take-disk`) settles each. A file the siting reads no title from names itself in the log; a file gone from disk asks the
- * whole look, since a removed file states no title of its own.
- */
-export function shoreLookPorts(pool: string, sense: (uris?: readonly string[]) => Promise<unknown>, log: (line: string) => void = () => {}): Pick<FacePoolPorts, "catchUp" | "wave"> {
-  return {
-    catchUp: async () => { await sense(); },
-    wave: async (files) => {
-      const titles = new Set<string>();
-      let gone = false;
-      for (const file of files) {
-        if (!existsSync(file)) { gone = true; continue; }
-        const rel = file.slice(pool.length + 1).split(sep);
-        const plane = rel[0] ?? "";
-        const sited = plane === FACE_PLANES.margins ? siteFileToTitle({ planeDir: join(pool, plane) }, file)
-          : siteFileToTitle({ planeDir: pool, ...(plane === FACE_PLANES.stage ? { titlePaths: true } : {}) }, file);
-        if ("title" in sited) titles.add(sited.title);
-        else log(`a wave reads no carrier from ${rel.join("/")}: ${sited.why}`);
-      }
-      if (gone) await sense();
-      else if (titles.size > 0) await sense([...titles]);
-    },
-  };
-}
+// The vessel's ports over the worn face's pool stand beside the ingest machinery (`poolIngestPorts`, `ingest-scan`): each wave
+// lands as an unattended INGEST wave, and a stand-off, a vanish and a margin go to the disk shore's look.

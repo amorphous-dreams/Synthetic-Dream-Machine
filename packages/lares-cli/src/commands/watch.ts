@@ -40,7 +40,7 @@
 
 import { watch as fsWatch, type FSWatcher } from "node:fs";
 import { join, isAbsolute } from "node:path";
-import { drainSeat, isWatchNoise, cookieSelfTest } from "@lararium/node";
+import { drainSeat, isWatchNoise, cookieSelfTest, pairedDeletions } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { exitFor, emit } from "../render.js";
 import { udsAlive, udsSocketPath } from "../local-connector.js";
@@ -48,7 +48,7 @@ import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } 
 
 /** The projections root when one stands, as the optional `MirrorDirs` field. */
 const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
-import { openSyncedTree, scanFiles, skipLines, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type ArmedDeletion, type StandingAsks } from "../ingest-core.js";
+import { openSyncedTree, scanFiles, skipLines, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type StandingAsks } from "../ingest-core.js";
 import { askShore } from "../shore-core.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 
@@ -58,33 +58,9 @@ const DEFAULT_DEBOUNCE_MS = 400;   // twillm's field-tested trailing window
 // `.meta` sidecar and every path HOUSE_IGNORED names open no wave; a burst of hints settles into one wave; one wave runs at a
 // time; a backend that echoes no cookie names itself dead.
 
-/**
- * Which vanished addresses ride THIS wave as a rename's source: PAIRED BY CONTENT, and by nothing else.
- * A vanished address pairs where exactly one vanished address holds its base hash, exactly one of the
- * wave's candidates holds that same hash, and that candidate ARRIVED (a file at an address that held no
- * base: `new`). A standing carrier a hand edited into the vanished one's bytes names no move, so it pairs
- * with nothing. Every other vanished address rides nowhere: no span of waiting turns a vanish into a
- * deletion. Pulled out of `cmdWatch`'s closure so it stands as one weldable fact.
- */
-export function pairedDeletions(
-  vanished:   ReadonlyMap<string, { readonly syncedHash: string; readonly file: string }>,
-  candidates: ReadonlyArray<{ readonly diskHash: string; readonly status: string }>,
-): ArmedDeletion[] {
-  const gone = new Map<string, number>();
-  for (const v of vanished.values()) gone.set(v.syncedHash, (gone.get(v.syncedHash) ?? 0) + 1);
-  // Every candidate counts toward ambiguity (the island's delete gate reads them all); only an arrival pairs.
-  const holding = new Map<string, { count: number; arrived: boolean }>();
-  for (const c of candidates) {
-    const h = holding.get(c.diskHash) ?? { count: 0, arrived: false };
-    holding.set(c.diskHash, { count: h.count + 1, arrived: h.arrived || c.status === "new" });
-  }
-  const ride: ArmedDeletion[] = [];
-  for (const [uri, v] of vanished) {
-    const pair = holding.get(v.syncedHash);
-    if (gone.get(v.syncedHash) === 1 && pair !== undefined && pair.count === 1 && pair.arrived) ride.push({ uri, syncedHash: v.syncedHash, file: v.file });
-  }
-  return ride;
-}
+/** Which vanished addresses ride THIS wave as a rename's source: PAIRED BY CONTENT, and by nothing else (`pairedDeletions`,
+ *  `@lararium/node` ingest-scan). The vessel's watch over a face's pool pairs its own vanished set by the same rule. */
+export { pairedDeletions } from "@lararium/node";
 
 /** The vanished sources a settled wave's deletion summary names as re-linked. */
 export function confirmedRenames(deletions: Record<string, unknown> | undefined): Set<string> {
