@@ -151,6 +151,29 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 | `packages/lares-cli/` | the vessel door |
 | `TiddlyWiki5/`, `VSCode-TW5-Syntax/`, `mempalace/`, `kowloon*/` | submodules the reference deployment runs on |
 
+#### A house reads a pinned canon clone
+
+A Lararium house reads its canon (`bags/`, `wikis/`) from the directory `LARES_WORKSPACE` names and writes canon edits back there. Name a **house canon clone** there, never the checkout you develop in, so a branch switch never moves a house's canon:
+
+```sh
+node tools/house-canon.mjs stand            # clone the origin to ~/.lares-canon, detached at develop
+# LARES_WORKSPACE=$HOME/.lares-canon        # in ~/.lares/lares-surface.env
+node tools/house-canon.mjs move             # fetch and check out the pin (--pin <branch|tag|commit> re-pins)
+lares vessel seed                           # the standing house reads the moved canon
+node tools/house-canon.mjs read             # the pin, the commit, the write-back the clone holds
+```
+
+`move` refuses while the clone holds the house's write-back, naming each path. One dev install MAY name its working checkout instead, so canon edits land in source control. The [founding runbook](bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem) (`#/prepare`) carries the whole walk.
+
+#### The seal merge driver
+
+Two branches that each re-seal one carrier conflict on its `bcc=` seal line even when their bodies merge clean. `.gitattributes` routes `*.mem` through `tools/mem-merge-driver.mjs`, which re-seals a seal-only conflict and leaves every other conflict standing. Install it once per clone, from the checkout root, after a build:
+
+```sh
+git config merge.mem-seal.name "a .mem conflict on its seal alone re-seals"
+git config merge.mem-seal.driver "node tools/mem-merge-driver.mjs %O %A %B %P %L"
+```
+
 
 ---
 
