@@ -81,7 +81,7 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
 
   test("a daemon-wiki write and a kahua lift each project under the face's kahua name, and the daemon bag projects no control or house title", async () => {
     // Trued from the seed form: `vessel seed` reads the canon source, which a scratch LAR_ROOT holds empty, and the
-    // fleet bag projects under its own bag id (`bags/kahua`), never `bags/kahua-<F>`. A write to each layer drives
+    // fleet bag projects under its own bag id (`bags/kahua`), never a folder of its own beside the face root. A write to each layer drives
     // its projection; the face rides the folder name alone.
     const source = join(hearth!.root, "stage-row.mem");
     const uri = "lar:///ha.ka.ba/kahua/memory/kahua-founding-stage-row";
@@ -105,8 +105,8 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
     } }, { budgetMs: 60_000 });
     expect(existsSync(join(daemonWikiDir(hearth!.root), "ha.ka.ba/kahua/memory/kahua-founding-stage-row.mem"))).toBe(true);
     expect(existsSync(kahuaStageDir(hearth!.root))).toBe(true);
-    // CONTROL (placement over patterns): the daemon wiki's mirrors stand under the worn face's F alone, `wikis/daemon-<F>`
-    // and `bags/daemon-<F>`; the daemon document and the control document name no mirror, so neither the tracked-shape
+    // CONTROL (placement over patterns): the daemon wiki's mirrors stand in the worn face's root alone, `faces/<pet name>/wiki`
+    // and `faces/<pet name>/canon`; the daemon document and the control document name no mirror, so neither the tracked-shape
     // bags/ beside the root nor <projections>/bags/daemon holds anything, and no projected file names a private home.
     expect(faceDaemonMirrors(hearth!.root).working).toBe(daemonWikiDir(hearth!.root));
     expect(existsSync(join(hearth!.root, "bags", "daemon"))).toBe(false);

@@ -24,7 +24,6 @@ import { resolveDiskMirrors, type DiskMirrorGrant } from "../../lararium-mesh/sr
 import { expandRecipe, wikiSlotUri } from "../../lararium-mesh/src/wiki-recipe.js";
 import { workspaceRootsOf, faceMarginsRoot, FACES_PROJECTION_DIR } from "../src/bag-paths.js";
 
-const F = "0b0e2c1a-1111-4222-8333-944445555666";
 const dirs: string[] = [];
 afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });
 function house(): { root: string; checkout: string; workspaces: string; hearth: string; projections: string } {

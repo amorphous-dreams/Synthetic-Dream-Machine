@@ -72,8 +72,8 @@ const daemonRecipe = mesh.kahuaRecipe({ wikiSlug: "daemon", canonBag: mesh.daemo
 for (const slot of mesh.expandRecipe(daemonRecipe)) {
   if (slot === mesh.CONTROL_HOME_ID || slot === mesh.SECRET_HOME_ID) throw new Error(`the daemon recipe composes a private home: ${slot}`);
 }
-for (const faceRelation of [F, null]) {
-  for (const mirror of daemonDiskMirrors({ projectionRoot: "/witness", canonBags: "/witness-absent", faceRelation, canon: faceRelation !== null, temp: true })) {
+for (const face of [{ relation: F, segment: "witness" }, null]) {
+  for (const mirror of daemonDiskMirrors({ projectionRoot: "/witness", canonBags: "/witness-absent", face, canon: face !== null, temp: true })) {
     if (PRIVATE_HOMES.has(mirror.bagId)) throw new Error(`a daemon mirror names a private home by placement: ${mirror.bagId} -> ${mirror.mirrorRoot}`);
   }
 }

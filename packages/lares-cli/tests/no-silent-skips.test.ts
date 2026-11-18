@@ -20,7 +20,6 @@ import { SyncedTree } from "@lararium/node";
 import { liveLay, mirrorFiles, mirrorLines, type MirrorSeedResult, type MirrorWave } from "../src/seed-mirrors.js";
 import { scanFiles, fileToUriForSource, skipLines } from "../src/ingest-core.js";
 
-const F1 = "11111111-1111-4111-8111-111111111111";
 const WORKING = "lar:///ha.ka.ba/wikis/daemon/working";
 let root: string;
 const P = (rel: string): string => join(root, "projections", ...rel.split("/"));
