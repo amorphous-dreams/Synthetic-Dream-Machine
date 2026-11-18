@@ -203,7 +203,7 @@ export function unlockFaceLines(a: CustodyDoorAnswer): string {
     const shut = readings.filter((r) => r.reading !== "opened").map((r) => `h${String(r.face)}`);
     parts.push(opened.length > 0 ? `opened ${opened.join(", ")}` : "opened no face");
     if (shut.length > 0) parts.push(`${shut.join(", ")} did not open under this route — run \`lares vault unlock --face N\` for each`);
-    if (typeof a["wears"] === "number") parts.push(`the daemon mount runs under h${String(a["wears"])}`);
+    if (typeof a["wears"] === "number") parts.push(`the vessel wears h${String(a["wears"])}${opened.length > 1 ? " (`lares wear N` wears another face standing open)" : ""}`);
   }
   if (typeof a["switchRefused"] === "string") {
     parts.push(`the daemon mount for h${String(a["face"])} did not stand (${a["switchRefused"]}); h${String(a["wornAgain"])} runs the daemon mount again, and the vessel key stays held`);
@@ -330,6 +330,13 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
       return 1;
     }
     if (typeof door?.["pulama"] === "object" && door["pulama"] !== null) return await vaultUnlockByPulama(args);
+    // A ROUTE ONLY WHILE CUSTODY STAYS CLOSED: a held key takes no second route to choose a face (that act is `lares wear N`).
+    // `--all` and `--face N` still open faces under their own routes, so they still ask.
+    if (door?.["op"] === "custody" && door["unlocked"] === true && args.flags["all"] !== true && args.options["face"] === undefined) {
+      const standing = typeof door["standing"] === "string" ? door["standing"] : "?";
+      emit(args, { ok: true, data: { reading: "already-unlocked", standing, next: "lares wear N" }, human: () => console.log(`already unlocked: the vessel holds its key and stands as ${standing}. No route was asked; to wear another face standing open, run \`lares wear N\`.`) });
+      return 0;
+    }
   }
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);

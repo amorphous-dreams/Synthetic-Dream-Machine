@@ -15,6 +15,8 @@ export type CustodyFrame =
   /** An unlock at a vessel whose custody a pūlama holds: it carries no credential, and the vessel asks its pūlama again. */
   | { readonly op: "unlock" }
   | { readonly op: "lock"; readonly face?: number }
+  /** Wear face `face`, one already standing open: no route rides it, and the face is all it names. */
+  | { readonly op: "wear"; readonly face: number }
   | { readonly op: "custody" }
   /** The census of saves the vessel holds in memory, read before a stop: no credential, answered at once. */
   | { readonly op: "census" }
