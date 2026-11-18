@@ -17,7 +17,9 @@
  * a house answers (`floor-status`), ratchet by ratchet; it moves nothing (`../seed-offered.ts`). The dir: `--genesis`, else the
  * one resolver's (`LAR_GENESIS`, the configured one, the root's, the shipped one), else the checkout's shipped genesis where
  * no house root stands. An image carries its genesis at `/app/genesis` (LAR_GENESIS), so inside a vessel this names the seed
- * the image offers; `--json` carries `seed`, the line the shim hands the pūlama (`image '{"digest":…,"seed":…}'`).
+ * the image offers; `--json` carries `seed`, and `--image <digest>` prints the whole pūlama frame (`{"digest":…,"seed":…}`) as
+ * the one stdout line, which the shim hands to `pulama-main image '<frame>'` unparsed (it wins over `--json`). Where no house
+ * answers (the one-shot image run at `up`), the founding record reads at boot.
  *
  * `status` prints both truths for every place (D1, shore recommendation 8): the founding record (the stored genesis island)
  * beside the seed (offered) and the floor pin, ratchet by ratchet. A place in no Nexus charter prints that part and names
@@ -122,6 +124,13 @@ async function houseAnswers(): Promise<boolean> {
 
 /** `floor seed`: the read and its answer; the founding record reads through the store door, and its failure only names why. */
 async function cmdFloorSeed(args: ParsedArgs): Promise<number> {
+  // `--image <digest>`: the one stdout line becomes the whole pūlama frame, so a shim passes it straight on with no JSON in
+  // shell. It wins over `--json`: the frame IS the machine line, and the envelope would only wrap what the shim hands on.
+  const image = args.options["image"];
+  if (image !== undefined && image.trim() === "") {
+    emit(args, { ok: false, error: { code: "usage", message: "floor seed --image names the image digest the frame carries" }, human: () => console.error("lares vessel floor seed: --image takes the image digest (`--image <digest>`)") });
+    return 2;
+  }
   const read = await floorSeedRead({
     genesisDir: floorSeedDir(args),
     record: async () => {
@@ -130,6 +139,10 @@ async function cmdFloorSeed(args: ParsedArgs): Promise<number> {
       catch (err) { return { unread: (err instanceof Error ? err.message : String(err)).replace(/[\r\n]+/g, " ").trim() || "no house answers" }; }
     },
   });
+  if (image !== undefined) {
+    process.stdout.write(JSON.stringify({ digest: image.trim(), seed: read.seed }) + "\n");
+    return 0;
+  }
   emit(args, { ok: true, data: { ...read }, human: () => { for (const line of floorSeedLines(read)) console.log(line); } });
   return 0;
 }
