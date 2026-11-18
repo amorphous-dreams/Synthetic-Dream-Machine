@@ -76,7 +76,10 @@ describe("the share door", () => {
     expect(f.verbs).toEqual([]);
     expect(await cmdShare("wiki", f.doors)(args(["cold-shelf"], {}, { remove: true }))).toBe(0);
     expect(parseShareFile(f.file()!)).toEqual([]);
-    expect(f.verbs).toEqual([{ name: "share-set", args: { slug: "cold-shelf", remove: true } }]);
+    expect(f.verbs.map((v) => v.name), "the landed grants revoke first, with the row still standing; then the row leaves").toEqual(["share-apply", "share-set"]);
+    expect(f.verbs[0]!.args["unshare"]).toEqual(["cold-shelf"]);
+    expect(f.verbs[1]).toEqual({ name: "share-set", args: { slug: "cold-shelf", remove: true } });
+    f.verbs.length = 0;
     expect(await cmdShare("bag", f.doors)(args(["cold-shelf"], { read: "h1 h2" }))).toBe(0);
     expect(parseShareFile(f.file()!)).toEqual([{ slug: "cold-shelf", kind: "bag", read: "joshua-fontany-engineer [[the referee]]", write: "" }]);
     // --remove names the kind the row carries: the other kind's door refuses, and a slug no row holds reads as such.
@@ -85,6 +88,23 @@ describe("the share door", () => {
     expect(g.file()).toBe(standing);
     expect(await cmdShare("bag", g.doors)(args(["nothing-here"], {}, { remove: true }))).toBe(2);
     expect(g.verbs).toEqual([]);
+  });
+
+  test("SH9 — a remove that cannot revoke a landed grant refuses to say unshared: the row stays in the file and the control document, and the line names what still reads", async () => {
+    const standing = serializeShareFile([{ slug: "notes", kind: "bag", read: "the referee", write: "" }]);
+    const f = fake({ file: standing, applied: { ok: true, revoked: 0, standing: ["notes"] } });
+    expect(await cmdShare("bag", f.doors)(args(["notes"], {}, { remove: true }))).toBe(1);
+    expect(f.file(), "the row stands whole").toBe(standing);
+    expect(f.verbs.map((v) => v.name), "no share-set remove rides").toEqual(["share-apply"]);
+    expect(f.err.join("\n")).toMatch(/notes stays shared\. A grant its row landed still reads/);
+    expect(f.out.join("\n")).not.toMatch(/unshared/);
+  });
+
+  test("SH10 — a remove that revoked says how many grants it took back", async () => {
+    const f = fake({ file: serializeShareFile([{ slug: "notes", kind: "bag", read: "the referee", write: "" }]), applied: { ok: true, revoked: 1, standing: [] } });
+    expect(await cmdShare("bag", f.doors)(args(["notes"], {}, { remove: true }))).toBe(0);
+    expect(f.out.join("\n")).toMatch(/revoked: 1 grant\(s\) the row had landed/);
+    expect(parseShareFile(f.file()!)).toEqual([]);
   });
 
   test("SH5 — the row keeps its owner in the control document as in the file", async () => {

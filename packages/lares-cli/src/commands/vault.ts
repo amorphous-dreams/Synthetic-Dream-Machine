@@ -25,7 +25,7 @@ import { importLines, restoreFromBundle, restoreFromCards, restoreLines } from "
 import { sealedActVia } from "../sealed-act-door.js";
 import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { udsAlive } from "../local-connector.js";
-import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
+import { houseFaces, sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { pulamaStands } from "../house-config.js";
 import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -203,7 +203,7 @@ export function unlockFaceLines(a: CustodyDoorAnswer): string {
     const shut = readings.filter((r) => r.reading !== "opened").map((r) => `h${String(r.face)}`);
     parts.push(opened.length > 0 ? `opened ${opened.join(", ")}` : "opened no face");
     if (shut.length > 0) parts.push(`${shut.join(", ")} did not open under this route — run \`lares vault unlock --face N\` for each`);
-    if (typeof a["wears"] === "number") parts.push(`the daemon mount runs under h${String(a["wears"])}`);
+    if (typeof a["wears"] === "number") parts.push(`the vessel wears h${String(a["wears"])}${opened.length > 1 ? " (`lares wear N` wears another face standing open)" : ""}`);
   }
   if (typeof a["switchRefused"] === "string") {
     parts.push(`the daemon mount for h${String(a["face"])} did not stand (${a["switchRefused"]}); h${String(a["wornAgain"])} runs the daemon mount again, and the vessel key stays held`);
@@ -299,7 +299,9 @@ async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
     return 0;
   }
   const waits = typeof (a["pulama"] as { waits?: unknown } | undefined)?.waits === "string" ? (a["pulama"] as { waits: string }).waits : "unknown";
-  emit(args, { ok: false, error: { code: "pulama-waits", message: pulamaWaitsLine(waits) }, data: a, human: () => console.error(`lares vault unlock: ${pulamaWaitsLine(waits)}`) });
+  // The vessel names the composition's own fault where it refused over the session: the line carries it.
+  const line = `${pulamaWaitsLine(waits)}${typeof a["refused"] === "string" ? ` The vessel's composition refused: ${a["refused"]}.` : ""}`;
+  emit(args, { ok: false, error: { code: "pulama-waits", message: line }, data: a, human: () => console.error(`lares vault unlock: ${line}`) });
   return 1;
 }
 
@@ -313,12 +315,14 @@ function keepOfferPorts(args: ParsedArgs): KeepOfferPorts {
       catch (err) { const failure = storeFailure(err); return { ok: false, code: failure.code, message: failure.message }; }
     },
     say: (line) => console.log(line),
-    // AN UNLOCK NAMING NO FACE STRINGS THE KEEP LEI AS THE DAEMON MOUNT: the seat's reading of `face.resolve`.
-    mountFace: async () => (await sealedAct<{ face: number }>("face.resolve", { worn: true })).face,
+    // THE KEEP'S FACE reads over the faces the house holds: the custody door's census, open and shut.
+    houseFaces: async () => houseFaces(),
   };
 }
 
 const CUSTODY_PROBE_UNREAD = "the vessel stands and its custody door read no answer; a pūlama keeps this house, so no route is asked here: run `lares vault status`, then unlock again";
+
+const OFFLINE_BESIDE_PULAMA = "no vessel stands, and a pūlama keeps this house's custody: no route is asked or proved here around it. Raise the vessel (`lares-container.sh up`, or `lares vessel stand`), then run `lares vault unlock`, which asks the pūlama";
 
 async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
   // THE DOOR READS FIRST, before any prompt: a vessel standing by a pūlama takes no route here, so none gets gathered.
@@ -330,10 +334,22 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
       return 1;
     }
     if (typeof door?.["pulama"] === "object" && door["pulama"] !== null) return await vaultUnlockByPulama(args);
+    // A ROUTE ONLY WHILE CUSTODY STAYS CLOSED: a held key takes no second route to choose a face (that act is `lares wear N`).
+    // `--all` and `--face N` still open faces under their own routes, so they still ask.
+    if (door?.["op"] === "custody" && door["unlocked"] === true && args.flags["all"] !== true && args.options["face"] === undefined) {
+      const standing = typeof door["standing"] === "string" ? door["standing"] : "?";
+      emit(args, { ok: true, data: { reading: "already-unlocked", standing, next: "lares wear N" }, human: () => console.log(`already unlocked: the vessel holds its key and stands as ${standing}. No route was asked; to wear another face standing open, run \`lares wear N\`.`) });
+      return 0;
+    }
+  } else if (pulamaStands()) {
+    // NO VESSEL STANDS AND A PŪLAMA KEEPS THIS HOUSE: a route proved here would open the slot tree around the pūlama, so
+    // nothing gets asked and nothing opens; the vessel stands first, then asks its pūlama.
+    emit(args, { ok: false, error: { code: "offline-beside-pulama", message: OFFLINE_BESIDE_PULAMA }, human: () => console.error(`lares vault unlock: ${OFFLINE_BESIDE_PULAMA}`) });
+    return 1;
   }
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
-  const creds = await gatherCredentials("lares vault unlock", routeFlag(args));
+  const creds = await gatherCredentials("lares vault unlock", { kind: "vessel" }, routeFlag(args));
   if (daemonUp) {
     const face = typeof args.options["face"] === "string" ? Number(args.options["face"]) : undefined;
     if (face !== undefined && (!Number.isSafeInteger(face) || face < 0)) throw new UsageError("--face names a handle index (a whole number from 0)");
@@ -356,7 +372,7 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
         if (landed !== null && Number(landed["lifted"] ?? 0) > 0) console.log(`shares: ${Number(landed["lifted"])} granted bag(s) now stand in this face's catalog`);
       } catch (e) { console.error(`shares: the share config waits (${e instanceof Error ? e.message : String(e)}); \`lares bag share --list\` reads it`); }
       // THE HOUSE KEEPS ITSELF: where the config names a keep workspace, the same act offers its keep lei under this one route.
-      await offerKeepLei(keepOfferPorts(args), { workspace: configuredKeepWorkspace(), route: creds, ...(face !== undefined ? { face } : {}) });
+      await offerKeepLei(keepOfferPorts(args), { workspace: configuredKeepWorkspace(), route: creds });
     }
     return ok ? 0 : 1;
   }
@@ -397,7 +413,7 @@ async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
  */
 async function vaultRewrap(args: ParsedArgs): Promise<number> {
   const face = faceOption(args) ?? 0;
-  const ward = await gatherWardRoute(`lares vault rewrap --face ${face}`);
+  const ward = await gatherWardRoute(`lares vault rewrap --face ${face}`, face);
   const done = await sealedAct<{ rewrapped: number }>("ward.rewrap", { handleIndex: face, ward });
   emit(args, { ok: true, data: done, human: () => console.log(done.rewrapped === 0
     ? `face h${face} stands warded: no root row needed moving.`
@@ -465,7 +481,7 @@ async function vaultBackup(args: ParsedArgs, daemonUp: boolean): Promise<number>
     return 1;
   }
   if (!wantsJson(args)) console.log("First this vessel's own route: it proves a person stands at this cut.");
-  const vesselCredentials = await gatherCredentials("lares vault backup", routeFlag(args));
+  const vesselCredentials = await gatherCredentials("lares vault backup", { kind: "vessel" }, routeFlag(args));
   const bundleRoutes = await gatherBundleRoute("lares vault backup");
   const result = await cutBundleToFile({ face: Number(faceRaw), out, vesselCredentials, bundleRoutes, send: (frame) => sendCustodyFrame(frame) });
   if (!result.ok) {
@@ -496,7 +512,7 @@ async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number
     return 1;
   }
   if (!wantsJson(args)) console.log("The bundle's own route: the passphrase or the paper sheet it got sealed under.");
-  const credentials = await gatherCredentials("lares vault restore", routeFlag(args));
+  const credentials = await gatherCredentials("lares vault restore", { kind: "vessel" }, routeFlag(args));
   // The restored face takes a route of its own; inside a standing vessel it rides the custody door first.
   seatNewFaceRoute();
   const result = await restoreFromBundle({
@@ -555,7 +571,7 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
   const io = new FsCustodyIo(homes);
   const face = faceOption(args);
   if (face !== undefined) {
-    const faceCreds = await gatherCredentials(`lares vault bind --face ${face}`);
+    const faceCreds = await gatherCredentials(`lares vault bind --face ${face}`, { kind: "face", ordinal: face });
     const f = await openFaceOrRefuse(args, "bind", homes, io, face, faceCreds);
     if (!f) return 1;
     const spec = await gatherNewSlot(`lares vault bind --face ${face}`, args.flags["paper"] ? "paper" : "passphrase");
@@ -563,7 +579,7 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
     emit(args, { ok: true, data: { face, slotId: out.slotId, slots: out.tree.slots.length }, human: () => console.log(`bound: slot ${out.slotId} now opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree is untouched.`) });
     return 0;
   }
-  const creds = await gatherCredentials("lares vault bind");
+  const creds = await gatherCredentials("lares vault bind", { kind: "vessel" });
   const u = await openOrRefuse(args, "bind", homes, io, creds);
   if (!u) return 1;
   const spec = await gatherNewSlot("lares vault bind", args.flags["paper"] ? "paper" : "passphrase");
@@ -577,7 +593,7 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
 
 /** `vault unbind <slot-id> --face N [--rotate]`: one route leaves the face's own tree; the node tree is untouched. */
 async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCustodyIo, face: number, slotId: string, rotate: boolean): Promise<number> {
-  const creds = await gatherCredentials(`lares vault unbind --face ${face}`);
+  const creds = await gatherCredentials(`lares vault unbind --face ${face}`, { kind: "face", ordinal: face });
   const f = await openFaceOrRefuse(args, "unbind", homes, io, face, creds);
   if (!f) return 1;
   const entry = readFaceIndexSync(homes.identity).faces[face];
@@ -612,7 +628,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
   const io = new FsCustodyIo(homes);
   const face = faceOption(args);
   if (face !== undefined) return await vaultUnbindFace(args, homes, io, face, slotId, rotate);
-  const creds = await gatherCredentials("lares vault unbind");
+  const creds = await gatherCredentials("lares vault unbind", { kind: "vessel" });
   const u = await openOrRefuse(args, "unbind", homes, io, creds);
   if (!u) return 1;
 

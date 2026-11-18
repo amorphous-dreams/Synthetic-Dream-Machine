@@ -108,7 +108,7 @@ function stampToolPath(root: string): string {
  * and neither `tools/` nor any package `src/`: nothing there can drift from a source the tree never held, and
  * nothing there could rebuild. The gate's question ("does dist come from the source this tree holds?") has one
  * answer in such a tree: no source stands to compare, so the dist reads current. Measured in the image:
- * `lares vessel seed` died `ERR_MODULE_NOT_FOUND … /app/tools/stamp-build.mjs` before its handler ran.
+ * `lares vessel lay` died `ERR_MODULE_NOT_FOUND … /app/tools/stamp-build.mjs` before its handler ran.
  *
  * BOTH absences together name the built tree. A tree that holds the CLI's source and lost its stamp tool (a
  * sparse or partial checkout) still holds source its dist may trail, so it never reads as arrived built.

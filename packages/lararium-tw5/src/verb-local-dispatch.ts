@@ -12,12 +12,14 @@
 import {
   DAEMON_BAG_ID,
   isHouseCanonBag,
+  refuseSeatCanonReach,
   type CapabilityAccess,
   type CapabilityVerifyResult,
   type CapabilityVerifier,
   type CompositeStore,
   type Verb,
 } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { wikiSlugOfBag } from "@lararium/mesh";
 import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 
@@ -34,6 +36,8 @@ export interface RunLocalVerbOptions {
   readonly surfaceOf?: (invocation: Verb) => boolean;
   /** The face a session wore for this ask, as the vessel's main thread booked it; absent where none. */
   readonly wornOf?: (invocation: Verb) => SessionWorn | undefined;
+  /** The asker's hand the island booked for this ask (`VerbContext.asker`); absent where none. */
+  readonly askerOf?: (invocation: Verb) => Hand | undefined;
 }
 
 export function makeCapVerify(verifier: CapabilityVerifier | undefined, requestedBy: string, local = false): CapVerify {
@@ -135,15 +139,19 @@ export class RoutedCapDenied extends Error {
   }
 }
 
-export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerifier, presenter: string, local: boolean): Promise<void> {
-  const { access, bagUrl } = deriveRoutedCap(invocation);
-  const proof = await verifier.verify({ presenter, bagUrl, access, ...(local ? { channel: "local" as const } : {}) });
-  if (!proof.ok) {
-    throw new RoutedCapDenied(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`, proof.kind, proof.bagUrl);
-  }
-  // Every inner bag clears its own cap, its grade read off the act the envelope carries: only a COPY reads its source
-  // (a copy out of canon stays open to a reader); a MOVE deletes at its source, and any other act takes the outer
-  // access. A bag named twice takes the stronger grade.
+/**
+ * THE SEAT'S HALF OF THE ROUTED GATE: an AI seat asker (`VerbContext.asker`) names no house canon bag a routed act writes or
+ * deletes (`seat-canon-reach`), with or without a verifier, since the wiki island behind main skips its own Kahu call
+ * (`kahuReachClearedAtGate`) and never sees the asker. A COPY's read-only source asks nothing.
+ */
+export function refuseSeatCanonRouted(invocation: Verb, asker: Hand | undefined): void {
+  if (asker !== "seat") return;
+  const readOnly = routedReadOnlyBags(invocation);
+  for (const bag of routedInnerBags(invocation)) if (!readOnly.has(bag)) refuseSeatCanonReach(bag, invocation.action, asker);
+}
+
+/** The bags a routed envelope only reads: a COPY's source, where the act names it nowhere else. */
+function routedReadOnlyBags(invocation: Verb): Set<string> {
   const outer = invocation.args as Record<string, unknown>;
   const innerArgs = outer["args"];
   const innerVerb = typeof outer["verb"] === "string" ? (outer["verb"] as string).toUpperCase() : "";
@@ -153,6 +161,19 @@ export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerif
     const elsewhere = new Set(["to-bag", "bag", "toBag"].map((k) => a[k]).filter((v): v is string => typeof v === "string"));
     for (const k of ["from-bag", "fromBag"]) { const v = a[k]; if (typeof v === "string" && !elsewhere.has(v)) readOnly.add(v); }
   }
+  return readOnly;
+}
+
+export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerifier, presenter: string, local: boolean): Promise<void> {
+  const { access, bagUrl } = deriveRoutedCap(invocation);
+  const proof = await verifier.verify({ presenter, bagUrl, access, ...(local ? { channel: "local" as const } : {}) });
+  if (!proof.ok) {
+    throw new RoutedCapDenied(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`, proof.kind, proof.bagUrl);
+  }
+  // Every inner bag clears its own cap, its grade read off the act the envelope carries: only a COPY reads its source
+  // (a copy out of canon stays open to a reader); a MOVE deletes at its source, and any other act takes the outer
+  // access. A bag named twice takes the stronger grade.
+  const readOnly = routedReadOnlyBags(invocation);
   for (const bag of routedInnerBags(invocation)) {
     if (bag === bagUrl) continue;
     const need: CapabilityAccess = readOnly.has(bag) ? "read" : access;
@@ -176,5 +197,6 @@ export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions):
   const local = opts.localOf?.(invocation) ?? false;
   const cap = makeCapVerify(opts.verifier, presenter, local);
   const worn = opts.wornOf?.(invocation);
-  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, surface: opts.surfaceOf?.(invocation) === true, ...(worn ? { worn } : {}), ...(opts.signal ? { signal: opts.signal } : {}) });
+  const asker = opts.askerOf?.(invocation);
+  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, surface: opts.surfaceOf?.(invocation) === true, ...(worn ? { worn } : {}), ...(asker ? { asker } : {}), ...(opts.signal ? { signal: opts.signal } : {}) });
 }

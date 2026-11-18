@@ -15,6 +15,8 @@ export type CustodyFrame =
   /** An unlock at a vessel whose custody a pūlama holds: it carries no credential, and the vessel asks its pūlama again. */
   | { readonly op: "unlock" }
   | { readonly op: "lock"; readonly face?: number }
+  /** Wear face `face`, one already standing open: no route rides it, and the face is all it names. */
+  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai" }
   | { readonly op: "custody" }
   /** The census of saves the vessel holds in memory, read before a stop: no credential, answered at once. */
   | { readonly op: "census" }
@@ -77,4 +79,11 @@ export function vesselStanding(dataDir?: string | null, waitMs = 5_000): Promise
   const asked = sendCustodyFrame({ op: "custody" }, dataDir, abort.signal).then((a): VesselStanding =>
     (a !== null && a["op"] === "custody" ? { reading: "vessel", unlocked: a["unlocked"] === true, composing: a["composing"] === true } : { reading: "none" }));
   return Promise.race([asked, silent]).finally(() => { if (timer) clearTimeout(timer); });
+}
+
+/** The faces the vessel holds, by handle index: the census's lit set and its faces locked; none where no vessel answers. */
+export async function houseFaces(dataDir?: string | null): Promise<{ open: number[]; shut: number[] }> {
+  const census = await sendCustodyFrame({ op: "census" }, dataDir);
+  const ordinals = (v: unknown): number[] => (Array.isArray(v) ? v.filter((f): f is number => Number.isSafeInteger(f) && (f as number) >= 0) : []);
+  return { open: ordinals(census?.["facesLit"]), shut: ordinals(census?.["facesLocked"]) };
 }

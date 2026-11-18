@@ -42,10 +42,10 @@
  */
 import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { MANIFEST_FILE, unsafeRelPath } from "./carry-manifest.js";
+import { MANIFEST_FILE, unsafeRelPath } from "./bundle-manifest.js";
 import { configuredKeepSessions } from "./keep-config.js";
 import { DEVICES_DIR, SessionsRefused, mirrorSessions, readOrMintDevice, sessionSources, type SessionSources } from "./keep-sessions.js";
-import { KEEP_INTO, KeepRefused, RITE_KEEP, mountLine } from "./rite-keep.js";
+import { KEEP_INTO, KeepRefused, RITE_KEEP, keepFaceLine } from "./rite-keep.js";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
 
 /**
@@ -204,9 +204,9 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     const actedAs = cut.output["face"];
     if (typeof actedAs === "number" && Number.isSafeInteger(actedAs)) {
       face = { face: actedAs };
-      const by = cut.output["faceBy"] === "mount" ? "mount" : "named";
+      const by = cut.output["faceBy"] === "keep" ? "keep" : "named";
       Object.assign(base, { face: actedAs, faceBy: by });
-      if (by === "mount") ports.say(`keep: ${mountLine(actedAs)}`);
+      if (by === "keep") ports.say(`keep: ${keepFaceLine(actedAs)}`);
     } else if (opts.face !== undefined) Object.assign(base, { face: opts.face, faceBy: "named" });
     const kept = cut.output["kept"] === true;
     const bundleId = String(cut.output["bundleId"]);

@@ -92,7 +92,7 @@ export async function openOfflineCustody(holder: CustodyHolder): Promise<void> {
   }
   process.stdout.write("This command opens rows sealed under the vessel key.\n");
   for (;;) {
-    const typed = await gatherCredentials("this command");
+    const typed = await gatherCredentials("this command", { kind: "vessel" });
     const u = await holder.unlock(typed);
     // The typed credential tries every face tree too (`--all`): a face it does not fit stays shut and costs nothing.
     if (u.reading === "opens" || u.reading === "already-unlocked") { await holder.unlockFaces(typed); return; }

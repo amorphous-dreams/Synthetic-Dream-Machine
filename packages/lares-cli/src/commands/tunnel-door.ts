@@ -12,7 +12,7 @@ import { execFileSync } from "node:child_process";
 import { homedir } from "node:os";
 import { createInterface } from "node:readline/promises";
 import { repoRoot } from "@lararium/mesh/node";
-import { EXIT, Ledger, exitOf, read, tend, undoLocked, type Item, type Reader, type Row } from "../reality-tunnel/engine.js";
+import { EXIT, Ledger, exitOf, read, tend, undoLocked, type Item, type Reader, type Row, type TendResult } from "../reality-tunnel/engine.js";
 import { homeLedgerDir, repoLedgerDir } from "../reality-tunnel/places.js";
 import { declared, homeItems, repoItems } from "../reality-tunnel/catalog.js";
 import { resolveHomes } from "../reality-tunnel/homes.js";
@@ -45,7 +45,7 @@ const GLYPH: Record<Row["state"], string> = { aligned: "✓", drift: "~", foreig
  * settings files at will), and one whose host now stands `absent` on this machine leaves the tunnel nothing to keep there, yet
  * the house once wrote it, so the line names it.
  */
-export function briefLine(rows: readonly Row[]): string {
+export function briefLine(rows: readonly Row[], door: Door = "home"): string {
   const off = rows.filter((r) => r.state === "drift" || r.state === "foreign" || r.state === "unreachable");
   const ids = (some: readonly Row[]): string => some.map((r) => r.id).join(", ");
   const rewritten = rows.filter((r) => r.touched && r.state === "aligned");
@@ -58,7 +58,7 @@ export function briefLine(rows: readonly Row[]): string {
   // A house hook script no row declares needs no reading to cure: the line names the act that lifts it.
   const stray = off.filter((r) => r.lifts !== undefined && r.state === "drift").sort((a, b) => a.id.localeCompare(b.id));
   const lift = stray.length === 0 ? "" : `; ${stray.length} item(s) name a house hook script no row declares: ${ids(stray)} (lares home tend lifts each)`;
-  return `reality tunnel: ${off.length} item(s) off the tunnel — ${ids(off)} (lares home read)${apart ? `; ${apart}` : ""}${lift}`;
+  return `reality tunnel: ${off.length} item(s) off the tunnel — ${ids(off)} (lares ${door} read)${apart ? `; ${apart}` : ""}${lift}`;
 }
 
 /** What a tend lifted, one line per target: the house hook scripts a row named before the tend and no row names after it. */
@@ -68,8 +68,18 @@ export function liftedLines(before: readonly Row[], after: readonly Row[]): stri
   return before.filter((r) => r.lifts !== undefined && held.has(key(r))).map((r) => `  lifted ${r.lifts!.join(", ")} from ${r.path} (${r.id})`);
 }
 
-function show(rows: readonly Row[], brief: boolean): void {
-  if (brief) { console.log(briefLine(rows)); return; }
+/**
+ * What a tend did to each host-owned store (a git config key, a harness's own seat), one line per item: `set` when this
+ * tend changed it, `already set` when it held before the tend. A store a tend could not reach names itself apart.
+ */
+export function externalLines(items: readonly Item[], r: Pick<TendResult, "rows" | "set">): string[] {
+  const ext = new Set(items.filter((i) => i.external).map((i) => i.id));
+  return r.rows.filter((row) => ext.has(row.id) && row.state === "aligned")
+    .map((row) => `  ${r.set.includes(row.id) ? "set" : "already set"} ${row.detail} (${row.id})`);
+}
+
+function show(rows: readonly Row[], brief: boolean, door: Door = "home"): void {
+  if (brief) { console.log(briefLine(rows, door)); return; }
   for (const r of rows) {
     console.log(`  ${GLYPH[r.state]} ${r.state.padEnd(11)} ${r.id.padEnd(30)} ${r.detail}${r.touched ? " · touched since the house last wrote it" : ""}`);
     console.log(`    ${" ".repeat(11)} ${r.path}`);
@@ -99,7 +109,7 @@ export const indexText = (repo: string) => (rel: string): string | null => {
 export function itemsFor(door: Door, staged = false, persist = false): { items: Item[]; ledger: Ledger; root: string } {
   if (door === "repo") {
     // `--staged` reads the carrier and the seed the commit carries, never the working tree's.
-    const items = staged ? repoItems(repoRoot, declared(repoRoot, indexText(repoRoot)), indexText(repoRoot)) : repoItems(repoRoot);
+    const items = staged ? repoItems(repoRoot, declared(repoRoot, indexText(repoRoot)), indexText(repoRoot), { staged: true }) : repoItems(repoRoot);
     return { items, ledger: new Ledger(repoLedgerDir(repoRoot)), root: repoRoot };
   }
   return { items: homeItems({ repo: repoRoot, homes: resolveHomes({ persist }) }), ledger: new Ledger(homeLedgerDir()), root: homedir() };
@@ -121,7 +131,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<numbe
     const rows = read(items, ledger, reader);
     const code = exitOf(rows);
     // `--brief` prints the one line a hook reads, terminal or none: the wake hook calls it with no TTY.
-    if (args.flags["brief"] === true) { show(rows, true); return code; }
+    if (args.flags["brief"] === true) { show(rows, true, door); return code; }
     emit(args, { ok: code === 0, data: { radius: door, rows, exit: code }, human: () => show(rows, false) });
     return code;
   }
@@ -133,12 +143,15 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<numbe
     const r = await tend(items, ledger, { force: args.flags["force"] === true, lock: hostLocker, radiusLock });
     const code = r.refused.length > 0 ? EXIT.foreign : r.failed.length > 0 ? EXIT.unreachable : exitOf(r.rows);
     const lifted = liftedLines(before, r.rows);
+    const stores = externalLines(items, r);
     emit(args, {
       ok: code === 0,
-      data: { radius: door, wrote: r.wrote, lifted: lifted.map((x) => x.trim()), refused: r.refused, generation: r.generation?.gen ?? null, rows: r.rows, exit: code },
+      data: { radius: door, wrote: r.wrote, set: r.set, stores: stores.map((x) => x.trim()), lifted: lifted.map((x) => x.trim()), refused: r.refused, generation: r.generation?.gen ?? null, rows: r.rows, exit: code },
       human: () => {
         console.log(r.wrote.length ? `tended ${r.wrote.length} target(s)${r.generation ? ` · generation ${r.generation.gen}` : ""}` : "every item already holds; nothing written");
-        for (const w of r.wrote) console.log(`  wrote ${w}`);
+        const setIds = new Set(r.set);
+        for (const w of r.wrote) if (![...setIds].some((id) => w.endsWith(` (${id})`))) console.log(`  wrote ${w}`);
+        for (const x of stores) console.log(x);
         for (const x of lifted) console.log(x);
         for (const f of r.refused) console.log(`  refused ${f.path}: ${f.detail} (--force takes it; the ledger keeps its bytes)`);
         for (const f of r.failed) console.log(`  unreachable ${f.id}: ${f.detail}`);

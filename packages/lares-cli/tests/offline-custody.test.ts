@@ -78,7 +78,7 @@ test("gathering skips a blank extra passphrase and explains the multi-pin questi
   vi.spyOn(secretPrompt, "promptSecret").mockResolvedValueOnce("held phrase").mockResolvedValueOnce("");
   const lines = vi.spyOn(secretPrompt, "promptLine").mockResolvedValueOnce("y").mockResolvedValueOnce("n");
   const output = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-  expect(await custodyPrompt.gatherCredentials("test", { route: "passphrase" })).toEqual([{ kind: "passphrase", passphrase: "held phrase" }]);
+  expect(await custodyPrompt.gatherCredentials("test", { kind: "vessel" }, { route: "passphrase" })).toEqual([{ kind: "passphrase", passphrase: "held phrase" }]);
   expect(lines.mock.calls[0]?.[0]).toContain("only a slot sealed with several pins needs one");
   expect(output.mock.calls.map((c) => String(c[0])).join("")).toContain("blank extra passphrase skipped");
 });

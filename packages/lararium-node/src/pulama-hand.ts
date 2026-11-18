@@ -12,9 +12,17 @@
  *            host reports then rests admitted for the named open faces, under a tessera whose two halves this act alone rests
  *            (`pulama-admit`). An unlit pūlama refuses `pulama-locked` and an unreported image `image-unreported`, each
  *            before the route reads. The route never leaves the pūlama.
+ *   unadmit  THE HAND ENDS AN ADMISSION. The route proves as `admit`'s does, and the admission of the named image digest rests
+ *            ended under a signed tombstone naming its tessera (`pulama-admit`); the gate then reads it unadmitted. An unlit
+ *            pūlama refuses `pulama-locked` before the route reads; a digest no admission stands for answers
+ *            `image-not-admitted` once the route proves.
  *   lock     every session drops and every key zero-fills.
- *   status   lit or not, the faces open, the sessions standing, attempts left, the image the host reported. Opens nothing.
- *   image    THE HOST'S REPORT of the image digest it raises (the kūkulu gate's input port).
+ *   status   lit or not, the faces open, the sessions standing, attempts left, the image the host reported; while lit, the
+ *            admitted digests and the ended ones. Opens nothing.
+ *   image    THE HOST'S REPORT of the image digest it raises (the kūkulu gate's input port), with an optional seed line: the
+ *            seed that image offers beside the founding record, ratchet by ratchet, as the host read it (D1). The pūlama
+ *            opens no document, so it names the line and never computes it; `status` and `admit` repeat it, and no admitted
+ *            row carries it: admission moves nothing.
  *   tessera  the tessera halves the pūlama witnessed, as they rest: `rite-begun` for each kūkulu it served, `rite-landed`
  *            for each that composed; and, while lit, the admitted images with each one's count of re-services.
  *
@@ -54,7 +62,15 @@ export function pulamaHandDoor(a: {
   const { holder, server } = a;
   const log = a.onLog ?? (() => {});
   let chain: Promise<unknown> = Promise.resolve();
-  const status = () => ({ lit: holder.isUnlocked(), faces: holder.unlockedFaces().length, sessions: server.sessions(), attemptsLeft: holder.attemptsLeft(), image: a.image.raised() });
+  // THE SEED LINE the host reported beside the image; a later report with no line clears it.
+  let seed: string | null = null;
+  const status = () => ({ lit: holder.isUnlocked(), faces: holder.unlockedFaces().length, sessions: server.sessions(), attemptsLeft: holder.attemptsLeft(), image: a.image.raised(), ...(seed !== null ? { seed } : {}) });
+  /** The admitted digests and the ended ones, read under the pūlama's key: an unlit pūlama names none. */
+  const admissionDigests = async () => {
+    if (!a.admissions || !holder.isUnlocked()) return {};
+    const by = await pulamaSignerOf(holder);
+    return { admitted: (await a.admissions.list(by)).map((r) => r.image), ended: [...await a.admissions.ended(by)] };
+  };
   const act = async (frame: unknown): Promise<PulamaHandAnswer> => {
     const f = (typeof frame === "object" && frame !== null ? frame : {}) as Record<string, unknown>;
     switch (f["op"]) {
@@ -95,13 +111,34 @@ export function pulamaHandDoor(a: {
         log(`admitted by hand: the reported image now serves ${ordinals.map((n) => `h${n}`).join(", ")}`);
         return { op: "admit", reading: "admitted", admitted: image, tessera, ...status(), lent: ordinals };
       }
+      case "unadmit": {
+        if (!a.admissions) return { op: "unadmit", reading: "admit-unavailable" };
+        if (!holder.isUnlocked()) return { op: "unadmit", reading: "pulama-locked", ...status() };
+        const image = f["image"];
+        const credentials = credentialsOf(f["credentials"]);
+        if (typeof image !== "string" || image === "" || credentials === null) return { op: "unadmit", reading: "malformed" };
+        // THE ROUTE PROVES A PERSON STANDS HERE, as an admission's does; it opens nothing new.
+        const proof = await holder.proves(credentials);
+        if (proof.reading !== "proves") { log(`unadmit: ${proof.reading}`); return { op: "unadmit", ...proof, ...status() }; }
+        const ended = await a.admissions.unadmit(image, await pulamaSignerOf(holder));
+        if (ended === null) return { op: "unadmit", reading: "image-not-admitted", digest: image, ...status() };
+        if ("occupied" in ended) {
+          log("unadmit: the tombstone slot holds a row the pūlama never signed; the admission still stands");
+          return { op: "unadmit", reading: "unadmit-slot-occupied", digest: image, slot: ended.occupied, detail: `the tombstone slot ${ended.occupied} holds a row the pūlama's key never signed, so no tombstone rests and the admission still stands; clear that row from the pūlama's state dir, then unadmit again`, ...status() };
+        }
+        if (ended.already === true) return { op: "unadmit", reading: "unadmitted", already: true, digest: image, ends: ended.ends, ...status() };
+        log("unadmitted by hand: an image's admission rests ended under a tombstone");
+        return { op: "unadmit", reading: "unadmitted", digest: image, ends: ended.ends, ...status() };
+      }
       case "lock": await server.lock(); return { op: "lock", ...status() };
-      case "status": return { op: "status", ...status() };
+      case "status": return { op: "status", ...status(), ...await admissionDigests() };
       case "image": {
         if (typeof f["digest"] !== "string") return { op: "image", reading: "malformed" };
+        if (f["seed"] !== undefined && typeof f["seed"] !== "string") return { op: "image", reading: "malformed" };
         try { a.image.report(f["digest"]); } catch { return { op: "image", reading: "malformed" }; }
-        log("the host reported an image digest");
-        return { op: "image", reading: "reported", image: a.image.raised() };
+        seed = typeof f["seed"] === "string" && f["seed"].trim() !== "" ? f["seed"].trim() : null;
+        log(seed !== null ? "the host reported an image digest and the seed it offers" : "the host reported an image digest");
+        return { op: "image", reading: "reported", image: a.image.raised(), ...(seed !== null ? { seed } : {}) };
       }
       case "tessera": {
         const halves: unknown[] = [];

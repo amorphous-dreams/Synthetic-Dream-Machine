@@ -4,7 +4,8 @@
 // names itself by its bytes and edges, never by an authored counter; a wall clock never decides; a comment states
 // the present. This reads three SEMANTIC SINKS, never bare tokens:
 //   version    — an authored version field or numbered format: `schemaVersion`, a `<name>/v<N>` format or preimage
-//                string, a `version`/`<word>Version` key held as a number, a `<NAME>_VERSION = <N>` constant;
+//                string, a minted `<name>/<N>` tag, a `version`/`<word>Version` key held as a number, a
+//                `<NAME>_VERSION = <N>` constant;
 //   clock      — `Date.now()` or `new Date()` flowing on its statement into an id (a template, a concat, a radix
 //                string, an id/nonce/epoch name), a durable record field (a time-named key, quoted or bare, or an
 //                ISO-stamped now), or a validity gate (a comparison or subtraction against the reading);
@@ -87,6 +88,9 @@ const NARRATION = /\b(?:used to|previously|formerly|legacy|no longer|back-compat
 // A comment that names the lane, wave or slice that built a line narrates its making; the code states what IS.
 const LANE_NARRATION = /\b(?:Wave [A-D]|[Ss]lice \d+|[Tt]his lane)\b/;
 const FORMAT = /(?:[a-z][\w.-]*|\})\/v(?:\d+|\$\{[^}]+\})(?![\w.])/;
+// A minted tag that ends in a bare number: a whole literal, one hyphen-joined lowercase name, one slash, digits.
+// A path, a url, a date or a ratio carries more slashes, a scheme, or no hyphen-joined name, and reads nothing.
+const NUMBERED_TAG = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)+\/\d+$/;
 const VERSION_CONST = /\b[A-Z][A-Z0-9_]*VERSION\s*=\s*(?:0x[\da-fA-F]+|\d)/;
 const CLOCK = /(?:\bDate\.now\s*\(\s*\)|\bnew\s+Date\s*\()/;
 const FIELD = /(?:\b[A-Za-z_$][\w$]*(?:At|Time|time|timestamp|Timestamp|ts|stamp|Stamp|date|Date)|\bts|["'][\w-]*(?:-at|-time|-ts|-stamp|-date|At|Time|timestamp|Timestamp)["'])\s*:/;
@@ -146,7 +150,7 @@ export function scanText(rel, text) {
     const literals = code.match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g) ?? [];
     const names = code.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g, "\"\"");
     if (OLD_SHAPE_NAME.test(names) || literals.some(literal => OLD_SHAPE_LITERAL.test(literal) || OLDER_PEER.test(literal) || EARLIER_SHAPE.test(literal)) || OLD_SHAPE_COMMENT.test(comments) || OLDER_PEER.test(comments) || EARLIER_SHAPE.test(comments)) add(finding("old-shape"));
-    if (/\bschemaVersion\b/.test(names) || /["']schemaVersion["']\s*:/.test(code) || /\[\s*["']schemaVersion["']\s*\]/.test(code) || /\b(?:version|[A-Za-z_$][\w$]*Version)\s*\??\s*:\s*(?:\d[\d_]*\b|number\b)/.test(names) || VERSION_CONST.test(names) || literals.some(literal => FORMAT.test(literal.slice(1, -1)))) add(finding("version"));
+    if (/\bschemaVersion\b/.test(names) || /["']schemaVersion["']\s*:/.test(code) || /\[\s*["']schemaVersion["']\s*\]/.test(code) || /\b(?:version|[A-Za-z_$][\w$]*Version)\s*\??\s*:\s*(?:\d[\d_]*\b|number\b)/.test(names) || VERSION_CONST.test(names) || literals.some(literal => FORMAT.test(literal.slice(1, -1)) || NUMBERED_TAG.test(literal.slice(1, -1)))) add(finding("version"));
     const clockCode = code.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, "\"\"");
     if (clockSink(`${carry.clock} ${clockCode}`, `${carry.keyed} ${code}`)) add(finding("clock"));
     carry = /(?:[=:(]|\?\?|\|\|)\s*$/.test(code) ? { clock: clockCode, keyed: code } : { clock: "", keyed: "" };

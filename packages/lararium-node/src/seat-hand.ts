@@ -58,7 +58,7 @@ export function seatFaceRefusal(input: { readonly seat: SeatKind | null; readonl
     return wear.ok ? null : wear.message;
   }
   if (input.worn !== null && input.named === input.worn) return null;
-  return `face-hand-refused: the AI seat acts as the worn face${input.worn !== null ? ` (h${input.worn})` : ""} alone, and this call names h${input.named}; only the operator's own hand (\`lares vessel seed\`, \`lares vessel import\`, \`lares bag share\`) names another face`;
+  return `face-hand-refused: the AI seat acts as the worn face${input.worn !== null ? ` (h${input.worn})` : ""} alone, and this call names h${input.named}; only the operator's own hand (\`lares vessel lay\`, \`lares import\`, \`lares bag share\`) names another face`;
 }
 
 /** The class a seat refusal names (`face-not-lent`, `lent-faces-empty`, `face-hand-refused`): the text before its first colon. */

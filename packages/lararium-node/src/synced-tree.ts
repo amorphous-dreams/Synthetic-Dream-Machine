@@ -166,6 +166,8 @@ export class SyncedTree {
    * ONE index key; a bare value parses as nothing and stays out of the index.
    */
   private byHash: Map<string, Set<string>> | null = null;
+  /** The keys whose base stands at each path: DERIVED like `byHash`, rebuilt on the first `uriAt` after a change. */
+  private byPath: Map<string, Set<string>> | null = null;
 
   constructor(
     /** The directory the tree rests in. Null holds the bases in memory for this instance's life and persists nothing. */
@@ -194,6 +196,7 @@ export class SyncedTree {
     if (!ids) { ids = new Set(); this.byKey.set(row.key, ids); }
     ids.add(id);
     this.byHash = null;
+    this.byPath = null;
   }
 
   private drop(key: string, path: string): boolean {
@@ -203,6 +206,7 @@ export class SyncedTree {
     ids?.delete(id);
     if (ids?.size === 0) this.byKey.delete(key);
     this.byHash = null;
+    this.byPath = null;
     return true;
   }
 
@@ -226,6 +230,20 @@ export class SyncedTree {
   /** The base that stands AT `file`, or null: an agreement reached at another path names no base here. */
   baseAt(key: string, file: string): SyncedBase | null {
     return this.map.get(rowId(key, syncedPath(file)))?.base ?? null;
+  }
+
+  /**
+   * THE REVERSE LOOKUP A BASE ROW GIVES: the one carrier whose base stands AT `file` (scoped to `bagId` where named), or null
+   * where none stands there or several carriers' bases do. A mirror file reads back under the carrier the projector last
+   * agreed at its path (`siteFileToTitle`, rule 0), so a title the projector sited by a uniquifier or a flatten reads home.
+   */
+  uriAt(file: string, bagId?: string): string | null {
+    const uris = new Set<string>();
+    for (const key of this.pathIndex().get(syncedPath(file)) ?? []) {
+      const at = this.splitKey(key);
+      if (bagId === undefined || at.bagId === bagId) uris.add(at.uri);
+    }
+    return uris.size === 1 ? uris.values().next().value ?? null : null;
   }
 
   /**
@@ -317,6 +335,18 @@ export class SyncedTree {
       bucket.add(uri);
     }
     return (this.byHash = byHash);
+  }
+
+  /** The path index over the rows as they stand (it never persists). */
+  private pathIndex(): Map<string, Set<string>> {
+    if (this.byPath !== null) return this.byPath;
+    const byPath = new Map<string, Set<string>>();
+    for (const { key, base } of this.map.values()) {
+      let keys = byPath.get(base.path);
+      if (!keys) { keys = new Set(); byPath.set(base.path, keys); }
+      keys.add(key);
+    }
+    return (this.byPath = byPath);
   }
 
   /** Every row the tree holds: the carrier's bag and address beside its base. */

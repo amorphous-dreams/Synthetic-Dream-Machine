@@ -9,7 +9,7 @@
 import { describe, expect, it } from "vitest";
 import { parseArgs } from "../src/parse-args.js";
 import { RiteUsage, hostRowLine, ritePlan } from "../src/commands/rite.js";
-import { riteKukulu, type RitePorts, type RiteVerbAnswer } from "../src/rite-kukulu.js";
+import { kukuluSeedLine, riteKukulu, type RitePorts, type RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
 import { COMMAND_NAMES } from "../src/bin/lares.js";
 
@@ -199,5 +199,37 @@ describe("kukulu-offer-reaches-the-new-vessel (the host's step)", () => {
   it("the offer sub-verb plans its store row", () => {
     expect(plan("offer", "--branch", "main", "--head", HEAD, "--image", IMAGE)).toEqual({ verb: "rite-offer", args: { branch: "main", head: HEAD, image: IMAGE } });
     expect(() => plan("offer", "--branch", "main", "--head", HEAD)).toThrow(RiteUsage);
+  });
+});
+
+describe("the kūkulu names the seed the image offers beside the founding record (D1)", () => {
+  const record = { engine: "e1", grammar: "g1", plugins: "p1", floor: "f1" };
+  const seed = { cid: "5".repeat(64), digests: { engine: "e1", grammar: "g2", plugins: "p1", floor: "f1" } };
+
+  it("RED: before the build, the host says the seed (offered) at the head beside the founding record, ratchet by ratchet; the rows and the shim order stay as they were", async () => {
+    const f = fakes();
+    const ports: RitePorts = { ...f.ports, seedOffer: async (head) => { f.calls.push(`seed-offer ${head}`); return { record, seed }; } };
+    const out = await riteKukulu(ports, {});
+    expect(f.calls.filter((c) => !c.startsWith("seed-offer"))).toEqual([
+      "checkout",
+      `rite-begin ${JSON.stringify({ rite: "kukulu", branch: "main", head: HEAD })}`,
+      "shim build", "shim down", "shim up",
+      `rite-land ${JSON.stringify({ tessera: TESSERA, head: HEAD, face: 0 })}`,
+    ]);
+    expect(f.calls.indexOf(`seed-offer ${HEAD}`)).toBeLessThan(f.calls.indexOf("shim build"));
+    const line = kukuluSeedLine(HEAD, { record, seed });
+    expect(line).toBe(`kūkulu: the image at ${HEAD} offers seed ${"5".repeat(64)} beside the founding record: a newer seed waits: engine same · grammar moved · plugins same · floor same; the founding record keeps serving, and the kūkulu moves no ratchet`);
+    expect(f.said).toContain(line);
+    expect(out).toMatchObject({ code: 0, data: { seed: { cid: "5".repeat(64), ratchets: "engine same · grammar moved · plugins same · floor same" } } });
+  });
+
+  it("CONTROL: a seed the same on every ratchet says so; a host that reads no founding record names that and the rite goes on", async () => {
+    expect(kukuluSeedLine(HEAD, { record, seed: { cid: seed.cid, digests: record } }))
+      .toBe(`kūkulu: the image at ${HEAD} offers seed ${seed.cid}: same on every ratchet as the founding record`);
+    const f = fakes();
+    const out = await riteKukulu({ ...f.ports, seedOffer: async () => null }, {});
+    expect(f.said).toContain("kūkulu: the host reads no founding record beside the seed this image offers; the rite goes on, and moves no ratchet");
+    expect(out.code).toBe(0);
+    expect(out.data["seed"]).toBeUndefined();
   });
 });

@@ -1,7 +1,8 @@
 // keep-cold — THE KEEP WAKES COLD WIKIS (K1), over one real house: a page put into a wiki no island mounts rests in its layer
 // and projects nowhere, so a keep that cut disk alone left it behind under `cold-wikis`.
 //
-//   W1  a scratch house holds four user wikis; the steward holds `bravo` and puts one page into each. The other three stand
+//   W1  a scratch house mints four user wikis (each mint holds within the pin budget, the fourth names it full), restarts
+//       so no hold outlives the daemon, then the steward holds `bravo` and puts one page into each. The other three stand
 //       cold, so their pages reach no mirror. A keep lei strung, `rite keep-cut` holds each cold wiki in turn before it cuts:
 //       every page rests in the staged tree as a `wiki-working` row, the manifest names none of the woken wikis cold, and the
 //       held set reads as it stood before the cut (`bravo` alone).
@@ -35,16 +36,23 @@ async function standHouse(tag, name) {
   const lares = (args) => spawnSync(process.execPath, [cli, ...args], { cwd: repo, encoding: "utf8", env });
   const found = lares(["vessel", "found", "--hearth", "--name", name, "--root", root, "--skip-build"]);
   assert.equal(found.status, 0, `found ${tag}: ${found.stdout}${found.stderr}`);
-  const child = spawn(process.execPath, [nodeMain, "--root", root, "--port", String(port)], { cwd: join(repo, "packages/lararium-node"), env });
-  let log = "";
-  child.stdout.on("data", (d) => { log += String(d); }); child.stderr.on("data", (d) => { log += String(d); });
-  await new Promise((resolve, reject) => { const poll = setInterval(() => { if (daemonStood(log)) { clearInterval(poll); resolve(); } else if (child.exitCode !== null) { clearInterval(poll); reject(new Error(log.slice(-3000))); } }, 200); });
-  const a = await unlockTestCustody(root, "unlock", 0);
-  assert.ok(a?.held === true || a?.reading === "opens" || a?.reading === "already-unlocked", JSON.stringify(a));
+  // The daemon stands, then the custody opens; a restart walks both again (rotatable holds live in the daemon alone).
+  let child;
+  const boot = async () => {
+    child = spawn(process.execPath, [nodeMain, "--root", root, "--port", String(port)], { cwd: join(repo, "packages/lararium-node"), env });
+    let log = "";
+    child.stdout.on("data", (d) => { log += String(d); }); child.stderr.on("data", (d) => { log += String(d); });
+    const c = child;
+    await new Promise((resolve, reject) => { const poll = setInterval(() => { if (daemonStood(log)) { clearInterval(poll); resolve(); } else if (c.exitCode !== null) { clearInterval(poll); reject(new Error(log.slice(-3000))); } }, 200); });
+    const a = await unlockTestCustody(root, "unlock", 0);
+    assert.ok(a?.held === true || a?.reading === "opens" || a?.reading === "already-unlocked", JSON.stringify(a));
+  };
+  await boot();
   const stop = () => new Promise((resolve) => { if (child.exitCode !== null) return resolve(); child.once("exit", () => resolve()); child.kill("SIGTERM"); });
+  const restart = async () => { await stop(); await boot(); };
   const must = (args) => { const r = lares(args); assert.equal(r.status, 0, `lares ${args.join(" ")}\n${r.stdout}\n${r.stderr}`); return r; };
   const answer = (r) => JSON.parse(r.stdout.trim().split("\n").pop());
-  return { root, port, lares, must, answer, stop };
+  return { root, port, lares, must, answer, stop, restart };
 }
 const memeText = (uri, body) => { const path = uri.slice("lar:///".length); return `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${path}"\n\`\`\`\n\n! ${path.split("/").pop()}\n\n${body}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`; };
 
@@ -55,7 +63,12 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
   const scratch = mkdtempSync(join(tmpdir(), "lares-keep-cold-files-"));
   const h = await standHouse("w1", "steward");
   try {
-    for (const slug of SLUGS) h.must(["wiki", "init", slug, "--json"]);
+    // A mint holds the wiki it mints within the pin budget (three on node), so alpha, bravo and charlie stand held and
+    // live and delta names the full budget. The holds live in the daemon alone: a restart lets every wiki go cold, and the
+    // steward holds `bravo` alone, so the other three stand cold as the keep meets them in a house that ran a while.
+    const minted = SLUGS.map((slug) => h.answer(h.must(["wiki", "init", slug, "--json"])).data);
+    assert.deepEqual(minted.map((m) => m.held), [true, true, true, false], JSON.stringify(minted));
+    await h.restart();
     h.must(["wiki", "hold", "bravo"]);
     for (const slug of SLUGS) {
       const file = join(scratch, `${slug}.mem`);
