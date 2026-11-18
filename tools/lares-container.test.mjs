@@ -961,7 +961,7 @@ test(`${name}: pulama-admit-reaches-the-hand-door: admit forwards to the pūlama
   assert.equal(face.status, 0, face.stderr);
   assert.match(face.calls, /pulama-main\.js admit 2/);
   const bad = await run(shim, ["pulama", "burn"], { envFile: PULAMA_ENV });
-  assert.match(bad.stderr, /pulama takes up, down, light, admit, unadmit, lock, status or tessera/);
+  assert.match(bad.stderr, /pulama takes up, down, light, admit, unadmit, keep-seat, lock, status or tessera/);
 });
 test(`${name}: pulama-unadmit-reaches-the-hand-door: unadmit forwards one image digest to the pūlama's own verb; a bare or malformed digest refuses and sends nothing`, { skip }, async () => {
   const digest = "sha256:" + "ab".repeat(32);

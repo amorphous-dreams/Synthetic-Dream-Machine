@@ -544,7 +544,36 @@ switch ($verb) {
         if ($rest.Count -ne 2 -or $rest[1] -cnotmatch '^sha256:[0-9a-f]{64}$') { Die 'pulama unadmit takes one image digest (sha256:<64 hex>)' }
         Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'unadmit', $rest[1]))
       }
-      default { Die 'pulama takes up, down, light, admit, unadmit, lock, status or tessera' }
+      'keep-seat' {
+        # The keep seat on a pūlama house: the pūlama proves the steward's route on this terminal and answers the wrapped seat
+        # plus the local signing seed on one stdout line; the shim writes { ...seat, signer } as config/keep-seat.json (owner
+        # read-write, temp file then move). The signer never reaches the screen or a log.
+        $reseat = ($rest.Count -ge 2 -and $rest[1] -eq '--reseat')
+        if ($rest.Count -gt 2 -or ($rest.Count -eq 2 -and -not $reseat)) { Die 'pulama keep-seat takes only --reseat' }
+        if (-not $script:Tty) { Die 'pulama keep-seat reads its route on a terminal; run it on one (nothing seated)' }
+        $seatFile = Join-Path (Join-Path $House 'config') 'keep-seat.json'
+        if ((Test-Path $seatFile) -and -not $reseat) { Die "a keep seat already rests at $seatFile; pass --reseat to replace it" }
+        [Console]::Error.WriteLine("lares-container: the pūlama now reads the steward's route to seat the keep (typed, unseen)")
+        $line = ''
+        & docker compose @Base --profile pulama exec pulama node $PulamaMain keep-seat | ForEach-Object {
+          $l = "$_".Trim("`r")
+          if ($l.StartsWith('{"op":"keep-seat"')) { $line = $l }
+        }
+        if (-not $line) { Die 'the pūlama answered no seat; nothing written' }
+        $answer = $line | ConvertFrom-Json
+        if ($answer.reading -eq 'refused') { Die "the pūlama seated nothing: $($answer.code) ($($answer.message))" }
+        if ($answer.reading -ne 'seated' -or -not $answer.seat -or -not ($answer.signer -is [string]) -or -not ($answer.seat.publicKey -is [string])) { Die "the pūlama's seat line read malformed; nothing written" }
+        $file = $answer.seat | Select-Object *
+        $file | Add-Member -NotePropertyName signer -NotePropertyValue $answer.signer -Force
+        $json = $file | ConvertTo-Json -Depth 32 -Compress
+        New-Item -ItemType Directory -Force -Path (Join-Path $House 'config') | Out-Null
+        $tmp = "$seatFile.$PID.tmp"
+        [System.IO.File]::WriteAllText($tmp, $json + "`n")
+        if (-not $IsWindows) { & chmod 600 $tmp }
+        Move-Item -Force -LiteralPath $tmp -Destination $seatFile
+        [Console]::Error.WriteLine("lares-container: the keep seat rests at $seatFile (0600); a keep now seals under it")
+      }
+      default { Die 'pulama takes up, down, light, admit, unadmit, keep-seat, lock, status or tessera' }
     }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
