@@ -75,7 +75,6 @@ Lady Aki walks between shrines, kingdoms, roads, and glades. Her rites bind. Her
 
 <<~/ahu>>
 
-
 <<~ ahu slot=`#/origin`>>
 
 !! Origin ~ How the Household Began
@@ -377,7 +376,6 @@ Ichi rides under relationship and responsibility rather than occupying a Hallmar
 ''Symbiosis principle:'' maintaining a relationship makes cooperation possible, not guaranteed. The living network can falter from harm, neglect, ritual disruption or disagreement; restoration may require time, material repair, offerings, negotiation or acts of care.
 
 <<~/ahu>>
-
 
 <<~ ahu slot=`#/gear-on-body`>>
 
@@ -851,7 +849,6 @@ The ready item tally now runs 7/7 after Ichi's move to Social Inventory. The ful
 <<~ loulou uri=`lar:///elyncia.neo-thracia.opens/mission/session-zero-thracia`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-
 <<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki`>>
 
 ''Source branch:'' feature/lady-aki-character-sheet; ''original sheet blob:'' ebbe463a6520e33042f27c4ed6c0777d9c4b8a67.
@@ -879,3 +876,7 @@ Only this annotated working document carries these proposed rules and clarified 
 
 
 //Unsealed annotated working draft. Do not reuse the source sheet's integrity digest; reseal only after reviewed promotion.//
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SQ4jiQ1nWcLMV-m8eePJmaK7gpV-kERaa0DUmdw9oq8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

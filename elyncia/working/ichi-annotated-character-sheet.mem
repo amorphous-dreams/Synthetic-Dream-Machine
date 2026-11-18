@@ -4,18 +4,18 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable = true
-l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
-rating    = "ano"
-role      = "Annotated draft: Ichi as Level 2 deuteragonist; Level 1 Broken Isles Field Spade Hallmark; chitin reconstructed armor and recovery/synthesis register"
-status    = "working-draft"
+cacheable  = true
+l-space    = "stable"
+mana       = 13
+manao      = 13
+manaoio    = 13
+rating     = "ano"
+role       = "Annotated draft: Ichi as Level 2 deuteragonist; Level 1 Broken Isles Field Spade Hallmark; chitin reconstructed armor and recovery/synthesis register"
+status     = "working-draft"
 source-sha = "318dda385794535dddc5425fb03b861945074685"
-title     = "lar:///ha.ka.ba/elyncia/working/ichi-annotated-character-sheet"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/elyncia/working/ichi-annotated-character-sheet"
+title      = "lar:///ha.ka.ba/elyncia/working/ichi-annotated-character-sheet"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/elyncia/working/ichi-annotated-character-sheet"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -44,7 +44,6 @@ uri-path  = "ha.ka.ba/elyncia/working/ichi-annotated-character-sheet"
 ''Accounting:'' Ichi's original sheet retains four occupied base Trait slots and four legacy equipment entries. The field spade adds a Level 1 invested Hallmark in Ichi's own gear inventory. Its proposed two-stone bulk and physical carriage must count separately; the revised ready-item/packed tally and XP source remain OPEN. No new automatic attacks, Armor/Ward, DT, Powers or free +1 roll are awarded.
 
 <<~/ahu>>
-
 
 <<~ ahu slot=`#/body`>>
 
@@ -467,3 +466,7 @@ Ichi can also ''throw Balefire grenades'': chitin pots holding combustion powder
 <<~/ahu>>
 
 //Working annotation copy, not source-canon seal. Original digest omitted because modifications invalidate its integrity checksum.//
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xXr2Ux478JD8bYtWddJbmA0yBh31URI5F8kRe4wHHjw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

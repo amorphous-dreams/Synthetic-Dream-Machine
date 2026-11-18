@@ -5,13 +5,13 @@
 
 ```toml meta
 cacheable = true
-l-space = "stable"
-rating = "ano"
-status = "working-draft"
-role = "ShrineBeest household network diagram and homunculus/ephyra template design"
-title = "lar:///ha.ka.ba/elyncia/working/shrinebeest-household-network-design"
-type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/elyncia/working/shrinebeest-household-network-design"
+l-space   = "stable"
+rating    = "ano"
+status    = "working-draft"
+role      = "ShrineBeest household network diagram and homunculus/ephyra template design"
+title     = "lar:///ha.ka.ba/elyncia/working/shrinebeest-household-network-design"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/working/shrinebeest-household-network-design"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -91,5 +91,7 @@ The currently attached covered wagon remains ONE separately towed vehicle with s
 
 ''Governance:'' Working note only. No promotion of this provisional network diagram, spawned counts, template loadouts or Power mechanics into `bags/` canon without further operator direction.
 <<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qgQCJgdoxvUTly6c_tIPm8V5wFDV6RSph1OZ091gl84`>>
 
 <<^ code=`&#x0004;` to=`?`>>
