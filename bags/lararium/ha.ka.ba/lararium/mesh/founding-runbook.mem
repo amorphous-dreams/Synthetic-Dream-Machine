@@ -64,7 +64,7 @@ tools/lares-container.sh build
 
 ''The house reads a pinned canon clone, never a working checkout.'' The vessel reads canon from `/workspace` and its disk mirror writes canon edits back there, so the directory `LARES_WORKSPACE` names moves the house's canon whenever its tree moves. `node tools/house-canon.mjs stand` clones the origin of the checkout it runs in to `~/.lares-canon` (`--at` names another place, `--from` another origin), checks out the pin (`develop` by default; `--pin` names a branch, a tag or a commit) with HEAD detached, and records the pin in the clone's own git config; it refuses a place that already holds files, one inside the working checkout, and one inside `LARES_HOUSE`. A developer's branch switch, rebase or merge in a working checkout then leaves the house's canon where it stands. The canon moves by an explicit act alone: `node tools/house-canon.mjs move` fetches the origin and checks out the pin's commit (`--pin` re-pins), then `lares vessel seed` lets the standing house read it. The house's write-back rests in the clone's working tree as uncommitted changes; `move` refuses while the clone holds any, naming each path, so a hand first commits them on a branch for review or discards them. `node tools/house-canon.mjs read` names the pin, the commit, the held write-back, and whether `LARES_WORKSPACE` names this clone, a working checkout, or another place.
 
-''The one dev install.'' A developer working on canon itself MAY name the working checkout as `LARES_WORKSPACE` for one install: canon edits then land in the tracked `bags/` and `wikis/` as source-control write-back, by design, and a branch switch there moves that install's canon with it. Every other house reads a canon clone.
+''The one dev install.'' A developer working on canon itself MAY name the working checkout as `LARES_WORKSPACE` for one install: canon edits then land in the tracked `bags/` and `wikis/` as source-control write-back, by design, and a branch switch there moves that install's canon with it. Every other house reads a canon clone. It names itself with `LARES_DEV_INSTALL=1` in the surface env; without it, every stand warns that `LARES_WORKSPACE` names a working checkout.
 
 Run these from the root of the household checkout; the house path shown stands as an example, and any local directory outside the checkout serves. `build` rebuilds the vessel image, every package the vessel runs, from the committed checkout: it runs `docker compose build lares` through the env file (a bare `docker compose build` reads no `lares-surface.env` and refuses on `LARES_HOUSE`) and bakes the checkout's HEAD into the image's revision label; a checkout holding uncommitted tracked changes refuses, so commit first. The shim makes the house's five bound classes before a container stands. Under PowerShell, assign `$env:LARES_HOUSE` and `$env:LARES_WORKSPACE` before calling the `.ps1` shim.
 
@@ -591,6 +591,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Obu2IO1kbYNvw4Amn9Pnqf4d6N-vX4OPRMso97kETIg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-pVgi3bQSGnWO0yQyhNluQ7i66cM9mTg6ukxyj01Bxs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
