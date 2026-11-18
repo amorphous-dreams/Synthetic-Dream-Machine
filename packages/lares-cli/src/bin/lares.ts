@@ -303,12 +303,12 @@ function printHelp(surface: string = VERB_SURFACE.cli, executableOnly = false): 
     console.log("  ✍ = holds a key. An agent surface may compose these and MUST NOT execute them.");
   }
   console.log(`  ${"help".padEnd(13)} Show this message.\n`);
-  console.log("Global flags:");
+  // The usage line already names `lares <command> --help`; the TTY rule rides the flags' own header, one line spared.
+  console.log("Global flags (prose on a TTY, JSON off-TTY or under --json):");
   console.log(`  ${"--json".padEnd(14)} Emit a deterministic JSON result (ok|error + requestId).`);
   console.log(`  ${"--no-json".padEnd(14)} Force human prose even when stdout is not a TTY.`);
   console.log(`  ${"--yes".padEnd(14)} Skip confirmation prompts (required for non-interactive runs).`);
   console.log(`  ${"--keyhive-trace".padEnd(15)} Print Keyhive's DEBUG/TRACE lines (${KEYHIVE_TRACE_ENV}=1 too).`);
-  console.log("Prose on a TTY, JSON off-TTY or under --json. Run `lares <command> --help` for a command's account.");
 }
 
 /** `-h` spells `--help` (clig.dev), and a leading help flag names the `help` command, so `lares --help` prints what
