@@ -2528,6 +2528,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ...(opts.onRest ? { onRest: opts.onRest } : {}),
         // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): the same pick the node binds; no pin mounts genesis.
         floorCid: () => vesselFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
+        foundingRecord: () => assembly.islandHandle.doc(), // the floor shadow read: each mount reads its floor beside the founding record, serving unchanged
         resolvePluginCids: async (recipe) => {
           publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication");
           return resolveBrowserIslandPluginCids({

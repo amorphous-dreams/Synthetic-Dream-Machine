@@ -111,7 +111,7 @@ export function isStillJoining<T>(r: DocHandle<T> | StillJoining): r is StillJoi
  * patience expiring while the library said nothing at all.
  *
  * A timeout's first recovery costs nothing: read again. If a terminally absent document is missing from the
- * local store, restore a known-good carrier and run `lares vessel seed --apply --yes`. If the store itself
+ * local store, restore a known-good carrier and run `lares vessel lay --apply --yes`. If the store itself
  * is damaged, found a fresh root by hand, restore the carriers, and seed that root.
  */
 export interface BootFaultVerdict {
@@ -134,9 +134,9 @@ export function bootFaultVerdict(
       // The recovery names are conditional on a store reading, never on this network answer alone.
       message: `[boot] ${where} — no reachable copy: this vessel's store did not answer with it, `
              + "and no peer carries it. Read the store first with `lares vessel read vessel` — if that "
-             + "id is ABSENT there, restore a known-good carrier and run `lares vessel seed --apply --yes`. "
+             + "id is ABSENT there, restore a known-good carrier and run `lares vessel lay --apply --yes`. "
              + "If the store reads damaged, found a fresh root with `lares vessel found --root <fresh-root>`, "
-             + "restore its known-good carriers, and run `lares vessel seed --apply --yes`.",
+             + "restore its known-good carriers, and run `lares vessel lay --apply --yes`.",
     };
   }
   return {

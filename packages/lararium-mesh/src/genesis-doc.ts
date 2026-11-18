@@ -552,6 +552,15 @@ export function computeGrammarCid(plugins: readonly RegionEntry[]): string {
   return foldRegion("lararium-grammar", plugins.filter(isGrammar));
 }
 
+/**
+ * The region entries a blob map folds over: every blob but the engine core, with its declared `kind`. The mint's
+ * verify and the mount's comparison (`genesis-compare.ts`) both read this one mapping, so the two never drift.
+ */
+export function regionEntriesOf(blobs: Readonly<Record<string, LarBlobEntry>> | null | undefined): RegionEntry[] {
+  return Object.values(blobs ?? {}).filter((b) => b.id !== ENGINE_CORE_ID)
+    .map((b) => ({ id: b.id, version: b.version, sha256: b.sha256, ...(b.kind ? { kind: b.kind as GenesisBlobKind } : {}) }));
+}
+
 // ---------------------------------------------------------------------------
 // Root bag catalog
 // ---------------------------------------------------------------------------
@@ -870,8 +879,7 @@ export function verifyGenesisArtifact(
   // Each region recomputes from the SAME declared classes the mint folded — the blob descriptors carry
   // `kind`, so a base-seed blob lands outside BOTH FOLDED regions (grammar and plugins) here exactly as
   // it did at the mint. The engine stands apart from both — its preimage is not a region fold.
-  const vendored = Object.values(doc.blobs ?? {}).filter((b) => b.id !== ENGINE_CORE_ID)
-    .map((b) => ({ id: b.id, version: b.version, sha256: b.sha256, ...(b.kind ? { kind: b.kind as GenesisBlobKind } : {}) }));
+  const vendored = regionEntriesOf(doc.blobs);
 
   const recomputedGrammarCid = computeGrammarCid(vendored);
   if (recomputedGrammarCid !== storedGrammarCid || recomputedGrammarCid !== artifact.grammarCid) {
