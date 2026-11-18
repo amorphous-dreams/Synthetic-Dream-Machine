@@ -121,6 +121,7 @@ export const HOLDER_REFUSALS = [
   "chain-absent",             // no chain stands (no session asked, no dial composed): the holder reads no record
   "values-malformed",         // a write batch names no value, or a value reads as no change or checkpoint
   "head-not-rolled",          // the head this vessel writes under follows no removal: a replacement owes no re-seal
+  "replaced-other-span",      // the body rests only under a version of another span: a replacement never carries it across
 ] as const;
 export type HolderRefusalName = (typeof HOLDER_REFUSALS)[number];
 /** A refusal names what stopped the act. `cause` carries another module's own refusal name, never a key. */
@@ -922,10 +923,14 @@ export class ContentKeyHolder {
       const cause = line.lineage.fact(at.head)!.cause;
       if (cause.kind !== "removal") return refuse("head-not-rolled");
       // THE REPLACED VALUE: the body under a version this founding holds other than the head, as `openBlob` reads it.
+      // THE SPAN FENCE (#/epochs: an inviter never widens the audience for another writer's past): only a version of the
+      // head's own span may hand its body on. A body that rests under another span alone refuses by name.
+      const span = line.lineage.fact(at.head)!.span;
       let met: HolderRefusal = refuse("reference-unknown");
       let old: { keyVersion: KeyVersionId; address: SealedAddress; entry: string; plaintext: Uint8Array } | null = null;
       for (const keyVersion of this.#usable(line)) {
         if (keyVersion === at.head || old !== null) continue;
+        const inSpan = line.lineage.fact(keyVersion)!.span === span;
         const oldKey = line.keys.get(keyVersion)!;
         const context: SealContext = { bagId: args.bagId, keyVersion, role: "blob", logicalRef: hexToBytes(args.ref) };
         const entry = entryLocatorOf(oldKey, context);
@@ -933,6 +938,7 @@ export class ContentKeyHolder {
           const manifest = await this.#manifest(bag, line, oldKey, row.manifest);
           const authorized = manifest === null ? null : authorizeFromManifest(manifest, oldKey, context);
           if (authorized === null) continue;
+          if (!inSpan) { if (met.refusal === "reference-unknown") met = refuse("replaced-other-span"); break; }
           const ciphertext = await this.#ports.values.read(authorized.address);
           if (ciphertext === null) { met = refuse("value-absent"); continue; }
           const opened = openPrivateBody({ ciphertext, under: { bagId: args.bagId, key: oldKey }, ref: args.ref, authorized });

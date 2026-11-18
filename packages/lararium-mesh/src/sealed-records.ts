@@ -619,6 +619,10 @@ export function judgeReseal(record: VerifiedRecord<"re-seal">, held: {
   else {
     const cause = successor.cause;
     if (cause.kind !== "removal" || !record.private.acts.every((act) => cause.acts.includes(act))) return unbound("successor");
+    // THE SPAN FENCE (#/epochs): a replacement never carries a body across spans. A replaced version the reader counted
+    // in another span than the successor's binds nothing; the span rides each version's clear part.
+    const replacedFact = factOf(replaced);
+    if (replacedFact !== null && replacedFact.span !== successor.span) return unbound("replaced");
     // THE REPLACED VERSION stands upstream of the successor. A walk that meets a version the reader never counted leaves
     // the binding unread, never complete.
     const seen = new Set<KeyVersionId>();
