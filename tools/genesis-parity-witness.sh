@@ -40,9 +40,12 @@
 #
 # ── THE FLOOR ───────────────────────────────────────────────────────────────────────────────────
 # Floor blobs answer to their own coherence and to their release, never to the live tree. The
-# canonical manifest names the two snapshot rows and the seed's engine, grammar and plugins region
-# witnesses. The seed's floor witness names the manifest row. A carrier edit cannot move this floor;
-# only a release cuts and names another snapshot. CAS and git checks cover its files as every blob.
+# canonical manifest carries exactly four keys, `format`, `engine`, `plugins` and `snapshots` (a
+# manifest naming `grammar` reads red: the parser bytes ride in the offering). `engine` names the
+# seed's engine region witness; `plugins` names the sha256 of the `floor-plugin-offering` seed row's
+# bytes, a row of kind floor carrying the plugin-offering mime; each snapshot names its `floor-<slug>`
+# row. The seed's floor witness names the manifest row. A carrier edit cannot move this floor; only a
+# release cuts and names another snapshot. CAS and git checks cover its files as every blob.
 #
 # ── ONE SERVED SEED ─────────────────────────────────────────────────────────────────────────────
 # The hearth's Pronaos serves `/genesis/seed.json` and `/genesis/cas/<cid>` off the genesis root it boots, and the page
@@ -198,6 +201,8 @@ for bid in sorted(set(blobs) - set(sources)):
 
 # ── the floor closes under its manifest and release witnesses ───────────────────────────────────
 FLOOR_MANIFEST = "floor-manifest"
+FLOOR_OFFERING = "floor-plugin-offering"
+FLOOR_OFFERING_MIME = "application/vnd.lararium.plugin-offering+json"
 FLOOR_FORMAT = "lararium-floor"
 FLOOR_REQUIRED = ("lares", "lararium")
 WITNESS_PREFIX = "lar:///ha.ka.ba/bags/oracle/genesis-cid-"
@@ -215,10 +220,11 @@ if floor_ids or floor_witness is not None:
             try:
                 raw_bytes = manifest_path.read_bytes()
                 manifest = json.loads(raw_bytes.decode("utf-8"))
-                keys = ("format", "engine", "grammar", "plugins", "snapshots")
-                assert isinstance(manifest, dict) and list(manifest) == list(keys), "fields or order differ from the five fixed keys"
+                keys = ("format", "engine", "plugins", "snapshots")
+                assert isinstance(manifest, dict) and list(manifest) == list(keys), "fields or order differ from the four fixed keys"
                 assert manifest["format"] == FLOOR_FORMAT, f"format differs from {FLOOR_FORMAT}"
-                assert all(isinstance(manifest[k], str) and manifest[k] and not re.search(r"[\x00-\x1f\x7f]", manifest[k]) for k in keys[:4]), "a field carries an empty, ill-typed or control-bearing value"
+                assert all(isinstance(manifest[k], str) and manifest[k] and not re.search(r"[\x00-\x1f\x7f]", manifest[k]) for k in keys[:3]), "a field carries an empty, ill-typed or control-bearing value"
+                assert re.fullmatch(r"[0-9a-f]{64}", manifest["plugins"]), "plugins names no offering record's sha256"
                 snaps = manifest["snapshots"]
                 assert isinstance(snaps, dict) and list(snaps) == sorted(snaps), "snapshots hold no map, or its slugs stand unsorted"
                 assert all(re.fullmatch(r"[a-z0-9][a-z0-9-]*", k) and isinstance(v, str) and v and not re.search(r"[\x00-\x1f\x7f]", v) for k, v in snaps.items()), "a snapshot slug or cid reads malformed"
@@ -236,20 +242,29 @@ if floor_ids or floor_witness is not None:
                         reds.append(f"FLOOR  floor-manifest names {bid} but the seed holds no floor snapshot row")
                     elif cid != blobs[bid]:
                         reds.append(f"FLOOR  floor-manifest {slug} {cid} differs from {bid} row {blobs[bid]}")
-                for field in ("engine", "grammar", "plugins"):
-                    title = WITNESS_PREFIX + field
-                    witness = seed.get("tiddlers", {}).get(title)
-                    cid = witness.get("tiddler", {}).get("cid") if isinstance(witness, dict) else None
-                    if not isinstance(cid, str) or not cid:
-                        reds.append(f"FLOOR  {title} holds no cid witness")
-                    elif manifest[field] != cid:
-                        reds.append(f"FLOOR  floor-manifest {field} {manifest[field]} differs from {title} {cid}")
+                title = WITNESS_PREFIX + "engine"
+                witness = seed.get("tiddlers", {}).get(title)
+                cid = witness.get("tiddler", {}).get("cid") if isinstance(witness, dict) else None
+                if not isinstance(cid, str) or not cid:
+                    reds.append(f"FLOOR  {title} holds no cid witness")
+                elif manifest["engine"] != cid:
+                    reds.append(f"FLOOR  floor-manifest engine {manifest['engine']} differs from {title} {cid}")
+                offering_row = seed["blobs"].get(FLOOR_OFFERING)
+                if not offering_row or FLOOR_OFFERING not in floor_ids:
+                    reds.append(f"FLOOR  {FLOOR_OFFERING} row stands absent or lacks kind floor: the manifest's plugins names no offering")
+                else:
+                    if offering_row.get("mimeType") != FLOOR_OFFERING_MIME:
+                        reds.append(f"FLOOR  {FLOOR_OFFERING} row carries mime {offering_row.get('mimeType')}, expected {FLOOR_OFFERING_MIME}")
+                    offering_path = cas_dir / blobs[FLOOR_OFFERING]
+                    offering_sha = sha(offering_path) if offering_path.is_file() else blobs[FLOOR_OFFERING]
+                    if manifest["plugins"] != offering_sha:
+                        reds.append(f"FLOOR  floor-manifest plugins {manifest['plugins']} differs from {FLOOR_OFFERING} row bytes {offering_sha}")
     cid = floor_witness.get("tiddler", {}).get("cid") if isinstance(floor_witness, dict) else None
     if not isinstance(cid, str) or not cid:
         reds.append(f"FLOOR  {WITNESS_PREFIX}floor holds no cid witness")
     elif manifest_row and cid != blobs[FLOOR_MANIFEST]:
         reds.append(f"FLOOR  genesis-cid-floor {cid} differs from floor-manifest row {blobs[FLOOR_MANIFEST]}")
-    for bid in sorted(floor_ids - {FLOOR_MANIFEST, *named_snapshots}):
+    for bid in sorted(floor_ids - {FLOOR_MANIFEST, FLOOR_OFFERING, *named_snapshots}):
         reds.append(f"FLOOR  unknown floor row {bid} has no manifest field")
 
 # ── the CAS closes under the seed ───────────────────────────────────────────────────────────────
