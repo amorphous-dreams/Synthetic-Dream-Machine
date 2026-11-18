@@ -561,6 +561,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # the carrier on stdout (a pipe too), the base on stderr; --json for the envelope",
       "lares meme patch lar:///ha.ka.ba/... --recipe lares --slot '#/x' --append note.txt --base <hash>  # one slot's body through the put's gate, resealed",
+      "lares meme get road.html --recipe lares       # a rendered record (`projection: rendered` on its source): one read; its writes refuse rendered-derives, so edit the sources",
       "lares meme put lar:///ha.ka.ba/... --recipe lares --file note.mem     # land a framed meme through the gate",
       "lares meme list --recipe lares --tree                                  # every root the wiki resolves, each slot tree nested",
       "lares meme list --bag lares                                            # every root that one bag holds",
