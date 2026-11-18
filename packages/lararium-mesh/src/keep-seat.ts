@@ -17,11 +17,11 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { x25519 } from "@noble/curves/ed25519.js";
+import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { constantTimeBytesEqual, hex, hexToBytes } from "./crypto.js";
-import { KEEP_PAIR_INFO, KEEP_ROSTER_INFO } from "./domains.js";
+import { KEEP_CUT_DOMAIN, KEEP_PAIR_INFO, KEEP_ROSTER_INFO, KEEP_SIGN_INFO } from "./domains.js";
 import { bindSlot, decodeSlotTree, encodeSlotTree, openTreeKey, type Credential, type KdfPort, type SlotSpec, type SlotTree } from "./keyslot.js";
 import { openFromSender, sealToRecipient, SEALED_BOX_AEAD_NONCE_LEN } from "./sealed-box.js";
 import { mintTreeKey, type TreeKey } from "./tree-key.js";
@@ -32,8 +32,12 @@ export interface KeepSeat {
   readonly slots: SlotTree;
 }
 
+/** A fresh pair: the seat that rests and travels, and the signing seed the minting house keeps beside it, never in a bundle. */
+export interface KeepMint { readonly seat: KeepSeat; readonly signingSeed: Uint8Array }
+
 export type KeepSecretOpening =
-  | { readonly reading: "opens"; readonly secret: Uint8Array; readonly slot: string }
+  /** `verifyKey` checks a cut's signature; `signingSeed` lets a house that lost its local seed sign again. Zero-fill both secrets. */
+  | { readonly reading: "opens"; readonly secret: Uint8Array; readonly signingSeed: Uint8Array; readonly verifyKey: Uint8Array; readonly slot: string }
   /** No slot opens under what was presented; `notes` never quotes a credential. */
   | { readonly reading: "no-slot-opens"; readonly notes: readonly string[] }
   /** A slot opened, and the secret it derives answers another public half: a seat spliced from two pairs. */
@@ -46,19 +50,50 @@ export type KeepSlotBinding =
 
 const PAIR_INFO = new TextEncoder().encode(KEEP_PAIR_INFO);
 const ROSTER_INFO = new TextEncoder().encode(KEEP_ROSTER_INFO);
+const SIGN_INFO = new TextEncoder().encode(KEEP_SIGN_INFO);
+const CUT_DOMAIN = new TextEncoder().encode(KEEP_CUT_DOMAIN);
 const KEY_LENGTH = 32;
 
 /** The keep pair's X25519 secret, derived from the key its tree wraps. */
 const secretOf = (treeKey: TreeKey): Uint8Array => hkdf(sha256, treeKey, new Uint8Array(0), PAIR_INFO, KEY_LENGTH);
 
-/** Mint a keep pair whose secret rests wrapped under `spec`'s routes alone. */
-export async function mintKeepSeat(spec: SlotSpec, kdf: KdfPort): Promise<KeepSeat> {
+/** The keep's Ed25519 signing seed, derived from the same key its tree wraps. */
+const signingSeedOf = (treeKey: TreeKey): Uint8Array => hkdf(sha256, treeKey, new Uint8Array(0), SIGN_INFO, KEY_LENGTH);
+
+/** Mint a keep pair whose secret rests wrapped under `spec`'s routes alone, with the signing seed its cuts sign under. */
+export async function mintKeepSeat(spec: SlotSpec, kdf: KdfPort): Promise<KeepMint> {
   const treeKey = mintTreeKey();
   try {
     const slots = await bindSlot(null, treeKey, spec, kdf);
     const secret = secretOf(treeKey);
-    try { return { publicKey: x25519.getPublicKey(secret), slots }; } finally { secret.fill(0); }
+    try { return { seat: { publicKey: x25519.getPublicKey(secret), slots }, signingSeed: signingSeedOf(treeKey) }; } finally { secret.fill(0); }
   } finally { treeKey.fill(0); }
+}
+
+/** The bytes a cut signs: the domain, the bundle id, and the sealed roster's digest. */
+function cutMessage(bundleId: string, sealedRoster: Uint8Array): Uint8Array {
+  const id = new TextEncoder().encode(bundleId);
+  const digest = sha256(sealedRoster);
+  const out = new Uint8Array(CUT_DOMAIN.length + 1 + id.length + 1 + digest.length);
+  out.set(CUT_DOMAIN, 0);
+  out.set(id, CUT_DOMAIN.length + 1);
+  out.set(digest, CUT_DOMAIN.length + 1 + id.length + 1);
+  return out;
+}
+
+/** Sign a cut: the bundle id and its sealed roster, under the keep's signing seed. Deterministic, so an unmoved cut signs alike. */
+export function signKeepCut(signingSeed: Uint8Array, bundleId: string, sealedRoster: Uint8Array): Uint8Array {
+  return ed25519.sign(cutMessage(bundleId, sealedRoster), signingSeed);
+}
+
+/** The verify key a signing seed answers to. */
+export function keepVerifyKeyOf(signingSeed: Uint8Array): Uint8Array {
+  return ed25519.getPublicKey(signingSeed);
+}
+
+/** Whether `signature` signs this bundle id and sealed roster under `verifyKey`; false on any fault. */
+export function verifyKeepCut(verifyKey: Uint8Array, bundleId: string, sealedRoster: Uint8Array, signature: Uint8Array): boolean {
+  try { return ed25519.verify(signature, cutMessage(bundleId, sealedRoster), verifyKey); } catch { return false; }
 }
 
 async function openTree(seat: KeepSeat, credentials: readonly Credential[], kdf: KdfPort): Promise<{ readonly treeKey: TreeKey; readonly slot: string } | Exclude<KeepSecretOpening, { reading: "opens" }>> {
@@ -75,7 +110,10 @@ async function openTree(seat: KeepSeat, credentials: readonly Credential[], kdf:
 export async function openKeepSecret(seat: KeepSeat, credentials: readonly Credential[], kdf: KdfPort): Promise<KeepSecretOpening> {
   const o = await openTree(seat, credentials, kdf);
   if ("reading" in o) return o;
-  try { return { reading: "opens", secret: secretOf(o.treeKey), slot: o.slot }; } finally { o.treeKey.fill(0); }
+  try {
+    const signingSeed = signingSeedOf(o.treeKey);
+    return { reading: "opens", secret: secretOf(o.treeKey), signingSeed, verifyKey: keepVerifyKeyOf(signingSeed), slot: o.slot };
+  } finally { o.treeKey.fill(0); }
 }
 
 /** Bind one more slot (a paper sheet beside the passphrase, say) over the seat's own key, opened by `openWith`. */

@@ -41,7 +41,7 @@ describe("the keep seat's passphrase slot costs what custody costs", () => {
 
     const { mintKeepSeat, openKeepSecret } = await import("../src/keep-seat.js");
     const keep = recordingPort();
-    const seat = await mintKeepSeat({ t: 1, pins: [PASS] }, keep.port);
+    const { seat } = await mintKeepSeat({ t: 1, pins: [PASS] }, keep.port);
     const opened = await openKeepSecret(seat, [PASS], keep.port);
     expect(opened.reading).toBe("opens");
     expect(keep.costs.length, "the keep's mint and open each derived").toBeGreaterThanOrEqual(2);
@@ -54,15 +54,15 @@ describe("the keep seat's passphrase slot costs what custody costs", () => {
   test("KK2 RED: two seats under one passphrase carry their own random salts and their own pairs", async () => {
     const { mintKeepSeat } = await import("../src/keep-seat.js");
     const a = recordingPort(), b = recordingPort();
-    const sa = await mintKeepSeat({ t: 1, pins: [PASS] }, a.port);
-    const sb = await mintKeepSeat({ t: 1, pins: [PASS] }, b.port);
+    const { seat: sa } = await mintKeepSeat({ t: 1, pins: [PASS] }, a.port);
+    const { seat: sb } = await mintKeepSeat({ t: 1, pins: [PASS] }, b.port);
     expect(a.salts[0]).not.toBe(b.salts[0]);
     expect(Buffer.from(sa.publicKey).equals(Buffer.from(sb.publicKey))).toBe(false);
   });
 
   test("KK3 RED: a paper slot beside the passphrase opens the same secret, through no passphrase derivation", async () => {
     const { mintKeepSeat, bindKeepSlot, openKeepSecret } = await import("../src/keep-seat.js");
-    const seat = await mintKeepSeat({ t: 1, pins: [PASS] }, nobleKdf);
+    const { seat } = await mintKeepSeat({ t: 1, pins: [PASS] }, nobleKdf);
     const draft = draftPaperPin();
     const confirmed = confirmPaperPin(draft, draft.sheets);
     const withPaper = await bindKeepSlot(seat, [PASS], { t: 1, pins: [{ kind: "paper", confirmed }] }, nobleKdf);

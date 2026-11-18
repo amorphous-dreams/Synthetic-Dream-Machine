@@ -655,8 +655,8 @@ export { bindSlot, unbindSlot, openTreeKey, nobleKdf, encodeSlotTree, decodeSlot
 export type { KdfPort, ScryptCost, PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, PinKind, PinRecord, PasskeyPinRecord, Credential, TreeKeyUnlock, SlotTreeReading } from "./keyslot.js";
 export { mintTreeKey, treeKeyEquals } from "./tree-key.js";
 // The keep pair: a keep bundle's roster seals to its public half; its secret rests wrapped under the human's routes — see `keep-seat`.
-export { mintKeepSeat, openKeepSecret, bindKeepSlot, sealToKeep, openFromKeep, encodeKeepSeat, decodeKeepSeat } from "./keep-seat.js";
-export type { KeepSeat, KeepSecretOpening, KeepSlotBinding, KeepSeatReading } from "./keep-seat.js";
+export { mintKeepSeat, openKeepSecret, bindKeepSlot, sealToKeep, openFromKeep, encodeKeepSeat, decodeKeepSeat, signKeepCut, verifyKeepCut, keepVerifyKeyOf } from "./keep-seat.js";
+export type { KeepSeat, KeepMint, KeepSecretOpening, KeepSlotBinding, KeepSeatReading } from "./keep-seat.js";
 // The serving key and the serving tree that wraps it under the tree key's entry — see `serving-key`.
 export { mintServingKey, SK_LENGTH } from "./serving-key.js";
 export type { ServingKey } from "./serving-key.js";

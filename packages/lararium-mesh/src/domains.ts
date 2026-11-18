@@ -166,6 +166,12 @@ export const KEEP_PAIR_INFO = mint("keep-pair");
 /** The sealed-box `info` a keep bundle's roster seals to the keep pair's public half under: a roster never opens as another
  *  protocol's seal between the same keys. */
 export const KEEP_ROSTER_INFO = mint("keep-roster");
+/** The HKDF `info` the keep's SIGNING seed derives under, from the same key the keep's slot tree wraps: the verify key a
+ *  restore checks rides inside that wrapped tree, so only the house that minted the pair signs a cut it accepts. */
+export const KEEP_SIGN_INFO = mint("keep-sign");
+/** The keep cut's SIGNATURE: the signing seed signs the bundle id and the sealed roster's digest under this name, so a roster
+ *  sealed to the published public half by anyone else never restores as the house's own. */
+export const KEEP_CUT_DOMAIN = mint("keep-cut");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
 /** A hearth's HOSTING ACT in one Nexus: its per-Nexus leaf signs the Nexus, itself, the act's POPRF public key

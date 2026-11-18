@@ -117,6 +117,9 @@ export interface BundleManifest {
   readonly library?: ReadonlyArray<{ readonly collection: string; readonly indexSha256: string | null }>;
   /** What a KEEP left to another holder, by where it rests (absent on a plain export). */
   readonly elsewhere?: readonly BundleElsewhere[];
+  /** The keep's signature over the bundle id and the sealed roster (Ed25519, hex): a restore checks it under the verify key the
+   *  opened seat derives, so a roster nobody but the house sealed never restores. Outside the file list, like the manifest. */
+  readonly keepSignature?: string;
 }
 
 /** The manifest as it rests in the bundle: faces by path key alone, rows naming a face by that key. */
@@ -281,6 +284,9 @@ export function verifyBundle(root: string): SealedBundle {
     faceKeys.add(f.key);
   }
 
+  if (raw.keepSignature !== undefined && (!isStr(raw.keepSignature) || !/^[0-9a-f]{128}$/.test(raw.keepSignature))) {
+    throw new BundleVerifyRefused("bundle-keep-signature-shape: the manifest's keep signature reads no 64-byte signature in hex");
+  }
   if (raw.elsewhere !== undefined && (!Array.isArray(raw.elsewhere) || (raw.elsewhere as unknown[]).some((e) => !isObj(e) || !isStr(e.slug) || e.layer !== "wiki-working"
     || !isStr(e.bag) || e.holder !== "checkout" || !isStr(e.path) || unsafeRelPath(e.path) !== null || (files as BundleFile[]).some((f) => f.path.startsWith(`wikis/${String(e.slug)}/working/`))))) {
     throw new BundleVerifyRefused("bundle-elsewhere-shape: the manifest's elsewhere names a holder, a place or a slug no keep spells, or a workbench the bundle still carries");

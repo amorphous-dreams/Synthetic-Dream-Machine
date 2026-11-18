@@ -77,13 +77,13 @@ import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "..
 import { writeFaceLabels, readFaceBases, labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
-  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KEEP_SEAT_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, openBundle, rosterView, readBundleSeat, BundleVerifyRefused,
+  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KEEP_SEAT_FILE, KAHUA_HEADS_FILE, bundleIdOf, bundleBytes, sha256Hex, zeroCounts, verifyBundle, openBundle, rosterView, readBundleSeat, BundleVerifyRefused,
   type BundleDiskManifest, type BundleFaceKey, type BundleFile, type BundleKahuaHead, type BundleManifest, type BundleOmission, type BundleRedeclare,
   type BundleRedeclareFace, type BundleRow, type BundleShareEntry, type VerifiedBundle,
 } from "../bundle-manifest.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs } from "../share-doors.js";
-import { KeepSeatRefused, adoptKeepSeat, bundleSeatText, keepSeatForCut, liveKeepRoute, openKeepSeat, sealRosterForCut } from "../keep-seat.js";
-import type { Credential } from "@lararium/mesh";
+import { KeepSeatRefused, adoptKeepSeat, bundleSeatText, keepSeatForCut, liveKeepRoute, openKeepSeat, sealRosterForCut, signCut } from "../keep-seat.js";
+import { verifyKeepCut, type Credential } from "@lararium/mesh";
 
 /** A keep seat refusal, as the bundle verbs name it. */
 async function seatAct<T>(act: () => Promise<T>): Promise<T> {
@@ -643,7 +643,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
 
   // THE KEEP PAIR the roster seals to, read before any byte stages: a house that rests none refuses the cut by name.
-  const seat = await seatAct(keepSeatForCut);
+  const { seat, signingSeed } = await seatAct(keepSeatForCut);
   // WRITE BESIDE THE DEST, VERIFY, THEN MOVE INTO PLACE.
   const staging = join(dirname(target), `.${basename(target)}.lar-tmp-${randomBytes(6).toString("hex")}`);
   mkdirSync(staging, { recursive: true });
@@ -685,10 +685,15 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     };
     // THE ROSTER RIDES SEALED to the keep pair's public half: a remote the bundle reaches crosses to another vessel, and the cut
     // asks for no credential. The pair rides beside it, its secret wrapped under the human's routes.
-    put(REDECLARE_FILE, sealRosterForCut(seat, redeclare));
+    const sealedRoster = sealRosterForCut(seat, redeclare);
+    put(REDECLARE_FILE, sealedRoster);
     put(KEEP_SEAT_FILE, bundleSeatText(seat));
     files.sort((a, b) => (a.path < b.path ? -1 : 1));
-    const manifest: BundleDiskManifest = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
+    // THE CUT SIGNS ITS ROSTER: the bundle id and the sealed roster, under the seed the house keeps, so a restore refuses a roster
+    // sealed to the published public half by anyone else.
+    const bundleId = bundleIdOf(files);
+    const keepSignature = signCut(signingSeed, bundleId, sealedRoster);
+    const manifest: BundleDiskManifest = { schema: BUNDLE_SCHEMA, bundleId, keepSignature, faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
     writeFileSync(join(staging, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`, { flag: "wx" });
     // Every byte read back against the manifest, the seat read whole, and the roster read against the manifest, before the bundle
     // takes its name.
@@ -844,8 +849,17 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
       ? "a slot of the bundle's keep seat opened a secret that answers another pair: the seat stands torn; restore from another keep"
       : "the route presented opens no slot of the bundle's keep seat: present the steward's passphrase or paper sheet the keep sealed under, then import again");
   }
+  // THE ROSTER'S ORIGIN: the verify key rides inside the slot that opened, so a roster the house never signed refuses here,
+  // before its text reaches any door.
+  const signature = sealed.manifest.keepSignature;
+  const signed = typeof signature === "string" && verifyKeepCut(opening.verifyKey, sealed.manifest.bundleId, bundleBytes(sealed.root, REDECLARE_FILE), Uint8Array.from(Buffer.from(signature, "hex")));
+  if (!signed) {
+    opening.secret.fill(0); opening.signingSeed.fill(0);
+    throw new BundleRefused("keep-roster-unsigned", "the bundle's roster carries no signature the opened keep seat answers: whoever wrote the remote may have sealed a roster of its own to the published public half; nothing moved. Restore from a keep this house cut");
+  }
   let bundle: VerifiedBundle;
   try { bundle = openBundle(sealed, opening.secret); } finally { opening.secret.fill(0); }
+  const adoptSeed = opening.signingSeed;
   const { manifest, redeclare } = bundle;
   // THE ORDER GUARD: the walk runs found -> up -> lay -> import. An import lands its rows over the canon the lay
   // laid, so its bag rows meet the checkout's canon at INGEST's three-way gate and stand off where they diverge; over
@@ -1238,7 +1252,8 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
 
   // THE PAIR SEATS LAST: only a whole apply seats the bundle's keep pair where this house rests none, so a restore that refused
   // anywhere above leaves the house's config as it stood.
-  if (apply) adoptKeepSeat(seat);
+  if (apply) adoptKeepSeat(seat, adoptSeed);
+  adoptSeed.fill(0);
   return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, waiting, warnings, benchWaiting, personalWaiting, kahuaWaiting, daemonWaiting, shares: { written: carriedShares.map((r) => r.slug), landed: sharesLanded } };
 }
 

@@ -13,6 +13,12 @@
  * --if-due` and the session-end hook cut where nobody stands; a house with no seat refuses the cut by name. A root a harness
  * staged (`.lar-test-scratch`) with no terminal seats under the published test route, as its custody opens under it.
  *
+ * THE CUT SIGNS ITS ROSTER. Whoever writes the remote reads the public half and could seal a roster of their own to it, so the
+ * mint derives a signing seed from the same key the slot tree wraps: the seed rests here beside the seat (0600, local alone,
+ * never in a bundle), each cut signs its bundle id and sealed roster, and a restore derives the verify key from the slot it
+ * opened and refuses a roster the house never signed (`keep-roster-unsigned`). A house that lost its seed (a seat from before
+ * the signature, an adopted seat) takes it back at the next proved unlock, which opens the seat anyway.
+ *
  * AN UNMOVED HOUSE CUTS THE SAME BUNDLE. A seal to a public half draws fresh randomness, so the seat keeps its last seal beside a
  * digest of the roster it covers (keyed by the public half; ciphertext and a digest, never the roster): a re-cut of the same
  * roster to the same pair hands back the same bytes, and an unmoved keep spends nothing.
@@ -23,7 +29,7 @@ import { createHmac } from "node:crypto";
 import { mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  bindKeepSlot, confirmHeldPaper, decodeKeepSeat, encodeKeepSeat, mintKeepSeat, openKeepSecret,
+  bindKeepSlot, confirmHeldPaper, decodeKeepSeat, encodeKeepSeat, keepVerifyKeyOf, mintKeepSeat, openKeepSecret, signKeepCut,
   type ConfirmedPaperPin, type Credential, type KeepSeat, type KeepSecretOpening, type PinSpec, type SlotSpec,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
@@ -47,23 +53,29 @@ export function keepSeatPath(): string {
   return join(larConfigHome(), KEEP_SEAT_FILE);
 }
 
-function readResting(): { readonly seat: KeepSeat; readonly lastRoster: LastRosterSeal | null } | null {
+/** The seat as it rests here: the pair, the last roster seal, and the signing seed its cuts sign under (null where none rests). */
+interface RestingSeat { readonly seat: KeepSeat; readonly lastRoster: LastRosterSeal | null; readonly signingSeed: Uint8Array | null }
+
+function readResting(): RestingSeat | null {
   let text: string;
   try { text = readFileSync(keepSeatPath(), "utf8"); } catch { return null; }
   const read = decodeKeepSeat(text);
   if (read.reading !== "readable") throw new KeepSeatRefused("keep-seat-unreadable", `${keepSeatPath()} reads no keep pair (${read.why}); the bundle a keep cut before carries the seat whole: restore it from there`);
   let lastRoster: LastRosterSeal | null = null;
+  let signingSeed: Uint8Array | null = null;
   try {
-    const raw = JSON.parse(text) as { lastRoster?: { digest?: unknown; sealed?: unknown } };
+    const raw = JSON.parse(text) as { lastRoster?: { digest?: unknown; sealed?: unknown }; signingSeed?: unknown };
     if (typeof raw.lastRoster?.digest === "string" && typeof raw.lastRoster.sealed === "string") lastRoster = { digest: raw.lastRoster.digest, sealed: raw.lastRoster.sealed };
+    if (typeof raw.signingSeed === "string" && /^[0-9a-f]{64}$/.test(raw.signingSeed)) signingSeed = Uint8Array.from(Buffer.from(raw.signingSeed, "hex"));
   } catch { /* the seat read whole above */ }
-  return { seat: read.seat, lastRoster };
+  return { seat: read.seat, lastRoster, signingSeed };
 }
 
-function writeResting(seat: KeepSeat, lastRoster: LastRosterSeal | null): void {
+function writeResting(seat: KeepSeat, lastRoster: LastRosterSeal | null, signingSeed: Uint8Array | null): void {
   const body = JSON.parse(encodeKeepSeat(seat)) as Record<string, unknown>;
+  const local = { ...body, ...(signingSeed !== null ? { signingSeed: Buffer.from(signingSeed).toString("hex") } : {}), ...(lastRoster !== null ? { lastRoster } : {}) };
   mkdirSync(larConfigHome(), { recursive: true });
-  atomicWriteFileSync(keepSeatPath(), `${JSON.stringify(lastRoster === null ? body : { ...body, lastRoster }, null, 2)}\n`, undefined, { mode: 0o600 });
+  atomicWriteFileSync(keepSeatPath(), `${JSON.stringify(local, null, 2)}\n`, undefined, { mode: 0o600 });
 }
 
 /** The house's keep seat, or null where none rests. */
@@ -71,7 +83,7 @@ export function readKeepSeat(): KeepSeat | null {
   return readResting()?.seat ?? null;
 }
 
-/** The seat as a bundle carries it: the public half and the slot tree, never the last seal. */
+/** The seat as a bundle carries it: the public half and the slot tree, never the last seal and never the signing seed. */
 export function bundleSeatText(seat: KeepSeat): string {
   return encodeKeepSeat(seat);
 }
@@ -93,12 +105,15 @@ export async function seatKeepPair(opener: readonly Credential[]): Promise<{ rea
   if (resting !== null) return { seated: false, seat: resting.seat };
   const pins = opener.map(pinOf);
   if (pins.length === 0 || pins.some((p) => p === null)) return { seated: false, seat: null };
-  const seat = await mintKeepSeat({ t: pins.length, pins: pins as PinSpec[] }, nativeKdf);
-  // THE SELF-CHECK: the seat opens under the very route it seated under before it rests, so no mint locks a restore out.
+  const { seat, signingSeed } = await mintKeepSeat({ t: pins.length, pins: pins as PinSpec[] }, nativeKdf);
+  // THE SELF-CHECK: the seat opens under the very route it seated under before it rests, so no mint locks a restore out, and the
+  // verify key it opens to answers the seed the house keeps.
   const check = await openKeepSecret(seat, opener, nativeKdf);
   if (check.reading !== "opens") throw new KeepSeatRefused("keep-seat-unchecked", `the keep pair minted under this route did not open under it (${check.reading}); nothing rests`);
-  check.secret.fill(0);
-  writeResting(seat, null);
+  const answers = Buffer.from(check.verifyKey).equals(Buffer.from(keepVerifyKeyOf(signingSeed)));
+  check.secret.fill(0); check.signingSeed.fill(0);
+  if (!answers) throw new KeepSeatRefused("keep-seat-unchecked", "the keep pair minted under this route opened to another signing key; nothing rests");
+  writeResting(seat, null, signingSeed);
   return { seated: true, seat };
 }
 
@@ -119,7 +134,12 @@ export async function seatKeepAtUnlock(answer: CustodyOpenAnswer, route: readonl
     const resting = readResting();
     if (resting !== null) {
       const o = await openKeepSecret(resting.seat, opener, nativeKdf);
-      if (o.reading === "opens") { o.secret.fill(0); return "resting"; }
+      if (o.reading === "opens") {
+        // A SEAT THAT LOST ITS SIGNING SEED takes it back here: the proved route opened the very key it derives from.
+        if (resting.signingSeed === null) writeResting(resting.seat, resting.lastRoster, o.signingSeed);
+        o.secret.fill(0); o.signingSeed.fill(0);
+        return "resting";
+      }
       say(`keep: keep-seat-unopened: the route this unlock proved opens no slot of the keep pair at ${keepSeatPath()}, so a restore would ask for a route the steward may no longer hold; run \`lares vault reseat\` to seat a fresh pair under this route`);
       return "resting-unopened";
     }
@@ -133,10 +153,11 @@ export async function seatKeepAtUnlock(answer: CustodyOpenAnswer, route: readonl
   }
 }
 
-/** Adopt a pair a bundle carried, where this house rests none: the next keep seals to the pair the restore opened. */
-export function adoptKeepSeat(seat: KeepSeat): boolean {
+/** Adopt a pair a bundle carried, where this house rests none, with the signing seed its opening derived: the next keep seals to
+ *  the pair the restore opened and signs as the house that minted it. */
+export function adoptKeepSeat(seat: KeepSeat, signingSeed: Uint8Array): boolean {
   if (readResting() !== null) return false;
-  writeResting(seat, null);
+  writeResting(seat, null, signingSeed);
   return true;
 }
 
@@ -149,7 +170,7 @@ export async function bindKeepPaper(openWith: readonly Credential[], confirmed: 
   if (resting === null) return "no-seat";
   const b = await bindKeepSlot(resting.seat, openWith, { t: 1, pins: [{ kind: "paper", confirmed }] }, nativeKdf);
   if (b.reading !== "bound") return b.reading;
-  writeResting(b.seat, resting.lastRoster);
+  writeResting(b.seat, resting.lastRoster, resting.signingSeed);
   return "bound";
 }
 
@@ -178,16 +199,23 @@ export function openKeepSeat(seat: KeepSeat, credentials: readonly Credential[])
   return openKeepSecret(seat, credentials, nativeKdf);
 }
 
+/** What a cut seals to and signs under. */
+export interface CutSeat { readonly seat: KeepSeat; readonly signingSeed: Uint8Array }
+
 /**
- * The seat a cut seals to. A cut asks for no credential, so a house that rests none refuses by name; a root a harness staged
- * with no terminal seats under the published test route.
+ * The seat a cut seals to, and the seed it signs under. A cut asks for no credential, so a house that rests none refuses by name,
+ * and so does one whose seed rests nowhere (a proved unlock restores it); a root a harness staged with no terminal seats under the
+ * published test route.
  */
-export async function keepSeatForCut(): Promise<KeepSeat> {
-  const resting = readResting();
-  if (resting !== null) return resting.seat;
-  if (testScratchRoot() && !canPromptSecret()) {
-    const { seat } = await seatKeepPair([{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }]);
-    if (seat !== null) return seat;
+export async function keepSeatForCut(): Promise<CutSeat> {
+  let resting = readResting();
+  if (resting === null && testScratchRoot() && !canPromptSecret()) {
+    await seatKeepPair([{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }]);
+    resting = readResting();
+  }
+  if (resting !== null) {
+    if (resting.signingSeed === null) throw new KeepSeatRefused("keep-seat-unsigned", `the keep pair at ${keepSeatPath()} rests with no signing seed, so a cut would carry a roster no restore accepts: run \`lares vault unlock\` with the steward's route, which opens the seat and restores it, then cut again`);
+    return { seat: resting.seat, signingSeed: resting.signingSeed };
   }
   throw new KeepSeatRefused("keep-seat-absent", `this house rests no keep pair at ${keepSeatPath()}, and a cut seals the roster to one: run \`lares vault unlock\` with the steward's passphrase, which seats it, then cut again`);
 }
@@ -200,8 +228,13 @@ export function sealRosterForCut(seat: KeepSeat, redeclare: BundleRedeclare): Bu
     return Buffer.from(resting.lastRoster.sealed, "base64");
   }
   const sealed = sealRedeclare(seat.publicKey, redeclare);
-  if (resting !== null && Buffer.from(resting.seat.publicKey).equals(Buffer.from(seat.publicKey))) writeResting(resting.seat, { digest, sealed: sealed.toString("base64") });
+  if (resting !== null && Buffer.from(resting.seat.publicKey).equals(Buffer.from(seat.publicKey))) writeResting(resting.seat, { digest, sealed: sealed.toString("base64") }, resting.signingSeed);
   return sealed;
+}
+
+/** Sign a cut: the bundle id and the sealed roster, under the seed the house keeps. Answers the signature in hex. */
+export function signCut(signingSeed: Uint8Array, bundleId: string, sealedRoster: Uint8Array): string {
+  return Buffer.from(signKeepCut(signingSeed, bundleId, sealedRoster)).toString("hex");
 }
 
 /**
