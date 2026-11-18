@@ -30,6 +30,7 @@ import { runOfferRetire } from "../src/commands/offer-retire.js";
 import {
   crossroadsDocUrl, publicationDocUrl, floorReleaseEntriesFromBoard, materializeSharedLarDoc, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
   assembleFloorRelease, openFloorReleaseBody, foundingRoster, readPromotionApproval, FLOOR_RELEASE_SURFACE, cutFloorSnapshot, floorManifestBytes,
+  signFloorOffering,
 } from "@lararium/mesh";
 import { readCasBlobFromFs, writeCasEntriesFs } from "../src/node-cas.js";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
@@ -83,19 +84,28 @@ const standing = (index: number, known: Map<string, Uint8Array>) =>
   withRoot(index, (repo) => runFloorReleaseStanding({ repo, sealHome: larSealHome(), manifestBytesOf: (cid) => known.get(cid) ?? null }));
 
 describe("a release names a floor this hearth holds whole", () => {
-  it("with a CAS dir, the manifest stages there and a floor missing a snapshot refuses before any row lands; the whole floor lands (CONTROL)", async () => {
+  it("with a CAS dir, the manifest stages there and a floor missing a snapshot, its plugins offering or an offered blob refuses before any row lands; the whole floor lands (CONTROL)", async () => {
     process.env["LAR_ROOT"] = roots[0]!;
     const cas = join(work, "cas");
     const lares = cutFloorSnapshot({ "lar:///t/lares": { tiddler: { title: "lar:///t/lares", text: "l" } } });
     const lararium = cutFloorSnapshot({ "lar:///t/lararium": { tiddler: { title: "lar:///t/lararium", text: "r" } } });
-    const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } });
+    const pluginBytes = new TextEncoder().encode("plugin bytes");
+    const offering = await signFloorOffering({ seed: new Uint8Array(32).fill(3), blobs: [{
+      id: "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", version: "unknown", sha256: sha256HexBytesSync(pluginBytes),
+      provenance: { source: "https://example.test", commit: "0".repeat(40), path: "plugin.json", licence: "MIT" },
+    }] });
+    const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), plugins: offering.cid, snapshots: { lares: lares.cid, lararium: lararium.cid } });
     const file = join(work, "floor-manifest.json"); writeFileSync(file, manifestBytes);
     const approval = await approve(file);
     const go = () => withRoot(0, (repo) => runFloorRelease({ repo, sealHome: larSealHome(), manifestFile: file, approval, casDir: cas }));
     writeCasEntriesFs([{ cid: lares.cid, bytes: lares.bytes }], cas);                                     // one snapshot alone
     await expect(go()).rejects.toThrow(/does not stand whole in this hearth's CAS/);
     expect(await standing(0, new Map([[sha256HexBytesSync(manifestBytes), manifestBytes]]))).toMatchObject({ standing: "absent" });
-    writeCasEntriesFs([{ cid: lararium.cid, bytes: lararium.bytes }], cas);                               // the whole floor
+    writeCasEntriesFs([{ cid: lararium.cid, bytes: lararium.bytes }], cas);                               // every snapshot
+    await expect(go()).rejects.toThrow(/offering absent/);
+    writeCasEntriesFs([{ cid: offering.cid, bytes: offering.bytes }], cas);                               // the offering, not its blob
+    await expect(go()).rejects.toThrow(/memetic-wikitext absent/);
+    writeCasEntriesFs([{ cid: offering.offering.blobs[0]!.sha256, bytes: pluginBytes }], cas);            // the whole floor
     const landed = await go();
     expect(landed.release.body.manifest).toBe(sha256HexBytesSync(manifestBytes));
     expect(readCasBlobFromFs(landed.release.body.manifest, cas)).not.toBeNull();                          // the manifest stands in the CAS the porch serves
