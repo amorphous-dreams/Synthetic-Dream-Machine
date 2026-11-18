@@ -4,7 +4,7 @@
  * home.
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
   chmodSync, existsSync, lstatSync, statSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, rmSync, symlinkSync, writeFileSync,
 } from "node:fs";
@@ -536,7 +536,10 @@ describe("the carrier", () => {
 
 describe("the brief line", () => {
   it("prints one line with no terminal, the way the wake hook reads it", () => {
-    const out = execFileSync("node", [join(REPO, "packages/lares-cli/dist/src/bin/lares.js"), "repo", "read", "--brief"], { encoding: "utf8", cwd: REPO });
+    // The exit reads the clone's own state (an untended clone's git config reads drift); the line's shape holds either way.
+    const r = spawnSync("node", [join(REPO, "packages/lares-cli/dist/src/bin/lares.js"), "repo", "read", "--brief"], { encoding: "utf8", cwd: REPO });
+    expect([0, 1]).toContain(r.status);
+    const out = r.stdout;
     expect(out.trim().split("\n")).toHaveLength(1);
     expect(out).toMatch(/^reality tunnel: /);
   });
