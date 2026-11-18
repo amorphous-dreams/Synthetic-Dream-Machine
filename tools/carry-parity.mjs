@@ -36,7 +36,8 @@
 //   node tools/carry-parity.mjs census --root <LAR_ROOT> [--port N] [--label L] [--out <census.json>] [--lares <cmd>]
 //       one reading of the standing house's worn face, for a rite where the two houses never stand at once.
 //   node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--json] [--out F]
-//       several readings per side merge by face pet-name (one census per worn face).
+//       several readings per side merge by face pet-name (one census per worn face); one flag takes every path after it
+//       up to the next flag, so `--old old-*.json` reads each face the glob names, and a path no flag takes refuses.
 // `--lares <cmd>` names the CLI to call (a host shim, e.g. `lares`); by default the built CLI under this checkout, with
 // LAR_ROOT (and LAR_PORT where named) set to the house read. `--base` is a census of the new house taken after its founding
 // and seed and before the import: its rows leave `extra`, so a red never hides behind the new house's own genesis. Both houses
@@ -329,8 +330,13 @@ function parse(argv) {
     if (k === "json" || k === "help") { opts[k] = true; continue; }
     const v = inline ?? argv[++i];
     if (v === undefined) throw new Error(`--${k} takes a value`);
-    if (many.has(k)) opts[k].push(v); else opts[k] = v;
+    if (!many.has(k)) { opts[k] = v; continue; }
+    opts[k].push(v);
+    // ONE FLAG, EVERY PATH AFTER IT: `--old old-*.json` reaches here as `--old old-0.json old-1.json`, and each one reads.
+    while (i + 1 < argv.length && !argv[i + 1].startsWith("--")) opts[k].push(argv[++i]);
   }
+  // A path no flag took refuses loudly: a compare that silently read less than it was handed reads par over faces it never saw.
+  if (opts._.length > 1) throw new Error(`${opts._.slice(1).map((s) => JSON.stringify(s)).join(", ")} stands where no flag takes it: the verb takes no path; name each census after --old, --new or --base`);
   return opts;
 }
 

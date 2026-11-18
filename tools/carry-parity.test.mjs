@@ -186,6 +186,38 @@ test("P1 the compare verb reads census files: par exits 0, red exits 1 and print
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
+test("P1 one --old, --new or --base takes every census path after it (a shell glob's expansion), and a stray path refuses", () => {
+  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-glob-"));
+  try {
+    /** The reading of one more worn face, as a census of that face alone writes it. */
+    const engineer = (over = {}) => {
+      const r = reading();
+      r.faces = [{ petname: "engineer", handleIndex: 1, mounted: true, relation: "33333333-3333-4333-8333-333333333333" }];
+      r.face = { engineer: { ...r.face.steward, ...over } };
+      r.allowed = { relations: { engineer: "33333333-3333-4333-8333-333333333333" }, kahuaCids: {} };
+      return r;
+    };
+    const p = (name, body) => { const f = join(dir, name); writeFileSync(f, JSON.stringify(body)); return f; };
+    const old0 = p("old-0.json", reading()), old1 = p("old-1.json", engineer());
+    const new0 = p("new-0.json", reading()), new1 = p("new-1.json", engineer({ memes: {} }));
+    const base0 = p("base-0.json", reading()), base1 = p("base-1.json", engineer());
+    // `--old old-*.json` arrives as `--old old-0.json old-1.json`: both faces read, so the engineer's lost memes read red.
+    const globbed = spawnSync(process.execPath, [tool, "compare", "--old", old0, old1, "--new", new0, new1, "--base", base0, base1, "--json"], { encoding: "utf8" });
+    assert.equal(globbed.status, 1, globbed.stderr);
+    const receipt = JSON.parse(globbed.stdout);
+    assert.ok(receipt.differences.some((d) => d.scope === "face:engineer" && d.kind === "missing"), JSON.stringify(receipt.differences));
+    assert.equal(receipt.counts.faces, 2);
+    assert.equal(receipt.base.labels.length, 2, "both base censuses read");
+    // The repeated-flag form reads the same.
+    const repeated = spawnSync(process.execPath, [tool, "compare", "--old", old0, "--old", old1, "--new", new0, "--new", new1, "--json"], { encoding: "utf8" });
+    assert.equal(repeated.status, 1, repeated.stderr);
+    // A path standing where no flag takes it refuses loudly, never compares less than it was given.
+    const stray = spawnSync(process.execPath, [tool, "compare", old1, "--old", old0, "--new", new0], { encoding: "utf8" });
+    assert.equal(stray.status, 2, stray.stdout);
+    assert.match(stray.stderr, /takes no path/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
 // ── P2: two real houses ───────────────────────────────────────────────────────────────────────────────────────
 
 const freePort = () => new Promise((resolve) => {
