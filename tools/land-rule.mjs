@@ -8,7 +8,9 @@
  * required check, and the sha descends from the span's current head on GitHub. tools/land-rule.json holds the span, the
  * workflow and the required checks, the ONE list; the repository ruleset on the span names the same checks, so GitHub's
  * native merge queue only runs and orders this rule. When the queue stands dark, lands go serial by the same rule: judge
- * the lane's merge onto the span head here, and land it only on LAND.
+ * the lane's merge onto the span head here, and land it only on LAND. A lane push runs the Quick gates alone (ci.yml's
+ * doorstep quick), so `Test` and `Witnesses` read skipped there and HOLD here: the rule reads the queue's `merge_group` run, or
+ * a whole battery dispatched by hand on the sha.
  *
  * Three reads, once each (`gh run list`, `gh run view`, `gh api …/compare`); this tool never waits, polls or watches, so
  * the pace stays the caller's (POLL_FLOOR_S in tools/ci-verdict.mjs governs any read again). It prints one verdict line:
@@ -49,7 +51,9 @@ export async function landRule({ sha, rule = readRule() }, ops) {
   const verdict = (word, code, why) => ({ word, code, line: `land-rule: ${word} ${short(sha)} — ${why}` });
   try {
     const runs = ops.gh(["run", "list", "--commit", sha, "--workflow", rule.workflow, "--json", "databaseId,status,conclusion,event", "--limit", "20"]);
-    const run = [...(Array.isArray(runs) ? runs : [])].sort((a, b) => b.databaseId - a.databaseId)[0];
+    const newest = [...(Array.isArray(runs) ? runs : [])].sort((a, b) => b.databaseId - a.databaseId);
+    // The queue's merge_group run reads the whole battery on the sha; a doorstep push run reads the Quick gates alone.
+    const run = newest.find((r) => r.event === "merge_group") ?? newest[0];
     const holds = [];
     let unread = null;
     let read = null;
@@ -61,6 +65,9 @@ export async function landRule({ sha, rule = readRule() }, ops) {
         const job = jobs.find((j) => j.name === check);
         if (!job) holds.push(`${rule.workflow} run ${run.databaseId}: no job named ${check}`);
         else if (job.conclusion !== "success") holds.push(`${rule.workflow} run ${run.databaseId}: ${check} reads ${job.conclusion || job.status}`);
+      }
+      if (run.event !== "merge_group" && jobs.some((j) => rule.requiredChecks.includes(j.name) && j.conclusion === "skipped")) {
+        holds.push(`run ${run.databaseId} (${run.event}): a doorstep run reads quick-only, the whole battery reads on the sha's merge_group run, or on a workflow_dispatch run`);
       }
       read = `${rule.workflow} run ${run.databaseId} reads ${rule.requiredChecks.join(", ")} success`;
     }
