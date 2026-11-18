@@ -16,7 +16,7 @@ import {
   FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus, bindFaceSlot, unbindFaceSlot, openFaceTree, readFaceIndexSync,
   type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
 } from "@lararium/node";
-import { openTreeKey, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
+import { openTreeKey, decodeSlotTree, type Credential, type SlotSpec, type SlotTree } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
 import { askYesNo, gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
@@ -678,10 +678,24 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
     say("  not rotated. A copy of the tree taken before this unbind still opens the key through the removed slot.");
     say("  to end that route now:  lares vault unbind <slot-id> --rotate   (re-reads each staying slot's route)");
   }
-  // THE ROUTE MOVED: the keep re-seats under the staying route that proved this unbind, so the removed one reaches no later keep.
-  await reseatKeepPair(u.opener.map((i) => creds[i]!).filter((c) => c !== undefined), keepSay(args)).catch((e: unknown) => keepSay(args)(`keep: the keep did not re-seat (${e instanceof Error ? e.message : String(e)}); run \`lares vault reseat\``));
+  // THE ROUTE MOVED: the keep re-seats under a route that opens the tree the unbind LEFT, proved again against `out.tree`, never
+  // under the opener of the open before it: a steward who typed the removed passphrase to authorise the unbind proves nothing now.
+  await reseatAfterUnbind(out.tree, creds, keepSay(args));
   emit(args, { ok: true, data: { slotId, rotated: out.rotated, rotationOffer: out.rotationOffer, slots: out.tree.slots.length }, human: () => undefined });
   return 0;
+}
+
+/** Re-seat the keep under what opens the tree an unbind left; where nothing typed opens it, seat nothing and name the road. */
+async function reseatAfterUnbind(tree: SlotTree, creds: readonly Credential[], say: (line: string) => void): Promise<void> {
+  try {
+    const proof = await openTreeKey(tree, creds, nativeKdf);
+    if (proof.reading !== "opens") {
+      say("keep: the route that authorised this unbind opens none of the slots that stay, so the keep seats no fresh pair under it; run `lares vault reseat` with a staying route");
+      return;
+    }
+    proof.treeKey.fill(0);
+    await reseatKeepPair(proof.opener.map((i) => creds[i]!).filter((c) => c !== undefined), say);
+  } catch (e) { say(`keep: the keep did not re-seat (${e instanceof Error ? e.message : String(e)}); run \`lares vault reseat\``); }
 }
 
 /**
