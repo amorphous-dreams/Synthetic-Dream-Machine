@@ -10,7 +10,8 @@
  *
  * HOST VERBS STAY HOME. `home` and `repo` edit this machine's homes and checkout; `help` and every `--help` render
  * from the table; `wing-of` reads a transcript on this disk; `mempalace` tends the guest comparator in this home;
- * `meme normalize|check` and `meme project <file> --to md` run over a file with no daemon. They never forward.
+ * `meme normalize|check` and `meme project <file> --to md` run over a file with no daemon; `surface` keeps the face pools,
+ * which rest on this disk, and asks the vessel only for the face no label settles. They never forward.
  *
  * NEVER INSIDE THE VESSEL. The image sets `LAR_ROOT=/lar` and `LARES_IN_CONTAINER=1`; either keeps the route local, so
  * a vessel whose environment lost its root refuses by name instead of looping (and the vessel holds neither the env
@@ -77,7 +78,7 @@ export function shimHelpLines(verb: string): string[] | null {
 }
 
 /** Commands that run on this machine whole. */
-const HOST_COMMANDS: ReadonlySet<string> = new Set(["home", "repo", "help", "wing-of", "mempalace", "mcp"]);
+const HOST_COMMANDS: ReadonlySet<string> = new Set(["home", "repo", "help", "wing-of", "mempalace", "mcp", "surface"]);
 
 /** Commands with some sub-verbs local and the rest in the vessel. */
 const MIXED_COMMANDS: ReadonlySet<string> = new Set(["meme", "rite"]);

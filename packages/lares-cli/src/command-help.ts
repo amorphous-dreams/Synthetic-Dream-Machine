@@ -498,15 +498,18 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   surface: {
-    usage: "usage: lares surface init|check|open|commit [--face N] [--launch] [-m <seam>]",
+    usage: "usage: lares surface init|check|open|commit|face [--face N] [--launch] [-m <seam>]",
     synopsis:
       "THE FACE POOL — each face's private planes rest under projections/faces/<pet name>/ (wiki, canon, stage, margins, recovery), " +
-      "and that root holds the face's one git working tree. Git runs here with an empty global config and no system config.",
+      "and that root holds the face's one git working tree. Git runs here with an empty global config and no system config. " +
+      "It runs on this machine: with no LAR_ROOT, the container house's pools rest under LARES_HOUSE/projections, its paths print " +
+      "as the host spells them, and the vessel answers only a face no label under projections/face-labels/ settles.",
     details: [
       "  lares surface init     make the worn (or named) face's root a pool: .git (0700), the house's ignore list, a local author, the roster hook",
       "  lares surface check    the roster witness over the repo standing here; exit 1 names each breach (the pre-commit hook runs it)",
       "  lares surface open     print `code -n <face root> <realm pools>`; --launch runs it; writes no workspace file",
       "  lares surface commit   commit only what the house already agrees with, under a lar: subject naming no face; never pushes",
+      "  lares surface face     the face the house resolves and its pet name (the host asks the vessel this alone)",
     ],
     examples: ["lares surface init", "lares surface open --launch", "lares surface commit -m sitting-close", "lares surface check --face 1"],
     flags: ["--face N   face index (the worn face where absent)", "--launch   (open) run the window line on this machine", "-m <seam>   (commit) the seam the subject names (by-hand where absent)"],
@@ -551,6 +554,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: ["lares surface commit", "lares surface commit -m sitting-close"],
     flags: ["--face N   face index", "-m <seam>   the seam the subject names, one slug (by-hand where absent)"],
     next: ["lares shore   # each path that read apart"],
+  },
+  "surface face": {
+    usage: "usage: lares surface face [--face N]",
+    synopsis:
+      "Name the face the house resolves (the named one, else the one standing open) and the pet name its root folder carries. " +
+      "On a container house's host the other sub-verbs read the face labels first and ask the vessel this line only where no label settles it.",
+    examples: ["lares surface face", "lares surface face --face 1 --json"],
+    flags: ["--face N   face index"],
   },
 
   tiddler: {

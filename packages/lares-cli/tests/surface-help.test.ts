@@ -21,7 +21,7 @@ describe("lares surface help", () => {
     for (const f of ["face", "launch", "message"]) expect(row!.accepts).toContain(f);
   });
 
-  test.each(["surface", "surface init", "surface check", "surface open", "surface commit"])("%s keeps a help entry with examples", (door) => {
+  test.each(["surface", "surface init", "surface check", "surface open", "surface commit", "surface face"])("%s keeps a help entry with examples", (door) => {
     const entry = COMMAND_HELP[door];
     expect(entry, door).toBeDefined();
     expect(entry!.examples.length).toBeGreaterThan(0);
