@@ -6,7 +6,8 @@ name: Held-out witnesses
 #
 # HELD-OUT RUNS PER TRAIN, NOT PER LANE PUSH. This workflow runs on each push to `develop` (the integration
 # branch) and to `main`, on a weekly clock, and by hand; a lane branch (`develop--*`, `lane/*`) never fires it,
-# so a lane reads GREEN on its CI alone and these drivers measure the merged tree after each land.
+# so a lane reads GREEN on its CI alone (the Quick gates on a lane push, ci.yml's doorstep; the whole battery on the
+# merge queue's run) and these drivers measure the merged tree after each land.
 # `tools/ci-verdict.mjs` still prints its verdict as the third reading beside the CI workflow's own, so a head
 # these drivers never measured reads UNREAD (a lane reads `held-out: not run (per train)`) and never green; the
 # vigil on `develop` reads both.
