@@ -3,7 +3,7 @@
  *
  * A workspace stands as a directory the operator bound by hand (`<root>/workspaces/<name>`; the host shim binds it at
  * `/lar/workspaces/<name>`), here a clone of the operator's own private repo. The keep cuts a `lar-house-bundle` bundle (the same
- * cut `lares export` makes: content in clear, its roster of faces sealed under the keep key, the one tree a new house imports) and rests it at `<workspace>/<into>`,
+ * cut `lares export` makes: content in clear, its roster of faces sealed to the keep pair, whose secret opens under the steward's passphrase or paper sheet, the one tree a new house imports) and rests it at `<workspace>/<into>`,
  * replacing the bundle an earlier keep left there, so the repo's history diffs file by file.
  *
  * THE LEI CARRIES THE GRANT. The operator strings a keep lei for the workspace by hand, under the ward
@@ -239,7 +239,7 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     // THE WAKE BEFORE THE CUT, AND THE PINS BACK BEFORE ANYTHING SPENDS: the cut reads disk, and a cold wiki's pages reach disk
     // only at a wake.
     const wake = await wakeColdWikis(ports.wikis);
-    // The cut answers the opened view (its faces by pet-name, read under the keep key); the bundle on disk names each by key alone.
+    // The cut answers the opened view (its faces by pet-name, read before the seal); the bundle on disk names each by key alone.
     let cut: BundleManifest;
     try { cut = await ports.cut(staging,{ workspace: wsDir, acceptOmissions: opts.acceptOmissions === true, woken: wake.woken }); }
     catch (e) { await wake.giveBack().catch(() => {}); throw e; }   // the cut's own refusal names the cause

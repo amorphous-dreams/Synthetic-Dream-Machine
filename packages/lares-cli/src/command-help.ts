@@ -62,10 +62,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   preparation reason", "--keep   keep an orphan", "--drop   drop an orphan"],
   },
   lei: {
-    usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep --branch <name> [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N]",
+    usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep --branch <name> [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N]  |  lares lei land '<pūlama answer>' [--face N]  |  lares lei terms kui|restring|unstring --rite <r> --branch <name> [--returns <n>] [--reach wide|head] [--head <h>] [--after <cid>] [--lei <cid>] [--yes] [--face N]",
     synopsis:
       "A lei grants one rite at one branch. A wide lei (the default) names no head and carries its returns; a head lei pins one head. " +
-      "The hand strings (kui), unstrings and restrings; any seat reads. Each return rests on a passing receipt for the head's tree.",
+      "The hand strings (kui), unstrings and restrings; any seat reads. Each return rests on a passing receipt for the head's tree. " +
+      "Under a pūlama the hand signs at the pūlama's hand door and `land` lands the record; `terms` prints the one JSON line that door takes " +
+      "(the face from --face, else a keep's own face, else the daemon mount; a restring's `after` from the line's tip), and writes nothing.",
     examples: [
       "lares lei show --rite kukulu --branch main --json                    # data.lei: standing, reach, returnsLeft",
       "lares lei show --rite push --branch feature/x --head <commit> --json   # ask after one head",
@@ -74,6 +76,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares lei kui --rite keep --branch house-backup --returns 6           # six keeps into the workspace house-backup",
       "lares lei unstring --rite push --branch feature/x --lei <cid>          # revoke it; a signed record, nothing deleted",
       "lares lei restring --rite push --branch feature/x --returns 2          # supersede the standing lei",
+      "lares lei land '<the pūlama's answer>'                                 # land a record the hand signed at the pūlama",
+      "lares lei terms restring --rite push --branch feature/x --returns 2    # one line: the terms `pulama-main.js lei restring` takes",
     ],
     flags: ["--rite <r>   push, kukulu or keep", "--branch <name>   the branch the lei binds (a keep lei: the workspace's name)", "--head <commit>   the head a show reads at, or a head lei pins",
       "--returns <n>   a wide lei's count of returns (more than twelve asks --yes)", "--reach wide|head   the lei's reach (wide where absent)", "--after <cid>   (kui) the lei this one follows; absent for the first",
@@ -557,6 +561,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # the carrier on stdout (a pipe too), the base on stderr; --json for the envelope",
       "lares meme patch lar:///ha.ka.ba/... --recipe lares --slot '#/x' --append note.txt --base <hash>  # one slot's body through the put's gate, resealed",
+      "lares meme get road.html --recipe lares       # a rendered record (`projection: rendered` on its source): one read; its writes refuse rendered-derives, so edit the sources",
       "lares meme put lar:///ha.ka.ba/... --recipe lares --file note.mem     # land a framed meme through the gate",
       "lares meme list --recipe lares --tree                                  # every root the wiki resolves, each slot tree nested",
       "lares meme list --bag lares                                            # every root that one bag holds",

@@ -29,6 +29,7 @@ import type { IslandCap } from "./island-caps.js";
 import type { IslandBehavior, IslandContext } from "./island-context.js";
 import type { RecordPortOptions } from "./record-port-handler.js";
 import { hasPortLease } from "./record-port-lease.js";
+import { hasRenderedTiddlers } from "./rendered-tiddler.js";
 
 /** The reboot-pending alert tiddler title. Tagged `$:/tags/Alert` so TW5's NATIVE
  *  alert area renders it (no custom banner needed). Stable title = one coalesced
@@ -178,5 +179,5 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
   // recipe · engine · projection-cleanup · registry-null. hasProjection is
   // the SHARED render cap the daemon also inherits — one VM, one surface path. Caller-supplied caps
   // fold at the tail — added capability, never a re-ordering of the base channels.
-  return composeIsland([hasHandBoundary(), dispatchCap, hasPortLease(opts.recordPort), hasProjection(opts.onBoot), hasEngineWatch(), hasRecipeWatch(), ...(opts.caps ?? [])]);
+  return composeIsland([hasHandBoundary(), dispatchCap, hasPortLease(opts.recordPort), hasProjection(opts.onBoot), hasEngineWatch(), hasRecipeWatch(), hasRenderedTiddlers(), ...(opts.caps ?? [])]);
 }

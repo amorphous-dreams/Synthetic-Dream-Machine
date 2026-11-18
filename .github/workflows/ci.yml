@@ -8,6 +8,8 @@ name: CI
 #
 # A FULL RUN RAISES AT MOST TEN JOBS AT ONCE (tools/ci-graph.test.mjs reads this file and the called e2e workflow), so a
 # second full run starts beside it inside the account's twenty running jobs:
+#   scope           — one small read, beside quick and ahead of every cell: whether this push changes canon alone
+#                     (tools/ci-ignored-paths.json), the answer the cells, the gates and the e2e doorstep read
 #   quick           — build + generated-artifact freshness (the checked-in plugin artifacts — the lar:// canonical copy AND
 #                     the `$:/` standalone distribution — must match a fresh build), typecheck, the exact-deps witness, the
 #                     the seed presence check (the hooks load the boot seed whole), the grammar artifact gates, the
@@ -35,6 +37,16 @@ name: CI
 # the `develop` ruleset requires still report on a lane head: `Quick gates` runs; `Test` and `Witnesses` report skipped
 # (GitHub reads a skipped required check as passing); `E2E / Merge shard reports` runs its one doorstep step and passes,
 # because a called job's check bears that name only while the caller runs. tools/ci-graph.test.mjs (D1-D3) holds all of it.
+#
+# THE CANON DOORSTEP. A push that changes only the canon paths tools/ci-ignored-paths.json names (meme, docs, wikis) runs
+# the doorstep set alone, on a lane or on `develop`/`main` alike: the scope job reads the push's diff against that one list
+# (develop and main against the push's own `before`, any other branch against its merge base with develop) and hands on
+# `canon`, and every job a lane push skips reads it beside the lane test. The push trigger ignores no path: a trigger filter
+# cannot vary by branch and stops the run before any job is read, so a canon pull request never saw its four required
+# checks and could not enter the queue (PR #242). A canon pull request reports all four and enqueues; a canon push to
+# `develop` costs the scope read, the Quick gates and the doorstep step, never the battery. A mixed push reads as code,
+# and `merge_group`, dispatch and a fork's pull request run whole whatever the scope reads. A scope that cannot read the
+# push answers code. tools/ci-graph.test.mjs (D4-D6) and tools/ci-ignored-paths.test.mjs hold it.
 # Defense-in-depth, not a single flag: build-freshness (CI, authoritative) is
 # backed by the always-on plugin-artifact-parity unit test in `test` (local-first,
 # runs in every `pnpm test`). Dropping one gate does not open the hole.
@@ -53,31 +65,29 @@ on:
     # The merge queue pushes each group to `gh-readonly-queue/<base>/...` and raises `merge_group` on that same sha; skipping
     # those refs here leaves the group ONE run, the merge_group one the queue waits on.
     branches-ignore: ["ci/**", "gh-readonly-queue/**"]
-    # Meme, docs and wiki paths raise no run on a push (tools/ci-ignored-paths.json; a test pins these globs equal
-    # to it). A push that changes only these leaves the in-flight run alone. pull_request stays un-ignored.
-    paths-ignore:
-      - "bags/**/*.mem"
-      - "**/*.md"
-      - "wikis/**"
-      - "CHANGELOG.md"
+    # NO `paths-ignore`: a canon-only push raises a run and its scope job answers it with the doorstep (THE CANON DOORSTEP,
+    # above). tools/ci-ignored-paths.test.mjs holds the trigger free of it.
   pull_request:
     branches: [develop, main]
   # THE MERGE QUEUE. A lane lands as a pull request into `develop` that enters the queue (the repository ruleset on `develop`
   # names the queue and its required checks); the queue builds each group on top of the groups ahead of it and raises
   # `merge_group` on the group's merge commit. That run raises the same ten jobs a push does, and on green the queue moves
-  # `develop` to that exact sha. `merge_group` reads no `paths-ignore` (GitHub filters it by branch alone), so a group
-  # of meme-only lanes still raises a full run: canon goes direct (tools/span-push.mjs), never through the queue.
+  # `develop` to that exact sha. The scope job reads a push alone, so a group of canon-only lanes still raises a full run
+  # here: a canon pull request enqueues on its doorstep checks, and canon may still go direct (tools/span-push.mjs).
   # held-out.yml answers the push of the group's merge onto `develop`, not the queue.
   merge_group:
     types: [checks_requested]
     branches: [develop]
-  # A controller runs CI by hand on a lane head whose own push the ignore list skipped: a meme-only head never
-  # raises a run of its own, and the land guard reads a head's verdict, not its ancestor's alone.
+  # A controller runs CI by hand on a lane head that wants a whole reading before it queues: a lane push, canon or code,
+  # runs the doorstep alone, and the land guard reads a head's verdict, not its ancestor's alone.
   workflow_dispatch:
 
+# A newer push to a lane or a feature span supersedes its older run. On `develop` and `main` the run in flight finishes: a
+# canon push there raises a run of its own (THE CANON DOORSTEP), and its doorstep must never cancel the battery a
+# code push before it raised, the way a canon push that raised no run never did (tools/span-push.mjs pushes canon on it).
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main' }}
 
 env:
   NODE_VERSION: "24"
@@ -94,6 +104,29 @@ env:
   PLAYWRIGHT_IMAGE: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f"
 
 jobs:
+  # ─── scope (does this push change canon alone? ONE small runner, beside quick) ───────────────
+  # It reads the push through tools/ci-ignored-paths.mjs, the one list's own module, off the runner's GITHUB_* variables and
+  # event file. Every job a canon-only push skips lists it in `needs` (Actions hands a job its direct needs' outputs alone;
+  # tools/workflow-law.test.mjs WL6 holds that); quick does not wait on it. On any event but a push it answers `false`.
+  scope:
+    name: Scope
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      canon: ${{ steps.read.outputs.canon }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The reader opens tools/ci-ignored-paths.{mjs,json} and asks git for the rest; no other file of the tree.
+          sparse-checkout: tools
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Read whether this push changes canon alone (tools/ci-ignored-paths.json)
+        id: read
+        run: node tools/ci-ignored-paths.mjs scope >> "$GITHUB_OUTPUT"
+
   # ─── quick (six small gates and the contract witness, ONE runner) ─────────────────────────
   # THE ACCOUNT RUNS ABOUT TWENTY JOBS AT ONCE, and a full run raises at most TEN (tools/ci-graph.test.mjs holds this file to
   # it), so a second full run starts beside the first. The six small gates that each held a runner of their own (build +
@@ -317,7 +350,8 @@ jobs:
   # named `Test` below is the gate: it fails closed on any missing, empty, red or unexpected cell.
   test-cells:
     name: Test cell ${{ matrix.cell }}
-    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/'))) }}
+    needs: scope
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container: ${{ matrix.container }}
@@ -474,9 +508,9 @@ jobs:
 
   test:
     name: Test
-    needs: test-cells
+    needs: [scope, test-cells]
     # Runs whatever the cells answered: a gate skipped by one red cell would read as nothing to report.
-    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/'))) }}
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -528,7 +562,8 @@ jobs:
   # them and fails closed on any missing, red or unexpected cell log.
   witness-cells:
     name: Witness cell ${{ matrix.cell }}
-    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/'))) }}
+    needs: scope
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
@@ -606,8 +641,8 @@ jobs:
 
   witnesses:
     name: Witnesses
-    needs: [quick, witness-cells]
-    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/'))) }}
+    needs: [scope, quick, witness-cells]
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -661,8 +696,11 @@ jobs:
   # The called jobs read on the run as `E2E / Shard <set> <k>/<n>` and `E2E / Merge shard reports`.
   e2e:
     name: E2E
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
+    # `!cancelled()` keeps the required `E2E / Merge shard reports` standing when the scope read itself fails: the doorstep
+    # input then reads code, and the shards answer (a lane still answers on its doorstep).
+    needs: scope
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) }}
     uses: ./.github/workflows/e2e-shards.yml
     with:
-      doorstep: ${{ (github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/'))) }}
+      doorstep: ${{ (github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) }}
 

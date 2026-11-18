@@ -83,7 +83,7 @@ export function larProjectionsHome(): string {
 
 /** `<root>/workspaces` — the operator-configured directories the host shim binds one by one (`/lar/workspaces/<name>`): a
  *  private shared wiki's workbench mirror rests in one where its share row names it (cabal-realm#/the-workbench). Outside
- *  the hearth, so no re-founding reaches it; never inside the checkout or the hearth (the shim refuses both). */
+ *  the hearth, so no re-founding reaches it; never inside the hearth (the shim refuses it; the checkout binds, road rank 4j). */
 export function larWorkspacesHome(): string {
   return join(larHouseRoot(), "workspaces");
 }

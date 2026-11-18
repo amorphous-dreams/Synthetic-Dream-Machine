@@ -22,7 +22,7 @@ export { atomicWriteFileSync } from "./fs-atomic.js";
 // vessel, so the vessel derives a keep's bundle id from the staged tree itself (`commands/rite.ts#keepStagedTree`).
 export {
   BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, BundleVerifyRefused,
-  sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder, openBundle, sealRedeclare, KEEP_SEAL_BAG,
+  sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder, openBundle, rosterView, sealRedeclare, redeclareBytes, readBundleSeat, KEEP_SEAT_FILE,
 } from "./bundle-manifest.js";
 export type {
   BundleLayer, BundleFile, BundleRow, BundleFace, BundleOmission, BundleManifest, BundleRedeclareFace, BundleShareEntry, BundleRedeclare,
@@ -201,6 +201,10 @@ export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase 
 export { workspaceRootsOf, FACES_PROJECTION_DIR, FACE_PLANES, faceSegment, faceSegmentRefusal, FaceSegmentRefused, faceRoot, faceMarginsRoot, type FaceSite, type FaceSegmentCode } from "./bag-paths.js";
 export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, isTempLayerInternalTitle, TEMP_LAYER_DIR,
   isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
+// The drain, one seat (face-pools W1, W2): the CLI's `lares watch` and the vessel's host over the worn face's pool.
+export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolWatch, poolCommitSeam, stageEditsSinceSitting, wakeStageLine, shoreLookPorts,
+  WATCHED_PLANES, SITTING_CLOSE_PREFIX, POOL_SETTLE_MS, type DrainSeat, type FacePoolWatch, type FacePoolPorts, type FacePoolWatchOptions, type SeamReading,
+  type SittingClose, type StageEdit, type WatchState, type GitRun } from "./watch-core.js";
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";
 
