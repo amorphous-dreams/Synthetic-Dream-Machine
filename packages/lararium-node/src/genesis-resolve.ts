@@ -58,7 +58,7 @@ function seedCidAt(dir: string): string | null {
   catch { return null; }
 }
 
-const PIN_FILE = "genesis-pin.json";
+const SEED_WITNESS_FILE = "genesis-pin.json";
 
 const NO_DIGESTS: GenesisDigests = Object.freeze({ engine: null, grammar: null, plugins: null, floor: null });
 
@@ -77,11 +77,11 @@ function witnessDigests(value: unknown): GenesisDigests {
 
 /** Record the seed witness a founding used, for EVERY seed source: the seed CID, where it stood, and its ratchet digests. */
 export function pinGenesisSeed(storageDir: string, resolution: GenesisResolution): void {
-  rmSync(join(storageDir, PIN_FILE), { force: true });
+  rmSync(join(storageDir, SEED_WITNESS_FILE), { force: true });
   const seedCid = seedCidAt(resolution.dir);
   if (seedCid === null) return;
   const witness = { seedCid, dir: resolution.dir, source: resolution.source, ratchets: seedDigestsAt(resolution.dir) };
-  writeFileSync(join(storageDir, PIN_FILE), JSON.stringify(witness, null, 2) + "\n");
+  writeFileSync(join(storageDir, SEED_WITNESS_FILE), JSON.stringify(witness, null, 2) + "\n");
 }
 
 /**
@@ -92,23 +92,23 @@ export function pinGenesisSeed(storageDir: string, resolution: GenesisResolution
  * Only a torn witness throws. The witness and the seed both sit on this host, so the compare reads SELF-CONSISTENCY.
  */
 export function checkGenesisPin(storageDir: string, resolution: GenesisResolution): string {
-  const path = join(storageDir, PIN_FILE);
+  const path = join(storageDir, SEED_WITNESS_FILE);
   const resolved = seedCidAt(resolution.dir);
   if (!existsSync(path)) {
     return `[genesis seed] unwitnessed — no seed witness at ${path}; this boot serves seed ${resolved ?? "(unreadable)"} ` +
       `(${resolution.source} at ${resolution.dir}) and holds nothing to compare it against`;
   }
-  let pin: { seedCid?: unknown; dir?: unknown; ratchets?: unknown };
-  try { pin = JSON.parse(readFileSync(path, "utf8")) as typeof pin; }
+  let held: { seedCid?: unknown; dir?: unknown; ratchets?: unknown };
+  try { held = JSON.parse(readFileSync(path, "utf8")) as typeof held; }
   catch { throw new Error(`[genesis seed] ${path} does not read; this vessel's founding seed is unknown — re-found it, or restore the file`); }
-  if (typeof pin.seedCid !== "string") throw new Error(`[genesis seed] ${path} names no seed CID — re-found the vessel, or restore the file`);
-  if (resolved === pin.seedCid) return `[genesis seed] witnessed ${pin.seedCid} — this boot's seed matches the seed witness (self-consistency)`;
-  const witness = `seed witness ${pin.seedCid} (founded at ${String(pin.dir)}; ${path})`;
+  if (typeof held.seedCid !== "string") throw new Error(`[genesis seed] ${path} names no seed CID — re-found the vessel, or restore the file`);
+  if (resolved === held.seedCid) return `[genesis seed] witnessed ${held.seedCid} — this boot's seed matches the seed witness (self-consistency)`;
+  const witness = `seed witness ${held.seedCid} (founded at ${String(held.dir)}; ${path})`;
   if (resolved === null) {
     return `[genesis seed] no seed reads at ${resolution.dir} (${resolution.source}) beside the ${witness}; ` +
       `the founding record keeps serving, and nothing moves at boot`;
   }
-  const words = ratchetWords(compareGenesisDigests(witnessDigests(pin.ratchets), seedDigestsAt(resolution.dir)));
+  const words = ratchetWords(compareGenesisDigests(witnessDigests(held.ratchets), seedDigestsAt(resolution.dir)));
   return `[genesis seed] a newer seed waits: ${words} — seed (offered) ${resolved} (${resolution.source} at ${resolution.dir}) ` +
     `beside the ${witness}; the founding record keeps serving, and nothing moves at boot`;
 }

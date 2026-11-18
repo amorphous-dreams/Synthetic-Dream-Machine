@@ -26,7 +26,7 @@ afterEach(() => {
   if (priorGenesis === undefined) delete process.env["LAR_GENESIS"]; else process.env["LAR_GENESIS"] = priorGenesis;
 });
 
-describe("the pin moves with a successful founding only", () => {
+describe("the seed witness moves with a successful founding only", () => {
   test("RED: a refused `found --force` keeps the old witness, so the boot on the shifted build still names the offer — CONTROL: a successful re-found witnesses the new seed", async () => {
     delete process.env["LAR_GENESIS"];
     expect(existsSync(join(SHIPPED, "seed.json"))).toBe(true);
@@ -40,11 +40,11 @@ describe("the pin moves with a successful founding only", () => {
       const pinned = JSON.parse(readFileSync(pinPath, "utf8")) as { seedCid: string };
       expect(pinned.seedCid).toMatch(/^[0-9a-f]{64}$/);
 
-      // The build shifts: the pin now names a seed (A) that the shipped one (B) no longer matches.
+      // The build shifts: the seed witness now names a seed (A) that the shipped one (B) no longer matches.
       const seedA = "a".repeat(64);
       writeFileSync(pinPath, JSON.stringify({ seedCid: seedA, dir: "/build-a/genesis", source: "shipped" }));
 
-      // A founding that refuses at custody (nothing seated) must leave A's pin standing.
+      // A founding that refuses at custody (nothing seated) must leave A's seed witness standing.
       seatCustody(null);
       await expect(ownedStore(storage, (repo) =>
         runInit({ repo, storageDir: storage, genesisDir: SHIPPED, force: true, custody: { slots: [] } }))).rejects.toThrow(/rests unopened|CustodyLocked|locked/i);
@@ -52,7 +52,7 @@ describe("the pin moves with a successful founding only", () => {
       // ...so the boot on the shifted build names the shifted seed as an offer.
       expect(checkGenesisPin(storage, resolveGenesis({ corpusRoot: r, shippedRoot: repoRoot }))).toMatch(/a newer seed waits/);
 
-      // CONTROL: a founding that succeeds pins the seed it used, and the boot passes.
+      // CONTROL: a founding that succeeds witnesses the seed it used, and the boot passes.
       await openTestCustody();
       await foundDirect({ storageDir: storage, genesisDir: SHIPPED, force: true });
       expect((JSON.parse(readFileSync(pinPath, "utf8")) as { seedCid: string }).seedCid).toBe(pinned.seedCid);
