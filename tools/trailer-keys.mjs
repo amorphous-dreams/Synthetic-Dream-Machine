@@ -14,7 +14,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 /** The closed set, in canonical spelling: the four record keys, then the attribution keys already in honest use. */
-export const KNOWN_KEYS = Object.freeze(["Breaking", "Operator-Act", "Changed", "Amends", "Co-Authored-By", "Claude-Session", "Signed-off-by"]);
+export const KNOWN_KEYS = Object.freeze(["Breaking", "Changed", "Amends", "Co-Authored-By", "Claude-Session", "Signed-off-by"]);
 
 const BY_LOWER = new Map(KNOWN_KEYS.map((k) => [k.toLowerCase(), k]));
 

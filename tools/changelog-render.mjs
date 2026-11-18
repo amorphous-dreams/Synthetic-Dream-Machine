@@ -6,9 +6,9 @@
 // The record lives in lane commits (lar:///ha.ka.ba/kahua/memory/research/record-as-projection). The renderer walks the
 // integration branch's first-parent merges in `<from>..<to>`, newest first, and for each merge M reads the trailers of the
 // commits M brought in (M^1..M^2) through git's own parser. The queue serialises merges, so the first-parent chain gives
-// one total order on this island. Output: plain markdown — Operator acts first (each naming its merge's PR title; the
-// literal `none` never lists), then Breaking, then each merge by its PR title (the merge body's first line) with its
-// Changed lines. `--json` gives the same data structured.
+// one total order on this island. Output: plain markdown — Breaking first (each naming its merge's PR title), then each
+// merge by its PR title (the merge body's first line) with its Changed lines. `--json` gives the same data structured.
+// An operator act lives in the house as a record of its own, never in git history, so no trailer carries one.
 //
 // `Amends: <sha>` in a later commit replaces the named commit's trailer lines of each key the amending commit carries;
 // the replacement renders once, under the target's merge. A target outside the range leaves the lines where they stand.
@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 import { canonicalKey, commitsWithTrailers, isRange } from "./trailer-keys.mjs";
 
 /** The keys that carry the record. */
-export const RECORD_KEYS = Object.freeze(["Breaking", "Operator-Act", "Changed", "Amends"]);
+export const RECORD_KEYS = Object.freeze(["Breaking", "Changed", "Amends"]);
 const isRecordKey = (key) => RECORD_KEYS.includes(canonicalKey(key));
 const short = (sha) => sha.slice(0, 9);
 
@@ -38,7 +38,7 @@ function resolveCommit(ref, cwd) {
   return r.status === 0 ? r.stdout.trim() : null;
 }
 
-/** The record of `<from>..<to>`: merges newest first, the operator acts and breaks gathered, and every red problem named. */
+/** The record of `<from>..<to>`: merges newest first, the breaks gathered, and every red problem named. */
 export function renderRange(range, { cwd } = {}) {
   const problems = [];
   const merges = commitsWithTrailers(["--first-parent", "--merges", range], { cwd }).map((m) => {
@@ -78,18 +78,15 @@ export function renderRange(range, { cwd } = {}) {
     }
   }
 
-  const operatorActs = [];
   const breaking = [];
   const out = merges.map((m) => {
     const lines = m.lane.flatMap((c) => c.lines);
     const values = (key) => lines.filter((l) => l.key === key).map((l) => l.value);
-    const acts = values("Operator-Act").filter((v) => v.toLowerCase() !== "none");
     const breaks = values("Breaking");
-    for (const act of acts) operatorActs.push({ act, sha: m.sha, title: m.title });
     for (const text of breaks) breaking.push({ text, sha: m.sha, title: m.title });
-    return { sha: m.sha, title: m.title, operatorActs: acts, breaking: breaks, changed: values("Changed") };
+    return { sha: m.sha, title: m.title, breaking: breaks, changed: values("Changed") };
   });
-  return { range, operatorActs, breaking, merges: out, problems };
+  return { range, breaking, merges: out, problems };
 }
 
 /** The record as plain markdown, newest merge first. */
@@ -101,7 +98,6 @@ export function toMarkdown(data) {
     else lines.push(...items);
     lines.push("");
   };
-  section("Operator acts", data.operatorActs.map((a) => `- ${a.act} — ${a.title} (\`${short(a.sha)}\`)`));
   section("Breaking", data.breaking.map((b) => `- ${b.text} — ${b.title} (\`${short(b.sha)}\`)`));
   lines.push("## Merges", "");
   if (data.merges.length === 0) lines.push("_none_", "");
