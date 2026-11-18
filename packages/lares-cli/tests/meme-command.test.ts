@@ -139,6 +139,60 @@ describe("lares meme get", () => {
     h.reply = { uri: "lar:///t/x", meme: null };
     expect(await cmdMeme(memeArgs(["get", "lar:///t/x"], { recipe: "default" }))).toBe(3);
   });
+
+  /** Run one get with exactly these flags (no `--json` default), catching stdout bytes and stderr lines. */
+  const carrierRun = async (flags: Record<string, boolean>): Promise<{ code: number; out: string; err: string[] }> => {
+    h.reply = { uri: "lar:///t/x", meme: { text: "<<^ code=`&#x0001;`>> body\n", canonicalHash: "sha256:9" } };
+    const out: string[] = [];
+    const err: string[] = [];
+    const w = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { out.push(String(m)); return true; });
+    const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
+    const tty = process.stdout.isTTY;
+    // A PIPE: stdout holds no terminal, where every other verb answers JSON.
+    Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true });
+    try {
+      const code = await cmdMeme({ command: "meme", positional: ["get", "lar:///t/x"], options: { recipe: "default" }, flags } as unknown as ParsedArgs);
+      return { code, out: out.join(""), err };
+    } finally {
+      Object.defineProperty(process.stdout, "isTTY", { value: tty, configurable: true });
+      w.mockRestore(); e.mockRestore();
+    }
+  };
+
+  test("★ through a pipe, a bare get answers the CARRIER on stdout and the base on stderr as one line ★", async () => {
+    const r = await carrierRun({});
+    expect(r.code).toBe(0);
+    expect(r.out).toBe("<<^ code=`&#x0001;`>> body\n");
+    expect(r.err).toEqual(["base: sha256:9"]);
+  });
+
+  test("`--no-json` stays a working alias of the carrier default", async () => {
+    const r = await carrierRun({ json: false });
+    expect(r.out).toBe("<<^ code=`&#x0001;`>> body\n");
+    expect(r.err).toEqual(["base: sha256:9"]);
+  });
+
+  test("CONTROL: `--json` asks for the envelope, the base inside it", async () => {
+    const r = await carrierRun({ json: true });
+    expect(r.code).toBe(0);
+    expect(JSON.parse(r.out)["data"]).toEqual({ uri: "lar:///t/x", text: "<<^ code=`&#x0001;`>> body\n", canonicalHash: "sha256:9" });
+  });
+
+  test("through a pipe, an absent meme refuses in prose on stderr and leaves stdout empty, so a redirect never saves an error as a meme", async () => {
+    h.reply = { uri: "lar:///t/x", meme: null };
+    const err: string[] = [];
+    const w = vi.spyOn(process.stdout, "write").mockImplementation(() => { throw new Error("stdout took bytes"); });
+    const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
+    const tty = process.stdout.isTTY;
+    Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true });
+    try {
+      expect(await cmdMeme({ command: "meme", positional: ["get", "lar:///t/x"], options: { recipe: "default" }, flags: {} } as unknown as ParsedArgs)).toBe(3);
+    } finally {
+      Object.defineProperty(process.stdout, "isTTY", { value: tty, configurable: true });
+      w.mockRestore(); e.mockRestore();
+    }
+    expect(err.join(" ")).toMatch(/no meme at lar:\/\/\/t\/x/);
+  });
 });
 
 describe("lares meme list — roots by default, --tree nests the slots", () => {
