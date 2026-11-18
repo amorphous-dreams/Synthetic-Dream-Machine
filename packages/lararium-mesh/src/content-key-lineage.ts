@@ -323,6 +323,31 @@ export class KeyLineage {
   followsRemoval(id: KeyVersionId, act: string): boolean {
     return this.#someAncestor(id, (fact) => fact.cause.kind === "removal" && fact.cause.acts.includes(act));
   }
+  /**
+   * THE NEAREST REMOVAL WITHIN A SPAN: walking back from `from` (each version itself first) through counted versions of
+   * `span` alone, the nearest version a removal minted; versions at one distance read by id, ascending, so every reader
+   * names the same one. `gap`: no removal met, and the walk reached a parent this lineage never counted, which may hide
+   * one. Null: the span's counted past from there holds no removal.
+   */
+  nearestRemoval(from: readonly KeyVersionId[], span: KeyVersionId): { readonly removal: KeyVersionFact } | { readonly gap: true } | null {
+    let ring = [...new Set(from)].sort(ascending);
+    const seen = new Set<KeyVersionId>();
+    let gap = false;
+    while (ring.length > 0) {
+      const next = new Set<KeyVersionId>();
+      for (const id of ring) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const fact = this.#facts.get(id);
+        if (fact === undefined) { gap = true; continue; }
+        if (fact.span !== span) continue;
+        if (fact.cause.kind === "removal") return { removal: fact };
+        for (const parent of fact.parents) next.add(parent);
+      }
+      ring = [...next].sort(ascending);
+    }
+    return gap ? { gap: true } : null;
+  }
 }
 
 // ── The roll ────────────────────────────────────────────────────────────────────────────────────

@@ -613,31 +613,39 @@ export function judgeReseal(record: VerifiedRecord<"re-seal">, held: {
     held.manifests.filter((m) => VERIFIED.has(m) && m.kind === "manifest" && m.body.bag === bag && m.body.keyVersion === id);
   const missing: ResealBinding[] = [];
   const unbound = (binding: ResealBinding): ResealVerdict => ({ verdict: "refused", refusal: "reseal-unbound", binding });
-  // THE SUCCESSOR: a counted removal version whose cause names every act the record cites.
+  // THE SUCCESSOR: the counted version the record rides under. The roll it answers stands as the nearest removal within
+  // the successor's span, the successor itself first, and that removal's cause names every act the record cites; a head
+  // after the removal (a join, a later write) answers the same roll.
   const successor = factOf(keyVersion);
   if (successor === null) missing.push("successor", "replaced");
   else {
-    const cause = successor.cause;
-    if (cause.kind !== "removal" || !record.private.acts.every((act) => cause.acts.includes(act))) return unbound("successor");
     // THE SPAN FENCE (#/epochs): a replacement never carries a body across spans. A replaced version the reader counted
     // in another span than the successor's binds nothing; the span rides each version's clear part.
     const replacedFact = factOf(replaced);
     if (replacedFact !== null && replacedFact.span !== successor.span) return unbound("replaced");
-    // THE REPLACED VERSION stands upstream of the successor. A walk that meets a version the reader never counted leaves
-    // the binding unread, never complete.
-    const seen = new Set<KeyVersionId>();
-    const queue = [...successor.parents];
-    let found = false, gap = false;
-    while (queue.length > 0) {
-      const id = queue.shift()!;
-      if (seen.has(id)) continue;
-      seen.add(id);
-      if (id === replaced) { found = true; break; }
-      const one = factOf(id);
-      if (one === null) { gap = true; continue; }
-      queue.push(...one.parents);
+    const nearest = held.lineage.nearestRemoval([keyVersion], successor.span);
+    if (nearest === null) return unbound("successor");
+    if (!("removal" in nearest)) missing.push("successor", "replaced");
+    else {
+      const roll = nearest.removal;
+      const cause = roll.cause;
+      if (cause.kind !== "removal" || !record.private.acts.every((act) => cause.acts.includes(act))) return unbound("successor");
+      // THE REPLACED VERSION stands upstream of that removal. A walk that meets a version the reader never counted leaves
+      // the binding unread, never complete.
+      const seen = new Set<KeyVersionId>();
+      const queue = [...roll.parents];
+      let found = false, gap = false;
+      while (queue.length > 0) {
+        const id = queue.shift()!;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        if (id === replaced) { found = true; break; }
+        const one = factOf(id);
+        if (one === null) { gap = true; continue; }
+        queue.push(...one.parents);
+      }
+      if (!found) { if (gap) missing.push("replaced"); else return unbound("replaced"); }
     }
-    if (!found) { if (gap) missing.push("replaced"); else return unbound("replaced"); }
   }
   // THE REPLACED VALUE: a manifest under the replaced version names its address under the entry the record names.
   const fromEntries = manifestsUnder(replaced).flatMap((m) => m.body.entries).filter((e) => e.address === from);
