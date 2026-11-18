@@ -4,7 +4,7 @@
  *   light    read the route on a real terminal, hand it to the hand door: the one act that opens a key
  *   admit    read the route on a real terminal, hand it to the hand door: the route PROVES against the lit holder (it opens
  *            nothing), and the image the host reports rests admitted, so a vessel raised from it wakes served
- *   lock · status · tessera · image <digest> [seed line…]   one frame each, no route
+ *   lock · status · tessera · image <digest> | image '{"digest","seed"}'   one frame each, no route
  *
  * ── A ROUTE RIDES A REAL TERMINAL AND NOTHING ELSE ──────────────────────────────────────────────
  * `readRoute` reads with no echo from a terminal, and refuses anything else by name: no pipe, no flag, no argument and no
@@ -70,7 +70,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = "usage: pulama-main.js serve | light | admit [face…] | lock | status | image <digest> [seed line…] | tessera";
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -99,8 +99,14 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     return ports.ask({ op: "admit", credentials: [{ kind: "passphrase", passphrase }], faces: args.map(Number) });
   }
   if ((verb === "lock" || verb === "status" || verb === "tessera") && arg === undefined) return ports.ask({ op: verb });
-  if (verb === "image" && typeof arg === "string") return ports.ask({ op: "image", digest: arg });
-  // `image <digest> <seed line…>`: the words after the digest ride as the seed line the host read.
-  if (verb === "image" && Array.isArray(arg) && arg.length >= 2) return ports.ask({ op: "image", digest: arg[0], seed: arg.slice(1).join(" ") });
+  if (verb === "image" && typeof arg === "string") {
+    // `image '{"digest":…,"seed":…}'`: the host's structured frame, the seed line beside the digest; `image <digest>` carries none.
+    if (!arg.trimStart().startsWith("{")) return ports.ask({ op: "image", digest: arg });
+    let frame: unknown;
+    try { frame = JSON.parse(arg); } catch { throw new PulamaVerbUsage(); }
+    const f = (typeof frame === "object" && frame !== null && !Array.isArray(frame) ? frame : {}) as Record<string, unknown>;
+    if (typeof f["digest"] !== "string" || (f["seed"] !== undefined && typeof f["seed"] !== "string")) throw new PulamaVerbUsage();
+    return ports.ask({ op: "image", digest: f["digest"], ...(typeof f["seed"] === "string" ? { seed: f["seed"] } : {}) });
+  }
   throw new PulamaVerbUsage();
 }
