@@ -59,10 +59,10 @@ test("G2 RED: a lane push with an open pull request raises ONE CI run, and a for
   assert.ok(triggers(ci).includes("pull_request"), "a fork's pull request has no push in this repository: the trigger stays");
 });
 
-test("G2d RED: a pull request into `develop` (the integration branch) or `main` raises CI, and the merge queue hook names `develop`", () => {
+test("G2d RED: a pull request into `develop` (the integration branch) or `main` raises CI, and the merge queue answers on `develop`", () => {
   const ci = liveFiles(ROOT)["ci.yml"];
   assert.match(ci, /^ {2}pull_request:\n {4}branches: \[develop, main\]$/m);
-  assert.match(ci, /^ {2}# {5}branches: \[develop\]$/m);
+  assert.match(ci, /^ {2}merge_group:\n {4}types: \[checks_requested\]\n {4}branches: \[develop\]$/m);
 });
 
 test("G2b CONTROL: a workflow with no fork guard raises a run per event, a guarded one only its push", () => {
@@ -75,11 +75,17 @@ test("G2b CONTROL: a workflow with no fork guard raises a run per event, a guard
   assert.equal(runsPerLanePush("on:\n  schedule:\n"), 0);
 });
 
-test("G2c: the merge queue's hook stands as a comment in ci.yml's on: block, and no job guards merge_group off", () => {
+test("G2c RED: the merge queue raises ONE full CI run per group, and held-out waits for the group's merge onto develop", () => {
   const files = liveFiles(ROOT);
-  assert.match(files["ci.yml"], /^ {2}# MERGE QUEUE HOOK \(not wired yet\)/m, "ci.yml lost the comment hook where merge_group will go");
-  assert.ok(!triggers(files["ci.yml"]).includes("merge_group"), "merge_group is wired: its lane (trigger, ref ignore, security-read gate) owns that");
-  for (const j of readJobs(files["ci.yml"])) if (j.ifText && !mergeGroupOnly(j.ifText)) assert.doesNotMatch(j.ifText, /merge_group/, `${j.id} guards merge_group off`);
+  const ci = files["ci.yml"];
+  assert.ok(triggers(ci).includes("merge_group"), "ci.yml answers no merge_group: the queue would wait on a check that never comes");
+  // The queue pushes each group to `gh-readonly-queue/<base>/...`; the push trigger skipping those refs leaves merge_group the one run.
+  const ignore = /^ {4}branches-ignore: \[(.*)\]$/m.exec(ci)?.[1] ?? "";
+  assert.match(ignore, /"gh-readonly-queue\/\*\*"/, "a queue group's ref push raises a second full run beside merge_group");
+  for (const j of readJobs(ci)) if (j.ifText && !mergeGroupOnly(j.ifText)) assert.doesNotMatch(j.ifText, /merge_group/, `${j.id} guards merge_group off`);
+  assert.equal(graphNumbers("ci.yml", files, { event: "merge_group" }).total, graphNumbers("ci.yml", files).total, "the queue's run raises fewer jobs than a push run");
+  const heldOut = readFileSync(join(ROOT, ".github/workflows/held-out.yml"), "utf8");
+  assert.ok(!triggers(heldOut).includes("merge_group"), "held-out rides the queue: its container cells would hold every group past the CI verdict");
 });
 
 test("G3a CONTROL: held-out holds its cells to the cap already (the row retires: it read green at the cut)", () => {
