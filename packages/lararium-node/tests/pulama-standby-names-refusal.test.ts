@@ -34,7 +34,7 @@ describe("RED door-names-the-composition-refusal: the stand-by remembers its las
       holder, onLog: () => {},
       recompose: async (sovereign) => (sovereign && refuse ? { standing: "herm", refused: "outside-the-lei: …" } : { standing: sovereign ? "hearth" : "herm" }),
     });
-    expect(await by.dial()).toEqual({ session: false, waits: "composition-refused" });
+    expect(await by.dial()).toEqual({ session: false, waits: "composition-refused", refused: "outside-the-lei: …" });
     expect(holder.isUnlocked()).toBe(false);
     expect(by.waits()).toBe("composition-refused");
     refuse = false;

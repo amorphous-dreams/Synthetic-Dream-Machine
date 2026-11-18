@@ -505,7 +505,7 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
     case "witness": {
       const note = args.options["note"];
       if (!note) throw new UsageError("a witness mark carries a note — what stood observed (--note)");
-      const witnessed = await crossingStep<{ by: string }>("crossing.witness", { handleIndex: handIndex(args), note, ward: await gatherWardRoute("lares nexus seal grow witness") });
+      const witnessed = await crossingStep<{ by: string }>("crossing.witness", { handleIndex: handIndex(args), note, ward: await gatherWardRoute("lares nexus seal grow witness", handIndex(args)) });
       emit(args, { ok: true, data: { witnessed }, human: () => console.log(`witnessed by ${witnessed.by.slice(0, 16)}… — "${note}"`) });
       return 0;
     }

@@ -51,7 +51,11 @@ export function vesselPulamaHolder(homes: CustodyHomes, env: Readonly<Record<str
 }
 
 /** What a dial left standing: a session, or the reading the pūlama waits on. */
-export interface PulamaStandingBy { readonly session: boolean; readonly waits: string | null }
+export interface PulamaStandingBy {
+  readonly session: boolean; readonly waits: string | null;
+  /** The composition's own fault, where the vessel refused to compose over the session it was served (`composition-refused`). */
+  readonly refused?: string;
+}
 
 /**
  * Seat the listener that composes at the floor when the session drops, and answer the one `dial` both the boot and the
@@ -94,7 +98,7 @@ export function pulamaStandBy(a: {
     leaving = true;
     try { await a.holder.lock(); } finally { leaving = false; }
     a.onLog("the sovereign composition did not stand on the pūlama's session; the session left");
-    return { session: false, waits: "composition-refused" };
+    return { session: false, waits: "composition-refused", refused: stood.refused };
   }
   // ONE KŪKULU, ONE OFFER: the vessel composed over its session, so the offer that opened it goes. A restart after this wears nothing.
   if (a.consumeOffer?.()) a.onLog("the kūkulu offer served its one session and left the config home");

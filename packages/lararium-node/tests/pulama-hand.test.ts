@@ -118,7 +118,7 @@ describe("a vessel finds its pūlama by one name and stands by it", () => {
     let consumed = 0;
     const thrown = fx.vessel();
     const falls = pulamaStandBy({ holder: thrown, onLog: () => {}, consumeOffer: () => { consumed += 1; return true; }, recompose: async (sovereign) => { if (sovereign) throw new Error("the composition fell over"); return { standing: "floor" }; } });
-    expect(await falls.dial()).toEqual({ session: false, waits: "composition-refused" });
+    expect(await falls.dial()).toEqual({ session: false, waits: "composition-refused", refused: "the composition fell over" });
     expect(thrown.isUnlocked()).toBe(false);
     expect(consumed).toBe(0);
     await fx.server.lock();
