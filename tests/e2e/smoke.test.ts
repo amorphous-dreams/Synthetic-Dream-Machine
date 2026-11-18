@@ -4,7 +4,7 @@
  * against a staged (or live) instance. Current canon only:
  *
  *   1. the vessel boots to live with the lares hearth wiki seated (quine default)
- *   2. the invariant plane carries the operator-minted lares-bag oracle
+ *   2. the vessel catalog carries the operator-minted lares-bag pointer
  *   3. LOAD feeds the hearth carrier-borne (boot meme → 17 records)
  *   4. wiki init + add-bag write the user registry (catalog composition lane)
  *
@@ -12,9 +12,9 @@
  * re-seeded, or asserted against genesis state.
  *
  * THE BOOT LOG IS READ AS IT GROWS, NEVER AS ONE SNAPSHOT. The harness resolves `targetInstance()` on
- * `phase → live`; the `live — wiki:` line and the oracle's operator-mint lares-bag record land a beat after
+ * `phase → live`; the `live — wiki:` line and the catalog's operator-mint lares-bag record land a beat after
  * that, and under whole-set load the beat outlasts a test's first read. So test 1 waits on its causal line
- * in the vessel's own log, and test 2 waits until the oracle doc's STORED history holds the record. Each
+ * in the vessel's own log, and test 2 waits until the catalog doc's STORED history holds the record. Each
  * wait ends on its event; its ceiling bounds a hang and nothing else, and a miss names what never arrived.
  */
 
@@ -23,9 +23,9 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { join } from "node:path";
 import { readFileSync } from "node:fs";
-import { targetInstance, bootDocUrl, vesselStorageDir, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, bootDocUrl, vesselStorageDir, type LarInstance } from "../harness/instance.js";
 import { memeticWikitextDeserializer } from "../../packages/lararium-tw5/src/deserializer.js";
-import { plainRecord } from "../../packages/lararium-mesh/src/stored-value.js";
+import { realmStandingDocUrl } from "../../packages/lararium-mesh/src/realm-bag.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
@@ -62,54 +62,51 @@ async function untilLogLine(instance: LarInstance, line: RegExp, ceilingMs = WAI
 type OracleRecord = { tiddler?: { text?: string }; meta?: { authority?: string } };
 
 /**
- * Wait until the oracle doc's STORED history holds the record at `title`, read off the vessel's own storage through
- * a throwaway repo per read (one repo loads a doc's storage once). The wait ends on the record; the ceiling bounds a
- * hang, and a miss names the record and the doc it never reached.
+ * Wait until the catalog doc's STORED history names the Kahu realm's standing registration for `bag` (the live system
+ * documents rest in the realm, never in a catalog row), and answer the document url it names plus whether a catalog row
+ * ALSO names the bag. Read off the vessel's own storage through a throwaway repo per read.
  */
-async function untilOracleHolds(instance: LarInstance, oracleUrl: string, title: string, ceilingMs = WAIT_CEILING_MS): Promise<OracleRecord> {
+async function untilRealmNames(instance: LarInstance, catalogUrl: string, bag: string, ceilingMs = WAIT_CEILING_MS): Promise<{ docUrl: string; catalogRow: boolean }> {
   const deadline = Date.now() + ceilingMs;
   for (;;) {
     const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(instance)) });
     try {
-      const isle = await repo.find(oracleUrl as never);
-      const rec = (isle.doc() as { tiddlers?: Record<string, OracleRecord> })?.tiddlers?.[title];
-      if (rec) return plainRecord(rec as never) as OracleRecord;
-    } catch { /* the stored doc is not yet loadable — the next read sees what has landed since */ }
+      const isle = await repo.find(catalogUrl as never);
+      const doc = isle.doc() as { tiddlers?: Record<string, OracleRecord> };
+      const docUrl = realmStandingDocUrl(doc as never, bag);
+      if (docUrl) return { docUrl, catalogRow: doc?.tiddlers?.[bag] !== undefined };
+    } catch { /* the stored doc is not yet loadable: the next read sees what has landed since */ }
     finally { await repo.shutdown().catch(() => {}); }
-    if (Date.now() > deadline) throw new Error(`the stored oracle doc ${oracleUrl} never held ${title} within ${ceilingMs}ms`);
+    if (Date.now() > deadline) throw new Error(`the stored catalog doc ${catalogUrl} never named a realm registration for ${bag} within ${ceilingMs}ms`);
     await new Promise((r) => setTimeout(r, READ_PACE_MS * 5));
   }
 }
 
-describe("smoke — the vessel stands", () => {
+describe.skipIf(!stagedTarget)("smoke — the vessel stands", () => {
   test("staged vessel reaches live with the lares hearth wiki seated", async () => {
-    if (lar.mode !== "staged") return;   // a live hearth already stands; its log is its own
     expect(lar.bootLog()).toContain("phase → live");
     expect(await untilLogLine(lar, /live — wiki: lares/)).toMatch(/live — wiki: lares/);
   }, TEST_BUDGET_MS);
 
-  test("the invariant plane carries the operator-minted lares-bag oracle", async () => {
-    if (lar.mode !== "staged") return;   // raw-storage read assumes an owned root
-    // The lares-bag oracle pointer rides the oracle plane (operator ruling
-    // 2026-06-16: the oracle, lararium and lares docs stand separate).
-    await untilLogLine(lar, /oracle:\s+automerge:[A-Za-z0-9]+/);
-    const oracleUrl = bootDocUrl(lar, "oracle");
-    expect(oracleUrl).toBeTruthy();
-    const rec = await untilOracleHolds(lar, oracleUrl!, LARES_URI);
-    expect(rec.tiddler?.text).toMatch(/^automerge:/);
-    expect(rec.meta?.authority).toBe("operator-mint");
+  test("the Kahu realm names the live lares document, and no catalog row does", async () => {
+    await untilLogLine(lar, /catalog:\s+automerge:[A-Za-z0-9]+/);
+    const catalogUrl = bootDocUrl(lar, "catalog");
+    expect(catalogUrl).toBeTruthy();
+    const named = await untilRealmNames(lar, catalogUrl!, LARES_URI);
+    expect(named.docUrl).toMatch(/^automerge:/);
+    // CONTROL: the catalog row that once named it retired with slice 3
+    expect(named.catalogRow).toBe(false);
   }, TEST_BUDGET_MS);
 
   test("CONTROL: a wait on a line the vessel never prints fails, naming the line", async () => {
-    if (lar.mode !== "staged") return;
     await expect(untilLogLine(lar, /a line no vessel prints/, 300)).rejects.toThrow(/never printed \/a line no vessel prints\//);
   });
 });
 
-describe("smoke — residency canon through the real CLI", () => {
+describe.skipIf(!stagedTarget)("smoke — residency canon through the real CLI", () => {
   test("LOAD feeds the hearth carrier-borne: boot meme → parent + every ahu child", async () => {
-    if (lar.mode !== "staged") return;   // mutating gesture — staged only
-    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", LARES_URI, "--yes", "--json"]);
+    const working = "lar:///ha.ka.ba/wikis/lares/working";
+    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", working, "--yes", "--json"]);
     expect(r.json?.["ok"]).toBe(true);
     const data = r.json?.["data"] as { count: number; titles: string[] };
     // DERIVE FROM THE DESERIALIZER, never from a formula over the source. `1 + ahuCount` encoded a
@@ -123,8 +120,7 @@ describe("smoke — residency canon through the real CLI", () => {
   });
 
   test("LOAD refuses a carrier-less gesture loudly (islands never fetch)", async () => {
-    if (lar.mode !== "staged") return;
-    const r = await lar.cli(["act", "LOAD", "--source-uri", "https://example.org/nope", "--to", LARES_URI, "--yes", "--json"]);
+    const r = await lar.cli(["act", "LOAD", "--source-uri", "https://example.org/nope", "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     // The CLI's error rides a STRUCTURED envelope — `{ code, message, hint? }`. Stringifying the whole
     // object yields "[object Object]", which matches no assertion and names no cause.
@@ -132,8 +128,16 @@ describe("smoke — residency canon through the real CLI", () => {
     expect(typeof err === "string" ? err : (err?.message ?? "")).toMatch(/no carriers/);
   });
 
+  test("LOAD into canon names the working slot and its promotion MOVE", async () => {
+    const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", LARES_URI, "--yes", "--json"]);
+    expect(r.json?.["ok"]).toBe(false);
+    const err = r.json?.["error"] as { message?: string } | undefined;
+    expect(err?.message).toMatch(/load-into-canon/);
+    expect(err?.message).toContain("lar:///ha.ka.ba/wikis/lares/working");
+    expect(err?.message).toContain("MOVE");
+  });
+
   test("wiki init + add-bag compose the user registry", async () => {
-    if (lar.mode !== "staged") return;   // mints registry entries — staged only
     const g = await lar.cli(["wiki", "init", "garden", "--json"]);
     expect(g.json?.["ok"]).toBe(true);
     expect((g.json?.["data"] as { recipeUri?: string })?.recipeUri).toMatch(/recipes\/garden/);
@@ -148,7 +152,6 @@ describe("smoke — residency canon through the real CLI", () => {
   });
 
   test("bag stats answers with the operator's real identity (no placeholder DID)", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["bag", "stats"]);
     expect(r.code).toBe(0);
     expect(r.stdout + r.stderr).not.toMatch(/bad hex length/);

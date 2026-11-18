@@ -1,0 +1,80 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-scout/luna-scout`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-09 (file date) — source `.lares-scratch/placement-scout/luna-scout.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-scout/luna-scout"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-scout/luna-scout"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! luna-scout.md — research, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-scout/luna-scout.md` (research, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-scout/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''Owed-Scout: Lares (Tasked Spirit)''
+
+!!! 1. Page proposal ID
+
+The page dispatches `kahua-propose` through the `$:/lararium.local.vm/verb/...` tiddler, then tries to read the outcome from a TW5 filter over `bags/daemon/outcomes/` ([[stage-walk.e2e.test.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-web/tests/e2e/stage-walk.e2e.test.ts:130]]). That read cannot work after outcomes moved into the unmounted control document. The verb itself returns `{ id, cid }` ([[kahua-door.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-node/src/kahua-door.ts:127]]); the dispatcher wraps its result in the answer ([[store-door-verbs.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-node/src/store-door-verbs.ts:372]]). Smallest cure: have the page dispatch path expose that answer back over its verb channel and render its `id`, or add a dedicated read verb if the page cannot observe dispatch answers. Leaving this unresolved makes S4 wait forever or lose the proposal ID.
+
+''Verdict: SETTLED'' — the proposal answer already carries the ID; the filter read is obsolete. ''Cure: M.''
+
+!!! 2. Stalled full suites
+
+The node config already caps workers at four and serializes known listener, nested-worker, and Python-holder suites ([[vitest.config.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-node/vitest.config.ts:21]], [[lines 145–180|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-node/vitest.config.ts:145]]). Scratch roots are created per worker and removed on process exit ([[vitest-scratch-house.mjs|/home/joshu/.lares-scratch/placement-int/wt/tools/vitest-scratch-house.mjs:15]]); browser tests use isolated Chromium/Firefox projects ([[vitest.config.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-browser/vitest.config.ts:40]]). Those reduce contention but do not establish which open handle stalled these runs. Likely classes to inspect include Repo/WebSocket/worker lifetimes and browser teardown. First diagnostic: rerun the same full command with `--reporter=hanging-process`; Vitest documents it specifically for finding processes blocking safe exit ([[Vitest reporter docs|https://main.vitest.dev/guide/reporters]]). Only after identifying the handle should you compare `--pool=forks` or increase `--teardownTimeout`; neither is yet a demonstrated cure.
+
+''Verdict: UNCERTAIN'' — the deciding evidence is the hanging-process output from the stalled run. ''Cure: M.''
+
+!!! 3. Two browser import failures
+
+I could not identify two failing files from static source inspection alone. The changed browser tests I inspected import names that still exist (`readWornPersonaMount`, `personaPanelStateArgs`, `openBrowserDaemonVm`, and `daemonFaceCanonBag`). No specific missing generated asset surfaced in those paths. The exact two filenames and causes depend on the import-error output from the full browser run; guessing would mislabel them, and shipping unresolved risks silently skipping broken tests.
+
+''Verdict: UNCERTAIN'' — the deciding evidence is the two Vitest import error messages or stack traces. ''Cure: S.''
+
+!!! 4. Daemon withheld-ingest test
+
+The current test already asserts the replacement structural rule: INGEST into `bags/daemon` rejects with `disk-wave-placement`, while the face daemon canon accepts those same titles; it also checks that `bags/control` and `bags/secret` reject disk waves ([[daemon-withheld-ingest.test.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-tw5/tests/daemon-withheld-ingest.test.ts:46]], [[lines 69–85|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-tw5/tests/daemon-withheld-ingest.test.ts:69]]). Keep assertions about placement and ordinary content acceptance, not title-shaped refusal. Test secret-home LOAD refusal separately at the home’s read boundary once that API is available. Otherwise, title-based tests would preserve an obsolete boundary and miss a placement regression.
+
+''Verdict: SETTLED'' — the checked-in test already uses the structural placement assertion. ''Cure: S.''
+
+!!! 5. Projector change and regression tests
+
+The projector diff removes both `disk-projection: no` exclusions and the `isVolatileVmUri` title-based barrier; projection now depends on the mirror’s placement/provenance and effect-record withholding. Accordingly, the standoff test’s expectation that setting `disk-projection: no` clears an alert asserts retired behavior ([[projection-standoff-alert.test.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-node/tests/projection-standoff-alert.test.ts:61]]). Its other tests still cover genuine standoff deduplication and resolution. The foreign-title test’s LOCI refusal case is likewise stale: fragments and bag-manifest titles are no longer blanket title barriers ([[foreign-title-projection.test.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-node/tests/foreign-title-projection.test.ts:482]]). The projector diff shows the policy change; preserve tests for occupied-path refusal, origin-bag/mirror selection, and actual effect-record withholding. Keeping the retired expectations would falsely fail the new placement contract.
+
+''Verdict: SETTLED'' — these named assertions encode removed title/field rules; the standoff tests’ remaining coverage still checks real behavior. ''Cure: S.''
+
+!!! 6. CLI carry paths
+
+Export scans `projections/wikis/daemon-<F>` for the face’s working content and `projections/bags/kahua-<F>` for its stage; it explicitly skips `projections/bags/daemon` ([[carry.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lares-cli/src/commands/carry.ts:303]], [[lines 330–344|/home/joshu/.lares-scratch/placement-int/wt/packages/lares-cli/src/commands/carry.ts:330]]). Import restores through mirror directories and calls the placement-aware ingest door ([[carry.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lares-cli/src/commands/carry.ts:537]]). I found no `observe/daemon` source in this carry path. The residual stale surface is the module’s top-level description, which still describes daemon control content under `bags/daemon` ([[carry.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lares-cli/src/commands/carry.ts:8]]); update that wording as part of cleanup. A mistaken path could omit valid face content or imply control data travels in bundles.
+
+''Verdict: SETTLED'' — the loops use face-specific projection folders; stale description remains. ''Cure: S.''
+
+!!! 7. Bootstrap and restart address
+
+The current social bootstrap stores the daemon document URL and face social-plane URLs, while `runInit`’s place bootstrap writes only the daemon URL ([[init.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-node/src/commands/init.ts:119]]). The control document persists because the daemon document names its URL under `CONTROL_HOME_ID`, and boot re-resolves or creates it through `standControlHome` ([[control-home.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-mesh/src/control-home.ts:24]], [[open-node-vessel.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-node/src/open-node-vessel.ts:2351]]). The secret document’s address is not present in the bootstrap shape shown here, and the control pointer does not substitute for a secret pointer. If the only secret URL is in a transient handle or a checkpoint that cannot be reached without that URL, restart cannot reliably recover it. The deciding fact is whether item A adds a durable secret URL reference reachable from the bootstrap or another independently discoverable home.
+
+''Verdict: UNCERTAIN'' — item A’s durable secret-address persistence decides restart recovery. ''Cure: M.''
+
+!!! 8. Automerge `shareConfig`
+
+Automerge Repo defines `announce` as whether to proactively announce a document and `access` as whether the peer may access it ([[ShareConfig docs|https://automerge.org/automerge-repo/types/_automerge_automerge-repo.ShareConfig.html]]). A known URL can still be requested if `access` permits it; “not announced” alone does not block sync. This code uses `shareConfigOf` as an access verdict as well as an announce verdict ([[open-node-vessel.ts|/home/joshu/.lares-scratch/placement-int/wt/packages/lararium-node/src/open-node-vessel.ts:1314]]). So a device-private document remains protected only if that verdict denies other-device access, even when another device learns its URL.
+
+''Verdict: SETTLED'' — `announce: false` alone is insufficient; the access policy decides leakage. ''Cure: S.''
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QUxPkwJ4mR6hwmFCB8iie54FHKBJYaO8UCNt3qrEAMQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

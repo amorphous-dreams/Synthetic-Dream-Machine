@@ -38,9 +38,12 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { readFileSync, existsSync } from "node:fs";
 import { join, extname, resolve } from "node:path";
 import { chromium, type Browser, type Page, type Worker } from "playwright";
+import { armTestCustody } from "./browser-test-custody.js";
 import { frameCarrier } from "@lararium/memetic-frame";
 
 const WEB_DIR   = process.env["LAR_WEB_DIR"]  ?? resolve("packages/lararium-web/dist");
+/** The genesis root the page reads its seed and CAS off (`/genesis/*`): the web build carries none of its own. */
+const GENESIS_DIR = process.env["LAR_GENESIS"] ?? resolve("genesis");
 const WEB_PORT  = Number.parseInt(process.env["LAR_WEB_PORT"] ?? "5173", 10);
 /** The operator's vessel this browser belongs to — reached over the shared namespace. */
 const VESSEL_WS = process.env["LAR_VESSEL_WS"] ?? "ws://localhost:8080/ws";
@@ -69,7 +72,8 @@ function serveWeb(): Promise<() => void> {
   const handler = (q: IncomingMessage, s: ServerResponse): void => {
     const rel = (q.url ?? "/").split("?")[0]!;
     const file = rel === "/" || rel === "" ? "index.html" : rel.replace(/^\//, "");
-    const path = join(WEB_DIR, file);
+    // `/genesis/*` reads the genesis root, as a hearth's Pronaos serves its own; everything else reads the built surface.
+    const path = file.startsWith("genesis/") ? join(GENESIS_DIR, file.slice("genesis/".length)) : join(WEB_DIR, file);
     // A single-page web surface answers its own routes; anything unfound falls back to the shell.
     const served = existsSync(path) && !path.endsWith("/") ? path : join(WEB_DIR, "index.html");
     try {
@@ -90,7 +94,7 @@ interface Reading {
   readonly subtle: boolean;
   readonly ed25519: string;
   /**
-   * The minted vessel's PUBLIC verifying key, hex — the value a `device-admit` needs.
+   * The minted vessel's PUBLIC verifying key, hex — the value a fleet-join request names.
    *
    * A browser vessel that mints and cannot say WHAT it minted leaves the admit unwalkable: the
    * operator's node has nothing to name. Public material by construction, and the private half never
@@ -210,6 +214,8 @@ async function main(): Promise<number> {
   try {
     browser = await chromium.launch({ args: ["--no-sandbox"] });   // container: no user namespace
     const page = await browser.newPage();
+    // A fresh vessel founds its first face over a slot: the harness types the published test route into the form.
+    await armTestCustody(page, LABEL);
     page.on("pageerror", (e) => console.error(`[browser-vessel] page: ${e.message}`));
     await page.goto(`http://localhost:${WEB_PORT}/`, { waitUntil: "domcontentloaded" });
 

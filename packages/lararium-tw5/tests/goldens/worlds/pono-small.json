@@ -1,0 +1,13 @@
+{
+  "title": "pono-small",
+  "tiddlers": [
+    {"title":"Alpha","text":"Alpha links to [[Beta]] and embeds {{Gamma}}.","tags":["topic","listed"],"list":["Beta","Gamma"],"category":"guide"},
+    {"title":"Beta","text":"Beta body.","tags":["topic"],"rank":"2"},
+    {"title":"Gamma","text":"Gamma body.","tags":["reference"],"rank":"3"},
+    {"title":"Delta","text":"Delta body.","tags":["topic","reference"],"rank":"1"},
+    {"title":"$:/config/pono-small","text":"system record","tags":["system"]},
+    {"title":"$:/plugins/pono-small/plugin-info","text":"{}","type":"application/json","plugin-type":"plugin"},
+    {"title":"$:/plugins/pono-small/startup","text":"exports.name = 'pono-small'; exports.startup = function() {};","type":"application/javascript","module-type":"startup"},
+    {"title":"$:/Shadow/Example","text":"shadow text","tags":["topic"]}
+  ]
+}

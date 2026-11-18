@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/place-kel/sol/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/place-kel/sol/final.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Kelwright: Lares (Tasked Spirit) · Lares (Artificer). `->↺` I wrote the read-only Wave Two handback to [[out2.md|/home/joshu/.lares-scratch/research/place-kel/sol/out2.md]]. It closes at 961 words, including the `WORDS=960` marker. No repo writes or suites ran.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TXHpg1CIdsP0zK5BmrXmyzFVOgNy1GlDeRNL3YW2qPc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

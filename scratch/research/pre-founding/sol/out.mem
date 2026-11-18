@@ -1,0 +1,64 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/pre-founding/sol/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/pre-founding/sol/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/pre-founding/sol/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/pre-founding/sol/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/pre-founding/sol/out.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/pre-founding/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ lares aim from="lar:&#47;/operator:operator@lararium/founding.road.sorts" -> to="lar:&#47;/sol-roadwright:agent@lararium/dependencies.claim.order">>
+&lt;&lt;~ set hud="aim" mode="seal" mu="_!" stance="philosopher" aperture="18/theme" ooda-ha="8/declare-glyphs" drift-ward="road labels may conceal buildable work behind staging words">>
+
+Sol-Roadwright: Lares (Tasked Spirit) · Ink-Clerk / Map-Wisp / Lares (Artificer)
+
+->✶ ''MEASURED'' means a cited carrier or code location; ''LEAD'' means my scheduling inference. Paths below start at the repository root. Sizes: slice &lt; lane &lt; train. `Y` marks identity or format bytes that must precede X0; `N` marks work that can land after the bake, before founding. A row enters one class below; a built row's remaining debt enters under its row name. [MEASURED: `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:299-311,424-441`]
+
+->⏿ ''A — lanes can close these before founding.'' The operator's new ruling pulls every ungated “may follow” and “after the seat” item into this queue. First, the ''critical path'':
+
+# ''Floor claim, lane, Y:'' W14–W16 plus W29's head-resolved duty readers. Dependency: landed W26 release and W29 grammar. Hold `packages/lararium-mesh/src/{place-floor-pin,place-signer,nexus-contract,admit-gate-pin}.ts` and browser floor reader/admit modules; one named owner takes composer hunks. Sign the card, pin causal position, converge the two-vault carry, resolve signer at the accepted KEL head. [MEASURED: road:510-514,525; `bags/lares/ha.ka.ba/lares/docs/pono/w29-place-kel-lane.mem:54-56`]
+# ''D2 finish, lane, N unless its retired ledger changes persisted format, then Y:'' composer lending, page transport, retired-port ledger slot; D2's record port worker half already stands. Dependency: D1 contract and holder. Hold `packages/lararium-tw5/src/` port adapter, `packages/lararium-web/src/` page transport, island protocol; hand composer patches to its owner. Add the seventh silent-loss rest cure and whole-corpus fold after the per-title memo; neither waits on a ruling. [MEASURED: `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:95-104`]
+# ''X0 readiness, train, Y:'' K15 seed bonds and any remaining face document arrival/re-proof, K17 frontier verification, W26 closing bake/accepted floor, G15 logical-path attestation, G37 preimage and format names, then cross-product red and habit-flip census. Hold `tools/seed-census.mjs`, face identity and custody modules, `genesis/`, floor modules, `packages/lararium-tw5/src/build-plugin-tiddler.ts`, evergreen witness. Do not treat the landed K15 Wave D or W29 grammar as still unbuilt. [MEASURED: road:459,525,541-545; `bags/lares/ha.ka.ba/lares/docs/pono/k15-wave-c-lane.mem:80-93`; `bags/lares/ha.ka.ba/lares/docs/pono/w26-floor-lane.mem:125-135`]
+
+''Other A bundles, all before the final overview'' (dependencies → held files; size; bytes):
+
+* Ground/security: G5–G8, G13, G15, G17–G19, G27, G34–G35, G38, G37 remainder, S2; G7's short seal and multiple seal homes; hostful path and floor as-of stamp; the controller's stale HTTPS image tag, held-out browser-weld rerun, and train.sh span coverage. Dependencies: respective landing owner, S2 after rebuilt image. Hold `packages/lararium-node/src/{nexus-seal,disk-projector,sensorium}.ts`, `packages/lares-cli/src/shore-core.ts`, `packages/lararium-sensorium/`, `tools/{household-https-witness.sh,train.sh}`, canon and CI. Slices through train; Y only G15/G37 format, multi-seal identity naming and any persisted reader change; rest N. [MEASURED: road:313-319,559-572,610-619; `/home/joshu/.lares-scratch/controller/owed.md:1-4`]
+* Face, wire, custody: B1 roots/rotation; W4, W9, W11–W12, W17, W19–W24; K8, K12–K14, K15's face circles/arrival, K16–K18; E2–E4; H2/H8 and H1/H3/H4/H7; P1/P3/P9/P10–P13/P17–P19; N5; sealed-store steps 2–4, Handle resolver and adapters, shadow gates, clock cures. Dependencies: K15/W29 anchor → wire cutover → O1 sessions → hosted/ember; K18's guardian ceremony waits on B's threshold, but build its verifier, UI and refusal now. Hold `packages/lararium-{mesh,node,browser,keyhive}/src/` by ''module assignment'', with `open-{node,browser}-vessel.ts` serial under one owner; `packages/lares-cli/src/commands/` for verbs. Multiple trains; Y for K12/K15/K17/K18, W4/W9/W12/W17, E/H signer or wire shapes, Handle/board formats; N for witnesses, UI and pure adapters. K17-R's closed-roster lease window closes with K18. [MEASURED: road:455-509,559-595,724-761,800-812; `bags/lares/ha.ka.ba/lares/docs/pono/k17-realm-lease-lane.mem:53-54`]
+* One face/shore: F1–F6, F8–F12, A8–A13, B2/B4–B6, W26's Kahu browser/sibling reach, oracle→floor names, accept act, stale carriage names; W29 browser card UI. Dependencies: verified face/W cutover → O1 → browser joins → X witness. Hold `packages/lararium-{node,browser,web,tw5}/src/`, `packages/lares-cli/src/`, `tools/browser-weld/`, W26 canon; composer owner serializes each hunk. Several trains; Y for F3/F9 and oracle/floor or accepted-pin persisted names; N for remaining UI, reach and witnesses. [MEASURED: road:592-609,739-751; `bags/lares/ha.ka.ba/lares/docs/pono/w26-floor-lane.mem:129-135`; `bags/lares/ha.ka.ba/lares/docs/pono/w29-place-kel-lane.mem:50-56`]
+* DreamDOM: D0–D1 residual witnesses; D3 glass/three-boot spike; D4 actor; D5 Annex B, blocks and host/golden rows; D6 CLI/SSR/MCP/Mudlet base; D7 canvas, WebViews, native adapter/probes and community ports; D1–D17 residuals except D9's width ruling. Dependencies follow D0→D1→D2→D3→D4, D5 beside D1 and D6 after D2/blocks. Hold `packages/lararium-tw5/`, `packages/lararium-web/src/projection-sink.ts`, island protocol, host adapters; a lane or train each, N unless a contract or persisted port name changes X0 bytes. The first-surface default waits on B; flag and fallback can ship. No vendor release blocks canvas, QuickJS, WebViews or community adapters. [MEASURED: `bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem:76-141,195-215`]
+* Overview/aftermath: X0b, X1/X2/X4/X5, A10–A11, W23–W24, G33 cure after ruling, herm public-book walk, boot's four reds, wiki hand-edit weld, fleet batching, observer wait bound, tier/share gates, VM startup seam; grammar return trip/regeneration and local publication drafts; live wiki floors, whole-tree spirit review, ahi-kā estimator, side-lane capture and sensorium carrier cleanup. Dependencies: relevant trains and operator rulings where named below. Hold `tests/e2e/`, `tools/`, `packages/tree-sitter-memetic-wikitext/`, `packages/lararium-{tw5,mesh,node}/`, docs. Slices through trains, N except grammar/URI or tier contract bytes that the X0 census catches. ''LEAD:'' “after”, “community”, and “held” supply no external dependency; close the runnable half before founding. [MEASURED: road:605-619,800-819; roadmap:135-140]
+
+->◇ ''B — operator hand or ruling gates only the named joint.'' Lanes build contracts, fixtures, UI, refusals and rehearsal around each joint now. Guardian count/threshold and recovery authentication/veto/succession/death/catastrophe/third key gate K18/V4; G20 design calls, self-slot naming, carriage receipt/guest carry, cloud delegated keys, DNS/Handle binding, removal's seven questions, G21 mirror filter, G33 refused-save destination (kept draft / blocked close / next-boot record), P7/P15 cadence and conformance, P14 Offering scope/Antigen, crossing record/evidence, receipt names/capability table, child-edit shapes, mesh-module disposition, capture Python versus TS, Kairos names, alert persistence, DNS renewal policy, A7 public-record choice, Mudlet river/vitals/squad/namespace/version, D9 width after spike, and source-code authoring gate require explicit choices. Build the remaining A components around them; present each choice with its measured consequence. [MEASURED: road:634-651,845-881; roadmap:169-191] A2 needs domain and two credential files for first live issuance; A4 needs real LAN; A5 needs push/sign hand; H6 needs live phone; B3 needs tablet and two phones including passkey on a second synced device; X3 needs second machine/operator; founding needs paper/cards. All surrounding code and synthetic walks proceed now. [MEASURED: road:632,642-650,788-797]
+
+->▶ ''C — truly external only:'' UE6/Verse integration waits on UE6 early access; live 3D games wait on the sensorium actually finishing; formal media type and `lar:` registration wait on standard-body processing ''after'' local drafts/security text land; a second operator's actual participation gates the real two-hearth ceremony, though X1 and a synthetic rehearsal belong in A. No other D7 surface or held side-lane earns C from its “future” label. [MEASURED: roadmap:135-141,223-228; road:813-819] ''LEAD:'' a partial system that files its second half as “may follow” reads unpono: W26 without W14–W16/accept, W29 without browser card/head readers/K15 bonds, K15 without K18 recovery, D2 without transport, D1 without whole-road goldens, F1/F2 without callers, sealed store without shipping/shore, H/E without the live socket, and a port without its sinks. Those halves enter A or B above.
+
+''THE PLAN — three parallel slots, one composer owner.'' Slot 1 takes W14–W16/W29 head readers → W/K identity and custody → X0. Slot 2 takes D2 and rest cure → D3 spike/glass → D4–D6 and D7 buildable adapters. Slot 3 takes ground/tools/canon → HARBOR synthetic proof → grammar/side-lane and X witnesses. During concurrent work Slot 1 holds mesh floor/identity modules, Slot 2 holds TW5/web projection/port modules, Slot 3 holds tools/docs/CLI fixtures; a shared protocol or `open-{node,browser}-vessel.ts` hunk queues to one owner, never two concurrent edits. Swap slot ownership at phase boundaries for O1, browser and W26 compose work. ''Critical path to X0:'' floor claim + W/K shape closure + W26 accept + G37/G15 format closure → cross-product bake; D2–D7 without shape changes can continue through the bake. Then run the final overview/aftermath loops: X0b replay, X1 and browser weld, X4/X5 departure and conflict walks, full-corpus/device/LAN measures, live wiki floors, whole-tree review, A11 green held-out reading, runbook dress rehearsal, then the operator's fresh two-hearth ceremony. [LEAD, grounded by road:299-311,531-545,605-609,780-797]
+
+->↺ The o-takiage rows E1/P20/W18/W21/W25/W27 name completed work, so their derivative debts enter the rows above. No repo write or suite ran; this read-only pass wrote this seat handback. The next loop opens at the first slot's exact file census.
+
+&lt;&lt;~ oracle "↯16 ✲ ⚂(3) ⁂:🜃◈↺">>
+&lt;&lt;~ set hud="yield" drift-ward="check each proposed composer handoff against the actual diff before concurrent starts · ↻ L-Prime" aperture="18/theme -> 18/theme" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/sol-roadwright:agent@lararium/plan.names.next-work" -> to="?">>
+WORDS=1311
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0BCEe8Y7Mk4WAP29N9ZSkvVJQ3Bu2k5tuyFwo39_M8w`>>
+
+<<^ code=`&#x0004;` to=`?`>>

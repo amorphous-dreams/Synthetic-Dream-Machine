@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/deps-920f2ed4a33be964aa0817391cafc4d8a4b9d779`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-01 (file date) — source `.lares-scratch/controller/ship/deps-920f2ed4a33be964aa0817391cafc4d8a4b9d779.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/deps-920f2ed4a33be964aa0817391cafc4d8a4b9d779"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/deps-920f2ed4a33be964aa0817391cafc4d8a4b9d779"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! deps-920f2ed4a33be964aa0817391cafc4d8a4b9d779.md — plan, 2026-11-01
+
+Verbatim scratch record `.lares-scratch/controller/ship/deps-920f2ed4a33be964aa0817391cafc4d8a4b9d779.md` (plan, file date 2026-11-01); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-lane-deps-head-920f2ed4a33be964aa0817391caf`>>
+
+! SHIP · lane deps · head 920f2ed4a33be964aa0817391cafc4d8a4b9d779
+read: blind Opus Supply-Reader at fc01faa12 (deps/security-read.md): supply chain clean (47/47 integrity, no new names, scripts or publishers, vitest advisory cured), HOLD only on the tree-sitter artifact pin record; controller delta read fc01faa12..920f2ed4a33be964aa0817391cafc4d8a4b9d779: aa70dde23 pins artifact fields to 0.27.1 (gate:fold-ts), cabf99ce2 merges the span (Train R), 920f2ed4a re-cuts packages/AGENTS.md with the 3.5.0 law line. CI 41385235967 green. 2026-11-01.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;61TMy1mU28Q_wQLrLA61Q7jkU70lM2oD1DXOph8hdpk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -108,7 +108,7 @@ export function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
   // walk checks the list against that digest and each box's signature, so a torn or padded list breaks the chain
   // where every reader sees it, never vanishing here as an event the board seems not to hold.
   const enrolRaw = p["enrolments"];
-  // A rotation and a veto carry no `kind`; a guardian enrolment names one, and the cid commits it. Any string rides
+  // A rotation and a veto carry no `kind`; a recovery contact enrolment names one, and the cid commits it. Any string rides
   // through as the board holds it, so a kind the reader knows not refuses at the walk, where every reader sees it.
   if (p["kind"] !== undefined && typeof p["kind"] !== "string")              return null;
   void PERSONA_KEL_DOMAIN;
@@ -125,6 +125,8 @@ export function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
     ...(typeof p["vetoSig"] === "string" ? { vetoSig: p["vetoSig"] as string } : {}),
     ...(typeof p["kind"] === "string" ? { kind: p["kind"] as NonNullable<PersonaKelEvent["kind"]> } : {}),
     ...(typeof p["enrolSig"] === "string" ? { enrolSig: p["enrolSig"] as string } : {}),
+    ...(typeof p["enrolCount"] === "number" ? { enrolCount: p["enrolCount"] } : {}),
+    ...(typeof p["enrolThreshold"] === "number" ? { enrolThreshold: p["enrolThreshold"] } : {}),
     recoveryRoster,
     recoveryThreshold: p["recoveryThreshold"] as number,
     prevEventCid:      prevRaw,

@@ -1,0 +1,80 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b2-doors-cells-collide`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/b2-doors-cells-collide.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b2-doors-cells-collide"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b2-doors-cells-collide"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b2-doors-cells-collide.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/b2-doors-cells-collide.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b2-doors-cells-collide-2026-10-31-main-27bc0cb6b`>>
+
+! b2-doors-cells collide (Anvil-Two: Lares (Tasked Spirit)), 2026-10-31, main 27bc0cb6b
+Read: worker-handle.ts, open-node-vessel.ts 510-535, 680-775, 1060-1090, 1514-1630, 1810-1830, 1966-2000, 2080-2102, 2480-2492, 3262-3285, 3730-3745; main.ts 396-450, 537-560; custody-frames.ts 215-300; custody-seat.ts; kahu-realm.ts 519-579; core-caps.ts 100-260; face-gate-server.ts stand/close; http-face-dispatcher.ts registerUpgrade. Not run: nothing (read-only).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/new-findings`>>
+
+!! New findings
+N1 (CONFIRMED by reading, low reach, stale-door). setCasDoor(resolveCidThroughDoor) at open-node-vessel.ts:1609 but its `stood.push(... setCasDoor(null))` sits at :1816. Between them `await sovereign.walkRecords()` (:1627) and the dial/carriage awaits can reject (main.ts:408 names "a row it cannot read" as the expected refusal). standDown (:520) then runs a list that lacks the cas entry: the dead composition's door survives its refusal until the floor composition's own :1609. Rest (:1083/1084), dyad (:2092/2100), custody (:2488/2490) push in the very next statement and are safe. Reach: bytes are CID-verified (`readVerifiedCasBlobFromFs`), no worker live at that point; fails stale, not open. Red: boot with a `sovereign.walkRecords` that rejects; assert the cas door answers a miss after the refusal. Control: refusal after :1816 also nulls it.
+N2 (CONFIRMED order hazard, UNRUN). standSyncGates (:1514) has no torn-down guard and several awaits (:1524 deviceBook.refresh, :1525 gateNexuses, :1541 registerRelayPlanes, :1545 standIntentRelay). Teardown order is reverse-push: the knocks entry (:1553) and intent relay (:1552) go down FIRST; the `sync gates` entry that closes gateServer (:769) goes down LAST, after the awaited daemon-island/pool shutdowns. An in-flight sweep (void-ed at :3273, or via resweepGates at :1277) landing in that window finds gateServer open (`stand` throws only when closed, face-gate-server.ts:383), stands a gate, calls dispatcher.registerUpgrade, and `syncStood.set` after the knocks entry already drained. The route stays on the caller's dispatcher (main.ts hands ONE dispatcher across recompositions). The path derives from custody root + nexus, so the next composition's registerUpgrade throws "upgrade path already owned" (http-face-dispatcher.ts:113) and its gates do not stand (warn at :3273). Fails closed (socket destroyed) but kills sync until restart. Red: slow `gateNexuses`, call teardown mid-flight, assert dispatcher.held() knocks==0 and a second composition stands its gate. two-phase-boot.test.mjs `held()` baseline checks only the no-in-flight case.
+N3 (CONFIRMED). More process-globals than four: custody-seat.ts:51 `seats`/`whenNeeded`, node-vessel-identity.ts:814 `mountedFace`, kahu-realm.ts:137 `CLASSIFICATION_WRITES` (every holder subscribes to every classification write, any vessel), hosting-carry.ts:268, switch-act-log.ts:119, face-route.ts:16/23, main.ts:152, plus env LAR_ROOT (e2e uses withLarRoot, which mutates process.env). T9 alone does not make two vessels per process lawful; it removes four of at least eight.
+N4 (CONFIRMED, minor). Teardown order drops the custody (:2490) and dyad (:2100) doors BEFORE the daemon island shuts down (:1828 pushed earlier, so runs later). An island export in flight at teardown gets `written:false`/`aside`. Fails closed; not shown to lose a needed write (no shutdown-time export found).
+N5 (CONFIRMED). `systemCanon` is optional in the keel type (open-mesh open-vessel-core.ts:112, `keel.systemCanon?.()` :191). Node supplies it; kahuProtected stays null forever if a keel omits it, and the guard reads that as withhold-nothing. Type does not force it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/per-finding-rulings`>>
+
+!! Per-finding rulings
+F1 NARROWED. (a) "sealed under a neighbour's KEY" REFUTED: the key is a process singleton (custody-seat `seatedCustody`, persistVeilArchive -> writeCustodyRow, identity-anchors.ts:114); the door varies only `personaGroupId`. Real leak: a floor vessel's island export would seal a veil archive row under the neighbour's FACE. (b) "main.ts opens one, so no sequence" NARROWED: main.ts recompose (main.ts:438, driven by unlock/lock) tears down then composes anew many times in one process, serialised on custody-frames' one chain (:178, :420). Doors span successive vessels, never overlapping; standDown (:520) continues past a faulting entry. (c) Tests: tools/two-phase-boot.test.mjs opens three compositions sequentially (floor, sovereign, floor) with teardown between, plus two refused boots; persona-ring e2e and nexus-rekey boot one. No overlap anywhere in tests, tools, daemon, cli (herm.ts routes to openNodeHerm). So F1 stands as latent and unreachable; its reach is wrong-face seal, not wrong-key. Fail-open on overlap only.
+F2 CONFIRMED. Evidence: sole inbound door to the Repo is gateSync.wss (:770), reached only through knocks registered at :1537 inside standSyncGates; sole callers :3272/3273 (resweepGates null until then, :1277 uses `?.`). kahuProtected set unconditionally at :1986-1988 in systemCanon, before openDaemon and so before the outbound dial (:2339) and before any island peer. Window real but closed by order. Also the holder itself starts incomplete=false, map empty; first recount is queued synchronously at :1991 so pending() flips true with no await between. antigenRing (:1198) and edgeShadows (:1416) set before keel. b3's independent finding agrees (not re-read here). Fail-open if the order breaks. Red: mutant moving the :3272 block before systemCanon must go red; unit: holder before first recount withholds all.
+TDZ CONFIRMED, latent. `let intentRelay` :1551 after the arrow body reads it at :1544. Only call sites :3272/3273 run after :1551. Because standSyncGates is async, an early call would be a swallowed rejection (warn), i.e. gates silently absent: fail closed. Reachable today: no. Cure is a move of one declaration; the T10 cell kind should include it.
+answerBrowserDyadAsk CONFIRMED nowhere in src: only tools/capability-inventory.mjs:116 (scan-name list) and dyad-door.test.ts:161 (negative regex). No definition anywhere in packages, tools, bags. Dead scan name; burn with the cut.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/per-verdict-rulings`>>
+
+!! Per-verdict rulings
+T9 CUT-READY after u1: AGREE, with additions: the red set must include N1 (door stands/drops as a pair) and an order test for N4; record-by-reference as wave 1 says. Do not claim it enables two vessels per process (N3).
+T10 NEEDS-RULING: AGREE with the two-kind lean (stand cells refuse by name; verdict inputs closed-default). Add: kahuProtected null -> withhold-all is a real old-shape cure; make systemCanon required in the keel type for the node (N5). Sequence behind T6 AND u1 AND ralias: AGREE. The `kahuStandingVessel` set-after-recount trap (:1991 vs :1992) stands as wave 1 said.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sources`>>
+
+!! Sources (date-stamped 2026-10-31; search only, not opened in full)
+* Automerge Repo SharePolicy / ShareConfig docs (v2.5.5, v2.6.0-alpha): signature (peerId, documentId?) -> Promise&lt;boolean>; newer split into access + announce. Search result only. Default value NOT confirmed; read source before citing.
+* Saltzer and Schroeder fail-safe defaults via shostack.org blog and arc42 "fail safe defaults" page: default = lack of access; missing config denies. Search only, secondary.
+Not found/not searched: TW5 module startup ordering, vitest fixture practice, DI-without-globals. Outside practice (fail-safe defaults) agrees with house law on kahuProtected; no conflict seen.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/merged-recommendation`>>
+
+!! Merged recommendation
+* T9: CUT-READY after u1. Red-first: (a) two records, distinct answers; (b) one-record control; (c) teardown isolation; (d) floor never inherits a custody door; (e) class gate by name; (f) late-stand by reference; (g) N1 refused-boot-between-1609-and-1816 leaves no cas door. Lean: explicit threading, no ambient fallback.
+* T10: NEEDS-RULING, lean two kinds; stand cells after T6 pins order; verdict cells ride T11; fold N5 and the TDZ declaration move in.
+* Separate lane, not a cut: N2 (stale sweep vs teardown), red-first as above; N1 can ride T9.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ueOXyKVj8rBxgvbxljfjsrtAPQOuUxC4UhuNgsd7Yoc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

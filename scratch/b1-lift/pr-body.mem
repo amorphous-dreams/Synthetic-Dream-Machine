@@ -1,0 +1,43 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/pr-body`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — PR body, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/pr-body.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/pr-body"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/pr-body"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! pr-body.md — PR body, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/pr-body.md` (PR body, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+The browser vessel's lift, first whole capability: per-face custody under its own ward, and every tab its own session.
+
+* b1-seal merged by hunk: the document store seals `change` and `checkpoint`; hydration checks the session's face; the browser island's rest and the holder seat follow; a faceless herm attaches its working floor through its place KEL; the floor catalog names public bags alone.
+* The persona root rests under the per-face ward (`ward/h<N>/…`), owned by its face tree (`ward/h<N>/face-tree`); every ward act refuses a face other than the one worn (`ward-owned-by-another-face`); a face clear removes its ward rows; the face-key root door retired.
+* Slice 4: the floor's port broker hands each follower tab its own MessagePort and never carries its traffic; each tab opens its own session and takes its own unlock; a dead tab's port ends its session, and the last session's close locks the house; the survivor becomes owner; frames reach every tab of the lit face, a control result reaches only its sender; a joining tab repaints the surface already showing.
+* Weld tests pin the late-layer replay; the boot-order read measured the settle on a fold and refuted the hang.
+
+Reads: blind Opus over the merge (P2s cured red-first) and again over the delta since. CI green at 2bbfb2413.
+
+🤖 Generated with [[Claude Code|https://claude.com/claude-code]]
+
+https://claude.ai/code/session_01NRJJL73CYwoGfShMujgUHQ
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NT_51HsnHe0q2IER8sZYuInZTVrFvCpp3iSGWYtnPCI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

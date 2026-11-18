@@ -1,0 +1,151 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/glass2/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/glass2/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/glass2/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/glass2/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/glass2/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/glass2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/glass-lane-ii-out-2026-11-11`>>
+
+! Glass lane II — out (Glass-Wright II: Lares (Tasked Spirit), 2026-11-11)
+
+Branch `feature/green-jello-dinosaur-5--glass2`, cut at 407f3251d and pushed. Two commits:
+* `18c05e779 lar:///floor.reaches.wiki/oracle-replay` — the floor's rows now land in every island's engine.
+* `a8f6058d0 lar:///pane.holds.viewport/glass-sheet` — the mirror's host acts as the engine's viewport; the pane's ground uses the palette colour; weld M2 updated to match.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-three-defects-read`>>
+
+!! The three defects, read
+
+# ''The sidebar escaped the pane.'' Confirmed: at 1400×900 the sidebar painted at (1050, 0), 350×900, on the window.
+#* Cure: `packages/lararium-tw5/src/glass-sheet.ts` (`shadowSheet`, `GLASS_FRAME_SHEET`), called by `glass-camera.ts` on every sheet render.
+#** `html` → `:host`; `body…` → `.lar-mirror…` (the container now carries `lar-mirror tc-body`).
+#** A width-only <code>&#64;media</code> → <code>&#64;container</code> on the host. <code>&#64;media print</code> and every other media query keep their text.
+#** The frame: `:host { container-type: inline-size; contain: layout paint; height: 80vh; min-height: 24rem; overflow: hidden }` and `.lar-mirror { height: 100%; overflow: auto }`.
+#* Result: TW5's `position: fixed` lays out against the host. The story scrolls inside `.lar-mirror` while a fixed sidebar holds still. The 960px breakpoint reads the pane's width.
+#* In the page (pane 758px) the sidebar now flows above the story, as TW5's narrow layout puts it. Past 960px it reads fixed inside the pane.
+# ''House canon at pure local boot.'' The controller's reading of the MIRROR did not reproduce. A real dropped link sat one layer down, in the worker island.
+#* Five fresh smokes from this tree (smoke1–4 at 407f3251d, smoke5 on the cure):
+#** `#mirror.larMirrorReading` gave story = defaults = `lar:///ha.ka.ba/lares/docs/welcome`, palette = `…gruvbox-dark#/palette`, `tiddler-background` #282828, `page-background` #1d2021.
+#** The skinny first paint shows welcome on a white frame: skinny carries no `text`, so palette colours arrive only at full.
+#** The floor at seed `cc9720d2…` carries welcome (tagged Landing) and both palette slots (read straight from genesis/cas).
+#** The port snapshot reads `composite.entries()`, which includes the floor face.
+#* ''The dropped link:'' `floorReadFace` had no `emitInitialReplay`. The recipe replays only doc slots, so no projection ever heard the floor's rows or the oracle seed's rows. The worker island's own engine opened ''GettingStarted'': smoke4 `#projection` titles = `["GettingStarted"]`.
+#* Cure: the face replays its pinned rows, first-wins, carrying `bag` = the slot. Then it replays the live seed, filtered of every title a floor row shadows. `markSyncComplete` passes through. `island-recipe` passes `bagId: slot`. One seam serves node and browser.
+#* smoke5: the worker's projection titles = `["lar:///ha.ka.ba/lares/docs/welcome"]`.
+#* Neither the browser recipe nor the `/genesis/cas` fetch nor the port filter dropped records. The `#/palette` title resolves as a TW5 tiddler.
+#* My guess at the controller's GettingStarted screenshot, not proven: either it read the worker floor before the mirror stood, or a first snapshot that raced. Five runs showed neither.
+# ''`data-lar-mirror` read null: the smoke reads too early.'' `smoke.mjs` takes `mirror` in its boot loop, which breaks at `live`, and in the projection loop, which ends once the worker's projection carries bytes. Both run before `standMirror` returns.
+#* With the instrumented copy waiting for the word, every run read `full`, with `data-lar-shown="mirror"`.
+#* `page-mirror.ts` still marks the host (the `mark` calls stand unchanged). Nothing needed restoring.
+
+''Owed row closed:'' the mirror's background. `body.tc-body` → `.lar-mirror.tc-body`, so the ground reads `page-background` (#1d2021). Weld M2 styled-ground reads it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/files-touched`>>
+
+!! Files touched
+* `packages/lararium-mesh/src/floor-manifest.ts` (`floorReadFace`: replay, `bagId`)
+* `packages/lararium-tw5/src/island-recipe.ts` (passes `bagId`)
+* `packages/lararium-tw5/src/glass-sheet.ts` (new), `packages/lararium-tw5/src/glass-camera.ts`
+* `packages/lararium-web/src/page-mirror.ts` (`larMirrorReading` carries `breakpoint`)
+* `tools/browser-weld/mirror-read.mjs`: new `sidebarInPane`; M2 styled-sidebar now reads "inside the pane, on the breakpoint's side" instead of "fixed"; new M2 styled-ground. `tools/browser-weld/weld.mjs` probe gains the boxes and the ground.
+* Tests: `packages/lararium-tw5/tests/island-floor-replay.test.ts` (new), `packages/lararium-tw5/tests/glass-sheet.test.ts` (new), `packages/lararium-web/tests/glass-theme.page.test.ts` (+2), `tools/browser-weld-mirror.test.mjs` (+2, the fixtures widened)
+* `CHANGELOG.md` (two Added rows)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/page-paths-touched`>>
+
+!! Page paths touched (for the operator's eye)
+* `#mirror` now stands 80vh tall (min 24rem) and scrolls inside itself. Its ground is gruvbox. The sidebar sits inside it.
+* `#mirror .lar-mirror` also carries class `tc-body`.
+* `#mirror.larMirrorReading.breakpoint`: new read-only field.
+* No change to `index.html` or to the attributes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tests-proved-alone`>>
+
+!! Tests proved alone
+* ''tw5:'' island-floor-replay (red proven before the cure: both tests), glass-sheet, island-floor-mount, and suites `tests/island*`, `tests/glass*`, tree-boot-set, `kernel*`, genesis-boot, daemon-hand-boundary, browser-host-bridge (22 files, 149 tests).
+* ''mesh:'' `floor*`, canon-offer, prototype-key-maps, `composite*` (13 files, 142 tests).
+* ''node:'' floor-cut, floor-door, floor-fleet-lanes, floor-porch, floor-sweeps-nothing, genesis-floor, working-attach-real-wiki, daemon-reopen-weld (8 files, 31 tests).
+* ''web'' (chromium + firefox; WebKit refuses on this host):
+** glass-theme: the two new tests proven red against the old camera (`static ≠ fixed`, `rgba(0,0,0,0) ≠ rgb(29,32,33)`).
+** Every `tests/glass*`, `tests/mirror*` and `tests/interaction-goldens*` file: 26 files, 190 tests green.
+* ''tools:'' browser-weld-mirror (node &#45;-test, 11/11).
+* ''Gates:''
+** `pnpm -r build` and `pnpm -r typecheck` green.
+** `pnpm typecheck:tests`: no package rose above its ceiling.
+** `witness-all --fast`: every witness reads ok; only the declared runtime/docker ones were held out.
+* ''Note:'' the worktree lacked `packages/lararium-tw5/tw5-core/` (gitignored). I generated it with `npm run build:tw5-vendor` (sha 4da77b10…, the genesis core) so the chromium suites could load the core. No tracked file changed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/smoke-screenshots`>>
+
+!! Smoke screenshots
+All under `/home/joshu/.lares-scratch/glass2/`. My instrumented copy of the controller's script is `mysmoke.mjs`: it waits for the mirror's word, then probes the reading, the boxes and the worker's projection titles.
+* `smoke1/s3-projection.png` (crop `smoke1/s3-crop.png`), at 407f3251d: skinny first paint, welcome on a white frame (skinny carries no palette text).
+* `smoke1/s4-settled.png`, at 407f3251d: full, gruvbox welcome. The sidebar still escapes to the window's right edge at y≈1260 of the full-page shot.
+* `smoke5/s4-settled.png` (crop `smoke5/s4-crop.png`), on the cure:
+** full, gruvbox ground across the pane;
+** the sidebar (Lararium / Welcome to the DreamNet, Open/Recent/Tools/More) inside the pane above the story;
+** the welcome tiddler;
+** the worker projection also on welcome.
+* Console: `smoke5/console.txt`. The only warning left is the known unrouted `$:/StoryList` personal-bag save.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/genesis-unbaked-json-rows`>>
+
+!! genesis/unbaked.json rows
+None. No boot-set byte moved (`git status` stayed clean of plugin files after the tw5 build). The floor face and the camera ride worker and page code, not the packed plugins.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-decided`>>
+
+!! Forks decided (moʻolelo, overrulable)
+* ''The sheet transform rides in the camera, not the theme.'' I rewrite the rendered sheet text rather than shadowing vanilla tiddlers. A shadow per theme would enumerate themes; the transform reads any whole-document sheet.
+* ''<code>&#64;container</code> over an iframe.'' An iframe would hand TW5 a real window. It would also cost a second document and break the port's single-document camera and focus law. Container queries plus layout containment give the breakpoint and the fixed box the pane.
+* ''Host height `80vh`, min 24rem.'' A fixed sidebar needs a definite height to land `bottom: 0` on, and this number fits a pane under the vessel cards. A page that wants another height overrides `#mirror { height }` from outside.
+* ''The narrow pane takes TW5's own narrow layout.'' At 758px the sidebar flows above the story; that is what TW5 does under its breakpoint. Widening the panel to ≥960px would bring the fixed side-by-side layout back, unchanged.
+* ''Weld M2 styled-sidebar changed meaning.'' "Computed fixed" became "inside the pane, fixed iff the pane stands at least the theme's breakpoint wide". The old reading would read red on every correct narrow pane. The breakpoint is read from the engine (vanilla's metric), never hard-coded.
+* ''Floor replay origin `crdt-remote`, `edgeIsland` = the slot.'' This matches the kahua stage and the doc store's own replay. Every island now lands about 5.6k floor rows at seed, the size of the old live lares and lararium bags. If seed time grows, that cost is the floor's design showing, not a new one.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+
+!! Owed
+* CI's held-out weld: M2 (the new sidebar and ground readings) and M3 prove only in CI.
+* TW5 `PageScroller` and popups still use window coordinates. Navigating inside the scrolling pane may scroll the page rather than `.lar-mirror`. I haven't checked; this belongs with the G3 doors.
+* The unrouted `$:/StoryList` personal save at pure local boot. It predates this lane: the island's first-story hand finds no personal bag.
+* The controller's GettingStarted MIRROR reading. If it shows up again, capture `#mirror.larMirrorReading` and the first snapshot's titles along with the screenshot.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QZ0DymBFgqea_ytXOG6b0e3_vQUdhcFS7b3l5h7-7WQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -4,8 +4,8 @@
  *
  * The vectors pin what the law promises of the bytes: any one route opens the bundle; one altered bit of the
  * body opens for nobody; another bundle's key opens nothing; two bundles of one body share no key, salt, nonce
- * or identifier; a holder with no route reads the residue and nothing more; and the body's shape gives a veil
- * key, a vessel key or a seat no home.
+ * or identifier; a holder with no route reads the residue and nothing more; the body's shape gives a veil
+ * key, a vessel key or a seat no home; and it carries the face's enrolled recovery contact set, or null, and nothing beside.
  *
  * Synthetic names and keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-bundle
  */
@@ -17,14 +17,15 @@ import {
   mintBundleKey, openBundleKey, openFaceBundleBody, readFaceBundle, readFaceBundleBody, sealFaceBundleBody,
   type FaceBundleBody,
 } from "../src/face-bundle.js";
-import { confirmPaperPin, draftPaperPin, bindSlot, openVk, type SlotSpec } from "../src/keyslot.js";
+import { confirmPaperPin, draftPaperPin, bindSlot, openTreeKey, type SlotSpec } from "../src/keyslot.js";
 import { openMemorySection, sealMemorySection } from "../src/memory-section.js";
 import { mintPersonaInception } from "../src/persona-kel.js";
-import { mintVk } from "../src/vk.js";
+import { mintTreeKey } from "../src/tree-key.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { ed25519 } from "@noble/curves/ed25519.js";
+import { nativeKdf } from "../src/node.js";
 
 // Every bind and every open runs a slot's own key derivation, priced to cost a guesser; the suite waits it out.
 vi.setConfig({ testTimeout: 120_000 });
@@ -54,27 +55,31 @@ function bodyFor(bundleKey: Uint8Array): FaceBundleBody {
     names: { petname: "the gardener" },
     faceProofKeys: [{ scope: "0f".repeat(16), secret: "c3".repeat(32) }],
     handleBook: { records: [{ nym: "nym-test", card: null, heads: [], accepted: [], petname: "a friend", recognisedBy: [{ face: ROOT_KEY, petname: "a friend" }] }] },
+    recoveryContactSet: {
+      recoveryContactSetHash: "9a".repeat(32), threshold: 1,
+      recoveryContacts: [{ slot: "contact-a", label: "Recovery-contact-A (unassigned)", recoveryPubKey: "7b".repeat(32), confirmPhrase: "" }],
+    },
     memory: { section: b64(section), holds: [{ bagId: "lar:///ha.ka.ba/@test/bags/garden-notes", founding: "11".repeat(32), keyVersion: "22".repeat(32) }] },
   };
 }
 /** One whole cut: a fresh key, two routes, the body sealed and framed. */
-function cut() {
+async function cut() {
   const bundleKey = mintBundleKey();
   const paper = paperRoute();
-  const tree = bindBundleRoutes(bundleKey, [{ t: 1, pins: [PASS] }, paper.spec]);
+  const tree = await bindBundleRoutes(bundleKey, [{ t: 1, pins: [PASS] }, paper.spec], nativeKdf);
   const body = bodyFor(bundleKey);
   const bytes = encodeFaceBundle(tree, sealFaceBundleBody(faceBundleBodyBytes(body), bundleKey));
   return { bundleKey, tree, body, bytes, sheets: paper.sheets };
 }
 
 describe("a bundle opens under any one route a person bound", () => {
-  it("CONTROL: the passphrase and the paper sheet each open the one bundle key, and the body reads back whole", () => {
-    const made = cut();
+  it("CONTROL: the passphrase and the paper sheet each open the one bundle key, and the body reads back whole", async () => {
+    const made = await cut();
     const read = readFaceBundle(made.bytes);
     expect(read.reading).toBe("readable");
     if (read.reading !== "readable") return;
     for (const credential of [PASS, { kind: "paper", sheets: made.sheets } as const]) {
-      const opened = openBundleKey(read.tree, [credential]);
+      const opened = await openBundleKey(read.tree, [credential], nativeKdf);
       expect(opened.reading).toBe("opens");
       if (opened.reading !== "opens") continue;
       expect(hex(opened.bundleKey)).toBe(hex(made.bundleKey));
@@ -84,22 +89,22 @@ describe("a bundle opens under any one route a person bound", () => {
     }
   });
 
-  it("a route that opens no slot reads `no-slot-opens`, apart from a malformed file", () => {
-    const made = cut();
+  it("a route that opens no slot reads `no-slot-opens`, apart from a malformed file", async () => {
+    const made = await cut();
     const read = readFaceBundle(made.bytes);
-    expect(read.reading === "readable" && openBundleKey(read.tree, [WRONG]).reading).toBe("no-slot-opens");
+    expect(read.reading === "readable" && (await openBundleKey(read.tree, [WRONG], nativeKdf)).reading).toBe("no-slot-opens");
   });
 
-  it("the format mark reads as the first eight bytes of SHA-256 over the format's name, and leads the file", () => {
-    const made = cut();
+  it("the format mark reads as the first eight bytes of SHA-256 over the format's name, and leads the file", async () => {
+    const made = await cut();
     expect(hex(faceBundleMark())).toBe(hex(sha256(utf8Bytes(FACE_BUNDLE_DOMAIN)).slice(0, 8)));
     expect(hex(made.bytes.subarray(0, 8))).toBe(hex(faceBundleMark()));
   });
 });
 
 describe("authenticated encryption covers the whole inner body", () => {
-  it("one altered bit anywhere in the sealed body opens for nobody", () => {
-    const made = cut();
+  it("one altered bit anywhere in the sealed body opens for nobody", async () => {
+    const made = await cut();
     const read = readFaceBundle(made.bytes);
     if (read.reading !== "readable") throw new Error("setup");
     const whole = openFaceBundleBody(read.sealedBody, made.bundleKey);
@@ -114,9 +119,9 @@ describe("authenticated encryption covers the whole inner body", () => {
     }
   });
 
-  it("another bundle's key opens nothing, and a body moved under another bundle's tree opens for nobody", () => {
-    const a = cut();
-    const b = cut();
+  it("another bundle's key opens nothing, and a body moved under another bundle's tree opens for nobody", async () => {
+    const a = await cut();
+    const b = await cut();
     const readA = readFaceBundle(a.bytes);
     const readB = readFaceBundle(b.bytes);
     if (readA.reading !== "readable" || readB.reading !== "readable") throw new Error("setup");
@@ -124,13 +129,13 @@ describe("authenticated encryption covers the whole inner body", () => {
     // A second key's write: bundle B's tree framed over bundle A's body opens B's key and never A's body.
     const spliced = readFaceBundle(encodeFaceBundle(readB.tree, readA.sealedBody));
     if (spliced.reading !== "readable") throw new Error("setup");
-    const opened = openBundleKey(spliced.tree, [PASS]);
+    const opened = await openBundleKey(spliced.tree, [PASS], nativeKdf);
     expect(opened.reading).toBe("opens");
     expect(opened.reading === "opens" && openFaceBundleBody(spliced.sealedBody, opened.bundleKey)).toBeNull();
   });
 
-  it("the body key and the memory pair's secret half each differ from the bundle key and from one another", () => {
-    const made = cut();
+  it("the body key and the memory pair's secret half each differ from the bundle key and from one another", async () => {
+    const made = await cut();
     const pair = bundleMemoryKeypair(made.bundleKey);
     expect(hex(pair.secret)).not.toBe(hex(made.bundleKey));
     // The body does not open under the pair's secret half, nor the section under the bundle key itself.
@@ -188,25 +193,25 @@ describe("a malformed file names itself, apart from a route that opens nothing",
     ["a tree length that runs past the file", (bytes: Uint8Array) => { const out = Uint8Array.from(bytes); new DataView(out.buffer).setUint32(8, out.length, false); return out; }],
     ["a slot tree that reads torn", (bytes: Uint8Array) => { const out = Uint8Array.from(bytes); out[12] = 0x00; return out; }],
     ["an empty file", () => new Uint8Array(0)],
-  ])("%s reads `bundle-malformed`", (_name, bend) => {
-    const made = cut();
+  ])("%s reads `bundle-malformed`", async (_name, bend) => {
+    const made = await cut();
     expect(readFaceBundle(made.bytes).reading).toBe("readable");
     expect(readFaceBundle(bend(made.bytes)).reading).toBe("bundle-malformed");
   });
 });
 
 describe("two bundles share nothing, and a holder with no route reads the residue alone", () => {
-  it("two cuts of one face share no key, salt, nonce, slot id or check", () => {
-    const a = cut();
-    const b = cut();
+  it("two cuts of one face share no key, salt, nonce, slot id or check", async () => {
+    const a = await cut();
+    const b = await cut();
     expect(hex(a.bundleKey)).not.toBe(hex(b.bundleKey));
-    expect(a.tree.vkCheck).not.toBe(b.tree.vkCheck);
+    expect(a.tree.keyCheck).not.toBe(b.tree.keyCheck);
     const fields = (made: ReturnType<typeof cut>): string[] => {
       const read = readFaceBundle(made.bytes);
       if (read.reading !== "readable") throw new Error("setup");
       return [
-        read.tree.vkCheck, hex(read.sealedBody.subarray(0, 24)),
-        ...read.tree.slots.flatMap((s) => [s.id, s.nonce, s.wrappedVk, ...s.pins.flatMap((p) => [p.nonce, p.wrapped, ...(p.kind === "passphrase" ? [p.salt] : [])])]),
+        read.tree.keyCheck, hex(read.sealedBody.subarray(0, 24)),
+        ...read.tree.slots.flatMap((s) => [s.id, s.nonce, s.wrappedKey, ...s.pins.flatMap((p) => [p.nonce, p.wrapped, ...(p.kind === "passphrase" ? [p.salt] : [])])]),
       ];
     };
     const inA = new Set(fields(a));
@@ -224,8 +229,8 @@ describe("two bundles share nothing, and a holder with no route reads the residu
     expect(shared).toBe(0);
   });
 
-  it("the residue names the length, each slot's pin kinds and its threshold, and no word of the body", () => {
-    const made = cut();
+  it("the residue names the length, each slot's pin kinds and its threshold, and no word of the body", async () => {
+    const made = await cut();
     const residue = faceBundleResidue(made.bytes);
     expect(residue).toEqual({ length: made.bytes.length, slots: [{ t: 1, pins: ["passphrase"] }, { t: 1, pins: ["paper"] }] });
     const text = Buffer.from(made.bytes).toString("latin1");
@@ -235,11 +240,11 @@ describe("two bundles share nothing, and a holder with no route reads the residu
     for (const word of ["garden-notes", "the gardener", ROOT_SEED]) expect(plain.includes(word)).toBe(true);
   });
 
-  it("a slot lifted from a bundle's tree into a vessel's tree opens nothing there", () => {
-    const made = cut();
-    const vessel = bindSlot(null, mintVk(), { t: 1, pins: [{ kind: "passphrase", passphrase: "the vessel's own route" }] });
-    const grafted = { vkCheck: vessel.vkCheck, slots: [...vessel.slots, made.tree.slots[0]!] };
-    expect(openVk(grafted, [PASS]).reading).toBe("no-slot-opens");
+  it("a slot lifted from a bundle's tree into a vessel's tree opens nothing there", async () => {
+    const made = await cut();
+    const vessel = await bindSlot(null, mintTreeKey(), { t: 1, pins: [{ kind: "passphrase", passphrase: "the vessel's own route" }] }, nativeKdf);
+    const grafted = { keyCheck: vessel.keyCheck, slots: [...vessel.slots, made.tree.slots[0]!] };
+    expect((await openTreeKey(grafted, [PASS], nativeKdf)).reading).toBe("no-slot-opens");
   });
 });
 
@@ -271,11 +276,23 @@ describe("the body's shape gives a seat key no home", () => {
     ["a handle-book record with a part the shape does not name", (b: Record<string, unknown>) => { ((b["handleBook"] as { records: Record<string, unknown>[] }).records[0]!)["veilKey"] = "aa".repeat(32); }],
     ["a handle-book record tagged by two faces", (b: Record<string, unknown>) => { ((b["handleBook"] as { records: Record<string, unknown>[] }).records[0]!)["recognisedBy"] = [{ face: "a1".repeat(32), petname: null }, { face: "b2".repeat(32), petname: "other" }]; }],
     ["a handle-book record whose tag carries a stray part", (b: Record<string, unknown>) => { ((b["handleBook"] as { records: Record<string, unknown>[] }).records[0]!)["recognisedBy"] = [{ face: "a1".repeat(32), petname: null, seat: true }]; }],
+    ["no recovery-contact-set part", (b: Record<string, unknown>) => { delete b["recoveryContactSet"]; }],
+    ["a recovery contact set with a part the shape does not name", (b: Record<string, unknown>) => { (b["recoveryContactSet"] as Record<string, unknown>)["seat"] = true; }],
+    ["a recovery contact set whose threshold no quorum meets", (b: Record<string, unknown>) => { (b["recoveryContactSet"] as Record<string, unknown>)["threshold"] = 2; }],
+    ["a recovery contact set with no recovery contact", (b: Record<string, unknown>) => { (b["recoveryContactSet"] as Record<string, unknown>)["recoveryContacts"] = []; }],
+    ["a recovery contact registration carrying a secret beside its public key", (b: Record<string, unknown>) => { ((b["recoveryContactSet"] as { recoveryContacts: Record<string, unknown>[] }).recoveryContacts[0]!)["seed"] = "aa".repeat(32); }],
+    ["a recovery contact registration under a slot no card names", (b: Record<string, unknown>) => { ((b["recoveryContactSet"] as { recoveryContacts: Record<string, unknown>[] }).recoveryContacts[0]!)["slot"] = "recovery-contact-z"; }],
     ["a handle-book record with no cards list", (b: Record<string, unknown>) => { delete ((b["handleBook"] as { records: Record<string, unknown>[] }).records[0]!)["accepted"]; }],
   ])("%s refuses the body", (_name, bend) => {
     const body = whole();
     bend(body);
     expect(readFaceBundleBody(canonicalJsonBytes(body))).toBeNull();
+  });
+
+  it("CONTROL: a body whose log commits no recovery contact set carries null there, and reads back", () => {
+    const body = whole();
+    body["recoveryContactSet"] = null;
+    expect(readFaceBundleBody(canonicalJsonBytes(body))?.recoveryContactSet).toBeNull();
   });
 
   it("the sealer refuses a body that reads as no body, and seals nothing", () => {

@@ -8,9 +8,9 @@
  * memory store the node writes into "from the inside" (an AI's authored memories about that stream,
  * given a structured home).
  *
- * THE IN-TREE MEMPALACE RETIRES THE BINDING, NEVER THE COEXISTENCE (operator ruling, 2026-07-29).
+ * THE IN-TREE MEMPALACE HOLDS THE BINDING, NEVER EXCLUDES THE COEXISTENCE (operator ruling, 2026-07-29).
  * Read the scope exactly, because the two readings differ by a whole capability:
- *   · RETIRED — every DEPENDENCY on an external `~/.mempalace`. The sovereign organs bind only in-tree,
+ *   · NONE — no DEPENDENCY on an external `~/.mempalace`. The sovereign organs bind only in-tree,
  *     so nothing silently falls back onto a guest store and the content-cap-home / never-bound /
  *     confused-deputy hazards dissolve at the root.
  *   · KEPT — the capability to ACCEPT a guest install that already stands. `~/.mempalace` holds its own
@@ -31,7 +31,7 @@
  *   - structurepalace   <memory>/structure  — the structural-AST store (li/sheaf).
  *   - formpalace        <memory>/form       — the living-grammar FORM-vector store (li/sheaf).
  *   - persistencepalace <memory>/persistence — the Testimony/witness store (cosheaf cap).
- *   - meshpalace        <lararium>/sensoriums/mesh — the `mesh` SENSORIUM (stood LAST: it couples to a
+ *   - meshpalace        <root>/sensoriums/mesh — the `mesh` SENSORIUM (stood LAST: it couples to a
  *                 live node). It `#has` three nested child sensoriums — WHO · AUTHORITY · FLOW —
  *                 each its own dir + thin manifest. Here we wire only the directory STRUCTURE +
  *                 stamp the manifests; the feed/carriage + cap-content live elsewhere.
@@ -108,6 +108,7 @@ export function initGuestMempalace(): PalaceSetupStep[] {
 
   if (!existsSync(cfgPath)) {
     try {
+      // LIVENESS: the external palace initializer may hang without an exit event.
       const r = spawnSync(mp, ["init", repoRoot, "--yes", "--no-llm"], { timeout: 180_000, encoding: "utf8" });
       const ok = r.status === 0 && existsSync(cfgPath);
       steps.push({
@@ -296,8 +297,8 @@ function seedCaptureSensorium(step: string, dir: string, opts: Omit<BuildSensori
  * `<memory>/content` (the RUN reads its OWN content). The `mempalace` cap adds a per-sensorium curated
  * memory store at `<memory>/mempalace` — the structured home for the memories an AI authors about this
  * stream (the "flat-file memories," given entity-graph / hallways structure). Each sensorium composes
- * its own (memory here; a future twain/kumulipo its own), which RETIRES the external guest `~/.mempalace`
- * and supersedes the one-mempalace / never-bound ruling — an in-tree sovereign store binds to nothing
+ * its own (memory here; a future twain/kumulipo its own), so no organ binds the external guest `~/.mempalace`
+ * — an in-tree sovereign store binds to nothing
  * external and can never silently fall back to a guest. bands rides as the base-cap membership-address
  * grain (NO dir); coupling stays empty (memory glues no sub-sensoriums).
  */
@@ -318,8 +319,8 @@ export function materializeMemorySensorium(): PalaceSetupStep {
       // the memories an AI authors about this stream (today scattered as flat files) given a structured
       // home (entity-graph · hallways · KG). IN-TREE at <sensorium>/mempalace, sovereign-owned, one per
       // sensorium — memory keeps its curated chat memories here; a twain/kumulipo sensorium keeps its own.
-      // Adopting this in-tree mempalace RETIRES the external guest ~/.mempalace install entirely (no
-      // external store → the content-cap-home / never-bound / confused-deputy hazards all dissolve).
+      // This in-tree mempalace binds no external guest ~/.mempalace install (no external store → the
+      // content-cap-home / never-bound / confused-deputy hazards all dissolve).
       mempalace:   { absDir: join(memorySensoriumDir(), "mempalace"), engine: "mempalace" },
     },
     // BASE cap — the FFZ membership-address grain (li-side stamp metadata). No bytes stored.

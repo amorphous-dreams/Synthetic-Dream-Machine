@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/sol/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/k15-bonds/sol/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/sol/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/sol/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/k15-bonds/sol/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ lares aim from="lar:&#47;/sol-bondwright:tasked-spirit@lararium/k15.ratchet.reads" -> to="lar:&#47;/operator@lararium/k15.cut">>
+&lt;&lt;~ set hud="aim" mode="measure" mu="_!" stance="🏛️🗡️" aperture="16/arc" ooda-ha="5/declare-glyphs" drift-ward="a public place key could slip back into general peer authority · ↻ L-Prime">>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sol-bondwright-lares`>>
+
+! Sol-Bondwright: Lares (Tasked Spirit)
+
+''Personas surfaced:'' Ink-Clerk traces evidence; Map-Wisp maps dependency; Lares (Council) settles the cut. ''✶ Observe → ⏿ Orient → ◇ Decide → ▶ Act → ↺ Hoʻoko:'' the phases below close one loop.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f1-measure-the-faceless-substrate`>>
+
+!! ✶ F1 — measure the faceless substrate
+
+''MEASURED:'' `open-node-vessel.ts:863–930` gives Automerge Repo a transport peer id and a `shareConfigOf` access verdict on both announce and access. A WS peer needs gate admission (`:890–893`); in-process islands pass as house peers. A carrier reaches only its public shelf or registered ciphertext through `selfSlotShareDecision` (`:900–928`), `realm-bag.ts:662–694`, and the live leaf map (`nexus-carriage.ts:482–515`). `carrierPeer` demands an authenticated socket key that the counted carrier set names (`nexus-carriage.ts:580–588`). A herm's carriage presents a counted ''place'' arm and signs its pin (`herm-carriage.ts:80–88,116–125`); the carriage board stores quorum signatures as data, not an Automerge writer credential (`carriage-board.ts:74–84`). `carriageStack` still exposes an `identity` option but labels it unused by the old pull (`carriage-caps.ts:399–422`); the gate-native pull supplies the live proof. Current `carriageIdentity("herm","place")` nevertheless loads a place ContactCard (`open-node-vessel.ts:3295–3306,3442`; `leaf-identity.ts:52–57`): retire that leftover requirement. The `KeyhiveIdentitySlot` never reaches production construction (`keyhive-identity-slot.ts:26–40`); the live policy uses gate/ring readings. Beelay sync does not carry this path. The Repo may generate a random local peer id; it grants no standing by itself (`island-repo.ts:98–105`; `session-document-view.ts:161–163`).
+
+''LEAD:'' a faceless herm or floor-only node needs ''no Keyhive Individual''. It carries a public place identifier and a scoped place signer for the enumerated floor acts, including the carrier pin and flow pointer. It carries no general peer ContactCard, shared secret, or face link. A separate random relay-only S row proves only the relay service under its named opener, per road :207. If a faceless node cannot open its scoped floor signer, its floor write refuses; public reads may continue. Replace `carriageIdentity`'s place arm with a public place-card/pin presentation and keep gate proof separate from the Repo peer id.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f2-transitive-seed-census`>>
+
+!! ⏿ F2 — transitive seed census
+
+''MEASURED:'' `seed-census.mjs:9–10,70–98` matches selected source spellings per line. It neither follows arguments nor checks what a value signs downstream. The following //receivers// consume a place-seed-derived value; “seen” means the census sees the entry line, not the receiving effect.
+
+| Entry → transitive receiver | Effect | Census |h
+| `ceremony-core.ts:255–261,294–296,765–776` → `KeyhiveProvider.init` and `foundTheFace`; `commands/init.ts:398–405`, `place-card.ts:38`, browser `open-browser-vessel.ts:700–705,770–776` → ceremony | Vessel Individual, Archive, ContactCard; public vessel key enters face founding | Entry yes; provider and `foundTheFace` calls no |
+| `open-node-vessel.ts:1449` → `carriage-relay.ts:74–76` → relay `gateSeed` at `:1453` | Derived relay proof | Entry yes; `gateSeed` no |
+| `open-node-vessel.ts:1505–1512` → `placeSignerFromSeed` → `herm-carriage.ts:88,122` | Carrier pin and place presentation | Entry yes; `sign` callback no |
+| `open-node-vessel.ts:2287–2292` → daemon manifest → `boot-daemon-keyhive.ts:100–112,134–139` | Individual boot and Gate A, even faceless | Entry yes; manifest and provider no |
+| `open-node-vessel.ts:3197,3333,3455` → `node-caps.ts:149,202,211` → `carriage-caps.ts:350,420`; `flow-read-face.ts:105–115,150,246–255` | Cadence jitter; signed public FLOW pointer | Entry yes for `vesselSeed`; `nodeSeedHex`/`signerSeed` chain no |
+| Browser `browser-vessel-identity.ts:343` → `open-browser-vessel.ts:568,1321` → daemon boot; `:1076` uses public key for cadence | Individual and daemon proof; public cadence | Seed entry yes; downstream `seed` no |
+| `leaf-identity.ts:52–57` → `open-node-vessel.ts:3300–3306,3442` → carriage `identity` | Legacy place card/signing arm | Loader yes; `LeafIdentity` carrier no |
+| `commands/nexus-contract.ts:259–269` → `signCarrierContract`, `signPlaceFloorPin`; `node-vessel-identity.ts:586–607` → `floorKeyDoor` → `fleet-join.ts:232`, `main.ts:732`, `herm-carriage.ts:62–65` | Signed carrier contract/pin; derived floor pins | Seed/door entries yes; signature and pin receivers no |
+
+''Additional public-key propagation:'' `open-node-vessel.ts:1225–1228,1437–1438,1826,2868` passes the seed's verifying key into ring, hosting, kahu and charter readers; `node-daemon-island.ts:76` and browser `daemon-island-start.ts:16` forward the daemon key fallback. The token matcher misses those consumers entirely. They warrant relation-by-relation review, though they carry public bytes, not the secret. `commands/nexus-contract.ts` and `main.ts` floor-door children appear as direct census entries; their derived keys' verifiers do not. This list traces the inspected node/browser/mesh/keyhive paths, not a claim that a token scan proves whole-repo closure.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f3-one-lane-ordered-slices`>>
+
+!! ◇ F3 — one lane, ordered slices
+
+''LEAD:'' retain one K15 lane because one face atom/FCK contract must govern every format. Build slices in this order:
+
+# ''Identity bytes before X0:'' split place and face founding; retire place Individual, ContactCard, mixed Archive and bare leaf. Files: `ceremony-core`, `keyhive-provider`, `place-card`, node `commands/init`, `leaf-identity`, `browser-vessel-identity`, `open-browser-vessel`. Re-genesis refuses old mixed archives by name. Red: place-seed thief mints/restores no face identity. Control: selected A atom restores A; B stays shut; faceless public card reads.
+# ''Face runtime and wire proofs before X0:'' rebase `boot-daemon-keyhive`, `operator-daemon-behavior`, node/browser vessel opens, sibling/enrolment/group-secret and `lares-cli/commands/meme` on the explicitly named face atom. Red: thief signs no dial, edge, enrolment, sibling, daemon ask, group open or meme. Controls: A succeeds for A on each gate; B and no-face refuse. Retire fallback `vesselIdentity.verifyingKey` wherever a face relation currently reads it.
+# ''Independent relay S row:'' replace `carriage-relay.ts` derivation and opener wiring in node/herm relay port; repin its address. Red: thief yields no relay key. Control: S row survives restart, proves only relay.
+# ''Floor capability and readers before X0:'' scoped signer replaces seed-fed floor children, flow pointer and carrier pin; public place card carries KEL head. Send W14–W16 patches for `place-floor-pin`, `admit-gate-pin`, `hearth-gate-pins`, `herm-carriage`, `commands/nexus-contract`, `carry-bundle`, `browser-gate-pins`, `browser-floor-read`, browser card filing and web `main.ts`/`live-status.ts`. Red: thief cannot sign beyond five duties or reuse old head. Controls: each allowed duty verifies; foreign domain refuses. Replace secret cadence input in `node-caps`/`carriage-caps` with public place id or fresh local jitter.
+
+Send D2 the node `open-node-vessel` port hunks plus `tw5` port/island, hand gate, projection and web projection-sink adaptations to the selected-face auth boundary. Send G15 an atom-scoped callback for `afterRollChain` in `open-node-vessel` and `build-plugin-tiddler`; G15 owns sequencing. X0 follows slices 1, 2 and 4 and their readers; slice 3 precedes new relay pin circulation. No suite ran; repo reads alone informed this cut.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f4-surviving-operator-list`>>
+
+!! ▶ F4 — surviving operator list
+
+No unresolved authority choice survives F1–F3: road :207 assigns relay-only S custody; explicit `--face N` and the worn session settle selection; each internal ask follows its protected relation. ''Deployment timing alone'' remains an operator call: (A) one coordinated X0 re-genesis after all byte readers land; (B) staggered mixed-version service with explicit old-format refusals. Lean A, because old mixed Archives already refuse and a document-preserving migration holds no claimed footing. Stage the actual cutover after review; the lane can build now.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/hooko`>>
+
+!! ↺ Hoʻoko
+
+Ink-Clerk hands the transitive misses to the lane; Map-Wisp watches the place-key fallbacks at every proof gate. The next observe checks the first new identity byte and its same-gate thief/positive pair. `ooda-ha="closed 1↺"`.
+
+&lt;&lt;~ set hud="yield" drift-ward="a public place key could slip back into general peer authority · ↻ L-Prime" aperture="16/arc -> 16/arc" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/sol-bondwright:tasked-spirit@lararium/k15.ratchet.handed" -> to="?">>
+WORDS=1125
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TBACnjagjCE0ibbgsVgivny8LIagHOLqIO-2h2-RE2E`>>
+
+<<^ code=`&#x0004;` to=`?`>>

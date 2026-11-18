@@ -4,16 +4,20 @@
  * two custodians {recorded-code, escrow} to re-admit a fresh device — whose edge verifies against the
  * original pinned root. The device-share (dead with the device) is never the recovery path.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeAll, beforeEach, describe, test, expect } from "vitest";
 import { generateKeyPairSync } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed25519 from "@noble/ed25519";
-import { assembleQuorum, reconstructFromQuorum, decodeShareBytes, guardianShareFromCard, verifyDeviceDelegation, personaPrefixOf, type RecoveryShare } from "@lararium/mesh";
+import { countersignDeviceDelegation, faceAtomKeyFromSeed, mintFaceAtomSeed, type DeviceDelegationRootHalf, assembleQuorum, reconstructFromQuorum, decodeShareBytes, custodianShareFromCard, verifyDeviceDelegation, personaPrefixOf, type RecoveryShare } from "@lararium/mesh";
 import { splitRootAtFounding, reconstructAndReadmit, provisionRecoveryAtFounding, provisionRecoveryCardsAtFounding } from "../src/recovery-keel.js";
 import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
 import { loadRecoveryDeviceShare } from "../src/recovery-share-store.js";
+import { fixtureWard } from "./custody-seat-fixture.js";
 
 const ROOT = Uint8Array.from(Array.from({ length: 32 }, (_, i) => (i * 61 + 13) & 0xff));
 const PLACE = "bafkreic7r3jrao44srh5bp47uryotaqp62bnmovzpqccbfy2kclf447bra";
@@ -28,10 +32,15 @@ function seededRng(seed: number) {
     randomUUID(): string { return "00000000-0000-0000-0000-000000000000"; },
   };
 }
+const deviceSeeds = new Map<string, Uint8Array>();
 const freshDeviceKey = (): string => {
-  const { publicKey } = generateKeyPairSync("ed25519");
-  return Buffer.from((publicKey.export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
+  const seed = mintFaceAtomSeed();
+  const key = faceAtomKeyFromSeed(seed, "recovery").key;
+  deviceSeeds.set(key, seed);
+  return key;
 };
+/** The fresh device completes the root's half with its own countersignature. */
+const complete = (half: DeviceDelegationRootHalf) => countersignDeviceDelegation(half, faceAtomKeyFromSeed(deviceSeeds.get(half.deviceVerifyingKey)!, "recovery").sign);
 // The persona's stable inception prefix over (root op-key + unarmed recovery-commit). In Fork-A reconstruct
 // the op-key does NOT rotate, so the reconstructed root IS the KEL head and this is the identifier the
 // re-admit carries. Computed once (async pubkey derivation) before the suite runs.
@@ -60,6 +69,8 @@ const readmitFields = (joineeVerifyingKey: string, boundEpoch = 0) => ({
   personaGroupId: "aa".repeat(32),
   meshCabalDocIdHex: "cc".repeat(32), syncUrl: null, boundEpoch,
   hearthDaemonUrl: null, personaUrl: "automerge:2fakeRecoveryPersonaDocUrl0000",
+  // This vector mints the edge alone; the log and frontier a re-admit carries have their reds in persona-act-boot and fleet-frontier-wiring.
+  personaActs: [], edgeFrontier: { records: [], snapshots: [] },
 });
 
 describe("recovery-keel — found → device drowns → recover → re-admit", () => {
@@ -71,14 +82,14 @@ describe("recovery-keel — found → device drowns → recover → re-admit", (
 
     // DEVICE DROWNS: the device-share is gone. Recovery rides the two SURVIVING custodians.
     const surviving = [founding.recordedCodeShare, founding.escrowShare];
-    const freshVK = freshDeviceKey();
-    const payload = await reconstructAndReadmit(surviving, readmitFields(freshVK));
+    const freshTreeKey = freshDeviceKey();
+    const payload = await reconstructAndReadmit(surviving, readmitFields(freshTreeKey));
 
     // The re-admit edge verifies against the ORIGINAL root — the Handle's pinned signer is unchanged.
     const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
     expect(payload.signerDid).toBe(rootDid);
-    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshVK);
-    expect((await verifyDeviceDelegation(payload.deviceEdge, rootDid)).ok).toBe(true);
+    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshTreeKey);
+    expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), rootDid)).ok).toBe(true);
   });
 
   test("the recorded code ALONE cannot recover — it is one share, below threshold", async () => {
@@ -97,7 +108,7 @@ describe("recovery-keel — found → device drowns → recover → re-admit", (
     const founding = splitRootAtFounding(ROOT, seededRng(7));
     const payload = await reconstructAndReadmit([founding.deviceShare, founding.escrowShare], readmitFields(freshDeviceKey()));
     const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
-    expect((await verifyDeviceDelegation(payload.deviceEdge, rootDid)).ok).toBe(true);
+    expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), rootDid)).ok).toBe(true);
   });
 });
 
@@ -112,10 +123,10 @@ describe("recovery-keel — the readmitted edge binds the PRESENT lease epoch, n
     const founding = splitRootAtFounding(ROOT, seededRng(7));
     const surviving = [founding.recordedCodeShare, founding.escrowShare];
     // The group rolled to epoch 2 sometime after founding (a face-join regrant, a device loss elsewhere —
-    // any live-lease event `effectiveLeaseEpoch` folds). A readmit that binds `boundEpoch: 0` (the
+    // any live-lease event `signedLeaseEpoch` folds). A readmit that binds `boundEpoch: 0` (the
     // founding-genesis floor, never re-read) is what a caller gets if it forgets to thread a live lease read.
     const payload = await reconstructAndReadmit(surviving, readmitFields(freshDeviceKey(), 0));
-    const verdict = await verifyDeviceDelegation(payload.deviceEdge, await rootDid(), { expectedEpoch: 2 });
+    const verdict = await verifyDeviceDelegation(await complete(payload.deviceEdge), await rootDid(), { expectedEpoch: 2 });
     expect(verdict.ok).toBe(false);
     expect(verdict.ok === false && verdict.reason).toMatch(/lease stale|boundEpoch/i);
   });
@@ -124,7 +135,7 @@ describe("recovery-keel — the readmitted edge binds the PRESENT lease epoch, n
     const founding = splitRootAtFounding(ROOT, seededRng(7));
     const surviving = [founding.recordedCodeShare, founding.escrowShare];
     const payload = await reconstructAndReadmit(surviving, readmitFields(freshDeviceKey(), 0));
-    const verdict = await verifyDeviceDelegation(payload.deviceEdge, await rootDid(), { expectedEpoch: 0 });
+    const verdict = await verifyDeviceDelegation(await complete(payload.deviceEdge), await rootDid(), { expectedEpoch: 0 });
     expect(verdict.ok).toBe(true);
   });
 
@@ -132,10 +143,10 @@ describe("recovery-keel — the readmitted edge binds the PRESENT lease epoch, n
     const founding = splitRootAtFounding(ROOT, seededRng(7));
     const surviving = [founding.recordedCodeShare, founding.escrowShare];
     // The caller read the live lease (2) before minting — exactly the pattern device-admit.ts's own
-    // `leaseEpochPrefix` → `effectiveLeaseEpoch` composition would produce, threaded by hand here since no
+    // `leaseEpochPrefix` → `signedLeaseEpoch` composition would produce, threaded by hand here since no
     // CLI door exists yet to do the daemon-doc read itself.
     const payload = await reconstructAndReadmit(surviving, readmitFields(freshDeviceKey(), 2));
-    const verdict = await verifyDeviceDelegation(payload.deviceEdge, await rootDid(), { expectedEpoch: 2 });
+    const verdict = await verifyDeviceDelegation(await complete(payload.deviceEdge), await rootDid(), { expectedEpoch: 2 });
     expect(verdict.ok).toBe(true);
   });
 });
@@ -146,9 +157,7 @@ describe("recovery-keel — founding provision against the real identity store",
   let root: string;
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-recprov-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", root);   // the scratch house root every resolver lays its classes beneath
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
@@ -156,9 +165,9 @@ describe("recovery-keel — founding provision against the real identity store",
   });
 
   test("provision at founding: split the minted root, seal the device-share, recover from {code, escrow}", async () => {
-    const dataDir = root;   // identityDir ignores it — the store resolves under XDG state
+    const dataDir = root;   // identityDir ignores it — the store resolves under the house root
     await generateOrLoadPersonaGroupRoot();                    // the founding mint
-    const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(dataDir, seededRng(11));
+    const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(dataDir, seededRng(11), 1, 0, undefined, fixtureWard());
 
     // The device-share landed sealed in the identity home; the two off-device carriers came back.
     expect((await loadRecoveryDeviceShare())?.custodian).toBe("device");
@@ -173,50 +182,48 @@ describe("recovery-keel — founding provision against the real identity store",
   });
 });
 
-describe("recovery-keel — identity recovery issues the SHARED guardian cards (reserve-aligned)", () => {
+describe("recovery-keel — identity recovery issues the SHARED custodian cards (reserve-aligned)", () => {
   const saved: Record<string, string | undefined> = {};
   const setEnv = (k: string, v: string | undefined): void => { saved[k] = process.env[k]; if (v === undefined) delete process.env[k]; else process.env[k] = v; };
   let dir: string;
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), "lares-reccard-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(dir, "state"));
-    setEnv("XDG_DATA_HOME", join(dir, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", dir);   // the scratch house root every resolver lays its classes beneath
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     rmSync(dir, { recursive: true, force: true });
   });
 
-  test("founding: split the minted root into mine + guardian-A/B cards, seal 'mine', recover from the two guardians", async () => {
+  test("founding: split the minted root into mine + custodian-A/B cards, seal 'mine', recover from the two custodians", async () => {
     await generateOrLoadPersonaGroupRoot();                       // the founding mint
-    const { cards, mineSealed } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11));
+    const { cards, mineSealed } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11), 1, 0, fixtureWard());
 
     // The SAME card shape the charter reserve issues: three slots, three distinct custodians, human labels.
     expect(mineSealed).toBe(true);
-    expect(cards.map((c) => c.slot)).toEqual(["mine", "guardian-a", "guardian-b"]);
-    expect(cards.map((c) => c.custodian)).toEqual(["device", "guardian", "escrow-peer"]);
-    expect(cards.find((c) => c.slot === "guardian-a")!.label).toContain("guardian-A (Ola)");
+    expect(cards.map((c) => c.slot)).toEqual(["mine", "custodian-a", "custodian-b"]);
+    expect(cards.map((c) => c.custodian)).toEqual(["device", "custodian", "escrow-peer"]);
+    expect(cards.find((c) => c.slot === "custodian-a")!.label).toContain("custodian-A (Ola)");
     expect(new Set(cards.map((c) => c.confirmPhrase)).size).toBe(3);
 
-    // The "mine" (device) share sealed on THIS device; a lost device recovers from the two GUARDIAN cards.
+    // The "mine" (device) share sealed on THIS device; a lost device recovers from the two CUSTODIAN cards.
     expect((await loadRecoveryDeviceShare())?.custodian).toBe("device");
-    const guardianCards = cards.filter((c) => c.slot !== "mine");
-    const quorum = guardianCards.map((c) => guardianShareFromCard(c, 1));
-    const freshVK = freshDeviceKey();
-    const payload = await reconstructAndReadmit(quorum, readmitFields(freshVK));
+    const custodianCards = cards.filter((c) => c.slot !== "mine");
+    const quorum = custodianCards.map((c) => custodianShareFromCard(c, 1));
+    const freshTreeKey = freshDeviceKey();
+    const payload = await reconstructAndReadmit(quorum, readmitFields(freshTreeKey));
 
     // The re-admit edge verifies against the ORIGINAL minted root — reconstruct-to-readmit, unchanged.
     const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(await loadPersonaGroupRootSeed())).toString("hex")}`;
     expect(payload.signerDid).toBe(rootDid);
-    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshVK);
-    expect((await verifyDeviceDelegation(payload.deviceEdge, rootDid)).ok).toBe(true);
+    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshTreeKey);
+    expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), rootDid)).ok).toBe(true);
   });
 
-  test("ONE guardian card alone cannot recover — below threshold (fail closed)", async () => {
+  test("ONE custodian card alone cannot recover — below threshold (fail closed)", async () => {
     await generateOrLoadPersonaGroupRoot();
-    const { cards } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11));
-    const one = [guardianShareFromCard(cards.find((c) => c.slot === "guardian-a")!, 1)];
+    const { cards } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11), 1, 0, fixtureWard());
+    const one = [custodianShareFromCard(cards.find((c) => c.slot === "custodian-a")!, 1)];
     await expect(reconstructAndReadmit(one, readmitFields(freshDeviceKey()))).rejects.toThrow(/below threshold/);
   });
 });

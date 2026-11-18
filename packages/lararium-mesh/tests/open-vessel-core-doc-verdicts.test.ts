@@ -41,6 +41,7 @@ async function buildKeel(opts: {
     repo,
     catalogHandle,
     waitHandle: async <T>(url: string) => repo.find(url as never) as unknown as Promise<never> as never,
+    systemCanon: async () => ({}),
     loadGenesis: async () => ({
       islandHandle,
       coreHash: "test-core-hash",
@@ -112,10 +113,10 @@ describe("assembleVessel — doc-load-probe verdicts decide the mount (H2)", () 
     expect(mountManifest.degraded).toBe(false);
   });
 
-  it("MUTATION PROOF: the retired isCondemned (status !== \"ok\") reads an unresolved verdict as condemned", () => {
+  it("MUTATION PROOF: an isCondemned of (status !== \"ok\") reads an unresolved verdict as condemned", () => {
     const unresolved: ProbeResult = { documentId: "x", status: "unresolved" };
-    const oldIsCondemned = (r: ProbeResult): boolean => r.status !== "ok";
-    expect(oldIsCondemned(unresolved)).toBe(true);     // the exact shape that quarantined the daemon doc
-    expect(isCondemned(unresolved)).toBe(false);        // the fix: unresolved is never condemned
+    const mutantIsCondemned = (r: ProbeResult): boolean => r.status !== "ok";
+    expect(mutantIsCondemned(unresolved)).toBe(true);  // the shape that quarantines the daemon doc
+    expect(isCondemned(unresolved)).toBe(false);        // unresolved is never condemned
   });
 });

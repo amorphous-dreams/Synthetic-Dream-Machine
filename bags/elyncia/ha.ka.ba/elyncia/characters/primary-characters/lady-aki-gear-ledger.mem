@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger.mem"
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "ano"
 role      = "Lady Aki discounted gear ledger — prose companion to the live CSV table"
 title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger"
@@ -17,13 +13,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lady Aki ~ Discounted Gear Ledger
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ! Lady Aki — Discounted Gear Ledger
 
@@ -231,6 +227,6 @@ Current answer: yes, provisionally.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WQhG49U1k_BNjgjwyN4mB1HXshz0CruzV9e-OPmYVy4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zMJo7_hjeRRqfxByJiN0QfOQBnhUNa7jt9sPBJTyloQ`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -19,9 +19,10 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
 
-const LARES_URI = "lar:///ha.ka.ba/bags/lares";
+const LARES_URI = "lar:///ha.ka.ba/wikis/lares/working";
+const LARES_BAG = "lar:///ha.ka.ba/bags/lares";
 
 let lar: LarInstance;
 let src = "";
@@ -30,12 +31,12 @@ let loadOk = false;
 
 beforeAll(async () => {
   lar = await targetInstance();
-  if (lar.mode !== "staged") return;
+  if (!stagedTarget) return;
 
   src = mkdtempSync(join(tmpdir(), "lares-load-types-"));
   // memetic carrier — SOH heading, decomposes at the membrane
   writeFileSync(join(src, "memetic.md"),
-    "<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///ha.ka.ba/lares/test/memetic-witness\">>\n# Memetic Witness\n\nbody under the way.\n");
+    "<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/test/memetic-witness`>>\n# Memetic Witness\n\nbody under the way.\n");
   // .tid — carries its own title field (must win)
   writeFileSync(join(src, "note.tid"),
     "title: TestTidTitle\ntype: text/vnd.tiddlywiki\n\nA .tid tiddler body.\n");
@@ -57,34 +58,30 @@ afterAll(async () => {
   await lar.stop();
 });
 
-describe("LOAD — memetic memes AND all legal TW5 filetypes (via TW5's registry)", () => {
+describe.skipIf(!stagedTarget)("LOAD — memetic memes AND all legal TW5 filetypes (via TW5's registry)", () => {
   test("T1 — the mixed-filetype batch LOAD lands", () => {
-    if (lar.mode !== "staged") return;
     expect(loadOk).toBe(true);
     expect(titles.length).toBeGreaterThanOrEqual(5);
   });
 
   test("T2 — a memetic .md decomposes at the membrane (heading-titled)", () => {
-    if (lar.mode !== "staged") return;
     expect(titles.some((t) => t.includes("test/memetic-witness"))).toBe(true);
   });
 
   test("T3 — a .tid lands through application/x-tiddler, keeping its own title", () => {
-    if (lar.mode !== "staged") return;
     expect(titles).toContain("TestTidTitle");
   });
 
   test("T4 — a .json lands through application/json", () => {
-    if (lar.mode !== "staged") return;
     expect(titles).toContain("JsonTiddler");
   });
 
   test("T5 — headless plain files land as text/plain, titled by the loci law", () => {
-    if (lar.mode !== "staged") return;
     // DERIVE from the target, never hardcode the address. The loci law titles a headless carrier
-    // `<the --to bag>/<basename>`, so the expectation moves whenever the bag URI does — and a literal
-    // here simply records where the bag USED to live, which is what it had come to record.
-    expect(titles).toContain(`${LARES_URI}/plain`);
-    expect(titles).toContain(`${LARES_URI}/notes`);
+    // `<the bag the --to slot rests for>/<basename>`: a wiki's working slot is where the record rests,
+    // never its name, so a carrier LOADed onto `wikis/lares/working` takes its address under `bags/lares`.
+    expect(titles).toContain(`${LARES_BAG}/plain`);
+    expect(titles).toContain(`${LARES_BAG}/notes`);
+    expect(titles.some((t) => t.startsWith(`${LARES_URI}/`)), "no record takes the slot as its name").toBe(false);
   });
 });

@@ -37,8 +37,12 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
 
-import { CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
+import { frameFloorDuty, verifyPlaceDuty, verifyPlaceDutyAtHead } from "./place-signer.js";
+import type { PlaceKelHead } from "./vessel-kel.js";
+import { CARRIAGE_ADMIT_OPENING_DOMAIN, CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
+import { admitGatePinDigest, readAdmitGatePin } from "./admit-gate-pin.js";
+import type { GateBundlePin } from "./gate-bundle.js";
 import type { QuorumSignature, KahuQuorumSeats } from "./kapae-antigen.js";
 import { foldAntigenVerdicts, type KapaeAntigenEntry, type QuorumVerifier } from "./kapae-antigen.js";
 import { sealKeySetHash, verifySealLineage, type SealEpoch } from "./wax-stamp.js";
@@ -67,6 +71,89 @@ export { CARRIAGE_CARRIER_DOMAIN } from "./domains.js";
  * One board, one monotone CRDT, two folds. Canon: heraldry#/the-herm-card.
  */
 export type CarriageAction = "admit" | "revoke" | "carry" | "uncarry";
+
+/**
+ * WHAT AN ADMIT CARRIES TO THE JOINEE, BOUND BY ITS SIGNATURE (face-proof#/the-gate-exchange, step 5): the gate pin
+ * of the hearth the joinee dials, and the canon documents that hearth names to it, by canon title.
+ *
+ * THE FLOOR STAYS THE FLOOR. A membership entry carries the operator's pubkey, the accepts-carriage proof and the
+ * charter epoch, and nothing above it (membership-doctrine#/the-operator-contract, operator-ruled), and the members
+ * board travels. So the quorum signs a HIDING COMMITMENT to the carriage (`carriageCommit`, a digest over a fresh
+ * random salt beside the pin and the canon list) and the board carries that commitment alone: no hearth key and
+ * no document address rides the board, and no two admits share a value. The OPENING (the carriage and its salt)
+ * rides only where the subject's own hands carry it: the admit bundle, and the partial that crosses between the
+ * founders' vaults. A joinee accepts either value only off an opening whose commitment the held quorum signed
+ * (`verifySignedAdmitBundle`).
+ *
+ * A canon title names a carried canon document, never a derivable system plane (`hearth-canon.ts`). The map stays
+ * small: a hearth names a handful of canon documents, never a catalog.
+ */
+export interface AdmitCarriage {
+  /**
+   * The hearth's FULL gate pin for its sovereign sync route at the Nexus (`readAdmitGatePin`): tier, Nexus, route, the
+   * X25519 key that answers a flight and the Ed25519 key that signs the verdict. The commitment is over its digest.
+   */
+  readonly gatePin: GateBundlePin;
+  /** Canon title → document url. */
+  readonly canon:   Readonly<Record<string, string>>;
+}
+
+/** The carriage and the salt its commitment hides it under. */
+export interface AdmitOpening {
+  readonly carriage: AdmitCarriage;
+  /** 32 random bytes, 64 lower-case hex. */
+  readonly salt:     string;
+}
+
+/** How many canon documents one admit may name. */
+export const ADMIT_CANON_BOUND = 16;
+const ADMIT_CANON_TEXT = /^[\x21-\x7e]{1,512}$/;
+const HEX64 = /^[0-9a-f]{64}$/;
+const plain = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+const exactly = (v: Record<string, unknown>, keys: readonly string[]): boolean =>
+  Reflect.ownKeys(v).length === keys.length && keys.every((k) => Object.hasOwn(v, k));
+
+/**
+ * Read an admit's carriage at its exact shape, or null. It copies the two fields alone, and holds the pin to the
+ * sovereign tier and the sovereign sync route. The Nexus it stands at is held where the Nexus is known
+ * (`readAdmitGatePinAt`): the signed-bundle door and the fleet-join answer.
+ */
+export function readAdmitCarriage(v: unknown): AdmitCarriage | null {
+  if (!plain(v) || !exactly(v, ["gatePin", "canon"])) return null;
+  const { gatePin, canon } = v;
+  const pin = readAdmitGatePin(gatePin);
+  if (!("pin" in pin) || !plain(canon)) return null;
+  const entries = Object.entries(canon);
+  if (entries.length > ADMIT_CANON_BOUND) return null;
+  const read: Record<string, string> = {};
+  for (const [title, url] of entries) {
+    if (!ADMIT_CANON_TEXT.test(title) || typeof url !== "string" || !ADMIT_CANON_TEXT.test(url)) return null;
+    read[title] = url;
+  }
+  return { gatePin: pin.pin, canon: read };
+}
+
+/** Read an opening at its exact shape, or null. */
+export function readAdmitOpening(v: unknown): AdmitOpening | null {
+  if (!plain(v) || !exactly(v, ["carriage", "salt"])) return null;
+  const carriage = readAdmitCarriage(v["carriage"]);
+  const salt = v["salt"];
+  return carriage !== null && typeof salt === "string" && HEX64.test(salt) ? { carriage, salt } : null;
+}
+
+/** The commitment an admit's quorum signs: one digest over the opening under its own domain. */
+export function admitCarriageCommit(opening: AdmitOpening): string {
+  return sha256HexBytesSync(canonicalJsonBytes({
+    domain: CARRIAGE_ADMIT_OPENING_DOMAIN, salt: opening.salt, gatePin: admitGatePinDigest(opening.carriage.gatePin), canon: opening.carriage.canon,
+  }));
+}
+
+/** Hide a carriage under a fresh random salt. */
+export function openAdmitCarriage(carriage: AdmitCarriage): AdmitOpening {
+  const salt = new Uint8Array(32);
+  globalThis.crypto.getRandomValues(salt);
+  return { carriage, salt: Array.from(salt, (b) => b.toString(16).padStart(2, "0")).join("") };
+}
 
 /**
  * One entry in the members set — a quorum-signed admit or revoke of ONE operator nym. Monotone/additive
@@ -100,6 +187,9 @@ export interface CarriageEntry {
    * Nexus could conscript an operator by re-presenting a place's seal, or the reverse.
    */
   readonly contractSig?:    QuorumSignature;
+  /** An ADMIT's hiding commitment to its carriage (`admitCarriageCommit`), 64 lower-case hex, signed inside the act
+   *  image. An admit may carry none, and then hands out no carriage; any other act that carries one never counts. */
+  readonly carriageCommit?: string;
 }
 
 /**
@@ -117,6 +207,8 @@ export function carriageEntryBytes(
     action: entry.action,
     parents: [...new Set(entry.parents)].sort(),
     sealEpochCid: entry.sealEpochCid,
+    // Absent, the image stays byte-identical to an entry that never knew the field.
+    ...(entry.carriageCommit !== undefined ? { carriageCommit: entry.carriageCommit } : {}),
   });
 }
 
@@ -150,11 +242,11 @@ export function carriageContractBytes(parts: { nym: string; sealEpochCid: string
  * for one asked a crossroads to seat the one thing its class exists to prevent.
  */
 export function carrierContractBytes(parts: { nym: string; sealEpochCid: string }): Uint8Array {
-  return canonicalJsonBytes({
+  return frameFloorDuty(CARRIAGE_CARRIER_DOMAIN, canonicalJsonBytes({
     kind:         CARRIAGE_CARRIER_DOMAIN,
     nym:          parts.nym,
     sealEpochCid: parts.sealEpochCid,
-  });
+  }));
 }
 
 /**
@@ -182,8 +274,23 @@ export async function verifyCarrierContract(
   if (!/^[0-9a-f]{64}$/.test(nym)) return false;
   if (!/^[0-9a-f]+$/.test(seal.sig) || seal.sig.length === 0) return false;
   const bytes = carrierContractBytes({ nym, sealEpochCid: seal.sealEpochCid });
-  try { return verifyEd25519(seal.sig, bytes, nym); }
+  try { return verifyPlaceDuty({ domain: CARRIAGE_CARRIER_DOMAIN, image: bytes, sig: seal.sig, signerKey: nym }); }
   catch { return false; }
+}
+
+/**
+ * Does a carrier seal prove itself AT THE HEAD of the place's KEL it names? The signer is the one the KEL seats at `kel`
+ * (`verifyPlaceDutyAtHead`), and the seal names that signer as its nym: an older signer after a rotation, and a seal naming any
+ * other key, each read false. The landing doors judge a carry through here with the head the carried floor pin claim names;
+ * the fold itself stays keyless of any KEL (`verifyCarrierContract`), since a counted seal records the signer the place held when
+ * it consented.
+ */
+export function verifyCarrierContractAtHead(seal: { nym: string; sealEpochCid: string; sig: string }, kel: PlaceKelHead): boolean {
+  try {
+    const nym = seal.nym.trim().toLowerCase();
+    if (!kel || kel.ok !== true || kel.signerKey !== nym || !/^[0-9a-f]+$/.test(seal.sig)) return false;
+    return verifyPlaceDutyAtHead({ kel, domain: CARRIAGE_CARRIER_DOMAIN, image: carrierContractBytes({ nym, sealEpochCid: seal.sealEpochCid }), sig: seal.sig });
+  } catch { return false; }
 }
 
 /**
@@ -292,6 +399,9 @@ function entryShapeIsReadable(entry: CarriageEntry): boolean {
 
 async function countReason(entry: CarriageEntry, roster: KahuQuorumSeats): Promise<{ counted: boolean; reason: string }> {
   if (!entryShapeIsReadable(entry)) return { counted: false, reason: "malformed-entry" };
+  if (entry.carriageCommit !== undefined && (entry.action !== "admit" || typeof entry.carriageCommit !== "string" || !HEX64.test(entry.carriageCommit))) {
+    return { counted: false, reason: "carriage-malformed" };
+  }
   if (entry.sealEpochCid !== roster.sealEpochCid) return { counted: false, reason: "wrong-charter-epoch" };
   if (entry.action !== "admit" && entry.action !== "revoke" && entry.action !== "carry" && entry.action !== "uncarry") {
     return { counted: false, reason: "unsupported-action" };
@@ -337,20 +447,31 @@ export function isCarriageDescendant(
  * Fold with evidence retained for a receiver-local relation verifier. The fold never picks a winner
  * between contradictory concurrent heads: both remain visible as `unsettled` and the member/carrier
  * projection fails closed.
+ *
+ * `ancestry` lets an act at a CLOSED epoch count where a counted chain of roll anchors carries it to the head
+ * and the act stood in every such anchor's past (`anchoredAncestryReader`); a counted parent at an ancestor
+ * epoch then stays a valid parent. Absent, only acts at the head count.
  */
 export async function foldCarriageDetails(
   entries: Iterable<CarriageEntry> | undefined,
   roster: KahuQuorumSeats | undefined,
+  ancestry?: CarriageAncestry,
 ): Promise<CarriageFoldDetails> {
   if (entries === undefined || roster === undefined) {
     return { charterEpochCid: roster?.sealEpochCid ?? null, members: new Set<string>(), carriers: new Set<string>(), entries: [] };
   }
   const source = [...entries];
   type MutableDetail = { nym: string; action: CarriageAction | string; parents: readonly string[]; evidenceCid: string; sealEpochCid: string; counted: boolean; state: CarriageFoldWinnerState; reason: string };
-  const counted: Array<{ entry: CarriageEntry; detail: MutableDetail }> = [];
+  const counted: Array<{ entry: CarriageEntry; detail: MutableDetail; anchored: boolean }> = [];
   const details: MutableDetail[] = [];
+  const anchoredRead = ancestry === undefined ? null : anchoredAncestryReader(source, roster, ancestry);
   for (const entry of source) {
-    const result = await countReason(entry, roster);
+    let result = await countReason(entry, roster);
+    let anchored = false;
+    if (anchoredRead !== null && result.reason === "wrong-charter-epoch") {
+      result = await anchoredRead.countReason(entry);
+      anchored = result.counted;
+    }
     const readable = entryShapeIsReadable(entry);
     const parents = readable ? [...entry.parents].sort() : [];
     const evidenceCid = readable ? carriageEntryActCid(entry) : "";
@@ -365,9 +486,9 @@ export async function foldCarriageDetails(
       reason: result.reason,
     };
     details.push(detail);
-    if (result.counted) counted.push({ entry, detail });
+    if (result.counted) counted.push({ entry, detail, anchored });
   }
-  const byCid = new Map<string, { entry: CarriageEntry; detail: MutableDetail }>();
+  const byCid = new Map<string, { entry: CarriageEntry; detail: MutableDetail; anchored: boolean }>();
   for (const candidate of counted) byCid.set(candidate.detail.evidenceCid, candidate);
   // A counted act whose causal parent is absent or belongs to another relation cannot become a head.
   // Re-run to a fixed point: a child of a parent invalidated by a missing grandparent is unavailable too.
@@ -381,7 +502,8 @@ export async function foldCarriageDetails(
         const parentNode = byCid.get(parent);
         return !parentNode || relationFamily(parentNode.entry.action) !== family ||
           parentNode.entry.nym.toLowerCase() !== candidate.entry.nym.toLowerCase() ||
-          parentNode.entry.sealEpochCid !== candidate.entry.sealEpochCid;
+          (parentNode.entry.sealEpochCid !== candidate.entry.sealEpochCid &&
+            !(anchoredRead?.epochPrecedes(parentNode.entry.sealEpochCid, candidate.entry.sealEpochCid) ?? false));
       });
       if (missing) {
         candidate.detail.counted = false;
@@ -393,7 +515,7 @@ export async function foldCarriageDetails(
     }
   }
 
-  const byRelation = new Map<string, Array<{ entry: CarriageEntry; detail: MutableDetail }>>();
+  const byRelation = new Map<string, Array<{ entry: CarriageEntry; detail: MutableDetail; anchored: boolean }>>();
   for (const candidate of counted) {
     if (!candidate.detail.counted) continue;
     const family = relationFamily(candidate.entry.action);
@@ -404,29 +526,32 @@ export async function foldCarriageDetails(
   }
   const members = new Set<string>();
   const carriers = new Set<string>();
+  // An act counted through anchored ancestry says so on every reason the relation fold hands it.
+  const road = (candidate: { anchored: boolean }, reason: string): string =>
+    candidate.anchored ? `${reason}${THROUGH_ANCHORED_ANCESTRY}` : reason;
   for (const [key, candidates] of byRelation) {
     const family = key.slice(0, key.indexOf(":"));
     const heads = candidates.filter((candidate) => !candidates.some((other) =>
       other !== candidate && other.entry.parents.includes(candidate.detail.evidenceCid)));
     if (heads.length === 0) {
-      for (const candidate of candidates) { candidate.detail.state = "unsettled"; candidate.detail.reason = "causal-cycle"; }
+      for (const candidate of candidates) { candidate.detail.state = "unsettled"; candidate.detail.reason = road(candidate, "causal-cycle"); }
       continue;
     }
     const actions = new Set(heads.map((head) => head.entry.action));
     const contradictory = (family === "member" && actions.has("admit") && actions.has("revoke")) ||
       (family === "carrier" && actions.has("carry") && actions.has("uncarry"));
     if (contradictory) {
-      for (const head of heads) { head.detail.state = "unsettled"; head.detail.reason = "concurrent-contradictory-heads"; }
+      for (const head of heads) { head.detail.state = "unsettled"; head.detail.reason = road(head, "concurrent-contradictory-heads"); }
       continue;
     }
     const headState: CarriageFoldWinnerState = heads[0]!.entry.action === "admit" || heads[0]!.entry.action === "carry" ? "accepted" : "revoked";
     for (const candidate of candidates) {
       if (heads.includes(candidate)) {
         candidate.detail.state = headState;
-        candidate.detail.reason = headState === "accepted" ? "causal-head-accepted" : "causal-head-revoked";
+        candidate.detail.reason = road(candidate, headState === "accepted" ? "causal-head-accepted" : "causal-head-revoked");
       } else {
         candidate.detail.state = "ignored";
-        candidate.detail.reason = "superseded-by-descendant";
+        candidate.detail.reason = road(candidate, "superseded-by-descendant");
       }
     }
     const nym = candidates[0]!.detail.nym;
@@ -511,8 +636,9 @@ export async function signCarriageContract(
 export async function foldCarriageSet(
   entries: Iterable<CarriageEntry>,
   roster: KahuQuorumSeats,
+  ancestry?: CarriageAncestry,
 ): Promise<ReadonlySet<string>> {
-  return (await foldCarriageDetails(entries, roster)).members;
+  return (await foldCarriageDetails(entries, roster, ancestry)).members;
 }
 
 /** Does this operator nym stand a contracted member in the folded members set? */
@@ -534,13 +660,134 @@ export function holdsCarriage(nym: string, memberSet: ReadonlySet<string>): bool
 export async function foldCarrierSet(
   entries: Iterable<CarriageEntry>,
   roster: KahuQuorumSeats,
+  ancestry?: CarriageAncestry,
 ): Promise<ReadonlySet<string>> {
-  return (await foldCarriageDetails(entries, roster)).carriers;
+  return (await foldCarriageDetails(entries, roster, ancestry)).carriers;
 }
 
 /** Does this PLACE's vessel key stand a contracted carrier in the folded carrier set? */
 export function holdsCarrier(nym: string, carrierSet: ReadonlySet<string>): boolean {
   return carrierSet.has(nym.toLowerCase());
+}
+
+/**
+ * What lets the fold count an act at a CLOSED epoch: the charter's epoch lineage (genesis first, its last
+ * epoch the roster's head) and the roll anchors the board holds, orphans included. Absent, the fold counts
+ * acts at the head alone.
+ */
+export interface CarriageAncestry {
+  readonly sealLineage: readonly SealEpoch[];
+  readonly anchors:     readonly RollAnchor[];
+}
+
+/** The suffix a fold reason wears when its act counted through anchored ancestry. */
+const THROUGH_ANCHORED_ANCESTRY = "-through-anchored-ancestry";
+/** The walk steps through at most this many anchors that pass their check per epoch (a refused one costs no step), and keeps at most this many whole chains. */
+const ANCESTRY_STEP_BOUND = 256;
+const ANCESTRY_CHAIN_BOUND = 16;
+
+/**
+ * The fold's anchored-ancestry reader. An act at epoch E, apart from the head, counts only when:
+ *   1. E stands on the verified charter lineage below the head;
+ *   2. some chain of the supplied anchors carries E to the head, each step judged as `resolveAnchoredChain`
+ *      judges it; a board may hold orphans, so the walk tries every candidate at each step, bounded;
+ *   3. the act counts under E's roster, the one the chain resolves;
+ *   4. the act sits in the causal past of EVERY anchor on that chain, read over all supplied entries plus
+ *      the anchors: an act minted under E's keys after E rolled stands in no anchor's past.
+ * Fails 1 or 2 → `epoch-not-anchored`; fails 4 → `not-in-anchor-past`; fails 3 → the act's own reason.
+ */
+function anchoredAncestryReader(source: readonly CarriageEntry[], head: KahuQuorumSeats, ancestry: CarriageAncestry) {
+  const lineage = Array.isArray(ancestry.sealLineage) ? ancestry.sealLineage : [];
+  // Every copy stays: a CID omits the signatures, so a stripped copy shares the real anchor's CID and must
+  // never displace it. Copies collapse only after one passes its check (`step`).
+  const anchors = (Array.isArray(ancestry.anchors) ? ancestry.anchors : []).filter((a) => isRollAnchor(a));
+  // The signature count is the dear check: one verdict per anchor under each opening roster.
+  const countsMemo = new Map<RollAnchor, Map<string, Promise<boolean>>>();
+  const countsUnder = (anchor: RollAnchor, opened: KahuQuorumSeats): Promise<boolean> => {
+    const key = `${opened.sealEpochCid}|${opened.threshold}|${opened.keys.join(",")}`;
+    let per = countsMemo.get(anchor);
+    if (per === undefined) { per = new Map(); countsMemo.set(anchor, per); }
+    let verdict = per.get(key);
+    if (verdict === undefined) { verdict = rollAnchorCounts(anchor, opened); per.set(key, verdict); }
+    return verdict;
+  };
+  // The checks of `anchorStepRefusal`, cheap ones first and the signature count memoised.
+  const stepPasses = async (anchor: RollAnchor, closed: SealEpoch, opened: KahuQuorumSeats, later: RollAnchor | null): Promise<boolean> =>
+    anchor.prevEpochCid === closed.epochCid &&
+    sealKeySetHash(anchor.prevKeys, anchor.prevThreshold) === closed.keySetHash &&
+    (later === null || later.parents.includes(rollAnchorCid(anchor))) &&
+    (await countsUnder(anchor, opened));
+  const lineageHolds = lineage.length > 0 && verifySealLineage(lineage) &&
+    lineage[lineage.length - 1]!.epochCid === head.sealEpochCid;
+  const position = new Map<string, number>();
+  if (lineageHolds) lineage.forEach((e, i) => { if (!position.has(e.epochCid)) position.set(e.epochCid, i); });
+
+  const graph = new Map<string, { readonly parents: readonly string[] }>();
+  for (const entry of source) if (entryShapeIsReadable(entry)) graph.set(carriageEntryActCid(entry), entry);
+  for (const anchor of anchors) graph.set(rollAnchorCid(anchor), anchor);
+
+  const chainsTo = new Map<string, Promise<AnchoredChain[]>>();
+  async function walk(epoch: string): Promise<AnchoredChain[]> {
+    const at = position.get(epoch);
+    const last = lineage.length - 1;
+    if (at === undefined || at >= last) return [];
+    const out: AnchoredChain[] = [];
+    let steps = 0;
+    const rosters = new Map<string, KahuQuorumSeats>([[head.sealEpochCid, head]]);
+    const walked: RollAnchor[] = [];
+    async function step(j: number, opened: KahuQuorumSeats, later: RollAnchor | null): Promise<void> {
+      if (j === at) { out.push({ rosters: new Map(rosters), anchors: [...walked] }); return; }
+      const closed = lineage[j - 1]!;
+      const passed = new Set<string>();
+      for (const anchor of anchors) {
+        if (anchor.sealEpochCid !== lineage[j]!.epochCid) continue;
+        if (out.length >= ANCESTRY_CHAIN_BOUND) return;
+        // A refused anchor spends no budget, so a board flooded with forgeries never starves the real one;
+        // a second passing copy of one CID walks nothing new.
+        if (!(await stepPasses(anchor, closed, opened, later))) continue;
+        const cid = rollAnchorCid(anchor);
+        if (passed.has(cid)) continue;
+        passed.add(cid);
+        if (++steps > ANCESTRY_STEP_BOUND) return;
+        const next = rosterClosedBy(anchor, closed);
+        rosters.set(closed.epochCid, next);
+        walked.unshift(anchor);
+        await step(j - 1, next, anchor);
+        walked.shift();
+        rosters.delete(closed.epochCid);
+      }
+    }
+    await step(last, head, null);
+    return out;
+  }
+
+  return {
+    /** The fold reason for an act at an epoch apart from the head. */
+    async countReason(entry: CarriageEntry): Promise<{ counted: boolean; reason: string }> {
+      let chains = chainsTo.get(entry.sealEpochCid);
+      if (!chains) { chains = walk(entry.sealEpochCid); chainsTo.set(entry.sealEpochCid, chains); }
+      const found = await chains;
+      if (found.length === 0) return { counted: false, reason: "epoch-not-anchored" };
+      const cid = carriageEntryActCid(entry);
+      let own: { counted: boolean; reason: string } | null = null;
+      let countedSomewhere = false;
+      for (const chain of found) {
+        const result = await countReason(entry, chain.rosters.get(entry.sealEpochCid)!);
+        if (!result.counted) { own ??= result; continue; }
+        countedSomewhere = true;
+        if (chain.anchors.every((anchor) => isCarriageDescendant(rollAnchorCid(anchor), cid, graph))) {
+          return { counted: true, reason: `${result.reason}${THROUGH_ANCHORED_ANCESTRY}` };
+        }
+      }
+      return countedSomewhere || own === null ? { counted: false, reason: "not-in-anchor-past" } : own;
+    },
+    /** Whether `ancestor` stands strictly below `epoch` on the verified lineage. */
+    epochPrecedes(ancestor: string, epoch: string): boolean {
+      const a = position.get(ancestor);
+      const b = position.get(epoch);
+      return a !== undefined && b !== undefined && a < b;
+    },
+  };
 }
 
 // ── the roll anchor ──────────────────────────────────────────────────────────────────────────────────────────
@@ -740,9 +987,30 @@ function presentedVerdict(state: PresentedAdmitState, reason: string, nym: strin
 }
 
 /** The rosters a counted anchor chain resolves, keyed by epoch cid, and the anchors oldest-first. */
-interface AnchoredChain {
+export interface AnchoredChain {
   readonly rosters: ReadonlyMap<string, KahuQuorumSeats>;
   readonly anchors: readonly RollAnchor[];
+}
+
+/**
+ * One step of an anchored walk: the anchor that opens the epoch above `closed`. It must name `closed` as the
+ * epoch it closes, count under `opened` (the roster of the epoch it opens), carry a key-set that hashes to
+ * `closed.keySetHash`, and stand cited by `later`, the anchor one step nearer the head. Answers the
+ * wrong-epoch reason, or null where the step holds. The presented-admit walk and the fold's walk share it.
+ */
+async function anchorStepRefusal(
+  anchor: RollAnchor, closed: SealEpoch, opened: KahuQuorumSeats, later: RollAnchor | null,
+): Promise<string | null> {
+  if (anchor.prevEpochCid !== closed.epochCid) return "anchor-off-the-charter-lineage";
+  if (!(await rollAnchorCounts(anchor, opened))) return "anchor-not-counted";
+  if (sealKeySetHash(anchor.prevKeys, anchor.prevThreshold) !== closed.keySetHash) return "anchor-key-set-unbound";
+  if (later && !later.parents.includes(rollAnchorCid(anchor))) return "anchor-chain-broken";
+  return null;
+}
+
+/** The roster a counted anchor step resolves for the epoch it closes. */
+function rosterClosedBy(anchor: RollAnchor, closed: SealEpoch): KahuQuorumSeats {
+  return { keys: [...anchor.prevKeys], threshold: anchor.prevThreshold, sealEpochCid: closed.epochCid };
 }
 
 /**
@@ -752,7 +1020,7 @@ interface AnchoredChain {
  * the anchor that opens lineage[j+1]. Every presented anchor must sit on the walk. A string names the
  * wrong-epoch reason; a `{ rejected }` names a malformed presentation.
  */
-async function resolveAnchoredChain(
+export async function resolveAnchoredChain(
   admitEpoch: string,
   head: KahuQuorumSeats,
   sealLineage: readonly SealEpoch[] | undefined,
@@ -779,11 +1047,9 @@ async function resolveAnchoredChain(
     const anchor = opens.get(sealLineage[j]!.epochCid);
     if (!anchor) return "anchor-missing";
     const closed = sealLineage[j - 1]!;
-    if (anchor.prevEpochCid !== closed.epochCid) return "anchor-off-the-charter-lineage";
-    if (!(await rollAnchorCounts(anchor, opened))) return "anchor-not-counted";
-    if (sealKeySetHash(anchor.prevKeys, anchor.prevThreshold) !== closed.keySetHash) return "anchor-key-set-unbound";
-    if (later && !later.parents.includes(rollAnchorCid(anchor))) return "anchor-chain-broken";
-    opened = { keys: [...anchor.prevKeys], threshold: anchor.prevThreshold, sealEpochCid: closed.epochCid };
+    const refusal = await anchorStepRefusal(anchor, closed, opened, later);
+    if (refusal !== null) return refusal;
+    opened = rosterClosedBy(anchor, closed);
     rosters.set(closed.epochCid, opened);
     walked.unshift(anchor);
     later = anchor;

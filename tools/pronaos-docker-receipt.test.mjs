@@ -4,7 +4,7 @@ import { readRunningPronaosReceipt } from "./pronaos-docker-receipt.mjs";
 
 test("live expected input comes from the attributed image, independent of host receipt", async () => {
   let calls = [];
-  const imageReceipt = { schema: "lararium-pronaos-artifact/v1", routes: [{ path: "/", file: "index.html" }] };
+  const imageReceipt = { schema: "lararium-pronaos-artifact", routes: [{ path: "/", file: "index.html" }] };
   const run = async (_file, args) => {
     calls.push(args);
     if (args[0] === "inspect") return { stdout: "0123456789abcdef0123456789abcdef\n" };

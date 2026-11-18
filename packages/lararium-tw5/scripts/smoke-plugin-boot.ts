@@ -73,7 +73,7 @@ async function main(): Promise<void> {
   const memeWithFraming = frameCarrier({
     head: { uri: carrierUri },
     prologue: "prose above the declaration\n\n",
-    body: "```toml meta\nuri-path = \"probe-meme\"\n```\n\n<<~ ahu #/head>>\nbody\n<<~/ahu>>",
+    body: "```toml meta\nuri-path = \"probe-meme\"\n```\n\n<<~ ahu slot=`#/head`>>\nbody\n<<~/ahu>>",
     postamble: "\ntrailing prose past the frame\n",
   });
   type DeserializedFields = Record<string, string | string[]>;
@@ -117,11 +117,11 @@ async function main(): Promise<void> {
       "uri-path = \"probe-slot-meme\"",
       "```",
       "",
-      "<<~ ahu #/parent>>",
+      "<<~ ahu slot=`#/parent`>>",
       "```toml meta",
       "field = \"value\"",
       "```",
-      "<<~ ahu #/child>>",
+      "<<~ ahu slot=`#/child`>>",
       "child body",
       "<<~/ahu>>",
       "trailing slot prose",

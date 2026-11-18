@@ -14,7 +14,7 @@
  *            the classic hollow-triangle obstruction). Each plane's reading stays true; there is nothing
  *            to average toward. DO NOT FUSE — surface the obstruction as SIGNAL, route to Talk-Story,
  *            never average it away. The reconciliation cost `R*_sem = log₂ dim H¹` (Thomas–Chen) rides
- *            the wire as the federation/mana rating axis: how expensive to reconcile these planes.
+ *            the wire as the federation reconciliation-cost axis: how expensive to reconcile these planes.
  *
  * ── WHERE THE SUBTLETY LIVES (honest note, per the build charge) ──────────────────────────────────
  *
@@ -265,7 +265,7 @@ export interface CohomologyObstruction {
   readonly kind: "reconcilable" | "ontological";
 }
 
-/** The reconciliation cost `R*_sem = log₂ dim H¹` (Thomas–Chen); the federation/mana rating axis. */
+/** The reconciliation cost `R*_sem = log₂ dim H¹` (Thomas–Chen); the federation reconciliation-cost axis. */
 export function reconciliationCost(dimH1: number): number {
   return dimH1 > 0 ? Math.log2(dimH1) : 0;
 }

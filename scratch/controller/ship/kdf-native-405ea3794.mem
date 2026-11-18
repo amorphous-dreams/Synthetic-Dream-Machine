@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/kdf-native-405ea3794`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-01 (file date) — source `.lares-scratch/controller/ship/kdf-native-405ea3794.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/kdf-native-405ea3794"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/kdf-native-405ea3794"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! kdf-native-405ea3794.md — plan, 2026-11-01
+
+Verbatim scratch record `.lares-scratch/controller/ship/kdf-native-405ea3794.md` (plan, file date 2026-11-01); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-lane-kdf-native-head-405ea37948f19596ab90d6`>>
+
+! SHIP · lane kdf-native · head 405ea37948f19596ab90d600a7dfd9e7abecf58d
+Base read: blind Opus Keystone-Reader SHIP at 8947ae4a6 (ship/kdf-native-8947ae4a6.md). Slice 6 delta (8947ae4a6..405ea3794) read by the controller: charge-first with refund on opens and no-derivation readings (root-unopenable refunds only after a right guess, same information as an open), fck zero-fill on founding throws, keyslot-internal-door witness. 2026-11-01.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fvuXM7cQuOc1l1X8qdJm6g2UKUn4JdrLARZPp8Uugyw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,255 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/workbench/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/workbench/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/workbench/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/workbench/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/workbench/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/workbench/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/benchwright-lares-the-workbench-lane-hand-back`>>
+
+! Benchwright: Lares (Tasked Spirit) — the workbench lane, hand-back
+
+<code>&lt;&lt;~ set lares="yield" … from="lar:&#47;&#47;/workbench.holds.working/one-path" to="?">></code>
+
+Branch: `feature/green-jello-dinosaur-5--workbench`, cut from `9baa6a506`. It has been pushed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-stands-now`>>
+
+!! What stands now (after three operator rulings arrived mid-lane)
+
+The final design follows the operator rulings of 2026-11-11. They replaced brief points 4, 5 and 10:
+
+* "Personal can absorb the new caps."
+* "Unpono, rip out old code, enact the full new design, early-alpha law holds."
+* The isomorphic-by-intent confirmation.
+
+''One path for working layers.'' Every wiki except the daemon's keeps its working layer in a realm workbench.
+* The slot `wikis/<slug>/working` keeps its place in the one recipe: canon → working (the workbench) → personal → draft → temp.
+* The slot now resolves to `realmWorkbenchDocUrl(realm, slug)`, which is `deterministicDocUrl(REALM_BOARD_URI/<realm>#working/<NFC slug>)`.
+
+''First stand.'' A wiki's first stand under a face founds a private cabal of one (`standWorkbench`):
+* It uses `foundCabalRealm` with no glamour and no announce.
+* The realm's Keyhive sentinel Document seats the owning face. The provider adopts the working bag onto that same Document, so one roster names the readers.
+* The vessel ledger (`edgeLedgerDocUrl(place key)`) records `workbench` rows for the slug and seat notes. It never calls `noteRealm`, so no realm plane stands up.
+
+''Sharing.'' A `kind:"wiki"` share row seats more faces through Keyhive `delegate`: `admin` for writers, `read` for readers.
+* If the row stops naming a face, `revokeSentinelMember` removes it. This is Keyhive's convergent tombstone; there are no epochs or counters.
+* The workbench address never moves.
+
+''`personal`'' holds a face's private margin as well as its view state.
+* It reaches the face's own devices only.
+* It mirrors per face to `<projections>/personal/<F>/<slug>/`, and the seed lays it back.
+
+''No face, no working layer.'' A vessel that wears no face cannot open a wiki working layer and refuses `no-face`. The daemon wiki stays the named exception: it keeps its device slot and refuses every share (`share-face-private`).
+
+''Removed (no back-compat):''
+* `face-working-address.ts`, its domain and its test.
+* The working floor: `WorkingFloorAnchor`, `workingFloorAnchorOf`, `floorAnchorSegment`, `wikiWorkingFloorKey`, and the manifest field `workingFloorAnchor`.
+* The node and browser anchor reads.
+* The resolver's derived, floor and seat-gap working paths, and its ports `faceAddressSecret`, `floorAnchor`, `faceWorkingDoc` and `rebindWorking`.
+* The working leg of the anon-veil lift.
+* From the first cut: the separate workbench slot, its grant threading, and the wiki→workbench lift (red test 10 was dropped, as ruled).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/round-2`>>
+
+!! Round 2 (controller asks: merge the span, converge offline founding, one owner for membership, restart workspaces)
+
+* ''Merge'' (`47ce0402b`): span `6d2f476f3` is merged in, keeping both intents. A sibling face now labels its slots with its own atom key (`LitFaceSlotSpec.atomKey`) and reads its working slot through its own workbench port. The kahu-reach refusals now say "house canon". The CHANGELOG carries both sides. The seed census K15 counts rise for the vessel ledger's place-key read (operator-daemon-behavior 5, open-node-vessel 10).
+** No format literal I added carries `/vN`. The evergreen version count reads 0/0.
+** ''I owned up to a miss.'' `pnpm -r typecheck` does not cover test files, so my one-path commit had left six test files still naming the removed working machinery.
+** Those tests are now cured or deleted:
+*** `working-seat-lift` and `working-floor-anchor-choice` are deleted.
+*** `working-attach-refusal`: the anchor-gate and rebind cases are deleted.
+*** `lit-face-slots` L1 now reads the workbench port.
+*** `catalog-view` now uses the draft-floor row, and the dead `/working-floor/` arm in `catalogRowHalf` is removed.
+*** `face-working-slot-founding` and `stand-founded-island` now read the secret through the face catalog.
+* ''Offline founding converges.'' The private-cabal-of-one realm id is `privateCabalRealmId(face PersonaGroup, NFC slug)`, under the new domain `private-cabal-realm`.
+** Two offline devices of one face therefore stand one realm and one workbench address, and their ledgers merge on one row.
+** ''Keyhive cannot derive a Document identity.'' `generateDocument` mints the Document's id from a fresh signing key, and no seed or ChangeId input reaches it.
+** So each vessel mints its own sentinel Document for the derived realm and records it in its ledger (`workbench-key`). The closest deterministic shape is the realm's name and the workbench address; the key Document stays per vessel.
+** Red test ''K9'': two offline devices of one face stand the wiki, merge, and land one realm. A second stand founds nothing.
+* ''One owner for membership.'' The ledger seat rows are now a projection of the key Document's roster.
+** Only `projectWorkbenchRoster` writes or drops them, and every roster read (a landing, a mount) re-projects.
+** The guard reads the projection and withholds when a row is absent.
+** An agent the replica's hive cannot name reads as no seat, so the guard fails closed.
+** Red test ''K10'': A revokes the engineer while B still holds the engineer's row. B's hive ingests A's events, B's projection drops the row, and B's guard refuses. A row written outside the projection is overwritten at the next projection.
+* ''Restart keeps workspaces.'' Both shims' restart `up` now carries every `LARES_WORKSPACES` bind. A shim test covers this for sh and pwsh.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits`>>
+
+!! Commits
+
+| sha | line |h
+| `dd6335a61` | `lar:///workbench.shares.faces/private-cabal` — first cut: private cabal, ledger, refusals, guard class, share row `workspace`, daemon refusal. This commit also carried the separate-slot design that later commits removed. |
+| `80f3f0719` | `lar:///workbench.holds.working/one-path` — the one path: working = realm workbench, per-face working removed, personal margin plus per-face mirror and seed-back, workspace roots, guard wiring, `<root>/workspaces` house class |
+| `3f5bef6ba` | `lar:///workspace.binds.workbench/shim-parity` — sh + PowerShell shims bind `/lar/workspaces/<name>`, with refusals; node mirror tests |
+| `6576c2313` | `lar:///canon.names.workbench/realm-path` — canon trued (L-Prime), carriers restamped, CHANGELOG |
+| `47ce0402b` | `lar:///workbench.converges.islands/span-merge` — span merge; stale tests cured; derived realm id (offline convergence); roster projection as the one owner; restart workspaces; canon and CHANGELOG |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/files-moved`>>
+
+!! Files moved (main)
+
+* ''mesh''
+** `workbench.ts` (new): refusals, ledger rows, seat notes, `workbenchDecider`
+** `deterministic-doc.ts` (`realmWorkbenchDocUrl`)
+** `protected-doc-guard.ts` (class `realm-workbench`)
+** `share-config.ts` (`workspace` field, `share-face-private`)
+** `vessel-island-pool-core.ts` (workspace root, `faceFolder` per-face personal mirror)
+** `wiki-recipe.ts`, `island-protocol.ts`, `domains.ts` (removals)
+** `face-working-address.ts` (deleted)
+* ''keyhive''
+** `workbench-realm.ts` (new): found / stand / adopt / admit / remove / holds / land
+** `slot-doc-resolver.ts` (workbench port; per-face working removed)
+** `anon-lift.ts` (working leg removed)
+** `share-apply.ts` (wiki rows seat the workbench)
+** `operator-daemon-behavior.ts` (`faceWorkbench` port, ledger, share port, floor attach)
+** `cabal-realm-ceremony.ts` (substrate derived from the realm id)
+* ''tw5'': `share-verbs.ts` (workspace, daemon refusal), `vessel-steps.ts` (personal mirror designation), `index.ts` (`isPersonalTitle`)
+* ''node''
+** `bag-paths.ts` (`workspaceRootsOf`, `personalFaceRoot`, `PERSONAL_PROJECTION_DIR`)
+** `open-node-vessel.ts` (grants, guard class, ledger watch)
+** `kahu-realm.ts` (`protectedDocsOver` workbench source)
+** `vessel-paths.ts`
+* ''mempalace + sensorium'': `larWorkspacesHome` / `workspaces_home`, in both tongues
+* ''browser'': `open-browser-vessel.ts` (anchor removed)
+* ''cli'': `share-cmd.ts` / `wiki.ts` (`--workspace`), `seed-mirrors.ts` (personal wave per open face)
+* ''shims'': `tools/lares-container.sh`, `tools/lares-container.ps1`, `docker-compose.surface.yml` (comment)
+* ''canon''
+** `cabal-realm.mem#/the-workbench` (new)
+** `disk-projection.mem#/personal` and the bag-role rows
+** `recipe-layer-model.mem` (bindings)
+** `session-contract.mem`
+** `hands-spine-lane.mem`
+* ''CHANGELOG.md''
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/red-tests`>>
+
+!! Red tests
+
+I proved locally each file I authored or rewrote, run alone. Each was written against the absent module or behaviour (red), then went green.
+
+| # | test | where | local |h
+| 1 | outsiders sync zero bytes | mesh `workbench.test.ts` W6: two real automerge repos behind the one guard; a stranger and a faceless peer get nothing, a member gets the doc. Also keyhive K3: no Keyhive seat for a stranger | ✅ |
+| 2 | offline edits from two faces converge | mesh W7: two replicas materialize the one address, write apart, merge commutatively | ✅ |
+| 3 | removed member's later edits refuse | keyhive K2 (`workbench-not-a-member` after revoke) and K8 (a row that drops a face revokes its seat) | ✅ |
+| 4 | address unmoved across add/remove | mesh W1, keyhive K1/K8 | ✅ |
+| 5 | daemon slug refuses a share | mesh W2 (gate, row title, hand-edited share file), keyhive K4 (refused before any Document is minted) | ✅ |
+| 6 | tree-clean | see Gates. The node M1 test covers the workspace refusals for checkout and hearth | partial ✅ / CI |
+| 7 | no announce row for a private cabal | keyhive K5: stand and land write only `…/workbench*` ledger rows; no announce, no registration | ✅ |
+| 8 | personal never reaches another face (re-scoped by the ruling) | mesh W8: the one guard carries the workbench to member faces and face A's personal only to A's devices | ✅ |
+| 9 | one wiki under two realms refuses | mesh W3, keyhive K7 | ✅ |
+| 10 | lift once | ''deleted by operator ruling'' (no lift) | — |
+| + | personal survives export → reset → seed | node `workbench-mirrors.test.ts` M3: the disk half (a reset clears only the hearth; the per-face folder survives). The seed's landing into the personal layer runs through `seed-mirrors.ts` and is ''CI/e2e-proved, not run here'' | partial ✅ |
+| + | one shared module under both host grants | node M2: `resolveDiskMirrors` under a disk-holding grant vs the empty browser grant, same recipe | ✅ |
+| + | first stand / replay idempotent | keyhive K6, resolver S5 (founds once, replay lands nothing), mesh W9 (seat notes) | ✅ |
+| + | faceless vessel refuses `no-face` | resolver S6 | ✅ |
+| + | shims | `lares-container.test.mjs` workspace cases (sh + pwsh), run alone by name | ✅ |
+| + | house table weld | `house-root-weld.test.ts`, `test_house_root.py` | ✅ |
+
+Rewritten existing files, also run alone and green: `slot-doc-resolver.test.ts` (S4–S6), `anon-veil-lift.test.ts` (working-floor cases removed). `face-bundle-restore.test.ts` now reads the secret through `faceCatalogDocUrl`; it typechecks but I did not run it, so CI proves it. `share-apply.test.ts` is unchanged but its module moved; CI proves it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gates`>>
+
+!! Gates
+
+* ''Build'' (whole chain) green. ''`pnpm -r typecheck`'' green.
+* ''Evergreen boundary'': green at the ceilings (narration 162/162; my one narration line is cured). No version number, counter, epoch or scalar clock was added.
+* ''bcc'': 807/807 ok. ''doctype'' green. ''domain-registry'' green. Deleting `face-working-address` lowered the domain count to 185.
+* ''lint'': the only reds are in the `TiddlyWiki5` submodule, which I did not touch.
+* ''tree-clean'': I started `tools/tree-clean-witness.sh` believing it was a static gate. It drives both e2e sets, so it broke the "no e2e locally" law. I did not rerun it and its verdict line was not captured. `git status` showed no added dirt under `bags/` or `wikis/`, and no stray processes remain. Treat tree-clean as ''CI-proved''.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-i-decided`>>
+
+!! Forks I decided (moʻolelo — each overrulable)
+
+# ''The slot keeps its name; only its document changes.'' Under the one-path ruling, `wikis/<slug>/working` resolves to the realm workbench. I did not add a new slot. This keeps seed, INGEST, meme put, mirrors, recipe records and the browser on one path with no threading. (My first cut added a separate slot; the later rulings made it dead and I removed it.)
+# ''The realm's sentinel Document also keys the working bag'' (`adoptBag`). Roster and readers stay one list, and removal rolls the key. The realm's genesis bearing is the slot URI.
+# ''A floor wears no face, so it stands no wiki working layer'' (`no-face`). The browser already refuses `wikiAwaitsFace` there. The daemon floor still attaches its own device slot; I dropped the old floor-anchor gate because the daemon's device slot never read the anchor.
+# ''The ledger is the vessel's own edge ledger under the place key.'' (The realm name now derives from face and slug; the per-vessel key Document is a `workbench-key` row.) The island uses `placeVerifyingKey` and the node uses `vesselIdentity.verifyingKey` (the same key). Rows are `workbench`, `workbench-seat`; there is no `noteRealm`.
+# ''(Superseded in round 2)'' The seat rows are a projection of Keyhive's roster, written by `projectWorkbenchRoster` alone. Earlier text: the wire guard decides by vessel-held seat notes. The node main thread holds no Keyhive. The notes are written beside every Keyhive seat (founder included) and dropped at every revoke, and they never cross. Keyhive stays the authority for content keys and the island mount.
+# ''Membership checks at the mount are face-scoped.'' One vessel holds every face's docs, so the resolver's port answers only where that face's own hive holds a seat.
+# ''Checkout-sourced wikis (lares, sdm, …)'' also get a cabal of one and keep their checkout write-back. Only a //shared// private wiki that is checkout-sourced refuses (`workbench-checkout-sourced`), and the share door already skips house canon.
+# ''Per-face personal folder'' is `<projections>/personal/<F>/<slug>`, where F is the worn face's relation. A host with no disk grant (browser) writes nothing; the plaintext reaches disk through a node. The seed lays each open face's folder into that face's own personal layer, by face index for non-worn faces.
+# ''Workspaces are configured in two ways:'' `up --workspace <name>=<dir>` plus `LARES_WORKSPACES` (`;`-separated, so the binds stand on every up). In-vessel, `workspaceRootsOf` re-checks for symlinks into the checkout or hearth, for sourced slugs, and for unbound names. `<root>/workspaces` joins the house table.
+# ''Restart path'' (cured in round 2): the restart's `up` carries every `LARES_WORKSPACES` bind. A workspace named only by an `up --workspace` flag applies to that `up` alone.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/where-the-shared-seam-lives`>>
+
+!! Where the shared seam lives (isomorphic law)
+
+''Shared, called by both hosts:''
+* <code>&#64;lararium/mesh</code> `workbench.ts`, `realmWorkbenchDocUrl`, and `resolveDiskMirrors`.
+* <code>&#64;lararium/keyhive</code> `workbench-realm.ts` and `slot-doc-resolver.ts`.
+* `operator-daemon-behavior.ts`. Both `node-daemon-island.ts` and the browser's `daemon-island-start.ts` mount this one behavior.
+
+''Host-forked adapters (substrate only):''
+* The disk-mirror grant: node holds `workspaceRoots` and `faceFolder`; the browser grant stays empty.
+* The guard id wiring (`open-node-vessel.ts`).
+* The host shims and the workspace bind.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-2b-seam`>>
+
+!! The 2b seam (cross-operator, OWED)
+
+`admitWorkbenchFace` already seats any Keyhive agent the owner's hive knows. A face of another operator joins once the realm's member consult answers for a peer across operators. That is `cabal-realm#/many-realms` OWED: the root map nothing fills. The wire class would then decide by that consult rather than by vessel seat notes. This is named in `cabal-realm.mem#/the-workbench`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+
+!! Owed
+
+* ''CI'': the full unit suites and e2e (tree-clean included). Watch especially for:
+** tests that assumed a floor wiki working layer or a face-secret working address beyond the files I touched;
+** e2e expecting a faceless floor wiki mount.
+* ''Seed into personal end-to-end'' (export → reset → seed with a live vessel): CI/e2e.
+* ''Host-mount (`mountWikiSlot`) resolves the working url through the same resolver'', so it gets the workbench, but it mounts no personal layer (the existing design). Private-margin writes therefore land only from the island.
+* ''Projection window'': between a replica ingesting a revoke and its next roster read (landing or mount), the stale row can still stand. Re-projecting on every Keyhive ingest (or routing the guard into the island) would close that window and is owed.
+* ''Per-vessel key Documents'': a face's devices each key their replica with a different Keyhive Document. Content keys therefore do not cross devices through Keyhive; the automerge doc does, behind the guard. The design does not yet say how a member admitted on one device gets seated on the face's other devices' key Documents.
+* ''Canon edits after the span's GENESIS RE-BAKE'' (cabal-realm, disk-projection, recipe-layer-model, session-contract, hands-spine-lane) move house-canon bytes, so the controller's next bake needs to carry them.
+* ''`CLAUDE.md`'s house-class sentence'' should name `workspaces/`. I did not edit it (adapter-surface file; operator's call).
+* ''Ledger privacy'': the edge ledger now holds seat notes (face group ids). It should keep its vessel-private classing. Verify that `vesselPrivate` names `edgeLedgerDocUrl`.
+
+<code>&lt;&lt;~ oracle throw="↯15 ✲ ⚃(4) ⁂:🜄⟁◈🪶">></code>
+<code>&lt;&lt;~ set lares="yield" drift-ward="each device keys the derived realm with its own Keyhive Document; a member seated on one device's Document reads no seat on another's until that device seats it — test a share made on device A against a mount on device B · ↻ L-Prime" ooda-ha="closed 4↺ -> open 1φ▶:ci.proves.suites/full-and-e2e" from="lar:&#47;&#47;/workbench.converges.islands/span-merge" to="?">></code>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Kr2NfDWPr6rdVOgvRxRhIyy3PDlaaGhKx3H2z1C9laM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

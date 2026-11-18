@@ -1,0 +1,140 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/memory-stage/research`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/memory-stage/research.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/memory-stage/research"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/memory-stage/research"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! research.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/memory-stage/research.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/memory-stage/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/memory-stage-scout-stage-scout-lares-2026-10-31`>>
+
+! Memory-stage scout: Stage-Scout: Lares (Tasked Spirit), 2026-10-31
+
+Source marks: [READ] opened this session. [SEARCH] search-result snippet only, page not opened. [RECALL] testimony from the scout's training memory, not re-verified today; the controller should treat it as testimony and check before quoting. WebFetch was not used; every web claim is [SEARCH] or [RECALL].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/0-house-ground`>>
+
+!! 0. House ground (READ)
+* otakiage.mem (revised 2026-09-12): the five-stage lifecycle rides tags `lifecycle/designed|standing|folded|harvest|retiring`, kind rides `kind/rite`. A carrier with no lifecycle tag stands UNGOVERNED. `lares meme sitting` names burn candidates (folded/retiring with nothing inbound, plus standing harvest rooms) and burns nothing; a burn happens in front of someone ("do not leave it silently"). Its own field survey already cites Ahrens' fleeting/permanent ladder, Matuschak evergreen, Appleton seedling/budding/evergreen, Gwern status+confidence. The memory-stage reuses that ladder; it does not need a new one.
+* Memory index (READ): the mempalace/sensorium is BURNED (2026-10-13) and the re-stand is DEFERRED until the founded-Lararium proof (2026-10-27). project_next_arc_sensorium_sidecar.md and project_sensorium_li_ki_canon.md (dated July/Sept) describe an arc the index marks deferred or burned; do not build on them as live. reference_mempalace_repair.md describes a Chroma sidecar that the index says no longer stands. The mempalace/ directory exists in the checkout (README READ: local-first, verbatim storage, 96.6% R@5 on LongMemEval, "does not summarize"); it is a vendored submodule, not house canon.
+* grep bags/ finds talk-story/hoike/moolelo in offering.mem, realm-bag-brief.mem, k15-wave-b-lane.mem, test-recut-road.mem and others (names only; bodies not read). Talk-story and hoike skills exist (listed in the skill roster) and already close in moolelo / hoike / suspension.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-neuroscience-of-memory-staging-with-operationa`>>
+
+!! 1. Neuroscience of memory staging, with operational analogues
+All [RECALL] unless marked; primary sources the controller can verify.
+# Working memory + global workspace (Baddeley & Hitch 1974; Baars 1988; Dehaene's global neuronal workspace). Small capacity, broadcast to many specialists. Analogue: the plan/owed stage is the workspace: small, one line per act, broadcast to every lane. Cap its size; overflow forces promotion or burn.
+# Hippocampal indexing (Teyler & DiScenna 1986). The hippocampus stores pointers to cortical patterns, not the content. Analogue: the stage holds an index tiddler whose fields point (loulou/transclusion) at the scout report, the commit, the carrier. Index cheap, content elsewhere.
+# Complementary learning systems (McClelland, McNaughton, O'Reilly 1995; Kumaran, Hassabis, McClelland 2016 update). Fast episodic learning protects slow semantic structure from catastrophic interference. Analogue: fast writes land on the daemon wiki's working stage; canon `.mem` changes slowly under ruling. Never write episodes straight into canon.
+# Systems consolidation + sleep replay (Squire; Buzsaki sharp-wave ripples; Diekelmann & Born 2010). Offline replay moves episodes to cortex. Analogue: a scheduled "sitting" between waves (the existing `meme sitting` shape) replays the stage rows and proposes promotions. Replay is offline, off the critical path.
+# Reconsolidation (Nader, Schafe, LeDoux 2000). A recalled memory becomes labile and rewritable. Analogue: reading a stage row at boot is the moment to re-verify and re-write it. Rule: a row read at cold boot carries a `last-tended` stamp updated only when re-checked against the repo; an unchecked row is shown as unchecked. This is the cure for the house's stale-memory problem ("memories age; check what they name").
+# Schema-dependent consolidation (Tse et al. 2007; van Kesteren et al. 2012). Info fitting an existing schema consolidates fast; schema-violating info needs slower handling. Analogue: a row that fits an existing carrier slot promotes quickly via fold; a row contradicting held canon routes to hoike (talk-story floor), not silent merge. This matches the "divergence surfaces" law.
+# Forgetting as a feature (Anderson; Richards & Frankland 2017, "The persistence and transience of memory"). Transience aids generalization and flexibility. Analogue: otakiage. Burn finished rows with thanks; forgetting is a ruled rite, not neglect.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-ai-agent-memory-developments`>>
+
+!! 2. AI agent memory developments
+* MemGPT / Letta [RECALL; Packer et al. 2023, arXiv 2310.08560]: OS-style tiers: in-context core memory blocks, recall (message history), archival (vector). The agent edits its own blocks via tools. Failure: the agent overwrites or bloats its blocks; context pressure triggers lossy summarization.
+* Letta sleep-time compute [SEARCH: arXiv 2504.13171, "Sleep-time Compute: Beyond Inference Scaling at Test-time", Lin, Snell et al.; reports ~5x less test-time compute at equal accuracy on Stateful GSM-Symbolic/AIME; best when the query is predictable from context]. A background agent rewrites shared memory blocks between turns. Failure: consolidation agent confabulates or invalidates good records; unobserved writes. A separate May 2026 paper "Language Models Need Sleep" (arXiv 2605.26099) is a different work (fast-weight layers) [SEARCH]; do not conflate.
+* Generative Agents [RECALL; Park et al. 2023, arXiv 2304.03442]: append-only memory stream; retrieval scored by recency + importance (LLM-rated 1-10) + relevance; periodic reflection when summed importance crosses a threshold writes higher-level notes citing sources. Failure: reflection compounds an early error; importance scores uncalibrated. (CORRECTED in section 5: recency decays over simulated game hours, not wall time; still a clock, so the house substitutes act-count.)
+* A-MEM [SEARCH: arXiv 2502.12110, Zettelkasten-style linked atomic notes, new memories can update old ones; multi-hop gains on LoCoMo reported by the authors; several paper versions exist, cite the version]. Failure: automatic link and rewrite of old notes can drift history; needs the original kept.
+* Mem0 / Mem0g (Chhikara et al. 2025) and Zep / Graphiti (Rasmussen et al. 2025) [SEARCH: only a 2026 survey, arXiv 2604.01707, was seen, classing Mem0 as flat vector with a graph variant and Zep as hierarchical temporal graph; primary papers not opened]. Zep's bi-temporal edges (event time vs ingestion time) fit the house idea of valid-as-of-sync. Both are web2 SaaS or service-shaped by default; barred from the stack proper (see section 3 law check); take the ideas only.
+* Anthropic [SEARCH: platform.claude.com memory-tool docs page, anthropic.com/news/context-management; not opened]. The memory tool is client-side: Claude reads and writes files in a /memories directory the developer's own code executes; context editing clears stale tool results. Anthropic's own reported figures: +39% (memory + context editing) and +29% (context editing alone) on an internal agentic-search eval, testimony from the vendor. Relevance: this is the same file-directory pattern the house uses with flat .md memory; the wiki can BE that directory's backing store.
+* Reflexion [RECALL; Shinn et al. 2023, arXiv 2303.11366]: after a failed attempt the agent writes a verbal self-critique into an episodic buffer and reads it next try. Failure: a wrong self-diagnosis persists and misleads later runs; no external check. Related: Voyager skill library [RECALL; Wang et al. 2023], procedural memory as verified code.
+* Cross-cutting failure modes seen across these: stale state read as current; confabulated "memories" from summarizer; self-written feedback never verified; unbounded growth; retrieval returning plausible but superseded rows. Benchmarks like LongMemEval and LoCoMo measure retrieval, rarely staleness [RECALL].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-design-the-memory-stage-on-the-daemon-wiki`>>
+
+!! 3. Design: the memory-stage on the daemon wiki
+Principle: a stage is a set of TAGS plus an index view on the existing daemon wiki, not a new store, not a new plane. Reuse the lifecycle ladder; extend it downward with one pre-stage.
+
+Tiers (proposal; names are the operator's to rule):
+| Tier | Content now | Home | Tag family |h
+| Working | plan.md, owed.md, resume sheets | daemon wiki working stage (wikis/&lt;slug>/working, wikis-first writes) | `stage/working` + `lifecycle/designed`-equivalent row tag `row/open` |
+| Episodic | scout reports, walks, handbacks, incident notes | same wiki, one tiddler per event, append-only | `stage/episodic`, `kind/scout|walk|incident` |
+| Semantic | canon `.mem` carriers | bags/ (git-tracked, canon) | existing `lifecycle/*` |
+| Procedural | lead law, briefs, working-procedures | bags/ `.mem` | `kind/rite|brief`, lifecycle/standing |
+| Feedback | what the flat feedback_*.md files hold | wiki working stage, promoted to procedural by ruling | `stage/feedback`, `recurs/N` |
+
+Consolidation rite (maps onto existing machinery): a working row earns promotion by (a) a witness (commit sha, test, measurement), the same witness law `standing` already requires, and (b) a sitting. Conflict with held canon opens a talk-story floor; the floor closes in moolelo (promote), hoike (kept dissent), or suspension. Promotion = pour a carrier in bags/ via PR, and the working row becomes a pointer (`lifecycle/folded` shape: "folded to lar:&#47;&#47;/..."). Fast to canon: never. The stage proposes; the operator's ruling promotes.
+
+Cold-boot retrieval: the controller reads, in order: (1) the stage index view (open rows only, each with last-tended causal stamp and unchecked flag); (2) the pono roadmap carrier; (3) the controller handoff. Episodic detail loads by pointer only on need. Target a fixed small boot set, so boot cost does not grow with history.
+
+Forgetting: `meme sitting` extended to stage rows: closed rows with a landed witness are candidates; the burn happens at the land (existing "o-takiage at every land" feedback), announced in the commit line, never silent. Episodic tiddlers age out into a harvest room when nothing points at them.
+
+Self-improvement loop: incident tiddler (what happened, the tell from #/off-true) -> recurrence counter (`recurs/N`, counted by repeat incidents, no clock) -> at N=2 a sitting proposes a procedural change (a feedback rule or a guard test, red-first per house law) -> operator rules -> promoted. Reflexion's lesson: a self-written lesson stays `unverified` until a later incident shows it held; flag lessons that never fired as burn candidates. Generative Agents' reflection maps to the sitting, with importance = recurrence count and blast radius, not an LLM score.
+
+History: git holds canon history (bags/); the disk projection mirrors wikis/ working state; Automerge holds the live causal log. A working row's edits live in the CRDT log between projections. MEASURED (controller + scout): `git ls-files wikis` returns 0; .gitignore line 57 says named wikis are checked in, line 58 ignores wikis/scratch/. See section 5.
+
+House-law check:
+* Web3/local-first: no Mem0/Zep/Letta Cloud. Take patterns (tiers, bi-temporal stamps, sleep-time sitting), run them on the daemon wiki. A local embedding index is optional and, per the burned mempalace, a deferred arc.
+* No global now: replace recency with causal stamps ("rows since", wave number, commit sha). No wall-clock decay.
+* Wikis-first writes: the stage lives where AI writes already land; only a sitting plus ruling crosses into bags/.
+* Operator originates: the stage proposes, never promotes; divergence from canon surfaces to hoike.
+* Idempotent single-operator refound: stage tiddlers need deterministic ids (derived from the event/row key) so a re-pour reproduces the same tiddlers. Open question; mechanism unmeasured.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-open-questions-for-the-operator`>>
+
+!! 4. Open questions for the operator
+# Does `stage/*` extend the lifecycle tag family or form a sibling family (a working row has no lifecycle until poured)?
+# Which daemon wiki and bag slug hosts the stage?
+# Is the stage git-tracked, projection-only, or CRDT-only?
+# Does the deferral of the sensorium arc cover this? This design needs no embeddings, so it appears to sit before the deferred arc; confirm.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-round-2-primary-pages-repo-measure-talked-out`>>
+
+!! 5. Round 2: primary pages, repo measure, talked-out questions
+
+!!! 5a. Primary reads [FETCHED = page opened this session via WebFetch, which summarizes the page with a small model; read as abstract-level]
+* Sleep-time compute, arXiv 2504.13171 [FETCHED abstract]: model reasons offline about a context before any query, "pre-computing useful quantities". ~5x less test-time compute at equal accuracy; accuracy up to +13% (Stateful GSM-Symbolic) and +18% (Stateful AIME) with more sleep-time compute; 2.5x lower average cost per query when queries share a context (Multi-Query GSM-Symbolic). Effect tracks query predictability. Evidence: two modified benchmarks plus one SWE case study. CORRECTION: my earlier "consolidation agent writes memory blocks" came from a tutorial site; the paper itself concerns precomputation over a context, not memory-block consolidation. Letta's product behavior stays [SEARCH] only.
+* A-MEM, arXiv 2502.12110 [FETCHED abstract]: on each new memory the system builds a note with contextual description, keywords, tags; links it to historical memories by similarity; integration can UPDATE descriptions/attributes of existing memories ("memory evolution"). Reports gains over baselines across six foundation models; abstract gives no figures and no retrieval method. CORRECTION: "multi-hop gains on LoCoMo" was snippet-level; not seen on the abstract page. Failure mode (existing notes rewritten, history drifts) is my inference from the evolution step, [INFERENCE].
+* Anthropic memory tool [FETCHED full docs page]: stable; client-side, Claude requests file ops under /memories (view, create, str_replace, insert, delete, rename), the application executes them against storage the developer controls; the API injects a protocol: "ALWAYS VIEW YOUR MEMORY DIRECTORY BEFORE DOING ANYTHING ELSE... ASSUME INTERRUPTION: Your context window might be reset at any moment". Docs advise: cap file sizes, expire memory not accessed in a long time, path-traversal checks, strip sensitive data. Documents a multisession pattern: an initializer session writes a progress log + feature checklist; each session opens by reading them and updates before ending; "Mark a feature complete only after end-to-end verification". Directly shaped like plan.md/owed.md and supports the stage index design; the docs' own expiry advice matches otakiage.
+* Context editing [FETCHED page, first 100k of 107k chars]: beta header context-management-2025-06-27; `clear_tool_uses_20250919` clears oldest tool results past a trigger (default 100,000 input tokens, keeps 3 most recent), `clear_thinking_20251015`; client keeps full history; as context nears the threshold Claude is warned to save to memory files. The page recommends server-side compaction for most long conversations. Anthropic's +39%/+29% figures stay [SEARCH] (blog snippet), vendor testimony.
+* Generative Agents, arXiv 2304.03442 [FETCHED abstract + ar5iv text, first 100k of 144k chars]: stream of natural-language observations. Retrieval score = recency + importance + relevance, each min-max scaled to [0,1], all weights 1. Recency: exponential decay 0.995 over SANDBOX GAME HOURS since last retrieval (a simulated clock, correcting my earlier "wall clock"). Importance: LLM rates 1-10 at creation ("poignant", mundane=1). Relevance: cosine similarity of embeddings. Reflection fires when summed importance of recent events exceeds 150, about 2-3 times per simulated day. Ablation: observation, planning, reflection each add believability. House move: keep the trigger shape (accumulated weight crosses a threshold), swap the clock for act-count and the LLM score for recurrence + blast radius.
+* MemGPT, arXiv 2310.08560 [FETCHED abstract]: "virtual context management" borrowing OS hierarchical memory; moves information between fast and slow tiers; interrupts coordinate control flow; tested on document analysis and multi-session chat. Specifics of core/recall/archival tiers and self-edit tools remain [RECALL].
+* CLS, Kumaran, Hassabis, McClelland 2016 [FETCHED abstract, PubMed 27315762]: neocortex = slow structured knowledge; hippocampus = fast individual experiences; replay can weight experience statistics by current goals and support generalization; neocortical learning can be FAST when new information fits existing structure (this confirms the schema point in 1.6 and corrects my "fast writes never to canon" absolutism: a fit-the-schema row may fold quickly).
+* Hippocampal indexing, Teyler & Rudy 2007, Hippocampus 17(12):1158-69, doi 10.1002/hipo.20350 [SEARCH: bibliographic data + a gloss; abstract/full text not opened; my first PubMed guess returned an unrelated paper]. Gloss: neocortex holds content, hippocampus holds an index of the loci; a partial cue reactivating the index retrieves the episode. The review concludes the theory has aged well.
+* Reconsolidation, Nader, Schafe, LeDoux 2000, Nature 406(6797):722-6, doi 10.1038/35021052 [SEARCH: PubMed record + abstract gloss; page not opened; my first PubMed guess was wrong]. Reactivated consolidated fear memories return to a labile state needing de novo protein synthesis to restabilize (rat amygdala, anisomycin). Caveat: a rodent fear-memory result; my "recall makes any memory editable" operational analogue is an analogy, not a finding.
+
+!!! 5b. Repo measure folded into the design
+`git ls-files wikis` returns 0 files; .gitignore:57 promises named wikis are checked in; :58 ignores wikis/scratch/. So today a wikis/ stage row reaches git only by (i) pouring a carrier in bags/, or (ii) a named wiki being checked in. LEAN: a two-leg stage. The working stage (plan/owed/feedback, high churn) lives in a named wiki that is NOT tracked by default: CRDT log plus disk projection hold it, and its loss is cheap by design. Anything that must outlive a refound reaches git only by promotion to a bags/ carrier (the existing rite), plus ONE thin tracked named wiki for the episodic tier (scout reports, incident rows) that cold sessions need after a clone. Reason: tracking the churning working stage would put every plan line into git and fight the tree-clean witness; promotion is the checkpoint; this also keeps "refound is idempotent" honest because only promoted, witnessed rows must reproduce. Unmeasured: what name/slug a checked-in stage wiki takes and whether wikis/lares-history (the .gitignore example) is the intended precedent.
+
+!!! 5c. The four questions, talked out (two rounds each; all voices mine, so this is testimony, not a floor)
+Gaia/Elyncia anchor: a household shrine keeps today's offering on the niche (working), the year's ofuda until the year-end rite (episodic), and the temple register (canon). A Lar binds to a PLACE; the niche is not the temple.
+# Does `stage/*` extend `lifecycle/*` or sit beside it? R1: extend (one filter, one ladder). R2 against: a working row has no witness, and `meme check` enforces witnesses on governed stages, so putting an unwitnessed row in `lifecycle/designed` hands the gate a row it must read as open `-> ?`, and tag family collisions would mean every plan line enters the governed count (54 of 726 today). SETTLED: sibling family `stage/*` for unpoured rows; a row that is poured as a carrier takes `lifecycle/*` at the pour. The niche and the register stay different shelves.
+# Where does the stage live (which wiki)? R1: the daemon wiki the operator named. R2: the operator said "daemon wiki", and the daemon wiki is the place the crew already addresses; a Lar binds to place. SETTLED in shape: the daemon's own named wiki hosts the stage. Slug and tracking stay with the operator (see 5b); the scout did not read the daemon's wiki config, so this holds as a lean only.
+# Git-tracked, projection-only, or CRDT-only? SETTLED by 5b: split by tier (working untracked; episodic thin tracked; semantic/procedural in bags/). Survives both rounds because the alternative (all tracked) collides with the tree-clean witness and the alternative (all untracked) loses episodes on refound.
+# Does the sensorium deferral cover this? R1: no embeddings, no sidecar, so no. R2: the operator's words ("neuroscience + Ai developments" memory-stage) name the same goal as the deferred arc's compaction gap. SURVIVES as the one real question: the operator ruled the deferral on 2026-10-27 naming the compaction gap; this ask on 2026-10-31 may lift it for the wiki-native, embedding-free layer. LEAN: treat this ask as the operator lifting the deferral for the plain-tiddler stage only (no vector index, no sidecar), keep the sensorium re-stand deferred. This is the only item the operator must rule; the scout will not decide it.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6tYaSLZLFWT7AC6G4vIbYIaLAWuWId8nSKJwGyF7pZM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

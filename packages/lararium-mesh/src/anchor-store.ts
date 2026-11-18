@@ -35,12 +35,9 @@ export interface IdentityAnchors {
    *  confers nothing a fresh signature-check would not. OPTIONAL: anchors written before this slot existed,
    *  a joinee (no self-minted edge), and h0 (whose live pins already carry them) may hold none. */
   readonly deviceEdge?: DeviceDelegationTiddler;
-  /** The founder-veil tag — the per-founding namespace `deriveDyadVeil(vesselSeed, veilTag)` scopes the
-   *  creator-veil leaf by. NOT a secret (the veil SEED derives from the vessel seed; the tag only names the
-   *  leaf), and it lived ONLY in the wiped daemon doc, so a preserving re-pave re-minted it and stood a
-   *  DIFFERENT veil. Persisted here, a re-light re-derives the SAME veil from it. OPTIONAL: anchors written
-   *  before this slot existed, and a joinee (whose veil tag IS its carried group id), carry none. */
-  readonly veilTag?: string;
+  /** The digest of the founding ask that minted this face. A re-seeded founding of the same ask re-enters the
+   *  group's atom through it. PUBLIC (a hash, never a seed). OPTIONAL: a joinee holds none. */
+  readonly foundingAskDigest?: string;
 }
 
 /**
@@ -67,13 +64,14 @@ export function readIdentityAnchors(parsed: Partial<IdentityAnchors> | null | un
     parsed &&
     typeof parsed.personaGroupId === "string" &&
     typeof parsed.meshCabalDocIdHex === "string" &&
-    (parsed.veilTag === undefined || typeof parsed.veilTag === "string") &&
+    !("veilTag" in parsed) &&
     // The wear-reboot mount material is optional (old anchors, joinees, and h0 hold none), but a PRESENT
     // one must be well-shaped — a torn signerDid/prefix (non-string) or a device edge that is not a record
     // reads the WHOLE anchor as null, so the re-pin never hands verifyDeviceDelegation a half-grant.
     (parsed.signerDid === undefined || typeof parsed.signerDid === "string") &&
     (parsed.personaKelPrefix === undefined || typeof parsed.personaKelPrefix === "string") &&
-    (parsed.deviceEdge === undefined || (typeof parsed.deviceEdge === "object" && parsed.deviceEdge !== null))
+    (parsed.deviceEdge === undefined || (typeof parsed.deviceEdge === "object" && parsed.deviceEdge !== null)) &&
+    (parsed.foundingAskDigest === undefined || typeof parsed.foundingAskDigest === "string")
   ) {
     return parsed as IdentityAnchors;
   }

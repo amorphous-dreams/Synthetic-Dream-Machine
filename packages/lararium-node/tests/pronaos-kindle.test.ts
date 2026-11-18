@@ -71,7 +71,7 @@ describe("the first arrival — kindle from the lararium's own Pronaos", () => {
     const fire = await pullArrival(httpBulbTransport(origin));
     process.env["LAR_ROOT"] = mkDir(`root-${tag}`);
     const repo = new Repo({ sharePolicy: async () => true }); repos.push(repo);
-    try { return await kindleFromBulb({ bulb: fire, repo, storageDir: mkDir(`store-${tag}`) }); }
+    try { return await kindleFromBulb({ placeFoundingCard: { readBack: async () => {} }, bulb: fire, repo, storageDir: mkDir(`store-${tag}`) }); }
     finally { if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot; }
   }
 

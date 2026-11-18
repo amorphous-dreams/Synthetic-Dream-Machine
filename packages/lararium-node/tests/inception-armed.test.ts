@@ -3,7 +3,7 @@
  *
  * Every persona the live ceremony founds must pre-commit a REAL recovery-set digest into its prefix —
  * the founder's 1-of-1 self-recovery key (`deriveSelfRecoveryKey`, the multitude-of-one NAMED) until a
- * real guardian set stands. An empty pre-commit mints an identity Fork B can never rotate: a name with
+ * real recovery contact set stands. An empty pre-commit mints an identity Fork B can never rotate: a name with
  * no recovery future at all, discovered only the day a device dies.
  *
  * The third vector walks the whole point: the founder loses the device, still holds the seed, and
@@ -13,13 +13,15 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { runFoundingCeremony } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import {
   hex, personaPrefixOf, sealKeySetHash, deriveSelfRecoveryKey,
   personaKelChainForPrefix, personaKelBoardDocUrl, personaRotationSigningBytes, mintPersonaRotation,
   type LarDoc,
 } from "@lararium/mesh";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
 
@@ -28,10 +30,9 @@ const FOUNDER_SEED = new Uint8Array(32).fill(7);
 async function found() {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
-    repo,
+  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo,
     vesselSeed:         FOUNDER_SEED,
-    vesselVerifyingKey: verifyingKey,
+    placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",
     binding: { mode: "self-stood", signerSeed: FOUNDER_SEED },
     hearthTrueName:       "",

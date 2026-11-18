@@ -42,8 +42,10 @@ import type {
   LarTiddlerChange,
   LarTiddlerStore,
   ChangeOrigin,
+  LarRemoveOptions,
   LarWriteOptions,
 } from "@lararium/mesh";
+import { holdsOnly } from "@lararium/mesh";
 
 export class MemoryTiddlerStore implements LarTiddlerStore {
   constructor(private readonly bagId?: string) {}
@@ -92,7 +94,8 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
 
   /** HARD-remove: drop the record entirely (get → null = ABSENT, falls through),
    *  distinct from tombstone's kāpae hide. The MOVE/promotion source retract. */
-  async remove(title: string, origin: ChangeOrigin): Promise<void> {
+  async remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void> {
+    if (options?.only && !holdsOnly(this._records.get(title), options.only)) return;
     this._records.delete(title);
     this._emit({ title, record: null, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }

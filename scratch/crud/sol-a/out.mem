@@ -1,0 +1,135 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-25 (file date) — source `.lares-scratch/crud/sol-a/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/crud/sol-a/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/crud/sol-a/out.md` (hand-back, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-a-handback-code-and-tests`>>
+
+! Seat A handback — code and tests
+
+Read-only sweep of `feature/green-jello-dinosaur-5` and `origin/feature/green-jello-dinosaur-5--k15-wave-d`. Paths below start at the repo root. `[wave-d]` marks work for that lane. `R` asks for a ruling before deletion. No suite, build, install, or repo edit ran.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/line-aperture`>>
+
+!! Line aperture
+
+| id | file:line | what it does | why crud (the earlier shape it serves) | burn class | confidence |h
+| L1 | `packages/lararium-mesh/src/lar-uris.ts:372` | `recipeUri` advertises acceptance of legacy <code>&#64;slug</code>; the function also accepts any non-`lar:` root at line 374. | The <code>&#64;slug</code> clause narrates an earlier bag-root spelling. Keep only a present contract for accepted roots. | B1 for comment; R for narrowing input, since current callers may pass bare slugs | high for comment, medium for input |
+| L2 | `packages/lararium-mesh/src/agile-digest.ts:127` | `firstSeparator` splits on `:` or `-`. | The dash branch serves the former `algo-hex` digest beside the current `algo:hex`; the current `sourceCidOf` now says it writes canonical form at `packages/lararium-tw5/src/memetic-wikitext-sensorium.ts:169`. | B2 | high |
+| L3 | `packages/lararium-node/src/sensorium.ts:244` | An absent ''or unknown'' `lifecycle` derives from `ephemeral` and `halfLife`. | The absent-field arm reads pre-lifecycle manifests; the unknown-value arm also hides malformed input. Require the declared current field and reject an unknown state. | B2 | high |
+| L4 | `packages/lararium-node/src/synced-tree.ts:171` | Checks `${dirPath}.json` and a file at `dirPath`, then changes behavior at line 176. | The adjacent comment at line 166 identifies the old single-file tree. The `.json` probe solely recognizes that retired path. | B2 for `.json`; R for file-at-directory collision guard | high |
+| L5 | `packages/lararium-browser/src/browser-vessel-identity.ts:99` | Deletes `persona-roots` and `persona-roster` during an IndexedDB upgrade. | Those stores come from the house's earlier schema; the present schema creates neither. | B3 | high |
+| L6 | `packages/lararium-browser/src/browser-vessel-identity.ts:116` | Deletes `hosting-walk`, `nexus-keys`, `vessel-face-keys`, and `boot-invite-burned`; line 128 deletes old secret rows in `fleet-join`. | A boot-time delete path for the house's retired clear-secret layout. Preserve the current stores and clean creation path at lines 97-121. | B3 | high |
+| L7 | `packages/lararium-browser/src/browser-vessel-identity.ts:104` | Narrates v2-to-v3 and v3-to-v4 store additions at line 109. | The comments make current store creation read as upgrade history. | B1 | high |
+| L8 | `packages/lares-cli/src/ingest-core.ts:217` | Explains that `digestsEqual` still normalizes legacy dash digests. | Both sides now write tagged digests, as this very comment says. Burn with L2. | B1 | high |
+| L9 | `packages/lararium-node/src/seal-ceremony.ts:203` | Calls an unreadable standing charter `TORN or in an earlier shape`. | The earlier-shape phrase keeps a historical diagnosis in the refusal. The refusal itself protects a standing malformed charter from reseating, so keep it. | B1 for phrase; R for the guard | high |
+| L10 | `[wave-d] packages/lararium-node/src/custody-shape.ts:95` | Identifies a flat face row as an earlier house spelling. | That comment and the loop at line 96 exist to recognize the house's former flat placement. | B3 for historical branch; R for a generic unsafe-file collision guard | high |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/function-aperture`>>
+
+!! Function aperture
+
+| id | file:line | what it does | why crud (the earlier shape it serves) | burn class | confidence |h
+| F1 | `packages/lararium-mesh/src/sealed-writer.ts:174` | `refuseOldShape` scans listed carriers and unlisted seal magic, then throws `OldShapeRefusal` at line 188. | The named refusal and diagnostic specifically classify a prior cleartext/no-tree founding; `packages/lararium-mesh/src/sealed-writer.ts:155` even calls it “the old shape.” Retain a present-tense no-overwrite/no-tree safety check where needed. | B3 for historical error kind and old-shape scan; R for generic collision safety | high |
+| F2 | `packages/lararium-mesh/src/sensorium-lifecycle.ts:55` | `deriveLifecycle` maps older `ephemeral`/`halfLife` fields to a missing `lifecycle`. | Its documented reason at line 47 reads manifests from before the declared field. The builder's current use at `packages/lararium-node/src/sensorium.ts:377` may still need a current default, which can be inlined or renamed. | B2 | high |
+| F3 | `packages/lararium-mesh/src/agile-digest.ts:100` | `parseDigest` accepts RFC `Repr-Digest`, canonical `algo:hex`, and former `algo-hex` through `firstSeparator` at line 111. | Only the dash spelling claims a house historical format; keep RFC HTTP input at line 101. | B2 | high |
+| F4 | `packages/lararium-node/src/synced-tree.ts:165` | Constructor probes the old single-file tree and treats every carrier as unagreed rather than reading it. | The `.json` branch at line 171 gives special behavior to a retired local path. | B2 | high |
+| F5 | `[wave-d] packages/lararium-node/src/vault-carriers.ts:571` | `flatFaceRowCarriers` enumerates flat files and matches an explicit `earlier` list at lines 575-587. | It records former shared and flat face-file names that current writes place inside face directories, per lines 568-569. | B3 | high |
+| F6 | `packages/lares-cli/src/claude-wire.ts:63` | `reapMempalaceMcp` removes the earlier house-owned direct MCP seat from Claude config. | Its docstring at lines 59-61 says it removes older wiring on every stand. | B1, with its tests | high |
+| F7 | `packages/lares-cli/src/copilot-wire.ts:65` | Deletes a `mempalace` MCP entry from Copilot config. | The old direct-holder seat survives only as a cleanup branch after the `lares` seat replaced it, per lines 57-59. | B1, with its tests | high |
+| F8 | `packages/lararium-mesh/src/cabal-realm-clock.ts:251` | `readRealmFeedSlot` accepts bare decimals and sealed JSON. | The note at lines 240-244 describes a future mixed-board transition, but `realmFeedSlotValue` still writes bare decimals at line 236. Both formats serve current writers. | R — keep until writer and board policy move to one format | high |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/file-module-aperture`>>
+
+!! File/module aperture
+
+| id | file:line | what it does | why crud (the earlier shape it serves) | burn class | confidence |h
+| M1 | `packages/lararium-mesh/tests/o-takiage-names.test.ts:1` | Scans code and paths for the retired oracle-pointer name and maintains token/file exception maps at lines 32-45. | This is an earlier-name census with allowlists. Its SLICE5 exceptions at lines 32-44 describe work still owed, so burn the completed rename checks, then burn the whole file when that lane completes. | B3; R on timing of SLICE5 | high |
+| M2 | `packages/lararium-mesh/tests/ffz-measure-parity.test.ts:6` | Keeps a `legacyStep` implementation and compares current output to it at lines 143-145. | The embedded prior algorithm exists only to pin the shape before the servo collapse. | B3 | medium |
+| M3 | `packages/lararium-tw5/tests/goldens/README.md:3` | Labels `deprecated` filter rows as compatibility forms; `filter-cts-sections/deprecated.json:3` contains that section. | These appear to be TW5 engine compatibility observations, and the engine remains vendored/pinned. | R — establish whether those rows model house forms or third-party TW5 behavior before burning | medium |
+| M4 | `[wave-d] packages/lararium-node/src/custody-shape.ts:80` | Returns an `old-shape` variant for secret/no-tree, unknown envelope, and cleartext-beside-tree at lines 90-100. | The variant fuses an earlier house layout with live malformed/foreign-input guards. Split the latter into present-tense unsafe-state refusals; remove the history-specific classification and its tests at `packages/lararium-node/tests/custody-shape.test.ts:61`. | B3 for old-shape taxonomy; R for live guards | high |
+| M5 | `packages/lararium-tw5/src/types/tiddlywiki.d.ts:21` | Describes itself as a migration path from local declarations toward upstream types. | The history/process prose at lines 21-31 does not state the current declaration surface. Type declarations may still bridge a third-party gap. | B1 for prose; R for declarations | high |
+| M6 | `packages/lares-cli/tests/unknown-command-refuses.test.ts:23` | Carries a `RETIRED` list and checks that every former command spelling refuses at lines 38-55. | The named census serves the vessel's earlier command table. Keep a generic unknown-command test using `CONTROL` at line 28. | B3 for retired list/cases | high |
+| M7 | `packages/lares-cli/tests/turn-key-one-leg.test.ts:26` | Checks that `readExchanges` no longer appears at lines 27 and 38. | The exact-name absence check serves a retired capture reader. Keep any live cross-language key-parity test from line 43 onward on its present merits. | B3 for retired-name checks | high |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seam-aperture`>>
+
+!! Seam aperture
+
+| id | file:line | what it does | why crud (the earlier shape it serves) | burn class | confidence |h
+| E1 | `packages/lararium-mesh/src/sealed-writer.ts:150`; `packages/lares-cli/src/commands/found.ts:71` | Writer emits `OldShapeRefusal`; CLI names it and sends the operator to a fresh-start runbook. Tests pin the name at `packages/lares-cli/tests/found-refusals.test.ts:42` and `packages/lararium-mesh/tests/keyslot.test.ts:299`. | Cross-package error vocabulary preserves a former founding layout after the move. Replace with a present unsafe-state/collision refusal only if the guard still protects live bytes. | B3; R for live no-overwrite behavior | high |
+| E2 | `packages/lararium-node/src/sensorium.ts:244`; `packages/lararium-mesh/src/sensorium-lifecycle.ts:47` | Node reads an omitted lifecycle through mesh's derivation; current writes declare it at `packages/lararium-node/src/sensorium.ts:377`. | Reader/writer mismatch solely supports pre-field manifests. | B2 | high |
+| E3 | `packages/lararium-mesh/src/agile-digest.ts:127`; `packages/lararium-tw5/src/memetic-wikitext-sensorium.ts:169` | Digest parser accepts dash while current source CID writer emits colon. Tests pin dash at `packages/lararium-mesh/tests/agile-digest.test.ts:36` and line 87. | Dual spelling outlives the writer's move. | B3 | high |
+| E4 | `packages/lararium-browser/src/browser-vessel-identity.ts:94`; `packages/lararium-browser/tests/browser-custody.test.ts:908` | IDB `onupgradeneeded` deletes retired stores; BC28 and BC31 at test line 936 simulate versions 9 and 10. | Upgrade-only delete path and its historical fixtures. Keep tests for present store creation, if valuable. | B3 | high |
+| E5 | `packages/lararium-mesh/src/capture/build-patch.ts:145`; `packages/lararium-mempalace/tests/subagent-capture-route.test.ts:35` | Parser still accepts an unprefixed spirit basename, and a test pins that case. | The current producer writes a prefixed basename at `packages/lararium-mempalace/tests/subagent-capture-route.test.ts:24`; the old-path parse remains for legacy staged names. | B3 | high |
+| E6 | `[wave-d] packages/lararium-node/src/vault-carriers.ts:563`; `[wave-d] packages/lararium-node/src/custody-shape.ts:96` | Flat face rows enter the VK carrier list and custody-shape refusal; `packages/lararium-node/tests/custody-shape.test.ts:61` pins an `old-shape` result. | The cross-module census serves prior flat/shared face paths. Preserve a generic unknown-file or overwrite refusal if current custody requires one. | B3; R for generic collision handling | high |
+| E7 | `packages/lararium-tw5/src/meme-normalize.ts:115`; `packages/lararium-tw5/src/weave/index.ts:116` | Both normalizer and weave accept a bare `fragment` mirror as a TW5-native compatibility spelling. | The current source table may itself declare that spelling, so it may describe a live dialect rather than an old house one. | R — decide whether bare `fragment` still belongs to current grammar | medium |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/system-aperture`>>
+
+!! System aperture
+
+| id | file:line | what it does | why crud (the earlier shape it serves) | burn class | confidence |h
+| S1 | `packages/lararium-mesh/src/sealed-writer.ts:150`; `packages/lararium-node/src/custody-shape.ts:100`; `[wave-d] packages/lararium-node/src/custody-shape.ts:100` | The custody stack uses `OldShapeRefusal`/`old-shape` to group bare carrier, absent tree, unknown envelope, and flat files. | A historical error family absorbs live unsafe-input checks. Burn the family vocabulary and old-file names; keep refusals keyed to current integrity facts. | B3; R for precise safety split | high |
+| S2 | `packages/lararium-browser/src/browser-vessel-identity.ts:53` | Numeric `IDB_VERSION = 11` drives a cumulative `onupgradeneeded` block at line 94, including old-store deletions. | IndexedDB demands a numeric schema version, but the house's version ladder and deletions encode its own history. | R for API-required version; B3 for historical upgrade arms | high |
+| S3 | `packages/lararium-mesh/tests/o-takiage-names.test.ts:32`; `tools/evergreen-boundary.mjs:37` | Both maintain exception lists: one for a retired pointer name, one for evergreen rule findings. | Exact former-name exceptions shelter pending history; the generic witness itself still enforces present rules. | B3 for retired-name list when its lane finishes; R for current evergreen exceptions | high |
+| S4 | `packages/lararium-mesh/src/nexus-board-climb.ts:244`; `packages/lararium-mesh/src/nexus-board-climb.ts:50` | Boot repeatedly carries live per-Nexus boards after a current scope change. | This reads as migration, yet `nexusScopeMoved` represents an ongoing re-key operation, not a one-time retired format. | R — keep unless the scope-change law itself changes | high |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/top-10-by-payoff`>>
+
+!! Top 10 by payoff
+
+# Burn the historical custody error family across mesh, CLI, and tests; keep current collision safety (`E1`, `S1`; `packages/lararium-mesh/src/sealed-writer.ts:150`).
+# Burn browser IDB delete-on-upgrade arms and their version-9/10 fixtures (`L5`, `L6`, `E4`; `packages/lararium-browser/src/browser-vessel-identity.ts:99`).
+# Burn Wave D's explicit flat/shared face-name census (`F5`, `E6`; `[wave-d] packages/lararium-node/src/vault-carriers.ts:575`).
+# Require a declared lifecycle on manifest reads and retain a current builder default (`E2`; `packages/lararium-node/src/sensorium.ts:244`).
+# Remove dash digest acceptance and its parity tests (`E3`; `packages/lararium-mesh/src/agile-digest.ts:127`).
+# Remove the single-file synced-tree probe (`F4`; `packages/lararium-node/src/synced-tree.ts:171`).
+# Burn completed oracle-pointer absence census rows, then its file when SLICE5 completes (`M1`; `packages/lararium-mesh/tests/o-takiage-names.test.ts:32`).
+# Remove Claude's old `mempalace` MCP reaper (`F6`; `packages/lares-cli/src/claude-wire.ts:63`).
+# Remove Copilot's old `mempalace` MCP reaper (`F7`; `packages/lares-cli/src/copilot-wire.ts:65`).
+# Remove the unprefixed spirit-basename parse and its fixture (`E5`; `packages/lararium-mesh/src/capture/build-patch.ts:145`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/witness-pattern-to-prevent-regrowth`>>
+
+!! Witness pattern to prevent regrowth
+
+Guard ''current writer/reader shape agreement'', rather than a list of retired literals. A witness can enumerate each house-owned persisted format and assert that current writers emit one grammar, readers do not accept a second house grammar, and upgrade callbacks contain no deletion of house-owned old stores. It should also flag history-named refusal kinds and exception-list entries that exist solely to allow an earlier spelling; review each hit against live hostile-input guards. The two clearest seeds are the digest writer/parser mismatch (`packages/lararium-tw5/src/memetic-wikitext-sensorium.ts:169`, `packages/lararium-mesh/src/agile-digest.ts:127`) and IDB deletes (`packages/lararium-browser/src/browser-vessel-identity.ts:99`).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B_Cy9ixyhABc-9kd0GHd_VWMVRqehvfUafTaAzW1r7o`>>
+
+<<^ code=`&#x0004;` to=`?`>>

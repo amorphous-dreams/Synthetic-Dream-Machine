@@ -17,13 +17,30 @@ export interface CapabilityVerifyArgs {
   readonly presenter: CapabilityPresenter;
   readonly bagUrl:    string;
   readonly access:    CapabilityAccess;
+  /**
+   * HOW THE ASK ARRIVED. `local` reads only when the dispatcher took the verb over the vessel's own presence channel;
+   * it never rides in from a claim, so a verifier that grants more to a local session reads this and nothing a peer wrote.
+   */
+  readonly channel?:  "local";
 }
 
 export interface CapabilityVerifyResult {
   readonly ok:      boolean;
   readonly reason?: string;
+  /**
+   * A refusal's TYPE, for a reader that acts on the kind of denial and never on its words. `bag-not-registered` names a
+   * bag no provider registered yet, carrying its uri in `bagUrl`.
+   */
+  readonly kind?:   "bag-not-registered";
+  readonly bagUrl?: string;
 }
 
 export interface CapabilityVerifier {
   verify(args: CapabilityVerifyArgs): Promise<CapabilityVerifyResult>;
+  /**
+   * A verifier that carries the Kahu predicate also answers it for a bag a routed verb names INSIDE its args (the
+   * `wiki-act` envelope carries the real destination and source in `args.args`, where `verify`'s bag derivation
+   * never looks). Throws a `kahu-reach` refusal for a house canon bag the hand's cabal does not reach.
+   */
+  kahuReach?(bagUrl: string, act: string, presenter?: string): Promise<void>;
 }

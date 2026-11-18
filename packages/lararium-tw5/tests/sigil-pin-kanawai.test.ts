@@ -33,28 +33,28 @@ describe("aka/pin and kanawai/law — two canonical sigils, each its own English
   });
 
   test.each([
-    ["aka", '<<~ aka "lar:///a.b.c/x">>'],
-    ["pin", '<<~ pin "lar:///a.b.c/x">>'],
-    ["kanawai", '<<~ kanawai "lar:///a.b.c/x">>'],
-    ["law", '<<~ law "lar:///a.b.c/x">>'],
+    ["aka", '<<~ aka uri=`lar:///a.b.c/x`>>'],
+    ["pin", '<<~ pin uri=`lar:///a.b.c/x`>>'],
+    ["kanawai", '<<~ kanawai uri=`lar:///a.b.c/x`>>'],
+    ["law", '<<~ law uri=`lar:///a.b.c/x`>>'],
   ])("%s scans as a leaf event, no Error", (name, src) => {
     const evt = leafEvent(src);
     expect(evt, `${name} produced no leaf event`).toBeTruthy();
   });
 
   test("pin's event erases to canonical name aka; law's erases to canonical name kanawai", () => {
-    expect(leafEvent('<<~ pin "lar:///a.b.c/x">>')?.sigilName).toBe("aka");
-    expect(leafEvent('<<~ law "lar:///a.b.c/x">>')?.sigilName).toBe("kanawai");
+    expect(leafEvent('<<~ pin uri=`lar:///a.b.c/x`>>')?.sigilName).toBe("aka");
+    expect(leafEvent('<<~ law uri=`lar:///a.b.c/x`>>')?.sigilName).toBe("kanawai");
   });
 
   test("normalize leaves law and pin alone — both are lar-weave: primary, never read-only mirrors", () => {
-    const src = '<<~ pin "lar:///a.b.c/x">>\n<<~ law "lar:///a.b.c/y">>\n';
+    const src = '<<~ pin uri=`lar:///a.b.c/x`>>\n<<~ law uri=`lar:///a.b.c/y`>>\n';
     const { changed } = normalizeMemeSource(src);
     expect(changed).toBe(false);
   });
 
   test("CONTROL — aka and kanawai themselves are canonical and never fold", () => {
-    const src = '<<~ aka "lar:///a.b.c/x">>\n<<~ kanawai "lar:///a.b.c/y">>\n';
+    const src = '<<~ aka uri=`lar:///a.b.c/x`>>\n<<~ kanawai uri=`lar:///a.b.c/y`>>\n';
     const { changed } = normalizeMemeSource(src);
     expect(changed).toBe(false);
   });

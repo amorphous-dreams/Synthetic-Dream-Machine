@@ -3,9 +3,9 @@
  * self-describing carriers this shore mints: a bag's `meta.mem` declaration and a library
  * collection's INDEX.
  *
- * NO BESPOKE CARRIER RENDERER (operator ruling). The retired `bag-carrier.ts` hand-rolled the frame
- * AND decided the canonical body shape itself — key padding, blank-line placement, ahu spacing — a
- * second implementation of the render tw5's own parser∘render pipeline already owns. This module
+ * NO BESPOKE CARRIER RENDERER (operator ruling). A renderer that hand-rolls the frame AND decides the
+ * canonical body shape itself — key padding, blank-line placement, ahu spacing — is a second
+ * implementation of the render tw5's own parser∘render pipeline already owns. This module
  * decides NONE of that: it mints the frame through `@lararium/memetic-frame`'s shared `frameCarrier`
  * (the one hand that spells SOH/STX/ETX+check/EOT, so this never re-derives that law either) and then
  * hands the whole draft to `@lararium/tw5/carrier-canonical`'s `canonicalizeCarrierText` —

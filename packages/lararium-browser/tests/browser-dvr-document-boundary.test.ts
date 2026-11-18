@@ -35,6 +35,9 @@ describe("browser D-VR-C owned crossing", () => {
       grants: { islandUrl: ordinary.url, wikiUrl: daemon.url },
       ownedDocument: true,
       workerScriptUrl: FIXTURE,
+      // The island asks through its vessel's record; this suite reads the document boundary alone, so every member
+      // stands absent and each ask refuses by name.
+      caps: {},
     });
     const events: IslandMsg_Event[] = [];
     core.worker.listen((raw) => {

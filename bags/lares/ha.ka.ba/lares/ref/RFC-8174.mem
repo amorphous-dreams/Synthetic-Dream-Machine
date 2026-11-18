@@ -1,18 +1,14 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-8174">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/ref/RFC-8174`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable      = true
-file-path      = "bags/lares/ha.ka.ba/lares/ref/RFC-8174.mem"
-mana           = 14
-manao          = 14
-manaoio        = 13
 namespace      = "&#x2299;"
 reference-kind = "rfc"
 role           = "reference meme — cites IETF RFC 8174 by its own bibliographic metadata"
-tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+tags           = ["lar:///ha.ka.ba/lares/ref"]
 title          = "lar:///ha.ka.ba/lares/ref/RFC-8174"
 type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/ref/RFC-8174"
@@ -25,7 +21,7 @@ target     = "https://www.rfc-editor.org/info/rfc8174"
 title      = "Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! RFC 8174 — Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words
 
@@ -34,14 +30,14 @@ never invented — in `[reference]` above, so a pin at this address cites the wo
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PP98KQmXYA7eVuPJB6ohz7i6MNV8hMxbKq-h7h2eMFc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9XT_2Rv-5uc2DzR1acBonwu7klZ51TubHEwun9PzWEE`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

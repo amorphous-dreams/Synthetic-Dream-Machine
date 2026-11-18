@@ -54,6 +54,20 @@ async function askRoute(question: string, allowBoth: boolean): Promise<readonly 
   throw new Error("no route chosen after three tries");
 }
 
+/**
+ * A yes or no with NO default: a blank line asks again, and three misses refuse. The answer is the operator's each time it is
+ * asked; nothing here remembers one.
+ */
+export async function askYesNo(question: string): Promise<boolean> {
+  for (let i = 0; i < 3; i++) {
+    const a = (await promptLine(`${question} [y/n]: `)).trim().toLowerCase();
+    if (a === "y" || a === "yes") return true;
+    if (a === "n" || a === "no") return false;
+    say("  (answer y or n; there is no default)");
+  }
+  throw new Error("no answer after three tries; nothing was founded");
+}
+
 /** Read the sheets of a paper pin, one line each, hidden; a blank line ends the list. */
 async function readSheets(label: string): Promise<string[]> {
   const sheets: string[] = [];
@@ -72,7 +86,7 @@ async function readCredential(route: Route): Promise<Credential> {
 }
 
 /**
- * The credentials that open the VK. One credential per pass; a slot of several pins asks for more. Refuses with no TTY.
+ * The credentials that open the S key. One credential per pass; a slot of several pins asks for more. Refuses with no TTY.
  * Nothing read here is stored beyond the returned array, which the caller hands to `unlockCustody` and drops.
  */
 export async function gatherCredentials(verb: string, opts: { readonly route?: Route } = {}): Promise<Credential[]> {
@@ -80,9 +94,32 @@ export async function gatherCredentials(verb: string, opts: { readonly route?: R
   const out: Credential[] = [];
   for (;;) {
     const [route] = opts.route ? [opts.route] : await askRoute("open with", false);
-    out.push(await readCredential(route!));
-    const more = (await promptLine("another credential for a multi-pin slot? [y/N]: ")).trim().toLowerCase();
+    const credential = await readCredential(route!);
+    if (out.length > 0 && credential.kind === "passphrase" && credential.passphrase === "") say("  blank extra passphrase skipped.");
+    else out.push(credential);
+    const more = (await promptLine("another pin? only a slot sealed with several pins needs one [y/N]: ")).trim().toLowerCase();
     if (!more.startsWith("y")) return out;
+  }
+}
+
+/** Which card a person holds, as the split named it: the root split's two off-device cards, or a custodian card. */
+const CARD_CUSTODIANS = { r: "recorded-code", e: "escrow-peer", c: "custodian", d: "device" } as const;
+export type CardCustodian = (typeof CARD_CUSTODIANS)[keyof typeof CARD_CUSTODIANS];
+
+/**
+ * The cards of a root split, for `vault restore --cards`: for each card, the custodian it came from and its code,
+ * read hidden; a blank custodian ends the list. Refuses with no TTY. The codes leave this function in the returned
+ * array alone, which the caller hands to the card reader and drops.
+ */
+export async function gatherCards(verb: string): Promise<Array<{ readonly code: string; readonly custodian: CardCustodian }>> {
+  requireTty(verb);
+  const cards: Array<{ readonly code: string; readonly custodian: CardCustodian }> = [];
+  for (;;) {
+    const a = (await promptLine(`card ${cards.length + 1} came from [r]ecorded code, [e]scrow carrier, [c]ustodian card, [d]evice (blank line when done): `)).trim().toLowerCase();
+    if (a === "") return cards;
+    const custodian = CARD_CUSTODIANS[a[0] as keyof typeof CARD_CUSTODIANS];
+    if (custodian === undefined) { say("  (choose one of the letters shown)"); continue; }
+    cards.push({ custodian, code: (await promptSecret(`  card ${cards.length + 1} code (hidden): `)).trim() });
   }
 }
 
@@ -91,6 +128,7 @@ async function newPaperPin(): Promise<PinSpec> {
   const draft = draftPaperPin({ threshold: 1, count: 1 });
   say();
   say("  PAPER PIN — write these words on paper, in order. They are shown once and kept nowhere:");
+  say("  Never paste these words anywhere: no chat, no notes app, no screenshot.");
   say();
   draft.sheets.forEach((sheet, i) => say(`    sheet ${i + 1}: ${sheet}`));
   say();
@@ -116,7 +154,7 @@ export async function gatherNewSlot(verb: string, route: Route): Promise<SlotSpe
 }
 
 /**
- * The founding route: one slot per chosen route, each opening the VK on its own. Refuses by name with no TTY and names
+ * The founding route: one slot per chosen route, each opening the S key on its own. Refuses by name with no TTY and names
  * the container recipe.
  */
 export async function gatherFoundingRoute(): Promise<SlotSpec[]> {
@@ -145,7 +183,7 @@ export async function gatherBundleRoute(verb: string): Promise<SlotSpec[]> {
 }
 
 /**
- * For `vault unbind --rotate`: the spec of a slot that STAYS, re-read from the human so the new VK can re-bind it.
+ * For `vault unbind --rotate`: the spec of a slot that STAYS, re-read from the human so the new S key can re-bind it.
  * A passphrase pin re-reads the passphrase; a paper pin re-reads its sheets (`confirmHeldPaper`). The caller proves
  * each spec opens its slot BEFORE any byte moves, so a typo never rotates a vessel into a lockout.
  */

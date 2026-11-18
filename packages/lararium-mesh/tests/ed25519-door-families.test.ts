@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "../src/place-signer.js";
 /**
  * ed25519-door-families.test — every verifier in the mesh package reads through the one strict door.
  *
@@ -6,7 +7,7 @@
  *     through the module's OWN helpers a signature that both curve libraries read true (their default rule and
  *     their strict branch) and the door refuses. A verifier that calls a curve library directly accepts it.
  *   · THE IDENTITY KEY: a small-order key with the signature anyone writes for it. It refuses BY NAME where a
- *     key enters standing state (a seat, a guardian set, an op-key, a Handle key, a device edge, an admit).
+ *     key enters standing state (a seat, a recovery contact set, an op-key, a Handle key, a device edge, an admit).
  *
  * The census test (`ed25519-door-census.test.ts`) proves no source file calls a curve library's verify; these
  * vectors prove each family's verdict moves with the door. The charter's own vectors (the roll, the stamp, a
@@ -18,7 +19,7 @@ import * as ed from "@noble/ed25519";
 import { ed25519 as curveEd } from "@noble/curves/ed25519.js";
 import { hex, hexToBytes, sha256Hex, utf8Bytes, defaultCryptoProvider } from "../src/crypto.js";
 import { acceptEd25519Key, readEd25519 } from "../src/ed25519-door.js";
-import { DEVICE_DELEGATION_DOMAIN, DYAD_ID_DOMAIN, HOSTING_INTRODUCTION_DOMAIN, ORACLE_POINTER_DOMAIN, RE_ANCHORING_DOMAIN } from "../src/domains.js";
+import { DEVICE_DELEGATION_DOMAIN, DYAD_ID_DOMAIN, HOSTING_INTRODUCTION_DOMAIN, FLOW_POINTER_DOMAIN, RE_ANCHORING_DOMAIN } from "../src/domains.js";
 import { realmBagRegistrationCounts, signRealmBagRegistration } from "../src/realm-bag.js";
 import {
   carriageEntryCounts, signCarriageContract, signCarriageQuorum, signCarrierContract, verifyCarriageConsent, verifyCarrierContract,
@@ -30,21 +31,19 @@ import { computePluginsCid } from "../src/genesis-doc.js";
 import { signPluginOffering, verifyPluginOffering, type OfferedBlob } from "../src/plugin-offering.js";
 import { signRealmFeed, verifyRealmFeedSlot } from "../src/cabal-realm-clock.js";
 import { signWitness, verifyWitnessSig } from "../src/persistence-keel.js";
-import { buildOraclePointer, exportOracleSnapshot, verifyOraclePointer } from "../src/oracle-substrate.js";
+import { buildFlowPointer, exportFlowSnapshot, verifyFlowPointer } from "../src/flow-substrate.js";
 import { mintPersonaInception, mintPersonaRotation, verifyPersonaKelFull, personaPrefixOf, personaEventCidOf, type PersonaKelEvent } from "../src/persona-kel.js";
 import { attestAndRotate, provisionThresholdRecoveryAtFounding } from "../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
-import { inceptVesselKel, verifyVesselKelInception } from "../src/vessel-kel.js";
+import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
+import { mintPlaceInception, verifyPlaceKel } from "../src/vessel-kel.js";
 import { handleKeyDigestOf, handleKeyFault, mintHandleInception, mintHandleRotation, verifyHandleKel, verifyHandleKelFull } from "../src/handle-kel.js";
 import { signFleetProof, signHandleCard, verifyFleetProof, verifyHandleCard } from "../src/handle-card.js";
 import { dyadId, signDyadBinding, verifiedFleetOfGroup, type DyadRecord, type DyadRef } from "../src/dyad.js";
 import { signAttestation, verifiedAttestors } from "../src/re-anchoring.js";
 import { signPluginAttestation, verifyPluginAttestation } from "../src/genesis-doc.js";
-import { buildDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "../src/device-delegation.js";
-import { mintEnrollmentOffer, mintJoinAck, openPersonaGrant, sealPersonaGrant, verifyJoinAck, type PersonaRef } from "../src/persona-admit.js";
+import { buildDeviceDelegation, buildDeviceDelegationRootHalf, countersignDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "../src/device-delegation.js";
 import { grantVerifiesAt, hostingEpochOf, issueGrant, mintHostingAct, verifyHostingAct } from "../src/hosting.js";
 import { sealGroupSecret } from "../src/persona-group-secret.js";
-import { authProofBytes, ed25519VerifyHex, verifyAuthProof } from "../src/auth-wire.js";
 import { introductionBytes, newcomerKeyOf, signIntroduction, verifyIntroduction, type IntroductionFields } from "../src/introduction.js";
 import { seatNextDigest } from "../src/cold-key-card.js";
 import { IDENTITY_KEY, MIXED_ORDER_KEY, NOBODYS_SIGNATURE, torsionHand } from "./ed25519-torsion.js";
@@ -121,8 +120,10 @@ bothHands("offering presentation (verifyOfferingPresentation)", async (hand) =>
   (await verifyOfferingPresentation(await presentOffering({ pluginsCid: "bafyOffering", noticed: "noticed", presenter: hand.key }, hand.sign))).ok);
 
 bothHands("offering quorum (foldOfferingAntigen)", async (kahu) => {
-  const entry = await signOfferingKapae({ pluginsCid: "bafyOffering", action: "kapae", parents: [], sealEpochCid: EPOCH }, [{ signer: kahu.key, sign: kahu.sign }]);
-  return (await foldOfferingAntigen([entry], { keys: [kahu.key], threshold: 1, sealEpochCid: EPOCH })).has("bafyOffering");
+  const scope = `nexus-${"ab".repeat(32)}`;
+  const entry = await signOfferingKapae({ scope, pluginsCid: "bafyOffering", action: "kapae", parents: [], sealEpochCid: EPOCH }, [{ signer: kahu.key, sign: kahu.sign }]);
+  const seats = { keys: [kahu.key], threshold: 1, sealEpochCid: EPOCH };
+  return (await foldOfferingAntigen([entry], { scope, seatsAt: (cid) => (cid === EPOCH ? seats : null) })).has("bafyOffering");
 });
 
 bothHands("plugin offering (verifyPluginOffering)", async (hand) => {
@@ -142,46 +143,37 @@ bothHands("realm feed slot (verifyRealmFeedSlot)", async (hand) => {
 bothHands("witness edge (verifyWitnessSig)", async (hand) =>
   verifyWitnessSig("claim-cid", await signWitness({ claimCid: "claim-cid", signer: hand.key, frontier: "f", polarity: 1, sign: hand.sign })));
 
-bothHands("daemon proof of possession (verifyAuthProof, ed25519VerifyHex)", async (peer) => {
-  const parts = { nonce: "11".repeat(32), gatePubKey: (await honestHand(6)).key, peerPubKey: peer.key, aud: "mesh" };
-  const sig = await peer.sign(authProofBytes(parts));
-  const proof = await verifyAuthProof({ ...parts, sig });
-  const bare = await ed25519VerifyHex(sig, authProofBytes(parts), peer.key);
-  if (proof.ok !== bare) throw new Error("the two wire verifiers disagree");
-  return proof.ok;
-});
-
-describe("oracle pointer (verifyOraclePointer)", () => {
+describe("flow pointer (verifyFlowPointer)", () => {
   // The builder derives its key from a seed, so the forgery re-derives the act cid over the identity key by hand.
-  const pointer = async () => buildOraclePointer({ snapshot: await exportOracleSnapshot(A.from({ tiddlers: {} })), parents: [], signerSeed: seed(1) });
-  test("CONTROL: a built pointer verifies", async () => { expect(await verifyOraclePointer(await pointer())).toEqual({ ok: true }); });
+  const pointer = async () => buildFlowPointer({ snapshot: await exportFlowSnapshot(A.from({ tiddlers: {} })), parents: [], signer: placeSignerFromSeed(seed(1)) });
+  test("CONTROL: a built pointer verifies", async () => { expect(await verifyFlowPointer(await pointer())).toEqual({ ok: true }); });
   test("nobody signs for a small-order publisher", async () => {
     const p = await pointer();
-    const actCid = await sha256Hex(utf8Bytes([ORACLE_POINTER_DOMAIN, p.cid, p.heads.join(","), "", "", IDENTITY_KEY].join("|")), defaultCryptoProvider);
+    const actCid = await sha256Hex(utf8Bytes([FLOW_POINTER_DOMAIN, p.cid, p.heads.join(","), "", "", IDENTITY_KEY].join("|")), defaultCryptoProvider);
     const forged = { ...p, pub: IDENTITY_KEY, actCid, sig: NOBODYS_SIGNATURE };
-    expect(await verifyOraclePointer(forged)).toEqual({ ok: false, reason: "signature verify failed" });
+    expect(await verifyFlowPointer(forged)).toEqual({ ok: false, reason: "signature verify failed" });
   });
 });
 
 // ── THE KEY LOGS ─────────────────────────────────────────────────────────────────────────────────────────────
 describe("persona KEL", () => {
-  const rotate = async (guardian: Hand) => {
+  const rotate = async (recoveryContact: Hand) => {
     const op = await honestHand(31), fresh = await honestHand(32);
     const prov = provisionThresholdRecoveryAtFounding({
-      foundingOpKeyDid: `0x${op.key}`, guardians: [guardianRecoveryRegistrationCard("mine", guardian.key, null)], recoveryThreshold: 1,
+      foundingOpKeyDid: `0x${op.key}`, recoveryContacts: [recoveryContactRegistrationCard("mine", recoveryContact.key, null)], recoveryThreshold: 1,
     });
     const rotated = await attestAndRotate({
-      head: prov.inception, freshOpKeyDid: `0x${fresh.key}`, guardianRecoveryKeys: [guardian.key], recoveryThreshold: 1,
-      guardianSigners: [{ signer: guardian.key, sign: guardian.sign }],
+      head: prov.inception, freshOpKeyDid: `0x${fresh.key}`, recoveryContactKeys: [recoveryContact.key], recoveryThreshold: 1,
+      recoveryContactSigners: [{ signer: recoveryContact.key, sign: recoveryContact.sign }],
     });
     return { prov, rotated };
   };
-  test("CONTROL: a guardian's signature rotates the op-key", async () => {
+  test("CONTROL: a recovery contact's signature rotates the op-key", async () => {
     const { prov, rotated } = await rotate(await honestHand(33));
     if (!rotated.ok) throw new Error(rotated.reason);
     expect(await verifyPersonaKelFull([prov.inception, rotated.event])).toEqual({ ok: true });
   });
-  test("a guardian signature only a lenient verifier reads rotates nothing", async () => {
+  test("a recovery contact signature only a lenient verifier reads rotates nothing", async () => {
     const { rotated } = await rotate(torsionHand(33));
     expect(rotated).toMatchObject({ ok: false });
     expect(rotated.ok ? "" : rotated.reason).toMatch(/below-threshold quorum: 0\/1/);
@@ -197,32 +189,33 @@ describe("persona KEL", () => {
     });
     expect(await verifyPersonaKelFull([lawful])).toEqual({ ok: true });                         // CONTROL
   });
-  test("a small-order guardian hidden in a commitment surfaces at its reveal, and a small-order fresh op-key refuses", async () => {
-    // Minted past the registration card, which would refuse: the commitment hides the guardian until a rotation reveals it.
+  test("a small-order recovery contact hidden in a commitment surfaces at its reveal, and a small-order fresh op-key refuses", async () => {
+    // Minted past the registration card, which would refuse: the commitment hides the recovery contact until a rotation reveals it.
     const head = mintPersonaInception(`0x${(await honestHand(31)).key}`, sealKeySetHash([IDENTITY_KEY], 1));
     const fresh = `0x${(await honestHand(32)).key}`;
     const revealed = await mintPersonaRotation({
       head, freshOpKeyDid: fresh, recoveryRoster: [IDENTITY_KEY], recoveryThreshold: 1,
       rotationSigs: [{ signer: IDENTITY_KEY, sig: NOBODYS_SIGNATURE }],
     });
-    expect(revealed).toEqual({ ok: false, reason: "a revealed guardian key refuses at the Ed25519 door (key-small-order)" });
+    expect(revealed).toEqual({ ok: false, reason: "a revealed recovery contact key refuses at the Ed25519 door (key-small-order)" });
     const seated = await mintPersonaRotation({
       head, freshOpKeyDid: `0x${IDENTITY_KEY}`, recoveryRoster: [IDENTITY_KEY], recoveryThreshold: 1, rotationSigs: [],
     });
     expect(seated).toEqual({ ok: false, reason: "the fresh op-key refuses at the Ed25519 door (key-small-order)" });
   });
-  test("a guardian key the door refuses never enters a set", async () => {
-    expect(() => guardianRecoveryRegistrationCard("mine", IDENTITY_KEY, null)).toThrow(/guardian-key-refused.*key-small-order/);
+  test("a recovery contact key the door refuses never enters a set", async () => {
+    expect(() => recoveryContactRegistrationCard("mine", IDENTITY_KEY, null)).toThrow(/recovery-contact-key-refused.*key-small-order/);
   });
 });
 
-describe("vessel KEL (verifyVesselKelInception)", () => {
-  test("CONTROL: a minted inception verifies", () => { expect(verifyVesselKelInception(inceptVesselKel(seed(1)).inception)).toBe(true); });
+describe("place KEL (verifyPlaceKel)", () => {
+  test("CONTROL: an armed inception verifies", () => {
+    const event = mintPlaceInception({ signerSeed: seed(1), coldVerifyingKey: hex(curveEd.getPublicKey(seed(2))) }).event;
+    expect(verifyPlaceKel([event]).ok).toBe(true);
+  });
   test("nobody signs an inception for a small-order key", () => {
-    // The signature covers `k`, and no digest binds it elsewhere: the identity key with nobody's signature
-    // satisfies a lenient verifier over the re-read bytes.
-    const { inception } = inceptVesselKel(seed(1));
-    expect(verifyVesselKelInception({ ...inception, k: [IDENTITY_KEY], sig: NOBODYS_SIGNATURE })).toBe(false);
+    const event = mintPlaceInception({ signerSeed: seed(1), coldVerifyingKey: hex(curveEd.getPublicKey(seed(2))) }).event;
+    expect(verifyPlaceKel([{ ...event, key: IDENTITY_KEY, sig: NOBODYS_SIGNATURE }]).ok).toBe(false);
   });
 });
 
@@ -274,11 +267,13 @@ describe("device edge (verifyDeviceDelegation)", () => {
   const edgeBy = async (root: Hand, deviceKey: string): Promise<DeviceDelegationTiddler> => {
     const fields = { personaRootDid: `0x${root.key}`, deviceDid: `0x${deviceKey}`, deviceVerifyingKey: deviceKey, hearthTrueName: "place", boundEpoch: "5" };
     const bytes = utf8(`${DEVICE_DELEGATION_DOMAIN}|${fields.personaRootDid}|${fields.deviceDid}|${fields.deviceVerifyingKey}|${fields.hearthTrueName}|${fields.boundEpoch}`);
-    return { kind: "device-delegation", ...fields, signature: await root.sign(bytes) } as DeviceDelegationTiddler;
+    const half = { kind: "device-delegation" as const, ...fields, signature: await root.sign(bytes) };
+    if (deviceKey === IDENTITY_KEY) return { ...half, atomSignature: "00".repeat(64) };
+    return countersignDeviceDelegation(half, (await honestHand(4)).sign);
   };
   test("CONTROL: the hand-built edge reads exactly as the builder's", async () => {
     const root = await honestHand(3), device = await honestHand(4);
-    const built = await buildDeviceDelegation({ personaRootSeed: seed(3), deviceVerifyingKey: device.key, hearthTrueName: "place", boundEpoch: 5 });
+    const built = await buildDeviceDelegation({ personaRootSeed: seed(3), atomSeed: seed(4), hearthTrueName: "place", boundEpoch: 5 });
     expect(await edgeBy(root, device.key)).toEqual(built);
     expect(await verifyDeviceDelegation(built, `0x${root.key}`)).toEqual({ ok: true });
   });
@@ -287,7 +282,7 @@ describe("device edge (verifyDeviceDelegation)", () => {
     expect(await verifyDeviceDelegation(await edgeBy(root, (await honestHand(4)).key), `0x${root.key}`)).toEqual({ ok: false, reason: "signature mismatch" });
   });
   test("a device key the door refuses never gets edged, by name", async () => {
-    await expect(buildDeviceDelegation({ personaRootSeed: seed(3), deviceVerifyingKey: IDENTITY_KEY, hearthTrueName: "place", boundEpoch: 5 }))
+    await expect(buildDeviceDelegationRootHalf({ personaRootSeed: seed(3), deviceVerifyingKey: IDENTITY_KEY, hearthTrueName: "place", boundEpoch: 5 }))
       .rejects.toThrow(/deviceVerifyingKey refuses at the Ed25519 door \(key-small-order\)/);
     const root = await honestHand(3);
     expect(await verifyDeviceDelegation(await edgeBy(root, IDENTITY_KEY), `0x${root.key}`))
@@ -297,40 +292,6 @@ describe("device edge (verifyDeviceDelegation)", () => {
     const forged = { ...(await edgeBy(await honestHand(3), (await honestHand(4)).key)), personaRootDid: `0x${IDENTITY_KEY}`, signature: NOBODYS_SIGNATURE } as DeviceDelegationTiddler;
     expect(await verifyDeviceDelegation(forged, `0x${IDENTITY_KEY}`))
       .toEqual({ ok: false, reason: "personaRootDid refuses at the Ed25519 door (key-small-order)" });
-  });
-});
-
-describe("persona admit (openPersonaGrant, verifyJoinAck)", () => {
-  const PREFIX = "EpersonaAID_prefix_0001";
-  const ceremony = async (persona: Hand, device: Hand) => {
-    const personaRef: PersonaRef = { prefix: PREFIX, verifyingKey: persona.key };
-    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: device.key });
-    const { sealed, sent } = await sealPersonaGrant({ offer, personaRef, personaSigner: persona.sign });
-    const opened = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: (prefix) => (prefix === PREFIX ? persona.key : null) });
-    if (!opened.ok) return { opened, ack: null };
-    const { ack } = await mintJoinAck({ accepted: opened.accepted, secret, deviceSigner: device.sign });
-    return { opened, ack: await verifyJoinAck({ ack, sent }) };
-  };
-  test("CONTROL: grant and acknowledgement both stand", async () => {
-    const { opened, ack } = await ceremony(await honestHand(51), await honestHand(52));
-    expect(opened.ok).toBe(true);
-    expect(ack?.ok).toBe(true);
-  });
-  test("a grant signature only a lenient verifier reads admits nobody", async () => {
-    const { opened } = await ceremony(torsionHand(51), await honestHand(52));
-    expect(opened.ok).toBe(false);
-  });
-  test("an acknowledgement only a lenient verifier reads records no join", async () => {
-    const { opened, ack } = await ceremony(await honestHand(51), torsionHand(52));
-    expect(opened.ok).toBe(true);
-    expect(ack).toMatchObject({ ok: false, reason: "ACK signature does not verify against B's device key" });
-  });
-  test("a device key the door refuses never gets offered or granted, by name", async () => {
-    expect(() => mintEnrollmentOffer({ targetVesselId: IDENTITY_KEY })).toThrow(/admit-key-refused.*key-small-order/);
-    const persona = await honestHand(51);
-    const { offer } = mintEnrollmentOffer({ targetVesselId: (await honestHand(52)).key });
-    await expect(sealPersonaGrant({ offer: { ...offer, targetVesselId: IDENTITY_KEY }, personaRef: { prefix: PREFIX, verifyingKey: persona.key }, personaSigner: persona.sign }))
-      .rejects.toThrow(/admit-key-refused.*key-small-order/);
   });
 });
 
@@ -373,8 +334,8 @@ bothHands("fleet proof (verifyFleetProof)", async (root) => {
 });
 
 bothHands("dyad binding (verifiedFleetOfGroup)", async (root) => {
-  const ref = { vesselDid: `0x${(await honestHand(82)).key}`, veilDid: `0x${(await honestHand(83)).key}` } as DyadRef;
-  const groupRoot = `0x${root.key}` as DyadRef["veilDid"];
+  const ref = { deviceDid: `0x${(await honestHand(83)).key}` } as DyadRef;
+  const groupRoot = `0x${root.key}` as DyadRef["deviceDid"];
   const binding = await signDyadBinding(ref, groupRoot, EPOCH, root.sign);
   const record = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(ref), ref, edge: null, binding } as unknown as DyadRecord;
   return (await verifiedFleetOfGroup([record], groupRoot)).length === 1;
@@ -388,7 +349,7 @@ bothHands("re-anchoring attestor (verifiedAttestors)", async (attestor) => {
 
 bothHands("plugin build attestation (verifyPluginAttestation)", async (builder) => {
   const build = {
-    format: "lararium-tw5-plugin-build/v1", canonicalTitle: "$:/plugins/lares/memetic-wikitext",
+    format: "lararium-tw5-plugin-build", canonicalTitle: "$:/plugins/lares/memetic-wikitext",
     moduleManifestPath: "dist-plugin/module-manifest.json", moduleManifestSha256: "a".repeat(64),
     packTranscriptPath: "dist-plugin/pack-transcript.json", packTranscriptSha256: "b".repeat(64),
     moduleCount: 23, packedTiddlerCount: 115, pluginJsonSha256: "c".repeat(64),

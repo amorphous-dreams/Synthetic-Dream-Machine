@@ -13,9 +13,9 @@ import { describe, test, expect } from "vitest";
 import { frameCarrier, readFrame, stampCarrier, verdict, META_OPEN_CANON } from "../src/index.js";
 
 const URI = "lar:///t/spine";
-const HEAD = (uri: string) => `<<^ code="&#x0001;" from="?" -> to="${uri}">>`;
-const STX = '<<^ code="&#x0002;">>';
-const EOT = '<<^ code="&#x0004;" -> to="?">>';
+const HEAD = (uri: string) => `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>`;
+const STX = '<<^ code=`&#x0002;`>>';
+const EOT = '<<^ code=`&#x0004;` to=`?`>>';
 const carrier = frameCarrier({ head: { uri: URI }, body: `${META_OPEN_CANON}\ntitle = "${URI}"\n\`\`\`\n\nProse.` });
 const kinds = (text: string): string[] => readFrame(text).faults.map((f) => f.kind);
 const tornBy = (text: string): string[] => {

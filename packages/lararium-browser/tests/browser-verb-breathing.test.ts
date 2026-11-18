@@ -11,12 +11,7 @@
  *        the reaction-router step — that LOGIC is covered e2e by node m3-breathing)
  *     → BrowserVesselIslandPool.onWorkerEvent receives it at the vessel boundary
  *
- * Replaces the previous browser-m3-breathing.test.ts, which booted a real TW5
- * core inside the worker from a CHECKED-IN, pre-built Vite bundle. That bundle
- * went stale (frozen bytes drifting from source) and the TW5 core UMD assumes a
- * Node `global` absent in browser Workers — so it hung before `ea`. This rewrite
- * keeps the flow, drops the frozen-artifact + TW5-in-worker fragility, and uses
- * the codebase's lightweight hand-written-worker fixture pattern (sibling of
+ * The test uses the lightweight hand-written-worker fixture pattern (sibling of
  * browser-repo-in-island-echo.mjs). No build step, no checked-in bundle.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-verb-breathing

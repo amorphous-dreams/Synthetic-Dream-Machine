@@ -44,16 +44,16 @@ describe("Node readiness face", () => {
     const server = createServer(); servers.push(server);
     const face = mountReadinessFace({ httpServer: server, state: createReadinessState(), standing: "lararium" });
     server.on("request", (req, res) => {
-      if (req.url === "/oracle/pointer") { res.writeHead(200); res.end("oracle-face"); return; }
+      if (req.url === "/flow/pointer") { res.writeHead(200); res.end("flow-face"); return; }
       if (!res.writableEnded) { res.writeHead(404); res.end("other-face"); }
     });
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
     const address = server.address();
     if (!address || typeof address === "string") throw new Error("readiness test did not bind");
     const origin = `http://127.0.0.1:${address.port}`;
-    const oracle = await fetch(`${origin}/oracle/pointer`);
-    expect(oracle.status).toBe(200);
-    expect(await oracle.text()).toBe("oracle-face");
+    const flow = await fetch(`${origin}/flow/pointer`);
+    expect(flow.status).toBe(200);
+    expect(await flow.text()).toBe("flow-face");
     const pronaos = await fetch(`${origin}/`);
     expect(pronaos.status).toBe(404);
     const arbitrary = await fetch(`${origin}/api/health/extra`);

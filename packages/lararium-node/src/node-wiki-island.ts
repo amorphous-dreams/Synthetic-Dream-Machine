@@ -23,4 +23,6 @@
 import { runSovereignWorker }      from "./sovereign-island-model.js";
 import { makeWikiPrimaryBehavior } from "./island-behaviors.js";
 
-runSovereignWorker((manifest) => makeWikiPrimaryBehavior(manifest));
+runSovereignWorker((manifest) => {
+  return makeWikiPrimaryBehavior(manifest);
+});

@@ -1,0 +1,59 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-vault-civic/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-vault-civic/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-vault-civic/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-vault-civic/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-vault-civic/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-vault-civic/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Vault-Civic: Lares (Tasked Spirit). A read-only design scout. Repo: /home/joshu/Synthetic-Dream-Machine (span 8e8078378). Write nothing. Mark claims MEASURED (file:line) or INFER.
+
+THE DESIGN UNDER READ: the reach vault — the secrets store for "the user's facebook, discord, bluesky and other integration keys for things across the causal island shore that still sit in web2.5's tech" (operator, 2026-11-06). Read: /home/joshu/.lares-scratch/secrets-store/brief.md whole (end state, the operator's clarification, the first-slots rulings: POEE home Bluesky `principiadiscordia.bsky.social` at CONTRACT from day one; Facebook and Discord PERSONAGROUP placeholders; Porkbun DNS at VEIL, node vessel only), and bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem whole, cap-tier.mem, bounded-reach-contract.mem.
+
+THE CIVIC DESIGN TO READ IT AGAINST: bags/lararium/ha.ka.ba/lararium/mesh/dreamnet-architecture.mem (faces, fleets, the ward, shrine tiers household -> crossroads -> temple), nexus-topology.mem, membership-doctrine.mem, attestation-plane.mem, identity-classes.mem, handle-card.mem, lamplighters.mem, pronaos.mem, secure-context.mem, first-realm-arc.mem, bags/lares/ha.ka.ba/lares/docs/libation-pool.mem, the-lares-protocols.mem, pattern-integrities.mem; the road's #/rulings (bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem) for recovery contacts (K18), the ward's reach, removal wins at every reader, no global now, web3-only law.
+
+FIND, as user stories a person would live (name who, where on the shrine tiers, what they do, what goes wrong), the scenarios and gaps the vault design misses. Cover at least:
+# Household: the operator's own fleet; a device lost or revoked holding a PERSONAGROUP credential (does revocation reach a credential the device already opened? rotation at the far side?); the ward (is onboarding, removal or re-tiering a credential a ward act?); recovery (does a recovered face get its credentials back, and who holds them under K18?).
+# Cabal / CONTRACT: a shared house account (POEE) voiced by several hands; a member leaves (removal wins at every reader: the far-side token they saw stays valid until rotated — what does the house do?); attribution receipts; two cabals sharing one credential; a contract that ends.
+# Crossroads / temple (civic): a district or civic node holding an institution's accounts; succession of stewards; the libation pool (operator-offered infra) holding others' credentials — custody across operators; a lamplighter or herm that must never read one.
+# Cross-cutting: the VEIL DNS key and the node's certificate act (who acts when the node sits locked; Kairos-style narrow capability); OAuth refresh vs no-global-now; the far side banning on retries; a credential that leaks (detection, revocation, receipts); the web3-only law at the shore; DreamNet-wide reuse of one credential by name (no per-persona index to leak).
+Rank each gap: BLOCKS-THE-STORE (the store's end state cannot stand pono without it), BEFORE-FIRST-USE (before the first real credential gets pasted), or LATER (the reach projection lane). For each, name the smallest design answer the existing civic law already implies, citing it.
+Final message under 1300 words.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dbLUKLGUrajZmQeZtf4-OyZrtIjPXcSfEuez4xs5_Vk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

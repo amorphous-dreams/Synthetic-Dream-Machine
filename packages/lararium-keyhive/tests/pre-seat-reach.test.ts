@@ -16,19 +16,23 @@ import { runFaceJoin, type FaceJoinContext, type FaceJoinGrant } from "../src/fa
 
 const noopStore = { put: async () => {}, list: async () => [] };
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
+const atomSeeds = new WeakMap<KeyhiveProvider, Uint8Array>();
 const b64 = (s: string) => new Uint8Array(Buffer.from(s, "base64"));
 
 async function leaf(fill: number): Promise<KeyhiveProvider> {
   const p = new KeyhiveProvider();
   await p.init({ seed: seedOf(fill), eventStore: noopStore });
+  atomSeeds.set(p, seedOf(fill));
   return p;
 }
 const rawKeyOf = async (p: KeyhiveProvider) => (await p.whoami()).replace(/^0x/, "");
 
 async function leafEdge(rootSeed: Uint8Array, joinee: KeyhiveProvider) {
+  const atomSeed = atomSeeds.get(joinee);
+  if (!atomSeed) throw new Error("atom seed absent");
   return buildDeviceDelegation({
     personaRootSeed: rootSeed,
-    deviceVerifyingKey: await rawKeyOf(joinee),
+    atomSeed,
     hearthTrueName: "",
     boundEpoch: 0,
   });
@@ -48,7 +52,7 @@ const ctxFor = (rootDid: string, pg: { groupId: string }, reseal?: readonly stri
 });
 
 const summonsFor = async (joinee: KeyhiveProvider, edge: Awaited<ReturnType<typeof leafEdge>>) => ({
-  kind: "face-join/v1" as const,
+  kind: "face-join" as const,
   contactCard: new TextDecoder().decode(await joinee.contactCard()),
   deviceEdge: edge,
 });

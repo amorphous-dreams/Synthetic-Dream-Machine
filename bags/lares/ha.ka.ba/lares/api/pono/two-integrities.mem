@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/two-integrities">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/two-integrities`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/two-integrities.mem"
 hydrate           = true
 l-space           = "stable"
-mana              = 16
-manao             = 15
-manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-02"
@@ -21,7 +17,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Two Integrities ~ a name system and a courier
 
@@ -31,7 +27,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 
 <<~/ahu>>
 
-<<~ ahu #/what-each-answers>>
+<<~ ahu slot=`#/what-each-answers`>>
 
 !! What each answers that we could not
 
@@ -41,19 +37,19 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 
 <<~/ahu>>
 
-<<~ ahu #/the-dyad>>
+<<~ ahu slot=`#/the-dyad`>>
 
 !! What they bring the Agent-Operator dyad
 
 * ''`derive(store, now, decisions)` — rulings become data.'' Operator rulings live in an agent's context window and in flat memory, degrading with every summary. As a pure derivation over a grow-only set, a verdict reads `f(evidence, decisions)`: deterministic, order-independent, recomputable by any vessel holding both. ''The operator's rulings move from remembered context into installed data.'' Its sharpest clause — ''no derived state ever crosses a boundary'' — says a tasked spirit receives evidence and rulings, never conclusions, and derives its own. A spirit handed conclusions inherits the sender's errors.
 * ''`Signed<T> -> try_verify -> Verified<T>` as type-state.'' "Forgetting to verify is a type error, not a bug class." `verifyCarriageConsent` and `verifyRealmFeedSlot` return booleans, and nothing structural stops a caller reading a consent's fields without checking its seal. A comment ranks as the weakest ward this house owns.
-* ''Petnames — the personal naming layer we lack.'' Every address handed to an operator takes global form. `~/grove` means //you previously bound this label to this reference//: mutable, local, face-scoped. A UX capability and a privacy capability in one primitive.
+* ''Petnames — the personal naming layer we lack.'' Every address handed to an operator takes global form. `~/grove` means //you bound this label to this reference//: mutable, local, face-scoped. A UX capability and a privacy capability in one primitive.
 * ''Graded verdicts, and staleness as a BADGE never a prompt.'' Interruption reserved for ''events'' — diffs in the derivation — never for standing conditions. //A warning that is always on protects nothing//, and every defence ending in "surfaced to the user" draws one attention budget.
 * ''The mutual backstop.'' Lose the keys and the name rescues you; lose the name and the keys rescue you. #the-two-keels ruled that ONE quorum serves both recovery and impersonation, leaving no safe custodial escrow — this gives a third path that ''holds no third party''.
 
 <<~/ahu>>
 
-<<~ ahu #/the-node>>
+<<~ ahu slot=`#/the-node`>>
 
 !! What they bring a node on the mesh
 
@@ -65,7 +61,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 
 <<~/ahu>>
 
-<<~ ahu #/double-blind>>
+<<~ ahu slot=`#/double-blind`>>
 
 !! The double-blind wrap ~ what a lamplighter must not learn
 
@@ -80,7 +76,7 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 
 <<~/ahu>>
 
-<<~ ahu #/the-clock>>
+<<~ ahu slot=`#/the-clock`>>
 
 !! The one hard collision
 
@@ -92,7 +88,7 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 
 <<~/ahu>>
 
-<<~ ahu #/sensorium>>
+<<~ ahu slot=`#/sensorium`>>
 
 !! Onomancy in the sensorium, the memory palace, the dream work
 
@@ -103,11 +99,11 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 
 <<~/ahu>>
 
-<<~ ahu #/what-we-do-not-take>>
+<<~ ahu slot=`#/what-we-do-not-take`>>
 
 !! What we do NOT take, and why
 
-* ⚠ ''The `automerge-repo` subduction FORK LINE.'' `2.6.0-subduction.48` names a separate npm dist-tag off branch `subductionjs`, 48 prereleases deep, tracked by a still-open draft PR, +19,251/-1,309 across 139 files against main. It makes the wasm module a hard dependency of `automerge-repo` and constructs a `SubductionSource` unconditionally inside `Repo`. ''No importer exists for existing stored data'' — the bridge writes a new `subduction/…` key space and the only migration path exports `.am` then re-ingests. ''A fork-line commitment, not a version bump.'' The house pulls the two LIBRARIES; it does not pull the repo line.
+* ⚠ ''The `automerge-repo` subduction FORK LINE.'' `2.6.0-subduction.48` names a separate npm dist-tag off branch `subductionjs`, 48 prereleases deep, tracked by a still-open draft PR, +19,251/-1,309 across 139 files against main. It makes the wasm module a hard dependency of `automerge-repo` and constructs a `SubductionSource` unconditionally inside `Repo`. ''No importer exists for existing stored data'' — the bridge writes a new `subduction/…` key space and the only crossing exports `.am` then re-ingests. ''A fork-line commitment, not a version bump.'' The house pulls the two LIBRARIES; it does not pull the repo line.
 * ⚠ ''ARK's TypeScript sync-protocol files carry a demolition notice'' — upstream announces a WASM-over-Rust refactor for `sync-protocol.ts`, `keyhive-subduction-adapter.ts`, `codec.ts`, `network-adapter.ts`, `cbor-builder.ts`, `batch.ts`, `pending.ts`. Build on none of them.
 * ⚠ ''Onomancy pins to a different Keyhive lineage'' (`keyhive_core = "0.5"`, replayed behind a versioned envelope) than the npm `@keyhive/keyhive` we run, and its own upstream ask names the unresolved bridge: //certificates need PORTABLE proofs (static files); ARK is a live hive//. Adopting both inherits that gap.
 * ⚠ ''Certificate issuance requires full admin on the document.'' Hostname-scoped attenuation stands as an open upstream ask, not a feature — a coarse grant under #the-cap-tiers, to live with at v0 or to wait on.
@@ -115,7 +111,7 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 
 <<~/ahu>>
 
-<<~ ahu #/the-order>>
+<<~ ahu slot=`#/the-order`>>
 
 !! The order of adoption
 
@@ -127,11 +123,11 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QFXujhbKcQVQDFOn5bytGJ2p21vNOcXKouCOjiHHN20
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JT09A45-d4HWCPa8un_Fbdb3Bm5JNYAqB9TsQJcrDzE`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

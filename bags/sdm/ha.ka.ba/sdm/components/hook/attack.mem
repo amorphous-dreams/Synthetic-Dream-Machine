@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/hook/attack">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/components/hook/attack`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 caption   = "attack"
-file-path = "bags/sdm/ha.ka.ba/sdm/components/hook/attack.mem"
 l-space   = "sdm"
-mana      = 14
-manao     = 16
-manaoio   = 13
 role      = "component (hook): Attack — resolves against Defense rather than as a save"
 title     = "lar:///ha.ka.ba/sdm/components/hook/attack"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -19,7 +15,7 @@ uri-path  = "ha.ka.ba/sdm/components/hook/attack"
 
 ! Attack
 
-<<~ ahu #/definition>>
+<<~ ahu slot=`#/definition`>>
 
 !! Definition
 
@@ -27,7 +23,7 @@ A canonical resolution hook: the Power resolves ''against the target's Defense''
 
 <<~/ahu>>
 
-<<~ ahu #/activation>>
+<<~ ahu slot=`#/activation`>>
 
 !! Activation
 
@@ -35,7 +31,7 @@ Modifies how the effect lands: roll to hit Defense. Overcharge typically scales 
 
 <<~/ahu>>
 
-<<~ ahu #/interaction>>
+<<~ ahu slot=`#/interaction`>>
 
 !! Interaction
 
@@ -43,7 +39,7 @@ Composes with offensive functions and any domain. Rarely sits on `domain/divinat
 
 <<~/ahu>>
 
-<<~ ahu #/filters>>
+<<~ ahu slot=`#/filters`>>
 
 !! Filters
 
@@ -54,7 +50,7 @@ Composes with offensive functions and any domain. Rarely sits on `domain/divinat
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath
 
@@ -62,14 +58,14 @@ Composes with offensive functions and any domain. Rarely sits on `domain/divinat
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/templates/components/tag`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;I5QVcW47jet4obsyBcBlet8mbf3SP_W-3Lj2RXbQpsg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zZr4_uZknmaQx6mJnIyGvea2PN6znEtJ8XLfqBOCQk4`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

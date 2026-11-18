@@ -15,7 +15,7 @@
 import { describe, expect, test } from "vitest";
 import { DYAD_ID_DOMAIN } from "../src/domains.js";
 import {
-  dyadId, dyadsOnVessel, fleetOfGroup, dyadsFromDoc, writeDyad, dyadSlotKey,
+  dyadId, fleetOfGroup, dyadsFromDoc, writeDyad, dyadSlotKey,
   type DyadRecord, type DelegationEdge,
 } from "../src/dyad.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
@@ -37,8 +37,8 @@ const edge = (deviceDid: string, rootDid = ROOT): DeviceDelegationTiddler => ({
 
 /** The ruled record shape: an EXPLICIT ref (place × derived face), the edge as carriage. */
 const rec = (vessel: string, veil: string, binding: DelegationEdge | null = null): DyadRecord => {
-  const ref = { vesselDid: vessel, veilDid: veil };
-  return { kind: DYAD_ID_DOMAIN, dyadId: dyadId(ref), ref, edge: edge(vessel), binding };
+  const ref = { deviceDid: veil };
+  return { kind: DYAD_ID_DOMAIN, dyadId: dyadId(ref), ref, edge: edge(veil), binding };
 };
 
 describe("the read path — a vessel sees the relationships its slots carry", () => {
@@ -48,11 +48,11 @@ describe("the read path — a vessel sees the relationships its slots carry", ()
     writeDyad(doc, d);
     const back = dyadsFromDoc(doc);
     expect(back).toHaveLength(1);
-    expect(back[0]!.ref.veilDid).toBe(VEIL_1);
-    expect(back[0]!.ref.veilDid).not.toBe(ROOT);
+    expect(back[0]!.ref.deviceDid).toBe(VEIL_1);
+    expect(back[0]!.ref.deviceDid).not.toBe(ROOT);
     expect(back[0]!.dyadId).toBe(dyadId(d.ref));
     // The id content-addresses the ORDERED pair, so it never collides with the reverse relation.
-    expect(dyadId({ vesselDid: DEVICE, veilDid: ROOT })).not.toBe(dyadId({ vesselDid: ROOT, veilDid: DEVICE }));
+    expect(dyadId({ deviceDid: DEVICE })).not.toBe(dyadId({ deviceDid: ROOT }));
   });
 
   test("an unbound dyad joins NO fleet — absence of a binding is not membership in a default group", () => {
@@ -61,10 +61,13 @@ describe("the read path — a vessel sees the relationships its slots carry", ()
     expect(fleetOfGroup([d], ROOT)).toEqual([]);
   });
 
-  test("a vessel filters the dyads that name IT, and not another place", () => {
+  test("a doc reads its distinct atom slots", () => {
     const mine = rec(DEVICE, VEIL_1);
     const theirs = rec(OTHER, VEIL_2);
-    expect(dyadsOnVessel([mine, theirs], DEVICE)).toEqual([mine]);
+    const doc = emptyLarDoc();
+    writeDyad(doc, mine);
+    writeDyad(doc, theirs);
+    expect(dyadsFromDoc(doc).map((d) => d.ref.deviceDid)).toEqual([VEIL_1, VEIL_2]);
   });
 
   test("★ N dyads land in N slots and read back whole ★", () => {

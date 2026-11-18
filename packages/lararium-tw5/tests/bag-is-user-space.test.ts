@@ -11,7 +11,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { toWikiFields } from "../src/modules/nalu-engine.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
-import { HandGate } from "../src/hand-gate.js";
 import { asIslandStore } from "./island-store-double.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
@@ -99,14 +98,14 @@ describe("★ the outbound adaptor ★", () => {
       puts.push({ fields: rec.tiddler as Record<string, unknown>, bag: options?.bag });
       return orig(rec, origin);
     };
-    adaptor = new IslandAdaptor(new FakeEngine() as never, asIslandStore(store), "witness", ORIGIN_BAG);
+    adaptor = new IslandAdaptor(new FakeEngine() as never, asIslandStore(store), "witness");
     adaptor.start();
   });
-  afterEach(() => { adaptor.stop(); vi.useRealTimers(); });
+  afterEach(() => { void adaptor.stop(); vi.useRealTimers(); });
 
   test("★ an author's `bag` never routes the save and rides into the record whole ★", async () => {
     const done = adaptor.saveTiddler({ fields: { title: URI, text: "an NPC", bag: INVENTORY, "$origin-bag": ORIGIN_BAG } });
-    await vi.advanceTimersByTimeAsync(HandGate.TRAILING_MS + 1);
+    await adaptor.boundary();
     await done;
     expect(puts).toHaveLength(1);
     // Residency rides the envelope: the cascade's bag, never the field's value.
@@ -129,8 +128,8 @@ describe("★ the placement sinks ★", () => {
 
   test("★ round trip: a meme whose meta carries `bag = …` lands, reads back, and re-places as a noop ★", async () => {
     const meme =
-      `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n` +
-      `<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/npc"\nbag = "${INVENTORY}"\n\`\`\`\n\nan NPC\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+      `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n` +
+      `<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/npc"\nbag = "${INVENTORY}"\n\`\`\`\n\nan NPC\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
     const store = new MemoryTiddlerStore(ORIGIN_BAG);
     const sink = storeMemeSink(store, ORIGIN_BAG, { kind: "lares-verb", requestId: "w" });
     const first = await placeMeme({ uri: URI, text: meme }, sink);

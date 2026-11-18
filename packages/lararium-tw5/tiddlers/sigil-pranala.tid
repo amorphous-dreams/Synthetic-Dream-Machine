@@ -2,15 +2,15 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pranala
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: edge
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/pranala
-lar-inline-pattern: <<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+family[=:]"?([\w.-]+)"?)?(?:\s+role[=:]"?([\w.-]+)"?)?\s*>>
-lar-block-pattern: <<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?\s*>>([\s\S]*?)<<~\/pranala\s*>>
+lar-inline-pattern: <<~\s*pranala(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sslot=`([^`]*)`)|)(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sfrom=`([^`]*)`)(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sto=`([^`]*)`)(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sfamily=`([^`]*)`)|)(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\srole=`([^`]*)`)|)(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*>>
+lar-block-pattern: <<~\s*pranala(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sslot=`([^`]*)`)|)(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sfrom=`([^`]*)`)(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sto=`([^`]*)`)(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*>>([\s\S]*?)<<~\/pranala\s*>>
 lar-close-pattern: <<~\/pranala\s*>>
 lar-default-family: relation
-lar-example: <<~ pranala from="lar:///a.b.c/x" -> to="lar:///a.b.c/y">>
+lar-example: <<~ pranala from=`lar:///a.b.c/x` to=`lar:///a.b.c/y`>>
 type: text/vnd.tiddlywiki
 
-<!-- pranala — permanent JS exception: arrow syntax FROM -> TO + keyword attrs
-     (from/to/slot/family/role/body) structurally distinct from <<~ WORD ARGS>>.
+<!-- pranala — permanent JS exception: named `from` and `to` ends (either order) + keyword attrs
+     (slot/family/role/body), each ``name=`value` ``, structurally distinct from <<~ WORD ARGS>>.
      Parsed directly in lar-sigil.ts findNextMatch before compound dispatch fires. -->
 
 \widget ~pranala(from:"" to:"" slot:"" family:"" role:"" body:"" template:"")

@@ -1,0 +1,10 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-moolelo
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: metadata
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/talk-story
+lar-pattern: <<~\s*moolelo(?=[\s>])(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sheld=`([^`]*)`)|)(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*>>
+lar-example: <<~ moolelo held=`the direction the floor settled on`>>
+lar-render: literal
+type: text/vnd.tiddlywiki
+
+<!-- moolelo — the settled direction a talk-story floor closes on: the position it `held`. Recognized in the tree, rendered as plain literal text for now. -->

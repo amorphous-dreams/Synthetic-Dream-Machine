@@ -11,12 +11,13 @@
  *   · the written tiddler PERSISTS across Repo instances (a fresh Repo reads the prior write back).
  *
  * The signing is the a-multitude-of-one: one operator holds all three faces' seat keys and signs the
- * quorum with two of their OWN held seats (the real-cabal collect-signatures ceremony is the surfaced fork).
+ * quorum with two of their OWN held seats; seats that rest in two vaults cross as a partial (nexus-kapae-two-vault).
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { afterEach, beforeEach, describe, expect } from "vitest";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { hex, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord, signAntigenEntry } from "@lararium/mesh";
@@ -31,27 +32,22 @@ import { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "../src/comman
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
 const VICTIM = "beadfeed".repeat(8);   // the presenter nym a ban targets
 
-let root: string;
-let priorLarRoot: string | undefined;
 
 /** The bags dir under the isolated LAR_ROOT — mirrors the CLI's `larBagsDir()` (LAR_BAGS ?? <root>/bags). */
 const sealHome = (): string => join(root, "state", "nexus");
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lares-kapae-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;   // isolates data/state/bags under the temp tree
+// isolates data/state/bags under the temp tree
 });
 
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
+
 });
 
 /** Seat the keys under a verifiable genesis lineage in `bags/nexus`; return its cid. */
@@ -64,7 +60,7 @@ function seatCharter(keys: string[], threshold = 2): string {
 
 describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   it("RAISE → board → fold → isKapaed: a 2-of-3 held-seat ban Kapae's the victim", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
 
@@ -82,7 +78,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("un_kapae as a causal descendant LIFTS the standing ban", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
 
@@ -103,7 +99,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("rejects a raw CID-poisoned board act when selecting the next frontier", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
     const ban = await direct(runNexusKapae)({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
@@ -118,7 +114,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("excludes a verified parent whose own grandparent is absent", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const chairs = await seatChairs([0, 1, 2]);
     const epoch = seatCharter([...chairs.keys]);
@@ -135,7 +131,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("SUB-QUORUM REFUSES: one held seat key against a 2-of-3 roster writes NOTHING", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     const held = (await seatChairs([0])).keys[0]!;   // the ONLY held seat key
     // Two roster co-signers the vessel does NOT hold — real ed25519 keys, just not in this vault.
@@ -155,7 +151,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("UNSEATED charter REFUSES: no roster to root a ban on", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     // No seatCharter — the authority home is absent.
     await expect(direct(runNexusKapae)({ action: "kapae", nym: VICTIM, sealHome: sealHome() }))
@@ -163,7 +159,7 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("a malformed nym REFUSES before any quorum work", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
     await expect(direct(runNexusKapae)({ action: "kapae", nym: "not-a-key", sealHome: sealHome() }))

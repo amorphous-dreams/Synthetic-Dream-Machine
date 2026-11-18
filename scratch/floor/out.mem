@@ -1,0 +1,156 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/floor/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/floor/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/floor/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/floor/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/floor/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/floor/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/floor-pinner-hand-back-the-vessel-pins-the-floor`>>
+
+! Floor-Pinner hand-back: the vessel pins the floor
+
+Branch `feature/green-jello-dinosaur-5--floor`, pushed. It merges the span head 594a22378 (the workbench lane).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits`>>
+
+!! Commits
+* `63bc695d9` lar:&#47;&#47;/vessel.pins.floor/accept-by-prior: the floor pin seam, both host bindings, the CLI, the announcement fold, wire-names, canon and the CHANGELOG.
+* `600e0bcd2` lar:&#47;&#47;/span.meets.floor/merge-workbench: merges the span. It also fixes two test types and adds `workspace` to the `accepts` rows of `bag` and `wiki`. The CLI law accepts-track-the-handlers was already red on the span head. Only those two accepts rows changed, and no share verb was touched.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-shared-seam`>>
+
+!! The shared seam (one implementation for both hosts)
+`packages/lararium-mesh/src/floor-pin.ts`:
+* ''Pin record.'' `{kind:"floor-pin", nexus, release, manifest}` at `<control>/floor-pin/<Nexus AID>` in the vessel's control home. It is keyed by Nexus only, so no face carries a pin.
+* ''Genesis start.'' With no pin row, the pin is derived from `GENESIS_FLOOR_TIDDLER` (`release: null`). Nothing is written at boot, so a reboot writes nothing.
+* ''Decision functions:''
+** `floorStatusOf`: the pinned release, the newest head, whether it descends (fast-forward and its path), and any fork.
+** `decideFloorAccept`: walks `prior` through the releases the board counts. It refuses with `floor-not-descendant` (rollback included), `floor-fork-unsettled` (names both heads), `floor-release-unknown` or `floor-no-release`. Accepting the release already pinned returns `moved:false` and writes nothing.
+** `floorRemountDecision`: swaps live when the island offers it (`floorSwap` plus a swap port); otherwise it raises the reboot-pending alert and says why.
+** `floorCidToMount` / `vesselFloorCid`: pick the floor a mount stands on (the vessel's only pin, or genesis).
+* ''Composed doors.'' `readFloorStatus` and `acceptFloorRelease` run over ports named by capability: `home`, `rows`, `fetchCas`, `stage`, `mount`. Accept stages the manifest and snapshots into the CAS before it moves the pin. `raiseFloorAlert` places the reboot-pending `system-alert` into every live wiki.
+* ''Supporting changes:''
+** `foldFloorReleases` now also returns its `counted` set.
+** `floorAnswerRows` is shared by `readFloorAnswer` and the browser.
+** `IslandMsg_Manifest.floorCid` and `VesselIslandPoolCoreOptions.floorCid`: each activation reads the pin again.
+** The tw5 kernel mounts `msg.floorCid` in place of the genesis witness. Plugin bytes are unchanged (sha256 of both plugin json files the same), so nothing goes into `genesis/unbaked.json`.
+** `surface-recipe` takes a `floorCid` input.
+* ''Announcement reader.'' `foldFloorAnnouncements` in `floor-announcement.ts` orders announcements by `prior`, starting from the line's opening or a held digest. Two heads read as `forked` with both named; recency never settles it. It sets aside `prior-unseen` and each read refusal.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/host-bindings`>>
+
+!! Host bindings
+* ''Node'' (`packages/lararium-node/src/commands/floor.ts`): binds the control home (`readControlHome`, which refuses on a locked vessel), the publication board replica, and the local CAS, with an optional `--porch` source for bytes.
+** Store-door rows `floor-status` and `floor-accept` are rows of the place, not face rows. `floor-accept` needs a person's hand (`floor-needs-hand`).
+** `floorAlert` is wired to `raiseFloorAlert(vmManager)`, and the pool's `floorCid` to `vesselFloorCid`.
+* ''Browser'' (`packages/lararium-browser/src/browser-floor-pin.ts`): binds the control home the boot stood, the porch answer, and OPFS.
+** The vessel result gains `floorStatus(baseUrl)` and `acceptFloor(baseUrl, release?)`, and the pool gets the same `vesselFloorCid`.
+** When it cannot run a door it refuses by name: `floor-control-unread`, `floor-no-nexus`, `floor-no-genesis`, `floor-porch-silent`.
+* ''CLI:'' `lares vessel floor status|accept [<release>] [--nexus] [--porch]` (`packages/lares-cli/src/commands/floor.ts`, wired through `vessel.ts`).
+* Neither host's island swaps its floor live today, so every accept raises the alert.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/wire-names`>>
+
+!! Wire names (controller's parity row)
+* <code>&#64;lararium/mesh/wire-names</code> is a new file with no imports and a package.json export. It holds GENESIS_SEED_FORMAT, ARRIVAL_FORMAT, FLOOR_MANIFEST_FORMAT, FLOOR_ANSWER_FORMAT, FLOOR_PIN_KIND and FLOOR_ANNOUNCEMENT_KIND.
+* genesis-doc, floor-manifest, floor-answer, floor-pin, floor-announcement and node `pronaos-adapter` re-export from it, so each name has one owner.
+* The web tests use the constants and parse the committed `genesis/seed.json` (vite `?raw`) through `readServedSeed`.
+* ''Page paths touched (for the eyes-on walk):''
+** `packages/lararium-web/src/genesis-anchor.ts`: imports the two constants; the hand-copied seed and arrival literals are gone.
+** `packages/lararium-web/src/live-status.ts`: imports `ARRIVAL_FORMAT` in place of `"lar-arrival"`.
+** `packages/lararium-web/tests/genesis-anchor.test.ts`, `packages/lararium-web/tests/arrival-relay.test.ts`.
+** No page UI calls the floor doors yet.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/red-tests`>>
+
+!! Red tests (each file run alone, `--maxWorkers=2`)
+* ''mesh `tests/floor-pin.test.ts`'' (new). Covers: the pin starts at genesis and a status read writes nothing; accept fast-forwards over two releases and stages first; non-descendant refuses; a fork refuses naming both heads; a replay writes nothing; status reads the same after a reboot (automerge save, then load into a new Repo); a face switch moves no pin; remount swaps or alerts; the mount pick.
+** Red proven against a mutated seam: 3 failures (non-descendant, fork, replay), then green once restored.
+* ''mesh'' `floor-announcement` (4 fold tests), `wire-names` (new), plus floor-release, floor-answer and surface-mount.
+* ''browser `tests/browser-floor-pin.test.ts`'' (new): the browser composition and a node-shaped binding give the same status, the same accept, and the same pin row byte for byte. Also covers stage plus alert, replay, fork, and the named refusals.
+* ''node `tests/floor-door.test.ts`'' (new): both rows are place rows; accept is hand-only; the node binding calls the mesh decision and declares no live swap. Also ran swarm-verbs.
+* ''web:'' genesis-anchor (adds the committed-seed test), arrival-relay.
+* ''cli:'' laws, help-flags, vessel-surfaces, fresh-build-observe.
+* Every touched test file passes again after the merge, and each typechecks under its package config.
+* Red proof is weaker for some: the browser parity test, node floor-door, the announcement fold and wire-names went red only because their modules did not exist yet. I did not prove them against mutants.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gates`>>
+
+!! Gates
+* `pnpm -r build` and `tools/typecheck-witness.sh`: clean across all 11 projects, before and after the merge.
+* Witnesses: bcc 807 ok; evergreen version 0/0 and narration 162/162 (three "slice 5" docblock notes trimmed); barrier, doctype and ahu-sections green.
+* `browser-weld-witness`: C4.2 (reload) timed out 3 times in a row with the page edits in, then passed 3 times in a row (once traced, twice plain). A/B with the page edits reverted also passed. My read is a cold dev-server cache, not a defect, but the cause is unproven.
+* `tree-clean-witness`: the run exited 1 and the tree stayed clean. I did not chase why.
+* ahu-pair-parity needs the tree-sitter wasm build (not built here).
+* No e2e and no full suites, by law.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-i-decided`>>
+
+!! Forks I decided (moʻolelo, each overrulable; also written in w26-floor-lane `#/the-vessel-pin`)
+# The CLI is `lares vessel floor`, not top-level `lares floor`. The help's one-screen law (62 lines) is already full, the vessel door already says "never another top-level verb", and the pin belongs to the vessel.
+# A genesis pin descends to every counted chain. The first release does not have to name the genesis manifest.
+# A fork refuses even a named release that descends from the pin.
+# A replay returns `moved:false` instead of refusing.
+# Accept needs a person's hand (seat sessions refuse it), like a kahua lift.
+# Mounts read the vessel's only pin. If two pins name different floors, the mount uses genesis and says so; it never chooses between Nexuses.
+# Before writing the pin, accept fetches the floor whole and stages it in the vessel's own CAS, so the next boot never meets a missing floor.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canon`>>
+
+!! Canon
+* `bags/lares/ha.ka.ba/lares/docs/pono/w26-floor-lane.mem`: new slot `#/the-vessel-pin`. Slice 5 rewritten as the vessel pin and marked built. Owed rows refreshed.
+* `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem`: the W26 row (slice 5 stands) and the ruling line now say "(vessel, Nexus)" in the control home.
+* `bags/lararium/ha.ka.ba/lararium/mesh/kahu.mem`: "a face accepts" → "a vessel accepts".
+* All three re-stamped (bcc ok). One CHANGELOG line added.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/still-owed`>>
+
+!! Still owed
+* ''Live floor swap.'' `floorReadFace` builds once in `buildIslandRecipe`. An island that learns to swap declares `floorSwap` and a swap port; the decision already routes there.
+* ''Choosing the Nexus at mount'' once a recipe names its Nexus.
+* ''A page floor pane.'' It should read through <code>&#64;lararium/mesh/wire-names</code>.
+* ''A relay to carry announcements'' to `foldFloorAnnouncements`.
+* ''A node integration test'' of `nodeFloorPorts` against a real founded vessel. It needs a scratch-root boot, so it was not run here.
+* ''Re-baking.'' The controller bakes genesis; nothing in this lane moved plugin bytes.
+
+No watchers left running.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5GYq5JJXPYxKF7MEl7JYRX-ELH0bRF3-O9g0bkdc1ws`>>
+
+<<^ code=`&#x0004;` to=`?`>>

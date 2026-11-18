@@ -26,12 +26,12 @@ import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
  * Slot identifier — supports nested fragment paths via `/`-separated
  * segments per memetic-wikitext spec §nested-ahu and lar-uri.md §5.6.
  *
- * `<<~ ahu #/parent/child/grandchild>>` opens a slot whose URI reads
+ * ``<<~ ahu slot=`#/parent/child/grandchild`>>`` opens a slot whose URI reads
  * `parentURI#/parent/child/grandchild` — single-hash invariant; the
  * fragment-path is the addressable hierarchy.
  *
- * TWO SPELLINGS, ONE SLOT FORM. The sharktooth house opens `<<~ ahu #/slot>>`; an English carrier opens
- * `<<fragment #/slot>>`. Both name a meme holding tiddlers and scan through this
+ * TWO SPELLINGS, ONE SLOT FORM. The sharktooth house opens ``<<~ ahu slot=`#/slot`>>``; an English carrier
+ * opens ``<<fragment slot=`#/slot`>>``. Both name a meme holding tiddlers and scan through this
  * shared reader. A bare `#slot` belongs to neither child-slot grammar.
  *
  * A SEGMENT ADMITS the Hawaiian long vowels (ā ē ī ō ū, precomposed) and the ʻokina (U+02BB) beside
@@ -45,14 +45,18 @@ import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
 export const SLOT_SEGMENT_SRC = "[\\wāēīōūʻ-]+";
 /** A rooted slot path — `#/a`, `#/a/b/c` — as a regex source, uncaptured. The ONE spelling every reader composes. */
 export const SLOT_PATH_SRC = `#\\/${SLOT_SEGMENT_SRC}(?:\\/${SLOT_SEGMENT_SRC})*`;
-export const AHU_OPEN_RE  = new RegExp(`<<(?:~[^>]*\\bahu|fragment)\\s+(${SLOT_PATH_SRC})(?:\\s+->\\s+\\S+)?\\s*>>`, "g");
-/** A kahea call naming a slot — `<<~ kahea ahu #/a/b>>` — the path captured. Global: `replace` and the masked scans reset it. */
-export const KAHEA_REF_RE = new RegExp(`<<~\\s*kahea\\s+ahu\\s+(${SLOT_PATH_SRC})\\s*>>`, "g");
+/**
+ * The slot NAMES itself (the kupono cut): ``<<~ ahu slot=`#/a`>>``, the path captured. A pointer away
+ * from the slot rides a named ``to=`…` `` after it; no arrow tail stands.
+ */
+export const AHU_OPEN_RE  = new RegExp(`<<(?:~[^>]*\\bahu|fragment)\\s+slot=\`(${SLOT_PATH_SRC})\`(?:\\s+to=\`[^\`\\n]*\`)?\\s*>>`, "g");
+/** A kahea call naming a slot — ``<<~ kahea ahu slot=`#/a/b`>>`` — the path captured. Global: `replace` and the masked scans reset it. */
+export const KAHEA_REF_RE = new RegExp(`<<~\\s*kahea\\s+ahu\\s+slot=\`(${SLOT_PATH_SRC})\`(?:\\s+to=\`[^\`\\n]*\`)?\\s*>>`, "g");
 export const AHU_CLOSE_RE = /<<(?:~\/ahu|\/fragment)\s*>>/g;
 
 /**
  * A DECLARATION OPENS A SLOT; A CALL NAMES ONE — and `AHU_OPEN_RE` matches both, because `~[^>]*\bahu`
- * swallows the dispatch verb in `<<~ kahea ahu #/b>>` and `<<~ aka ahu #/b>>`. Every declaration in the
+ * swallows the dispatch verb in ``<<~ kahea ahu slot=`#/b`>>`` and ``<<~ aka ahu slot=`#/b`>>``. Every declaration in the
  * corpus spells `<<~ ahu` with nothing between the namespace mark and the word; every call carries a verb
  * there. So the test is the span between them: empty (or whitespace) declares, anything else calls.
  *
@@ -89,7 +93,7 @@ export function findTopLevelAhuBlocks(text: string): AhuBlock[] {
 
 /**
  * Collect every ahu slot name a carrier declares — top-level and nested, across the whole text —
- * skipping quoted (fenced/inline-code) sigils. EVERY SLOT OPENS A CHILD: the exempt-slot class retired,
+ * skipping quoted (fenced/inline-code) sigils. EVERY SLOT OPENS A CHILD: no slot class is exempt,
  * so a slot the disk declares is a slot the render must address. The gate reads
  * this to guard its canonical-equivalence NOOP: a slot the disk declares that
  * the round-trip render drops names a LOSSY shore, never a cosmetic edit —
@@ -134,14 +138,41 @@ export interface AhuScan {
  * order, opener before closer. The split and the quoteblock floor read this one scan, so they can never
  * disagree on what counts as balanced.
  */
+/** The `>>` at `end` ends its line: the text ends, or `\n` / `\r\n` follows (TiddlyWiki's macrocallblock law). */
+function endsLine(text: string, end: number): boolean {
+  return end >= text.length || text[end] === "\n" || (text[end] === "\r" && text[end + 1] === "\n");
+}
+
+/** A closer standing at the end of its line, as the rest of an opener's line (the one-line pair). */
+const LINE_CLOSE_RE = /<<(?:~\/ahu|\/fragment)\s*>>\r?$/;
+
+/**
+ * THE LINE LAW (Train R; the parity every reader holds inside the sigil space). A pair stands only when
+ * its closer's `>>` ends a line and the closer OPENS that line (or shares its opener's line), and its
+ * opener's `>>` ends its own line or shares the line its closer ends. Text after a closer, or after a multi-line pair's opener, leaves that mark as TEXT: it opens or
+ * closes nothing, so no child record is cut from it, exactly as the plugin's render and tree-sitter read
+ * it. The machine keeps its own regexes (the law above): the heads it decomposes are welded to the
+ * `lar-flow: block` child-slot heads by `tests/ahu-line-law.test.ts`, never read from the vocabulary.
+ */
 export function scanAhu(text: string): AhuScan {
   const mask = fencedSpans(text);
   const events: Array<{ kind: "open" | "close"; pos: number; end: number; slot: string }> = [];
   for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
     if (!isAhuDeclaration(m[0])) continue;
-    events.push({ kind: "open", pos: m.index, end: m.index + m[0].length, slot: m[1] ?? "#" });
+    const end = m.index + m[0].length;
+    const eol = text.indexOf("\n", end);
+    if (!endsLine(text, end) && !LINE_CLOSE_RE.test(text.slice(end, eol < 0 ? text.length : eol))) continue;
+    events.push({ kind: "open", pos: m.index, end, slot: m[1] ?? "#" });
   }
+  // A closer counts only when its `>>` ends its line and it OPENS that line, or follows a counted
+  // opener on the same line (the one-line pair) — TiddlyWiki builds a block call only from a call
+  // that starts its line.
+  const openLines = new Set(events.map((e) => text.lastIndexOf("\n", e.pos - 1)));
   for (const m of maskedExecAll(text, AHU_CLOSE_RE, mask)) {
+    if (!endsLine(text, m.index + m[0].length)) continue;
+    const lineStart = text.lastIndexOf("\n", m.index - 1);
+    const opensLine = /^[ \t]*$/.test(text.slice(lineStart + 1, m.index));
+    if (!opensLine && !openLines.has(lineStart)) continue;
     events.push({ kind: "close", pos: m.index, end: m.index + m[0].length, slot: "" });
   }
   events.sort((a, b) => a.pos - b.pos);
@@ -171,7 +202,7 @@ export function scanAhu(text: string): AhuScan {
  * ways, so the two can never drift on what counts as balanced.
  *
  * Meant to run over a COMPOSED root (a child's edited body, recomposed inline through its parent's
- * `<<~ ahu #/slot>>…<<~/ahu>>` wrapper) — at that altitude a child's dangling opener eats the parent's
+ * ``<<~ ahu slot=`#/slot`>>…<<~/ahu>>`` wrapper) — at that altitude a child's dangling opener eats the parent's
  * own closer (surfaces here as `ahu-unbalanced-open` on the child's opener, the parent's closer simply
  * consumed), and a child's stray closer closes the parent early, leaving the parent's own closer an
  * orphan (surfaces here as `ahu-orphan-close` on that trailing closer). Per #/quoteblock-floor, the
@@ -184,7 +215,7 @@ export function findAhuBalanceFaults(text: string): AhuBalanceFault[] {
 
 /**
  * Append a SINGLE leaf segment (or leaf path) under a prefix — the MINT relation, one of two that
- * used to share one function (`composeSlotPath`'s overcollapse): the other, READING an authored
+ * never share one function: the other, READING an authored
  * open, takes the open's own path AS its full address, verbatim, and never calls this. This one
  * mints a FRESH child address from a parent + a leaf (`placeMeme`/`childUri`/island-adaptor
  * minting) — it always appends, unconditionally; it never inspects the leaf for whether it already

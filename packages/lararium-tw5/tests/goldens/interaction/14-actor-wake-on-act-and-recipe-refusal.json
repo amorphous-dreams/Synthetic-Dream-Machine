@@ -1,0 +1,26 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/14",
+  "pins": "an act on a sleeping actor parks, the surface shows waking, the actor wakes and answers; a second act while waking supersedes the first; an act into a recipe wiki refuses actor-not-spawned with a spawn affordance",
+  "surfaces": {
+    "sleeper": {
+      "actor": "sleeping",
+      "world": {
+        "tiddlers": [{ "title": "lar:///t/actor/count", "text": "0" }],
+        "story": ["lar:///t/actor/count"],
+        "root": "<$button class=\"bump\" set=\"lar:///t/actor/count\" setTo=\"woken\">bump</$button>"
+      }
+    },
+    "recipe": { "actor": "recipe", "world": { "tiddlers": [], "story": [], "root": "" } }
+  },
+  "steps": [
+    { "frame": "first", "surface": "sleeper" },
+    { "act": { "surface": "sleeper", "control": "button.bump", "action": "lar:click" } },
+    { "expect": { "page": { "surface": "sleeper", "button.bump": { "state": "waking" } }, "answers": [] } },
+    { "act": { "surface": "sleeper", "control": "button.bump", "action": "lar:click" } },
+    { "expect": { "answers": ["refused:superseded"] } },
+    { "wake": { "surface": "sleeper" } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/actor/count", "text": "woken" }], "page": { "surface": "sleeper", "button.bump": { "state": "" } } } },
+    { "act": { "surface": "recipe", "control": "lar:open", "action": "lar:route", "wholeValue": "lar:///t/actor/into-recipe" } },
+    { "expect": { "answers": ["refused:actor-not-spawned"], "page": { "surface": "recipe", "affordances": ["spawn"] } } }
+  ]
+}

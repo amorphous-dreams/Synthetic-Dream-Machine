@@ -1,0 +1,50 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-dial-fault/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-dial-fault/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-dial-fault/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-dial-fault/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-dial-fault/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-dial-fault/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''INFER — The excerpt does not identify the fault or justify a specific fix yet.'' It proves the client accepted a verified gate verdict, but it does not show whether B received A’s Automerge join, replied with its peer ID, or whether A later disconnected. The earlier `findWhenReady` fault occurs after this assertion and is a separate observation problem.
+
+''MEASURED —'' The failing run logged “verdict OK — crossing open, syncing” before timing out; the test took about 6.2 seconds. That log precedes `join()`, not receipt of B’s Automerge peer message. [[Failure excerpt|/home/joshu/.lares-scratch/controller/terra-dial-fault/fail-excerpt.log:19]], [[client adapter|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/lar-ws-client-adapter.ts:330]].
+
+''MEASURED — Possible paths to no matching peer:''
+
+* Before that log, an absent or unreadable pin, invalid presentation, gate refusal, deadline, transport failure, or named chain answer prevents a successful crossing. Silence triggers redial; named answers and local refusals anergize. These paths do not explain the logged successful crossing itself. [[Dial|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/lar-ws-client-adapter.ts:302]], [[gate|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/face-gate.ts:620]].
+* After the verdict, session opening or the channel can fail; the join or response can be lost, malformed, rejected for protocol incompatibility, or delayed. B’s adapter emits a response containing ''its adapter’s'' peer ID after receiving a valid join; A emits `peer-candidate` from the response’s `senderId`, which the subsystem forwards as `peer`. Thus a different sender ID also fails the exact comparison. [[Gate seat|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/face-gate.ts:541]], [[server adapter|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/node_modules/@automerge/automerge-repo-network-websocket/dist/WebSocketServerAdapter.js:146]], [[client adapter|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/node_modules/@automerge/automerge-repo-network-websocket/dist/WebSocketClientAdapter.js:160]].
+* ''INFER —'' A server adapter that has not installed its `connection` listener when the gate opens could miss the socket. The rig returns after constructing the Repo, while adapter connection is scheduled through a metadata promise; this timing needs a controlled witness, not an assumption that it occurred in CI. [[Rig|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/tests/gated-node-rig.ts:53]], [[subsystem|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/node_modules/@automerge/automerge-repo/dist/network/NetworkSubsystem.js:75]].
+
+''MEASURED —'' An early `peer` event alone is not missed: the helper subscribes and immediately checks `repo.peers`; the Repo adds the peer synchronously in its earlier listener. An early peer followed by disconnection //can// be missed because removal erases that current state. [[Test|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/tests/nexus-client-dial.test.ts:94]], [[Repo|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/node_modules/@automerge/automerge-repo/dist/Repo.js:137]].
+
+''MEASURED —'' PR #171 makes persona admission verify the per-face ward key and `wardPop`; ward acts judge co-signs and readers validate the spend at its cited frontier. This test’s presenter instead uses the fixture’s synthetic Nexus carriage admit, not that persona admission or ward-act path. A gate can still refuse its presented admit, but the verified verdict excludes such refusal for the logged crossing. [[Persona fold|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/persona-act.ts:113]], [[frozen spend|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/ward-cosign.ts:134]], [[fixture|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/tests/face-gate-fixture.ts:330]].
+
+''INFER —'' The 6-second timeout bounds a real asynchronous join, but also masks a permanently lost message, wrong ID, or disconnected peer; increasing it cannot distinguish them. The separate dial deadline is two seconds and already passed for the logged verified crossing. [[Test|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/tests/nexus-client-dial.test.ts:153]], [[deadline|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/tests/flow-floor-rig.ts:42]].
+
+''INFER — Minimal next red and cure:'' First add a deterministic, no-load witness that controls server-listener installation versus gate open and records join, response ID, client `peer-candidate`, subsystem `peer`, and disconnect. It must fail for the demonstrated ordering, with a control that reaches the expected peer; preserve equivalent diagnostics in the live test. If it proves the listener race, fix server readiness at the actual listener-installed event before accepting crossings. If it instead proves a transient peer, register the test’s `peer` observer before mounting and retain the event, while separately asserting connection when needed. Do not choose either cure before the red identifies the path.
+
+''MEASURED —'' No files were written or tests run. Socket tests are ''lead runs''; the inspected installed Automerge code is local evidence and its exact CI artifact was not verified.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xDI3yfNDaKj3N9XgftO7TSmpgB2XXFfBf1SA-adVGz4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

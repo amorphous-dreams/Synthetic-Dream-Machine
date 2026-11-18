@@ -22,7 +22,7 @@ git -C "$WORK" init -q
 git -C "$WORK" config user.email witness@example.invalid
 git -C "$WORK" config user.name witness
 mkdir -p "$WORK/bags/t"
-echo '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>' > "$WORK/bags/t/stale.mem"
+echo '<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>' > "$WORK/bags/t/stale.mem"
 
 echo "pre-commit-hook-witness — the hook's own absent-gate branch, no tools/ present at all"
 
@@ -57,7 +57,7 @@ SHELF="$WORK/bags/lares/ha.ka.ba/lares/api/pono/submissions"
 mkdir -p "$SHELF" "$WORK/bags/lares/ha.ka.ba/lares/scratch"
 printf 'source: lar:///ha.ka.ba/lares/scratch/witness-source\n' > "$SHELF/witness.md.meta"
 echo "# witness pair" > "$SHELF/witness.md"
-echo '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>' \
+echo '<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>' \
   > "$WORK/bags/lares/ha.ka.ba/lares/scratch/witness-source.mem"
 git -C "$WORK" add "$SHELF/witness.md" "$SHELF/witness.md.meta" "$WORK/bags/lares/ha.ka.ba/lares/scratch/witness-source.mem"
 if OUT=$(cd "$WORK" && "$HOOK" 2>&1); then bad "passed a staged submission source/pair with the gate script absent"

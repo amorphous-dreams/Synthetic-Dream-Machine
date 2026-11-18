@@ -1,0 +1,59 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/seats/sol-4/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/seats/sol-4/brief.md` (brief, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/p27-wiring-step-4-build-seat-lane-p27-wire`>>
+
+! P27 wiring, step 4 — build seat (Sol), lane p27-wire
+
+Conductor: Lares-Kiaʻi. Same wall as steps 1-3 (workspace-write in /home/joshu/.lares-scratch/p27-wire/wt, network off; you EDIT, the conductor runs tests and commits). Steps 1-3's edits stand uncommitted (70 files). Your step 3 hand-back: /home/joshu/.lares-scratch/p27-wire/seats/sol-3/final.md and out.md.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-conductor-ran-your-51-file-manifest-each-fil`>>
+
+!! The conductor ran your 51-file manifest, each file alone (bwrap PID ns, fresh build): 39 pass, 9 browser-runner files go to CI, 2 REAL reds:
+# packages/lararium-node/tests/surface-mount-vessel-path.test.ts > "a session surface through the node vessel's own parts > the two asked gates answer a real island from its own view, and two sessions stand two islands": `expect(await v.probe(one, "content", { cid: "../cas/" + grammarCid… }))` got `{ ok: false, refusal: "cas-unavailable: the vessel holds no byte door" }`, expected `{ ok: true, refusal: null }`. A session island's content read lost its byte door when the workers' readers moved onto `vesselCasAsker` (or the session view's narrower grant no longer reaches the gated record). That reads as a product regression: a person's session surface stops reading the grammar wasm it renders with. Cure it so the session island reads through the SAME gated door with its own audience (its document-view grant first, then the tier gate), never an ungated side path; keep the test's assertion as written unless the code proves it wrong.
+# packages/lararium-mesh/tests/p27-cas-floor.test.ts > "P27 boot: immutable engine and genesis-bag inventory reads with no held doc; undeclared and mutable-only CIDs refuse": expected a refusal matching `{ reason: 'declared-tier-unresolved' }`, got `SecretsRegistryRefusal` (secrets-registry-…). Decide which refusal reads true for an undeclared CID with no held document under the one predicate's order (does the secrets floor rightly answer first, or does an unnamed CID refuse as unresolved before any registry reading?), name why, and make product and test agree.
+
+Typecheck node and browser (`tsc -p … --noEmit`). WRITE YOUR FINAL MESSAGE as soon as the edits stand. Hand back outcome first: each red's cause and cure (file:line), forks decided and why, and the test files the conductor reruns alone.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Rx5Q6xkPPZVhOhxJqRwJGVDjHdGsjE6olgyLRePo040`>>
+
+<<^ code=`&#x0004;` to=`?`>>

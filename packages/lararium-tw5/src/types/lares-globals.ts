@@ -19,7 +19,7 @@ import type { MemeDiagnostic } from "../meme-ast/diagnostics.js";
  */
 export interface MemeCheck {
   readonly shape: CarrierShape;
-  readonly check: "ok" | "mismatch" | "unchecked" | "torn";
+  readonly check: "ok" | "head-unbound" | "mismatch" | "unchecked" | "torn";
   /** The check the framed body should carry, or null where no framed body stands. */
   readonly bcc: string | null;
   readonly edges: readonly CarrierEdge[];
@@ -57,12 +57,22 @@ export interface LaresNaluAPI {
   applyNalu(change: LarTiddlerChange): void;
   enqueueNalu?: (change: LarTiddlerChange) => void;
   isApplyingNalu(): boolean;
-  /** The IN-VM capture annotate (capture-annotate-vm startup): parse + harvest a turn IN-REALM with
-   *  the full self-hosted grammar → the lar_* patch (+ lar_ast). The daemon wires this as the engine's
-   *  annotate so all ast-parsing runs inside the TW5 engine, never the worker. */
-  captureAnnotateVm(turnText: string, sourceFile?: string): Record<string, string | number>;
   /** The in-VM meme face (meme-face startup) — every meme law, under one name. */
   meme: LaresMemeFace;
+  /** The host-door ask a mounted camera installs (tw5-projection) for the root-services startup. */
+  serviceDoor: LaresServiceDoor;
+}
+
+/** The arguments a host door carries: primitives only, as `lar:service` reads them. */
+export type LaresServiceArgs = Readonly<Record<string, string | number | boolean>>;
+
+/**
+ * `$tw.lares.serviceDoor` — the island's door to the surface's host services (dreamdom#/host-services).
+ * `ask` posts one `lar:service` and calls `settle` once with `"ok"` or a named refusal: at once when the
+ * surface's manifest lacks the kind, else when the surface's `lar:service-result` lands.
+ */
+export interface LaresServiceDoor {
+  ask(kind: string, args: LaresServiceArgs, settle: (status: string) => void): void;
 }
 
 export interface LaresTw5Extension {

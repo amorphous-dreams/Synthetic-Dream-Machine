@@ -7,22 +7,25 @@
  * CGKA behaviour to keyhive's tests.
  */
 import { describe, test, expect } from "vitest";
-import { buildDeviceDelegation } from "@lararium/mesh";
+import { buildDeviceDelegation, hexToBytes, makeIslandRepo, materializeSharedLarDoc, fleetEdgeBoardDocUrl, emptyLarDoc, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 import { runFaceJoin, gateFaceJoin, type FaceJoinProvider, type FaceJoinContext } from "../src/face-join.js";
+import { boardDyadReader } from "../src/board-dyad-reader.js";
+import { fleetFixture } from "./fleet-fixture.js";
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const OTHER_SEED   = new Uint8Array(32).fill(9);
 // A REAL verifying key (RFC 8032 §7.1 TEST 1): a device edge names only a key the Ed25519 door accepts.
 const JOINEE_KEY   = "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a";
+const JOINEE_SEED  = hexToBytes("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60");
 const HEARTH       = "bafkreift7cvcpxxqusdb4lkxsxnt3mzv5uip6tpytinrh7ibgrvu7ceqwa";
 
 /** The identifier a card derives ends in the raw verifying key — the relationship the Binding Gate leans on. */
 const cardIdFor = (key: string) => `0x${key}`;
 
-async function edgeFor(opts: { seed?: Uint8Array; key?: string; hearth?: string } = {}) {
+async function edgeFor(opts: { seed?: Uint8Array; hearth?: string } = {}) {
   return buildDeviceDelegation({
     personaRootSeed:    opts.seed ?? FOUNDER_SEED,
-    deviceVerifyingKey: opts.key  ?? JOINEE_KEY,
+    atomSeed: JOINEE_SEED,
     hearthTrueName:     opts.hearth ?? HEARTH,
     boundEpoch:         0,
   });
@@ -54,9 +57,27 @@ async function ctxFor(): Promise<FaceJoinContext> {
 }
 
 const summons = (deviceEdge: Awaited<ReturnType<typeof edgeFor>>, force?: boolean) =>
-  ({ kind: "face-join/v1" as const, contactCard: '{"joinee":"card"}', deviceEdge, ...(force !== undefined ? { force } : {}) });
+  ({ kind: "face-join" as const, contactCard: '{"joinee":"card"}', deviceEdge, ...(force !== undefined ? { force } : {}) });
 
 describe("the gate — a signature, never a list", () => {
+  test("a healthy second device joins through the founded fleet board", async () => {
+    const edge = await edgeFor();
+    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    try {
+      const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(edge.personaRootDid), "board:edge-kapae");
+      const fx = await fleetFixture(FOUNDER_SEED);
+      await fx.found(board);
+      const ledger = repo.create(emptyLarDoc());
+      const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(8));
+      const read = boardDyadReader(repo, ledger, undefined, own, undefined, undefined, fx.lineage);
+      const joineeDyad = await read(edge.personaRootDid, edge.deviceVerifyingKey);
+      const ctx = { ...(await ctxFor()), dyad: () => joineeDyad };
+      const provider = fakeProvider();
+      const out = await runFaceJoin(provider, summons(edge), ctx);
+      expect(out.ok, "EMPTY BOARD JOIN: a signed healthy peer reaches the hearth seat").toBe(true);
+      expect(provider.calls.added, "the admitted peer joins the group").toHaveLength(1);
+    } finally { await repo.shutdown(); }
+  });
   test("an edge this root signed, for this hearth, naming this card → admitted", async () => {
     const ctx = await ctxFor();
     const out = await runFaceJoin(fakeProvider(), summons(await edgeFor()), ctx);
@@ -87,6 +108,15 @@ describe("the gate — a signature, never a list", () => {
     expect(p.calls.received).toBe(0);
   });
 
+  test("a LEAF joinee clears against the root's stated-empty hearth; an edge naming a hearth refuses there, and a leaf's edge refuses at a hearth", async () => {
+    // A gateless leaf binds `hearthTrueName: ""` by design: no seed-charter Nexus stands there. The root signature
+    // carries the wall, and the hearth check still separates a leaf's fleet from a hearth's in both directions.
+    const leaf = { ...(await ctxFor()), hearthTrueName: "" };
+    expect(await gateFaceJoin({ edge: await edgeFor({ hearth: "" }), ctx: leaf })).toEqual({ ok: true });
+    expect(await gateFaceJoin({ edge: await edgeFor(), ctx: leaf })).toMatchObject({ ok: false, reason: expect.stringMatching(/different hearth/) });
+    expect(await gateFaceJoin({ edge: await edgeFor({ hearth: "" }), ctx: await ctxFor() })).toMatchObject({ ok: false, reason: expect.stringMatching(/different hearth/) });
+  });
+
   test("a VALID edge presented with somebody ELSE'S card → refused, and no seat is granted", async () => {
     const ctx = await ctxFor();
     // The card resolves to a different key than the edge licenses — the impersonation this binding exists for.
@@ -99,7 +129,7 @@ describe("the gate — a signature, never a list", () => {
 
   test("a summons carrying no edge → refused, never thrown", async () => {
     const ctx = await ctxFor();
-    const out = await runFaceJoin(fakeProvider(), { kind: "face-join/v1", contactCard: "{}", deviceEdge: undefined as never }, ctx);
+    const out = await runFaceJoin(fakeProvider(), { kind: "face-join", contactCard: "{}", deviceEdge: undefined as never }, ctx);
     expect(out.ok).toBe(false);
     if (!out.ok) expect(out.reason).toMatch(/no device-delegation/i);
   });
@@ -213,11 +243,18 @@ describe("the Binding Gate reads the dyad's shadow", () => {
     const refused = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "aside" });
     // MU: word for word what an edge with a false signature draws at this door.
     const forged = await runFaceJoin(fakeProvider(), summons({ ...(await edgeFor()), signature: "00".repeat(64) }), base);
-    expect(forged).toEqual({ ok: false, reason: "edge refused: signature mismatch" });
-    expect(refused).toEqual(forged);
+    expect(forged).toEqual({ ok: false, reason: "edge refused: atom countersignature mismatch" });
+    expect(refused).toEqual({ ok: false, reason: "edge refused: signature mismatch" });
     expect(p.calls.received).toBe(0); expect(p.calls.added).toEqual([]);
     const control = await runFaceJoin(fakeProvider(), summons(await edgeFor()), { ...base, dyad: () => "clear" });
     expect(control.ok).toBe(true);
+  });
+  test("RED: an UNKNOWN fleet frontier binds nobody at the live join gate; CONTROL: a clear device still binds", async () => {
+    const base = await ctxFor(), p = fakeProvider();
+    const refused = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "unknown" });
+    expect(refused).toEqual({ ok: false, reason: "edge refused: no qualifying signed edge frontier" });
+    expect(p.calls.received).toBe(0); expect(p.calls.added).toEqual([]);
+    expect((await runFaceJoin(fakeProvider(), summons(await edgeFor()), { ...base, dyad: () => "clear" })).ok).toBe(true);
   });
   test("the shadow lookup receives the summons device key", async () => {
     const base = await ctxFor(), seen: string[] = [];

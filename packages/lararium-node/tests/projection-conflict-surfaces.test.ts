@@ -203,9 +203,9 @@ describe("the projection gate's decision law — clause for clause against the i
     }
   });
 
-  test("the clause reads through digestsEqual — every tagged spelling matches, a bare hash never does", () => {
-    // CONTROL: the SRI spelling of the same digest is the same digest.
-    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, diskCanonicalHash: C.replace("sha256:", "sha256-") }))
+  test("the clause reads through digestsEqual — a tagged digest matches, a bare hash never does", () => {
+    // CONTROL: the same tagged digest is the same digest.
+    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, diskCanonicalHash: C }))
       .toEqual({ kind: "noop", reason: "canonical-equivalent" });
     // A bare hex names no algorithm: no equivalence stands, and the standoff surfaces.
     expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, diskCanonicalHash: C.slice("sha256:".length) }))

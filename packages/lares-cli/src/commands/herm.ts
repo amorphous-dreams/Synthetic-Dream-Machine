@@ -5,11 +5,11 @@
  * This is a stand-up verb, NOT a fork of the boot: it spawns the SAME `main.js` the `lares vessel stand` path runs,
  * routed to `openNodeHerm` via `--recipe herm`, with the carriage relay standing when a relay port rides the
  * config (`--relay-port` / `LAR_HERM_RELAY_PORT`). Pi-deployable: a gate seed + a relay port + the http
- * FLOW-map read-face port. The relay's gate seed derives from the Herm's OWN identity (stable across restarts)
- * unless `--relay-seed <hex>` pins one — NEVER a fresh random per boot, so hearths keep dialing the same key.
+ * FLOW-map read-face port. The relay gate rests in its own random, durable identity-home row.
+ * `lares herm relay-rotate` replaces it and prints the pin hearths must adopt after restart.
  *
  * On a live stand it prints the crossroads' dial URL(s) + gate pubkey (echoed from the node's own attestation,
- * the single source of truth for the derived gate key) so the operator can hand a hearth what to dial.
+ * the single source of truth for the durable relay row) so the operator can hand a hearth what to dial.
  */
 
 import { engineHeldByHost } from "../port-control.js";
@@ -17,17 +17,23 @@ import { existsSync, mkdirSync, openSync, readFileSync, statSync } from "node:fs
 import { join } from "node:path";
 import { spawn } from "node:child_process";
 import { repoRoot } from "@lararium/mesh/node";
-import { loadVesselVerifyingKey, fatalLine } from "@lararium/node";
+import { rotateRelayGateSeed, fatalLine } from "@lararium/node";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir } from "../env.js";
 import { emit } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { awaitBootPhase } from "../stand-socket-wait.js";
 
+// PACING: attestation or its silence bound ends the wait; sleep spaces the polls.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 export async function cmdHerm(args: ParsedArgs): Promise<number> {
   const port      = Number(args.options["port"]       ?? process.env["LAR_PORT"] ?? "8080");     // http FLOW-map read-face
   const relayPort = Number(args.options["relay-port"] ?? process.env["LAR_HERM_RELAY_PORT"] ?? "8090"); // Socket B crossroads
-  const relaySeed = (args.options["relay-seed"] as string | undefined) ?? process.env["LAR_HERM_RELAY_SEED"] ?? undefined;
+  if (args.positional[0] === "relay-rotate") {
+    const gateKey = rotateRelayGateSeed();
+    emit(args, { ok: true, data: { gateKey }, human: () => console.log(`relay gate rotated — hand hearths the new pin ${gateKey}; restart the herm to stand it`) });
+    return 0;
+  }
   const root      = larRoot();
   const bootstrap = larBootstrapPath();
   const dataDir   = larDataDir();
@@ -39,11 +45,6 @@ export async function cmdHerm(args: ParsedArgs): Promise<number> {
     !existsSync(distMain)   ? "node dist not built — run `pnpm -r build`, then `lares herm`" :
     !existsSync(bootstrap)  ? "no bootstrap — run `lares vessel found` (or point LAR_ROOT at an initialized instance)" :
     null;
-
-  // The gate pubkey the CLI can name up-front when the relay seed DEFAULTS to the Herm's own identity — a pinned
-  // `--relay-seed` derives a different key inside the node, echoed from its log below (never re-derived here).
-  let ownGateKey: string | null = null;
-  try { ownGateKey = await loadVesselVerifyingKey(); } catch { /* no identity yet */ }
 
   const dialHint: string[] = [];
   let live = false;
@@ -65,7 +66,6 @@ export async function cmdHerm(args: ParsedArgs): Promise<number> {
         ...process.env,
         LAR_CAS: larCasDir(),
         LAR_HERM_RELAY_PORT: String(relayPort),
-        ...(relaySeed ? { LAR_HERM_RELAY_SEED: relaySeed } : {}),
       },
     });
     child.unref();
@@ -74,32 +74,27 @@ export async function cmdHerm(args: ParsedArgs): Promise<number> {
       try { return readFileSync(log, "utf8").slice(startOffset); } catch { return ""; }
     };
     // Self-attested readiness (no web2 /health probe): the node writes `vessel-ready` on a live stand, `fatal:` on a
-    // boot fault. Adaptive window — extend while the log grows, fail only on a genuine stall or the ceiling.
-    // This door's own liveness patience (adaptive idle window + outer ceiling) — never a
-    // safety verdict — reads a monotonic clock, so an adversarial or operator wall-clock
-    // set-back/set-forward changes neither how long this wait actually ran nor when it gives up.
-    const IDLE_MS = 30_000;
-    const hardCap = performance.now() + 180_000;
-    let idleDeadline = performance.now() + IDLE_MS;
-    let seenLen = 0;
-    let phase: "starting" | "ready" | "fault" = "starting";
-    while (performance.now() < idleDeadline && performance.now() < hardCap) {
-      const tail = readAttestation();
-      if (/fatal:/.test(tail)) { phase = "fault"; break; }
-      if (tail.includes("vessel-ready")) { phase = "ready"; break; }
-      if (tail.length > seenLen) { seenLen = tail.length; idleDeadline = performance.now() + IDLE_MS; }
-      await sleep(200);
-    }
+    // boot fault. The same wait `vessel stand` runs: each later boot milestone renews the silence span, a repeated or
+    // earlier one renews nothing, and no fixed ceiling cuts a herm that keeps advancing.
+    let childExited = false;
+    child.once("exit", () => { childExited = true; });
+    const booted = await awaitBootPhase({
+      readAttestation, childExited: () => childExited, now: () => performance.now(), sleep,
+      silenceMs: 30_000, // LIVENESS: headroom for a silent heavy stretch between two milestones
+    });
+    const phase: "starting" | "ready" | "fault" = booted === "ready" || booted === "fault" ? booted : "starting";
     live = phase === "ready";
     note = phase === "ready"
       ? `started detached (pid ${child.pid ?? "?"}); attested vessel-ready`
       : phase === "fault"
         // A boot fault keeps its own voice: the node's `fatal:` line names the fault and any cure.
         ? `started then attested a boot fault: ${fatalLine(readAttestation()) ?? "see " + log}`
-        : `starting detached (pid ${child.pid ?? "?"}); boot stalled before vessel-ready — see ${log}`;
+        : booted === "exited"
+          ? `child exited before ready (pid ${child.pid ?? "?"}) — see ${log}`
+          : `starting detached (pid ${child.pid ?? "?"}); boot stalled before vessel-ready — see ${log}`;
 
     // Echo the node's OWN carriage crossroads lines (dial URLs + gate key) — the node computes the gate key from the
-    // configured/derived seed (single source of truth), so a pinned `--relay-seed` prints the RIGHT key without a
+    // durable row (single source of truth), so the printed pin matches the relay without a
     // second derivation here. A short settle lets the carriage line land after vessel-ready.
     if (live) {
       await sleep(400);
@@ -115,7 +110,7 @@ export async function cmdHerm(args: ParsedArgs): Promise<number> {
     ok,
     data: {
       herm: { live, port, relayPort, note },
-      relay: { port: relayPort, gateKey: ownGateKey, seedPinned: relaySeed !== undefined, dial: dialHint },
+      relay: { port: relayPort, gateKey: dialHint.find((d) => d.startsWith("gate key:"))?.slice(9).trim() ?? null, dial: dialHint },
       root,
       bootstrap: existsSync(bootstrap) ? "present" : "absent",
       timestamp: new Date().toISOString(),
@@ -124,8 +119,6 @@ export async function cmdHerm(args: ParsedArgs): Promise<number> {
       console.log("lares herm — the carriage crossroads (Lares Viales)");
       console.log(`  herm:        ${live ? "live" : "down"} on read-face :${port}${note ? ` — ${note}` : ""}`);
       console.log(`  relay port:  ${relayPort}  (Socket B — hearths dial this to carry sealed cad bodies)`);
-      if (!relaySeed && ownGateKey) console.log(`  gate key:    ${ownGateKey}  (derived from this Herm's own identity — stable across restarts)`);
-      if (relaySeed) console.log(`  gate key:    (pinned via --relay-seed) — see dial lines below / the node log`);
       if (dialHint.length > 0) {
         console.log("  hand a hearth one of these to dial:");
         for (const d of dialHint) console.log(`    ${d}`);

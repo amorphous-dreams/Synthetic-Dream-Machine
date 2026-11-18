@@ -6,6 +6,7 @@
  * proven platform-blind in @lararium/mesh; THIS stands the browser shores round-trip + the never-federates
  * wall over the SAME mesh core the node fs stores ride.
  */
+import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
 import {
   renameOwnPersona, clearOwnPersonaPetname, ownPersonaPetname, personaMultitudeView,
@@ -51,8 +52,8 @@ describe("the browser pet-name stores over IndexedDB (#64 stage 4)", () => {
 
   test("the MULTITUDE-VIEW over the real IDB vault: held roots + private labels + the one federated glamour", async () => {
     const name = idb();
-    await generateOrLoadBrowserPersonaRoot(name, 0);
-    await generateOrLoadBrowserPersonaRoot(name, 1);
+    await bindSyntheticBrowserCustodySlot(name);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     const petnames = await makeBrowserPersonaPetnameStore(name);
     const publicStore = await makeBrowserPublicHandleStore(name);
     await renameOwnPersona(petnames, 0, "work");
@@ -61,9 +62,8 @@ describe("the browser pet-name stores over IndexedDB (#64 stage 4)", () => {
     const vault = await makeBrowserIdbPersonaVault(name);
     const view = await personaMultitudeView(vault, petnames, publicHandleViewOf(publicStore));
     const byIndex = Object.fromEntries(view.map((e) => [e.handleIndex, e]));
-    expect(view.map((e) => e.handleIndex)).toEqual([0, 1]);
+    expect(view.map((e) => e.handleIndex)).toEqual([0]);
     expect(byIndex[0]).toMatchObject({ petname: "work", heldHere: true, hasPublicHandle: true, glamour: "Guru-Josh" });
-    expect(byIndex[1]).toMatchObject({ petname: null, heldHere: true, hasPublicHandle: false, glamour: null });
   });
 
   test("the private label never PUBLICLY federates — publishing a glamour leaves the label off the board", async () => {

@@ -46,7 +46,7 @@ export interface RigidityVerdict {
   /** Lock-quality — the dominant period's autocorrelation strength ∈ [0,1]. */
   readonly lockQuality: number;
   /** Recovery — the fraction of lock retained when re-detection finds the SAME period after the perturbation
-   *  ∈ [0,1]; 0 when the perturbed signal's dominant period no longer matches (no re-lock). */
+   *  ∈ [0,1]; 0 when the perturbed signal's dominant period fails to match (no re-lock). */
   readonly recovery: number;
   /** standing = lockQuality × recovery ∈ [0,1] — the continuous order-parameter. */
   readonly standing: number;

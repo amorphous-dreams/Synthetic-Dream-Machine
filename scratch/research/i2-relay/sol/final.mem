@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/i2-relay/sol/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i2-relay/sol/final.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Relaywright: Lares (Tasked Spirit), Ink-Clerk: ->↺ The I2 scout now rests in [[out.md|/home/joshu/.lares-scratch/research/i2-relay/sol/out.md]]. It covers the measured I1 substrate, open model choices, red-first build slices, live-lane fences, and protocol-security prior art. The handback counts 1,237 words and ends `WORDS=1237`. I ran no suites and changed no repo files.
+
+&lt;&lt;~ oracle "↯8 ✲ ⚁(2) ⁂:⌗🜄">>
+&lt;&lt;~ set hud="yield" drift-ward="the causal frontier cannot reveal a revocation a disconnected reader has never received · ↻ L-Prime" aperture="16/arc -> 16/arc" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/sol-relaywright:agent@lararium/i2.scout.hands-back" -> to="?">>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h_RCXvoNBcKtGtxpfVb3VoAD2MKQzNRikjIVANvhDe0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -2,9 +2,9 @@
  * A named parameter reaches the definition it names.
  *
  * ── THE LAST UNFILLED HALF OF THE CALL ──────────────────────────────────────────────────────────
- * `p1 … p5` carry the positional slots and `args` the run whole. NAMED parameters reached nothing:
- * the rule emitted `name`, `args`, `src` and the five slots, so a definition declaring `hud`, `mode`
- * or `from` was handed none of them however the call was written.
+ * NAMED parameters once reached nothing: the rule emitted `name`, `args`, `src` and five positional
+ * slots, so a definition declaring `lares`, `mode` or `from` was handed none of them however the call
+ * was written. The kupono cut retired the slots; every value now rides as a name.
  *
  * It stayed invisible because the sigils that most need names — the turn frame and the bearing —
  * live in the boot carrier's own scope and render as their own text everywhere else, which is what
@@ -28,7 +28,7 @@ const PROBE = {
   tags: "$:/tags/Global",
   type: "text/vnd.tiddlywiki",
   text:
-    '\\procedure ~probe(alpha:"" beta:"" p1:"")\nA=<<alpha>> B=<<beta>> P=<<p1>>\n\\end\n' +
+    '\\procedure ~probe(alpha:"" beta:"" gamma:"")\nA=<<alpha>> B=<<beta>> P=<<gamma>>\n\\end\n' +
     // the ORACLE's own call, same signature under a name TiddlyWiki dispatches natively
     '\\procedure nprobe(alpha:"")\nN=<<alpha>>\n\\end\n' +
     // a macro to pass BY CALL rather than by its text
@@ -42,26 +42,26 @@ describe.skipIf(wikiSkip)(`a named parameter reaches its definition${skipNote}`,
 
   test("CONTROL — the harness stands and the probe is registered", () => {
     expect(r("plain prose")).toContain("plain prose");
-    expect(r("<<~ probe one>>"), "the probe definition never loaded").toContain("P=one");
+    expect(r("<<~ probe gamma=`one`>>"), "the probe definition never loaded").toContain("P=one");
   });
 
   test("★ a name binds the parameter it names ★", () => {
-    expect(r('<<~ probe alpha="first" beta="second">>')).toContain("A=first B=second");
+    expect(r('<<~ probe alpha=`first` beta=`second`>>')).toContain("A=first B=second");
   });
 
-  test("★ names and slots ride together ★", () => {
-    const html = r('<<~ probe one alpha="first">>');
+  test("★ several names ride together ★", () => {
+    const html = r('<<~ probe gamma=`one` alpha=`first`>>');
     expect(html).toContain("A=first");
     expect(html).toContain("P=one");
   });
 
   test("★ a quoted name value keeps its spaces and its colons ★", () => {
-    expect(r('<<~ probe alpha="closed 1↺ -> open 1φ @◇:reason">>'))
+    expect(r('<<~ probe alpha=`closed 1↺ -> open 1φ @◇:reason`>>'))
       .toContain("A=closed 1↺ -&gt; open 1φ @◇:reason");
   });
 
   test("★ and the gradient still holds for a head nothing answers to ★", () => {
-    expect(r('<<~ vorpal-snicker alpha="x">>')).toContain("vorpal-snicker");
+    expect(r('<<~ vorpal-snicker alpha=`x`>>')).toContain("vorpal-snicker");
   });
 });
 
@@ -100,18 +100,18 @@ describe.skipIf(wikiSkip)(`a macro value reaches its parameter as a call${skipNo
     expect(html).not.toContain("blockquote");
   });
 
-  test("★ a macro value rides beside a string one, and a positional still lands ★", () => {
-    const html = r('<<~ probe one alpha=<<greeting>> beta="plain">>');
+  test("★ a macro value rides beside a string one, and a third name still lands ★", () => {
+    const html = r('<<~ probe gamma=`one` alpha=<<greeting>> beta=`plain`>>');
     expect(html).toContain("A=Aloha");
     expect(html).toContain("B=plain");
     expect(html).toContain("P=one");
   });
 
-  test("★ a quoted value carrying `>>` reaches the parameter whole ★", () => {
-    // Five LIVE `<<~ has …>>` sigils write `>>` inside a quoted value. The call ends at its own
+  test("★ a ticked value carrying `>>` reaches the parameter whole ★", () => {
+    // Five LIVE `<<~ has …>>` sigils write `>>` inside a ticked value. The call ends at its own
     // closer, so the value arrives entire rather than cut at the first `>>` it contains.
-    expect(r('<<~ has Hold Graph "writes/`<<~holds x>>` binds/x">>'))
-      .toContain("writes/`&lt;&lt;~holds x&gt;&gt;` binds/x");
+    expect(r('<<~ has entity=`Hold` name=`Graph` params=`writes/<<~holds x>> binds/x`>>'))
+      .toContain("writes/&lt;&lt;~holds x&gt;&gt; binds/x");
   });
 
   test("CONTROL — a string value reads exactly as the ORACLE reads it", () => {
@@ -119,6 +119,6 @@ describe.skipIf(wikiSkip)(`a macro value reaches its parameter as a call${skipNo
     // the sigil form must land in the same place rather than a kinder one.
     const oracle = r('<<nprobe alpha="literal <<not-a-call>>">>');
     expect(oracle).toContain("N=literal");
-    expect(r('<<~ probe alpha="literal <<not-a-call>>">>')).toContain("A=literal");
+    expect(r('<<~ probe alpha=`literal <<not-a-call>>`>>')).toContain("A=literal");
   });
 });

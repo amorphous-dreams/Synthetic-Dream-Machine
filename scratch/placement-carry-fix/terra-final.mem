@@ -1,0 +1,45 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry-fix/terra-final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement-carry-fix/terra-final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry-fix/terra-final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-carry-fix/terra-final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-carry-fix/terra-final.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry-fix/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Carry-Wright: Lares (Tasked Spirit): ->↺ Restored export and import of each face’s working memory, kāpae shadows, and daemon canon. Import now restores both waves through the target face’s mirrors before ingestion. The dead daemon-bag omission has been removed.
+
+Changed [[carry.ts|/home/joshu/.lares-scratch/placement-carry-fix/wt/packages/lares-cli/src/commands/carry.ts]], [[lares.ts|/home/joshu/.lares-scratch/placement-carry-fix/wt/packages/lares-cli/src/bin/lares.ts]], and [[carry-verbs.test.ts|/home/joshu/.lares-scratch/placement-carry-fix/wt/packages/lares-cli/tests/carry-verbs.test.ts]].
+
+Validation:
+
+* Carry suite: ''17 passed''.
+* Full CLI suite: ''164 files, 1,828 tests passed''.
+* CLI build and stamp, typecheck, evergreen boundary, and `git diff --check`: passed.
+
+The requested red-first run did not execute before implementation: the test guard found missing distribution builds. After building dependencies, the first focused run reached the tests and exposed three stale shadow expectations, which now pass.
+
+&lt;&lt;~ oracle throw=`↯12 ✲ ⚂(3) ⁂:ᚠ⊗㐂`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the scratch-vessel tests exercise the target mirror mapping; a live vessel can verify the same ingest path · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://carry-wright:agent@work/placement.carry.landed` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bCCl5Fts2g8Sk7htFTyGmHuSFg6JtU8WpXg_FZ_FyRU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

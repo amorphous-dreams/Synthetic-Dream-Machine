@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // mesh-pins — the docker mesh's peer pins, read off each vessel's own founded store, never copied by hand.
 //
-// Every bootstrap peer in docker-compose.mesh.yml names the gate key it knocks with (`<url>#<gate key hex>`), and
-// an entry with no key is refused aloud. Each container founds its OWN vessel key at first boot, so the key a peer
-// must pin exists only once that peer has founded. This tool reads it there — the vessel's own verifying key, the
-// key its gates arm with — and writes `.mesh-pins.env`, which the compose file's pinned entries read.
+// Every bootstrap peer in docker-compose.mesh.yml names the PUBLISHER key of the peer it pulls from (`<url>#<vessel
+// verifying key hex>`: the key a pulled FLOW-map pointer must verify under, `carriage-caps`; the knock itself rides the
+// floor pin the carry join files, never this key), and an entry with no key is refused aloud. Each container founds its
+// OWN vessel key at first boot, so the key a peer must pin exists only once that peer has founded. This tool reads it
+// there and writes `.mesh-pins.env` (`<SERVICE>_PUBLISHER=<hex>`), which the compose file's pinned entries read.
 //
 //   node tools/mesh-pins.mjs           read the pins of every pinned service that stands; write .mesh-pins.env
 //   node tools/mesh-pins.mjs --up      stand the mesh in PIN ORDER: each wave boots against the pins every earlier
@@ -35,20 +36,20 @@ function resolveHarnessImage() {
   process.env.LARES_HARNESS_IMAGE = result.stdout.trim();
 }
 
-/** The services a peer pins, and the variable each one's gate key rides in. */
+/** The services a peer pins, and the variable each one's publisher (vessel) key rides in. */
 export const PINNED = [
-  { service: "herm-source",  name: "HERM_SOURCE_GATE" },
-  { service: "herm-relay",   name: "HERM_RELAY_GATE" },
-  { service: "herm-relay-2", name: "HERM_RELAY_2_GATE" },
-  { service: "lararium-a",   name: "LARARIUM_A_GATE" },
-  { service: "lararium-b",   name: "LARARIUM_B_GATE" },
+  { service: "herm-source",  name: "HERM_SOURCE_PUBLISHER" },
+  { service: "herm-relay",   name: "HERM_RELAY_PUBLISHER" },
+  { service: "herm-relay-2", name: "HERM_RELAY_2_PUBLISHER" },
+  { service: "lararium-a",   name: "LARARIUM_A_PUBLISHER" },
+  { service: "lararium-b",   name: "LARARIUM_B_PUBLISHER" },
 ];
 
 const KEY_RE = /^[0-9a-f]{64}$/;
 const READ_KEY = `import("/app/packages/lararium-node/dist/src/node-vessel-identity.js").then(async (m) => { process.stdout.write(await m.loadVesselVerifyingKey()); }).catch(() => process.exit(3));`;
 
-/** One service's gate key off its own founded store, or null while it has not founded (or does not stand). */
-export function gateKeyOf(service) {
+/** One service's publisher key (its vessel verifying key) off its own founded store, or null while it has not founded (or does not stand). */
+export function publisherKeyOf(service) {
   const r = spawnSync("docker", [...COMPOSE, "exec", "-T", service, "node", "-e", READ_KEY], { encoding: "utf8" });
   const key = (r.stdout ?? "").trim().toLowerCase();
   return r.status === 0 && KEY_RE.test(key) ? key : null;
@@ -73,7 +74,7 @@ export function pinsText(pins) {
 function readAll(prior) {
   const pins = { ...prior };
   for (const { service, name } of PINNED) {
-    const key = gateKeyOf(service);
+    const key = publisherKeyOf(service);
     if (key) pins[name] = key;
   }
   return pins;
@@ -81,7 +82,7 @@ function readAll(prior) {
 
 async function waitForKey(service, attempts = 90) {
   for (let i = 0; i < attempts; i++) {
-    const key = gateKeyOf(service);
+    const key = publisherKeyOf(service);
     if (key) return key;
     await new Promise((r) => setTimeout(r, 2000));
   }
@@ -109,7 +110,7 @@ export function pinsOfPeers(value, where = "LAR_PEERS") {
 }
 
 /**
- * The gate pins each compose service knocks with, read off its `LAR_PEERS` default and never listed by hand:
+ * The publisher keys each compose service pins, read off its `LAR_PEERS` default and never listed by hand:
  * `{ service: [pin name…] }` for every service under `services:`. A service that names no `LAR_PEERS` maps to
  * `[]`. The reader reads ONE spelling, a double-quoted single-line map entry, which a YAML comment may follow; any
  * other spelling of `LAR_PEERS` (single-quoted, bare, a block scalar, a `- LAR_PEERS=` list item) throws rather
@@ -142,7 +143,7 @@ export function standPlan(needs, wanted = []) {
   const serviceOf = Object.fromEntries(PINNED.map((p) => [p.name, p.service]));
   for (const s of wanted) {
     if (!(s in needs)) throw new Error(`no compose service named "${s}"`);
-    if (!PINNED.some((p) => p.service === s)) throw new Error(`"${s}" founds no gate key a peer pins`);
+    if (!PINNED.some((p) => p.service === s)) throw new Error(`"${s}" founds no publisher key a peer pins`);
   }
   const want = new Set(wanted.length ? wanted : PINNED.map((p) => p.service));
   const queue = [...want];

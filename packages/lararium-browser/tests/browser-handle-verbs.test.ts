@@ -8,12 +8,14 @@
  * proof is isomorphism-by-composition: the browser twin produces the SAME burned chain / attestation the node
  * adapter does. The owner-burn HAND mirrors node's `resolveOwnerBurnHand` case-for-case.
  */
+import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
 import {
-  PERSONA_KEL_PREFIX_TIDDLER, currentOwnerSet, isBurned, headHandleKey, verifyAttestation,
+  currentOwnerSet, isBurned, headHandleKey, verifyAttestation,
   type LarDoc, type HandleKelEvent,
 } from "@lararium/mesh";
 import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";
+import { sealOwnerFace } from "./handle-owner-fixture.js";
 import { publishHandleBrowser } from "../src/browser-handle-publish.js";
 import { burnFaceBrowser, attestFaceBrowser, resolveOwnerBurnHandBrowser } from "../src/browser-handle-verbs.js";
 import * as ed25519 from "@noble/ed25519";
@@ -43,23 +45,15 @@ const OWNER = "persona-" + "ab".repeat(32);
 const ROOT  = new Uint8Array(32).fill(9);
 const hexOf = (b: Uint8Array): string => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
 
-function daemonDoc(prefix?: string): LarDoc {
-  const d: LarDoc = { tiddlers: {} } as LarDoc;
-  if (prefix) {
-    (d.tiddlers as Record<string, unknown>)[PERSONA_KEL_PREFIX_TIDDLER] =
-      { tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: prefix, kind: "persona-kel-prefix" } };
-  }
-  return d;
-}
-
 /** Publish a face onto the board + into the origin's store, returning the board + idb the twins read. */
 async function publishFace(): Promise<{ name: string; board: ReturnType<typeof makeFakeBoard>; actCid: string }> {
   const name = idb();
-  await generateOrLoadBrowserPersonaRoot(name, 0);
+  await bindSyntheticBrowserCustodySlot(name);
+  const face = await sealOwnerFace(name, 0);
   const board = makeFakeBoard();
   const card = await publishHandleBrowser({
-    daemonDoc: daemonDoc(OWNER), board: board as never,
-    handleIndex: 0, glamour: "Guru-Josh", idbName: name,
+    board: board as never, kelBoard: face.kelBoard as never,
+    handleIndex: 0, glamour: "Guru-Josh", idbName: name, ward: FIXTURE_WARD,
   });
   return { name, board, actCid: card.actCid };
 }
@@ -67,14 +61,15 @@ async function publishFace(): Promise<{ name: string; board: ReturnType<typeof m
 describe("the browser burn twin — a phone vessel closes its own name", () => {
   test("★ SELF-burn: the seated handle key buries the name; the chain reads terminal ★", async () => {
     const name = idb();
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await bindSyntheticBrowserCustodySlot(name);
+    const face = await sealOwnerFace(name, 0);
     const board = makeFakeBoard();
     const published = await publishHandleBrowser({
-      daemonDoc: daemonDoc(OWNER), board: board as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
+      kelBoard: face.kelBoard as never, board: board as never,
+      handleIndex: 0, glamour: "Guru-Josh", idbName: name, ward: FIXTURE_WARD,
     });
 
-    const burned = await burnFaceBrowser({ board: board as never, handleIndex: 0, idbName: name });
+    const burned = await burnFaceBrowser({ board: board as never, handleIndex: 0, idbName: name, ward: FIXTURE_WARD });
 
     expect(isBurned(burned.chain as HandleKelEvent[]), "the chain ends in a burn").toBe(true);
     expect(headHandleKey(burned.chain as HandleKelEvent[]), "a buried name seats no key").toBeNull();
@@ -83,27 +78,39 @@ describe("the browser burn twin — a phone vessel closes its own name", () => {
     // The genesis owner still binds — a burn changes no set.
     // The genesis set stands in the inception alone; past it a reader with no resolver trusts no set.
     const owners = currentOwnerSet([(burned.chain as HandleKelEvent[])[0]!])!;
-    expect(owners.members).toEqual([OWNER]);
+    expect(owners.members).toEqual([face.prefix]);
   });
 
   test("★ owner-burn FAILS CLOSED when the persona-KEL head is unreachable — honest, toward self-burn ★", async () => {
     const name = idb();
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await bindSyntheticBrowserCustodySlot(name);
+    const face = await sealOwnerFace(name, 0);
     const board = makeFakeBoard();
     await publishHandleBrowser({
-      daemonDoc: daemonDoc(OWNER), board: board as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
+      kelBoard: face.kelBoard as never, board: board as never,
+      handleIndex: 0, glamour: "Guru-Josh", idbName: name, ward: FIXTURE_WARD,
     });
     await expect(burnFaceBrowser({
-      board: board as never, handleIndex: 0, idbName: name,
-      fromPersona: true, daemonDoc: daemonDoc(OWNER), kelBoard: makeEmptyKelBoard() as never,
+      board: board as never, handleIndex: 0, idbName: name, ward: FIXTURE_WARD,
+      fromPersona: true, kelBoard: makeEmptyKelBoard() as never,
     })).rejects.toThrow(/unreachable|fail-closed|self/i);
+  });
+
+  test("★ owner-burn rides the SEALED ANCHOR: with the chain on the KEL board the root-headed persona buries the face from above ★", async () => {
+    const name = idb();
+    await bindSyntheticBrowserCustodySlot(name);
+    const face = await sealOwnerFace(name, 0);
+    const board = makeFakeBoard();
+    await publishHandleBrowser({ board: board as never, kelBoard: face.kelBoard as never, handleIndex: 0, glamour: "Guru-Josh", idbName: name, ward: FIXTURE_WARD });
+    const burned = await burnFaceBrowser({ board: board as never, handleIndex: 0, idbName: name, ward: FIXTURE_WARD, fromPersona: true, kelBoard: face.kelBoard as never });
+    expect(isBurned(burned.chain as HandleKelEvent[]), "the owner's burn lands").toBe(true);
   });
 
   test("no published face at the index refuses — publish first", async () => {
     const name = idb();
-    await generateOrLoadBrowserPersonaRoot(name, 0);
-    await expect(burnFaceBrowser({ board: makeFakeBoard() as never, handleIndex: 0, idbName: name }))
+    await bindSyntheticBrowserCustodySlot(name);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
+    await expect(burnFaceBrowser({ board: makeFakeBoard() as never, handleIndex: 0, idbName: name, ward: FIXTURE_WARD }))
       .rejects.toThrow(/no published face/i);
   });
 });
@@ -141,15 +148,16 @@ describe("resolveOwnerBurnHandBrowser — the owner-hand mirrors node case-for-c
 describe("the browser attest twin — a face signs a claim under its head", () => {
   test("★ attests under the head; the statement verifies reader-locally against the chain ★", async () => {
     const name = idb();
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await bindSyntheticBrowserCustodySlot(name);
+    const face = await sealOwnerFace(name, 0);
     const board = makeFakeBoard();
     const card = await publishHandleBrowser({
-      daemonDoc: daemonDoc(OWNER), board: board as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
+      kelBoard: face.kelBoard as never, board: board as never,
+      handleIndex: 0, glamour: "Guru-Josh", idbName: name, ward: FIXTURE_WARD,
     });
 
     const claim = { surface: "dns-control", domain: "example.net" } as const;
-    const statement = await attestFaceBrowser({ board: board as never, handleIndex: 0, claim, idbName: name });
+    const statement = await attestFaceBrowser({ board: board as never, handleIndex: 0, claim, idbName: name, ward: FIXTURE_WARD });
 
     expect(statement.prefix, "the claim speaks for the published nym").toBe(card.nym);
     // THE STRUCTURED EDGE crosses the browser shore intact — the surface KIND and its foreign subject.
@@ -160,16 +168,17 @@ describe("the browser attest twin — a face signs a claim under its head", () =
 
   test("a claim that reads as PROSE, or names no known surface, attests nothing — refuse", async () => {
     const name = idb();
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await bindSyntheticBrowserCustodySlot(name);
+    const face = await sealOwnerFace(name, 0);
     const board = makeFakeBoard();
     await publishHandleBrowser({
-      daemonDoc: daemonDoc(OWNER), board: board as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
+      kelBoard: face.kelBoard as never, board: board as never,
+      handleIndex: 0, glamour: "Guru-Josh", idbName: name, ward: FIXTURE_WARD,
     });
     // Prose reaches no adapter; an unknown surface reaches none either; a blank subject names nothing.
     for (const bad of ["controls example.net", { surface: "carrier-pigeon", subject: "x" }, { surface: "dns-control", domain: "  " }]) {
       await expect(
-        attestFaceBrowser({ board: board as never, handleIndex: 0, claim: bad as never, idbName: name }),
+        attestFaceBrowser({ board: board as never, handleIndex: 0, claim: bad as never, idbName: name, ward: FIXTURE_WARD }),
         `${JSON.stringify(bad)} attests nothing`,
       ).rejects.toThrow(/structured edge/i);
     }

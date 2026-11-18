@@ -6,12 +6,11 @@
  * fail-closed fence: a face anchors to its persona (the daemon doc's persona-KEL prefix owns it), and a
  * daemon doc with no prefix REFUSES — a browser face never self-owns, exactly as the node CLI refuses.
  */
+import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
-import {
-  PERSONA_KEL_PREFIX_TIDDLER, currentOwnerSet,
-  type LarDoc, type HandleKelEvent,
-} from "@lararium/mesh";
+import { currentOwnerSet, type LarDoc, type HandleKelEvent } from "@lararium/mesh";
 import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";
+import { sealOwnerFace, stableBoard } from "./handle-owner-fixture.js";
 import { publishHandleBrowser } from "../src/browser-handle-publish.js";
 
 let created = 0;
@@ -29,36 +28,43 @@ function makeFakeBoard(): { doc(): LarDoc; change(fn: (d: LarDoc) => void): void
   const d: LarDoc = { tiddlers: {} } as LarDoc;
   return { doc: () => d, change: (fn) => fn(d) };
 }
-const OWNER = "persona-" + "ab".repeat(32);
 
-function daemonDoc(prefix?: string): LarDoc {
-  const d: LarDoc = { tiddlers: {} } as LarDoc;
-  if (prefix) {
-    (d.tiddlers as Record<string, unknown>)[PERSONA_KEL_PREFIX_TIDDLER] =
-      { tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: prefix, kind: "persona-kel-prefix" } };
-  }
-  return d;
-}
+const emptyKelBoard = (): { doc(): LarDoc } => ({ doc: () => ({ tiddlers: {} } as LarDoc) });
 
 describe("the browser publish surface — a phone vessel names itself", () => {
-  test("★ publishes a persona-anchored Handle — the owner is the daemon doc's persona-KEL prefix ★", async () => {
+  test("★ publishes a persona-anchored Handle — the owner is the selected face's SEALED-ANCHOR prefix ★", async () => {
     const name = idb();
-    await generateOrLoadBrowserPersonaRoot(name, 0);   // seed the origin's persona vault
+    await bindSyntheticBrowserCustodySlot(name);
+    const face = await sealOwnerFace(name, 0);
     const card = await publishHandleBrowser({
-      daemonDoc: daemonDoc(OWNER), board: makeFakeBoard() as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
+      board: makeFakeBoard() as never, kelBoard: face.kelBoard as never,
+      handleIndex: 0, glamour: "Guru-Josh", idbName: name, ward: FIXTURE_WARD,
     });
     const owners = currentOwnerSet(card.chain as HandleKelEvent[])!;
-    expect(owners.members, "the persona owns the published face").toEqual([OWNER]);
+    expect(owners.members, "the persona owns the published face").toEqual([face.prefix]);
     expect(owners.members[0], "the handle key never owns itself").not.toBe(card.chain[0]!.handleKeyDid);
   });
 
-  test("★ FAIL-CLOSED — no persona-KEL prefix on the daemon doc refuses; a browser face never self-owns ★", async () => {
+  test("★ a verb that selects a SECOND handle refuses by name: a root rests only under its own face, never a handle index ★", async () => {
     const name = idb();
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await bindSyntheticBrowserCustodySlot(name);
+    const kel = stableBoard();
+    await sealOwnerFace(name, 0, kel);
+    await expect(sealOwnerFace(name, 1, kel)).rejects.toMatchObject({ reading: "face-names-a-handle" });
+  });
+
+  test("★ FAIL-CLOSED CONTROLS — no sealed anchor, or no chain on the KEL board, refuses; a browser face never self-owns ★", async () => {
+    const name = idb();
+    await bindSyntheticBrowserCustodySlot(name);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);   // a root, but no sealed anchor
     await expect(publishHandleBrowser({
-      daemonDoc: daemonDoc(undefined), board: makeFakeBoard() as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
-    })).rejects.toThrow(/persona-KEL prefix|belongs to its persona/i);
+      board: makeFakeBoard() as never, kelBoard: emptyKelBoard() as never, handleIndex: 0, glamour: "Guru-Josh", idbName: name, ward: FIXTURE_WARD,
+    })).rejects.toThrow(/sealed anchor|belongs to its persona/i);
+    const other = idb();
+    await bindSyntheticBrowserCustodySlot(other);
+    const sealed = await sealOwnerFace(other, 0);
+    await expect(publishHandleBrowser({
+      board: makeFakeBoard() as never, kelBoard: emptyKelBoard() as never, handleIndex: 0, glamour: "Guru-Josh", idbName: other, ward: FIXTURE_WARD,
+    }), `${sealed.prefix.slice(0, 12)}… with no chain on the board`).rejects.toThrow(/absent from the local board|fail-closed/i);
   });
 });

@@ -72,7 +72,7 @@ const MANIFEST: readonly ParityEntry[] = [
   {
     ts: "sensorium-lifecycle.ts", py: null, status: "ts-concept-witness",
     fixtures: [],
-    note: "the sensorium lifecycle-state reducer (pioneer→hardening→durable→tombstone): deriveLifecycle (lossless reader-default) + nextLifecycle (pure survivor-age transition) — platform-blind state LOGIC, not numerics; the reconciler runs it node-side over manifests, the RUN never recomputes it, so no py twin is planned.",
+    note: "the sensorium lifecycle-state reducer (pioneer→hardening→durable→tombstone): deriveLifecycle (the derivation for an undeclared state) + nextLifecycle (pure survivor-age transition) — platform-blind state LOGIC, not numerics; the reconciler runs it node-side over manifests, the RUN never recomputes it, so no py twin is planned.",
   },
   {
     ts: "sensorium-fusion.ts", py: "sensorium_fusion.py", status: "witnessed",

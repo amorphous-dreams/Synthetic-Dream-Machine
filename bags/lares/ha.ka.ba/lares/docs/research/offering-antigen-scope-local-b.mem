@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b.mem"
 l-space    = "lares"
-mana       = 15
-manao      = 15
-manaoio    = 14
 role       = "local research: Offering Antigen scope and identity contract; board rendezvous versus cryptographic Nexus binding"
 status-why = "Wave 1 local scout; recommendation ready for collision with internet research"
 tags       = ["research/offering-antigen", "api/pono/causal-islands", "mesh/identity-as-relation", "mesh/charter-scope"]
@@ -18,9 +14,9 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/research/offering-antigen-scope-local-b"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/scope-contract>>
+<<~ ahu slot=`#/scope-contract`>>
 
 ! Offering Antigen scope ~ the board is a rendezvous; the act carries the island
 
@@ -44,7 +40,7 @@ wall-clock reading. The act SHOULD retain `sealEpochCid` as a separate field. Th
 
 The deterministic board MUST still be derived from the resolved Nexus scope, and a receiver MUST read
 only the board for its locally resolved scope. Board scoping remains necessary for routing, locality, and
-replication. It is not sufficient as cryptographic provenance: a copied signed row can be written into a
+replication. It is not sufficient as cryptographic provenance: a copied signed record can be written into a
 different board, and a board location is not part of the current OfferingKapae signature bytes.
 
 !! Local evidence
@@ -86,7 +82,7 @@ receiver consults, keeps Antigen per-Nexus, and allows a copied board to remain 
 It cannot answer whether an act //means// what the copied board says it means. In the current shape,
 two boards can carry the same signed `OfferingKapaeEntry`; the verifier sees the same offering, action,
 parents, seal epoch, and quorum signatures in both places. If the receiving code trusts the board's
-address as an implicit scope, a copied row can be laundered into another board or a stale board can be
+address as an implicit scope, a copied record can be laundered into another board or a stale board can be
 presented under a new route without changing its semantic bytes.
 
 This is the exact failure mode the no-global-now and identity-as-relation laws warn about: location is a
@@ -118,7 +114,7 @@ be known and coherent under its local charter chain.
 | act copied while the local charter is torn or absent | unavailable local authority; fail closed | a private `own` scope may substitute |
 
 The audit surface may report rejected foreign acts and their CIDs. The authority fold MUST exclude them,
-so an imported row cannot create a ban. Conversely, a foreign `un_kapae` MUST NOT be able to lift a local
+so an imported record cannot create a ban. Conversely, a foreign `un_kapae` MUST NOT be able to lift a local
 ban. The local scope check is therefore a refusal boundary, not a merge preference.
 
 !! Capability placement
@@ -198,17 +194,17 @@ those movements silently changes which Nexus the record speaks for.
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-nexus-keying-spine">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/offering">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/quorum-entry">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-nexus-keying-spine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/offering`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/quorum-entry`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5xDA2oLGF7UQZyOVMQoHacEvdsSK76JQtVww3iOJc-0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WfuddX1BpAiD5gv-Vt-47Wyyuy2ON8LXutEtC8N_5vg`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

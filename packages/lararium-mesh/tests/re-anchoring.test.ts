@@ -16,6 +16,7 @@ import {
 } from "../src/re-anchoring.js";
 import { hex, hexToBytes } from "../src/crypto.js";
 import { emptyLarDoc } from "../src/base-doc.js";
+import { storedLarRecord } from "../src/stored-record.js";
 
 const seedOf  = (n: number) => new Uint8Array(32).fill(n);
 const signer  = (s: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, s).then(hex);
@@ -23,8 +24,8 @@ const pubOf   = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
 
 const REALM   = "realm-amorphous";
 const DWELLER = "dweller-1";
-/** A chain the reader can walk. `null` reads unknown — an epochCid nobody minted, or one from elsewhere. */
-const chain = (m: Record<string, number>) => (e: string) => m[e] ?? null;
+/** The reader's held lineage: epoch cids, genesis first. An epochCid off it stands unplaceable to this reader. */
+const LINEAGE = ["e1", "e2", "e3"] as const;
 
 const subject = (epochCid: string) =>
   ({ kind: RE_ANCHORING_DOMAIN, dweller: DWELLER, realm: REALM, epochCid }) as const;
@@ -133,20 +134,52 @@ describe("the fold answers does-this-one-hold, never who-holds", () => {
     writeReAnchoring(doc, mine);
     writeReAnchoring(doc, other);
 
-    const h = await dwellingHistory(doc, DWELLER, REALM, chain({ e1: 1 }));
-    expect(h).toHaveLength(1);
-    expect(h[0]!.attestors).toHaveLength(2);
+    const h = await dwellingHistory(doc, DWELLER, REALM, ["e1"]);
+    expect(h.anchored).toHaveLength(1);
+    expect(h.unanchored).toHaveLength(0);
+    expect(h.anchored[0]!.attestors).toHaveLength(2);
     // There is no call that would return BOTH dwellers — the shape offers no such reach.
   });
 
-  test("history rides the CHAIN, and arrival order never decides it", async () => {
-    const order = chain({ e1: 1, e2: 2, e3: 3 });
+  test("anchored history rides the held LINEAGE, and arrival order never decides it", async () => {
     const doc = emptyDoc();
     writeReAnchoring(doc, await record("e3", [9]));
     writeReAnchoring(doc, await record("e1", [7]));
     writeReAnchoring(doc, await record("e2", [8]));
-    const h = await dwellingHistory(doc, DWELLER, REALM, order);
-    expect(h.map((x) => x.epochCid)).toEqual(["e1", "e2", "e3"]);
+    const h = await dwellingHistory(doc, DWELLER, REALM, LINEAGE);
+    expect(h.anchored.map((x) => x.epochCid)).toEqual(["e1", "e2", "e3"]);
+    expect(h.anchored.map((x) => x.position)).toEqual([0, 1, 2]);
+    expect(h.unanchored).toEqual([]);
+  });
+
+  test("★ a record on an epoch OFF the lineage surfaces in unanchored — it never ranks against the anchored ★", async () => {
+    const doc = emptyDoc();
+    writeReAnchoring(doc, await record("e1", [7]));
+    writeReAnchoring(doc, await record("fork-x", [8]));
+    const h = await dwellingHistory(doc, DWELLER, REALM, LINEAGE);
+    expect(h.anchored.map((x) => x.epochCid)).toEqual(["e1"]);
+    expect(h.unanchored.map((x) => x.epochCid)).toEqual(["fork-x"]);
+    expect(h.unanchored[0]!.attestors).toHaveLength(1);
+    // The unanchored entry carries no position — a record the reader cannot order stands concurrent to every other.
+    expect(h.unanchored[0]).not.toHaveProperty("position");
+  });
+
+  test("unanchored records read sorted by epochCid for a stable read, whatever the board order", async () => {
+    const doc = emptyDoc();
+    writeReAnchoring(doc, await record("zz", [7]));
+    writeReAnchoring(doc, await record("aa", [8]));
+    writeReAnchoring(doc, await record("mm", [9]));
+    const h = await dwellingHistory(doc, DWELLER, REALM, LINEAGE);
+    expect(h.unanchored.map((x) => x.epochCid)).toEqual(["aa", "mm", "zz"]);
+  });
+
+  test("★ an EMPTY lineage puts every record in unanchored — a reader holding no chain places nothing ★", async () => {
+    const doc = emptyDoc();
+    writeReAnchoring(doc, await record("e1", [7]));
+    writeReAnchoring(doc, await record("e2", [8]));
+    const h = await dwellingHistory(doc, DWELLER, REALM, []);
+    expect(h.anchored).toEqual([]);
+    expect(h.unanchored.map((x) => x.epochCid)).toEqual(["e1", "e2"]);
   });
 
   test("a re-anchoring at a LATER epochCid lands BESIDE its predecessor — the board holds acts, not state", async () => {
@@ -154,19 +187,50 @@ describe("the fold answers does-this-one-hold, never who-holds", () => {
     writeReAnchoring(doc, await record("e1", [7]));
     writeReAnchoring(doc, await record("e2", [8]));
     // A dwelling that lapsed and re-anchored reads as TWO acts, never one edited state.
-    expect(await dwellingHistory(doc, DWELLER, REALM, chain({ e1: 1, e2: 2 }))).toHaveLength(2);
+    expect((await dwellingHistory(doc, DWELLER, REALM, ["e1", "e2"])).anchored).toHaveLength(2);
   });
 
-  test("an UNATTESTED record deposits nothing — a record nobody witnessed carries no depth", async () => {
+  test("★ two records for ONE epoch fold to one entry with the sorted union of attestors, whatever the board order ★", async () => {
+    // A record misfiled under a second title reads as itself (the kind check filters, never the key). The key
+    // names one act, so both fold into one entry; attestors grow without re-signing.
+    const a = await record("e1", [7]);
+    const b = await record("e1", [8, 9]);
+    const put = (doc: ReturnType<typeof emptyDoc>, title: string, r: ReAnchoring) => {
+      doc.tiddlers[title] = storedLarRecord(title, { text: JSON.stringify(r) }, r.epochCid);
+    };
+    const one = emptyDoc(); put(one, "x/one", a); put(one, "x/two", b);
+    const two = emptyDoc(); put(two, "x/two", b); put(two, "x/one", a);
+    for (const lineage of [["e1"], []] as const) {
+      const h1 = await dwellingHistory(one, DWELLER, REALM, lineage);
+      const h2 = await dwellingHistory(two, DWELLER, REALM, lineage);
+      expect(h1).toEqual(h2);
+      const entries = [...h1.anchored, ...h1.unanchored];
+      expect(entries).toHaveLength(1);
+      expect(entries[0]!.attestors).toEqual([...new Set([...(await verifiedAttestors(a)), ...(await verifiedAttestors(b))])].sort());
+    }
+  });
+
+  test("an UNATTESTED record deposits nothing — in neither list, anchored epoch or not", async () => {
     const doc = emptyDoc();
-    const unwitnessed: ReAnchoring = { ...subject("e1"), attestors: [] };
-    writeReAnchoring(doc, unwitnessed);
-    expect(await dwellingHistory(doc, DWELLER, REALM, chain({ e1: 1 }))).toHaveLength(0);
+    writeReAnchoring(doc, { ...subject("e1"), attestors: [] });
+    writeReAnchoring(doc, { ...subject("fork-x"), attestors: [] });
+    const h = await dwellingHistory(doc, DWELLER, REALM, LINEAGE);
+    expect(h).toEqual({ anchored: [], unanchored: [] });
+  });
+
+  test("a FORGED-only record deposits nothing — in neither list", async () => {
+    const doc = emptyDoc();
+    const r = await record("e1", [7]);
+    const forged: ReAnchoring = { ...r, attestors: [{ attestor: await pubOf(seedOf(9)), sig: "00".repeat(64) }] };
+    writeReAnchoring(doc, forged);
+    writeReAnchoring(doc, { ...forged, epochCid: "fork-x" });
+    const h = await dwellingHistory(doc, DWELLER, REALM, LINEAGE);
+    expect(h).toEqual({ anchored: [], unanchored: [] });
   });
 
   test("an EMPTY board yields no dwellings — absence reads as absence, never as refusal", async () => {
     // Under no-global-now a withheld record and an unsynced one generate identically. Nothing here may
     // report that as a verdict about anyone.
-    expect(await dwellingHistory(emptyDoc(), DWELLER, REALM, chain({}))).toEqual([]);
+    expect(await dwellingHistory(emptyDoc(), DWELLER, REALM, [])).toEqual({ anchored: [], unanchored: [] });
   });
 });

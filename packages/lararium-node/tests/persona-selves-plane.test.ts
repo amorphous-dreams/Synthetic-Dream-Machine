@@ -97,8 +97,10 @@ describe("each face's persona plane off the main thread's Repo", () => {
 
   test("R7 — a plane whose rest stands clear takes no name: the vessel's own storage holds none", async () => {
     const dir = mkdtempSync(join(tmpdir(), "selves-rest-"));
+    // The Repo saves its storage id on its own at construction; its shutdown closes the adapter, which lands every
+    // write in flight and drops any later one, so the directory leaves only after the store stands still.
+    const repo = new Repo({ storage: new DurableNodeFSStorageAdapter(dir) });
     try {
-      const repo = new Repo({ storage: new DurableNodeFSStorageAdapter(dir) });
       const p0 = repo.create<LarDoc>(emptyLarDoc());
       const plane = repoPersonaSelvesPlane(repo, [{ personaGroupId: G0, url: p0.url }], async () => [{ handleIndex: 0, personaGroupId: G0 }]);
       const LABEL = `a-relit-label-${Math.random().toString(36).slice(2)}`;
@@ -120,7 +122,10 @@ describe("each face's persona plane off the main thread's Repo", () => {
       expect(await plane.read()).toEqual([{ handleIndex: 0, petname: "an-older-vessels-name" }]);
       expect(await plane.write(0, "petname", "")).toEqual({ written: true, plane: true });
       expect(await plane.read()).toEqual([]);
-    } finally { rmSync(dir, { recursive: true, force: true }); }
+    } finally {
+      await repo.shutdown();
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   test("R6 — a document this Repo cannot find refuses", async () => {

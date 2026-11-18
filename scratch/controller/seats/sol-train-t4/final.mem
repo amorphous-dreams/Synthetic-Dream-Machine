@@ -1,0 +1,69 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-t4/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-t4/final.md` (hand-back, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t4/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Train-Reader T4: Lares (Tasked Spirit).
+
+''HOLD #144; SHIP #142.'' One confirmed MEDIUM defect. No HIGH production bypass established.
+
+I applied and context-checked #144’s patch in memory against `ec3c990be`. Its line numbers below refer to the post-patch tree. Probes used source, real signatures and memory-only storage; the worn-fleet probe substituted an empty custody roster. No dist, build, socket or daemon was used.
+
+# ''MEDIUM — replayed receipts can block genuine acknowledgement.''
+`packages/lararium-mesh/src/edge-ledger.ts:230`
+`markRaiseRolled` verifies the existing row’s signature but omits the scope/raise checks used by `verifiedRollMarks` at `:199`. ''MEASURED:'' copy this vessel’s valid `gone`/`revoked` receipt from another scope or raise into the target row. Readers correctly leave the target unanswered, but the genuine target receipt cannot overwrite it. The raise remains durably owed and settlement repeats. This establishes acknowledgement poisoning, without demonstrating disclosure. Apply the same row-validity predicate before preserving an existing mark; add both replay regressions.
+
+# ''LOW — unavailable documents can manufacture an apparently readable empty fold.''
+`packages/lararium-node/src/commands/edge-seats.ts:139`; `packages/lararium-mesh/src/deterministic-doc.ts:159`
+''MEASURED:'' unavailable board and ledger become blank documents, yielding `read:true, counted:[], unanswered:[]`. Separately, feeding that evidence to a holder retaining removal records selected its founding key; the old-key holder opened the new body, using production `ownChainStanding`.
+
+This is a component consistency counterexample, ''not an established production exploit'': cold boot refuses an unknown signed frontier at `packages/lararium-keyhive/src/boot-daemon-keyhive.ts:172`. A live breach would additionally need both evidence documents to disappear after the face stood, or another route past that gate. Neither was established here.
+
+# ''LOW — the named classification residual remains.''
+`packages/lararium-node/src/joined-face-auth.ts:29`; `packages/lararium-node/src/open-node-vessel.ts:2593`
+Locked or skipped faces contribute no joined-face ledger class. ''MEASURED at guard level:'' an unclassified ledger passes a signed realm alias. Normal late unlocking calls `lightFace`, which classifies the ledger before opening its island at `:2600`; late opening alone therefore does not establish a bypass. No live-wire leak was measured.
+
+For the requested checks:
+
+* ''(a) Marks and reader keys:'' ''MEASURED:'' bare, unsigned, foreign-key, altered, cross-scope and cross-raise plants answer nothing. Wrong, empty, malformed and zero keys fail closed. A plant leaves the device `owing` and its duty scheduled; a genuine own receipt returns it. All affected product readers pass the ledger’s atom key: node facts/fold, shadow ring, browser `wornAtom`, and keyhive `ownDevice`. The empty fallback verifies nothing. A `no-authority` receipt answers the content-roll obligation while remaining excluded from “seat seen leave.” Evidence: `packages/lararium-mesh/src/edge-ledger.ts:194`, `:244`, `:255`; `packages/lararium-keyhive/src/board-dyad-reader.ts:35`.
+
+* ''(b) Worn authority:'' No session/CLI route found that supplies a foreign `worn` root or atom. Store rows select caller arguments explicitly and obtain `worn` separately from the composer; duties reject extra arguments and reread facts. The composer checks atom/device-edge equality, selects the sign-door predicate through custody’s `custodyGroup`, and creates the settler only under `sovereign`. The island verifies the vessel-signed ask and recounts under its own edge’s root. ''MEASURED:'' a rootless joinee reads and marks its worn fleet; an unrelated unserved root refuses. Evidence: `packages/lararium-node/src/store-door-verbs.ts:499`; `packages/lararium-node/src/open-node-vessel.ts:1460`, `:1757`, `:2156`; `packages/lararium-keyhive/src/operator-daemon-behavior.ts:661`.
+
+* ''(c) T35:'' Null, empty and malformed worn pieces refuse; ''MEASURED'' session reads return `signer-unavailable`. Only `worn:null` returns unread, with both raise lists empty. No no-face path counting an owed raise was found. The empty-materialization limit is finding 2.
+
+* ''(d) Ledger reach:'' ''MEASURED:'' classified device ledgers deny realm aliases, permissive sibling gates, permissive same-face views and strangers. In-process islands retain intended access. Device-owner refusal precedes those relations at `packages/lararium-node/src/vessel-private.ts:171`. Finding 3 bounds the remaining classification gap.
+
+* ''(e) Merge interactions:'' #141’s null inputs still withhold, ''MEASURED''. `NO_BANS`/`NOBODY_ASIDE` ensure the new tests exercise the guard rather than an unstood-input denial. #140’s booking, Nexus-anchor and face-subject checks remain intact; failed worn folds refuse through its read door. Evidence: `packages/lararium-node/src/self-slot-share.ts:143`; `packages/lararium-node/src/session-sign-door.ts:75`; `packages/lararium-keyhive/src/operator-daemon-behavior.ts:806`.
+
+''LOW — #142 includes a small product-source addition:'' `packages/lararium-tw5/src/landed-ledger.ts:36` on its branch adds waiters and notification from `set`/`clear`. No production `whenLanded` caller was introduced. Immediate, future-predicate, deadline and clear probes passed. Scratch environment and custody changes remain under tests.
+
+Live realm-ledger and composed joinee/session tests are ''lead runs''. The read-only wall refused writing `out.md`; this response carries the report.
+
+''#144 recut-rolls: HOLD — repair finding 1.''
+''#142 recut-fixture: SHIP.''
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pEY21iBZ1mCsdoB5-nmtrXyw7deBwFMFSuxoHG0ttkw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

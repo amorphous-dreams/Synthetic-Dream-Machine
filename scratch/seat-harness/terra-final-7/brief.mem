@@ -1,0 +1,90 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-7/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/terra-final-7/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-7/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-7/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/terra-final-7/brief.md` (brief, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-7/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/terra-final-read-the-seat-harness-lane`>>
+
+! Terra final read: the seat-harness lane (controller, 2026-11-04)
+
+Read only. You are a defensive code reviewer for the maintainers: reason over source and tests; cite code paths and the tests that pin them; construct no attack payloads. Your final message IS the hand-back; write no files.
+
+Tree: ~/.lares-scratch/seat-harness/wt, branch feature/green-jello-dinosaur-5&#45;-seat-harness, head 5c21bc5aa, cut from promote at 7478a5012. Review `git -C ~/.lares-scratch/seat-harness/wt diff 7478a5012..5c21bc5aa` in full (tools/* and bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem). CI is green at 5c21bc5aa (run 41968486237), and the witness cell now installs and proves bubblewrap, so the wall proofs ran live, none skipped,
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-the-lane-built`>>
+
+!! What the lane built (the carrier's #/owed rows 1-6)
+# Per-seat token ceilings: a watchdog tails the seat's own rollout and stops the seat at 15M (lead step) or 8M (other modes), writing ceiling.md.
+# Pool-aware launching: leads refuse above 50% used, build/research above 60%.
+# Compaction limits as launcher -c overrides, plus a live-proven canary.
+# tools/lane-state.mjs plus &#45;-lead-step: a fresh lead per step over state.json.
+# The ratcheted broker: tools/seat-broker.mjs (data-only git plumbing, pinned binary, fixed env, expected old head, race-proof reads), tools/seat-walls.mjs (a bwrap check seat with an HMAC receipt over tree, check names and definitions; a bwrap install seat), tools/tree-export.mjs, and tools/commit-relay.mjs rewired.
+# The live-wiki controls: design text only.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/confirm`>>
+
+!! Confirm
+(a) The broker never executes lane-controlled bytes with its own authority: hooks, filters, submodules, git config, .npmrc, lifecycle scripts, PATH/HOME/GIT_*/NODE_OPTIONS, symlink/hardlink races. Find any path that still leaks.
+(b) A lead can't grant its own push, escape its lane root, launch a lead, or commit outside the worktree.
+(c) The watchdog can't kill the wrong process, can't miss its seat's rollout, and doesn't count the wrong session.
+(d) The receipt binds what it claims (tree, check names, check definitions) and can't be replayed or forged by the lead.
+(e) Without bubblewrap the walls refuse by name and never run lane code unwalled.
+(f) Any regression to the launcher's existing modes (read, research, build, lead) and its floors.
+Verdict: SHIP or HOLD, findings ranked with file:line, MEASURED or LEAD.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/round-7-your-round-6-hold-and-its-cures`>>
+
+!! Round 7: your round-6 HOLD and its cures
+Read your earlier hand-backs first: terra-final{,-2,-3,-4,-5,-6}/final.md under ~/.lares-scratch/seat-harness/. The lead reports (verify against code and tests; trust nothing on its word):
+# P1 broker dir: one fixed broker root outside ~/.lares-scratch, never caller-named (no &#45;-broker-dir anywhere); created if absent, then lstat-verified (our uid, exactly 0700, no symlinked or group/other-writable component from $HOME down, no ancestor under a Codex-granted root), size-bounded; each seat dir a mkdtemp inside it, removed after the hand-back.
+# P1 containment: the seat runs inside `bwrap --unshare-pid --die-with-parent`; a setsid descendant dies with the namespace (live red + control); the probe proves the full containment command; without bwrap on CI the wall tests fail by name, never skip.
+# P2: the hand-back filters to regular single-link non-dot names before the cap, final.md first; an old hand-back moves aside into prev-&lt;n>/; a done-&lt;uuid> marker written LAST carries verdict, exitCode, copied names and handbackError, and is written even when supervision throws (supervisor-error); the wait also watches the supervisor pid.
+# P2: dry-run creates nothing.
+# NEW, a safety cure from an incident: a test fake with pid 1 made the supervisor's real exit handler run process.kill(-1, SIGKILL), killing every process the operator owns (twice). Now `killGroup(pgid, sig)` refuses any pgid not an integer above 1; every supervisor kill routes through an injectable signal that defaults to killGroup; witnesses read red on process.kill outside killGroup in the harness sources and on any test fake with pid 0 or 1. Weigh whether any path can still signal a pid or pgid the supervisor did not spawn.
+# The accepted pid-reuse edge on the exit handler stays; weigh it under the namespace (does the namespace change it?).
+Seventh round. If a class repeats, name the whole surface. Confirm each cure with a test that fails without it, and look for anything newly opened. Verdict: SHIP or HOLD.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* Write `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-UQHW4yYDcexFo1mgFn4sMXxlh1m2R7swU0F_KzOE-c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

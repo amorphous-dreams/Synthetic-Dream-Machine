@@ -13,6 +13,8 @@ Over two REAL braids (a worldline_io fork-DAG + real-chroma content stores):
 import math
 import os
 
+import pytest
+
 import content_io as cio
 import worldline_io as wl
 import worldline_ffz as wf
@@ -154,3 +156,18 @@ def test_no_host_wall_time_on_the_recover_or_stamp_path():
     for banned in ("import time", "import datetime", "from datetime", "time.time", "datetime.now",
                    "utcnow", "time.monotonic", "perf_counter"):
         assert banned not in src, f"clock leak: {banned!r} on the worldline-ffz path"
+
+
+def test_turn_vectors_read_only_the_turns_named():
+    # The vector pull reads exactly the turn-keys it names; nothing walks a whole content store.
+    class Store:
+        def vectors_for_turns(self, wanted):
+            return {tk: [[1.0, 0.0], [0.0, 1.0]] for tk in wanted}
+
+        def scan(self, *_):
+            raise AssertionError("a whole-store scan ran")
+
+    got = wf.collect_turn_vectors([Store()], {"A1"})
+    assert set(got) == {"A1"} and list(got["A1"]) == [0.5, 0.5]
+    with pytest.raises(TypeError):
+        wf.collect_turn_vectors([Store()])

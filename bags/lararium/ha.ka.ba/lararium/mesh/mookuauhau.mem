@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/mookuauhau">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/mookuauhau`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/mesh/mookuauhau.mem"
 l-space       = "lararium"
-mana          = 16
-manao         = 15
-manaoio       = 14
 research-date = "2026-06-30"
 role          = "moʻokūʻauhau — the genealogy of the one recursive #has-cap fractal: ancestors, the three pillars, the cousins, the anti-pattern corpse, and the weld verdict"
 title         = "lar:///ha.ka.ba/lararium/mesh/mookuauhau"
@@ -17,19 +13,19 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/mookuauhau"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Moʻokūʻauhau ~ Ancestors & Cousins of the One Fractal
 
 A genealogy chants where a thing //comes from//. This one names the bloodline of the DreamNet's core move — ''a nameless entity that `#has` a stack of capabilities, composed by one rite (`composeVessel`) that routes only what each cap declares and refuses to boot on a missing dep'' — and asks the adversarial question: //who already stands here?//
 
-The chart sits beside the 2026-05-28 layer-survey, never replacing it — that one maps prior art onto the stack's components; this one traces the //fractal idea itself//. <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art">>
+The chart sits beside the 2026-05-28 layer-survey, never replacing it — that one maps prior art onto the stack's components; this one traces the //fractal idea itself//. <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art`>>
 
 ''The one-line verdict (chant it first, defend it after):'' the pieces stand ~80% built across ''two lineages that have never married'' — and so the novel work names a ''weld'', never an invention. //the smaller, defensible claim survives contact; the grander one falls to the first cousin who did it earlier.//
 
 <<~/ahu>>
 
-<<~ ahu #/ancestors>>
+<<~ ahu slot=`#/ancestors`>>
 
 !! The Ancestors ~ the deep roots
 
@@ -45,13 +41,13 @@ These the lineage does not //extend// — it ''inherits''. To re-derive them rea
 
 <<~/ahu>>
 
-<<~ ahu #/pillars>>
+<<~ ahu slot=`#/pillars`>>
 
 !! The Three Pillars ~ one recursion each, none seeing the others
 
 The load-bearing cousins. Each carries //one// of the three recursions whole — and stays blind to the other two. This blindness names the whole opportunity.
 
-<<~ scale recursion "authority@Keyhive -> wiring-as-security@Genode -> transport@RINA">>
+<<~ scale name=`recursion` ranks=`authority@Keyhive -> wiring-as-security@Genode -> transport@RINA`>>
 
 ''Keyhive (Ink & Switch — and it runs on our own stack).'' The authority recursion, built. It treats //individuals, devices, groups, and documents uniformly as principals in a recursive delegation graph// — a person reads as a group of devices, an org as a group of person-groups, a document as a group whose members hold access. That folds ''membership ⊥ device-sovereignty'' into one recursive principal-is-a-group fractal, in WASM, over Automerge. It splits its own internals deliberately: ''Access-Control (delegation edges) ⊥ Key-Agreement (BeeKEM) ⊥ Transport (Beelay, kept blind/E2E)''. The load-bearing sentence: ''Keyhive deliberately excludes binding a human identity to a key — "left to a future layer."'' That blank names a REFUSAL this stack keeps rather than a doorway it fills: no constructor for a human stands anywhere in the model, so the Lar declares the hole permanently open and maps relations ACROSS it — not //who//, but which hearth one tends. [inkandswitch.com/keyhive/notebook]
 
@@ -61,7 +57,7 @@ The load-bearing cousins. Each carries //one// of the three recursions whole —
 
 <<~/ahu>>
 
-<<~ ahu #/cousins>>
+<<~ ahu slot=`#/cousins`>>
 
 !! The Cousins ~ the wider family
 
@@ -69,7 +65,7 @@ The kin that each solve one facet, citably, so the house adopts rather than rein
 
 | Cousin | What it solves | Where it grafts |
 |---|---|---|
-| ''UCAN'' (ucan-wg/spec) | DAG delegation chains rooted at the resource owner; //delegate without sharing the key// | the device-admit edge's shape |
+| ''UCAN'' (ucan-wg/spec) | DAG delegation chains rooted at the resource owner; //delegate without sharing the key// | the internal `device-admit` edge's shape |
 | ''Willow / Meadowcap'' (willowprotocol.org) | communal-vs-owned namespaces · area/prefix-restricted ''read-caps'' | the veil / anon-read FLOW tier |
 | ''Veilid'' (veilid.com) | ''peer-identity ⊥ user-identity'' · transport via private routes | Plane-A transport-sovereignty carrying its own key |
 | ''Goblins / OCapN / E'' (spritely.institute) | capability-as-identity · ''petnames'' over crypto IDs · CapTP | the petname-constellation identity (fork ①); cap heals by revoke |
@@ -78,7 +74,7 @@ The kin that each solve one facet, citably, so the house adopts rather than rein
 
 <<~/ahu>>
 
-<<~ ahu #/corpse>>
+<<~ ahu slot=`#/corpse`>>
 
 !! The Anti-Pattern Corpse ~ Matrix, and why one-door-per-axis
 
@@ -86,17 +82,17 @@ Matrix //nominally// separates rooms ⊥ federation ⊥ power-levels. In practic
 
 <<~/ahu>>
 
-<<~ ahu #/hazard>>
+<<~ ahu slot=`#/hazard`>>
 
 !! The Unsolved Hazard ~ the leak two lineages both flag
 
 Keyhive's own notebook, p2panda-auth's notes, and a formal-verification paper (arXiv 2604.23560) flag the ''same'' edge, independently: the ''concurrent add-while-remove key-leak'' — a member added concurrently with a removal can, under CRDT merge, hold a key they should never have seen — //unsolvable without consensus-before-key-handover.// And "no global now" ''forbids'' that consensus. So the house holds, by construction, one room whose lock it cannot prove.
 
-This the lineage does not sweep. The leak rides ''bounded'', never sealed: every membership decays (the lease), and the ''kapae'' tombstone marks the cast-off so a removal converges. The disease and the cure share one vow. Boundary-test where it bites; consecrate the corner; refuse the false promise of a fortress. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
+This the lineage does not sweep. The leak rides ''bounded'', never sealed: every membership decays (the lease), and the ''kapae'' tombstone marks the cast-off so a removal converges. The disease and the cure share one vow. Boundary-test where it bites; consecrate the corner; refuse the false promise of a fortress. <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
 
 <<~/ahu>>
 
-<<~ ahu #/weld>>
+<<~ ahu slot=`#/weld`>>
 
 !! The Weld ~ the verdict that survives contact
 
@@ -107,12 +103,12 @@ Lay the three recursions side by side and the gap shows: they live in ''two unma
 
 No one has made ''one composition primitive serve simultaneously as the code-wiring AND the authority graph AND the transport-recursion, across a no-global-now causal-island mesh.'' That marriage names the ''novel delta'' — plus binding identity in the exact layer Keyhive leaves blank, which for the Lar reads not as //who// but as ''which hearth one tends'' (place, and the petname-constellation that acts in each context).
 
-''Claim the weld, never the invention.'' //"We married three known fractals and filled the doorway one of them left open"// stands; //"we invented a fractal"// falls to Ink & Switch, to RINA, to Genode — each of whom built their third of it first. The rite that performs the marriage already sits in the code wearing the name of a function. <<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">>
+''Claim the weld, never the invention.'' //"We married three known fractals and filled the doorway one of them left open"// stands; //"we invented a fractal"// falls to Ink & Switch, to RINA, to Genode — each of whom built their third of it first. The rite that performs the marriage already sits in the code wearing the name of a function. <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/composable-keel`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DltD-qc2YtBklI7Jd2WrKKbWxEeDPuvF4cL8EUs4Pqw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CEz__X4ChSE5uXB9wY-89fhzVYzOTFsizFzOO1ZPK2M`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

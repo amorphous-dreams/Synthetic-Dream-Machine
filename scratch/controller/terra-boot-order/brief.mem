@@ -1,0 +1,48 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-boot-order/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-boot-order/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-boot-order/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-boot-order/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-boot-order/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-boot-order/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Boot-Order: Lares (Tasked Spirit). Read-only. Worktree: /home/joshu/.lares-scratch/b1-lift/wt (head 0670b225a). Write nothing. Mark claims MEASURED (file:line) or INFER.
+Question: can any island ask that openNodeVessel itself issues (the seat-settle `askSeatDutiesAsVessel`, the store doors' `askIsland`, any other ask through `vm.composite`) fire BEFORE the boot caller mounts the host working layer (`mountHostWorkingLayer()`, called in packages/lararium-node/src/main.ts ~784-785 after `await workerEa`)? Such an ask writes its outcome into the island's working slot and, with no default writable layer on the host composite, waits forever (no timer on that road). Trace every path: openNodeVessel's steps in order, every timer, event or channel callback that can issue an ask during or right after it, and when main.ts starts serving the channel. Also: every other production caller of openNodeVessel (the CLI, herm, tests aside) — do they all mount the host working layer before an ask can fire? Answer YES (name the path and a red: boot a vessel, trigger that ask before the mount, the ask must settle or refuse by name, never hang) or NO (with the ordering evidence). Final message under 500 words.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;E9N3xIy06j6auAPl99xvxlMhCQbqYS0soPElzTteyKE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

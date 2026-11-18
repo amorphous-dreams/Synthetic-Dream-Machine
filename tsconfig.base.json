@@ -34,6 +34,15 @@
       ],
       "@lararium/mesh/harvest": [
         "./packages/lararium-mesh/src/capture/harvest.ts"
+      ],
+      "@lararium/mesh/face-proof-subjects": [
+        "./packages/lararium-mesh/src/face-proof-subjects.ts"
+      ],
+      "@lararium/mesh/session-signer": [
+        "./packages/lararium-mesh/src/session-signer.ts"
+      ],
+      "@lararium/mesh/session-face": [
+        "./packages/lararium-mesh/src/session-face.ts"
       ]
     },
     "strict": true,

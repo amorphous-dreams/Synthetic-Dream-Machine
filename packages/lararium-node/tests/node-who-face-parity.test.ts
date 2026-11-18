@@ -2,7 +2,7 @@
  * node-who-face-parity — the ANCHOR and its LEAVES resolve the ONE WHO board.
  *
  * `openNodeVessel` composes whoFaceCap with its own gate key; a browser leaf composes the same cap with the
- * relayGatePubKey it dials. Those name the SAME string (a node anchors its confederation, so its gate key IS
+ * island its admit carries. Those name the SAME string (a node anchors its confederation, so its gate key IS
  * the Nexus key its leaves pass back), and both sides reach the board through the deterministic crossroads
  * address. This witnesses that construction end-to-end: two independently-composed vessels, wired exactly as
  * the two openers wire them, land on one board and one composite layer — and neither publishes a face.
@@ -21,7 +21,7 @@ import {
   nexusHandlesUri, whoBoardDocUrl,
 } from "@lararium/mesh";
 
-/** The node's own gate key — the value it hands its leaves as relayGatePubKey. */
+/** The node's own gate key — the island its admitted leaves resolve. */
 const ANCHOR_GATE_KEY = "9f3c1a77b20e4d6688aa5510cc73ef02";
 
 /** Stand in for the vessel core — the WHO cap needs only the composite it layers the board into. */
@@ -40,14 +40,14 @@ async function composeWhoPlane(repo: Repo, nexusPubkey: string, composite: Compo
 }
 
 describe("node WHO-plane parity — anchor and leaf reach one board", () => {
-  test("the anchor's gate key and a leaf's relayGatePubKey resolve the SAME board + layer", { timeout: 20_000 }, async () => {
+  test("the anchor's gate key and a leaf's admitted island resolve the SAME board + layer", { timeout: 20_000 }, async () => {
     const repo = new Repo({ sharePolicy: async () => true });
 
     // the ANCHOR composes with its own gate key (openNodeVessel's wiring) …
     const anchorComposite = new CompositeStore();
     const anchor = await composeWhoPlane(repo, ANCHOR_GATE_KEY, anchorComposite);
 
-    // … and a LEAF composes with the relayGatePubKey it dialled — the anchor's key, handed back
+    // … and a LEAF composes with the island its admit carries — the anchor's key, handed back
     const leafComposite = new CompositeStore();
     const leaf = await composeWhoPlane(repo, ANCHOR_GATE_KEY, leafComposite);
 

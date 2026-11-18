@@ -1,7 +1,7 @@
 /**
  * multi-graph-recall — P4: the N-ary RRF multi-graph query. Asserts the PURE rank-fusion math (k=60,
  * a more-graphs drawer outranks a fewer-graphs one), the verbatim_sha join (content↔form↔… pairing,
- * single-leg drawers handled gracefully), the N-graph (3+) fold, the live markers→vector deriver, the
+ * single-leg drawers handled gracefully), the N-graph (3+) fold, the form leg held as a placeholder, the
  * P6 paragraph aperture, and a real multi-query → sensible fused ranking (orchestrator over fake
  * search legs — no python, no chroma). The where-filter builder is covered for the multi-aperture
  * scoping.
@@ -10,10 +10,9 @@
 import { describe, expect, test } from "vitest";
 
 import type { SearchArgs, SearchHit, SearchResult } from "@lararium/mempalace";
-import type { MoveSkeleton, SerializedBasis } from "@lararium/tw5/form-layer";
 import type { FormMatch } from "../src/sensorium.js";
 import {
-  fuseMultiGraph, multiGraphRecall, buildFormWhere, combineWhere, makeFormSearch, DEFAULT_RRF_K,
+  fuseMultiGraph, multiGraphRecall, buildFormWhere, makeFormSearch, DEFAULT_RRF_K,
   contentLeg, formLeg, resolveApertureGrain, apertureWeight, weightByAperture,
   PARAGRAPH_APERTURE,
   type MultiGraphRecallDeps, type FormSearchPalace, type MultiGraphHit, type GraphLeg,
@@ -176,174 +175,29 @@ describe("buildFormWhere — the multi-aperture metadata scoping", () => {
       $and: [{ register: "synthesis" }, { grammar_layer: "x-memetic" }],
     });
   });
-  test("a bearing clause alone → a flat clause", () => {
-    expect(buildFormWhere(undefined, undefined, { bearing_root: "breach.watch.fires" })).toEqual({
-      bearing_root: "breach.watch.fires",
-    });
-    expect(buildFormWhere(undefined, undefined, { bearing_w1: "breach" })).toEqual({ bearing_w1: "breach" });
-  });
-  test("aperture + bearing facets compose into one $and (present-only, empties dropped)", () => {
-    expect(
-      buildFormWhere("synthesis", undefined, { bearing_w1: "breach", bearing_w3: "fires", bearing_frag: "" }),
-    ).toEqual({
-      $and: [{ register: "synthesis" }, { bearing_w1: "breach" }, { bearing_w3: "fires" }],
-    });
-  });
 });
 
-describe("combineWhere — AND clauses, flatten one $and level", () => {
-  test("all undefined → undefined", () => {
-    expect(combineWhere(undefined, undefined)).toBeUndefined();
-  });
-  test("one clause → itself", () => {
-    expect(combineWhere(undefined, { register: "synthesis" })).toEqual({ register: "synthesis" });
-  });
-  test("a pre-built $and + a flat clause flatten into ONE $and (no nesting)", () => {
-    const aperture = buildFormWhere("synthesis", "x-memetic");
-    const bearing = { bearing_root: "breach.watch.fires" };
-    expect(combineWhere(aperture, bearing)).toEqual({
-      $and: [{ register: "synthesis" }, { grammar_layer: "x-memetic" }, { bearing_root: "breach.watch.fires" }],
-    });
+describe("makeFormSearch — the form leg held as a placeholder (operator ruling 2026-10-31, Train Q)", () => {
+  test("every query shape answers [], no palace is touched, and the wired recall fuses content-only", async () => {
+    const calls: string[] = [];
+    const palace: FormSearchPalace = {
+      async filter() { calls.push("filter"); return [formMatch(SHA_B)]; },
+      async query() { calls.push("query"); return [formMatch(SHA_B)]; },
+    };
+    for (const query of ["lar:///breach.watch.fires/intent", "the turn <<~ ward !>>", "plain keywords here"]) {
+      const leg = makeFormSearch({ query, formPalace: palace });
+      expect(await leg({ nResults: 5 })).toEqual([]);
+      expect(await leg({ nResults: 5, where: { register: "synthesis" } })).toEqual([]);
+    }
+    expect(calls).toEqual([]);
+    const res = await multiGraphRecall({
+      async contentSearch(args) { return { query: args.query, results: [contentHit(SHA_A)] }; },
+      formSearch: makeFormSearch({ query: "lar:///breach.watch.fires", formPalace: palace }),
+    }, { query: "lar:///breach.watch.fires" });
+    expect(res.counts["form"]).toBe(0);
+    expect(res.results.map((r) => r.presentIn)).toEqual([["content"]]);
   });
 });
-
-describe("makeFormSearch — the form-leg policy (bearing · markers · keywords)", () => {
-  function fakePalace(matches: FormMatch[]): {
-    palace: FormSearchPalace;
-    filterCalls: { where?: Record<string, unknown>; nResults?: number }[];
-    queryCalls: { skeleton: MoveSkeleton; basis: SerializedBasis; nResults?: number; where?: Record<string, unknown> }[];
-  } {
-    const filterCalls: { where?: Record<string, unknown>; nResults?: number }[] = [];
-    const queryCalls: { skeleton: MoveSkeleton; basis: SerializedBasis; nResults?: number; where?: Record<string, unknown> }[] = [];
-    const palace: FormSearchPalace = {
-      async filter(input) { filterCalls.push(input); return matches; },
-      async query(input) { queryCalls.push(input); return matches; },
-    };
-    return { palace, filterCalls, queryCalls };
-  }
-  const fakeDerive = () => ({ skeleton: {} as MoveSkeleton, basis: { axes: [], dimension: 0 } as SerializedBasis });
-
-  test("a BEARING query → structured where-filter on the root, no vector", async () => {
-    const { palace, filterCalls, queryCalls } = fakePalace([formMatch(SHA_A)]);
-    const leg = makeFormSearch({ query: "lar:///breach.watch.fires/intent", formPalace: palace });
-    const out = await leg({ nResults: 5 });
-    expect(out).toHaveLength(1);
-    expect(queryCalls).toHaveLength(0);
-    expect(filterCalls).toHaveLength(1);
-    expect(filterCalls[0]!.nResults).toBe(5);
-    expect(filterCalls[0]!.where).toEqual({ bearing_root: "breach.watch.fires" });
-  });
-
-  test("a BEARING query ANDs its root onto the incoming aperture where", async () => {
-    const { palace, filterCalls } = fakePalace([]);
-    const leg = makeFormSearch({ query: "lar:///breach.watch.fires", formPalace: palace });
-    await leg({ nResults: 3, where: { register: "synthesis" } });
-    expect(filterCalls[0]!.where).toEqual({
-      $and: [{ register: "synthesis" }, { bearing_root: "breach.watch.fires" }],
-    });
-  });
-
-  test("a MARKERS query (deriveSkeleton supplied) → vector similarity", async () => {
-    const { palace, filterCalls, queryCalls } = fakePalace([formMatch(SHA_B)]);
-    const leg = makeFormSearch({ query: "the turn <<~ ward !>>", formPalace: palace, deriveSkeleton: fakeDerive });
-    const out = await leg({ nResults: 4, where: { register: "synthesis" } });
-    expect(out).toHaveLength(1);
-    expect(filterCalls).toHaveLength(0);
-    expect(queryCalls).toHaveLength(1);
-    expect(queryCalls[0]!.nResults).toBe(4);
-    expect(queryCalls[0]!.where).toEqual({ register: "synthesis" });
-  });
-
-  test("a MARKERS query with NO deriver degrades to the keyword branch", async () => {
-    const { palace, filterCalls, queryCalls } = fakePalace([]);
-    const leg = makeFormSearch({ query: "the turn <<~ ward !>>", formPalace: palace });
-    const out = await leg({ nResults: 4 });
-    expect(out).toEqual([]);
-    expect(queryCalls).toHaveLength(0);
-    expect(filterCalls).toHaveLength(0);
-  });
-
-  test("a KEYWORD query with an aperture scope → where-filter only", async () => {
-    const { palace, filterCalls, queryCalls } = fakePalace([formMatch(SHA_A)]);
-    const leg = makeFormSearch({ query: "what did we decide about deps", formPalace: palace });
-    const out = await leg({ nResults: 6, where: { register: "synthesis" } });
-    expect(out).toHaveLength(1);
-    expect(queryCalls).toHaveLength(0);
-    expect(filterCalls).toHaveLength(1);
-    expect(filterCalls[0]!.where).toEqual({ register: "synthesis" });
-  });
-
-  test("a bare KEYWORD query with NO scope → DEFER (empty form leg, content-only fusion)", async () => {
-    const { palace, filterCalls, queryCalls } = fakePalace([formMatch(SHA_A)]);
-    const leg = makeFormSearch({ query: "what did we decide about deps", formPalace: palace });
-    const out = await leg({ nResults: 6 });
-    expect(out).toEqual([]);
-    expect(filterCalls).toHaveLength(0);
-    expect(queryCalls).toHaveLength(0);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// the MARKERS → VECTOR live deriver — recall-by-move-form (the jurus query)
-// ---------------------------------------------------------------------------
-
-describe("makeFormSearch markers branch — the in-VM query-derive routing (one runtime, no node fallback)", () => {
-  const fakeBasis = { axes: [], dimension: 12 } as SerializedBasis;
-  // The derive runs IN the daemon VM now; the leg only sees its async result. A real derivation
-  // carries BOTH planes — the linear stream AND the structural (graph) plane (the meme-ast TREE) —
-  // so the query vector lands in the SAME full space as the corpus (capture's identical functor).
-  const fakeDerivation = {
-    skeleton: {
-      stream: [{ kind: "ward", token: "sword", axisId: "ward:sword", offset: 0 }],
-      graph: [{ kind: "Sigil", children: [] }],
-    },
-    basis: fakeBasis,
-  } as unknown as { skeleton: MoveSkeleton; basis: SerializedBasis };
-  const MARKERS_QUERY = "what did we decide <<~ hud Aperture(10) OODA-HA(3)>> <<~ ward ! L-Prime>>";
-
-  test("a markers query → the VM derive routes to the VECTOR (query) path, structural plane present", async () => {
-    const queryCalls: { skeleton: MoveSkeleton; basis: SerializedBasis }[] = [];
-    const filterCalls: unknown[] = [];
-    const palace: FormSearchPalace = {
-      async query(input) { queryCalls.push(input); return [formMatch(SHA_B)]; },
-      async filter(input) { filterCalls.push(input); return []; },
-    };
-    const deriveSkeleton = async (_q: string) => fakeDerivation;
-    const leg = makeFormSearch({ query: MARKERS_QUERY, formPalace: palace, deriveSkeleton });
-    const out = await leg({ nResults: 5 });
-    expect(out).toHaveLength(1);
-    expect(queryCalls).toHaveLength(1);
-    expect(filterCalls).toHaveLength(0);
-    expect(queryCalls[0]!.basis.dimension).toBe(12);
-    // The FULL functor: the structural (graph) plane rides the query vector — NEVER the truncated [].
-    expect(queryCalls[0]!.skeleton.graph.length).toBeGreaterThan(0);
-  });
-
-  test("the VM derive resolves null (VM cold/unavailable, no move-form) → keyword DEFER → [] (content-only)", async () => {
-    const queryCalls: unknown[] = [];
-    const palace: FormSearchPalace = {
-      async query(i) { queryCalls.push(i); return [formMatch(SHA_B)]; },
-      async filter() { return []; },
-    };
-    const deriveSkeleton = async (_q: string) => null;
-    const leg = makeFormSearch({ query: MARKERS_QUERY, formPalace: palace, deriveSkeleton });
-    expect(await leg({ nResults: 5 })).toEqual([]);
-    expect(queryCalls).toHaveLength(0);
-  });
-
-  test("a markers query with NO deriveSkeleton wired → keyword DEFER → [] (graceful, no shadow derive)", async () => {
-    const palace: FormSearchPalace = {
-      async query() { return [formMatch(SHA_B)]; },
-      async filter() { return []; },
-    };
-    const leg = makeFormSearch({ query: MARKERS_QUERY, formPalace: palace });
-    expect(await leg({ nResults: 5 })).toEqual([]);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// P6 — the PARAGRAPH-SCALE aperture (the basin-peak knob)
-// ---------------------------------------------------------------------------
 
 describe("resolveApertureGrain — band names / numbers → a 0..20 center", () => {
   test("the paragraph band resolves to PARAGRAPH_APERTURE (10)", () => {
@@ -391,38 +245,6 @@ describe("weightByAperture — re-weights a fused ranking toward paragraph grain
   test("reads the content hit's lar_aperture when the form side has none", () => {
     const out = weightByAperture([mgHit(SHA_A, 0.02, { larAperture: 10 }), mgHit(SHA_C, 0.02, { larAperture: 0 })], PARAGRAPH_APERTURE);
     expect(out[0]!.verbatimSha).toBe(SHA_A);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// the wired recall — makeFormSearch × multiGraphRecall
-// ---------------------------------------------------------------------------
-
-describe("multiGraphRecall × makeFormSearch — the wired recall", () => {
-  test("a bearing query fuses content + the bearing-filtered form leg", async () => {
-    const palace: FormSearchPalace = { async filter() { return [formMatch(SHA_B)]; }, async query() { return []; } };
-    const deps: MultiGraphRecallDeps = {
-      async contentSearch(args) { return { query: args.query, results: [contentHit(SHA_A), contentHit(SHA_B)] }; },
-      formSearch: makeFormSearch({ query: "lar:///breach.watch.fires", formPalace: palace }),
-    };
-    const res = await multiGraphRecall(deps, { query: "lar:///breach.watch.fires" });
-    expect(res.counts["content"]).toBe(2);
-    expect(res.counts["form"]).toBe(1);
-    expect(res.results[0]!.verbatimSha).toBe(SHA_B);
-    expect(res.results[0]!.presentIn).toEqual(["content", "form"]);
-  });
-
-  test("a keyword-only query degrades to content-leaning WITHOUT error", async () => {
-    const palace: FormSearchPalace = { async filter() { return []; }, async query() { return []; } };
-    const deps: MultiGraphRecallDeps = {
-      async contentSearch(args) { return { query: args.query, results: [contentHit(SHA_A)] }; },
-      formSearch: makeFormSearch({ query: "plain keywords here", formPalace: palace }),
-    };
-    const res = await multiGraphRecall(deps, { query: "plain keywords here" });
-    expect(res.counts["form"]).toBe(0);
-    expect(res.counts["content"]).toBe(1);
-    expect(res.results).toHaveLength(1);
-    expect(res.results[0]!.presentIn).toEqual(["content"]);
   });
 });
 

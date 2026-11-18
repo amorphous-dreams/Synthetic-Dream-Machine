@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/ux-polish/` — 4 record(s) here, 4 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/ux-polish/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/ux-polish/`
+
+The scratch planning records of `.lares-scratch/ux-polish/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 4 record(s) stand here and 4 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[workshop|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[luna-w1|lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/luna-w1]] | plan | 2026-11-09 | `luna-w1.md` |
+| [[luna-w2|lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/luna-w2]] | plan | 2026-11-09 | `luna-w2.md` |
+| [[w2-brief|lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/w2-brief]] | brief | 2026-11-09 | `w2-brief.md` |
+| [[w2-handback|lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/w2-handback]] | hand-back | 2026-11-09 | `w2-handback.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZJa_P6mnjILmCHrbVW5uC_vrmMj1Pn2lFiKcJTatuGk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

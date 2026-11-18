@@ -113,10 +113,10 @@ export function runBoundaryResidualFlow(
   const signalScale = cnt > 0 ? Math.sqrt(sumSq / cnt) : 1;
   const noiseFloor = relativeFloor(1e-300, signalScale * signalScale, 1e-18);
   // The ONE dial: α feeds the null, basinRadius feeds the mint — one scalar, every threshold reads it.
-  // OPEN RULING (α vs α_node — Sprint-0 aftermath): controlLimit reads the PER-FRAME α (dial.alpha), so the
+  // OPEN RULING (α vs α_node): controlLimit reads the PER-FRAME α (dial.alpha), so the
   // cross-plane AND refracts the BIRTH-level rate to ≈ α^k — CONSERVATIVE against the dial's stated meaning
-  // ("one false SINK per N frames"). The dial exposes the birth-matched α_node = ARL₀^(−1/k) for the fix, but
-  // wiring it now would set the per-node gate by FIAT on an UNMEASURED assumption (independent planes). The
+  // ("one false SINK per N frames"). The dial exposes the birth-matched α_node = ARL₀^(−1/k) as the alternative, but
+  // wiring it would set the per-node gate by FIAT on an UNMEASURED assumption (independent planes). The
   // planes correlate + the accretion barrier attenuates, so the TRUE birth rate sits between α^k and α — only
   // the deferred shuffle-null can measure which field lands ARL₀. Until then: α (conservative), witnessed at
   // the node level (arl-dial.test T3). Do NOT swap to α_node before the shuffle-null witnesses the birth rate.

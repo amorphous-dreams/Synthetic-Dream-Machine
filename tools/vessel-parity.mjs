@@ -73,9 +73,9 @@ const ROSTER = [
     why: "the shared-doc materialisation both vessel doors perform at open.",
   },
   {
-    symbol: "registerCrossroadsInOracle",
+    symbol: "registerCrossroadsPointer",
     pkg: "@lararium/mesh",
-    why: "the crossroads announce both shores make to the oracle they dial.",
+    why: "the crossroads pointer both shores write into their own catalog for the Nexus they dial.",
   },
   {
     symbol: "vesselDyads",
@@ -96,6 +96,16 @@ const ROSTER = [
     symbol: "assemblePersonaGroupRing",
     pkg: "@lararium/keyhive",
     why: "the ONE PersonaGroup identity-slot ring assembly. Both shores call it and only the grant path's proof source differs: the node reads the key its inbound gate proved, a leaf reads the gate key its outbound socket proved by a signed verdict. Both read the device key a sibling proved over the sibling session by the ring's own sibling path, which stands the sibling gate: the face's own planes and the public boards, never the @daemon, never another face's planes. Every leaf runs it: a face of an operator's PersonaGroup where a listening vessel exists, a single user device, and one device of a user-caps-only fleet where no vessel listens (lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy).",
+  },
+  {
+    symbol: "wireIdentityOf",
+    pkg: "@lararium/mesh",
+    why: "the wire identity a vessel stands its Repo on: the store under the worn face's scope, a peer id minted for the composition, and the seat of every wire leg. A shore without it presents one store id under every face (lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/faces-sit-flat).",
+  },
+  {
+    symbol: "seatDialLeg",
+    pkg: "@lararium/mesh",
+    why: "the ONE seat of a dial's leg: the adapter a vessel dials a hearth with presents the alias of its (face, Nexus) and rests the hearth's store id under that pair's scope. A shore that joins its dial bare presents one store id at every Nexus its face dials (lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/faces-sit-flat).",
   },
   {
     symbol: "standSiblingChannel",

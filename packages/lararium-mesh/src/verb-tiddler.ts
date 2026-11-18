@@ -8,18 +8,18 @@
  *                         Automerge. Tombstoned by the dispatcher after the
  *                         outcome lands. Local intent lives here, not shared truth.
  *
- *   bags/daemon/outcomes/<id>  DURABLE outcome tiddler in the Automerge-backed
+ *   bags/control/outcomes/<id>  DURABLE outcome tiddler in the Automerge-backed
  *                         daemon bag. Written by the dispatcher on done/error.
  *                         Syncs to all vessels. CRDT convergence here IS the result.
  *                         Shared aftermath lives here.
  *
  * Verb invocation paths:
  *   Local (in-process):   placeVerb() → wiki.addTiddler() → TW5 change event
- *                         → dispatcher runs → outcome to bags/daemon/outcomes/
- *   Remote (CLI/vessels): vessel writes bags/daemon/summons/<id> to Automerge →
+ *                         → dispatcher runs → outcome to bags/control/outcomes/
+ *   Remote (CLI/vessels): vessel writes bags/control/summons/<id> to Automerge →
  *                         IslandAdaptor flows it into TW5 wiki →
  *                         dispatcher translates to volatile invocation → processes →
- *                         outcome to bags/daemon/outcomes/
+ *                         outcome to bags/control/outcomes/
  *
  * Batch contract:
  *   One invocation tiddler may carry N targets (tiddler URIs, file paths, edge resource
@@ -44,7 +44,7 @@
  */
 
 import {
-  DAEMON_BAG_ID, VOLATILE_VM_PREFIX,
+  CONTROL_HOME_ID, VOLATILE_VM_PREFIX,
   LARES_VERB_EVENT_TAG, LARES_VERB_TAG,
 } from "./lar-uris.js";
 import { sha256Hex, canonicalJsonBytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
@@ -56,12 +56,12 @@ import type { LarTiddlerRecord } from "./tiddler-store.js";
 /** Volatile verb invocation tiddlers — daemon TW5 wiki scratch, never synced. */
 export const VERB_URI_PREFIX = `${VOLATILE_VM_PREFIX}verbs/`;
 
-/** Automerge-backed verb summons — remote vessels write here; dispatcher translates
- *  to volatile invocation and tombstones after pickup. */
-export const SUMMONS_URI_PREFIX = `${DAEMON_BAG_ID}/summons/`;
+/** Automerge-backed verb summons, resting in the vessel's control document (`control-home`); the dispatcher translates
+ *  each to a volatile invocation and tombstones it after pickup. */
+export const SUMMONS_URI_PREFIX = `${CONTROL_HOME_ID}/summons/`;
 
-/** Durable outcome tiddlers — Automerge-backed, sync to all vessels. */
-export const OUTCOME_URI_PREFIX = `${DAEMON_BAG_ID}/outcomes/`;
+/** Durable outcome tiddlers, resting in the vessel's control document (`control-home`), never in a mirrored layer. */
+export const OUTCOME_URI_PREFIX = `${CONTROL_HOME_ID}/outcomes/`;
 
 /** Result map key for single-result (no explicit targets) verbs. */
 export const VERB_RESULT_KEY = "summary" as const;
@@ -114,37 +114,24 @@ export async function taskContentId(
 // outcome tiddler, which the channel observes. One writer per field, so no two
 // processes race a `state` transition.
 
-/** Durable per-request fact tiddlers — `<daemon bag>/receipts/<requestId>`. */
-export const RECEIPT_FACT_URI_PREFIX = `${DAEMON_BAG_ID}/receipts/`;
+/** Durable per-request fact tiddlers — `<control home>/receipts/<requestId>`, in the vessel's control document. */
+export const RECEIPT_FACT_URI_PREFIX = `${CONTROL_HOME_ID}/receipts/`;
 
-/** Durable ward audits: `<daemon bag>/ledger/ward/<id>`. */
-export const WARD_AUDIT_URI_PREFIX = `${DAEMON_BAG_ID}/ledger/ward/`;
+/** Durable ward audits: `<control home>/ledger/ward/<id>`, in the vessel's control document. */
+export const WARD_AUDIT_URI_PREFIX = `${CONTROL_HOME_ID}/ledger/ward/`;
 
-/**
- * True for a title whose record never projects to disk: a receipt fact, a verb summons, a ward audit.
- * The makers stamp such a record `disk-projection: "no"`; no file for it ever comes from the projector,
- * so a file standing at its address counts as foreign.
- */
-export function neverProjects(title: string): boolean {
-  return title.startsWith(RECEIPT_FACT_URI_PREFIX)
-    || title.startsWith(SUMMONS_URI_PREFIX)
-    || title.startsWith(WARD_AUDIT_URI_PREFIX);
-}
+/** The durable mailbox: `<control home>/mailbox/<wiki>/<id>`, in the vessel's control document. */
+export const MAILBOX_URI_PREFIX = `${CONTROL_HOME_ID}/mailbox/`;
 
-/** A file whose ingest would write a record that never projects to disk. */
-export class NeverProjectedPathRefusal extends Error {
-  override readonly name = "NeverProjectedPathRefusal";
-  readonly code = "never-projected-path";
-
-  constructor(readonly path: string, readonly title: string) {
-    super(`${path} (${title}): records at this address never project to disk, so a file here never ingests; remove the file`);
-  }
-}
+/** The effect index: `<control home>/effects/<effectKey>`, in the vessel's control document. */
+export const EFFECT_URI_PREFIX = `${CONTROL_HOME_ID}/effects/`;
 
 export type ReceiptFactState = "committed" | "interrupted" | "abandoned" | "done" | "error" | "evicted";
 
 interface ReceiptFactCommon {
   readonly requestId:  string;
+  readonly face?: string;
+  readonly action?: string;
   readonly effectKey?: string;
   /** Set once the fact reaches a terminal outcome; survives the `evicted` transition
    *  (eviction keeps digest, effect key and terminal — only the full outcome drops). */
@@ -158,7 +145,7 @@ interface ReceiptFactCommon {
  *  which compares no content claim at all (an EOF-drop still records the invocation's
  *  own digest before refusing by state). The ring carries that absence into `evicted`.
  *  Every other state names a claim this ledger arbitrated or observed, so its digest is
- *  required, never a legacy-shaped optional absence (early alpha, no shim). */
+ *  required, never an optional absence. */
 export interface ReceiptFactAbandoned extends ReceiptFactCommon {
   readonly state:       "abandoned";
   readonly inputDigest?: string;
@@ -222,10 +209,10 @@ export function buildReceiptFact(fact: ReceiptFact): LarTiddlerRecord {
       "request-id":   fact.requestId,
       state:          fact.state,
       seq:            String(fact.seq),
-      // Control-plane record: it follows the working layer and never projects to a disk mirror.
-      "disk-projection": "no",
       ...(fact.inputDigest !== undefined && { "input-digest": fact.inputDigest }),
       ...(fact.effectKey   !== undefined && { "effect-key":   fact.effectKey }),
+      ...(fact.face !== undefined && { face: fact.face }),
+      ...(fact.action !== undefined && { action: fact.action }),
       ...(fact.terminal    !== undefined && { terminal:       fact.terminal }),
       ...("bootEpoch" in fact && fact.bootEpoch !== undefined && { "boot-epoch":   String(fact.bootEpoch) }),
       ...("outcomeBytes" in fact && { "outcome-bytes": String(fact.outcomeBytes) }),
@@ -251,12 +238,17 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
   if (!requestId || Number.isNaN(seq) || !isReceiptFactState(state)) return null;
 
   const effectKey = typeof fields["effect-key"] === "string" ? fields["effect-key"] : undefined;
+  if ((fields["face"] !== undefined && (typeof fields["face"] !== "string" || !fields["face"])) ||
+      (fields["action"] !== undefined && (typeof fields["action"] !== "string" || !fields["action"]))) return null;
+  const face = fields["face"] as string | undefined;
+  const action = fields["action"] as string | undefined;
+  const identity = { ...(face !== undefined && { face }), ...(action !== undefined && { action }) };
   const terminalRaw = fields["terminal"];
   const terminal = terminalRaw === "done" || terminalRaw === "error" ? terminalRaw : undefined;
 
   if (state === "abandoned") {
     return {
-      requestId, state, seq,
+      requestId, state, seq, ...identity,
       ...(inputDigest !== undefined && { inputDigest }),
       ...(effectKey   !== undefined && { effectKey }),
       ...(terminal    !== undefined && { terminal }),
@@ -267,17 +259,17 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
   if (state === "evicted" && inputDigest === undefined) {
     // A cancel names no content: any `terminal` or `effect-key` field beside it, sound or not, reads torn.
     if (fields["terminal"] !== undefined || fields["effect-key"] !== undefined) return null;
-    return { requestId, state, seq };
+    return { requestId, state, seq, ...identity };
   }
   // Every other state claims a digest — a committed/done/error fact with none on the wire reads as torn,
-  // never as a legacy-shaped "unverifiable" absence.
+  // never as an "unverifiable" absence.
   if (inputDigest === undefined) return null;
   const epochRaw = fields["boot-epoch"];
   const epoch = typeof epochRaw === "string" && /^\d+$/.test(epochRaw) ? Number.parseInt(epochRaw, 10)
               : typeof epochRaw === "number" && Number.isInteger(epochRaw) && epochRaw >= 0 ? epochRaw
               : undefined;
-  const common: { requestId: string; seq: number; inputDigest: string; effectKey?: string; terminal?: "done" | "error" } = {
-    requestId, seq, inputDigest,
+  const common: { requestId: string; seq: number; inputDigest: string; face?: string; action?: string; effectKey?: string; terminal?: "done" | "error" } = {
+    requestId, seq, inputDigest, ...identity,
     ...(effectKey !== undefined && { effectKey }),
     ...(terminal  !== undefined && { terminal }),
   };
@@ -313,14 +305,14 @@ export function outcomeBytesOf(fields: Readonly<Record<string, unknown>>): numbe
  * (digest-on-outcome: stamped onto the outcome tiddler so a later reader can re-check it
  * without re-walking the fact). Distinct from `taskContentId` (the content-addressed task
  * surface, keyed by {subject,command,args,nonce}) — this digest keys the CURRENT running
- * verb/summons/outcome path's request identity, {verb,args,requestedBy,effectKey}.
+ * verb/summons/outcome path's request identity, {verb,args,face,effectKey}.
  */
 export async function verbInputDigest(
-  parts: { verb: string; args: Readonly<Record<string, unknown>>; requestedBy: string; effectKey?: string },
+  parts: { verb: string; args: Readonly<Record<string, unknown>>; face?: string | undefined; effectKey?: string },
   provider: DigestProvider = defaultCryptoProvider,
 ): Promise<string> {
   const canonical = {
-    verb: parts.verb, args: parts.args, requestedBy: parts.requestedBy,
+    verb: parts.verb, args: parts.args, face: parts.face ?? "",
     effectKey: parts.effectKey ?? "",
   };
   return formatDigest("sha256", await sha256Hex(canonicalJsonBytes(canonical), provider));
@@ -387,6 +379,7 @@ export interface Verb {
   readonly batchMode:   BatchMode;
   readonly status:      VerbStatus;
   readonly requestedBy: string;
+  readonly face?:      string;
   readonly requestedAt: string;
   /** Source device instance URI — Verse `fromUri` (papalohe edge origin). */
   readonly fromUri?:    string;
@@ -422,9 +415,9 @@ export interface OutcomeRecord extends LarTiddlerRecord {
   readonly tiddler: {
     readonly title:          string;
     readonly "request-id":   string;
+    readonly face?: string;
     readonly verb:           string;
     readonly status:         "done" | "error";
-    readonly "requested-by": string;
     readonly "completed-at": string;
     readonly cause:          string;
     readonly tags:           string;
@@ -439,11 +432,12 @@ export interface OutcomeRecord extends LarTiddlerRecord {
   };
 }
 
+/** AN OUTCOME NAMES NO REQUESTER (K20): the volatile invocation carries who asked; the daemon document keeps the verb, its status and its result, so no synced outcome pairs a requester with what it answered. */
 export function concludeVerb(opts: {
   requestId:     string;
   verb:          string;
+  face?: string;
   status:        "done" | "error";
-  requestedBy:   string;
   cause:         string;
   batchMode:     BatchMode;
   results?:      Record<string, VerbTargetResult>;
@@ -469,11 +463,8 @@ export function concludeVerb(opts: {
     "request-id":    opts.requestId,
     verb:            opts.verb,
     status:          opts.status,
-    "requested-by":  opts.requestedBy,
     "completed-at":  new Date().toISOString(),
     cause:           opts.cause,
-    // Bookkeeping of the control bag: no mirror writes a file for an outcome, whatever layer holds it.
-    "disk-projection": "no",
   };
   return {
     tiddler: {
@@ -481,6 +472,7 @@ export function concludeVerb(opts: {
       results: JSON.stringify(opts.results ?? {}),
       ...(opts.errorMessage !== undefined && { "error-message": opts.errorMessage }),
       ...(opts.inputDigest  !== undefined && { "input-digest":  opts.inputDigest }),
+      ...(opts.face !== undefined && { face: opts.face }),
       ...(opts.effectKey    !== undefined && { "effect-key":    opts.effectKey }),
       ...(opts.effectOf     !== undefined && { "effect-of":     opts.effectOf }),
       ...(opts.refusal      !== undefined && { refusal:         opts.refusal }),
@@ -518,6 +510,7 @@ export function buildVerb(opts: {
   verb:        string;
   args:        Record<string, unknown>;
   requestedBy: string;
+  face?:       string;
   targets?:    string[];
   batchMode?:  BatchMode;
   requestId?:  string;
@@ -539,6 +532,7 @@ export function buildVerb(opts: {
     status:          "pending",
     "requested-by":  opts.requestedBy,
     "requested-at":  new Date().toISOString(),
+    ...(opts.face       !== undefined && { face: opts.face }),
     ...(opts.fromUri    !== undefined && { "from-uri":   opts.fromUri }),
     ...(opts.listenable !== undefined && { listenable:   opts.listenable }),
     ...(opts.aud        !== undefined && { aud:          opts.aud }),
@@ -572,8 +566,6 @@ export function summon(opts: {
       "batch-mode":    opts.batchMode ?? "best-effort",
       "request-id":    requestId,
       status:          "pending",
-      // Control-plane record: it follows the working layer and never projects to a disk mirror.
-      "disk-projection": "no",
       "requested-by":  opts.requestedBy,
       "requested-at":  new Date().toISOString(),
       ...(opts.fromUri    !== undefined && { "from-uri":   opts.fromUri }),
@@ -621,6 +613,7 @@ export function parseVerb(fields: Record<string, unknown>): Verb | null {
   const listenable = typeof fields["listenable"] === "string" ? fields["listenable"] : undefined;
   const aud        = typeof fields["aud"]        === "string" ? fields["aud"]        : undefined;
   const effectKey  = typeof fields["effect-key"] === "string" ? fields["effect-key"] : undefined;
+  const face       = typeof fields["face"] === "string" ? fields["face"] : undefined;
 
   return {
     requestId, title, action: verb, args, targets, batchMode, status, requestedBy, requestedAt,
@@ -628,6 +621,7 @@ export function parseVerb(fields: Record<string, unknown>): Verb | null {
     ...(listenable !== undefined && { listenable }),
     ...(aud        !== undefined && { aud }),
     ...(effectKey  !== undefined && { effectKey }),
+    ...(face       !== undefined && { face }),
   };
 }
 

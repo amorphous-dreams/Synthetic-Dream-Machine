@@ -1,0 +1,68 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/seats/sol-4/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/seats/sol-4/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-4/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): Step 4 edits stand in two test files. Both requested package typechecks passed. The additional typecheck covering both changed tests passed. git diff &#45;-check passed. The retained step 1–4 working tree still carries 70 changed/untracked files, all uncommitted.
+
+Red 1 — session content
+
+The fixture handed VesselIslandPool an empty capability record and a constant world audience. After step 3 removed filesystem bypass reads, nodeContentReader correctly refused that absent byte door (packages/lararium-node/src/vessel-island-pool.ts:33). Production already passes islandCaps from the composed floor and makeIslandAudienceReader from the verified face (packages/lararium-node/src/open-node-vessel.ts:2356 and :4117). The session view already checks its own grant before calling that record (packages/lararium-mesh/src/vessel-island-pool-core.ts:1083). Therefore this red calls for fixture composition repair; no production fallback should restore direct filesystem access.
+
+Cure: packages/lararium-node/tests/surface-mount-vessel-path.test.ts:94 now places grammar/core metadata in the oracle as the fixture's comment promised. Line 140 composes islandFloorStack over a held-CID lookup, the real tier predicate, and the filesystem resolver. Line 157 derives the audience through makeIslandAudienceReader and a held face. The pool reads the composed record. Disposal now drops the floor after its islands.
+
+The original grammar success assertion and offered/traversal refusal assertions remain unchanged at lines 287, 289 and 290. New controls at line 283 prove the same grammar CID refuses world before any resolver call, succeeds for the matching session face as in-process, never reaches the resolver after a view refusal, refuses a mismatched face, and still reads through the surviving second session after the first closes. The existing raw-capability isolation test remains intact.
+
+Red 2 — refusal order
+
+The initial undeclared CID names no document, so islandFloorStack refuses declared-tier-unresolved at packages/lararium-mesh/src/lar-vessel.ts:73 without consulting a registry. The later mutable-only CID names the newly held oracle document through its blobs metadata; it therefore enters the per-document predicate. resolveTierForDoc reads structuralFloorFor before declarations (packages/lararium-mesh/src/cap-tier.ts:275), and structuralFloorFor reads secrets first (:192). The absent registry then correctly refuses secrets-registry-unread. The earlier test incorrectly expected declared-tier-unresolved for that different state.
+
+Cure: packages/lararium-mesh/tests/p27-cas-floor.test.ts:82 explicitly checks the empty reference lookup and proves no registry read for undeclared CIDs. Line 88 checks the mutable-only CID's oracle reference, and line 91 expects SecretsRegistryRefusal / secrets-registry-unread. Line 94 makes the registry readable with an initialized-empty row; the same CID then refuses declared-tier-unresolved because the document still lacks a bag declaration. Every refusal leaves the byte resolver untouched. Product order remains unchanged.
+
+Forks decided
+
+* Retain the gated record and host-held session audience; repair the incomplete fixture instead of restoring the old filesystem shortcut. Production wiring already carries these gates in the required order.
+* Refuse no-reference CIDs before a per-document reading. For referenced documents, retain secrets-floor-before-declaration ordering. A mutable reference never grants publication, and an unread registry never silently answers false.
+* Preserve all original session content assertions. The traversal CID continues to refuse beyond-facets.
+
+Checks completed, exit 0
+
+* pnpm exec tsc -p packages/lararium-node/tsconfig.typecheck.json &#45;-noEmit
+* pnpm exec tsc -p packages/lararium-browser/tsconfig.typecheck.json &#45;-noEmit
+* pnpm exec tsc -p /home/joshu/.local/state/lares-broker/seats/seat-r48Sow/tsconfig.changed-tests.json &#45;-noEmit
+* git diff &#45;-check
+
+The extra changed-test typecheck initially caught my readonly blobs assignment; the final fixture uses Object.assign in the Automerge change callback, and its rerun passed. TMPDIR/TMPPREFIX stayed inside this seat; typechecks read stdin from /dev/null.
+
+Conductor reruns, each file alone after the conductor's fresh build
+
+* packages/lararium-node/tests/surface-mount-vessel-path.test.ts — lead runs; real worker/island fixture.
+* packages/lararium-mesh/tests/p27-cas-floor.test.ts — lead runs; refusal-order red and controls.
+
+No runtime test, build, browser runner, vessel, socket, daemon, network request, git write or commit ran in this seat. No stale-dist runtime verdict was read. Runtime red/green verdicts remain with the conductor.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y-rSyW2N51p03aYzak5vjnyi7pVwDL2qB2CV51_jzJ4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

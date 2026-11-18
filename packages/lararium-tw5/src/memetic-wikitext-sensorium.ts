@@ -143,7 +143,7 @@ export interface AssociationEdge {
    */
   readonly floatDock: boolean;
   /**
-   * DEFAULT-FILL — the WFC repair (Goldsmith Proposal 4 / Harmonic Phonology). This edge was ADDED to
+   * DEFAULT-FILL — the WFC repair (Goldsmith Proposal 4 / Harmonic Phonology). This edge stands to
    * satisfy the Well-Formedness Condition: an unmarked prose anchor default-fills the ambient register by
    * spreading the nearest in-domain steer onto it (never a rejection). `false` = a primary read edge.
    */
@@ -166,9 +166,7 @@ export function sourceCidOf(text: string): string {
       "[memetic-wikitext-sensorium] the VM sandbox carries no TextEncoder — pass an explicit sourceCid to stratify()",
     );
   }
-  // Canonical algorithm-tagged form (`sha256:<hex>`, agile-digest). The reader side
-  // (`parseDigest`/`digestsEqual`) also accepts the `sha256-<hex>` SRI dash
-  // form, so a stored dash-tagged pin keeps comparing equal.
+  // Algorithm-tagged form (`sha256:<hex>`, agile-digest); `parseDigest` reads it back.
   return formatDigest("sha256", sha256HexSync(text));
 }
 
@@ -684,7 +682,7 @@ function ffzKey(cell: FfzCell, band?: number): string {
  * JOIN two FFZ-addressed cell streams into aligned ticks — the ONLY sound cross-text alignment: a formal
  * cell pairs with an informal cell IFF they SHARE an FFZ address (the shared grain). Formal drives order;
  * a formal cell with no informal match at its address emits NO tick. No shared address ⇒ no ticks ⇒ the
- * runtime warms and emits nothing (the honest no-coupling — never the ordinal fabrication that was here).
+ * runtime warms and emits nothing (the honest no-coupling — never an ordinal fabrication).
  */
 export function ffzAlignTicks(formal: readonly FfzCell[], informal: readonly FfzCell[], band?: number): AlignedTick[] {
   const imap = new Map<string, readonly number[]>();

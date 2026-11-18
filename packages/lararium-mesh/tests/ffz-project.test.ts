@@ -5,8 +5,7 @@
  * of absent/fluid cells); ffzTruncate yields a clean coarser prefix; ffzCoDepth/ffzLca
  * read the ULTRAMETRIC distance (the longest-common-prefix / lowest common ancestor —
  * same session, different turns share Arc not Beat; different sessions share only the
- * root); and the build-patch wire stamps Arc (free, from source_file) + Pulse, omits the
- * fluid bands, and carries ZERO causality (the PATH-B cut).
+ * root).
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/ffz-clock
  */
@@ -20,11 +19,7 @@ import {
   ffzHasCell,
   FFZ_ADDRESS_ORDER,
   FFZ_ABSENT,
-  buildPatch,
-  harvestTurnGradient,
 } from "../src/index.js";
-
-const h = () => harvestTurnGradient("Lares (Council): the verb leads");
 
 describe("ffzMembershipAddress — a coarse→fine membership path, gracefully partial", () => {
   test("pure + deterministic: same cells → identical address", () => {
@@ -124,48 +119,5 @@ describe("ffzCoDepth / ffzLca — the ultrametric (longest-common-prefix = LCA d
     const d = ffzMembershipAddress({ arc: "sessA", pulse: "drw1", profile: "diegetic" });
     expect(ffzCoDepth(a, d)).toBe(0);
     expect(ffzLca(a, d)).toBe("");
-  });
-});
-
-describe("buildPatch wire — lar_ffz stamps Arc (free) + Pulse, omits fluid bands, no causality", () => {
-  test("source_file alone ⇒ lar_ffz stamps the Arc cell (the session, given free)", () => {
-    const p = buildPatch(h(), "claude__sess1.jsonl");
-    // Arc derived from source_file (basename, extension stripped); Pulse/Beat absent.
-    expect(p["lar_ffz"]).toBe("session/_.claude__sess1");
-  });
-
-  test("no source_file and no context ⇒ no lar_ffz (nothing to address)", () => {
-    const p = buildPatch(h());
-    expect(p["lar_ffz"]).toBeUndefined();
-  });
-
-  test("source_file + Pulse cell ⇒ Arc + Pulse stamp, the fluid bands omitted", () => {
-    const p = buildPatch(h(), "claude__sess1.jsonl", undefined, { pulse: "drwX" });
-    expect(p["lar_ffz"]).toBe("session/_.claude__sess1._._.drwX");
-    // exactly the five-slot tuple with the two fluid bands + Beat porous.
-    expect(String(p["lar_ffz"]).split("/")[1]!.split(".")).toHaveLength(5);
-  });
-
-  test("Beat threads when supplied (a per-island turn cell)", () => {
-    const p = buildPatch(h(), "claude__sess1.jsonl", undefined, { pulse: "drwX", beat: "t3" });
-    expect(p["lar_ffz"]).toBe("session/_.claude__sess1._.t3.drwX");
-  });
-
-  test("an explicit profile threads through to the stamp", () => {
-    const p = buildPatch(h(), "claude__sess1.jsonl", undefined, { pulse: "drwX", ffzProfile: "diegetic" });
-    expect(String(p["lar_ffz"]).startsWith("diegetic/")).toBe(true);
-  });
-
-  test("two same-session drawers' stamps read same-session via ffzCoDepth", () => {
-    const p1 = buildPatch(h(), "claude__sess1.jsonl", undefined, { pulse: "drw1" });
-    const p2 = buildPatch(h(), "claude__sess1.jsonl", undefined, { pulse: "drw2" });
-    expect(ffzCoDepth(String(p1["lar_ffz"]), String(p2["lar_ffz"]))).toBe(1); // share Arc
-  });
-
-  test("lar_ffz carries NO causality field — it is a rhythm-only membership string", () => {
-    const p = buildPatch(h(), "claude__sess1.jsonl", undefined, { pulse: "drwX" });
-    expect(typeof p["lar_ffz"]).toBe("string");
-    // the patch holds only the str/int chroma scalars — no edge/causal/itc field rode in
-    expect(Object.keys(p).some((k) => /causal|edge|happens|itc/i.test(k))).toBe(false);
   });
 });

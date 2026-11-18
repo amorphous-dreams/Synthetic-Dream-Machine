@@ -5,8 +5,8 @@
  * plugin build can't bundle (wasm). The IN-VM worldline reads (the sovereign-worker home of the
  * permainan substrate) need only the pure pieces — the ITC registry + compare, the Turn→Trajectory
  * functor, the null shuffle, and the edge-DAG projection — so the in-VM module imports from this
- * subpath (`@lararium/mesh/worldline`), the same pure-subpath idiom `query-derive-vm` uses for
- * `@lararium/mesh/harvest`.
+ * subpath (`@lararium/mesh/worldline`), the same pure-subpath idiom `@lararium/mesh/harvest` and
+ * `@lararium/mesh/lar-uris` carry.
  *
  * Everything re-exported here stays Automerge-free (worldline-clock / -edge / -trajectory /
  * -inject-detect + the itc + ffz-clock primitives they ride). The libs themselves are UNCHANGED —

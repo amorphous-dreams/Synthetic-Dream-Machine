@@ -3,11 +3,13 @@
 // job view of the newest whole run. No network, no `gh`: `readVerdict` takes the JSON as data.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, chmodSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { MERGE_JOB, driverOf, exitOf, failing, heldOutDrivers, heldOutUnreadable, readHeldOut, readVerdict, render, renderHeldOut } from "./ci-verdict.mjs";
+import { DRIVERS } from "./held-out-cells.mjs";
+import { MERGE_JOB, classifyFailure, driverOf, exitOf, failing, heldOutBranchPatterns, heldOutDrivers, heldOutMeasures, heldOutUnreadable, jobMinutes, main, readHeldOut, readVerdict, render, renderHeldOut, renderJobMinutes } from "./ci-verdict.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const { runs, views, heldOutRuns, heldOutViews } = JSON.parse(readFileSync(join(HERE, "ci-verdict.fixture.json"), "utf8"));
@@ -119,6 +121,7 @@ const unfolded = (over = {}) => ({ jobs: [
   { name: "Held-out · civic", status: "completed", conclusion: "success" },
   { name: "Held-out · crossing", status: "completed", conclusion: "success" },
   { name: "Held-out · herm-mesh", status: "completed", conclusion: "success" },
+  { name: "Held-out · herm-mesh-roll", status: "completed", conclusion: "success" },
   { name: "Held-out · mesh-scenarios-crossing", status: "completed", conclusion: "success" },
   { name: "Held-out · mesh-scenarios-meme", status: "completed", conclusion: "success" },
   { name: "Merge the cells", status: "completed", conclusion: "success" },
@@ -133,6 +136,7 @@ test("CONTROL: the held-out recording holds a whole red run of one job per drive
   assert.equal(driverOf("Held-out · mesh-scenarios-realm-crossing"), "mesh-scenarios");
   assert.equal(driverOf("Held-out · crossing"), "crossing", "the crossing driver never takes the crossing scenario's cell, nor gives its own away");
   assert.equal(driverOf("Held-out · herm-mesh"), "herm-mesh");
+  assert.equal(driverOf("Held-out · herm-mesh-roll"), "herm-mesh-roll", "the roll cell is its own driver, never a herm-mesh scenario");
   assert.equal(driverOf("Held-out · meshless"), null);
   assert.equal(driverOf("Merge the cells"), null);
 });
@@ -143,7 +147,8 @@ test("RED: the recorded held-out run reads red for its own head and names each d
   assert.equal(h.coversHead, true);
   assert.equal(h.behind, 0);
   assert.deepEqual(Object.fromEntries(h.drivers.map((d) => [d.driver, d.result])),
-    { "browser-weld": "failure", civic: "success", crossing: "success", "herm-mesh": "failure", "mesh-scenarios": "success" });
+    // The recorded run predates the roll cell, so that driver answered no job there.
+    { "browser-weld": "failure", civic: "success", crossing: "success", "herm-mesh": "failure", "herm-mesh-roll": "unread", "mesh-scenarios": "success" });
   const text = renderHeldOut(h).join("\n");
   assert.match(text, /^held-out: RED for cb8a1a9a8 — run 38491127984 reads failure: browser-weld, herm-mesh failed/);
   assert.match(text, /herm-mesh: failure — red: herm-mesh/);
@@ -211,16 +216,10 @@ test("GREEN: an unfolded run on the head reads green only with every driver gree
   assert.equal(running.state, "unread");
   assert.equal(running.drivers.find((d) => d.driver === "civic").result, "running");
   assert.equal(readHeldOut({ runs: heldRun({ conclusion: "cancelled" }), head, views: { 7: unfolded({ "Held-out · civic": { conclusion: "cancelled" } }) } }).state, "unread");
-  assert.deepEqual(heldOutDrivers(undefined).rows.map((r) => r.result), ["unread", "unread", "unread", "unread", "unread"]);
+  assert.deepEqual(heldOutDrivers(undefined).rows.map((r) => r.result), DRIVERS.map(() => "unread"));
 });
 
 test("the third reading says and never blocks: the door's exit code follows the CI reading alone", () => {
-  const src = readFileSync(join(HERE, "ci-verdict.mjs"), "utf8");
-  assert.match(src, /return exitOf\(v\.state\);/);
-  assert.doesNotMatch(src, /exitOf\(heldOut/);
-  assert.match(src, /\.\.\.render\(v\), \.\.\.renderHeldOut\(heldOut\)/, "the door stopped printing the third reading");
-  // A held-out lookup that fails reads unread and leaves the exit code where the CI reading put it.
-  assert.match(src, /\} catch \(err\) \{\n\s+heldOut = heldOutUnreadable\(head, /);
   const dark = heldOutUnreadable("0".repeat(40), "gh: no such workflow");
   assert.equal(dark.state, "unread");
   assert.match(renderHeldOut(dark).join("\n"), /held-out: UNREAD for 000000000 — the held-out runs could not be read \(gh: no such workflow\)[\s\S]*UNREAD never reads as green/);
@@ -233,13 +232,41 @@ test("the door answers exit 3 when it cannot read, never 0", () => {
   assert.match(r.stderr, /ci-verdict: could not read/);
 });
 
+test("a detached checkout refuses an unnamed branch before reading runs; an attached checkout reads its branch", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ci-verdict-branch-"));
+  const git = join(dir, "git");
+  const gh = join(dir, "gh");
+  const queried = join(dir, "queried");
+  try {
+    writeFileSync(git, '#!/bin/sh\nif [ "$2" = "--abbrev-ref" ]; then printf "%s\\n" "$TEST_BRANCH"; else printf "%040d\\n" 0; fi\n');
+    writeFileSync(gh, '#!/bin/sh\nprintf "%s\\n" "$*" >> "$TEST_QUERIED"\nprintf "[]\\n"\n');
+    chmodSync(git, 0o755);
+    chmodSync(gh, 0o755);
+    const run = (branch) => spawnSync(process.execPath, [join(HERE, "ci-verdict.mjs")], {
+      encoding: "utf8", env: { ...process.env, PATH: `${dir}:${process.env.PATH}`, TEST_BRANCH: branch, TEST_QUERIED: queried },
+    });
+    const detached = run("HEAD");
+    assert.equal(detached.status, 3, detached.stderr);
+    assert.match(detached.stderr, /detached HEAD: name --branch/);
+    assert.doesNotMatch(detached.stdout, /UNREAD/);
+    assert.equal(existsSync(queried), false, "a detached default must not ask GitHub about branch HEAD");
+
+    const attached = run("topic/ci-reader");
+    assert.equal(attached.status, 2, attached.stderr);
+    assert.match(attached.stdout, /ci-verdict: branch topic\/ci-reader/);
+    assert.match(readFileSync(queried, "utf8"), /run list --branch topic\/ci-reader --workflow CI/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("the shard lane's push door ends on the line that names this reader", async () => {
   const { HALF_VERDICT } = await import("./e2e-shards.mjs");
-  assert.match(HALF_VERDICT, /node tools\/ci-verdict\.mjs --head$/);
+  assert.match(HALF_VERDICT, /node tools\/ci-verdict\.mjs --branch$/);
   const src = readFileSync(join(HERE, "e2e-shards.mjs"), "utf8");
   const push = src.slice(src.indexOf("async function cliPush("), src.indexOf("\n}\n", src.indexOf("async function cliPush(")));
-  assert.match(push, /console\.log\(`\$\{HALF_VERDICT\} \$\{result\.headSha\.slice\(0, 9\)\}`\)/,
-    "the push door stopped naming the head it pushed (the checkout's head moves while the run goes)");
+  assert.match(push, /console\.log\(`\$\{HALF_VERDICT\} \$\{fullCiBranchOf\(repoRoot, result\.headSha\) \?\? "<the branch this head rides>"\} --head \$\{result\.headSha\.slice\(0, 9\)\}`\)/,
+    "the push door must name the branch whose full run measures the head it pushed, never the ci/ lane");
   assert.match(src, /return \{ ok, runId, headSha, /);
 });
 
@@ -249,7 +276,246 @@ test("the shard lane names a run whose verdict it could not read, and the comman
   const src = readFileSync(join(HERE, "e2e-shards.mjs"), "utf8");
   const watch = src.slice(src.indexOf("const watch = spawnSync("), src.indexOf("function deleteBranch("));
   const { WATCH_INTERVAL_S } = await import("./e2e-shards.mjs");
-  assert.ok(Number(WATCH_INTERVAL_S) >= 30, "a watch that looks more often than every half minute spends the shared API budget");
+  const { POLL_FLOOR_S } = await import("./ci-verdict.mjs");
+  assert.ok(Number(WATCH_INTERVAL_S) >= POLL_FLOOR_S, "a watch that looks more often than the house poll floor spends the shared API budget");
+  assert.equal(WATCH_INTERVAL_S, String(POLL_FLOOR_S), "the watch interval reads the floor, never a literal of its own");
   assert.match(watch, /"run", "watch", String\(runId\), "--exit-status", "--interval", WATCH_INTERVAL_S\]/);
   assert.match(watch, /catch \(err\) \{[\s\S]*throw new Error\(`\$\{unreadVerdict\(runId\)\}/, "a failed read of the run stopped naming the run as unread");
+});
+
+// ── B3: the three-state verdict, --wait, and the job-minutes line ─────────────────────────────────────────────
+const T0 = "2026-10-30T10:00:00Z", T1 = "2026-10-30T10:06:00Z";
+const SHA = "a".repeat(40);
+const mkRun = (o = {}) => ({ databaseId: 11, headSha: SHA, status: "completed", conclusion: "success", createdAt: T0, url: "https://example/run/11", ...o });
+const mkHeld = (o = {}) => mkRun({ databaseId: 22, url: "https://example/run/22", ...o });
+const mkJob = (name, startedAt, completedAt, o = {}) => ({ name, status: "completed", conclusion: "success", startedAt, completedAt, steps: [], ...o });
+const heldGreenView = () => ({ jobs: [...DRIVERS.map((d) => mkJob(`Held-out · ${d.driver}`, T0, T1)), mkJob(MERGE_JOB, T0, T1)] });
+const bad502 = () => Object.assign(new Error("Command failed: gh run list"), { stderr: "HTTP 502: Bad Gateway (https://api.github.com/repos/x/actions/runs)" });
+
+/** A scripted `gh`/`git`: each key's value is data, an Error, or a function of that key's call count (1-based). */
+function fake(table) {
+  const n = {}, calls = [];
+  const sh = (cmd, args) => {
+    calls.push([cmd, ...args]);
+    if (calls.length > 400) throw Object.assign(new Error("runaway vigil"), { stderr: "runaway vigil: the test stopped a wait that never ends" });
+    let key;
+    if (cmd === "git") key = args.includes("--abbrev-ref") ? "branch" : "rev";
+    else if (args[1] === "list") key = `${args[args.indexOf("--workflow") + 1] === "CI" ? "runs" : "heldRuns"}${args.includes("--commit") ? "AtSha" : ""}`;
+    else if (args[0] === "api") key = args[1] === "rate_limit" ? "rateLimit" : "branchApi";
+    else key = `view:${args[2]}`;
+    n[key] = (n[key] ?? 0) + 1;
+    const v = table[key];
+    if (v === undefined) throw Object.assign(new Error(`unscripted ${key}`), { stderr: `no such ${key}` });
+    const r = typeof v === "function" ? v(n[key]) : v;
+    if (r instanceof Error) throw r;
+    return typeof r === "string" ? r : JSON.stringify(r);
+  };
+  return { sh, calls, n };
+}
+const door = async (table, extra = [], opts = {}) => {
+  const f = fake({ rev: SHA, ...table });
+  const out = [], err = [], slept = [];
+  const code = await main([...extra, "--branch", "topic", "--head", SHA], { sh: f.sh, sleep: async (ms) => { slept.push(ms); }, log: (l) => out.push(l), err: (l) => err.push(l), heldOutPatterns: ["**"], ...opts });
+  return { code, out: out.join("\n"), err: err.join("\n"), slept, ...f };
+};
+const GREEN_TABLE = () => ({ runs: [mkRun()], "view:11": { jobs: [mkJob("Test", T0, T1)] }, heldRuns: [mkHeld()], "view:22": heldGreenView() });
+
+test("CONTROL: a recorded green CI and green held-out exit 0, and print the job-minutes line beside the CI reading", async () => {
+  const r = await door(GREEN_TABLE());
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.match(r.out, /ci-verdict: GREEN/);
+  assert.match(r.out, /held-out: GREEN/);
+  assert.match(r.out, /^job-minutes: 6\.0 \(critical path 6\.0 min\)$/m);
+  assert.deepEqual(r.slept, []);
+});
+
+test("classifyFailure: a 5xx, a timeout and a dropped network read UNREADABLE; a missing gh and an unknown branch are hard", () => {
+  for (const e of [bad502(), Object.assign(new Error("x"), { stderr: "HTTP 503 Service Unavailable" }), Object.assign(new Error("spawnSync gh ETIMEDOUT"), { code: "ETIMEDOUT" }),
+    Object.assign(new Error("x"), { killed: true, signal: "SIGTERM" }), Object.assign(new Error("x"), { stderr: 'Post "https://api.github.com/graphql": dial tcp: lookup api.github.com: no such host' }),
+    Object.assign(new Error("x"), { stderr: "error connecting to api.github.com: could not resolve host" }), Object.assign(new Error("x"), { stderr: "HTTP 429: API rate limit exceeded" })]) {
+    assert.equal(classifyFailure(e), "unreadable", String(e.stderr ?? e.message));
+  }
+  for (const e of [Object.assign(new Error("spawnSync gh ENOENT"), { code: "ENOENT" }), Object.assign(new Error("x"), { stderr: "HTTP 404: Not Found" }), Object.assign(new Error("x"), { stderr: "no such branch" })]) {
+    assert.equal(classifyFailure(e), "hard", String(e.stderr ?? e.message));
+  }
+  assert.equal(exitOf("unreadable"), 4);
+  assert.ok(![0, 1, 2, 3].includes(exitOf("unreadable")), "UNREADABLE owns its exit code");
+});
+
+test("RED: a recorded 502 then green returns green after one wait", async () => {
+  const r = await door({ ...GREEN_TABLE(), runs: (n) => (n === 1 ? bad502() : [mkRun()]) });
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.equal(r.slept.length, 1);
+  assert.equal(r.slept[0], 180000, "the default interval reads the house poll floor: three minutes");
+});
+
+test("RED: a 502 forever exits UNREADABLE (its own code), never RED and never GREEN", async () => {
+  const r = await door({ ...GREEN_TABLE(), runs: bad502 });
+  assert.equal(r.code, 4, r.out + r.err);
+  assert.match(r.out, /ci-verdict: UNREADABLE for aaaaaaaaa/);
+  assert.doesNotMatch(r.out, /ci-verdict: (RED|GREEN)/);
+  assert.equal(r.slept.length, 6, "six reads again, then it says so");
+  const wait = await door({ ...GREEN_TABLE(), runs: bad502 }, ["--wait"]);
+  assert.equal(wait.code, 4, "under --wait the same bounded wait ends in UNREADABLE");
+});
+
+test("RED: a run whose jobs endpoint stays 502 falls back to that run's own conclusion at the exact sha", async () => {
+  const jobs502 = () => Object.assign(new Error("x"), { stderr: "HTTP 502: Bad Gateway (https://api.github.com/repos/x/actions/runs/11/jobs)" });
+  const g = await door({ runs: [mkRun()], "view:11": jobs502, heldRuns: [mkHeld()], "view:22": jobs502 });
+  assert.equal(g.code, 0, g.out + g.err);
+  assert.match(g.out, /ci-verdict: GREEN[^\n]*run conclusion only/);
+  assert.match(g.out, /held-out: GREEN[^\n]*run conclusion only/);
+  assert.match(g.out, /^job-minutes: unread \(the run's jobs endpoint stayed unreadable\)$/m);
+  const red = await door({ runs: [mkRun({ conclusion: "failure" })], "view:11": jobs502, heldRuns: [mkHeld()], "view:22": heldGreenView() });
+  assert.equal(red.code, 1, "a failure conclusion still reads RED with its jobs unread");
+  const live = await door({ runs: [mkRun({ status: "in_progress", conclusion: null })], "view:11": jobs502, heldRuns: [mkHeld()], "view:22": heldGreenView() });
+  assert.equal(live.code, 2, "a run still running reads unread, not green");
+});
+
+test("a head the branch list's window misses is asked for by sha (`gh run list --commit`)", async () => {
+  const r = await door({ ...GREEN_TABLE(), runs: [mkRun({ headSha: "b".repeat(40), databaseId: 99 })], "view:99": { jobs: [] }, runsAtSha: [mkRun()], heldRuns: [], heldRunsAtSha: [mkHeld()] });
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.ok(r.calls.some((c) => c.includes("--commit") && c.includes(SHA)));
+});
+
+test("RED: --wait returns once neither reading is unread: unread, unread, green returns green on the third read", async () => {
+  const r = await door({ ...GREEN_TABLE(), runs: (n) => (n < 3 ? [mkRun({ status: "in_progress", conclusion: null })] : [mkRun()]) }, ["--wait", "--interval", "300"]);
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.equal(r.n.runs, 3);
+  assert.deepEqual(r.slept, [300000, 300000], "CONTROL: an interval over the floor paces every wait");
+});
+
+const quotaPending = () => ({ ...GREEN_TABLE(), runs: (n) => n === 1 ? [mkRun({ status: "in_progress", conclusion: null })] : [mkRun()] });
+const reportedQuota = (remaining) => ({ resources: { core: { limit: 5000, remaining, reset: 4102444800 } } });
+
+test("G54: low reported quota widens the next wait", async () => {
+  const low = await door({ ...quotaPending(), rateLimit: reportedQuota(10) }, ["--wait"]);
+  assert.equal(low.code, 0);
+  assert.ok(low.slept[0] > 180000, `low quota should widen the wait, got ${low.slept[0]} ms`);
+});
+
+test("G54 control: full reported quota keeps the floor", async () => {
+  const full = await door({ ...quotaPending(), rateLimit: reportedQuota(5000) }, ["--wait"]);
+  assert.equal(full.code, 0);
+  assert.deepEqual(full.slept, [180000]);
+});
+
+test("RED: the house poll floor holds three minutes; --interval under it refuses by name before any read, and every wait of a --wait vigil reads at least the floor", async () => {
+  const { POLL_FLOOR_S } = await import("./ci-verdict.mjs");
+  assert.equal(POLL_FLOOR_S, 180, "the operator's law (2026-11-05): poll CI no closer than three minutes");
+  const r = await door(GREEN_TABLE(), ["--wait", "--interval", "30"]);
+  assert.equal(r.code, 3, "a refusal reads the reader's own usage code, never 2 (unread), which a vigil would read as wait on");
+  assert.match(r.err, /poll-under-floor: 30 < 180/);
+  assert.equal(r.calls.length, 0, "the refusal reads nothing");
+  const w = await door({ ...GREEN_TABLE(), runs: (n) => (n === 1 ? bad502() : n < 4 ? [mkRun({ status: "in_progress", conclusion: null })] : [mkRun()]) }, ["--wait"]);
+  assert.equal(w.code, 0, w.out + w.err);
+  assert.ok(w.slept.length >= 3, "a dark read and two unread reads each waited");
+  for (const ms of w.slept) assert.ok(ms >= 180000, `a wait of ${ms} ms polls closer than the floor`);
+});
+
+test("RED: without --wait an unread head exits 2 at once; a cancelled-clean run keeps --wait waiting", async () => {
+  const once = await door({ ...GREEN_TABLE(), runs: [mkRun({ status: "in_progress", conclusion: null })] });
+  assert.equal(once.code, 2);
+  assert.equal(once.n.runs, 1);
+  const w = await door({ ...GREEN_TABLE(), runs: (n) => (n === 1 ? [mkRun({ conclusion: "cancelled" })] : [mkRun()]) }, ["--wait"]);
+  assert.equal(w.code, 0);
+  assert.equal(w.n.runs, 2, "the cancelled-clean run measured nothing, so the wait read again");
+});
+
+test("RED: --wait also waits for a held-out run that does not name the head yet", async () => {
+  const r = await door({ ...GREEN_TABLE(), heldRuns: (n) => (n < 3 ? [] : [mkHeld()]), heldRunsAtSha: [] }, ["--wait"]);
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.equal(r.n.heldRuns, 3);
+});
+
+test("job-minutes: a recorded jobs JSON sums to the figure by hand; critical path is the run's first start to last end", () => {
+  const view = { jobs: [
+    mkJob("Test", "2026-10-30T10:00:00Z", "2026-10-30T10:10:00Z"),            // 10
+    mkJob("Witnesses", "2026-10-30T10:00:30Z", "2026-10-30T10:04:30Z"),       // 4
+    mkJob("Lint", "2026-10-30T10:10:00Z", "2026-10-30T10:12:30Z"),            // 2.5
+    mkJob("Skipped", "0001-01-01T00:00:00Z", "0001-01-01T00:00:00Z", { conclusion: "skipped" }),
+  ] };
+  const jm = jobMinutes(view);
+  assert.equal(jm.partial, false);
+  assert.equal(jm.minutes, 16.5);
+  assert.equal(jm.criticalMin, 12.5);
+  assert.equal(renderJobMinutes(jm), "job-minutes: 16.5 (critical path 12.5 min)");
+});
+
+test("job-minutes: a job with no completion reads PARTIAL, never a smaller number", () => {
+  const view = { jobs: [mkJob("Test", T0, T1), mkJob("Slow", T0, null, { status: "in_progress", conclusion: null })] };
+  const jm = jobMinutes(view);
+  assert.equal(jm.partial, true);
+  const line = renderJobMinutes(jm);
+  assert.match(line, /^job-minutes: partial /);
+  assert.doesNotMatch(line, /^job-minutes: \d/);
+  assert.equal(renderJobMinutes(jobMinutes(undefined)).startsWith("job-minutes: unread"), true);
+});
+
+test("the door still exits 3 when gh is absent, and 3 for a hard read failure (not UNREADABLE)", async () => {
+  const r = await door({ ...GREEN_TABLE(), runs: () => Object.assign(new Error("x"), { stderr: "HTTP 404: Not Found" }) });
+  assert.equal(r.code, 3);
+  assert.match(r.err, /ci-verdict: could not read/);
+  assert.deepEqual(r.slept, [], "a hard failure never waits");
+});
+
+// ── Luna and Sol read the verdict door ───────────────────────────────────────────────────────────────────────
+test("RED: an explicit HTTP status decides before any word: a 404 that mentions `timeout` is hard; transport failures GitHub words differently are unreadable", () => {
+  assert.equal(classifyFailure(Object.assign(new Error("x"), { stderr: "HTTP 404: workflow timeout.yml not found" })), "hard");
+  assert.equal(classifyFailure(Object.assign(new Error("x"), { stderr: "HTTP 503: Service Unavailable" })), "unreadable");
+  assert.equal(classifyFailure(Object.assign(new Error("x"), { stderr: "error connecting to api.github.com\ncheck your internet connection or https://githubstatus.com" })), "unreadable");
+  assert.equal(classifyFailure(Object.assign(new Error("x"), { stderr: "unexpected EOF" })), "unreadable");
+  assert.equal(classifyFailure(Object.assign(new Error("x"), { stderr: "HTTP 401: Bad credentials" })), "hard");
+});
+
+test("RED: a branch that holds no run is checked for existence: a 404 is a hard read (3), never a vigil with no end", async () => {
+  const gone = () => Object.assign(new Error("x"), { stderr: "HTTP 404: Branch not found" });
+  const r = await door({ runs: [], runsAtSha: [], branchApi: gone, heldRuns: [], heldRunsAtSha: [] }, ["--wait"]);
+  assert.equal(r.code, 3, r.out + r.err);
+  assert.deepEqual(r.slept, []);
+  const real = await door({ runs: [], runsAtSha: [], branchApi: "topic", heldRuns: [], heldRunsAtSha: [] });
+  assert.equal(real.code, 2, "a real branch with no run yet reads unread");
+});
+
+test("RED: --wait never ends in success over a held-out reading it could not read: UNREADABLE exits 4, a hard held-out failure exits 3; without --wait the third reading still only says", async () => {
+  const dark = { ...GREEN_TABLE(), heldRuns: bad502, heldRunsAtSha: bad502 };
+  const w = await door(dark, ["--wait"]);
+  assert.equal(w.code, 4, w.out + w.err);
+  assert.match(w.out, /held-out: UNREADABLE/);
+  const plain = await door(dark);
+  assert.equal(plain.code, 0, "the exit follows the CI reading alone outside a vigil");
+  const hard = { ...GREEN_TABLE(), heldRuns: () => Object.assign(new Error("x"), { stderr: "HTTP 404: Not Found" }) };
+  assert.equal((await door(hard, ["--wait"])).code, 3);
+});
+
+test("RED: a poll whose milliseconds pass the timer limit refuses by name; a lawful poll stands", async () => {
+  const { pollRefusal } = await import("./ci-verdict.mjs");
+  assert.match(pollRefusal("2147484"), /^poll-over-timer-limit: 2147484/);
+  assert.match(pollRefusal(2147484), /poll-over-timer-limit/);
+  assert.equal(pollRefusal("2147483"), null);
+  assert.equal(pollRefusal("300"), null, "control: a lawful poll still works");
+});
+
+test("RED: --wait on a branch no held-out driver measures ends at its CI verdict and says so, held-out UNREAD never green; CONTROL: a branch the workflow measures keeps waiting", async () => {
+  const lane = ["feature/**", "!feature/green-jello-dinosaur-5--**", "main"];
+  const T = { ...GREEN_TABLE(), heldRuns: [], heldRunsAtSha: [] };
+  const r = await door(T, ["--wait", "--branch", "feature/green-jello-dinosaur-5--x"], { heldOutPatterns: lane });
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.match(r.out, /held-out: UNREAD/);
+  assert.match(r.out, /raises no run on this branch/);
+  assert.ok(!/held-out: GREEN/.test(r.out));
+  assert.deepEqual(r.slept, []);
+  // CONTROL: a branch the push patterns include still waits for the held-out run.
+  const c = await door({ ...T, heldRuns: (n) => (n < 3 ? [] : [mkHeld()]), heldRunsAtSha: [], "view:22": heldGreenView() }, ["--wait", "--branch", "feature/other"], { heldOutPatterns: lane });
+  assert.equal(c.code, 0, c.out + c.err);
+  assert.ok(c.slept.length >= 2);
+  assert.match(c.out, /held-out: GREEN/);
+  assert.deepEqual([heldOutMeasures("main", lane), heldOutMeasures("feature/green-jello-dinosaur-5", lane), heldOutMeasures("feature/green-jello-dinosaur-5--tools-ci", lane)], [true, true, false]);
+});
+
+test("heldOutBranchPatterns reads the real held-out.yml: lane branches excluded, the span and feature branches included", () => {
+  const p = heldOutBranchPatterns();
+  assert.ok(Array.isArray(p) && p.length >= 2, String(p));
+  assert.equal(heldOutMeasures("feature/green-jello-dinosaur-5--a", p), false);
+  assert.equal(heldOutMeasures("feature/green-jello-dinosaur-5", p), true);
 });

@@ -30,8 +30,9 @@
  */
 
 import { createHash } from "node:crypto";
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { join, dirname, resolve, relative } from "node:path";
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, renameSync, rmSync, openSync, closeSync, constants as FS } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { join, dirname, basename, resolve, relative } from "node:path";
 
 const REPO = resolve(process.argv[2] ?? ".");
 
@@ -43,6 +44,36 @@ export function globalStampPath(repo) {
 /** The one path a per-package stamp lives at, shared by every writer and every reader. */
 export function packageStampPath(repo, dir) {
   return join(resolve(repo), "node_modules", ".lares-build", "pkg", dir);
+}
+
+/**
+ * Write a stamp under `<repo>/node_modules/.lares-build` without following a planted link. Test-door code may write that
+ * dir, so a symlink standing at the stamp's name (or at any dir on its way) could aim an unwalled writer at a file outside:
+ * every dir from node_modules down must stand as a real directory, and the bytes land in a fresh temp file renamed over the
+ * name (rename replaces a link, never writes through it).
+ */
+export function writeStamp(repo, path, body, { afterWalk = () => {} } = {}) {
+  const base = join(resolve(repo), "node_modules");
+  const rel = relative(base, dirname(path));
+  if (rel.startsWith("..") || resolve(base, rel) !== dirname(path)) throw new Error(`a stamp lives under ${base}: ${path}`);
+  const directoryFlags = FS.O_RDONLY | FS.O_DIRECTORY | FS.O_NOFOLLOW;
+  const held = [];
+  try {
+    // The repo root comes from the caller; links are refused below it.
+    let parent = openSync(resolve(repo), FS.O_RDONLY | FS.O_DIRECTORY); held.push(parent);
+    let dir = resolve(repo);
+    for (const part of ["node_modules", ...(rel ? rel.split("/") : [])]) {
+      dir = join(dir, part);
+      const at = `/proc/self/fd/${parent}/${part}`;
+      try { mkdirSync(at); } catch (error) { if (error.code !== "EEXIST") throw error; }
+      try { parent = openSync(at, directoryFlags); held.push(parent); }
+      catch (error) { if (["ELOOP", "ENOTDIR"].includes(error.code)) throw new Error(`stamp path ${dir} is not a real directory (a symlink or file stands there)`); throw error; }
+    }
+    afterWalk();
+    const temp = `/proc/self/fd/${parent}/.stamp-${process.pid}-${randomBytes(6).toString("hex")}`;
+    writeFileSync(temp, body, { flag: "wx" });
+    try { renameSync(temp, `/proc/self/fd/${parent}/${basename(path)}`); } catch (error) { rmSync(temp, { force: true }); throw error; }
+  } finally { for (const fd of held.reverse()) closeSync(fd); }
 }
 
 /** Every `packages/<dir>` holding its own `package.json` — derived from the filesystem, never a hand list. */
@@ -62,9 +93,7 @@ export function workspacePackageDirs(repo) {
 /** Stamp one package's dist with a digest of its own source subtree. */
 export function stampPackage(repo, dir) {
   const digest = sourceDigest(join(resolve(repo), "packages", dir));
-  const path = packageStampPath(repo, dir);
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, digest);
+  writeStamp(repo, packageStampPath(repo, dir), digest);
   return digest;
 }
 
@@ -77,6 +106,10 @@ export function sourceDigest(dir) {
     for (const e of [...entries].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
       if (e.name === "node_modules" || e.name === "dist" || e.name === ".git") continue;
       if (e.name.endsWith(".prev")) continue;
+      // TESTS NEVER ENTER A BUILD. No package's `tsconfig.build.json` includes `tests/` (each extends a tsconfig that excludes it or
+      // lists `src` alone), so a test edit changes no byte of dist; hashing it would stale every dist on a red-only edit and force a
+      // rebuild in every lane. The CLI's `build-freshness.ts#sourceDigest` imports this very function, so the two cannot drift.
+      if (e.isDirectory() ? e.name === "tests" : /\.test\.(ts|mts|cts)$/.test(e.name)) continue;
       const full = join(d, e.name);
       if (e.isDirectory()) { walk(full); continue; }
       if (!/\.(ts|mts|cts|json)$/.test(e.name)) continue;
@@ -146,9 +179,7 @@ export function stampWasm(repo, dir) {
   const wasms = grammarWasms(repo, dir);
   if (wasms.length !== 1) throw new Error(`packages/${dir} holds ${wasms.length} root wasm files; a wasm stamp binds exactly one`);
   const body = wasmStampBody(repo, dir, wasms[0]);
-  const path = wasmStampPath(repo, dir);
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, body);
+  writeStamp(repo, wasmStampPath(repo, dir), body);
   return body;
 }
 
@@ -181,9 +212,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`[stamp-build] ${dir} ${digest.slice(0, 16)}… — this package's dist now names the bytes it came from`);
   } else {
     const digest = sourceDigest(join(REPO, "packages"));
-    const stampPath = globalStampPath(REPO);
-    mkdirSync(dirname(stampPath), { recursive: true });
-    writeFileSync(stampPath, digest);
+    writeStamp(REPO, globalStampPath(REPO), digest);
     // The CLI gate's workspace-wide stamp stands as it always has; a per-package stamp is struck
     // alongside it for every package the tree currently holds, so a full build leaves BOTH readers
     // (the global gate and any package-scoped witness) with a fresh stamp to compare against.

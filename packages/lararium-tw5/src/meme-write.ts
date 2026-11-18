@@ -26,7 +26,7 @@
  * Schema: lar:///ha.ka.ba/lares/api/lararium/schema/meme-write
  */
 
-import type { TiddlerFields } from "./deserializer.js";
+import { expandMemeRefs, type TiddlerFields } from "./deserializer.js";
 import { recomposeMeme } from "./meme-project.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { makeTw5FileInfo, readSitingCascades, ruledBasePath, flattenedRelPath, type Tw5FileInfo } from "./tw5-file-info.js";
@@ -71,13 +71,13 @@ export interface CarrierFile {
    *  `.meta` alone. Absent for every carrier whose bytes ride in `body`. */
   readonly pointerCid?: string;
   /** The mirror-relative path a `$:/config/FileSystemPaths` rule sited this carrier at, extension
-   *  included — present ONLY when a rule reached the title. Absent, the projector sites by the loci
+   *  included — present ONLY when a rule reached the title. Absent, the projector sites by the address siting rule
    *  law (`carrierBaseRelPath`), which is where a stock server with no such rule and an island
    *  part ways: the server flattens the title, the island reads the uri-path. */
   readonly relPath?:  string;
   /** TW5's FLATTENED-TITLE default path, extension included — `generateTiddlerFilepath`'s no-rule
    *  branch, the file a stock folder wiki would write. Distinct from `relPath` on purpose: the
-   *  projector's precedence reads off the shape alone — a RULE (`relPath`) first, then the loci law
+   *  projector's precedence reads off the shape alone — a RULE (`relPath`) first, then the address siting rule
    *  for a `lar:` name, then this. A foreign title (`My Notes`, `$:/config/Foo`) has no uri-path, so
    *  this is the ONLY thing that sites it, and two titles MAY flatten alike (`A/B`, `A_B`) — the
    *  projector's free-or-mine uniquifier settles that, since only the disk knows what sits there. */
@@ -101,6 +101,39 @@ export function exportCarrierFile(tw5: TW5Engine, memeUri: string): CarrierFile 
   const tiddler = wiki.getTiddler?.(memeUri) as { fields?: TiddlerFields } | undefined;
   const fields = tiddler?.fields;
   if (!fields) return null;
+  return carrierFileOfFields(tw5, memeUri, fields, () => exportMemeText(tw5, memeUri));
+}
+
+/**
+ * Render ONE BAG'S OWN RECORD of a carrier root back to its filetype — the same shore as {@link exportCarrierFile},
+ * fed the bag's records rather than the resolved view. `records` answers the root and its own fragment records
+ * (`<root>#…`) from that bag alone; every other title (a carriage ref, a siting cascade) reads the live wiki. A higher
+ * layer that shadows this root (a same-title draft, a personal row) therefore never leaks into the render.
+ *
+ * Returns null when the bag holds no record of the root.
+ */
+export function exportRecordCarrierFile(
+  tw5: TW5Engine, memeUri: string, records: ReadonlyMap<string, Record<string, unknown>>,
+): CarrierFile | null {
+  const fields = records.get(memeUri) as TiddlerFields | undefined;
+  if (!fields) return null;
+  const wiki = tw5.$tw.wiki;
+  const reader = (title: string): TiddlerFields | undefined => {
+    const own = records.get(title) as TiddlerFields | undefined;
+    if (own || title === memeUri || title.startsWith(`${memeUri}#`)) return own;
+    return (wiki.getTiddler?.(title) as { fields?: TiddlerFields } | undefined)?.fields;
+  };
+  return carrierFileOfFields(tw5, memeUri, fields, () => {
+    try {
+      const carrier = expandMemeRefs(reader, memeUri);
+      if (carrier !== null) return carrier;
+    } catch { /* fall through to the raw text */ }
+    return typeof fields["text"] === "string" ? fields["text"] as string : "";
+  });
+}
+
+/** The shore both renders share: the root's fields decide type, extension and siting; `memeText` composes a carrier. */
+function carrierFileOfFields(tw5: TW5Engine, memeUri: string, fields: TiddlerFields, memeText: () => string): CarrierFile {
   const $tw = tw5.$tw as unknown as TW5Instance;
   // The siting cascades, read as the stock filesystem adaptor reads them — a real
   // `$:/config/FileSystemPaths` / `FileSystemExtensions` tiddler in this wiki, and nothing else.
@@ -139,7 +172,7 @@ export function exportCarrierFile(tw5: TW5Engine, memeUri: string): CarrierFile 
     const ruled = ruledBasePath($tw, memeUri, cascades);
     return {
       ext: MEME_EXT,
-      body: exportMemeText(tw5, memeUri),
+      body: memeText(),
       ...(ruled !== undefined
         ? { relPath: stripMemeExt(ruled) + MEME_EXT }
         // A memetic carrier under a FOREIGN title has no uri-path to site by, so it carries the
@@ -158,8 +191,8 @@ function nativeCarrierFile(info: Tw5FileInfo): CarrierFile {
     body: info.body,
     ...(info.hasMetaFile && info.metaBody !== undefined ? { metaBody: info.metaBody } : {}),
     ...(info.encoding === "base64" ? { encoding: "base64" } : {}),
-    // A rule's path rides as `relPath` (it OVERRIDES the loci law); TW5's flattened default rides as
-    // `defaultRelPath` (it sites what the loci law cannot name at all). Two fields, two precedences.
+    // A rule's path rides as `relPath` (it OVERRIDES the address siting rule); TW5's flattened default rides as
+    // `defaultRelPath` (it sites what the address siting rule cannot name at all). Two fields, two precedences.
     ...(info.pathRuled ? { relPath: info.relPath } : { defaultRelPath: info.relPath }),
   };
 }

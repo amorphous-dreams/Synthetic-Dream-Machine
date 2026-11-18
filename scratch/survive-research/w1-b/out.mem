@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-b/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-08 (file date) — source `.lares-scratch/survive-research/w1-b/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-b/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/w1-b/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-research/w1-b/out.md` (research, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-b/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Research hand-back: see final.md for principles, design patterns, source links, limitations, and deferred work. No repository files were read, no build or daemon was run, and no git writes were made.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lRLvVSqoEFcV0nGpMg3qQloh2P1wOlPONA8MBHPFOHk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

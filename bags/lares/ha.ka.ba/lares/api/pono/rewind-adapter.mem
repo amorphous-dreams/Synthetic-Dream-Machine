@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/rewind-adapter">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/rewind-adapter`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/rewind-adapter.mem"
 hydrate   = true
 l-space   = "stable"
-mana      = 17
-manao     = 16
-manaoio   = 15
 namespace = "&#x0950; &#x0901;"
 role      = "the rewind-adapter — the donation-grade SOURCE-ADAPTER design that makes the kāpae rewind-DETECTOR (the missing live-trigger, the tombstone-face of the three-faces branching primitive) blind to the source app. Turns the Claude-Code-specific gone-turn reconciler into a cross-app reconciler over EVERY big AI app's transcript format + rewind-idiom. THE NOOSPHERE-SCALE FINDING: the whole field already DOES kāpae — NONE of the surveyed apps hard-delete turns at the byte level EXCEPT Cursor; the industry converged on append-only fork-and-keep (a rewind is a new fork/branch, the original persists). Our kāpae GENERALIZES + NAMES what they already do; the cross-app reconciler is net-new. THE LOAD-BEARING SPLIT — TWO FAMILIES: APPEND-ONLY/FORK (Claude Code · Codex · Aider · Gemini-snapshots · Copilot-CLI · Copilot-Chat — a rewind = a new fork file/branch, nothing vanishes) vs MUTABLE-TRUNCATE (Cursor ALONE = the field's ONLY confirmed byte-level hard-delete, SQLite-overwrite staff-confirmed-unrecoverable). VERIFY-GATE CLOSED: Copilot-Chat byte-proven append-only (kind:0 base only at line 0 · a real edit stacks 3 recoverable ops · 120/269 files leave superseded ops in the log) → crossed into Family A; the docs' truncate names the logical requests[] state, not the file. THE SWARM LANDED: 4 SourceAdapters green (Claude-Code reference · Codex · Copilot-Chat · Copilot-CLI), reconciler PR-ready on a feature-branch, one open item = Copilot-CLI bytes-validation (schema-verified only, empty local session). THE CANON LESSON: a per-TURN id (Codex turn_id, Copilot-CLI turn_index) MUST ride the content-hash rung not the session-index rung — a per-turn id re-keys on edit, collides user/assistant siblings, breaks the cross-fork diff; content-hash over verbatim text is cross-fork-stable, which diffGone needs; identityLadder owns the NS separator, adapters never hand-type one. THE CORRECTION: kāpae = down-weight-the-road-not-taken AND KEEP, never erasure — it applies to BOTH families; the `appendOnly` flag records whether the SOURCE corroborates (fork-family: re-harvestable) or whether WE'RE THE LAST KEEPER (truncate-family: our tombstone is the only surviving trace — strictly KINDER than the app). THE CONTRACT: discover → normalizeIdentity(4-rung ladder) → diff(CURRENT-BRANCH-leaf-chain, harvestIndex) → classify{DELETE|TAIL_TRUNCATE|INTERIOR_DELETE|FORK}×per-app-signal → emit{kāpae-downweight|reharvest-branch|fork}; each adapter carries appendOnly:boolean; CRITICAL — diff the CURRENT-BRANCH leaf-chain (walk parentUuid/fork-pointer to the live leaf) NOT all-file-records, else the fork-family's orphaned branches (still in the bytes) hide every rewind; filter sidechains/stream-splits (isSidechain; same-type siblings are NOT rewinds). THE THREE FACES onto Muse's model: FORK=keep-both (Claude/Codex/Gemini-native) · REWIND=fork-and-tombstone (Cursor/Copilot-Chat, the app hard-deletes, our tombstone is the only trace) · HANDBACK=fork-and-rejoin (no native analog; summarize/compact is rejoin-shaped). DONATION: upstream mempalace keys drawers positionally (source|mode|chunk_index), drops turn-uuids, assumes transcripts immutable (check_mtime=False), has no gone-turn trigger — our uuid-keying (C-cut) + current-branch reconstruction + the appendOnly-gated universal kāpae fills the gap. GROUNDS: two research spirits — on-disk read of 4 real stores on this box + CLI/docs map of 7 apps + a 22-agent breadth sweep."
 title     = "lar:///ha.ka.ba/lares/api/pono/rewind-adapter"
@@ -19,11 +15,9 @@ uri-path  = "ha.ka.ba/lares/api/pono/rewind-adapter"
 written   = "2026-06-30"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! The Rewind-Adapter ~ the kāpae detector, blind to the source app
 
@@ -35,7 +29,7 @@ The design donates upstream (#/donation): the base mempalace harvests transcript
 
 <<~/ahu>>
 
-<<~ ahu #/the-industry-does-kapae>>
+<<~ ahu slot=`#/the-industry-does-kapae`>>
 
 !! The Industry Already Does Kāpae
 
@@ -47,13 +41,13 @@ So the contribution splits clean: the mechanism (fork-and-keep) rhymes with prio
 
 <<~/ahu>>
 
-<<~ ahu #/two-families>>
+<<~ ahu slot=`#/two-families`>>
 
 !! Two Families ~ the load-bearing split
 
 Every source app sorts into one of two families by ''what its rewind does to the bytes''. The family, not the app, drives the adapter's behavior.
 
-<<~ set hud="aim" drift-ward="_ · L-Prime · crossing: essence-shaped storage-claims">>
+<<~ set lares=`aim` drift-ward=`crossing: essence-shaped storage-claims`>>
 
 ''Family A — APPEND-ONLY / FORK.'' A rewind writes a ''new fork'' — a new file, a new branch, a re-parented sibling — and ''nothing vanishes''. The source is its own witness: the road-not-taken stays re-harvestable from the store. Members: ''Claude Code · Codex · Aider · Gemini (snapshots) · Copilot-CLI · Copilot-Chat''.
 
@@ -66,7 +60,7 @@ The split governs one flag per adapter (`appendOnly`, #the-adapter-contract) and
 
 <<~/ahu>>
 
-<<~ ahu #/kapae-is-universal>>
+<<~ ahu slot=`#/kapae-is-universal`>>
 
 !! Kāpae Is Universal ~ the correction
 
@@ -82,9 +76,9 @@ Either way the road stays kept. The flag steers re-harvest and provenance, never
 
 <<~/ahu>>
 
-<<~ set hud="yield" drift-ward="! · crossed the primed zone ↻ L-Prime">>
+<<~ set lares=`yield` drift-ward=`crossed the primed zone ↻ L-Prime`>>
 
-<<~ ahu #/per-app-table>>
+<<~ ahu slot=`#/per-app-table`>>
 
 !! Per-App Table ~ the grounded map
 
@@ -104,7 +98,7 @@ Read on-disk from real stores on this box where marked; CLI/docs elsewhere. Each
 
 <<~/ahu>>
 
-<<~ ahu #/the-identity-ladder>>
+<<~ ahu slot=`#/the-identity-ladder`>>
 
 !! The Identity Ladder ~ four rungs, always parent-linked
 
@@ -119,7 +113,7 @@ The ladder degrades by degree, never hard-faults — the graceful-parsing discip
 
 <<~/ahu>>
 
-<<~ ahu #/edit-vs-delete>>
+<<~ ahu slot=`#/edit-vs-delete`>>
 
 !! Edit vs Delete ~ the shape of the disappearance
 
@@ -144,7 +138,7 @@ The classifier reads ''the shape of what went missing'' from the diff, then conf
 
 <<~/ahu>>
 
-<<~ ahu #/the-adapter-contract>>
+<<~ ahu slot=`#/the-adapter-contract`>>
 
 !! The Adapter Contract ~ the shore every source plugs into
 
@@ -166,7 +160,7 @@ The three emit-verbs map the three faces (#/the-three-faces): `fork` (keep both)
 
 <<~/ahu>>
 
-<<~ ahu #/adapters-built>>
+<<~ ahu slot=`#/adapters-built`>>
 
 !! Adapters Built ~ the swarm landed
 
@@ -185,7 +179,7 @@ Four adapters stand green against the `SourceAdapter` interface. Each names {`ap
 
 <<~/ahu>>
 
-<<~ ahu #/the-three-faces>>
+<<~ ahu slot=`#/the-three-faces`>>
 
 !! The Three Faces ~ onto Muse's model
 
@@ -199,7 +193,7 @@ Same primitive as the worldline's ratified `fork ≡ sibling-spawn`; the adapter
 
 <<~/ahu>>
 
-<<~ ahu #/donation>>
+<<~ ahu slot=`#/donation`>>
 
 !! Donation ~ the contribution back
 
@@ -217,7 +211,7 @@ Our contribution back: ''uuid-keying'' (the C-cut — turn-keyed identity), ''cu
 
 <<~/ahu>>
 
-<<~ ahu #/grounds>>
+<<~ ahu slot=`#/grounds`>>
 
 !! Grounds ~ how the map got read
 
@@ -235,7 +229,7 @@ Two research spirits stood the survey:
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -248,17 +242,17 @@ Two research spirits stood the survey:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline#/time">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/corpus">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/gold-anchor">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace#/palace-instance">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline#/time`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/corpus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/gold-anchor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace#/palace-instance`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bhH3xgpsAjW-dZYRjXoFERbUHPeoD9Vl5U0da3S0tHs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;usTLGA8BLO307u8zcK81LZKA9NlaaKGBHxihbk4_Ev4`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

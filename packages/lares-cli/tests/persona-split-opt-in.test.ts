@@ -1,3 +1,6 @@
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its ward acts ask the suite's person (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

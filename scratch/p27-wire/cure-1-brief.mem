@@ -1,0 +1,52 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-1-brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/cure-1-brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-1-brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-1-brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! cure-1-brief.md — brief, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/cure-1-brief.md` (brief, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/p27-cure-step-opus-seam-lead-lane-p27-wire`>>
+
+! P27 cure step — Opus seam lead, lane p27-wire
+
+Controller: Lares-Kiaʻi. Worktree /home/joshu/.lares-scratch/p27-wire/wt, branch feature/green-jello-dinosaur-5&#45;-p27-wire, head ed44bf39a (PR #200), built. Two independent reads say HOLD; read both whole, then measure each finding before curing (pentabarf V):
+* Sol design read: /home/joshu/.lares-scratch/p27-wire/sol-read-verdict.md
+* Blind Opus custody read: /home/joshu/.lares-scratch/p27-wire/blind-opus/out.md
+
+THE SHAPE OF THE PROBLEM: the one predicate holds; the PRODUCTION COMPOSITION (`makeHeldShareFloor` and its readers) over-refuses, and every lane witness runs on permissive stubs (`publicShareTiers`, `federatable: () => true`), so nothing tested what ships. Landing as is would stop public boards reaching the world, sibling devices syncing, browser leaf ↔ hearth relay and herm /cas: the household walk (M3) would break.
+
+CURE (end state, no back-compat, refusals by name, no implicit empty fallbacks):
+# Secrets scope: read the registry through `faceScopedSecrets(registry.plane, ownsDoc)` with a PROVEN ownership reader (unresolved ownership still refuses); wire `registry.initialize()` durably where the sealed face catalog binds (open-node-vessel ~:2657 / face creation), never an implicit empty registry; registration waits for a secrets store (the operator's parked vault) and stays unwired.
+# The structural floor reads the gate that actually allowed the share (selfSlotFedGate, the sibling gate, `crossing.gate`), not a fresh DeterministicFederationGate holding only the five public boards; the face-grant ring proves `fleet`; canon, persona planes and face-grant planes reach their audiences.
+# Non-bag planes (the face catalog `…/bags/catalog/face`, hosting docs) bind as `{kind:"non-bag"}` with an explicit declared floor; contracted carriers get CONTRACT.
+# Herm /cas checks the board id that carries the reference and every doc `documentsForCid` returns (`tiers.require(id,"world")`); the floor porch's released-floor serve passes the predicate; realm books keep their document binding (Sol F4).
+# Browser audience: positive house-peer membership and positive fleet proof; an unclassified peer or null-gate relay refuses by name (Sol P1 #2; blind F9b).
+# P2s: a present `null` refinement parses (VEIL), only `undefined` reads absent (share-tighten ~:135); node session CAS refusals carry the refusal field (worker-handle ~:119) and reject through `vesselCasAsker`; plugin CIDs that plugin resolution proved count as references (blind F5), and a browser replica without a genesis seed still loads its engine; non-session wiki islands get the gated sync leg sessions get (`view.attach`) so one island cannot forge its plane (blind F6), or, if that is too large for this step, name it as an owed row with its scenario; stop passing CAS dirs to node workers (Sol P3, blind F8) and state the OPFS same-origin limit in the claim.
+# THE HONEST WITNESS (required): tests that run the REAL `makeHeldShareFloor` composition with production-shaped readers (no permissive stub): crossroads reaches `world`; a sibling device reads a `personagroup` plane at `fleet`; a fresh bound face catalog shares after init; an unproven browser peer refuses; a private blob stays refused to `world` while the face's daemon island reads it `in-process`. Also run (lead runs, single file, bwrap) the existing P27 manifest: /tmp/claude-1000/-home-joshu-Synthetic-Dream-Machine/eb8cf0a6-ccb1-4c58-8740-6730b6fd611d/scratchpad/p27-files.txt (browser-package files ride CI).
+
+LAW: red first with a control for each cure; daemon packages single files only, `bwrap --dev-bind / / --unshare-pid --proc /proc --die-with-parent`, NODE_OPTIONS=&#45;-max-old-space-size=1536, scratch HOME + LAR_ROOT, LAR_BAGS unset; `pnpm build` in the lane before tests read dist; the pre-push gate. Never write or pnpm install in /home/joshu/Synthetic-Dream-Machine. Commit red then cure with `git commit -F <msgfile> --only -- <paths>`, subject `lar:///w1.w2.w3 — summary`, ending:
+Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V63vwNsTbwswaievYNJosw
+Push only the lane branch. No stash, no &#45;-no-verify, no force-push, no kill -1. Hand back to /home/joshu/.lares-scratch/p27-wire/cure-1-out.md and return: outcome first (pushed head), each finding CURED / OWED with file:line, each red/control, forks decided and why.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;izEPUhn9j1cCGJXeuRyQKo9BzswAE6y_dy6SS2VEjI0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

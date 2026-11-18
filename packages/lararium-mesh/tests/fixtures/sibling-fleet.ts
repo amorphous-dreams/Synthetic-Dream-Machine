@@ -11,10 +11,11 @@ import { Repo, cbor, type PeerId } from "@automerge/automerge-repo";
 import { base64UrlDecode, hex, hexToBytes } from "../../src/crypto.js";
 import { mintVeto, type PersonaKelEvent } from "../../src/persona-kel.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../../src/recovery-registration.js";
+import { recoveryContactRegistrationCard } from "../../src/recovery-registration.js";
 import {
   enrolDevice, rollEnrolments, leafStandingUnder, enrolmentUnderHead, groupSecretOpenerFromSeed, type PersonaGroupEnrolment,
 } from "../../src/persona-group-secret.js";
+import { countersignDeviceDelegation } from "../../src/device-delegation.js";
 import type { LeafPeerSelf } from "../../src/leaf-peer-proof.js";
 import { shareConfigOf } from "../../src/federation-gate.js";
 import {
@@ -35,39 +36,40 @@ export const pubOf    = (s: Uint8Array): Promise<string> => ed.getPublicKeyAsync
 export const didOf    = async (s: Uint8Array): Promise<string> => `0x${await pubOf(s)}`;
 export const signerOf = (s: Uint8Array) => async (bytes: Uint8Array): Promise<string> => hex(await ed.signAsync(bytes, s));
 
-/** The founded PersonaGroup: an inception under opA with a 2-of-3 guardian set armed. */
-export async function founded(): Promise<{ inception: PersonaKelEvent; guardianRecoveryKeys: string[]; recoveryThreshold: number }> {
-  const guardianRecoveryKeys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
-  const slots = ["mine", "guardian-a", "guardian-b"] as const;
-  const guardians = guardianRecoveryKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null));
-  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid: await didOf(SEEDS.opA), guardians, recoveryThreshold: 2 });
-  return { inception: prov.inception, guardianRecoveryKeys, recoveryThreshold: prov.recoveryThreshold };
+/** The founded PersonaGroup: an inception under opA with a 2-of-3 recovery contact set armed. */
+export async function founded(): Promise<{ inception: PersonaKelEvent; recoveryContactKeys: string[]; recoveryThreshold: number }> {
+  const recoveryContactKeys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
+  const slots = ["mine", "contact-a", "contact-b"] as const;
+  const recoveryContacts = recoveryContactKeys.map((k, i) => recoveryContactRegistrationCard(slots[i]!, k, null));
+  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid: await didOf(SEEDS.opA), recoveryContacts, recoveryThreshold: 2 });
+  return { inception: prov.inception, recoveryContactKeys, recoveryThreshold: prov.recoveryThreshold };
 }
 
 /** A root enrols a device: the edge and the sealed secret, under the KEL prefix. */
 export async function enrol(root: Uint8Array, device: Uint8Array, prefix: string, boundEpoch = 0): Promise<PersonaGroupEnrolment> {
-  return enrolDevice({ opSeed: root, prefix, deviceVerifyingKey: await pubOf(device), hearthTrueName: "", boundEpoch });
+  const issued = await enrolDevice({ opSeed: root, prefix, deviceVerifyingKey: await pubOf(device), hearthTrueName: "", boundEpoch });
+  return { ...issued, edge: await countersignDeviceDelegation(issued.edge, signerOf(device)) };
 }
 
 /** The KEL rotated to opB, re-enrolling exactly `keep` — a device left out is revoked by this rotation. */
 export async function rotatedKeeping(keep: readonly Uint8Array[]): Promise<PersonaKelEvent[]> {
-  const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
-  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const { inception, recoveryContactKeys, recoveryThreshold } = await founded();
+  const recoveryContactSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const devices = await Promise.all(keep.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
   const enrolments = await rollEnrolments({ prefix: inception.prefix, opSeed: SEEDS.opB, devices });
-  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments });
+  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), recoveryContactKeys, recoveryThreshold, recoveryContactSigners, enrolments });
   if (!rot.ok) throw new Error(rot.reason);
   return [inception, rot.event];
 }
 
 /** The KEL rotated twice — opB re-enrolling `first`, then opC re-enrolling `second`. */
 export async function rotatedTwice(first: readonly Uint8Array[], second: readonly Uint8Array[]): Promise<PersonaKelEvent[]> {
-  const { guardianRecoveryKeys, recoveryThreshold } = await founded();
+  const { recoveryContactKeys, recoveryThreshold } = await founded();
   const once = await rotatedKeeping(first);
-  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const recoveryContactSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const devices = await Promise.all(second.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
   const enrolments = await rollEnrolments({ prefix: once[0]!.prefix, opSeed: SEEDS.opC, devices });
-  const rot = await attestAndRotate({ head: once[1]!, freshOpKeyDid: await didOf(SEEDS.opC), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments });
+  const rot = await attestAndRotate({ head: once[1]!, freshOpKeyDid: await didOf(SEEDS.opC), recoveryContactKeys, recoveryThreshold, recoveryContactSigners, enrolments });
   if (!rot.ok) throw new Error(rot.reason);
   return [...once, rot.event];
 }
@@ -75,11 +77,11 @@ export async function rotatedTwice(first: readonly Uint8Array[], second: readonl
 /** A PROVISIONAL rotation to opB re-enrolling `keep`, and the standing op-key's veto of it. The provisional
  *  confers nothing until accepted; the veto, folded, kills it. */
 export async function provisionalKeeping(keep: readonly Uint8Array[]): Promise<{ inception: PersonaKelEvent; provisional: PersonaKelEvent; veto: PersonaKelEvent }> {
-  const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
-  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const { inception, recoveryContactKeys, recoveryThreshold } = await founded();
+  const recoveryContactSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const devices = await Promise.all(keep.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
   const enrolments = await rollEnrolments({ prefix: inception.prefix, opSeed: SEEDS.opB, devices });
-  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments, provisional: true });
+  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), recoveryContactKeys, recoveryThreshold, recoveryContactSigners, enrolments, provisional: true });
   if (!rot.ok) throw new Error(rot.reason);
   const veto = await mintVeto({ contested: rot.event, standing: inception, sign: signerOf(SEEDS.opA) });
   return { inception, provisional: rot.event, veto };
@@ -91,7 +93,7 @@ export async function leafOf(
 ): Promise<SiblingLeaf> {
   const deviceKey = await pubOf(device);
   const standing = await leafStandingUnder({ kel, deviceKey, enrolment, open: groupSecretOpenerFromSeed(device) });
-  return { deviceKey, sign: signerOf(device), kel, standing, ...(expectedEpoch !== undefined ? { expectedEpoch } : {}) };
+  return { deviceKey, sign: signerOf(device), kel, standing, ...(expectedEpoch !== undefined ? { expectedEpoch: () => expectedEpoch } : {}) };
 }
 
 /** A leaf as it proves under a KEL: the edge and secret its head op-key sealed to it. Throws for a leaf the head
@@ -199,7 +201,7 @@ export function memoryRelay() {
   return relay;
 }
 
-export interface Leaf { repo: Repo; adapter: SiblingNetworkAdapter; refusals: SiblingRefusal[]; self: SiblingLeaf }
+export interface Leaf { repo: Repo; adapter: SiblingNetworkAdapter; refusals: SiblingRefusal[]; self: SiblingLeaf; relay: ReturnType<typeof memoryRelay> }
 
 /** Stand a leaf on the relay: a repo whose only network is the sibling channel, sharing every doc, its drops the
  *  relay's two herms unless a test hands its own. */
@@ -215,6 +217,8 @@ export function standLeaf(
     readonly alsoVia?: readonly ReturnType<typeof memoryRelay>[];
     /** Delay before the leaf re-dials a herm that dropped it. */
     readonly retryInterval?: number;
+    /** The leaf the adapter reads at every licensing act, in place of the fixture's (a product composition's). */
+    readonly leaf?: (kel: readonly PersonaKelEvent[]) => Promise<SiblingLeaf>;
   } = {},
 ): Leaf {
   const sharePolicy = opts.sharePolicy ?? (async () => true);
@@ -224,18 +228,18 @@ export function standLeaf(
     transports: [relay, ...(opts.alsoVia ?? [])].map((r) => r.transportFor(self.deviceKey)),
     ...(opts.retryInterval !== undefined ? { retryInterval: opts.retryInterval } : {}),
     kel: self.kel,
-    leaf: async (kel) => {
-      const leaf = await leafOf(device, enrolment, kel, self.expectedEpoch);
+    leaf: opts.leaf ?? (async (kel) => {
+      const leaf = { ...(await leafOf(device, enrolment, kel)), ...(self.expectedEpoch !== undefined ? { expectedEpoch: self.expectedEpoch } : {}) };
       return opts.presents ? { ...leaf, standing: { held: leaf.standing.held.map((h) => ({ ...h, edge: opts.presents! })) } } : leaf;
-    },
+    }),
     ...(drops ? { drops } : {}),
     onRefusal: (r) => refusals.push(r),
   });
-  // The verdict seats on announce AND access (`shareConfigOf`), as every vessel's does: a legacy `sharePolicy`
+  // The verdict seats on announce AND access (`shareConfigOf`), as every vessel's does: a `sharePolicy`
   // fills announce alone and leaves a request by id wide open.
   const repo = new Repo({ network: [adapter], shareConfig: shareConfigOf(async (peerId, documentId) => sharePolicy(peerId, documentId)) });
   adapter.bindRepo(repo);
-  return { repo, adapter, refusals, self };
+  return { repo, adapter, refusals, self, relay };
 }
 
 export async function until(cond: () => boolean, label: string, ms = 3000): Promise<void> {
@@ -259,11 +263,54 @@ export const shutdown = async (...leaves: Leaf[]): Promise<void> => { for (const
 const B64URL_RE = /^[A-Za-z0-9_-]+$/;
 const HEX_RE = /^(?:[0-9a-fA-F]{2})+$/;
 
+/** Does the run read as one CBOR item whose every declared length fits in the bytes that remain? Reads the heads
+ *  alone and builds nothing, so a random nonce that opens with a head claiming a hundred million elements reads
+ *  `false` at once, where a decoder that believes the head walks the claim for seconds and starves the event loop.
+ *  Past 64 levels the reading stops and hands the run on: depth costs a decoder bytes, never a claim. */
+const CBOR_DEEP = Symbol("cbor-deep");
+function cborFits(bytes: Uint8Array): boolean {
+  let at = 0;
+  const item = (depth: number): boolean => {
+    if (depth > 64) throw CBOR_DEEP;
+    if (at >= bytes.length) return false;
+    const head = bytes[at++]!;
+    const major = head >> 5;
+    const info = head & 31;
+    if (info === 31) {
+      if (major < 2 || major > 5) return false;
+      while (at < bytes.length && bytes[at] !== 0xff) {
+        if (!item(depth + 1)) return false;
+        if (major === 5 && !item(depth + 1)) return false;
+      }
+      if (at >= bytes.length) return false;
+      at++;
+      return true;
+    }
+    let n = info;
+    if (info >= 28) return false;
+    if (info >= 24) {
+      const width = 1 << (info - 24);
+      if (at + width > bytes.length) return false;
+      n = 0;
+      for (let i = 0; i < width; i++) n = n * 256 + bytes[at++]!;
+    }
+    const left = bytes.length - at;
+    switch (major) {
+      case 2: case 3: if (n > left) return false; at += n; return true;
+      case 4: if (n > left) return false; for (let i = 0; i < n; i++) if (!item(depth + 1)) return false; return true;
+      case 5: if (2 * n > left) return false; for (let i = 0; i < 2 * n; i++) if (!item(depth + 1)) return false; return true;
+      case 6: return item(depth + 1);
+      default: return true;
+    }
+  };
+  try { return item(0) && at === bytes.length; } catch (deep) { if (deep === CBOR_DEEP) return true; throw deep; }
+}
+
 /** Every structured reading of a byte run: JSON, CBOR, and the Automerge sync message, change or document it holds. */
 function structuresOf(bytes: Uint8Array): unknown[] {
   const out: unknown[] = [];
   try { out.push(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes))); } catch { /* not JSON */ }
-  try { out.push(cbor.decode(bytes)); } catch { /* not CBOR */ }
+  if (cborFits(bytes)) try { out.push(cbor.decode(bytes)); } catch { /* not CBOR */ }
   try { out.push(A.decodeSyncMessage(bytes).changes); } catch { /* not a sync message — each change it carries reads below */ }
   try { out.push(A.decodeChange(bytes)); } catch { /* not a change */ }
   try { out.push(A.toJS(A.load(bytes))); } catch { /* not a document */ }

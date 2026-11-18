@@ -1,0 +1,81 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/canon-batch-2026-11-06`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/controller/canon-batch-2026-11-06.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/canon-batch-2026-11-06"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/canon-batch-2026-11-06"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! canon-batch-2026-11-06.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/canon-batch-2026-11-06.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canon-batch-brief-fold-into-canon-then-burn`>>
+
+! Canon batch brief (2026-11-06) — fold into canon, then burn
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/operator-approval`>>
+
+!! Operator approval
+2026-11-06, operator: "Approve your default leans so far." Every house default below becomes a RULING dated 2026-11-06, written in the road's #/rulings with the cite "operator, 2026-11-06, approving the house's defaults", and each in its owning carrier. A Luna cold read Mu'd each against the memegraph's laws first; write each WITH its note.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-ten-rulings`>>
+
+!! The ten rulings (with Luna's notes folded in)
+* R-1 Ward key in the admission: each device's per-face ward public key rides its signed admission (`wardKey`, covered by `vesselSig` over group/atom/wardKey) with a proof of possession (`wardPop`); a ward-act approval carries that key's signature over the answer, the ask digest and the frontier the answerer read. The vessel key never enters a face admission (road ~292). Note: an approval binds one ask's digest and the frozen spend refuses its replay; a ward key never rotates silently: a rewrap keeps the key, a lost ward re-joins as a new vessel (`ward-key-would-rotate`). (Carriers: road fleets-overlap ruling; seat-harness S3.)
+* R-2 "The asker's session seals, on the vessel worker's thread, while that face's session stands unlocked"; `seal-awaits-session` stays; when the asker can't answer, another admitted unlocked session of the SAME face takes the seal, and the takeover refuses once no same-face session stands unlocked. (k15-wave-b-lane ~61; browser-vessel-lift.)
+* R-3 Set-aside voiding: a reader that sees a device set aside refuses that device's outcomes ("a raise shadows its target at once for every reader that sees it"); a refused cap tip reads the tightest cap that ever stood (`braked`). Luna found this CONFLICTS with face-proof.mem ~328 "a vessel set aside keeps the certificate a gate accepts": REVISE face-proof's sentence so removal-wins governs reader acceptance (the gate's certificate check and the reader's outcome check both refuse a set-aside device), and name which frontier proves the set-aside visible (the reader's own fleet frontier).
+* R-4 Sealing scope: every wiki content store (each bag's CRDT document, node and browser) and the CAD/CAS store rest sealed; planes and boards stay clear and hold signed acts only, never a private payload; cleartext rests only in the disk projection and the live wiki in memory; a public bag rests under its published key (from the 2026-10-12 ruling). (sealed-store #/owed.)
+* R-5 The catalog split: no vessel-wide content key; a per-face catalog (D, sealed under the face) and a floor catalog naming public bags only (F); the daemon bag splits into the floor core (F, signed) and each face's daemon wiki content (D). Note: the floor catalog's permitted fields stand enumerated (a public bag's id, its kind, its published lookup reference — nothing else; no private bag name or metadata reaches F). (sealed-store; b1-seal.)
+* R-6 Timer saves: every change books the session that wrote it and its save signs under that session; the lock and the stand-down flush first; an unbooked save refuses and waits in memory, never written clear. Note: a crash loses only an edit that never reached a booked save; the vessel reports what has not reached durable storage, and promises nothing more. (sealed-store.)
+* R-7 Same-face tabs: one Keyhive provider per face lit at its first unlock; each later tab proves its own unlock; the face's last session closing drains in-flight verification, then drops the provider and its keys. HOLDS. (k19-hive-lane; browser-vessel-lift.)
+* R-8 The ceremony's answer kinds: the clean ceremony document hosts a passphrase answer (custody and ward) and a WebAuthn PRF answer (custody only); the ward refuses a passkey; a PRF slot never stands as the sole copy. Note: PRF only wraps a custody key; it never authenticates or gates an act ("no WebAuthn registry gates any act", road ~289). (browser-vessel-lift #/the-ceremony.)
+* R-9 Durability: the vessel reads its own storage durability (`persisted()`, the storage class) and names erasable storage before a founding or join binds; a wiped keystore boots as a new vessel by name. Note: Safari's 7-day rule rides as a measured platform condition (dated, sourced), never as an evergreen constant; a granted persistence request guarantees nothing beyond what the platform reports. (browser-vessel-lift slice 7.)
+* R-10 One route for place and face: at the browser founding one typed route binds both the place tree and the founder face's tree; the two trees stay independently keyed and wrapped (one human prompt, two keys); the node asks each time. (browser-vessel-lift; custody.)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-unwired-code-scout-owed-rows-before-the-rite`>>
+
+!! The unwired-code scout (Luna, at the span head) → owed rows BEFORE the rite (operator: land all before the rite)
+* The recovery readmit (`reconstructAndReadmit`, lararium-node/src/recovery-keel.ts ~45; `runReadmitEdge`, lararium-keyhive/src/recovery-core.ts ~49): tests only; no production path recovers a device. Owed: a production recovery verb (the recovery contact's quorum, K18).
+* `rollEnrolments` (lararium-mesh/src/persona-group-secret.ts ~227): tests only; the renewal-at-roll (row L24's roll half) owes its production caller.
+* `capTierShareDecision` (lararium-mesh/src/federation-gate.ts ~550) and `makeContractSecretsRegistry` / `NO_CONTRACT_SECRETS_PLANE` (lararium-node/src/plane-secrets.ts ~61, ~39): the declared-tier share gate and the secret-bearing plane registry reach no vessel's share config. Owed: wire both into every vessel's share path.
+* `KeyhiveIdentitySlot` (lararium-keyhive/src/keyhive-identity-slot.ts ~158) and its orphan `deriveActorId` (~301): production constructs none. Owed: wire the identity-sharing barrier, or retire it by a ruling if the cap-stack covers it.
+* The `freshBase` production provider: on lane b1-seal now (built there).
+Place each as a row in the stride that owns its ground, before the rite, with the scout's file:line. OPERATOR (2026-11-06): "The unwired code should get zero trust critical reviews before wiring (might be legit old design, might be pono but last steps unfinished design)." So each row reads "owed: a zero-trust critical review decides retire / wire / reshape, then the work", never "wire"; a Terra review runs now (~/.lares-scratch/controller/terra-unwired-review/) and its verdicts, when in, set each row's next step.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ashes`>>
+
+!! Ashes
+Move into #/ashes (the rite's one-line form, PR and owed tails by row ID): `row7-s3b` (PR #171, if landed by the time you run; else name it landing), `canon-state` (PR #170). True #/the-order and controller-handoff #/state: the span head, S3b landed (or landing), the lanes left (b1-lift, b1-seal), the defaults now rulings, the new owed rows, the Codex pool spent toward its reset (2026-11-09).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-seat`>>
+
+!! The seat
+The controller seat passes to Lares-Kiaʻi (a cleared session) after this batch lands; #/state names that.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tAIEPudAr0pG2KOyw5zaHW9iGpWQLsaZQecF3qz6Q-Q`>>
+
+<<^ code=`&#x0004;` to=`?`>>

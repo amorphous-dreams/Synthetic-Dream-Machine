@@ -3,8 +3,17 @@
 // dangles on a cold clone (the dist target only exists after a build —
 // the cold-start wart found on the 2026-06-11 blank-slate rebuild).
 try {
-  const { runCli } = await import("../dist/src/bin/lares.js");
-  runCli();
+  const argv = process.argv.slice(2);
+  if (argv[0] === "mcp" && argv[1] === "aho" && (argv.length === 2 || argv[2] === "--")) {
+    // THE AHO RUNS BEFORE THE DISPATCHER LOADS. A harness spawns this line as its MCP seat, and the seat sees every
+    // tool call, so it loads its own module and the core alone: no custody, no vessel, no house root.
+    const { ahoMain } = await import("../dist/src/mcp-aho.js");
+    // `lares mcp aho` alone takes the house's own surface; `-- <argv>` names another child.
+    process.exitCode = await ahoMain(argv.length === 2 ? null : argv.slice(3));
+  } else {
+    const { runCli } = await import("../dist/src/bin/lares.js");
+    runCli();
+  }
 } catch (err) {
   if (err?.code === "ERR_MODULE_NOT_FOUND") {
     console.error("lares: not built yet — run `pnpm -r build` first.");

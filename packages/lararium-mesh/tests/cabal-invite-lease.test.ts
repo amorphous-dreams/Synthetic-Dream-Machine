@@ -8,11 +8,11 @@
  * lease can therefore be extended by the machine being gated, which is the whole property a lease
  * exists to deny. A red-team tester sets a clock; nothing detects it, because nothing was measured.
  *
- * ── THE FENCE THIS HOUSE ALREADY STANDS ─────────────────────────────────────────────────────────
- * `epoch-lease` is a coordinator-free MAX-REGISTER held as per-writer slots: two concurrent rolls
- * both land effective+1 in their own slot, and the maximum never decreases. `device-delegation`
- * already binds a grant to one with `boundEpoch`, so a grant goes stale when the resource's epoch
- * rolls past it. That is convergent, monotone, and holds no clock at all.
+ * ── THE FENCE THIS HOUSE STANDS ─────────────────────────────────────────────────────────────────
+ * A realm's charter quorum signs lease advances; `quorumLeaseEpoch` verifies them under the
+ * charter's seal-epoch lineage. `device-delegation` binds a face grant to its own signed face
+ * lease with `boundEpoch`. Each grant goes stale when its resource's verified epoch passes it,
+ * with no clock consulted.
  *
  * An invite binds the same way. `expiresAt` remains on the wire as a HINT a voucher's own tools can
  * render — it never gates, so no reader's clock can move an admission.

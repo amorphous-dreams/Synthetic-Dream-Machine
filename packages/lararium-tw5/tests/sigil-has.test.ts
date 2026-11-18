@@ -25,7 +25,7 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, renderWikitext, wikiSkip, skipNote } from "./test-wiki.js";
 
-const CALL = '<<~ has rank pulse "levels/0-4 reads/a-mark-a-morpheme-a-word">>';
+const CALL = "<<~ has entity=`rank` name=`pulse` params=`levels/0-4 reads/a-mark-a-morpheme-a-word`>>";
 
 describe.skipIf(wikiSkip)(`has — a registered sigil${skipNote}`, () => {
   let e: TW5Engine;
@@ -38,7 +38,7 @@ describe.skipIf(wikiSkip)(`has — a registered sigil${skipNote}`, () => {
   });
 
   test("CONTROL — a head no definition answers to still echoes", () => {
-    expect(rendered('<<~ vorpal-snicker a b "c">>')).toBe(false);
+    expect(rendered("<<~ vorpal-snicker entity=`a` name=`b` params=`c`>>")).toBe(false);
   });
 
   test("★ has renders its DEFINITION, not its own text ★", () => {
@@ -50,17 +50,17 @@ describe.skipIf(wikiSkip)(`has — a registered sigil${skipNote}`, () => {
   });
 
   test("★ the head each photocopy hard-coded rides as a VALUE ★", () => {
-    expect(r('<<~ has Cap content "stock/the nomic embedder over verbatim words">>'))
+    expect(r("<<~ has entity=`Cap` name=`content` params=`stock/the nomic embedder over verbatim words`>>"))
       .toContain("Cap content holds [stock/the nomic embedder over verbatim words]");
   });
 
   test("★ a quoted third slot keeps its colons, arrows and slashes as prose ★", () => {
-    const html = r('<<~ has Stage Mandate "carries/scope + TTL; lapses on parent-dissolution -> handback RATIFIES">>');
+    const html = r("<<~ has entity=`Stage` name=`Mandate` params=`carries/scope + TTL; lapses on parent-dissolution -> handback RATIFIES`>>");
     expect(html).toContain("carries/scope + TTL; lapses on parent-dissolution -&gt; handback RATIFIES");
   });
 
   test("★ an entity holding nothing still names itself ★", () => {
-    expect(rendered("<<~ has Stage Two>>")).toBe(true);
-    expect(r("<<~ has Stage Two>>")).toContain("Stage Two holds");
+    expect(rendered("<<~ has entity=`Stage` name=`Two`>>")).toBe(true);
+    expect(r("<<~ has entity=`Stage` name=`Two`>>")).toContain("Stage Two holds");
   });
 });

@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 /** Prepare a detached checkout from inputs, then compile its generated package outputs. */
-import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { assertDisk } from './disk-guard.mjs';
 import { wasmStampBody } from './stamp-build.mjs';
+import { treeSharedInodes } from './module-inodes.mjs';
 
 export const USAGE = 'usage: provision-worktree.mjs <empty-dir>';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -42,6 +44,22 @@ function copy(source, destination, rel, log, options = {}) {
   cpSync(from, to, { recursive: true, force: true, dereference: false, ...options });
   log(`COPIED ${rel} from ${from}`);
 }
+/** Mirror a tree with COPIED files: each lane file holds its own inode, so a write in one tree never reaches another. */
+function copyTree(from, to) {
+  mkdirSync(to, { recursive: true });
+  for (const entry of readdirSync(from, { withFileTypes: true })) {
+    const a = join(from, entry.name), b = join(to, entry.name);
+    if (entry.isSymbolicLink()) symlinkSync(readlinkSync(a), b);
+    else if (entry.isDirectory()) copyTree(a, b);
+    else copyFileSync(a, b);
+  }
+}
+/** A lane shares no writable inode with the store, the main checkout or another lane: a regular file under a module farm
+ *  carrying a second link refuses by name (the one walk the test door and the launcher also run). */
+function assertNoSharedInodes(destination) {
+  const refusal = treeSharedInodes(destination);
+  if (refusal) throw new Error(refusal);
+}
 function* linksUnder(path) {
   if (!existsSync(path)) return;
   for (const entry of readdirSync(path, { withFileTypes: true })) {
@@ -69,7 +87,7 @@ function relinkModules(source, destination, rel) {
     if (!canNest(source, target)) continue;
     const mapped = join(destination, relative(source, target));
     rmSync(link);
-    symlinkSync(relative(dirname(link), mapped), link);
+    symlinkSync(relative(dirname(link), mapped) || '.', link); // a link naming its own parent maps to '.', never ''
     rewritten++;
   }
   return rewritten;
@@ -94,11 +112,12 @@ function packageOrder(destination) {
   return ordered;
 }
 
-/** `run` receives (executable, argv, cwd); injection lets tests avoid git, npm and network. */
-export function provision({ source = ROOT, destination, run = defaultRun, log = console.log }) {
+/** `run` receives (executable, argv, cwd); injection lets tests avoid git, npm and network. `guard` reads the disk before any bulk lands. */
+export function provision({ source = ROOT, destination, run = defaultRun, log = console.log, guard = assertDisk }) {
   if (!destination) throw new Error(USAGE);
   source = realpathSync(source);
   destination = assertDestination(source, destination);
+  guard();
   const bare = () => run('git', ['-C', source, 'config', '--get', 'core.bare'], source).trim();
   if (bare() !== 'false') throw new Error('core.bare must read false before worktree add');
   run('git', ['-C', source, 'worktree', 'add', '--detach', destination, 'HEAD'], source);
@@ -106,7 +125,28 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   if (bare() !== 'false') throw new Error('core.bare must read false after worktree add');
   const head = run('git', ['-C', destination, 'rev-parse', 'HEAD'], destination).trim();
   log(`HEAD ${head}`);
-  run('git', ['-C', destination, 'submodule', 'update', '--init', '--', 'TiddlyWiki5', 'mempalace'], destination);
+  // Borrow the objects the source already holds (its own .git, or the common dir when the source is a linked tree),
+  // so a new tree does not clone them again.
+  let common = join(source, '.git');
+  try { common = resolve(source, run('git', ['-C', source, 'rev-parse', '--git-common-dir'], source).trim()); } catch { /* the plain .git stands in */ }
+  for (const name of ['TiddlyWiki5', 'mempalace']) {
+    // A submodule checked out with its own .git directory (mempalace in the main checkout) holds its objects there, not under modules/.
+    const objects = [join(source, '.git/modules', name), join(common, 'modules', name), join(source, name, '.git'), join(dirname(common), name, '.git')].find(dir => existsSync(join(dir, 'objects')));
+    const plain = ['-C', destination, 'submodule', 'update', '--init', '--', name];
+    if (!objects) {
+      log(`SUBMODULE ${name}: no local module objects stand; the clone dials the network`);
+      run('git', plain, destination);
+      continue;
+    }
+    try {
+      run('git', ['-C', destination, 'submodule', 'update', '--init', '--reference', objects, '--', name], destination);
+      log(`SUBMODULE ${name}: cloned against ${objects}`);
+    } catch (error) {
+      // A reference clone can still dial the network for objects the reference lacks; name it, retry plain, never fail on it.
+      log(`SUBMODULE ${name}: reference clone refused (${error.message.split('\n')[0]}); retrying plain, which dials the network`);
+      run('git', plain, destination);
+    }
+  }
   for (const name of ['TiddlyWiki5/tiddlywiki.js', 'mempalace']) {
     if (!existsSync(join(destination, name))) throw new Error(`required submodule input absent: ${name}`);
   }
@@ -118,14 +158,32 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
     if (existsSync(join(source, rel))) modulePaths.push(rel);
   }
   let rewritten = 0;
-  for (const rel of modulePaths) if (existsSync(join(source, rel))) {
-    copy(source, destination, rel, log);
-    const count = relinkModules(source, destination, rel);
-    rewritten += count;
-    log(`RELINKED ${count} symlinks in ${rel}`);
+  let installed = false;
+  try {
+    // The workspace's lockfile and the pnpm store already hold every package, so an offline frozen install fills the new
+    // tree without the network. It COPIES out of the store: a hardlink import would leave every lane, the main checkout and
+    // the store holding one owner-writable inode per file, so a write in any tree would rewrite the tooling of all of them.
+    run('pnpm', ['install', '--offline', '--frozen-lockfile', '--package-import-method=copy'], destination);
+    installed = existsSync(join(destination, 'node_modules'));
+    if (installed) log('INSTALLED node_modules by pnpm install --offline --frozen-lockfile --package-import-method=copy (copies from the store)');
+    else log('pnpm install left no root node_modules; falling back to a copy from the source');
+  } catch (error) {
+    log(`pnpm offline install refused: ${error.message.split('\n')[0]}; falling back to a copy from the source`);
+  }
+  if (!installed) {
+    for (const rel of modulePaths) {
+      rmSync(join(destination, rel), { recursive: true, force: true });
+      if (!existsSync(join(source, rel))) continue;
+      copyTree(join(source, rel), join(destination, rel));
+      log(`COPIED ${rel} from ${join(source, rel)}`);
+      const count = relinkModules(source, destination, rel);
+      rewritten += count;
+      log(`RELINKED ${count} symlinks in ${rel}`);
+    }
   }
   log(`RELINKED ${rewritten} node_modules symlinks`);
   assertNoSourceLinks(source, destination);
+  assertNoSharedInodes(destination);
   if (!existsSync(join(destination, 'node_modules'))) throw new Error('required input absent: root node_modules');
   for (const bin of ['tsc', 'tsx']) {
     if (!existsSync(join(destination, `node_modules/.bin/${bin}`)) && !existsSync(join(destination, `packages/lararium-tw5/node_modules/.bin/${bin}`))) {
@@ -135,17 +193,23 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   rmSync(join(destination, 'node_modules/.lares-build'), { recursive: true, force: true });
 
   const grammar = `packages/${WASM}`;
-  const wasmFiles = readdirSync(join(source, grammar)).filter(name => name.endsWith('.wasm'));
-  if (wasmFiles.length !== 1) throw new Error(`expected one grammar wasm; found ${wasmFiles.length}`);
   const stamp = `node_modules/.lares-build/wasm/${WASM}`;
-  const expected = wasmStampBody(source, WASM, wasmFiles[0]);
-  if (!existsSync(join(source, stamp)) || readFileSync(join(source, stamp), 'utf8') !== expected) {
-    throw new Error('grammar wasm provenance differs from source or stamp');
-  }
-  copy(source, destination, `${grammar}/${wasmFiles[0]}`, log);
-  if (wasmStampBody(destination, WASM, wasmFiles[0]) !== expected) throw new Error('copied grammar wasm provenance differs from destination source');
-  copy(source, destination, stamp, log);
-  log(`COPIED provenance grammar wasm: ${expected.trim().replaceAll('\n', ' | ')}`);
+  const wasmFiles = readdirSync(join(source, grammar)).filter(name => name.endsWith('.wasm'));
+  if (wasmFiles.length === 1) {
+    const expected = wasmStampBody(source, WASM, wasmFiles[0]);
+    if (!existsSync(join(source, stamp)) || readFileSync(join(source, stamp), 'utf8') !== expected) {
+      throw new Error('grammar wasm provenance differs from source or stamp');
+    }
+    copy(source, destination, `${grammar}/${wasmFiles[0]}`, log);
+    if (wasmStampBody(destination, WASM, wasmFiles[0]) !== expected) throw new Error('copied grammar wasm provenance differs from destination source');
+    copy(source, destination, stamp, log);
+    log(`COPIED provenance grammar wasm: ${expected.trim().replaceAll('\n', ' | ')}`);
+  } else if (wasmFiles.length === 0) {
+    // The source tree holds no grammar wasm: build it in the destination, which stamps its own provenance.
+    run('pnpm', ['run', 'build:wasm'], join(destination, grammar));
+    if (readdirSync(join(destination, grammar)).filter(name => name.endsWith('.wasm')).length !== 1) throw new Error('build:wasm left no single grammar wasm');
+    log(`BUILT ${grammar} wasm (build:wasm; the source held none)`);
+  } else throw new Error(`expected one grammar wasm; found ${wasmFiles.length}`);
 
   const tw5 = join(destination, 'packages/lararium-tw5');
   rmSync(join(tw5, 'tw5-core'), { recursive: true, force: true });
@@ -172,7 +236,11 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   return { destination, head };
   } catch (error) {
     try { run('git', ['-C', source, 'worktree', 'remove', destination], source); }
-    catch (cleanupError) { throw new Error(`${error.message}; plain git worktree remove refused: ${cleanupError.message}`, { cause: error }); }
+    catch (plainError) {
+      // Git refuses a plain remove when the tree holds submodules; this tree is the one provision just added, so force is ours to use.
+      try { run('git', ['-C', source, 'worktree', 'remove', '--force', destination], source); }
+      catch (forceError) { throw new Error(`${error.message}; git worktree remove refused: ${plainError.message}; --force refused: ${forceError.message}`, { cause: error }); }
+    }
     throw error;
   }
 }

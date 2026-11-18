@@ -290,3 +290,35 @@ def test_real_warm_embed_wires_the_keystone(tmp_path, _):
     res = capture_and_observe(str(tmp_path / ".mem"), "claude", CLAUDE, wing="wing_proj")
     assert res["landed"] == TURN_COUNT and res["audit"]["ok"]
     assert res["embedder_model"] == model and res["embedder_dim"] == dim
+
+
+# THE REWIND MUTE ON CAPTURE — a pinned gap (train security read LOW-5, traced 2026-11-01). Claude Code
+# orphans-not-deletes: a /rewind re-parents the next prompt off an earlier node and the rewound tail stays
+# in the .jsonl, so the linear source re-derives every old block with its old cid and chain and the
+# pipeline skips it, still recallable. No automatic leg ever reached the recall mute (`lar_kapae`): the
+# burned pour leg fired only the KG valid-close, its structurepalace leg reached an unimplemented
+# `kapaeAst`, and `stampKapaeSalience` had no caller even at the span base. A branch-shape detector cannot
+# stand in: measured over 252 real transcripts, sibling steering prompts with live sub-trees (queued and
+# hook rows) and parallel same-type assistant rows outnumber any rewind, so the old same-type rule would
+# mute live content. The cure waits on a reliable rewind marker (an operator ruling). STRICT: the day the
+# mute lands, this flips to XPASS and reds, so the marker comes off with the cure.
+@pytest.mark.xfail(strict=True, reason="LOW-5: capture holds no rewind mute; a branch-shape detector mis-mutes live content (measured)")
+def test_a_rewound_claude_turn_reads_muted_after_capture(tmp_path):
+    def row(t, u, p, content):
+        msg = {"role": t, "content": content if t == "user" else [{"type": "text", "text": content}]}
+        return json.dumps({"type": t, "uuid": u, "parentUuid": p, "sessionId": "s",
+                           "timestamp": "2026-11-01T00:00:00Z", "message": msg})
+    path = tmp_path / "rewind.jsonl"
+    path.write_text("\n".join([row("user", "u1", None, "open the door"), row("assistant", "a1", "u1", "opened"),
+                               row("user", "u2", "a1", "RETRACTED prompt"), row("assistant", "a2", "u2", "RETRACTED reply")]) + "\n")
+    server = CaptureSessionServer(str(tmp_path / ".mem"), embed_factory=_stub_embed_factory())
+    req = {"surface": "claude", "pointer": str(path), "wing": "wing_proj", "room": "conversations"}
+    server.capture(req)
+    with path.open("a") as fh:   # the operator rewinds to a1 and asks again: u2/a2 orphan in place
+        fh.write(row("user", "u2b", "a1", "the prompt asked again") + "\n" + row("assistant", "a2b", "u2b", "answered") + "\n")
+    server.capture(req)
+    from capture_sources import _source_key
+    store = server._content_store()
+    for chunk in (2, 3):         # u2 and a2, the rewound tail
+        meta = store.get(derive_cid(_source_key("claude", str(path)), chunk))["metadata"]
+        assert str(meta.get("lar_kapae", "")) == "1"

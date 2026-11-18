@@ -19,9 +19,12 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   ScriptedSeatRolls, SealedStore, ed25519SignerFromSeed, hex, memorySealedStoreRest, signSeatRoll, utf8Bytes,
+  makeIslandRepo, materializeSharedLarDoc, fleetEdgeBoardDocUrl, emptyLarDoc, ed25519VerifyingKeyFromSeed,
   type EdgeStanding, type RecordSigner, type RollOutcome, type SealedAddress, type SealedStoreRest, type SeatRoll,
 } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore, announceSeatRoll, keyhiveSeatShore, runSeatDuties, seatContentKeys, type ContentKeySeat } from "../src/index.js";
+import { boardDyadReader } from "../src/board-dyad-reader.js";
+import { fleetFixture } from "./fleet-fixture.js";
 import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, pair, signHex, type Chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
 
@@ -47,6 +50,7 @@ interface Device {
   readonly standing: Map<string, EdgeStanding>;
   readonly raises: Set<string>;
   readonly reports: RollOutcome[];
+  standingOf?: (member: string) => Promise<EdgeStanding>;
   signs: boolean;
   seat: ContentKeySeat;
   /** Stand the seat afresh over the same rest. */
@@ -77,7 +81,7 @@ async function fleet(base: number, names: readonly string[]): Promise<{ group: s
           restArchive: async (p) => { d.archives.push(await (p as KeyhiveProvider).exportArchive()); },
           group: { groupId: group, scope: SCOPE },
           bags: () => [BAG],
-          standingOf: (member) => d.standing.get(bare(member)) ?? "clear",
+          standingOf: (member) => d.standingOf ? d.standingOf(member) : d.standing.get(bare(member)) ?? "clear",
           countedRaises: () => d.raises,
           session: { signer: () => (d.signs ? d.signer : null), standing: { holdsWrite: () => true } },
           report: (o) => { d.reports.push(o); },
@@ -120,6 +124,24 @@ const roll = (raiseCids: string[], seat: { group: string; member: string } | und
   ({ kind: "seat-roll", scope: SCOPE, edgeId: "edge-1", ...(seat ? { seat } : {}), raiseCids, how });
 
 describe("a private body seals on real Keyhive identities, end to end", () => {
+  it("a founded fleet board leaves a healthy sibling in the content-key wrap", async () => {
+    const { devices: [f, sibling] } = await fleet(0x08, ["founder", "sibling"]);
+    const root = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(6));
+    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    try {
+      const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+      const fx = await fleetFixture(new Uint8Array(32).fill(6));
+      await fx.found(board);
+      const read = boardDyadReader(repo, repo.create(emptyLarDoc()), undefined, f!.id, undefined, undefined, fx.lineage);
+      f!.standingOf = (member) => read(root, member);
+      f!.reseat();
+      const result = await f!.seat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes("shared across the fresh fleet"), signer: f!.signer });
+      expect("body" in result, "EMPTY BOARD WRAP: the holder mints a body for the healthy fleet").toBe(true);
+      if (!("body" in result)) return;
+      await carry(f!, sibling!);
+      expect(await opens(sibling!, result.body.ref), "EMPTY BOARD WRAP: the sibling remains in the key agreement").toBe("shared across the fresh fleet");
+    } finally { await repo.shutdown(); }
+  });
   it("seal, restart from the kept Archive, unlock, open; every seated device opens; a locked vessel refuses by name and reads nothing", async () => {
     const { devices: [f, b] } = await fleet(0x10, ["f", "b"]);
     const sealed = await seal(f!, "the household's private note");
@@ -220,6 +242,104 @@ describe("a removed device opens nothing sealed after its removal", () => {
     expect(await opens(c!, after.body.ref)).toBe("REFUSED:reference-unknown");
   });
 
+  it("A ROLL NO SESSION SIGNED STAYS OWED, AND NOTHING SEALS AHEAD OF IT: the holder refuses `roll-owed`; the session's own act settles it first, and the removed device opens nothing sealed after", async () => {
+    const { group, devices: [f, b, c], everything } = await fleet(0x34, ["f", "b", "c"]);
+    const before = await seal(f!, "sealed while c stood");
+    await carry(f!, c!);
+    // The seat roll arrives with no session behind it: the executor's announce finds no signer, the roll stays owed,
+    // and the raise stays unmarked (the next run brings it again).
+    f!.signs = false;
+    f!.raises.add("raise-1");
+    const outcomes = await runSeatDuties(keyhiveSeatShore(f!.provider), [{ kind: "revoke", scope: SCOPE, edgeId: "edge-c", seat: { group, member: c!.id }, raiseCids: ["raise-1"], then: "leave-out" }], (r) => f!.rolls.announce(r));
+    expect(outcomes.map((o) => o.did)).toEqual(["undelivered"]);
+    expect(f!.seat.owedFor(BAG)).toEqual(["raise-1"]);
+    // THE HOLDER REFUSES a seal under a head that precedes the owed removal, even with a signer in hand.
+    const ahead = await f!.seat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes("x"), signer: f!.signer, owedActs: () => f!.seat.owedFor(BAG) });
+    expect("refusal" in ahead && ahead.refusal).toBe("roll-owed");
+    // A session act whose signer the settle cannot use seals nothing either.
+    const refusing = await f!.seat.seal({ bagId: BAG, plaintext: utf8Bytes("x"), signer: { certificate: f!.signer.certificate, sign: async () => ({ refusal: "signer-dropped" }) } });
+    expect("refusal" in refusing && refusing.refusal).toBe("roll-owed");
+    // THE SESSION'S OWN ACT settles the roll with its own signer, then seals under the successor.
+    const after = await f!.seat.seal({ bagId: BAG, plaintext: utf8Bytes("sealed after c left"), signer: f!.signer });
+    if ("refusal" in after) throw new Error(said(after));
+    expect(after.body.keyVersion).not.toBe(before.body.keyVersion);
+    expect(f!.seat.owedFor(BAG)).toEqual([]);
+    // The removed device takes everything a carrier could hand it and opens nothing sealed after its removal.
+    await c!.provider.ingestPeerEvents(await everything(f!)).catch(() => undefined);
+    await carry(f!, c!);
+    expect(await opens(c!, after.body.ref)).toBe("REFUSED:reference-unknown");
+    expect(await opens(c!, before.body.ref)).toBe("sealed while c stood");
+    void b;
+  });
+
+  /** A seal paused inside its signer's first signature while a raise is counted and its roll arrives (the train's Sol
+   *  read, 2026-10-31): the seal must not commit under a key the removed reader holds. */
+  async function raceDuringSeal(founding: boolean, raiseLands: boolean) {
+    const { group, devices: [f, , c] } = await fleet(founding ? 0x50 : 0x52, ["f", "b", "c"]);
+    const before = founding ? null : await seal(f!, "sealed while c stood");
+    if (before) await carry(f!, c!);
+    let paused!: () => void, resume!: () => void;
+    const atFirstSign = new Promise<void>((r) => { paused = r; });
+    const release = new Promise<void>((r) => { resume = r; });
+    let signs = 0;
+    const slow: RecordSigner = { certificate: f!.signer.certificate, async sign(purpose, payload) { if (++signs === 1) { paused(); await release; } return f!.signer.sign(purpose, payload); } };
+    const sealing = f!.seat.seal({ bagId: BAG, plaintext: utf8Bytes("private after removal"), signer: slow });
+    await atFirstSign;
+    let rolling: Promise<string> = Promise.resolve("none");
+    if (raiseLands) {
+      f!.raises.add("raise-race");
+      f!.standing.set(bare(c!.id), "aside");
+      f!.signs = false;
+      rolling = f!.seat.sink({ kind: "seat-roll", scope: SCOPE, edgeId: "edge-c", raiseCids: ["raise-race"], how: "revoked", seat: { group, member: c!.id } } as never).then(() => "settled", () => "owed");
+    }
+    resume();
+    const sealed = await sealing;
+    await rolling;
+    let removedOpens = "nothing sealed";
+    if (!("refusal" in sealed)) { await carry(f!, c!); removedOpens = await opens(c!, sealed.body.ref); }
+    return { sealed, removedOpens, before };
+  }
+
+  it("A RAISE COUNTED WHILE A SEAL SIGNS, ON A BAG IT FOUNDS: the seal refuses `roll-owed` at its commit point, and the removed reader opens nothing", async () => {
+    const { sealed, removedOpens } = await raceDuringSeal(true, true);
+    expect("refusal" in sealed && sealed.refusal).toBe("roll-owed");
+    expect(removedOpens).toBe("nothing sealed");
+  });
+
+  it("A RAISE COUNTED WHILE A SEAL SIGNS, ON A BAG ALREADY FOUNDED: the seal refuses `roll-owed` at its commit point, and the removed reader opens nothing", async () => {
+    const { sealed, removedOpens } = await raceDuringSeal(false, true);
+    expect("refusal" in sealed && sealed.refusal).toBe("roll-owed");
+    expect(removedOpens).toBe("nothing sealed");
+  });
+
+  it("CONTROL: the same paused seal with no raise counted commits, founding and existing alike", async () => {
+    for (const founding of [true, false]) {
+      const { sealed, before } = await raceDuringSeal(founding, false);
+      if ("refusal" in sealed) throw new Error(said(sealed));
+      if (before) expect(sealed.body.keyVersion).toBe(before.body.keyVersion);
+    }
+  });
+
+  it("A ROLL IN FLIGHT ALREADY BINDS A SEAL: the seat counts it owed from the moment it arrives, and the holder reads that inside its turn", async () => {
+    const { group, devices: [f, , c] } = await fleet(0x3a, ["f", "b", "c"]);
+    await seal(f!, "v1");
+    f!.signs = false;
+    const delivered = f!.seat.sink({ kind: "seat-roll", scope: SCOPE, edgeId: "edge-c", raiseCids: ["raise-9"], how: "revoked", seat: { group, member: c!.id } } as never).catch(() => "owed");
+    expect(f!.seat.owedFor(BAG)).toEqual(["raise-9"]);              // owed before the roll's own turn even ran
+    expect(await delivered).toBe("owed");
+    const ahead = await f!.seat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes("x"), signer: f!.signer, owedActs: () => f!.seat.owedFor(BAG) });
+    expect("refusal" in ahead && ahead.refusal).toBe("roll-owed");
+  });
+
+  it("CONTROL: with no roll owed the session's seal proceeds under the head it holds", async () => {
+    const { devices: [f] } = await fleet(0x36, ["f", "b", "c"]);
+    const first = await seal(f!, "v1");
+    expect(f!.seat.owedFor(BAG)).toEqual([]);
+    const next = await f!.seat.seal({ bagId: BAG, plaintext: utf8Bytes("v2"), signer: f!.signer });
+    if ("refusal" in next) throw new Error(said(next));
+    expect(next.body.keyVersion).toBe(first.body.keyVersion);
+  });
+
   it("CONTROL: with no removal the same device opens what the vessel seals next", async () => {
     const { devices: [f, , c] } = await fleet(0x38, ["f", "b", "c"]);
     await seal(f!, "v1");
@@ -244,6 +364,15 @@ describe("a removed device opens nothing sealed after its removal", () => {
     await carry(b!, f!);
     expect(await opens(f!, after.body.ref)).toBe("sealed by b after the raise");
     expect(await opens(c!, after.body.ref)).toBe("REFUSED:reference-unknown");
+  });
+
+  it("RED: an unknown fleet frontier keeps a reader out of a new content key; CONTROL: a clear reader opens it", async () => {
+    const { devices: [f, b, c] } = await fleet(0x45, ["f", "b", "c"]);
+    f!.standing.set(bare(c!.id), "unknown");
+    const sealed = await seal(f!, "frontier held");
+    await carry(f!, b!); await carry(f!, c!);
+    expect(await opens(b!, sealed.body.ref)).toBe("frontier held");
+    expect(await opens(c!, sealed.body.ref)).toBe("REFUSED:bag-unfounded");
   });
 
   it("a party this vessel's edge reading sets aside receives no key, whatever the group seats", async () => {

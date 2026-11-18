@@ -1,0 +1,34 @@
+import { expect, test } from "vitest";
+import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { ManualBoundary, plainDoc, shoreRig, turns } from "./wiki-shore-rig.js";
+import { wikiSkip, skipNote } from "./test-wiki.js";
+
+test.skipIf(wikiSkip)(`a rejected placed family retains its overlapping child for retry${skipNote}`, async () => {
+  const boundary = new ManualBoundary();
+  const r = await shoreRig({ boundary });
+  await r.adaptor.armSeedCheckpoint();
+  r.unbridge();
+  const title = "lar:///t/shore/rejected-placed-family";
+  const child = `${title}#/a`;
+  const root = new r.Tiddler({ title, type: CARRIER_TYPE, text: "<<~ kahea ahu slot=`#/a`>>" });
+  const slot = new r.Tiddler({ title: child, type: CARRIER_TYPE, text: "pending child", "$fragment-parent": title, "$slot": "#/a" });
+  r.wiki.addTiddler(root);
+  r.wiki.addTiddler(slot);
+  let rejectFamily!: (error: Error) => void;
+  r.failures.family = new Error("family refused");
+  r.failures.gate = new Promise<void>((_resolve, reject) => { rejectFamily = reject; });
+  void r.adaptor.saveTiddler(root).catch(() => {});
+  void r.adaptor.saveTiddler(slot).catch(() => {});
+  const first = r.adaptor.boundary();
+  await turns();
+  expect(r.calls.some((call) => call.puts.includes(title) && call.puts.includes(child))).toBe(true);
+  rejectFamily(new Error("family refused"));
+  await expect(first).rejects.toThrow("family refused");
+  r.failures.family = null;
+  r.failures.gate = null;
+  void r.adaptor.saveTiddler(root).catch(() => {});
+  await r.adaptor.boundary();
+  expect(plainDoc(r.workingHandle.doc()).tiddlers[child]?.tiddler.text, "the carried child persists on retry").toBe("pending child");
+  await r.adaptor.stop();
+  await r.repo.shutdown();
+}, 120_000);

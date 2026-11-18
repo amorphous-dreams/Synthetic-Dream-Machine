@@ -14,7 +14,7 @@
  */
 
 import { createConnection } from "node:net";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, readlinkSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 import { newRequestId } from "@lararium/mesh";
@@ -87,6 +87,7 @@ export async function udsAlive(dataDir?: string | null, timeoutMs = 1_500): Prom
       resolve(alive);
     };
     const sock = createConnection(path);
+    // LIVENESS: a bound but wedged socket may never connect or report an error.
     sock.setTimeout(timeoutMs);
     sock.once("connect", () => done(true));
     sock.once("error",   () => done(false));   // ECONNREFUSED on a stale inode → DOWN, never an error
@@ -135,8 +136,43 @@ export function socketHolderPids(path: string): number[] {
       const pid = Number(line.trim().split(/\s+/)[1]);
       if (Number.isFinite(pid)) pids.push(pid);
     }
-    return uniq(pids);
+    if (pids.length > 0) return uniq(pids);
+  } catch { /* lsof absent or refused — fall to the kernel's own tables */ }
+  return uniq(procHolderPids(prefix));
+}
+
+/**
+ * PIDs holding a LISTENING UNIX socket bound under `prefix`, read off the kernel's own tables: `/proc/net/unix` names each bound
+ * path with its socket inode, and `/proc/<pid>/fd/*` links a descriptor to `socket:[inode]`. It needs neither `ss` nor
+ * `lsof` (a minimal container image carries neither), and it reads only the descriptors this user may read, so a holder of
+ * another user stays unnamed, as it does for `lsof`. Empty = none found, or no `/proc`.
+ */
+export function procHolderPids(prefix: string): number[] {
+  const inodes = new Set<string>();
+  try {
+    for (const line of readFileSync("/proc/net/unix", "utf8").split("\n").slice(1)) {
+      const cols = line.trim().split(/\s+/);
+      const bound = cols[7] ?? "";
+      // Flags column: __SO_ACCEPTCON (0x10000) marks a LISTENING socket, the same set `ss -xl` names.
+      const listening = (Number.parseInt(cols[3] ?? "0", 16) & 0x10000) !== 0;
+      if (listening && bound.startsWith(prefix)) inodes.add(cols[6] ?? "");
+    }
   } catch { return []; }
+  if (inodes.size === 0) return [];
+  const pids: number[] = [];
+  let procs: string[] = [];
+  try { procs = readdirSync("/proc").filter((n) => /^\d+$/.test(n)); } catch { return []; }
+  for (const pid of procs) {
+    let fds: string[] = [];
+    try { fds = readdirSync(`/proc/${pid}/fd`); } catch { continue; }
+    for (const fd of fds) {
+      let link = "";
+      try { link = readlinkSync(`/proc/${pid}/fd/${fd}`); } catch { continue; }
+      const m = /^socket:\[(\d+)\]$/.exec(link);
+      if (m && inodes.has(m[1]!)) { pids.push(Number(pid)); break; }
+    }
+  }
+  return pids;
 }
 
 /**
@@ -146,9 +182,9 @@ export function socketHolderPids(path: string): number[] {
  * TWO READINGS OF "NOTHING ANSWERED", NEVER FUSED (M4). Before this, every non-answer — an immediate
  * `ECONNREFUSED`/`ENOENT` (nobody there at all) AND a connection the OS accepted into its backlog but
  * whose process never read a byte (frozen, SIGSTOPped, wedged) — read as the SAME `null`, "no
- * discoverable holder". A live probe proved the difference matters: a SIGSTOPped holder answered
- * `null` at its timeout exactly as an unbound socket would, so a caller budgeting "unbound" patience
- * for a holder that was there the whole time spent the WRONG patience and named the wrong story.
+ * discoverable holder". The difference matters: a SIGSTOPped holder would answer `null` at its
+ * timeout exactly as an unbound socket does, so a caller budgeting "unbound" patience for a holder
+ * standing the whole time would spend the WRONG patience and name the wrong story.
  *   - `error` (ECONNREFUSED/ENOENT, before any `connect`) → UNBOUND: `null`, nothing to connect to.
  *   - `timeout` after a successful `connect` but before any line arrives → WEDGED: something accepted
  *     the connection and then never answered. `socketHolderPids` names it when it can.
@@ -173,6 +209,7 @@ export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<Wh
       resolve(v);
     };
     const sock = createConnection(path);
+    // LIVENESS: a holder may accept the query and remain silent.
     sock.setTimeout(timeoutMs);
     sock.setEncoding("utf8");
     let buf = "";
@@ -266,7 +303,7 @@ type ReadOnlyOp = "receipt" | "cancel";
  *
  * `patienceMs` (M13) is THIS caller's own MONOTONIC (`performance.now()`-timed) liveness for the
  * READ — never a verdict on anything. A frozen/wedged vessel that accepted the connection but never
- * answers used to hang this call forever; past `patienceMs` this destroys the socket and resolves
+ * answers would hang this call forever; past `patienceMs` this destroys the socket and resolves
  * `{state:"unanswered"}` instead, exactly as `LocalWaitExpired` ends the dispatch path's OWN wait.
  */
 function readOnlyQuery(op: ReadOnlyOp, requestId: string, opts: { dataDir?: string | null; patienceMs?: number }): Promise<ReceiptAnswer> {
@@ -282,6 +319,7 @@ function readOnlyQuery(op: ReadOnlyOp, requestId: string, opts: { dataDir?: stri
       clearTimeout(timer);
       fn();
     };
+    // LIVENESS: a daemon may never answer the receipt query; close and error settle separately.
     const timer = setTimeout(() => {
       settle(() => { try { sock.destroy(); } catch { /* already gone */ } resolve({ requestId, state: "unanswered" }); });
     }, patienceMs);
@@ -309,10 +347,9 @@ function readOnlyQuery(op: ReadOnlyOp, requestId: string, opts: { dataDir?: stri
 }
 
 /**
- * Read a request id's receipt WITHOUT dispatching anything (H1). Replaces the old pattern of
- * calling `invokeLocal` a second time with the same request id as a "read-back" — that second call
- * went through the EXACT SAME dispatch path as the original, so an id this vessel had already
- * dropped as abandoned got run a second time, never a read. `queryReceipt` rides a dedicated
+ * Read a request id's receipt WITHOUT dispatching anything (H1). A second `invokeLocal` with the
+ * same request id as a "read-back" would ride the EXACT SAME dispatch path as the original, so an id
+ * this vessel already dropped as abandoned would run a second time, never a read. `queryReceipt` rides a dedicated
  * `{op:"receipt"}` line the vessel's own connection handler answers from its ledger + the durable
  * outcome doc alone.
  *
@@ -365,6 +402,7 @@ export async function invokeLocal(
     };
     const onAbort = (): void => settle(() => reject(new LocalInvocationAborted(`local verb "${verb}" aborted by its own caller`)));
     opts.signal?.addEventListener("abort", onAbort, { once: true });
+    // LIVENESS: a daemon may remain silent while the verb continues; reply or socket failure settles earlier.
     const timer = setTimeout(
       () => settle(() => reject(new LocalWaitExpired(verb, timeoutMs, requestId))),
       timeoutMs,

@@ -16,9 +16,9 @@ import { digestsEqual, reprDigestOf } from "@lararium/mesh/agile-digest";
 
 const URI = "lar:///t/x";
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function wiki() {
   const store = new Map<string, TiddlerFields>();
@@ -96,7 +96,7 @@ describe("★ PUT /bags/:bag/memes/:scheme/:path ★", () => {
 
   test("CONTROL: an error-graded meme answers 422 and the wiki stays untouched", async () => {
     const w = wiki();
-    const stranded = meme(["a"]).replace("<<^ code=\"&#x0003;\">>\n", "<<^ code=\"&#x0003;\">>\n<<~ ahu #edges>>\n\n* x\n\n<<~/ahu>>\n");
+    const stranded = meme(["a"]).replace("<<^ code=`&#x0003;`>>\n", "<<^ code=`&#x0003;`>>\n<<~ ahu slot=`#edges`>>\n\n* x\n\n<<~/ahu>>\n");
     const r = await fire(put, w, { data: stranded });
     expect(r.status).toBe(422);
     expect(w.store.size).toBe(0);
@@ -273,7 +273,7 @@ describe("★ THE TWO DOORS (a): a framed meme root at the native door refuses, 
   test("CONTROL: a plain tiddler passes; a carrier-typed tiddler with no head (a split root, a slot child) passes; SOH text under another type passes", () => {
     expect(gate({ title: URI, text: meme(["a"]) }).kind).toBe("pass");
     expect(gate({ title: URI, type: "text/vnd.tiddlywiki", text: meme(["a"]) }).kind).toBe("pass");
-    expect(gate({ title: URI, type: CARRIER, text: "<<~ kahea ahu #/a>>" }).kind).toBe("pass");
+    expect(gate({ title: URI, type: CARRIER, text: "<<~ kahea ahu slot=`#/a`>>" }).kind).toBe("pass");
     expect(gate({ title: `${URI}#/a`, type: CARRIER, text: "! a", fields: { "$slot": "#/a" } }).kind).toBe("pass");
     // A head SHOWN inside a fence opens nothing.
     expect(gate({ title: URI, type: CARRIER, text: "```\n" + meme(["a"]) + "```\n" }).kind).toBe("pass");

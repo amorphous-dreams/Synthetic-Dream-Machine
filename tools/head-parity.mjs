@@ -55,18 +55,18 @@ function controlNodes(nodes, out = []) {
   return out;
 }
 
-/** The address the PARSER says this carrier's head names — named or positional. */
+/**
+ * The address the PARSER says this carrier's head names. The head ticks every value (the kupono cut), and
+ * TiddlyWiki types a ticked value `substituted`, its interior carried as `rawValue` with no `.value` at all:
+ * a reader asking `.value` alone would go blind on every head and report every carrier as drift.
+ */
 function parserHeadUri(text) {
+  const valueOf = (a) => a?.type === "substituted" ? a.rawValue : a?.value;
   for (const n of controlNodes(wiki.parseText("text/vnd.tiddlywiki", text, { parseAsInline: false }).tree)) {
-    const code = n.attributes?.code?.value ?? "";
+    const code = valueOf(n.attributes?.code) ?? "";
     if (!HEAD_CODE_RE.test(code)) continue;
-    // the far side is a named `to=`, or the positional token the framing ends carried before names
-    const named = n.attributes?.to?.value;
+    const named = valueOf(n.attributes?.to);
     if (named) return named;
-    const positional = Object.entries(n.attributes ?? {})
-      .filter(([k, v]) => v?.isPositional && /^lar:\/\//.test(String(v.value)))
-      .map(([, v]) => String(v.value));
-    if (positional.length) return positional[0];
   }
   return null;
 }

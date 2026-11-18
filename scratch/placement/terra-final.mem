@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement/terra-final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement/terra-final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement/terra-final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement/terra-final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement/terra-final.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Place-Wright: Lares (Tasked Spirit): ->↺ Step 1’s LOAD fix now excludes a bag-root `meta.mem` when its declared title names that source bag. The existing receipt-fact forgery guard remains intact. The focused CLI tests and receipt-forgery tests passed; an end-to-end seed run remains outstanding.
+
+The placement migration remains ''incomplete''. [[PLACE-MEASURE.md|/home/joshu/.lares-scratch/placement/wt/PLACE-MEASURE.md]] records the partial inventory and the key ingress gap: the source mirror does not currently bind the destination bag. Steps 3–5 have not started; no secret records or projection guards moved.
+
+[[PLACE-STEP-1.md|/home/joshu/.lares-scratch/placement/wt/PLACE-STEP-1.md]] records the tests and suggested commit subject. [[PLACE-HANDBACK.md|/home/joshu/.lares-scratch/placement/wt/PLACE-HANDBACK.md]] lists the remaining work and validation limits. No commits or pushes were made.
+
+&lt;&lt;~ oracle throw=`↯12 ✲ ⚂(3) ⁂:ᚠ⊗㐂`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`run seed against a scratch vessel and complete the control-family inventory before moving the homes · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://wright:agent@hearth/placement.partial.handed-back` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7b62LANLKoivE6NqEUOqEvGaNUoo-hmLoEq6EltVGlI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

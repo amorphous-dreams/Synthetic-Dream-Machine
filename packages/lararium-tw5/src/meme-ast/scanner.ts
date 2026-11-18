@@ -15,6 +15,8 @@
 import type { GrammarRules, SigilRule } from "./types.js";
 import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
 import { GENERATED_SIGILS } from "./grammar-table.generated.js";
+import { SIGIL_TRAILING_TEXT_CODE } from "./diagnostics.js";
+import type { ParseFailure } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,15 +61,30 @@ export interface ParseEvent {
 // (@lararium/memetic-frame head.ts); the bootstrap SCAN did not, by the same ruling that keeps every frame scan local
 // (@lararium/memetic-frame marks.ts). (`sigil-frame-soh.tid` etc. DO carry a `lar-pattern` — a deliberately narrower
 // spec-side anchor frame-parity's OWN witness reads; it is not this file's independent recognizer.)
+/** One run of a call's attributes: a tick run (the triple first) is a value, and a `>` ends a call only doubled. */
+export const ATTR_RUN = "(?:```(?:(?!```)[\\s\\S])*```|`[^`]*`|[^`>]|>(?!>))*";
+/**
+ * THE ONE PRANALA OPENER, shared by the inline scan, the block scan and the block-span exclusion, so the
+ * three cannot drift. The pair carries the relation (the kupono cut): `slot`, `from` and `to` are named,
+ * ticked values in either order, read by lookahead into groups 1-3; group 4 is the whole attribute run,
+ * where `attrOf` reads `family` and `role`. A pranala naming no `from` or no `to` opens nothing.
+ */
+export const PRANALA_OPEN_SRC =
+  `<<~\\s*pranala(?=\\s)` +
+  `(?:(?=${ATTR_RUN}?\\sslot=\`([^\`]*)\`)|)` +
+  `(?=${ATTR_RUN}?\\sfrom=\`([^\`]*)\`)` +
+  `(?=${ATTR_RUN}?\\sto=\`([^\`]*)\`)` +
+  `(${ATTR_RUN})>>`;
+
 export const BOOTSTRAP_SCANS: SigilScan[] = [
-  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0001;(?:[^>]|>(?!>))*"?\?"?\s*->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
+  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0001;(?=(?:[^>]|>(?!>))*?\sfrom=`\?`)(?:[^>]|>(?!>))*?\sto=`([^`\s>]+)`(?:[^>]|>(?!>))*>>/g, eventType: "pragma" },
   { sigilName: "control-stx", regex: /<<\^(?:[^>]|>(?!>))*&#x0002;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   { sigilName: "control-etx", regex: /<<\^(?:[^>]|>(?!>))*&#x0003;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   { sigilName: "control-eot", regex: /<<\^(?:[^>]|>(?!>))*&#x0004;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
-  // Kapu extended range — DC1 (&#x0011;) SOH₂ variant (the Kapu opener). EOT2 (DC4, 0x14) is
-  // RETIRED: every carrier closes on plain EOT, at rest and in flight; stream/batch framing belongs
+  // Kapu extended range — DC1 (&#x0011;) SOH₂ variant (the Kapu opener). No second EOT spelling
+  // stands: every carrier closes on plain EOT, at rest and in flight; stream/batch framing belongs
   // to a future transport envelope, not a second at-rest EOT spelling.
-  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0011;(?:[^>]|>(?!>))*"?\?"?\s*->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
+  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0011;(?=(?:[^>]|>(?!>))*?\sfrom=`\?`)(?:[^>]|>(?!>))*?\sto=`([^`\s>]+)`(?:[^>]|>(?!>))*>>/g, eventType: "pragma" },
   // pranala stays a reasoned SECOND hand-kept exception (RED: pranala-attribute-spellings.test.ts).
   // `sigil-pranala.tid`'s own `lar-inline-pattern` /
   // `lar-block-pattern` carry a DIFFERENT capture shape than builder.ts's makeLeaf "pranala" case
@@ -77,8 +94,8 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   // the generic tiddler-pattern dispatch, so the tiddler's pattern fields describe the sigil for
   // reference/generation, not the shape a scanner-and-builder contract can derive blind. Order
   // matters below: block before inline — block wins at same position.
-  { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, eventType: "leaf" },
-  { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>/g, eventType: "leaf" },
+  { sigilName: "pranala", regex: new RegExp(`${PRANALA_OPEN_SRC}([\\s\\S]*?)<<~\\/pranala\\s*>>`, "gs"), eventType: "leaf" },
+  { sigilName: "pranala", regex: new RegExp(PRANALA_OPEN_SRC, "g"), eventType: "leaf" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -106,8 +123,9 @@ export function buildScansFromGrammar(sigils: SigilRule[]): SigilScan[] {
   }
   // GENERIC catch-all — appended LAST so every specific grammar scan claims its position first (the same
   // partial-rung the bootstrap carries, now in grammar-mode too: an unmatched sharktooth grades `missing`
-  // in the FULL-grammar in-VM parse, not only bootstrap).
-  scans.push({ sigilName: "(generic)", generic: true, regex: /<<~\s*(\\?[A-Za-z][\w-]*)((?:[^>]|>(?!>))*?)\s*>>/g, eventType: "leaf" });
+  // in the FULL-grammar in-VM parse, not only bootstrap). The attribute run is ATTR_RUN, so a `>>` a
+  // ticked value carries rides as content and the call ends at its own `>>`, as `sigilOpenEnd` reads it.
+  scans.push({ sigilName: "(generic)", generic: true, regex: new RegExp(`<<~\\s*(\\\\?[A-Za-z][\\w-]*)(${ATTR_RUN}?)\\s*>>`, "g"), eventType: "leaf" });
   // Control scans must win at identical positions even in grammar-hydrated mode
   return scans.sort((a, b) => (a.sigilName.startsWith("control-") ? 0 : 1) - (b.sigilName.startsWith("control-") ? 0 : 1));
 }
@@ -139,7 +157,7 @@ export function collectEvents(text: string, grammar?: GrammarRules): ParseEvent[
 
   // Pranala block spans: inline events inside a pranala block body are excluded
   const blockSpans: [number, number][] = [];
-  for (const m of maskedExecAll(text, /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, mask, true)) {
+  for (const m of maskedExecAll(text, new RegExp(`${PRANALA_OPEN_SRC}([\\s\\S]*?)<<~\\/pranala\\s*>>`, "gs"), mask, true)) {
     blockSpans.push([m.index!, m.index! + m[0].length]);
   }
   const inBlock = (pos: number): boolean => blockSpans.some(([s, e]) => pos >= s && pos < e);
@@ -189,4 +207,36 @@ export function collectEvents(text: string, grammar?: GrammarRules): ParseEvent[
   }
 
   return events.sort((a, b) => a.pos - b.pos || a.end - b.end);
+}
+
+// ---------------------------------------------------------------------------
+// trailingTextFailures — the graceful floor under the block law
+// ---------------------------------------------------------------------------
+
+/**
+ * A sigil is a block only when its `>>` ends the line (`\r?\n` or the end of the source) — TW5's own
+ * split of `<<m>>` from `<<m>>;abc`. A line that opens on a sigil and leaves text behind reads as a
+ * paragraph holding the sigil inline, every byte kept.
+ *
+ * For a head that rides inline (a link, a citation, a call — loulou, saksi, kahea, …) that IS the
+ * reading, and it draws nothing. The floor speaks only for a BLOCK-ONLY head (`lar-flow: block` on its
+ * sigil tiddler: the frame marks and the child-slot opener and closer), whose meaning needs its own
+ * line: one warning per such sigil, so the text stands rendered AND the author hears about it. The set
+ * comes from the grammar, never a list here; a frame mark answers by the `lar-code` its rule carries.
+ * The events arrive fence-masked, so a quoted lesson raises nothing.
+ */
+export function trailingTextFailures(text: string, events: readonly ParseEvent[], sigils: readonly SigilRule[] = GENERATED_SIGILS): ParseFailure[] {
+  const blockNames = new Set(sigils.filter((s) => s.flow === "block").map((s) => s.name));
+  const blockCodes = sigils.filter((s) => s.flow === "block" && s.code).map((s) => s.code!);
+  const blockOnly = (e: ParseEvent): boolean =>
+    blockNames.has(e.sigilName) || (e.raw.startsWith("<<^") && blockCodes.some((c) => e.raw.includes(c)));
+  const out: ParseFailure[] = [];
+  for (const e of events) {
+    if (!e.raw.startsWith("<<") || e.raw.includes("\n") || !blockOnly(e)) continue;
+    const lineStart = text.lastIndexOf("\n", e.pos - 1) + 1;
+    if (!/^[ \t]*$/.test(text.slice(lineStart, e.pos))) continue;
+    if (e.end >= text.length || text[e.end] === "\n" || (text[e.end] === "\r" && text[e.end + 1] === "\n")) continue;
+    out.push({ pos: e.pos, raw: e.raw, reason: SIGIL_TRAILING_TEXT_CODE, recoveredAs: "repaired", sigilName: e.sigilName });
+  }
+  return out;
 }

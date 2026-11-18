@@ -1,0 +1,4 @@
+title: $:/core/modules/savers/postmessage.js
+type: application/javascript
+
+// The mirror is fed by the port alone; no saver probes the origin.

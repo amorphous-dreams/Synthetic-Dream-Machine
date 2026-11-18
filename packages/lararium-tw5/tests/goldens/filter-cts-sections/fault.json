@@ -1,0 +1,122 @@
+[
+  {
+    "id": "fault-001-fault-0",
+    "filter": "[lar-uri:bad[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "fault-002-fault-1",
+    "filter": "[[Alpha]meme-pin[bad]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "fault-003-fault-2",
+    "filter": "[[Alpha]meme-project[bad]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "fault-004-fault-3",
+    "filter": "[wikisense:recall:bogus[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "wikisense answers an unknown suffix as a result string, not a filter fault"
+  },
+  {
+    "id": "fault-005-fault-4",
+    "filter": "[wikisense:bogus[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "wikisense answers an unknown verb as a result string, not a filter fault"
+  },
+  {
+    "id": "fault-006-fault-5",
+    "filter": "[unknown-operator[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "an unknown operator answers an empty list, not a filter fault"
+  },
+  {
+    "id": "fault-007-fault-6",
+    "filter": "[regexp:title[[[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "an invalid regexp answers its SyntaxError as a result string, not a filter fault"
+  },
+  {
+    "id": "fault-008-fault-7",
+    "filter": "[sort[",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "fault-009-fault-8",
+    "filter": "[tag[topic]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "fault-010-fault-9",
+    "filter": "[all[tiddlers]bad-token[nope]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "an unknown operator answers an empty list, not a filter fault"
+  }
+]

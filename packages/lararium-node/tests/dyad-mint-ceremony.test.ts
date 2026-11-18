@@ -1,10 +1,8 @@
 /**
  * dyad-mint-ceremony — A DYAD IS MINTED WHEN A FACE MEETS A DEVICE (register ⑨, Stage 2).
  *
- * The Stage 0 ruling (2026-09-05) named what stands behind the veil: the per-handle credential
- * derived from the DEVICE-MINTED vessel seed (`deriveDyadVeil`). These vectors assert the two
- * ceremony sites WRITE that relationship down: founding and admit each land a dyad slot whose
- * veilDid is the derived face — never the persona root, which spans devices and names no veil.
+ * A face's random atom names the device end of the relationship. These vectors assert that
+ * founding and admit each land a dyad slot under the atom DID.
  *
  * The binding asymmetry is the model's own honesty: at FOUNDING (self-stood) the group root stands
  * in the same hands, so the binding gets signed, rooted on the HEARTH it binds (the seed charter's AID);
@@ -14,28 +12,31 @@
 import { describe, test, expect, vi } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { KeyhiveProvider, runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { KeyhiveProvider, runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import {
-  hex, deriveDyadVeil, vesselDyads, DYAD_SLOT_PREFIX, DYAD_VEIL_TAG_TIDDLER, tiddlerText, type DyadRecord,
+  hex, faceAtomKeyFromSeed, vesselDyads, DYAD_SLOT_PREFIX, seedDaemonDoc, type DyadRecord,
   personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix, MESH_CABAL_SENTINEL_URI,
 } from "@lararium/mesh";
 import type { LarDoc } from "@lararium/mesh";
 
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 /** The hearth the founding binds: a seed charter's Nexus AID. */
 const HEARTH_AID = `nexus-${"5a".repeat(32)}`;
 const JOINEE_SEED  = new Uint8Array(32).fill(11);
+const JOINEE_ATOM = new Uint8Array(32).fill(12);
 
 async function found(hearthTrueName: string = HEARTH_AID) {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
-  const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
-    repo,
+  const f = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo,
     vesselSeed:         FOUNDER_SEED,
-    vesselVerifyingKey: verifyingKey,
+    placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",
     binding: { mode: "self-stood", signerSeed: FOUNDER_SEED },
     hearthTrueName,
@@ -54,8 +55,8 @@ async function founderPersonaKelChain(founder: Awaited<ReturnType<typeof found>>
   return chain;
 }
 
-async function dyadSlotsOf(repo: Repo, daemonUrl: string): Promise<DyadRecord[]> {
-  const handle = await repo.find(daemonUrl as AutomergeUrl);
+async function dyadSlotsOf(repo: Repo, secretUrl: string): Promise<DyadRecord[]> {
+  const handle = await repo.find(secretUrl as AutomergeUrl);
   const doc = await handle.doc() as { tiddlers: Record<string, { tiddler?: { text?: string } }> };
   return Object.keys(doc.tiddlers)
     .filter((t) => t.startsWith(DYAD_SLOT_PREFIX))
@@ -63,20 +64,15 @@ async function dyadSlotsOf(repo: Repo, daemonUrl: string): Promise<DyadRecord[]>
 }
 
 describe("the ceremony mints the dyad", () => {
-  test("★ FOUNDING writes a dyad slot — veilDid is the DERIVED face, never the root, binding SIGNED ★", async () => {
+  test("founding writes one atom dyad slot with a signed binding", async () => {
     const { repo, f } = await found();
-    const slots = await dyadSlotsOf(repo, f.daemonUrl);
+    const slots = await dyadSlotsOf(repo, f.secretUrl);
     expect(slots.length, "founding mints exactly one dyad").toBe(1);
 
-    // The founder's veil derives from the PERSISTED FOUNDING TAG (the pre-birth moment of the
-    // two-tag split); the joinee's derives from the carried doc id (the post-birth moment).
-    const handle = await repo.find(f.daemonUrl as never);
-    const tag = tiddlerText((handle.doc() as { tiddlers: Record<string, unknown> }).tiddlers[DYAD_VEIL_TAG_TIDDLER] as never)!;
-    const veil = await deriveDyadVeil(FOUNDER_SEED, tag);
+    const atom = faceAtomKeyFromSeed(f.atomSeed, f.personaGroupId);
     const slot = slots[0]!;
-    expect(slot.ref.veilDid.toLowerCase()).toContain(veil.verifyingKey);
-    expect(slot.ref.veilDid.toLowerCase()).not.toBe(f.signerDid.toLowerCase());
-    expect(slot.ref.vesselDid.toLowerCase()).toBe(f.founderEdge.deviceDid.toLowerCase());
+    expect(slot.ref.deviceDid.toLowerCase()).toBe(atom.did.toLowerCase());
+    expect(slot.ref.deviceDid.toLowerCase()).not.toBe(f.signerDid.toLowerCase());
     expect(slot.binding, "the root stands self-stood here, so the binding signs").not.toBeNull();
     expect(slot.binding!.epochCid, "the binding roots on the hearth's AID").toBe(HEARTH_AID);
   });
@@ -95,18 +91,18 @@ describe("the ceremony mints the dyad", () => {
 
   test("★ a face founded at NO hearth binds no dyad: its slot carries binding null — CONTROL: at a hearth it binds ★", async () => {
     const { repo, f } = await found("");
-    const slots = await dyadSlotsOf(repo, f.daemonUrl);
+    const slots = await dyadSlotsOf(repo, f.secretUrl);
     expect(slots).toHaveLength(1);
     expect(slots[0]!.binding).toBeNull();
     const at = await found();
-    expect((await dyadSlotsOf(at.repo, at.f.daemonUrl))[0]!.binding).not.toBeNull();
+    expect((await dyadSlotsOf(at.repo, at.f.secretUrl))[0]!.binding).not.toBeNull();
   });
 
-  test("★ APPLY writes the joinee's dyad slot — its OWN derived face, binding null (the root is absent) ★", async () => {
+  test("apply writes the joinee atom's dyad slot with a null binding", async () => {
     const founder = await found();
-    const joineeKey = await pubOf(JOINEE_SEED);
+    const joineeKey = faceAtomKeyFromSeed(JOINEE_ATOM, founder.f.personaGroupId).key;
     const payload = await runDeviceAdmitEdge({
-      signerSeed:             FOUNDER_SEED,
+      signerSeed:             FOUNDER_SEED, edgeFrontier: await frontierFromFoundingSeed(FOUNDER_SEED),
       joineeVerifyingKey:     joineeKey,
       personaKelPrefix:       founder.f.personaKelPrefix,
       personaKelChain:        await founderPersonaKelChain(founder),
@@ -114,20 +110,19 @@ describe("the ceremony mints the dyad", () => {
       personaGroupId:   founder.f.personaGroupId,
       meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
       syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
+      personaActs: await founderAndJoineeActs({ face: founder.f, signerSeed: FOUNDER_SEED, founderAtomSeed: founder.f.atomSeed, joineeKey, chain: await founderPersonaKelChain(founder) }),
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
 
     const joineeRepo = new Repo({ sharePolicy: async () => true });
-    const applied = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)),
-      repo: joineeRepo, vesselSeed: JOINEE_SEED, vesselVerifyingKey: joineeKey,
-      vesselDisplayName: "Ichi", payload, nexusPubkey: joineeKey,
+    const applied = await runApplyAdmitPayload({ repo: joineeRepo, atomSeed: JOINEE_ATOM, daemonHandle: seedDaemonDoc(joineeRepo), ...memorySecretHome(joineeRepo),
+      vesselDisplayName: "Ichi", payload, nexusPubkey: await pubOf(JOINEE_SEED),
     });
 
-    const slots = await dyadSlotsOf(joineeRepo, applied.daemonUrl);
+    const slots = await dyadSlotsOf(joineeRepo, applied.secretUrl);
     expect(slots.length, "the admit mints exactly one dyad on the joinee").toBe(1);
 
-    const veil = await deriveDyadVeil(JOINEE_SEED, founder.f.personaGroupId);
     const slot = slots[0]!;
-    expect(slot.ref.veilDid.toLowerCase()).toContain(veil.verifyingKey);
+    expect(slot.ref.deviceDid.toLowerCase()).toBe(faceAtomKeyFromSeed(JOINEE_ATOM, founder.f.personaGroupId).did.toLowerCase());
     expect(slot.binding, "no root stands on the joinee — the absence travels").toBeNull();
   });
 
@@ -136,21 +131,19 @@ describe("the ceremony mints the dyad", () => {
     // derived veil. One relationship, one record, and the slot's reading is the one that surfaces —
     // the exact union the boot read path (`openDaemon`) now walks on a live daemon doc.
     const { repo, f } = await found();
-    const handle = await repo.find(f.daemonUrl as AutomergeUrl);
+    const handle = await repo.find(f.secretUrl as AutomergeUrl);
     const doc = await handle.doc() as unknown as LarDoc;
 
     const dyads = vesselDyads(doc);
     expect(dyads.length, "one relationship, slot and edge united").toBe(1);
-    const tag = tiddlerText((doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers[DYAD_VEIL_TAG_TIDDLER] as never)!;
-    const veil = await deriveDyadVeil(FOUNDER_SEED, tag);
-    expect(dyads[0]!.ref.veilDid.toLowerCase()).toContain(veil.verifyingKey);
-    expect(dyads[0]!.ref.veilDid.toLowerCase()).not.toBe(f.signerDid.toLowerCase());
+    expect(dyads[0]!.ref.deviceDid.toLowerCase()).toBe(faceAtomKeyFromSeed(f.atomSeed, f.personaGroupId).did.toLowerCase());
+    expect(dyads[0]!.ref.deviceDid.toLowerCase()).not.toBe(f.signerDid.toLowerCase());
     expect(dyads[0]!.binding).not.toBeNull();
   });
 
   test("the two vessels wear DIFFERENT faces into one group — no roster key appears on another", async () => {
-    const a = await deriveDyadVeil(FOUNDER_SEED, "deadbeef".repeat(8));
-    const b = await deriveDyadVeil(JOINEE_SEED,  "deadbeef".repeat(8));
-    expect(a.verifyingKey).not.toBe(b.verifyingKey);
+    const a = faceAtomKeyFromSeed(FOUNDER_SEED, "one-group");
+    const b = faceAtomKeyFromSeed(JOINEE_ATOM, "one-group");
+    expect(a.key).not.toBe(b.key);
   });
 });

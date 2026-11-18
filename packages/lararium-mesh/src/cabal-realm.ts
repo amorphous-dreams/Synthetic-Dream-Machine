@@ -78,7 +78,7 @@ export interface CabalRealm {
  * belongs to the vessel that admits. This addresses the REALM'S feed, the heartbeat its members keep
  * together, which has to take a peer's write. They share a key BY CONSTRUCTION, not by debt: a cabal IS
  * the shared relation over its realm's resources, so identity-as-relation names it by that realm's doc.
- * One name is correct; one SLOT was not.
+ * One name holds; one SLOT does not.
  *
  * Addressed alike they are ONE SLOT, and each drives the other: feeding a realm stales its own invites,
  * and revoking an invite reads as somebody maintaining it.
@@ -99,7 +99,7 @@ export function realmFeedSlotUri(realmDocIdHex: string, writerId: string): strin
 
 /**
  * The realm's LIVENESS feed slot a single writer owns, keyed by the realm's sentinel DocId.
- * Coordinator-free max-register (effectiveLeaseEpoch = max over slots); the realm's own
+ * Coordinator-free feed max over sealed slots; the realm's own
  * collective-maintenance heartbeat, NOT an authority epoch (#the-tie-break).
  *
  * The CABAL holding this realm carries its own epoch under the same DocId, in the epoch-lease space
@@ -174,7 +174,7 @@ export function deriveCabalRealmLiveness(
  *   · `unread`    — this vessel never looked.
  *
  * ⚠ NO INSTRUMENT HERE SEES THE COLLECTIVE, and `realmStanding` does not either. Its per-writer lease
- * slots ride `bags/daemon/lease-epoch/`, whose bag URL each vessel reads off its OWN social bootstrap,
+ * slots ride `bags/control/lease-epoch/`, whose bag URL each vessel reads off its OWN social bootstrap,
  * so a contracted peer's offering never arrives — measured on two hearths through a live relay, where
  * the founder counted her own faces and never her partner's. Both readings answer for the vessel
  * holding them; they differ in WHAT they answer about, never in how far they see.

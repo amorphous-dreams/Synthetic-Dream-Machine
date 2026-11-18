@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/carry-f13df80b7f54951aa6cfb13eed25ad4c1b8e8085`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-09 (file date) — source `.lares-scratch/controller/ship/carry-f13df80b7f54951aa6cfb13eed25ad4c1b8e8085.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/carry-f13df80b7f54951aa6cfb13eed25ad4c1b8e8085"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/carry-f13df80b7f54951aa6cfb13eed25ad4c1b8e8085"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! carry-f13df80b7f54951aa6cfb13eed25ad4c1b8e8085.md — plan, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/controller/ship/carry-f13df80b7f54951aa6cfb13eed25ad4c1b8e8085.md` (plan, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-carry-f13df80b7f54951aa6cfb13eed25ad4c1b8e8`>>
+
+! SHIP carry f13df80b7f54951aa6cfb13eed25ad4c1b8e8085
+read: controller (Kiaʻi) read Carry-Wright's four hand-backs (export/import flows, manifest and re-declare shapes, face remap, journal under config/, the namespace withhold that keeps the group-secret seals off disk, the island INGEST guard, the projection filter's call-site map and equivalence suite), resolved the outbound-bridge conflict to the new ruling at projections/bags/daemon, and staged the four commits by cherry-pick on span + wave 2.
+security: withheld titles (control plane, bags/**, dreamnet/**, $:/) never project and refuse at the island; cap/** never anywhere; no credential travels; the bundle carries no key, signature or AID.
+
+read: cure commits 4bc6b529e (evergreen narration ceiling 163->162; never-projected test skips residency effect records only; outbound-bridge e2e imports mesh src by path; mcp-seat + kahua-founding-stage tests read the canon-mirror withhold law and the list's relation key), 085d4bede (span merge, no file change), f13df80b7 (mirror-parity fixture adds export/import). Stage-walk S3-S6 unrouted-save read as flake (16/16 locally, green in 42570345857).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a3LRdPv7Gpb5kbyslAlhRqPvxWQx2TbdaI5gsvSGHVY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

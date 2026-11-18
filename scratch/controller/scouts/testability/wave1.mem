@@ -1,0 +1,205 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/testability/wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! wave1.md — research, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/testability/wave1.md` (research, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/testability/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/testability-scout-wave-1`>>
+
+! Testability scout, wave 1 (codebase only)
+
+Kilo-Scout: Lares (Tasked Spirit). Date 2026-10-31. Main checkout, read-only. Nothing in the repo changed; no mutation tool, suite, e2e or docker ran.
+Anything I could not verify is marked ''(testimony)''.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tl-dr`>>
+
+!! TL;DR
+
+# The 1.66:1 figure runs ''high'' against what I measure. Non-comment TS/MJS: tests 204,871 vs source 145,127 = ''1.41:1'' (1.46 with fixtures and shell witnesses). Raw lines: ''1.10:1''. Source carries 39% comment lines, tests 22%, so the raw view hides test weight and the comment-stripped view shows it. The weight sits in `lararium-node` (1.88), `lararium-web` (2.02), `lararium-tw5` (1.50) and `lararium-keyhive` (1.60). Node + mesh + tw5 hold 74% of all test LOC.
+# The single biggest seam is one function: `prepareNodeBootOn` in `packages/lararium-node/src/open-node-vessel.ts:709-3546` runs ~2,840 lines (164 top-level closures/consts, 49 `let`s). Every claim about vessel boot enters through it, which is why tests boot whole vessels and stand setup in bulk.
+# Test weight comes from setup repetition and breadth, not giant test files: 1,032 `mkdtemp` calls in 389 files, 2.1 test files per source file in node, 5,669 exports of which ~350 only tests touch (strict) and ~1,200 touch only their own file and tests.
+# Mutation testing exists only as a hand catalog: 14 mutants for `lares-cli` (`packages/lares-cli/tests/laws/mutants.json`), run by `tools/law-mutants-witness.sh`. Stryker is not in the repo (no config, no dependency); canon records it activated no mutants against vitest 5. A mutation score cannot replace raw count today.
+# The road (`stable-founding-road.mem:268, 849`) rules the test architecture re-cuts AFTER the founding. Items below sort into before (cheap, seam-opening, no re-cut), folded into the founding, or after. The "before" set needs the operator's explicit lift of that ruling.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/measured-numbers`>>
+
+!! Measured numbers
+
+Method: `git ls-files`, filtered to tracked code files; excludes `dist/`, `node_modules/`, `TiddlyWiki5/`, `tw5-core/`, `_osr/`. A "test" is any file under a `tests/` dir or named `*.test.*`/`*.e2e.*`. Non-comment = non-blank, not starting `//`, `/*`, `*` (trailing comments count as code, so source is slightly overcounted). Script (reads only): `/tmp/claude-1000/-home-joshu-Synthetic-Dream-Machine/dc3b2897-8df4-438c-9c04-27bbafa680a6/scratchpad/loc.mjs`. Python (sensorium scripts ~38k) and `_osr` shell are excluded from the TS ratio.
+
+| Area | src (non-comment) | test (non-comment) | ratio | raw ratio | src files / test files |h
+| lararium-mesh | 45,341 | 55,955 | 1.23 | 0.89 | 361 / 483 |
+| lararium-node | 32,502 | 60,971 | ''1.88'' | 1.48 | 241 / 512 |
+| lararium-tw5 | 22,805 | 34,156 | 1.50 | 1.17 | 195 / 318 |
+| lares-cli | 17,641 | 15,430 | 0.87 | 0.77 | 133 / 153 |
+| lararium-browser | 5,250 | 7,643 | 1.46 | 1.21 | 49 / 90 |
+| lararium-keyhive | 5,117 | 8,175 (+821 fixtures) | 1.60 | 1.15 | 42 / 87 |
+| lararium-web | 2,624 | 5,309 | ''2.02'' | 1.78 | 32 / 42 |
+| tools (mjs src vs `*.test.mjs`) | 11,672 | 8,178 | 0.70 | 0.58 | 96 / 57 |
+| tests/ (e2e + harness) | 0 | 7,243 | n/a | n/a | 0 / 52 |
+| memetic-frame, mempalace, tree-sitter, sensorium TS | ~2,100 | ~1,800 | ~0.9 | | |
+| ''TS/MJS total'' | ''145,127'' | ''204,871'' | ''1.41'' | ''1.10'' | 1,190 / 1,819 |
+| shell witnesses (`tools/*witness*.sh`) | | 4,084 non-comment (4,790 raw) | | | |
+| fixtures/probes | | 2,237 | | | |
+
+All-languages view (python and `_osr` included): src 196,664, tests 205,463, plus witness 4,084 and fixture 2,237; reads ~1.05. No variant I tried gives 1.66; the nearest is comment-stripped source against raw test lines (1.81). ''Where 1.66 came from: testimony.''
+
+Other counts:
+* `it(`/`test(` rows: 12,659 across `packages/*/tests`, `tests`, `tools` (rg, line-start; `.each` counts once, so a floor).
+* Test files: median 80 non-comment lines, p90 223, 100 over 300, 29 over 500. Half of all test LOC sits in 365 of 1,819 files.
+* Source: half of source LOC sits in 178 of 1,165 files; 22 TS files exceed 1,000 raw lines, 6 exceed 1,500.
+* `vi.mock/spyOn/fn` in 193 test files; 5 snapshot calls in 3 files; `.each` in 53 files.
+* Shared mutable module state in src: 74 module-level `new Map/Set` in 53 files; 46 module-level `let` in 28 files.
+* Env/clock reads in src (rg): `process.env` 105 hits in 46 files; `Date.now` 28; `new Date(` 53; `setTimeout` 95 in 50 files; `homedir` 30 in 10 files; `LAR_ROOT` 82 in 34 files. Clock injection exists in 33 places (`now: () =>`, `clock?:`).
+
+!!! Largest source files (raw lines / non-comment)
+open-node-vessel.ts 3,771/2,339 · tools/mesh-scenarios.sh 2,102/1,228 · lararium-browser open-browser-vessel.ts 1,963/1,147 · tw5 action-handler.ts 1,785/1,041 · node disk-projector.ts 1,672/894 · tw5 island-adaptor.ts 1,574/1,004 · mesh island-protocol.ts 1,502/810 · keyhive operator-daemon-behavior.ts 1,458/1,009 · tw5 tw5-projection.ts 1,421/1,060 · node uds-channel.ts 1,412/934 · node sensorium.ts 1,358/725 · cli nexus-seal.ts 1,336/987 · mesh carriage-registry.ts 1,240/745 · web projection-sink.ts 1,188/948 · node commands/nexus-contract.ts 1,179/802 · mesh vessel-island-pool-core.ts 1,174/750 · cli commands/meme.ts 1,164/726 · cli command-help.ts 872/799. (Python `bands.py` 1,666 and `lares_mcp.py` 1,310 and `_osr` shell sit outside the TS set.)
+
+!!! Largest test files (raw / non-comment)
+tw5 record-port-handler 1,390/1,313 · tw5 wiki-shore-vectors 1,181/1,106 · mesh content-key-holder 1,235/1,091 · mesh face-gate 1,138/981 · node uds-channel-receipt-ledger 1,144/945 · tw5 weave 1,229/926 · mesh surface-mount 1,054/900 · tests/harness scenario-action-graph 903/836 · tw5 wiki-shore-draft-road 874/820 · node nexus-contract 1,000/814 · cli meme-command 965/794 · mesh sibling-channel 869/740 · browser browser-custody 935/732 · tw5 meme-verbs 861/729 · web interaction-goldens.page 868/724 · node face-bundle-restore 766/598 · mesh handle-kel 704/550 · mesh edge-reach 634/539 · node node-cas-sweep 698/538 · node edge-shadow-ring 611/534.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/where-the-test-weight-comes-from`>>
+
+!! Where the test weight comes from
+
+# ''Setup repetition.'' `mkdtemp` appears 1,032 times in 389 files across tests/tools; `lararium-node/tests` alone 598 in 233 files. Node has ONE shared setup file (`tests/support/scratch-custody-setup.ts`, 108 lines) and no shared temp-dir helper. Fixture helpers exist per domain in mesh and keyhive (`face-gate-fixture`, `kel-fixture`, `content-key-fixture`...). Same-named helpers redeclared across test files: `said` 12, `missing` 12, `sleep` 8, `meme` 7, `walk` 6 (git grep over function decls).
+# ''Whole-vessel boots for unit-sized claims.'' Only 5 direct `openNodeVessel(` calls in tests, but 39 test files import `open-node-vessel` and 20 reference some vessel opener. Because the composer is one 2,840-line function, a claim about any closure (boot ordering, a gate, a sweep) reaches it only through the whole composition. 66 node suites sit in the serial `heavy` project (`packages/lararium-node/vitest.config.ts`) because they bind listeners, nested Workers or python holders; `maxWorkers: 4`. The e2e set (36 files in `tests/e2e`) carries `tools/e2e-shard-weights.json`: 35 files, 3,070 weighted seconds; top: nexus-two-root 330s, vessel-reboot 259s, hosted-walk 206s. Boot cost per `tests/vitest.config.ts` comment: "~30s incl. genesis".
+# ''Test-only exports.'' No convention marks them (grep for `ForTest`, `test-only`, <code>&#64;internal</code>: 2 hits). By use graph (script `exp.mjs`, my scratchpad): 5,669 top-level exports in `packages/*/src`; ''350'' have no use in any other src file (barrels excluded), appear in tests, and no use in their own file beyond the declaration; ''1,198'' have no other-src use but appear in tests (own-file use allowed); 69 appear nowhere (dead). The 350 by package: mesh 215, node 62, tw5 27, browser 13, mempalace 11, keyhive 10, cli 8. The prior scout's 233 sits in the same order of magnitude ''(testimony: its method is unrecorded)''. Caveat: a regex scan cannot see consumption by `bin/`, `.mjs` tools, package.json `exports`, and name collisions inflate "used". Treat as a candidate list.
+# ''Giant files.'' Test files are not the driver (p90 = 223 lines); the god-file is the production composer. Breadth drives weight: node 2.1 test files per source file, browser 1.8, mesh 1.3.
+# ''Witness shell scripts.'' `ls tools/*witness*.sh` = 54 files (4,790 raw lines). Most are 5-20 line wrappers around an `.mjs` with its own `*.test.mjs` (e.g. `ahu-pair-parity-witness.sh`, 14 lines): they measure live canon, not duplicate suites. Heavy ones are overlap candidates: `contract-witness.sh` 715 lines (two-vessel handshake; `tests/e2e/nexus-two-root.test.ts` is the same family, ''overlap unverified, testimony''), `household-https-witness.sh` 350, `hearths-gate-witness.sh` 293, `genesis-parity-witness.sh` 293. `witness-all.sh` globs `tools/*witness*.sh` (a new one enrols itself); 9 are held out as docker/browser.
+# ''Prose/regex reading tests.'' 62 test files read `src/` bytes; 67 read `.ts` text. The CLI census (`cli-test-laws.mem` #/the-census) counted for the CLI alone: 206 prose-coupled assertions, 196 mocks mirroring the implementation, 100 giant fixtures, 60 source-regex reads, 29 timing waits, 24 tests that cannot fail, 23 touching outside a scratch root. Other packages likely repeat the smell classes ''(testimony)''.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seams-modules-that-resist-small-tests`>>
+
+!! Seams: modules that resist small tests
+
+| Seam | Evidence | Refactor that lets a smaller test reach the claim |h
+| `prepareNodeBootOn` mega-closure | open-node-vessel.ts:709-3546; 164 closure decls, 49 `let`; `composeNodeVesselOn` (:3557) is ~100 lines and thin | Cut into named stages with typed input/output records; each stage tests with a small fake. Same shape for `open-browser-vessel.ts` (1,963 raw lines). |
+| `identityDir()` reads env alone | `tests/harness/with-lar-root.ts:1-35` header: no caller path; a test that forgets `LAR_ROOT` silently touches `~/.local/share/lares/identity`; `withLarRoot` mutates `process.env` and "NOT thread-safe against concurrent vessels" | Pass a homes record (identity/storage/seal) into the opener; `vesselCustodyHomes()` (`vault-carriers`) is the seed. Read `LAR_ROOT` once at the process edge. |
+| Git global config leak | `GIT_CONFIG_GLOBAL` appears in 4 files; set at `packages/lararium-node/tests/support/scratch-custody-setup.ts:~35` and pinned by `hermetic-git-global.test.ts`; the source shells `git config --global user.email` in `readLocalOperatorHint`. Only node's setup file sets it; mesh/tw5/cli/keyhive configs not checked for an equivalent ''(testimony)'' | Inject the operator hint as a dependency so units pass a literal; keep one test on the shell-out; lift the null-device env into a shared workspace `globalSetup`. |
+| Module-level registries | 74 module Maps/Sets in 53 files; `tests/vitest.config.ts` header says suites depend on `isolate: true` because modules "hold process-global registries … no reset clears" | Registries built in a composition root and passed in; the `isolate` dependence then drops. |
+| Fixed waits / poll loops | 44 `turn < N` poll-loop lines in 27 test files; 77 `setImmediate` in 44 files; 699 `sleep/waitFor/until` hits. `wiki-shore-draft-road.test.ts:463,466,633`: 400 turns x 5ms polls `ledger.landedOf(x)`. `LandedLedger` (`lararium-tw5/src/landed-ledger.ts`, 14 lines) is a bare Map with no event | `whenLanded(title, pred)` promise on the ledger (about 10 lines) removes the flake class. The road already names this ("fixed waits become events"). |
+| Wall-clock ratios | `sensorium-consistency.scale.test.ts:100-119` already cured: counts operations, with a comment citing the 12.48-vs-12 flake. Model for the rest | Sweep other `performance.now`/`Date.now` assertions in tests; not counted yet. |
+| Staged-unlock under load | owed.md: 3rd sighting 2026-10-28, 4th 2026-10-30: "staged vessel never unlocked (door rc 1) ... store did not acknowledge &lt;doc> at rest" | Expose a store-ack event on the unlock door and have `tests/harness/instance.ts` await it. owed.md says the same. |
+| TW5 dropdown e2e | `packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts:150-164`: `.tc-search-drop-down` visible-wait of 20s; owed.md: 3 sightings 10-30/31 | Ready signal from the served page after the worker settles; capture `browserConsole` + mirror DOM on failure (owed.md proposes the capture). The popup depends on a late TW5 worker event. |
+| Built `dist/` dependence | `tools/vitest-dist-guard.mjs` globalSetup; config comment: nested-worker ESM import of an existing dist file reds `ERR_MODULE_NOT_FOUND` under FD pressure | A source loader for workers removes the dist dependence. Wave 2. |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/mutation-testing-as-it-stands`>>
+
+!! Mutation testing as it stands
+
+* ''Stryker: absent from the repo.'' `git ls-files | rg stryker` and `rg -il stryker` (outside node_modules) hit only `bags/.../cli-test-laws.mem` and a vendored `automerge-repo` package.json. Canon: "Stryker 10 runs against this suite's vitest 5 and activates no mutant at runtime: every score read the same, killing only mutants that act at load. The named catalog stands in until a runner activates them" (`cli-test-laws.mem` #/the-holes). The inPlace-revert incident rests on an ad hoc run ''(testimony)''.
+* ''Catalog runner:'' `tools/law-mutants.mjs` (42 lines), `tools/law-mutants-witness.sh`, `packages/lares-cli/tests/laws/mutants.json` (''14 mutants''), `packages/lares-cli/vitest.law-mutants.config.ts`. It rewrites a source file in place, runs the named law files, restores in `finally` and on SIGINT/SIGTERM. The `*witness*.sh` name makes `witness-all.sh` glob it into the witness fleet and CI. It mutates the working tree (same in-place hazard class as Stryker); SIGKILL would leave a mutant behind ''(inferred, untested)''.
+* ''fast-check:'' `fast-check 4.10.2` and <code>&#64;fast-check/vitest 0.5.0</code> in `packages/lares-cli/package.json` only; 5 law files use property APIs; 18 law modules, 2,922 lines in `tests/laws`; seed fixed in `tests/laws/fixed-seed.ts` (`LARES_FC_SEED` overrides). Laws L1-L16 listed in `cli-test-laws.mem` #/the-laws. Finds reported there: four faults on first generated runs (TOML scalar/table kinds, duplicate floor write, replace reaching inside a table) and a fifth from the readiness law.
+* ''Retirement so far:'' 55 literal tests retired where a law covers the input; 3 files removed whole; 1,000 rows classed (581 seeds, 230 repeats, 189 controls, 15 orphans). That is the only demonstrated "prune what a stronger test covers" in the tree, done by hand with two cold readers.
+* ''Assessment: can mutation score replace raw count?'' Not yet. (a) No runner works with vitest 5. (b) 14 hand-written mutants on 17.6k CLI lines measure laws, not the suite. (c) The law + seeds + control + named-mutants recipe works and is the template. A "prune tests that kill no unique mutant" rule needs per-test kill sets; Stryker's `coverageAnalysis: "perTest"` gives them in principle ''(testimony; wave 2)''. Scoring before the founding measures shapes that will change.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/flakes-and-slow-tests-traced`>>
+
+!! Flakes and slow tests, traced
+
+From `/home/joshu/.lares-scratch/controller/owed.md` (plan.md added no flake entries beyond the POSIWID line):
+
+| Item | Sightings | Design seam |h
+| Staged vessel unlock under load | 4 (to 2026-10-30, custody-census-witness) | The unlock door returns before the store acks; harness waits on wall time. |
+| `wiki-shore-*` tw5 tests under CI load | 5 (to 2026-10-28) | 2s poll on `ledger.landedOf`; the ledger has no change event. |
+| `sensorium-consistency.scale` ratio 12.48 vs 12 | cured | Wall-clock ratio; now counts operations. |
+| TW5 dropdown e2e (`shore-writes.e2e`, G46) | 3 on 2026-10-30/31 | No ready signal; 20s visible-wait; no artifact on failure. |
+| browser `browser-tab-custody` TC1 two-tab unlock, 60s | 1 (2026-10-29) | Same family as staged unlock; "fixed-wait sweep (Relay)" owed. |
+| Playwright engine install hangs on CI (48 min, 20 min) | 3 (2026-10-26) | Infra: browser cache keyed on Playwright version owed. |
+| Six node suites red locally without `GIT_CONFIG_GLOBAL=/dev/null` | cured | Source shells out for the operator email. |
+| Local `e2e/vessel-reboot` red under scratch HOME | 2026-10-26 | Scratch-HOME custody-frames leak (same family). |
+
+Slow tests: `tools/e2e-shard-weights.json` (from CI runs 40956130282 and 40977288914). Per-file durations for node's slowest unit suites: the road lists them as owed; ''not measured here, no CI data read''.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canon-constraints-that-bind-recommendations`>>
+
+!! Canon constraints that bind recommendations
+
+* `stable-founding-road.mem:268, 849`: the test architecture re-cuts after the founding (operator ruling, 2026-10-29); until then large batches and one heavy battery per batch; red-first commits stay. Named inputs: fixed waits become events (`owned-store` first), tw5 corpus scans share one measured budget, node's slowest files get profiled. The CLI re-cut is the pattern awaiting "more eyes".
+* Rulings "Old shapes burn" and "Full models land early": no tolerant readers, no staged interims; a seam-opening refactor leaves no back-compat shim and no second shape.
+* `working-procedures.mem` #/red-first: vector before cure (own commit), read the failure text, nonsense control, assert the setup took, dispatch-position match, cure and check both marks move, a red that clears with no edit names shared state. For a refactor: a characterization test lands before the cut, and its control stays red after.
+* `mixed-model-swarm.mem` #/the-battery: CI + held-out give the verdict; local battery = `pnpm build`, red proofs, evergreen boundary, `witness-all.sh`, typecheck witness, touched packages' suites (mesh always) under scratch HOME/LAR_ROOT with `LAR_BAGS` unset, `node --test` on touched tools, ONE e2e file; one heavy battery at a time via `tools/battery.sh`. A lane touching `open-node-vessel.ts` inherits the node suite plus mesh.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ranked-findings`>>
+
+!! Ranked findings (value / cost / order vs the founding refactor)
+
+Cost: S = under a day for a lane, M = days, L = a train.
+
+# ''Stage-cut `prepareNodeBootOn` (and `open-browser-vessel.ts`)'' into typed stages. Evidence above. Gain: stage-level tests replace vessel boots; the 66-suite serial heavy project can shrink over time. Cost L, risk high (the most-touched file). ''FOLD into the founding refactor'' (the N/W/H trains already reshape boot); write characterization tests for the boot sequence BEFORE.
+# ''Shared `withScratchRoot()`/`scratchHomes()` helper + codemod'' (1,032 `mkdtemp` in 389 files). Gain: fewer lines per test; one place fixes tmpdir, HOME, LAR_ROOT, GIT_CONFIG_GLOBAL. Cost M, mechanical, no product change. ''BEFORE'', in the porch lane (matches the hermetic-test owed items). Pilot on 20 node files and measure the LOC drop before sweeping.
+# ''Eventful seams for the four flake families'': `LandedLedger.whenLanded`, store-ack event on the unlock door, ready attribute plus failure artifacts for the TW5 dropdown, event instead of poll in the browser two-tab test. Cost S each; removes 14+ owed sightings. Matches the road's own "fixed waits become events". ''BEFORE''; red-first fits (force the late event to reproduce).
+# ''Inject homes and operator hint instead of reading env.'' Removes `withLarRoot` env mutation, the git-global leak and the silent-real-home footgun. Cost M. ''FOLDED'' into the custody/home work of the road; land item 2 first so the later change touches one helper.
+# ''Delete the 69 dead exports now; list the ~350 test-only candidates with a TS-compiler pass; move survivors behind a `…/testing` subpath export during the module re-cuts.'' Gain: smaller public surface, and a clear view of which functions are real contracts. Cost S (dead) then M. ''BEFORE for the dead set and the list, DURING the founding for the moves.''
+# ''Extend the law pattern to a second package'' (generated inputs, seeds, control, named mutants). Candidates by smell: `tw5` wiki-shore vectors, `mesh` face-gate and content-key-holder (vector tables over 1,000 lines). Gain: the one demonstrated route that cut tests. Cost M per package. ''AFTER'' (the road assigns the re-cut there), with at most one pilot beside the founding since fast-check is installed in lares-cli only.
+# ''A working mutation runner with vitest 5.'' Probe each Stryker release or extend the catalog per package; run in a worktree copy, never inPlace on a live checkout; per-package, `perTest` coverage. Cost M, mostly probe time. ''BEFORE as a probe, USED after the founding'' for pruning.
+# ''Witness consolidation'': one manifest for the 5-20 line wrappers; decide overlap of the four 200-700 line witnesses vs `tests/e2e`. Small LOC gain (4.8k); gain is runtime. Cost S-M. ''AFTER''.
+# ''Report the ratio as non-comment.'' Source carries 39% comment lines (237,782 raw vs 145,127 code), so the raw ratio understates test weight by 0.3. No cost.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/questions-for-wave-2`>>
+
+!! Questions for wave 2 (internet)
+
+# StrykerJS with vitest: which versions support vitest 5 (canon says Stryker 10 activates no mutants); `coverageAnalysis: "perTest"` behavior; `--incremental` file stability across refactors; running in a sandbox copy not inPlace; per-package `mutate` globs in a pnpm monorepo.
+# Alternatives to Stryker for TypeScript (AST-based mutators, vitest-aware runners) that avoid the hand cost of the named catalog.
+# Mutation-guided suite minimization (kill-set reduction): papers, tools, rates of redundant tests found, and the regression value pruning loses outside the mutation operators.
+# Test-to-code ratio norms: published ratios for monorepos, crypto and distributed-systems code, TypeScript; property-heavy vs example-heavy; whether published figures strip comments.
+# Vitest: per-project `isolate`, `pool: threads` vs `forks`, `--shard` and sharding by weight (versus our hand-kept `e2e-shard-weights.json`), `--changed`, memory limits; whether `isolate: false` is safe for suites that reset module registries; `vi.waitFor` vs event waits.
+# Property-based testing to collapse example tests: fast-check model-based/commands testing for stateful stores (ledger, store-ack), Automerge/CRDT projects' practice, shrinking cost on large states.
+# Hermetic-test practice: `node:test` `mock.timers`, injecting `fs`/`os.homedir`, avoiding `process.env` mutation under parallel suites.
+# Composition-root testing: guidance for cutting a 2,000+ line async composer into stages with typed ports; how VS Code, Deno and TiddlyWiki upstream slice boot code for test.
+# CI wall time: affected-only selection (Nx/Turborepo/vitest related), test impact analysis, remote result caching, flaky-test quarantine policy.
+# Playwright flake practice: web-first assertions, trace-on-retry, browser caching keyed on version, console-capture artifacts.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/method-notes-and-limits`>>
+
+!! Method notes and limits
+
+* Counts use my own comment stripper (leading-line `//`, `/* */`, `*`); trailing comments and template-literal text count as code.
+* The export scan is regex-based (top-level `export const|function|let|class|enum`); it skips `export {x}` lists, default exports, type exports and barrel `index.ts`; candidates only.
+* I measured no suite runtime, read no CI logs, and read no live-lane worktree.
+* plan.md:345 (POSIWID scout, 2026-10-31) carries "233 test-only exports; open-node-vessel.ts 3,770 lines": the second matches `wc -l` (3,771 raw lines in my count); the first ''(testimony)''.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YMMXe3xAEhL7X5HZx07MbcHlUMXG0F_x7FdhrpWOwso`>>
+
+<<^ code=`&#x0004;` to=`?`>>

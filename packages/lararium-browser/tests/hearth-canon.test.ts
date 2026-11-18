@@ -3,8 +3,8 @@
  *
  * The cross-operator gate federates the public boards alone. A leaf dialing the hearth that admitted it also
  * takes the documents its carried admit names (`@lares`, `@lararium`), so the wiki it opens is the hearth's.
- * The oracle plane stays behind the gate with every other private plane: each vessel holds that document
- * under one derived id, the hearth boots from it, and a leaf's replica of it never merges with the hearth's.
+ * The oracle seed and each vessel's catalog stay behind the gate; a leaf seats admitted pointers
+ * in its own catalog and leaves the hearth's catalog untouched.
  */
 import { describe, expect, test } from "vitest";
 import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
@@ -14,7 +14,7 @@ import {
   crossroadsDocUrl, whoBoardDocUrl, materializeSharedLarDoc, mutableLarRecord, oracleGenesisDocUrl, emptyLarDoc, tiddlerText,
   type FederationGate, type LarDoc,
 } from "@lararium/mesh";
-import { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, isOwnHearthCrossing, seatHearthCanon } from "../src/hearth-canon.js";
+import { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, isOwnHearthCrossing, provenCrossingPlanes, seatHearthCanon } from "../src/hearth-canon.js";
 import { browserShareConfig } from "../src/open-browser-vessel.js";
 
 const NEXUS = "ab".repeat(32);
@@ -55,21 +55,21 @@ describe("admittedCanonDocs — a canon title never names a system plane", () =>
   const HONEST = { [LARES_DOC_URI]: LARES_URL, [LARARIUM_DOC_URI]: LARARIUM_URL };
   test("CONTROL: an honest admit still opens exactly its two documents", () => {
     expect(admittedCanonDocs(HONEST, NEXUS)).toEqual(HONEST);
-    const gate = hearthCrossingOf({ pinnedGatePubKey: "cd".repeat(32), hearthGatePubKey: "cd".repeat(32), holdsDeviceEdge: true, hearthCanonDocs: HONEST, relayGatePubKey: "cd".repeat(32), nexusPubkey: NEXUS });
+    const gate = hearthCrossingOf({ pinnedGatePubKey: "cd".repeat(32), hearthGatePubKey: "cd".repeat(32), holdsDeviceEdge: true, hearthCanonDocs: HONEST, nexusPubkey: NEXUS });
     expect(gate.hearthCanon).toEqual(HONEST);
   });
   test("the oracle plane named under a canon title opens nothing", () => {
     const oracle = oracleGenesisDocUrl();
     expect(admittedCanonDocs({ [LARES_DOC_URI]: oracle, [LARARIUM_DOC_URI]: LARARIUM_URL }, NEXUS)).toEqual({ [LARARIUM_DOC_URI]: LARARIUM_URL });
     expect(admittedCanonDocs({ [LARES_DOC_URI]: oracle })).toEqual({});
-    const crossing = hearthCrossingOf({ pinnedGatePubKey: "cd".repeat(32), hearthGatePubKey: "cd".repeat(32), holdsDeviceEdge: true, hearthCanonDocs: { [LARES_DOC_URI]: oracle }, relayGatePubKey: "cd".repeat(32), nexusPubkey: NEXUS });
+    const crossing = hearthCrossingOf({ pinnedGatePubKey: "cd".repeat(32), hearthGatePubKey: "cd".repeat(32), holdsDeviceEdge: true, hearthCanonDocs: { [LARES_DOC_URI]: oracle }, nexusPubkey: NEXUS });
     expect(crossing.hearthCanon).toEqual({});
     expect(crossing.gate!.mayFederate(id(oracle))).toBe(false);
   });
   test("a per-Nexus board named under a canon title opens nothing beyond the boards gate", () => {
     const board = whoBoardDocUrl(NEXUS);
     expect(admittedCanonDocs({ [LARARIUM_DOC_URI]: board, [LARES_DOC_URI]: LARES_URL }, NEXUS)).toEqual({ [LARES_DOC_URI]: LARES_URL });
-    const crossing = hearthCrossingOf({ pinnedGatePubKey: "cd".repeat(32), hearthGatePubKey: "cd".repeat(32), holdsDeviceEdge: true, hearthCanonDocs: { [LARARIUM_DOC_URI]: board }, relayGatePubKey: "cd".repeat(32), nexusPubkey: NEXUS });
+    const crossing = hearthCrossingOf({ pinnedGatePubKey: "cd".repeat(32), hearthGatePubKey: "cd".repeat(32), holdsDeviceEdge: true, hearthCanonDocs: { [LARARIUM_DOC_URI]: board }, nexusPubkey: NEXUS });
     expect(crossing.hearthCanon).toEqual({});
   });
   test("one url under both titles names two documents in one: both fall out", () => {
@@ -101,28 +101,28 @@ describe("HearthCanonGate", () => {
   });
 });
 
-describe("seatHearthCanon — the leaf's own oracle replica names the admitted canon", () => {
+describe("seatHearthCanon — the leaf's own catalog names the admitted canon", () => {
   test("writes each named pointer once, and a second seating writes nothing", () => {
     const doc = emptyLarDoc();
     let changes = 0;
-    const oracle = { doc: () => doc, change: (fn: (d: LarDoc) => void) => { changes++; fn(doc); } };
-    seatHearthCanon(oracle, { [LARES_DOC_URI]: LARES_URL, [LARARIUM_DOC_URI]: LARARIUM_URL });
+    const catalog = { doc: () => doc, change: (fn: (d: LarDoc) => void) => { changes++; fn(doc); } };
+    seatHearthCanon(catalog, { [LARES_DOC_URI]: LARES_URL, [LARARIUM_DOC_URI]: LARARIUM_URL });
     expect(tiddlerText(doc.tiddlers[LARES_DOC_URI])).toBe(LARES_URL);
     expect(tiddlerText(doc.tiddlers[LARARIUM_DOC_URI])).toBe(LARARIUM_URL);
     expect(changes).toBe(1);
-    seatHearthCanon(oracle, { [LARES_DOC_URI]: LARES_URL, [LARARIUM_DOC_URI]: LARARIUM_URL });
+    seatHearthCanon(catalog, { [LARES_DOC_URI]: LARES_URL, [LARARIUM_DOC_URI]: LARARIUM_URL });
     expect(changes).toBe(1);
-    seatHearthCanon(oracle, {});
+    seatHearthCanon(catalog, {});
     expect(changes).toBe(1);
   });
 });
 
 /**
  * THE WRITE PATH, MEASURED OVER A LIVE SYNC. Two Repos stand as leaf and hearth over one channel, each holding
- * the oracle document under its derived id. The hearth shares everything with the leaf (a same-operator
- * device). What decides is the LEAF's own gate, seated on announce and access both.
+ * separate catalogs. The hearth shares its named canon documents with the leaf; the leaf's catalog
+ * remains local. The control opens the oracle to prove the gate can observe a crossing write.
  */
-describe("a leaf's write to the oracle document never reaches its hearth", () => {
+describe("a leaf's catalog write never reaches its hearth", () => {
   const settle = (ms = 400): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
   async function crossing(gateOf: (named: Record<string, string>) => FederationGate) {
@@ -131,7 +131,8 @@ describe("a leaf's write to the oracle document never reaches its hearth", () =>
     const hearthOracle = await materializeSharedLarDoc(hearth, oracleGenesisDocUrl(), "oracle");
     const hearthLares = hearth.create<LarDoc>(emptyLarDoc());
     hearthLares.change((d) => { d.tiddlers["lar:///t/canon/lady-aki"] = mutableLarRecord("lar:///t/canon/lady-aki", { text: "the hearth holds her" }, "test"); });
-    hearthOracle.change((d) => { d.tiddlers[LARES_DOC_URI] = mutableLarRecord(LARES_DOC_URI, { text: hearthLares.url }, "hearth-boot"); });
+    const hearthCatalog = hearth.create<LarDoc>(emptyLarDoc());
+    hearthCatalog.change((d) => { d.tiddlers[LARES_DOC_URI] = mutableLarRecord(LARES_DOC_URI, { text: hearthLares.url }, "hearth-boot"); });
 
     const named = { [LARES_DOC_URI]: hearthLares.url as string };
     const gate = gateOf(named);
@@ -141,12 +142,13 @@ describe("a leaf's write to the oracle document never reaches its hearth", () =>
       shareConfig: browserShareConfig(new Set(["hearth"]), () => gate),
     });
     const leafOracle = await materializeSharedLarDoc(leaf, oracleGenesisDocUrl(), "oracle");
-    return { hearth, leaf, hearthOracle, leafOracle, hearthLares, named, close: () => { port1.close(); port2.close(); } };
+    const leafCatalog = leaf.create<LarDoc>(emptyLarDoc());
+    return { hearth, leaf, hearthOracle, leafOracle, hearthCatalog, leafCatalog, hearthLares, named, close: () => { port1.close(); port2.close(); } };
   }
 
   const MOVED = "automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu";   // where a hostile or mistaken leaf would point `bags/lares`
 
-  test("under the admit's gate: the named canon arrives, and the leaf's oracle write stays on the leaf", async () => {
+  test("under the admit's gate: the named canon arrives, and the leaf's catalog write stays on the leaf", async () => {
     const boards = new DeterministicFederationGate(NEXUS);
     const c = await crossing((named) => new HearthCanonGate(boards, named));
     try {
@@ -154,19 +156,19 @@ describe("a leaf's write to the oracle document never reaches its hearth", () =>
       const canon = await c.leaf.find<LarDoc>(c.hearthLares.url);
       expect(tiddlerText(canon.doc()?.tiddlers["lar:///t/canon/lady-aki"])).toBe("the hearth holds her");
 
-      // The leaf seats its admitted pointer on its OWN oracle replica, then writes where the hearth boots from.
-      seatHearthCanon(c.leafOracle, c.named);
-      c.leafOracle.change((d) => {
+      // The leaf seats its admitted pointer on its own catalog, then writes its own pointer.
+      seatHearthCanon(c.leafCatalog, c.named);
+      c.leafCatalog.change((d) => {
         d.tiddlers[LARES_DOC_URI] = mutableLarRecord(LARES_DOC_URI, { text: MOVED }, "leaf-write");
         d.tiddlers["lar:///t/leaf/planted"] = mutableLarRecord("lar:///t/leaf/planted", { text: "from the leaf" }, "leaf-write");
       });
       await settle();
-      expect(tiddlerText(c.hearthOracle.doc()?.tiddlers[LARES_DOC_URI]), "the leaf moved the pointer its hearth boots from").toBe(c.hearthLares.url);
-      expect(c.hearthOracle.doc()?.tiddlers["lar:///t/leaf/planted"], "a leaf's oracle write reached the hearth").toBeUndefined();
-      // And nothing the hearth's oracle names beyond the admit reaches the leaf.
-      c.hearthOracle.change((d) => { d.tiddlers[DAEMON_BAG_ID] = mutableLarRecord(DAEMON_BAG_ID, { text: DAEMON_URL }, "hearth-boot"); });
+      expect(tiddlerText(c.hearthCatalog.doc()?.tiddlers[LARES_DOC_URI]), "the leaf moved the pointer its hearth boots from").toBe(c.hearthLares.url);
+      expect(c.hearthCatalog.doc()?.tiddlers["lar:///t/leaf/planted"], "a leaf's catalog write reached the hearth").toBeUndefined();
+      // And nothing the hearth's catalog names beyond the admit reaches the leaf.
+      c.hearthCatalog.change((d) => { d.tiddlers[DAEMON_BAG_ID] = mutableLarRecord(DAEMON_BAG_ID, { text: DAEMON_URL }, "hearth-boot"); });
       await settle();
-      expect(c.leafOracle.doc()?.tiddlers[DAEMON_BAG_ID], "the hearth's private pointers crossed to the leaf").toBeUndefined();
+      expect(c.leafCatalog.doc()?.tiddlers[DAEMON_BAG_ID], "the hearth's private pointers crossed to the leaf").toBeUndefined();
     } finally { c.close(); }
   }, 30_000);
 
@@ -187,7 +189,7 @@ describe("hearthCrossingOf — the vessel's crossing wears the widened gate for 
   const admit = { [LARES_DOC_URI]: LARES_URL, [LARARIUM_DOC_URI]: LARARIUM_URL };
   const at = (over: Partial<Parameters<typeof hearthCrossingOf>[0]>) => hearthCrossingOf({
     pinnedGatePubKey: HEARTH, hearthGatePubKey: HEARTH, holdsDeviceEdge: true, hearthCanonDocs: admit,
-    relayGatePubKey: HEARTH, nexusPubkey: NEXUS, ...over,
+    nexusPubkey: NEXUS, ...over,
   });
   const opens = (gate: FederationGate | null, url: string) => gate?.mayFederate(id(url) as DocumentId);
 
@@ -210,7 +212,7 @@ describe("hearthCrossingOf — the vessel's crossing wears the widened gate for 
 
   test("a foreign hearth, a founder with no hearth key and a vessel without its edge wear the narrow gate and name no canon", () => {
     for (const foreign of [
-      at({ pinnedGatePubKey: FOREIGN, relayGatePubKey: FOREIGN }),
+      at({ pinnedGatePubKey: FOREIGN }),
       at({ hearthGatePubKey: null }),
       at({ holdsDeviceEdge: false }),
     ]) {
@@ -222,7 +224,37 @@ describe("hearthCrossingOf — the vessel's crossing wears the widened gate for 
     }
   });
 
+  // THE FACE'S OWN PLANES CROSS AT ITS OWN HEARTH, AS ITS SIGNED LOG NAMES THEM. The bootstrap rests unsealed in the
+  // origin's IndexedDB, so a plane url read from it proves nothing alone (the twin #125 closed for the catalog): the
+  // own-hearth crossing opens no face plane until the face proof passes, then exactly the planes the proof's
+  // projection names for the worn face. A substituted url (the leaf's own catalog named as `sessions`) never opens.
+  test("RED: the own-hearth crossing opens no face plane before the proof, then only the planes the face's signed log names", () => {
+    const PERSONA_URL = generateAutomergeUrl(), CIRCLES_URL = generateAutomergeUrl(), INTENTS_URL = generateAutomergeUrl();
+    const own = at({});
+    expect(opens(own.gate, PERSONA_URL), "no face plane crosses before the proof").toBe(false);
+    // The face's signed log names persona, intents and circles; the bootstrap carries the leaf's catalog as `sessions`.
+    const projection = { planes: { persona: PERSONA_URL, intents: INTENTS_URL, circles: CIRCLES_URL } };
+    const proven = provenCrossingPlanes(projection, { persona: PERSONA_URL, intents: INTENTS_URL, circles: CIRCLES_URL, sessions: CATALOG_URL, identities: null });
+    expect([...proven].sort()).toEqual([PERSONA_URL, INTENTS_URL, CIRCLES_URL].sort());
+    expect(own.openFacePlanes(proven)).toBe(true);
+    for (const url of [PERSONA_URL, INTENTS_URL, CIRCLES_URL]) expect(opens(own.gate, url)).toBe(true);
+    expect(opens(own.gate, CATALOG_URL), "a substituted plane never opens").toBe(false);
+    // The canon and the boards still open; the daemon bag and the oracle stay shut beside the planes.
+    expect(opens(own.gate, LARES_URL)).toBe(true);
+    expect(opens(own.gate, crossroadsDocUrl(NEXUS))).toBe(true);
+    expect(opens(own.gate, DAEMON_URL)).toBe(false);
+    expect(opens(own.gate, oracleGenesisDocUrl())).toBe(false);
+    // CONTROL: a foreign hearth opens no face plane, whatever the proof names.
+    const foreign = at({ pinnedGatePubKey: FOREIGN });
+    expect(foreign.openFacePlanes([PERSONA_URL])).toBe(false);
+    expect(opens(foreign.gate, PERSONA_URL)).toBe(false);
+    // CONTROL: a reserved document never rides the list, even named by a log.
+    const reserved = at({});
+    reserved.openFacePlanes(provenCrossingPlanes({ planes: { persona: oracleGenesisDocUrl() } }, { persona: oracleGenesisDocUrl() }));
+    expect(opens(reserved.gate, oracleGenesisDocUrl())).toBe(false);
+  });
+
   test("CONTROL: no gate key pinned is the operator's own node, so no federation gate stands", () => {
-    expect(at({ relayGatePubKey: undefined }).gate).toBeNull();
+    expect(at({ pinnedGatePubKey: undefined }).gate).toBeNull();
   });
 });

@@ -12,9 +12,9 @@ import * as ed from "@noble/ed25519";
 import { hex } from "../../src/crypto.js";
 import {
   signCarriageQuorum, signCarriageContract, signCarrierContract,
-  type CarriageAction, type CarriageEntry, type QuorumSignature,
+  type CarriageAction, type CarriageEntry,
 } from "../../src/carriage-registry.js";
-import type { KahuQuorumSeats } from "../../src/kapae-antigen.js";
+import type { KahuQuorumSeats, QuorumSignature } from "../../src/kapae-antigen.js";
 
 /** The hex-signing function a seed holds. */
 export const signerOf = (seed: Uint8Array) => (bytes: Uint8Array): Promise<string> => ed.signAsync(bytes, seed).then(hex);
@@ -50,14 +50,14 @@ export async function carrierSeal(seed: Uint8Array, sealEpochCid: string): Promi
 export async function carriageAct(
   subject: Uint8Array,
   action: CarriageAction,
-  opts: { kahu: readonly Uint8Array[]; epoch: string; parents?: readonly string[]; seal?: QuorumSignature },
+  opts: { kahu: readonly Uint8Array[]; epoch: string; parents?: readonly string[]; seal?: QuorumSignature; carriageCommit?: string },
 ): Promise<CarriageEntry> {
   const seal = opts.seal ?? (
     action === "admit" ? await contractIn(subject, opts.epoch)
     : action === "carry" ? await carrierSeal(subject, opts.epoch)
     : undefined);
   return signCarriageQuorum(
-    { nym: await pubOf(subject), action, parents: opts.parents ?? [], sealEpochCid: opts.epoch },
+    { nym: await pubOf(subject), action, parents: opts.parents ?? [], sealEpochCid: opts.epoch, ...(opts.carriageCommit !== undefined ? { carriageCommit: opts.carriageCommit } : {}) },
     await kahuSigners(opts.kahu), seal,
   );
 }

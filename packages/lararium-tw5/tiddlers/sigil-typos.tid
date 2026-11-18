@@ -3,7 +3,7 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: pragma
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kumu
 lar-see-also: kumu
-lar-open-pattern: <<~\s*typos\s+([\w~-]+)(?:\s+([^>]*?))?\s*>>
+lar-open-pattern: <<~\s*typos\s+name=`([\w~-]+)`(?:\s+([^>]*?))?\s*>>
 lar-close-pattern: <<~\/typos\s*>>
 lar-render: declares
 type: text/vnd.tiddlywiki

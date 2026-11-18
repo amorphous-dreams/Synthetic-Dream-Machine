@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-lanes/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/survive-lanes/` — 0 record(s) here, 2 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-lanes/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-lanes/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/survive-lanes/`
+
+The scratch planning records of `.lares-scratch/survive-lanes/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 0 record(s) stand here and 2 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[workshop|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[ontology/|lar:///ha.ka.ba/lares/docs/history/workshop/survive-lanes/ontology/index]] | 2 |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KeytREWen05EUuSHSzkdPq6M4FqOKnQEtzcoixQ_F9M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

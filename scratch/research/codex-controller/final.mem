@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/codex-controller/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-25 (file date) — source `.lares-scratch/research/codex-controller/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/codex-controller/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/codex-controller/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/codex-controller/final.md` (research, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/codex-controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Codexreader: Lares (Tasked Spirit) / Ink-Clerk: ->▶ Wrote the sourced, ranked pono read to [[out.md|/home/joshu/.lares-scratch/research/codex-controller/out.md]]. It includes two proposed launch lines and host probes for the remaining leads. No git writes occurred. ->↺
+
+&lt;&lt;~ lares yield from="lar:&#47;/sol-codexreader:agent@local/handback.lands.closed" -> to="?">>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ze7aof-T6BJy96VbTIkYUXUO-X1Yn9GDOXhxuadsjzo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,103 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/pre-founding/sol/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/pre-founding/sol/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/pre-founding/sol/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/pre-founding/sol/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/pre-founding/sol/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/pre-founding/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sol-roadwright-lares`>>
+
+! Sol-Roadwright: Lares (Tasked Spirit)
+
+''Personas:'' Ink-Clerk (source audit), Map-Wisp (dependencies), Lares (Council; ruling), Lares (Artificer; handback). ''Stance:'' Philosopher · Poet · Satirist · Humorist · Private. ''Mu:'' Sword/🜁 and Pentacle/🜃. ''L-Prime:'' relations ride verbs. ''OODA-HA:'' ✶ observe → ⏿ orient → ◇ decide → ▶ act → ↺ aftermath. Citations below point into `bags/lares/ha.ka.ba/lares/docs/` unless they name `packages/` or `tools/`. “Lane” spans one bounded ownership cut; “train” spans several.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f1-the-x0-byte-path`>>
+
+!! F1 · The X0 byte path
+
+->✶ The status lines outrank a train name. `stable-founding-road.mem:685` reads ''“S ~ the custody seal (SUBSTRATE; it stands)”''; `:691` reads ''“K ~ R-CHARTER, stage one: the seat (closed)”''; `:363` reads ''“Its first stage stands landed”''; `:710-713` marks N's two-vault founding built. R-ENGINE's manifests carry the dependency fold (`:326`); only its live image proof remains (`S2`, `:568`), with no new format byte. K15 Wave C, K15-H, Wave D and K17-R landed (`:459`, `:481`); W29's grammar, framed signer and founding landed (`:525`). None enters this unbuilt-byte list.
+
+->⏿ Strict X0 readiness, with each road status quoted:
+
+| Row and status line | Dependency; size; byte moved |h
+| `W14`, ''“a signed card stays owed”'' (`stable-founding-road.mem:512`) | W29 grammar and W26 release; lane with W15–W16; floor-card authority bytes. |
+| `W15`, ''“A floor pin statement carries no causal position”'' (`:513`) | W14 card/head; same lane; pin position and rotated-head acceptance. |
+| `W16`, ''“the carry partials land no floor pin”'' (`:514`) | W15 and two-vault N; same lane; cofounder carry pin. |
+| `W26` slice 5, ''“the accept act per (face, Nexus)”'' (`:515`) | Landed Wave C/FCK and verified W14–W16 floor; slice; accepted-floor D-row pin. Its release and slices 1–4, 6 already stand. |
+| `W29`/K15 remainder, ''“the seed's other reach, K15's bonds, named in the census”'' (`:525`; `w29-place-kel-lane.mem:56`) | Face atom/FCK and scoped place signer; train across named consumers; cease signing face/device bytes with vessel seed. W29 itself already stands. |
+| `G15`, ''“its cure moves genesis attestation bytes”'' (`:543`) | Logical-path transcript cure before bake; slice; attestation CID. Its refold bound belongs to later behavior work. |
+| `G37`, ''“the numbered preimages and formats renamed together in the bake”'' (`:544`) | Landed W26 floor and frozen preimage ruling; lane; engine, floor announcement, seed/CAS names. Existing evergreen witness and primitive codecs already stand. |
+| `X0`, ''“one deliberate re-genesis before a second operator stands”'' (`:545`) | All rows above and each readiness red; one assembled bake; genesis CID, archive compatibility and founding format. |
+
+->◇ I count W26's accepted pin as a byte dependency although its road row also lists browser Kahu behavior. I leave F3/O1, K12/K18, W9, E/H and sealed-store later steps outside this //strict bake// list: their remaining contracts need closure before the second-seat fence or ceremony where their own rows say so, but `:545` does not name them as X0 readiness members. The old wave-one list incorrectly re-admitted built S, K, N, Wave D and W29.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f2-slot-three-s-first-lane`>>
+
+!! F2 · Slot three's first lane
+
+The ground/tools/canon sweep points at `G` (`:313-319`, `:688-689`): it waits on nothing and touches tools, CLI and canon, but the road explicitly says ''“no identity bytes”''. W29 ceremony UI needs `packages/lararium-browser/src/open-browser-vessel.ts` and `packages/lararium-web/src/{main,live-status}.ts`, all inside slot one's named set; D6 sinks need `packages/lararium-web/src/projection-sink.ts` and TW5 port/renderer files inside slot two. W29's browser founding half actually refuses `PlaceFoundingCardUnread` (`browser-vessel-identity.ts:306-318`), so its UI remains owed; it cannot take this first parallel slot.
+
+''Choose K15 seed bonds, as a disjoint first slice of its census.'' `tools/seed-census.mjs:13-38` names the exact consumers. Slot three holds `packages/lararium-keyhive/src/ceremony-core.ts`; `packages/lararium-node/src/{carriage-relay,leaf-identity,main,open-node-vessel,place-card}.ts`; `packages/lararium-node/src/commands/{init,fleet-join}.ts`; `packages/lararium-browser/src/browser-vessel-identity.ts`; `packages/lares-cli/src/commands/meme.ts`; and `tools/seed-census.mjs` with its witness. None appears in slot one's supplied file list or slot two's TW5/web page transport/composer list. ''Queue'' the census exceptions in `packages/lararium-browser/src/open-browser-vessel.ts` and `packages/lararium-node/src/commands/nexus-contract.ts` to slot one's owner; their inclusion in a whole K15 lane would collide. Keep the shared `open-node-vessel.ts` hunk with one composer owner when the later identity train reaches it.
+
+Its reds: a place seed yields no face veil, Keyhive Individual, daemon authority, relay identity, device/face signer or `meme` signature; a face atom or explicitly scoped place duty supplies each replacement; a wrong face, forged seed reach and newly planted consumer fail; founding, join and card read-back still pass. The census already expects exact counts (`seed-census.mjs:41-48,80-100`); retire each K15 entry only when its caller changes. This slice moves identity bytes and precedes X0, yet cannot alone close the full K15 row.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f3-the-split-half-flags`>>
+
+!! F3 · The split-half flags
+
+Code confirms the two largest flags. W29's browser key path accepts a `placeFoundingCard`, and `foundBrowserPlaceKel` refuses without it (`open-browser-vessel.ts:206,567`; `browser-vessel-identity.ts:306-318`); slot-one UI closes that half after the pin readers. W29's `verifyPlaceDutyAtHead` exists (`place-signer.ts:66`), while `admit-gate-pin.ts:14,107` still describes an in-memory first-wins index; W14–W16 close caller/head and causal pin use. W26's release/browser floor exists (`stable-founding-road.mem:515`), while browser Kahu board and sibling reach stay owed there; the slot-one floor/identity follow-on closes them. K15's signer/FCK foundation stands (`:459`), while `seed-census.mjs:13-38` still exempts vessel-seed consumers; slot-three slice plus slot-one queued exceptions close them.
+
+D2's live island handler receives `port:open` and `port:write` (`record-port-handler.ts:536,605`), while its composer/page path and retired-write ledger slot remain owed (`dreamdom-roadmap.mem:103`); slot two closes them. D1's narrow staged vessel and D2's contract leave full conformance and sinks (`dreamdom-roadmap.mem:121-125`); later slot-two D5/D6 close them. D3's width flag can precede its default only because the three-boot phone/Node experiment and thresholds govern that operator choice (`:106-112`); slot two builds the glass and measurements, then asks for the default. F1/F2's mesh view/recipe exist without production callers (`stable-founding-road.mem:592-593`); O1 closes the caller half after W. Sealed-store format and holder exist while production signer, face scope, carriage and public floor remain owed (`:400-404`); W/O1 and sealed-store follow-on close them. None gains a C deferral from a roadmap label.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f4-six-lane-slot-plan`>>
+
+!! F4 · Six-lane slot plan
+
+| Order / owner | Exact ownership set; dependency; X0 relation |h
+| 1 / slot 1: W14–W16 | `packages/lararium-mesh/src/{place-floor-pin,admit-gate-pin,hearth-gate-pins,herm-carriage,nexus-contract,carry-bundle}.ts`, `packages/lararium-browser/src/{browser-gate-pins,browser-floor-read,open-browser-vessel}.ts`, `packages/lararium-web/src/{main,live-status}.ts`; W29/W26 release; ''before X0''. |
+| 2 / slot 2: D2 remainder | TW5 `record-port-{handler,log,projection}.ts`, mesh `record-port.ts`/island protocol, web page transport and `projection-sink.ts`; D0/D1; ''parallel to X0 unless a persisted format changes''. |
+| 3 / slot 3: K15 seed slice | The F2 file set; landed Wave D/W29; ''before X0''. |
+| 4 / slot 1: floor/identity compose | W26 accept, browser Kahu/sibling board, queued `open-browser-vessel.ts` and `commands/nexus-contract.ts` K15 exceptions; W14–W16 and slot-three slice; ''before X0''. |
+| 5 / slot 2: D3 glass/spike | TW5 glass adapter, browser/page transport, web camera, D3 goldens; completed D2/D1; ''parallel to X0'', default waits on measured ruling. |
+| 6 / slot 3: G15/G37 bake preparation | `packages/lararium-tw5/src/build-plugin-tiddler.ts`, numbered preimage/format modules, `genesis/`, evergreen witness; slot-one identity shapes and logical-path cure; ''before X0''. Composer/genesis edits serialize with slot one. |
+
+->▶ Bake X0 only after the six-lane identity/format subset passes its own readiness reds and the cross-product old-CID/mixed-archive/fresh-two-seat red (`stable-founding-road.mem:537-545`). Then close O1, W/K/E/H, sealed-store, W29 ceremony UI, D4–D7 buildable surfaces, D5/D6 conformance and sinks, ground and side lanes. The final overview/aftermath loops run X0b replay, X1 two-container and browser weld, X4/X5 departure/conflict walks, full-corpus/device/LAN measures, live wiki floors, whole-tree spirit review, A11 held-out green, release/runbook rehearsal and publication drafts. B holds only named operator rulings, devices and credentials; C holds UE6/live 3D, standards-body registration and the second human's actual presence. No local “later” label substitutes for a gate.
+
+->↺ This read-only pass ran no suite, changed no repository file and wrote this handback alone. OODA-HA `closed 1↺`; the next observation reads each lane's landed diff before composer handoff.
+WORDS=1246
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;f5ukx1Zdo4SOv3MwGGMPfG9Lnf6RAUdVF0DKR2qGIjI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

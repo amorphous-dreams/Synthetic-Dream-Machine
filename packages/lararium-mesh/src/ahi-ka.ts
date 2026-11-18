@@ -11,7 +11,7 @@
  * or cross-realm rolls on a board the observer is current on) reads a partition as ABSTAIN — "I've been blind"
  * — not "the realm died". So the middle state is a RATIO — the realm still while the independent ambient moved
  * by K — never a duration on a clock; that escapes the lamplighters ban ("a logical epoch cannot accrue
- * silence"), which holds only when a realm's silence is read on its own max-register or on a wall-clock.
+ * silence"), which holds only when a realm's silence is read on its own maintenance feed or on a wall-clock.
  *
  * THIS FORM IS MINIMAL — a ratio + an abstain floor — for the discrimination probe. The Negative-Binomial fit
  * over over-dispersed causal-step counts and the conformal reject-region (a principled abstain boundary) ride
@@ -85,7 +85,7 @@ export function readAhiKa(opts: {
 
 /**
  * The realm's own NOW, in ROLLS of its maintenance feed — `realmPace(reading)` over the SAME reading the
- * `realm-clock` verb answers (`cabalRealmMaintenanceProvenance`: the max-register epoch this replica folds).
+ * `realm-clock` verb answers (`cabalRealmMaintenanceProvenance`: the feed epoch this replica folds).
  *
  * WHY THE REALM'S CLOCK OUTRANKS AN OBSERVED ROLL RATE. A reader that samples the epoch twice on its own
  * wall-clock and answers `elapsed / rolls` measures the realm against ITS OWN advancement — the co-driven

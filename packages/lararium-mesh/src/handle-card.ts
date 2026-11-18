@@ -16,7 +16,7 @@
  * CAUSAL, LEASED, SELF-CERTIFYING — a card carries a semantic act CID and canonical parent set. A local
  * recogniser folds those acts without a scalar currentness guess or wall-clock authority.
  *
- * Pure and isomorphic, like oracle-substrate: this module holds no I/O and no key. The vessel supplies the
+ * Pure and isomorphic, like flow-substrate: this module holds no I/O and no key. The vessel supplies the
  * signer; the caller carries the bytes; the read-open oracle plane serves the published blob.
  *
  * Design-of-record: lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault (publication model).
@@ -33,7 +33,7 @@ import {
 import { verifyEd25519 } from "./ed25519-door.js";
 
 /** The stable identifier a card presents — a handle-KEL prefix (`handle-<64hex>`), fixed across every key
- *  rotation and graft. The nym RETIRED off a bare key onto this chain-anchored name (identity-classes#the-handle-chain). */
+ *  rotation and graft. The nym is this chain-anchored name, never a bare key (identity-classes#the-handle-chain). */
 const HANDLE_PREFIX_RE = /^handle-[0-9a-f]{64}$/;
 
 /** The domain a card signs over. A signature is meaningless without the domain it was made in. */
@@ -271,7 +271,7 @@ export async function recognizeHandle(
  *
  * `verifyHandleCard` certifies ONE card in isolation. Recognising a handle OVER TIME needs more: announced
  * acts form a causal closure, and a recogniser must retain every verified ancestor while refusing a detached
- * copy or a forked lineage that equivocates. This rule carries the SAME discipline `oracle-substrate` proves
+ * copy or a forked lineage that equivocates. This rule carries the SAME discipline `flow-substrate` proves
  * for its pointer, applied to the card's own causal fields.
  *
  * Pass what the recogniser remembers of this Handle:

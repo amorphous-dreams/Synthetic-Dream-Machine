@@ -28,8 +28,7 @@ import {
   type SlotUri,
   type WikiRecipe,
   type WikiMountSpec,
-  type IslandGrants,
-} from "@lararium/mesh";
+  type IslandGrants, ownEntry, litFaceCatalogOf, isFloorCanonAddress} from "@lararium/mesh";
 import type { VerbTable } from "./verb-dispatcher.js";
 import { effectiveRecipe } from "./recipe-planes.js";
 
@@ -92,7 +91,7 @@ export interface BindingResolver {
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
     wikiSlug: string,
-  ): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
+  ): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null; writeSlot?: "personal" }>;
 }
 
 export interface PrimaryMountInputs {
@@ -101,7 +100,9 @@ export interface PrimaryMountInputs {
   coreHash:     string | null;
   /** lararium island doc url. */
   islandUrl:    string;
-  /** primary wiki doc url. */
+  /** The primary wiki's canon address: its document url, or a house canon bag's floor address (`floorCanonAddress`) where
+   *  the vessel holds no live document for it. The slot bindings key on it; the island's `wikiUrl` grant carries it only
+   *  where it names a document. */
   wikiUrl:      string;
   /** catalog registry doc url — the island's ACCESS grant (recipe-watch + library
    *  resolution live island-side; without this the island cannot watch its recipe). */
@@ -127,13 +128,13 @@ export function recipeRecordOf(
   slug: string,
 ): LarTiddlerRecord | null {
   return effectiveRecipe(slug, (plane, title) =>
-    (plane === "oracle" ? planes.islandHandle : planes.catalogHandle).doc()?.tiddlers?.[title],
+    ownEntry((plane === "oracle" ? planes.islandHandle : planes.catalogHandle).doc()?.tiddlers, title),
   )?.record ?? null;
 }
 
 /** Canonical disk-mirror DESIGNATION (system canon). A pool's held grant decides
  *  whether it actually mirrors (node holds a disk grant; browser's empty grant
- *  ignores). The per-wiki working layer + own canon append at mount (slug-scoped). */
+ *  ignores). The per-wiki draft, working layer and own canon append at mount (slug-scoped). */
 const PRIMARY_MIRROR_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
 
 /**
@@ -154,7 +155,7 @@ const PRIMARY_MIRROR_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI]
 export async function resolveSlotDocs(
   binding: BindingResolver,
   wiki: { wikiSlug: string; wikiUrl: string },
-): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }> {
+): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null; writeSlot?: "personal" }> {
   const recipeTrace = { wikiDocId: wiki.wikiUrl, libraryBagDocIds: [] as readonly string[] };
   const fingerprint = await computeRecipeFingerprint(recipeTrace);
   return binding.resolveBinding(fingerprint, recipeTrace, wiki.wikiSlug);
@@ -163,30 +164,41 @@ export async function resolveSlotDocs(
 export async function buildWikiMountSpec(
   binding: BindingResolver,
   inputs:  PrimaryMountInputs,
-): Promise<{ spec: WikiMountSpec; personalUrl: string; draftUrl: string; workingUrl: string }> {
-  const { personalUrl, draftUrl, workingUrl } = await resolveSlotDocs(binding, inputs);
+): Promise<{ spec: WikiMountSpec; personalUrl: string; draftUrl: string; workingUrl: string | null }> {
+  const { personalUrl, draftUrl, workingUrl, writeSlot } = await resolveSlotDocs(binding, inputs);
 
   // Typed structural grants — no slot dictionary. Library bags never ride the
   // mount: the island resolves them from the catalog registry itself (boot = first reconcile),
   // so the live composition path and the boot path can never diverge.
+  // The lit face's own catalog rides beside the floor's (sealed-store#/owed, U1): the face this vessel stands lit over its
+  // floor catalog, none at the floor or on a herm.
+  const faceCatalogUrl = litFaceCatalogOf(inputs.catalogUrl);
   const grants: IslandGrants = {
     islandUrl:  inputs.islandUrl,
     catalogUrl: inputs.catalogUrl,
-    wikiUrl:    inputs.wikiUrl,
+    ...(faceCatalogUrl ? { faceCatalogUrl } : {}),
+    ...(isFloorCanonAddress(inputs.wikiUrl) ? {} : { wikiUrl: inputs.wikiUrl }),
     ...(personalUrl     ? { personalUrl } : {}),
     ...(draftUrl        ? { draftUrl    } : {}),
     ...(workingUrl      ? { workingUrl  } : {}),
+    // A face that holds no writer's seat in the wiki's workbench writes its own `personal` slot (cabal-realm#/the-workbench).
+    ...(writeSlot       ? { writeSlot   } : {}),
   };
   // Designate the wiki's OWN canon (@{slug}) for disk projection alongside the
   // primaries. The pool's self-canon grant authorizes a minted user wiki to
   // bags/{slug}; for the system wikis (lares/lararium) the slug-bag already
   // sits in PRIMARY via a literal grant, so resolveDiskMirrors skips the dup.
+  // The temp slot rides the designation too; its grant yields only for a slug the operator's consent row names.
   const recipe: WikiRecipe = {
     wikiSlug: inputs.wikiSlug,
     ...(inputs.libraryBags?.length ? { libraryBags: inputs.libraryBags } : {}),
     ...(inputs.pluginOfferings?.length ? { pluginOfferings: inputs.pluginOfferings } : {}),
     ...(inputs.pluginOfferingsFault !== undefined ? { pluginOfferingsFault: inputs.pluginOfferingsFault } : {}),
-    mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "working"), wikiBagUri(inputs.wikiSlug)],
+    // The personal slot rides the designation too: it carries the face's private margin over the workbench, and its grant roots
+    // per face (`faceFolder`); plaintext survives for it as for every other layer that holds content.
+    // ONE FOLDER ANSWERS A WORKBENCH, and a seated writer's wear writes it: a face that holds no writer's seat (seated `read`,
+    // or seated nowhere) designates no working mirror, so its mount writes nothing into the workbench's folder.
+    mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "temp"), wikiSlotUri(inputs.wikiSlug, "draft"), ...(writeSlot === "personal" ? [] : [wikiSlotUri(inputs.wikiSlug, "working")]), wikiSlotUri(inputs.wikiSlug, "personal"), wikiBagUri(inputs.wikiSlug)],
   };
 
   return { spec: { coreHash: inputs.coreHash, recipe, grants }, personalUrl, draftUrl, workingUrl };
@@ -205,9 +217,12 @@ export async function mountPrimaryWiki(
   pool:    PrimaryMountPool,
   binding: BindingResolver,
   inputs:  PrimaryMountInputs,
-): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }> {
+): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null }> {
+  console.info(`[mount] binding ${inputs.activeWikiId}`);
   const { spec, personalUrl, draftUrl, workingUrl } = await buildWikiMountSpec(binding, inputs);
+  console.info(`[mount] binding ready ${inputs.activeWikiId}; awaiting ea`);
   await pool.mountWiki(inputs.activeWikiId, spec, { pinned: true });
+  console.info(`[mount] ea ${inputs.activeWikiId}`);
   return { personalUrl, draftUrl, workingUrl };
 }
 

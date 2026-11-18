@@ -3,8 +3,8 @@
  * daemon/hook/capture topology OBSERVABLE and GRACEFULLY-DRAINABLE.
  *
  * The daemon-spawn whack-a-mole: warm write-daemons spawn ON-DEMAND (a client mine
- * hands off to a per-palace daemon, auto-starting it), and the `lares` capture +
- * ingest hooks mint one on every dispatch. Killing the children never stops the
+ * hands off to a per-palace daemon, auto-starting it), and the `lares` capture
+ * legs mint one on every dispatch. Killing the children never stops the
  * spawner. These verbs surface the whole topology (`status`), then drain it
  * gracefully — PAUSE the hooks first (stop the minting), THEN SIGTERM-drain the
  * warm daemons (`quiesce`), and un-pause when the storm passes (`resume`).
@@ -75,6 +75,7 @@ function passthroughGuest(verb: string, inner: ParsedArgs): number {
   }
 }
 
+// PACING: process exit or the escalation bound ends each drain wait; sleep spaces polls.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** Snapshot the live topology, marking the WS-port holder(s) as the node vessel. */
@@ -92,7 +93,6 @@ const KIND_TAG: Readonly<Record<ProcKind, string>> = {
   "chroma":        "CHROMA ",
   "node-vessel":   "VESSEL ",
   "capture-holder":"CAP-HOLD",
-  "ingest-hook":   "HOOK   ",
   "capture-job":   "CAPTURE",
   "subagents-job": "SPIRITS",
   "telemetry-job": "TELEM  ",
@@ -178,7 +178,7 @@ function cmdStatus(args: ParsedArgs): number {
 
 /**
  * A proc the drain TERMs: the store-HOLDERS *and* the daemon-MINTING spawner jobs
- * (`lares capture/subagents/telemetry` legs + the ingest hook). Holders alone left
+ * (the `lares capture/subagents/telemetry` legs). Holders alone left
  * a wedged spawner surviving every drain, dead-ending the teardown into --force.
  * The spawner jobs run watermark-idempotent by design, so a TERM stays re-runnable.
  * (The node vessel — holdsStore:false, mintsDaemons:false — stays untouched.)
@@ -237,6 +237,7 @@ async function drainHolders(opts: { select?: (p: PalaceProc) => boolean; graceMs
   // This door's own liveness patience before escalating — never a safety verdict — reads a
   // monotonic clock, so an adversarial or operator wall-clock jump changes neither grace window.
   const graceDeadline = performance.now() + graceMs;
+  // LIVENESS: external holders can ignore SIGTERM without exiting.
   while (performance.now() < graceDeadline) {
     if (holdersNow().length === 0) return { drained: [...drained], forced: [], remaining: [] };
     await sleep(pollMs);
@@ -246,6 +247,7 @@ async function drainHolders(opts: { select?: (p: PalaceProc) => boolean; graceMs
   const forced: number[] = [];
   for (const p of stubborn) { forced.push(p.pid); try { process.kill(p.pid, "SIGKILL"); } catch { /* gone */ } }
   const killDeadline = performance.now() + killMs;
+  // LIVENESS: an uninterruptible holder can remain after SIGKILL.
   while (performance.now() < killDeadline) {
     if (holdersNow().length === 0) return { drained: [...drained], forced, remaining: [] };
     await sleep(pollMs);
@@ -371,7 +373,7 @@ export function runResume(args: ParsedArgs, door: DoorScope): number {
     human: () => {
       console.log(`${door.label} resume\n`);
       console.log(before.paused
-        ? "  hooks UN-PAUSED — capture/ingest mint the warm daemon lazily again."
+        ? "  hooks UN-PAUSED — capture mints the warm daemon lazily again."
         : "  hooks were already live — nothing to do (idempotent no-op).");
     },
   });
@@ -476,7 +478,7 @@ export async function cmdMempalace(args: ParsedArgs): Promise<number> {
  *
  * FOUNDING NEVER REACHES IT (operator ruling). This writes OUTSIDE the vessel root, into the
  * operator's real Python environment — so a founding that ran it could never stay isolated, and a throwaway
- * rehearsal would touch the machine it rehearses on. `vessel stand --install` stands the vessel; a separate tool
+ * rehearsal would touch the machine it rehearses on. `vessel stand --init` stands the vessel; a separate tool
  * answers on its own door.
  *
  * The mempalace is a READ-ONLY sidecar submodule. A vessel founds and serves without it; what it unlocks is

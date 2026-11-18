@@ -1,40 +1,34 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/continuity">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/continuity`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/continuity.mem"
 hydrate   = true
 l-space   = "stable"
-mana      = 14
-manao     = 14
-manaoio   = 14
 namespace = "&#x0950; &#x0901;"
 role      = "lararium child invariant for continuity, crystal carry, and memory-as-hint boundaries"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/tw5/continuity"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/continuity"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 !! Entry — Lararium Core Hydration
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/lararium`>>
 
 The lararium hydrates the continuity room here.
 Session carry belongs to the lararium side, not the threshold side.
 
 <<~/ahu>>
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lararium Continuity
 
@@ -44,7 +38,7 @@ Continuity enters here as calibration and carry, not as unquestioned truth.
 
 <<~/ahu>>
 
-<<~ ahu #/continuity-law>>
+<<~ ahu slot=`#/continuity-law`>>
 
 !! Continuity Law
 
@@ -60,7 +54,7 @@ More detailed crystal and MemPalace work can gather in docs space until it harde
 
 <<~/ahu>>
 
-<<~ ahu #/source-shelf>>
+<<~ ahu slot=`#/source-shelf`>>
 
 !! Source Shelf
 
@@ -74,16 +68,16 @@ This child meme keeps the cold-hydration contract small.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/crystal">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/lararium`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/crystal`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/config`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Op7xed2CjEzm11LJoF6VW_Vj2oOi1t3Wge35eXK4uEg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gYtvfpx5JIxq0yh9scokyPtq7gSflc0NBncUsauLo6g`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

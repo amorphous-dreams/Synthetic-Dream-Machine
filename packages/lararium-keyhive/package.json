@@ -20,6 +20,7 @@
     "clean": "node ../../tools/clean-output.mjs dist",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test": "vitest run"
   },
   "dependencies": {
@@ -28,7 +29,7 @@
     "@lararium/tw5": "workspace:*"
   },
   "devDependencies": {
-    "@automerge/automerge": "3.4.1",
-    "vitest": "5.0.3"
+    "@automerge/automerge": "3.5.0",
+    "vitest": "5.0.5"
   }
 }

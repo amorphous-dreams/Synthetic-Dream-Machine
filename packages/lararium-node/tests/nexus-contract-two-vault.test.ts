@@ -9,7 +9,7 @@
  *       A's leaf a member, and neither vault ever held the other's seat.
  *   V2  RED: nothing signs or lands on a partial the judge refuses: the same act again (`replay`), a revoke A opened
  *       before its own board held the admit (`stale`), a partial under another Nexus, a torn file, a partial its own
- *       vault cannot advance, and a carry; the board B holds keeps its count through every refusal.
+ *       vault cannot advance, and an uncarry; the board B holds keeps its count through every refusal.
  *   V3  RED: the board moves while B's seat signs (a handshake inside the signer lands another act for the same
  *       nym first): the act B just cosigned reads stale at the write, and nothing lands.
  *   V6  RED: the board moves while A's seat signs an open (the handshake lands the completed admit first): the
@@ -20,6 +20,9 @@
  * A 2-of-3 control and the whole-quorum and no-seat open refusals wait on a fixture that seats such a roster beside
  * a joint Nexus (train N step 5's add-a-chair roll); the cofound door founds two of two.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 /** A handshake inside every seat signature: a vector may run one step before the next signature completes. */
@@ -37,10 +40,12 @@ vi.mock("../src/seat-key-store.js", async (importOriginal) => {
     },
   };
 });
-import { mintColdKey, seatFingerprint, cidV1Sha256, foldCarriageDetails, carriageEntriesFromBoard, carriageDocUrl, materializeSharedLarDoc,
+import { hex, admitCarriageCommit, mintColdKey, seatFingerprint, cidV1Sha256, foldCarriageDetails, carriageEntriesFromBoard, carriageDocUrl, materializeSharedLarDoc,
   holdsCarriage, foundingRoster, KAPAE_ANTIGEN_DOMAIN, antigenActCid, nexusActPartial, type CofoundOffer, type KapaeAntigenEntry } from "@lararium/mesh";
 import { charterHomeFor } from "../src/carried-set.js";
 import { NexusContractError, runNexusContractOpen, runNexusContractPartial } from "../src/commands/nexus-contract.js";
+import { takeAdmitBundle } from "../src/admit-bundle.js";
+import { hearthSovereignPin } from "../src/hearth-sovereign-pin.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { mintNexusLeaf } from "../src/nexus-leaf.js";
@@ -72,7 +77,7 @@ interface Vault { readonly c: SeatedScratchCustody; readonly repo: RestingRepo }
 async function vault(label: string): Promise<Vault> {
   const c = await seatScratchCustody(label);
   drops.push(c);
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   return { c, repo: restingRepo(larDataDir()) };
 }
@@ -121,6 +126,14 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     const opened = await runNexusContractOpen({ action: "admit", nym: leaf.verifyingKey, sealHome: larSealHome(), repo: A.repo, aid });
     expect(opened.verdict).toBe("ready");
     expect(opened.signed).toEqual([aSeat]);
+    // The admit's quorum signs a commitment to the opening hearth's FULL sovereign sync pin at this Nexus and canon list
+    // (face-proof#/the-gate-exchange, step 5); the opening crosses with the partial, never onto a board.
+    const opening = opened.partial.act.family === "admit" ? opened.partial.act.opening : undefined;
+    const aPin = opening!.carriage.gatePin;
+    const aGate = aPin.signingKey;
+    expect(aPin).toEqual(hearthSovereignPin(aid));
+    expect([aPin.tier, aPin.route, aPin.nexus]).toEqual(["sovereign", "/ws", hex(new TextEncoder().encode(aid))]);
+    expect(opened.partial.act.family === "admit" && opened.partial.act.entry.carriageCommit).toBe(admitCarriageCommit(opening!));
     expect(opened.landed).toBeNull();
     expect(await memberHere(A, aid, leaf.verifyingKey)).toBe(false);
 
@@ -131,6 +144,10 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     expect(cosigned.signed).toEqual([aSeat, bSeat].sort());
     expect(cosigned.landed?.memberHeld).toBe(true);
     expect(cosigned.landed?.contractIn).toBe("supplied");
+    // B lands A's act, so B's bundle names the pin the admit signed, never B's own gate key.
+    const bGate = hearthSovereignPin(aid).signingKey;
+    expect(bGate).not.toBe(aGate);
+    expect(cosigned.landed?.bundle?.gatePubKey).toBe(aGate);
 
     at(A);
     const landed = await runNexusContractPartial({ partial: courier(cosigned.partial), sealHome: larSealHome(), repo: A.repo });
@@ -138,6 +155,12 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     expect(landed.landed?.evidenceCid).toBe(cosigned.landed?.evidenceCid);
     expect(await memberHere(A, aid, leaf.verifyingKey)).toBe(true);
     expect(await memberHere(B, aid, leaf.verifyingKey)).toBe(true);
+
+    // The bundle B landed takes on A, and hands out the canon list the quorum signed.
+    at(A);
+    const taken = await takeAdmitBundle({ sealHome: larSealHome(), raw: JSON.stringify(cosigned.landed!.bundle) });
+    expect(taken.gatePubKey).toBe(aGate);
+    expect(taken.canon).toEqual(opening?.carriage.canon);
   });
 
   test("V2 — nothing signs or lands where the judge refuses", async () => {
@@ -166,14 +189,14 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     const foreign = { ...courier(opened.partial), aid: `nexus-${"cd".repeat(32)}` };
     expect(await refusal(runNexusContractPartial({ partial: foreign, sealHome: larSealHome(), repo: B.repo }))).toMatch(/holds no charter/);
     // A torn file reads as no partial.
-    expect(await refusal(runNexusContractPartial({ partial: { ...courier(opened.partial), extra: 1 }, sealHome: larSealHome(), repo: B.repo }))).toMatch(/reads as no admit or revoke partial/);
+    expect(await refusal(runNexusContractPartial({ partial: { ...courier(opened.partial), extra: 1 }, sealHome: larSealHome(), repo: B.repo }))).toMatch(/reads as no admit, revoke or carry partial/);
     // A kapae partial reads well at its own family, and the contract door still takes it as no admit or revoke.
     const ban = { kind: KAPAE_ANTIGEN_DOMAIN, nym: leaf.verifyingKey, action: "kapae", actCid: "", parents: [], sealEpochCid: opened.partial.act.family === "admit" ? opened.partial.act.entry.sealEpochCid : "",
       signatures: [{ signer: "ab".repeat(32), sig: "cd".repeat(64) }] } as KapaeAntigenEntry;
     const kapae = nexusActPartial(aid, { family: "kapae", entry: { ...ban, actCid: antigenActCid(ban) } });
-    expect(await refusal(runNexusContractPartial({ partial: courier(kapae), sealHome: larSealHome(), repo: B.repo }))).toMatch(/reads as no admit or revoke partial/);
-    // A carry crosses no vaults as a partial.
-    expect(await refusal(runNexusContractOpen({ action: "carry", nym: leaf.verifyingKey, carrierSig: "00".repeat(64), sealHome: larSealHome(), repo: B.repo, aid }))).toMatch(/crosses no vaults/);
+    expect(await refusal(runNexusContractPartial({ partial: courier(kapae), sealHome: larSealHome(), repo: B.repo }))).toMatch(/reads as no admit, revoke or carry partial/);
+    // An uncarry crosses no vaults as a partial (a carry does, with its claim: `nexus-carry-two-vault`).
+    expect(await refusal(runNexusContractOpen({ action: "uncarry", nym: leaf.verifyingKey, sealHome: larSealHome(), repo: B.repo, aid }))).toMatch(/crosses no vaults/);
     expect(await boardCount(B, aid)).toBe(held);
   });
 

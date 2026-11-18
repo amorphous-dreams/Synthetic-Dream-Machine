@@ -1,0 +1,50 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-carrier-read/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-05 (file date) — source `.lares-scratch/b1-lift/luna-carrier-read/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-carrier-read/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-carrier-read/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/b1-lift/luna-carrier-read/final.md` (hand-back, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-carrier-read/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/findings`>>
+
+!! Findings
+
+* ''RULING — `#/the-opening` lines 29–44; `#/the-shape` lines 55, 63; `#/the-founding-path` line 109.'' The measured current design puts the persona-root seed, atom seed, and custody key on the page, and sends the ward route from a page form. The proposed path still has the page form send secret bytes; it even names the input string lingering until garbage collection. That conflicts with the road’s ruling: “Every page holds a SURFACE with a port onto a vessel” and “no sovereign VM and no key on a surface” (road `#/rulings`, line 237). The route must be handled so no key, seed, or route remains on the page after the cut.
+
+* ''RULING — `#/the-slices` lines 77–80, 84, 129.'' Per-tab unlocks and live sessions are carried in slices 3–4; slice 3 drops the key when the face’s last session closes. But the target does not specify how that last-tab transition returns the browser to its floor, or how each shared store retains one owner. The “kept laws” list these requirements, but does not make their slice-level behavior or red test explicit. Compare road lines 227 and 230: each tab asks independently, and “the browser rests at its floor.” The road also says the vessel meets each face by that face’s atom, “never one device-wide key” (line 236).
+
+* ''CONTRADICTION — `#/house-readings` line 138 vs. road `#/rulings` line 237.'' House reading: “The path from the page’s form to the worker holds as the interim ceremony boundary for the rite.” Ruling: “the unlock ceremony [is one] the surface cannot paint.” Deferring the ceremony’s final shape to research leaves a page-mediated ceremony in the founding path.
+
+* ''DEFERRAL — `#/house-readings` line 138; `#/the-slices` lines 76, 80–84.'' The carrier says the ceremony’s final shape “stays research,” despite the ruling that Browser + Node are part of founding and every B1 slice lands before the rite (road line 49). Slice 2 proves a browser founding, but does not specify a joined Node-and-browser founding test; slice 5b’s shared composer and the X0b sweep also come late in the slice order. Make those part of the pre-rite gate.
+
+* ''CONTRADICTION — port list, `#/the-shape` lines 59–63.'' `join:answer{text}` is opaque and may carry an admit or route; `answer{askId}` carries secret bytes from the page, and `ask{…, act}` may carry private act data back to it. The list does not constrain these payloads enough to establish that sovereign material never crosses to the page. `status{…, seedRest, …}` also needs a non-secret definition.
+
+* ''CONTRADICTION — `#/the-slices` lines 57, 78 vs. `#/house-readings` lines 139–140.'' The floor design has a follower reach a leader’s dedicated worker, while the reading says “one vessel worker per house” and every tab gets its own live session. Specify whether that worker holds distinct per-tab sessions without sharing unlocks or keys; otherwise the floor path blurs the session and ownership rules.
+
+* ''L-PRIME — `#/the-opening` lines 29–44; `#/the-slices` lines 74–84.'' The opening’s implementation inventory and “today” status are snapshots, while slice 2 says `openBrowserVessel` runs “unchanged.” Keep the measured baseline clearly dated; make target prose invariant-based so it remains useful after the implementation moves.
+
+* ''REALM — dreamdom `#/open-rulings` lines 555–558; road line 1096.'' “mirror-realm,” “realm menu,” and “clean-realm ceremony” use //realm// outside the DreamNet sense. Use “thread” for JavaScript execution context; retain `ShadowRealm` only as the API’s proper name.
+
+''Verdict: HOLD.'' The carrier has the right broad worker direction, but the page-mediated secret path and deferred ceremony design conflict with the rulings. Specify the secret-free boundary, per-tab floor lifecycle, store ownership, and pre-rite joined founding gate before treating B1 as rite-ready.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bKxioi-Paye4A1jeKnhWRpK74DBXGIK4SWzO2olQeiw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

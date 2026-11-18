@@ -46,7 +46,7 @@ import {
   climbNexusBoards, carryPersonaKelUpTheGradient,
   nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow, type NexusIdentityAt,
   materializeSharedLarDoc,
-  kapaeAntigenDocUrl, crossroadsDocUrl,
+  kapaeAntigenDocUrl, realmAnnounceDocUrl,
   personaKelBoardDocUrl,
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry,
   writePersonaKelEvent, personaKelChainForPrefix, mintPersonaInception,
@@ -56,6 +56,7 @@ import {
 // The boot's own source — the fault-pin's only reachable witness. `?raw` because this suite runs in a
 // real chromium and holds no fs; the text is the same text `tsc` compiles.
 import bootSrc from "../src/open-browser-vessel.ts?raw";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const signer = (s: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, s).then(hex);
@@ -152,7 +153,7 @@ describe("★ RED — the LEAF BRICKS: the Binding Gate's own read goes blank wh
     const own    = await pubOf(seedOf(111));
     const anchor = await pubOf(seedOf(211));
 
-    // ① the leaf founds OFFLINE. `runFoundingCeremony({…, nexusPubkey})` seats the inception on the board
+    // ① the leaf founds OFFLINE. `runFoundingCeremony({ vesselTag: testVesselTagDoor(1),…, nexusPubkey})` seats the inception on the board
     //    keyed by the island resolved AT THAT MOMENT — for a founding leaf, its own key.
     const before = leafStandsAt(own);
     expect(nexusScopeOrThrow(nexusIdentity(before))).toBe(own);
@@ -208,7 +209,7 @@ describe("★ RED — the LEAF BRICKS: the Binding Gate's own read goes blank wh
     expect(carried[0]!.nym).toBe(victim);
   }, 30_000);
 
-  test("the crossroads RE-ANNOUNCE stands INERT at a leaf — it holds no charter, so no realm", async () => {
+  test("the realm RE-ANNOUNCE stands INERT at a leaf — it holds no charter, so no realm", async () => {
     const r        = repo();
     const own      = await pubOf(seedOf(115));
     const anchor   = await pubOf(seedOf(215));
@@ -216,11 +217,11 @@ describe("★ RED — the LEAF BRICKS: the Binding Gate's own read goes blank wh
     const island   = nexusScopeOrThrow(nexusIdentity(at));
 
     const climb = await leafClimb(r, at);
-    const act   = climb.acts.find((a) => a.board === "crossroads")!;
+    const act   = climb.acts.find((a) => a.board === "realm-announce")!;
     expect(act.act).toBe("re-announce");
     expect(act.landed, "no realm → nothing to re-derive; a leaf registers nothing either").toBe(0);
     expect(act.from, "and it read no realm doc at all").toEqual([]);
-    expect(publicRealmBooksFromDoc((await board(r, crossroadsDocUrl(island))).doc())).toEqual([]);
+    expect(publicRealmBooksFromDoc((await board(r, realmAnnounceDocUrl(island))).doc())).toEqual([]);
   }, 30_000);
 });
 
@@ -264,7 +265,7 @@ describe("the gradient law holds AT THE LEAF", () => {
     expect(climb.landed).toBe(0);
     for (const act of climb.acts) expect(act.from).toEqual([]);
     expect(carry).toEqual({ carried: 0, from: null });
-    for (const url of [kapaeAntigenDocUrl(own), crossroadsDocUrl(own), personaKelBoardDocUrl(own)]) {
+    for (const url of [kapaeAntigenDocUrl(own), realmAnnounceDocUrl(own), personaKelBoardDocUrl(own)]) {
       expect(await keysOn(r, url)).toEqual([]);
     }
   }, 30_000);
@@ -357,15 +358,19 @@ describe("the leaf climb stays scoped to antigen and crossroads", () => {
     //    the pinned prefix is known.
     expect(bootSrc, "a climb nested under a face guard would stop a FACELESS leaf from carrying")
       .toMatch(/\n {2}await climbNexusBoards\(\{/);
+    //    The carry sits one level deeper than `openDaemon`'s own depth: inside the `faced` closure, which a veil floor
+    //    (a record naming no face, so no pinned prefix) never enters.
     expect(bootSrc, "the KEL carry rides where the pinned prefix is read")
-      .toMatch(/\n {6}await carryPersonaKelUpTheGradient\(\{/);
+      .toMatch(/\n {8}await carryPersonaKelUpTheGradient\(\{/);
+    expect(bootSrc, "the KEL carry rides inside the face's own closure, which the veil floor never enters")
+      .toMatch(/const faced = bootFace === null \? null : await \(async \(social: FacedBootstrap\) => \{[\s\S]*?\n {8}await carryPersonaKelUpTheGradient\(\{/);
 
     // ⑥ ORDER. Every index reads POSITIVE first — `indexOf` answers -1 for an absent call, and -1 is
     //    less than everything, so an ordering assertion over an absent call passes VACUOUSLY.
     const scopeDoor  = bootSrc.indexOf("nexusScopeOrThrow(nexusStanding)");
     const climbAt    = bootSrc.indexOf("await climbNexusBoards");
     const kelCarryAt = bootSrc.indexOf("await carryPersonaKelUpTheGradient");
-    const crossroads = bootSrc.indexOf("await registerCrossroadsInOracle");
+    const crossroads = bootSrc.indexOf("await registerCrossroadsPointer");
     const gateReadAt = bootSrc.indexOf("personaKelChainForPrefix(kelBoard.doc()");
     for (const [what, at] of [["the scope door", scopeDoor], ["the board climb", climbAt],
                               ["the KEL carry", kelCarryAt], ["the crossroads register", crossroads],
@@ -389,11 +394,10 @@ describe("★ ADMIT-AWARE ISLAND — an admitted leaf resolves the FOUNDER'S isl
   // now `@lararium/mesh/nexus-identity.ts`): an admit payload carries the founder's RESOLVED
   // `hearthIslandKind`/`hearthIslandScope`, a SNAPSHOT at mint time, so a CLIMBED founder's joinee seats
   // on the board the founder actually stands on rather than always reading `kind: "anchor"` off the raw
-  // `hearthGatePubKey`/`relayGatePubKey`. This leaf inherited the SAME defect (the follow-on `aa15cfb3b`
-  // itself flagged, "not built"). `openBrowserVessel` needs a real IndexedDB + WebCrypto substrate and
+  // `hearthGatePubKey`. `openBrowserVessel` needs a real IndexedDB + WebCrypto substrate and
   // cannot stand in a unit test (same limitation the fault-pin above already works around), so this reads
   // the boot's own source — the ONLY reachable witness, same method as the pin above.
-  test("★ FAULT-PIN — the admit branch composes admittedJoineeIsland over the CARRIED island fields, not relayGatePubKey alone", () => {
+  test("★ FAULT-PIN — the admit branch composes admittedJoineeIsland over the CARRIED island fields, not a raw gate key", () => {
     // RED — the admit-aware resolution must exist and must read the carried island fields, beside the
     // unchanged anti-relay binding (hearthGatePubKey stays byte-identical to before — Option A, node-side).
     expect(bootSrc, "an admit must resolve through admittedJoineeIsland, the SAME ruling the node's init.ts composes")
@@ -413,7 +417,7 @@ describe("★ ADMIT-AWARE ISLAND — an admitted leaf resolves the FOUNDER'S isl
       .toContain("admittedJoineeIsland({");
 
     // CONTROL — the founding (no-admit) branch is UNCHANGED: it still resolves via nexusIdentity over
-    // nexusStandsAt (`relayGatePubKey ?? null`), and never reaches for admittedJoineeIsland.
+    // nexusStandsAt, and never reaches for admittedJoineeIsland.
     const elseBranch = /\} else \{[\s\S]*?\n {2}\}\n/.exec(bootSrc.slice(bootSrc.indexOf("if (admit) {")))?.[0] ?? "";
     expect(elseBranch, "the founding branch must be findable").not.toBe("");
     expect(elseBranch, "the founding branch must still resolve via nexusIdentity(nexusStandsAt)")

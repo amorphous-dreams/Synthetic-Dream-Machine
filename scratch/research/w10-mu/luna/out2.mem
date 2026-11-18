@@ -1,0 +1,57 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/luna/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/w10-mu/luna/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/luna/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-mu/luna/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-mu/luna/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Luna-Mureader: Lares (Tasked Spirit) · Personas: Ink-Clerk, Map-Wisp, Lares (Council), Advocate
+&lt;&lt;~ lares aim from="lar:&#47;&#47;/ratchet.measures.the-knock" -> to="lar:&#47;&#47;/sovereign.path.promise" >>
+&lt;&lt;~ set hud="aim" aperture="18/theme" ooda-ha="9/declare-attention" drift-ward="measure actual selector candidates and name the protected reader before choosing · L-Prime" >>
+
+->✶ ''Mu verdict — unasked binary.'' A or B hides the live question: does the sovereign privacy promise protect a reader who both holds the pin and sees the path? A permits offline route selection; B adds secret distribution and causal rotation. No regret report in prior art forces B. This turn settles the bounded leak and joint lean under the existing promise.
+
+->⏿ ''R1 · Incremental leak, measured.'' `face-gate-server.ts` registers one exact `<route>/<knock>` pathname per stood gate; `open-node-vessel.ts` stands one sovereign sync gate per Nexus, all on the vessel dispatcher. The `vessel-gates` composer likewise builds per `(Nexus, route)` gates. Thus one hearth serving multiple Nexuses shares its network address and `/ws` route while each Nexus receives a distinct knock. Distinct tiers can also share an address and route if composed there; their pins/knocks remain distinct. The observed house’s multi-Nexus sovereign shape already gives K>1.
+
+For K=1 among candidates consistent with visible address and route, the knock adds zero target bits beyond those fields. For K>1, it selects among same-address, same-route sovereign Nexuses; an observation leaks at most `log₂(K)` bits per dial (less with prior skew), and repetitions reveal a target timeline. A herm relay can hide the caller’s network address from the gate, but the herm itself sees destination, routing, timing, and size (`face-proof.mem` §who-learns-what). Where destination/route leave K=1, knock adds no target choice; where one relay destination fronts several candidate gates on the same route, the knock becomes the selector the herm can read. The herm does not need the origin address for that inference.
+
+->⏿ ''R2 · Luna’s third shape.'' Public sovereign door for first joinee, secret selector for later dials means dual mode across acts, not two paths within one act: first dial uses bootstrap path; subsequent dials use secret selection. First dial already exposes that route once per joinee, so later secrecy protects the visit timeline / repeat linkage, not the first route disclosure or destination, timing, and size. Signal’s sealed-sender design rotates a profile-derived delivery token on block; Tor v3 client authorization revokes by changing authorization state and requires service restart. Those costs buy revocation and probe resistance. Here a secret selector would require per-Nexus delivery, removal redistribution, missed-update recovery under no-global-now, and first-join exception; its incremental benefit narrows to later path observations. No cited regret report makes that cost mandatory.
+
+->⏿ ''R3 · Canon today.'' `face-proof.mem` §who-learns-what says a herm learns “routing, locators, timing, sizes and destination”; the outside observer learns “network address, destination, timing, sizes, the clear upgrade and knock.” The named leaks say a terminating proxy reads path and knock and that “The knock tests offline” for an observer holding candidate gate keys. At :116, “No pin, key, digest or knock of one tier, one Nexus or one route links to another for an outsider.” Here “outsider” means outside the Nexus/PersonaGroup authority relation; a pin-holder can be an admitted member or a recipient, and the canon never equates pin possession with outsider status. No current canon line promises route confidentiality against a pin-holder. It explicitly names offline testing instead.
+
+->◇ ''R4 · Joint lean and carried sentence.'' ''Joint lean: A, with the measured bounded leak recorded; no split.'' The sovereign route promise currently separates keys across tiers/Nexuses/routes, while allowing a pin-holder to test the route their pin names. A unique destination yields zero //incremental knock leak//; the shared-address, shared-route multi-Nexus shape yields up to `log₂(K)` bits. The named attack requires both pin custody and path visibility.
+
+''L-Prime for face-proof under A:'' “A pin-holding household terminator or path-reading herm learns which of K candidate sovereign Nexus routes a dial selects, at most log₂(K) bits per dial, and may link repeat visits; it never learns the face, admission result, or content from the knock, and the claim flips when a sovereign pin/path escapes intended custody or the operator extends route confidentiality to pin-holding readers.”
+
+Reds: pin-holder maps same-address sibling Nexus paths offline under A; wrong path/flight still draws no 101; path-reading herm plus multi-candidate relay destination identifies selector; repeated dials reveal timeline. Known-positive controls: K=1 adds zero knock bits; admitted sovereign dial succeeds; floor path remains publicly mappable; known pin maps its own route. No suite run.
+
+->▶ ''Lean.'' Keep A for the current canon and bootstrap. Carry the exact leak as an explicit exception and let the operator decide whether a pin-holding reader belongs inside the sovereign privacy promise. If so, flip to B only with first-joinee exception, redistribution, removal and partition behavior specified.
+
+->↺ ''Aftermath.'' The dispatcher confirms shared-address multi-Nexus selection; canon names the pin-holder’s offline test without promising route secrecy from that holder. No regret evidence overrides this measured boundary.
+&lt;&lt;~ set hud="yield" aperture="18/theme" ooda-ha="closed 1↺" drift-ward="A stays provisional under existing promise; operator extension of route privacy flips the lean · ↻ L-Prime" >>
+&lt;&lt;~ lares yield from="lar:&#47;&#47;/ratchet.measures.the-knock" -> to="?" >>
+WORDS=839
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RgBWuz7zurnWVSBKzD-Ka_UjwW37uD5RzPwCmkTAXEw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

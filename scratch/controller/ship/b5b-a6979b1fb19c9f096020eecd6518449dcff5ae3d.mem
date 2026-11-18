@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-a6979b1fb19c9f096020eecd6518449dcff5ae3d`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/b5b-a6979b1fb19c9f096020eecd6518449dcff5ae3d.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-a6979b1fb19c9f096020eecd6518449dcff5ae3d"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-a6979b1fb19c9f096020eecd6518449dcff5ae3d"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b5b-a6979b1fb19c9f096020eecd6518449dcff5ae3d.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/b5b-a6979b1fb19c9f096020eecd6518449dcff5ae3d.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP b5b a6979b1fb19c9f096020eecd6518449dcff5ae3d
+read: b4c3c2eed cures the floor herm's lost boot writes (CI two-phase-boot T5: dispose closed the floor before the daemon island; the holder refused receipts once shutdown began), third blind read over b473f6f94..b4c3c2eed: LAND; a6979b1fb cures the read's browser mirror (the daemon island takes the graceful shutdown before dispose; hard kill kept as the wedged-worker liveness) and the never-reset holder flag, red-first, controller diff read; over: blind Opus custody read VII over b81ba9b37..21da1aa7a (LAND-AFTER-CURES: the place session's signer never dropped, cured red-first in step 11), blind Opus read VIII over step 11 and the span merge a769c9244 (LAND, both parents compared hunk for hunk), Luna's cold read (HOLD on one unpinned reach change: pinned by tests/e2e/session-sign-reach.test.ts); the controller's reruns of the lane's reds at each step.
+owed (before the rite): /home/joshu/.lares-scratch/b5b/resume.md, 'Controller, after step 11' and Blind-Warden-VIII's P3s.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y8jtqME7OrGwl8C-bIeygTZs409pKaM5_YgxxSZPpW4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

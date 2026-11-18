@@ -8,10 +8,10 @@
  * runs a native carrier through `decideIngest` with a `nativeRender` congruence
  * (deserialize the disk bytes, merge the `.meta` sidecar over the result — TW5's
  * own folder-loader law — then render the merged record back through
- * `renderCarrier`). `disk-projector.ts`'s projecting leg had NO equivalent: its
- * `canonicalizeFn` was gated to `file.ext === MEME_EXT` alone, so a native carrier
- * whose disk and records both moved past the merge base always read `conflict`,
- * even when the two streams said the SAME thing (reordered JSON keys, a
+ * `renderCarrier`). `disk-projector.ts`'s projecting leg reads the same congruence
+ * here: a `canonicalizeFn` gated to `file.ext === MEME_EXT` alone would read every
+ * native carrier whose disk and records both moved past the merge base as `conflict`,
+ * even when the two streams say the SAME thing (reordered JSON keys, a
  * reformatted `.tid` field block). This is that congruence, mirrored — NOT a new
  * design; it reuses the SAME three primitives the ingest leg's `nativeRender`
  * closes over (`Tw5Deserializer.deserialize` / `.parseFields` / `.renderCarrier`),
@@ -56,7 +56,7 @@ export interface NativeCanonicalCarrier {
  * (`action-handler.ts`).
  *
  * @param deserializer - the island's live native congruence (`makeTw5Deserializer`).
- * @param uri           - the carrier's own loci URI — the fallback title when the
+ * @param uri           - the carrier's own `lar:` URI — the fallback title when the
  *                        deserialized record carries none (a title-less `.md`/content
  *                        file; a `.tid`/`.json` almost always names its own).
  * @param ext           - the extension the disk file sited at (`.tid`, `.json`, …);

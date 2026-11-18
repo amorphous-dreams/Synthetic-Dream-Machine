@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/reaction-graph">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/reaction-graph`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/reaction-graph.mem"
 l-space       = "stable"
-mana          = 17
-manao         = 17
-manaoio       = 16
 namespace     = "&#x2299;"
 role          = "invariant capability: in-memory reaction graph — subscribe, fire, load, UEFN dispatch semantics"
 source-symbol = "ReactionGraph RENDER_MODES REACTION_ROLES"
@@ -19,7 +15,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/reaction-graph"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Reaction Graph
 
@@ -28,7 +24,7 @@ Routes (fromUri, listenable) → (toUri, subscribable) bindings; wired and subsc
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read the incoming binding set — fromUri, listenable, toUri, subscribable, source (wired|subscribed)
 ⏿ orient dispatch mode: fireSync for view-layer; fire/fireAll for async; fireRace/fireRush reserved
@@ -38,7 +34,7 @@ Routes (fromUri, listenable) → (toUri, subscribable) bindings; wired and subsc
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -53,7 +49,7 @@ The graph defines the Tier 0 dispatch surface — all kumu event crossings route
 
 <<~/ahu>>
 
-<<~ ahu #/binding-shape>>
+<<~ ahu slot=`#/binding-shape`>>
 
 !! Binding Shape
 
@@ -71,7 +67,7 @@ source       = "wired | subscribed"
 
 <<~/ahu>>
 
-<<~ ahu #/dispatch-modes>>
+<<~ ahu slot=`#/dispatch-modes`>>
 
 !! Dispatch Modes
 
@@ -90,7 +86,7 @@ fireRush         — puka: first to resolve wins; others receive AbortSignal
 
 <<~/ahu>>
 
-<<~ ahu #/subscription-api>>
+<<~ ahu slot=`#/subscription-api`>>
 
 !! Subscription API
 
@@ -112,7 +108,7 @@ The returned Promise resolves when the listenable fires once; `cancel()` rejects
 
 <<~/ahu>>
 
-<<~ ahu #/update-invariant>>
+<<~ ahu slot=`#/update-invariant`>>
 
 !! Update Invariant
 
@@ -125,7 +121,7 @@ This preserves in-flight kukali suspensions across TW5 wiki-change events.
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -140,13 +136,13 @@ reaction-roles = ["listenable", "subscribable", "observes", "throttles", "deboun
 
 <<~/ahu>>
 
-<<~ ahu #/yin-collapse-target>>
+<<~ ahu slot=`#/yin-collapse-target`>>
 
-!! Yin-Collapse — Completed (2026-05-15)
+!! Yin-Collapse
 
-`ReactionEngine` (TS inline dispatch class) removed. The TW5 wiki IS the reactive engine.
-The yin-collapse is not provisional — it landed and shipped. `reaction-router.ts` is
-the target architecture, not a bridge to it.
+No `ReactionEngine` (TS inline dispatch class) stands. The TW5 wiki carries the reactive engine.
+The yin-collapse holds as the architecture, never as a provisional step. `reaction-router.ts` carries
+the target architecture and bridges to nothing.
 
 !!! What shipped
 
@@ -194,7 +190,7 @@ exclusively through `wiki.dispatchEvent("tm-verse-event")` inside the nalu hook.
 
 <<~/ahu>>
 
-<<~ ahu #/scope-1-networking>>
+<<~ ahu slot=`#/scope-1-networking`>>
 
 !! Scope 1 ~ the CRDT-wave surface [surgical 2026-07-03]
 
@@ -202,14 +198,14 @@ The reaction dispatch layer runs as a ''Scope-1'' CRDT-wave surface under the tw
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kukali">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/papalohe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kukali`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;62nleymhqoZiW9IcJ0R4LiHnhyk3VQS975wR5IEOUMQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5TqXOH-PkFQ24cCmz9LzqTpae84zTB_Bc186BRJ6l1Q`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

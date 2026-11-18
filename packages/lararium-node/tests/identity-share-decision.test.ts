@@ -1,15 +1,15 @@
 /**
  * identity-share-decision.test.ts — the #58 COMPOSED gate against the real WASM.
  *
- * identityShareDecision layers the #49 federation gate (OUTER ring) OVER a real
- * KeyhiveIdentitySlot's capability barrier (INNER ring), deny-by-default with AND
- * semantics. These cases are the proof the OpenIdentitySlot socket could never
- * give — the composed decision DENIES an undelegated peer's doc-share and ALLOWS
- * a delegated one, both verdicts riding genuine Keyhive accessForDoc crypto.
+ * identityShareDecision layers the #49 federation gate (OUTER ring) OVER a capability
+ * barrier (INNER ring), deny-by-default with AND semantics. The inner ring here asks a real
+ * KeyhiveProvider's `verify` (accessForDoc) for the presenter it names — the Keyhive identity
+ * slot retired with K23, so the suite holds the barrier through a slot of its own, and the
+ * composed decision still DENIES an undelegated peer's doc-share and ALLOWS a delegated one,
+ * both verdicts riding genuine Keyhive crypto.
  *
- * Mirrors federation-gate.test.ts (the ring shape) ∪ keyhive-identity-slot.test.ts
- * (two real KeyhiveProviders exchange cards, A grants, the slot for the audience
- * verifies). In-process, real keyhive WASM — no crypto stubbed.
+ * Two real KeyhiveProviders exchange cards, A grants, the barrier for the audience verifies.
+ * In-process, real keyhive WASM — no crypto stubbed.
  */
 
 import { describe, test, expect } from "vitest";
@@ -20,14 +20,23 @@ import {
 import {
   DeterministicFederationGate, identityShareDecision, type IdentityRing,
 } from "@lararium/mesh";
+import type { IdentitySlot } from "@lararium/mesh";
 import { KeyhiveProvider } from "@lararium/keyhive";
-// The slot stands out of the package barrel and its export map (specified in code), so its tests read its source.
-import { KeyhiveIdentitySlot } from "../../lararium-keyhive/src/keyhive-identity-slot.js";
 
 const memStore = () => ({ put: async () => {}, list: async () => [] });
 const NX  = "abcdef0123456789";
 const BAG = "lar:///ha.ka.ba/bags/test/identity-share-decision";
 const RELAY = "relay-peer" as PeerId;
+
+/** The inner ring's barrier: `did` presents itself to the provider's real `verify` (an edit asks admin). */
+function barrierSlot(provider: KeyhiveProvider, did: string): IdentitySlot {
+  return {
+    did,
+    verifyCapability: async (docUrl, ability) => (await provider.verify({ presenter: did, bagUrl: docUrl, access: ability === "edit" ? "admin" : "read" })).ok,
+    delegateCapability: async () => null,
+    verifyDelegation: async () => false,
+  };
+}
 
 /** A stable AutomergeUrl + its DocumentId for the shared bag — the doc the relay asks for. */
 function bagDoc(): { url: string; id: DocumentId } {
@@ -58,7 +67,7 @@ describe("identityShareDecision — the #49 fed gate OVER the real Keyhive barri
       const relayPeers = new Set<string>([RELAY]);
 
       const ringFor = (did: string): IdentityRing => ({
-        slot: new KeyhiveIdentitySlot({ provider: A, did }),
+        slot: barrierSlot(A, did),
         bagUrlForDoc: (d) => (d === doc.id ? BAG : null),
       });
 
@@ -90,7 +99,7 @@ describe("identityShareDecision — the #49 fed gate OVER the real Keyhive barri
       const fedGate    = new DeterministicFederationGate(NX);   // no extra boards → priv is private
       const relayPeers = new Set<string>([RELAY]);
       const ring: IdentityRing = {
-        slot: new KeyhiveIdentitySlot({ provider: A, did: bId }),
+        slot: barrierSlot(A, bId),
         bagUrlForDoc: () => BAG,   // the inner barrier WOULD clear (bId holds read)...
       };
       // ...but the outer ring never lets the private doc reach it → DENY.

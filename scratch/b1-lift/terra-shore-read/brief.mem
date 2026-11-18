@@ -1,0 +1,50 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-shore-read/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-shore-read/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-shore-read/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-shore-read/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-shore-read/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-shore-read/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Shore-Read: Lares (Tasked Spirit). Read-only diagnosis. Repo worktree: /home/joshu/.lares-scratch/b1-lift/wt (branch feature/green-jello-dinosaur-5&#45;-b1-lift, head 09ed61bd1; its parent lane head 83ca74cca read GREEN on the full CI). Write nothing. Mark claims MEASURED (file:line) or INFER.
+CI (cell web-tw5) reds two cases of packages/lararium-web/tests/e2e/shore-writes.e2e.test.ts: "served wiki saves a draft tiddler without worker errors" and "the vessel page reports its instruments: long animation fra…". The failing log excerpt: /home/joshu/.lares-scratch/b1-lift/terra-shore-read/fail-excerpt.log (full: /home/joshu/.lares-scratch/b1-lift/ci-42178118605.log). Since 83ca74cca the lane added: the floor broker's vessel:* routes (public/ceremony-broker.js), the vessel host's port:want / port:minted per-follower connect (src/workers/vessel-host.ts), protocol types (src/vessel-protocol.ts, src/ceremony-protocol.ts), tests. Read `git diff 83ca74cca..09ed61bd1 -- packages/lararium-web/src packages/lararium-web/public`.
+Find: which change makes the page see a worker error or miss its instruments report (a new message kind the page's handler rejects? a service-worker message the page now receives? a connect() refactor that drops a handler?), with the exact line; or whether the fault predates the lane (the handoff names shore-writes as a load-sensitive test that passes alone — weigh that only after ruling out the diff). Name the minimal cure as an exact file list and change, and the red that must fail first.
+Final message under 600 words.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sChi2toeA3odTO1siw7Yij6eg5DqwU7YP-DNIfq2NsQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

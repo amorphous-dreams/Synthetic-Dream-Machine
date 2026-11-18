@@ -1,22 +1,18 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/tiddler-text">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/tiddler-text`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/tiddler-text.mem"
 heleuma   = "ba"
-mana      = 18
-manao     = 17
-manaoio   = 17
 role      = "heleuma: oracle tiddler text-field reader"
 title     = "lar:///ha.ka.ba/lararium/mesh/tiddler-text"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/tiddler-text"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -30,6 +26,6 @@ One helper holds the guard on an oracle tiddler's text: a caller reads `tiddlerT
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RKMpLQ05JyO6-cd1n14At8iHFUXmJNXlYNdoLKPR5-M
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EWdbECjEcRXp0nrrGGqBTesWUaXS_trvMG-IQcwStdY`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/mandate-activity-provenance.mem"
 l-space   = "stable"
-mana      = 19
-manao     = 18
-manaoio   = 18
 role      = "canonical agency cut: mandate, activity, result, delegation, attestation and local appraisal"
 tags      = ["api/pono", "api/lararium", "mesh/agency", "mesh/provenance", "mesh/causal-island"]
 title     = "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance"
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/mandate-activity-provenance"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Mandate → Activity → Appraisal
 
@@ -29,17 +25,17 @@ The mandate does not become the activity. An attended spirit's act reads as the 
 
 <<~/ahu>>
 
-<<~ ahu #/worldline-boundary>>
+<<~ ahu slot=`#/worldline-boundary`>>
 
 !! Worldline boundary
 
-A tasked spirit consists of an AI, its Mask and the vessel's seat. The seat belongs to the vessel. In attended work, the operator directs the spirit, whose act reads as the operator's own, with the Mask as authorship; under a standing grant, the spirit drafts without a person in the loop. The vessel's own key serves as the spirit's system identity at every boundary. A Mask pins to no key or identifier and records no identity. The derived lineage-path handle, attribution DAG and per-handle clock address and recall the spirit's work and record who drove whom; they grant no identity. The operator answers for the spirit's acts. No separate key, DID, fingerprint or signature belongs to a spirit.
+A tasked spirit consists of an AI, its Mask and the vessel seat. The seat belongs to the vessel: it carries the spirit's act and witnesses it, and the act presents the proof of the face the session wears. In attended work, the operator directs the spirit, whose act reads as the operator's own, with the Mask as authorship; under a standing grant, the spirit drafts without a person in the loop. The vessel seat stands as the spirit's system identity at every boundary, as witness, never as the face's authority. A Mask pins to no key or identifier and records no identity. The derived lineage-path handle, attribution DAG and per-handle clock address and recall the spirit's work and record who drove whom; they grant no identity. The operator answers for the spirit's acts. No separate key, DID, fingerprint or signature belongs to a spirit.
 
 The boundary record carries the parent mandate, activity, result, delegation relation and local appraisal. Re-delegation stays closed by default and must carry an explicit attenuating grant; a child never widens the parent's envelope.
 
 <<~/ahu>>
 
-<<~ ahu #/appraisal>>
+<<~ ahu slot=`#/appraisal`>>
 
 !! Local appraisal runs on a gradient
 
@@ -57,7 +53,7 @@ These stand as local appraisals, never a global present. Arrival order, wall-clo
 
 <<~/ahu>>
 
-<<~ ahu #/scenario-harness>>
+<<~ ahu slot=`#/scenario-harness`>>
 
 !! Red-first ScenarioCast guidance
 
@@ -78,14 +74,14 @@ The fiction failure modes serve as test names, not authority: False Archive test
 
 <<~/ahu>>
 
-<<~ ahu #/relations>>
+<<~ ahu slot=`#/relations`>>
 
 !! Membrane relations
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/capability">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/capability`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/causal-island`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0OHBZoV3FPiHjA6VdMpoGxP0HD_IW_KRM73V4p9dA7Y
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vYY-UZP_sBZDQrKbh3LtMaEu86sYy-4TWxeAEZOanyM`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

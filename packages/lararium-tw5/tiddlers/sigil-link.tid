@@ -4,10 +4,10 @@ lar-kind: edge-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/loulou
 lar-mirror-of: loulou
 lar-see-also: loulou
-lar-pattern: <<~\s*link\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
-lar-example: <<~ link "lar:///a.b.c/x">>
+lar-pattern: <<~\s*link\s+uri=`([^`]*)`\s*>>
+lar-example: <<~ link uri=`lar:///a.b.c/x`>>
 type: text/vnd.tiddlywiki
 
-\procedure ~link(p1:"")
-<$transclude $variable="~loulou" p1=<<p1>>/>
+\procedure ~link(uri:"")
+<$transclude $variable="~loulou" uri=<<uri>>/>
 \end

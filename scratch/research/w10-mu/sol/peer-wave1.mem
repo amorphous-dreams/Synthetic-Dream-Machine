@@ -1,0 +1,55 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/peer-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/w10-mu/sol/peer-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/peer-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/peer-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! peer-wave1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-mu/sol/peer-wave1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Luna-Mureader: Lares (Tasked Spirit) · Personas: Lares (Council), Ink-Clerk, Map-Wisp, Advocate
+&lt;&lt;~ lares aim from="lar:&#47;&#47;/mu.question.opens.the-house" -> to="lar:&#47;&#47;/sovereign.path.privacy" >>
+&lt;&lt;~ set hud="aim" aperture="17/theme" ooda-ha="9/declare-attention" drift-ward="Mu must test the framing before choosing; weigh privacy and adversarial readers · L-Prime" >>
+
+->✶ ''Mu verdict — malformed binary; ask a narrower question.'' “A or B” hides the design space: public route selector + secret admission proof; relay-carried encrypted selector; or the present two-stage route plus Noise preflight, with the pin-holding observer explicitly in the threat model. The binary also conflates dispatch, authorization, and traffic privacy. The live question: what does the house promise against a household terminator or herm who holds a sovereign pin and sees the path? A and B both leave destination, timing, size, and network address visible. B hides the selector only if its carrier and selection process do not recreate the same mapping.
+
+->⏿ ''MEASURED / present claim.'' `gateKnock` HMACs the gate-bundle digest and route; exact `<route>/<knock>` lookup selects one gate; preflight decrypts Noise message one before 101 (`gate-bundle.ts:188-212`; `face-gate-server.ts:328-332,395-404`). The dial carries knock and flight (`face-dial.ts:49-63`). A pin-and-path holder can map the stable sovereign route; this yields the target route/Nexus, not face, content, nor proof of successful admission (`face-proof.mem:183-201`). The first joinee receives its sovereign pin in fleet answer before the join record lands (`fleet-join.ts:379-394`; prior e2e cited in both rounds). This means a secret selector cannot cover that first dial absent a new bootstrap.
+
+->◇ ''1. Prior-art rhymes — MEASURED from cited project sources; costs are LEAD.'' obfs4 bridge lines distribute address plus secret cert, so a scanner knowing only address cannot complete the protocol; bridge secrecy costs distribution and censorability when lines leak. Tor v3 uses public onion names plus time-blinded descriptor keys and optional client authorization; authorization keys cost provisioning and revocation is operational (removal takes restart per Tor guidance). WireGuard `mac1` deliberately uses public-key-derived material, allowing public validation; cookies add load defense, while PSK adds secret authentication. fwknop SPA chooses secret authenticated packets and replay cache/ACL state, trading scan resistance for client-server key rollout. Signal sealed sender derives a delivery token from profile key; blocking rotates that key, so unlinkability and post-block exclusion cost contact renegotiation. I2P layers garlic routing to hide next-hop instructions; tunnels still expose traffic shape and need delay/cover for stronger analysis resistance. ECH encrypts SNI but still exposes provider/IP absent encrypted DNS and a shared front. Loopix/Nym mix traffic, add cover and delay, paying latency/bandwidth for metadata resistance. Pattern choice follows attacker goals: A fits public route discovery; B fits probe resistance. No directly comparable regret report settles this case. [[Tor obfs4 spec|https://github.com/Yawning/obfs4/blob/master/doc/obfs4-spec.txt]], [[Tor obfs4 overview|https://blog.torproject.org/tor-heart-bridges-and-pluggable-transports/]], [[Tor v3 spec|https://github.com/torproject/torspec/blob/main/rend-spec-v3.txt]], [[client auth/restart|https://community.torproject.org/onion-services/advanced/client-auth/]], [[WireGuard|https://www.wireguard.com/protocol/]], [[fwknop SPA|https://cipherdyne.com/fwknop/docs/SPA.html]], [[Signal|https://signal.org/blog/sealed-sender/]], [[I2P threat model|https://www.i2p.net/en/docs/overview/threat-model/]], [[ECH RFC 9849|https://www.rfc-editor.org/rfc/rfc9849.html]], [[Loopix paper|https://arxiv.org/abs/1703.00536]].
+
+->⏿ ''2. Principles.'' Saltzer–Schroeder economy favors A’s one exact lookup; open design and Kerckhoffs favor either public algorithm with secret keys, but A’s public pin makes no authentication secret. Least privilege and end-to-end security require the endpoint proof (Noise/presentation) to decide access; neither knock should imply admission. B better serves least disclosure if its per-route key reaches only admitted devices and removal rotates causally. Yet B makes the pin carry two relations—gate identity and membership secret—unless the house names a distinct credential. Contextual integrity asks whether an operator’s path log may disclose “this household contacted that private Nexus”; that flow violates the stated private-context expectation unless explicitly ruled acceptable. LINDDUN flags linking/detecting; STRIDE alone can miss this privacy harm. [[Saltzer–Schroeder|https://www.andrew.cmu.edu/course/18-330/2019/reading/Saltzer_Schroeder_Protection_of_Information_in_Computer_Systems.pdf]], [[Kerckhoffs summary|https://www.britannica.com/technology/cryptology/Kerckhoffs-principle]], [[end-to-end|https://web.mit.edu/saltzer/www/publications/endtoend/endtoend.pdf]], [[Nissenbaum|https://digitalcommons.law.uw.edu/wlr/vol79/iss1/10/]], [[LINDDUN|https://linddun.org/]], [[STRIDE|https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats]].
+
+->⏿ ''3. Pattern-integrity rhymes (LEAD).'' MHC presents selected peptides, like scoped proof; biology is not cryptographic identity, and autoimmunity breaks the analogy. Quorum sensing uses public molecules to coordinate local group behavior: public signal works when observability benefits the group; it breaks when an adversary can infer membership. A’s route tag has information capacity up to log₂(K) bits per observation over K candidate Nexuses, and repeated stable paths permit linking; actual leakage equals uncertainty reduction, not a fixed bit count. B’s fresh tag can suppress that mapping, while still leaking destination/traffic shape. Thermodynamics gives no free secrecy: reducing observer information requires entropy elsewhere—key distribution, computation, state, or cover traffic. Ecology: aposematism pays when warning predators reduces costly attacks; crypsis pays when detection itself harms. Shibboleths work only when a verifier knows the expected response; public route spelling fails that test. Marshallese stick charts encode wave patterns and island locations as learned navigation aids: the route can guide while the navigator reads conditions; the rhyme breaks because the network herm may log the landing directly. [[Marshallese charts|https://www.lib.cam.ac.uk/rcs/projects-exhibitions/marshall-islands-sailing-charts]], [[MHC overview|https://www.nature.com/articles/nri.2017.3]], [[quorum sensing|https://pmc.ncbi.nlm.nih.gov/articles/PMC2792178/]], [[aposematism|https://doi.org/10.1016/j.tree.2019.02.015]].
+
+->⏿ ''4. House laws.'' A preserves the simple relation “pin names gate”; the path’s second relation also identifies the target to any pin holder. B risks violating one-name/one-relation by making the pin both gate locator and access secret. No global now favors causal rotation over expiry clocks, but a partitioned herm or gate retains stale knowledge until sync. Build the end state: selector, first-dial bootstrap, revocation, and browser/node parity together before X0. Herm carries without reading content, yet A still lets it infer landing if it holds pins. User introduces; operator admits: secret distribution cannot turn possession of a pin into admission. DreamNet’s invited pseudonymity makes route correlation a real breach of context even when content stays sealed.
+
+->⏿ ''5. Flip and tests.'' A’s named attacker: household TLS terminator logging URL, or herm seeing upgrade path, who also obtains candidate sovereign pins. Each observation discloses the candidate route/Nexus (at most log₂K bits); stable repeats link dials to that route, never identity or payload. Concrete flip: a sovereign pin/path appears outside members’ custody, or a terminator/Herm is granted pins while the house still promises it cannot infer private-Nexus visitation. Red tests: pin-holding observer must fail to map sovereign route under B; removed device must fail after every remaining gate learns the causal removal; two fresh dials must resist tag linking; first joinee must join without a face roster. Positive controls: floor route remains publicly mappable, admitted sovereign dial succeeds, and known pin maps A’s sovereign path.
+
+->▶ ''One lean.'' Choose a third shape: keep A’s exact public selector for floor and first joinee bootstrap, then add a distinct per-(Nexus,route) secret selector/proof for later sovereign dials only if the operator names route confidentiality as a house promise. Evidence favors A as deployable, but not harmless or accepted. B’s proposed universal rotation is underspecified and its joinee path unresolved. Flip the lean when members share sovereign pins beyond intended custody, or when the operator rules sovereign path confidentiality a requirement; then do not ship B until first dial and causal redistribution pass the red tests.
+
+->↺ ''Aftermath.'' Mu rejects the binary; A remains provisional for the extant bootstrap, with an explicit privacy exception requiring operator ruling.
+&lt;&lt;~ set hud="yield" aperture="17/theme -> 18/theme" ooda-ha="closed 1↺" drift-ward="the first joinee needs a pin before grant; operator must decide whether sovereign route privacy overrides that bootstrap · ↻ L-Prime" >>
+&lt;&lt;~ lares yield from="lar:&#47;&#47;/mu.verdict.house-law" -> to="?" >>
+WORDS=1160
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;u3heJq6r5FASjdPXb2PzS4ze7qK-IFEwPDOfZJb_3jw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,23 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal/drift">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/signal/drift`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/drift.mem"
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 16
 role      = "docs room for governing-field drift, recovery protocol pressure, and projection-error handling across lararium signal surfaces"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal/drift"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal/drift"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Signal — Drift
 
@@ -26,7 +22,7 @@ This room holds mismatch-recovery pressure where declared signal diverges from a
 
 <<~/ahu>>
 
-<<~ ahu #/room-charter>>
+<<~ ahu slot=`#/room-charter`>>
 
 !! Room Charter
 
@@ -37,7 +33,7 @@ The in-span loop surfacing rides the `OODA-HA` Level (`lar:///ha.ka.ba/lares/api
 
 <<~/ahu>>
 
-<<~ ahu #/drift-correction-pressure>>
+<<~ ahu slot=`#/drift-correction-pressure`>>
 
 !! Drift Correction Pressure
 
@@ -49,16 +45,16 @@ The in-span loop surfacing rides the `OODA-HA` Level (`lar:///ha.ka.ba/lares/api
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/hud">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/sa-display">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/hud`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/sa-display`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZSfowk2uByW9bng75l7HxhHlWAuN_JD0gRrl2C99Jag
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dEascMAw36-7NzaQmwAbMXTDsnIBh7_Gvjm86hevTps`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

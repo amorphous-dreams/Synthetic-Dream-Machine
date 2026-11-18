@@ -1,0 +1,49 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-unwired/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-05 (file date) — source `.lares-scratch/controller/luna-unwired/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-unwired/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/luna-unwired/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/luna-unwired/brief.md` (brief, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-unwired/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Luna-Unwired-Scout: Lares (Tasked Spirit). A read-only scout over the repo at /home/joshu/Synthetic-Dream-Machine (the span head; read files directly; write nothing).
+TASK: find production code that production never wires: exported functions, classes, modules, verbs, doors, store rows or tools in `packages/*/src/**` (and `tools/*.mjs` that claim a product role) that no production path calls — reached only from tests, fixtures, harnesses, or nothing at all. Method: for each package, list its index exports and its src modules; for each export, grep callers across `packages/*/src` (excluding `tests/`, `**/*.test.*`, `fixtures/`, `probes/`, `testing` entries, `tools/` test helpers); classify: WIRED (a production caller exists) / TEST-ONLY (only tests or harnesses call it) / ORPHAN (nothing calls it) / SEAM (a test seam exported from a product index). Pay particular attention to custody, ward, sealing, session, co-sign, capability-record, island-ask and boot code (names like seal, ward, cosign, custody, holder, session, admit, renewal, lease, catalog, freshBase, recovery, readmit, rollEnrolments), since "specified in code, not wired" there means a founding gap.
+OUTPUT (final message, under 900 words): a ranked list, most founding-relevant first: name · file:line · class (TEST-ONLY / ORPHAN / SEAM) · who calls it (tests named) · what it claims to do · whether canon (bags/**/*.mem) presents it as built. Close with counts per package and the 10 items most likely to mean a founding gap. Mark anything you could not decide as UNSURE.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fE0pBrdTE8lifV09AdH4YU3DeLB8Dt4F-ENpSKH8arI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -18,7 +18,10 @@
  *
  * ── WHAT THE BODY NAMES ─────────────────────────────────────────────────────────────────────────
  * One face: its root, the roster line that names it, the two fixed names of its anchors, its key event log, its
- * own names, its face proof keys, its own handle-book records and its memory section. `readFaceBundleBody`
+ * own names, its face proof keys, its own handle-book records, the recovery contact set its typed first enrolment committed
+ * (null where its log commits none), its address secret (the 32 bytes the face's own catalog document derives its
+ * address from, so a restored face finds its catalog half; its working layers rest in realm workbenches and derive
+ * nothing from it; null where a reader built the body from paper, which carries none) and its memory section. `readFaceBundleBody`
  * reads SHAPE alone and refuses any key it does not name; the restore judges every relation between the parts.
  * The body names no veil key, no vessel key, no seat and no row of another face, and its shape gives none a home.
  *
@@ -32,11 +35,12 @@ import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJsonBytes, defaultCryptoProvider, utf8Bytes, type RandomProvider } from "./crypto.js";
 import { FACE_BUNDLE_BODY_INFO, FACE_BUNDLE_DOMAIN, FACE_BUNDLE_MEMORY_INFO } from "./domains.js";
-import { bindSlot, decodeSlotTree, encodeSlotTree, openVk, type Credential, type SlotSpec, type SlotTree } from "./keyslot.js";
+import { bindSlot, decodeSlotTree, encodeSlotTree, openTreeKey, type Credential, type KdfPort, type SlotSpec, type SlotTree } from "./keyslot.js";
 import { memoryKeypairOf, type MemoryKeypair } from "./memory-section.js";
 import { coercePersonaKelEvent } from "./persona-kel-board.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
-import type { VesselKey } from "./vk.js";
+import type { RecoveryContactRegistration } from "./recovery-registration.js";
+import type { TreeKey } from "./tree-key.js";
 
 /** A bundle key's width, in bytes. */
 export const BUNDLE_KEY_LENGTH = 32;
@@ -69,11 +73,11 @@ export function bundleMemoryKeypair(bundleKey: Uint8Array): MemoryKeypair {
 }
 
 /** Wrap `bundleKey` under each route of `routes`, one slot per route: any one slot opens the key. */
-export function bindBundleRoutes(bundleKey: Uint8Array, routes: readonly SlotSpec[], rng: RandomProvider = defaultCryptoProvider): SlotTree {
+export async function bindBundleRoutes(bundleKey: Uint8Array, routes: readonly SlotSpec[], kdf: KdfPort, rng: RandomProvider = defaultCryptoProvider): Promise<SlotTree> {
   assertKey(bundleKey);
   if (routes.length === 0) throw new Error("face-bundle: a bundle with no route opens for nobody");
   let tree: SlotTree | null = null;
-  for (const spec of routes) tree = bindSlot(tree, bundleKey as VesselKey, spec, rng);
+  for (const spec of routes) tree = await bindSlot(tree, bundleKey as TreeKey, spec, kdf, rng);
   return tree!;
 }
 
@@ -81,6 +85,16 @@ export function bindBundleRoutes(bundleKey: Uint8Array, routes: readonly SlotSpe
 
 /** One version a memory section carries, as the cut names it: a bag, its founding and a key version id. No key. */
 export interface FaceBundleHolding { readonly bagId: string; readonly founding: string; readonly keyVersion: string }
+
+/**
+ * The recovery contact set a face's typed first enrolment committed, as the face's own sealed record holds it: the digest
+ * the event carries, the threshold, and the registrations a later rotation reveals against that digest.
+ */
+export interface FaceBundleRecoveryContactSet {
+  readonly recoveryContactSetHash: string;
+  readonly threshold:       number;
+  readonly recoveryContacts:       readonly RecoveryContactRegistration[];
+}
 
 /** Everything one face's bundle carries, as the sealed body spells it. */
 export interface FaceBundleBody {
@@ -98,8 +112,17 @@ export interface FaceBundleBody {
   readonly faceProofKeys: readonly { readonly scope: string; readonly secret: string }[];
   /** The handle-book records this face itself recognised, each with this face's own label. */
   readonly handleBook: { readonly records: readonly Record<string, unknown>[] };
+  /** The recovery contact set the face's log commits by its typed first enrolment; null where the log still stands one-of-one. */
+  readonly recoveryContactSet: FaceBundleRecoveryContactSet | null;
   /** The memory section, sealed to the pair this bundle's key derives (base64), and what it holds. */
   readonly memory:     { readonly section: string; readonly holds: readonly FaceBundleHolding[] };
+  /**
+   * The face's address secret, 64 lower hex: every device that wears the face derives the face's catalog document from it
+   * (`faceCatalogDocUrl`); working layers rest in realm workbenches and derive nothing from it.
+   * Null where the body came from paper (the root cards carry none). Absent, the body reads whole and the restore
+   * refuses it `no-address-secret`: a restore never mints a fresh one.
+   */
+  readonly addressSecret?: string | null;
 }
 
 const HEX64 = /^[0-9a-f]{64}$/;
@@ -117,6 +140,23 @@ function plain(v: unknown, keys: readonly string[], optional: readonly string[] 
 }
 const isLabel = (v: unknown): v is string => typeof v === "string" && v.length > 0 && v.length <= LABEL_LIMIT;
 const isIndex = (v: unknown): v is number => Number.isSafeInteger(v) && (v as number) >= 0;
+const RECOVERY_CONTACT_SLOTS = ["mine", "contact-a", "contact-b", "contact-c"];
+
+/** A recovery contact set's SHAPE: a digest, a whole threshold, and registrations of the house's card shape. Null where it reads as none. */
+function readRecoveryContactSet(v: unknown): FaceBundleRecoveryContactSet | null {
+  const set = plain(v, ["recoveryContactSetHash", "threshold", "recoveryContacts"]);
+  if (!set || typeof set["recoveryContactSetHash"] !== "string" || !HEX64.test(set["recoveryContactSetHash"])) return null;
+  if (!Number.isSafeInteger(set["threshold"]) || (set["threshold"] as number) < 1 || !Array.isArray(set["recoveryContacts"])) return null;
+  const recoveryContacts: RecoveryContactRegistration[] = [];
+  for (const one of set["recoveryContacts"] as unknown[]) {
+    const g = plain(one, ["slot", "label", "recoveryPubKey", "confirmPhrase"]);
+    if (!g || typeof g["slot"] !== "string" || !RECOVERY_CONTACT_SLOTS.includes(g["slot"]) || !isLabel(g["label"])) return null;
+    if (typeof g["recoveryPubKey"] !== "string" || !HEX64.test(g["recoveryPubKey"]) || typeof g["confirmPhrase"] !== "string" || g["confirmPhrase"].length > LABEL_LIMIT) return null;
+    recoveryContacts.push({ slot: g["slot"] as RecoveryContactRegistration["slot"], label: g["label"], recoveryPubKey: g["recoveryPubKey"], confirmPhrase: g["confirmPhrase"] });
+  }
+  if (recoveryContacts.length === 0 || (set["threshold"] as number) > recoveryContacts.length) return null;
+  return { recoveryContactSetHash: set["recoveryContactSetHash"], threshold: set["threshold"] as number, recoveryContacts };
+}
 
 /**
  * Read a body's SHAPE off the bytes a bundle's seal opened. Null where the bytes read as no body: a key the
@@ -126,8 +166,10 @@ const isIndex = (v: unknown): v is number => Number.isSafeInteger(v) && (v as nu
 export function readFaceBundleBody(bytes: Uint8Array): FaceBundleBody | null {
   let raw: unknown;
   try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { return null; }
-  const top = plain(raw, ["root", "rosterLine", "anchors", "kel", "names", "faceProofKeys", "handleBook", "memory"]);
+  const top = plain(raw, ["root", "rosterLine", "anchors", "kel", "names", "faceProofKeys", "handleBook", "recoveryContactSet", "memory"], ["addressSecret"]);
   if (!top) return null;
+  const addressSecret = top["addressSecret"];
+  if (addressSecret !== undefined && addressSecret !== null && (typeof addressSecret !== "string" || !HEX64.test(addressSecret))) return null;
   const root = plain(top["root"], ["signingKey", "verifyingKey"]);
   const rosterLine = plain(top["rosterLine"], ["handleIndex", "verifyingKey"]);
   const anchors = plain(top["anchors"], ["signerDid", "personaKelPrefix"]);
@@ -171,6 +213,8 @@ export function readFaceBundleBody(bytes: Uint8Array): FaceBundleBody | null {
     }
     records.push(record);
   }
+  const recoveryContactSet = top["recoveryContactSet"] === null ? null : readRecoveryContactSet(top["recoveryContactSet"]);
+  if (top["recoveryContactSet"] !== null && recoveryContactSet === null) return null;
   if (typeof memory["section"] !== "string" || !BASE64.test(memory["section"])) return null;
   const holds: FaceBundleHolding[] = [];
   for (const one of memory["holds"] as unknown[]) {
@@ -184,7 +228,8 @@ export function readFaceBundleBody(bytes: Uint8Array): FaceBundleBody | null {
     anchors: { signerDid: anchors["signerDid"], personaKelPrefix: anchors["personaKelPrefix"] },
     kel,
     names: { ...(names["petname"] !== undefined ? { petname: names["petname"] as string } : {}), ...(names["handle"] !== undefined ? { handle: names["handle"] as string } : {}) },
-    faceProofKeys, handleBook: { records }, memory: { section: memory["section"], holds },
+    faceProofKeys, handleBook: { records }, recoveryContactSet, memory: { section: memory["section"], holds },
+    ...(addressSecret !== undefined ? { addressSecret: addressSecret as string | null } : {}),
   };
   // ONE BODY, ONE SPELLING: the bytes must equal the canonical image of what they parsed to.
   const again = canonicalJsonBytes(top);
@@ -260,9 +305,9 @@ export type BundleKeyOpening =
   | { readonly reading: "no-slot-opens"; readonly notes: readonly string[] };
 
 /** Open a bundle's key with the routes a person presents. The caller owns the key and zero-fills it. */
-export function openBundleKey(tree: SlotTree, credentials: readonly Credential[]): BundleKeyOpening {
-  const opened = openVk(tree, credentials);
-  return opened.reading === "opens" ? { reading: "opens", bundleKey: opened.vk, slot: opened.slot } : opened;
+export async function openBundleKey(tree: SlotTree, credentials: readonly Credential[], kdf: KdfPort): Promise<BundleKeyOpening> {
+  const opened = await openTreeKey(tree, credentials, kdf);
+  return opened.reading === "opens" ? { reading: "opens", bundleKey: opened.treeKey, slot: opened.slot } : opened;
 }
 
 /** What a holder of the file reads with no route: the residue, and nothing of the face. */

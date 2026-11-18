@@ -27,7 +27,20 @@ export interface VesselWorkerHandle {
   post(msg: unknown, transfer?: unknown[]): void;
   listen(onMessage: (raw: unknown) => void): () => void;
   onError(cb: (err: Error) => void): () => void;
+  /**
+   * The worker's EXIT, named: a worker that exits answers nothing further, so every ask waiting on it ends at once by
+   * name, never at a clock. A node worker names its exit code; a browser Worker gives no exit event, so its handle names
+   * the exit its own `terminate` makes. Returns an unsubscribe. A handle that declares none says nothing of an exit.
+   */
+  onExit?(cb: (why: string) => void): () => void;
   terminate(): void;
+  /**
+   * What the island's BOUND RECORD grants, read at ask time (a lift may stand a member late and drop it at teardown).
+   * The pool answers a `receipt:request` from its main Repo only where this reads `receipt: true`; a handle that
+   * declares none grants none. Where the record lacks `receipt` the pool stays silent and the island's own worker
+   * answers with its named refusal: exactly one party answers each requestId.
+   */
+  readonly grants?: () => { readonly receipt: boolean };
 }
 
 // ── VesselIslandHost — the pool's platform shore ──────────────────────────────
@@ -40,7 +53,7 @@ export interface VesselWorkerHandle {
 export interface VesselIslandHost {
   /**
    * Spawn a fresh island worker (closes over the platform worker URL). `session: true` names a SESSION's
-   * island: the host hands that worker NONE of the vessel's own doors (the fetch door, the rest door, the
+   * island: the host hands that worker NONE of the vessel's own doors (the fetch door, the receipt capability, the
    * custody write door). A session island reaches the vessel through its scoped view alone.
    */
   spawnWorker(opts?: { readonly session?: boolean }): VesselWorkerHandle;
@@ -76,6 +89,8 @@ export interface AwaitIslandMsgOpts<T extends IslandToVesselMsg> {
    * of spending the silence budget on a corpse.
    */
   rejectOnTypes?: readonly IslandToVesselMsg["type"][];
+  /** A narrower rejection: the message this predicate names settles the wait by rejection (a teardown's own fault, never any fault). */
+  rejectOn?: (msg: IslandToVesselMsg) => boolean;
   /** Register a message handler; return its unsubscribe. */
   subscribe: (handler: (raw: unknown) => void) => () => void;
   /** Optionally register an error handler; return its unsubscribe. */
@@ -99,6 +114,7 @@ export function awaitIslandMsg<T extends IslandToVesselMsg>(opts: AwaitIslandMsg
     const defer: (fn: () => void) => ReturnType<typeof setTimeout> =
       typeof setImmediate === "function"
         ? (setImmediate as unknown as (fn: () => void) => ReturnType<typeof setTimeout>)
+        // PACING: the fallback yields to queued port messages before the silence verdict.
         : (fn) => setTimeout(fn, 0);
     const clearDefer: (h: ReturnType<typeof setTimeout>) => void =
       typeof clearImmediate === "function"
@@ -131,6 +147,7 @@ export function awaitIslandMsg<T extends IslandToVesselMsg>(opts: AwaitIslandMsg
     // wait re-arms instead of killing a live island.
     const arm = (ms: number): void => {
       clearTimeout(timer);
+      // LIVENESS: a wedged island may stop breathing without exiting; measured silence bounds the wait.
       timer = setTimeout(() => {
         const silent = mono() - lastHeardAt;
         if (silent < opts.timeoutMs) { arm(opts.timeoutMs - silent); return; }
@@ -151,7 +168,7 @@ export function awaitIslandMsg<T extends IslandToVesselMsg>(opts: AwaitIslandMsg
     offs.push(opts.subscribe((raw) => {
       if (!isIslandToVesselMsg(raw)) return;
       lastHeardAt = mono();
-      if (opts.rejectOnTypes?.includes(raw.type)) {
+      if (opts.rejectOnTypes?.includes(raw.type) || opts.rejectOn?.(raw) === true) {
         cleanup();
         const detail = (raw as { error?: string }).error;
         reject(new Error(

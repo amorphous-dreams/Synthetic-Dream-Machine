@@ -33,6 +33,9 @@ function sources(dir: string, out: string[] = []): string[] {
   return out;
 }
 
+/** The seed census names every raw-seed door it polices, so its own files stand outside the weld. */
+const WITNESS_FILES = new Set(["tools/seed-census.mjs", "tools/seed-census.test.mjs"]);
+
 /** Every file that holds the word `name`: under any package's `src`, under `tools`, and under the test harness. */
 function holders(name: string): string[] {
   const word = new RegExp(`(?<![A-Za-z0-9_$])${name}(?![A-Za-z0-9_$])`);
@@ -43,6 +46,7 @@ function holders(name: string): string[] {
   const hits: string[] = [];
   for (const root of roots) {
     for (const file of sources(root)) {
+      if (WITNESS_FILES.has(relative(repo, file))) continue;
       if (word.test(readFileSync(file, "utf8"))) hits.push(relative(repo, file));
     }
   }

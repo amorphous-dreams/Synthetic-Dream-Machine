@@ -28,15 +28,16 @@
  * outcome rejects by the island's words (A2), an outcome that already stands answers with no placement (A3),
  * and an abandoned ask rejects by name and stops listening (A4).
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import {
-  concludeVerb, deviceEdgeId, ed25519SignerFromSeed, edgeLedgerDocUrl, emptyLarDoc, keptSeatRolls, materializeSharedLarDoc,
-  raisesSeenThrough, signSeatRoll, type LarDoc, type SeatRoll,
-} from "@lararium/mesh";
+  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, concludeVerb, deviceEdgeId, ed25519SignerFromSeed, edgeLedgerDocUrl, emptyLarDoc, keptSeatRolls,
+  materializeSharedLarDoc, raisesSeenThrough, signSeatRoll, wikiSlotUri, type LarDoc, type SeatRoll, CONTROL_HOME_ID } from "@lararium/mesh";
 import {
-  generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootVerifyingKey, loadVesselSigningSeed,
-  loadVesselVerifyingKey,
+  generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootVerifyingKey,   loadVesselVerifyingKey,
 } from "../src/node-vessel-identity.js";
 import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, type EdgeSeatFacts } from "../src/commands/edge-seats.js";
@@ -45,6 +46,8 @@ import { makeSeatSettler, raisesOwed, type SeatDutiesAnswer, type SeatSettler } 
 import { IslandAskAbandoned, IslandVerbRefused, askIslandVerb } from "../src/island-verb-ask.js";
 import { larSealHome } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
 
 const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
 
@@ -61,11 +64,13 @@ describe("a fold of the fleet's board settles the key side", () => {
 
   beforeEach(async () => {
     custody = await seatScratchCustody("seat-settle");
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
+    await seedFaceAtom(0);
     repo = new Repo({});
+    await seedFleet(0, { repo });
     fleetRoot = bare((await loadPersonaGroupRootVerifyingKey(0))!);
-    vesselKey = bare((await loadVesselVerifyingKey())!);
+    vesselKey = bare((await atomKeyOf()));
     how = "revoked";
     asked = [];
     logs = [];
@@ -83,7 +88,7 @@ describe("a fold of the fleet's board settles the key side", () => {
       byEdge.set(act.edgeId, [...(byEdge.get(act.edgeId) ?? []), act.actCid]);
     }
     asked.push([...byEdge.values()].flat().sort());
-    const sign = ed25519SignerFromSeed(await loadVesselSigningSeed());
+    const sign = ed25519SignerFromSeed(await atomSeedOf());
     const rolls = [];
     for (const [edgeId, raiseCids] of byEdge) {
       const roll: SeatRoll = { kind: "seat-roll", scope: facts.fleetRoot, edgeId, raiseCids, how };
@@ -107,7 +112,7 @@ describe("a fold of the fleet's board settles the key side", () => {
   const stand = async (wired: boolean) => {
     let settler: SeatSettler | null = null;
     const ring = makeEdgeShadowRing({
-      repo, vesselKey, sealHome: larSealHome(),
+      repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
       fleetRoots: () => [fleetRoot], vesselKeyOfPeer: () => null, realmNymOfPeer: () => null,
       onRefold: () => { settler?.onFold(); report(ring); },
     });
@@ -139,7 +144,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     const first = await raise(device);
     await foldReads(unwired.ring, first);
     expect(raisesOwed(unwired.ring.fold(), fleetRoot)).toEqual({ owed: [first], selfAside: false });
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)]).toEqual([]);
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)]).toEqual([]);
     expect(asked).toEqual([]);
     unwired.ring.dispose();
 
@@ -149,8 +154,8 @@ describe("a fold of the fleet's board settles the key side", () => {
     await foldReads(wired.ring, second);
     await wired.settler!.idle();
     expect(asked).toEqual([[first, second].sort()]);
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)].sort()).toEqual([first, second].sort());
-    expect(keptSeatRolls(await ledger(), fleetRoot).map((r) => r.how)).toEqual(["revoked", "revoked"]);
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)].sort()).toEqual([first, second].sort());
+    expect(keptSeatRolls(await ledger(), fleetRoot, vesselKey).map((r) => r.how)).toEqual(["revoked", "revoked"]);
     // The ring read the marks: no raise stays owed, and a gate reads the seat as rolled.
     expect(raisesOwed(wired.ring.fold(), fleetRoot)).toEqual({ owed: [], selfAside: false });
     expect(logs.some((l) => l.includes("2 raise(s) owed, 2 marked"))).toBe(true);
@@ -168,7 +173,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     await wired.settler!.idle();
     expect(asked.flat().filter((cid) => cid === first).length).toBe(1);
     expect(asked[asked.length - 1]).toEqual([second]);
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)].sort()).toEqual([first, second].sort());
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)].sort()).toEqual([first, second].sort());
     wired.ring.dispose();
   });
 
@@ -178,8 +183,8 @@ describe("a fold of the fleet's board settles the key side", () => {
     const held = await raise("ab".repeat(32));
     await foldReads(wired.ring, held);
     await wired.settler!.idle();
-    expect(keptSeatRolls(await ledger(), fleetRoot).map((r) => r.how)).toEqual(["no-authority"]);   // the roll stays kept
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)]).toEqual([]);                            // and the raise owed
+    expect(keptSeatRolls(await ledger(), fleetRoot, vesselKey).map((r) => r.how)).toEqual(["no-authority"]);   // the roll stays kept
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)]).toEqual([]);                            // and the raise owed
     expect(raisesOwed(wired.ring.fold(), fleetRoot)!.owed).toEqual([held]);
     const tries = asked.length;
     // No fold, no retry: nothing spins between folds.
@@ -192,7 +197,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     await foldReads(wired.ring, other);
     await wired.settler!.idle();
     expect(asked[asked.length - 1]).toEqual([held, other].sort());
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)].sort()).toEqual([held, other].sort());
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)].sort()).toEqual([held, other].sort());
     wired.ring.dispose();
   });
 
@@ -203,7 +208,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     await wired.settler!.idle();
     expect(wired.ring.fold()!.fleets[0]!.readings.get(deviceEdgeId(fleetRoot, vesselKey))?.stands).toBe(true);
     expect(asked).toEqual([]);
-    expect([...raisesSeenThrough(await ledger(), fleetRoot)]).toEqual([]);
+    expect([...raisesSeenThrough(await ledger(), fleetRoot, vesselKey)]).toEqual([]);
     wired.ring.dispose();
   });
 });
@@ -339,34 +344,42 @@ describe("the main thread asks its island a verb", () => {
   const stand = () => {
     const repo = new Repo({});
     const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+    const working = CONTROL_HOME_ID;
+    // The control store as the island writes it: the vessel's control document (the daemon document stays beside it).
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: working, store: new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), working), writable: true });
+    let listening = 0;
+    const subscribe = composite.subscribe.bind(composite);
+    composite.subscribe = (fn) => { listening += 1; const off = subscribe(fn); return () => { listening -= 1; off(); }; };
     const placed: Array<{ verb: string; requestId: string }> = [];
     let onPlace: () => void = () => {};
     const placedOnce = new Promise<void>((r) => { onPlace = r; });
-    const conclude = (requestId: string, status: "done" | "error", output: Record<string, unknown>, errorMessage?: string): void => {
+    const conclude = (requestId: string, status: "done" | "error", output: Record<string, unknown>, errorMessage?: string): Promise<void> => {
       const outcome = concludeVerb({
-        requestId, verb: "seat-duties", status, requestedBy: "vessel", cause: "test-island", batchMode: "best-effort",
+        requestId, verb: "seat-duties", status, cause: "test-island", batchMode: "best-effort",
         results: { summary: { ok: status === "done", output } }, ...(errorMessage !== undefined ? { errorMessage } : {}),
       });
-      daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+      return composite.put(outcome, { kind: "lares-verb", requestId });
     };
-    return { daemonHandle, placed, placedOnce, conclude, place: (o: { verb: string; requestId: string }) => { placed.push({ verb: o.verb, requestId: o.requestId }); onPlace(); } };
+    return { composite, listening: () => listening, placed, placedOnce, conclude, place: (o: { verb: string; requestId: string }) => { placed.push({ verb: o.verb, requestId: o.requestId }); onPlace(); } };
   };
 
-  test("A1 — the outcome on the daemon's document answers the ask", async () => {
+  test("A1 — the outcome in the control document answers the ask", async () => {
     const s = stand();
-    const ask = askIslandVerb({ daemonHandle: s.daemonHandle, placeVerb: s.place, verb: "seat-duties", args: { facts: {} }, requestedBy: "vessel", requestId: "ask-1" });
-    await s.placedOnce;                                                    // the ask read the document first, then placed
+    const ask = askIslandVerb({ control: s.composite, placeVerb: s.place, verb: "seat-duties", args: { facts: {} }, requestedBy: "vessel", requestId: "ask-1" });
+    await s.placedOnce;                                                    // the ask read the composite first, then placed
     expect(s.placed).toEqual([{ verb: "seat-duties", requestId: "ask-1" }]);
-    s.conclude("another-request", "done", { ran: false });                 // control: another request's outcome answers nothing
-    s.conclude("ask-1", "done", { ran: true, rolls: [1, 2] });
+    await s.conclude("another-request", "done", { ran: false });           // control: another request's outcome answers nothing
+    await s.conclude("ask-1", "done", { ran: true, rolls: [1, 2] });
     expect(await ask.answer).toEqual({ ran: true, rolls: [1, 2] });
   });
 
   test("A2 — an error outcome rejects by the island's own words", async () => {
     const s = stand();
-    const ask = askIslandVerb({ daemonHandle: s.daemonHandle, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-2" });
+    const ask = askIslandVerb({ control: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-2" });
     await s.placedOnce;
-    s.conclude("ask-2", "error", {}, "this vessel carries no device edge of its own");
+    await s.conclude("ask-2", "error", {}, "this vessel carries no device edge of its own");
     const refused = await ask.answer.catch((e: unknown) => e);
     expect(refused).toBeInstanceOf(IslandVerbRefused);
     expect((refused as Error).message).toBe("this vessel carries no device edge of its own");
@@ -374,24 +387,23 @@ describe("the main thread asks its island a verb", () => {
 
   test("A3 — an outcome that already stands answers with no placement", async () => {
     const s = stand();
-    s.conclude("ask-3", "done", { ran: true });
-    const ask = askIslandVerb({ daemonHandle: s.daemonHandle, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-3" });
+    await s.conclude("ask-3", "done", { ran: true });
+    const ask = askIslandVerb({ control: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-3" });
     expect(await ask.answer).toEqual({ ran: true });
     expect(s.placed).toEqual([]);
   });
 
   test("A4 — an abandoned ask rejects by name and stops listening", async () => {
     const s = stand();
-    // A first ask stands the document's one store door; every later ask shares it and adds its own listener alone.
-    const first = askIslandVerb({ daemonHandle: s.daemonHandle, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-4a" });
+    const first = askIslandVerb({ control: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-4a" });
     first.abandon();
     await expect(first.answer).rejects.toBeInstanceOf(IslandAskAbandoned);
-    const before = s.daemonHandle.listenerCount("change");
-    const ask = askIslandVerb({ daemonHandle: s.daemonHandle, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-4" });
-    expect(s.daemonHandle.listenerCount("change")).toBe(before + 1);        // control: the ask listens while it waits
+    const before = s.listening();
+    const ask = askIslandVerb({ control: s.composite, placeVerb: s.place, verb: "seat-duties", args: {}, requestedBy: "vessel", requestId: "ask-4" });
+    expect(s.listening()).toBe(before + 1);                                // control: the ask listens while it waits
     ask.abandon();
     await expect(ask.answer).rejects.toBeInstanceOf(IslandAskAbandoned);
-    expect(s.daemonHandle.listenerCount("change")).toBe(before);            // and no ask leaves a listener behind
-    s.conclude("ask-4", "done", { ran: true });                            // a late outcome moves nothing
+    expect(s.listening()).toBe(before);                                    // and no ask leaves a listener behind
+    await s.conclude("ask-4", "done", { ran: true });                      // a late outcome moves nothing
   });
 });

@@ -1,0 +1,49 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/research/hydrafusion/` — 3 record(s) here, 8 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/research/hydrafusion/`
+
+The scratch planning records of `.lares-scratch/research/hydrafusion/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 3 record(s) stand here and 8 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[research/|lar:///ha.ka.ba/lares/docs/history/workshop/research/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[sonnet/|lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/sonnet/index]] | 2 |
+| [[terra/|lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/terra/index]] | 3 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/brief]] | brief | 2026-10-28 | `brief.md` |
+| [[brief2|lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/brief2]] | brief | 2026-10-28 | `brief2.md` |
+| [[out2|lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/out2]] | research | 2026-10-28 | `out2.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;p_jg_b82KEdncX_WG8QFfF7arJmGc04AZSDh8FEloZU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,13 +1,20 @@
 /**
  * hearth-dial-pin — the PIN names the dial. A joinee founded by an admit edge holds, in its bootstrap, the
- * hearth's `ws://` sync url and the hearth's gate key; the boot dials them when no `LAR_JOIN_*` rides the env.
+ * hearth's `ws://` sync url and the hearth's gate key, and the doc url the admit named for the dial to ask for;
+ * the boot dials them unless an explicit option names another, and no environment names any of them.
  * CONTROL: a bootstrap carrying no pin (a self-founded vessel) reads null; a torn pin (one half) reads null.
  */
 import { describe, test, expect } from "vitest";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { hearthDialTiddlers, readHearthDialPin } from "../src/hearth-dial-pin.js";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh";
+import { HEARTH_DOC_URL_TIDDLER, HEARTH_GATE_PIN_TIDDLER, hearthDialTiddlers, readHearthDialPin } from "../src/hearth-dial-pin.js";
+
+const pinAt = (nexus: string, tag = 4): GateBundlePin => {
+  const bundle = deriveGateBundle(sovereignGateRoot(custodyRootDoor({ derive: () => new Uint8Array(32).fill(tag) })), new TextEncoder().encode(nexus), sovereignRoute("/ws"));
+  try { return bundle.pin; } finally { bundle.drop(); }
+};
 
 const bootstrapWith = (tiddlers: Record<string, unknown>): string => {
   const dir = mkdtempSync(join(tmpdir(), "lares-hearth-pin-"));
@@ -35,5 +42,28 @@ describe("the pinned edge's hearth dial", () => {
     const bad = bootstrapWith({ ...hearthDialTiddlers("ws://127.0.0.1:4242/ws", "not-a-key") });
     expect(readHearthDialPin(bad)).toBeNull();
     expect(readHearthDialPin("/nonexistent/social-bootstrap.json")).toBeNull();
+  });
+
+  test("RED: the doc url the admit named rides the pin, and the dial reads it from there; a torn doc url tears the whole pin", () => {
+    const pin = pinAt("nexus-a.synthetic");
+    const doc = "automerge:4Lx9JqzF2wR7cTn8VbYk3sPdHm1";
+    const path = bootstrapWith({ ...hearthDialTiddlers("ws://127.0.0.1:4242/ws", pin.signingKey, null, pin, doc) });
+    expect(readHearthDialPin(path)).toEqual({ syncUrl: "ws://127.0.0.1:4242/ws", gatePubKey: pin.signingKey, gatePin: pin, docUrl: doc });
+    // CONTROL: an admit that named no doc packs none, and the pin reads without one.
+    expect(readHearthDialPin(bootstrapWith({ ...hearthDialTiddlers("ws://127.0.0.1:4242/ws", pin.signingKey, null, pin) }))?.docUrl).toBeUndefined();
+    const torn = bootstrapWith({ ...hearthDialTiddlers("ws://127.0.0.1:4242/ws", pin.signingKey, null, pin, doc), [HEARTH_DOC_URL_TIDDLER]: { title: HEARTH_DOC_URL_TIDDLER, text: "not a doc", kind: "hearth-door" } });
+    expect(readHearthDialPin(torn)).toBeNull();
+  });
+
+  test("the FULL pin rides beside the key and reads back whole; a pin whose signing key is not the carried key tears the whole pin", () => {
+    const pin = pinAt("nexus-a.synthetic");
+    const path = bootstrapWith({ ...hearthDialTiddlers("ws://127.0.0.1:4242/ws", pin.signingKey, null, pin) });
+    expect(readHearthDialPin(path)).toEqual({ syncUrl: "ws://127.0.0.1:4242/ws", gatePubKey: pin.signingKey, gatePin: pin });
+    // CONTROL: a key with no pin keeps reading as before.
+    expect(readHearthDialPin(bootstrapWith({ ...hearthDialTiddlers("ws://127.0.0.1:4242/ws", pin.signingKey) }))?.gatePin).toBeUndefined();
+    const other = pinAt("nexus-a.synthetic", 9);
+    expect(readHearthDialPin(bootstrapWith({ ...hearthDialTiddlers("ws://127.0.0.1:4242/ws", pin.signingKey, null, other) }))).toBeNull();
+    const torn = bootstrapWith({ ...hearthDialTiddlers("ws://127.0.0.1:4242/ws", pin.signingKey, null, pin), [HEARTH_GATE_PIN_TIDDLER]: { title: HEARTH_GATE_PIN_TIDDLER, text: "{not json", kind: "hearth-door" } });
+    expect(readHearthDialPin(torn)).toBeNull();
   });
 });

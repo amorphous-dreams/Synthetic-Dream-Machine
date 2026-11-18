@@ -29,8 +29,7 @@ import type { StoreIntegrityReport } from "./store-integrity.js";
  *                 a slow disk, a loaded host, or a big doc reads identically to a torn one at the
  *                 timer, and a timer must never mint a safety verdict (H2). NEVER condemned.
  *
- * `timeout` is RETIRED under this name — a renamed status, not a new concept: every former
- * `timeout` now reads `unresolved`.
+ * No status reads `timeout`: a probe the window closed on reads `unresolved`.
  */
 export type ProbeStatus = "ok" | "torn" | "load-error" | "aborted" | "unresolved";
 

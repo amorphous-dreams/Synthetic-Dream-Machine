@@ -17,7 +17,7 @@
  *     boolean, and only `checkFaceChain` mints the value a `verified` verdict carries.
  *
  * What it never does: hold a secret at rest, write a custody row, read a clock, or keep a list of a face's
- * vessels. A key mints here as bytes the caller hands straight to its custody row (`FACE_PROOF_CUSTODY_ROWS`
+ * vessels. A key mints here as bytes the caller hands straight to its custody row (`FACE_PROOF_CUSTODY_RECORDS`
  * names the rows), and every signature the face key or a vessel's face-scoped key makes comes back through a
  * custody door the caller supplies. A memory holds denials and the events that carry them, and no
  * certificate.
@@ -26,8 +26,8 @@
  * dial. A `verified` verdict states that two certificates verify and no learned denial names the vessel's
  * key; it states nothing of possession.
  *
- * Stands specified in code until the join door, the removal door and the gate consume it; out of the
- * package barrel till then.
+ * Called by the gate (`face-gate`, `gate-exchange`), the dial (`face-dial`), the join door (`fleet-join`), the
+ * removal door (`device-removal`), the session face and signer, and the browser adapter; the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof
  */
@@ -50,7 +50,7 @@ import type { CapabilityProfile } from "./session-contract.js";
  * code here writes one. Both rows hold 32 secret bytes, sealed, read whole or refused by name. The
  * certificate and the withdrawal history hold no secret: they rest in the face's own private causal state.
  */
-export const FACE_PROOF_CUSTODY_ROWS = Object.freeze([
+export const FACE_PROOF_CUSTODY_RECORDS = Object.freeze([
   Object.freeze({
     row:     "face-proof-key",
     keyedBy: "(PersonaGroup, Nexus)",

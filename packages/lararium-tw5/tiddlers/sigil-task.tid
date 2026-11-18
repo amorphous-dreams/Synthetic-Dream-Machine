@@ -4,13 +4,13 @@ lar-kind: guest-grammar-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/hana
 lar-mirror-of: hana
 lar-see-also: hana
-lar-open-pattern: <<~\s*task\s+([^\n>]+?)\s*>>
+lar-open-pattern: <<~\s*task\s+grammar=`([^`]*)`(?:\s+body=`([^`]*)`)?\s*>>
 lar-close-pattern: <<~\/task\s*>>
-lar-example: <<~ task "write the thing">>
+lar-example: <<~ task grammar=`toml` body=`write the thing`>>
 type: text/vnd.tiddlywiki
 
 <!-- \task — English alias for hana; bounded guest-grammar / work block. -->
 
-\procedure ~task(p1:"" p2:"")
-<$transclude $variable="~hana" p1=<<p1>> p2=<<p2>>/>
+\procedure ~task(grammar:"" body:"")
+<$transclude $variable="~hana" grammar=<<grammar>> body=<<body>>/>
 \end

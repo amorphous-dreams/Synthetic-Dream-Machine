@@ -1,7 +1,7 @@
 /**
  * Shared rig for the wiki-shore draft-road, cross-bag and returning-hand vectors: a real TiddlyWiki
  * through `test-wiki.ts`, real `AutomergeDocStore`s over a real automerge-repo `Repo`, a `CompositeStore`
- * with a read-only canon layer plus writable working and draft layers, and `ManualTimers`.
+ * with a read-only canon layer plus writable working and draft layers, and `ManualBoundary`.
  *
  * Every composite store call is recorded SYNCHRONOUSLY at the call, so a vector reads what the shore
  * issued in a given turn, with the exact `base` argument and the bag.
@@ -15,7 +15,6 @@ import {
 import { plainEntries } from "@lararium/mesh";
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
-import type { ShoreTimers } from "../src/hand-gate.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { bootTestWiki } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -41,22 +40,16 @@ const automerge = meshRequire("@automerge/automerge") as {
 };
 
 export const turns = async (n = 8): Promise<void> => { for (let i = 0; i < n; i++) await new Promise<void>((resolve) => setImmediate(resolve)); };
+/** The guard a `whenLanded` waiter carries: settles after `ms` of real time, so a title that never lands refuses by name instead of hanging. */
+export const landingDeadline = (ms = 2000): Promise<void> => new Promise<void>((resolve) => { setTimeout(resolve, ms).unref(); });
 /** Resolves after the wiki's own `change` dispatch (TiddlyWiki dispatches on `process.nextTick`, FIFO). */
 export const afterDispatch = (): Promise<void> => new Promise<void>((resolve) => process.nextTick(resolve));
 
-export class ManualTimers implements ShoreTimers {
-  private id = 0;
-  readonly tasks = new Map<number, { fn: () => void; ms: number }>();
-  setTimer(fn: () => void, ms: number): number { const id = ++this.id; this.tasks.set(id, { fn, ms }); return id; }
-  clearTimer(handle: unknown): void { this.tasks.delete(handle as number); }
-  armed(): number { return this.tasks.size; }
-  fire(ms: number): void {
-    const found = [...this.tasks].find(([, task]) => task.ms === ms);
-    if (!found) throw new Error(`no ${ms}ms timer is armed`);
-    this.tasks.delete(found[0]);
-    found[1].fn();
-  }
-  fireAll(ms: number): void { while ([...this.tasks.values()].some((task) => task.ms === ms)) this.fire(ms); }
+export class ManualBoundary {
+  private adaptor: IslandAdaptor | null = null;
+  bind(adaptor: IslandAdaptor): void { this.adaptor = adaptor; }
+  pending(): number { return this.adaptor?.pendingTitles().length ?? 0; }
+  fire(): void { if (!this.adaptor) throw new Error("boundary has no adaptor"); void this.adaptor.boundary().catch(() => {}); }
 }
 
 export interface StoreCall {
@@ -69,14 +62,18 @@ export interface StoreCall {
 
 export interface RigOptions {
   readonly instanceId?: string;
-  readonly timers?: ShoreTimers;
+  readonly boundary?: ManualBoundary;
   readonly yieldHost?: () => Promise<void>;
   /** Whether the canon layer accepts writes (default: it does not). */
   readonly canonWritable?: boolean;
+  /** The id the canon layer answers to (default `canonBag`), so a suite can seat a named bag at the floor. */
+  readonly canonId?: string;
   /** Mount the personal layer (above working) and the temp layer (on top), as a recipe's composition does. */
   readonly upperSlots?: boolean;
   /** Leave the working layer unmounted, though the recipe pointers still name it. */
   readonly noWorking?: boolean;
+  /** Leave the draft layer unmounted, as the daemon wiki stands (one writable top), though the draft pointer still names it. */
+  readonly noDraft?: boolean;
   /** Saved docs to import, so a second shore stands over the same history as a first. */
   readonly docs?: { canon?: Uint8Array; working?: Uint8Array; draft?: Uint8Array; personal?: Uint8Array };
 }
@@ -103,17 +100,17 @@ export async function shoreRig(opts: RigOptions = {}) {
   const canonHandle = open(opts.docs?.canon);
   const workingHandle = open(opts.docs?.working);
   const draftHandle = open(opts.docs?.draft);
-  const canon = new AutomergeDocStore(canonHandle, canonBag);
+  const canon = new AutomergeDocStore(canonHandle, opts.canonId ?? canonBag);
   const working = new AutomergeDocStore(workingHandle, workingBag);
   const draft = new AutomergeDocStore(draftHandle, draftBag);
   const personalHandle = open(opts.docs?.personal);
   const personal = new AutomergeDocStore(personalHandle, personalBag);
   const temp = new MemoryTiddlerStore();
   const composite = new CompositeStore();
-  composite.addLayer({ bagId: canonBag, store: canon, writable: opts.canonWritable === true, defaultWritable: false });
+  composite.addLayer({ bagId: opts.canonId ?? canonBag, store: canon, writable: opts.canonWritable === true, defaultWritable: false });
   if (opts.noWorking !== true) composite.addLayer({ bagId: workingBag, store: working, writable: true });
   if (opts.upperSlots === true) composite.addLayer({ bagId: personalBag, store: personal, writable: true, defaultWritable: false });
-  composite.addLayer({ bagId: draftBag, store: draft, writable: true, defaultWritable: false });
+  if (opts.noDraft !== true) composite.addLayer({ bagId: draftBag, store: draft, writable: true, defaultWritable: false });
   if (opts.upperSlots === true) composite.addLayer({ bagId: tempBag, store: temp, writable: true, defaultWritable: false });
 
   const calls: StoreCall[] = [];
@@ -122,12 +119,14 @@ export async function shoreRig(opts: RigOptions = {}) {
   const ownSlots = new Set<string>([workingBag, draftBag, wikiSlotUri("shore-road", "temp"), wikiSlotUri("shore-road", "personal")]);
   const writeFamily = composite.writeFamily.bind(composite);
   const tombstoneInBag = composite.tombstoneInBag.bind(composite);
-  const failures: { family: Error | null; tombstone: Error | null; gate: Promise<void> | null; hold: Promise<void> | null } = { family: null, tombstone: null, gate: null, hold: null };
+  const failures: { family: Error | null; tombstone: Error | null; gate: Promise<void> | null; hold: Promise<void> | null; deleteTitle: string | null; holdDelete: { title: string; until: Promise<void> } | null } = { family: null, tombstone: null, gate: null, hold: null, deleteTitle: null, holdDelete: null };
   vi.spyOn(composite, "writeFamily").mockImplementation((puts, deletes, origin, options) => {
     const destination = options?.bag ?? composite.defaultWritableBagId() ?? undefined;
     if (destination && !ownSlots.has(destination) && origin.kind === "tw-local") outsideSlots.push(`family ${destination}`);
     calls.push({ kind: "family", bag: destination, puts: puts.map((p) => p.tiddler.title), deletes: [...deletes], base: options?.base });
+    if (failures.holdDelete && deletes.includes(failures.holdDelete.title)) return failures.holdDelete.until.then(() => writeFamily(puts, deletes, origin, options));
     if (failures.hold && options?.bag === draftBag) { const held = failures.hold; return held.then(() => writeFamily(puts, deletes, origin, options)); }
+    if (failures.deleteTitle && deletes.includes(failures.deleteTitle)) return Promise.reject(new Error("source removal refused"));
     if (failures.family) { const fault = failures.family; return (failures.gate ?? Promise.resolve()).then(() => { throw fault; }); }
     return writeFamily(puts, deletes, origin, options);
   });
@@ -139,18 +138,20 @@ export async function shoreRig(opts: RigOptions = {}) {
     return tombstoneInBag(bag, title, origin, options);
   });
 
-  const adaptor = new IslandAdaptor(engine, composite, instanceId, opts.timers);
+  const adaptor = new IslandAdaptor(engine, composite, instanceId);
+  opts.boundary?.bind(adaptor);
   adaptor.installLandingQueue(opts.yieldHost);
+  // A changeset closes a store change after its URI changes, so a title is heard when its changeset arrives.
   const arrivals: string[] = [];
-  const onUriChanged = adaptor.onUriChanged.bind(adaptor);
-  vi.spyOn(adaptor, "onUriChanged").mockImplementation((change) => { arrivals.push(change.title); onUriChanged(change); });
+  const hearers = new Set<() => void>();
+  const hearArrival = (): void => { for (const hearer of [...hearers]) hearer(); };
   const onChangeset = adaptor.onChangeset.bind(adaptor);
-  vi.spyOn(adaptor, "onChangeset").mockImplementation((changes) => { for (const change of changes) arrivals.push(change.title); onChangeset(changes); });
+  vi.spyOn(adaptor, "onChangeset").mockImplementation((changes) => { for (const change of changes) arrivals.push(change.title); onChangeset(changes); hearArrival(); });
   adaptor.start();
   const unbridge = bridgeWikiToAdaptor(engine, adaptor);
   await turns();
   return {
-    engine, wiki, Tiddler, repo, instanceId, composite, adaptor, unbridge, calls, failures, arrivals, outsideSlots,
+    engine, wiki, Tiddler, repo, instanceId, composite, adaptor, unbridge, calls, failures, arrivals, hearers, outsideSlots,
     canonHandle, workingHandle, draftHandle, personalHandle, canon, working, draft, personal, temp,
     handles: { [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle, [personalBag]: personalHandle } as Record<string, typeof canonHandle>,
     saved: () => ({
@@ -170,26 +171,32 @@ export async function shoreRig(opts: RigOptions = {}) {
 }
 
 /** A second actor over its own Repo: imports the bag's doc, writes, and merges back into the shore's handle. */
-export async function peerWrite(r: Rig, bag: string, records: readonly LarTiddlerRecord[]): Promise<void> {
+export async function peerWrite(r: Rig, bag: string, records: readonly LarTiddlerRecord[], beforeMerge?: () => void): Promise<void> {
   const peerRepo = new Repo({ network: [] });
   const peerHandle = peerRepo.import<LarDoc>(automerge.save(r.handles[bag]!.doc()));
   const peerStore = new AutomergeDocStore(peerHandle, bag);
   for (const record of records) await peerStore.put(record, { kind: "crdt-remote", edgeIsland: `peer-of-${r.instanceId}` });
   const before = r.arrivals.length;
+  beforeMerge?.();
   r.handles[bag]!.merge(peerHandle);
   await arrived(r, before, records.map((record) => record.tiddler.title));
   await peerRepo.shutdown();
 }
 
-/** Waits (host turns only, no clock) until the shore has heard every title since `before` arrivals. */
+/**
+ * Waits on the store's own event until the shore has heard every title since `before` arrivals. No clock and no turn
+ * count. A caller that wants the landing those arrivals queued asks the adaptor's `landingIdle()` next; a held host
+ * yield keeps the landing parked on purpose. A title the store never raises hangs the wait to the test's own timeout.
+ */
 export async function arrived(r: Rig, before: number, titles: readonly string[]): Promise<void> {
-  // The store delivers a merge through its own debounce; the wait is on the arrival signal, the cap only ends a hang.
-  for (let attempt = 0; attempt < 600; attempt++) {
-    const heard = new Set(r.arrivals.slice(before));
-    if (titles.every((title) => heard.has(title))) { await turns(24); return; }
-    await new Promise<void>((resolve) => setTimeout(resolve, 5));
-  }
-  throw new Error(`the shore never heard ${titles.join(", ")}`);
+  await new Promise<void>((resolve) => {
+    const check = (): void => {
+      const heard = new Set(r.arrivals.slice(before));
+      if (titles.every((title) => heard.has(title))) { r.hearers.delete(check); resolve(); }
+    };
+    r.hearers.add(check);
+    check();
+  });
 }
 
 /** A `change` listener registered after the bridge: records how many store calls stood when the dispatch reached it. */

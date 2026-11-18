@@ -6,7 +6,7 @@
  * the re-export hub it grew from collapsed (YIN).
  */
 
-import type { Repo, CompositeStore, SlotReach } from "@lararium/mesh";
+import type { Repo, CompositeStore, KahuReachSource, SlotReach } from "@lararium/mesh";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 import type { ResidencyOpPost } from "./worker-data-verbs.js";
 
@@ -27,6 +27,9 @@ export interface WikiMintHandlerOptions {
   readonly catalog:     CatalogAccessor;
   /** The system plane: a system wiki's canon doc and default recipe stand here. A system slug mints nothing. */
   readonly oracle?:     CatalogAccessor;
+  /** The live doc url of a house canon bag THIS vessel holds, from the Kahu realm's standing registration; null where it
+   *  holds none (a vessel outside the Kahu cabal). A house canon wiki's canon doc rests in the Kahu realm, never in the catalog. */
+  readonly systemCanonUrl?: (bagUri: string) => Promise<string | null>;
   /** The VESSEL's DID (`0x`+verifying key) — the PLACE that asks. Distinct from the persona
    *  root (the human), which signs delegation edges and never rides a verb request. */
   readonly vesselDid: () => Promise<string> | string;
@@ -39,6 +42,12 @@ export interface WikiMintHandlerOptions {
    * lar: BAG URL (the cap-gate's verify key), never the automerge doc url.
    */
   readonly registerBag?: (bagUrl: string) => Promise<void>;
+  /**
+   * THE VEIL FLOOR'S MINT (the-veil-ladder#/the-base-model): present where the vessel wears no face and holds its own key
+   * open. The new wiki's catalog row then carries `face-reach = vessel-only` and `minted-by`, and `nameCanon` files the canon
+   * document as the vessel's own BEFORE its first byte rests (the mark and the seal travel together). Absent: a face mints.
+   */
+  readonly veilFloor?: { readonly mintedBy: string; readonly nameCanon: (slug: string, documentId: string, url: string) => Promise<void> };
   /**
    * THE ONE DRAFT RESOLVER (`resolveSlotDoc`, seated in the keyhive-holding daemon): the wiki's draft
    * doc — the PersonaGroup × fingerprint binding when the vessel holds a seat, else the device floor
@@ -68,4 +77,6 @@ export interface WikiComposeOptions {
 
 export interface DraftHandlerOptions {
   readonly composite: CompositeStore;
+  /** The vessel's source of the Kahu predicate's facts; a draft into a house canon bag asks it first. Absent → a stranger. */
+  readonly kahuReach?: KahuReachSource;
 }

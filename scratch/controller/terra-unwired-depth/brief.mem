@@ -1,0 +1,63 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-depth/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-unwired-depth/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-depth/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-depth/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-unwired-depth/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-depth/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Unwired-Depth: Lares (Tasked Spirit). A read-only, ZERO-TRUST follow-up to an earlier review (its verdict sits at /home/joshu/.lares-scratch/controller/terra-unwired-review/final.md — read it first). Repo: /home/joshu/Synthetic-Dream-Machine at the span head ffe05bc79. Read code and canon (bags/**/*.mem) directly; write nothing. Trust no comment, test or canon claim until the code bears it out. Mark every claim MEASURED (file:line read) or INFER.
+
+The controller holds five defaults and six uncertainties. Settle each question with evidence; where the code cannot settle it, say UNSETTLED and name what would.
+
+Q1 (K23 presenter binding). Defaults: `verifyDelegation` (packages/lararium-keyhive/src/keyhive-identity-slot.ts ~250) should take the AUTHENTICATED presenter from the session and refuse unless it equals `payload.audience`. Row 7's S3b landed per-face ward keys in the admission with proof of possession (PR #171). TRACE: does any landed share/sync path (node and browser) already hold an authenticated per-peer identity at the point a capability token would be checked (the sealed face gate handshake, the admission, the session)? Name the exact variable/function where a presenter identity is proven, and whether it reaches the share path. Is S3b's proof of possession the right binding, or a different one (the socket handshake's peer key)?
+
+Q2 (deriveActorId). Default: retire it; let the Automerge repo assign per-writer actor ids. MEASURE: how does production assign Automerge actor ids today (node and browser, per tab)? Would wiring deriveActorId collide concurrent writers of one face? Is anything else per-DID actor-keyed?
+
+Q3 (P27b secrets). Default: retire the in-memory registry; make `secrets` a REQUIRED named reading in `makeTierFloorSource` (packages/lararium-mesh/src/cap-tier.ts ~206) so every site passes NO_CONTRACT_SECRETS_PLANE explicitly. MEASURE: list every production caller of makeTierFloorSource and whether each passes `secrets`; does any production store hold secrets today (anything that should floor CONTRACT)? Would the required-reading change break any caller?
+
+Q4 (P27a declared tier). Default: wire `capTierShareDecision` (packages/lararium-mesh/src/federation-gate.ts ~550) at every crossing and bulb read, node and browser, early returns included. MEASURE: enumerate every share/announce/access decision point on node (packages/lararium-node/src/self-slot-share.ts and siblings) and browser (packages/lararium-browser/src/open-browser-vessel.ts ~2095 and siblings), each early return, and whether a declared-tier datum source (DeclaredTierSource) exists in production to feed it. Size the wiring: how many sites.
+
+Q5 (K22 + L28, K18). Defaults: retire `reconstructAndReadmit`/`runReadmitEdge` as K18's path (keep the Shamir primitive for self-recovery); reshape `rollEnrolments` (packages/lararium-mesh/src/persona-group-secret.ts ~227) inside a fresh K18 rotation ceremony with wipeable buffers and L24's device-edge renewal. MEASURE: what of K18's ceremony already stands landed (road row K18, PR #135: rotation, reanchorAfterRotation, recovery contacts' quorum)? What exactly is missing between the landed parts and a production recovery verb? Size it. Is any K18 piece a founding blocker in the code's own terms (does founding or join call anything that needs it)?
+
+Q6 (the stuck joinee). Since R1, a replay after a lease roll refuses `replay-edge-lapsed` (the row7-s3a lane, PR #168). Owed ruling (a) or (b) names the way out for a seated admission whose edge lapsed across a lease roll; find the two options in canon (grep the road and bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem for replay-edge-lapsed / stuck joinee / L24). Does L24's renewal at the roll (L28's work) resolve the stuck joinee by itself, so the fork folds into Q5's lane? Which option does the code favor?
+
+OUTPUT (final message, under 1100 words): per question: the answer, MEASURED/INFER cites, whether the controller's default stands, bends or breaks, and the size of the work. End with any defect you found that the earlier review missed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bEVj3dRb7RT5bg8WLJVF2Jl0Y754Z5msv2cEqWl8Zi4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

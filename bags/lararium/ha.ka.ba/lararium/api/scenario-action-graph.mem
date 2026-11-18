@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/api/scenario-action-graph">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/api/scenario-action-graph`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/api/scenario-action-graph.mem"
 l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 16
 role      = "pure test-only specification for separate mandate, delegation, activity, result, attestation and computed appraisal"
 tags      = ["api/lararium", "api/pono", "mesh/agency", "mesh/provenance", "test/harness"]
 title     = "lar:///ha.ka.ba/lararium/api/scenario-action-graph"
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/scenario-action-graph"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Scenario Action Graph
 
@@ -25,7 +21,7 @@ This carrier specifies a pure test grammar beside `ScenarioPresence`. A presence
 
 <<~/ahu>>
 
-<<~ ahu #/records>>
+<<~ ahu slot=`#/records`>>
 
 !! The six source records and one computed verdict
 
@@ -41,7 +37,7 @@ Mandate, activity and result stand as distinct records. Human, agent and workloa
 
 <<~/ahu>>
 
-<<~ ahu #/laws>>
+<<~ ahu slot=`#/laws`>>
 
 !! Graph laws
 
@@ -56,7 +52,7 @@ Mandate, activity and result stand as distinct records. Human, agent and workloa
 
 <<~/ahu>>
 
-<<~ ahu #/test-seam>>
+<<~ ahu slot=`#/test-seam`>>
 
 !! Harness seam
 
@@ -64,6 +60,6 @@ Mandate, activity and result stand as distinct records. Human, agent and workloa
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SUtasIbSSJrDd2Saj4nKUC97zjrXWO_BJYxRgDdx6gw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Gli4fFGI8BP7XpTy8CWWcv0URoL_ejW7WobCx9mThT0`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

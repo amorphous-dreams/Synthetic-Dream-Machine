@@ -30,7 +30,7 @@ import { namedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";
 
 const REALM = `nexus-${"e1".repeat(32)}`;
-const BAG   = "lar:///ha.ka.ba/bags/lares";
+const BAG   = "lar:///ha.ka.ba/bags/ford";
 const DOC_A = deterministicDocUrl("the-registered-book");
 const seedA = new Uint8Array(32).fill(1);
 const seedB = new Uint8Array(32).fill(2);
@@ -91,12 +91,12 @@ describe("the realm fold moves the wire verdict, and the caller must hear it", (
 
   test("a realm-doc change refolds the plane and the caller hears it", async () => {
     const repo = new Repo({});
-    const oracleHandle = repo.create<LarDoc>(emptyLarDoc());
-    const crossroadsHandle = repo.create<LarDoc>(emptyLarDoc());
+    const registry = repo.create<LarDoc>(emptyLarDoc());
+    const announceHandle = repo.create<LarDoc>(emptyLarDoc());
     let refolds = 0;
     let heard: Arrival<void> | null = null;
     const plane = makeRealmPlane({
-      repo, oracleHandle, crossroadsHandle,
+      repo, registry, announceHandle,
       membership: noMembers,
       base: denyAll,
       onRefold: () => { refolds += 1; heard?.arrive(); },

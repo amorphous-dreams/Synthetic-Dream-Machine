@@ -14,10 +14,10 @@ import { newRequestId } from "../src/verb-tiddler.js";
 describe("newRequestId — no wall-clock prefix (L1)", () => {
   afterEach(() => { vi.useRealTimers(); });
 
-  test("control: the retired shape DID embed Date.now() — proves the control itself answers", () => {
+  test("control: a clock-stamped id shape embeds Date.now() — proves the control itself answers", () => {
     const ms = (t: number) => t.toString(32).padStart(9, "0");
-    const retired = (now: number) => `${ms(now)}-aaaaaaaa`;
-    expect(retired(1000)).not.toBe(retired(2000));
+    const clockStamped = (now: number) => `${ms(now)}-aaaaaaaa`;
+    expect(clockStamped(1000)).not.toBe(clockStamped(2000));
   });
 
   test("set back, set forward, and now: the id format never embeds a Date.now() value", () => {

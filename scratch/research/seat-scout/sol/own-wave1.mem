@@ -1,0 +1,100 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/own-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-25 (file date) — source `.lares-scratch/research/seat-scout/sol/own-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/own-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/own-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! own-wave1.md — research, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/seat-scout/sol/own-wave1.md` (research, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ lares aim from="lar:&#47;/operator:operator@seat-scout/grant.arrival.questions" -> to="lar:&#47;/sol:agent@seat-scout/code.trace.decides">>
+&lt;&lt;~ set hud="aim" mode="draft" stance="🏛️" mu="_!" aperture="15/arc" ooda-ha="7/declare-glyphs" drift-ward="a change pulse could precede the lease frontier it needs">>
+
+Sol-Seatwright: Lares (Tasked Spirit), Ink-Clerk and Map-Wisp: ->✶ Code-first handback. Paths below refer to `/home/joshu/.lares-scratch/k15-wave-d/wt/`; no suite ran.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/a-seat-on-grant-arrival`>>
+
+!! A — Seat on grant arrival
+
+''LEAN (17/20):'' Wake the existing `faceSeated` owner when the joinee observes its grant on the PersonaGroup document; keep binding reads as a backstop, with one serialized seat/lift operation.
+
+''Strongest counter-reading:'' A lazy read avoids a new live subscription and lets the next binding ask find both the grant and the lease frontier. An arrival pulse can precede the lease or KEL data; a one-shot listener then offers false progress. The extra hook also risks two owners unless it only calls the current seat function.
+
+''Ground / road:'' The founder serializes issues, signs and publishes one title per group/joinee, then saves an operation receipt in `packages/lararium-keyhive/src/face-join-operation.ts:41-50,77-112`. The joinee's boot passes `personaUrl` to `openDaemonVm` (`packages/lararium-node/src/open-node-vessel.ts:2333-2353`); its wrapper resolves a held or mesh-shared handle (`packages/lararium-node/src/open-daemon-vm.ts:118-130`). `packages/lararium-tw5/src/daemon-vm-core.ts:361-369,647-653` tends that document and syncs the worker through its manifest. The worker accesses the same plane through `makeCatalogAccessor(...).storeOf(...)`, verifies under the pinned root, persona-KEL head and live lease epoch, then ingests cap events (`packages/lararium-keyhive/src/operator-daemon-behavior.ts:274-333`). `faceSeated` alone runs `liftFloor()` (`:335-368`); resolver reuse and mint call it (`packages/lararium-keyhive/src/resolve-binding.ts:144-164`). No grant-specific change hook currently calls it. Existing arrival precedent uses `findWithProgress().subscribe()` (`packages/lararium-mesh/src/join-face-documents.ts:65-87`); store change fan-out already exists (`packages/lararium-mesh/src/automerge-doc-store.ts:143-153`). Automerge's [[DocHandle documentation|https://automerge.org/docs/reference/repositories/dochandles/]] says a handle will “fire a ‘change’ event” for a peer's change. That supports an event wake, not a claim that a document change proves grant validity.
+
+''Gaia 2026:''
+
+# Mira signs in on a phone and laptop; the laptop first makes a private floor note.
+# The phone publishes the signed face join grant while the laptop remains open.
+# Sync delivers the grant; the laptop's seat owner checks KEL and lease, then ingests the caps.
+# The same owner lifts every keyed anonymous item into the face subtree; the note appears without another binding request.
+# A restart reads the persisted cap events and completes any interrupted lift.
+
+''Elyncia 5492:''
+
+# A traveler feeds the crossroads shrine from a second orichalcum vessel.
+# The hearth vessel writes the join sign onto their shared PersonaGroup plane.
+# The second vessel hears the plane change, checks the causal seal, and seats the face.
+# Its floor offerings ascend together to the face's cap stack; no shrine clock calls the moment.
+# A late lease scroll keeps the sign pending until a causal change wakes the same check.
+
+''Build brief:'' At `packages/lararium-keyhive/src/operator-daemon-behavior.ts:994`, after verifier boot, resolve the joinee's PersonaGroup handle through `makeCatalogAccessor(...).find`, subscribe to its changes, filter the own grant title, and wake the `faceSeated` owner at `:349` ''and once after listener installation''. Extract that closure from `slotDocsOf` so the subscription and resolver call one function. Watch the lease/frontier source too; an unavailable lease leaves the grant unjudged and retries on its next causal change. Stop listeners on island teardown. Serialize grant take + lift in one promise; leave `packages/lararium-keyhive/src/resolve-binding.ts:147,164` as backstop. Mark an accepted signature judged only after successful ingest/seat; keep definitive refusals judged once per boot. Preserve the Wave D destination: the binding rests in D's face subtree, never the floor index. ''Red test:'' two devices sync a valid grant after the joinee already holds a vessel-only binding and makes no further binding call; await causal change, then assert one seat, all keyed floor material lifted, face-subtree binding, no floor-index binding, and one ingest despite duplicate change pulses. ''Known positive/control:'' the same setup with a missing grant stays on the floor; a grant arriving before an unavailable lease stays unjudged, then a lease change seats it. Crash after ingest and before lift, restart, and assert completion once.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b-scout-exemption`>>
+
+!! B — Scout exemption
+
+''LEAN (18/20):'' Replace the whole-file scout skip with seven exact-line exemptions, each naming its file, line digest, matched source term and reason in the vocabulary tool.
+
+''Strongest counter-reading:'' Inline carrier marks tell a scout reader why a term stands and travel with copied text; an external ledger demands maintenance when a citation changes. A file skip costs less code and already reflects that scouts quote outside projects. Yet its 22-file aperture hides an unrelated house-voice regression.
+
+''Ground:'' `tools/s-vocabulary.mjs:27-46,54-63` scans tokens and canon through `carrierFiles()`, but drops all `*-scout.mem`. `tools/s-vocabulary.test.mjs:14-26,45-52` already supplies a planted positive and checks a nonempty canon set. The seven current lines occupy `bags/lares/ha.ka.ba/lares/docs/pono/canvas-field-scout.mem:197` (VKB); `bags/lares/ha.ka.ba/lares/docs/pono/crdt-ecosystem-scout.mem:57` (issuer VK); `bags/lares/ha.ka.ba/lares/docs/pono/subduction-onomancy-scout.mem:54,71,158,167,284` (vk/IssuerVK). The last line mixes quoted terminology with house analysis, so backtick/URL detection cannot cover every legitimate use. A file-plus-term allow-list would also miss a fresh house sentence using the same term. `packages/lararium-tw5/src/meme-normalize.ts:318-338,619-649` distinguishes frame rewrites from authored grammar and protects prose from mirror folding; an external line ledger adds no comment or table token for the normalizer or renderer to move. An HTML-comment marker might survive the normalizer, but would alter source bytes, including a table row; a normalized round-trip would still need proof.
+
+''Gaia 2026:''
+
+# Mira reads a scout on her laptop; its third-party key acronym remains visible in the citation.
+# Her phone syncs the same carrier without a hidden annotation in its rendered paragraph.
+# A house author later adds the retired term elsewhere in that scout.
+# The vocabulary check reports the new line; its seven cited lines still pass by exact digest.
+
+''Elyncia 5492:''
+
+# A shrine scout records a foreign guild's key-name on one etched line.
+# Its ledger names that line and the foreign source behind the wording.
+# A later scribe adds the old house key-name to another line.
+# The one finder brings both lines to the ward; only the cited etching receives exemption.
+
+''Build brief:'' In `tools/s-vocabulary.mjs:43-46`, retain every live scout from `carrierFiles()` and apply a named ledger only after `memWords()` finds hits. Key exemptions by relative file plus full normalized line digest; record expected matched word(s), count and source reason, and fail on stale, duplicate or unused entries. Keep history's separate named exclusion. ''Red test:'' plant the retired word on an unlisted line in an exempt scout; scanner fails even though the seven cited lines pass. ''Known positive/control:'' plant that word on a listed line by changing its prose; the digest mismatch fails; verify seven exact entries match seven current hit lines and a clean scout line passes. Avoid a silent zero by asserting a nonempty carrier inventory, 22 scouts visited, seven exemptions consumed, and at least one planted hit detected.
+
+->▶ Handback written. ->↺ The remaining implementation risk sits where grant change and lease change arrive in either order; one serialized owner must re-read both states on each causal wake.
+
+&lt;&lt;~ oracle "↯15 ✲ ⚂(3) ⁂:🜃◈〰️">>
+&lt;&lt;~ set hud="yield" drift-ward="verify that the worker can retain the persona handle across late arrival and unsubscribe at shutdown · ↻ L-Prime" aperture="15/arc -> 16/arc" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/sol:agent@seat-scout/recommendations.written.handed" -> to="?">>
+WORDS=1148
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;c4jDzOXSK1mWhM_7NKH-RgC8ItDalevWg8Z-E1spAmQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,48 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-3/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s4-3/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-3/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-3/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s4-3/out.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-hand-back`>>
+
+! Seat hand-back
+
+Changed:
+* packages/lararium-web/src/workers/vessel-host.ts
+* packages/lararium-web/src/vessel-port.ts
+* packages/lararium-web/src/floor-tab.ts (new)
+* packages/lararium-web/src/ceremony-page.ts
+* packages/lararium-web/src/main.ts
+
+Checks:
+* <code>pnpm &#45;-filter &#64;lararium/web exec tsc &#45;-noEmit -p .</code>: clean, exit 0.
+* `node tools/page-entry-witness.mjs`: exit 0; `page-entry: holds — packages/lararium-web/src/main.ts reaches no vessel module (79 module(s) reached · 3 worker spawn(s) not reached)`.
+* Browser-mode vitest: lead runs; not run in this seat.
+
+Reading chosen: retain the floor choice across owner retries. A follower retry reloads the page to obtain a fresh brokered port, since its claim spends once. When Web Locks do not exist, the page leads alone, as it does on broker refusal.
+
+No requested implementation left undone. Browser-mode results await the lead.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5wZo0q36_mjVdn7eS-rhMMIwdYzckOWOcci7VTd4WGQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

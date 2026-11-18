@@ -108,10 +108,9 @@ export function refusalCode(reason: string): string {
  * The operator-facing CURE for a refusal CODE (post {@link refusalCode}), named ONCE so a caller
  * reads the identical hint whichever door answers the refusal — the LIVE refusal riding straight
  * back on the socket (`result.refusal`, the connection never dropped) and the SAME refusal found
- * only AFTER a lost connection (`LocalWaitExpired` → a read-back's `ReceiptAnswer.state`) used to
- * grow their hint text by two separate hands; a change-id'd caller hitting the live door read no
- * hint at all (K2, P2.5 iteration 7) — `act.ts`'s two refusal sites both call this instead of
- * carrying their own copy.
+ * only AFTER a lost connection (`LocalWaitExpired` → a read-back's `ReceiptAnswer.state`) take their
+ * hint text from one hand, so a change-id'd caller hitting the live door reads the hint too (K2, P2.5
+ * iteration 7) — `act.ts`'s two refusal sites both call this and carry no copy of their own.
  *
  *   request-abandoned  — this vessel already refused the request before commit; it never ran.
  *                         Reusing `--change-id` keeps a re-run a RETRY of the same change rather
@@ -120,7 +119,7 @@ export function refusalCode(reason: string): string {
  *                          in part. Re-running with `--change-id` lets the effect index answer
  *                          what landed without running it twice.
  *   retention-gap       — the receipt ring evicted this id's outcome past its retention bound; a
- *                          fresh `--change-id` runs it as a new change (the old one is unrecoverable).
+ *                          fresh `--change-id` runs it as a new change (the evicted one is unrecoverable).
  *   receipt-fact-torn   — the ledger's own fact for this id is unreadable; a fresh REQUEST (a
  *                          flagless re-run already mints one) is the only cure — reusing
  *                          `--change-id` names no cure here, since the torn fact is per-request,

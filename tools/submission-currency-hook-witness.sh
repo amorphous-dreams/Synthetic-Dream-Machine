@@ -47,8 +47,7 @@ cp "$PRISM_SRC" "$WORK/$SRC_DIR/prism.mem"
 # real (bagsResolver, read-only over `--root`), so the throwaway repo needs that target too, or the
 # currency gate's scratch mirror (which mirrors only what the real repo's commit involves) never
 # finds it and reads a false DRIFT. A real committer's working tree already holds it; this mirrors
-# that reality. LOOP 7 retargeted the pin from `api/pono/RFC-2119` to `ref/RFC-2119` (the reference
-# meme Canon-Scribe's sibling work created) — mirror THAT path, not the old content meme's.
+# that reality. The pin targets the reference meme at `ref/RFC-2119`, so this mirrors THAT path.
 RFC2119_SRC="$REPO_ROOT/bags/lares/ha.ka.ba/lares/ref/RFC-2119.mem"
 [ -f "$RFC2119_SRC" ] && cp "$RFC2119_SRC" "$WORK/$REF_DIR/RFC-2119.mem"
 
@@ -102,7 +101,7 @@ git -C "$WORK" reset -q -- "$SHELF/prism.md"
 # proves the gate's `projectMdCheck` path (not just the CLI's own `project` door) reads the record.
 step "⑥ a GFM+en pair recording its target → the gate re-projects WITH it, passes GREEN"
 cp "$PRISM_SRC" "$WORK/$SRC_DIR/prism-gfm.mem"
-sed -i 's#to="lar:///ha.ka.ba/lares/api/pono/prism"#to="lar:///ha.ka.ba/lares/api/pono/prism-gfm"#' "$WORK/$SRC_DIR/prism-gfm.mem"
+sed -i 's#to=`lar:///ha.ka.ba/lares/api/pono/prism`#to=`lar:///ha.ka.ba/lares/api/pono/prism-gfm`#' "$WORK/$SRC_DIR/prism-gfm.mem"
 ( cd "$WORK" && node "$LARES" meme project "$SRC_DIR/prism-gfm.mem" --to md --dialect GFM --tongue en --out "$SHELF" >/dev/null 2>&1 )
 if grep -q 'variant: GFM' "$WORK/$SHELF/prism-gfm.md.meta" 2>/dev/null && grep -q 'tongue: en' "$WORK/$SHELF/prism-gfm.md.meta" 2>/dev/null; then
   git -C "$WORK" add "$SRC_DIR/prism-gfm.mem" "$SHELF/prism-gfm.md" "$SHELF/prism-gfm.md.meta"

@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/final2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-25 (file date) — source `.lares-scratch/research/seat-scout/luna/final2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/final2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/final2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final2.md — research, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/seat-scout/luna/final2.md` (research, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Luna-Gatescout: Lares (Tasked Spirit), Ink-Clerk, and Map-Wisp — I wrote the wave-two handback to [[out2.md|/home/joshu/.lares-scratch/research/seat-scout/luna/out2.md]]. It is 730 words and ends with `WORDS=730`.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mMQf1Sh54wCjFc0FDD0y-iz0q2ELcbxgwtbHN_Qv20A`>>
+
+<<^ code=`&#x0004;` to=`?`>>

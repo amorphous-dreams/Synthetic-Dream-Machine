@@ -23,12 +23,17 @@ import {
   type LarDoc, type PersonaKelEvent,
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, enrolmentDigestOf, personaEventCidOf,
+  mintFaceAnchor,
+  ed25519SignerFromSeed, deviceAtomProofBytes,
 } from "@lararium/mesh";
 import {
-  KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony,
-  type BootDaemonKeyhiveInput, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+  KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, FacelessKeyhiveRefused, runFoundingCeremony,
+  type BootDaemonKeyhiveInput } from "@lararium/keyhive";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome, MEMORY_SEALED, memorySecretStore } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const SEED = new Uint8Array(32).fill(7);
+const ATOM_SEED = new Uint8Array(32).fill(8);
 
 interface Founded {
   verifyingKey: string;
@@ -50,9 +55,8 @@ beforeAll(async () => {
   await probe.dispose();
 
   // Found a real operator into the in-memory repo (host pre-spawn step).
-  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(SEED)),
-    repo, vesselSeed: SEED,
-    vesselVerifyingKey: verifyingKey,
+  const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo, atomSeed: ATOM_SEED,
+    placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "Test Operator",
     binding: { mode: "self-stood", signerSeed: SEED },          // self-signed (signerDid == deviceDid) for the test founder
     hearthTrueName: "",         // hearth-agnostic in the unit test
@@ -71,23 +75,56 @@ beforeAll(async () => {
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true });
   daemonStore.markSyncComplete();
 
-  const eventStore = new DaemonEventStore({ daemon: composite });
+  const eventStore = new DaemonEventStore({ ...memorySecretStore(await repo.find(cer.secretUrl as AutomergeUrl)), face: cer.personaGroupId });
   founded = {
-    verifyingKey, eventStore,
+    verifyingKey: cer.founderEdge.deviceVerifyingKey, eventStore,
     bootArgs: {
-      seed: SEED, eventStore,
-      vesselVerifyingKey:  verifyingKey,
+      atomSeed: ATOM_SEED, eventStore,
+      placeVerifyingKey: verifyingKey,
+      veilArchiveBytes: cer.veilArchive,
       personaGroupId:   cer.personaGroupId,
       meshCabalDocIdHex:     cer.meshCabalDocIdHex,
       registerBags:          [DAEMON_BAG_ID],
       signerDid:             cer.signerDid,
       personaKel:            { prefix: cer.personaKelPrefix, chain: kelChain },
       deviceEdge:            cer.founderEdge,
+      faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
+        personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
+      faceVerifyingKey:      cer.founderEdge.deviceVerifyingKey,
     },
   };
 });
 
 describe("bootDaemonKeyhive", () => {
+  test("RED: a faceless place refuses by name; CONTROL: its selected face atom boots", async () => {
+    await expect(bootDaemonKeyhive({ eventStore: founded.eventStore, registerBags: [] })).rejects.toThrow(FacelessKeyhiveRefused);
+    const lit = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+    expect(lit.did.endsWith(founded.verifyingKey)).toBe(true);
+    await lit.keyhive.dispose();
+  });
+
+  test("RED: the place seed cannot pass Gate A for the face; CONTROL: its atom can", async () => {
+    await expect(bootDaemonKeyhive({ ...founded.bootArgs, atomSeed: SEED, veilArchiveBytes: undefined, expectedEpoch: 0 })).rejects.toThrow(/Gate A.*atom/);
+    const lit = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+    expect(lit.did.endsWith(founded.verifyingKey)).toBe(true);
+    await lit.keyhive.dispose();
+  });
+
+  test("RED: a face edge countersigned by the place key stops at the Binding Gate; CONTROL: the atom edge boots", async () => {
+    const edge = founded.bootArgs.deviceEdge!;
+    const old = { ...edge, atomSignature: await ed25519SignerFromSeed(SEED)(deviceAtomProofBytes(edge)) };
+    await expect(bootDaemonKeyhive({ ...founded.bootArgs, deviceEdge: old, expectedEpoch: 0 })).rejects.toThrow(/Binding Gate|Face anchor/);
+    const lit = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+    await lit.keyhive.dispose();
+  });
+  test("RED: face B cannot countersign A's edge; CONTROL: A's atom clears the Binding Gate", async () => {
+    const edge = founded.bootArgs.deviceEdge!;
+    const otherAtom = new Uint8Array(32).fill(9);
+    const other = { ...edge, atomSignature: await ed25519SignerFromSeed(otherAtom)(deviceAtomProofBytes(edge)) };
+    await expect(bootDaemonKeyhive({ ...founded.bootArgs, deviceEdge: other, expectedEpoch: 0 })).rejects.toThrow(/Binding Gate|Face anchor/);
+    const lit = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+    await lit.keyhive.dispose();
+  });
   test("clears Gate A + the Binding Gate, registers the daemon bag, and verifies operator admin", async () => {
     const { keyhive, did } = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
 
@@ -136,7 +173,7 @@ describe("bootDaemonKeyhive", () => {
 
   test("HALTs on identity drift (Gate A)", async () => {
     await expect(bootDaemonKeyhive({
-      ...founded.bootArgs, vesselVerifyingKey: "deadbeefdeadbeef",
+      ...founded.bootArgs, faceVerifyingKey: "deadbeefdeadbeef",
     })).rejects.toThrow(/Gate A/);
   });
 
@@ -162,7 +199,7 @@ describe("bootDaemonKeyhive", () => {
   });
 
   // ── THE LEASE-EPOCH FENCE (Option 1: license off the PersonaGroup lease epoch, not the wall clock) ──────
-  // The founding edge mints `boundEpoch: 0` (a genesis founding — `effectiveLeaseEpoch` over no slots IS 0,
+  // The founding edge mints `boundEpoch: 0` (a genesis founding — `signedLeaseEpoch` over no slots IS 0,
   // ceremony-core.ts). Passing `expectedEpoch` to the Binding Gate must therefore ADMIT at 0 and HALT above it.
   describe("★ the Binding Gate fences on `expectedEpoch` (the PersonaGroup lease), not the wall clock alone ★", () => {
     test("RED-FIRST — expectedEpoch ABOVE the edge's boundEpoch HALTS; AT it, boots clean", async () => {

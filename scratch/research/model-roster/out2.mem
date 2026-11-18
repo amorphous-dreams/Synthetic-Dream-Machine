@@ -1,0 +1,407 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/model-roster/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/model-roster/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/model-roster/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/model-roster/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/model-roster/out2.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/model-roster/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/model-roster-round-two-verified-measured-ratchet`>>
+
+! Model roster, round two (Opus): verified, measured, ratcheted — 2026-10-28
+
+Lares (second researcher) · ->✶ observe ->⏿ orient ->◇ decide ->▶ act ->↺ aftermath
+
+''Key.'' SOURCED = a page fetched 2026-10-28 (URL given); quotes come from that fetch. MEASURED = read today from this
+machine's own logs (spend.py, Codex rollouts, Claude transcripts, `~/.codex/models_cache.json`); the script or field is
+named. REASONED = my judgment or arithmetic. "API-eq $" = tokens priced at Anthropic's or OpenAI's public API rates. It
+weighs seats against each other; it is NOT what the subscription charges. Neither Anthropic nor OpenAI publishes a plan
+meter in those units.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/0-what-changed-from-round-one`>>
+
+!! 0. What changed from round one (the ratchet, in seven lines)
+
+# ''The crew ran `gpt-6-sol`, not `gpt-6.1-sol`, all week'' (MEASURED, spend.py: 58 gpt-6-sol seats vs 1 gpt-6.1-sol).
+OpenAI's credit table bills gpt-6-sol's CACHED input at 5 credits/M against 2.5 for gpt-6.1-sol (SOURCED §1.1).
+Cached input made ''68%'' of last week's Codex draw (MEASURED §2.2). Some of "Sol gets speedy" comes from the old
+model's cached-input rate. The rest comes from long seats re-reading their context.
+# ''The Codex pool on this account is WEEKLY only'': `plan_type: team`, one window of 10,080 min, no 5-hour window
+(MEASURED, rollout `rate_limits`). It meters at ≈15–16.5 credits per 1% (MEASURED §2.2): ≈1,600 credits a week.
+# ''The biggest Claude-side cost is cache REWRITES, not model choice.'' Subagents get a 5-minute cache TTL. An
+Episkopos that waits 5–60 min on a Codex seat re-writes its whole context when it wakes. That happened 250 times on
+Sonnet, about 63% of all Sonnet subagent API-eq spend (MEASURED §2.3). One setting, `subagentPromptCacheTtl: "1h"`,
+targets it (SOURCED §1.5).
+# Terra: OpenAI does not position it for coding (SOURCED §1.6). Our own pool data cannot yet show that Terra builds
+cheaper per accepted slice. Keep it, but on trial (experiment E2).
+# Luna: the crew runs it at medium. OpenAI's Codex guide says "Start with High for Luna" (SOURCED). An older Luna missed
+most security bugs in one public test (SOURCED §1.7). Every Luna read so far ran `--ephemeral`, so its cost goes
+unmeasured (MEASURED, i2-relay resume.md line 29).
+# Opus BUILDER seats carry 87% of Opus subagent spend, all in hands-spine (MEASURED §2.3). Retire them as a default.
+# Copilot: the allowance resets 2026-11-01 00:00 UTC and does not roll over. Spend what is left this week on cheap
+Haiku-4.5 sweeps (SOURCED §1.2; REASONED).
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-verify-round-one-s-load-bearing-claims`>>
+
+!! 1. VERIFY — round one's load-bearing claims
+
+!!! 1.1 Codex plan: per-5h message estimates — HOLDS (numbers) · OVERSTATED (applies to this account)
+* SOURCED https://learn.chatgpt.com/docs/pricing (developers.openai.com/codex/pricing 308-redirects here): "The
+estimates below show local messages per five-hour period for Plus and Standard Business": Astra 5–45, GPT-6.1 Sol
+15–160, GPT-6.1 Terra 35–285, ''GPT-6 Sol 15–150'' (round one omitted it), Luna 350–3,000. "These estimates are not
+fixed message limits." "Weekly limits may also apply." "ChatGPT Work and Codex share usage."
+* SOURCED, same page, credit rates per 1M tokens, input / cached / output: **GPT-6.1 Sol 50 / 2.5 / 250 · GPT-6 Sol
+50 / 5 / 250** · GPT-6.1 Terra 25 / 1.25 / 125 · GPT-6 Luna 2.5 / 0.25 / 12.5 · Astra 250 / 25 / 1,250. API prices
+follow the same ratios (https://developers.openai.com/api/docs/pricing: gpt-6-sol cached $0.20 vs gpt-6.1-sol $0.10).
+* SOURCED: "Fast mode uses 2x the Standard rate where available, and Ultrafast mode uses 6x." The page's table shows Fast
+at 2.5× of included usage. Ultrafast is listed only for "Pro $500 and eligible Enterprise/Edu plans".
+* ''OVERSTATED'': round one framed the pool as "five-hour and weekly windows". MEASURED from this machine's rollouts
+(`payload.rate_limits` in `~/.codex/sessions/2026/10/2*/rollout-*.jsonl`): `"limit_id":"codex"`,
+`"primary":{"window_minutes":10080,...}`, `"secondary":null`, `"plan_type":"team"`. One weekly window, with no
+five-hour window on this account now. So the per-5h estimates convert to a weekly budget here; they do not set a 5h
+ceiling.
+
+!!! 1.2 Copilot legacy multipliers — HOLDS · "can legacy annual select the cheap ones" — NOT ESTABLISHED by docs
+* SOURCED https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/model-multipliers-for-annual-plans:
+GPT-5.3-Codex "6", GPT-5.1-Codex-Mini "0.33", GPT-5.1-Codex "3", Claude Haiku 4.5 "0.33", MAI-Code-1.1-Flash "0.25".
+"Users on legacy annual Copilot plans will not receive access to new models and features." The page names no model
+that a legacy user can or cannot select.
+* SOURCED https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/copilot-requests:
+"Each prompt to Copilot CLI uses ''one premium request'' with the default model", multiplied by the model's rate;
+code review: "''13 premium requests''"; "Premium request counters reset on the 1st of each month at 00:00:00 UTC";
+"$0.04/request" overage.
+* MEASURED, crew record (feedback_mixed_model_swarm, 2026-10-16): on THIS account `claude-haiku-4.5` and `gpt-5-mini`
+(0.33) and `mai-code-1.1-flash` (0.25) open, and "the gpt-5.1-codex line is NOT open". So GPT-5.1-Codex-Mini at 0.33
+holds as a price but not as a choice here. Haiku 4.5 at 0.33 stands as the cheap Copilot seat (18× cheaper than
+GPT-5.3-Codex per prompt). A 2026-10-19 note records Gemini/MAI-Code models answering "model unavailable". So re-probe
+MAI-Flash before relying on it.
+
+!!! 1.3 Anthropic per-model pricing — HOLDS
+* SOURCED https://platform.claude.com/docs/en/about-claude/pricing: Opus 5.5 "$4 / MTok | $5 | $8 | $0.20 | $20";
+Sonnet 5.5 "$2 | $2.50 | $4 | $0.10 | $10"; Haiku 5.5 "(for prompts up to 100,000 tokens) $0.10 | $0.125 | $0.20 |
+$0.01 | $0.50", over 100k "$0.50 | $0.625 | $1 | $0.05 | $2.50"; Fable 5.1 "$10 | $12.50 | $20 | $0.25 | $50". Footnote:
+"Cache hits and refreshes on Claude Opus 5.5 and Claude Sonnet 5.5 are priced at 0.05x the base input price."
+"A request's prompt length counts all of its input tokens, including cache reads and cache writes" (Haiku tier).
+
+!!! 1.4 Claude Code plan metering — HOLDS, with one gap closed
+* SOURCED https://support.claude.com/en/articles/11145838: "Both Pro and Max plans have a five-hour session limit and a
+weekly limit"; Max has "a separate weekly limit for Fable"; "limits are shared across Claude and Claude Code".
+* SOURCED https://support.claude.com/en/articles/14552983: Opus "uses meaningfully more of your quota"; "Opus costs
+several times more per turn than Sonnet, and Sonnet more than Haiku"; "Pro tip: plan with Opus, execute with Sonnet."
+It gives no numeric ratio. Round one's "cannot be derived" holds for the ratio.
+* ''Gap closed (SOURCED https://code.claude.com/docs/en/sub-agents)'': a subagent "sends its own requests, which count
+toward the same [usage limits] as your main conversation." So subagent seats draw the same Max pool as the controller.
+* MEASURED: this account runs `subscriptionType: max`, `rateLimitTier: default_claude_max_20x`, Claude Code 2.1.312.
+
+!!! 1.5 Prompt caching in Claude Code — round one REASONED it; it is now SOURCED and MEASURED
+* SOURCED https://code.claude.com/docs/en/prompt-caching: on a subscription, "Main conversation: One hour"; "Everything
+else [subagents, workflows, forks…]: Five minutes". "Subagents fall outside the main-conversation TTL bucket, so they
+get five minutes even on a subscription until you choose a longer one." Controls: "`subagentPromptCacheTtl` setting,
+or the `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL` environment variable" (`5m`|`1h`, v2.1.242+); also a per-agent
+`experimental.cacheTtl` frontmatter (v2.1.248+). "Two sessions in different directories therefore build different
+prefixes and miss each other's cache." Effort changes keep the cache on Opus/Sonnet/Haiku 5.5. A model switch does not.
+* MEASURED (transcripts since 10-26): main session cache writes are 100% `ephemeral_1h`; subagent writes are 100%
+`ephemeral_5m`. See §2.3 for what that costs.
+
+!!! 1.6 Terra's positioning — round one HOLDS, and it understated the point
+* SOURCED https://developers.openai.com/api/docs/models/gpt-6.1-terra: "A fast, efficient model for visual reasoning,
+precise computer use, and clear, natural writing." Coding is not mentioned.
+* SOURCED https://learn.chatgpt.com/docs/models (Codex models page): Terra "A fast, efficient model for clear writing,
+visual understanding, and computer use", recommended for writing, images/screens and in-app tasks. Sol 6.1: "Consider
+GPT-6.1 Sol for work across code, apps, and documents when cost matters." Luna: "focused, high-volume tasks, including
+summarization, extraction, and focused coding"; "Choose Luna … when you know what a good result looks like". Effort:
+"Start with High for Luna or Light for Astra." The page's only review example runs &#96;codex exec -m gpt-6.1-sol "Review
+the current changes"&#96;.
+* MEASURED (`~/.codex/models_cache.json`, fetched 14:13Z today): gpt-6.1-terra "GPT-6.1 Terra Codex model.", default
+effort ''low''; gpt-6.1-sol "Latest workhorse model for coding and everyday work.", default medium, nux "Maximize usage
+with GPT-6.1 Sol"; gpt-6-sol "Previous generation workhorse model."; gpt-6-luna "Fast and affordable model for easier
+tasks."; gpt-reserve (hidden) "Fast and affordable agentic coding model."
+
+!!! 1.7 "Fresh eyes beat a second family" — HOLDS, but round one missed its most useful finding
+* SOURCED https://stephens.page/blog/fresh-eyes-beat-a-second-family/paper/ (J. Stephens, 2026-10-12; Opus 5.5 vs
+GPT-6.1 Sol xhigh; 183+24 sessions). A fresh same-model reviewer "matched or beat the other family's catches at every
+checkpoint"; "where the second look is placed matters more than who takes it."
+* The one checkpoint that paid off is the ''second look after the spec-level review'': Codex found real missed bugs in
+16/30 features and fresh Claude in 19/30 (bar 6), and "the two families' findings were largely disjoint." Plan-check:
+only fresh Claude at MAX effort passed (8/10 stops right). Codex stopped 15 Claude plans, only 5 of them correctly.
+Authoring agents declined 2 of 2 correct escaped-bug flags.
+* Limits (stated by the paper): Claude graders, one run per cell, small n, one system.
+* REASONED reading for this crew: a cross-lineage read pays at the slice-level second look, because it finds disjoint
+bugs. Most of the value comes from the read being fresh and well placed, not from the family. The "authors declined
+correct flags" result supports refinement 5 (readers route straight to the builder, the controller rules on forks).
+It also argues for the controller, not the builder, closing HIGH findings.
+
+!!! 1.8 Codex `/usage` — WRONG as cited
+* SOURCED https://learn.chatgpt.com/docs/pricing: "If you want to see your remaining limits during an active Codex CLI
+session, you can use `/status`." The CLI page (https://learn.chatgpt.com/docs/codex/cli) shows no `/usage`. `/usage`
+belongs to Claude Code (prompt-caching page: "For a per-session summary, run `/usage`").
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-gaps-filled`>>
+
+!! 2. GAPS — filled
+
+!!! 2.1 Claude Code subagent model selection (SOURCED https://code.claude.com/docs/en/sub-agents)
+* Yes, a subagent can run Haiku 5.5. `model:` takes "`sonnet`, `opus`, `haiku`, `fable`, a full model ID … or
+`inherit`". On an Agent tool call, "that parameter takes a model alias: `sonnet`, `opus`, `haiku`, or `fable`", and
+"It applies on resume and follow-up messages". Precedence runs: per-call param > frontmatter >
+`CLAUDE_CODE_SUBAGENT_MODEL` > main model. `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` pins every subagent.
+* Effort per call: "Claude can pass `effort` per call for non-fork subagents (requires v2.1.292+)" (we run 2.1.312);
+`low|medium|high|xhigh|max`. `CLAUDE_CODE_EFFORT_LEVEL` overrides both.
+* Weighting: no published ratio (§1.4). REASONED: API price ratios Opus:Sonnet:Haiku = 40:20:1 on input and output
+(Haiku ≤100k). "Several times more per turn" fits ~2× per token plus Opus's longer turns. Treat 2× as the floor.
+* Haiku tier hazard (REASONED): a subagent here carries the Claude Code system prompt, tools, CLAUDE.md and the boot
+.mem. After a few file reads it passes 100k, and every later turn bills at the >100k tier ($0.50 in / $2.50 out).
+That is still 4× under Sonnet.
+
+!!! 2.2 Reading the Codex pool from a script (MEASURED; mechanism not documented, so treat it as a field that can change)
+* Every Codex rollout `token_count` event carries `rate_limits.primary.used_percent`, `window_minutes`, `resets_at`,
+`plan_type`, `credits`. Read the first and last per rollout. spend.py does not yet read them. Five lines would add a
+"pool %" column per lane.
+* Last week's window (resets_at 2026-11-02 06:26Z), MEASURED by pairing each rollout's pool readings with its tokens ×
+the credit table:
+** The pool went ''5% → 100% between 2026-10-26 10:10Z and 2026-10-27 07:14Z'', about 21 hours of lane work.
+** All of that draw was gpt-6-sol: ≈1,566 credit-eq, of which ''1,052 (68%) was cached input''. That gives ≈16.5
+credits per 1%.
+** k15-bonds alone took 57→89% in about 2 hours (82.5M cached tokens).
+* A new window opened 2026-10-28 ≈11:24Z (resets 2026-11-04 11:24Z) before the old one's reset. The cause does not show
+in the logs (operator "refreshed"/credits?). By 14:14Z it stood at 17%: ≈251 credit-eq (gpt-6-sol 217, Terra 23,
+6.1-sol 10), ≈14.8 credits per 1%. The two windows agree within 10%. So **the plan meter tracks the published credit
+rates**, and spend.py can price any seat in credits.
+* Per-seat (10-28, MEASURED, 1% granularity, concurrent seats blur it):
+** gpt-6-sol medium builder seats: 1–5% each.
+** Terra medium seats: 0–1% each (≈23 credits over 6 seats).
+** One gpt-6.1-sol high read: 1% (10.4 credits).
+** REASONED: a ~1% Terra seat against a 3–5% gpt-6-sol seat compares unequal work. That is why E2 exists.
+* REASONED: the pool is shared with the operator's own ChatGPT Work use (SOURCED §1.1), so a lane's % delta can include
+his chats. Credits-from-tokens is the cleaner per-lane number. The % reading is the budget truth.
+
+!!! 2.3 Where the Claude spend goes (MEASURED, transcripts since 2026-10-26, API-eq $; 5m writes priced at 1.25× input)
+| Bucket | Seats | API-eq $ | Of which cache WRITES |h
+| Controller (main session, Opus, 1h cache) | 1 | ≈79 | 19 |
+| Opus subagents (hands-spine 12 seats $130, porch 1 $16, research 2 $3) | 15 | ≈149 | 57 |
+| Sonnet subagents (Episkopoi + hands-spine readers) | 29 | ≈331 | ''229'' |
+* Sonnet subagents made 3,408 calls. ''250 of them followed a 5–60 minute idle gap and re-wrote 83M tokens'' (≈$207
+API-eq, 63% of Sonnet spend). Opus: 29 such rewrites, 7.8M (≈$39, 26%).
+* The gap is the Episkopos waiting on a background Codex seat. The wait outlives the 5-minute TTL, so each wake pays a
+full re-write at 1.25× input instead of a 0.05× read.
+* REASONED projection with `subagentPromptCacheTtl: "1h"`: re-writes become reads (83M × $0.10 ≈ $8), and the remaining
+≈8–10M of writes cost 1.6× more ($4 vs $2.50). Net Sonnet ≈$331 → ≈$150 (−55%), Opus ≈$149 → ≈$120. Unverified
+against the plan meter. E1 measures it.
+* Hands-spine, MEASURED: since 10-26 the lane holds ''12 Opus + 11 Sonnet seats'' (spend.py; all-time 16 Opus-5.5 + 7
+older Opus + 1 Haiku-4.5). The brief's "one slice took 8 Opus and 10 Sonnet seats" sits inside that total. spend.py
+cannot split by slice, so I cannot confirm the 8/10 split from tool logs.
+* spend.py blind spots (MEASURED by reading it):
+** The controller's own main session is not tallied (it globs only `subagents/agent-*.jsonl`).
+** It does not split 5m from 1h writes.
+** It prints raw tokens, not credits.
+** Ephemeral Codex seats (all Luna reads to date) are invisible.
+
+!!! 2.4 Effort as a cost lever, per role (REASONED on SOURCED controls)
+* Codex: output tokens cost 10× input, and reasoning tokens count as output. Effort mostly moves output and turn count.
+In this crew's seats, output was ~14% of gpt-6-sol credits and cached input 68%. **Context length per seat beats
+effort as a lever**: shorter seats, a fresh seat per slice rather than one long resumed seat, and briefs that point at
+files rather than paste them.
+* Claude: per-call `effort` now exists. Episkopos (drives seats, runs suites) → `medium`. Readers → `high`. A
+controller's named rulings → `max` (the plan-check result in §1.7 favoured max).
+
+!!! 2.5 Stable brief prefixes (REASONED on §1.5)
+* A Claude subagent's cache keys on system prompt + tools + CLAUDE.md + its opening message, per directory. Two seats
+whose briefs share a long common head share that prefix only while warm, in the same cwd, within the TTL.
+* Gains: put the stable crew text (fences, battery, hand-back shape) FIRST and identical; put the lane-specific part
+LAST. Codex caches the same way (its cached-input line). A stable `AGENTS.md`-led head helps both.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-yin-the-strongest-case-against-the-current-ros`>>
+
+!! 3. YIN — the strongest case against the current roster
+
+''Y1. Terra + Luna under-reviews, and possibly under-builds.''
+* OpenAI never positions Terra for code (§1.6). Its local default effort is //low//. The Codex docs point code work at
+Sol 6.1.
+* The only public recall number for a Luna line (SOURCED https://hyper.ai/de/stories/61420e1b8b747e0a57a34e18041183d9,
+Sept 2026, 50 public PRs, two-judge verification):
+** GPT-5.6 Luna found 69 verified bugs against Astra's 92, at 74% precision against 96%.
+** On security, "Luna identifizierte nur 9 von 24 Sicherheitslücken" (Astra 19).
+* Launch benchmarks show GPT-6 Luna close to GPT-6 Sol on DeepSWE (66.6% vs 68.8%), but ''at max effort''. Its factual
+error rate runs 7.6% vs 4.5% (SOURCED https://computingforgeeks.com/gpt-6-sol-luna-released-features-benchmarks/,
+updated 2026-10-27).
+* The crew runs Luna at medium, on a repo whose lanes are capability, custody, crypto and gate code: exactly the
+security class Luna missed.
+* A pairing of a builder not made for code and a reader weak on security leaves the Sonnet Episkopos as the only real
+review. The controller's 2026-10-19 ruling already moved the deep read to the controller.
+
+''Y2. Opus seats should not build at all.''
+* 87% of Opus subagent spend sat in one lane's builder seats (§2.3).
+* Anthropic's own guidance: "plan with Opus, execute with Sonnet."
+* The controller already reads every chunk. An Opus builder pays Opus prices for work a Sonnet or Codex builder does
+under the same review.
+* The hands-spine balloon (8 seats, ~40 commits) came from scope creep, which refinement 2 now caps, not from model
+weakness.
+
+''Y3. The controller should run on Sonnet, with Opus called for named rulings.''
+* The controller is the single largest Claude line after the Sonnet re-writes: ≈$79 API-eq in 2.5 days, 237M
+cache-read tokens.
+* Most controller turns read hand-backs, launch seats and run spend.py. That is Sonnet work.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-yang-what-survives`>>
+
+!! 3′. YANG — what survives
+
+* ''Y3 fails.'' The controller is the one seat where depth decides outcomes.
+** The fresh-eyes paper's only passing plan-check ran fresh Claude at //max//, and authors declined correct flags. The
+seat that rules on forks must be the strongest.
+** The controller costs ≈14% of Claude spend. Halving it saves less than the cache fix saves on one lane.
+** What survives from Y3: the controller hands mechanical turns (spend tallies, launches, greps) to a Haiku/Sonnet
+helper. It does not downgrade itself.
+* ''Y2 survives.'' Opus leaves the default builder slot. It stays available for a named cross-process-seam slice, with
+the reason written in the brief.
+* ''Y1 survives in part.''
+** Terra stays the builder on trial. It costs half of Sol 6.1 per credit. Its seats so far drew ≈1% each, and the crew
+reads every build twice anyway. E2 decides it within a week.
+** Luna stays the first, every-slice reader, at ''high'' effort (OpenAI's own starting point). It never stands as the
+sole substantive read of a slice touching caps, custody, crypto, gate or keyhive: those get Sol-6.1 high. In this
+repo that is often, so "Sol only for named deep questions" becomes "Sol for named deep questions AND for every
+security-class slice."
+** Sol-6.1 replaces gpt-6-sol everywhere. Same credit price on input and output, half the cached rate, newer.
+** The "speedy" Sol the operator saw was mostly gpt-6-sol plus 80M-token seats. Sol 6.1 in short, fresh seats should
+not reproduce last week's 21-hour drain.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-the-roster-ratcheted`>>
+
+!! 4. THE ROSTER, ratcheted (one page)
+
+Pools: ''Max-20x'' (Claude, 5h + weekly, subagents included) · ''Codex team, weekly'' (≈1,600 credit-eq/week MEASURED;
+shared with ChatGPT Work) · ''Copilot legacy annual'' (300/month, resets 11-01 00:00Z, no rollover, ends at term).
+
+| Role | First choice | Fallback | Effort | Pool | Cost reasoning (this crew's numbers) |h
+| Controller | Opus 5.5 main session (1h cache already) | — (no downgrade); Fable only for a named ruling | high; `max` for named rulings | Max | ≈$79 API-eq/2.5 days, ≈14% of Claude spend; the seat that rules forks. Hand tallies and launches to helpers. |
+| Episkopos (lane lead) | Sonnet 5.5 subagent, ''`subagentPromptCacheTtl: 1h`'' | Opus only if the lane is a named seam lane | medium | Max | 63% of Sonnet spend was 5m-cache re-writes after Codex waits; 1h TTL projects ≈−55% (E1). |
+| Builder | Codex `gpt-6.1-terra` medium (trial) | `gpt-6.1-sol` ''low/medium'' in a fresh seat; then Sonnet 5.5 subagent | medium | Codex | Terra 25/1.25/125 credits vs Sol-6.1 50/2.5/250. Keep seats short: cached re-reads were 68% of last week's draw. Opus builders retired as default (87% of Opus seat spend). |
+| Reader (every slice) | Codex `gpt-6-luna` ''high'', read-only, NON-ephemeral | Copilot Haiku 4.5 (0.33×) | high | Codex | Luna ≈1/10 of Terra per credit. Recall weak on security (§3), so it is first pass, never the sole read on security-class slices. |
+| Deep reader | Codex `gpt-6.1-sol` high: named deep question ''or any caps/custody/crypto/gate/keyhive slice'' | Opus 5.5 subagent, fresh, high | high | Codex / Max | One Sol-6.1 high read ≈10 credits ≈0.6% of the week (MEASURED). Cheap next to an escaped security bug. |
+| Researcher | Codex `gpt-6.1-sol` medium `--search` (web works today) | Opus 5.5 subagent with WebSearch/WebFetch (this seat) | medium | Codex / Max | Last week's 18 research Sol seats drew ≈0–1% each. Research is cheap; depth matters more. Opus for ratchet rounds like this one. |
+| Sweeper (prose, naming, evergreen) | Claude ''Haiku 5.5'' subagent (`model: haiku`) for mechanical passes | Luna high | low–medium | Max | ≈1/20 of Sonnet per token (1/4 past 100k). Witness scripts gate meaning; the controller reads the diff. |
+| Batch Aftermath | Copilot ''Haiku 4.5'' (0.33×) | Copilot gpt-5.3-codex (6×) only as a third-lineage read on a named high-risk slice | medium | Copilot | 18× cheaper per prompt. ''Spend the remaining November allowance before 11-01 00:00Z.'' It expires unused. |
+
+Standing rules the roster implies (REASONED):
+* `gpt-6-sol` leaves every launch line, the k17-r brief's trailer and resume commands.
+* No Codex seat runs `--ephemeral`. Luna included: its reads have never been counted.
+* One fresh Codex seat per slice beats one long resumed seat (cached re-reads dominate).
+* spend.py gains four things: credits per Codex seat (the §1.1 table), pool-% first/last per rollout, the controller's
+main session, and the 5m/1h write split.
+
+!!! Three experiments for this week
+
+''E1. Subagent cache TTL (Claude).'' Set `subagentPromptCacheTtl: "1h"` (operator's settings change) for one week.
+* Before: spend.py for the week of 10-26 shows Sonnet subagents at 91.5M cache-write vs 809M read (ratio 0.113), with
+250 re-writes after a 5–60 min gap.
+* After: the ratio should fall below ≈0.03, with re-write count near 0. The Claude `/usage` weekly % per lane-day
+should drop.
+* Confirm on the plan meter: read the Claude weekly % before and after one comparable lane-day. If writes fall but the
+weekly % does not, the plan does not weight cache writes the way the API does. Revert, and say so in the swarm canon.
+
+''E2. Builder A/B (Codex).'' Run two comparable slices, Terra-6.1 medium against Sol-6.1 low, each in a fresh seat with
+the same brief head.
+* spend.py (with credits) shows credits and pool-% per seat.
+* The review record shows Luna-high and Episkopos findings per slice, HIGH/MEDIUM counts, fix commits after the read
+(rework), and red-before-fix compliance.
+* Decision rule: credits per accepted slice, including rework seats. Terra wins only if it lands at least as clean at
+≤60% of Sol-low's credits.
+
+''E3. Reader recall (Codex).'' On 3–4 slices, at least two of them security-class, run Luna-high and Sol-6.1-high
+read-only on the same diff. Run them blind to each other and to the author's rationale.
+* The controller adjudicates each finding as confirmed, false or duplicate.
+* The review records show confirmed findings unique to each reader and false positives.
+* spend.py shows credits per confirmed finding.
+* If Luna-high misses a confirmed HIGH that Sol catches on a security-class slice, the deep-reader rule in the table
+stands as law. If Luna matches, Sol returns to named questions only.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-open-questions-only-the-operator-can-rule`>>
+
+!! 5. Open questions only the operator can rule (each with my lean)
+
+# ''Retire `gpt-6-sol` from every launch in favour of `gpt-6.1-sol`?'' Lean: yes, now. It carries the same input and
+output credits at half the cached rate. Last week's draw was 68% cached input.
+# ''Set `subagentPromptCacheTtl: "1h"` in user settings?'' I cannot make this change; it needs the operator's settings
+edit. Lean: yes, for E1's week. It is the single largest Claude-side lever measured.
+# ''Retire Opus as a default builder seat?'' Lean: yes. Opus seats only on a named seam slice, with the reason in the
+brief.
+# **Does a security-class slice (caps, custody, crypto, gate, keyhive) always get a Sol-6.1-high read, beyond the
+Luna-high pass?** Lean: yes until E3 says otherwise.
+# ''Luna at high instead of medium?'' Lean: yes. That is OpenAI's own "start with High" and still ≈1/10 of Terra.
+# ''Copilot's remaining November allowance and the term's end.'' Lean:
+#* Spend what remains on Haiku-4.5 aftermath sweeps before 2026-11-01 00:00Z. Check the run logs' &#96;Requests N
+Premium&#96;, not the stale cache.
+#* Rule now what replaces Copilot's third lineage when the legacy term falls to Free. Candidates: Gemini 3.8 Flash
+API (separately billed, unprovisioned) or simply fresh same-family reads, which the fresh-eyes paper supports.
+# **The Codex pool is shared with the operator's ChatGPT Work use, and a second window opened on 10-28 before the
+first's reset.** Should the crew hold a weekly reserve (say 20%) for the operator's own use and for named deep
+reads? Lean: yes. Name it in the swarm canon as a pool floor, read from rollout `used_percent`.
+
+---
+Sources fetched 2026-10-28:
+* https://learn.chatgpt.com/docs/pricing
+* https://learn.chatgpt.com/docs/models
+* https://learn.chatgpt.com/docs/codex/cli
+* https://developers.openai.com/api/docs/models
+* https://developers.openai.com/api/docs/models/gpt-6.1-terra
+* https://developers.openai.com/api/docs/pricing
+* https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/model-multipliers-for-annual-plans
+* https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/copilot-requests
+* https://platform.claude.com/docs/en/about-claude/pricing
+* https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan
+* https://support.claude.com/en/articles/14552983-models-usage-and-limits-in-claude-code
+* https://code.claude.com/docs/en/sub-agents
+* https://code.claude.com/docs/en/prompt-caching
+* https://code.claude.com/docs/en/env-vars
+* https://stephens.page/blog/fresh-eyes-beat-a-second-family/paper/
+* https://hyper.ai/de/stories/61420e1b8b747e0a57a34e18041183d9
+* https://computingforgeeks.com/gpt-6-sol-luna-released-features-benchmarks/
+
+Measurements: `python3 ~/.lares-scratch/controller/spend.py --since 2026-10-26`; Codex rollout `rate_limits` and
+`token_count` (`~/.codex/sessions/2026/10/2[5-9]`); Claude transcript `usage.cache_creation` (`ephemeral_5m`/`1h`) and
+inter-call gaps; `~/.codex/models_cache.json`; `~/.claude/.credentials.json` (subscription tier only).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qVK0MMb94sIhy45xodGrWHq0DvzDcOjuStXrE_xuFi0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

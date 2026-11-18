@@ -1,0 +1,35 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/dogfood-proof-c06dab3a02917762a91dbd488a9e0b3d08829e54`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/dogfood-proof-c06dab3a02917762a91dbd488a9e0b3d08829e54.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/dogfood-proof-c06dab3a02917762a91dbd488a9e0b3d08829e54"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/dogfood-proof-c06dab3a02917762a91dbd488a9e0b3d08829e54"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! dogfood-proof-c06dab3a02917762a91dbd488a9e0b3d08829e54.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/dogfood-proof-c06dab3a02917762a91dbd488a9e0b3d08829e54.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP dogfood-proof c06dab3a02917762a91dbd488a9e0b3d08829e54
+read: blind Opus (Blind-Warden-Proof) over e44da0167...b416c6eb8 on the security-class paths (.github/workflows/e2e-shards.yml, package.json) plus tools/dogfood-proof.sh, genesis/unbaked.json and the place-meme.ts stage-row gate: LAND, no P1/P2 (workflow: triggers, runner and permissions unchanged; one fixed LARES_PYTHON path into GITHUB_ENV from the runner's own HOME; HOME scoped to its step; package.json one script, no lifecycle hook). CI 42450020328 green on rerun. L9 unit reds 16 -> 29/29; dogfood-memory-restand e2e green alone.
+read (head moved, span merge only): b416c6eb8..c06dab3a02917762a91dbd488a9e0b3d08829e54 merges e44da0167; the road differs from the span in the L9 row and the stamp only (lead verified by diff); no tw5 or genesis change from the span.
+owed (P3): tools/dogfood-proof.sh unset LAR_BAGS LAR_GENESIS beside its exports (an operator shell exporting LAR_BAGS=&lt;checkout>/bags would write back into the tracked tree); corepack pnpm under a fresh HOME may fetch; stage-row gate compares raw strings (Memory/, %2F, no trailing slash skip the missing-key check while stage readers filter on the exact prefix); a keyed row's /path children can sit at another key's derived title; noop/conflict verdicts and writes bypassing placeMeme skip the gate (the read-side law covers them).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Q6nHmxPmKdvzyezweFGqQtwat1d_hHiiILZuCC19wlA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

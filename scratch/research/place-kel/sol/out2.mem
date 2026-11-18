@@ -1,0 +1,79 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/place-kel/sol/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/place-kel/sol/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">>
+Sol-Kelwright: Lares (Tasked Spirit) · Ink-Clerk / Map-Wisp / Lares (Artificer)
+&lt;&lt;~ lares aim from="lar:&#47;/operator:operator@lararium/place.kel.edges" -> to="lar:&#47;/sol:agent@lararium/kit.edges.settles">>
+&lt;&lt;~ set hud="aim" mode="seal" stance="🏛️" mu="_!" aperture="16/arc" ooda-ha="9/declare-glyphs" drift-ward="the seed's current reach could hide a sixth authority or strand a peer after rotation">>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/observe-span-43bdc025f`>>
+
+!! ->✶ Observe — span 43bdc025f
+
+''MEASURED:'' `node-vessel-identity.ts:199-241,302-335` still mints a one-event, unarmed KEL and stores its seed in an owner-only file. `place-signer.ts:38-93` permits five duties: carriage carrier, place floor pin, flow pointer, raise challenge, gate place finish. `nexus-contract.ts:257-268` and `herm-carriage.ts:86-88` still sign carrier/pin from that seed; `flow-read-face.ts:150`, `node-caps.ts:211`, and `open-node-vessel.ts:1503-1512` route pointer and carriage signing from it. Road `stable-founding-road.mem:207,249,544` rules an online scoped signer, offline card key for KEL events, and four changed duty images under X0; gate finish already carries its domain frame.
+
+''Reach census and owner.'' Place KEL inception takes the cold founding authority; its key signs inception and rotations, while each event seats the separate online signer key. The five floor duties take that signer; no sixth duty follows. `place-card.ts:26-40`, `keyhive/ceremony-core.ts:255-309`, and `leaf-identity.ts:37-57` still mint/archive a vessel-wide Keyhive Individual and prove the place arm with its card and raw seed. Retire that Individual, archive, card, and bare place leaf; replace their gate proof with KEL descent and a scoped floor finish. Road `:203,208` assigns one Keyhive identity to each face and carries this removal in ''K15''. `open-node-vessel.ts:2283` daemon auth and `:3451` pointer signer split: face auth moves to the face atom/K15; pointer moves to the scoped signer here. `:1447` relay key and `carriage-relay.ts:74-76` move to a separately provisioned transport principal/K15; `:3329` cadence consumes public place AID, never secret seed. `:981` merely loads the seed and should disappear after callers migrate. `island-verb-ask.ts:125-171` names a requesting key rather than signing; its old place-seed caller moves to session face proof/K15. Browser `open-browser-vessel.ts:566,699,752-774,1319` carries device/face Keyhive and daemon reach: K15 owns those bonds. Floor-gate child derivations in `node-vessel-identity.ts:466-489` take a distinct floor gate root; no card key or signer grants custody. `lares-cli/src/commands/meme.ts:1117` still signs an ask with the seed and needs face/session authority under K15. Count all direct and derived uses in the census: zero raw-seed exports outside the KEL/card ceremony; plant one illicit face/relay caller and require a named red.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/orient-cold-card-and-public-descent`>>
+
+!! ->⏿ Orient — cold card and public descent
+
+''LEAD:'' One house KEL grammar reuses `persona-kel.ts` sequence, predecessor, digest and strict fold, `handle-kel.ts` next-key reveal, and `cofound.ts:420-430` cold-card digest read-back; place authority alone changes. Inception commits next digest and seats signer key; rotation names stable inception AID, sequence, prior event digest, revealed committed key, fresh next digest and replacement signer key. The ''revealed cold key'' signs the rotation; online signer signs duties only. No interaction event. Fresh next key rests on a ''replacement physical card'', written and typed back before the rotation publishes, as `seal-ceremony.ts:270-309,331-342` rehearses. `cofound.ts:392-430` measures fingerprint and card-opening reads, but supplies no durable atomic card/event transaction. Under one custody claim: verify old card/head; mint, record and read back fresh card; durably stage signed event; publish event/head; retire old signer. A failed card write leaves head unchanged. A failed event write leaves an orphan replacement card and permits the same signed event to retry. Restart reconciles staged bytes against the last verified head, never invents a successor; an event without its replacement card signals a torn ceremony and refuses another rotation. Re-found follows card plus signer loss (road `:207`). TPM-bound signer where offered; owner-only file otherwise.
+
+''Public carriage.'' `deterministic-doc.ts:60-62` names the Nexus ''carriage board''; `place-floor-pin.ts:115-151` already files place pins there. Add KEL inception and rotations as public place records keyed by inception AID, replicate with the board, and include verified descent in `carry-bundle.ts:1-18,61-69,82-160` for the offline herm. The floor porch `floor-porch.ts:2-17` carries W26 releases, not this KEL; it may convey bytes only after its own contract changes. A reader pins inception, checks every event digest, sequence, predecessor, commitment reveal and cold signature to the claimed head, then verifies the head's signer and duty. Missing links, rollback and valid forks refuse advancement; last accepted head remains an as-of-sync claim. W14–W16 separately own the floor pin claim and its filing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decide-act-ordered-kit`>>
+
+!! ->◇ Decide / ->▶ Act — ordered kit
+
+# ''Genesis/card red:'' `mesh/vessel-kel.ts`, `node-vessel-identity.ts`, `commands/init.ts`, `found-hearth.ts`, cofound ceremony, CLI `found.ts`, herm stand path: unarmed genesis, wrong card, reused commitment, mismatched signer and torn landing refuse; current inception supplies control, fresh node/hearth/cofound/herm genesis plus restart supply positives. `runFoundHearth` calls `runInit` (`found-hearth.ts:194-200`); `lares herm` only stands an already founded root (`lares-cli/src/commands/herm.ts:2-6,56-59`). Move fixture helpers `stand-founded-island.ts`, `found-route.ts`, mesh `vessel-kel.test.ts`, node `node-vessel-identity-sealed.test.ts`, `found-hearth.test.ts`, `cofound-ceremony.test.ts`, herm and Keyhive `foundThePlace` fixtures through the real founding door; prohibit hand-built KEL fixtures.
+# ''Reader/carriage red:'' KEL fold, board record, node/browser pin readers, carry bundle: gap/fork/rollback/forged board row refuse; present inception-only reader supplies control, rotated head and offline herm catch-up supply positives. K17-R owns lease law, realm boards and frontier verifier; this reader offers verified place head without editing those policies.
+# ''Signer/census red:'' `place-signer.ts`, all five makers/verifiers, `place-card.ts`, `leaf-identity.ts`, `open-node-vessel.ts`, relay, daemon auth and ask paths: sixth domain, embedded-domain replay, old image/key, and illicit seed reach refuse; existing exact heads supply controls, five framed signatures and a face atom/relay positive prove the split. W28 owns `gate-exchange.ts`, `face-gate*`, `face-dial.ts`; hand its owner the gate-place-finish verifier-byte change. W26 owns release/porch. X0 readiness red requires fresh genesis, five signer/verifier framed pairs, old CID refusal and mixed archive refusal (road `:544`); X0 coordinates the bake and builds none of these slices.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/hooko-aftermath`>>
+
+!! ->↺ Hoʻoko / aftermath
+
+No operator question survives the road and house laws. Read-only inspection; no repo writes or suites.
+
+&lt;&lt;~ oracle "↯13 ✲ ⚂(3) ⁂:🜃⌗◈">>
+&lt;&lt;~ set hud="yield" drift-ward="the place-card replacement must pass the gate's real presentation verifier before retiring the old card · ↻ L-Prime" aperture="16/arc -> 18/theme" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/sol:agent@lararium/kit.edges.handed" -> to="?">>
+
+WORDS=960
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZimVW9WhfDXOf0HhRo8d_U-WlEg-pF5tBOZ3dNBHmnE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

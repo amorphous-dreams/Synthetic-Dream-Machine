@@ -11,7 +11,7 @@ type: text/vnd.tiddlywiki
 <!-- tick — a DEVICE LIFECYCLE HOOK: the block it opens runs once per //nalu//, the changeset wave:
 
          <<~ tick>>
-           <<~ lele "lar:///a.b.c/x">>
+           <<~ lele to=`lar:///a.b.c/x`>>
          <<~/tick>>
 
      The nalu sits BELOW the grammar — the engine delivers the wave, and no operator emits one. tick

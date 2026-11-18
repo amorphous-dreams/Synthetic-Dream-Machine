@@ -1,0 +1,135 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/glass-mirror/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/glass-mirror/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/glass-mirror/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/glass-mirror/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/glass-mirror/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/glass-mirror/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/glass-mirror-lane-out-2026-11-11`>>
+
+! Glass mirror lane — out (Glass-Wright: Lares (Tasked Spirit), 2026-11-11)
+
+Branch `feature/green-jello-dinosaur-5--glass`, pushed. One commit on span head 725c31b72:
+`00c7af858 lar:///mirror.wears.stock/glass-theme — …`
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/scout-cites-verified`>>
+
+!! Scout cites, verified
+* weld.mjs:75-92 drove the hidden `#projection` (dispatchEvent on rid nodes) — confirmed.
+* glass-mirror.ts:25-43 census — confirmed; themes already slipped past it (`plugin-type !== "plugin"` passed whole, saver/syncadaptor check skipped too).
+* lar-story.ts:13-16,52-58 opened the story inside engine boot — confirmed. Extra find: the WORKER's GettingStarted came from TW5 core `startup/story.js`, which carries no platform gate and runs in the island runtime (the scout's "not traced" item).
+* `$:/palette` pointer/carrier title mismatch and memetic-wikitext type — confirmed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/built`>>
+
+!! Built (red first, each with a control)
+# ''Weld reads the mirror'' — `tools/browser-weld/mirror-read.mjs` (pure), `weld.mjs` M1–M5 after W4; W2–W4 stay as the floor's return-leg vectors, W5 stays named.
+#* M1 waits on `settleOf` (its source runs in the page too): `full`, or `skinny` + `data-lar-mirror-why`; a floor fails.
+#* M2 styled: `.tc-sidebar-scrollable` rule, sidebar computed `fixed`, toolbar svg ≤ 48px, tiddler-frame background = palette `tiddler-background`.
+#* M3 content: first story title = first of the wiki's `$:/DefaultTiddlers`, ≠ GettingStarted.
+#* M4 label: `#projection-wiki` = vessel card `wiki` row.
+#* M5: new tiddler through Playwright locator clicks + keyboard in `#mirror`, read back from the worker's floor render.
+#* A red whose source `genesis/unbaked.json` declares reads as a ''gap naming the row''; once the bake deletes the file, the same reading FAILS.
+# ''Theme by CID'' — `packages/lararium-tw5/scripts/build-tw5-themes.ts` (first step of the tw5 `build`; deterministic, sorted shadows) → `plugins/tiddlywiki-vanilla.json`, `plugins/tiddlywiki-snowwhite.json`. Genesis class `stock` (`isStockTw5PluginTitle` in mesh genesis-doc), folded into no region. `bootSetPluginCids` already takes every JSON blob, so worker and mirror read the same blobs.
+# ''Palette'' — gruvbox-dark/-light carry a `#/palette` slot (`application/x-tiddler-dictionary`, `$:/tags/Palette`, name, color-scheme). The boot shadows' `$:/palette` = `lar:///ha.ka.ba/lararium/tw5/palette/gruvbox-dark#/palette`.
+# ''Default story'' — `packages/lararium-tw5/src/default-story.ts` `openDefaultStory` (one implementation).
+#* Mirror: `openMirror().openStory()` after the greeting, before paint (stand.ts).
+#* Island: after `seedDrained` with `keepLanded` (sovereign-kernel.ts); the island runtime disables TW5 `story` (tw5-host-bridge.ts).
+#* lar-story binds doors only and reads no hash; tm-home in both modules calls the door.
+#* House plugin shadow `tiddlers/default-tiddlers.tid`: `[all[tiddlers]tag[$:/tags/lares/Landing]] ~[[GettingStarted]]`. New canon `bags/lares/ha.ka.ba/lares/docs/welcome.mem` tagged Landing.
+# ''Pane'' — `index.html` `#projection-wiki` beside the summon button; `src/pane-label.ts`, wired in `main.ts`; `page-mirror.ts` sets `data-lar-mirror-why`, plus a read-only `larMirrorReading` for the weld.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/page-paths-touched`>>
+
+!! Page paths touched (for the operator's eye)
+* `packages/lararium-web/index.html` — heading reads `projection — <wiki>` then the <code>☰ &#64;daemon</code> button.
+* `#mirror`: new attribute `data-lar-mirror-why`.
+* The mirror itself goes stock-styled with gruvbox ''after the bake and the floor cut'' (below).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tests-proved-alone`>>
+
+!! Tests proved alone
+* ''tw5:'' tree-boot-set (new; node + browser-worker paths; story red proven by reverting the bridge line), glass-census (new), genesis-boot, kernel-teardown-drain (its fake engine gained a wiki), browser-host-bridge, module-gate, kernel-*, island-adaptor, island-recipe, lar-root-services, confirm-road, interaction-goldens.blocks, plugin-artifact-parity, standalone-plugin-parity, bundle-tracks-source, grammar-in-a-wiki, mirror-browser-mode-control, daemon-behavior-seed-order, daemon-hand-boundary.
+* ''mesh:'' genesis-region-cid (+ stock test), cas-plugin-resolution.
+* ''node:'' genesis-actor-seed, node-plugin-resolution, working-attach-real-wiki, worker-entry-census, daemon-reopen-weld.
+* ''web (chromium):''
+** new: glass-theme, pane-label;
+** extended: glass-page-mirror (why + reading);
+** unchanged and green: glass-mirror, glass-boot, glass-promote, glass-stepdown, glass-topology, glass-walk, mirror-plugin-gate, mirror-savers, mirror-browser-mode, interaction-goldens(-offers).
+* ''tools:'' browser-weld-mirror (new), browser-weld-page-wait, browser-weld-witness (fakes).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gates`>>
+
+!! Gates
+* Green: `pnpm -r build` (rebuild leaves no tracked diff), `pnpm -r typecheck`, `typecheck:tests` (no ceiling rose), and the tw5 scripts tsconfig.
+* `witness-all --fast`: everything green except `ahu-pair-parity`, which needs the tree-sitter wasm build (host env; the lane leaves the grammar alone).
+* `evergreen-boundary` read red on the weld's new `Date.now()`; cured with `randomUUID`, so clock reads 53/53.
+* bcc 808 ok · meme-coordinates · genesis-parity: 4 declared, 0 red.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/genesis-unbaked-json-rows`>>
+
+!! genesis/unbaked.json rows (the controller bakes; nothing baked)
+* `plugins/lararium-boot-shadows.json` — the palette pointer.
+* `plugins/lares-memetic-wikitext.json` — the landing shadow, lar-story, default-story, the census.
+* `plugins/tiddlywiki-snowwhite.json` — new stock blob.
+* `plugins/tiddlywiki-vanilla.json` — new stock blob.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-decided`>>
+
+!! Forks decided (moʻolelo, overrulable)
+* ''Stock class by namespace.'' A packed plugin titled under `$:/themes/tiddlywiki/`, `$:/plugins/tiddlywiki/` or `$:/languages/` reads `stock` and folds into no epoch. Why: it rides the core's TW5 revision, so a TW5 bump moves the engine CID beside it. The alternative, a per-title list, enumerates.
+* ''Gate by capability, not CID.'' Stock themes pass because they carry no JavaScript module, not because their CID matches. This plumbs nothing new through `mirrorInputs`, and a third-party theme carrying a module now waits on the seal. The gate also refuses a theme carrying a saver; before, any non-`plugin` type slipped through.
+* ''Palette as a typed slot.'' The dictionary rides `#/palette` (title `…/gruvbox-dark#/palette`). A dictionary-typed carrier root would have stopped projecting to disk (`isCarrierType`).
+* ''The wiki owns its landing by tag.'' No carrier can take the title `$:/DefaultTiddlers`, so a house shadow reads `$:/tags/lares/Landing` records from the wiki's own bags and falls back to GettingStarted. A wiki that authors its own `$:/DefaultTiddlers` overrides the shadow.
+* ''The island writes its first story as a hand.'' After `seedDrained`, through the bridge, keeping any landed personal StoryList. This adds one StoryList save per wiki on first boot, the same class of write as every navigation; e2e stays unproven locally.
+* ''W2–W4 stay as floor vectors.'' M1–M5 read the mirror instead of rewriting them.
+* ''M5 fails on a refused write.'' A faceless floor wiki whose port refuses writes reads red, never a gap.
+* ''Row 17 closes only its default-story half.'' The StartupAction re-run and the `.mem` registration stay owed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+
+!! Owed
+* ''The bake and the floor cut.'' CI's held-out weld reads M2/M3 as declared gaps until both land:
+** controller bake: genesis CAS blobs for the four rows;
+** floor cut: welcome + palette slot reach a browser through `floor-lares`/`floor-lararium`.
+* G3 doors (modal, notify, clipboard, download, route), M4 goldens 1–13 at full against stock, and D6 SSR all stay owed.
+* The mirror's page background. `body.tc-body` never matches inside the shadow root, so the ground shows the host page beneath the gruvbox frames.
+* The e2e/weld prove the first-boot StoryList hand and M5 only in CI.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mZbl1UpuofZICpd_QSXckPmrTWw4GVvSqR6ltMRc_nE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

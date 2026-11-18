@@ -10,15 +10,32 @@
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { VesselKey } from "@lararium/mesh";
+import type { TreeKey } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
-import { makeCustodyHolder, type CustodyHolder } from "../src/custody-holder.js";
+import { makeCustodyHolder, seatFaceAutoFounder, type CustodyHolder } from "../src/custody-holder.js";
 import { seatCustody, unseatCustody } from "../src/custody-seat.js";
+import { seatFaceRoute } from "../src/face-route.js";
 import { vesselCustodyHomes, type CustodyHomes } from "../src/vault-carriers.js";
+import { setMountedFace } from "../src/node-vessel-identity.js";
+import { parkWardTicket, wardCredential, type WardCredential } from "../src/ward-credential.js";
 
 /** The synthetic route every fixture custody founds under. */
 export const FIXTURE_PASSPHRASE = "fixture-custody-passphrase";
+
+/**
+ * The ward route of a face founded under this fixture (seat-harness#/the-ward): a fresh token per act, as a person types one per act.
+ * `fixtureWardRef(verb, args)` parks it for one store verb's act, bound to that verb and those arguments, as the CLI's ward door does.
+ */
+/** The routes a suite's faces are founded under: this fixture's synthetic one, and `found-route`'s test founding route. */
+const SUITE_ROUTES = [FIXTURE_PASSPHRASE, "test-founding-passphrase"] as const;
+export const fixtureWard = (passphrase?: string): WardCredential =>
+  wardCredential((passphrase === undefined ? [...SUITE_ROUTES] : [passphrase]).map((p) => ({ kind: "passphrase" as const, passphrase: p })));
+export const fixtureWardRef = (verb: string, args: Readonly<Record<string, unknown>>, passphrase?: string): string => parkWardTicket(fixtureWard(passphrase), { verb, args });
+
+// A face founded under this fixture asks its own route; the fixture answers with the same synthetic passphrase.
+seatFaceRoute(async () => [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }]);
+seatFaceAutoFounder(() => [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }]);
 
 export interface SeatedScratchCustody {
   readonly root:   string;
@@ -26,7 +43,7 @@ export interface SeatedScratchCustody {
   readonly io:     FsCustodyIo;
   readonly holder: CustodyHolder;
   /** A copy of the minted vessel key, for a test that builds a second holder over the same tree. */
-  readonly vk:     VesselKey;
+  readonly treeKey:     TreeKey;
   /** Lock, clear the seat, restore `LAR_ROOT`, remove the root. */
   drop(): Promise<void>;
 }
@@ -41,10 +58,10 @@ export async function seatScratchCustody(label = "seat"): Promise<SeatedScratchC
   const io = new FsCustodyIo(homes);
   const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
   const holder = makeCustodyHolder({ io, homes });
-  await holder.adopt(founded.vk);
+  await holder.adopt(founded.treeKey);
   seatCustody(holder);
   return {
-    root, homes, io, holder, vk: founded.vk,
+    root, homes, io, holder, treeKey: founded.treeKey,
     async drop() {
       await holder.lock();
       unseatCustody(holder);
@@ -52,6 +69,14 @@ export async function seatScratchCustody(label = "seat"): Promise<SeatedScratchC
       rmSync(root, { recursive: true, force: true });
     },
   };
+}
+
+/** A scratch custody with its founding face standing unlocked for hosting's first write. */
+export async function seatHostingCustody(label = "hosting"): Promise<SeatedScratchCustody> {
+  const c = await seatScratchCustody(label);
+  setMountedFace(undefined);
+  await c.holder.foundFace({ ordinal: 0, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
+  return { ...c, async drop() { setMountedFace(undefined); await c.drop(); } };
 }
 
 /**
@@ -62,20 +87,20 @@ export async function seatScratchCustody(label = "seat"): Promise<SeatedScratchC
  * second has read, and the second then lawfully stands as the next act. A vector that means to prove "the
  * overtaken act refuses" must hold that overlap itself.
  *
- * This gate wraps the seated holder's `updateRow` for the rows `match` names. The first act to ARRIVE at its seal
+ * This gate wraps the seated holder's `updateRecord` for the rows `match` names. The first act to ARRIVE at its seal
  * waits there until the second has arrived too: both have then finished their reads. The first then seals, and
  * the second seals only once the first has settled. No clock, no sleep, no retry: the two arrivals shake hands.
  * `release()` restores the holder. Which of the two arrives first stays the machine's own choice, so a vector
  * reads WHO won off the outcome and never off the order it started them in.
  */
 export function holdSealsUntilBothArrive(holder: CustodyHolder, match: RegExp): { release(): void } {
-  const real = holder.updateRow.bind(holder);
+  const real = holder.updateRecord.bind(holder);
   let arrived = 0;
   let secondArrived!: () => void;
   const second = new Promise<void>((resolve) => { secondArrived = resolve; });
   let firstSettled!: () => void;
   const first = new Promise<void>((resolve) => { firstSettled = resolve; });
-  (holder as { updateRow: CustodyHolder["updateRow"] }).updateRow = (async (home, file, decide) => {
+  (holder as { updateRecord: CustodyHolder["updateRecord"] }).updateRecord = (async (home, file, decide) => {
     if (!match.test(file)) return real(home, file, decide);
     arrived += 1;
     if (arrived === 1) {
@@ -87,6 +112,6 @@ export function holdSealsUntilBothArrive(holder: CustodyHolder, match: RegExp): 
       await first;
     }
     return real(home, file, decide);
-  }) as CustodyHolder["updateRow"];
-  return { release() { (holder as { updateRow: CustodyHolder["updateRow"] }).updateRow = real as CustodyHolder["updateRow"]; } };
+  }) as CustodyHolder["updateRecord"];
+  return { release() { (holder as { updateRecord: CustodyHolder["updateRecord"] }).updateRecord = real as CustodyHolder["updateRecord"]; } };
 }

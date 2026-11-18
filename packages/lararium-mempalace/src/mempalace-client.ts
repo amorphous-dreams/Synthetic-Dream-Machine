@@ -282,6 +282,7 @@ export class MempalaceClient {
   private request(method: string, params: unknown): Promise<unknown> {
     const id = this.nextId++;
     return new Promise<unknown>((resolve, reject) => {
+      // LIVENESS: the holder can stay alive without answering a request.
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(this.withStderr(new Error(`mempalace call '${method}' timed out after ${this.timeoutMs}ms`)));

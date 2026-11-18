@@ -30,6 +30,9 @@
  * running peer reads the new member at BOUNDED STALENESS, never instantly. This headless proof folds each
  * hearth's board directly off its own store, so it proves the CONTRACT, not the wire's refold latency.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -57,7 +60,6 @@ import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.j
 import { nexusLeafFor } from "../src/nexus-leaf.js";
 import { materializeSharedLarDoc, carriageDocUrl, presentationFromBoardDoc } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
-import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
 
@@ -103,7 +105,7 @@ interface Hearth {
 async function standHearth(root: string, threshold = 2): Promise<Hearth> {
   return asRoot(root, async () => {
     const dir = larDataDir();
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const nexusPubkey = await loadVesselVerifyingKey();
     const { keys } = await seatChairs([0, 1, 2], { family: root });           // each hearth's chairs hold keys of their own
@@ -145,11 +147,7 @@ async function standGate(h: Hearth) {
     const board = await open(carriageDocUrl(h.island), "board:carriage-contracts");
     const { presentation: presented } = await presentationFromBoardDoc(board, nym, foundingRoster(readNexusDoc(h.bags)));
     if (!presented) throw new Error(`no admit for ${nym.slice(0, 12)}… on ${h.island.slice(0, 12)}…`);
-    const nonce = "56".repeat(32);
-    const gatePubKey = h.nexusPubkey;
-    const vesselKey = "cd".repeat(32);
-    const leafProof = await socketProof(socketUnderTest(vesselKey, { nonce, gatePubKey }), { kind: "admit", admit: presented.admit, lineage: [] }, ed25519SignerFromSeed(leafSeed));
-    await holder.present(peerId, { presentedAdmit: { ...presented, leafProof }, nonce, gatePubKey, vesselKey });
+    await holder.present(peerId, { presentedAdmit: { admit: presented.admit, lineage: presented.lineage }, faceKey: await ed.getPublicKeyAsync(leafSeed).then(hex) });
   };
   return { holder, present };
 }

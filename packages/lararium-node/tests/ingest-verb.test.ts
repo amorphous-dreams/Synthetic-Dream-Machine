@@ -21,7 +21,11 @@ import type { ChangeOrigin, LarTiddlerRecord, VerbContext, Verb, CapabilityAcces
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors } from "../../lararium-tw5/src/action-handler.js";
+import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import { memeticWikitextDeserializer, expandMemeRefs } from "../../lararium-tw5/src/deserializer.js";
+
+/** `bags/lares` is system canon: the suite stands as a Kahu hand (a counted admission AND a sentinel membership). */
+const KAHU = await kahuHand();
 
 const REPO_ROOT = new URL("../../..", import.meta.url).pathname;
 const BOOT = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
@@ -98,7 +102,7 @@ describe("INGEST — the gate composed with replace-by-group", () => {
     expect(seeded.length).toBeGreaterThan(10);
 
     // Edit: change a heading AND remove the #classifier-channel ahu block whole.
-    const blockStart = source.indexOf("<<~ ahu #/classifier-channel>>");
+    const blockStart = source.indexOf("<<~ ahu slot=`#/classifier-channel`>>");
     const blockEnd   = source.indexOf("<<~/ahu>>", blockStart) + "<<~/ahu>>".length;
     expect(blockStart).toBeGreaterThan(0);
     const edited = (source.slice(0, blockStart) + source.slice(blockEnd))
@@ -107,7 +111,7 @@ describe("INGEST — the gate composed with replace-by-group", () => {
     expect(edited).toContain("(ingested)"); // guard: heading drift must fail loud, not collapse to noop
 
     const table = new VerbTable();
-    registerActionReactors(table, { composite });
+    registerActionReactors(table, { kahuReach: KAHU, composite });
     const handler = table.get("INGEST")!;
     const args = ingestArgs(edited, sha(canonical));
     const result = await handler(args, ctx(composite, args)) as Record<string, unknown>;
@@ -131,7 +135,7 @@ describe("INGEST — the gate composed with replace-by-group", () => {
     const before = await liveGroup(composite);
 
     const table = new VerbTable();
-    registerActionReactors(table, { composite });
+    registerActionReactors(table, { kahuReach: KAHU, composite });
     const args = ingestArgs(source, sha(source));
     const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
 
@@ -149,7 +153,7 @@ describe("INGEST — the gate composed with replace-by-group", () => {
     const edited = source.replace(ENTRY_H1, "# Entry - DISK EDIT");
     expect(edited).not.toBe(source);
     const table = new VerbTable();
-    registerActionReactors(table, { composite });
+    registerActionReactors(table, { kahuReach: KAHU, composite });
     // syncedHash names a THIRD state: disk moved AND the merge seat moved.
     const args = ingestArgs(edited, sha("some-older-projection"));
     const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
@@ -166,9 +170,9 @@ describe("INGEST — the gate composed with replace-by-group", () => {
 
     // The known refusal class: an unclosed fence that swallows the closer
     // (the shore's degraded-carrier surfacing, found live 2026-06-11).
-    const broken = source.replace("<<^ code=\"&#x0003;\">>", "```js\nunclosed fence\n<<^ code=\"&#x0003;\">>");
+    const broken = source.replace("<<^ code=`&#x0003;`", "```js\nunclosed fence\n<<^ code=`&#x0003;`");
     const table = new VerbTable();
-    registerActionReactors(table, { composite });
+    registerActionReactors(table, { kahuReach: KAHU, composite });
     const args = ingestArgs(broken, sha(canonical));
     const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
 

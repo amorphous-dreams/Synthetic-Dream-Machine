@@ -88,7 +88,7 @@ def _open(root: str, plane: str):
         return None, "absent"
     try:
         if plane == "form":
-            from form_encoder import FormPalaceStore
+            from form_store import FormPalaceStore
             return FormPalaceStore(d)._col, None       # noqa: SLF001 — the ceiling reads the raw plane
         from mempalace.palace import get_collection
         return get_collection(d, create=False, _skip_identity_check=True), None

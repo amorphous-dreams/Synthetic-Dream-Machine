@@ -11,7 +11,7 @@
 /** EX_TEMPFAIL — a serde-skew boot is recoverable, distinct from a generic fatal (1). */
 export const SERDE_SKEW_EXIT = 75;
 
-/** The identity-safe cure for stored bytes a dependency bump can no longer deserialize. */
+/** The identity-safe cure for stored bytes the running dependency cannot deserialize. */
 export const SERDE_SKEW_CURE = "lares vessel rite rebuild";
 
 /**

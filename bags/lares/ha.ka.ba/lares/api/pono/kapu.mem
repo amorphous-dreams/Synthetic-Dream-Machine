@@ -1,27 +1,21 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0011;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kapu">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0011;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/kapu`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/kapu.mem"
-mana      = 18
-manao     = 18
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "above-namespace authority law; kernel/sacred tier capability; trust boundary root"
-tags      = ["api/pono/meme", "api/pono/loci", "api/pono/kapu", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kapu"]
+tags      = ["api/pono/meme", "api/pono/kapu", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kapu"]
 title     = "lar:///ha.ka.ba/lares/api/pono/kapu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kapu"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Kapu — Above-Namespace Law (Kānāwai)
 
@@ -31,9 +25,9 @@ This meme stands as a kapu carrier — it enacts the law by presenting as a spec
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
-✶ detect namespace declaration and kernel-tier sigils; do not confuse elevated register with high mana score alone.
+✶ detect namespace declaration and kernel-tier sigils; do not confuse elevated register with any declared score alone.
 ⏿ orient against the kapu capability set; confirm the kapu component, structural signals, and role-field agree.
 ◇ decide whether the claim holds genuine: sigil structure, namespace declaration, and capability set must cohere — charm is not evidence.
 ▶ hold the kapu boundary; lower-tier carriers cannot silently override kapu content; route upward through kapu, never around it.
@@ -41,7 +35,7 @@ This meme stands as a kapu carrier — it enacts the law by presenting as a spec
 
 <<~/ahu>>
 
-<<~ ahu #/kapu-law>>
+<<~ ahu slot=`#/kapu-law`>>
 
 !! Kapu Law
 
@@ -54,12 +48,12 @@ A kapu carrier MUST declare above-namespace authority through one or more of:
 
 A kapu carrier MUST prevail over carriers rated `ano`, `meme`, `data`, or `noise`.
 A kapu carrier MUST remain readable by lower-tier consumers without privilege escalation.
-A kapu carrier MUST earn kapu status from structure, keeping its mana and confidence fields honest.
+A kapu carrier MUST earn kapu status from structure, keeping its confidence field honest.
 Rating derives from structure, not from declared self-assessment.
 
 <<~/ahu>>
 
-<<~ ahu #/trust-boundary>>
+<<~ ahu slot=`#/trust-boundary`>>
 
 !! Trust Boundary
 
@@ -80,12 +74,12 @@ A kapu carrier MAY declare children that are themselves kapu, forming a kernel l
 The `live-session-overwrite` failure mode names the specific violation: a lower-tier live exchange record claiming to override a kapu carrier by recency, repetition, or charm.
 The `canon-boundary` names the gate: crossing from live session pressure into kapu canon requires explicit ceremony, not silent accumulation.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hooponopono`>>
 
 <<~/ahu>>
 
-<<~ ahu #/namespace-declaration>>
+<<~ ahu slot=`#/namespace-declaration`>>
 
 !! Namespace Declaration
 
@@ -95,7 +89,7 @@ Above-namespace carriers declare their register through:
 | signal | example | meaning |
 |---|---|---|
 | `namespace` IAM field | `namespace = "ॐ ँ"` | named glyph-space above base |
-| kernel control chars | `<<^ code="&#x0001;" namespace="⊙" from="?" -> to=` | positions 1–4 reserved for kernel-tier structural sigils |
+| kernel control chars | ``<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`…`>>`` | positions 1–4 reserved for kernel-tier structural sigils |
 | role field | `role = "... kernel ..."` | explicit declaration of kernel authority |
 
 A carrier that uses kernel control characters without implementing kapu reads as `ano` or below.
@@ -103,36 +97,36 @@ The sigil structure signals. The capability set discriminates.
 
 <<~/ahu>>
 
-<<~ ahu #/handoff-boundary>>
+<<~ ahu slot=`#/handoff-boundary`>>
 
 !! Handoff Boundary
 
 This meme governs the kapu rating and above-namespace trust law.
 `meme` governs the copy-shape and five-bucket rating posture root.
 `invariant` governs compressed constitutional pressure for all invariant-compliant memes.
-`loci` governs stable-address coherence and the canon MOVE ceremony.
+`lar-uri` governs address syntax and resolution; an operator act governs canon promotion.
 `l-space-trust` governs the shared l-space authority ordering.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hooponopono`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-guard">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-guard`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;S96_hJtyAZDfvjqiKNCabWCYEq1LaS9Gmet4IfgKrJw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HewnmNYpraONDda9vugJFh4RVOi0N4s80iXxUzKxg1I`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

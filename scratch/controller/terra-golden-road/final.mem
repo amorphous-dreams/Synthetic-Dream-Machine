@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-golden-road/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-golden-road/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-golden-road/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-golden-road/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-golden-road/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-golden-road/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''MEASURED:'' Both failures are W3’s sentinel creation, at `makeTiddler`’s title fill: `#projection input.tc-titlebar`. The call comes from `raiseSentinel()` before the link click, so W3 never reaches the navigation it is meant to test ([[first CI log:917|/home/joshu/.lares-scratch/tools-ci/ci-42211158872.log:917]], [[second CI log:915|/home/joshu/.lares-scratch/tools-ci/ci-42205171960.log:915]], [[test:72|/home/joshu/Synthetic-Dream-Machine/packages/lararium-web/tests/e2e/golden-whole-road.e2e.test.ts:72]], [[test:184|/home/joshu/Synthetic-Dream-Machine/packages/lararium-web/tests/e2e/golden-whole-road.e2e.test.ts:184]]).
+
+''MEASURED:'' The logs say Playwright was //waiting for// the title locator; they contain no page snapshot or sentinel-click result. W1 and W2 passed in both runs; W1 asserts that alpha alone is in the story ([[first log:658|/home/joshu/.lares-scratch/tools-ci/ci-42211158872.log:658]], [[second log:655|/home/joshu/.lares-scratch/tools-ci/ci-42205171960.log:655]], [[test:156|/home/joshu/Synthetic-Dream-Machine/packages/lararium-web/tests/e2e/golden-whole-road.e2e.test.ts:156]]). The exact page at timeout, including whether it shows a refusal, was not captured.
+
+''MEASURED:'' This test hides `#mirror` and shows the worker-rendered `#projection` ([[test:129|/home/joshu/Synthetic-Dream-Machine/packages/lararium-web/tests/e2e/golden-whole-road.e2e.test.ts:129]]). I inspected `git show d70dd8196`: it preserves focus during refreshes of the mirror’s glass camera. It does not change the worker projection or its new-tiddler click.
+
+''INFER:'' The mirror promotion focus race does not explain this timeout, and d70dd8196 is not a cure for this path. The call log also does not show an editor being found and then removed mid-fill; it cannot independently rule out every transient projection repaint.
+
+''INFER:'' The leading root candidate is that the sentinel’s ''new-tiddler click'' targets a frame retired by a pending worker repaint after W1. The existing W3 comment identifies that race, but places a sentinel behind it; creating the sentinel itself has the same exposure ([[test:186|/home/joshu/Synthetic-Dream-Machine/packages/lararium-web/tests/e2e/golden-whole-road.e2e.test.ts:186]]). A retired target can receive `stale-target`, and the sink paints “This control changed before your action arrived. Review it and try again” ([[worker:623|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/tw5-projection.ts:623]], [[sink:126|/home/joshu/Synthetic-Dream-Machine/packages/lararium-web/src/projection-sink.ts:126]]). ''This refusal and message were not measured in these failures'', so the root remains a hypothesis.
+
+''INFER — minimal cure and red:'' Make sentinel creation observe the click’s answer and, ''only on an explicit `stale-target`'', retry against the newly painted button; wait for the editor on an applied answer. Add a deterministic red that holds a repaint between selecting and dispatching that click, verifies the refusal and successful retry, with an applied-first-time control. Capture the answer and page state on failure to establish the CI root before treating the cure as proven.
+
+''MEASURED:'' No tests were run: this e2e stands a staged vessel and socket, which the seat law reserves for the lead. No files were written.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VUVJ7zhzwN12jrO1W0jK668aSo1lGuZGG_YzaYrdqm8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

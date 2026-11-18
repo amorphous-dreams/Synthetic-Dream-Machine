@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-005/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-005/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-005/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-005/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-005/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-005/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->▶ The controller’s reported mesh run reached the epoch-free assertion at line 173 after the three controls passed. The test source confirms that order; the lane contains no separate raw run log.
+
+->↺ The mesh red remains uncommitted pending the controller’s blind Opus custody review. The prior commit receipt confirms head `1e82c0d472ac9a93bd3d937a49ae9ed457a5cb2b`. I updated [[state.json|/home/joshu/.lares-scratch/lease-end/state.json]] and wrote the review handoff to [[out.md|/home/joshu/.lares-scratch/lease-end/steps/step-005/out.md]].
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚁(2) ⁂:🜁◈`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`inspect the controller’s blind review before requesting the mesh red commit · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://lares:agent@hearth/review.handoff.waits` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;V8B2rq8rnA5bOXXsTopp_r8-d5M6t8DVBjfXgXRUXM0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

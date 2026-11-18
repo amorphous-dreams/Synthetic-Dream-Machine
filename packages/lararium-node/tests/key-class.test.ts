@@ -4,16 +4,16 @@
  * The vocabulary stands closed in mesh (`device-minted` · `seed` · `cloud-synced` · `relation`). The custody status
  * reads each standing file ONCE and carries three facts on that one line, and none answers for another:
  *   `keyClass` — what kind of secret the file holds, off its row of the carrier table;
- *   `custody`  — where the vessel key holds it (`floor` · `floor-plain` · `hot` · `cold`), off the same row;
+ *   `custody`  — which custody key holds it (`floor` · `floor-plain` · `hot` · `cold`), off the same row;
  *   `reading`  — what the bytes standing there read as.
- * Three rows read `seed` and all three rest `cold`; a sweep keyed on the class alone could not tell a sealed root
- * from a bare one, so the reading rides beside the class and a hot or cold row that reads anything but `sealed`
+ * Three rows read `seed` and their face rows rest `face-cold`; a sweep keyed on the class alone could not tell a sealed root
+ * from a bare one, so the reading rides beside the class and a sealed row that reads anything but `sealed`
  * reads as a fault.
  */
 import { describe, test, expect } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { isKeyClass } from "@lararium/mesh";
 import { carrierTable, type CustodyHomes } from "../src/vault-carriers.js";
 import { FsCustodyIo } from "../src/custody-io.js";
@@ -27,26 +27,25 @@ function scratch(): { homes: CustodyHomes; drop: () => void } {
 }
 
 async function rowsOf(homes: CustodyHomes, files: Record<string, string | Uint8Array>): Promise<Map<string, CustodyStatusRow>> {
-  for (const [name, body] of Object.entries(files)) writeFileSync(join(homes.identity, name), body);
+  for (const [name, body] of Object.entries(files)) { mkdirSync(dirname(join(homes.identity, name)), { recursive: true }); writeFileSync(join(homes.identity, name), body); }
   const status = await custodyStatus({ io: new FsCustodyIo(homes), homes });
   return new Map(status.rows.map((r) => [r.name, r]));
 }
 
 describe("custody ⊥ secret-kind — one reading names both axes", () => {
   const SOWN = {
-    ".vessel-key-joshua.json": "{}", "keyhive-archive.bin": "x", "veil-archive-h0.bin": "x",
-    ".persona-group-root-joshua-h0.json": "{}", "recovery-device-share-h0.bin": "x",
-    ".vessel-card-joshua.json": "{}",
+    ".vessel-key.json": "{}", [`faces/${"ab".repeat(16)}/veil-archive-g${"a".repeat(64)}.bin`]: "x",
+    [`faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: "{}", [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x",
+    [`faces/${"ab".repeat(16)}/ward-slots.bin`]: "x",
   };
 
-  test("each key names its class and its custody off the one carrier table; a card carries no key", async () => {
+  test("each key names its class and its custody off the one carrier table", async () => {
     const v = scratch();
     try {
       const rows = await rowsOf(v.homes, SOWN);
       expect(Object.fromEntries([...rows].map(([name, r]) => [name, `${r.keyClass ?? "-"} ${r.custody}`]))).toEqual({
-        "vessel-key": "device-minted floor", "vessel-card": "- floor-plain",
-        "keyhive-archive": "device-minted hot", "veil-archive-h0": "device-minted hot",
-        "persona-root-h0": "seed cold", "recovery-device-share-h0": "seed cold",
+        "vessel-key": "device-minted floor", [`veil-archive-g${"a".repeat(64)}`]: "device-minted face-hot",
+        "persona-root-h0": "seed ward-cold", "recovery-device-share-h0": "seed face-cold", "ward-slots": "- floor",
       });
       for (const r of rows.values()) expect(r.keyClass === null || isKeyClass(r.keyClass), r.name).toBe(true);
       expect([...rows.values()].some((r) => r.keyClass === "cloud-synced")).toBe(false);
@@ -58,22 +57,22 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
     try {
       const io = new FsCustodyIo(v.homes);
       await foundCustody({ io, homes: v.homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "census-test-route" }] }] });
-      const rows = await rowsOf(v.homes, { ".persona-group-root-joshua-h0.json": "{}", "recovery-device-share-h0.bin": "x" });
-      expect(rows.get("custody-root")).toMatchObject({ keyClass: "device-minted", custody: "hot", reading: "sealed", fault: false });
-      expect(rows.get("persona-root-h0")).toMatchObject({ keyClass: "seed", custody: "cold", reading: "bare", fault: true });
-      expect(rows.get("recovery-device-share-h0")).toMatchObject({ keyClass: "seed", custody: "cold", reading: "bare", fault: true });
+      const rows = await rowsOf(v.homes, { [`faces/${"ab".repeat(16)}/.persona-group-root-h0.json`]: "{}", [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x" });
+      expect(rows.get("gate-root")).toMatchObject({ keyClass: "device-minted", custody: "hot", reading: "sealed", fault: false });
+      expect(rows.get("persona-root-h0")).toMatchObject({ keyClass: "seed", custody: "ward-cold", reading: "bare", fault: true });
+      expect(rows.get("recovery-device-share-h0")).toMatchObject({ keyClass: "seed", custody: "face-cold", reading: "bare", fault: true });
       // CONTROL: the floor's own key reads bare by law, and no fault.
       const floor = await rowsOf(v.homes, { ".vessel-key.json": "{}" });
       expect(floor.get("vessel-key")).toMatchObject({ custody: "floor", reading: "bare", fault: false });
     } finally { v.drop(); }
   });
 
-  test("a VK frame that stands DAMAGED reads `torn` and a fault, never bare by law", async () => {
+  test("an FCK frame that stands DAMAGED reads `torn` and a fault, never bare by law", async () => {
     const v = scratch();
     try {
       const rows = await rowsOf(v.homes, {
-        "recovery-device-share-h0.bin": Buffer.concat([Buffer.from("lares-vk-seal"), Buffer.from([1, 2, 3])]),
-        "recovery-device-share-h1.bin": "x",
+        [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: Buffer.concat([Buffer.from("lares-fck-seal"), Buffer.from([1, 2, 3])]),
+        [`faces/${"ab".repeat(16)}/recovery-device-share-h1.bin`]: "x",
       });
       expect(rows.get("recovery-device-share-h0")).toMatchObject({ reading: "torn", fault: true, bare: null });
       expect(rows.get("recovery-device-share-h1")).toMatchObject({ reading: "bare", fault: true, bare: null });
@@ -83,30 +82,38 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
   test("CONTROL: a GAP in the handle numbering throws nothing and drops nobody", async () => {
     const v = scratch();
     try {
-      const rows = await rowsOf(v.homes, { "recovery-device-share-h0.bin": "x", "recovery-device-share-h3.bin": "x", ".persona-group-root-joshua-h3.json": "{}" });
+      const rows = await rowsOf(v.homes, { [`faces/${"ab".repeat(16)}/recovery-device-share-h0.bin`]: "x", [`faces/${"ab".repeat(16)}/recovery-device-share-h3.bin`]: "x", [`faces/${"ab".repeat(16)}/.persona-group-root-h3.json`]: "{}" });
       expect([...rows.keys()].sort()).toEqual(["persona-root-h3", "recovery-device-share-h0", "recovery-device-share-h3"]);
     } finally { v.drop(); }
   });
 });
 
+const RELATION_ROWS = ["admissions", "enroll-pending", "face-address-secret", "face-join-record", "fleet-join-pending", "grant-pending"];
+
 describe("the relation class — a secret only the other party re-issues", () => {
-  test("the three relation rows read `relation` and hot", async () => {
+  // The persona admit's three rows, and the fleet-join door's three: the face's address secret and the grants the
+  // root re-issues, and a join's seal secret its answer alone consumes.
+  test("the six relation rows read `relation` and hot", async () => {
     const v = scratch();
     try {
-      const rows = await rowsOf(v.homes, { ".persona-enroll-pending.json": "{}", ".persona-grant-pending.json": "{}", ".persona-admissions.json": "{}" });
-      expect([...rows.keys()].sort()).toEqual(["admissions", "enroll-pending", "grant-pending"]);
-      for (const r of rows.values()) expect(r, r.name).toMatchObject({ keyClass: "relation", custody: "hot" });
+      const rows = await rowsOf(v.homes, {
+        ".persona-enroll-pending.json": "{}", ".persona-grant-pending.json": "{}", ".persona-admissions.json": "{}",
+        [`faces/${"ab".repeat(16)}/face-address-secret-g${"5e".repeat(32)}.bin`]: "x", [`faces/${"ab".repeat(16)}/fleet-join-pending-g${"6e".repeat(32)}.json`]: "{}", [`faces/${"ab".repeat(16)}/face-join-record-g${"6f".repeat(32)}.json`]: "{}",
+      });
+      // A row the table names by a digest reads under its name with that digest.
+      expect([...rows.values()].map((r) => r.row).sort()).toEqual(RELATION_ROWS);
+      for (const r of rows.values()) expect(r, r.name).toMatchObject({ keyClass: "relation", custody: ["face-address-secret", "face-join-record", "fleet-join-pending"].includes(r.row) ? "face-hot" : "hot" });
     } finally { v.drop(); }
   });
 
-  test("CONTROL: a non-relation hot row (the handle-book) names no key class", async () => {
+  test("CONTROL: a non-relation face-hot row (the handle-book) names no key class", async () => {
     const v = scratch();
     try {
-      expect((await rowsOf(v.homes, { ".handle-book.json": "{}" })).get("handle-book")?.keyClass).toBeNull();
+      expect((await rowsOf(v.homes, { [`faces/${"ab".repeat(16)}/.handle-book-h0.json`]: "{}" })).get("handle-book-h0")?.keyClass).toBeNull();
     } finally { v.drop(); }
   });
 
-  test("every relation row in the table is exactly the three", () => {
-    expect(carrierTable().filter((r) => r.keyClass === "relation").map((r) => r.row).sort()).toEqual(["admissions", "enroll-pending", "grant-pending"]);
+  test("the table names exactly the six relation rows", () => {
+    expect(carrierTable().filter((r) => r.keyClass === "relation").map((r) => r.row).sort()).toEqual(RELATION_ROWS);
   });
 });

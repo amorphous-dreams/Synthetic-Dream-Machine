@@ -17,6 +17,7 @@ import { describe, test, expect } from "vitest";
 import { interpretAsDocumentId, stringifyAutomergeUrl, type BinaryDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import {
   crossroadsDocUrl, whoBoardDocUrl, kapaeAntigenDocUrl, carriageDocUrl, personaKelBoardDocUrl, deterministicDocUrl,
+  realmAnnounceDocUrl, publicationDocUrl,
 } from "../src/deterministic-doc.js";
 import { DeterministicFederationGate, federationShareDecision } from "../src/federation-gate.js";
 
@@ -37,6 +38,13 @@ describe("DeterministicFederationGate — the federatable surface", () => {
   test("federates the per-Nexus crossroads + WHO board", () => {
     expect(gate.mayFederate(docIdOf(crossroadsDocUrl(NX)))).toBe(true);
     expect(gate.mayFederate(docIdOf(whoBoardDocUrl(NX)))).toBe(true);
+  });
+
+  test("federates the publication board beside the crossroads document, at an address of its own", () => {
+    expect(publicationDocUrl(NX)).not.toBe(crossroadsDocUrl(NX));
+    expect(publicationDocUrl(NX)).not.toBe(realmAnnounceDocUrl(NX));
+    expect(gate.mayFederate(docIdOf(publicationDocUrl(NX)))).toBe(true);
+    expect(gate.mayFederate(docIdOf(publicationDocUrl("other-nexus")))).toBe(false);
   });
 
   test("DENIES a private/random doc id (deny-by-default)", () => {

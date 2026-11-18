@@ -29,13 +29,13 @@ const OK_URI = "lar://crossroads/t.title.allowed/one";
 const CODE = "session-form-title";
 
 const framed = (uri: string, body: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t.title.context/capture"\n\`\`\`\n\n${body}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t.title.context/capture"\n\`\`\`\n\n${body}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /** A captured exchange: an aim, a quoted link and a fenced yield, each carrying a speaker's URI in the BODY. */
 const CAPTURE_BODY =
   `<<~ lares aim from="lar://mara:operator@crossroads/operator.asks.the-cost" -> to="lar://compita:agent@crossroads/clerk.reads.the-record">>\n\n` +
   `A quoted link: lar://alias:grant@host/some.path.here\n\n` +
-  "```\n<<~ lares yield from=\"lar://compita:agent@crossroads/clerk.named.the-source\" -> to=\"?\">>\n```";
+  "```\n<<~ lares yield from=\"lar://compita:agent@crossroads/clerk.named.the-source\" to=`?`>>\n```";
 
 const verbCtx = (requestId = "r1"): VerbContext => ({
   daemon: {} as CompositeStore,
@@ -111,7 +111,7 @@ describe("meme put: the title law through the verb path", () => {
 describe("every store that holds a title holds the law", () => {
   for (const [storeName, storeOf] of STORES) {
     test(`${storeName}: a put and a tombstone of a session-form title refuse, and the store stays empty`, async () => {
-      const store = storeOf("lar:///ha.ka.ba/bags/title-door");
+      const store = storeOf("lar:///ha.ka.ba/wikis/title/working-door");
       const origin = { kind: "lares-verb", requestId: "r" } as const;
       await expect(store.put({ tiddler: { title: BAD_URI, text: "x" } }, origin)).rejects.toMatchObject({ reason: CODE });
       await expect(store.tombstone(BAD_URI, origin)).rejects.toMatchObject({ reason: CODE });
@@ -136,7 +136,7 @@ function actionCtx(composite: CompositeStore, action: "INGEST" | "LOAD", args: R
 }
 
 describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency verbs${skipNote}`, () => {
-  const BAG = "lar:///ha.ka.ba/bags/title";
+  const BAG = "lar:///ha.ka.ba/wikis/title/working";
   const GOOD = "lar:///ha.ka.ba/t/title/good";
   const FILE_URI = "lar:///ha.ka.ba/t/title/carried";
   /** A `.tid` whose own header names a session-form title: the registry titles the record by it. */

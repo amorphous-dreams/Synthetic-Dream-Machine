@@ -85,7 +85,7 @@ export async function admitToRealm(args: {
   readonly realmDocIdHex:     string;
   readonly joinerIdentityHex: string;
   readonly invite:            CabalInvite | null;
-  /** The realm's effective lease epoch — a max-register, never a clock (see `inviteLeaseVerdict`). */
+  /** The realm's verified charter-quorum admission epoch, never its maintenance clock (see `inviteLeaseVerdict`). */
   readonly effectiveEpoch:    number;
   readonly verify:            (bytes: Uint8Array, sigHex: string, voucherDid: string) => Promise<boolean>;
   /** The seed-rooted vouch DAG the lineage price walks. */
@@ -163,7 +163,7 @@ export async function admitOnLineage(args: {
   readonly joinerIdentityHex: string;
   /** The invite THIS applicant presents — the structural signal-2. */
   readonly invite:            CabalInvite | null;
-  /** The realm's effective lease epoch — a max-register, never a clock (see `inviteLeaseVerdict`). */
+  /** The realm's verified charter-quorum admission epoch, never its maintenance clock (see `inviteLeaseVerdict`). */
   readonly effectiveEpoch:    number;
   readonly verify:            (bytes: Uint8Array, sigHex: string, voucherDid: string) => Promise<boolean>;
   /** Every invite the realm has issued — the lineage's raw material, folded here and never before. */

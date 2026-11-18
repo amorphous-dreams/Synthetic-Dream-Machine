@@ -5,10 +5,10 @@
  * `device-admit-reads-the-resolved-island.test.ts` pins that `admitBoardIsland` resolves the RIGHT
  * KEY once a founder climbs — `91ce09afb`'s cure. But resolving the right key only helps if that
  * island's BOARD carries the chain, and the ONLY place anything carries it sits at `open-node-vessel.ts`'s
- * boot, which `lares device-admit` never runs: `device-admit.ts`'s own docblock says it opens the
+ * boot, which the fleet-join answer's edge mint never runs: `device-admit.ts`'s own docblock says it opens the
  * store directly and exits (Node adapter, no daemon boot). So the ordinary walk —
  *
- *     lares vessel found → lares persona new 0 → lares nexus rite quorum → lares device-admit
+ *     lares vessel found → lares persona new 0 → lares nexus rite quorum → lares fleet join answer
  *
  * — with NO daemon ever booted in between (nothing here starts one; `nexus rite quorum` and
  * `device-admit` both run as store-direct doors, exactly like the fleet harness's `found:` callback in
@@ -37,7 +37,7 @@ import { join } from "node:path";
 
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { runFoundingCeremony } from "@lararium/keyhive";
 import {
   hex, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
   nexusIdentity, nexusScopeOrThrow,
@@ -50,6 +50,8 @@ import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { admitBoardIsland } from "../src/commands/device-admit.js";
 import { nodeNexusIslandsBelow } from "../src/nexus-standing.js";
 import { larSealHome } from "../src/vessel-paths.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -66,8 +68,7 @@ async function foundAtOwnIsland(vesselSeed: Uint8Array) {
   const ownKey   = await pubOf(vesselSeed);
   const founding = nexusIdentity({ ownVesselKey: ownKey });
   expect(founding.kind, "a fresh founding stands a PRIVATE NEXUS OF ONE").toBe("own");
-  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
-    repo, vesselSeed, vesselVerifyingKey: ownKey, vesselDisplayName: "A",
+  const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo, vesselSeed, placeVerifyingKey: ownKey, vesselDisplayName: "A",
     binding: { mode: "self-stood", signerSeed: vesselSeed }, hearthTrueName: "",
     nexusPubkey: nexusScopeOrThrow(founding),
   });
@@ -92,10 +93,6 @@ describe("device-admit carries persona-KEL in-session, with no daemon boot betwe
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-admit-carry-session-"));
     setEnv("LAR_ROOT", root);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));
-    setEnv("XDG_CONFIG_HOME", join(root, "config"));
-    setEnv("LAR_JOIN_GATE", undefined);
   });
 
   afterEach(() => {

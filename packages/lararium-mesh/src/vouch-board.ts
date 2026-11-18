@@ -54,7 +54,7 @@ import type { StoredLarRecord } from "./stored-value.js";
  * The relationship id a vouch presents to the kāpae plane — the voucher→joiner edge inside one realm.
  *
  * A voucher WITHDRAWING a vouch raises a shadow over this id. That reads differently from an EXPIRY: an
- * expired vouch simply no longer stands and a fresh one may replace it, while a withdrawn one stays set
+ * expired vouch simply lapses and a fresh one may replace it, while a withdrawn one stays set
  * aside, so re-minting the same edge cannot resurrect the standing it once carried.
  */
 export function vouchEdgeId(invite: Pick<CabalInvite, "realmDocIdHex" | "voucherDid" | "joinerIdentityHex">): string {
@@ -92,7 +92,7 @@ export function writeVouch(draft: LarDoc, invite: CabalInvite): void {
 }
 
 /** A parsed payload reads as an invite only at the exact FLOOR shape — else null. Extra fields are dropped. */
-function coerceInvite(parsed: unknown): CabalInvite | null {
+export function readCabalInvite(parsed: unknown): CabalInvite | null {
   if (typeof parsed !== "object" || parsed === null) return null;
   const p = parsed as Record<string, unknown>;
   if (p["kind"] !== CABAL_INVITE_DOMAIN) return null;                  // not a vouch tiddler → skip
@@ -109,6 +109,7 @@ function coerceInvite(parsed: unknown): CabalInvite | null {
     sig:               p["sig"] as string,
   };
 }
+const coerceInvite = readCabalInvite;
 
 /**
  * Every invite the board carries WHOSE SIGNATURE VERIFIES against the voucherDid it names — the only read,

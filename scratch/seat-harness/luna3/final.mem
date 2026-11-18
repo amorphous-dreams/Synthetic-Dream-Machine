@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna3/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna3/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna3/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna3/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna3/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HIGH — `tools/launch-codex.mjs:368–372`: `--lane-root` can escape the lane scratch directory.'' The path is resolved, then used to create the step directory and write its brief before `preflight` checks only the //seat directory//. A caller can point it outside `~/.lares-scratch/<lane>/`; the lead then also gets that root added to its sandbox at lines 383–384.
+
+''HIGH — `tools/launch-codex.mjs:368–372, 386`: dry-run writes files.'' `mkdirSync` and `writeFileSync` run before the dry-run return, creating the step directory and brief despite the documented “writes nothing” guarantee.
+
+''MED — `tools/launch-codex.mjs:368–372, 388`: concurrent launches can claim the same step.'' Each reads the same counter and derives the same step directory before either writes the increment. Both can then launch step N, with one state update overwriting the other. Atomic rename in `lane-state.mjs:45–49` avoids torn reads, but provides no lock or compare-and-swap.
+
+''MED — `tools/lane-state.mjs:19–24`: nested state validation is shallow.'' Seat objects may have missing or extra fields, and empty strings are accepted for seat fields, `next`, and worktree paths. Malformed state can pass validation and produce an unusable brief.
+
+''MED — `tools/launch-codex.test.mjs:527–559`: row 4 tests miss these cases.'' No checks cover dry-run filesystem writes, escaped lane roots, or concurrent launches. `tools/lane-state.test.mjs:11–21` also omits malformed nested seats and empty fields. These gaps let the defects above pass the added tests.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aNDenTAnY8iVh8wiMTLXlZuVEJsNuV2YrqzoicvVfNs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

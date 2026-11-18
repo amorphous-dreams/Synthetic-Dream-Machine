@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/promote-e0342d7256c4f3e4315bbea8547bfa24514c60ee`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/controller/ship/promote-e0342d7256c4f3e4315bbea8547bfa24514c60ee.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/promote-e0342d7256c4f3e4315bbea8547bfa24514c60ee"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/promote-e0342d7256c4f3e4315bbea8547bfa24514c60ee"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! promote-e0342d7256c4f3e4315bbea8547bfa24514c60ee.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/ship/promote-e0342d7256c4f3e4315bbea8547bfa24514c60ee.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+e0342d7256c4f3e4315bbea8547bfa24514c60ee
+read: the promote train united with PR #157's land branch, at e0342d7256c4f3e4315bbea8547bfa24514c60ee (CI 42040446821 green, all 13 jobs). Reads, in order: Sol core (sol-core HOLD -> cured), blind Opus whole train at 04b477093 (HOLD narrow -> cured; StartupAction layer gate ruled), Sol cure re-read + blind Opus custody re-read (HOLD -> cured round 2), Sol final Drain read + blind Opus round-2 read (HOLD -> Fable turn 1 research + turn 2 fixes D1-D4, K1-K3), cold Terra read of the merge 2f330bc48 (HOLD P1 listener ordering -> cured e0342d725, reds a/b). The land branch side carries its own SHIP at b9265c9e6 (seven Sol rounds). Controller read of the security-class edges: pnpm-lock adds only fast-check 4.10.2 to tw5 dev (already locked for lares-cli), the capability-probe compose PINS the playwright image by digest, the vitest configs add test projects only, and CI workflow edits were read by Terra (merge), Luna (row A) and the Q1 lane's Luna. Owed rows named on the road: K4 unavailable-doc wake, the rehome orphan, the holder listener reason nit, the boundary caller await (inherent), and the foreign-title-projection turn-order flake (twice in CI, rerun green).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ehSG1MkuP754_10BVCWF4VjzwZFeYsIHGqgGzoFnkt4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -13,13 +13,13 @@ import { describe, expect, test } from "vitest";
 import { buildEffectRecordTiddler, RETIRED_EVENT_ID, type ChangeOrigin } from "@lararium/mesh";
 import { unsavedHandAlertTitle } from "../src/island-adaptor.js";
 import { wikiSkip, skipNote } from "./test-wiki.js";
-import { afterDispatch, ManualTimers, shoreRig, storeDeleted, storeText, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
+import { afterDispatch, ManualBoundary, shoreRig, storeDeleted, storeText, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
 
 const SAVED = "lar:///t/retired/saved";
 const KEPT = "lar:///t/retired/kept";
-const hand = async (r: Rig, timers: ManualTimers): Promise<void> => {
+const hand = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
   await afterDispatch();
-  timers.fireAll(400);
+  boundary.fire();
   await turns(48);
   await r.adaptor.landingIdle();
 };
@@ -33,18 +33,18 @@ const retire = async (r: Rig): Promise<void> => {
 
 describe.skipIf(wikiSkip)(`a wiki's hand meets a retired bag${skipNote}`, () => {
   test("RED: a save and a delete into a retired working layer refuse by name, land nothing and stay owed", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     await r.adaptor.armSeedCheckpoint();
     await r.adaptor.landingIdle();
     r.wiki.addTiddler(new r.Tiddler({ title: KEPT, text: "kept" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(storeText(r, workingBag, KEPT), "setup: the title landed before DROP").toBe("kept");
 
     await retire(r);
     r.wiki.addTiddler(new r.Tiddler({ title: SAVED, text: "a save after DROP" }));
     r.wiki.deleteTiddler(KEPT);
-    await hand(r, timers);
+    await hand(r, boundary);
 
     expect(storeText(r, workingBag, SAVED), "nothing lands in the retired bag").toBeUndefined();
     expect(storeDeleted(r, workingBag, KEPT), "no tombstone lands in the retired bag").toBe(false);
@@ -59,12 +59,12 @@ describe.skipIf(wikiSkip)(`a wiki's hand meets a retired bag${skipNote}`, () => 
   }, 120_000);
 
   test("CONTROL: the same save into a working layer no DROP retired lands", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     await r.adaptor.armSeedCheckpoint();
     await r.adaptor.landingIdle();
     r.wiki.addTiddler(new r.Tiddler({ title: SAVED, text: "a save" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(storeText(r, workingBag, SAVED)).toBe("a save");
     expect(r.wiki.getTiddler(unsavedHandAlertTitle(SAVED))).toBeUndefined();
     await end(r);

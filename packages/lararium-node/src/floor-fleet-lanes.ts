@@ -10,9 +10,6 @@
  *                  sibling lane carries nothing. A peer that rides neither lane keeps what the built ring answers:
  *                  the public shelf stays served.
  *
- *   `noFleetAtTheFloor`  THE FETCH DOOR'S PREDICATE (Socket B's cleartext tier) reads no peer as fleet, the pinned
- *                  join gate's key included: a cleartext ask draws the Mu a miss draws.
- *
  * Every other reading passes through to the ring the composition built. The first unlock stands a fresh
  * composition that reads the roster and uses the built ring whole.
  */
@@ -25,6 +22,3 @@ export function floorShadowRing(built: EdgeShadowRing, provenSibling: (peerId: s
     aside: (peerId) => provenSibling(peerId) || built.aside(peerId),
   };
 }
-
-/** The fetch door's fleet predicate at the floor: nobody reads as fleet. */
-export const noFleetAtTheFloor = (_peerKey: string): boolean => false;

@@ -1,0 +1,66 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/c-b-r2/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-08 (file date) — source `.lares-scratch/survive-research/c-b-r2/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/c-b-r2/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/c-b-r2/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-research/c-b-r2/final.md` (research, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/c-b-r2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+`set lares=aim`
+
+''Draft-Keeper: Lares (Tasked Spirit)''
+
+The strongest first move is to make the ''existing private projection root independently configurable outside the reset target'', while preserving canon write-back and the existing daemon control-plane exclusion. The research’s survival goal holds, but several mechanisms it proposes already exist, and draft recovery is more developed—and more strongly ruled—than either report assumed.
+
+''Verdicts''
+
+* ''BENDS — Put memory-stage, house-minted and private projections outside the wipe.'' The split already exists by origin: sourced bags and their wikis return to the canon source; other bags and wikis use the state root ([[bag-paths.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/bag-paths.ts:245]]). The daemon’s working wiki and kahua stage have separate `kahua-<face>` mirrors, while `bags/daemon` deliberately has ''no'' mirror because it holds control-plane material ([[bag-paths.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/bag-paths.ts:158]]). Add a private projection root to both these factories and the per-wiki grants; preserve one shared tree, not per-face roots. The roadmap explicitly rules one tree and defers identity recovery ([[stable-founding-road.mem|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:599]]).
+
+* ''BENDS — A sibling survives reset.'' Compose currently mounts private projections inside `/state` ([[docker-compose.surface.yml|/home/joshu/Synthetic-Dream-Machine/docker-compose.surface.yml:6]]); `reset` empties every entry inside the resolved `LARES_STATE` after stopping and confirmation ([[lares-container.sh|/home/joshu/Synthetic-Dream-Machine/tools/lares-container.sh:223]]). A separate mount and a verified path outside that resolved target are necessary. A sibling is not an independent backup. The proposed wholesale `hearth/` migration is a larger change: native paths also have XDG fallbacks when `LAR_ROOT` is unset ([[vessel-paths.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/vessel-paths.ts:78]]).
+
+* ''ALREADY BUILT under another name — Daemon wiki projection.'' The working layer already mirrors to `wikis/kahua-<face>` when a face is worn; MCP `meme_put` with `recipe: "default"` writes through the daemon wiki’s existing route ([[bag-paths.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/bag-paths.ts:196]], [[lares_mcp.py|/home/joshu/Synthetic-Dream-Machine/packages/lararium-sensorium/scripts/lares_mcp.py:109]]). The immediate gap is placement and preservation, not inventing a memory bag.
+
+* ''BENDS — Temp, draft and personal behind a flag and per-bag consent.'' Grants intersect recipe `mirrorBags`; that existing authority/designation split is the right integration point ([[vessel-island-pool-core.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/vessel-island-pool-core.ts:201]]). But ordinary wiki recipes ''already designate draft'', and the grant projects it into a distinct recovery directory ([[vessel-steps.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/vessel-steps.ts:183]], [[open-node-vessel.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/open-node-vessel.ts:4064]]). A new default-off rule that withdraws existing draft recovery ''breaks'' the ruling that unsaved drafts survive in both CRDT and projection ([[stable-founding-road.mem|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:435]]). Temp needs a real new capture path: the volatile VM namespace is explicitly barred from projection, and a memory-only store cannot be recovered by scanning sealed bags ([[disk-projector.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/disk-projector.ts:490]], [[open-node-vessel.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/open-node-vessel.ts:2439]]). ''Inference:'' distinguish intentional user temp content from internal volatile state; a blanket override would breach that boundary. Consent must remain deliberate, and credentials cannot ride the flag ([[stable-founding-road.mem|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:118]]).
+
+* ''BENDS — Close the commit-to-projection gap.'' An outbox is not automatically needed: on start the projector subscribes first, scans visible recovery-store records and recovery agreements, then scans the mounted wiki’s titles; the keyed queue reconciles current state ([[disk-projector.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/disk-projector.ts:481]]). This is ''not proof of complete authorized-bag reconciliation'': ordinary mirrors follow the resolved view, so shadowed bag values and records absent from that view need an explicit coverage design. Test crash-before-notification for each authorized class before claiming the gap closed. Any new outbox needs atomic coupling or equivalent reconciliation; the house’s existing outbox law also requires sealed parcels ([[stable-founding-road.mem|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:390]]).
+
+* ''BENDS — Atomic and durable writes.'' Same-directory temporary write and rename already give single-file replacement visibility ([[disk-projector.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/disk-projector.ts:1217]]). The implementation shown does not fsync the file or parent directory, nor explicitly set private temp-file mode. Add those, surface failures, and account for body and `.meta` being separate renames; they do not form a crash-atomic pair ([[disk-projector.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/disk-projector.ts:1765]]).
+
+* ''BENDS — Status and waiting.'' The existing //settle word// reports `settled`, `elsewhere`, `superseded`, `stopped`, `closed` and `failed` per carrier ([[disk-projector.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/disk-projector.ts:1275]]). Reuse these distinctions rather than collapse them into “projected.” Add an explicit durable-sync acknowledgment only after fsync; `idle()` alone means queue drained, not durable disk ([[disk-projector.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/disk-projector.ts:602]]).
+
+* ''ALREADY BUILT under another name — External-edit review.'' The Confluence gate compares disk, records and their last agreement; divergent sides stand off with `shore take-disk` / `take-records` doors, and vanished files become pending removals ([[disk-projector.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/disk-projector.ts:1680]]). `sense()` triggers a fresh disk check ([[disk-projector.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/disk-projector.ts:999]]). Carry these semantics to relocated mirrors and export; do not implement a second conflict system.
+
+* ''BENDS — Cleanup touches projections only.'' Existing guarded cleanup unlinks settled obsolete mirror files and preserves conflicting homes; it does not implement the proposed private trash and retention policy ([[disk-projector.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/disk-projector.ts:1118]]). Preserve `.kapae` shadows: they encode a raised exclusion, and ingest validates them to avoid resurrecting deleted content ([[disk-projector.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/disk-projector.ts:1160]], [[ingest-core.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/ingest-core.ts:192]]). My proposed 30+30-day expiry has no code-derived basis; prefer artifact housekeeping and opt-in retention. If cleanup settles a //disk-watcher removal//, the signed, bag-scoped, bounded human instruction law applies ([[stable-founding-road.mem|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:392]]).
+
+* ''HOLDS — Locked-custody saves need a volatile state and must not be silently projected.'' The sealed document store names `save-unbooked`, `save-unmapped` and `save-unsealed` as saves waiting in memory, not on disk ([[sealed-doc-store.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/sealed-doc-store.ts:15]]). Custody writes can also refuse while locked ([[custody-holder.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/custody-holder.ts:5]]). A preservation workflow needs a live census and a refusal or explicit loss acknowledgment ''before shutdown''; the stopped-container reset cannot inspect vanished RAM. That required census is an ''inference'', not a verified existing reset feature.
+
+* ''BENDS — Concurrent values on export.'' The wiki already persists differing parallel values as attributed drafts when it can; failure can leave the only copy on a volatile alert rail, and conflicts on the draft bag itself are not recursively preserved ([[island-adaptor.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/island-adaptor.ts:843]]). A complete export must census those cases and either carry authorized alternatives or report/refuse omissions. A visible carrier alone cannot establish completeness. Existing seed discovers the configured ''canon bags directory'', then uses ingest or create/load/move; it is not a general private-projection restore ([[seed.ts|/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/commands/seed.ts:52]]). Content import remains new changes under new authority; identity, history and full restore remain deferred under the roadmap ([[stable-founding-road.mem|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:160]]).
+
+''First lane and red.'' Introduce one separately configured private projection root through [[bag-paths.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/bag-paths.ts:233]], [[open-node-vessel.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/open-node-vessel.ts:4036]], the daemon mirror construction, [[docker-compose.surface.yml|/home/joshu/Synthetic-Dream-Machine/docker-compose.surface.yml:138]], and reset’s resolved-path checks. Preserve sourced write-back, private exclusions, existing draft recovery and `.kapae` behavior. The first red belongs in [[projection-roots-split.test.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/tests/projection-roots-split.test.ts]]: with distinct state, canon and projection roots, assert house and both tagged daemon mirrors resolve under the projection root, canon still resolves to the checkout, and `bags/daemon` never appears. Add a reset boundary test proving the projection sibling survives and an overlapping path is refused. This is a placement lane, not a claim that temp consent, crash durability or re-import are complete; the full model must not be foreclosed by the slice ([[stable-founding-road.mem|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:38]]).
+
+''Research corrections:'' both reports missed built draft recovery, startup scans, Confluence standoffs, settle statuses and the landed kāpae disk round trip. My report’s generic “indexes are rebuildable” mapping is unsafe: the sensorium resolver explicitly describes captured content that cannot necessarily be recreated ([[xdg-base.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mempalace/src/xdg-base.ts:35]]). Neither `~/.lares` as a universal native root nor a reset that checks preservation follows from the current code. No tests were run in this read-only seat.
+
+`set lares=yield to=?`
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jIp5ZAJ_9Buzk-d7hJ_YIDq09H8ArQis0eHZk9dljFE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

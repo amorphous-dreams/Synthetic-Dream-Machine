@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-x-launch">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/train-x-launch`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/train-x-launch.mem"
 l-space   = "adjacent"
 role      = "train X launch kit: isolated two-hearth driver, file courier and operator-run ceremony"
 status    = "draft"
@@ -14,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/train-x-launch"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Train X ~ two hearths
 
@@ -24,7 +23,7 @@ uri-path  = "ha.ka.ba/lararium/docs/train-x-launch"
 
 <<~/ahu>>
 
-<<~ ahu #/ground>>
+<<~ ahu slot=`#/ground`>>
 
 !! Ground and crew
 
@@ -32,7 +31,7 @@ Start the automated witness after N, W, O1, sealed-store step 3, H, E, browser c
 
 <<~/ahu>>
 
-<<~ ahu #/walk>>
+<<~ ahu slot=`#/walk`>>
 
 !! Commit walk
 
@@ -43,7 +42,7 @@ Start the automated witness after N, W, O1, sealed-store step 3, H, E, browser c
 
 <<~/ahu>>
 
-<<~ ahu #/witness>>
+<<~ ahu slot=`#/witness`>>
 
 !! Witness and driver contract
 
@@ -51,7 +50,7 @@ The driver reports separate root and image evidence, both seed fingerprints, one
 
 <<~/ahu>>
 
-<<~ ahu #/collisions>>
+<<~ ahu slot=`#/collisions`>>
 
 !! Collision sheet
 
@@ -59,14 +58,14 @@ The driver reports separate root and image evidence, both seed fingerprints, one
 |---|---|
 | N | Consume cofounding, partial acts, contracts and final AID; edit no charter composer. |
 | W | Consume face gates, file transport and two-Nexus routing; edit no socket sorter. |
-| S8 and sealed-store step 3 | Consume sealed custody and authenticated restart; edit no selves rows or Repo format. |
+| S8 and sealed-store step 3 | Consume sealed custody and authenticated restart; edit no selves records or Repo format. |
 | O1 | Consume scoped node and browser sessions, working addresses and receipts; edit no surface composer. |
 | H and E | Consume delegated hosting, answer, public-half grant and serving gate; edit no hosting act or ember arm. |
 | Browser and Harbor | Consume custody, HTTPS and discovery; the operator measures the real LAN and phones. |
 
 <<~/ahu>>
 
-<<~ ahu #/done>>
+<<~ ahu slot=`#/done`>>
 
 !! Done when
 
@@ -74,14 +73,14 @@ Two isolated vessels from one image digest keep separate seeds and private handl
 
 <<~/ahu>>
 
-<<~ ahu #/rulings>>
+<<~ ahu slot=`#/rulings`>>
 
 !! Rulings
 
-The roadmap's TWO HEARTHS path and fresh-start instructions hold the driver and ceremony (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start">>). The operator moves old homes aside by hand and keeps them reversible. Guardian threshold and succession remain with the operator at `#/open`; X supplies no answer (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/open">>).
+The roadmap's TWO HEARTHS path and fresh-start instructions hold the driver and ceremony (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`>>; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start`>>). The operator moves old homes aside by hand and keeps them reversible. Recovery contact threshold and succession remain with the operator at `#/open`; X supplies no answer (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/open`>>).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SbYPqMp0nCzWcaUy0U1NO7jiQba3RMcdsGCrG8a9wQU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dz9XS4aWFzMDTeQYVQeJFjpV87Q2ZWJDFY_kIoNxAqM`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

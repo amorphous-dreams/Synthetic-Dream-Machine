@@ -12,6 +12,7 @@ import {
   shuffleTrajectory,
   mulberry32,
   worldlineCausalFromEdges,
+  replayWorldlineEdges,
   worldlineCompare,
   worldlineHandles,
   worldlineFrontiersFor,
@@ -145,15 +146,16 @@ describe("worldlineCausalFromEdges — project the ITC registry from the durable
     expect(worldlineHandles(causal).sort()).toEqual(["run", "run.a", "run.b"]);
   });
 
-  test("idempotent / re-derive-tolerant — a duplicate spawn + an unknown-pair handback are skipped", () => {
+  test("identical duplicate spawn collapses and an unknown-pair handback announces a skip", () => {
     const root = "run";
     const opens = [
       delegationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:00Z" }),
-      delegationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:00Z" }), // dup — skipped
+      delegationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:00Z" }), // identical duplicate collapses
     ];
     const closes = [handbackClose(root, "run.ghost", "2026-06-29T00:00:09Z")]; // unknown — skipped
-    const causal = worldlineCausalFromEdges(root, opens, closes);
+    const { causal, skipped } = replayWorldlineEdges(root, opens, closes);
     expect(worldlineHandles(causal).sort()).toEqual(["run", "run.a"]);
+    expect(skipped).toMatchObject([{ op: "handback", reason: "pair-unknown" }]);
   });
 });
 

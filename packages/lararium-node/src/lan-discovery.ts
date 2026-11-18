@@ -277,8 +277,8 @@ export function createLanListener(opts: {
 }
 
 /**
- * A discovery candidate supplies only the URL. A key comes from a human-carried admission (QR or `lar:` URI
- * of `lares device-admit`); without that pinned key the candidate never becomes a peer entry.
+ * A discovery candidate supplies only the URL. A key comes from a human-carried admission (the gate pin a
+ * `lares fleet join answer` signs); without that pinned key the candidate never becomes a peer entry.
  */
 export function candidatePin(candidate: LanCandidate, gateKeyHex: string | null): string | null {
   return typeof candidate?.url === "string" && typeof gateKeyHex === "string" && /^[0-9a-fA-F]{64}$/.test(gateKeyHex)

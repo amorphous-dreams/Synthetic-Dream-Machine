@@ -74,6 +74,11 @@ export interface SigilRule {
   // frame) vs the default "repaired" (force-close marked, recovered). The resilient driver reads it;
   // the structure still never breaks. (First rung of the #has recovery cap-stack.)
   recoverAs?: "water" | "repaired";
+  // `lar-flow: block` — a block-only head: its meaning needs its own line (the frame marks, the
+  // child-slot opener/closer). The graceful floor warns on text after its `>>`; no other head's does.
+  flow?: "block";
+  // `lar-code` — the control entity a frame mark carries (`&#x0003;` for ETX).
+  code?: string;
   // Weave name per tongue (sigil-mirror-flip ruling item 3): when a canonical sigil carries
   // several mirrors (Hawaiian headword + English alias(es)), at most ONE mirror per tongue
   // carries `weave: "primary"` — the name that tongue's authors are steered toward. A mirror
@@ -100,7 +105,7 @@ export interface GrammarRules {
 
 export type MemeAstKind =
   | "Meme"          // root document node  (replaces CarrierNode)
-  | "Ahu"           // addressable scope socket  <<~ ahu #/slot>>
+  | "Ahu"           // addressable scope socket  <<~ ahu slot=`#/slot`>>
   | "Pranala"       // explicit edge  (block or inline)
   | "PranalaSugar"  // sugared forms: loulou / aka / kahea / pono / papalohe
   | "Lele"          // fire-and-forget dispatch
@@ -146,8 +151,8 @@ export interface AhuNode extends MemeAstBase {
   uri:         string;            // memeUri + slot
   delegate:    string | null;
   body:        MemeAstNode[];
-  invocation?: boolean;           // <<~ kahea ahu #/slot>>
-  projection?: boolean;           // <<~ aka ahu #/slot>>
+  invocation?: boolean;           // <<~ kahea ahu slot=`#/slot`>>
+  projection?: boolean;           // <<~ aka ahu slot=`#/slot`>>
 }
 
 // ---------------------------------------------------------------------------
@@ -228,7 +233,7 @@ export interface TextNode extends MemeAstBase {
 //   wehe / kumu        → { name, params }
 //   helu               → { name, params, expression }
 //   kau                → { name, value, scope }
-//   kapu               → { qualifier, inline: "true"|"false" }
+//   kapu               → { qualifier, to?, inline: "true"|"false" }
 //   toml               → { profile, content }
 // ---------------------------------------------------------------------------
 

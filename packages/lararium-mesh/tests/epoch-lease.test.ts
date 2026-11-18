@@ -11,28 +11,10 @@ import { describe, test, expect } from "vitest";
 import {
   leaseEpochPrefix,
   leaseEpochSlotUri,
-  effectiveLeaseEpoch,
   rolledLeaseEpoch,
 } from "../src/epoch-lease.js";
 
 describe("epoch-lease — coordinator-free max-register", () => {
-  test("effectiveLeaseEpoch = max over slots; empty → 0", () => {
-    expect(effectiveLeaseEpoch([])).toBe(0);
-    expect(effectiveLeaseEpoch(["3", "7", "5"])).toBe(7);
-  });
-
-  test("invalid slots are ignored (untrusted CRDT input never throws)", () => {
-    expect(effectiveLeaseEpoch(["3", null, undefined, "x", "1.5", "9"])).toBe(9);
-    expect(effectiveLeaseEpoch([null, undefined, "nope"])).toBe(0);
-  });
-
-  test("max NEVER decreases — a concurrent lower slot can't pull the lease back", () => {
-    // writer A rolled to 5; writer B still sits at 3 → effective 5, never 3
-    expect(effectiveLeaseEpoch(["5", "3"])).toBe(5);
-    // the concurrent-roll collapse is fine: both write 5 in their own slots → still 5
-    expect(effectiveLeaseEpoch(["5", "5"])).toBe(5);
-  });
-
   test("rolledLeaseEpoch = effective + 1", () => {
     expect(rolledLeaseEpoch(0)).toBe(1);
     expect(rolledLeaseEpoch(7)).toBe(8);

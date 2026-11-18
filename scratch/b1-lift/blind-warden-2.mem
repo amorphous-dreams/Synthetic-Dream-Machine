@@ -1,0 +1,58 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/blind-warden-2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/blind-warden-2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/blind-warden-2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/blind-warden-2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! blind-warden-2.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/blind-warden-2.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+VERDICT: LAND-AFTER-CURES
+
+Blind-Warden-II: Lares (Tasked Spirit). Read: diff c98557881..2bbfb2413 &#45;- packages, plus vessel-host.ts whole, the admit/require/watch parts of vessel-sessions.ts, floor-tab.ts, the relay in public/ceremony-broker.js, and the face, ward and identity custody doors.
+
+Earlier P2s: they hold, each with a red test and a control.
+* P2-1 holds. The clear takes ward/h&lt;N>/* (owner matched by fcid), the roster line and ward/sign/&lt;G>/* (browser-face-custody.ts:491-150 of the diff, about :488-511). Pinned by browser-ward-face-owner.test.ts WO2, control included.
+* P2-2 holds. Both doors are gone. checkRow refuses persona-root (browser-face-custody.ts:111). WO3 pins it, and FC2 was cut.
+* P2-3 holds at the vessel level. The owner row comes before any byte (browser-ward-tree.ts:166-175). refuseWardOfAnotherFace covers the slot load, the held read, Sign and Signer (browser-ward.ts:80,151). WO1 and BC22b pin it, each with a control.
+
+NEW P2s, to cure before the land:
+# No face gate on inbound traffic. A session of face G gets admitted onto a vessel lit for face A (vessel-sessions.ts:480-517). vessel-host.ts filters what goes out (wearsLitFace, :91), but control-event, set-surface, port:place and read:mirror-inputs (vessel-host.ts:381-422) check only that the session is admitted. So G can place bindings into A's islands, send control events into A's wiki (which drive promote ward asks at open-browser-vessel.ts:1549-1554), and flip A's shown surface. SV1 (vessel-host-surface.test.ts:153) admits G but never sends traffic from G. Cure: refuse with face-not-worn unless wearsLitFace(conn). Red: G's place, event and surface switch never reach the vessel; control: A's do.
+# A torn founding locks h0 for good. The owner row names an unnamed: fcid that resolves only on that thread (faceTreeIdOf, browser-face-custody.ts:235). After a reload, a fresh founder face meets that owner and refuses ward-owned-by-another-face, and nothing can clear it: the face can't be named, and the place clear leaves ward rows. browser-custody.test.ts ~:641 was rewritten to expect this outcome; before, the re-founding worked. Cure: at founding, sweep a ward whose owner tree stands in no index and no seat, with its roster line. Red plus control.
+
+P3s:
+* Still standing: vessel-host.ts:157 askWardRoute and askCustody stay bound to the lighting conn. A follower's vessel acts ask in another tab. Once that session drops, the ask goes out with face null to a dead port and hangs. It fails closed.
+* Still standing: the stale comment at browser-ward-tree.ts:15-18 (page main thread, "B1 owes", no face-tree row).
+* Still standing: browserVesselFaceTagDoor rowFace (browser-face-atom.ts:149-153) goes unchecked. browserWardKeySign and browserWardKeyMint (browser-ward.ts:97,111) don't check the group against the worn face.
+* Cured: the possession read at browser-walk.ts:75 is now owner-gated through browserPersonaRootHeld.
+* New: walk:ward (vessel-host.ts:438-446) checks only that the session has a face. The gate compares against the vessel's worn face, not the session's. It's a harness-only door.
+* New: controlSenders.set (vessel-host.ts:387) overwrites a pending eventId, so a session that knows another session's eventId can take its result.
+* New: the clear removes ward/h&lt;N>/face-tree first (sorted list). A torn clear leaves owner-less rows that no later clear finds (fails closed). Remove the owner row last.
+* New: port:want mints a connection for a session that is open but not yet admitted (vessel-host.ts:360), with no cap.
+* Still standing: the liveness sweep (vessel-sessions.ts:426-442) decides a session's lifetime on a timer.
+
+No new hole found in these: the session after its tab (require refuses a dropped session, the lifetime lock and the port close back it up), the broker (relays by clientId and reads no port) and ceremony answers (ride their own port).
+
+Not read: the slot-wait, tw5-projection and vm-shim changes, the e2e bodies, and open-browser-vessel.ts outside the founding and ward sites.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1HWLTAHJuHdHfoDvk4QpRKDKBiMPHZQyBOjF6MKFRPQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

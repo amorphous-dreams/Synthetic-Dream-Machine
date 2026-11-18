@@ -29,7 +29,7 @@ function renderSigilRule(name: string, obj: Record<string, unknown>): string {
   const lines: string[] = [`  { name: ${quote(name)}, kind: ${quote(obj.kind as string)}`];
   const keys = [
     "layer", "inlinePattern", "blockPattern", "openPattern", "closePattern",
-    "pattern", "pragmaPattern", "aliasFor", "defaultFamily", "defaultPropagation", "recoverAs",
+    "pattern", "pragmaPattern", "aliasFor", "defaultFamily", "defaultPropagation", "recoverAs", "flow", "code",
   ];
   for (const k of keys) {
     const v = (obj as Record<string, unknown>)[k];

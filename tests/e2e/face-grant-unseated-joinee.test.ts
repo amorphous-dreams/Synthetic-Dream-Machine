@@ -1,29 +1,28 @@
 /**
  * e2e/face-grant-unseated-joinee — MEASURE: does the founder's face-grant record reach a joinee that boots
- * WITHOUT `LAR_JOIN_*` set?
+ * by its PIN alone?
  *
  * `meme-two-vessel-bag` ⑨ proves the later grant (basket-one #/the-later-grant, `c3bcab741`): the founder's
  * `face-join` writes `$:/lares/face-grant/<group>/<joinee>` on the PersonaGroup plane, and the joinee's kit
- * takes the seat by its own act. THAT joinee dials the founder by hand (`LAR_JOIN_SYNC` · `LAR_JOIN_GATE` ·
- * `LAR_JOIN_DOC`), so the plane it reads crosses a socket the operator opened at boot.
+ * takes the seat by its own act. THAT joinee also asks the hearth for the founder's lares doc, so the plane it
+ * reads crosses a socket its boot opened.
  *
- * THIS joinee holds the same admit edge — the PIN names the hearth's dial (`device-admit --sync-url`, pinned in
- * the bootstrap at founding) — and boots with NO `LAR_JOIN_*`. The question the drift-ward asks: does the
+ * THIS joinee holds the same admit edge — the PIN names the hearth's dial (the fleet-join answer signs it, and
+ * the landing pins it in the bootstrap) — and boots asking for no document. The question the drift-ward asks: does the
  * record reach it at all? The CONTROL is the founder's side — the record lands on A's plane regardless
  * (`recordTitle`).
  *
- * THE PIN NAMES THE DIAL. `device-admit --sync-url` packs the hearth's `ws://` relay AND the hearth's gate key
- * into the payload; `vessel found --admit` pins both in the joinee's bootstrap (`hearth-dial-pin.ts`), and the
- * boot dials them where no `LAR_JOIN_*` rides the env (an explicit env still wins; no pin and no env dials
- * nobody). `HEARTH_DAEMON_URL_TIDDLER` keeps the hearth's daemon DOC url — an `automerge:` address that dials
+ * THE PIN NAMES THE DIAL. The root's fleet-join answer carries the hearth's `ws://` relay AND the hearth's gate
+ * key inside its signature; `fleet join land` pins both in the joinee's bootstrap (`hearth-dial-pin.ts`), and the
+ * boot dials them (an explicit option outranks the pin; no pin dials nobody). `HEARTH_DAEMON_URL_TIDDLER` keeps the hearth's daemon DOC url — an `automerge:` address that dials
  * nothing — so the dial needed a pin of its own.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance } from "../harness/instance.js";
-import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
+import { openStagedJoinee, type StagedJoinee, type LarInstance } from "../harness/instance.js";
+import { faceJoinOutcome, requestFaceJoin } from "../harness/face-join-intent.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -40,7 +39,6 @@ const gaps = missing();
 if (gaps.length > 0) console.error(`face-grant-unseated-joinee: SKIPPED — missing ${gaps.join("; ")}`);
 
 let pair: StagedJoinee | null = null;
-let A: LarInstance | null = null;
 let B: LarInstance | null = null;
 let rootB = "";
 let admitCode = -1;
@@ -49,9 +47,9 @@ let bootFailure = "";
 
 describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed by its pin ★", () => {
   beforeAll(async () => {
-    // The joinee rite — one door in the harness; B boots by its PIN alone (no LAR_JOIN_*).
+    // The joinee rite — one door in the harness; B boots by its PIN alone.
     pair = await openStagedJoinee({ tag: "pin", dial: "pin" });
-    A = pair.A; B = pair.B; rootB = pair.rootB; admitCode = pair.admitted.code; bootFailure = pair.joinGate ?? "";
+    B = pair.B; rootB = pair.rootB; admitCode = pair.admitted.code; bootFailure = pair.joinGate ?? "";
     if (!B) console.error(`face-grant-unseated-joinee MEASURE B: never stood — ${bootFailure.slice(0, 240)}`);
   }, 400_000);
 
@@ -59,14 +57,15 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed b
 
   test("① B founds by A's edge, holding the hearth's dial in its PIN", () => {
     expect(admitCode).toBe(0);
-    expect(existsSync(join(rootB, "data/lares/vessel/social-bootstrap.json"))).toBe(true);
+    expect(existsSync(join(rootB, "hearth/vessel/social-bootstrap.json"))).toBe(true);
   });
 
-  test("MEASURE: a joinee with no LAR_JOIN_* stands by its PIN alone — the boot dials the hearth the edge names", () => {
+  test("MEASURE: a joinee stands by its PIN alone — the boot dials the hearth the edge names", () => {
     expect(B, `B never stood: ${bootFailure}`).not.toBeNull();
     const log = B!.bootLog();
     expect(log).toContain("[nexus-join] nexus dial-out up → ws://127.0.0.1:");
-    expect(log).toContain("[nexus-join] presenting the device-delegation edge (fleet)");
+    // The sealed face gate speaks one verdict line.
+    expect(log).toContain("[lar-leaf] verdict OK — crossing open");
     expect(log).not.toContain("[lar-leaf] ANERGIZED");
     expect(log).toContain("phase → live");
   });
@@ -94,16 +93,8 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed b
     expect(taken, `the record never reached B:\n  ${tail}`).toBe(true);
   }, 180_000);
 
-  /** A seats B by summons — the verb runs where A's booted provider lives; the record lands on A's plane. */
+  /** B asks for its seat on the face's intents plane; A's door answers and the record lands on A's plane. */
   async function seatB(): Promise<Record<string, unknown>> {
-    const idDir = join(rootB, "data/lares/identity");
-    const cardFile = readdirSync(idDir).find((f) => f.startsWith(".vessel-card"))!;
-    const contactCard = readFileSync(join(idDir, cardFile), "utf8");
-    const payload = JSON.parse(readFileSync(join(rootB, "admit.json"), "utf8")) as Record<string, unknown>;
-    const deviceEdge = payload["deviceEdge"] ?? (JSON.parse(Buffer.from(String(payload["admit"] ?? ""), "base64url").toString("utf8") || "{}") as Record<string, unknown>)["deviceEdge"];
-    const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", contactCard, deviceEdge } },
-      `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A!), timeoutMs: 60_000 }) as
-      { results?: { summary?: { output?: Record<string, unknown> } } };
-    return r.results?.summary?.output ?? {};
+    return faceJoinOutcome(B!, await requestFaceJoin(B!));
   }
 });

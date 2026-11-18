@@ -16,6 +16,9 @@
  * The reveal-verify SEMANTICS (accept/refuse on the digest, the pre-rotation guard) are exhaustively proven
  * at the mesh layer (wax-stamp.test); this file proves the CLI WIRING over a genuine vault + disk.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -27,7 +30,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome, larDataDir } from "../src/env.js";
 import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc, nexusCharterDocPath,
-  heldSeatKey, listSeatKeys, signAsSeat, writeNexusDoc,
+  heldSeatKey, listSeatKeys, seatReadBackStandIn, signAsSeat, writeNexusDoc,
 } from "@lararium/node";
 import {
   renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead, verifySealLineage,
@@ -127,7 +130,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     const genesis = sealLineageHead(genesisDoc)!;
     const genesisKeys = genesisDoc.kahu.map((k) => k.verifyingKey!.toLowerCase());
 
-    expect(await code(rite.rotate())).toBe(0);
+    expect(await code(rite.rotate({ face: "0" }))).toBe(0);
     const doc = readNexusDoc(larSealHome());
     expect(doc?.sealLineage?.length).toBe(2);
     const head = sealLineageHead(doc)!;
@@ -142,7 +145,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     expect(genesisKeys.some((key) => heldSeatKey(key) !== null)).toBe(false);
     expect(listSeatKeys()).toHaveLength(3);
 
-    expect(await code(rite.rotate())).toBe(0);                    // and again
+    expect(await code(rite.rotate({ face: "0" }))).toBe(0);                    // and again
     expect(verifySealLineage(readNexusDoc(larSealHome())!.sealLineage!)).toBe(true);
     expect(readNexusDoc(larSealHome())?.sealLineage?.length).toBe(3);
 
@@ -169,7 +172,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
   test("★ a rotated chain whose charter reads TORN refuses the re-seat — null means absent OR torn, and they differ ★", async () => {
     await seatVault();
     await code(rite.seat());
-    await code(rite.rotate());
+    await code(rite.rotate({ face: "0" }));
     expect(readNexusDoc(larSealHome())?.sealLineage?.length, "the fixture failed to rotate").toBe(2);
 
     // TEAR the charter: the file stands, its fenced blocks no longer compose. `readNexusDoc` reads null.
@@ -202,6 +205,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
 
   test("RED: a LIVE root prints no card into a JSON answer or a pipe: the seat refuses and writes nothing", async () => {
     await seatVault();
+    seatReadBackStandIn(false); // Exercise the live refusal without the shared harness's explicit read-back seat.
     rmSync(join(root, ".lar-test-scratch"), { force: true });                     // a live root: no staged marker
     const chunks: string[] = [];
     const write = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { chunks.push(String(chunk)); return true; });
@@ -224,7 +228,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: stranger.epochCid, sealLineage: [stranger] });
     const rows = listSeatKeys().length;
 
-    expect(await code(rite.rotate())).not.toBe(0);                // fail-closed: no card answers the head
+    expect(await code(rite.rotate({ face: "0" }))).not.toBe(0);                // fail-closed: no card answers the head
     const after = readNexusDoc(larSealHome());
     expect(after?.sealLineage?.length).toBe(1);            // nothing written — still at genesis
     expect(sealLineageHead(after)!.predecessors).toEqual([]);
@@ -248,7 +252,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     await renameOwnPersona(petnames, 3, "compartment-3");
     await declarePersonaHandle(declarations, 3, "Kahu Delta");
     await standForKahuSeat(declarations, 3, true, "Kahu Delta");
-    expect(await code(rite.rotate({ threshold: "3" }))).toBe(0);
+    expect(await code(rite.rotate({ threshold: "3", face: "0" }))).toBe(0);
 
     const doc = readNexusDoc(larSealHome());
     expect(doc!.kahu.map((k) => k.chairLabel).sort()).toEqual([...KAHU, "Kahu Delta"].sort());
@@ -263,7 +267,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
 
     // A chair that steps down drops at the next roll, and the committed hands still sign.
     await standForKahuSeat(declarations, 1, false);
-    expect(await code(rite.rotate({ threshold: "2" }))).toBe(0);
+    expect(await code(rite.rotate({ threshold: "2", face: "0" }))).toBe(0);
     const after = readNexusDoc(larSealHome())!;
     expect(after.kahu.map((k) => k.chairLabel).sort()).toEqual(["Kahu Alpha", "Kahu Delta", "Kahu Gamma"]);
     expect(verifySealLineage(after.sealLineage!)).toBe(true);

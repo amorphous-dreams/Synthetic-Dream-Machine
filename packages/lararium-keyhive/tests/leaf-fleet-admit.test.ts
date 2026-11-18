@@ -7,8 +7,8 @@
  *
  * TWO PROPERTIES SEPARATE THIS FLEET FROM AN OPERATOR'S.
  *
- * First, a self-stood leaf is HEARTH-AGNOSTIC — it founds with `hearthTrueName: ""`, because a vessel that
- * binds to no engine CID has no place to name. So the gate's hearth check compares "" against "" for every
+ * First, a self-stood leaf is HEARTH-AGNOSTIC — it founds with `hearthTrueName: ""`, because no seed-charter Nexus
+ * stands at a leaf, so its edge has no hearth to name. So the gate's hearth check compares "" against "" for every
  * leaf on earth and separates NOTHING. In an operator's fleet the hearth true-name is a second wall; here the
  * ROOT SIGNATURE carries the whole weight, and the cross-fleet vector below is the one that proves it.
  *
@@ -24,21 +24,25 @@ import { runFaceJoin, type FaceJoinContext } from "../src/face-join.js";
 
 const noopStore = { put: async () => {}, list: async () => [] };
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
+const atomSeeds = new WeakMap<KeyhiveProvider, Uint8Array>();
 const b64 = (s: string) => new Uint8Array(Buffer.from(s, "base64"));
 
 /** A leaf: its own device key, its own keyhive. A browser or a phone, never a node. */
 async function leaf(fill: number): Promise<KeyhiveProvider> {
   const p = new KeyhiveProvider();
   await p.init({ seed: seedOf(fill), eventStore: noopStore });
+  atomSeeds.set(p, seedOf(fill));
   return p;
 }
 const rawKeyOf = async (p: KeyhiveProvider) => (await p.whoami()).replace(/^0x/, "");
 
 /** HEARTH-AGNOSTIC by construction — a self-stood leaf binds to no engine CID, so its edges name no place. */
 async function leafEdge(rootSeed: Uint8Array, joinee: KeyhiveProvider) {
+  const atomSeed = atomSeeds.get(joinee);
+  if (!atomSeed) throw new Error("atom seed absent");
   return buildDeviceDelegation({
     personaRootSeed:    rootSeed,
-    deviceVerifyingKey: await rawKeyOf(joinee),
+    atomSeed,
     hearthTrueName:     "",
     boundEpoch:         0,
   });
@@ -74,7 +78,7 @@ describe("an end-user's fleet — leaves only, no node anywhere", () => {
     expect(edge.hearthTrueName).toBe("");
 
     const out = await runFaceJoin(phone, {
-      kind: "face-join/v1",
+      kind: "face-join",
       contactCard: new TextDecoder().decode(await laptop.contactCard()),
       deviceEdge: edge,
     }, ctxFor(edge.personaRootDid, pg));
@@ -107,7 +111,7 @@ describe("an end-user's fleet — leaves only, no node anywhere", () => {
     for (const v of [laptop, tablet]) {
       const e = await leafEdge(ROOT, v);
       const o = await runFaceJoin(phone, {
-        kind: "face-join/v1", contactCard: new TextDecoder().decode(await v.contactCard()), deviceEdge: e,
+        kind: "face-join", contactCard: new TextDecoder().decode(await v.contactCard()), deviceEdge: e,
       }, ctx(e.personaRootDid));
       expect(o.ok).toBe(true);
       if (!o.ok) return;
@@ -143,7 +147,7 @@ describe("an end-user's fleet — leaves only, no node anywhere", () => {
     expect(theirEdge.hearthTrueName).toBe(myEdge.hearthTrueName);   // "" — the wall an operator's fleet has, gone
 
     const out = await runFaceJoin(mine, {
-      kind: "face-join/v1",
+      kind: "face-join",
       contactCard: new TextDecoder().decode(await stranger.contactCard()),
       deviceEdge: theirEdge,
     }, ctxFor(myEdge.personaRootDid, pg));
@@ -161,7 +165,7 @@ describe("an end-user's fleet — leaves only, no node anywhere", () => {
     const pg   = await faceOf(phone, "lar:///ha.ka.ba/sentinel/pg-leaf-repeat");
     const edge = await leafEdge(ROOT, laptop);
     const summons = {
-      kind: "face-join/v1" as const,
+      kind: "face-join" as const,
       contactCard: new TextDecoder().decode(await laptop.contactCard()),
       deviceEdge: edge,
     };

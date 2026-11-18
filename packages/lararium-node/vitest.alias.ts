@@ -38,7 +38,7 @@ function exportsFor(scopedName: string, dirName: string, src: string) {
 }
 
 /** Re-seated exports first, then barrels (a dir with `index.ts`), then `<sub>.ts`, then the bare package. */
-function aliasesFor(scopedName: string, dirName: string) {
+export function aliasesFor(scopedName: string, dirName: string) {
   const src = path.join(packagesDir, dirName, "src");
   const reseated = exportsFor(scopedName, dirName, src);
   const barrels = fs

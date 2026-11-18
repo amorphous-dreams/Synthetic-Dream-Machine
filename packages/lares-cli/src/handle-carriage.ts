@@ -4,7 +4,7 @@
  * THE CARD IS CARRIED, NEVER FETCHED. A HandleCard is self-certifying — its `sig` verifies against the `nym` it
  * names — so it needs no trusted channel and no reachable authority: a carrier may WITHHOLD it, never forge it.
  * The bytes ride anything a human can hand over — a paste, a QR code held to a screen, a `#card=…` URL fragment,
- * a file on a stick. This is the SAME posture as the hosting-invite / device-admit carriage, applied to recognition:
+ * a file on a stick. It takes the SAME posture as the hosting-invite and fleet-join carriages, applied to recognition:
  * it lets a follow admit an unmet nym without the CLI's `--card <file>`, the card arriving by paste instead.
  *
  * The fragment earns its place because a browser never transmits one — the card reaches the vessel and no relay
@@ -25,7 +25,7 @@
 
 import { base64UrlEncode, base64UrlDecode, utf8Bytes, HANDLE_CARD_DOMAIN, type HandleCard } from "@lararium/mesh";
 
-/** The carriage key a HandleCard rides under — `#card=<base64url>`, a distinct fragment from `#admit=`. */
+/** The carriage key a HandleCard rides under — `#card=<base64url>`, a fragment key of its own. */
 export const HANDLE_CARD_CARRIAGE_KEY = "card" as const;
 
 /**

@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/action-handler">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/action-handler`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/api/action-handler.mem"
 l-space     = "stable"
-mana        = 16
-manao       = 16
-manaoio     = 15
 namespace   = "&#x0950; &#x0901;"
 role        = "source-of-truth: the Residency Model ACTION verb handler family — six verbs, withEffectRecord wrapping, cap-gate law, dispatch shore (Sprint 5)"
 source-file = "packages/lararium-tw5/src/action-handler.ts"
@@ -21,11 +17,9 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/api/action-handler"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! ACTION Verb Handler Family
 
@@ -39,7 +33,7 @@ operated from the CLI by `lares act`.
 
 <<~/ahu>>
 
-<<~ ahu #/verbs>>
+<<~ ahu slot=`#/verbs`>>
 
 !! The verb family
 
@@ -48,10 +42,10 @@ Six residency verbs (SPARQL set-algebra) + a ''non-residency tier'' (INGEST, CRE
 | Verb | Effect | Effect record(s) | Required args |
 |---|---|---|---|
 | ''ADD'' | read `from-bag`'s record for title; write into `to-bag` preserving change-id | accession (`to-bag`) | title, from-bag, to-bag, change-id |
-| ''COPY'' | read `from-bag`'s record; overwrite `to-bag`'s version preserving change-id | accession (`to-bag`) | title, from-bag, to-bag, change-id |
-| ''MOVE'' | For a live source, land its whole carrier group in `to-bag` + RETRACT (hard-remove → //absent//) the group in `from-bag` (falls through to a canon copy beneath; never a kāpae); for a tombstone source, carry the title's delete into `to-bag`, with the delete of each tombstoned member of its group that `to-bag` holds live, then retract the carried tombstones from `from-bag` (a member `to-bag` lacks stays a tombstone in the source and the answer names it); `to-bag` must hold the title live unless `shadow` asks, and `shadow` carries every member | live source: transfer pair, accession (`to-bag`) + deaccession (`from-bag`); tombstone source: two deaccessions, one per bag, no accession | title, from-bag, to-bag, change-id, optional shadow |
+| ''COPY'' | read `from-bag`'s record; overwrite `to-bag`'s version preserving change-id; a slot subject refuses `slot-without-root` (a slot copies only with the root that holds it) | accession (`to-bag`) | title, from-bag, to-bag, change-id |
+| ''MOVE'' | For a live source, land its whole family in `to-bag` (the root and its component slots, by the one family law, `lar:///ha.ka.ba/lares/api/pono/ahu#/family`; a `root/path` title stands as its own meme and stays; a slot subject refuses `slot-without-root`) + RETRACT (hard-remove → //absent//) the family in `from-bag` (falls through to a canon copy beneath; never a kāpae); for a tombstone source, carry the title's delete into `to-bag`, with the delete of each tombstoned member of its group that `to-bag` holds live, then retract the carried tombstones from `from-bag` (a member `to-bag` lacks stays a tombstone in the source and the answer names it); `to-bag` must hold the title live unless `shadow` asks, and `shadow` carries every member | live source: transfer pair, accession (`to-bag`) + deaccession (`from-bag`); tombstone source: two deaccessions, one per bag, no accession | title, from-bag, to-bag, change-id, optional shadow |
 | ''CLEAR'' | enumerate live titles in bag, tombstone each | disposition (bag-level) | bag |
-| ''DROP'' | tombstone every live title in bag + write the retirement marker into the bag's own doc; the registry row stays (see Handler Law 6) | disposition (`bag-retired`, under the fixed marker id) | bag |
+| ''DROP'' | tombstone every live title in bag + write the retirement marker into the bag's own doc; the registry entry stays (see Handler Law 6) | disposition (`bag-retired`, under the fixed marker id) | bag |
 | ''LOAD'' | land operator-supplied carriers into `to-bag` (carrier-borne; islands never fetch — `source-uri` = provenance) | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
 | ''INGEST'' | disk→records through the Confluence — the three-way reconcile gate (disk · synced · records meet; replace-by-group, NFC; + whole-carrier `deletions`; surface-never-overwrite) — the non-residency precedent | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
 | ''CREATE'' | mint a new record into a PLANE rather than move one between bags — the plane grades the cap: the catalog plane (household) takes `read`, the oracle plane (temple) takes `admin`. Handled in the REACTOR, never `executeAction`, because the gate must read the plane before the mint | accession (the plane's doc) | plane, title, and the record to mint |
@@ -61,7 +55,7 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Handler Law
 
@@ -82,7 +76,7 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
    MOVE on the root and on each child of the group. The `change-id` argument (`lares act` mints a
    fresh one where the caller passes none) rides the receipt and the effect record, and lands on a
    record only where the source carries none. Derived text never keys on this id: it survives an
-   edit (`wiki-corpus-reader.ts` memos on the body). <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns">>
+   edit (`wiki-corpus-reader.ts` memos on the body). <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns`>>
 # ''Kāpae or retract, never silent delete'' (Anti-pattern #3 defense). CLEAR /
    DROP raise a ''kāpae'' tombstone (shadows lower bags — resurrection-prevention);
    A live-source MOVE ''retracts'' its source to //absent// (hard-remove → falls through, so the
@@ -94,7 +88,7 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
    membership + per-verb required args; malformed input throws before dispatch.
 # ''A retired bag takes no landing.'' DROP writes one `bag-retired` disposition at a
    fixed title (`<bag>/ledger/residency/retired`) in the bag's own doc, and a second DROP
-   keeps the first marker. The registry row STAYS, the name's only pointer to the retired
+   keeps the first marker. The registry entry STAYS, the name's only pointer to the retired
    doc and its ledger. Every verb that writes a bag (ADD, COPY, MOVE, CLEAR, LOAD and INGEST,
    a watcher's unattended wave among them; `writesBag` in the residency verb table) reads the
    marker on its destination and refuses by name (`bag-retired: …`), pointing at CREATE; a
@@ -105,12 +99,12 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
    island holds the hand owed on its alert rail. A write that only adds new live effect records naming that
    bag, exactly as the ledger's own builder writes them, to its own residency ledger passes, so the record that retires the bag lands; no tombstone,
    removal, overwrite or write of the marker's own title passes. CREATE reads a retired doc as absent: it mints a fresh doc and re-points the
-   row, so a retirement always names the doc the row pointed at when DROP ran. A wiki's
+   entry, so a retirement always names the doc the entry pointed at when DROP ran. A wiki's
    recipe slot belongs to the wiki (`lares wiki remove-bag`), never to a bag verb.
 
 <<~/ahu>>
 
-<<~ ahu #/dispatch>>
+<<~ ahu slot=`#/dispatch`>>
 
 !! Dispatch Shore
 
@@ -131,15 +125,15 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/effect-record-surface">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model#/effect-record-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mYRNiS_1pgBR_-6d0EQp-Ga-osWWOHMB9QCK5w-JHTI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G544DweD_SgN6BZBYIT6wUzu6d2OGOWk_3jyTLZ-OU8`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

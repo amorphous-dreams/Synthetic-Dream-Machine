@@ -1,0 +1,91 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/dogfood-stand-runbook`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-08 (file date) — source `.lares-scratch/controller/dogfood-stand-runbook.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/dogfood-stand-runbook"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/dogfood-stand-runbook"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! dogfood-stand-runbook.md — plan, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/controller/dogfood-stand-runbook.md` (plan, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/dogfood-stand-runbook`>>
+
+! Dogfood stand — runbook (operator ruling 2026-11-07: "Pono, approve the dogfood/keeper split.")
+
+A DOGFOOD hearth: re-standable as often as needed (single-operator re-found, 2026-10-31). The keeper rite keeps every qualification. Source: founding-runbook #/prepare, #/pre-rite, #/found; the landmark map's M4 route. The seat prepares 1-3; the operator's hands run 4 on an attached TTY.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/0-ready-state`>>
+
+!! 0. Ready state (operator, 2026-11-07, item 4)
+The main repo reaches the full ready-to-dogfood state (every gate lane landed, the span green), then a FULL rebuild (`pnpm build` and the product image at the landed head), then the check that the live Lararium launches containerized, web3 and local-first.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-gate`>>
+
+!! 1. Gate (seat)
+* Lanes: lease-end slice 2, L23 and the harness batch land; P27 PARKED (CI reds real boots; the old deciders stand).
+* The dogfood proof set (lane `dogfood-proof`, a deterministic e2e set reusing existing suites first) reads green in CI: the stand, memory surviving a re-stand (L9 re-pour reproduces), the MCP seat's meme_put/meme_get round-trip, a booted vessel mounting its islands with no manifest refusal, the containerized web3 local-first launch.
+* The span's CI and held-out read green at the head the image builds from.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-homes`>>
+
+!! 2. Homes (seat prepares, nothing deleted)
+* State home, kept across re-stands: `~/.lares/state`, named by `~/.lares/lares-surface.env` (the env the `lares` MCP seat already reads, so the seat reaches the hearth unchanged). The old walk's state there renames aside first: `mv ~/.lares/state ~/.lares/state.before-dogfood && mkdir ~/.lares/state`.
+* Workspace: THE MAIN REPO (operator, 2026-11-07: the workspace question mu'd). `LARES_WORKSPACE=/home/joshu/Synthetic-Dream-Machine`. Live wiki and canon writes land in the tracked tree as source-control write-back. Branch plan (operator, 2026-11-07): once the dogfood stands AND the proof set reads green, all outstanding work merges into `feature/green-jello-dinosaur-5`, that merges to `main`, and the primary repo checks out ONE root branch, `develop`, where the house both dogfoods and develops until the roadmap clears; milestones PR back to `main`. No split: lanes branch off `develop` and land into it; the live wiki's writes land on `develop` too.
+* A re-stand renames the old state home aside (`mv ~/.lares-hearth ~/.lares-hearth.<label>`), never deletes; memories re-pour by content key (L9) from the old projection.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-image`>>
+
+!! 3. Image (seat, LAST, at the landed head)
+`cd $LARES_WORKSPACE && GIT_REV=$(git rev-parse HEAD) docker compose -f docker-compose.surface.yml build lares` and read `org.opencontainers.image.revision` back.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-the-stand`>>
+
+!! 4. The stand (operator's hands, attached TTY, in $LARES_WORKSPACE with both vars exported)
+```sh
+tools/lares-container.sh found --hearth --name '<label>' --chair '<chair>'   # route + cold-key card read-back on paper
+tools/lares-container.sh up                                                    # live unlock on the TTY
+tools/lares-container.sh vessel seed --apply --yes
+tools/lares-container.sh vessel read
+tools/lares-container.sh persona list --json
+tools/lares-container.sh nexus seal show
+tools/lares-container.sh meme list --recipe default --json
+```
+(`found --hearth` founds persona zero whole; the runbook's separate `persona new 0` line is drift the canon pass trues.)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-read-backs`>>
+
+!! 5. Read-backs (seat, after the stand)
+* `<state>/wikis/kahua-<tag>` and `<state>/bags/kahua-<tag>` exist; no `bags/daemon` anywhere (the rite stops there otherwise).
+* The `lares` MCP seat connects to the standing daemon; `meme_put` then `meme_get` round-trips one tiddler; the file lands in the projection.
+* Then the M5 spine opens: L17 MCP full TW5 caps, L8/L10/L11, L18, L19 (the flat memories move in), L13.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FkIhzDBA9KGRInrGx1YLHA6mZOR06luYVdGOljqga1M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

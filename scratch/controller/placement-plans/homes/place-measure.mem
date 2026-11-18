@@ -1,0 +1,97 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-measure`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-10 (file date) — source `.lares-scratch/controller/placement-plans/homes/PLACE-MEASURE.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-measure"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-measure"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! PLACE-MEASURE.md — plan, 2026-11-10
+
+Verbatim scratch record `.lares-scratch/controller/placement-plans/homes/PLACE-MEASURE.md` (plan, file date 2026-11-10); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/placement-measurement-completed-inventory`>>
+
+! Placement measurement — completed inventory
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/disk-ingress-boundary`>>
+
+!! Disk ingress boundary
+
+The boundary does not yet bind the source mirror to its destination. `lares-cli/src/commands/ingest.ts` accepts `--source` and `--to` independently; `ingest-core.ts:fileToUriForSource` explicitly leaves designation of the target to the caller. The island's `action-handler.ts` writes through `access.write(action.toBag)` and does not authenticate the source path against a mirror grant. LOAD similarly accepts supplied carriers and `toBag`, with `sourceUri` as provenance. A structural ward must bind a disk wave to an actual granted mirror and its bag at a trusted boundary, including deletions, renames and kāpae. It must account for deliberate LOAD from arbitrary source directories into a working layer.
+
+Foreign titles are legitimate content: native packs and the kahua title-path mirror preserve titles independently of the resting bag. The `bag` field must not select the store; the selected store does. A title-prefix check would violate the ruling. Observe sources already refuse at the CLI, but that check alone does not establish the destination grant at the island.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/current-homes-and-readers`>>
+
+!! Current homes and readers
+
+| Family | Current write and read path | Current home |h
+| Summons | mesh `verb-tiddler.ts` mints; tw5 `verb-dispatcher.ts` scans | daemon document / composite |
+| Outcomes, effect index | tw5 `verb-vm.ts` writes; dispatcher and node `uds-channel.ts` read | daemon wiki default working slot |
+| Receipt facts | node `uds-channel.ts` FactLedger writes and reads | daemon wiki working slot |
+| Ward audits | tw5 `worker-data-verbs.ts` writes | daemon composite; audit destination needs tracing per call |
+| Residency effects | mesh `effect-record.ts`, tw5 `action-handler.ts`; composite retirement checks read | each affected bag, including mirrored bags |
+| Group-secret seals | keyhive `ceremony-core.ts`; node `open-node-vessel.ts` reads for sibling channel | vessel daemon document |
+| Dyads | keyhive `ceremony-core.ts`, mesh `dyad.ts`; board reader also folds signed fleet edges | vessel daemon document; separate fleet edge board |
+| Persona acts | keyhive `ceremony-core.ts`, node `persona-act-store.ts` and `commands/device-admit.ts`; proof readers fold acts | persona plane; admission also copies acts to daemon document |
+| Keyhive cap events | keyhive `daemon-event-store.ts` writes and lists; `boot-daemon-keyhive.ts` replays | daemon composite / daemon document |
+| Realm-bag announcements | node `realm-plane.ts`; mesh `realm-bag.ts` and `nexus-board-climb.ts` read | crossroads document |
+| VM plane | tw5 `island-adaptor.ts` routes scratch locally | volatile VM, not a persisted bag |
+| Swarm controls | mesh `swarm-tiddlers.ts`, node `swarm-wiki.ts` and `commands/swarm.ts` | daemon wiki; exact per-writer layer requires further tracing |
+| Mailbox, delegate, face-row, lease-epoch, other ledger | node `vessel-mailbox.ts`, tw5 `daemon-vm-core.ts`, mesh `epoch-lease.ts` | daemon-associated stores; exact per-writer layer requires further tracing |
+
+!!! Completed trace of the remaining families
+
+| Family | Writers and readers | Current rest |h
+| Mailbox | `node/vessel-mailbox.ts` parks and marks delivered via explicit `composite.put(..., {bag: DAEMON_BAG_ID})`; drain lists and reads from the composite. Node vessel wiring parks undeliverable alerts and drains on wiki breath. Browser wiring warns and drops. | daemon document |
+| Delegate / face-row | `tw5/daemon-vm-core.ts` builds request data in memory and calls `runLocalVerb`; `verb-local-dispatch.ts` invokes the registered handler. Face-row responses return over the socket. These are not persisted invocation records. | no row; handler business effects land according to that handler |
+| Lease epoch | `node/lease-rekey.ts` writes to a supplied handle; persona lease and vessel rekey pass the daemon handle. Vessel readers scan that same daemon document (`open-node-vessel.ts`, `vessel-raise.ts`). | daemon document |
+| Swarm | Signed acts write through `node/commands/swarm.ts` to the face's promote-board document; readers fold that board. Separate transient `$:/lares/swarm/**` UI rows live in the daemon wiki. | face promote board for signed acts; daemon wiki layers for UI controls |
+| Ward audit | `tw5/worker-data-verbs.ts` calls bagless `composite.put`, which routes to default writable. Tests and handler behavior place it in the wiki working layer. | wiki working layer |
+| Persona acts | Founding writes genesis acts to the persona plane (`keyhive/ceremony-core.ts`); device admit appends there (`node/persona-act-store.ts` from `commands/device-admit.ts`). Admission also copies carried acts to the local daemon document (`ceremony-core.ts`), creating a duplicate. Boot proof and several readers fold persona + daemon docs; lease, swarm, promote, intent and kahua readers generally read persona plane only. | persona plane plus redundant local daemon copy |
+
+The per-family guards/readers include `node/tests/uds-face-row-socket-only.test.ts`, `tw5/tests/daemon-vm-run-as-face.test.ts`, `node/tests/lease-rekey.test.ts`, `raise-reads-the-leased-epoch.test.ts`, `mesh/tests/swarm-board.test.ts`, `swarm-door.test.ts`, `tw5/tests/worker-data-verbs.test.ts`, `node/tests/persona-act-boot.test.ts`, `mesh/tests/persona-act-board.test.ts`, `keyhive/tests/shared-face-docs.test.ts`, and `node/tests/device-admit-face-edge.test.ts`. Mailbox lacks a named node test; `tw5/tests/seal-refusal-reaches-the-ledger.test.ts` covers related wiring.
+
+The family count corrects two earlier overgeneralizations: delegate and face-row invocation rows do not persist, and signed swarm acts sit on a face promote board rather than in the daemon wiki. The daemon wiki's swarm UI remains a distinct family.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/homes-to-mint`>>
+
+!! Homes to mint
+
+`wiki-recipe.ts:expandRecipe` currently derives canon from the wiki slug; `daemon-vm-core.ts` adds the daemon document and optionally persona document to its composite and builds the daemon recipe through `kahuaRecipe`. The working document receives outcomes and receipts independently of the daemon document. A control home therefore needs an explicit vessel-scoped document and handle, write routing for all control writers, and reader subscriptions; merely renaming the daemon bag cannot move the working-slot records or per-bag effects.
+
+A secret home needs separate document custody and access grants, never a wiki recipe layer or a disk mirror. Founding and admission (`keyhive/src/ceremony-core.ts`, `node/src/commands/init.ts`, `commands/device-admit.ts`), replay, peer sync and browser construction must all follow it. Persona acts currently occupy more than one document, so every owner and reader needs an explicit sweep. Face-bound daemon canon needs minting at face creation/join, registry and capability binding, recipe expansion and a per-face mirror (`node/src/bag-paths.ts`); `bags/kahua` remains the read-only next library.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/predicate-candidates`>>
+
+!! Predicate candidates
+
+The residency uses of `isControlPlaneUri`, `isDaemonCanonWithheld`, `isBagManifestUri`, `isVolatileVmUri`, `isEffectRecordUri`, `isRealmBagAnnounceUri`, `isNexusHandlesUri`, `isTempLayerInternalTitle`, `declaresNoProjection`, and the residency runs in `projection-filter.ts` need review. Some helpers also serve non-projection semantics: for example, effect-record retirement and enumeration use `isEffectRecordUri` in `composite-store.ts`; removing those uses without replacing their actual ledger contract would change behavior. `isVolatileVmUri` also routes VM scratch in `island-adaptor.ts`. Ownership, identity and routing uses need separate treatment from residency decisions.
+
+Inventory completed for the families named by the ruling. Delegate and face-row invocation requests do not persist; signed swarm acts remain on the face promote board, while transient swarm UI controls rest in daemon wiki layers. Step 3 must preserve these distinctions while moving the persisted daemon control families. The mirror-source grant gap remains the structural dependency Step 4 must close.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fydndq1Ys_xfWXJMjoTQY-6w6LQ8k7TdvlE-gCOCu2w`>>
+
+<<^ code=`&#x0004;` to=`?`>>

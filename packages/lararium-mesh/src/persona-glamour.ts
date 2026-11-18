@@ -38,7 +38,7 @@ import {
 import { mintHandleInception, handleKeyDigestOf, type HandleKelEvent } from "./handle-kel.js";
 import { sealKeySetHash } from "./wax-stamp.js";
 import type { DelegationEdge } from "./delegation-edge.js";
-import { ed25519SignerFromSeed } from "./auth-wire.js";
+import { ed25519SignerFromSeed } from "./ed25519-door.js";
 import { hexToBytes } from "./crypto.js";
 import { didFromVerifyingKey } from "./lar-did.js";
 import { announceToWhoFace } from "./who-face.js";
@@ -60,8 +60,8 @@ export interface PersonaPublicHandleRecord {
   readonly handleIndex: number;
   /** The context-index the veiled face derived at (default PERSONA_GLAMOUR_CONTEXT). */
   readonly contextIndex: number;
-  /** The face's handle-KEL PREFIX — the card's `nym`, the STABLE self-certifying identifier (retired off the
-   *  bare veiled key onto the founded chain). A re-mint reproduces it, so the lineage holds across renewals. */
+  /** The face's handle-KEL PREFIX — the card's `nym`, the STABLE self-certifying identifier (the founded
+   *  chain, never the bare veiled key). A re-mint reproduces it, so the lineage holds across renewals. */
   readonly nym: string;
   /** The current published display glamour. */
   readonly glamour: string;

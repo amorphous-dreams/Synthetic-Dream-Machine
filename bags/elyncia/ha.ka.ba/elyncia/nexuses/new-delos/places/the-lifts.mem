@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-lifts">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-lifts`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/the-lifts.mem"
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "routes — the mana-lift network: the Nexus's vertical pointcrawl legs; keeper unruled"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-lifts"
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/the-lifts"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Mana Lifts
 
@@ -35,6 +31,6 @@ politics.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wMIwNp1Ax1oKKuSezCybjQ4dQ5kcDoiFEfDpVP2hb2k
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fl3IKLo2LsSCStruopNWU4036sd-S80J6SyaJVVtWYM`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

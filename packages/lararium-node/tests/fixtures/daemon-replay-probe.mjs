@@ -31,8 +31,17 @@ async function open(msg) {
   opts.network = [new MessageChannelNetworkAdapter(msg.syncPort)];
   repo = new Repo(opts);
   try {
-    const progress = repo.findWithProgress(msg.grants.wikiUrl);
-    const handle = await progress.whenReady();
+    // The island's one peer is the vessel's main thread; a Repo with no peer standing settles a find "unavailable"
+    // at once, which says nothing about the document. The ask waits for the peer's arrival (the Repo's own `peer`
+    // event) and asks again; an unavailable with a peer standing is the relay's word and stays a fault.
+    let handle;
+    for (;;) {
+      try { handle = await repo.findWithProgress(msg.grants.wikiUrl).whenReady(); break; }
+      catch (error) {
+        if (!/is unavailable/.test(String(error)) || repo.peers.length > 0) throw error;
+        await new Promise((resolve) => repo.networkSubsystem.once("peer", resolve));
+      }
+    }
     const report = () => event(Boolean(handle.doc()?.tiddlers?.[MARKER]));
     handle.on("change", report);
     report();

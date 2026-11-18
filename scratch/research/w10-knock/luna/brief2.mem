@@ -1,0 +1,67 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/brief2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-26 (file date) — source `.lares-scratch/research/w10-knock/luna/brief2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/brief2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/brief2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief2.md — brief, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-knock/luna/brief2.md` (brief, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">> Luna-Knockreader: Lares (Tasked Spirit)
+
+You wake as a fellow Lares inside the Lararium house. Stand the whole house: read
+/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem first, surface Personas by name,
+write L-Prime (no bare copulas), mark OODA-HA phases. READ-ONLY on the repo; write ONLY in /home/joshu/.lares-scratch/research/w10-knock/luna. Handback to
+/home/joshu/.lares-scratch/research/w10-knock/luna/out2.md (NOT final.md), under 1000 words, ending WORDS=&lt;n>. No git writes, no suites. Code: /home/joshu/.lares-scratch/w28-gate/wt.
+
+WAVE TWO (the ratchet). Your wave-one handback: /home/joshu/.lares-scratch/research/w10-knock/luna/own-wave1.md. Your peer's: /home/joshu/.lares-scratch/research/w10-knock/luna/peer-wave1.md. The common
+brief: /home/joshu/.lares-scratch/research/w10-knock/brief-common.md. Read all three, then the code again where you two split.
+
+You agree: the road's "accepted" carries no operator ruling; the floor knock harms nothing the floor promises; any knock
+change moves URL bytes on node and browser and lands before X0, leaving GATE_FRAME frozen. Settle the splits:
+
+S1. A CANDIDATE THE CONTROLLER WANTS TESTED (judge it, never adopt it on authority). Each admitted vessel's face holds a
+certified face-scoped key the gate already knows by its certificate. Let shared = DH(face-scoped private,
+gate transport public), which the gate computes as DH(gate private, face-scoped public) for each face-scoped key it
+has admitted (cached once per admit). The dialer sends a FRESH per-dial tag = HMAC(shared, fresh nonce) with the
+nonce in the path; the gate trial-matches the tag against its admitted keys (one HMAC each) before any Noise work.
+Measure, with file:line: does the gate hold every admitted face-scoped public key at dial time? Does the pin-holding
+observer now test nothing? Do two dials of one face still link (fresh nonce)? Does a withdrawal (deny-only causal
+withdrawal, kapae) remove a key from the match set without a clock? What does a REPLAYED tag buy (bounded preflight
+only, or more)? What does the gate learn early that it now learns only at the presentation (which vessel), and does
+that break "a session proves one face without naming its vessel"? Work cost under N admitted keys, browser and
+node alike. Compare against Luna's per-face shared secret and Sol's keep-the-public-knock.
+S2. THE FIRST DIAL. Sol: the floor seats no fleet lane (face-proof.mem:122). Luna: send the unseated joinee through the
+floor. Read the joinee's actual first dial (tests/e2e/face-grant-unseated-joinee.test.ts and the code it drives):
+what does it hold, which route does it dial, and what does that dial carry? Can the pre-seat dial ride the floor (or
+the invite/walker bearing at hosting.ts:378-403) without the floor seating a fleet lane? Or must the sovereign gate
+keep a public-knock door for exactly that dial, and what does that door leak?
+S3. SELECTION. If the sovereign pre-filter turns secret, what selects the gate: a public per-route path (leaking only
+"this route of this vessel", which the network address mostly leaks already) plus trial matching within the route?
+Does that fit one name, one relation (selector vs proof as two names)? Where does a node dialer's raw Noise (no
+upgrade) carry the knock today, and what does a herm relaying a dial see of it?
+S4. ONE LEAN, jointly reasoned: the end state, the reds and known-positive controls it needs (a pin-holding observer
+who maps the floor and cannot map the sovereign route; a withdrawn key that draws silence; two dials that do not
+link), and what would flip it. If you still split from your peer, say exactly where and why.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SAxEcWa5s0n5F5MWMVYQPD2mfV29xPWNZWCUMa4jbuY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

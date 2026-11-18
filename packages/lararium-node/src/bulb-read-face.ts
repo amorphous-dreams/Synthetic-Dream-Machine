@@ -1,5 +1,5 @@
 /**
- * bulb-read-face — hand over the BULB by CID over the node's PUBLIC read-face (the oracle-substrate floor).
+ * bulb-read-face — hand over the BULB by CID over the node's PUBLIC read-face (the flow-substrate floor).
  *
  * Routes (GET/HEAD-only, on the SAME HTTP server the FLOW-map read-face uses, under a distinct `/bulb/` prefix):
  *   GET /bulb/<cid>.bin   → the genesis seed (under the bulb CID) or one seed-named engine/plugin CAS blob
@@ -40,7 +40,7 @@ import { plainRecord } from "@lararium/mesh";
 import { readVerifiedCasBlobFromFs } from "./node-cas.js";
 import { buildBulb, type BulbArtifact } from "./bulb.js";
 import { ARRIVAL_WELL_KNOWN_ROUTE, WELL_KNOWN_LAR_ROUTE_KEY } from "./pronaos-adapter.js";
-import type { OracleReadFace } from "./oracle-read-face.js";
+import type { FlowReadFace } from "./flow-read-face.js";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 
 /** The public-CAS shore the read-face re-shares from: the bytes a cid names, and whether a PUBLIC pointer names it. */
@@ -59,7 +59,7 @@ export interface RealmShoreBook {
 }
 
 /**
- * THE CARRIER'S OWN LANE — the books a Herm folds off its @crossroads replica.
+ * THE CARRIER'S OWN LANE — the books a Herm folds off its realm-announce board replica.
  *
  * A Herm holds no charter, so it stands in no realm and folds no registration: the realm lane above named
  * nothing on the one vessel it was built for (measured — `nexus realm-bags` on the Herm read `bags: []` while
@@ -69,14 +69,15 @@ export interface RealmShoreBook {
  * book this carrier never replicated answers nothing — a rejected find withholds, never serves.
  */
 export async function announcedRealmBooks(opts: {
-  readonly crossroadsDoc: () => LarDoc | null | undefined;
+  /** The Nexus's realm-announce board (`realmAnnounceDocUrl`), never the crossroads bag. */
+  readonly announceDoc:   () => LarDoc | null | undefined;
   readonly findBook:      (docUrl: string) => Promise<LarDoc | null>;
   /** Fired once per ask with what the board named and what this carrier could actually read — the one place
    *  an operator sees WHY a public body draws a 404 (no announce · an unreplicated book · an empty book). */
   readonly onLog?:        (line: string) => void;
 }): Promise<RealmShoreBook[]> {
   const books: RealmShoreBook[] = [];
-  const announcements = publicRealmBooksFromDoc(opts.crossroadsDoc());
+  const announcements = publicRealmBooksFromDoc(opts.announceDoc());
   opts.onLog?.(`announce lane: ${announcements.length} PUBLIC book(s) on the board`);
   for (const announced of announcements) {
     const doc = await opts.findBook(announced.docUrl).catch(() => null);
@@ -98,7 +99,7 @@ export async function announcedRealmBooks(opts: {
  *
  *   · THE REGISTRATION ROAD — every registration this vessel's realm plane carries, at the tier the
  *     registration DECLARED. A vessel that stands in no realm folds nothing here.
- *   · THE ANNOUNCE ROAD — the PUBLIC books the @crossroads board names (`announcedRealmBooks`).
+ *   · THE ANNOUNCE ROAD — the PUBLIC books the realm-announce board names (`announcedRealmBooks`).
  *
  * THE REGISTRATION WINS THE COLLISION. A bag the registration road already named never takes a second entry
  * off the board, so a stale PUBLIC announce can never re-tier a book whose registration reads CONTRACT here.
@@ -107,7 +108,7 @@ export async function announcedRealmBooks(opts: {
 export async function hermRealmShoreBooks(opts: {
   readonly realmStanding: () => Promise<ReadonlyMap<string, { bagUri: string; docUrl: string; readTier: CapTier }>>;
   readonly findDoc:       (docUrl: string) => Promise<LarDoc | null>;
-  readonly crossroadsDoc: () => LarDoc | null | undefined;
+  readonly announceDoc:   () => LarDoc | null | undefined;
   readonly onLog?:        (line: string) => void;
 }): Promise<RealmShoreBook[]> {
   const books: RealmShoreBook[] = [];
@@ -123,7 +124,7 @@ export async function hermRealmShoreBooks(opts: {
     });
   }
   const announced = await announcedRealmBooks({
-    crossroadsDoc: opts.crossroadsDoc,
+    announceDoc:   opts.announceDoc,
     findBook:      opts.findDoc,
     ...(opts.onLog ? { onLog: opts.onLog } : {}),
   });
@@ -151,11 +152,15 @@ export function publicCasShore(opts: {
   readonly bagTier:    (bagUrl: string) => CapTier | null;
   /** The realm lane — absent, the shore answers exactly as its own planes answer. */
   readonly realmReferences?: () => Promise<Iterable<RealmShoreBook>> | Iterable<RealmShoreBook>;
+  /** THE RELEASED-FLOOR LANE: the cids the Nexus's HEAD release names (`floor-porch` `releasedFloorCids`, derived from the
+   *  verified chain at each ask). A herm carries the floor it presents; absent, the shore answers as before. */
+  readonly releasedFloor?: () => Promise<ReadonlySet<string>> | ReadonlySet<string>;
 }): PublicCasShore {
   return {
     // Bytes altered at rest never leave: a blob that fails its own address reads as a blob this shore lacks.
     read: (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
     isPublic: async (cid) => {
+      if (opts.releasedFloor && (await opts.releasedFloor()).has(cid)) return true;
       const own   = [...(await opts.references())];
       const books = opts.realmReferences ? [...(await opts.realmReferences())] : [];
       const realm = books.flatMap((b) => [...b.entries].map((e) => ({ book: b, entry: e })));
@@ -185,7 +190,7 @@ export async function mountBulbReadFace(args: {
   readonly dispatcher?: HttpFaceDispatcher;
   /** The Herm re-share shore; absent, `/cas/<cid>` answers the closed door for every cid. */
   readonly publicCas?: PublicCasShore;
-}): Promise<OracleReadFace> {
+}): Promise<FlowReadFace> {
   const { httpServer, bulb, onLog, publicCas, dispatcher } = args;
   const { cid, blobs } = buildBulb(bulb);
   const blobByCid = new Map<string, Uint8Array>(blobs.map((b) => [b.cid, b.bytes]));
@@ -265,7 +270,7 @@ export function mountHermWaymark(args: {
   readonly httpServer:  Server;
   readonly bulbCid:     string;
   readonly dispatcher?: HttpFaceDispatcher;
-}): OracleReadFace {
+}): FlowReadFace {
   const bytes = hermWaymarkBytes(args.bulbCid);
   const owns = (req: IncomingMessage): boolean => new URL(req.url ?? "/", "http://localhost").pathname === ARRIVAL_WELL_KNOWN_ROUTE;
   const onRequest = (req: IncomingMessage, res: ServerResponse): void => {

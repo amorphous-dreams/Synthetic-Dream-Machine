@@ -21,6 +21,8 @@
  *   - tombstone() marks deletion in live wiki state; no hard delete by default.
  */
 
+import { canonicalJson } from "./crypto.js";
+
 // ---------------------------------------------------------------------------
 // MemeProjection — typed slot for a downstream CRDT integration
 // ---------------------------------------------------------------------------
@@ -87,15 +89,6 @@ export interface LarTiddlerMeta {
   readonly authority?:     string;
   readonly recipe?:        string;
   /**
-   * Residency Model schema-version tag — Anti-pattern #2 defense (schema drift
-   * across multi-bag residency). Records carry their schema-version so a
-   * consumer can tell which shape generation it is reading. Absent = no
-   * migration needed. Convention: short stable string (e.g. "v1", "lore-2",
-   * "2026-05"). The version-keyed read-time lens registry that once projected
-   * these (`lensFor`/`identityLens`) was unused residue and is retired.
-   */
-  readonly schemaVersion?: string;
-  /**
    * Residency Model change-id — Anti-pattern #1 defense (causal-history
    * severance on copy). When an ACTION verb (ADD / COPY / MOVE / LOAD)
    * transfers a tiddler between bags, the handler MUST preserve the
@@ -118,6 +111,11 @@ export interface LarTiddlerRecord {
 export interface LarWriteOptions {
   readonly bag?: string;
   readonly base?: readonly string[];
+  /**
+   * `writeFamily` alone: titles that RETRACT to absent inside the same change (a hard remove, never a kāpae
+   * tombstone), so the cascade falls through and a record beneath surfaces. A reveal delete of a family rides here.
+   */
+  readonly retracts?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -172,12 +170,25 @@ export interface LarTiddlerChange {
   readonly bag?:      string;
   /** Heads of the bag document read in the same synchronous stretch as record. */
   readonly heads?:    readonly string[];
-  /**
+    /**
    * On the envelope a WRITE fires: the heads of the change that write made. A plain write sits on
    * top of the doc, so this equals `heads`; a based write (`changeAt`) names its own change alone.
    * The writer's next write of this title takes it as its base.
    */
   readonly writtenAt?: readonly string[];
+  /**
+   * The store already fired this change's own envelope when it wrote it; this envelope re-reads the title after the
+   * provider's debounce, under the writer's origin, for the shores that land from the debounced wave (the island
+   * adaptor, then the disk projector reading its wiki). A reader that took the writer's envelope drops it: it carries
+   * no write of its own. Absent on every write's own envelope and on every remote or sync merge.
+   */
+  readonly redelivery?: true;
+}
+
+/** The conditional hard-remove a promotion's retract rides (`LarTiddlerStore.remove`). */
+export interface LarRemoveOptions {
+  /** Remove only while the stored record is live and its fields equal these. */
+  readonly only?: LarTiddlerRecord;
 }
 
 // ---------------------------------------------------------------------------
@@ -211,6 +222,15 @@ export interface LarTiddlerStore {
   getHeads?(): Promise<readonly string[] | null>;
 
   /**
+   * Optional causal-past read for CRDT-backed stores: true where the document, read as of the heads `have`,
+   * holds every head in `named`. A store with no causal history omits it, and a caller reads that as false.
+   */
+  coversHeads?(have: readonly string[], named: readonly string[]): boolean;
+
+  /** Optional: true where the document holds every head in `named` (those changes reached this replica). */
+  holdsHeads?(named: readonly string[]): boolean;
+
+  /**
    * Write a record to live wiki state.
    * Must NOT write to lares/ (canon path). Future canon promotion must use a
    * Keyhive-backed proposal/receipt graph outside this store.
@@ -227,7 +247,7 @@ export interface LarTiddlerStore {
   tombstone(title: string, origin: ChangeOrigin, options?: { readonly base?: readonly string[] }): Promise<void>;
 
   /**
-   * Write a meme FAMILY — a root, its slot children, and the orphan children it no longer declares —
+   * Write a meme FAMILY — a root, its slot children, and the orphan children it leaves undeclared —
    * as ONE atomic change, so no peer ever sees the root pointing at a tombstoned child or a child
    * without its root. `options.bag` routes exactly as `put`'s does. A store that cannot write
    * atomically omits this and its callers write member by member.
@@ -239,14 +259,20 @@ export interface LarTiddlerStore {
     options?:   LarWriteOptions,
   ): Promise<void>;
 
+  /** A family reaches subscribers before its writeFamily promise settles. */
+  readonly notifiesSynchronously?: true;
+
   /**
    * HARD-remove a title (delete the record so `get` returns null = ABSENT),
    * distinct from `tombstone`'s kāpae hide. Absent FALLS THROUGH the cascade to
    * a lower bag (vs kāpae, which shadows it). The retract a MOVE/promotion uses
    * on its source so a lower-bag canonical copy surfaces — "tombstone distinct
    * from absent" (residency-model anti-pattern #3). Audit lives in the ledger.
+   * With `only`, the title leaves only while it still holds a live record whose fields equal `only`'s and no
+   * concurrent value beside it, read and removed in one synchronous change: a record another hand wrote, deleted or
+   * wrote concurrently since stays as it stands until it is settled.
    */
-  remove(title: string, origin: ChangeOrigin): Promise<void>;
+  remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void>;
 
   /**
    * Subscribe to store changes. Returns an unsubscribe function.
@@ -268,3 +294,9 @@ export interface LarTiddlerStore {
   addProjection?(p: MemeProjection): () => void;
 }
 
+
+/** True where `held` is a live record whose fields equal `only`'s (a conditional remove's test, `LarRemoveOptions`). */
+export function holdsOnly(held: LarTiddlerRecord | null | undefined, only: LarTiddlerRecord): boolean {
+  if (!held || held.meta?.deleted) return false;
+  return canonicalJson(JSON.parse(JSON.stringify(held.tiddler))) === canonicalJson(only.tiddler);
+}

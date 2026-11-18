@@ -4,6 +4,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { POLL_FLOOR_S } from './ci-verdict.mjs';
 
 export const USAGE = 'usage: burst-bisect.mjs <lane> <good-sha> <bad-sha> [--max <n>] [--all]';
 const exec = promisify(execFile);
@@ -46,7 +47,7 @@ function verdictFrom(run, view, log, watched) {
   return { ...run, runId: view.databaseId ?? run.runId, url: view.url ?? null, status, shard, lines };
 }
 
-export async function burstBisect({ repoRoot = resolve('.'), lane, good, bad, max = 8, all = false, run = defaultRun, sleep = defaultSleep, now = Date.now, log = console.log, findBudgetMs = 120_000, pollMs = 3000 }) {
+export async function burstBisect({ repoRoot = resolve('.'), lane, good, bad, max = 8, all = false, run = defaultRun, sleep = defaultSleep, now = Date.now, log = console.log, findBudgetMs = 2 * POLL_FLOOR_S * 1000, pollMs = POLL_FLOOR_S * 1000 }) {
   if (!laneRe.test(lane ?? '') || !shaRe.test(good ?? '') || !shaRe.test(bad ?? '') || !Number.isSafeInteger(max) || max < 1) throw new Error(USAGE);
   const call = (cmd, args) => run(cmd, args, repoRoot);
   if ((await call('git', ['config', '--get', 'core.bare'])).trim() !== 'false') throw new Error('core.bare must read false');
@@ -96,7 +97,7 @@ export async function burstBisect({ repoRoot = resolve('.'), lane, good, bad, ma
         } while (true);
         if (!found) throw new Error('run not found by head SHA');
         let watched = true;
-        try { await call('gh', ['run', 'watch', String(found.databaseId), '--exit-status', '--interval', '30']); }
+        try { await call('gh', ['run', 'watch', String(found.databaseId), '--exit-status', '--interval', String(POLL_FLOOR_S)]); }
         catch { watched = false; } // A failed watch can mean a red run or an unread run; only a successful watch proves green.
         const view = JSON.parse(await call('gh', ['run', 'view', String(found.databaseId), '--json', 'databaseId,status,conclusion,url']));
         const body = await call('gh', ['run', 'view', String(found.databaseId), '--log']);

@@ -29,8 +29,8 @@ function wholeEdge(deviceDid: string): DeviceDelegationTiddler {
 
 /** The ruled record shape: an EXPLICIT ref (place × derived face), the edge as carriage. */
 function rec(vessel: string, veil: string, binding: DelegationEdge | null = null): DyadRecord {
-  const ref = { vesselDid: vessel, veilDid: veil };
-  return { kind: DYAD_ID_DOMAIN, dyadId: dyadId(ref), ref, edge: wholeEdge(vessel), binding };
+  const ref = { deviceDid: veil };
+  return { kind: DYAD_ID_DOMAIN, dyadId: dyadId(ref), ref, edge: wholeEdge(veil), binding };
 }
 
 function docWithSelfEdge(): LarDoc {
@@ -52,9 +52,8 @@ describe("vesselDyads — the vessel's own relationships, read from its slots", 
     writeDyad(doc, rec(DEVICE, VEIL_1));
     const dyads = vesselDyads(doc);
     expect(dyads).toHaveLength(1);
-    expect(dyads[0]!.ref.vesselDid).toBe(DEVICE);
-    expect(dyads[0]!.ref.veilDid).toBe(VEIL_1);
-    expect(dyads[0]!.ref.veilDid).not.toBe(ROOT);
+    expect(dyads[0]!.ref.deviceDid).toBe(VEIL_1);
+    expect(dyads[0]!.ref.deviceDid).not.toBe(ROOT);
     expect(dyads[0]!.binding).toBeNull();
   });
 

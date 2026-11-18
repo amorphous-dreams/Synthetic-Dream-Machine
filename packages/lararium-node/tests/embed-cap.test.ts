@@ -3,9 +3,10 @@
  * a real text→vector round-trip, store-compatible 384-dim, one holder per process. Pinned to minilm
  * (local, no 300MB download) via the spawned env.
  */
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test } from "vitest";
 
 import { makeEmbedCap, _liveEmbedHolderCount, type EmbedCap } from "../src/embed-cap.js";
+import { palaceSuite } from "./helpers/palace-holder.js";
 
 const TEST_TIMEOUT = 120_000;
 
@@ -22,7 +23,7 @@ function open(): EmbedCap {
 }
 afterEach(async () => { await Promise.all(opened.splice(0).map((c) => c.close())); });
 
-describe("makeEmbedCap (text→vector, driven live)", () => {
+palaceSuite("makeEmbedCap (text→vector, driven live)", () => {
   test("embeds a batch → store-compatible 384-dim vectors", async () => {
     const r = await open().embed(["the verb leads", "call me Ishmael"]);
     expect(r.dim).toBe(384);

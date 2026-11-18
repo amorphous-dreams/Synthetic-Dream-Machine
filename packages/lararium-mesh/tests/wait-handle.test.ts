@@ -14,8 +14,9 @@ import { describe, expect, test } from "vitest";
 
 import { waitHandle, LOCAL_READY_MS } from "../src/wait-handle.js";
 
-type Handle = { id: string; merged: string[] };
-const handle = (id: string): Handle => ({ id, merged: [] });
+type Handle = { id: string; merged: string[]; doc: () => unknown };
+/** A handle stand-in: the guarded merge reads the source document, so each carries a clean empty `doc()`. */
+const handle = (id: string): Handle => ({ id, merged: [], doc: () => ({}) });
 
 /** A Repo stand-in whose readiness the test controls. `never` models a peer that has not synced. */
 function fakeRepo(ready: Promise<Handle> | "never") {

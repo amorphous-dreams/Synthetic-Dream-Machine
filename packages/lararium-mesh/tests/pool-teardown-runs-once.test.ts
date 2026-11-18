@@ -10,7 +10,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { VesselIslandPoolCore } from "../src/vessel-island-pool-core.js";
-import { mkEa, mkTeardownAck } from "../src/island-protocol.js";
+import { isVesselToIslandMsg, mkEa, mkFault, mkTeardownAck } from "../src/island-protocol.js";
 import type { VesselIslandHost, VesselWorkerHandle } from "../src/vessel-host.js";
 import type { WikiMountSpec } from "../src/wiki-recipe.js";
 
@@ -44,10 +44,37 @@ function scriptedHost() {
     teardowns: () => teardowns,
     terminations: () => terminations,
     ack: () => { for (const l of [...listeners]) l(mkTeardownAck()); },
+    fault: () => { for (const l of [...listeners]) l(mkFault(WIKI_ID, "teardown-fault: the adaptor would not stop")); },
+    slotFault: () => { for (const l of [...listeners]) l(mkFault(WIKI_ID, "slot working unavailable — the Repo refused the ask")); },
   };
 }
 
 describe("a wiki island's teardown handshake runs once", () => {
+  test("RED (clock-sweep): an island whose teardown answers a fault ends the handshake at once, unacked, never at its bound", async () => {
+    const island = scriptedHost();
+    const pool = new VesselIslandPoolCore({ host: island.host, resolvePluginCids: NO_OFFERINGS });
+    await pool.mountWiki(WIKI_ID, spec());
+    const unmount = pool.unmountWiki(WIKI_ID);
+    for (let turn = 0; turn < 8; turn++) await Promise.resolve();
+    expect(island.teardowns()).toBe(1);
+    island.fault();
+    expect(await unmount).toEqual({ wikiId: WIKI_ID, acked: false });
+    expect(island.terminations()).toBe(1);
+  }, 3_000);
+
+  test("F6: a late slot fault during teardown ends nothing; the island's ack still lands — CONTROL: the named teardown-fault above ends it unacked", async () => {
+    const island = scriptedHost();
+    const pool = new VesselIslandPoolCore({ host: island.host, resolvePluginCids: NO_OFFERINGS });
+    await pool.mountWiki(WIKI_ID, spec());
+    const unmount = pool.unmountWiki(WIKI_ID);
+    for (let turn = 0; turn < 8; turn++) await Promise.resolve();
+    island.slotFault();
+    for (let turn = 0; turn < 8; turn++) await Promise.resolve();
+    expect(island.terminations(), "a slot fault never cuts the island before its flush").toBe(0);
+    island.ack();
+    expect(await unmount).toEqual({ wikiId: WIKI_ID, acked: true });
+  }, 3_000);
+
   test("two unmounts in flight share one handshake: one teardown, one termination, one answer", async () => {
     const island = scriptedHost();
     const pool = new VesselIslandPoolCore({ host: island.host, resolvePluginCids: NO_OFFERINGS });
@@ -99,4 +126,42 @@ describe("a wiki island's teardown handshake runs once", () => {
     island.ack();
     expect(await later).toEqual({ wikiId: WIKI_ID, acked: true });
   });
+});
+
+test("drain request validates its complete shape, with teardown as control", () => {
+  expect(isVesselToIslandMsg({ type: "teardown" })).toBe(true);
+  expect(isVesselToIslandMsg({ type: "wiki:request-drain" })).toBe(true);
+  expect(isVesselToIslandMsg({ type: "wiki:request-drain", extra: true })).toBe(false);
+});
+
+test("a drain request reaches each live wiki, but not a cooled wiki", async () => {
+  const sent: unknown[][] = [];
+  const host: VesselIslandHost = {
+    spawnWorker() {
+      const messages: unknown[] = []; sent.push(messages);
+      const listeners = new Set<(raw: unknown) => void>();
+      return {
+        post(msg) {
+          messages.push(msg);
+          const m = msg as { type: string; wikiUri?: string };
+          if (m.type === "manifest" || m.type === "teardown") queueMicrotask(() => {
+            for (const listener of listeners) listener(m.type === "manifest" ? mkEa(m.wikiUri!) : mkTeardownAck());
+          });
+        },
+        listen(fn) { listeners.add(fn); return () => { listeners.delete(fn); }; },
+        onError: () => () => {}, terminate() {},
+      };
+    },
+    newSyncChannel() { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
+    storage: () => undefined,
+  };
+  const pool = new VesselIslandPoolCore({ host, resolvePluginCids: async () => ({ ok: true, pluginCids: [] }) });
+  const spec = (wikiSlug: string) => ({ coreHash: null, recipe: { wikiSlug }, grants: { islandUrl: "automerge:fixture" } });
+  await pool.mountWiki("a", spec("a"));
+  await pool.mountWiki("b", spec("b"));
+  await pool.mountWiki("c", spec("c"));
+  await pool.unmountWiki("c");
+  (pool as unknown as { requestWikiDrains(): void }).requestWikiDrains();
+  expect(sent.map(messages => messages.filter(m => (m as { type: string }).type === "wiki:request-drain").length)).toEqual([1, 1, 0]);
+  await pool.disposeAll();
 });

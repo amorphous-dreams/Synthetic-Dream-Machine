@@ -1,5 +1,5 @@
 /**
- * standup-order — `vessel stand --install` founds before it reaches outside LAR_ROOT,
+ * standup-order — `vessel stand --init` founds before it reaches outside LAR_ROOT,
  * and the mempalace sidecar keeps its own door.
  */
 
@@ -18,7 +18,6 @@ function mockAll(): void {
   vi.doMock("../src/commands/found.js", () => ({ cmdFound: vi.fn(async () => { log.push("cmdFound"); return foundCode; }) }));
   vi.doMock("../src/commands/scripted.js", () => ({ cmdBake: vi.fn(async () => { log.push("cmdBake"); return 0; }) }));
   vi.doMock("../src/link-bin.js", () => ({
-    linkLaresGlobal: vi.fn(() => { log.push("linkLaresGlobal"); return { ok: true, detail: "linked" }; }),
     linkMempalaceBins: vi.fn(() => { log.push("linkMempalaceBins"); return [{ ok: true, detail: "linked mempalace" }]; }),
   }));
   vi.doMock("../src/integration-check.js", () => ({
@@ -43,11 +42,11 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("foundIfAbsent — the founding runs first, the link runs last", () => {
+describe("foundIfAbsent — the founding writes LAR_ROOT alone", () => {
   it("★ a refused init stops before genesis and every outside reach ★", async () => {
     foundCode = 1;
     const { foundIfAbsent } = await import("../src/standup.js");
-    const steps = await foundIfAbsent(parseArgs(["vessel", "stand", "--install"]), { root, bootstrap: join(root, "vessel") });
+    const steps = await foundIfAbsent(parseArgs(["vessel", "stand", "--init"]), { root, bootstrap: join(root, "vessel") });
     expect(log).not.toContain("linkLaresGlobal");
     expect(log).not.toContain("linkMempalaceBins");
     expect(log).not.toContain("installMempalaceIntegration");
@@ -55,23 +54,24 @@ describe("foundIfAbsent — the founding runs first, the link runs last", () => 
     expect(steps[steps.length - 1]).toMatchObject({ step: "init", action: "failed" });
   });
 
-  it("★ a founded init runs init, genesis, then the lares link; the mempalace never appears ★", async () => {
+  it("★ a founded init runs init then genesis, and reaches no home: no link, no mempalace ★", async () => {
     const { foundIfAbsent } = await import("../src/standup.js");
-    await foundIfAbsent(parseArgs(["vessel", "stand", "--install"]), { root, bootstrap: join(root, "vessel") });
-    expect(log.filter((l) => ["cmdFound", "cmdBake", "linkLaresGlobal"].includes(l))).toEqual(["cmdFound", "cmdBake", "linkLaresGlobal"]);
+    await foundIfAbsent(parseArgs(["vessel", "stand", "--init"]), { root, bootstrap: join(root, "vessel") });
+    expect(log.filter((l) => ["cmdFound", "cmdBake"].includes(l))).toEqual(["cmdFound", "cmdBake"]);
+    expect(log).not.toContain("linkLaresGlobal");
     expect(log).not.toContain("linkMempalaceBins");
     expect(log).not.toContain("installMempalaceIntegration");
   });
 
-  it("CONTROL: a bootstrap and genesis already present skip both and the link still runs", async () => {
+  it("CONTROL: a bootstrap and genesis already present skip both and nothing runs", async () => {
     mkdirSync(join(root, "genesis"), { recursive: true });
     writeFileSync(join(root, "genesis", "seed.json"), "{}");
     writeFileSync(join(root, "vessel"), "x");
     const { foundIfAbsent } = await import("../src/standup.js");
-    const steps = await foundIfAbsent(parseArgs(["vessel", "stand", "--install"]), { root, bootstrap: join(root, "vessel") });
+    const steps = await foundIfAbsent(parseArgs(["vessel", "stand", "--init"]), { root, bootstrap: join(root, "vessel") });
     expect(steps.find((s) => s.step === "init")?.action).toBe("skip");
     expect(steps.find((s) => s.step === "genesis")?.action).toBe("skip");
-    expect(log).toEqual(["linkLaresGlobal"]);
+    expect(log).toEqual([]);
   });
 
   it("planFounding names no mempalace step", async () => {

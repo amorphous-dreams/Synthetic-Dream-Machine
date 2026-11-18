@@ -1,0 +1,62 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/slice4-brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/slice4-brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/slice4-brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/slice4-brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! slice4-brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/slice4-brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lane-b1-lift-slice-4-the-sharedworker-house-and`>>
+
+! Lane `b1-lift` — slice 4: the SharedWorker house and the floor's port broker
+
+Seat: Lift-Wright: Lares (Tasked Spirit), a fresh lead step for the controller Lares-Kiaʻi. Opus: the slice moves sessions and
+ceremony ports between tabs (a custody seam).
+
+READ FIRST: the boot seed (CLAUDE.md), controller-handoff.mem #/the-practice and #/the-lane-law, mixed-model-swarm.mem #/the-shapes
+and #/the-tiers (the spend balance leans Codex 70 : Claude 30, PR #173: hand mechanical edits to Terra build seats), the lane's
+carrier bags/lares/ha.ka.ba/lares/docs/pono/browser-vessel-lift.mem in your worktree (slice 4's row, #/the-ceremony, every slice's
+keeps), /home/joshu/.lares-scratch/b1-lift/design.md and collide-batch.md, the road's 2026-11-06 rulings on the span ("every tab
+carries a live session"; same-face tabs; the ceremony's answer kinds).
+
+Ground: /home/joshu/.lares-scratch/b1-lift/wt, branch feature/green-jello-dinosaur-5&#45;-b1-lift, head 83ca74cca (CI green, run
+42183810005). You are its only writer. Leave alone: b1-seal (its cure lead holds packages/lararium-node's composer and the sealed
+store now), secrets-store. Pronaos route declarations may touch the node's route inventory: keep that hunk minimal and name it.
+
+The slice: the SharedWorker hosts slice 2's vessel body where the engine offers one; the dedicated worker serves as the floor; `?holder`
+goes. On the floor, a follower tab reaches the leader's vessel worker through a MessagePort brokered for it (the service worker or the
+vessel worker minting a per-tab port); the broker hands the port over and never carries its traffic. Each tab's session keeps its own
+unlock through its own ceremony door; the last tab returns the browser to its floor; one owner per store (Web Lock). The Pronaos route
+inventory declares every new route under its CSP delivery policy. The carrier's dependency-order line (the paragraph after the X0b
+sweep) omits slice 4: true it to the handoff's order (4, 5b, 6, 7, X0b, the joined gate) in your canon commit.
+Reds first with controls: a follower tab on the floor opens its own session through a brokered port and its ceremony bytes never pass
+the broker; a second SharedWorker host refuses by the owner lock; the two-tab reds that waited on the broker (the handoff names them).
+Engine facts unmeasured (SharedWorker on Android Chrome; nesting) stay probe items: the floor carries the rite.
+
+Practice: red-first per commit; browser e2e: one file locally, whole sets in CI; never `git stash`/`--no-verify`; commit
+`git commit -F <msg> --only -- <paths>`; Terra build seats via &#96;node tools/launch-codex.mjs &#45;-seat-dir
+/home/joshu/.lares-scratch/b1-lift/terra-s4-N &#45;-model gpt-6.1-terra &#45;-effort medium &#45;-mode build &#45;-worktree
+/home/joshu/.lares-scratch/b1-lift/wt&#96; (brief.md first; on a launch, write resume.md and hand back at once). Push once the slice
+forms a feature; the controller reads CI. Stop near 40 tool calls; write /home/joshu/.lares-scratch/b1-lift/resume.md; hand back
+ONCE, short.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LAUBzlaewAkbARPecAIRKRR1RRco0F2OaeRD7uVK0ZI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

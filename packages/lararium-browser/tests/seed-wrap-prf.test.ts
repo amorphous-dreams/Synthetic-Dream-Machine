@@ -1,18 +1,18 @@
 /**
- * seed-wrap-prf.test — PRF WRAPS THE SEED AT REST, BESIDE THE CLEARTEXT FINDING, OPT-IN (basket-one #/the-phone-seat,
+ * seed-wrap-prf.test — PRF WRAPS THE SEED AT REST, BESIDE THE UNWRAPPED PATH, OPT-IN (basket-one #/the-phone-seat,
  * ruled 2026-09-11: "PRF wraps beside and never mints, a synced passkey counts as a cloud").
  *
  * A fake `PublicKeyCredential` host with a fixed PRF output: wrap → unwrap round-trips the seed; a different PRF
  * output refuses, named; the wrap record NAMES the credential's key class (`cloud-synced` for a synced passkey).
  * CONTROL: a host without PRF → `detectPrf` reads `{ available: false, why }` and NOTHING wraps — the floor,
- * never a throw. The cleartext path stays untouched (its own witnesses stand in browser-persona-vault.test.ts).
+ * never a throw. The unwrapped path stays untouched (its own witnesses stand in browser-persona-vault.test.ts).
  */
 import { describe, test, expect } from "vitest";
 import {
   detectPrf, wrapSeed, unwrapSeed, SeedWrapRefused, SEED_WRAP_HKDF_INFO,
   type PrfHost, type SeedWrapRecord,
 } from "../src/seed-wrap-prf.js";
-import { PERSONA_ADMIT_SEAL_INFO } from "@lararium/mesh";
+import { SLOT_WRAP_INFO } from "@lararium/mesh";
 
 const SEED   = new Uint8Array(32).map((_, i) => (i * 7 + 3) & 0xff);
 const PRF_A  = new Uint8Array(32).fill(0xa5);
@@ -57,7 +57,7 @@ describe("the PRF wrap — round-trip under one PRF output, refusal under anothe
   });
 
   test("the HKDF info is its OWN separated string — never an existing seal's", () => {
-    expect(SEED_WRAP_HKDF_INFO).not.toBe(PERSONA_ADMIT_SEAL_INFO);
+    expect(SEED_WRAP_HKDF_INFO).not.toBe(SLOT_WRAP_INFO);
     expect(SEED_WRAP_HKDF_INFO).toMatch(/seed-wrap-prf/);
   });
 

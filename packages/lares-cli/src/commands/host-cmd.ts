@@ -13,7 +13,8 @@
  *                                                  the one string to carry; nothing about it is kept here
  *
  * Without `--nexus` a door acts on this hearth's own charter. A hearth hosts only in a Nexus it carries, and
- * only as the face this vessel wears.
+ * only as one face: the face that holds its hosting there, else (at the first roll) `--face N`, else the one face
+ * standing open.
  *
  * THE CUSTODY DOOR. The hosting state, its spend rows and its carriage rest sealed under the vessel key, so each
  * door here sends one `act` frame (`host.state`, `host.roll`, `host.invite`): an invite as a verb's outcome would
@@ -24,6 +25,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
+import { faceOption } from "../face-option.js";
 import { HostRefusal, SealedActRefused } from "@lararium/node";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -93,7 +95,7 @@ async function hostRoll(args: ParsedArgs): Promise<number> {
   }
   try {
     const nexusAid = nexusOf(args);
-    const vargs = { ...(nexusAid ? { nexusAid } : {}), ...(cap !== undefined ? { cap } : {}) };
+    const vargs = { ...(nexusAid ? { nexusAid } : {}), ...(cap !== undefined ? { cap } : {}), ...faceOption(args) };
     const { output: r, via } = await hostDoor("host.roll", vargs);
     emit(args, {
       ok: true,
@@ -105,6 +107,7 @@ async function hostRoll(args: ParsedArgs): Promise<number> {
         console.log(`  cap:       ${String(r["cap"])}`);
         console.log(`  act on:    ${String(r["docUrl"])}  (${via === "daemon" ? "the standing vessel's replica" : "this vessel's store"})`);
         console.log("  every grant and token two epochs back is now dead; roll again to end the previous epoch too.");
+        console.log("  note: the walker route ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings): the epoch is written, but no gate seats a walker on it until a live grant reader opens the route.");
         if (Number(r["unswept"]) > 0) console.log(`  ${String(r["unswept"])} spend row(s) of dead epochs refused removal (bytes this vessel's key does not open); they stay on disk.`);
       },
     });
@@ -125,6 +128,7 @@ async function hostInvite(args: ParsedArgs): Promise<number> {
       human: () => {
         console.log(String(r["invite"]));
         console.error("  carry this to one newcomer; it redeems once, at this hearth's own gate. Nothing about it is kept here.");
+        console.error("  note: the walker route ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings): no gate seats a walker on this invite until a live grant reader opens the route.");
       },
     });
     return 0;

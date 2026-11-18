@@ -13,21 +13,25 @@ import { describe, expect, it } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
-  buildDeviceDelegation, hex, deriveSelfRecoveryKey, sealGroupSecret, groupSecretSealTitle, groupSecretOpenerFromSeed,
-  personaGroupSecret, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, tiddlerText,
-  type PersonaKelEvent, type LarDoc,
+  buildDeviceDelegationRootHalf, hex, deriveSelfRecoveryKey, sealGroupSecret, groupSecretSealTitle, groupSecretOpenerFromSeed,
+  personaGroupSecret, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, tiddlerText,
+  mintFaceAnchor, personaActRecordsOfGroup, proveFaceFromLog, signFoundingLog, faceRootCommitment, edgeBodyDigest, writePersonaAct,
+  ed25519SignerFromSeed, type PersonaKelEvent, type LarDoc,
 } from "@lararium/mesh";
-import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { runFoundingCeremony } from "@lararium/keyhive";
+import { testVesselTag, testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const OPERATOR_SEED = new Uint8Array(32).fill(11);   // the CONTRACTING operator's persona root
-const HERM_SEED     = new Uint8Array(32).fill(22);   // the faceless vessel's own device key
+const HERM_SEED     = new Uint8Array(32).fill(22);   // the face atom the operator delegates to
+const PLACE_SEED    = new Uint8Array(32).fill(44);   // the faceless vessel's own place key
 const HEARTH        = "bafyHermHearth";
 
 const pubOf = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
 
 /** What the contracting operator hands over: the signed edge, the pinned prefix, and their KEL. */
 async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
-  const edge = await buildDeviceDelegation({
+  const edge = await buildDeviceDelegationRootHalf({
     personaRootSeed:       OPERATOR_SEED,          // the OPERATOR signs, elsewhere
     deviceVerifyingKey,
     hearthTrueName,
@@ -38,7 +42,7 @@ async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
   const selfRecovery = await deriveSelfRecoveryKey(OPERATOR_SEED);
   const inception: PersonaKelEvent = provisionThresholdRecoveryAtFounding({
     foundingOpKeyDid: edge.personaRootDid,
-    guardians: [guardianRecoveryRegistrationCard("mine", selfRecovery.verifyingKey, null)],
+    recoveryContacts: [recoveryContactRegistrationCard("mine", selfRecovery.verifyingKey, null)],
     recoveryThreshold: 1,
   }).inception;
   // The same act seals the operator's PersonaGroup secret to this device, beside the edge.
@@ -46,15 +50,16 @@ async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
   return { edge, personaKelPrefix: inception.prefix, personaKelChain: [inception] as const, groupSecretSeal };
 }
 
-async function found(binding: Parameters<typeof runFoundingCeremony>[0]["binding"], deviceKey: string, repo = new Repo({ sharePolicy: async () => true })) {
-  return runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(HERM_SEED)),
-    repo,
-    vesselSeed: HERM_SEED,
-    vesselVerifyingKey: deviceKey,
+async function found(binding: Parameters<typeof runFoundingCeremony>[0]["binding"], _atomKey: string, repo = new Repo({ sharePolicy: async () => true })) {
+  const placeKey = await pubOf(PLACE_SEED);
+  return runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo,
+    vesselSeed: PLACE_SEED,
+    placeVerifyingKey: placeKey,
     vesselDisplayName: "herm",
     binding,
     hearthTrueName: HEARTH,
-    nexusPubkey: deviceKey,
+    nexusPubkey: placeKey,
+    atomSeed: HERM_SEED,
   });
 }
 
@@ -69,6 +74,8 @@ describe("a contracted founding carries its binding instead of signing it", () =
     expect(f.personaKelPrefix).toBe(b.personaKelPrefix);
     expect(f.signerDid).toBe(b.edge.personaRootDid);
     expect(f.signerDid).not.toBe(`0x${deviceKey}`);
+    expect(f.founderEdge.deviceVerifyingKey).toBe(deviceKey);
+    expect(f.founderEdge.deviceVerifyingKey).not.toBe(await pubOf(PLACE_SEED));
   });
 
   // The identifier derives DETERMINISTICALLY from the founding op-key, so one root yields one prefix in
@@ -114,8 +121,8 @@ describe("a contracted founding carries its binding instead of signing it", () =
     const repo = new Repo({ sharePolicy: async () => true });
     const f = await found({ mode: "contracted", ...b }, deviceKey, repo);
     expect(f.groupSecretSeal).toEqual(b.groupSecretSeal);
-    const daemon = await repo.find<LarDoc>(f.daemonUrl as never);
-    const rested = JSON.parse(tiddlerText(daemon.doc()?.tiddlers?.[groupSecretSealTitle(f.personaGroupId)]) ?? "null");
+    const secret = await repo.find<LarDoc>(f.secretUrl as never);
+    const rested = JSON.parse(tiddlerText(secret.doc()?.tiddlers?.[groupSecretSealTitle(f.personaGroupId)]) ?? "null");
     expect(rested).toEqual(b.groupSecretSeal);
     expect(groupSecretOpenerFromSeed(HERM_SEED).seal(rested)).toEqual(personaGroupSecret(OPERATOR_SEED, b.personaKelPrefix));
     expect(groupSecretOpenerFromSeed(OPERATOR_SEED).seal(rested)).toBeNull();
@@ -140,5 +147,25 @@ describe("a contracted founding carries its binding instead of signing it", () =
     // for a head it can never find — refuse at founding, where it still costs nothing.
     await expect(found({ mode: "contracted", ...b, personaKelPrefix: "prefix-nobody-carries" }, deviceKey))
       .rejects.toThrow(/other than the pinned one/);
+  });
+
+  // A CONTRACTED FACE PROVES NOTHING UNTIL ITS OPERATOR'S RECORDS ARRIVE. This vessel holds no root seed, so its founding
+  // signs no `@persona` acts; the boot's proof refuses by name (never by stall) and accepts the operator's own signed log.
+  it("RED: the founded face's boot proof refuses `no-founding` by name; CONTROL: the operator's signed records, arriving with the edge, prove it", async () => {
+    const deviceKey = await pubOf(HERM_SEED);
+    const b = await bundleFor(deviceKey);
+    const repo = new Repo({ sharePolicy: async () => true });
+    const f = await found({ mode: "contracted", ...b }, deviceKey, repo);
+    const anchor = mintFaceAnchor({ personaGroup: f.personaGroupId, personaKelPrefix: f.personaKelPrefix, personaRootDid: f.founderEdge.personaRootDid, edge: f.founderEdge, leaseEpoch: 0 });
+    const plane = await repo.find<LarDoc>(f.personaUrl as never);
+    const proof = (records: unknown[]) => proveFaceFromLog({ records, chain: b.personaKelChain, group: f.personaGroupId, anchor, deviceKey, planes: { persona: f.personaUrl, intents: f.intentsUrl } });
+    expect(proof(personaActRecordsOfGroup(plane.doc(), f.personaGroupId))).toEqual({ ok: false, refusal: { why: "no-founding" } });
+    const operatorKey = f.founderEdge.personaRootDid.replace(/^0x/, "");
+    const log = await signFoundingLog({
+      group: f.personaGroupId, personaKelPrefix: f.personaKelPrefix, rootCommitment: faceRootCommitment(f.founderEdge.personaRootDid), epoch: 0,
+      planes: { persona: f.personaUrl, intents: f.intentsUrl }, deviceKey, edgeDigest: edgeBodyDigest(f.founderEdge), vesselTag: await testVesselTag(1, f.personaGroupId, deviceKey),
+    }, { key: operatorKey, sign: ed25519SignerFromSeed(OPERATOR_SEED) });
+    plane.change((d) => { for (const a of log) writePersonaAct(d, a); });
+    expect(proof(personaActRecordsOfGroup(plane.doc(), f.personaGroupId)).ok).toBe(true);
   });
 });

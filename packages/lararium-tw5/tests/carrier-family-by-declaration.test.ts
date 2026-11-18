@@ -19,18 +19,18 @@ import { exportCarrierFile } from "../src/meme-write.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 
-const BAG = "lar:///ha.ka.ba/bags/family";
+const BAG = "lar:///ha.ka.ba/wikis/family/working";
 const URI = "lar:///ha.ka.ba/t/family/teaches-the-frame";
 
-const HEAD = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/t/shown">>`;
+const HEAD = `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///ha.ka.ba/t/shown\`>>`;
 /** Markdown that SHOWS a head inside a fence, and names one inline. */
-const TEACHES_FENCED = `# The frame\n\nA carrier opens with a head:\n\n\`\`\`\n${HEAD}\n<<^ code="&#x0002;">>\n\`\`\`\n\nThen the body.\n`;
+const TEACHES_FENCED = `# The frame\n\nA carrier opens with a head:\n\n\`\`\`\n${HEAD}\n<<^ code=\`&#x0002;\`>>\n\`\`\`\n\nThen the body.\n`;
 /** Markdown whose head stands LIVE, outside every fence (a rendered artifact quoting a carrier raw). */
 const TEACHES_LIVE = `# The frame\n\nA carrier opens with a head:\n\n${HEAD}\n\nThen the body.\n`;
 const SIDECAR = `title: ${URI}\ntype: text/markdown\nsource: lar:///ha.ka.ba/t/source\nsource-check: ni:///sha-256;AAAA\nvariant: kramdown-rfc2629\ntongue: en\n`;
 
 const memetic = (uri: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\n\`\`\`\n\n<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\n\`\`\`\n\n<<~ ahu slot=\`#/a\`>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 const allowCap = async (_a: CapabilityAccess, _b: string): Promise<CapabilityVerifyResult> => ({ ok: true });
 function ctx(composite: CompositeStore, action: "INGEST" | "LOAD", args: Record<string, unknown>): VerbContext {
@@ -103,6 +103,31 @@ describe.skipIf(wikiSkip)(`a carrier's declaration decides its family${skipNote}
     expect(file.ext).toBe(".md");
     expect(file.body).toBe(TEACHES_FENCED);
     for (const line of SIDECAR.split("\n").filter((l) => l !== "")) expect(file.metaBody).toContain(line);
+  });
+
+  // A `.tid` FILE FRAMES ITSELF: a header block naming its title, a blank line, then the body. A staged memory row rests so
+  // (`bags/daemon-<F>/…/<slug>.tid`), and its body holds a whole framed meme, a live head standing outside every fence.
+  const ROW = "lar:///ha.ka.ba/t/family/a-row";
+  const ROW_FILE = `title: ${ROW}\n\n${memetic(ROW)}`;
+  for (const door of ["INGEST", "LOAD"] as const) {
+    test(`${door}: a \`.tid\` whose body holds a framed meme lands as that one record, its text the body alone`, async () => {
+      const r = rig();
+      if (door === "INGEST") expect((await ingest(r, { text: ROW_FILE, ext: ".tid", uri: ROW }))["decision"]).toBe("ingest");
+      else await load(r, { text: ROW_FILE, ext: ".tid", title: ROW });
+      expect(await carriersIn(r)).toEqual([ROW]);
+      const fields = (await r.store.get(ROW))!.tiddler as Record<string, unknown>;
+      // The header names the record and never enters its text: a re-pour of the row reads the bytes a hand staged.
+      expect(String(fields["text"]).replace(/\n$/, "")).toBe(memetic(ROW).replace(/\n$/, ""));
+      expect(String(fields["text"])).not.toContain("title: ");
+    });
+  }
+  test("CONTROL: the same meme as its own `.mem` file still reaches the memetic shore, and a `.tid` with no meme lands as it did", async () => {
+    const r = rig();
+    expect((await ingest(r, { text: memetic(ROW), ext: ".mem", uri: ROW }))["decision"]).toBe("ingest");
+    expect(await carriersIn(r)).toEqual([ROW, `${ROW}#/a`]);
+    const plain = rig();
+    expect((await ingest(plain, { text: `title: ${ROW}\n\nplain words\n`, ext: ".tid", uri: ROW }))["decision"]).toBe("ingest");
+    expect(String(((await plain.store.get(ROW))!.tiddler as Record<string, unknown>)["text"]).trim()).toBe("plain words");
   });
 
   test("markdown with no sidecar keeps its family when the head stands inside a fence", async () => {

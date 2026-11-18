@@ -28,8 +28,8 @@ async function rig(pins: ReadonlyArray<{ realm: string; doc: string; steward?: s
   const repo = new Repo({ network: [] });
   for (const p of pins) await materializeSharedLarDoc(repo, p.doc as never, "book");
   if (own) await materializeSharedLarDoc(repo, own as never, "book");
-  const oracle = repo.create<LarDoc>(emptyLarDoc());
-  oracle.change((d) => {
+  const catalog = repo.create<LarDoc>(emptyLarDoc());
+  catalog.change((d) => {
     d.tiddlers[REALM_ID_TIDDLER] = storedLarRecord(REALM_ID_TIDDLER, { text: C }, "vessel-boot");
     if (own) d.tiddlers[BAG] = storedLarRecord(BAG, { text: own }, "registry");
     for (const p of pins) {
@@ -39,10 +39,10 @@ async function rig(pins: ReadonlyArray<{ realm: string; doc: string; steward?: s
     }
   });
   const opts = memeVerbOptions(
-    { composite: new CompositeStore(), tw5: {} as never, repo, catalogUrl: null, oracleUrl: oracle.url },
+    { composite: new CompositeStore(), tw5: {} as never, repo, catalogUrl: catalog.url, oracleUrl: null },
     async () => null,
   );
-  return { repo, oracle, opts };
+  return { repo, catalog, opts };
 }
 const DOC_A = deterministicDocUrl("island-book-a"), DOC_B = deterministicDocUrl("island-book-b"), DOC_C = deterministicDocUrl("island-book-c");
 
@@ -56,11 +56,11 @@ describe("the island reads a realm's standing verdict", () => {
   });
 
   test("I2 a verdict with no doc pin beside it answers nothing; control: the pin restores the reach", async () => {
-    const { opts, oracle } = await rig([{ realm: A, doc: DOC_A, pinDoc: false }]);
+    const { opts, catalog } = await rig([{ realm: A, doc: DOC_A, pinDoc: false }]);
     expect(await opts.reach!(BAG, BAG, A)).toBeNull();
-    oracle.change((d) => { d.tiddlers[realmDocPointer(A)] = storedLarRecord(realmDocPointer(A), { text: "automerge:elsewhere" }, "vessel-boot"); });
+    catalog.change((d) => { d.tiddlers[realmDocPointer(A)] = storedLarRecord(realmDocPointer(A), { text: "automerge:elsewhere" }, "vessel-boot"); });
     expect(await opts.reach!(BAG, BAG, A)).toBeNull();                    // a pin that names another doc pins nothing
-    oracle.change((d) => { d.tiddlers[realmDocPointer(A)] = storedLarRecord(realmDocPointer(A), { text: realmDocUrl(A) }, "vessel-boot"); });
+    catalog.change((d) => { d.tiddlers[realmDocPointer(A)] = storedLarRecord(realmDocPointer(A), { text: realmDocUrl(A) }, "vessel-boot"); });
     expect(await opts.reach!(BAG, BAG, A)).not.toBeNull();
   });
 

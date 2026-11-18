@@ -10,7 +10,7 @@
  *     signed, in one canonical encoding. No certificate, no vessel's key, no time and no count rides it.
  *   · EVERY EVENT VERIFIES AGAIN AT LOAD. A row passes the fold before the gate believes it. A row that STANDS
  *     and does not fold (one event the face key never signed, one event of another face, a row past its bound,
- *     bytes that read as no list) REFUSES by name (`GateMemoryRowTorn`), and `onTorn` hears its name. It never
+ *     bytes that read as no list) REFUSES by name (`GateMemoryRecordTorn`), and `onTorn` hears its name. It never
  *     loads as nothing: a gate that read a standing row as unlearned would start a fresh memory over it and
  *     admit a vessel the row once denied. The asking gate falls silent, no keep writes over the row, and a
  *     person repairs it by hand. Only a row with nothing at its name reads as nothing learned. The row proves
@@ -29,12 +29,12 @@
  *
  * WHERE THE ROWS REST belongs to the vessel: sealed under the vessel key, behind its one store door, and on
  * no board another operator reads. A sovereign gate alone asks this store; a locked vessel opens no row, and
- * a floor gate asks none. This module reads and writes bytes through `GateMemoryRows` and seals nothing.
+ * a floor gate asks none. This module reads and writes bytes through `GateMemoryRecords` and seals nothing.
  *
  * It compiles no registry (lar:///ha.ka.ba/lares/api/pono/registry-filter#/the-test): every event stands
  * authored by its subject's own hand, the gate reads it as of its own last learning, and nothing enumerates.
  *
- * Stands specified in code until the socket cutover wires it; out of the package barrel till then.
+ * Called by the node vessel's sovereign gate (`open-node-vessel`, over `gate-memory-records`); the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof
  */
@@ -44,17 +44,17 @@ import type { GateWithdrawalMemory } from "./face-gate.js";
 import { faceProofSubjectRef, own, type FaceScope } from "./face-proof-subjects.js";
 
 /** The vessel store's door for a gate's memory: one row of bytes per name. The vessel seals what rests. */
-export interface GateMemoryRows {
+export interface GateMemoryRecords {
   read(name: string): Uint8Array | null | Promise<Uint8Array | null>;
   write(name: string, bytes: Uint8Array): void | Promise<void>;
 }
 
 /** The most bytes one row may hold: 1024 events, each under a kilobyte. A longer row refuses as torn. */
-export const GATE_MEMORY_ROW_MAX_BYTES = 1 << 20;
+export const GATE_MEMORY_RECORD_MAX_BYTES = 1 << 20;
 
 /** A row that stands and does not fold whole. The gate that asked falls silent; nothing writes over the row. */
-export class GateMemoryRowTorn extends Error {
-  override readonly name = "GateMemoryRowTorn";
+export class GateMemoryRecordTorn extends Error {
+  override readonly name = "GateMemoryRecordTorn";
   constructor(readonly row: string) {
     super(`the gate memory row ${row} stands and does not fold whole, so the gate reads nothing off it and writes nothing over it`);
   }
@@ -64,11 +64,11 @@ export class GateMemoryRowTorn extends Error {
  * A gate's withdrawal memory over a vessel's rows. `onTorn` hears the name of a row that stands and refused to
  * load: the vessel's own log may say so; the wire never does.
  */
-export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?: (name: string) => void } = {}): GateWithdrawalMemory {
+export function storedWithdrawals(records: GateMemoryRecords, opts: { readonly onTorn?: (name: string) => void } = {}): GateWithdrawalMemory {
   // Two adapters over one set of rows share one writer queue and one verified view: a second adapter never
   // joins against a row the first already moved.
-  let shared = SHARED.get(rows);
-  if (shared === undefined) { shared = { verified: new Map(), writing: new Map(), dropped: new Map() }; SHARED.set(rows, shared); }
+  let shared = SHARED.get(records);
+  if (shared === undefined) { shared = { verified: new Map(), writing: new Map(), dropped: new Map() }; SHARED.set(records, shared); }
   /** What this process already verified, by row name: a row verifies once per process, and again after a restart. */
   const { verified, writing, dropped } = shared;
 
@@ -76,15 +76,15 @@ export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?
     const name = faceProofSubjectRef(scope);
     const known = verified.get(name);
     if (known !== undefined) return known;
-    // A read that began before a refused write dropped this row's view may hold bytes the row no longer holds:
+    // A read that began before a refused write dropped this row's view may hold bytes the row has since dropped:
     // it answers its own caller and seats nothing.
     const drops = dropped.get(name) ?? 0;
-    const bytes = await rows.read(name);
+    const bytes = await records.read(name);
     if (bytes === null) return null;
     // A STANDING ROW THAT DOES NOT FOLD REFUSES. It reports its name and throws: the read answers nobody, and a
     // keep that reads first writes nothing over what the row holds.
-    const torn = (): never => { try { opts.onTorn?.(name); } catch { /* a log never decides */ } throw new GateMemoryRowTorn(name); };
-    if (!(bytes instanceof Uint8Array) || bytes.length > GATE_MEMORY_ROW_MAX_BYTES) return torn();
+    const torn = (): never => { try { opts.onTorn?.(name); } catch { /* a log never decides */ } throw new GateMemoryRecordTorn(name); };
+    if (!(bytes instanceof Uint8Array) || bytes.length > GATE_MEMORY_RECORD_MAX_BYTES) return torn();
     let events: unknown;
     try { events = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { return torn(); }
     // The fold reads every event through the withdrawal's own reader and holds each to this scope.
@@ -108,8 +108,8 @@ export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?
         if (standing !== null && held.length === heldWithdrawals(standing).length) return;      // nothing new: nothing to write
         if (held.length === 0) return;
         // A write the vessel's door refuses (another writer moved the row since this view verified it) drops the
-        // view: the next read verifies the row again, and never answers from what the row no longer holds.
-        try { await rows.write(name, canonicalJsonBytes(held)); }
+        // view: the next read verifies the row again, and never answers from bytes the row has dropped.
+        try { await records.write(name, canonicalJsonBytes(held)); }
         catch (refused) { verified.delete(name); dropped.set(name, (dropped.get(name) ?? 0) + 1); throw refused; }
         verified.set(name, joined.memory);
       });
@@ -122,26 +122,26 @@ export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?
 }
 
 /** What every adapter over one set of rows shares: one writer per row, and what this process verified of each. */
-const SHARED = new WeakMap<GateMemoryRows, { verified: Map<string, WithdrawalMemory>; writing: Map<string, Promise<void>>; dropped: Map<string, number> }>();
+const SHARED = new WeakMap<GateMemoryRecords, { verified: Map<string, WithdrawalMemory>; writing: Map<string, Promise<void>>; dropped: Map<string, number> }>();
 
 /**
  * Rows kept in this process alone: a stand-in for a vessel's store, for suites and for nothing else.
  * `reopen` answers a new door over the same bytes, as a restarted process opens its store again.
  */
-export interface MemoryRows extends GateMemoryRows {
+export interface MemoryRecords extends GateMemoryRecords {
   names(): string[];
   peek(name: string): Uint8Array | null;
-  reopen(): MemoryRows;
+  reopen(): MemoryRecords;
   readonly writes: number;
 }
-export function memoryRows(held: Map<string, Uint8Array> = new Map()): MemoryRows {
+export function memoryRecords(held: Map<string, Uint8Array> = new Map()): MemoryRecords {
   let writes = 0;
   return {
     read: (name) => { const bytes = held.get(name); return bytes === undefined ? null : Uint8Array.from(bytes); },
     write: (name, bytes) => { writes++; held.set(name, Uint8Array.from(bytes)); },
     names: () => [...held.keys()].sort(),
     peek: (name) => held.get(name) ?? null,
-    reopen: () => memoryRows(held),
+    reopen: () => memoryRecords(held),
     get writes() { return writes; },
   };
 }

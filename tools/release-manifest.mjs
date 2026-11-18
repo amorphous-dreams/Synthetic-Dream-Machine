@@ -94,7 +94,7 @@ export function buildReleaseManifest({ image, genesisDir = resolve(ROOT, "genesi
   assertPlatforms(named);
   const cids = readGenesisCids(genesisDir);
   return {
-    format: "lararium-release-manifest/v1",
+    format: "lararium-release-manifest",
     image: { digest, platforms: named },
     genesis: { seedCid: cids.seedCid },
     engine: { cid: cids.engineCid },
@@ -119,7 +119,7 @@ export function verifyReleaseManifest(manifest, { genesisDir = resolve(ROOT, "ge
   const compare = (field, actual, wanted) => {
     if (actual !== wanted) differences.push(`${field}: manifest=${String(actual)} expected=${String(wanted)}`);
   };
-  compare("format", manifest?.format, "lararium-release-manifest/v1");
+  compare("format", manifest?.format, "lararium-release-manifest");
   compare("genesis.seedCid", manifest?.genesis?.seedCid, expected.seedCid);
   compare("engine.cid", manifest?.engine?.cid, expected.engineCid);
   compare("grammar.cid", manifest?.grammar?.cid, expected.grammarCid);

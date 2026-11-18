@@ -1,5 +1,5 @@
 /**
- * spectral-keel-cap — the ocap capability line over the spectral keel (Sprint-2 R3). The READ/WRITE verb-
+ * spectral-keel-cap — the ocap capability line over the spectral keel. The READ/WRITE verb-
  * split IS the capability boundary: an island composes `project` always (read the frozen anchor), and gains
  * `track` (drift the live subspace) ONLY when the `capture-island` write-authority cap rides its
  * #has-cap-stack. Miller's facet pattern (Robust Composition, 2006) on the existing composeVessel present-

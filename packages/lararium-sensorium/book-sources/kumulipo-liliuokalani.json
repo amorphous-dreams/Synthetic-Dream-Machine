@@ -1,0 +1,30 @@
+{
+  "schema": "lararium.sensorium.book-source.v1",
+  "source_key": "book:library:kumulipo/liliuokalani-1897/sacred-texts-2005-combined",
+  "collection": "library:kumulipo",
+  "work": "Kumulipo",
+  "producer": {
+    "attributed_chant": "Keaulumoku (attribution carried by the source)",
+    "translator": "Queen Liliʻuokalani",
+    "digital_redactor": "John Bruno Hare (named by the carrier provenance)"
+  },
+  "edition": {
+    "title": "An Account of the Creation of the World According to Hawaiian Tradition",
+    "publisher": "Lee and Shepard",
+    "place": "Boston",
+    "year": "1897"
+  },
+  "witness": {
+    "locator": "library:kumulipo/kumulipo-liliuokalani.mem",
+    "kind": "combined memetic-wikitext carrier of sacred-texts.com per-era transcription",
+    "digital_source": "sacred-texts.com/pac/lku/index.htm, pages lku00–lku18",
+    "retrieved": "2026-06-21 through Wayback snapshot web.archive.org/web/20050413, as stated in source carrier",
+    "expected_bytes": 108812,
+    "sha256": "164550ee69ac49bb9de6d50c2b0917c0854f2bb8a4f4c0a686fd2f1cfe4ca6ad",
+    "ni": "ni:///sha-256;FkVQ7mmsSbud5tUMKwkXwIVPK7ik9MCmhv0vHP5Mpq0"
+  },
+  "rights": {
+    "status": "source claims public domain in the United States; not independently adjudicated here",
+    "evidence": "carrier #provenance states pre-1923 publication and preserves the original scan attribution notice inline in Title Page"
+  }
+}

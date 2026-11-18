@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna5/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna5/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna5/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna5/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna5/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna5/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HIGH — push can execute lead-controlled Git config.'' [[seat-broker.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:412]] pushes `origin` while reading the lane’s `.git/config`. The fixed `core.sshCommand` and empty credential helper do not neutralize `remote.origin.pushurl`, `url.*.insteadOf`, or `protocol.ext.allow`; an `ext::` push URL can execute a command when a controller go is spent. This breaks the “executes NO code” claim and can redirect an authorized push. Proof 1 tests hooks and a credential helper, not remote helpers or push URL overrides ([[test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:178]]).
+
+''HIGH — check seat can read the signing key.'' [[seat-walls.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:95]] exposes the host filesystem read-only with `--ro-bind / /`. Checks run as the broker’s user, so a check can read a user-readable key file; the key is never hidden or excluded. A malicious check can recover the HMAC key and forge receipts. Proof 5 tests a fake MAC, but not key confidentiality ([[test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:302]]).
+
+''MED — install proof misses executable pnpm configuration.'' The `.npmrc` key allowlist ([[seat-walls.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:128]]) does not reject `.pnpmfile.cjs`, which pnpm can execute during install despite `--ignore-scripts`; workspace configuration also goes unexamined. Proof 3 uses a fake `pnpm` executable, so it does not exercise these behaviors ([[test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:231]]).
+
+''MED — symlink-race proof is probabilistic and narrow.'' `readSafe` protects the final open with `O_NOFOLLOW` and checks its resolved fd ([[seat-broker.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:199]]), but the proof’s 400 reads against a background swapper can pass without hitting a race, and it only swaps the final component ([[test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:284]]).
+
+The receipt binds tree and sorted check names; replay for the same tree/check set is expected. The commit uses that immutable tree after verification. Relay checks go-file location via a real parent path, but key/receipt/iso checks only inspect lexical parents ([[commit-relay.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:23]], [[line 38|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:38]]).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AKa25FloMXDsF723cgVbNpQ_0crR377EjMraKZcDFwI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

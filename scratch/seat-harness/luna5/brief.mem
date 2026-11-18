@@ -1,0 +1,49 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna5/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna5/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna5/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna5/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna5/brief.md` (brief, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna5/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/security-cold-read-git-c-home-joshu-lares-scratc`>>
+
+! Security cold read: `git -C /home/joshu/.lares-scratch/seat-harness/wt show HEAD --stat` then read tools/seat-broker.mjs, tools/seat-walls.mjs, tools/tree-export.mjs, tools/commit-relay.mjs and the proofs at the end of tools/commit-relay.test.mjs. Write nothing.
+The claim: the broker executes NO code from a lead's tree (hooks, filters, submodules, credential helpers, installs, build/test/editor config) and a lead cannot grant its own push or forge a check receipt. Adversary = a lead that controls the worktree, its .git/config and hooks, files, symlinks, and the lane root.
+Hunt for real bypasses: any git invocation that reads lane config/attributes/hooks and can exec (including `worktree add`, `worktree remove`, `status`, `ls-tree`, `read-tree`, `push` env/HOME, `core.*`/`include`/`url.*.insteadOf`/`remote.origin.pushurl`/`core.sshCommand` set in the lane's own .git/config that -c may not override); the receipt scheme (key location, mac coverage, replay, TOCTOU between verify and commit-tree); the readSafe race; bwrap wall gaps (env, /proc, /dev, network, writable binds, the key file reachable from the seat); the install seat (.npmrc allowlist gaps, workspace/pnpm-workspace.yaml, package.json pnpm fields, .pnpmfile.cjs executing during install even with &#45;-ignore-scripts); relay option validation (go file, key, receipts, iso outside lane); and whether each proof test truly fails without the defense. Rank HIGH/MED/LOW with file:line. Final message under 400 words.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;X7sO1LAnWORJvKX53rNa2xN1pOe8g7DWfGkPnCsLP98`>>
+
+<<^ code=`&#x0004;` to=`?`>>

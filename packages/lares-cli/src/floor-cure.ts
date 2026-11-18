@@ -7,9 +7,9 @@
  * to light a face — which is sound advice from inside an island that can see its own boot and no
  * disk at all, and wrong advice for the person holding three faces already.
  *
- * Measured on the founding rehearsal: the vessel stood faceless, three kahu were minted, and the
- * seed refused with `lares persona new 0`. Following that counsel mints a fourth face and changes
- * nothing, because the standing is what has to move.
+ * A vessel standing faceless over three minted kahu meets the seed's refusal `lares persona new 0`;
+ * following that counsel mints a fourth face and changes nothing, because the standing is what has
+ * to move.
  *
  * The CLI holds what the island lacks — the faces are on its disk — so the correction lands here.
  * It stays NARROW: only this refusal, only when a face actually stands. A surface that re-worded

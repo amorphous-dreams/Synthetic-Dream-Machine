@@ -1,0 +1,46 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-006/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-006/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-006/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-006/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-006/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-006/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-6-mesh-signature-cure-prepared-authority-bo`>>
+
+! Step 6 — mesh signature cure prepared; authority boundary remains open
+
+`relay/req-005.json` requests the controller-validated mesh red commit against `1e82c0d472ac9a93bd3d937a49ae9ed457a5cb2b`. The controller's later correction supersedes step 5's review-before-red instruction: blind Opus custody review precedes a cure's land. Read `relay/res-005.json` next step; the recorded head remains unchanged until success. The targeted red result remains controller testimony; no raw run log or blind review was read here. No git or tests ran inside this wall.
+
+Prepared, uncommitted: `packages/lararium-mesh/src/device-delegation.ts` verifies the signed epoch-free edge under the pinned root, while a caller requesting `expectedEpoch` receives `delegation lease proof unavailable` for that edge. `evaluateDeviceDelegation` reports cryptographic validity separately from unavailable authority evidence. The existing legacy minter and edge type remain until the coordinated burn. `packages/lararium-mesh/tests/device-delegation-retirement.test.ts` exercises that boundary, a legacy control, tampering, and stripping an epoch from an already signed edge. The existing red test remains untouched after the commit request; its legacy controls still need migration during the coordinated burn.
+
+''Controller runs'' `packages/lararium-mesh/tests/device-delegation.test.ts` and `packages/lararium-mesh/tests/device-delegation-retirement.test.ts` outside the faulty Vitest door, and arranges a blind Opus custody review before any cure lands. Report assertion failures and review findings for the next step.
+
+''Land blocker:'' `packages/lararium-keyhive/src/face-grant-record.ts:151` calls the signature wrapper with optional freshness; `face-join-operation.ts:65-77` supplies no expected epoch. The newly readable epoch-free signature could therefore pass a caller that treats signature success as authority. Keep this cure off the span until those authority paths fail closed or gain the required pinned-lineage and remove-wins standing proof; a passing signature never proves standing, complete view, or anti-rollback. The grant reds already committed cover part of that work. Other signature-only callers require the same census.
+
+Fork: 🜁 philosopher separates the cryptographic proof from the authority decision; 🜄 weighs preserving a working legacy fence against accepting a signature without standing. A temporary dual reader retains the old fence while allowing the new bytes to be verified, with named refusal when a lease-gated caller lacks an epoch. It does not authorize legacy compatibility as the end state: early-alpha re-genesis burns the old shape with all its readers and guard after the census. An isolated device can only act on its verified local frontier; on receiving a valid removal, remove-wins must withdraw its future authority, though unseen removals cannot retroactively recall plaintext or acts. Implementation and tests remain owed.
+
+Measured collision: `packages/lararium-mesh/src/device-delegation.ts:235-242` still enforces the face epoch; `bags/lares/ha.ka.ba/lares/api/pono/convergent-mesh.mem#/two-revocation-modes` at :45-53 describes non-renewal as the default, while `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem#/rulings` at :348 retires this face lease to pinned lineage and remove-wins standing. Follow the later specific ruling, preserve the interim guard, and true up the older carrier at the final burn. This does not retire separate quorum or bag-capability leases.
+
+No b5b-owned sibling or composer hunks changed. Grant cure, offline-removal handling, census with incomplete-view refusal, fork and rollback proof, and migration of authority readers remain owed. K18 stays independent.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eT2aQhAGtXRDCMP2SrwGQGMpSXWUFQh1VPh0WhIDk4c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

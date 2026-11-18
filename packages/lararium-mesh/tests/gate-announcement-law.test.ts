@@ -1,10 +1,9 @@
 /** The floor's announcement must be signed by the same pin a dial checks. */
 import { describe, expect, test } from "vitest";
 import { utf8Bytes } from "../src/crypto.js";
-import { GATE_VERDICT_DOMAIN } from "../src/domains.js";
+import { GATE_VERDICT_DOMAIN, WAKING_FLOOR_ANNOUNCE_DOMAIN } from "../src/domains.js";
 import { deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, gateFields, readGateSignature } from "../src/gate-bundle.js";
 
-const red = process.env.LAR_UNBUILT_REDS === "1" ? test : test.skip;
 const bundle = () => deriveGateBundle(floorGateRoot(floorKeyDoor({ derive: () => new Uint8Array(32).fill(19) })), utf8Bytes("announcement-nexus"), floorRoute("/announce"));
 
 describe("the floor announcement and gate pin", () => {
@@ -15,9 +14,9 @@ describe("the floor announcement and gate pin", () => {
     expect(readGateSignature(b.pin, image, signature)).toBe(true);
   });
 
-  red("ANNOUNCEMENT_AND_GATE_SHARE_PIN: the floor signs an announcement under its published pin", async () => {
+  test("ANNOUNCEMENT_AND_GATE_SHARE_PIN: the floor signs an announcement under its published pin", async () => {
     const b = bundle();
-    const image = gateFields("lar:gate-announcement", utf8Bytes("same-nexus-and-pin"));
+    const image = gateFields(WAKING_FLOOR_ANNOUNCE_DOMAIN, utf8Bytes("same-nexus-and-pin"));
     const signature = await b.sign(image);
     expect(readGateSignature(b.pin, image, signature)).toBe(true);
   });

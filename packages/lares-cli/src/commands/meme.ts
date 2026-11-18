@@ -12,7 +12,11 @@
  *   project <file.mem> --to md [--dialect CommonMark|GFM|kramdown-rfc2629]   — RFC 7764 variant; CommonMark default
  *   project <file.mem> --to md [--tongue <bcp47>]   — weave sigil head names through their tongue's primary mirror; canonical default
  *   project --to md --check <file.md | dir>   — prove currency by re-projection alone; writes nothing
- *   promote <docs/…/x.mem> [--dest-bag <lar:uri>] [--corpus <glob>]
+ *   promote <docs/…/x.mem> [--face N] [--dest-bag <lar:uri>] [--corpus <glob>]
+ *   offer <lar:uri ...> --bag <slug>              — offer working records toward a house-canon bag (offering#/the-canon-offer)
+ *   offer list [--bag <slug>] [--all]             — the Nexus's offer table, each record's freshness ("canon is fresher" warns)
+ *   offer show <cid>                              — one offer's field diff against canon now
+ *   offer promote <cid> [--over-fresher]          — the Kahu steward lands it in canon and retires it
  *
  * A VERB DECLARES ITS SEAT. `normalize` · `check` · `project --to md` over a file run LOCAL — they open a
  * path, read its bytes, and (normalize, project) write bytes back: no daemon, no store, no cap gate, no
@@ -73,8 +77,7 @@
  * mouth the in-VM face (`$tw.lares.meme.project`) and the `meme-project` verb also call, so a pair
  * projected from any door carries identical bytes. No clock rides the meta: currency proves by re-projecting, never by a stamp.
  *
- * `project --to md --check <file.md | dir>` RUNS THAT PROOF, folded off `tools/submission-parity.mjs`
- * (now retired) and into this one door: re-project each named pair's source in memory through the same
+ * `project --to md --check <file.md | dir>` RUNS THAT PROOF: re-project each named pair's source in memory through the same
  * `projectSubmission`, compare against the pair on disk and its meta's `source-check`, and exit non-zero
  * naming each pair whose source moved (`source-check` disagrees), vanished, or whose bytes drifted from
  * a hand edit. Local, read-alone — it writes nothing, exactly like `check` over a `.mem` file.
@@ -89,13 +92,14 @@ import { basename, dirname, isAbsolute, join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission, PROFILES, profileOf, recordedTargetOf, resolveWeaveTarget, type WeaveProfile } from "@lararium/tw5/weave";
-import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle } from "@lararium/tw5";
-import { verifyBcc, verdict, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
-import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
-import { loadVesselSigningSeed, loadVesselVerifyingKey } from "@lararium/node";
-import { vesselDid } from "../env.js";
+import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle, memeticVerdict } from "@lararium/tw5";
+import { verifyBcc, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
+import { newChangeId } from "@lararium/mesh";
+import { faceSigningSeat, listFaceOrdinals, runPromoteCheckBytes } from "@lararium/node";
+import { vesselDid, larSealHome } from "../env.js";
 import { containerArgs } from "../container-target.js";
 import { runVerb, verbFailure } from "../verb-call.js";
+import { storeVerb } from "../store-door.js";
 import { LocalWaitExpired } from "../local-connector.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
@@ -126,13 +130,23 @@ export interface ProjectPlan {
   readonly container: Record<string, string>;
 }
 
-const SUBS = ["put", "get", "list", "delete", "normalize", "check", "sitting", "project", "promote"] as const;
+const SUBS = ["put", "get", "list", "delete", "normalize", "check", "sitting", "project", "promote", "offer"] as const;
 type Sub = typeof SUBS[number];
 
 function usage(): void { for (const line of helpLines("meme")) console.error(line); }
 
+/**
+ * THE STORE DOOR'S ONE-SHOT CARRIES NO FACE: a store verb reads and writes the daemon mount's seat, so a line naming `--face`
+ * refuses `face-not-routed` rather than stand the mount in for the face it names.
+ */
+function refuseFace(args: ParsedArgs, line: string): void {
+  if (args.options["face"] === undefined) return;
+  throw new UsageError(`face-not-routed: \`lares ${line}\` rides the store door's one-shot, which carries no face; it reads and writes the vessel's daemon mount, never the face --face names, so drop \`--face\``);
+}
+
 /** The verb and its args for a sub-verb — the argument law, with no daemon in reach. */
 export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemePlan {
+  refuseFace(args, `meme ${sub}`);
   const uri = args.positional[1];
   if (!uri) throw new UsageError(`a uri is required (e.g. \`lares meme ${sub} lar:///ha.ka.ba/... --recipe <slug>\`)`);
   const out: Record<string, string> = { uri, ...containerArgs(args, `meme ${sub}`, sub === "put" || sub === "delete" ? "write" : "read") };
@@ -152,6 +166,7 @@ export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemeP
 
 /** The listing addresses the SEAT, never one meme: the container alone, `tree` on request. */
 export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readonly args: Record<string, string | boolean> } {
+  refuseFace(args, "meme list");
   const out: Record<string, string | boolean> = { ...containerArgs(args, "meme list") };
   if (args.flags["tree"]) out["tree"] = true;
   return { verb: "meme-list", args: out };
@@ -211,6 +226,7 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
       case "sitting":   return surveySitting(namedFiles(args, "sitting"));
       case "project":   return await memeProject(args);
       case "promote":   return await memePromote(args);
+      case "offer":     return await memeOffer(args);
     }
   } catch (err) {
     if (typeof err === "object" && err !== null && (err as { code?: unknown }).code === "no-container") {
@@ -220,7 +236,8 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
     }
     if (err instanceof UsageError) {
       const msg = err.message;
-      emit(args, { ok: false, error: { code: "usage", message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
+      const code = msg.startsWith("face-not-routed:") ? "face-not-routed" : "usage";
+      emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
       return exitFor("usage");
     }
     // M3: a LOCAL WAIT ENDING (LocalWaitExpired, including the vessel's own folded-in
@@ -273,6 +290,10 @@ async function memePut(args: ParsedArgs): Promise<number> {
     human: () => {
       console.log(`${decision}: ${plan.args["uri"]}`);
       if (decision === "ingest") console.log(`  landed ${landed.length} · tombstoned ${tombstoned.length}`);
+      // THE ANSWER NAMES THE LAYER: a face that holds no writer's seat in the wiki's workbench lands in its own personal layer.
+      if (typeof receipt["bag"] === "string") console.log(receipt["layer"] === "personal"
+        ? `  in ${receipt["bag"]} (your personal layer: this face holds no writer's seat in the wiki's workbench; \`lares meme offer\` carries a record from here)`
+        : `  in ${receipt["bag"]}`);
       if (decision === "noop" && receipt["reason"]) console.log(`  ${receipt["reason"]}`);
       for (const w of warnings) console.log(`  ! ${w}`);
       if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
@@ -291,6 +312,7 @@ async function memeGet(args: ParsedArgs): Promise<number> {
     return exitFor(code);
   }
   const meme = outcome.output["meme"] as { text: string; canonicalHash: string } | null | undefined;
+  const fromFloor = outcome.output["floor"] === true;
   if (!meme) {
     emit(args, { ok: false, requestId: result.requestId, error: { code: "not-found", message: `no meme at ${plan.args["uri"]}` }, human: () => console.error(`lares meme get: no meme at ${plan.args["uri"]}`) });
     return exitFor("not-found");
@@ -298,15 +320,20 @@ async function memeGet(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true,
     requestId: result.requestId,
-    data: { uri: plan.args["uri"], text: meme.text, canonicalHash: meme.canonicalHash },
-    // The text alone reaches stdout, so `lares meme get <uri> --recipe <slug> > file` carries the meme; the base rides stderr.
-    human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); },
+    // `floor`: the bag's floor snapshot answered (this face holds no read on the live house canon document).
+    data: { uri: plan.args["uri"], text: meme.text, canonicalHash: meme.canonicalHash, ...(fromFloor ? { floor: true } : {}) },
+    // The text alone reaches stdout on a terminal, or under `--no-json`: a redirect leaves stdout no terminal, where the answer
+    // is JSON, so `lares meme get <uri> --recipe <slug> --no-json > file` carries the meme. The base rides stderr.
+    human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); if (fromFloor) console.error(FLOOR_READ_NOTE); },
   });
   return 0;
 }
 
 /** One listed root, as the verb answers it. */
-interface ListedRoot { uri: string; canonicalHash: string; bag?: string; slots?: ListedSlot[] }
+interface ListedRoot { uri: string; canonicalHash: string; bag?: string; floor?: boolean; slots?: ListedSlot[] }
+
+/** The line a read prints on stderr where a house canon bag's floor snapshot answered it. */
+const FLOOR_READ_NOTE = "read from the floor snapshot: this face holds no read on the live house canon document (the Kahu steward's face reads it live)";
 interface ListedSlot { slot: string; uri: string; slots: ListedSlot[] }
 
 /**
@@ -350,7 +377,7 @@ async function memeList(args: ParsedArgs): Promise<number> {
   };
   // The seat as the verb named it: one bag, or a recipe with the bags its stack read and any it could not reach.
   const seat: Record<string, unknown> = {};
-  for (const key of ["bag", "recipe", "bags", "unreached"]) if (head[key] !== undefined) seat[key] = head[key];
+  for (const key of ["bag", "floor", "recipe", "bags", "unreached"]) if (head[key] !== undefined) seat[key] = head[key];
   const unreached = Array.isArray(head["unreached"]) ? (head["unreached"] as string[]) : [];
   emit(args, {
     ok: true,
@@ -360,6 +387,7 @@ async function memeList(args: ParsedArgs): Promise<number> {
     human: () => {
       for (const r of roots) { console.log(`${r.canonicalHash}  ${r.uri}`); slotLines(r.slots, 1); }
       for (const bag of unreached) console.error(`lares meme list: ${bag} stands unreached; its roots stay unlisted`);
+      if (head["floor"] === true || roots.some((r) => r.floor === true)) console.error(FLOOR_READ_NOTE);
     },
   });
   return 0;
@@ -478,7 +506,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // BARE DATA IS NOT A MEME. No head, no text frame, no release: normalizing it would frame bytes
     // nobody framed, so both seats NAME it and move none of its bytes. A reading, never a fault — the
     // stage law below still reads whatever meta it declares.
-    const frame = verdict(src);
+    const frame = memeticVerdict(src);   // the house verdict: torn where the frame's meta read and TOML's part
     if (frame.kind === "bare") {
       console.log(`bare: ${f}`);
       console.log("  ⚠ bare data — no frame stands (no head, no STX/ETX, no release); not a meme. WARNING: UNSTABLE");
@@ -545,6 +573,14 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
           : `  ✗ ${fault.message}`);
       }
       continue;
+    }
+
+    // THE SEAL NEVER REACHES AN UNBOUND HEAD (head-bind.ts). The check verifies and the head names an end
+    // the sealed root meta never names — a reading named aloud on both seats, never a fault: no gesture
+    // can choose the address the meta should have sealed.
+    if (frame.kind === "head-unbound") {
+      console.log(`head-unbound: ${f}`);
+      console.log(`  ⚠ the head names ${frame.unbound.map((e) => `\`${e}=\``).join(" and ")} where the sealed root meta names none — the block check never reaches it; seal a \`title\`${frame.unbound.includes("namespace") ? " and `namespace`" : ""} in the root meta`);
     }
 
     // EOT closes the carrier. Bytes after it are outside every recoverable frame boundary and may
@@ -707,9 +743,9 @@ function surveyEdges(files: string[]): number {
  * holds a dissolving act. So this reading names candidates and stops. The operator calls the sitting.
  *
  * ── THE WELD COMES FIRST AND THE FIRE SECOND, ALWAYS ────────────────────────────────────────────
- * A carrier any other carrier still names is HELD, however the stage reads. Measured on this tree:
- * moving three carriers without the weld left 66 references naming addresses that no longer answered;
- * folding 37 weld-first broke none. The corpus passed IS the universe here, exactly as it is for the
+ * A carrier any other carrier still names is HELD, however the stage reads:
+ * the weld must update every reference before a carrier moves, so every named address still answers.
+ * The corpus passed IS the universe here, exactly as it is for the
  * edges reading — so a narrow run reads as a graph with holes, and the summary states the count read.
  *
  * ── AND THE HARVEST ROOM'S EMPTINESS IS THE WITNESS ─────────────────────────────────────────────
@@ -851,7 +887,7 @@ async function memeProject(args: ParsedArgs): Promise<number> {
   //     own reading that the operator may not have the render they asked for — over a carrier whose
   //     every byte an author wrote on purpose. Refusing is the move this house does not make.
   //
-  // AND THE FAULT IS A COMPOSITION FAULT, WHICH MEANS THE FIX IS NOT HERE. Two legal carriers joined into
+  // AND THE FAULT IS A COMPOSITION FAULT, WHICH MEANS THE CURE LIES ELSEWHERE. Two legal carriers joined into
   // an illegal one: no byte of the projection is wrong, and nothing this door could refuse would repair
   // the records behind it. Refusing would withhold the one artifact that SHOWS the operator the join.
   //
@@ -958,7 +994,7 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
 }
 
 /**
- * `project --to md --check <file.md|dir>` — THE FOLD of `tools/submission-parity.mjs` into this door.
+ * `project --to md --check <file.md|dir>` — the submission currency check.
  *
  * A projected pair proves its currency by RE-PROJECTION, never by a stamp: the meta carries no clock,
  * so the only way a pair reads current is that projecting its source again produces the same bytes.
@@ -1014,7 +1050,7 @@ function projectMdCheck(args: ParsedArgs): number {
     const title = /^title: (\S+)$/m.exec(meta)?.[1];
     const source = /^source: (\S+)$/m.exec(meta)?.[1];
     const claimedCheck = /^source-check: (\S+)$/m.exec(meta)?.[1];
-    // THE PAIR READS AS PROJECTED: the meta's OWN `variant`/`tongue` name the target this pair was
+    // THE PAIR READS AS PROJECTED: the meta's OWN `variant`/`tongue` name the target this pair is
     // woven for — no flag at check time, the recorded sidecar IS the instruction. Absent either
     // key, the pair stays CommonMark with no tongue (the default both channels share).
     const { variant, tongue: recordedTongue } = recordedTargetOf(meta);
@@ -1058,19 +1094,35 @@ function projectMdCheck(args: ParsedArgs): number {
  *   · THE MOVE — the same verb without `--dry-run`. `executeMove` performs the whole-carrier-group transfer;
  *     this door builds no second mover.
  *
- * IT STILL REFUSES WHEN THE CAP IS ABSENT, and that refusal now carries the daemon's own words rather than
- * this door's confession. Promotion-down stays the kahu-cabal's act, operator-triggered first: an AI nym
- * holding no admin on the canon bag meets the same closed gate it met before.
+ * A missing cap draws the daemon's own refusal. Promotion-down requires an operator-triggered kahu-cabal act;
+ * an AI nym holding no admin on the canon bag meets the closed cap gate.
  */
 async function memePromote(args: ParsedArgs): Promise<number> {
   const file = args.positional[1];
-  if (!file) throw new UsageError("lares meme promote <…/x.mem> [--from-bag <b>] [--dest-bag <b>] — name the carrier to cross");
+  if (!file) throw new UsageError("lares meme promote <…/x.mem> [--face N] [--approval <approval.json>] [--from-bag <b>] [--dest-bag <b>] — name the carrier to cross");
   const root = process.cwd();
   const destBag = typeof args.options["dest-bag"] === "string" ? args.options["dest-bag"].trim() : undefined;
   const fromBag = typeof args.options["from-bag"] === "string" ? args.options["from-bag"].trim() : undefined;
+  let approval: unknown;
+  if (args.options["approval"]) {
+    try { approval = JSON.parse(readFileSync(args.options["approval"], "utf8")); }
+    catch { approval = null; }
+  }
+  if (approval === null) {
+    emit(args, { ok: false, error: { code: "verb-error", message: "malformed-approval" },
+      human: () => console.error("lares meme promote: malformed-approval") });
+    return exitFor("verb-error");
+  }
 
-  const did     = await vesselDid();
-  const seedKey = await loadVesselVerifyingKey();
+  const rawFace = args.options["face"];
+  if (args.flags["face"] !== undefined || (rawFace !== undefined && (typeof rawFace !== "string" || !/^(?:0|[1-9][0-9]*)$/.test(rawFace)))) {
+    throw new UsageError("face-malformed: --face N names a whole handle index");
+  }
+  if (typeof rawFace === "string" && !Number.isSafeInteger(Number(rawFace))) throw new UsageError("face-malformed: --face N names a safe handle index");
+  if (rawFace === undefined && listFaceOrdinals().length > 1) throw new UsageError("face-not-named: this vessel holds several faces; name the signing face with --face N");
+  const atom = await faceSigningSeat(typeof rawFace === "string" ? Number(rawFace) : undefined);
+  const seedKey = atom.key;
+  const did = `0x${atom.key}`;
   // The record's title, read once for the CAP REHEARSAL — the crossing re-reads the carrier for itself, and
   // a rehearsal needs a title to name. An unreadable carrier falls through to the crossing's own refusal.
   const abs   = isAbsolute(file) ? file : join(root, file);
@@ -1106,12 +1158,13 @@ async function memePromote(args: ParsedArgs): Promise<number> {
       const r = await summonMove(m, false);
       return r.ok ? { ok: true, moved: 1 } : { ok: false, reason: r.reason };
     },
-    sign: ed25519SignerFromSeed(await loadVesselSigningSeed()),
+    sign: atom.sign,
+    verifyApproval: (candidate, bytes) => runPromoteCheckBytes({ approval: candidate, bytes, sealHome: larSealHome(), ...(args.options["nexus"] ? { aid: args.options["nexus"] } : {}) }),
   };
 
   let outcome;
   try {
-    outcome = await promoteCarrier({ root, file, ...(fromBag ? { fromBag } : {}), ...(destBag ? { destBag } : {}) }, seat);
+    outcome = await promoteCarrier({ root, file, approval, ...(fromBag ? { fromBag } : {}), ...(destBag ? { destBag } : {}) }, seat);
   } catch (err) {
     // M3: told apart by the error's own TYPE, never folded into `daemon-unreachable` wholesale.
     const f = verbFailure(err);
@@ -1144,4 +1197,147 @@ async function memePromote(args: ParsedArgs): Promise<number> {
     },
   });
   return exitFor("ok");
+}
+
+/**
+ * THE OFFERING DOOR (offering#/the-canon-offer), four acts over the daemon's offer verbs:
+ *   offer <lar:uri ...> --bag <slug>      `offer-make`: the lit face offers records from its working layer toward a house-canon bag;
+ *   offer list [--bag <slug>] [--all]     `offer-list`: the open offers (every one with --all), each record's freshness now;
+ *   offer show <cid>                      `offer-show`: one offer's field diff against canon now;
+ *   offer promote <cid> [--over-fresher]  `offer-promote`: the Kahu steward, on a vessel holding a charter seat, writes the offered bytes into canon and retires the offer.
+ * A moved base WARNS ("canon is fresher") in every listing; only a promotion over it takes the explicit `--over-fresher`. A release
+ * after a promotion carries it: `lares nexus release --cut <manifest-file>` cuts the floor from live canon.
+ */
+export function offerPlan(args: ParsedArgs): { readonly verb: "offer-make" | "offer-list" | "offer-show" | "offer-promote"; readonly args: Record<string, unknown> } {
+  const act = args.positional[1];
+  const bag = typeof args.options["bag"] === "string" ? args.options["bag"] : undefined;
+  if (act === "list") return { verb: "offer-list", args: { ...(bag !== undefined ? { bag } : {}), ...(args.flags["all"] === true ? { all: true } : {}) } };
+  if (act === "show" || act === "promote") {
+    const cid = args.positional[2];
+    if (!cid || !/^[0-9a-f]{64}$/.test(cid)) throw new UsageError(`offer ${act} names one offer CID (64 hex)`);
+    return act === "show" ? { verb: "offer-show", args: { cid } } : { verb: "offer-promote", args: { cid, ...(args.flags["over-fresher"] === true ? { overFresher: true } : {}) } };
+  }
+  const titles = args.positional.slice(1);
+  if (titles.length === 0 || titles.some((t) => !t.startsWith("lar:"))) throw new UsageError("offer names the lar: uris to offer, or one of list · show <cid> · promote <cid>");
+  if (bag === undefined) throw new UsageError("offer names the house-canon bag it offers toward (--bag <slug>)");
+  return { verb: "offer-make", args: { bag, titles } };
+}
+
+type OfferRow = { cid: string; bag: string; offerer: string; retired: { steward: string } | null; refusedRetires?: Array<{ retire: string; reason: string; steward?: string }>; fresher: boolean; records: Array<{ title: string; freshness: string }> };
+
+/** A daemon offer verb refused: the code, the message and the named refusal its answer carried. */
+class OfferVerbRefused extends Error {
+  constructor(readonly code: "cap-denied" | "verb-error", message: string, readonly requestId: string, readonly refusal?: string) { super(message); }
+}
+
+/** The doors one promotion walks: the canon write on the daemon's door, the charter seat's retire on the store door. */
+export interface OfferPromoteDoors {
+  /** The canon write (`offer-promote`); a refusal throws. The verb itself asks the charter seat before canon moves. */
+  readonly promote: () => Promise<Record<string, unknown>>;
+  /** The retire (`offer-retire`), given the fresher canon digests the promotion overrode and the canon heads its write answered. */
+  readonly retire:  (over: unknown, after: unknown) => Promise<Record<string, unknown>>;
+}
+
+export type OfferPromoteOutcome =
+  | { readonly ok: true; readonly out: Record<string, unknown>; readonly retire: Record<string, unknown> | null }
+  /** The canon write landed and the retire did not: `pending` where the seat's replica of canon still trails (no refusal). */
+  | { readonly ok: false; readonly wrote: true; readonly pending: boolean; readonly message: string; readonly out: Record<string, unknown>; readonly retire: Record<string, unknown> };
+
+/**
+ * ONE PROMOTION, ONE OUTCOME (offering#/the-canon-offer). The canon write and the retire ride two doors. The daemon's verb asks
+ * the charter seat itself before canon moves (`offer-retire-unseated`, for every caller), so this walk holds no check of its own:
+ * the canon write, then the retire, which waits on the canon heads the write answered. A retire whose replica still trails past
+ * the wait reads PENDING (the canon write stands); one that refuses names both halves. Either way a second promote completes it:
+ * it writes nothing canon already carries, and retires.
+ */
+export async function promoteThenRetire(doors: OfferPromoteDoors): Promise<OfferPromoteOutcome> {
+  const out = await doors.promote();
+  if (out["moved"] !== true) return { ok: true, out, retire: null };
+  let retire: Record<string, unknown>;
+  try { retire = await doors.retire(out["over"] ?? [], out["canonHeads"] ?? undefined); }
+  catch (err) {
+    const refused = err instanceof Error ? err.message : String(err);
+    return { ok: false, wrote: true, pending: false, out, retire: { refused }, message: `the canon write landed; the retire did not: ${refused}; run the promote again to retire it (canon already carries the bytes, so it writes nothing)` };
+  }
+  if (retire["retired"] === false && retire["why"] === "canon-trails") {
+    return { ok: false, wrote: true, pending: true, out, retire, message: String(retire["pending"] ?? "the canon write stands; the retire still pends: run the promote again to retire it") };
+  }
+  return { ok: true, out, retire };
+}
+
+async function memeOffer(args: ParsedArgs): Promise<number> {
+  const plan = offerPlan(args);
+  let requestId = "";
+  const daemon = async (): Promise<Record<string, unknown>> => {
+    const result = await runVerb(plan.verb, plan.args, await vesselDid());
+    requestId = result.requestId;
+    const outcome = readVerbOutcome(result);
+    const answer = outcome.output;
+    if (!outcome.ok || answer["ok"] === false) {
+      const message = outcome.error ?? String(answer["why"] ?? answer["refusal"] ?? "the verb refused");
+      throw new OfferVerbRefused(/kahu-reach|cap-denied/.test(message) ? "cap-denied" : "verb-error", message, result.requestId, typeof answer["refusal"] === "string" ? answer["refusal"] : undefined);
+    }
+    return answer;
+  };
+  let out: Record<string, unknown>;
+  let retire: Record<string, unknown> | null = null;
+  try {
+    if (plan.verb === "offer-promote") {
+      // THE RETIRE (offering#/the-canon-offer): a seat of the charter held in this vault retires the offer on the store door; a
+      // retire no seat sealed counts nothing to any reader. The daemon's verb asks that seat before canon moves, and the retire
+      // waits on the canon heads the write answered (`promoteThenRetire`).
+      const promoted = await promoteThenRetire({
+        promote: daemon,
+        retire:  async (over, after) => (await storeVerb("offer-retire", { cid: plan.args["cid"], over, ...(Array.isArray(after) ? { after } : {}) })).output,
+      });
+      if (!promoted.ok) {
+        emit(args, { ok: false, requestId, data: { ...promoted.out, retire: promoted.retire, retirePending: promoted.pending }, error: { code: "verb-error", message: promoted.message }, human: () => console.error(`lares meme offer promote: ${promoted.message}`) });
+        return exitFor("verb-error");
+      }
+      out = promoted.out; retire = promoted.retire;
+    } else out = await daemon();
+  } catch (err) {
+    if (!(err instanceof OfferVerbRefused)) throw err;
+    emit(args, { ok: false, requestId: err.requestId, error: { code: err.code, message: err.message, ...(err.refusal !== undefined ? { refusal: err.refusal } : {}) }, human: () => console.error(`lares meme offer: ${err.message}`) });
+    return exitFor(err.code);
+  }
+  const result = { requestId };
+  const short = (cid: unknown): string => `${String(cid).slice(0, 16)}…`;
+  emit(args, {
+    ok: true, requestId: result.requestId, data: retire !== null ? { ...out, retire } : out,
+    human: () => {
+      if (plan.verb === "offer-make") {
+        console.log(`offer → ${out["landed"] ? "OFFERED" : "HELD (the same offer already stands)"} ${out["cid"]}`);
+        for (const r of (out["records"] as Array<{ title: string; base: string | null }>) ?? []) console.log(`  ${r.title}  ${r.base ? `base ${short(r.base)}` : "(a new title)"}`);
+        console.log("  canon stays unmoved; the Kahu steward reviews it (lares meme offer list) and promotes it");
+        return;
+      }
+      if (plan.verb === "offer-list") {
+        const offers = (out["offers"] as OfferRow[]) ?? [];
+        if (offers.length === 0) console.log("offer list: no open offer on this Nexus's table");
+        for (const o of offers) {
+          console.log(`${o.cid}  ${o.bag}  offerer ${short(o.offerer)}${o.retired ? "  (retired)" : ""}${o.fresher ? "  ⚠ canon is fresher" : ""}${o.refusedRetires?.length ? `  (${o.refusedRetires.length} retire-unauthorised ignored)` : ""}`);
+          for (const r of o.records) console.log(`  ${r.freshness === "canon-is-fresher" ? "⚠ canon is fresher" : r.freshness}  ${r.title}`);
+        }
+        return;
+      }
+      if (plan.verb === "offer-show") {
+        console.log(`offer ${out["cid"]} → ${out["bag"]}${out["retired"] ? " (retired)" : ""}`);
+        for (const r of (out["refusedRetires"] as OfferRow["refusedRetires"]) ?? []) console.log(`  ${r.reason}: retire ${short(r.retire)}${r.steward ? ` sealed by ${short(r.steward)}` : ""} — no charter seat sealed it; it retires nothing`);
+        for (const d of (out["diffs"] as Array<{ title: string; fields: Array<{ field: string; canon: string | null; offered: string | null }> }>) ?? []) {
+          const rec = ((out["records"] as OfferRow["records"]) ?? []).find((r) => r.title === d.title);
+          console.log(`  ${d.title}  ${rec?.freshness === "canon-is-fresher" ? "⚠ canon is fresher" : rec?.freshness ?? ""}`);
+          for (const f of d.fields) console.log(`    ${f.field}: ${f.canon === null ? "(absent)" : JSON.stringify(f.canon.slice(0, 80))} → ${f.offered === null ? "(absent)" : JSON.stringify(f.offered.slice(0, 80))}`);
+        }
+        return;
+      }
+      if (out["moved"] === false) { console.log(`offer promote → HELD: ${short(out["cid"])} already retired; nothing lands`); return; }
+      console.log(`offer promote → PROMOTED ${out["cid"]} into ${out["bag"]}`);
+      console.log(`  wrote:  ${((out["wrote"] as string[]) ?? []).join(", ") || "(canon already carried every record)"}`);
+      const over = (out["over"] as Array<{ title: string }>) ?? [];
+      if (over.length > 0) console.log(`  over fresher canon (your explicit choice): ${over.map((o) => o.title).join(", ")}`);
+      console.log(`  retired by the charter seat's record ${short(retire?.["retire"])}; cut a release to carry it to every face: lares nexus release <manifest-file> --cut`);
+    },
+  });
+  return 0;
 }

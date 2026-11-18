@@ -149,6 +149,7 @@ export const defaultSensoriumIngest: SensoriumIngest = ({ sourcePath, sensoriumR
   try {
     const env = { ...process.env, PYTHONPATH: submoduleRoot + (process.env["PYTHONPATH"] ? `:${process.env["PYTHONPATH"]}` : ""), ...resolveHolderCapEnv(python) };
     const out = execFileSync(python, [script, "--sensorium", sensoriumRoot, "--source", sourcePath, "--wing", "wing_corpus", ...(ephemeral ? ["--ephemeral"] : [])], {
+      // LIVENESS: the external Python ingest process may hang without an exit event.
       cwd: submoduleRoot, env, maxBuffer: 1 << 30, encoding: "utf8", timeout: 300_000,
     });
     const lines = out.trim().split(/\r?\n/).filter((value) => value.trim().startsWith("{"));
@@ -244,6 +245,7 @@ function setSensoriumEphemeral(dir: string, ephemeral: boolean): void {
   if (!python || !scriptPresent) return;
   const env = { ...process.env, PYTHONPATH: submoduleRoot + (process.env["PYTHONPATH"] ? `:${process.env["PYTHONPATH"]}` : ""), ...resolveHolderCapEnv(python) };
   execFileSync(python, [script, "--sensorium", dir, "--set-ephemeral", String(ephemeral)], {
+    // LIVENESS: the external Python manifest process may hang without an exit event.
     cwd: submoduleRoot, env, maxBuffer: 1 << 20, encoding: "utf8", timeout: 30_000,
   });
 }

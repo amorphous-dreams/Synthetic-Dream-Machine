@@ -87,10 +87,12 @@ import {
   frameAlt,
   fenceLineOpen,
   fenceLineClose,
+  bccOf,
   bccOfSpan,
   type FenceOpen,
 } from "@lararium/memetic-frame";
 import { GENERATED_SIGILS, GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE } from "../meme-ast/grammar-table.generated.js";
+import { ATTR_RUN } from "../meme-ast/scanner.js";
 // Re-exported so a test of weave's OWN tongue-axis properties (round-trip, injectivity) reaches
 // the mirror/primary tables through this sanctioned surface rather than importing
 // `meme-ast/grammar-table.generated.js` directly (vm-grammar-boundary.test.ts forbids a test
@@ -147,7 +149,7 @@ export interface SubmissionProjection {
   meta: string;
   /** The carrier's own address, read off its SOH heading (or supplied). */
   uri: string;
-  /** The block check found adjacent to ETX, or "unchecked". */
+  /** The block check the ETX mark's `bcc` slot carries, or "unchecked". */
   check: string;
   /**
    * RFC 7763: true when the file ALSO carries YAML frontmatter for standalone travel (GFM,
@@ -266,34 +268,38 @@ export function resolveWeaveTarget(opts: {
 }
 
 /**
- * Line-standing frame sigil (every mark the frame declares), with whatever rides after the closer.
+ * Line-standing frame sigil (every mark the frame declares), ALONE on its line. A frame mark with text
+ * after its `>>` falls through as prose: that text rides inside the checked span and the plugin renders it
+ * inline, so the weave never drops it in silence.
  * THE SET IS THE DECLARATION'S (`frameAlt()` names every mark): a hand-spelled `&#x00..;` read any C0
  * entity as frame and would have dropped an authored line that merely quoted one.
  */
-const FRAME_LINE = new RegExp(`^<<\\^ code="${frameAlt()}"(?:[^>\\n]|>(?!>))*>>.*$`);
+const FRAME_LINE = new RegExp(`^<<\\^ code=\`${frameAlt()}\`(?:[^>\\n]|>(?!>))*>>\\s*$`);
 /**
- * The ETX closer with its adjacent check.
+ * The ETX closer with the check its `bcc` slot carries.
  *
  * THE CODE SET COMES FROM THE DECLARATION; THIS SHAPE STAYS THIS READER'S OWN (@lararium/memetic-frame marks.ts). The
- * line-anchored canonical spelling is what a transpose meets, and the trailing capture takes the BCC
- * that rides the closer with nothing between.
+ * line-anchored canonical spelling is what a transpose meets, and the capture takes the BCC the
+ * closer's final `bcc` value names (the frame's lawful spelling, one space and one tick each side).
  */
-const ETX_LINE = new RegExp(`^<<\\^ code="${frameAlt("ETX")}"[^\\n]*>>(\\S+)?`);
+const ETX_LINE = new RegExp(`^<<\\^ code=\`${frameAlt("ETX")}\`(?: bcc=\`(ni:\\/\\/\\/[a-z0-9-]+;[A-Za-z0-9_-]+)\`)?>>\\s*$`);
 const DOCTYPE_LINE = /^<<!DOCTYPE (?:[^>\n]|>(?!>))*>>\s*$/;
 // The tooth stands at one dispatch position: `<<~` then LWSP then the command word, and a close
 // word carries its own slash (`ahu`, `/ahu`). Both spacings reach the same word, matching the
 // plain register's `<<fragment …>>` / `<</fragment>>`.
 //
-// The `#` sigil marks a slot path, rooted (`#/a/b`) or bare (`#name`) — the capture takes
-// whatever follows the `#` up to whitespace or the close, leading slash included when present, so
-// `ahuId` below can tell the two spellings apart and drop only the ROOT slash, not a bare name.
+// The slot NAMES itself — ``slot=`#/a/b` `` (the kupono cut) — rooted or bare (`#name`); the capture
+// takes whatever follows the `#` inside the tick run, leading slash included when present, so `ahuId`
+// below can tell the two spellings apart and drop only the ROOT slash, not a bare name.
 const AHU_NAMES  = ["ahu", ...mirrorsOf("ahu")];
 const AHU_SHAPES = splitByPrefixShape(AHU_NAMES);
 const ahuAlt = [
   AHU_SHAPES.sharktooth.length ? `<<~\\s*(?:${AHU_SHAPES.sharktooth.join("|")})` : null,
   AHU_SHAPES.bare.length ? `<<(?:${AHU_SHAPES.bare.join("|")})` : null,
 ].filter((s): s is string => s !== null).join("|");
-const AHU_OPEN = new RegExp(`^(?:${ahuAlt})\\s+#(\\S+?)(?: (?:[^>\\n]|>(?!>))*)?\\s*>>\\s*$`);
+// The tail after the slot is the shared tick-aware attribute run (ATTR_RUN), so a `>>` inside a ticked
+// value rides as content and the opener ends at its own `>>`. A line carries no newline to cross.
+const AHU_OPEN = new RegExp(`^(?:${ahuAlt})\\s+slot=\`#([^\`\\s]+)\`(?: ${ATTR_RUN})?\\s*>>\\s*$`);
 const AHU_CLOSE = new RegExp(`^(?:<<~\\s*\\/\\s*(?:${AHU_SHAPES.sharktooth.join("|")})|<<\\/(?:${AHU_SHAPES.bare.join("|") || "\\x00"})\\s*)>>\\s*$`);
 // `loulou` (+ its mirror `link`) names a plain citation and keeps the reference-bullet shape.
 // `aka`/`kanawai` (English mirrors `pin`/`law`) PIN an edge — rendering follows the TARGET
@@ -304,14 +310,14 @@ const AHU_CLOSE = new RegExp(`^(?:<<~\\s*\\/\\s*(?:${AHU_SHAPES.sharktooth.join(
 // one-line invoke shape — the block open/close form is declined, see the handback) weaves as a plain
 // link under the profile's own marker, since a LIVE include names no frozen moment to pin.
 const LOULOU_NAMES = ["loulou", ...mirrorsOf("loulou")];
-const LOULOU_LINE = new RegExp(`^<<~\\s*(${LOULOU_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
+const LOULOU_LINE = new RegExp(`^<<~\\s*(${LOULOU_NAMES.join("|")})\\s+uri=\`([^\`\\n]*)\`\\s*>>\\s*$`);
 // `aka` (English `pin`, informative) and `kanawai` (English `law`, binding/normative) are TWO
 // canonical sigils sharing one rendering mechanism — a pin's TARGET decides whether it weaves as a
 // citation or a frozen image either way; only the SIGIL decides which kramdown reference list a
 // citation folds into (role = WHICH SIGIL, no parameter, no position rule). Both families' names
 // derive from the table, never hand-listed.
 const AKA_NAMES = ["aka", ...mirrorsOf("aka"), "kanawai", ...mirrorsOf("kanawai")];
-const AKA_LINE = new RegExp(`^<<~\\s*(${AKA_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
+const AKA_LINE = new RegExp(`^<<~\\s*(${AKA_NAMES.join("|")})\\s+uri=\`([^\`\\n]*)\`\\s*>>\\s*$`);
 
 /**
  * Every BASE URI (fragment stripped, quotes stripped) an `aka`/`kanawai` pin names in `text` — the
@@ -332,7 +338,7 @@ export function pinTargetsOf(text: string): string[] {
     if (fence !== null) continue;
     const aka = AKA_LINE.exec(line);
     if (!aka) continue;
-    const raw = (aka[2] ?? "").trim().replace(/^"|"$/g, "");
+    const raw = (aka[2] ?? "").trim();
     const base = raw.split("#")[0];
     if (base) targets.add(base);
   }
@@ -341,7 +347,7 @@ export function pinTargetsOf(text: string): string[] {
 // CENSUS LANE B: the word set derives from the table (`mirrorsOf`), matching AHU/LOULOU/AKA above —
 // a hand-typed "kahea" alone would silently miss `import`/`transclude` the tiddlers already declare.
 const KAHEA_NAMES = ["kahea", ...mirrorsOf("kahea")];
-const KAHEA_LINE = new RegExp(`^<<~\\s*(?:${KAHEA_NAMES.join("|")})\\s+("?lar:[^"\\s>]+"?|[^\\s>(]+\\/[^\\s>]*|[^\\s>(]+#[^\\s>]*)\\s*>>\\s*$`);
+const KAHEA_LINE = new RegExp(`^<<~\\s*(?:${KAHEA_NAMES.join("|")})\\s+uri=\`([^\`\\s]+)\`\\s*>>\\s*$`);
 // A transclusion standing alone as a block: `{{title}}`, `{{title||template}}`,
 // `{{{filter}}}`, `{{{filter||template}}}` — no markdown equivalent exists for any of them, so
 // the LINE-STANDING form carries whole into a tangle fence (a mid-line occurrence is handled
@@ -351,7 +357,8 @@ const TRANSCLUSION_LINE = /^\s*(\{\{[\s\S]*\}\})\s*$/;
 // body belongs to the EMBEDDED language, never this walk's recognizers: a `#` inside a TOML body
 // must not become a markdown list item. So the whole span weaves as ONE fenced block, info string =
 // the grammar key, body byte-verbatim — captured before any other recognizer gets a look at its lines.
-const HANA_OPEN = /^<<~\s*hana\s+([^\n>]+?)\s*>>\s*$/;
+// The grammar-key names itself (the kupono cut): ``<<~ hana grammar=`toml`>>``, the key captured from the tick run.
+const HANA_OPEN = /^<<~\s*hana\s+grammar=`([^`\n]+)`\s*>>\s*$/;
 const HANA_CLOSE = /^<<~\s*\/\s*hana\s*>>\s*$/;
 // The speaking head with or without a joined name (`<<~ ahu`, `<<~ranks`, `<<~! wehe`) — any
 // line-standing sigil not already given a markdown shape above.
@@ -855,7 +862,7 @@ export function transposeMarkdown(
   let metaFenceDone: string | undefined;
   let inMetaFence = false;
   let uri: string | undefined;
-  let check: string | undefined;
+  const check = bccOf(text) ?? undefined;
   let tableRow = 0;         // rows emitted in the current table run
   let sigilBuf: string[] | null = null;  // a line-spanning sigil, gathered whole
   let proseBuf: string[] | null = null;  // a contiguous default/ordered run, flushed as one string
@@ -914,7 +921,7 @@ export function transposeMarkdown(
     if (fence === null && metaFenceDone === undefined && META_OPEN_LINE_RE.test(line)) { inMetaFence = true; metaFence = []; continue; }
 
     // ── fence tracking: OPEN and CLOSE both read through fence-mask's own rules (CommonMark §4.5) —
-    // `fenceLineOpen` (backtick or tilde; a fence's info string may carry no run of its own
+    // `fenceLineOpen` (backticks only, TiddlyWiki's law; a fence's info string may carry no run of its own
     // character) and `fenceLineClose` (a closer needs a run of the SAME character ≥ the opener AND
     // nothing else on the line — a content line that happens to start with a shorter or trailed run,
     // "```` example of `backticks`" inside a fence opened at four, never closes early; it is body).
@@ -943,7 +950,7 @@ export function transposeMarkdown(
     const soh = matchCarrierHeadLine(line);
     if (soh) { uri = uri ?? soh.uri; continue; }
     const etx = ETX_LINE.exec(line);
-    if (etx) { check = check ?? etx[1]; continue; }
+    if (etx) { continue; }
     if (FRAME_LINE.test(line) || DOCTYPE_LINE.test(line)) continue;
 
     // ── a sigil spanning lines travels whole, shown literally in a fence ──
@@ -981,7 +988,7 @@ export function transposeMarkdown(
     const kahea = KAHEA_LINE.exec(line);
     if (kahea) {
       flushProse();
-      const target = kahea[1]!.replace(/^"|"$/g, "");
+      const target = kahea[1]!;
       const href = /\s/.test(target) ? `<${target}>` : target;
       const kaheaWord = resolveHeadWord("kahea", tongue);
       out.push(`${profile.kaheaMarker}\`${kaheaWord}\` [${target}](${href})`);
@@ -1105,17 +1112,19 @@ export function projectSubmission(
   // WITH when it leaves the shelf alone (source/source-check/lang/tongue/the kramdown identity
   // keys) — what an external reader (an IANA tool, an RFC toolchain) sees with no sidecar beside it.
   // A pair with no recorded variant stays CommonMark, no tongue (the default both channels share).
-  const metaLines = [
-    `title: ${title}`,
-    `type: text/markdown`,
-    `source: ${uri}`,
-    `source-check: ${check}`,
-    ...(profile.dialect !== "CommonMark" ? [`variant: ${profile.dialect}`] : []),
-    ...(opts?.tongue ? [`tongue: ${opts.tongue}`] : []),
-    `projected-by: weave (lares meme project --to md · meme-project)`,
-    `law: projected artifact — hand edits do not survive re-projection`,
-  ];
-  const meta = metaLines.join("\n") + "\n";
+  // The sidecar rests in TW5's own field-block form (fields sorted, one line each, no trailing newline),
+  // the bytes the disk projection renders for the same fields, so a seed re-projects the pair unmoved.
+  const metaFields: Record<string, string> = {
+    title,
+    type: "text/markdown",
+    source: uri,
+    "source-check": check,
+    ...(profile.dialect !== "CommonMark" ? { variant: profile.dialect } : {}),
+    ...(opts?.tongue ? { tongue: opts.tongue } : {}),
+    "projected-by": "weave (lares meme project --to md · meme-project)",
+    law: "projected artifact — hand edits do not survive re-projection",
+  };
+  const meta = Object.keys(metaFields).sort().map((k) => `${k}: ${metaFields[k]}`).join("\n");
 
   if (profile.frontmatter) {
     const fields: Record<string, string> = {

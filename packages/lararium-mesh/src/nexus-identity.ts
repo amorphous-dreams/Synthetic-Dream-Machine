@@ -225,6 +225,9 @@ export function admittedJoineeIsland(opts: {
   return nexusScopeOrThrow(
     opts.hearthIslandKind === "charter" && opts.hearthIslandScope
       ? nexusIdentity({ genesisEpochCid: opts.hearthIslandScope, ownVesselKey: opts.ownVesselKey })
+      // A ROOT HOLDER THAT STOOD NO GATE names no gate key and its own island (`own`): the joinee then resolves ITS OWN
+      // island here, exactly as its every later boot does with no hearth pin at rest, so the carried KEL chain seeds the
+      // board that boot reads. Two leaves share no board until a road joins them; a connect re-keys the boards then.
       : nexusIdentity({ anchorGateKey: opts.hearthGatePubKey ?? null, ownVesselKey: opts.ownVesselKey }),
   );
 }
@@ -234,9 +237,9 @@ export function admittedJoineeIsland(opts: {
  *
  * A vessel that climbs from a private nexus of one to a seated charter re-keys every per-Nexus board
  * it stands on — crossroads, WHO, persona-KEL, antigen, carriage. Nothing carries
- * across on its own: the old board keeps every announce it ever held and the new one mints blank, so
- * books announced before the connect stay invisible to the island, and any peer still dialling the old
- * address reads a silence that looks exactly like a vessel going dark.
+ * across on its own: the board left behind keeps every announce it ever held and the new one mints blank, so
+ * books announced before the connect stay invisible to the island, and any peer still dialling the address
+ * left behind reads a silence that looks exactly like a vessel going dark.
  *
  * DESCENDING wants the same act for the opposite reason. Leaving a Nexus, or a Nexus dissolving, is
  * LEGITIMATE — and unless it arrives as an explicit act it reads on the wire byte-identically to state
@@ -247,7 +250,7 @@ export function admittedJoineeIsland(opts: {
  *   · CARRY, verbatim — persona-KEL (`carryPersonaKelUpTheGradient`, `persona-kel-climb`: the gate REFUSES
  *     rather than degrades, so a moved board would take the vessel down) · antigen (an empty deny set
  *     RE-ADMITS a Kapae'd presenter; the quorum epoch check makes the carry self-limiting).
- *   · RE-ANNOUNCE, re-derived — the crossroads realm-bag announce. It carries no signature a reader could
+ *   · RE-ANNOUNCE, re-derived — the realm-bag announce on the realm-announce board. It carries no signature a reader could
  *     re-check, so a copied row would launder a lapsed, equivocated or FOREIGN-REALM registration; the
  *     projection recomputes from the realm doc's counted registrations instead.
  *   · DELIBERATELY NEITHER — WHO (a boot-time announce would DISCLOSE a face the operator published only to

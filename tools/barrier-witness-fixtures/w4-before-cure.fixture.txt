@@ -1,0 +1,15 @@
+// W4 as the span stood at 1d166a0e7, before the rest-before-reload lane's cure. The polls wait on the page's own
+// tab count; the acts relay across the page-to-island wire and may land after the story read below.
+describe("golden 01 on the whole road", () => {
+  test("W4 — a modified click and a middle click leave the browser default standing and the story holds", async () => {
+    const link = wiki().locator(".tc-story-river a.tc-tiddlylink-resolves").first();
+    const before = opened.length;
+    await link.click({ modifiers: ["Control"] });
+    await expect.poll(() => opened.length, { timeout: 20_000 }).toBe(before + 1);
+    expect(await lastClick()).toMatchObject({ prevented: false, ctrl: true });
+    await link.click({ button: "middle" });
+    await expect.poll(() => opened.length, { timeout: 20_000 }).toBe(before + 2);
+    expect(await lastClick()).toMatchObject({ prevented: false, button: 1 });
+    expect(await story()).toEqual([ALPHA]);
+  });
+});

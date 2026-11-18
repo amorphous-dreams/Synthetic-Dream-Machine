@@ -1,7 +1,7 @@
 /**
  * sealed-box — the ONE X25519-ECDH → HKDF-SHA256 → XChaCha20-Poly1305 seal-to-a-recipient primitive.
  *
- * ONE ASSEMBLY, MANY PROTOCOLS. A protocol that seals to a recipient (the persona-admit grant seal first among
+ * ONE ASSEMBLY, MANY PROTOCOLS. A protocol that seals to a recipient (the fleet-join address secret among
  * them) composes this module and hand-rolls none of it. What differs between two protocols, their salt and their
  * domain, rides as required parameters, so composing here can never quietly erase a difference that carries meaning.
  *
@@ -13,7 +13,7 @@
  * THE SALT IS A SUPERSET, NEVER A REPLACEMENT. It binds `senderPub ‖ recipientPub` ALWAYS, then appends whatever
  * session challenges the caller carries. That strictly dominates both prior salts: the pubkey pair pins the
  * derivation to this exact pairing, and `extraSalt` pins it to this exact session (so a repeated ephemeral key still
- * derives a fresh key). Nothing a caller previously bound gets dropped.
+ * derives a fresh key). Every input either salt binds stays bound.
  *
  * SEAL THROWS, OPEN WITHHOLDS. Sealing to a malformed recipient THROWS — a caller must never believe it delivered
  * something to nobody. Opening returns `null` on ANY failure (wrong key, tampered ciphertext, malformed frame) —

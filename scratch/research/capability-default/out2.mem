@@ -1,0 +1,226 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/capability-default/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/capability-default/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/capability-default/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/capability-default/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/capability-default/out2.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/capability-default/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/dreamdom-s-capability-default-the-second-ratchet`>>
+
+! DreamDOM's capability default · the second, ratcheting round
+
+Opus, 2026-10-28. Reads `brief.md`, `out.md` (round one, Terra-6.1), the operator's 2026-10-28 rulings, the D3 worktree (`/home/joshu/.lares-scratch/d3-glass/wt`, branch `--d3-glass`) and the spike table. Marks: ''SOURCED (URL)'' for a field claim, quoted where it carries weight; ''SOURCED (repo: path)'' for a claim read in the house's own code or canon; ''REASONED'' for an inference or a design choice. Nothing here was run; the repository was read only.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/0-the-ratchet-in-five-lines`>>
+
+!! 0. The ratchet in five lines
+
+# Round one's field claims mostly hold (§1). Its design does not fit this house, for four reasons. It reads clocks, which the clockless law forbids. It mints a new object kind where the house already has a grant shape. It probes with synthetic operations that the vessel open has already proved. And it treats authority (who may act) and capacity (what the browser can carry) as one thing.
+# The mirror holds no authority to guard, by ruling: it holds no keys and no truth, and the port is its only feed. Its handle is the D2 port binding and the lease the vessel posts for it. The width already travels as a field of `port:open`. No new handle kind is needed.
+# Capacity is not known in advance; it shows up as the real boot either finishing or failing. ''The real boot is the probe'': the house's own `shared-holder.ts` rule says "THE GREETING DECIDES, NEVER A CLOCK". Each step of the mirror's boot either completes or names its floor.
+# Under the house's own D3 gate, full currently ''fails'': heap is +240 % over a stock tab against a +25 % gate, and cold first paint takes 33 s against 0.85 s at skinny. "Full by default" therefore needs a ruling on //order//, not only on default (§5 Q1).
+# No stored width, ever. One thing may persist, and only for one tab's life: evidence that a full boot died before it painted. Whether even that is allowed is the operator's call (§5 Q2).
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-verify-round-one-s-load-bearing-sourced-claims`>>
+
+!! 1. VERIFY · round one's load-bearing sourced claims, checked at their pages
+
+| # | Round-one claim | Verdict | Quote at the page |h
+| V1 | Figma probes WebGL by rendering and reading pixels back; it runs WebGPU tests after startup to avoid blocking readback; it uses device blocklists | ''HOLDS, and it understates the precedent'' | "Figma runs a series of tests that try to render pixels to a texture, read the pixels back"; "Because WebGPU only supports asynchronous readback, this could increase load times by hundreds of milliseconds"; "blocklist these specific devices prior to rolling out WebGPU", later "devices based on their average fallback rates"; and the part round one left out: "start a session with WebGPU-based rendering, and fall back to WebGL-based rendering later as needed … We trigger the fallback if the asynchronous tests fail". ''SOURCED'' https://www.figma.com/blog/figma-rendering-powered-by-webgpu/ |
+| V2 | Compute Pressure reports "coarse system CPU pressure"; secure context; limited; Permissions Policy; the spec damps flipping | ''OVERSTATED on scope; HOLDS otherwise'' | MDN: "observe the pressure of system resources such as the CPU"; sources include `"thermals"`, and "the list of supported sources varies per browser". "The specification requires that the change in contributing factors must be substantial to avoid flip-flopping between states." The directive is `"compute-pressure"` with default allowlist `'self'`. ''SOURCED'' https://developer.mozilla.org/en-US/docs/Web/API/Compute_Pressure_API. Round one ''missed'' WebKit's position, which is "oppose" (#255, privacy and device independence), so on WebKit the probe will never exist. ''SOURCED (repo: `bags/lares/ha.ka.ba/lares/docs/pono/device-capabilities-2026.mem` #/refusals-and-floors)'' |
+| V3 | `deviceMemory` is coarse, rounded and clamped, with limited availability | ''HOLDS; round one missed the opposition'' | "approximated by rounding the actual memory to the nearest power of 2 … clamped within lower and upper bounds"; "not Baseline". ''SOURCED'' https://developer.mozilla.org/en-US/docs/Web/API/Navigator/deviceMemory. WebKit marked it ''"position: oppose"'', closed 2026-04-14. Its reasons: RAM alone does not tell whether a device runs a site well, the memory "a WebContent process can use is limited by factors beyond physical RAM", and it is a fingerprinting surface. ''SOURCED'' https://github.com/WebKit/standards-positions/issues/645 |
+| V4 | `measureUserAgentSpecificMemory` needs cross-origin isolation, includes workers, and its values are not comparable | ''HOLDS'' | "your document must be in a secure context and cross-origin isolated"; "estimate the memory usage of a web application including all its iframes and workers"; "aren't comparable across browsers or between different versions of the same browser". The page also says it is "meant to be called periodically (with a randomized interval)", so it is a telemetry instrument, not a boot gate. ''SOURCED'' https://developer.mozilla.org/en-US/docs/Web/API/Performance/measureUserAgentSpecificMemory. The house never sets COOP/COEP; `crossOriginIsolated` goes unused. ''SOURCED (repo: device-capabilities-2026.mem #/device-seats)'' |
+| V5 | Web Locks with `ifAvailable` returns no lock when the lock is busy, which differs from the API being absent | ''HOLDS'' | "If it cannot be granted, the callback will be invoked with `null` instead of a `Lock` instance." `steal`: "Code that was previously running inside the lock continues to run, and may clash". Baseline "since March 2022", and available in workers. ''SOURCED'' https://developer.mozilla.org/en-US/docs/Web/API/LockManager/request. The house already rides this: `vessel-lock.ts` asks `ifAvailable`, forbids `steal`, and refuses the store outright where `navigator.locks` is absent. ''SOURCED (repo: `packages/lararium-browser/src/vessel-lock.ts:1-24`)'' |
+| V6 | BroadcastChannel is same-origin; OPFS needs a secure context (supporting rows) | ''HOLDS'' | BroadcastChannel: Baseline "since March 2022", available in workers, "between different documents … of the same origin". ''SOURCED'' https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel |
+
+''Round one's house-shaped claims, checked against the code (REASONED from SOURCED repo reads):''
+* //"Probe the worker, port round trip, locks, channel and OPFS."// By the time the page can reach a mirror, the vessel open has already proved each of these by doing it. The worker island runs. `vessel-lock.ts` holds the store lock, or the vessel refuses to boot. Genesis read OPFS (`browser-genesis.ts:39,72,112`). `standPagePort` exists only after `openBrowserVessel` returned (`main.ts:404-439`). Probing them again duplicates the vessel's own work and creates a second place where the answer could disagree.
+* //"Timeouts, sustained budget breaches, dwell, cooldown."// Each of these reads a clock. The house law: "A wall clock never decides whether an act runs; timers serve only one's own liveness" (memory `project_no_global_now_timers`). `shared-holder.ts:91-93` writes the same law into a capability door: "No timer picks the floor, so a slow-starting SharedWorker never loses its house to a deadline." ''Round one's whole step-down section fails this law.''
+* //"Mint one private, branded, revocable handle."// This adds a new object kind beside `PortGrant` and the `composeVessel` powerbox. It also guards nothing the ruling left to guard: the mirror is unprivileged.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-gaps-what-this-project-needs-that-round-one-mi`>>
+
+!! 2. GAPS · what this project needs that round one missed
+
+!!! 2a. The island's own grant and lease shapes: the mirror rides them, so no new kind is needed
+
+* ''SOURCED (repo: `packages/lararium-mesh/src/record-port.ts:41-49`)'' `PortGrant { faceId, actor, edits, bags, admin, casTier?, kahu? }`. The vessel's `portPolicy` mints it, and it travels vessel → island only as `port:lease{portId, grant}`. Revocation travels as `port:gone`.
+* ''SOURCED (repo: `packages/lararium-mesh/src/port-lease.ts`)'' `makePortDoor.place` refuses a page placement of `port:lease` or `port:gone` as `port-kind-refused`. The first binding that opens a `portId` owns it, and any other binding meets `port-owned`. With no policy, the answer is `port-not-granted`.
+* ''SOURCED (repo: `packages/lararium-tw5/src/record-port-lease.ts`)'' The island trusts a grant "because only the vessel may post one". It lends `faceOf`, `mayEdit`, `bagGrant` and the rest from it alone.
+* ''SOURCED (repo: `record-port.ts:38,61-79`)'' `PortWidthName = "full" | "skinny" | "story" | "none"`, and `PortMsg_Open` already carries `width`. ''The width is already a fact on the wire, scoped to one port.''
+* ''SOURCED (repo: `packages/lararium-mesh/src/cap-compose.ts:1-20`)'' The house's capability grammar is a vessel that "stands as" its cap-stack. `composeVessel` builds or refuses ("never a runtime flag"), the composer is a transient powerbox, and the rule reads "blind by structure, not by flag". `vessel-caps.mem` #/hold-vs-express: a vessel ''holds'' caps broadly and ''expresses'' (lights) a subset "against its context and capacity". `device-capabilities-2026.mem` #/refusals-and-floors: "a refused capability maps onto a FLOOR the vessel falls to, never a red … a refusal removes a cap from the declaration and nothing else."
+* ''REASONED · the reading.'' Two things travel separately and must stay separate:
+** ''Authority'' is what the mirror may read and write. The `PortGrant` carries it, minted by the vessel's policy and posted by the vessel, so in-page code cannot forge it. A mirror at any width can do exactly what its port's grant allows and nothing more. This is the unforgeable object the operator asked for, and it already stands.
+** ''Capacity'' is what this browser can carry. It is a fact about the vessel. The page's composition root learns it by ''lighting'' the mirror cap and either finishing or failing, and records it as the `width` field of the `port:open` it sends. Capacity confers no authority, so a forged width can at most waste the forger's own memory. The island already serves any width to any granted port.
+** So the "capability object minted once" is the ''port binding the composition root holds'': `standPagePort` returns it, and the root hands it to the mirror explicitly. No boolean and no URL string selects anything.
+* ''REASONED · what `{glass: true}` really guards.'' It lifts the §9 guard in `prepareHostBootInstance` (`tw5-host-bridge.ts:446`). That guard exists so that ''truth never lands on the main thread by accident''. A mirror that boots only through a door taking a port, and loads only hashed CAS core and plugin bytes, cannot hold truth the port did not send. The ratchet gives the guard a structural exit: one module-private door in <code>&#64;lararium/tw5/glass</code> that boots, binds the adaptor and mounts together. The boolean parameter goes away. Honesty: inside one realm this stops a confused caller, not hostile code. Hostile same-realm script has already passed every in-page guard, and the worker plus the grant stay the only truth boundary (round one's own caveat, which holds).
+
+!!! 2b. Safari, WebKit and mobile
+
+* ''Web Locks'' ships in Safari 15.4 and ''BroadcastChannel'' is Baseline since March 2022, so both stand on WebKit. ''SOURCED'' (V5, V6; repo: `device-capabilities-2026.mem` #/capability-table "Web Locks … 15.4"). No WebKit-specific floor is needed for the leader election.
+* ''OPFS in workers.'' `createSyncAccessHandle` is "only available in Dedicated Web Workers", Baseline since March 2023. A `readwrite` handle is exclusive: "Attempting to open subsequent handles … throws `NoModificationAllowedError`". ''SOURCED'' https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/createSyncAccessHandle. The mirror's CAS read (`readCasBlobFromOpfs` from the page, `glass/cas.ts`) rides the async OPFS face on the main thread, which every engine carries (OPFS WebKit 15.1). ''REASONED:'' the exclusive sync handle belongs to the island worker alone, so a page-side mirror read must never take one, or it would collide with the island. `cas.ts` reads async today; a red pins it (R9).
+* ''SharedWorker'' is absent on Android Chrome before 148 and has no lifetime promise on iOS without a Home Screen install; the house already floors this by name (`shared-holder.ts:8`). ''SOURCED (repo)''
+* ''iOS memory kills: the case no probe can defend.'' WebKit's Simon Fraser: "WebContent processes on iPhone are subject to a "soft" limit of around 1.5GB … if they use more than this amount of memory, they are subject to getting killed by "jetsam"." ''SOURCED'' https://bugs.webkit.org/show_bug.cgi?id=277848. Ryan Reno: "a highwater jetsam which can occur when the WebContent process crosses a soft limit … the system needs memory due to memory pressure". The reporter adds: "Safari will try to load it twice then display "A problem repeatedly occurred"". ''SOURCED'' https://bugs.webkit.org/show_bug.cgi?id=279637. ''REASONED:''
+** The kill takes the page's JavaScript with it, so no in-page step-down can answer it.
+** It depends on pressure across the whole system, so a probe that passes now promises nothing at snapshot landing.
+** Safari's own reload loop makes the page boot twice into the same death.
+** Only evidence that survives the kill can break that loop (§2d), and nothing in-page can read the limit in advance (V3: the WebKit objection names exactly this, "limited by factors beyond physical RAM").
+* ''Chromium's discard signal.'' `document.wasDiscarded` lets a page "inspect the value of this property at page load time" after a hidden-tab discard, and "discarded pages must be reloaded to use again". Firefox and Safari: "not supported". ''SOURCED'' https://developer.chrome.com/docs/web-platform/page-lifecycle-api. ''REASONED:'' this is a platform-held, Chromium-only piece of evidence. A discard of a //hidden// tab says the system needed memory, not that the mirror failed, so it must not step the width down (R6).
+* ''WebKit's seven-day eviction'' applies to every piece of script-writable storage, including anything the page might keep across tabs. The house names it at `secure-context-gate.ts`. ''SOURCED (repo)'' ''REASONED:'' this is one more reason a cross-session "remembered width" would lie: it vanishes silently on WebKit and stays put on Chromium.
+
+!!! 2c. Multi-tab: who holds the mirror, and how a follower's width resolves
+
+* ''SOURCED (repo: `packages/lararium-web/src/glass/leader.ts`, `tab-bus.ts`)'' An exclusive Web Lock elects the leader, and its release passes leadership on. The leader `serveFollowers` re-places each follower's `port-up` through the real doors as the binding `tab:<tab>:<binding>`, so the vessel's policy grants each follower binding on its own. A follower `rehello`s at every new leader nonce. The D3 kit reads "the leader's worker holds the engine": the //island// engine, the truth.
+* ''REASONED · rulings for the design:''
+*# ''A mirror per rendering document.'' A DOM cannot be shared across tabs, so every tab that renders stands its own mirror over its own shadow root. The leader holds the port bindings, not the mirrors.
+*# ''Each tab resolves its own width'' by lighting its own mirror (§4). A follower's port step rides bus → leader → doors, so the bus greeting is a prerequisite only for the follower. A follower whose `hello` meets no `ready` stays ''waiting, named'', and never falls back on a clock. A failed bus (no `BroadcastChannel`) is a floor named `tab-bus-absent`, but that engine already lacks Web Locks under the same Baseline and the vessel itself refused to open.
+*# ''No width crosses tabs.'' A width another tab measured is evidence from a different document under different memory pressure; reading it would be a cross-tab flag.
+*# ''Leader handoff never touches a mirror.'' The follower rehellos, re-places its `port:open` with its cursor, and the mirror's records stay (the existing `glass-leader-handoff-mid-write` witness).
+*# ''Memory adds up per tab:'' N visible tabs carry N mirrors (~106 MiB each at 2,000 tiddlers, N=1). A hidden tab does ''not'' step down. Background throttling and `freeze` are not capacity evidence (round one agreed; this holds). Whether hidden tabs should hold a mirror at all is §5 Q5.
+
+!!! 2d. Persistence across reloads without a stored flag
+
+* ''Ruling the brief asked for (REASONED, the operator confirms in §5 Q2):'' //a remembered downgrade is a flag.// "This vessel runs skinny" stored anywhere repeats the URL flag's fault one layer down. It is a value nobody measured //this// boot, it outlives the conditions that produced it, and on WebKit it disappears silently after seven days. ''Forbidden.''
+* ''What may persist: evidence, never a choice.'' One record, only for one tab's life (`sessionStorage`, which survives Safari's crash-reload of the same tab and dies with the tab): `mirror:began = <bootNonce>`, written before the snapshot lands and cleared at the first full paint. A boot that finds an uncleared `began` //reads a fact//: a full boot in this tab ended before it painted. That fact changes one thing: this boot lights skinny first and says why, in words beside the surface. It names no width, it never crosses tabs or devices, and a fresh tab measures fresh.
+** ''Hysteresis without a clock:'' the epoch is the tab session. One unfinished full boot keeps this tab at skinny for the tab's life. Without that, a jetsam device alternates full → death → skinny → full → death on every reload.
+** ''Cost of a false positive:'' a person who reloads during a slow full paint gets one skinny tab. That is visible, explained, and cured by opening a new tab.
+* ''Everything else re-measures at every boot.'' The boot is the measurement, and it costs nothing extra because it is the boot.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-yin-then-yang`>>
+
+!! 3. YIN, then YANG
+
+!!! YIN · the strongest case against round one's design (and against "full by default" as built)
+
+# ''The probe lies in every direction.'' A cold cache paints full in 33,210 ms and a warm one in 9,329 ms on the same desktop (SOURCED repo: spike `table-2000.md`, N=1), so any budget read from a first paint measures cache state, not capacity. A hidden tab never paints, because rAF is paused. A probe that passes says nothing about snapshot landing under later system pressure, and on iOS the failure is a kill that no JavaScript survives (§2b). The capacity signals (`deviceMemory`, Compute Pressure) are opposed by WebKit (V2, V3) and so never appear on a third of the field. The one honest memory figure needs COOP/COEP, which the house does not serve, and is not comparable across versions anyway (V4). ''Every synthetic capacity probe is either absent, coarse, or a clock.''
+# ''The probe costs the thing it protects.'' Allocating headroom to test headroom (round one rejected a synthetic 106 MiB, rightly) or round-tripping operations the vessel already proved adds boot latency and a second way to disagree.
+# ''Full fails the house's own gate today.'' The roadmap's D3 Measures: "full loses only on the marginal-memory gate (+25 % over a stock tab; a 150 MB tripwire)". Measured: full 106.44 MiB against stock 31.34 MiB, which the spike reports as `marginalPercent 239.7, passes: false`. Full stays under the 150 MB tripwire but fails the +25 % gate by nearly ten times. Cold first paint is 33.2 s against 0.85 s at skinny, and hot swap is 8,956 ms against 517 ms (SOURCED repo: `dreamdom-roadmap.mem:109`, `spike/table-2000.md`). The kit itself names "a 2,000-tiddler snapshot lands in tens of seconds at width full; the cure waits on its own slice" (`d3-glass-lane.mem` #/owed). Defaulting to full //as built// hands every desktop a half-minute blank page and every phone a jetsam lottery.
+# ''The stronger shape: start skinny and promote.'' Skinny and full run the ''same'' main-thread engine, adaptor, camera, CAS core and port; only `width` differs (SOURCED repo: `glass-port-adaptor.ts:21`, `boot.ts`). A painted skinny mirror has therefore already lit every prerequisite the full mirror needs except resident bodies. Promotion, which loads bodies in batches and acknowledges each one causally after first paint, reaches full on any browser that carries it. It stops (and names why) on a catchable allocation or quota failure. On iOS the jetsam then lands //after// a painted, usable surface instead of before one. This is Figma's own move, "start a session with … and fall back … later", turned upward (V1). Skinny is also the only width whose keystroke p95 was measured (1,080 ms, N=100, desktop), and that figure must be cured either way.
+# ''Worker-first (start at none, promote to a mirror)'' is the shape most faithful to §9. But the spike never mounted a none frame into the page (none first paint UNMEASURED), and none's page controls are unbuilt. It cannot be a default of any kind today. It stays the floor.
+
+!!! YANG · what survives
+
+* ''The operator's law survives whole.'' The capability is //known// (by lighting it), never //requested//; full is the destination wherever the browser carries it; the URL and the boolean burn. Skinny-first contests only the ''order'' in which full arrives, not the default. Q1 hands the order to the operator.
+* ''Round one's sound kernel survives:'' functional evidence over hints; unknown telemetry reads as unknown, never as absent; a busy lock reads as a follower, not as an absence; one transition at a time under a generation; worker truth held across teardown; reasons shown to the person.
+* ''What the house adds and round one lacked:'' the real boot is the probe (no synthetic operations); every floor is named with `{kind: "floor", why}`, the shape `attachSharedHolder` already returns; only causal events step down, never clocks; the D2 port binding and grant serve as the handle; nothing chooses a width across a boot except the one-tab evidence record.
+* ''What dies in YIN's case:'' promotion cannot stay a sketch. A skinny port widening in place is ''not built'': the adaptor's `width` is fixed per port (`glass-port-adaptor.ts:169-170,220-221`), and a reopen at full costs the 8.9 s hot swap. If the operator takes skinny-first, the port contract gains one row: a widening `port:open` on the same binding with `since`, answered with only the omitted bodies, landed in causal batches. ''REASONED, owed.''
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-the-design-ratcheted`>>
+
+!! 4. THE DESIGN, ratcheted (one page)
+
+''The composition root'' is `packages/lararium-web/src/main.ts`, right after `standPagePort(result.ports, …)`. It calls `standMirror({ host, port, coreCid, pluginCids, wikiUri, actor, evidence })` and passes the `port` it holds explicitly. `pagePort()`, the ambient getter, burns.
+
+''What it measures, the real boot as the probe.'' It lights the mirror cap step by step. Each step either completes or returns `{ kind: "floor", width: "none", why }`, the same shape as `attachSharedHolder`. No step reads a clock.
+
+| step | the real operation | completes when | floors with `why` |h
+| L1 dom | `host.attachShadow({mode:"open"})` | a shadow root returns | `mirror-no-shadow-root` |
+| L2 cas | `readGlassBootInputs` (async OPFS, sha-256 per member) | every named member reads and hashes | `glass-core-cas-miss:<cid>` / `…-sha256-mismatch:<cid>` (already built) |
+| L3 engine | the tw5 mirror door boots `TW5Engine` from those bytes | boot resolves | `mirror-engine-refused:<name>` (incl. a caught `RangeError`) |
+| L4 port | adaptor `port:open{width}` on the held binding; a follower rides the bus | the first `port:snapshot` chunk lands (the greeting decides) | the placement's own reason (`port-not-granted`, `transport-closed`, …) |
+| L5 paint | `mountGlassCamera` renders the root template | `render()` returns and the container holds nodes | `mirror-paint-threw:<name>` |
+
+''The width it opens at in L4:'' `full`, unless the tab's evidence record names an unfinished full boot, in which case `skinny`, shown in words beside the surface (§2d). If the operator takes Q1's lean, `skinny` first paint followed by promotion becomes the order everywhere until the landing cure passes the +25 % gate.
+
+''The handle.'' The mirror receives exactly one handle, the port binding (`makePortTransport`'s result). Its authority is the `PortGrant` the vessel's policy posts for that binding: edits, bags, admin, cas tiers. The page can neither forge nor widen that grant (`port-kind-refused`). The width travels as a field of `port:open`. No branded object, no boolean, no URL value: ''the vessel's grant is the capability, and the root's lighting is the capacity.'' The §9 guard opens through one module-private door in <code>&#64;lararium/tw5/glass</code>. That door takes a transport and the hashed bytes, and boots, binds and mounts as one act. `TW5Engine.boot`'s `options.glass` parameter is removed.
+
+''Step-down, by causal event only.''
+* ''Triggers:'' an L1–L5 floor; a caught `RangeError` or `QuotaExceededError` while a snapshot lands; a `port:gone` (grant revoked), which is the grant's floor and not a capacity floor, and closes the mirror with the island's reason.
+* ''Never a trigger:'' a slow paint, a long frame, a hidden tab, a `freeze`, `wasDiscarded`, or Compute Pressure. Each of these is ''measured and reported'' (LoAF, heap) to the spike instruments and never decides.
+* ''The step:'' full → skinny on the same engine. Close the port, then open a fresh `portId` at skinny (measured hot swap 517 ms). Worker truth stays, pending writes settle by `txId` (D2 resend). The old adaptor's late callbacks die by generation.
+* ''If skinny floors too:'' unmount the camera, dispose the engine, release the lends; the page keeps the width-none projection it already runs.
+
+''Hysteresis, clockless:''
+* at most ''one step-down per boot'';
+* ''no step-up within a boot'', except the ruled skinny-first promotion, which runs once and forward only;
+* the next boot re-lights from the top;
+* the tab session is the dwell (§2d).
+
+''Multi-tab'' (§2c): one mirror per rendering tab; each tab lights its own; the leader carries bindings only; no width crosses tabs; a hidden tab keeps its width.
+
+''Persistence:'' none, except the one-tab `mirror:began` evidence record, pending Q2. `localStorage` never holds a width; the `_storage` parameter of `glassWanted` burns with the function.
+
+!!! What changes, file by file, against the D3 worktree
+
+| file | change |h
+| `packages/lararium-web/src/glass/flag.ts` | ''BURNS whole.'' `glassWanted` and its `?glass=` read go. `GlassWidth` gives way to the wire's own `Extract<PortWidthName, "full"|"skinny"|"story">` from <code>&#64;lararium/mesh/record-port</code>. |
+| `packages/lararium-web/src/glass/stand.ts` | ''`standGlassIfFlagged` BURNS'', along with its `location` and `storage` inputs. In its place: `standMirror(...)`, the L1–L5 lighting, returning `{kind:"mirror", width, unmount}` or `{kind:"floor", width:"none", why}`, plus the one-step full → skinny, plus reading and clearing the evidence record. |
+| `packages/lararium-web/src/glass/boot.ts` | Loses `{ glass: true }`. It calls the tw5 mirror door with the explicit transport, and the width arrives from `standMirror`, never a reader of `location`. |
+| `packages/lararium-web/src/glass/cas.ts`, `cid.ts` | Unchanged; L2 //is// this read. Add a red that it never takes a sync access handle (R9). |
+| `packages/lararium-web/src/page-port.ts` | `pagePort()` (an ambient getter) burns; `standPagePort`'s return value travels explicitly to `standMirror`. |
+| `packages/lararium-web/src/main.ts` | Calls `standMirror` after `standPagePort` (closes G3's owed "main.ts calling `standGlassIfFlagged`" under its new name). |
+| `packages/lararium-tw5/src/tw5-vm.ts`, `tw5-host-bridge.ts` | `options?: { glass?: true }` burns from `boot` and `prepareHostBootInstance`. The main-thread exit opens only through a module-private token that `glass.ts` alone imports and the package `exports` map never re-exports. The §9 throw stays for every other caller. |
+| `packages/lararium-tw5/src/glass.ts` | Gains the one mirror door (boot, adaptor, camera as one act, with teardown in reverse). |
+| `packages/lararium-web/tests/glass-boot.page.test.ts` | The `describe("glass flag")` block burns, and its boot test passes the door instead of `{glass:true}`. The reds below land red first. |
+| `d3-glass-lane.mem` G2, `dreamdom-roadmap.mem` D3 ("behind a flag", "The flag ships first; the default flips after") | Re-true to the ruling: the width is lit, never flagged, and the default is full by the operator's 2026-10-28 ruling. The lane fence "the default width" now reads ruled. |
+
+!!! The red tests (each: plants / must read)
+
+* ''R1 full by default.'' //Plants:// a real Chromium page, the vessel standing, no query, no options, no evidence record. //Must read:// `{kind:"mirror", width:"full"}` and `port:open.width === "full"` on the wire. Repeated with `?glass=skinny`, `?glass=none` and `?glass=junk`, it must read the identical result: the query is inert and throws nothing (today's `glass-width-refused` burns).
+* ''R2 the boolean is gone.'' //Plants:// `new TW5Engine().boot(core, [], { glass: true } as never)` on the main thread. //Must read:// the §9 sovereignty throw. //Control:// the mirror door with a transport boots.
+* ''R3 no transport, no mirror.'' //Plants:// the mirror door called with a closed transport, or one whose placement refuses `port-not-granted`. //Must read:// `{kind:"floor", why:"port-not-granted"}` (or `transport-closed`); engine disposed; lends released (`global`, `Buffer`, `process` restored); `$tw.browser` given back.
+* ''R4 each step floors by name.'' //Plants//, one at a time: `attachShadow` throwing; a CAS miss; a sha mismatch; an engine boot throwing `RangeError`; `render` throwing. //Must read:// the step's `why`, no mounted container, the page's none projection still painting, no partial lends left.
+* ''R5 the greeting decides, never a clock.'' //Plants:// a fake clock jumped by an hour, plus a port whose snapshot arrives after the jump. //Must read:// full, with no floor. //Control:// a throwing `Date.now` / `performance.now` spy across `standMirror` must never fire (the `hand-gate-clockless` pattern).
+* ''R6 slowness and hiding never step down.'' //Plants:// `document.hidden = true` during landing; a `freeze` then `resume`; `wasDiscarded = true` at load. //Must read:// full each time, and a measured paint figure reported rather than acted on.
+* ''R7 one causal step-down.'' //Plants:// a `RangeError` thrown from the snapshot-landing path at full, with an optimistic local write pending. //Must read:// exactly one step to skinny on the same engine, a fresh `portId`, the write settled once by its `txId` (one echo, zero re-landings), the old adaptor's late `port:changes` ignored, and the reason shown. A second `RangeError` at skinny must read the none floor and never a third step.
+* ''R8 a remembered width is refused; evidence is read once.'' //Plants:// `localStorage` and `sessionStorage` holding `width=skinny`, `glass=skinny`, or any key but `mirror:began`. //Must read:// full. //Plants:// `mirror:began=<nonce>` left by a boot that never painted. //Must read:// skinny with the named reason. Then a successful full paint in a //new// tab must read no record left, and the old tab's record stays its own.
+* ''R9 the mirror never takes the island's disk.'' //Plants:// a spy on `FileSystemFileHandle.prototype.createSyncAccessHandle` across `standMirror`. //Must read:// zero calls.
+* ''R10 multi-tab.'' //Plants:// two tabs, A the leader at full and B a follower; A's lock is released mid-write. //Must read:// B keeps its own mirror and width, rehellos, and lands the write once (extends `glass-leader-handoff-mid-write`). //Plants:// B with a bus `hello` never answered. //Must read:// B waiting with its reason named, and no floor.
+* ''R11 width carries no authority.'' //Plants:// a read-only `PortGrant`, opened at full. //Must read:// every write refused by the contract's own names, exactly as at skinny. //Plants:// a page placement of `port:lease{grant:{edits:true}}`. //Must read:// `port-kind-refused`.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-open-questions-only-the-operator-can-rule`>>
+
+!! 5. Open questions only the operator can rule (each with a lean)
+
+# ''Order versus default.'' Full is ruled the default. As built, it fails the house's own +25 % marginal-memory gate (+240 %) and paints in 33 s cold at 2,000 tiddlers. Does full open first anyway, or does full arrive by ''skinny first paint, then promotion'', until the landing cure passes the gate? ''Lean: promote.'' The law stays "full wherever carried". The order gives a painted surface before the heavy landing and moves an iOS kill to after paint. The port contract gains the widening-open row (§3 YANG). When the landing cure passes the gate, the promotion order retires on that measured reading, not on a date.
+# ''The one-tab evidence record'' (`mirror:began` in `sessionStorage`, cleared at first full paint). Is it evidence, or a flag in disguise? ''Lean: permit it.'' It records an event, never a width. It never leaves the tab, and without it Safari's own double reload walks a jetsam device into "A problem repeatedly occurred". Forbid every other stored form.
+# ''A person's own choice of a lighter surface.'' The flag is dead, but a human may want "light reading" on a metered phone. That is an //intent//, not a capability. ''Lean: permit it later as a face intent'' (riding <code>&#64;intents-&lt;tag></code>, worded for a person, never `skinny`). It can narrow the width and never widen it past what the lighting measured. Not in D3.
+# ''Should the grant carry a width ceiling'' (a vessel's policy lending `widths`)? ''Lean: no.'' Width is the page's capacity and confers no authority (R11); a ceiling on the grant would mix the two again.
+# ''Hidden tabs.'' N visible tabs carry N mirrors. Should a tab that stays hidden release its mirror to the none projection? ''Lean: no step-down on hiding'' (hiding is not capacity evidence). Revisit only if the phone measurement shows multi-tab kills, and then as a causal act (`pagehide`), never a timer.
+# ''Story width.'' It has stood unmeasured since the spike ran ("story only if skinny and full split"). ''Lean: hold it'' as a wire value with no lighting path, and decide it once promotion lands, since the full/skinny split it waits on may then dissolve.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-q1Qh49-jhnux7N3QYIBJDH6qpSwuciu--aM3VDg5gE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

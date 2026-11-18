@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/terra-final-2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement-answer/terra-final-2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/terra-final-2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-answer/terra-final-2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final-2.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-answer/terra-final-2.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Answer-Wright: Lares (Tasked Spirit): ->↺ The stage-walk now keeps the propose button and shadow span, removes the outcome dump, and polls `hearth.cli(["intent", "--json"])` for distinct `kahua-propose` IDs. I reverted the red TW5 test, leaving only the stage-walk file changed.
+
+The filter reads `intents[].id` and `intents[].verb`, defined on `IntentState` in [[intent-read.ts|/home/joshu/.lares-scratch/placement-answer/wt/packages/lararium-mesh/src/intent-read.ts:27]]. The command returns its intents reading at [[intent.ts|/home/joshu/.lares-scratch/placement-answer/wt/packages/lararium-node/src/commands/intent.ts:266]].
+
+<code>pnpm &#45;-filter &#64;lararium/web typecheck</code> passed. I did not run the e2e suite.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;X4sg7mp_gMt47ff7KBYM7WZj_QsNH-Buszzl1Qk3OrM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

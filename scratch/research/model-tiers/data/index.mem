@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/research/model-tiers/data/` — 2 record(s) here, 2 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/research/model-tiers/data/`
+
+The scratch planning records of `.lares-scratch/research/model-tiers/data/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 2 record(s) stand here and 2 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[research/model-tiers/|lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[cache|lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/cache]] | plan | 2026-10-29 | `cache.md` |
+| [[tables|lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/tables]] | plan | 2026-10-29 | `tables.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uDDT-PFviddkauxd-9sxW0dbtSH0xBjEmBN8JMShPVg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

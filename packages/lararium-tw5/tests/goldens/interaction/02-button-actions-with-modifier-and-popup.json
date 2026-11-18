@@ -1,0 +1,18 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/2",
+  "pins": "a button's actions run with the act's modifier, and a popup opens as wiki state the page places from the act's geometry",
+  "world": {
+    "tiddlers": [{ "title": "lar:///t/button/target", "text": "0" }],
+    "story": [],
+    "root": "<$button class=\"act\" actions=\"<$action-setfield $tiddler='lar:///t/button/target' text=<<modifier>>/>\">act</$button><$button class=\"pop\" popup=\"$:/state/popup/golden\">pop</$button><$reveal type=\"popup\" state=\"$:/state/popup/golden\" class=\"menu\">menu body</$reveal>"
+  },
+  "steps": [
+    { "frame": "first" },
+    { "act": { "control": "button.act", "action": "lar:click", "modifiers": { "ctrl": true, "meta": false, "alt": false, "shift": false, "button": 0 } } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/button/target", "text": "ctrl" }] } },
+    { "act": { "control": "button.pop", "action": "lar:click", "geometry": { "top": 40, "left": 10, "right": 60, "bottom": 60, "width": 50, "height": 20 } } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "$:/state/popup/golden", "text": "(10,40,50,20)" }] } },
+    { "frame": "next" },
+    { "expect": { "frame": { "contains": "menu body" }, "page": { ".menu": { "visible": true, "placedFrom": { "top": 60, "left": 10 } } } } }
+  ]
+}

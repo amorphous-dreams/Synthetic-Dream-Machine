@@ -4,22 +4,21 @@
  * update LOOP, and computes the variational free-energy objective
  *   F = Σ_i ½(π_i·ε_i² − ln π_i)  +  Σ_i KL[q_i(x) ‖ p_i(x)].
  *
- * ## Two crucible fixes (li-ki-integrities.md #crucible-tested)
+ * ## Two crucible terms (li-ki-integrities.md #crucible-tested)
  *
- * The old `F = Σπε² + complexity` earned only "the ACCURACY term of VFE"
- * because (1) it omitted the `−ln π` log-precision term — the tell — so precision had no interior
- * optimum, and (2) its complexity was an MDL param-cost, a description-length, NOT a real
- * `KL[q(x)‖p(x)]` to a NAMED prior over causes (so it read as precision-weighted regression in FEP
- * costume). Both are now carried:
+ * A bare `F = Σπε² + complexity` earns only "the ACCURACY term of VFE": without the `−ln π`
+ * log-precision term — the tell — precision has no interior optimum, and an MDL param-cost complexity,
+ * a description-length, carries NO real `KL[q(x)‖p(x)]` to a NAMED prior over causes (so it reads as
+ * precision-weighted regression in FEP costume). This core carries both terms:
  *
- *   FIX 1 — the `−ln π` penalty. The full Gaussian precision term is `½(π·ε² − ln π)`. The `−ln π`
+ *   TERM 1 — the `−ln π` penalty. The full Gaussian precision term is `½(π·ε² − ln π)`. The `−ln π`
  *   is a prior ON PRECISION: it competes with `½π·ε²` and gives the precision/confidence gain a
  *   UNIQUE INTERIOR optimum `π* = 1/ε̄²` instead of running to a boundary (`{@link vfePrecisionTerm}`,
  *   `{@link optimalPrecision}`, `{@link settlePrecision}`). Without it the objective is monotone in π
  *   — the gain pins at the max (everything maximally salient). It stays inert (`−ln 1 = 0`) in pure
  *   bottom-up ESTIMATE mode (gain 1); it bites a top-down VOW, regularizing over-confident attention.
  *
- *   FIX 2 — the complexity is a REAL KL to a NAMED per-plane prior. Default per plane: the TEMPORAL
+ *   TERM 2 — the complexity reads as a REAL KL to a NAMED per-plane prior. Default per plane: the TEMPORAL
  *   / PREDICTIVE prior — the PREVIOUS frame's posterior is THIS frame's prior — so complexity =
  *   Σ_t KL[q_t ‖ q_{t-1}], the belief-movement cost of the running generative model (fits the
  *   streaming sensorium natively). See `{@link gaussianKL}` / `{@link temporalKL}`. Named priors:
@@ -92,8 +91,8 @@ export function confidenceToPrecision(confidence: number): number {
  * BOUNDED COMPLEMENTARY form `20·(1 − 1/(1+π))` — algebraically the signal-fraction `20·π/(1+π)`
  * but numerically robust: at `π→∞`, `1/(1+∞) = 0` ⇒ `20` EXACTLY (the naive `π/(1+π)` would form
  * `Inf/Inf ⇒ NaN`). The arithmetic inverse of {@link confidenceToPrecision}; π=1 ⇒ 10/20 (neutral),
- * π→∞ ⇒ 20/20. An `isFinite` guard returns the ceiling for a non-finite π (Defect 3 fix,
- * #crucible-tested). STANDING, never confidence: a plane REPORTS this trust from its own errors
+ * π→∞ ⇒ 20/20. An `isFinite` guard returns the ceiling for a non-finite π
+ * (#crucible-tested). STANDING, never confidence: a plane REPORTS this trust from its own errors
  * (backward-earned) — confidence rides FORWARD as a vow, standing rides backward as a measure.
  */
 export function precisionToStanding(precision: number): number {
@@ -106,7 +105,7 @@ export function precisionToStanding(precision: number): number {
 
 /**
  * The full Gaussian PRECISION term of VFE, per plane: `½(π·ε̄² − ln π)` (`ε̄²` = the mean squared
- * standardized error). The `−½ ln π` (FIX 1, #crucible-tested) is a prior ON precision. As a
+ * standardized error). The `−½ ln π` (TERM 1, #crucible-tested) is a prior ON precision. As a
  * function of π it is strictly CONVEX (second derivative `½/π² > 0`) with a UNIQUE interior
  * minimum at `π* = 1/ε̄²` ({@link optimalPrecision}). Drop the `−ln π` and only `½π·ε̄²` remains —
  * MONOTONE increasing in π (min at the π→0 boundary; the salience `π·ε̄²` it weights runs to +∞ as
@@ -121,7 +120,7 @@ export function vfePrecisionTerm(precision: number, meanSqErr: number): number {
  * The precision that minimizes {@link vfePrecisionTerm}: `argmin_π ½(π·ε̄² − ln π) = 1/ε̄²`,
  * computed as the CLOSED FORM `1/(ε̄²+EPS_REL)`. The floor stays RELATIVE (`EPS_REL`), so a
  * near-noiseless plane (`ε̄²→0`) caps at `PI_MAX = 1/EPS_REL`. An ABSOLUTE floor (`EPS=1e-9`) clamps
- * every `ε̄² < 1e-9` to one scale-blind `1e9` ceiling (Defect 2, #crucible-tested).
+ * every `ε̄² < 1e-9` to one scale-blind `1e9` ceiling (#crucible-tested).
  */
 export function optimalPrecision(meanSqErr: number): number {
   return 1 / (Math.max(0, meanSqErr) + EPS_REL);
@@ -140,8 +139,8 @@ export interface PrecisionSettle {
  * SETTLE a plane's precision at the free-energy precision term's optimum. With the `−ln π` penalty
  * the term `½(π·ε̄² − ln π)` is strictly convex with a unique interior minimum where the gradient
  * `½(ε̄² − 1/π)` vanishes — so the settle is the CLOSED FORM `π* = 1/(ε̄²+EPS_REL)`
- * ({@link optimalPrecision}), solved, not iterated (Defect 2 fix, #crucible-tested: the
- * old fixed-`lr` gradient flow was non-contractive for `ε̄² ≳ 2.83` — it STALLED or diverged to the
+ * ({@link optimalPrecision}), solved, not iterated (#crucible-tested: a
+ * fixed-`lr` gradient flow runs non-contractive for `ε̄² ≳ 2.83` — it STALLS or diverges to the
  * WRONG boundary; the optimum is analytic, so there is nothing to converge). Always `settled` — a
  * closed form carries no convergence risk. (A STREAMING caller tracking a moving `ε̄²` could run
  * Newton on log-precision to warm-start from the previous frame; not needed for the one-shot settle.)
@@ -166,7 +165,7 @@ export function settlePrecision(
   return { precision, settled: Number.isFinite(precision), iters: 0, grad };
 }
 
-// ── the KL complexity — a REAL KL[q(x)‖p(x)] to a NAMED per-plane prior (FIX 2) ─────────────
+// ── the KL complexity — a REAL KL[q(x)‖p(x)] to a NAMED per-plane prior (TERM 2) ─────────────
 
 /**
  * KL divergence between two univariate Gaussians, `KL[N(μq,σq²) ‖ N(μp,σp²)]` in NATS:
@@ -180,7 +179,7 @@ export function gaussianKL(muQ: number, varQ: number, muP: number, varP: number)
 }
 
 /**
- * The TEMPORAL / PREDICTIVE prior's complexity (FIX 2): `Σ_t KL[q_t ‖ q_{t-1}]` over the plane's
+ * The TEMPORAL / PREDICTIVE prior's complexity (TERM 2): `Σ_t KL[q_t ‖ q_{t-1}]` over the plane's
  * belief trajectory `means` (the running generative model's per-frame posterior mean), the PREVIOUS
  * frame's posterior serving as THIS frame's prior. Equal-variance case (both `σ²`) ⇒ each step
  * reduces to the belief-MOVEMENT cost `½(Δμ/σ)²`. Real KL to a real, named prior — not an MDL code.
@@ -278,11 +277,11 @@ export interface PlaneRead {
   readonly standing: number;
   /** surprise = π · mean(z²) — the precision-weighted-error part of the accuracy term. */
   readonly surprise: number;
-  /** the `−½ ln π` log-precision penalty (FIX 1) — the interior-optimum term; 0 at gain 1. */
+  /** the `−½ ln π` log-precision penalty (TERM 1) — the interior-optimum term; 0 at gain 1. */
   readonly logPrecisionPenalty: number;
   /** the MDL param-cost `½·k·log₂ n` (a description-length, kept for reference / the form override). */
   readonly complexity: number;
-  /** the REAL KL complexity (FIX 2): Σ_t KL[q_t ‖ q_{t-1}] to the TEMPORAL predictive prior. */
+  /** the REAL KL complexity (TERM 2): Σ_t KL[q_t ‖ q_{t-1}] to the TEMPORAL predictive prior. */
   readonly complexityKL: number;
   readonly meanSqZ: number;
   /** the precision-weighted residual the plane EMITS instead of the raw feature. */
@@ -319,7 +318,7 @@ export function planePc(
   const dims = M[0]!.length;
 
   // PREDICT + implicit UPDATE, per column; accumulate the standardized squared error AND the
-  // TEMPORAL-prior KL (the belief-movement cost Σ_t KL[q_t ‖ q_{t-1}] of the running g, FIX 2).
+  // TEMPORAL-prior KL (the belief-movement cost Σ_t KL[q_t ‖ q_{t-1}] of the running g, TERM 2).
   let nParams = 0;
   const w = Math.max(0, Math.min(warmup, n));
   let sumSq = 0;
@@ -373,7 +372,7 @@ export function planePc(
   }
 
   const surprise = gain * meanSqZ; // π · mean(z²) — the precision-weighted error
-  // FIX 1: the −½ ln π log-precision penalty. Inert at gain 1 (−ln 1 = 0, estimate mode); it bites
+  // TERM 1: the −½ ln π log-precision penalty. Inert at gain 1 (−ln 1 = 0, estimate mode); it bites
   // a top-down VOW, giving the vowed precision an interior optimum instead of pinning at max.
   const logPrecisionPenalty = -0.5 * Math.log(Math.max(EPS, gain));
   const complexity = modelComplexity(nParams, n);
@@ -384,16 +383,16 @@ export function planePc(
 
 // ── the free-energy objective F = Σ ½(π·ε² − ln π) + Σ KL[q‖p] over the planes ──────────────
 
-/** Which named prior priced a plane's complexity term (FIX 2, #crucible-tested). */
+/** Which named prior priced a plane's complexity term (TERM 2, #crucible-tested). */
 export type PriorKind = "temporal" | "mdl-coding" | "temporal-approx";
 
 export interface FreeEnergy {
   readonly F: number;
   /** the precision-weighted-error part of accuracy, `Σ π·ε̄²`. */
   readonly accuracy: number;
-  /** the `Σ −½ ln π` log-precision penalty (FIX 1) — 0 unless a plane carries a vow. */
+  /** the `Σ −½ ln π` log-precision penalty (TERM 1) — 0 unless a plane carries a vow. */
   readonly precisionPenalty: number;
-  /** the complexity term, `Σ KL[q‖p]` to the named per-plane priors (FIX 2). */
+  /** the complexity term, `Σ KL[q‖p]` to the named per-plane priors (TERM 2). */
   readonly complexity: number;
   readonly perPlane: Record<string, { surprise: number; logPrecisionPenalty: number; complexity: number; priorKind: PriorKind; precision: number; confidence: number | null; standing: number; n: number }>;
 }
@@ -421,8 +420,8 @@ export interface FreeEnergyOptions {
 /**
  * The sensorium's per-frame OBJECTIVE: `F = Σ_i ½(π_i·ε_i² − ln π_i) + Σ_i KL[q_i ‖ p_i]` over the
  * planes. Each plane runs its own {@link planePc}; `accuracy` sums the precision-weighted surprises,
- * `precisionPenalty` sums the `−½ ln π` log-precision terms (FIX 1, non-zero only where a plane
- * carries a top-down vow), and `complexity` sums each plane's REAL KL to its NAMED prior (FIX 2) —
+ * `precisionPenalty` sums the `−½ ln π` log-precision terms (TERM 1, non-zero only where a plane
+ * carries a top-down vow), and `complexity` sums each plane's REAL KL to its NAMED prior (TERM 2) —
  * the temporal predictive prior by default. `formComplexityBits` swaps the FORM plane's KL for the
  * induction ledger's MDL coding-bits (`priorKind: "mdl-coding"`); `approxPriorPlanes` marks planes
  * (e.g. coupling) whose temporal-KL stands in for an aspirational latent prior.
@@ -444,7 +443,7 @@ export function freeEnergy(
       ...(opts.alpha !== undefined ? { alpha: opts.alpha } : {}),
       ...(conf !== undefined ? { confidence: conf } : {}),
     });
-    // complexity = a REAL KL to a NAMED prior (FIX 2). Default: the temporal predictive prior.
+    // complexity = a REAL KL to a NAMED prior (TERM 2). Default: the temporal predictive prior.
     let planeComplexity = r.complexityKL;
     let priorKind: PriorKind = approx.has(name) ? "temporal-approx" : "temporal";
     // form's induction MDL bits swap in a universal-CODING prior (a description-length, not a KL).

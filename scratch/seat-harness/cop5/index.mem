@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop5/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/seat-harness/cop5/` — 3 record(s) here, 3 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop5/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/cop5/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/seat-harness/cop5/`
+
+The scratch planning records of `.lares-scratch/seat-harness/cop5/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 3 record(s) stand here and 3 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[seat-harness/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[b5-out|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop5/b5-out]] | hand-back | 2026-11-04 | `b5.out.md` |
+| [[b5-share|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop5/b5-share]] | session transcript | 2026-11-04 | `b5.share.md` |
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop5/brief]] | brief | 2026-11-04 | `brief.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3yCfvj-3qnHRJXYs9inNNaRc6iVDuxm-45YMIP8jAsQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -22,7 +22,7 @@ export function alphaFromHalfLife(halfLifeTicks: number): number {
 
 /**
  * One conviction/decay step: `y_t = α·y_{t-1} + x_t` — the prior warmth decays by α, this
- * tick's maintenance/rep `applied` adds in. Redirecting maintenance drains the old bucket at
+ * tick's maintenance/rep `applied` adds in. Redirecting maintenance drains the bucket it leaves at
  * the same rate, so a sudden swing costs sustained effort (capture-resistance, natively).
  */
 export function decayStep(prev: number, applied: number, alpha: number): number {

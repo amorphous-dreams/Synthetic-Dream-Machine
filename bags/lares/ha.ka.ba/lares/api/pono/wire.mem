@@ -1,14 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/wire">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/wire`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/wire.mem"
-mana      = 13
-manao     = 15
-manaoio   = 12
 role      = "wire law (kānāwai): the reified edge — one wire, one addressable entity; semantics worn as stack components; the verse-messaging and canvas substrate under the has-stack model"
 tags      = ["api/pono/has-stack"]
 title     = "lar:///ha.ka.ba/lares/api/pono/wire"
@@ -17,11 +13,9 @@ uri-path  = "ha.ka.ba/lares/api/pono/wire"
 written   = "2026-06-12"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Wire — the reified edge
 
@@ -31,7 +25,7 @@ A wire that merely //points// stays a `loulou`; embedding stays `aka`/`kahea`; c
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ find the relation's real pressure before reifying — value, pulse, message, rule, or watch.
 ⏿ orient against the ladder: pointer → loulou; embed → aka/kahea; worn → tags; //doing// → wire.
@@ -41,11 +35,11 @@ A wire that merely //points// stays a `loulou`; embedding stays `aka`/`kahea`; c
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Wire Law
 
-# ''One wire, one entity.'' A wire exists as one `lar:` addressed record carrying `from` and `to` (each a `lar:` URI or `URI#socket`). It MUST NOT exist as an attribute on a line of prose — the corpus-wide attribute-edge form retired 2026-06-12.
+# ''One wire, one entity.'' A wire exists as one `lar:` addressed record carrying `from` and `to` (each a `lar:` URI or `URI#socket`). It MUST NOT exist as an attribute on a line of prose.
 # ''Semantics worn, never typed-in-place.'' A wire wears its family as a stack component — `wires/dataflow`, `wires/message`, `wires/control`, `wires/constraint`, `wires/observe` ride as //examples, not an enum// (has-stack clause 4: open minting, ladder-judged). The family definition meme carries the meaning; the wire record carries only endpoints and fields.
 # ''The four concerns stay independent'' (inherited whole from the prior edge law): `traversal` (how a query moves) · `propagation` (how invalidation fires) · arity (family-declared, has-stack clause 5) · lifecycle. They ride as ''fields'' on the wire record and MUST NOT collapse into each other.
 # ''Lifecycle = template · instance · trace.'' A template wire carries slots and defaults; an instance binds real endpoints; a ''trace'' records a firing, failure, or event — each its own entity, so the event history merges and federates like any record.
@@ -56,7 +50,7 @@ A wire that merely //points// stays a `loulou`; embedding stays `aka`/`kahea`; c
 
 <<~/ahu>>
 
-<<~ ahu #/authoring>>
+<<~ ahu slot=`#/authoring`>>
 
 !! Authoring — two gestures, one existence (ratified 2026-06-12)
 
@@ -77,18 +71,18 @@ Co-projection applied to wires: the operator's mind originates; the carrier body
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala-families`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CQu4mtN1O_hA4yIfR1JJG5rG_Gl2Dsz9Qcy_GL6rRjY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WcJeTVNQWaSv-ATMqFzi7PwJ3346TYsydUUV40RemGA`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

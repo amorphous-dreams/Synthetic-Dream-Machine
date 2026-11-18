@@ -28,7 +28,7 @@
  */
 
 import {
-  fencedSpans, maskedExecAll, readFrame, META_OPEN_RE, type MaskSpan,
+  fencedSpans, maskedExecAll, readFrame, META_OPEN_RE, rootMetaFence as frameRootMetaFence, type MaskSpan,
 } from "@lararium/memetic-frame";
 import { parseTaploFields, duplicateTomlKeys, duplicateKeyMessage } from "./toml-ast.js";
 import type { TiddlerFields } from "./deserializer.js";
@@ -41,7 +41,8 @@ export interface MetaFenceSpan {
   readonly openLine: string;
   /** Where the body begins (just past the opener's newline). */
   readonly bodyStart: number;
-  /** Where the body ends — the index of the `\n` before the closing ```` ``` ````. */
+  /** Where the body ends — the `\n` before the closing tick run (the shared close, `META_FENCE_RE`) where
+   *  that run opens its line, else the run itself. */
   readonly bodyEnd: number;
   /** The body text itself, `text.slice(bodyStart, bodyEnd)`. */
   readonly body: string;
@@ -62,8 +63,13 @@ export function metaFenceAt(
   if (!open) return null;
   const openStart = open.index;
   const bodyStart = openStart + open[0].length;
-  const closeAt = text.indexOf("\n```", bodyStart);
-  if (closeAt < 0) return null;
+  // THE SHARED CLOSE (`META_FENCE_RE`, memetic-frame): the first tick run past the opener, as the
+  // deserializer closes it, so no reader reads a body the split never parses (blind security read A3).
+  const closeRun = text.indexOf("```", bodyStart);
+  if (closeRun < 0) return null;
+  // `bodyEnd` keeps its contract: the `\n` ahead of a closer that opens its line (a writer inserts just
+  // past it), else the tick run itself, never before the body's own start.
+  const closeAt = Math.max(bodyStart, text[closeRun - 1] === "\n" ? closeRun - 1 : closeRun);
   return {
     openStart,
     openLine: open[0].replace(/\n$/, ""),
@@ -74,14 +80,25 @@ export function metaFenceAt(
 }
 
 /**
- * The carrier's ROOT meta fence. THE ROOT META RIDES THE BODY: a meta block above STX is the frame
- * verdict's tear, never the root, so the search starts at STX's end (or the top, where no STX stands).
+ * The carrier's ROOT meta fence: THE FENCE OPENS THE BODY. Where a text frame stands, the frame's one rule
+ * answers (`rootMetaFence`, memetic-frame): the first live meta fence after STX with nothing but spacing
+ * before it — the fence the deserializer splits the root fields from and the head binds against, never a
+ * slot's. A carrier with no text frame (no STX..ETX) seals no span, and reads its first live meta fence.
  */
 export function rootMetaFence(
   text: string,
   spans: readonly MaskSpan[] = fencedSpans(text),
 ): MetaFenceSpan | null {
-  return metaFenceAt(text, readFrame(text, spans).stx?.end ?? 0, spans);
+  const frame = readFrame(text, spans);
+  if (frame.stx && frame.etx) {
+    const framed = frameRootMetaFence(text, spans);
+    if (!framed) return null;
+    const openLine = text.slice(framed.openStart, framed.bodyStart).replace(/\n$/, "");
+    const bodyEnd = Math.max(framed.bodyStart, text[framed.bodyEnd - 1] === "\n" ? framed.bodyEnd - 1 : framed.bodyEnd);
+    return { openStart: framed.openStart, openLine, bodyStart: framed.bodyStart, bodyEnd, body: text.slice(framed.bodyStart, bodyEnd) };
+  }
+  // No text frame: no sealed span, and the earlier reading stands — the first live meta fence.
+  return metaFenceAt(text, frame.stx?.end ?? 0, spans);
 }
 
 /** The root meta's fields, parsed; `{}` where the carrier writes no root meta. */

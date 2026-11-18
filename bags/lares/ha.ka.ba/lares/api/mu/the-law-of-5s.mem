@@ -1,30 +1,24 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/mu/the-law-of-5s.mem"
 heleuma   = "ba"
 hydrate   = true
 l-space   = "stable"
-mana      = 18
-manao     = 17
-manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 role      = "OODA-HA loop boot, Catma nav terminal, syad handoff shelf"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu/the-law-of-5s"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Law of 5s
 
@@ -36,7 +30,7 @@ He gives away the secret when he adds, "given enough ingenuity on the part of th
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ enter through Chaos; entertain the phenomenon and invite demonstrative ingenuity
 ⏿ pass into Discord; test the fivefold relation without hardening it into dogma
@@ -46,7 +40,7 @@ He gives away the secret when he adds, "given enough ingenuity on the part of th
 
 <<~/ahu>>
 
-<<~ ahu #/the-five-seasons>>
+<<~ ahu slot=`#/the-five-seasons`>>
 
 !! The Five Seasons
 
@@ -64,7 +58,7 @@ Five phases. Five questions.
 
 <<~/ahu>>
 
-<<~ ahu #/maybe-logic>>
+<<~ ahu slot=`#/maybe-logic`>>
 
 !! RAW's Maybe Logic
 
@@ -82,11 +76,11 @@ The agent should avoid premature closure, avoid false certainty, and mark uncert
 
 The agent should hold open competing readings when the frame remains underdetermined.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
 
 <<~/ahu>>
 
-<<~ ahu #/sri-syadasti>>
+<<~ ahu slot=`#/sri-syadasti`>>
 
 !! The Syad Perspectives of Sri Syadasti
 
@@ -97,7 +91,7 @@ Five standpoints license seven predications --- the //naya// wing, never a mappi
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -148,7 +142,7 @@ kapu  = "violet"
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source (TypeScript)
 
@@ -190,17 +184,31 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/rank-consensus`>>
 
-!! Edges
+!! Rank consensus ~ several lenses over one item set
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+''The fold.'' Several strict, best-first rankings over the SAME named items yield one reproducible order. Each ranking names every item exactly once; an absent or repeated item stops the fold rather than inviting a guessed position. The first ranking supplies the stable tie order.
+
+''Two readings.'' Borda adds each item's zero-based positions and advances the lowest sum, a tied sum following the first ranking's order (`bordaConsensus`). Kemeny searches the permutations for the order with the least total Kendall-tau pair disagreement (`kemenyConsensus`, `kendallTauCost`); seeded with Borda and keeping the first equal-cost order, its disagreement never exceeds Borda's. Exhaustive search reaches at most eight items (`KEMENY_MAX_ITEMS`); a larger set takes another method or a refusal, never an unbounded silent search (`packages/lararium-mesh/src/rank-consensus.ts`).
+
+''The ladder boundary.'' Aperture, the action ladder, scope, rating and stage each name a vocabulary of their own, so their five rows rank no shared set of candidates. A caller first names the common candidates and takes a strict order over them from each lens it means to fold. Without that mapping, the separate readings stand side by side and no consensus gets announced.
+
+''The authority boundary.'' A consensus order compresses the disagreement among the readings it received; it grants no federation rank, gate authority or world verdict. The input orders and the Kendall cost ride beside the result, so another reader can inspect what the fold moved.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rmokugmyB_LfeZ2Z3Fb2ypHeZ_Q6nLsCbKb9cfihhzk
+<<~ ahu slot=`#/edges`>>
 
-<<^ code="&#x0004;" -> to="?">>
+!! Edges
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/chao`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-four-tools`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WQO3EfWPbGaDEJjN8o-G2Id8rdLiFbD23dq7ETADXBI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

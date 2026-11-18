@@ -18,7 +18,8 @@ export {
   fencedSpans, inMask, inMaskInterior, maskedExec, maskedExecAll, fenceLineOpen, fenceLineClose,
   type MaskSpan, type FenceChar, type FenceOpen,
 } from "./fence-mask.js";
-export { META_OPEN_CANON, META_OPEN_RE, META_OPEN_LINE_RE, PLAIN_OPEN_RE, isCanonicalMetaOpen } from "./meta-fence.js";
+export { META_OPEN_CANON, META_OPEN_RE, META_OPEN_LINE_RE, PLAIN_OPEN_RE, META_FENCE_RE, isCanonicalMetaOpen } from "./meta-fence.js";
+export { rootMetaFence, type RootMetaFence } from "./root-meta.js";
 export {
   carrierHeadPattern, carrierHeadLinePattern, carrierMarkPattern, carrierReleasePattern,
   matchCarrierHead, matchCarrierMark, matchCarrierHeadLine, headUriOf,
@@ -29,11 +30,12 @@ export {
   type MarkHit, type FrameMarks, type FrameRead, type FrameFault, type FrameStanding,
 } from "./span.js";
 export {
-  CHECK_ALG, bccOfSpan, nihOfSpan, bccOf, verifyBcc, BCC_RE, classifyPostamble, classifyPostEot,
+  CHECK_ALG, bccOfSpan, canonicalSpan, nihOfSpan, bccOf, verifyBcc, BCC_RE, classifyPostamble, classifyPostEot,
   type Postamble,
 } from "./check.js";
+export { headBinding, sealedBindingKeys, type HeadBinding, type UnboundEnd, type SealedBindingKeys } from "./head-bind.js";
 export { verdict, verdictOf, frameShape, type FrameVerdict, type FrameShape } from "./verdict.js";
 export {
-  CARRIER_DECLARATION, markCode, headSigil, frameCarrier, stampCarrier,
+  CARRIER_DECLARATION, markCode, headSigil, markSigil, sealSigil, releaseSigil, frameCarrier, stampCarrier,
   type FrameHeadSpec, type FrameCarrierInput,
 } from "./write.js";

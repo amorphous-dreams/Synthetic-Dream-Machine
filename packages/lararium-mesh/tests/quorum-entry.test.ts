@@ -5,7 +5,7 @@
  * set both sign over. Its header states that `kind` rides first, stays required, and IS the cross-board separation —
  * "no signature raised on one board can ever be re-presented on the other". Until this file, `quorumEntryBytes`
  * appeared in ZERO test references, and the verify-time gates that enforce the domain
- * (`kapae-antigen.ts:116`, `carriage-registry.ts:117`) were each deleted in a scratch mirror with the whole mesh
+ * (in `kapae-antigen.ts` and `carriage-registry.ts`) were each deleted in a scratch mirror with the whole mesh
  * suite still reporting 1659 passed. The law had no witness at either end.
  *
  * WHAT GETS PROVEN HERE:

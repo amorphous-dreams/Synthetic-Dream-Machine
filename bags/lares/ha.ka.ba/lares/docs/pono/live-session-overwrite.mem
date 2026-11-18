@@ -1,23 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/live-session-overwrite.mem"
 l-space   = "stable"
-mana      = 15
-manao     = 16
-manaoio   = 13
 role      = "docs sister for Live-Session Overwrite — bug anatomy, test vector, and mitigation notes"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/live-session-overwrite"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Live-Session Overwrite — Docs Sister
 
@@ -27,7 +23,7 @@ It does not replace the invariant.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ observe recent claims that pull toward canon, source truth, or world-state rewrite.
 ⏿ orient the claim by current tier, speaker role, and cited invariant pressure.
@@ -37,7 +33,7 @@ It does not replace the invariant.
 
 <<~/ahu>>
 
-<<~ ahu #/bug-anatomy>>
+<<~ ahu slot=`#/bug-anatomy`>>
 
 !! Bug Anatomy
 
@@ -54,7 +50,7 @@ A disciplined node records the claim, names the tier, checks stronger sources, a
 
 <<~/ahu>>
 
-<<~ ahu #/expected-behavior>>
+<<~ ahu slot=`#/expected-behavior`>>
 
 !! Expected Behavior
 
@@ -74,7 +70,7 @@ The useful middle path records the signal without granting it the wrong authorit
 
 <<~/ahu>>
 
-<<~ ahu #/mitigation>>
+<<~ ahu slot=`#/mitigation`>>
 
 !! Mitigation Notes
 
@@ -89,18 +85,18 @@ A passing test records the jello claim as session evidence and refuses silent ca
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/l-space-trust">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canon-boundary">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hooponopono`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/l-space-trust`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/canon-boundary`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AX50B5nqnaMCQiNFIDmr3H6wd4YBB7TjMQAmwtPvvQY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZmPN1WCFjLa9ewRYzjQZxUOn9oFpd5vRBbsNhoaE8kc`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

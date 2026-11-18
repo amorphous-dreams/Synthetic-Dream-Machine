@@ -7,25 +7,30 @@
  */
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { runFoundingCeremony } from "@lararium/keyhive";
 import {
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, makeIslandRepo, attachMessageChannelSync,
+  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, SECRET_HOME_ID, controlStoreOf, standControlHome, faceAtomKeyFromSeed, hex, makeIslandRepo, attachMessageChannelSync,
+  mintFaceAnchor,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, wikiBagUri, type LarDoc,
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
-const FOUNDER_SEED = seed(71);
 
 /** Found a face, then stand the island the way an owned-document vessel does: a main repo that DENIES the
  *  daemon doc, an oracle registry that names it anyway, and the daemon doc reaching the composite as a layer. */
-export async function standFoundedIsland(teardown: Array<() => void>, opts: { composite?: CompositeStore; tw5?: unknown } = {}) {
+export async function standFoundedIsland(teardown: Array<() => void>, opts: { composite?: CompositeStore; tw5?: unknown; seedOffset?: number } = {}) {
   const vesselRepo = new Repo({ sharePolicy: async () => true });
-  const key = await pubOf(FOUNDER_SEED);
-  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
-    repo: vesselRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: key,
-    vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: key,
+  const founderSeed = seed(71 + (opts.seedOffset ?? 0));
+  const key = await pubOf(founderSeed);
+  // The vessel's secret home: this fixture's vessel Repo holds no storage, so it rests nothing (`memorySecretHome`); the
+  // daemon island reaches it as the kernel hands it (`islandSecretHome`): a store and the vessel's sealed-rest answer.
+  const secret = memorySecretHome(vesselRepo);
+  const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...secret, repo: vesselRepo, atomSeed: seed(72 + (opts.seedOffset ?? 0)), placeVerifyingKey: key,
+    vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: founderSeed }, hearthTrueName: "", nexusPubkey: key,
   });
   const kelBoard = await materializeSharedLarDoc(vesselRepo, personaKelBoardDocUrl(key), "board:persona-kel");
   const chain = personaKelChainForPrefix(kelBoard.doc(), cer.personaKelPrefix);
@@ -33,11 +38,9 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
 
   // The oracle registry names the daemon doc — the address a registry walk resolves.
   const oracle = vesselRepo.create<LarDoc>({
-    schemaVersion: "lar/1",
     tiddlers: { [DAEMON_BAG_ID]: { tiddler: { title: DAEMON_BAG_ID, text: cer.daemonUrl } } },
   } as unknown as LarDoc);
   const catalog = vesselRepo.create<LarDoc>({
-    schemaVersion: "lar/1",
     tiddlers: { [wikiBagUri("daemon")]: { tiddler: { title: wikiBagUri("daemon"), text: cer.daemonUrl } } },
   } as unknown as LarDoc);
 
@@ -61,16 +64,22 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
     handles: new Map([[wikiBagUri("daemon"), daemonHandle]]), post: () => {},
     repo: islandRepo, catalogUrl: catalog.url, oracleUrl: oracle.url, engine: { sha256: "", version: "" },
     recipe: { wikiSlug: "daemon" },
+    secretStore: new AutomergeDocStore(secret.secretHandle, SECRET_HOME_ID), secretRest: secret.secretRest,
+    // The vessel's control document, as the host stands it beside the daemon VM (`control-home`).
+    control: controlStoreOf(await standControlHome(vesselRepo, daemonHandle)),
   } as never;
+  const atom = faceAtomKeyFromSeed(cer.atomSeed, cer.personaGroupId);
+  const veil = { atom: { seed: hex(cer.atomSeed), key: atom.key }, veilArchiveBytes: cer.veilArchive };
   const daemonAuth = {
-    seed: FOUNDER_SEED, vesselVerifyingKey: key,
+    ...veil,
+    placeVerifyingKey: key,
+    // The place's KEL prefix and the face's address secret, as the opener reads them from main-thread custody.
+    faceAddressSecret: hex(seed(73)),
     personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,
+    faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
+      personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
   };
-  // The face's creator-veil, as a shore that derives it hands it to the island: the key the founding derived under
-  // its tag, and the Archive that veil left. A suite that needs the veil standing adds both to `daemonAuth`.
-  const veilKeys = await veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED))(cer.veilTag);
-  const veil = { dyadVeil: { tag: cer.veilTag, signingKey: veilKeys.signingKey }, veilArchiveBytes: cer.veilArchive };
-  return { ctx, daemonAuth, daemonHandle, vesselRepo, veil };
+  return { ctx, daemonAuth, daemonHandle, secretHandle: secret.secretHandle, vesselRepo, veil, placeSeed: Uint8Array.from(founderSeed) };
 }

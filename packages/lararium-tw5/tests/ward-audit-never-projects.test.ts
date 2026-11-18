@@ -1,25 +1,21 @@
-/**
- * A ward audit carries `disk-projection: "no"` where it gets written: it lands in the working layer like any
- * bagless write, stands at a never-projected address, and so reaches no disk mirror and ingests from none.
- */
 import { describe, expect, test } from "vitest";
-import { CompositeStore, WARD_AUDIT_URI_PREFIX, neverProjects, wikiSlotUri } from "@lararium/mesh";
+import { CompositeStore, CONTROL_HOME_ID, WARD_AUDIT_URI_PREFIX, wikiSlotUri } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { fileWardRefusal } from "../src/worker-data-verbs.js";
 
-describe("a ward audit never projects", () => {
-  test("the audit record carries the opt-out at a never-projected address in the working layer", async () => {
+describe("ward audit placement", () => {
+  test("the audit rests in the control document, never in the mirrored working layer, and keeps its refusal facts", async () => {
     const working = wikiSlotUri("daemon", "working");
-    const store = new MemoryTiddlerStore(working);
+    const workingStore = new MemoryTiddlerStore(working);
     const composite = new CompositeStore();
-    composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true });
-    await fileWardRefusal(composite, () => {}, { bagId: "mirror", uri: "lar:///ward/x", reason: "refused" });
-    const audits = (await store.listVisible()).filter((title) => title.startsWith(WARD_AUDIT_URI_PREFIX));
+    composite.addLayer({ bagId: working, store: workingStore, writable: true, defaultWritable: true });
+    const controlStore = new MemoryTiddlerStore(CONTROL_HOME_ID);
+    const control = new CompositeStore();
+    control.addLayer({ bagId: CONTROL_HOME_ID, store: controlStore, writable: true, defaultWritable: true });
+    await fileWardRefusal(composite, control, () => {}, { bagId: "mirror", uri: "lar:///ward/x", reason: "refused" });
+    const audits = (await controlStore.listVisible()).filter((title) => title.startsWith(WARD_AUDIT_URI_PREFIX));
     expect(audits).toHaveLength(1);
-    const record = await store.get(audits[0]!);
-    expect(record?.tiddler["disk-projection"]).toBe("no");
-    expect(neverProjects(audits[0]!)).toBe(true);
-    // CONTROL: the audit names what the ward refused.
-    expect(record?.tiddler).toMatchObject({ uri: "lar:///ward/x", reason: "refused", bag: "mirror" });
+    expect((await controlStore.get(audits[0]!))?.tiddler).toMatchObject({ uri: "lar:///ward/x", reason: "refused", bag: "mirror" });
+    expect(await workingStore.listVisible(), "an audit row reached the mirrored working layer").toEqual([]);
   });
 });

@@ -1,5 +1,5 @@
 /**
- * bags-file-uri.test.ts — the loci law run backward (the ingest scan leg):
+ * bags-file-uri.test.ts — the address siting rule run backward (the ingest scan leg):
  * `bags/<sub-path>.mem` ⇄ `lar:///ha.ka.ba/<sub-path>`; outside bags/ or
  * non-.mem → null (the gesture reports skipped, never guesses).
  */
@@ -9,7 +9,7 @@ import { bagsFileToUri, mirrorDirFileToUri } from "../src/bag-paths.js";
 
 const ROOT = "/srv/vessel";
 
-describe("bagsFileToUri — loci reverse-derivation (full-path-inside-bag)", () => {
+describe("bagsFileToUri — address reverse-derivation (full-path-inside-bag)", () => {
   test("residency dir strips; the interior IS the name", () => {
     expect(bagsFileToUri(ROOT, "/srv/vessel/bags/lares/ha.ka.ba/lares/api/pono/meme.mem"))
       .toBe("lar:///ha.ka.ba/lares/api/pono/meme");

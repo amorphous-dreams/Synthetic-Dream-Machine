@@ -39,6 +39,7 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/waking-floor
  */
 
+import { frameFloorDuty } from "./place-signer.js";
 import { RAISE_CHALLENGE_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes } from "./crypto.js";
 import { type CarriageEntry, type PresentedAdmitState, type PresentedLineageAct } from "./carriage-registry.js";
@@ -106,9 +107,9 @@ export interface RaiseRefused {
 
 /** The exact bytes a recogniser signs. Strict field set — nothing about the vessel's contents rides here. */
 export function raiseChallengeBytes(c: RaiseChallenge): Uint8Array {
-  return canonicalJsonBytes({
+  return frameFloorDuty(RAISE_DOMAIN, canonicalJsonBytes({
     kind: RAISE_DOMAIN, vesselId: c.vesselId, nexus: c.nexus, epoch: c.epoch, nonce: c.nonce,
-  });
+  }));
 }
 
 /**

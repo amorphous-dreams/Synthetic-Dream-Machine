@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/w2-handback`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/ux-polish/w2-handback.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/w2-handback"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/ux-polish/w2-handback"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! w2-handback.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/ux-polish/w2-handback.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/ux-polish/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/wave-2-hand-back`>>
+
+! Wave 2 hand-back
+
+''Seed progress.'' `seed.ts` now prints a per-holding start and completion line, recursive carrier counts, elapsed time, 5-second INGEST settle ticks, a folded CREATE line by default, and a final `seed: N/N holdings · XmYYs` tally. Retry guidance marks successful and diff-gated INGEST runs safe; failed act runs direct the operator to the request/change-id hint. Durations use `performance.now()`, matching the CLI's existing process-local monotonic liveness seam (`stand.ts` and `port-control.ts`); no new wall-clock dependency was introduced.
+
+''Shim errors.'' Both host shims keep census output quiet by default and show it only with `LARES_DEBUG=1`. A census refusal says the vessel remains standing and directs the operator to logs and another `down`. Failed `up` preserves Compose's error and appends the requested readiness/retry sentence.
+
+''Vault unlock.'' Unknown custody answers now say unlock did not complete and point to `lares vault status`; human and JSON error output omit the raw answer and internal reading label. `--verbose` is registered as a vessel flag and documented for seed CREATE detail.
+
+''Checks.'' Build and stamp passed (<code>&#64;lares/cli</code>, final stamp `412360ae0285a744…`); CLI typecheck passed. Final focused CLI run: 4 files, 134 tests passed. Full CLI run: 163/164 files and 1823/1824 tests passed; `port-control.test.ts` had one 5-second timeout under full worker load, then passed alone (1 file, 22 tests). Shim suite: 103/103 passed across `.sh` and `.ps1`. Evergreen boundary passed (3874 files). `rite-commands-witness.sh` passed (13 commands, 13 sub-doors, 7 symbols). `git diff --check` passed.
+
+''WAIT for a later wave.'' Found end-hang measure: time CLI exit separately from Compose run teardown. Founding-copy glosses: route, seed charter, chair, place, persona zero, generation, holding, carrier, and `alreadyStood`.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Deru4sGwNoNVGrSfqaFmmPPwmj5ZJa-Nl7jy8lWi8nI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -4,6 +4,12 @@
  * A face claims synchronously, then may answer asynchronously. The dispatcher
  * never races a claimed face with its terminal refusal. A request no face claims
  * draws the closed door; an upgrade no socket face claims has its socket destroyed.
+ *
+ * THE UNCLAIMED KNOCK, SAID. A gate answers nothing on a knock it does not stand, so a dialer cannot learn why its
+ * socket died. The vessel's own console can: the first unclaimed upgrade at each path this boot draws one line, after
+ * the socket is already destroyed, so the line changes nothing a dialer sees. The line states why a sync gate may stand
+ * nowhere: a hearth rests at its floor, standing no sync gate, until a person unlocks it (`lares vault unlock`). The
+ * paths it remembers are bounded (`UNCLAIMED_PATHS_SAID`); past the bound one last line says the rest go unsaid.
  */
 
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
@@ -12,7 +18,7 @@ import { answerClosedDoor } from "./bulb-routes.js";
 
 export interface HttpFace {
   readonly name: string;
-  /** Stable ownership declarations used to reject duplicate registration. */
+  /** Stable ownership declarations; the dispatcher rejects a duplicate registration by them. */
   readonly routeKeys: readonly string[];
   /** Claim before any asynchronous authorization or byte work begins. */
   readonly owns: (req: IncomingMessage) => boolean;
@@ -25,6 +31,14 @@ export interface HttpUpgradeFace {
   /** The exact pathname this face upgrades. One live face per path. */
   readonly path: string;
   readonly handle: (req: IncomingMessage, socket: Duplex, head: Buffer) => void;
+}
+
+/** How many distinct unclaimed upgrade paths one boot says, one line each. */
+export const UNCLAIMED_PATHS_SAID = 64;
+
+export interface HttpFaceDispatcherOptions {
+  /** Where an unclaimed upgrade's line goes; `console.warn` where none is named. A hearer that throws decides nothing. */
+  readonly onUnclaimedUpgrade?: (line: string) => void;
 }
 
 export interface HttpFaceDispatcher {
@@ -48,7 +62,7 @@ function failHandler(res: ServerResponse): void {
  * Registration order is the dispatch order. A route key may belong to only
  * one live face, while a face can claim an asynchronous request immediately.
  */
-export function mountHttpFaceDispatcher(server: Server): HttpFaceDispatcher {
+export function mountHttpFaceDispatcher(server: Server, opts: HttpFaceDispatcherOptions = {}): HttpFaceDispatcher {
   const faces: HttpFace[] = [];
   const routeOwners = new Map<string, string>();
 
@@ -69,9 +83,21 @@ export function mountHttpFaceDispatcher(server: Server): HttpFaceDispatcher {
   server.on("request", onRequest);
 
   const upgradeFaces = new Map<string, HttpUpgradeFace>();
+  const said = new Set<string>();
+  const sayUnclaimed = (path: string): void => {
+    if (said.size > UNCLAIMED_PATHS_SAID || said.has(path)) return;
+    said.add(path);
+    const shown = path.length > 72 ? `${path.slice(0, 72)}…` : path;
+    const line = said.size > UNCLAIMED_PATHS_SAID
+      ? `[lar-gate] ${UNCLAIMED_PATHS_SAID} unclaimed upgrade paths said this boot; the rest go unsaid`
+      : `[lar-gate] an upgrade at ${shown} met no gate standing on it (said once this boot) — a hearth rests at its floor, standing no sync gate, until a person unlocks it (\`lares vault unlock\`)`;
+    try { (opts.onUnclaimedUpgrade ?? ((l: string) => console.warn(l)))(line); } catch { /* a log never decides */ }
+  };
   const onUpgrade = (req: IncomingMessage, socket: Duplex, head: Buffer): void => {
-    const face = upgradeFaces.get(new URL(req.url ?? "/", "http://localhost").pathname);
-    if (!face) { socket.destroy(); return; }
+    let path: string;
+    try { path = new URL(req.url ?? "/", "http://localhost").pathname; } catch { socket.destroy(); return; }
+    const face = upgradeFaces.get(path);
+    if (!face) { socket.destroy(); sayUnclaimed(path); return; }
     try { face.handle(req, socket, head); } catch { socket.destroy(); }
   };
   server.on("upgrade", onUpgrade);

@@ -16,17 +16,27 @@
  *   H7 · a re-seat over the hearth's seed charter refuses by name, and moves no byte: the hearth's AID never moves —
  *        with the bootstrap's face pin gone too, since the faces' own anchors answer.
  *   H8 · over a place that holds a charter this act did not found, the act refuses by name and founds no face.
+ *   H9 · the founding lands a counted 1-of-1 Kahu-cabal admission for persona zero's group, once: a second run lands
+ *        no second act, and a group the act never named stands absent (W26 slice 3).
+ *  H10 · the founding registers `lares` and `lararium` as realm bags on the hearth's realm: two counted registrations,
+ *        sealed by persona zero's per-Nexus key, each naming a live document of its own; run again it registers nothing
+ *        new, and the catalog carries no pointer row for either bag (W26 slice 3).
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID, HEARTH_TRUE_NAME_TIDDLER, federationPostureFromDoc, genesisCharterEpoch, seatedKahuKeys, NEXUS_AID_PATTERN, PERSONA_GROUP_ID_TIDDLER, tiddlerText, verifiedFleetOfGroup, vesselDyads,
+  DAEMON_BAG_ID, HEARTH_TRUE_NAME_TIDDLER, federationPostureFromDoc, genesisCharterEpoch, kahuRealmGroup, foldRealmBags, realmDocUrl, materializeSharedLarDoc, LARES_DOC_URI, LARARIUM_DOC_URI, seatedKahuKeys, NEXUS_AID_PATTERN, PERSONA_GROUP_ID_TIDDLER, tiddlerText, verifiedFleetOfGroup, vesselDyads,
   type LarDoc,
 } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/commands/init.js";
+import { runCabalStanding } from "../src/commands/nexus-cabal.js";
+import { nexusLeafFor } from "../src/nexus-leaf.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
@@ -34,6 +44,7 @@ import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { fixtureKey } from "./fixture-keys.js";
 import { loadPersonaGroupRootVerifyingKey } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
+import { openVesselSecretHome } from "../src/secret-home-store.js";
 import { heldSeatKey, listSeatKeys } from "../src/seat-key-store.js";
 import { armGenesis } from "../src/seal-ceremony.js";
 import { larBootstrapPath, larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";
@@ -71,6 +82,11 @@ function packed(): Record<string, { text?: string }> {
 }
 
 /** The daemon doc the bootstrap names, read on the store's one holder. */
+/** The vessel's secret home, reopened from its custody row by a fresh direct holder: the dyads rest there. */
+async function secretDoc(): Promise<LarDoc> {
+  return ownedStore(larDataDir(), async (repo) => (await openVesselSecretHome(repo)).handle.doc() as LarDoc);
+}
+
 async function daemonDoc(): Promise<LarDoc> {
   const url = packed()[DAEMON_BAG_ID]!.text!;
   return ownedStore(larDataDir(), async (repo) => (await repo.find<LarDoc>(url as AutomergeUrl)).doc() as LarDoc);
@@ -78,7 +94,7 @@ async function daemonDoc(): Promise<LarDoc> {
 
 /** Found a hearth at `r`, keeping each card's seed for a later look. */
 async function foundAt(r: string, readBack?: (cards: readonly HearthCard[]) => Promise<void>) {
-  return withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis"), ...(readBack ? { readBack } : {}) }));
+  return withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis"), ...(readBack ? { readBack } : {}) }));
 }
 
 describe("the Stable founding act", () => {
@@ -104,8 +120,8 @@ describe("the Stable founding act", () => {
       expect(existsSync(join(larIdentityDir(), "sk-slots.bin"))).toBe(true);
       expect(founded.face.alreadyStood).toBe(false);
     });
-    expect(seeds).toHaveLength(1);
-    expect(seeds[0]!.every((b) => b === 0)).toBe(true);                                    // the card's seed zero-filled
+    expect(seeds).toHaveLength(2);                                                          // the place card, then the chair's
+    expect(seeds.every((seed) => seed.every((b) => b === 0))).toBe(true);                   // each card's seed zero-filled
   });
 
   test("H2 — the device edge, the true-name pin and the dyad binding each name the charter's AID", async () => {
@@ -115,13 +131,59 @@ describe("the Stable founding act", () => {
       expect(edge.hearthTrueName).toBe(aid);
       const doc = await daemonDoc();
       expect(tiddlerText(doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER])).toBe(aid);
-      const dyads = vesselDyads(doc);
+      // A committed founding leaves no write-ahead checkpoint and no title that spells its atom on the vessel-wide doc.
+      expect(Object.keys(doc.tiddlers).filter((title) => /checkpoint/.test(title) || title.includes(edge.deviceVerifyingKey))).toEqual([]);
+      // THE DYADS REST IN THE SECRET HOME (placement over patterns), and none in the daemon document.
+      expect(vesselDyads(doc)).toEqual([]);
+      const dyads = vesselDyads(await secretDoc());
       expect(dyads.length).toBeGreaterThan(0);
       expect(dyads.every((d) => d.binding?.epochCid === aid)).toBe(true);
       expect(await verifiedFleetOfGroup(dyads, edge.personaRootDid, new Set(), aid)).toHaveLength(dyads.length);
       expect(await verifiedFleetOfGroup(dyads, edge.personaRootDid, new Set(), `nexus-${"0".repeat(64)}`)).toHaveLength(0);
       expect(await verifiedFleetOfGroup(dyads, edge.personaRootDid)).toHaveLength(dyads.length);    // CONTROL: no scope asked
     });
+  });
+
+  test("H9 — the founding lands one counted 1-of-1 Kahu-cabal admission for persona zero's group (CONTROL: a group it never named stands absent; a second run lands no second act)", async () => {
+    await withLarRoot(a, async () => {
+      const group = kahuRealmGroup(packed()[PERSONA_GROUP_ID_TIDDLER]!.text!);
+      const stood = await direct(runCabalStanding)({ group });
+      expect(stood.standing).toBe("admitted");
+      expect(stood.heads).toHaveLength(1);
+      expect((await direct(runCabalStanding)({ group: "ab".repeat(32) })).standing).toBe("absent");   // CONTROL
+    });
+    const again = await foundAt(a);
+    expect(again.face.alreadyStood).toBe(true);
+    await withLarRoot(a, async () => {
+      const group = kahuRealmGroup(packed()[PERSONA_GROUP_ID_TIDDLER]!.text!);
+      expect((await direct(runCabalStanding)({ group })).heads).toHaveLength(1);
+    });
+  });
+
+  test("H10 — the founding registers lares and lararium as realm bags, sealed by persona zero's key at the Nexus, once (CONTROL: nothing else registered, no catalog pointer row)", async () => {
+    const realm = async () => withLarRoot(a, async () => {
+      const aid = readNexusDoc(larSealHome())!.sealLineage![0]!.epochCid;
+      const stood = await ownedStore(larDataDir(), async (repo) => {
+        const handle = await materializeSharedLarDoc(repo, realmDocUrl(aid), "realm");
+        const folded = await foldRealmBags(handle.doc(), aid);
+        const docs = new Map<string, boolean>();
+        for (const rec of folded.values()) docs.set(rec.bagUri, ((await repo.find(rec.docUrl as AutomergeUrl)).doc() as LarDoc | undefined) !== undefined);
+        return { folded: [...folded.values()].map((r) => ({ bag: r.bagUri, docUrl: r.docUrl, keptBy: r.keptBy, tier: r.readTier })), docs };
+      });
+      return { aid, ...stood, leaf: (await nexusLeafFor(0, aid))?.verifyingKey ?? null };
+    });
+    const first = await realm();
+    expect(first.folded.map((r) => r.bag).sort()).toEqual([LARARIUM_DOC_URI, LARES_DOC_URI].sort());
+    expect(first.leaf).not.toBeNull();
+    for (const rec of first.folded) { expect(rec.keptBy).toEqual([first.leaf]); expect(first.docs.get(rec.bag)).toBe(true); expect(rec.tier).toBe("contract"); }
+    expect(new Set(first.folded.map((r) => r.docUrl)).size).toBe(2);                       // two documents, never one
+    await foldAgain();
+    async function foldAgain() {
+      const again = await foundAt(a);
+      expect(again.face.alreadyStood).toBe(true);
+      const second = await realm();
+      expect(second.folded).toEqual(first.folded);                                            // CONTROL: a second run registers nothing new
+    }
   });
 
   test("H7 — a re-seat over the hearth's seed charter refuses by name and moves no byte: its AID never moves (CONTROL: H1's arming seated it)", async () => {
@@ -214,7 +276,7 @@ describe("the card reads back before the charter moves", () => {
   test("H5 — a refused read-back writes no charter and no face and retires its seat key — the act run again completes", async () => {
     const r = freshRoot("refused");
     let seen: Uint8Array | null = null;
-    await expect(foundAt(r, async (cards) => { seen = cards[0]!.seed; throw new Error("the card read back otherwise"); }))
+    await expect(foundAt(r, async (cards) => { if (cards[0]!.chair === "place") return; seen = cards[0]!.seed; throw new Error("the card read back otherwise"); }))
       .rejects.toThrow(/read back otherwise/);
     await withLarRoot(r, async () => {
       expect(existsSync(join(larSealHome(), "founding-roster.mem"))).toBe(false);

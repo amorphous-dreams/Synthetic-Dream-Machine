@@ -4,7 +4,7 @@
  *
  * Extracted from `owned-store.ts`'s `claimStore`/`bindClaim` (where the doctrine is spelled out at
  * length) so every exclusive-holder-by-name claim in this house rides ONE implementation instead of
- * a parallel re-derivation — `owned-store.ts`'s own rendezvous socket, and `claude-wire.ts`'s
+ * a parallel re-derivation — `owned-store.ts`'s own rendezvous socket, and `reality-tunnel/lock.ts`'s
  * settings.json write-lock (which carried a hand-rolled pid-file lock with a pid-reuse hole and a
  * pid-namespace hole — see M6) among them.
  *
@@ -88,7 +88,7 @@ export interface ReapWord {
 
 export interface ClaimNameOptions {
   /** Handle each connection reaching this holder. Default: accept and end at once (a pure presence
-   *  lock — the use `claude-wire.ts`'s settings.json write-lock makes of this primitive). */
+   *  lock — the use `reality-tunnel/lock.ts`'s settings.json write-lock makes of this primitive). */
   readonly onConnection?: (sock: Socket) => void;
   /** Build the refusal thrown when another holder answers. Default names `path` alone. */
   readonly refuse?: () => NameHeld;
@@ -104,6 +104,9 @@ export interface ClaimNameOptions {
   /** Hears each reading this claim takes of another claimant's grave ({@link ReapWord}). A hearer that throws
    *  changes nothing of the claim. */
   readonly onReap?: (word: ReapWord) => void;
+  /** Under `await`: an aborted signal ends the wait with the refusal. The caller names the bound (a LIVENESS span for
+   *  a holder wedged alive); the claim reads no clock. */
+  readonly signal?: AbortSignal;
 }
 
 const uidOf = (): number => process.getuid?.() ?? 0;
@@ -125,11 +128,13 @@ export function answers(path: string): Promise<boolean> {
 }
 
 /** Resolve once the holder at `path` lets go: its release closes the connection, and so does its death. */
-export function letGo(path: string): Promise<void> {
+export function letGo(path: string, stop?: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
     const sock = createConnection(path);
     sock.once("error", () => resolve());
     sock.once("close", () => resolve());
+    // A look that ended another way drops its connection, so a long wait leaves none standing.
+    stop?.addEventListener("abort", () => { sock.destroy(); resolve(); }, { once: true });
   });
 }
 
@@ -180,6 +185,7 @@ async function reapCorpse(path: string, seen: Stats, refuse: () => NameHeld, onR
       say("waits");
       let stranded = true;
       for (let i = 0; i < GRAVE_DEAD_PATIENCE; i++) {
+        // LIVENESS: a stranded reaper may never clear its grave; these looks bound that silence.
         await new Promise((r) => setTimeout(r, GRAVE_DEAD_INTERVAL_MS));
         if (!sameInode(statOf(path), seen)) { stranded = false; break; }
         if (await answers(path)) throw refuse();
@@ -204,14 +210,17 @@ async function reapCorpse(path: string, seen: Stats, refuse: () => NameHeld, onR
 export async function claimName(path: string, opts: ClaimNameOptions = {}): Promise<ClaimedName> {
   const refuse = opts.refuse ?? (() => new NameHeld(`${path} already has a holder answering — nothing claimed`));
   const pollMs = opts.pollMs ?? 50;
+  // PACING: holder release or abort ends the wait; this spaces the claim looks.
   const pace = opts.pace ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   let reaping = 0;
   for (;;) {
     try { return await bindName(path, opts, refuse); }
     catch (err) {
       if (!(err instanceof NameHeld) || !opts.await) throw err;
+      if (opts.signal?.aborted) throw refuse();
       if (!(await answers(path))) {
         if (err instanceof NameReaping && ++reaping > REAP_PATIENCE) throw err;
+        // PACING: the reaping attempt count bounds retries; this only spaces them.
         await new Promise((r) => setTimeout(r, 5));
         continue;
       }
@@ -220,8 +229,12 @@ export async function claimName(path: string, opts: ClaimNameOptions = {}): Prom
       // a look that returned on the hang-up would bind, link and connect again at the kernel's own speed for as
       // long as the holder worked. The look ends early only when the name stopped answering.
       const paced = pace(pollMs);
-      await Promise.race([letGo(path), paced]);
-      if (await answers(path)) await paced;
+      const aborted = new Promise<void>((r) => { if (opts.signal?.aborted) r(); else opts.signal?.addEventListener("abort", () => r(), { once: true }); });
+      const look = new AbortController();
+      await Promise.race([letGo(path, look.signal), paced, aborted]);
+      look.abort();
+      if (opts.signal?.aborted) throw refuse();
+      if (await answers(path)) await Promise.race([paced, aborted]);
     }
   }
 }

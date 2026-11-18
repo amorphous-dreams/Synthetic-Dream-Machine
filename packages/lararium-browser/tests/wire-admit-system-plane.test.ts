@@ -11,10 +11,11 @@ import { generateAutomergeUrl } from "@automerge/automerge-repo";
 import { LARES_DOC_URI, LARARIUM_DOC_URI, admittedJoineeIsland, crossroadsDocUrl } from "@lararium/mesh";
 import { BootHalted, admitNaming, bootOptions, observed, resetObserved } from "./wire-vessel-rig.js";
 import { openBrowserVessel } from "../src/open-browser-vessel.js";
+import { bindSyntheticBrowserCustodySlot, bindSyntheticFace } from "./browser-custody-fixture.js";
 
 vi.mock("@lararium/keyhive", async (orig) => {
   const rig = await import("./wire-vessel-rig.js");
-  return { ...(await orig<object>()), runApplyAdmitPayload: async () => rig.fakeAdmitResult() };
+  return { ...(await orig<object>()), runApplyAdmitPayload: async (input: never) => rig.fakeAdmitResult(input) };
 });
 vi.mock("../src/hearth-canon.js", async (orig) => {
   const rig = await import("./wire-vessel-rig.js");
@@ -27,7 +28,10 @@ const nexusOf = admittedJoineeIsland({ hearthGatePubKey: hearth, hearthIslandKin
 
 async function bootCarrying(canon: Record<string, string>): Promise<Record<string, unknown>> {
   resetObserved();
-  await expect(openBrowserVessel(bootOptions(admitNaming(hearth, canon), null))).rejects.toBeInstanceOf(BootHalted);
+  const options = bootOptions(admitNaming(hearth, canon), null);
+  await bindSyntheticBrowserCustodySlot(options.idbName!);
+  await bindSyntheticFace(options.idbName!, options.admit!.personaGroupId);
+  await expect(openBrowserVessel(options)).rejects.toBeInstanceOf(BootHalted);
   expect(observed.crossingInputs, "the vessel reached its crossing decision").toHaveLength(1);
   return observed.crossingInputs[0]!;
 }
@@ -47,5 +51,10 @@ describe("the browser admit ingest wire", () => {
     const plain = { [LARES_DOC_URI]: generateAutomergeUrl(), [LARARIUM_DOC_URI]: generateAutomergeUrl() };
     const input = await bootCarrying(plain);
     expect(input.hearthCanonDocs).toEqual(plain);
+  });
+
+  test("the crossing decision reads no plane url off the unsealed bootstrap (the proof opens the face's planes later)", async () => {
+    const input = await bootCarrying({ [LARES_DOC_URI]: generateAutomergeUrl(), [LARARIUM_DOC_URI]: generateAutomergeUrl() });
+    expect(input).not.toHaveProperty("facePlaneDocs");
   });
 });

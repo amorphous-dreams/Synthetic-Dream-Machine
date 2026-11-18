@@ -4,11 +4,10 @@
  * One content id, read against all three planes — content · structure · form — with an honest null
  * wherever a plane holds no record of it. READ-ONLY: it witnesses co-presence and scores nothing.
  *
- * ── WHY THIS DOOR EXISTED ONLY FOR AGENTS ───────────────────────────────────────────────────────
- * The daemon verb has stood since the plane-query lift, and the MCP seat has called it all along, so an
- * AGENT could ask this question and an OPERATOR could not. A surface only one of them can reach is a
- * surface the other cannot audit by hand — which is the whole invariant `surface-parity-witness` holds.
- * This is the last tool that failed it, and the door is what was missing rather than the machinery.
+ * ── WHY AN OPERATOR DOOR ────────────────────────────────────────────────────────────────────────
+ * The MCP seat calls the same daemon verb, so without this door an AGENT could ask this question and an
+ * OPERATOR could not. A surface only one of them can reach is a surface the other cannot audit by hand —
+ * which is the whole invariant `surface-parity-witness` holds.
  *
  * It carries no compute of its own: the witness lives py-side in `plane_query`, one implementation the
  * holder that OWNS the store runs, and both surfaces route to that same holder. So the CLI and the MCP

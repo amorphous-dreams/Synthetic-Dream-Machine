@@ -42,6 +42,10 @@ interface Stand {
   /** The bag the wiki's resolved view names for the carrier, or null where it holds none. */
   owner: { bag: string | null };
   holding: Set<string>;
+  /** The document each bag's records rest in, as the projector's `documentOf` door answers it (none named: none answered). */
+  docs: Record<string, string>;
+  /** The Synced tree as the directory holds it now. */
+  tree: () => SyncedTree;
   at: (rel: string, bag?: string) => string;
   reboot: () => Promise<void>;
 }
@@ -53,6 +57,7 @@ function stand(mirrorRoots: Record<string, string> = { [BAG]: BAG, [OTHER]: OTHE
     conflicts: [] as Stand["conflicts"], resolved: [] as string[],
     file: { ext: ".md", body: BODY, metaBody: META, relPath: "a/note.md", encoding: "utf8" } as CarrierFile,
     owner: { bag: BAG as string | null }, holding: new Set<string>([BAG]),
+    docs: {} as Record<string, string>,
   };
   const engine = { $tw: { wiki: {
     getTiddler: (title: string) => (title === URI && s.owner.bag !== null ? { fields: { title, "$origin-bag": s.owner.bag } } : undefined),
@@ -64,6 +69,7 @@ function stand(mirrorRoots: Record<string, string> = { [BAG]: BAG, [OTHER]: OTHE
       mirrors: Object.entries(mirrorRoots).map(([bagId, dir]) => ({ bagId, mirrorRoot: join(root, dir) })),
       carrierFileFn: async () => out.file,
       bagsHolding: async () => [...s.holding],
+      documentOf: (bagId: string) => s.docs[bagId] ?? null,
       syncedTree: tree(),
       onConflict: (info) => { s.conflicts.push(info); },
       onConflictResolved: (info) => { s.resolved.push(info.standoff); },
@@ -72,7 +78,7 @@ function stand(mirrorRoots: Record<string, string> = { [BAG]: BAG, [OTHER]: OTHE
     return projector;
   };
   const out: Stand = {
-    ...s, projector: null as unknown as LarDiskProjector,
+    ...s, projector: null as unknown as LarDiskProjector, tree,
     at: (rel: string, bag = BAG): string => join(root, mirrorRoots[bag]!, rel),
     reboot: async (): Promise<void> => { await out.projector.stop(); out.projector = make(); await out.projector.idle(); },
   };
@@ -211,7 +217,7 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     expect(s.conflicts[0]!.reason).toContain(s.at("a/note.md"));
   });
 
-  test("a foreign title the loci law sites nowhere still gets read at its base's path after a restart", async () => {
+  test("a foreign title the address siting rule sites nowhere still gets read at its base's path after a restart", async () => {
     const s = stand();
     const TITLE = "My Notes";
     const live = { on: true };
@@ -357,5 +363,107 @@ describe("a carrier left one mirror for another", () => {
     expect(read(clean.at("a/note.md", OTHER))).toBe(BODY);
     expect(existsSync(clean.at("a/note.md"))).toBe(false);
     expect(clean.conflicts).toEqual([]);
+  });
+
+  test("the mirror it moved into already holds its bytes: nothing writes there, and the untouched file it left still leaves", async () => {
+    // The seed's road for a leaf bag: LOAD onto the wiki's working layer (whose mirror writes the file), then
+    // MOVE the layer into canon, whose mirror already holds the same bytes. The canon flush writes nothing,
+    // and the file in the working layer's mirror must leave all the same, or a copy of canon rests there.
+    const s = stand();
+    await s.projector.idle();
+    expect(read(s.at("a/note.md"))).toBe(BODY);
+    mkdirSync(dirname(s.at("a/note.md", OTHER)), { recursive: true });
+    writeFileSync(s.at("a/note.md", OTHER), BODY, "utf-8");
+    writeFileSync(s.at("a/note.md.meta", OTHER), META, "utf-8");
+    s.owner.bag = OTHER; s.holding.clear(); s.holding.add(OTHER);
+    await s.projector.sense([URI]);
+    expect(read(s.at("a/note.md", OTHER))).toBe(BODY);
+    expect(existsSync(s.at("a/note.md"))).toBe(false);
+    expect(existsSync(s.at("a/note.md.meta"))).toBe(false);
+    expect(s.conflicts).toEqual([]);
+  });
+
+  test("CONTROL: the bag it shadows still holds it: the file in that mirror stays when the other flush writes nothing", async () => {
+    const s = stand();
+    await s.projector.idle();
+    mkdirSync(dirname(s.at("a/note.md", OTHER)), { recursive: true });
+    writeFileSync(s.at("a/note.md", OTHER), BODY, "utf-8");
+    writeFileSync(s.at("a/note.md.meta", OTHER), META, "utf-8");
+    s.owner.bag = OTHER; s.holding.add(OTHER);
+    await s.projector.sense([URI]);
+    expect(read(s.at("a/note.md"))).toBe(BODY);
+    expect(s.conflicts).toEqual([]);
+  });
+});
+
+describe("a file answers only to the document whose records its base read", () => {
+  // Each face of a vessel mounts its OWN workbench document for an unshared wiki, and every face's document serves one
+  // bag id over one mirror root. The base names the document its records side read, so a pass under another face's
+  // document never judges that file.
+  const KEY = syncedTreeKey(BAG, URI);
+
+  test("another document's pass finds the carrier in a second bag: the first document's file stays, its base stands, and nothing stands off", async () => {
+    const s = stand();
+    s.docs[BAG] = "automerge:face-a";
+    await s.projector.idle();
+    expect(read(s.at("a/note.md"))).toBe(BODY);
+    // Another face stands worn: its own document serves the bag, holds no such carrier, and the view resolves the
+    // carrier from the second bag (canon under a working copy the other face forked).
+    s.docs[BAG] = "automerge:face-b";
+    s.owner.bag = OTHER; s.holding.clear(); s.holding.add(OTHER);
+    await s.projector.sense([URI]);
+    expect(read(s.at("a/note.md", OTHER))).toBe(BODY);
+    expect(read(s.at("a/note.md"))).toBe(BODY);
+    expect(existsSync(s.at("a/note.md.meta"))).toBe(true);
+    expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.doc).toBe("automerge:face-a");
+    expect(s.conflicts).toEqual([]);
+  });
+
+  test("CONTROL: the same document's pass finds the carrier in a second bag: its own untouched file leaves", async () => {
+    const s = stand();
+    s.docs[BAG] = "automerge:face-a";
+    await s.projector.idle();
+    s.owner.bag = OTHER; s.holding.clear(); s.holding.add(OTHER);
+    await s.projector.sense([URI]);
+    expect(read(s.at("a/note.md", OTHER))).toBe(BODY);
+    expect(existsSync(s.at("a/note.md"))).toBe(false);
+    expect(s.tree().baseAt(KEY, s.at("a/note.md"))).toBeNull();
+  });
+
+  test("another document's records hold no such carrier: the first document's file and base stay", async () => {
+    const s = stand();
+    s.docs[BAG] = "automerge:face-a";
+    await s.projector.idle();
+    s.docs[BAG] = "automerge:face-b";
+    s.owner.bag = null; s.holding.clear();
+    await s.reboot();
+    await s.projector.sense([URI]);
+    expect(read(s.at("a/note.md"))).toBe(BODY);
+    expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.doc).toBe("automerge:face-a");
+    expect(s.conflicts).toEqual([]);
+  });
+
+  test("two documents hold one title: the second writes nothing over the first's file and stands off by name", async () => {
+    const s = stand();
+    s.docs[BAG] = "automerge:face-a";
+    await s.projector.idle();
+    s.docs[BAG] = "automerge:face-b";
+    s.file = { ...s.file, body: "# what the second face's records say\n" };
+    await s.reboot();
+    expect(read(s.at("a/note.md"))).toBe(BODY);
+    expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.doc).toBe("automerge:face-a");
+    expect(s.conflicts).toHaveLength(1);
+    expect(s.conflicts[0]!.reason).toContain("another document");
+    expect(s.conflicts[0]!.reason).toContain(s.at("a/note.md"));
+  });
+
+  test("CONTROL: one document's records move: its own file takes the new render", async () => {
+    const s = stand();
+    s.docs[BAG] = "automerge:face-a";
+    await s.projector.idle();
+    s.file = { ...s.file, body: "# what the records say now\n" };
+    await s.reboot();
+    expect(read(s.at("a/note.md"))).toBe("# what the records say now\n");
+    expect(s.conflicts).toEqual([]);
   });
 });

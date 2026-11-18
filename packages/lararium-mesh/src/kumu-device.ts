@@ -192,11 +192,11 @@ export function kumuDeviceSpecFromEdges(
       if (e.role === "listenable") {
         const name = s("listenable");
         if (name) {
-          const vk = s("verseKind");
+          const treeKey = s("verseKind");
           const desc = s("description"); const pt = s("payloadType");
           const entry: KumuListenable = { name };
           if (desc) (entry as { description?: string }).description = desc;
-          if (vk === "event" || vk === "listenable") (entry as { verseKind?: "listenable" | "event" }).verseKind = vk;
+          if (treeKey === "event" || treeKey === "listenable") (entry as { verseKind?: "listenable" | "event" }).verseKind = treeKey;
           if (pt)   (entry as { payloadType?: string }).payloadType = pt;
           listenables.push(entry);
         }

@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement/terra-final-3`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement/terra-final-3.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement/terra-final-3"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement/terra-final-3"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final-3.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement/terra-final-3.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Place-Wright: Lares (Tasked Spirit): ->⏿ The placement migration remains incomplete. I traced item A’s founding path and recorded the findings in [[PLACE-HANDBACK.md|/home/joshu/.lares-scratch/placement/wt/PLACE-HANDBACK.md]].
+
+The direct store holder has no sealed-bag map, save session, or sealing door. Founding also creates an empty secret placeholder without preserving its address in the bootstrap. Passing that handle alone would therefore leave the sealed-rest requirement unmet.
+
+->▶ I ran the focused `founding-seed-by-ask` test; its single test failed with `secret-home-unavailable`. ->↺ I made no implementation changes, and items A–G remain open. The worktree should not yet be used for founding.
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚂(3) ⁂:ᚠ⊗㐂`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`inspect owned-store and the founding bootstrap before wiring secret custody · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://place-wright:agent@worktree/custody.trace.lands` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wj4JV5M_SyvN5FgpTSoPKiTjmn7baMSdZjNkTK2sgM4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-slice3/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-05 (file date) — source `.lares-scratch/b1-lift/terra-slice3/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-slice3/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-slice3/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-slice3/final.md` (hand-back, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-slice3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''Verdict: HOLD.'' The committed code leaves custody and isolation failures in the paths below. This was a cold, read-only source review; I did not run tests. ''MEASURED'' identifies code directly observed; ''INFER'' identifies the consequence derived from it.
+
+* ''P1 — Production sessions do not enforce per-face custody.'' ''MEASURED:'' `packages/lararium-web/src/workers/vessel-host.ts:257` opens every session without a face; `:172` supplies no provider door, and `:215` binds fleet-join custody through the browser-wide tree. The design document explicitly names the unmigrated rows and unwired provider as residuals. ''INFER:'' Production requests operate through the shared vessel and keystore rather than the face-scoped admission, booking, sealing and row paths. The claimed K15 isolation and one-provider-per-face behavior are therefore not established at the product door.
+
+* ''P1 — Closing a session does not stop underlying custody work.'' ''MEASURED:'' `packages/lararium-browser/src/vessel-sessions.ts:284` rejects a wrapper promise but does not cancel or await its body. A face unlock or first bind can continue after that rejection and seat its FCK at `browser-face-custody.ts:332` or `:308`; an asking session’s drop does not run the admitted-session lock (`vessel-sessions.ts:319`). Face row operations also copy the FCK before asynchronous I/O (`browser-face-custody.ts:213`). ''INFER:'' Closing during unlock can leave a newly seated key after the last session has gone; a pending row operation can retain a key copy and complete after closure. The same wrapper does not fence other in-flight work.
+
+* ''P1 — A tampered index can make one face’s clear delete a sibling.'' ''MEASURED:'' `packages/lararium-browser/src/browser-face-custody.ts:368` routes clear through the unauthenticated index, proves only that the supplied credential opens the routed tree, then deletes its rows and tree at `:379`. Unlike unlock at `:326`, clear does not authenticate the sealed anchor against the requested face. ''INFER:'' If A’s index entry points to B’s tree and the supplied route opens B—such as a shared passphrase—confirming clear for A deletes B’s custody.
+
+* ''P2 — A failed switch can leave the target FCK seated.'' ''MEASURED:'' `packages/lararium-browser/src/vessel-sessions.ts:543` preflights by unlocking and seating the target; if the subsequent intent hook fails, `:558` drops the session while it still wears the old face. ''INFER:'' With another session keeping the house alive, the target key remains held without an admitted target session. Cleanup must account for preflight keys on every failed or interrupted switch.
+
+The diff documents real-device lifecycle checks and production row migration as outstanding; this review does not establish those properties.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;q-ZHyGRtCeDbdqv9nMmGtbDLxTT1f49HsVeldOY9M7I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

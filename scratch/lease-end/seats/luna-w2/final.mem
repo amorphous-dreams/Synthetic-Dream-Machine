@@ -1,0 +1,92 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/luna-w2/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/seats/luna-w2/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/luna-w2/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/seats/luna-w2/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/seats/luna-w2/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/luna-w2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/handback`>>
+
+! Handback
+
+''Verdict: HOLDS-WITH-SLICES.'' I reproduced the wave‑1 findings. The ruling’s tradeoff fits No global now and causal islands, but its “kāpae over the face” option is not an implemented PersonaGroup removal mechanism. Until the reader coverage and refusal gaps are cured, the lease cannot safely be retired.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/re-measurement-and-remedies`>>
+
+!! Re-measurement and remedies
+
+# ''An isolated device can keep acting under its local view until it receives removal. — CONFIRMED; NEEDS-SLICE''
+
+''Measured:'' The fleet edge board carries acts for dyads and “holds no roster” ([[kapae.mem:114–125|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/kapae.mem:114]]). The boot gate refuses an `unknown` dyad and halts on `aside` ([[boot-daemon-keyhive.ts:171–177|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/boot-daemon-keyhive.ts:171]]); a missing qualifying frontier reads `unknown`, not `clear` ([[edge-kapae.ts:727–750|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/edge-kapae.ts:727]]).
+
+''Inference and remedy:'' A partitioned device cannot act on a removal it has not received. That is the accepted consequence of causal islands, not a reason to preserve a fleet-wide roll that also requires delivery. Require every authority reader to refuse missing, forked, or rolled-back proof, and define removal as effective on a device when its reader receives and folds the act. No relation act gives instantaneous fleet-wide effect.
+
+# ''“Kāpae over the face” is not a PersonaGroup fleet-removal mechanism. — CONFIRMED; RESHAPE THE RULING''
+
+''Measured:'' Canon names four marked edge relations: dyad, vouch, member, and carriage ([[kapae.mem:110–120|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/kapae.mem:110]]). The fleet board is for dyad acts and “holds no roster”; reads cannot claim a whole set ([[kapae.mem:122–125|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/kapae.mem:122]]). The public Nexus refusal in persona policy shadows a public Handle subject, a different authority relation ([[persona-policy.mem:204–212|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/persona-policy.mem:204]]).
+
+''Inference and remedy:'' The face-wide kāpae alternative must be removed or changed in the ruling. Under identity-as-relation, the existing mechanism is a set-aside on each known device-face dyad, or a root re-anchor through K18. The census must name its source and refuse when it cannot establish a complete view; the current lease roll reads seated edges from the local persona log ([[persona-lease.ts:112–135|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/commands/persona-lease.ts:112]]), while the fleet edge board itself has no roster. Do not add a fifth marker without a changed house ruling.
+
+# ''K18 root rotation has no production door. — CONFIRMED; NEEDS-SLICE''
+
+''Measured:'' Canon says no production door rotates the root, the ceremony rotates under two of three recovery contacts, and `reanchorAfterRotation` is a proven library function ([[stable-founding-road.mem:752|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:752]]). The re-anchor function requires the new root to be the verified KEL head under the anchor’s pinned prefix ([[face-anchor.ts:137–153|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/face-anchor.ts:137]]).
+
+''Inference and remedy:'' Root rotation is a suitable relation re-anchor, but not current recovery coverage. Wire the production recovery-contact ceremony and readmission path; prove old signers refuse and the recovered face re-anchors before treating this as the face-wide remedy. Until then, rely only on per-edge removals and their limits.
+
+# ''Grant serial check can count a stale grant as standing. — CONFIRMED; NEEDS-SLICE''
+
+''Measured:'' The grant writer calls `verifyFaceGrantRecord` without `expectedEpoch` ([[face-join-operation.ts:65–77|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/face-join-operation.ts:65]]). The verifier only checks lease freshness when that option is supplied ([[face-grant-record.ts:136–152|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/face-grant-record.ts:136]]); the delegation verifier likewise makes epoch enforcement optional ([[device-delegation.ts:226–244|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/device-delegation.ts:226]]). The face-seat reader does pass an epoch ([[face-seat.ts:141–150|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/face-seat.ts:141]]).
+
+''Inference and remedy:'' A validly signed but stale grant can be counted by the writer and block a newer issue. Replace this with the ruling’s anchor-pinned lineage and standing proof; absent or incomplete standing proof must refuse. Do not leave an optional freshness path that silently treats missing proof as sufficient.
+
+# ''Unreadable face can fall back to epoch zero in sibling setup. — CONFIRMED AND WIDENED; NEEDS-SLICE''
+
+''Measured:'' The browser path uses `readFace(...)?.leaseEpoch(...) ?? 0` ([[open-browser-vessel.ts:1836–1844|/home/joshu/Synthetic-Dream-Machine/packages/lararium-browser/src/open-browser-vessel.ts:1836]]); the node path has the same fallback ([[open-node-vessel.ts:3250–3261|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/open-node-vessel.ts:3250]]).
+
+''Inference and remedy:'' `null` is not proof of a clean authority view. Both paths need a named refusal or pending result. This is particularly important before lease retirement, since the fallback could otherwise admit a path without either verified lineage or standing evidence.
+
+# ''Code still reads the lease while canon records retirement as owed. — CONFIRMED; DRIFT-ONLY''
+
+''Measured:'' Boot refuses when the lease frontier is absent and passes the anchor-floored epoch to edge verification ([[boot-daemon-keyhive.ts:56–61, 158–162|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/boot-daemon-keyhive.ts:56]]). Admission reads and binds the current epoch ([[device-admit.ts:358–377|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/commands/device-admit.ts:358]]). The roll command and strand guard remain ([[persona-lease.ts:112–125|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/commands/persona-lease.ts:112]]). Canon calls retirement and reader coverage owed, with the roll guard held until coverage is proved ([[stable-founding-road.mem:76, 348|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:76]]).
+
+''Inference and remedy:'' This is implementation drift from the ruling’s intended end state, not a reason to preserve the lease. After reader coverage and fail-closed gaps are fixed, burn the face delegation lease fields, readers, roll command, and guard together, then update interim canon. Preserve distinct signer, charter/seal, and causal-frontier data; they are not this delegation lease.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/close`>>
+
+!! Close
+
+| Finding | Wave‑1 severity | Verdict | Remedy / slice |h
+| Isolated device acts until it receives removal | NEEDS-SLICE | Confirmed | Fail closed on missing/forked/rolled-back proof; define local receipt effect |
+| Face-wide kāpae mechanism | NEEDS-SLICE | Confirmed; reshape | Remove that option or change ruling; set aside known dyads or use K18 re-anchor |
+| K18 production recovery absent | NEEDS-SLICE | Confirmed | Wire recovery rotation, re-anchor, readmission |
+| Stale grant counted by serial writer | NEEDS-SLICE | Confirmed | Require lineage and standing proof; refuse unavailable proof |
+| Browser null-to-zero fallback | NEEDS-SLICE | Confirmed and widened to node | Named refusal in both sibling paths |
+| Lease implementation/canon drift | DRIFT-ONLY | Confirmed | Retire readers, fields, command, and guard after coverage |
+
+''HOLDS-WITH-SLICES — cure order:'' (1) census authority readers and fix fail-closed/zero-fallback gaps, (2) reshape “kāpae over the face” to known dyads or K18 re-anchor and define census refusal, (3) wire K18 if relying on root rotation, (4) burn the lease and true up canon.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8MvMz6d0fi6Zly3jcza8qJXY9i4OwC90pcxp6CmG8GY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

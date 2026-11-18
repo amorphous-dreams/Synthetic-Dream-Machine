@@ -24,7 +24,7 @@
 import { realpathSync } from "node:fs";
 import { resolve, join } from "node:path";
 
-import { mempalaceContentParent } from "./xdg-base.js";
+import { mempalaceContentParent } from "./house-root.js";
 
 /**
  * Canonicalize a palace path to ONE stable spelling:

@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/final2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/i2-relay/sol/final2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/final2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/final2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i2-relay/sol/final2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Relaywright: Lares (Tasked Spirit) — The wave-two handback stands at [[out2.md|/home/joshu/.lares-scratch/research/i2-relay/sol/out2.md]]. It rules all five joints, marks the remaining operator choices, and sets one red-first I2 lane. WORDS=952.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0g34GugGdbLDAlRpKFS8yTpdePV5BFT7AXSqUdOv3MA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -18,7 +18,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { foundThePlace, foundTheFace, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { foundThePlace, foundTheFace } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import {
   hex, tiddlerText, type LarDoc,
@@ -26,6 +26,8 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
 } from "@lararium/mesh";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome, withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const VESSEL_SEED = new Uint8Array(32).fill(9);
 // The two persona ROOTS — each face its own sovereign signing key (distinct from the vessel and each other).
@@ -48,15 +50,22 @@ const pins = (h: DaemonHandle): Record<string, string | undefined> => {
   };
 };
 
+/** One secret home per place: every face this storage-less Repo founds writes its secrets there. */
+const secretHomes = new WeakMap<Repo, ReturnType<typeof memorySecretHome>>();
+const secretOf = (repo: Repo): ReturnType<typeof memorySecretHome> => {
+  let home = secretHomes.get(repo);
+  if (!home) { home = memorySecretHome(repo); secretHomes.set(repo, home); }
+  return home;
+};
+
 async function foundFace(
   repo: Repo, daemonHandle: DaemonHandle, signerSeed: Uint8Array, opts: { mount?: boolean } = {},
-): Promise<{ groupId: string; cabalId: string; prefix: string; personaUrl: string; identitiesUrl: string; circlesUrl: string; sessionsUrl: string }> {
+): Promise<{ groupId: string; cabalId: string; prefix: string; personaUrl: string; identitiesUrl: string; circlesUrl: string; sessionsUrl: string; intentsUrl: string }> {
   const verifyingKey = await pubOf(VESSEL_SEED);
-  const face = await foundTheFace({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(VESSEL_SEED)),
-    repo,
-    daemonHandle,
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1), repo,
+    daemonHandle, ...secretOf(repo),
     vesselSeed:         VESSEL_SEED,
-    vesselVerifyingKey: verifyingKey,
+    placeVerifyingKey: verifyingKey,
     vesselDisplayName:  "Multitude Shrine",
     binding:            { mode: "self-stood", signerSeed },
     hearthTrueName:     "",
@@ -65,14 +74,14 @@ async function foundFace(
   });
   return {
     groupId: face.personaGroupId, cabalId: face.meshCabalDocIdHex, prefix: face.personaKelPrefix,
-    personaUrl: face.personaUrl, identitiesUrl: face.identitiesUrl, circlesUrl: face.circlesUrl, sessionsUrl: face.sessionsUrl,
+    personaUrl: face.personaUrl, identitiesUrl: face.identitiesUrl, circlesUrl: face.circlesUrl, sessionsUrl: face.sessionsUrl, intentsUrl: face.intentsUrl,
   };
 }
 
 describe("a per-persona founding stands a second face without unseating the first", () => {
   test("★ mount:false founds a DISTINCT, fully-founded individual and leaves h0's mount pins standing ★", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
-    const place = await foundThePlace({ repo, vesselSeed: VESSEL_SEED, hearthTrueName: "" });
+    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed: VESSEL_SEED }), repo);
 
     // ── h0 lights the hearth fire and MOUNTS (the operator's live founding path) ──
     const h0 = await foundFace(repo, place.daemonHandle, ROOT_H0);
@@ -102,7 +111,7 @@ describe("a per-persona founding stands a second face without unseating the firs
 
   test("CONTROL — the founding face (mount default) writes the singular pins exactly", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
-    const place = await foundThePlace({ repo, vesselSeed: VESSEL_SEED, hearthTrueName: "" });
+    const place = withMemorySecretHome(await foundThePlace({ repo, vesselSeed: VESSEL_SEED }), repo);
     const h0 = await foundFace(repo, place.daemonHandle, ROOT_H0);   // no mount arg → defaults true
 
     const p = pins(place.daemonHandle);
@@ -126,6 +135,7 @@ describe("a per-persona founding stands a second face without unseating the firs
         { title: face.identities, text: `${url}-id` },
         { title: face.circles,    text: `${url}-ci` },
         { title: face.sessions,   text: `${url}-se` },
+        { title: face.intents,    text: `${url}-in` },
         ...personaMembershipEntries({ personaGroupId: g, url }),
       ];
     };

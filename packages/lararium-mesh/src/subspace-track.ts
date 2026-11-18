@@ -1,5 +1,5 @@
 /**
- * subspace-track — the ONLINE WRITE face of the boundary keel (Sprint-2 R1, the proof-mover). Where the batch
+ * subspace-track — the ONLINE WRITE face of the boundary keel (the proof-mover). Where the batch
  * `projectBoundary` reads a FROZEN anchor Π₀, `track(frame)` reads the LIVE subspace U_t, returns the
  * innovation, THEN folds the frame in — advance-AFTER-read (detection reads the subspace the frame has not yet
  * entered; entrainment lags a step, rhyming capture-drain's watermark-advances-after-commit). Two residuals,
@@ -120,7 +120,7 @@ export function makeTracker(U0: Mat, D: Mat = [], opts: TrackerOpts = {}): Track
       // Grassmannian geodesic toward the innovation by a step-fraction of the angle-to-full-fit
       // θ = step·arctan(‖r‖/‖w‖), then re-orthonormalize. arctan SATURATES at π/2, so the per-frame rotation
       // stays BOUNDED by step·π/2 no matter how gross the frame — a single outlier turns the subspace by a
-      // bounded arc, where both the old linear kick (ΔU ∝ ‖r‖, unbounded) and the vanilla product angle
+      // bounded arc, where both a linear kick (ΔU ∝ ‖r‖, unbounded) and the vanilla product angle
       // (θ ∝ ‖r‖·‖w‖, unbounded → wraps and flips) over-rotate. ‖w‖²,‖r‖² guard against a NaN on a
       // zero-coordinate / zero-residual frame (numerical clamp, never the fold-rate — the
       // persistence+corroboration rate-gate defers to the null-calib sprint). ‖p‖ = ‖w‖ holds for

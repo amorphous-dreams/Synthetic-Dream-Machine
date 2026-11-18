@@ -194,13 +194,13 @@ describe("the KI face — FFZ-aligned ticks through the windowed-coupling runtim
 // A two-frame sample: an `ahu` block A holds a MID steer (governs in-block prose) + a TAIL steer that
 // reaches past the block boundary into block B — the NCC case (Coleman & Local). Then block B's prose.
 const TWO_FRAME =
-  "<<~ ahu #alpha>>\n" +
+  "<<~ ahu slot=`#alpha`>>\n" +
   "Alpha prose runs here as plain black text before the mid marker leads it forward in this block. " +
   "<<~ confidence Synthesis 12/20>>" +
   " the mid steer governs this in-block prose that follows it directly inside the very same frame here. " +
   "<<~ ward ! · ↻ L-Prime>>" +
   "\n<<~/ahu>>\n" +
-  "<<~ ahu #beta>>\n" +
+  "<<~ ahu slot=`#beta`>>\n" +
   "Beta prose runs here after the boundary and belongs to a wholly different frame than the alpha block. " +
   "<<~/ahu>>";
 

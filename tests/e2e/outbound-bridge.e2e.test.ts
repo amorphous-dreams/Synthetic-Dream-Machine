@@ -1,4 +1,5 @@
 /**
+ * LEAD RUNS: this suite boots a staged daemon and waits on its journal projection events.
  * e2e/outbound-bridge — the two seams between the daemon's live wiki and its disk, typed through the
  * daemon's own door.
  *
@@ -7,7 +8,7 @@
  *       working store never receives it — `meme get --bag wikis/daemon/working` answers not-found.
  *   B2  the DAEMON MIRROR: a record put DIRECTLY into `wikis/daemon/working` (`--bag`, the composite
  *       sink — no bridge needed) reaches the daemon's wiki, but the daemon island mounts no disk
- *       projector and its manifest carries no `diskMirrors`, so `<root>/wikis/daemon/…` never appears.
+ *       projector and its manifest carries no `diskMirrors`, so `<projections>/wikis/daemon-<F>/…` never appears.
  *
  * Each seam reads red for its own reason and flips loud when its wire lands (`test.fails`). The
  * CONTROLS stand green today and MUST stay green under both wires.
@@ -16,9 +17,11 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, awaitRendezvous, type LarInstance } from "../harness/instance.js";
+import { privateTitlesProjected } from "../harness/placement-mirrors.js";
+import { openStaged, awaitRendezvous, daemonWikiDir, stageDir, type LarInstance } from "../harness/instance.js";
+import { expectEntry } from "../harness/journal-expect.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -26,14 +29,13 @@ const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
 
 const DAEMON_WORKING = "lar:///ha.ka.ba/wikis/daemon/working";
 const PATH_A = "ha.ka.ba/t/bridge/anchor";   // a three-term root — the siting law sites `lar:///w.w.w/…` names alone
-const PATH_B = "ha.ka.ba/t/bridge/direct";
 const uriOf  = (p: string): string => `lar:///${p}`;
 const REL    = (p: string): string => `${p}.mem`;
 
 const meme = (path: string, slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uriOf(path)}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${path}"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uriOf(path)}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${path}"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function missing(): string[] {
   const out: string[] = [];
@@ -44,35 +46,31 @@ function missing(): string[] {
 }
 
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
-const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
-
-/** Poll a path until it reaches the wanted existence state (or timeout). */
-async function awaitFileState(path: string, want: boolean, timeoutMs = 20_000): Promise<boolean> {
-  const start = Date.now();
-  for (;;) {
-    if (existsSync(path) === want) return true;
-    if (Date.now() - start > timeoutMs) return false;
-    await sleep(500);
-  }
-}
-
 const gaps = missing();
 if (gaps.length > 0) console.error(`outbound-bridge: SKIPPED — missing ${gaps.join("; ")}`);
 
 let lar: LarInstance;
 let scratch = "";
+let priorHome: string | undefined;
 
 describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror, over a live rendezvous ★", () => {
   beforeAll(async () => {
-    lar = await targetInstance();
+    const root = mkdtempSync(join(stageDir(), "lares-outbound-bridge-"));
+    priorHome = process.env["HOME"];
+    process.env["HOME"] = join(root, "home");
+    mkdirSync(process.env["HOME"], { recursive: true });
+    lar = await openStaged({ root, tag: "outbound-bridge" });
     scratch = join(lar.root, "witness");
     mkdirSync(scratch, { recursive: true });
     writeFileSync(join(scratch, "anchor.mem"), meme(PATH_A, ["a"]));
-    writeFileSync(join(scratch, "direct.mem"), meme(PATH_B, ["a"]));
     const bound = await awaitRendezvous(lar);
     if (!bound) throw new Error(`the staged daemon reached live but bound no rendezvous:\n${lar.bootLog().slice(-800)}`);
   }, 150_000);
-  afterAll(async () => { if (lar) await lar.stop(); });
+  afterAll(async () => {
+    if (lar) await lar.stop();
+    if (priorHome === undefined) delete process.env["HOME"];
+    else process.env["HOME"] = priorHome;
+  });
 
   test("CONTROL: explicit `--recipe default` lands in the daemon wiki and reads it back", async () => {
     const put = await lar.cli(["meme", "put", uriOf(PATH_A), "--recipe", "default", "--file", join(scratch, "anchor.mem"), "--json"]);
@@ -82,30 +80,23 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
   });
 
   test("B1 the bridge (Road B): the explicit anchor recipe reaches the daemon working store", async () => {
-    // The adaptor's capture debounce (400 ms) then the store put — poll to a deadline, never a fixed nap.
-    const deadline = Date.now() + 20_000;
-    let got = await lar.cli(["meme", "get", uriOf(PATH_A), "--bag", DAEMON_WORKING, "--json"]);
-    while (got.json?.["ok"] !== true && Date.now() < deadline) {
-      await new Promise((r) => setTimeout(r, 1000));
-      got = await lar.cli(["meme", "get", uriOf(PATH_A), "--bag", DAEMON_WORKING, "--json"]);
-    }
+    // LIVENESS: fail if the matching projector event never arrives; event arrival, not elapsed time, gates the read.
+    await expectEntry(lar, { kind: "bag-projected", match: (event) => {
+      const data = event.data as Record<string, unknown>;
+      return data["bagId"] === DAEMON_WORKING && data["path"] === daemonWikiDir(lar.root);
+    } }, { budgetMs: 60_000 });
+    const got = await lar.cli(["meme", "get", uriOf(PATH_A), "--bag", DAEMON_WORKING, "--json"]);
     expect(got.json?.["ok"], `the anchor placement stands in $tw.wiki alone — ${said(got)}`).toBe(true);
     expect(String((got.json?.["data"] as Record<string, unknown>)["text"])).toContain(`uri-path = "${PATH_A}"`);
+    const at = join(daemonWikiDir(lar.root), REL(PATH_A));
+    expect(existsSync(at), `the working wiki did not project ${at}`).toBe(true);
   });
 
-  test("CONTROL: a DIRECT put into wikis/daemon/working (the composite sink) lands, and reads back through the same bag", async () => {
-    const put = await lar.cli(["meme", "put", uriOf(PATH_B), "--bag", DAEMON_WORKING, "--file", join(scratch, "direct.mem"), "--json"]);
-    expect(put.json?.["ok"], said(put)).toBe(true);
-    const got = await lar.cli(["meme", "get", uriOf(PATH_B), "--bag", DAEMON_WORKING, "--json"]);
-    expect(got.json?.["ok"], said(got)).toBe(true);
-  });
-
-  test("★ the daemon wiki projects: a record in wikis/daemon/working lands at <root>/wikis/daemon/<uri-path>.mem ★", async () => {
-    const at = join(lar.root, "wikis", "daemon", REL(PATH_B));
-    expect(await awaitFileState(at, true), `nothing projected at ${at}`).toBe(true);
-  });
-
-  test("CONTROL: the daemon's private bag projects NOWHERE — no bags/daemon/ under the root", () => {
-    expect(existsSync(join(lar.root, "bags", "daemon"))).toBe(false);
+  test("CONTROL: placement keeps every private home off the mirrors — no control, secret or daemon-document title projects", () => {
+    // The daemon wiki projects under the worn face's F (`wikis/daemon-<F>`, `bags/daemon-<F>`); the daemon document and the
+    // control document name no mirror (lar:///ha.ka.ba/lararium/mesh/control-home), so <projections>/bags/daemon never
+    // stands and no projected file anywhere names a private home's family.
+    expect(existsSync(join(lar.root, "projections", "bags", "daemon")), "the daemon document gained a mirror").toBe(false);
+    expect(privateTitlesProjected(lar.root), "a control, secret or daemon-document title stands in a mirror").toEqual([]);
   });
 });

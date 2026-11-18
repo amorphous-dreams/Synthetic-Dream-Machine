@@ -12,10 +12,8 @@
 # verb would put N unsynchronised holders on one operator's keys. The operator's hand keeps those.
 #
 # ── WHY THIS WITNESS EXISTS AT ALL ──────────────────────────────────────────────────────────────
-# Both descriptions of the MCP surface had drifted, each in the same direction: `mcp-resolve.ts` named
-# nine verbs and `mcp-tool-registry.mem` named ten, while the live surface carried THIRTY. A hand-written
-# list cannot notice what it missed, and both lists read as authoritative to anyone who found them. So the
-# count is DERIVED here and nowhere transcribed.
+# A hand-written list of the MCP surface cannot notice what it missed, and it reads as authoritative to
+# anyone who finds it. So the count is DERIVED here and nowhere transcribed.
 #
 # Exit 0 = every MCP tool has a CLI door.
 set -uo pipefail
@@ -27,10 +25,10 @@ import pathlib, re, subprocess, sys
 MCP = pathlib.Path("packages/lararium-sensorium/scripts/lares_mcp.py")
 CLI = pathlib.Path("packages/lares-cli/dist/src/bin/lares.js")
 
-# A VANISHED SUBJECT IS A RED, NEVER A CLEAN RUN. This read `nothing to compare` and exited 0, so the
-# day the MCP surface moved or was renamed, the one witness that welds an agent's reach to an operator's
-# would have reported the cleanest run it has ever produced — over a comparison it never made. The CLI
-# half of this same file already keeps the law (`or not doors` → exit 1); the MCP half enforces it too.
+# A VANISHED SUBJECT IS A RED, NEVER A CLEAN RUN. A missing MCP surface reading `nothing to compare`
+# with exit 0 would report the cleanest run this witness ever produced, over a comparison it never
+# made, and the one witness that welds an agent's reach to an operator's would go dark. Both halves
+# keep the law: the CLI half (`or not doors` → exit 1) and the MCP half here.
 if not MCP.exists():
     print(f"[surface-parity] NO MCP SURFACE AT {MCP} — parity is unmeasurable, not clean.")
     print( "      An agent's reach and an operator's reach go uncompared until this file answers.")
@@ -40,16 +38,23 @@ if not CLI.exists():
     print(f"[surface-parity] no built CLI at {CLI} — run `pnpm build` first"); sys.exit(1)
 
 tools = [t.replace("_", "-") for t in
-         re.findall(r'@mcp\.tool\(\)\s*\n\s*(?:async )?def (\w+)', MCP.read_text())]
+         re.findall(r'@mcp\.tool\([^)\n]*\)\s*\n\s*(?:async )?def (\w+)', MCP.read_text())]
 
-# A FLOOR ON THE SUBJECT'S SIZE. The decorator pattern binds `@mcp.tool()` with EMPTY parentheses, so the
-# ordinary act of giving one tool a `name=` or `description=` argument would drop it from this reading —
-# and a reading that drops every tool leaves `missing` empty and the run green. The set the whole witness
-# walks must be asserted before anything is asserted about its members.
+# A FLOOR ON THE SUBJECT'S SIZE. The decorator pattern binds `@mcp.tool(...)` with its arguments on ONE line
+# (the tiddler door's tools state their annotations there: `@mcp.tool(annotations=_READS)`), so a decorator
+# broken across lines would drop its tool from this reading — and a reading that drops every tool leaves
+# `missing` empty and the run green. The set the whole witness walks must be asserted before anything is
+# asserted about its members, and the count below welds the reading to the seat's own tool list.
 if not tools:
     print(f"[surface-parity] {MCP} DECLARES NO TOOLS to this reader — the walk below has no members.")
-    print( "      The probe binds `@mcp.tool()` with empty parentheses; a decorator carrying an argument")
+    print( "      The probe binds `@mcp.tool(...)` on one line; a decorator broken across lines")
     print( "      reads as absent, and every check here then passes by having nothing to check.")
+    sys.exit(1)
+# EVERY DECORATOR THE SEAT WRITES GETS READ: a `@mcp.tool` this pattern cannot bind would ride unaudited.
+decorated = len(re.findall(r'^\s*@mcp\.tool\b', MCP.read_text(), re.M))
+if decorated != len(tools):
+    print(f"[surface-parity] {MCP} writes {decorated} `@mcp.tool` decorators and this reader binds {len(tools)}:")
+    print( "      a tool whose decorator the pattern cannot read rides unaudited. Keep each decorator on one line.")
     sys.exit(1)
 
 # The CLI's own answer, never a transcription of it: the top-level listing, plus each parent verb's own
@@ -124,7 +129,7 @@ EXEMPT: dict[str, str] = {
 
 def daemon_verbs_mcp(name: str) -> set:
     """The daemon verbs an MCP tool routes to — read off its own `_call(...)`."""
-    body = re.search(rf'@mcp\.tool\(\)\s*\n\s*(?:async )?def {re.escape(name)}\b.*?(?=\n    @mcp\.tool|\Z)',
+    body = re.search(rf'@mcp\.tool\([^)\n]*\)\s*\n\s*(?:async )?def {re.escape(name)}\b.*?(?=\n    @mcp\.tool|\Z)',
                      MCP.read_text(), re.S)
     found = set(re.findall(r'_call\(\s*"(\w+)"', body.group(0))) if body else set()
     return {v.replace("_", "-") for v in found}
@@ -145,10 +150,10 @@ def daemon_verbs_cli(name: str) -> set:
 # and says what each one writes — so a reader meeting either door learns the difference here rather
 # than by running both and comparing stores.
 SLICING: dict[str, str] = {
-    "pour": ("CLI `pour` harvests ONE pointer's bearing gradient into the harvest index that "
-             "`sense worldline` joins; `pour --all` walks the whole tending movement. The MCP tool "
-             "captures one pointer's DRAWERS, and its `all` rides the same sweep spine the CLI's "
-             "drawers leg reaches. Both fill a sensorium; they enter at different legs."),
+    "pour": ("CLI `pour --all` walks the whole tending movement and `pour --writeback` runs its "
+             "bearing leg alone. The MCP tool captures one pointer's DRAWERS, and its `all` rides "
+             "the same sweep spine the CLI's drawers leg reaches. Both fill a sensorium; they "
+             "enter at different legs."),
 }
 
 drift = []

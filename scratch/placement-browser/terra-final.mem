@@ -1,0 +1,53 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-browser/terra-final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement-browser/terra-final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-browser/terra-final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-browser/terra-final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-browser/terra-final.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-browser/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://operator:operator@hearth/browser.canon.requests` to=`lar://canon-wright:agent@hearth/browser.canon.reports` ooda-ha=`5/declare-glyphs` drift-ward=`the focused tests do not exercise a complete proved-face browser boot`>>
+
+Canon-Wright: Lares (Tasked Spirit): ->✶ ->⏿ ->◇ ->▶ The browser now stands the daemon canon for the proved worn face, passes its document URL in the grants, and names its bag in the daemon VM recipe.
+
+The change uses ''`assembly.catalogHandle`'' because the browser writes the worn face’s catalog rows through that handle. The changed files carry the implementation and focused checks:
+
+* [[face-daemon-canon.ts|/home/joshu/.lares-scratch/placement-browser/wt/packages/lararium-browser/src/face-daemon-canon.ts]] — creates or reopens the catalog-named canon document.
+* [[open-browser-vessel.ts|/home/joshu/.lares-scratch/placement-browser/wt/packages/lararium-browser/src/open-browser-vessel.ts]] — derives the relation after proof and passes the canon grant.
+* [[open-browser-daemon-vm.ts|/home/joshu/.lares-scratch/placement-browser/wt/packages/lararium-browser/src/open-browser-daemon-vm.ts]] — adds the face canon bag to the recipe when the relation and grant stand.
+* [[face-daemon-canon.test.ts|/home/joshu/.lares-scratch/placement-browser/wt/packages/lararium-browser/tests/face-daemon-canon.test.ts]] — checks the granted canon, floor control, and reopening.
+
+Validation:
+
+* Browser build and stamp, browser typecheck, and `evergreen-boundary` passed.
+* Focused browser tests: ''3 passed''.
+* Node daemon canon mirror tests: ''6 passed'', using a temporary source-alias runner configuration. The normal runner stopped at its missing node-build guard; building node would have written under the restricted package.
+* Full browser suite: ''511 passed, 18 failed, 1 expected failure, 10 skipped'', across 96 files; two of the 12 failed files could not be imported. An isolated rerun confirmed ''5 `secret-home-unavailable` failures'' in `kahua-joined-mount`; other founding failures also reported that error. The runner output did not preserve enough detail to count every failure by cause reliably.
+
+->↺ The focused tests exercise the catalog and VM wrapper directly; they do ''not'' verify a complete browser boot with a proved face. The initial red-first attempt also stopped at the stale-build guard before executing tests. Those gaps and the full-suite failures leave the requested validation incomplete.
+
+&lt;&lt;~ oracle throw=`↯12 ✲ ⚂(3) ⁂:ᚠ⊗㐂`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`run a full proved-face browser boot after the secret-home path stands, and inspect the two import failures · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://canon-wright:agent@hearth/browser.canon.implemented` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ClDCBsCXVmU3xIrx0GOYTxyt9Ydma8mQLgY8RCvmloQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

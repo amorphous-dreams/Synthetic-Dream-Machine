@@ -1,0 +1,130 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds4/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/ci-reds4/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds4/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/ci-reds4/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/ci-reds4/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds4/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ci-reds4-redmender-iii-hand-back`>>
+
+! ci-reds4 — Redmender-III hand-back
+
+Branch `feature/green-jello-dinosaur-5--ci-reds4` (cut at a8f6058d0), pushed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits`>>
+
+!! Commits
+* `2e4b7f38d lar:///story.stays.engine/owes-no-save`: cures reds 1 and 2.
+* `8de6c6588 lar:///mirror.writes.fields/tw5-strings`: cures red 3.
+
+No plugin or boot-set byte moved. The build left the tracked tree clean, so genesis/unbaked.json needs no entry.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/red-1-and-red-2-one-root-cause-the-product-was-w`>>
+
+!! Red 1 (node-b surface-mount-real-island, `acked: false`) and Red 2 (two-phase-boot T5, faceless herm floor): one root cause, the product was wrong
+CI log line: `teardown-fault: the island could not tear down: unsaved at teardown: "$:/StoryList"`. The same fault shows in port-page-real-island, verb-tiddler-dispatch and the browser daemon worker.
+
+''Cause.'' Since 407f3251d the kernel opens the default story after the outbound bridge stands. Before that, TW5's `story` startup wrote `$:/StoryList` before the shore was resident, so no save followed. Now the opener's write reaches the bridge as a hand. The cascade routes it through `current-wiki-personal`. At a composition with no personal layer, the save is refused:
+* at the daemon floor the pointer names `wikis/daemon/personal`, a bag that floor does not mount;
+* at the surface, nothing mounts it.
+
+The refused save raises an unrouted-save alert for a write no person made and stays owed in the drain. Teardown then names it unsaved, and the vessel reads the teardown as faulted. Floor replay (glass2) played no part.
+
+''Cure'' (`packages/lararium-tw5/src/island-story.ts`, new; `island-adaptor.ts`; `sovereign-kernel.ts`):
+* `IslandAdaptor.routesSave(title)` reads the same verdict as `_settle` without side effects: no alert and no console line.
+* `IslandAdaptor.keepInEngine(title)` records the current wiki value as landed with no bag, so the bridge reads the opener's change as foam.
+* `openIslandStory(tw5, adaptor)`:
+** a composition with a layer for the story saves it through the bridge, as before;
+** one with none keeps `$:/StoryList` and the `$:/HistoryList` entry in the engine only.
+
+A faceless floor now tears down clean. The herm path is untouched. Explicit hand saves that refuse still refuse by name, as before.
+
+''Tests.'' New: `packages/lararium-tw5/tests/island-story-owes-no-save.test.ts`. It runs over the real wiki and the real bridge:
+* no layer for the story: the probe raises nothing, no store hears the story, no alert is raised, and `stop()` returns `[]`;
+* CONTROL: with a personal layer, the story saves to it;
+* CONTROL: the bare opener leaves `$:/StoryList` owed. This reproduces the fault the cure removes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/red-3-the-product-was-wrong-the-weld-reads-the-r`>>
+
+!! Red 3 (held-out weld M5 mirror-edit): the product was wrong, the weld reads the right place
+''Diagnosis.'' A local smoke drove the steps W3 and M5 take: the worker sidebar set to Recent, then a new tiddler typed in the mirror. A page-side port trace showed:
+* the mirror's `port:write` lands: `port:written status=applied`, and `port:changes` echoes the title. So the write does land at the pure-local browser vessel with a bound face;
+* the worker re-projects: 12 → 15 frames;
+* but the worker's Recent timeline painted `<div class="tc-menu-list-item"></div>`: one empty day.
+
+The trace showed why. The mirror sent `modified = "Wed Nov 11 2026 18:56:37 GMT-0800 (Pacific Standard Time)"`. `glass-port-adaptor.ts` `ownFields` used `String(value)` on a Date, and joined lists without brackets. No engine parses that date back, so the worker held the tiddler with an invalid date. `eachday` made one group, but the date view and the `sameday` list rendered nothing. The same bad bytes also reach the store.
+
+The "unrouted `$:/StoryList` personal save at pure local boot" console line was red 1's fault, unrelated to M5. It is gone now too.
+
+''Cure.'' `ownFields` reads TW5's own `getFieldStrings()`. For a bare fields object it falls back to TW5 form: `YYYYMMDDHHMMSSmmm` UTC dates and `[[bracketed]]` list members.
+
+''Tests.'' New vector in `glass-port-adaptor.test.ts`, `glass-writes-tw5-field-strings`, over the real island rig. Red first, proven: it received the locale string against the old code. Green after the cure: the store holds `20261112025637123` and `plain [[two words]]`, and the island engine reads the date back.
+
+''Smoke after the cure.'' `WORKER FLOOR SHOWS TITLE: true`, the worker Recent reads "11th November 2026 smoke-mirror-…", and the wire carries `modified=20261112025950541`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-i-proved-locally`>>
+
+!! What I proved locally
+* node `surface-mount-real-island`, `port-page-real-island`, `verb-tiddler-dispatch`: 3 files, 4 tests, green, with 0 "unsaved at teardown".
+* witness `tools/two-phase-boot.test.mjs`, run alone: pass, with 0 StoryList or unrouted lines.
+* tw5 `glass-port-adaptor`, `glass-port-adaptor-races`, `island-story-owes-no-save`, `save-refusal`, `glass-draft-prompt`: 38 tests green.
+* <code>pnpm &#45;-filter &#64;lararium/tw5 typecheck</code> is clean.
+* `typecheck:tests` ratchet: no package above its ceiling.
+* M5 path by smoke: `/home/joshu/.lares-scratch/ci-reds4/smoke/m5.mjs`, with vite on :5173 (now stopped).
+* I did not run browser-weld-witness, tree-clean-witness or any e2e.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/a8f6058d0-ci-both-red`>>
+
+!! a8f6058d0 CI (runs 43142190718 CI, 43142190654 held-out): both red
+All three reds survive glass2, with the same signatures:
+* ''node-b:'' surface-mount-real-island, `unsaved at teardown: "$:/StoryList"`;
+* ''witness rest:'' two-phase-boot T5, same fault;
+* ''held-out:'' weld M5, LIVENESS.
+
+''New on a8f6058d0, web-tw5:'' golden-whole-road e2e W1–W6 all fail. W1 calls `closeTiddler("GettingStarted")` and gets `Cannot read properties of null (reading 'click')`; W2–W6 fail behind it.
+* ''Why:'' since 18c05e779 the floor replays into every island, so the worker opens the wiki's own landing (`lar:///ha.ka.ba/lares/docs/welcome`), not stock's GettingStarted.
+* ''Which side was wrong:'' the test. The product now does what glass2 intended; the golden still expected the stock story.
+* ''Cure:'' `6f097dc94 lar:///golden.reads.landing/whole-road`. W1 closes every title the opened story holds. Not run locally (e2e law); only CI can prove it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits-2`>>
+
+!! Commits (final)
+* `2e4b7f38d`: island story owes no save (reds 1 and 2).
+* `8de6c6588`: mirror writes TW5 field strings (red 3).
+* `6f097dc94`: golden-whole-road reads the landing (new web-tw5 red).
+
+No servers or watchers left running; vite was stopped by its process group.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1fdUMBnPMQd9G2OQ-tvXW1xdiPjw1JownnL4UKihV2I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -6,5 +6,6 @@
   "version": "0.1.0",
   "core-version": ">=5.4.0",
   "plugin-type": "plugin",
-  "list": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext/readme"
+  "list": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext/readme",
+  "plugin-priority": 10
 }

@@ -60,7 +60,7 @@ async function crossing(): Promise<{ joineeSeed: Uint8Array; capEvents: readonly
   const pg = await phone.createGroup();
   const edge = await buildDeviceDelegation({
     personaRootSeed:    seedOf(213),
-    deviceVerifyingKey: (await laptop.whoami()).replace(/^0x/, ""),
+    atomSeed: laptopSeed,
     hearthTrueName:     "",
     boundEpoch:         0,
   });
@@ -71,7 +71,7 @@ async function crossing(): Promise<{ joineeSeed: Uint8Array; capEvents: readonly
     dyad: () => "clear", leaseEpoch:             0,
   };
   const out = await runFaceJoin(phone, {
-    kind:        "face-join/v1",
+    kind:        "face-join",
     contactCard: new TextDecoder().decode(await laptop.contactCard()),
     deviceEdge:  edge,
   }, ctx);

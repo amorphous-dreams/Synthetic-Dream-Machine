@@ -110,7 +110,7 @@ describe.skipIf(wikiSkip)(
   // must never take the wiki down. The generator seeds itself, so a failure reproduces exactly.
   test("the superset never throws, whatever the carrier holds", () => {
     const CHUNKS = [
-      "<<~", ">>", "<<~ ahu #slot>>", "<<~/ahu>>", "<<~ pranala a -> b>>", "<<~/pranala>>",
+      "<<~", ">>", "<<~ ahu slot=`#slot`>>", "<<~/ahu>>", "<<~ pranala a -> b>>", "<<~/pranala>>",
       "''", "//", "@@", "`", "```", "<<<", "\\define f()", "\\end", "{{x}}", "[[y]]",
       "\n", "\n\n", " ", "prose", "|t|c|", "! head", "* item", "&#x0001;", "```toml meta", "type = \"x\"",
     ];

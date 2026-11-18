@@ -19,7 +19,7 @@ import { raiseStands, standingClass } from "../src/vessel-standing.js";
 import { carriageEntryActCid, type CarriageEntry } from "../src/carriage-registry.js";
 import { heldRootRevision } from "../src/held-nexus-root.js";
 import { makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
-import { ed25519VerifyHex } from "../src/auth-wire.js";
+import { ed25519VerifyHex } from "../src/ed25519-door.js";
 import { pubOf, signerOf, kahuRoster, carriageAct } from "./fixtures/carriage.js";
 
 const VESSEL = "vessel-key-hex";
@@ -266,7 +266,7 @@ describe("the signed bytes", () => {
 
   test("carry NOTHING of the vessel's contents — a challenge is not a disclosure", () => {
     const text = Buffer.from(raiseChallengeBytes(challenge())).toString("utf8");
-    const fields = Object.keys(JSON.parse(text) as Record<string, unknown>).sort();
+    const fields = Object.keys(JSON.parse(text.slice(4 + RAISE_CHALLENGE_DOMAIN.length)) as Record<string, unknown>).sort();
     expect(fields).toEqual(["epoch", "kind", "nexus", "nonce", "vesselId"]);
   });
 });

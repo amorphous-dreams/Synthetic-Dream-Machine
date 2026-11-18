@@ -2,7 +2,7 @@
  * e2e/vessel-sealed — a vessel whose private rows rest sealed under its VESSEL KEY stands end to end, every step
  * through the built CLI and the custody door.
  *
- * A founding seals the keyhive archive, the face's veil archive and its anchors under the vessel key from their
+ * A founding seals the face's veil archive and its anchors under the face's custody key from their
  * first write. Every boot then rests at the FLOOR (faceless, carrying, every sovereign act waiting) until the key
  * opens on the custody door, and a lock or a restart returns it there. This witness walks that whole life on a
  * staged vessel it owns:
@@ -26,11 +26,11 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, cliFor, foundStagedHearth, unlockStaged, type LarInstance, type CliResult } from "../harness/instance.js";
 import { unlockTestCustody } from "../harness/test-door.js";
-import { readVkCarrier } from "../../packages/lararium-mesh/src/vk-envelope.js";
+import { readFckCarrier } from "../../packages/lararium-mesh/src/fck-envelope.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -41,8 +41,8 @@ const URI  = `lar:///${PATH}`;
 const WIKI = ["--recipe", "lares"] as const;
 
 const meme = (): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n` +
-  `<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n` +
+  `<<~ ahu slot=\`#/a\`>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function missing(): string[] {
   const out: string[] = [];
@@ -63,11 +63,34 @@ let cli: (env: Record<string, string>, args: readonly string[]) => Promise<CliRe
 let carrierHash = "";
 const PLAIN: Record<string, string> = {};
 
-const identity = (file: string): string => join(lar!.root, "data/lares/identity", file);
-/** The rows this witness watches at rest: the family the founding seals under the vessel key. */
-const SEALED_ROWS = ["keyhive-archive.bin", "veil-archive-h0.bin", "anchors-h0.json", "anchor-roster.json"] as const;
-const rowsAtRest = (): Record<string, Buffer> => Object.fromEntries(SEALED_ROWS.map((f) => [f, readFileSync(identity(f))]));
-const SHARE = (): string => identity("recovery-device-share-h0.bin");
+const identity = (file: string): string => join(lar!.root, "hearth/identity", file);
+/** A face's row rests in that face's own directory: the file, found in whichever face holds it. */
+const faceDirs = (): string[] => { try { return readdirSync(identity("faces")); } catch { return []; } };
+const faceRowFile = (file: string): string => {
+  const at = faceDirs().map((d) => identity(`faces/${d}/${file}`)).find((p) => { try { readFileSync(p); return true; } catch { return false; } });
+  if (!at) throw new Error(`no face holds ${file}`);
+  return at;
+};
+/** The face's veil archive rests under a name that carries its PersonaGroup's digest, so the witness finds it by its family. */
+const veilArchiveRows = (): string[] => faceDirs().flatMap((d) => readdirSync(identity(`faces/${d}`)).filter((f) => /^veil-archive-g[0-9a-f]{64}\.bin$/.test(f)));
+/** The face's own roster line: its name carries the login hint when the host has one. */
+const rosterRow = (): string => {
+  const name = faceDirs().flatMap((d) => readdirSync(identity(`faces/${d}`))).find((f) => /^\.persona-roster-h0\.json$/.test(f));
+  if (!name) throw new Error("CONTROL: the founded face holds no roster line at rest");
+  return name;
+};
+const rowsAtRest = (): Record<string, Buffer> => {
+  const veil = veilArchiveRows();
+  if (veil.length === 0) throw new Error("CONTROL: the founded face holds no veil archive at rest");
+  return Object.fromEntries([
+    ["anchors-h0.json", readFileSync(faceRowFile("anchors-h0.json"))] as const,
+    [rosterRow(), readFileSync(faceRowFile(rosterRow()))] as const,
+    ...veil.map((f) => [f, readFileSync(faceRowFile(f))] as const),
+  ]);
+};
+/** Every watched private row rests under its face custody key. */
+const sealOf = (_file: string, bytes: Buffer): string => readFckCarrier(bytes);
+const SHARE = (): string => faceRowFile("recovery-device-share-h0.bin");
 
 /** The custody door's own reading of what stands. Looks are COUNTED while no daemon answers; no clock decides. */
 async function custodyReading(): Promise<Record<string, unknown>> {
@@ -115,7 +138,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(reading["unlocked"]).toBe(false);
     expect(reading["slot"]).toBeNull();
     for (const [file, bytes] of Object.entries(rowsAtRest())) {
-      expect(readVkCarrier(bytes), `${file} carries the vessel key's seal`).toBe("sealed");
+      expect(sealOf(file, bytes), `${file} carries its key's seal`).toBe("sealed");
     }
     // No sovereign act answers on the floor: the recipe seat reads nothing.
     const r = await readCarrier();
@@ -143,7 +166,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(String(dataOf(got)["canonicalHash"])).toBe(carrierHash);
 
     // The hearth's own archive export lands through the sealed writer: still the vessel key's seal, never bare.
-    for (const [file, bytes] of Object.entries(rowsAtRest())) expect(readVkCarrier(bytes), file).toBe("sealed");
+    for (const [file, bytes] of Object.entries(rowsAtRest())) expect(sealOf(file, bytes), file).toBe("sealed");
     expect(readFileSync(SHARE()).equals(shareAtFounding), "an unlock re-minted the device share").toBe(true);
   }, 300_000);
 
@@ -186,7 +209,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     const got = await readCarrier();
     expect(got.json?.["ok"], said(got)).toBe(true);
     expect(String(dataOf(got)["canonicalHash"])).toBe(carrierHash);
-    for (const [file, bytes] of Object.entries(rowsAtRest())) expect(readVkCarrier(bytes), file).toBe("sealed");
+    for (const [file, bytes] of Object.entries(rowsAtRest())) expect(sealOf(file, bytes), file).toBe("sealed");
     expect(readFileSync(SHARE()).equals(shareAtFounding), "a stand re-minted the device share").toBe(true);
   }, 300_000);
 
@@ -201,13 +224,16 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(custody.rows.filter((r) => r.fault).map((r) => r.file)).toEqual([]);
     expect(new Set(custody.rows.map((r) => `${r.home}/${r.file}`)).size).toBe(custody.rows.length);
     for (const r of custody.rows) {
-      if (r.custody === "hot" || r.custody === "cold") expect(r.reading, r.file).toBe("sealed");
+      if (r.custody === "hot" || r.custody === "cold" || r.custody === "face-hot" || r.custody === "face-cold" || r.custody === "ward-cold") expect(r.reading, r.file).toBe("sealed");
       else expect(typeof r.bare === "string" && r.bare.length > 0, `${r.file} names the law it rests bare under`).toBe(true);
     }
     // CONTROL: the reading holds rows of both kinds, so neither loop above ran over nothing.
     expect(custody.rows.some((r) => r.row === "device-share" && r.reading === "sealed")).toBe(true);
-    expect(custody.rows.some((r) => r.row === "vk-slots" && r.reading === "bare")).toBe(true);
-    expect(readVkCarrier(readFileSync(SHARE()))).toBe("sealed");
+    expect(custody.rows.some((r) => r.row === "s-slots" && r.reading === "bare")).toBe(true);
+    // The face root rests warded, under the ward's own frame, beside the ward tree (seat-harness#/the-ward).
+    expect(custody.rows.some((r) => r.row === "persona-root" && r.custody === "ward-cold" && r.reading === "sealed")).toBe(true);
+    expect(custody.rows.some((r) => r.row === "ward-slots" && r.reading === "bare")).toBe(true);
+    expect(readFckCarrier(readFileSync(SHARE()))).toBe("sealed");
   }, 120_000);
 
   test("⑦ a word outside the vault door's seven verbs answers as no door, and the share keeps its bytes", async () => {

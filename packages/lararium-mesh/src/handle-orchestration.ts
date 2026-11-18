@@ -4,7 +4,7 @@
  * The WHO board holds the authoritative handle-KEL; a vessel's local record stays a thin projection (an index
  * into the board, never the chain itself — a chain a record OWNED would read as a compiled who-is-X-of-one,
  * which the registry filter refuses). To mint the next event, a vessel resolves one settled verified chain
- * from the board and conditions the mutation on the head the caller previously folded.
+ * from the board and conditions the mutation on the head the caller last folded.
  *
  * The head condition guards the common case — a local view whose head the board already changed. It does not,
  * alone, stop a truly-concurrent partition fork (two peers extend one head across a partition); that stays
@@ -20,7 +20,7 @@ import { foldHandleCardsDetailed } from "./handle-card.js";
 import { mintHandleBurn, mintHandleGraft, mintHandleRotation, handleKeyDigestOf, type HandleKelEvent, type HandleMintResult, type HandleCoSigner, type OwnerHeadResolver } from "./handle-kel.js";
 import { deriveVeiledUserKey } from "./persona-identity.js";
 import { didFromVerifyingKey } from "./lar-did.js";
-import { ed25519SignerFromSeed } from "./auth-wire.js";
+import { ed25519SignerFromSeed } from "./ed25519-door.js";
 import { hexToBytes } from "./crypto.js";
 import { PERSONA_GLAMOUR_CONTEXT } from "./persona-glamour.js";
 import type { HandleCard } from "./handle-card.js";

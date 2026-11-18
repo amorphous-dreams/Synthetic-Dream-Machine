@@ -1,23 +1,26 @@
 /**
  * browser leaf continuity — C4's held-out live walk.
  *
- * A real Chromium profile runs the web surface, first without an anchor and then with a
- * valid gate key. The browser's IndexedDB survives document replacement, which
- * makes this the ordinary field walk rather than a synthetic Repo exercise.
+ * A real Chromium profile runs the web surface as a leaf: it founds offline, then reloads. A fresh browser boots as an unbound
+ * veil that holds no place KEL and runs no Binding Gate (the-veil-ladder ruling U3); a person founds a face of its own through
+ * the identity panel's door (`#found-face`, a one-boot ask), the founding arms the face's KEL, and the gate walks it from that
+ * boot on. So each walk founds through that door first, as a person does. A leaf names no anchor (a
+ * device crosses by the floor card or the root-signed pin its fleet join carries), so it stands on its own island at
+ * every boot, and the carry up the gradient finds nothing below to move. The browser's IndexedDB survives document
+ * replacement, which makes this the ordinary field walk rather than a synthetic Repo exercise.
  *
- * It then repeats the walk with the exact runtime carry call replaced in the
- * fetched module. That fault must make the Binding Gate refuse the anchored
- * reload; otherwise a green normal walk could be reading a path that never
- * reached the carry.
+ * It then repeats the reload with the Binding Gate's chain read emptied in the fetched module. That fault must make
+ * the gate refuse the boot; otherwise a green ordinary walk could be reading a path that never reached the gate.
  */
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium } from "playwright";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../../packages/lararium-node/dist/probes/browser-test-custody.js";
 
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
-const ANCHOR = "4a".repeat(32);
 const BOOT_MS = Number(process.env.LEAF_BOOT_MS ?? 90_000);
 const BOOT_TRACE = process.env.LEAF_BOOT_TRACE === "1";
 const pageDiagnostics = new WeakMap();
@@ -26,11 +29,13 @@ const pageBootTrace = new WeakMap();
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const say = (kind, text) => console.log(`  ${kind.padEnd(8)} ${text}`);
 
-function webUrl(gate) {
-  const url = new URL(WEB);
-  if (gate) url.searchParams.set("gate", gate);
-  if (BOOT_TRACE) url.searchParams.set("c4trace", "1");
-  return url.href;
+function webUrl() {
+  return new URL(WEB).href;
+}
+
+// The page reads its trace switch off this tab's sessionStorage (its address stays TW5's own): raise it before the page loads.
+async function raiseBootTrace(context) {
+  if (BOOT_TRACE) await context.addInitScript(() => { try { sessionStorage.setItem("lares:c4trace", "1"); } catch { /* the page then boots untraced */ } });
 }
 
 async function waitFor(page, predicate, what) {
@@ -67,12 +72,27 @@ async function liveReading(page) {
       (BOOT_TRACE ? `; C4 boot trace: ${JSON.stringify(traceSummary)}` : ""));
   }
   if (state.kind === "failed") throw new Error(`browser vessel boot refused: ${state.status}`);
-  return await page.evaluate(() => {
+  const surface = await page.evaluate(() => {
     const rows = [...document.querySelectorAll("#vessel .row")];
     const did = rows.find((row) => row.querySelector(".k")?.textContent === "did")?.querySelector(".v")?.textContent ?? "";
-    const kel = globalThis.__laresC4PersonaKel;
-    return { did, vessel: document.getElementById("vessel")?.textContent ?? "", kel };
+    return { did, vessel: document.getElementById("vessel")?.textContent ?? "" };
   });
+  return { ...surface, kel: await readKelObservation(page) };
+}
+
+/**
+ * The Binding Gate's KEL observation, read where the gate ran: the leading tab's vessel worker since b1-lift (the observation route
+ * writes it beside the gate's read, on that realm's globalThis), the page's own realm first.
+ */
+async function readKelObservation(page) {
+  const read = () => globalThis.__laresC4PersonaKel;
+  const own = await page.evaluate(read);
+  if (own) return own;
+  for (const worker of page.workers()) {
+    const seen = await worker.evaluate(read).catch(() => undefined);
+    if (seen) return seen;
+  }
+  return undefined;
 }
 
 /** Keep a small terminal tail: a boot timeout must expose a concrete browser cause. */
@@ -157,7 +177,7 @@ function instrumentBootSource(source) {
     (match) => `console.log("[C4 boot] host:kel-board:start");\n    ${match}\n    console.log("[C4 boot] host:kel-board:done");`,
   );
   body = body.replace(
-    /daemon = await openBrowserDaemonVm\(\{/,
+    /daemonHolder = holdDaemonVm\(\{ vm: await openOnce\(/,
     (match) => `console.log("[C4 boot] host:daemon-vm:start");\n      ${match}`,
   );
 
@@ -172,7 +192,7 @@ function instrumentBootSource(source) {
     `if (isIslandToVesselMsg(raw) && raw.type === "ready") { console.log("[C4 boot] worker:ready"); resolve(); }`,
   );
   body = body.replace(
-    /worker\.post\(manifestMsg, transfer\);/,
+    /worker\.post\(initialPost\.msg, initialPost\.transfer\);/,
     (match) => `console.log("[C4 boot] host:manifest-post"); ${match}`,
   );
 
@@ -348,6 +368,8 @@ async function withProfile(run) {
   let context;
   try {
     context = await chromium.launchPersistentContext(profile, { headless: true, args: ["--no-sandbox"] });
+    await armTestCustody(context, "leaf-continuity");
+    await raiseBootTrace(context);
     return await run(context);
   } finally {
     await context?.close();
@@ -398,6 +420,19 @@ async function observeKelRead(context, page) {
   };
 }
 
+/**
+ * THE FOUNDING DOOR, driven as a person drives it: the veil stands live, the identity panel's button stashes the founding ask for
+ * one boot and the page boots again, and the vessel's custody asks answer through the published test route (`armTestCustody`).
+ * No URL selects a founding, so the address bar stays the wiki's own.
+ */
+async function foundThroughTheDoor(page) {
+  const veil = await liveReading(page);
+  if (veil.kel) throw new Error("a fresh veil boot ran the Binding Gate before any face was founded");
+  await Promise.all([page.waitForEvent("load", { timeout: BOOT_MS }), page.locator("#found-face").click()]);
+  if (new URL(page.url()).search !== new URL(webUrl()).search) throw new Error("the founding act moved the address bar");
+  return await liveReading(page);
+}
+
 function assertKel(label, reading, expected) {
   const kel = reading.kel;
   if (!kel || typeof kel.prefix !== "string" || !Array.isArray(kel.eventCids) || kel.eventCids.length === 0) {
@@ -422,32 +457,30 @@ async function ordinaryWalk() {
     const finishObservation = await observeKelRead(context, page);
 
     await page.goto(webUrl(), { waitUntil: "domcontentloaded" });
-    const offline = await liveReading(page);
+    const offline = await foundThroughTheDoor(page);
     if (!/^0x[0-9a-f]{64}$/i.test(offline.did)) throw new Error(`offline boot reported no vessel key: ${offline.did || "empty"}`);
     const offlineKel = assertKel("offline founding", offline);
     say("ok", "C4.1 offline leaf founded with a persistent browser identity");
-
-    const anchoredAt = logs.length;
-    await page.goto(webUrl(ANCHOR), { waitUntil: "domcontentloaded" });
-    const anchored = await liveReading(page);
-    const anchorLogs = logs.slice(anchoredAt).join("\n");
-    if (anchored.did !== offline.did) throw new Error("anchor configuration changed the browser vessel identity");
-    assertKel("configured anchor", anchored, offlineKel);
-    if (!anchorLogs.includes("[persona-kel] carried 1 event(s)")) {
-      throw new Error(`anchor reload reached live without the KEL carry receipt: ${anchorLogs.slice(-500)}`);
-    }
-    say("ok", "C4.2 configured anchor carried the founding KEL before the Binding Gate");
 
     const reloadAt = logs.length;
     await page.reload({ waitUntil: "domcontentloaded" });
     const reloaded = await liveReading(page);
     const reloadLogs = logs.slice(reloadAt).join("\n");
-    if (reloaded.did !== offline.did) throw new Error("anchored reload changed the browser vessel identity");
-    assertKel("anchored reload", reloaded, offlineKel);
-    if (reloadLogs.includes("[persona-kel] carried")) throw new Error("anchored reload carried the KEL a second time");
+    if (reloaded.did !== offline.did) throw new Error("reload changed the browser vessel identity");
+    assertKel("reload", reloaded, offlineKel);
+    if (reloadLogs.includes("[persona-kel] carried")) throw new Error("a leaf on its own island carried its KEL on reload");
     finishObservation();
-    say("ok", "C4.3 anchored reload preserved identity and added no second carry");
+    say("ok", "C4.2 reload preserved identity and the KEL, and carried nothing");
   });
+}
+
+// THE FAULT EMPTIES THE BINDING GATE'S BOOT READ ALONE: the anchor the observation route reads. The co-sign port's per-act
+// `liveKelChain` closure reads the same chain later in the same module and stays untouched, so the fault reaches the gate.
+const BOOT_CHAIN_READ = /const personaKelChain = personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\);/g;
+
+function emptyBootChainRead(source) {
+  const count = source.match(BOOT_CHAIN_READ)?.length ?? 0;
+  return { count, body: count === 1 ? source.replace(BOOT_CHAIN_READ, "const personaKelChain = null;") : source };
 }
 
 async function faultWalk() {
@@ -456,58 +489,36 @@ async function faultWalk() {
     watchPage(context, page);
     let replacements = 0;
     await page.goto(webUrl(), { waitUntil: "domcontentloaded" });
-    await liveReading(page);
+    // The gate runs only over a founded face: a veil's reload would never reach the emptied read.
+    await foundThroughTheDoor(page);
 
-    await page.route("**/*.js*", async (route) => {
+    // The gate's read runs in the vessel worker: context routing reaches its modules, as the observation route's does.
+    await context.route("**/*.js*", async (route) => {
       const response = await route.fetch();
       const type = response.headers()["content-type"] ?? "";
       if (!/javascript/.test(type)) return route.fulfill({ response });
       const source = instrumentBootSource(await response.text());
-      const call = /await carryPersonaKelUpTheGradient\(\{\s*repo, nexusPubkey, prefix: personaKelPrefix,\s*priorIslands: nexusIslandsBelow\(nexusStandsAt\),\s*\}\);/;
-      const matches = source.match(new RegExp(call.source, "g")) ?? [];
-      if (matches.length === 0) return route.fulfill({ response, body: source });
-      if (matches.length !== 1) throw new Error(`C4 fault route found ${matches.length} carry calls in one fetched module`);
+      const { count, body } = emptyBootChainRead(source);
+      if (count === 0) return route.fulfill({ response, body: source });
+      if (count !== 1) throw new Error(`C4 fault route found ${count} chain reads in one fetched module`);
       replacements += 1;
-      if (replacements > 1) throw new Error("C4 fault route found more than one carry call");
-      return route.fulfill({ response, body: source.replace(call, "await Promise.resolve({ carried: 0, from: null });") });
+      if (replacements > 1) throw new Error("C4 fault route found more than one chain read");
+      return route.fulfill({ response, body });
     });
 
-    await page.goto(webUrl(ANCHOR), { waitUntil: "domcontentloaded" });
+    await page.reload({ waitUntil: "domcontentloaded" });
     const refusal = await refusedReading(page);
-    if (replacements !== 1) throw new Error(`C4 fault route replaced ${replacements} carry calls, expected one`);
+    if (replacements !== 1) throw new Error(`C4 fault route replaced ${replacements} chain reads, expected one`);
     if (!/persona-KEL chain.*absent.*Binding Gate/i.test(refusal)) {
-      throw new Error(`disabled carry did not produce the expected Binding Gate refusal: ${refusal}`);
+      throw new Error(`an emptied chain read did not produce the expected Binding Gate refusal: ${refusal}`);
     }
-    say("ok", "C4.4 disabling the one carry call makes the Binding Gate refuse the anchored boot");
-  });
-}
-
-async function malformedAnchorWalk() {
-  return withProfile(async (context) => {
-    const page = await context.newPage();
-    watchPage(context, page);
-    const finishObservation = await observeKelRead(context, page);
-    await page.goto(webUrl(), { waitUntil: "domcontentloaded" });
-    const offline = await liveReading(page);
-    const offlineKel = assertKel("malformed-anchor offline founding", offline);
-    await page.goto(webUrl("not-a-hex-gate"), { waitUntil: "domcontentloaded" });
-    const refusal = await refusedReading(page);
-    if (!/\[nexus\] the island reads TORN, so no board may be addressed — an admission RECORD stands at this vessel and the anchor key it names reads as no key at all/i.test(refusal)) {
-      throw new Error(`malformed anchor did not stop at nexusScopeOrThrow: ${refusal}`);
-    }
-    await page.goto(webUrl(ANCHOR), { waitUntil: "domcontentloaded" });
-    const recovered = await liveReading(page);
-    if (recovered.did !== offline.did) throw new Error("valid anchor retry after malformed input changed the browser vessel identity");
-    assertKel("valid anchor retry after malformed input", recovered, offlineKel);
-    finishObservation();
-    say("ok", "C4.5 malformed anchor stops at the scope door; a valid retry recovers the same identity and KEL");
+    say("ok", "C4.3 emptying the one chain read makes the Binding Gate refuse the reload");
   });
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   await ordinaryWalk();
   await faultWalk();
-  await malformedAnchorWalk();
 }
 
-export { instrumentBootSource, observeKelRead };
+export { emptyBootChainRead, instrumentBootSource, observeKelRead, readKelObservation };

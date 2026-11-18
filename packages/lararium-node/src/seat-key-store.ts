@@ -41,10 +41,10 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus · lar:///ha.ka.ba/lararium/mesh/custody#/the-table
  */
 import { createPrivateKey, createPublicKey, randomFillSync, sign } from "node:crypto";
-import { readdirSync } from "node:fs";
-import { sha256HexBytesSync } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openColdCustodyRow, openedCustody, removeColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
+import { faceFileNames } from "./face-index.js";
+import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
+import { openColdCustodyRecord, openFaceFileNames, removeColdCustodyRecord, updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 /** The seat key's file, for the carrier table: `seat-key-h<N>-<32 hex of the key's name>.bin`. */
@@ -95,18 +95,32 @@ function keyOf(secret: Uint8Array) {
 function publicOf(secret: Uint8Array): string {
   return Buffer.from((createPublicKey(keyOf(secret)).export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
 }
-const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((v, i) => v === b[i]);
 
-/** Every seat key this vessel holds, by name. Reads the directory alone: it opens no row and answers at the floor. */
-export function listSeatKeys(): HeldSeatKey[] {
-  let names: string[];
-  try { names = readdirSync(larIdentityDir()); } catch { return []; }
+const seatKeysIn = (names: readonly string[]): HeldSeatKey[] => {
   const out: HeldSeatKey[] = [];
-  for (const file of names.sort()) {
+  for (const file of [...names].sort()) {
     const m = SEAT_KEY_FILE.exec(file);
     if (m) out.push({ handleIndex: Number(m[1]), name: m[2]!, file });
   }
   return out;
+};
+
+/**
+ * Every seat key this vessel holds, by name, in every face. NAMES ALONE: it opens no row and answers at the floor, so it
+ * walks every face's directory, the lend's and the rest; a reader that opens a row reads `servedSeatKeys` instead.
+ */
+export function listSeatKeys(): HeldSeatKey[] {
+  let names: string[];
+  try { names = faceFileNames(larIdentityDir()); } catch { return []; }
+  return seatKeysIn(names);
+}
+
+/**
+ * The seat keys of the faces this seat serves (`openFaceFileNames`): a face resting locked, or outside a pūlama session's
+ * lend, holds its rows shut, so no row of it is asked. A locked seat refuses `CustodyLocked` here.
+ */
+async function servedSeatKeys(): Promise<HeldSeatKey[]> {
+  return seatKeysIn(await openFaceFileNames());
 }
 
 /** The row this vessel holds for one seat's public key, or null. Reads names alone. */
@@ -122,14 +136,13 @@ export function heldSeatKey(verifyingKey: string): HeldSeatKey | null {
  */
 export async function seatKeysOfFace(handleIndex: number): Promise<string[]> {
   assertFace(handleIndex);
-  await openedCustody();
   const keys: string[] = [];
-  for (const held of listSeatKeys()) {
+  for (const held of await servedSeatKeys()) {
     if (held.handleIndex !== handleIndex) continue;
-    keys.push(await openColdCustodyRow("identity", held.file, (secret) => {
-      if (secret.length !== 32) throw new CustodyRowUnavailable("identity", held.file, "malformed");
+    keys.push(await openColdCustodyRecord("identity", held.file, (secret) => {
+      if (secret.length !== 32) throw new CustodyRecordUnavailable("identity", held.file, "malformed");
       const key = publicOf(secret);
-      if (seatKeyName(key) !== held.name) throw new CustodyRowUnavailable("identity", held.file, "names-another-key");
+      if (seatKeyName(key) !== held.name) throw new CustodyRecordUnavailable("identity", held.file, "names-another-key");
       return key;
     }));
   }
@@ -148,9 +161,9 @@ export async function storeSeatKey(handleIndex: number, secret: Uint8Array): Pro
   try {
     const verifyingKey = publicOf(own);
     const file = seatKeyFile(verifyingKey, handleIndex);
-    await updateColdCustodyRow("identity", file, (bytes) => {
+    await updateColdCustodyRecord("identity", file, (bytes) => {
       // The look at the other faces' rows runs under the same custody hold as the write: two stores of one key
-      // under two faces never both land.
+      // under two faces never both land. It reads every face's names, the lend's and the rest, and opens none.
       const standing = heldSeatKey(verifyingKey);
       if (standing !== null && standing.file !== file) {
         throw new Error(`seat-key-store: this seat key stands under another face (${standing.file}); nothing was written`);
@@ -158,7 +171,7 @@ export async function storeSeatKey(handleIndex: number, secret: Uint8Array): Pro
       // The writer seals this store's own copy, which zero-fills below once the write has settled: no second
       // image of the secret outlives the store.
       if (bytes === null) return { plaintext: own, value: undefined };
-      if (!sameBytes(bytes, own)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+      if (!bytesEqual(bytes, own)) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
       return { plaintext: null, value: undefined };
     });
     return verifyingKey;
@@ -177,34 +190,36 @@ export async function mintSeatKey(handleIndex: number): Promise<string> {
 /** The seat's door: the cold row opens for this one signature over exactly `image`. */
 export async function signAsSeat(verifyingKey: string, image: Uint8Array): Promise<Uint8Array> {
   const key = assertKey(verifyingKey);
-  const held = heldSeatKey(key);
+  // The seat answers first (a locked vessel refuses `CustodyLocked` before it says what it holds), and a row of a face it
+  // does not serve reads as none.
+  const name = seatKeyName(key);
+  const held = (await servedSeatKeys()).find((k) => k.name === name) ?? null;
   if (held === null) {
-    // The seat still answers first: a locked vessel refuses `CustodyLocked` before it says what it holds.
-    await openedCustody();
-    throw new CustodyRowUnavailable("identity", `seat-key-h*-${seatKeyName(key)}.bin`, "absent");
+    throw new CustodyRecordUnavailable("identity", `seat-key-h*-${seatKeyName(key)}.bin`, "absent");
   }
-  return openColdCustodyRow("identity", held.file, (secret) => {
-    if (secret.length !== 32) throw new CustodyRowUnavailable("identity", held.file, "malformed");
-    if (publicOf(secret) !== key) throw new CustodyRowUnavailable("identity", held.file, "names-another-key");
+  return openColdCustodyRecord("identity", held.file, (secret) => {
+    if (secret.length !== 32) throw new CustodyRecordUnavailable("identity", held.file, "malformed");
+    if (publicOf(secret) !== key) throw new CustodyRecordUnavailable("identity", held.file, "names-another-key");
     return new Uint8Array(sign(null, Buffer.from(image), keyOf(secret)));
   });
 }
 
 /**
  * Retire one seat key: its row leaves, and this answers whether one stood. The holder removes only a row its own
- * vessel key opens, so a row that stands and does not open refuses `CustodyRowUnavailable` and stays.
+ * vessel key opens, so a row that stands and does not open refuses `CustodyRecordUnavailable` and stays.
  */
 export async function retireSeatKey(verifyingKey: string): Promise<boolean> {
-  const held = heldSeatKey(verifyingKey);
-  if (held === null) { await openedCustody(); return false; }
   const key = assertKey(verifyingKey);
+  const name = seatKeyName(key);
+  const held = (await servedSeatKeys()).find((k) => k.name === name) ?? null;
+  if (held === null) return false;
   // The row's own bytes answer for it, under the same hold as the removal: a row under this key's name that holds
   // another key, or another length, stays and refuses by name.
   const row: { reading: "malformed" | "names-another-key" | null } = { reading: null };
-  const left = await removeColdCustodyRow("identity", held.file, (secret) => {
+  const left = await removeColdCustodyRecord("identity", held.file, (secret) => {
     row.reading = secret.length !== 32 ? "malformed" : publicOf(secret) !== key ? "names-another-key" : null;
     return row.reading === null;
   });
-  if (row.reading !== null) throw new CustodyRowUnavailable("identity", held.file, row.reading);
+  if (row.reading !== null) throw new CustodyRecordUnavailable("identity", held.file, row.reading);
   return left;
 }

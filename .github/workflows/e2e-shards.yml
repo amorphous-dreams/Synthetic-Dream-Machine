@@ -1,7 +1,7 @@
 name: E2E shards
 
 # EVERY e2e set (the table `E2E_SETS` in tools/e2e-shards.mjs: the main set under tests/ split four
-# ways, the node package's own set in one shard) rides the vitest shard matrix below, each shard a SELF-CONTAINED runner: its own recursive checkout, its own
+# ways, the node package's own set riding shard 3 as a companion run) rides the vitest shard matrix below, each shard a SELF-CONTAINED runner: its own recursive checkout, its own
 # frozen install, its own TW5 core render, its own build, then only its slice of the suite. A
 # merge job reassembles every shard's report and FAILS CLOSED unless every shard of every set
 # answered, none failed, none ran zero tests, and each set's union of files actually run is EXACTLY
@@ -18,7 +18,7 @@ name: E2E shards
 # its shards: one push, one e2e verdict.
 #
 # ONE BUILD PER SHARD. A single build shared across runners would need its own artifact-transfer
-# job this lane does not carry; four independent builds cost more CPU-minutes but no coordination,
+# job this workflow does not carry; four independent builds cost more CPU-minutes but no coordination,
 # and the repo is public, so Linux minutes bill to net $0 against the org's usage.
 
 on:
@@ -45,6 +45,7 @@ jobs:
   shard:
     name: Shard ${{ matrix.set }} ${{ matrix.shard }}/${{ matrix.count }}
     runs-on: ubuntu-latest
+    timeout-minutes: 50
     strategy:
       # A red shard must never cancel its siblings — the merge gate needs to see ALL FOUR
       # verdicts to tell "one shard failed" apart from "one shard never got to answer".
@@ -55,9 +56,8 @@ jobs:
         include:
           - { set: tests, dir: tests, config: vitest.config.ts, shard: 1, count: 4 }
           - { set: tests, dir: tests, config: vitest.config.ts, shard: 2, count: 4 }
-          - { set: tests, dir: tests, config: vitest.config.ts, shard: 3, count: 4 }
+          - { set: tests, dir: tests, config: vitest.config.ts, shard: 3, count: 4, companion: node }
           - { set: tests, dir: tests, config: vitest.config.ts, shard: 4, count: 4 }
-          - { set: node, dir: packages/lararium-node, config: vitest.e2e.config.ts, shard: 1, count: 1 }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -76,6 +76,40 @@ jobs:
         run: pnpm --filter @lararium/tw5 build:tw5-vendor
       - name: Build (vessels run from dist)
         run: pnpm build
+      # THE MCP SEAT WALKS HERE TOO. `mcp-seat-binds-the-hearth` spawns the real `lares_mcp.py` against a staged
+      # hearth, so the shard holds THE venv (`~/.venv`) the seat resolves, stood from the same list and cached
+      # under the same key as ci.yml's test cells (one cache, restored by key).
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: py
+        with:
+          python-version: '3.12'
+      - id: mempalace-pin
+        run: echo "sha=$(git rev-parse HEAD:mempalace)" >> "$GITHUB_OUTPUT"
+
+      # The key carries the exact interpreter PATCH: a restored venv's bin/python3 symlinks to the hostedtoolcache path of the patch that built
+      # it, so on a runner carrying another 3.12.x it dangles (exit 127).
+      - name: Cache the holder venv
+        id: venv-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.venv
+          key: holder-venv-${{ runner.os }}-py${{ steps.py.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
+      - name: Stand the holder venv (~/.venv)
+        env:
+          CACHE_HIT: ${{ steps.venv-cache.outputs.cache-hit }}
+        run: |
+          # A restored venv whose interpreter does not answer is no venv: stand it again (belt beside the patch-keyed cache).
+          if [ "$CACHE_HIT" = 'true' ] && ~/.venv/bin/python3 -V >/dev/null 2>&1; then exit 0; fi
+          rm -rf ~/.venv
+          python3 -m venv ~/.venv
+          ~/.venv/bin/python3 -m pip install --upgrade pip
+          ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
+      - name: Witness the holder answers
+        # The slice below runs under a scratch HOME, where `~/.venv` names nothing: the seat's interpreter rides by name
+        # (`LARES_PYTHON`, read before `~/.venv`), pinned here while HOME still names the runner's own home.
+        run: |
+          ~/.venv/bin/python3 -c "import mempalace; from mcp.server.mcpserver import MCPServer; print('holder ok')"
+          echo "LARES_PYTHON=$HOME/.venv/bin/python3" >> "$GITHUB_ENV"
       - name: Run this shard's slice of its e2e set
         working-directory: ${{ matrix.dir }}
         env:
@@ -84,13 +118,54 @@ jobs:
           # neither, and `larRoot()` throws a clean error rather than silently sitting the repo
           # checkout as the corpus. Each shard gets its own directory; the shards never share a VM.
           LAR_ROOT: ${{ runner.temp }}/lar-root-${{ matrix.set }}-${{ matrix.shard }}
+          HOME: ${{ runner.temp }}/home-e2e-${{ matrix.set }}-${{ matrix.shard }}
         run: |
+          mkdir -p "$HOME"
           mkdir -p "$LAR_ROOT"
-          npx vitest run --config "${{ matrix.config }}" \
-            --shard="${{ matrix.shard }}/${{ matrix.count }}" \
-            --reporter=blob --reporter=json \
+          # THE DEAL IS BY MEASURED WEIGHT, never vitest's path hash: `tools/e2e-shards.mjs shard-files` reads
+          # `tools/e2e-shard-weights.json`, and the merge gate still reads every tracked file run exactly once.
+          mapfile -t files < <(node "$GITHUB_WORKSPACE/tools/e2e-shards.mjs" shard-files --set "${{ matrix.set }}" --shard "${{ matrix.shard }}" --repo-root "$GITHUB_WORKSPACE")
+          test "${#files[@]}" -gt 0
+          # THE SHARD SPEAKS AS IT GOES: the dealt files print first, and the default reporter names each file and test as it
+          # settles beside the blob and JSON reports, so a shard the step timeout cuts names the file still running (the one
+          # dealt and never reported), where the blob alone wrote nothing until the end.
+          printf 'shard %s/%s deals %s file(s):\n' "${{ matrix.set }}" "${{ matrix.shard }}" "${#files[@]}"; printf '  %s\n' "${files[@]}"
+          npx vitest run --config "${{ matrix.config }}" "${files[@]}" \
+            --reporter=default --reporter=blob --reporter=json \
             --outputFile.json=".vitest/blob/report-shard-${{ matrix.set }}-${{ matrix.shard }}.json"
         timeout-minutes: 45
+      # The dogfood vessel suites above enter the normal tracked-file shard set. These no-socket
+      # controls pin the product image's state mounts and the host shim used by the runbook.
+      - name: Dogfood surface controls
+        if: ${{ matrix.set == 'tests' && matrix.shard == 4 }}
+        run: node --test tools/compose-surface-root.test.mjs tools/lares-container.test.mjs tools/container-founding-seat.test.mjs
+      # THE HOST BRIDGE AGAINST REAL DOCKER: the built host `lares` forwards through the real shim into a throwaway
+      # compose project (its own name, a busybox image, a stand-in CLI), never the product image. It walks argv, the
+      # forwarded env values, TTY, exit codes, and a lone SIGTERM and a Ctrl+C leaving nothing running in the vessel.
+      - name: Host bridge against real docker
+        if: ${{ !cancelled() && matrix.set == 'tests' && matrix.shard == 4 }}
+        working-directory: packages/lares-cli
+        env:
+          LARES_REAL_DOCKER: "1"
+        run: npx vitest run tests/host-bridge-real-docker.test.ts --reporter=default
+        timeout-minutes: 10
+      # THE COMPANION SET RIDES THIS RUNNER. A full CI run raises at most ten jobs (tools/ci-graph.test.mjs), so the node
+      # package's 47-second e2e set takes no runner of its own: it runs here, after the shard's slice, and uploads under its
+      # own artifact name (`e2e-shard-node-1`), so the merge gate reads it exactly as it read the shard it replaces.
+      - name: Run the companion set beside this shard
+        if: ${{ !cancelled() && matrix.companion != '' }}
+        working-directory: packages/lararium-node
+        env:
+          LAR_ROOT: ${{ runner.temp }}/lar-root-${{ matrix.companion }}-1
+        run: |
+          mkdir -p "$LAR_ROOT"
+          mapfile -t files < <(node "$GITHUB_WORKSPACE/tools/e2e-shards.mjs" shard-files --set "${{ matrix.companion }}" --shard 1 --repo-root "$GITHUB_WORKSPACE")
+          test "${#files[@]}" -gt 0
+          printf 'companion %s deals %s file(s):\n' "${{ matrix.companion }}" "${#files[@]}"; printf '  %s\n' "${files[@]}"
+          npx vitest run --config vitest.e2e.config.ts "${files[@]}" \
+            --reporter=default --reporter=blob --reporter=json \
+            --outputFile.json=".vitest/blob/report-shard-${{ matrix.companion }}-1.json"
+        timeout-minutes: 15
       - name: Upload this shard's blob + JSON report (always, even on a red shard)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -102,6 +177,14 @@ jobs:
           # artifact-less entry the merge gate can name as missing, never as a step that is
           # itself silently green because it had nothing to upload.
           if-no-files-found: warn
+      - name: Upload the companion set's blob + JSON report (always, even on a red run)
+        if: ${{ always() && matrix.companion != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-shard-${{ matrix.companion }}-1
+          path: packages/lararium-node/.vitest/blob/
+          retention-days: 3
+          if-no-files-found: warn
 
   # ─── merge (fails closed) ──────────────────────────────────────────────────────────────────────
   merge:
@@ -109,9 +192,10 @@ jobs:
     needs: shard
     # Runs whatever the shards answered — a job gated on `needs.shard.result == 'success'` would
     # let one red shard SKIP the merge gate instead of failing it, and a skipped required check
-    # reads as "nothing to report" rather than as the red this lane exists to surface.
+    # reads as "nothing to report" rather than as the red this gate exists to surface.
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -144,7 +228,7 @@ jobs:
           find artifacts -name 'blob-*.json' -exec cp {} merged-blobs/ \; 2>/dev/null || true
       - name: vitest --merge-reports (the documented sharded-report merge flow)
         working-directory: tests
-        # `--merge-reports` reads previously recorded blobs and reports; it runs no test file
+        # `--merge-reports` reads the recorded blobs and reports; it runs no test file
         # itself. It stays its own step, separate from the merge gate below, because vitest's own
         # merge reads SILENT ZERO when blobs are missing (exit 0, "no tests") — the gate step
         # names that loudly instead of trusting this command's exit code.

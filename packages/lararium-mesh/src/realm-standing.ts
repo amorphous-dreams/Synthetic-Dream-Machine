@@ -13,7 +13,7 @@
  * and deposits DEPTH.
  *
  * ── NOR CAN THEY SEE PAST THIS VESSEL ───────────────────────────────────────────────────────────
- * The count is a FLOOR, never a total. The slots ride `bags/daemon/lease-epoch/`, and each vessel
+ * The count is a FLOOR, never a total. The maintenance slots ride `realm-feed/`, and each vessel
  * reads that bag's URL off its OWN social bootstrap, so a contracted peer's offering rides its own
  * vessel's slots and never arrives here. Two operators contracted into one Nexus, both feeding one
  * realm, read only their own faces — walked in `mesh-scenarios.sh realm-crossing`.
@@ -45,7 +45,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation
  */
 
-/** One writer's lease slot, as the realm's clock reports it. */
+/** One writer's maintenance-feed slot, as the realm's clock reports it. */
 export interface RealmFeedSlot {
   readonly writer: string;
   readonly epoch:  number;

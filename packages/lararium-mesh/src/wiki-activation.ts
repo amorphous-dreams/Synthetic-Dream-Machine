@@ -39,12 +39,16 @@ export interface ActivationPool {
 
 /**
  * Resolve a never-opened wiki's mount spec from its recipe/catalog — the UNKNOWN-grain
- * branch of activation-on-reference (the true multi-wiki swap). The vessel supplies it,
- * closing over the catalog + binding resolver. Returns null for a genuinely-unknown
- * reference (no catalog entry) → the caller parks/drops. Absent entirely → retain-only
- * (a bare reference only reactivates a grain the pool already mounted once).
+ * branch of activation-on-reference. The vessel supplies it over the catalog and
+ * binding resolver; a refusal names the cause before the caller parks a verb.
  */
-export type ResolveWikiSpec = (wikiId: string) => Promise<WikiMountSpec | null>;
+export type WikiActivationResult =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly cause: "no-such-bag" | "record-unparsable" | "no-read-grant" | "unmounted"; readonly detail: string };
+export type WikiSpecResolution =
+  | { readonly ok: true; readonly spec: WikiMountSpec }
+  | { readonly ok: false; readonly cause: "no-such-bag" | "record-unparsable" | "no-read-grant"; readonly detail: string };
+export type ResolveWikiSpec = (wikiId: string) => Promise<WikiSpecResolution>;
 
 /**
  * The vessel's activation GRANT — the spectrum point this vessel advertises.
@@ -59,12 +63,10 @@ export interface WikiActivationGrant {
 export interface WikiActivationCap {
   /**
    * Ensure a wiki grain is live, activating a cold/known grain on reference.
-   * Returns true when the grain is live after the call. A NEVER-mounted grain
-   * (no retained spec, under retain-only) returns false WITHOUT registering a
-   * phantom resident — the caller parks the verb (the mailbox fallback) until the
-   * grain's spec is resolvable (`resolveWikiSpec`, the multi-wiki follow-on).
+   * Answers success when the grain lives. A refusal carries its cause and leaves
+   * no phantom resident; callers can park the verb with that cause.
    */
-  ensureActive(wikiId: string): Promise<boolean>;
+  ensureActive(wikiId: string): Promise<WikiActivationResult>;
   /**
    * HOLD a wiki as a rotatable user pin (exempt from collection) — the switcher's
    * pin control. Activates it first (a pin means nothing on a dead grain), then pins
@@ -101,9 +103,9 @@ export function makeWikiActivationCap(
 
   // The one activation chokepoint — closed over so `hold` and the method share it
   // (destructure-safe: no `this`).
-  const ensureActive = async (wikiId: string): Promise<boolean> => {
+  const ensureActive = async (wikiId: string): Promise<WikiActivationResult> => {
     // Already live → done (cheap, the common case for a pinned/active wiki).
-    if (pool.has(wikiId)) return true;
+    if (pool.has(wikiId)) return { ok: true };
     // Unknown grain (the pool never mounted it, no retained spec): the true swap
     // RESOLVES its spec from the recipe/catalog and teaches the pool, so a bare
     // reference wakes ANY wiki cold. A genuinely-unknown reference (resolveSpec
@@ -111,15 +113,15 @@ export function makeWikiActivationCap(
     // touching an unresolved grain would strand a phantom resident (wela in the
     // collector, cold in the pool), so we teach-BEFORE-touch or not at all.
     if (!pool.knowsSpec(wikiId)) {
-      const spec = resolveSpec ? await resolveSpec(wikiId) : null;
-      if (!spec) return false;
-      pool.registerSpec(wikiId, spec);   // teach it (no mount) — now knowsSpec
+      const resolved = resolveSpec ? await resolveSpec(wikiId) : { ok: false as const, cause: "no-such-bag" as const, detail: wikiId };
+      if (!resolved.ok) return resolved;
+      pool.registerSpec(wikiId, resolved.spec);   // teach it (no mount) — now knowsSpec
     }
     // Heat the grain through the ONE collector: `touch` marks it wela (its
     // onHydrate mounts the now-known grain via pool.ensureWiki, single-flight) and
     // enforces the wiki cap (onEvict unmounts the LRU wiki). Local-first act.
     await residency.touch(wikiId, "wiki");
-    return pool.has(wikiId);
+    return pool.has(wikiId) ? { ok: true } : { ok: false, cause: "unmounted", detail: wikiId };
   };
 
   return {
@@ -127,7 +129,7 @@ export function makeWikiActivationCap(
     ensureActive,
     async hold(wikiId: string): Promise<boolean> {
       // A pin means nothing on a dead grain — activate first (resolves + mounts).
-      if (!(await ensureActive(wikiId))) return false;
+      if (!(await ensureActive(wikiId)).ok) return false;
       // Already held → refresh its recency (so a re-hold never self-evicts).
       if (!holds.has(wikiId)) {
         // Budget-enforce: while full, RELEASE the least-recently-held rotatable pin.

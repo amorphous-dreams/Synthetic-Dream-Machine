@@ -1,165 +1,32 @@
 /**
- * live-wire-node-crossing.test.ts — LIVE-WIRE S1: two NODE vessels replicate a doc over the real
- * authenticated gate, one dialing the other, headless, in ONE process.
+ * live-wire-node-crossing.test.ts — LIVE-WIRE S1: two NODE vessels replicate a doc over a real sealed gate, one
+ * dialing the other, headless, in ONE process.
  *
- * browser-crossing.test proves a browser-SHAPED client leaf crosses a node's gate. This proves the
- * NODE-CLIENT leg: a full node vessel — its OWN DaemonAuthGate on its OWN port, NodeFS storage on its
- * OWN dir — mounts a LarWSClientAdapter carrying its OWN Ed25519 identity and dials ANOTHER node's /ws.
- * That models a real node joining a peer node (the transport foundation `lares nexus join` builds on),
- * not a browser leaf. Every crypto piece stays REAL: real DaemonAuthGate, real V3 Ed25519
- * proof-of-possession, real Automerge CRDT sync. The capability barrier reads an admitted-key set — the
- * faithful stand-in for the keyhive worker's grant check the in-process + container crossings also use.
+ * A full node vessel — its OWN sovereign gate on its OWN port (`faceGateServer`, its sessions read by a
+ * `gateSyncServer` the Repo's adapter serves), NodeFS storage on its OWN dir — mounts a `LarWSClientAdapter`
+ * carrying a face the other node's gate sorts and dials ANOTHER node's sync route. Every crypto piece stays REAL:
+ * the Noise IK flight, the presented admit, the signed verdict, real Automerge CRDT sync over the sealed channel.
  *
  * It proves:
  *   (1) a doc authored on vessel B reaches the DIALING node A (B → A);
  *   (2) a change authored on A flows back to B (A → B) — the breath both ways over ONE crossed socket;
- *   (3) an UN-admitted node's client ANERGIZES and never becomes a peer (no sync), while the SAME node,
- *       once B admits its key, DOES sync — so the admit check bites by construction (the deny is
- *       load-bearing, not an incidental transport failure).
+ *   (3) a node presenting NO admit under a PRIVATE gate meets silence and never becomes a peer, while the SAME
+ *       node presenting its admit DOES sync — so the sort bites by construction (the deny is load-bearing, not an
+ *       incidental transport failure).
  *
  * Gate: lar:///ha.ka.ba/lararium/node/live-wire-node-crossing
  */
 
 import { describe, test, expect, afterEach } from "vitest";
-import { createServer, type Server } from "node:http";
-import { generateKeyPairSync } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { WebSocketServer } from "ws";
-import { ed25519SignerFromSeed, type LarWSClientAdapter } from "@lararium/mesh";
-import { Repo, type PeerId } from "@automerge/automerge-repo";
-import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
-import { restEvery, restingRepo } from "./resting-repo.js";
-import { type DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
-import { armGate, dialGate, provingShore, standGate as standAuthGate } from "./gate-dial-fixture.js";
-import { arrival } from "../../lararium-mesh/tests/handshake.js";
-/** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
-const admitProven: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
-import type { LeafIdentity } from "../src/leaf-identity.js";
+import { restEvery } from "./resting-repo.js";
+import { standGatedNode, type GatedNode } from "./gated-node-rig.js";
 
-const AUD = "lar:///ha.ka.ba/bags/daemon";
 const GREETING_KEY = "lar:///ha.ka.ba/bags/crossroads/greeting";
 const REPLY_KEY    = "lar:///ha.ka.ba/bags/personal/reply";
 type GreetDoc = { tiddlers: Record<string, { text: string }> };
-
-/** An Ed25519 keypair (the node-vessel-identity pattern): raw 32-byte seed + verifying-key hex. */
-const SEED_OF = new Map<string, Uint8Array>();
-function genKey(): { seed: Uint8Array; pub: string } {
-  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
-  const pub  = Buffer.from((publicKey.export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
-  const seed = new Uint8Array(Buffer.from((privateKey.export({ format: "jwk" }) as { d: string }).d, "base64url"));
-  SEED_OF.set(pub, seed);
-  return { seed, pub };
-}
-/** A gate's own key — the verifying key it advertises and the signer of its verdicts. */
-const gateKeyOf = (pub: string): GateKey => ({ pubKey: pub, sign: ed25519SignerFromSeed(SEED_OF.get(pub)!) });
-
-/** A node's leaf identity — a real Ed25519 signer + a ContactCard carrying its own verifying key. The
- *  SAME light identity a headless node dials out with (leaf-identity.ts); no browser shape enters here. */
-function makeNodeIdentity(): { identity: LeafIdentity; seed: Uint8Array; pub: string } {
-  const { seed, pub } = genKey();
-  return { seed, pub, identity: { contactCard: JSON.stringify({ peerPubKey: pub }), peerPubKey: pub, sign: ed25519SignerFromSeed(seed) } };
-}
-
-/**
- * The real shore a vessel's gate arms with: it runs the REAL V3 Ed25519 proof check, then the CAPABILITY
- * decision — a peer crosses only when its key sits in the admitted set (the daemon-bag grant). A valid
- * proof proves WHO, never WHETHER-GRANTED; an un-admitted node is turned away here.
- */
-/**
- * Node-side Automerge readiness override (mirrors the production ListeningWSServerAdapter): upstream's
- * NodeWSServerAdapter declares ready only on its FIRST client — un-pono for a local-first vessel whose
- * readiness reads from local state. The override keeps the vessel ready from listen, the shape
- * open-node-vessel wires in production.
- */
-class ReadyWSServerAdapter extends NodeWSServerAdapter {
-  override isReady(): boolean { return true; }
-  override whenReady(): Promise<void> { return Promise.resolve(); }
-}
-
-interface VesselOpts {
-  storageDir: string;
-  gatePubKey: string;
-  /** The keys THIS vessel's gate admits (the daemon-bag grant it enforces on INBOUND dials). */
-  admitted:   ReadonlySet<string>;
-  /** When present, the vessel ALSO mounts a client adapter and dials a peer node's gate — the node-client
-   *  leg. Its `gatePubKey` binds the proof to the DIALED gate, never this vessel's own. */
-  dialOut?: { url: string; identity: LeafIdentity; peerGatePubKey: string };
-}
-
-interface Vessel {
-  gate: DaemonAuthGate;
-  repo: Repo;
-  port: number;
-  /** The dial-out client adapter (present only when `dialOut` was given) — carries `.anergized`. */
-  client: LarWSClientAdapter | null;
-  /** The dial-out leaf's own word that it anergized, with the refusal it met (`onAnergy`). */
-  anergy: Promise<string>;
-  close: () => Promise<void>;
-}
-
-/**
- * Stand a FULL node vessel: its own http+wss behind a real DaemonAuthGate on its own port, NodeFS storage
- * on its own dir, and a Repo whose gate-ring sharePolicy shares a doc ONLY with a WS peer whose socket
- * carries an admitted identifier. When `dialOut` is set, the vessel also mounts a LarWSClientAdapter and
- * dials the named peer node — so ONE vessel both SERVES its gate and DIALS another's, the real node shape.
- */
-function standNodeVessel(opts: VesselOpts): Promise<Vessel> {
-  return new Promise((resolve, reject) => {
-    const http: Server = createServer();
-    const wss  = new WebSocketServer({ server: http });
-    const gate = standAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
-    const serverNetwork = new ReadyWSServerAdapter(gate as unknown as WebSocketServer);
-
-    // The gate ring: a WS peer arriving on THIS vessel's own gate shares only once its socket carries an
-    // admitted identifier. A peer reached over the OUTBOUND client leg is not in the server sockets, so the
-    // policy shares with it freely — exactly the production asymmetry (a node serves gated, dials open).
-    const peerIdentifierMap = new Map<string, string>();
-    serverNetwork.on("peer-candidate", ({ peerId }: { peerId: string }) => {
-      queueMicrotask(() => {
-        const socket = (serverNetwork.sockets as Record<string, unknown>)[peerId];
-        if (!socket) return;
-        const identHex = gate.getIdentifierForSocket(socket as Parameters<typeof gate.getIdentifierForSocket>[0]);
-        if (identHex) peerIdentifierMap.set(peerId, identHex);
-      });
-    });
-
-    let client: LarWSClientAdapter | null = null;
-    const anergy = arrival<string>("the dialing node saying it anergized (`onAnergy`)", 8_000);
-    const network: (ReadyWSServerAdapter | LarWSClientAdapter)[] = [serverNetwork];
-    if (opts.dialOut) {
-      client = dialGate({
-        url: opts.dialOut.url, identity: opts.dialOut.identity, aud: AUD, gatePubKey: opts.dialOut.peerGatePubKey,
-        onAnergy: (reason) => { anergy.arrive(reason); },
-      });
-      network.push(client);
-    }
-
-    const repo = restingRepo(opts.storageDir, {
-      network,
-      sharePolicy: async (peerId) => {
-        const wsSocket = (serverNetwork.sockets as Record<string, unknown> | undefined)?.[peerId];
-        return wsSocket ? peerIdentifierMap.has(peerId) : true;
-      },
-    });
-
-    armGate(gate, { gate: gateKeyOf(opts.gatePubKey), aud: AUD, sort: admitProven, shore: provingShore(opts.gatePubKey, { admits: (key) => opts.admitted.has(key) }) });
-
-    http.listen(0, "127.0.0.1", () => {
-      const addr = http.address();
-      if (!addr || typeof addr === "string") { reject(new Error("bad address")); return; }
-      resolve({
-        gate, repo, port: addr.port, client, anergy: anergy.arrived,
-        close: async () => {
-          try { client?.disconnect(); } catch { /* never connected */ }
-          await repo.rest();
-          await new Promise<void>((res) => wss.close(() => http.close(() => res())));
-        },
-      });
-    });
-  });
-}
 
 /** Resolve once `handle`'s doc carries `key`, or reject after `ms` (a denial reads as "never synced"). */
 function awaitKey(handle: { doc: () => GreetDoc | undefined; on: (e: "change", cb: () => void) => void }, key: string, ms: number, label: string): Promise<void> {
@@ -171,36 +38,27 @@ function awaitKey(handle: { doc: () => GreetDoc | undefined; on: (e: "change", c
   });
 }
 
-describe("LIVE-WIRE S1 — two NODE vessels, one dialing the other over the real authenticated gate", () => {
+describe("LIVE-WIRE S1 — two NODE vessels, one dialing the other over a real sealed gate", () => {
   const dirs: string[] = [];
-  let vessels: Vessel[] = [];
+  let nodes: GatedNode[] = [];
 
   function mkStorageDir(): string { const d = mkdtempSync(join(tmpdir(), "lar-livewire-")); dirs.push(d); return d; }
 
   afterEach(async () => {
-    for (const v of vessels) { try { await v.close(); } catch { /* already down */ } }
-    vessels = [];
+    for (const n of nodes) { try { await n.close(); } catch { /* already down */ } }
+    nodes = [];
     // Every vessel's Repo rests (its adapter closed) before its directory leaves: no save of its can land after.
     await restEvery();
     for (const d of dirs.splice(0)) { try { rmSync(d, { recursive: true, force: true }); } catch { /* gone */ } }
   });
 
   test("node A dials node B; a doc authored on B replicates to A, AND a change on A flows back to B (both ways)", async () => {
-    // Node A's identity is known before B stands, so B can admit it.
-    const a = makeNodeIdentity();
-    const bGate = genKey().pub;
-    const aGate = genKey().pub;
-
-    // Vessel B — the DIALED node. Its gate admits A's key.
-    const nodeB = await standNodeVessel({ storageDir: mkStorageDir(), gatePubKey: bGate, admitted: new Set([a.pub]) });
-    vessels.push(nodeB);
-
-    // Vessel A — a FULL node (its own gate on its own port + storage) that ALSO dials B carrying A's identity.
-    const nodeA = await standNodeVessel({
-      storageDir: mkStorageDir(), gatePubKey: aGate, admitted: new Set(),
-      dialOut: { url: `ws://127.0.0.1:${nodeB.port}`, identity: a.identity, peerGatePubKey: bGate },
-    });
-    vessels.push(nodeA);
+    // Vessel B — the DIALED node. Its gate admits the face A presents.
+    const nodeB = await standGatedNode({ storageDir: mkStorageDir() });
+    nodes.push(nodeB);
+    // Vessel A — a FULL node (its own gate on its own port + storage) that ALSO dials B carrying an admit.
+    const nodeA = await standGatedNode({ storageDir: mkStorageDir(), nexus: "nexus-a.synthetic", dialOut: { node: nodeB, label: "node a" } });
+    nodes.push(nodeA);
 
     // B authors a doc — its AutomergeUrl is the capability token A resolves across the crossed socket.
     const docB = nodeB.repo.create<GreetDoc>({ tiddlers: {} });
@@ -217,57 +75,44 @@ describe("LIVE-WIRE S1 — two NODE vessels, one dialing the other over the real
     expect(docB.doc()?.tiddlers?.[REPLY_KEY]?.text).toBe("node A answers");
 
     // The dialing node crossed the gate as a real peer.
-    expect(nodeB.gate.clients.size).toBe(1);
+    expect(nodeB.seated()).toBe(1);
   }, 12_000);
 
-  // The deny and its positive control run as a MATCHED PAIR — identical wiring, the admitted set the only
-  // difference. Together they prove the deny hangs on the admit check (the bite), not on incidental
-  // transport failure: flip the one input, the outcome flips.
+  // The deny and its positive control run as a MATCHED PAIR — identical wiring, the presented admit the only
+  // difference. Together they prove the deny hangs on the sort (the bite), not on incidental transport failure:
+  // flip the one input, the outcome flips.
 
-  test("an UN-admitted node's client is DENIED — it anergizes and never syncs (the barrier holds)", async () => {
-    const c = makeNodeIdentity();
-    const bGate = genKey().pub;
-    // B admits NOBODY. C's proof verifies, yet it holds no daemon grant.
-    const nodeB = await standNodeVessel({ storageDir: mkStorageDir(), gatePubKey: bGate, admitted: new Set() });
-    vessels.push(nodeB);
+  test("a node presenting NO admit is silence under PRIVATE — it never becomes a peer and never syncs (the barrier holds)", async () => {
+    const nodeB = await standGatedNode({ storageDir: mkStorageDir() });             // PRIVATE: the world's default posture
+    nodes.push(nodeB);
 
     const docB = nodeB.repo.create<GreetDoc>({ tiddlers: {} });
     docB.change((d) => { d.tiddlers[GREETING_KEY] = { text: "the DreamNet breathes" }; });
 
-    const nodeC = await standNodeVessel({
-      storageDir: mkStorageDir(), gatePubKey: genKey().pub, admitted: new Set(),
-      dialOut: { url: `ws://127.0.0.1:${nodeB.port}`, identity: c.identity, peerGatePubKey: bGate },
-    });
-    vessels.push(nodeC);
+    const nodeC = await standGatedNode({ storageDir: mkStorageDir(), nexus: "nexus-a.synthetic", dialOut: { node: nodeB, arm: null, label: "node c" } });
+    nodes.push(nodeC);
 
     // A denied node holds no peer and no local copy, so find() never resolves the doc — bound it in a race
-    // (the container crossing-client bounds it the same way) and assert the doc never crossed.
+    // and assert the doc never crossed.
     const findOutcome = await Promise.race([
       nodeC.repo.find<GreetDoc>(docB.url).then(() => "found" as const, () => "unavailable" as const),
       new Promise<"pending">((r) => setTimeout(() => r("pending"), 1_500)),
     ]);
     expect(findOutcome).not.toBe("found");         // the denied node never synced B's doc
-    expect(nodeB.gate.clients.size).toBe(0);       // never a peer — the real barrier held
-    // The dialing node anergized on the refusal: it says so itself, whenever the race above happened to end.
-    expect(await nodeC.anergy).toBeTruthy();
-    expect(nodeC.client?.anergized).toBeTruthy();
+    expect(nodeB.seated()).toBe(0);                // never a peer — the real barrier held
+    expect(nodeC.client?.anergized).toBeNull();    // silence is a transport fault, never a named anergy
   }, 12_000);
 
-  test("the positive control (the bite): the SAME un-admitted setup, once B admits C's key, DOES sync", async () => {
-    const c = makeNodeIdentity();
-    const bGate = genKey().pub;
-    // The ONLY change from the deny test: B admits C's key → the crossing must now breathe.
-    const nodeB = await standNodeVessel({ storageDir: mkStorageDir(), gatePubKey: bGate, admitted: new Set([c.pub]) });
-    vessels.push(nodeB);
+  test("the positive control (the bite): the SAME setup presenting its admit DOES sync", async () => {
+    const nodeB = await standGatedNode({ storageDir: mkStorageDir() });
+    nodes.push(nodeB);
 
     const docB = nodeB.repo.create<GreetDoc>({ tiddlers: {} });
     docB.change((d) => { d.tiddlers[GREETING_KEY] = { text: "the DreamNet breathes" }; });
 
-    const nodeC = await standNodeVessel({
-      storageDir: mkStorageDir(), gatePubKey: genKey().pub, admitted: new Set(),
-      dialOut: { url: `ws://127.0.0.1:${nodeB.port}`, identity: c.identity, peerGatePubKey: bGate },
-    });
-    vessels.push(nodeC);
+    // The ONLY change from the deny test: C presents its admit → the crossing must now breathe.
+    const nodeC = await standGatedNode({ storageDir: mkStorageDir(), nexus: "nexus-a.synthetic", dialOut: { node: nodeB, label: "node c" } });
+    nodes.push(nodeC);
 
     const foundOnC = await nodeC.repo.find<GreetDoc>(docB.url);
     await awaitKey(foundOnC, GREETING_KEY, 5_000, "admitted node C never synced (positive control failed)");

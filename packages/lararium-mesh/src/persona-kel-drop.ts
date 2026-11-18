@@ -11,7 +11,7 @@
  * bytes by content address. A deposit carries the successor AND its predecessor event. The herm keeps the successor
  * only when it VERIFIES against that predecessor (`admitPersonaKelDropDeposit`): the predecessor's cid recomputes,
  * the drop's name derives from it, and the successor passes the one reader's own successor check
- * (`personaSuccessorFault`) — a rotation by a guardian quorum against the predecessor's committed next keys (the
+ * (`personaSuccessorFault`) — a rotation by a recovery contact quorum against the predecessor's committed next keys (the
  * pre-rotation), a veto by the predecessor's op-key, every enrolment by its op-key's seal. So no one who lacks the
  * persona's keys files anything under a name a leaf pulls, and every quota counts verified values alone. A drop
  * holds plural values: a provisional rotation and its veto share a predecessor, and both stay; rotations and vetoes
@@ -56,7 +56,6 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJson, canonicalJsonBytes, hex } from "./crypto.js";
 import { PERSONA_KEL_DROP_DOMAIN } from "./domains.js";
-import { pinnedRelayAddress } from "./gate-knock.js";
 import {
   foldPersonaContests, personaEventCidOf, personaSuccessorFault, type PersonaKelEvent, type PersonaKelFork,
 } from "./persona-kel.js";
@@ -260,6 +259,20 @@ async function cappedText(res: Response, cap: number): Promise<string | null> {
   return new TextDecoder().decode(all);
 }
 
+const RELAY_KEY_RE = /^[0-9a-fA-F]{64}$/;
+
+/**
+ * A pinned relay address: `ws(s)://host[:port][/path]#<gate key hex>`. The fragment is the dialer's own pin and
+ * never rides a request. Throws on an address with no 32-byte hex key: a dial with no pin has no herm to reach.
+ */
+export function pinnedRelayAddress(url: string): { readonly url: string; readonly gatePubKey: string } {
+  const u = new URL(url);
+  const gatePubKey = u.hash.replace(/^#/, "").toLowerCase();
+  if (!RELAY_KEY_RE.test(gatePubKey)) throw new Error(`a relay address names its gate key in its fragment (#<gate key hex>): ${url}`);
+  u.hash = "";
+  return { url: u.href, gatePubKey };
+}
+
 /** True for the abort a request's deadline raises. */
 const timedOut = (err: unknown): boolean =>
   typeof err === "object" && err !== null && ["TimeoutError", "AbortError"].includes((err as { name?: string }).name ?? "");
@@ -283,6 +296,7 @@ export function httpPersonaKelDropHerm(address: string, opts: { readonly deadlin
     gatePubKey: pinned.gatePubKey,
     pull: async (name) => {
       try {
+        // LIVENESS: a remote herm may leave the pull unanswered indefinitely.
         const res = await fetch(at(name), { signal: AbortSignal.timeout(deadline) });
         if (!res.ok) { await res.body?.cancel().catch(() => undefined); return []; }
         const text = await cappedText(res, PERSONA_KEL_DROP_BODY_CAP * PERSONA_KEL_DROP_READ_CAP);
@@ -297,6 +311,7 @@ export function httpPersonaKelDropHerm(address: string, opts: { readonly deadlin
     deposit: async (name, deposit) => {
       try {
         const res = await fetch(at(name), {
+          // LIVENESS: a remote herm may leave the deposit unanswered indefinitely.
           method: "POST", headers: { "content-type": "text/plain" }, body: JSON.stringify(deposit), signal: AbortSignal.timeout(deadline),
         });
         await res.body?.cancel().catch(() => undefined);

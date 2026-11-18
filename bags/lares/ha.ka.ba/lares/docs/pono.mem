@@ -1,27 +1,21 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono.mem"
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 17
 role      = "parent docs shelf for protocol reference, law-adjacent explanation, and stable operator guidance"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Pono Docs
 
@@ -30,7 +24,7 @@ This shelf holds explanatory protocol docs, migration notes, and operator-facing
 
 <<~/ahu>>
 
-<<~ ahu #/tree>>
+<<~ ahu slot=`#/tree`>>
 
 !! Tree
 
@@ -43,16 +37,16 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/loci">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lar-uri`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ze17qz2_bGm_JaTnOt8zDcTQdySkCb2HDhPqoqD1Mqw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RyNRHF-REhSSC3v58zNsmArE7sEUz6t2KWXiMK4oAZg`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

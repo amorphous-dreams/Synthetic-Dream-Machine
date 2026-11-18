@@ -1,13 +1,9 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/tw5-widget-module">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/tw5-widget-module`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path   = "bags/lararium/ha.ka.ba/lararium/docs/tw5-widget-module.mem"
-mana        = 17
-manao       = 17
-manaoio     = 16
 role        = "design doc: TW5 widget module protocol — two-phase stub preload + prototype chain wiring"
 source      = "lar:///ha.ka.ba/lares/api/lararium/modules/widget-module"
 status-date = "2026-04-30"
@@ -16,7 +12,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/docs/tw5-widget-module"
 ```
 
-<<~ ahu #/overview>>
+<<~ ahu slot=`#/overview`>>
 
 !! Overview
 
@@ -26,7 +22,7 @@ The canonical source for this protocol is at `lar:///ha.ka.ba/lares/api/lararium
 
 <<~/ahu>>
 
-<<~ ahu #/two-phase>>
+<<~ ahu slot=`#/two-phase`>>
 
 !! Two-Phase Boot
 
@@ -36,7 +32,7 @@ The canonical source for this protocol is at `lar:///ha.ka.ba/lares/api/lararium
 
 <<~/ahu>>
 
-<<~ ahu #/corpus-path>>
+<<~ ahu slot=`#/corpus-path`>>
 
 !! Corpus Path
 
@@ -44,6 +40,6 @@ When the boot gate passes at least one corpus meme, `tw5-modules` is loaded as a
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eoX9SgYx4pNhQwVE3KyEzfFdOtmBUk89hbpU5K9G1EA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HVH2Dy2vHg_k9nOwRNMhv_TfKsmbqmX1kWcb5n9qGjA`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

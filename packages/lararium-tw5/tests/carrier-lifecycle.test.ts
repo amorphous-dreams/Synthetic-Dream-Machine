@@ -34,7 +34,7 @@ function carrier(metaLines: readonly string[], body = ""): string {
   return `${meta(metaLines)}\n\n${body}\n`;
 }
 
-const LEANS = (...items: string[]) => ["<<~ ahu #/leans>>", "", ...items, "", "<<~/ahu>>"].join("\n");
+const LEANS = (...items: string[]) => ["<<~ ahu slot=`#/leans`>>", "", ...items, "", "<<~/ahu>>"].join("\n");
 
 describe("carrier-lifecycle — the tag family carries the stage", () => {
   test("the five stages are the whole vocabulary", () => {
@@ -52,7 +52,7 @@ describe("carrier-lifecycle — the tag family carries the stage", () => {
    * would fault the whole shelf.
    */
   test("CONTROL — an untagged carrier stands ungoverned and owes nothing", () => {
-    const src = carrier([`tags = ["api/pono/meme"]`], LEANS("# a question stands. `-> ?`"));
+    const src = carrier([`tags = ["api/pono/meme"]`], LEANS("# a question stands. ``to=`?` ``"));
     expect(readCarrierLifecycle(src).stage).toBeNull();
     expect(checkCarrierLifecycle(src)).toEqual([]);
   });
@@ -66,32 +66,32 @@ describe("carrier-lifecycle — the tag family carries the stage", () => {
   });
 
   test("a designed carrier may hold an open lean", () => {
-    const src = carrier([`tags = ["lifecycle/designed"]`], LEANS("# the fork stands unruled. `-> ?`"));
+    const src = carrier([`tags = ["lifecycle/designed"]`], LEANS("# the fork stands unruled. ``to=`?` ``"));
     expect(checkCarrierLifecycle(src)).toEqual([]);
   });
 
   test("a standing carrier may NOT hold an open lean", () => {
-    const src = carrier([`tags = ["lifecycle/standing"]`], LEANS("# the fork stands unruled. `-> ?`"));
+    const src = carrier([`tags = ["lifecycle/standing"]`], LEANS("# the fork stands unruled. ``to=`?` ``"));
     expect(checkCarrierLifecycle(src)).toEqual([
-      "lifecycle/standing: an open lean `-> ?` stands in #/leans — a ruling closes it, or the stage reads designed",
+      "lifecycle/standing: an open lean ``to=`?` `` stands in #/leans — a ruling closes it, or the stage reads designed",
     ]);
   });
 
   /** The lean law reaches the `#/leans` slot alone; a bearing arrow in prose is not a lean. */
   test("CONTROL — an open arrow outside #/leans is not an open lean", () => {
-    const src = carrier([`tags = ["lifecycle/standing"]`], "The turn hands back `-> ?` and waits.");
+    const src = carrier([`tags = ["lifecycle/standing"]`], "The turn hands back ``to=`?` `` and waits.");
     expect(checkCarrierLifecycle(src)).toEqual([]);
   });
 
   test("a folded carrier owes every content slot a fold pointer", () => {
     const body = [
-      "<<~ ahu #/one>>",
+      "<<~ ahu slot=`#/one`>>",
       "",
       "folded to lar:///ha.ka.ba/lares/api/pono/meme",
       "",
       "<<~/ahu>>",
       "",
-      "<<~ ahu #/two>>",
+      "<<~ ahu slot=`#/two`>>",
       "",
       "the argument still sits here.",
       "",
@@ -104,7 +104,7 @@ describe("carrier-lifecycle — the tag family carries the stage", () => {
 
   test("CONTROL — a folded carrier whose every slot points is clean", () => {
     const body = [
-      "<<~ ahu #/one>>",
+      "<<~ ahu slot=`#/one`>>",
       "",
       "folded to lar:///ha.ka.ba/lares/api/pono/meme",
       "",
@@ -187,7 +187,7 @@ describe("carrier-lifecycle — the root meta rides the body, never a meta above
    * carrier's root — the real root meta stands after STX and is the one `harvest-to` answers from.
    */
   test("a meta block above STX never answers for the carrier — the root after STX does", () => {
-    const STX = `<<^ code="&#x0002;">>`;
+    const STX = `<<^ code=\`&#x0002;\`>>`;
     const src = [
       "```toml meta",
       `harvest-to = "wrong"`,

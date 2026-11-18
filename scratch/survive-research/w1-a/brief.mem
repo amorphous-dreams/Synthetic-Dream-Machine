@@ -1,0 +1,87 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-08 (file date) — source `.lares-scratch/survive-research/w1-a/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-research/w1-a/brief.md` (brief, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w1-a/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/research-brief-wave-1-seat-a-survival-layout-and`>>
+
+! Research brief, wave 1, seat A: survival layout and bundle/restore prior art
+
+You stand the whole Lares house if you know it; otherwise work plainly. Mask: `Root-Cartographer: Lares (Tasked Spirit)`. Use web search. Cite every claim with a URL. Write final.md in your seat dir (under 1800 words).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/local-context`>>
+
+!! Local context (you cannot read the repo; these facts come from the controller's code reads)
+
+The Lares stack: a local-first, web3-only "vessel" (Node daemon) that holds an Automerge CRDT store of tiddler-like records ("memes") composed into wikis by RECIPES over BAGS (a TiddlyWiki-like model). Layers top to bottom in a wiki: temp -> draft -> personal -> working -> canon -> kahua (governance) -> library bags -> oracle. Records stay sealed at rest under a custody key (passphrase and/or paper-pin slots). A disk PROJECTOR renders the latest text of some records to plaintext `.mem` files (memetic wikitext) on disk; projection holds latest text only, never CRDT history. An AI agent (Claude Code, Codex) reads and writes memory through an MCP server into the daemon's own wiki.
+
+Layout today: one root ($LAR_ROOT, default ~/.lares; in the container ~/.lares/state mounts at /state) holding XDG-shaped subtrees: data/ (data/lares/{vessel,identity,nexus}, data/lararium/sensoriums/{memory,mesh,memetic-wikitext} with chroma.sqlite3 indexes), state/ (projection, harvest, harvest-stage), cache/ (scratch sensoriums), config/, run/ (sockets), plus bags/ and wikis/ projection folders for house-minted and private bags. The source checkout (git) holds bags/ and wikis/ for canon-sourced bags; those project back into git. Path names repeat semantics (".lares/state/data/lares/identity", ".lares/state/data/lares/vessel/st").
+
+The operator re-founds the hearth often in early alpha (wipe the state root, found fresh keys and a fresh charter, re-seed canon from git). A code read found what a re-found loses:
+* Plaintext that projects only under the state root (the daemon wiki where AI memory lands, house-minted bags, private planes, per-face kahua folders) dies with it.
+* The temp, personal and (by default) draft layers never project at all.
+* All CRDT history (heads, versions, concurrent drafts, signed governance acts) and every key/identity (custody, seat keys, the Nexus AID).
+* Saves held in memory while custody sat locked.
+The memory index (vector sensorium) rebuilds from source transcripts that survive elsewhere.
+
+The operator's direction: (1) the immediate need: essential user data and the AI memory stage reach disk as plaintext projections, even temp layers (behind a flag, with an automated, principled cleanup); (2) a root layout inside ~/.lares split by what survives and how, so a couple of commands bundle/export a backup and re-import it after a re-found. Identity continuity across re-founds, face bundles, emergency recovery and backup restores stay DEFERRED until after a two-operator Nexus stands; note them, don't design them deep.
+
+House laws that bind any proposal: web3-only and local-first (no cloud service in the stack proper; a web2 bridge sits behind a boundary); no credential through a flag, env var or pipe; plaintext on disk carries cleartext only by deliberate projection (the operator owns that choice per bag); a projection stays a deliberate act, not a side-channel.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/your-question`>>
+
+!! Your question
+
+What golden principles, prior art and best practices govern (a) laying out an application's on-disk roots by survival class, and (b) a two-command export/bundle -> re-import flow that survives wiping the app's state?
+
+Read at least: the XDG Base Directory spec (data vs state vs cache vs config vs runtime: what each promises about loss); Ink & Switch "Local-first software" seven ideals and their later essays (and Automerge's save/load/export story); "file over app" (Steph Ango / Obsidian); how Obsidian, Logseq, Anytype, Joplin, TiddlyWiki (single-file and node.js), and Zotero lay out vaults vs app state; how key-holding apps separate key backup from data backup (Signal backup passphrase, Matrix/Element secure key backup, Bitwarden/KeePassXC export, age/sops, restic/borg repository design, Git as a backup substrate); Apple/Android app-data backup classes (what's excluded as cache/derived).
+
+Deliver:
+# Five to nine principles, each one sentence plus its sources.
+# A survival-class taxonomy (e.g. irreplaceable-secret, irreplaceable-content, re-derivable index, rebuildable cache, ephemeral runtime) with what prior art does for each class on wipe/export/restore.
+# Concrete layout proposal for ~/.lares with no repeated semantics (one level per meaning), mapping today's paths into it.
+# A sketch of `export` / `import` (or `bundle` / `restore`) verbs: what each bundles, format choices (plaintext tree vs archive vs CRDT binary), how secrets travel (or don't), idempotency and verification (manifest + hashes), and pitfalls prior art hit.
+# Anything in prior art that contradicts the operator's direction; name it plainly.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d-AiF28uMbrhzty05_iKSv_pFOOxqpHV7sc-SRYfZIY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

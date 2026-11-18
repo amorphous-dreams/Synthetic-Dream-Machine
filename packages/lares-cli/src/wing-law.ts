@@ -1,9 +1,8 @@
 /**
  * wing-law — the ONE per-project wing derivation, extracted from harvest.ts so every
- * consumer (harvest · capture · `lares wing-of` · the ingest hook via `wing-of`) reads
- * the SAME law instead of mirroring it per language. The bash mirror in the ingest hook
- * survives only as the broken-dist FALLBACK; the cross-language fixture
- * (tests/ingest-hook-wing.test.ts) pins the agreement.
+ * consumer (harvest · capture · `lares wing-of`) reads the SAME law instead of mirroring
+ * it. The python sweep carries its own port (`wing_derive.py`); the two fixture tables
+ * (tests/wing-law.test.ts, scripts/test_wing_derive.py) pin the agreement.
  *
  * The wing names the AI PROJECT a transcript belongs to — derived from the transcript's
  * RECORDED cwd (rows carry it), never the live payload cwd (it drifts with every agent cd).

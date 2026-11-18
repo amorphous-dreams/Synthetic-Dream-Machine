@@ -60,7 +60,7 @@ describe("a seat claim needs no Handle and exports no chair label", () => {
     expect(await cmdPersona(personaArgs("2", "veil-three", {}, { handle: "outward" }))).toBe(0);
 
     // The seed card reveals, and the roll seats every chair that stands: the AID stays the hearth's.
-    expect(await cmdNexus(nexusArgs(["seal", "rotate"], { "cold-key": card }))).toBe(0);
+    expect(await cmdNexus(nexusArgs(["seal", "rotate"], { "cold-key": card, face: "0" }))).toBe(0);
     const standing = readNexusDoc(larSealHome())!;
     expect(standing.sealLineage![0]!.epochCid).toBe(seed.sealLineage![0]!.epochCid);
     const fingerprints = standing.kahu.map((k) => seatFingerprint(k.verifyingKey!));

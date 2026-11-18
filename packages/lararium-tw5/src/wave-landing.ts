@@ -13,6 +13,9 @@ export interface LandingQueueDoor {
  * quota and lands them with no turn handed to the host in between, so the wiki dispatches its `change`
  * for a root and its children together and no reader of the wiki meets half a carrier. A family larger
  * than the quota lands whole in a slice of its own.
+ *
+ * THE BREATH: the queue tells each slice it lands (`onSliceLanded`). A watchdog that bounds a wait on PROGRESS reads a
+ * drain of many slices as moving, slice by slice, and a drain that lands nothing tells nothing and still reads as stuck.
  */
 export class WaveLanding {
   static readonly QUOTA = 200;
@@ -34,6 +37,8 @@ export class WaveLanding {
     private readonly yieldHost: HostTaskYield = yieldToHost,
     private readonly onLandingFailed: (title: string, error: Error) => void = () => {},
     private readonly onLandingRecovered: (title: string) => void = () => {},
+    /** Told once per slice the drain landed, with the rows it landed: the drain's own evidence that it moves. */
+    private readonly onSliceLanded: (landed: number) => void = () => {},
   ) {}
 
   enqueue(change: LarTiddlerChange): void { this.enqueueFamily([change]); }
@@ -146,6 +151,8 @@ export class WaveLanding {
           }
         }
       }
+      // THE DRAIN BREATHES AS IT WORKS: each landed slice says so, so a long drain that moves never reads as stalled.
+      try { this.onSliceLanded(count); } catch { /* a listener's fault never stops the drain */ }
       if (this.queue.length) await this.yieldHost();
     }
     // Clear only at the empty observation. No await separates this from the queue check.

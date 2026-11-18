@@ -8,19 +8,19 @@
  * (agent-worldline #time, #attribution). Keyed turn-DAG (the operator's C-cut) — handles
  * survive rewind/fork because the turn-DAG node does.
  *
- * ## The (handle, frontier) address (slice-3)
+ * ## The (handle, frontier) address
  *
  * The registry key is `${handle}@${frontier}` — address = handle × FRONTIER, the frontier keyed
  * BY the handle, never smuggled INSIDE it. The handle stays a RIGID designator (baptized-fixed at
  * spawn); the frontier is the MOVING antichain — a short hash of the ITC event heads (the causal
- * history), so it advances on every inject/handback and holds across a bare fork. This fixes the
- * same-session-fork collision: two spawns of one child handle across a rewind carry DIFFERENT
- * re-projected histories → different frontiers → distinct keys, so `worldlineSpawn` no longer
+ * history), so it advances on every inject/handback and holds across a bare fork. Same-session
+ * forks never collide: two spawns of one child handle across a rewind carry DIFFERENT
+ * re-projected histories → different frontiers → distinct keys, so `worldlineSpawn` never
  * throws when a handle re-appears on a rewound-then-re-forked branch. The frontier is DERIVED from
  * the stamp — never authoritative state, so the composite key holds only because causal-order rides
  * a re-derivable projection (else the global-now sneaks back in).
  *
- * NOTE — the edge-DAG home LANDED (slice-2): the same spawn/inject/handback persist as
+ * NOTE — the edge-DAG home: the same spawn/inject/handback persist as
  * mempalace-KG triples (prov:Delegation + prov:Communication via kg_add / `kg_io.py`), and
  * kapae (rewind) closes them via kg_invalidate (valid_to set, never deleted). This in-memory
  * ITC registry stays the live causal READ; the persisted edge-DAG is the durable home, and the
@@ -45,7 +45,7 @@ export interface WorldlineCausal {
 const FRONTIER_SEP = "@";
 
 /**
- * FNV-1a/32 → 8 hex — a short, stable, dependency-free fingerprint (twin of build-patch's fnv1a8,
+ * FNV-1a/32 → 8 hex — a short, stable, dependency-free fingerprint (twin of branch-frontier's fnv1a8,
  * inlined here so this module — and the pure `@lararium/mesh/worldline` VM subpath it feeds — pulls
  * in NOTHING heavier). NOT cryptographic; it only DISTINGUISHES frontiers deterministically.
  */
@@ -132,9 +132,9 @@ export function worldlineCausalSeed(rootHandle: string): WorldlineCausal {
  * parent happened-before the child (the prov:Delegation edge). The parent's pre-spawn acts
  * precede the child; its post-spawn acts read concurrent with the child (the lightcone cut).
  *
- * The collision guard now fires on the COMPOSITE child key, not the bare handle: re-spawning a
+ * The collision guard fires on the COMPOSITE child key, never the bare handle: re-spawning a
  * child handle whose frontier moved (a rewound-then-re-forked branch) succeeds — a distinct
- * (handle, frontier) entry rides alongside the old one (the same-session-fork fix).
+ * (handle, frontier) entry rides alongside the earlier-frontier one.
  */
 export function worldlineSpawn(c: WorldlineCausal, parent: string, child: string): WorldlineCausal {
   const p = resolveRef(c, parent);

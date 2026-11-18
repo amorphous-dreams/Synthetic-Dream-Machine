@@ -5,8 +5,9 @@ Short orientation for humans and agents reviewing `packages/`.
 ## Source of truth
 
 - `packages/AGENTS.md` carries package-boundary law.
-- `packages/HANDOFF.md` carries active work only.
-- `packages/ROADMAP.md` carries near-term path order.
+- `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem` carries the road: rulings, the leaps, and the owed rows.
+- `bags/lares/ha.ka.ba/lares/docs/pono/controller-handoff.mem` carries session state: what stands on which branch, and what runs.
+- `packages/.shelf/` keeps earlier planning torches as archive.
 - `lar:///ha.ka.ba/lararium/api/mempalace-integration` carries the current
   guest-comparator and Python-library boundary; the Sensorium's design of
   record lives at `lar:///ha.ka.ba/lares/api/pono/sensorium-machina`.
@@ -20,10 +21,9 @@ Treat these as build artifacts unless the task explicitly targets generators,
 bundles, or release packaging:
 
 - `packages/*/dist*/`
-- `packages/lararium-tw5/output/`
 - `packages/lararium-tw5/src/plugin-tiddler.generated.ts`
 - `packages/lararium-tw5/tw5-core/`
-- `packages/lararium-node/genesis/`
+- repo-root `genesis/` (the baked seed and CAS; a controller re-bake moves it)
 
 Prefer reviewing the generator or source module first, then rebuild.
 

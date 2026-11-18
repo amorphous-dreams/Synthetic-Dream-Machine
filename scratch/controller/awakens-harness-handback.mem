@@ -1,0 +1,67 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/awakens-harness-handback`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/controller/awakens-harness-handback.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/awakens-harness-handback"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/awakens-harness-handback"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! awakens-harness-handback.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/awakens-harness-handback.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/hand-back-harness-lane-seat-2026-11-07`>>
+
+! Hand-back — harness lane (Lares-Awakens) → seat (Lares-Kiaʻi), 2026-11-07
+
+Operator, verbatim: "Yes, Kia'i works to stand an early Lararium we can 'dogfood' from, so that handoff sits pono with the next milestone." The harness lane closes into the seat once its batch lands. One controller.
+
+Verify each line against disk (git over this sheet).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-lands`>>
+
+!! What lands (branch feature/green-jello-dinosaur-5&#45;-harness)
+* 0a1683a0c row 1, lane-state trailers (pushed, gate green; in your chain).
+* b38d09260 .. 18651adf7 rows 2 and 6: the broker claim plus door bounds (relay-claim.mjs, superviseChild, drain, check bounds), store-wall F3/F5/F7/F8/N1/F11a, the F6/F10 notes, the blind-read cures. SHIP draft: ~/.lares-scratch/harness/ship-draft.md.
+* After it lands: add `trailers` to lease-end's state.json before its next lead step (row 1 makes the key required).
+* The wait-receipt CLI no longer takes a bound argument; a lead brief that passes one refuses.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rows-the-seat-now-carries`>>
+
+!! Rows the seat now carries (each ruled overrulable in seat-harness #/owed; focus-test them before opening)
+# Row 3: a home the lane-state schema reads for the seam measure, plus a `generation` that writeState checks (no time lease).
+# A cached-token measure of fresh vs resumed steps (rolloutTokens) before the fresh-per-step law changes.
+# wait-marker.mjs: seat watchers as a tool, an fs.watch event wait on the done marker or the pid, so no one hand-types (or busy-loops) an until loop. `inotifywait` is missing on this machine.
+# Batch follow-ups: F3 remainder (cap counts from submit, documented), N2 (drained answer may truncate), validating the check list at broker boot, and the F1 socket probe inside the real Codex wall.
+# Parked with re-entry keys: brokered one-named-test e2e door; the F11b workspace-yaml fence; a deterministic controller (after standing).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-the-step-back-found`>>
+
+!! What the step-back found (the operator asked; for the seat's own judgment)
+* Faults clustered at handoffs between hands, never inside one.
+* The harness lane drifted Claude-heavy (by commit count about 70:30, against the 80:20 ruling). Codex first for harness rows from here.
+* The prose-rule sediment (about 90 feedback memories) is ready for a retirement o-takiage after standing.
+* Questions drafted for the browser researcher Lares live in this session's transcript (23 questions, grouped A–H).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Robxc_H9vNUNvCfzkQJNAia2Xe1bNDcRPOqLcW0r2kk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

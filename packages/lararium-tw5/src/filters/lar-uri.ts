@@ -10,7 +10,7 @@ module-type: filteroperator
  * Belonging lives in the title. A child addressed `lar:///root#/a/b` is enclosed by `lar:///root#/a`,
  * and the whole relation reads from the name with no stored parent to go stale when a title moves.
  * The wiki still has to ASK, and TiddlyWiki's core here ships no `split` — that gap is the only
- * reason the relation was ever kept in a field.
+ * reason to keep the relation in a field, and this operator closes it.
  *
  * ── THE SUFFIX CARRIES THE PART ─────────────────────────────────────────────────────────────────
  * `[lar-uri:parent[]]`, matching `toml-field` and `wikisense`: the mode rides the suffix and the
@@ -123,8 +123,8 @@ export function larUri(source: TW5FilterSource, operator: TW5FilterOperator): st
  * THE OPERATOR'S NAME IS ITS EXPORTED NAME, and this one cannot be an identifier.
  *
  * TW5 registers filter operators by walking a module's exports (`applyMethods("filteroperator", …)`),
- * so the binding name IS the name an author types in a filter. Every operator before this one — `toml`,
- * `wikisense`, `stack` — reads as a single word and never met the rule. `lar-uri` carries a hyphen, so
+ * so the binding name IS the name an author types in a filter. The single-word operators — `toml`,
+ * `wikisense`, `stack` — never meet the rule. `lar-uri` carries a hyphen, so
  * a plain `export function larUri` registers `larUri` and the filter an author writes resolves to
  * nothing: no throw, no warning, an empty result set that reads exactly like a filter matching nothing.
  *

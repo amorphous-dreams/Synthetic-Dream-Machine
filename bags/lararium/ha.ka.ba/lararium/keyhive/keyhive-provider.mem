@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/keyhive-provider.mem"
 l-space     = "lararium"
-mana        = 17
-manao       = 16
-manaoio     = 15
-role        = "isomorphic keyhive ceremony provider: founding, device-admit, and apply-admit functions; three-gate identity lattice"
+role        = "isomorphic keyhive ceremony provider: founding and the internal device-admit edge functions; three-gate identity lattice"
 source-file = "packages/lararium-keyhive/src/keyhive-provider.ts"
 title       = "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -23,7 +19,7 @@ The isomorphic ceremony surface for the Lararium identity lattice.
 Lives in `@lararium/keyhive` — no TW5, no Node I/O, no DOM.
 Takes a `Repo` and a seed; returns unforgeable membership proofs stored as Automerge CRDT events.
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -54,7 +50,7 @@ lattice membership from cold — no network request, no authority server.
 
 <<~/ahu>>
 
-<<~ ahu #/three-gate-lattice>>
+<<~ ahu slot=`#/three-gate-lattice`>>
 
 !! Three-Gate Lattice
 
@@ -78,7 +74,7 @@ to any remote vessel.
 
 <<~/ahu>>
 
-<<~ ahu #/isomorphic-law>>
+<<~ ahu slot=`#/isomorphic-law`>>
 
 !! Isomorphic Law
 
@@ -97,7 +93,7 @@ It does not depend on `@lararium/tw5`, `@lararium/node`, or `@lararium/browser`.
 
 <<~/ahu>>
 
-<<~ ahu #/ea-notes>>
+<<~ ahu slot=`#/ea-notes`>>
 
 !! Ea Notes
 
@@ -120,17 +116,17 @@ would turn admission into cloning, and every admitted vessel would hold the huma
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
-<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
-<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/event-store">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/two-vessel-mesh">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/event-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/two-vessel-mesh`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sV2hD1WvuFKyYjmVE2Ips06GQOUVsUx-LZjmRxZxkwg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;99053E6rsB9eQNm4YnSuGLX_D380gyxPZpo5eOmTi-g`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

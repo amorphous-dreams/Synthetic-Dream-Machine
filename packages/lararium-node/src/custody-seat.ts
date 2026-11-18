@@ -19,16 +19,16 @@
  * refuses `CustodyLocked`.
  *
  * ── A ROW READS WHOLE OR REFUSES ────────────────────────────────────────────────────────────────
- *   `readCustodyRow`   the row's plaintext; `null` when nothing stands at its path, and for that reading alone.
- *                      Locked refuses `CustodyLocked`. A row that stands and does not open (torn, bare, an
- *                      earlier shape, another key's) refuses `CustodyRowUnavailable` naming what stands.
- *   `writeCustodyRow`  the one sealed writer, under the key the seat holds.
- *   `updateCustodyRow` a read, a decision and a write under ONE custody holder, for a row whose next bytes depend
+ *   `readCustodyRecord`   the row's plaintext; `null` when nothing stands at its path, and for that reading alone.
+ *                      Locked refuses `CustodyLocked`. A row that stands and does not open (torn, bare,
+ *                      malformed, another key's) refuses `CustodyRecordUnavailable` naming what stands.
+ *   `writeCustodyRecord`  the one sealed writer, under the key the seat holds.
+ *   `updateCustodyRecord` a read, a decision and a write under ONE custody holder, for a row whose next bytes depend
  *                      on its standing ones. The decision receives the row's plaintext (`null` when nothing stands)
  *                      and every other reading refuses before it runs, so it decides over the row itself or not at all.
- *   `removeCustodyRow` a removal under ONE custody holder, of a row the seat's key opens; any other standing row
+ *   `removeCustodyRecord` a removal under ONE custody holder, of a row the seat's key opens; any other standing row
  *                      refuses and stays.
- *   `openColdCustodyRow` / `updateColdCustodyRow`  the same two doors for a COLD row: its plaintext lives for one
+ *   `openColdCustodyRecord` / `updateColdCustodyRecord`  the same two doors for a COLD row: its plaintext lives for one
  *                      act and zero-fills when the act settles.
  *   `exclusiveCustody` one act under the custody claim while the key stands open, for a FLOOR row whose mint must
  *                      land once (the vessel key and its inception). It opens no row.
@@ -36,11 +36,14 @@
  *
  * Node-main only: a worker never imports this module.
  */
-import { GATE_FLOOR_BUNDLE_INFO, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type RowUpdate } from "./custody-holder.js";
+import { FLOOR_REST_KEY_INFO, GATE_FLOOR_BUNDLE_INFO, WardRefused, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
+import { CustodyLocked, CustodyRecordUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RecordUpdate, type WardSeat } from "./custody-holder.js";
+import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 import { CustodyRootRefused } from "./custody-root.js";
 import type { CustodyHome } from "./vault-carriers.js";
 import { larIdentityDir } from "./vessel-paths.js";
+import { listFaceFiles, readFaceIndexSync } from "./face-index.js";
+import { personaGroupDigest } from "./persona-group-file.js";
 
 /** Gathers a human route and unlocks the seated holder. Throws when it cannot (no terminal, no route that opens). */
 export type CustodyOpener = (holder: CustodyHolder) => Promise<void>;
@@ -111,62 +114,75 @@ export async function openedCustody(): Promise<CustodyHolder> {
 }
 
 /** One sealed row's plaintext, or `null` when nothing stands there. Every other reading refuses by name. */
-export async function readCustodyRow(home: CustodyHome, file: string): Promise<Uint8Array | null> {
-  const r = await (await openedCustody()).readRow(home, file);
+export async function readCustodyRecord(home: CustodyHome, file: string): Promise<Uint8Array | null> {
+  const r = await (await openedCustody()).readRecord(home, file);
   if (r.reading === "opens") return r.plaintext;
   if (r.reading === "absent") return null;
-  if (r.reading === "locked") throw new CustodyLocked();
-  throw new CustodyRowUnavailable(home, file, r.why);
+  if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();
+  throw new CustodyRecordUnavailable(home, file, r.why);
 }
 
 /** Seal `plaintext` as one row, through the one sealed writer, under the key the seat holds. */
-export async function writeCustodyRow(home: CustodyHome, file: string, plaintext: Uint8Array): Promise<void> {
-  await (await openedCustody()).writeRow(home, file, plaintext);
+export async function writeCustodyRecord(home: CustodyHome, file: string, plaintext: Uint8Array): Promise<void> {
+  await (await openedCustody()).writeRecord(home, file, plaintext);
 }
 
 /**
  * Read one sealed row, decide, and write it, as one custody holder. `decide` receives the row's plaintext, or `null`
  * when nothing stands there, and answers its next plaintext (`null` writes nothing) beside the caller's answer.
  */
-export async function updateCustodyRow<T>(
-  home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RowUpdate<T>,
+export async function updateCustodyRecord<T>(
+  home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RecordUpdate<T>,
 ): Promise<T> {
-  return (await openedCustody()).updateRow(home, file, (r) => {
+  return (await openedCustody()).updateRecord(home, file, (r) => {
     if (r.reading === "opens") return decide(r.plaintext);
     if (r.reading === "absent") return decide(null);
-    if (r.reading === "locked") throw new CustodyLocked();
-    throw new CustodyRowUnavailable(home, file, r.why);
+    if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();
+    throw new CustodyRecordUnavailable(home, file, r.why);
   });
 }
 
 /**
  * Remove one sealed row, as one custody holder; answers whether a row stood. Locked refuses `CustodyLocked`; a row
- * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays, so a removal never
+ * that stands and does not open under the seat's key refuses `CustodyRecordUnavailable` and stays, so a removal never
  * destroys bytes this vessel's key did not seal. `when`, where given, reads the standing plaintext under the same
  * hold: a row it declines stays, and the removal answers false.
  */
-export async function removeCustodyRow(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
-  return (await openedCustody()).removeRow(home, file, when);
+export async function removeCustodyRecord(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
+  return (await openedCustody()).removeRecord(home, file, when);
+}
+
+/** Move a row pair under one holder claim; both rows keep standing if the destination holds other bytes. */
+export async function moveCustodyRecord(home: CustodyHome, source: string, destination: string, expected: Uint8Array): Promise<void> {
+  return (await openedCustody()).moveRecord(home, source, destination, expected);
+}
+
+/** Hold the founding custody claim across a row scan and every retirement it decides. */
+export async function withCustodyRecords<T>(act: (records: {
+  read(home: CustodyHome, file: string): Promise<Uint8Array | null>;
+  remove(home: CustodyHome, file: string, when?: (bytes: Uint8Array) => boolean): Promise<boolean>;
+}) => Promise<T>): Promise<T> {
+  return (await openedCustody()).withRecords(act);
 }
 
 /**
  * Remove one COLD row, as one custody holder; answers whether a row stood. Locked refuses `CustodyLocked`; a row
- * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays. `when`, where
+ * that stands and does not open under the seat's key refuses `CustodyRecordUnavailable` and stays. `when`, where
  * given, reads the standing plaintext under the same hold: a row it declines stays, and the removal answers false.
  */
-export async function removeColdCustodyRow(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
-  return (await openedCustody()).removeColdRow(home, file, when);
+export async function removeColdCustodyRecord(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
+  return (await openedCustody()).removeColdRecord(home, file, when);
 }
 
 /**
  * Open one COLD row for one act. `act` receives the row's plaintext, which zero-fills when the act settles, so the
- * act copies out what it keeps. A row with nothing at its path refuses `CustodyRowUnavailable` reading `absent`,
+ * act copies out what it keeps. A row with nothing at its path refuses `CustodyRecordUnavailable` reading `absent`,
  * as every reading but a whole one does: a cold row holds a secret some act already counted on.
  */
-export async function openColdCustodyRow<T>(
+export async function openColdCustodyRecord<T>(
   home: CustodyHome, file: string, act: (plaintext: Uint8Array) => Promise<T> | T,
 ): Promise<T> {
-  return (await openedCustody()).openColdRow(home, file, act);
+  return (await openedCustody()).openColdRecord(home, file, act);
 }
 
 /**
@@ -175,14 +191,14 @@ export async function openColdCustodyRow<T>(
  * The plaintext handed in zero-fills once `decide` returns. A row that stands and does not open refuses by name
  * before `decide` runs, so a mint never lands over a secret it could not read.
  */
-export async function updateColdCustodyRow<T>(
-  home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RowUpdate<T>,
+export async function updateColdCustodyRecord<T>(
+  home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RecordUpdate<T>,
 ): Promise<T> {
-  return (await openedCustody()).updateColdRow(home, file, (r) => {
+  return (await openedCustody()).updateColdRecord(home, file, (r) => {
     if (r.reading === "opens") return decide(r.plaintext);
     if (r.reading === "absent") return decide(null);
-    if (r.reading === "locked") throw new CustodyLocked();
-    throw new CustodyRowUnavailable(home, file, r.why);
+    if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();
+    throw new CustodyRecordUnavailable(home, file, r.why);
   });
 }
 
@@ -195,10 +211,6 @@ export async function exclusiveCustody<T>(act: () => Promise<T>): Promise<T> {
   return (await openedCustody()).exclusive(act);
 }
 
-/** The dyad veil for `groupTag`, derived from the custody root the seat holds. */
-export async function custodyVeilKeys(groupTag: string): Promise<{ signingKey: string; verifyingKey: string }> {
-  return (await openedCustody()).veil(groupTag);
-}
 
 /**
  * THE CUSTODY ROOT'S DERIVE DOOR for a sovereign gate's bundle: one child of the sealed custody root this home's
@@ -218,4 +230,106 @@ export function custodyGateDoor(): CustodyRootDoor {
       return holder.derive(domain);
     },
   });
+}
+
+/**
+ * THE FLOOR'S REST KEY DOOR (`@lararium/mesh` `floorRestKey`): one child of the sealed custody root, under the floor's own
+ * registered domain and no other. It answers only while this home's seat holds its key, so a locked hearth derives none
+ * (`CustodyLocked`) and a herm, which never unlocks, derives none either. The custody root mints once at the custody's
+ * founding and a rotation of the S key re-seals its carrier whole, so the child holds across a rotation and across every
+ * face that lands.
+ */
+export function custodyFloorKeyDoor(): (info: string) => Uint8Array {
+  return (info) => {
+    if (info !== FLOOR_REST_KEY_INFO) throw new CustodyRootRefused("the floor's key door derives the floor's rest key alone");
+    const holder = seats.get(larIdentityDir())?.holder;
+    if (!holder) throw new CustodyLocked();
+    return holder.derive(info);
+  };
+}
+
+// ── faces: the founding and opening acts a face's custody takes through this home's seated holder ──────────────
+
+/** Found one face's custody on the seated holder (the S key layer must stand open: the founding act reads it). */
+export async function foundFaceCustody(args: Parameters<CustodyHolder["foundFace"]>[0]): ReturnType<CustodyHolder["foundFace"]> {
+  return (await openedCustody()).foundFace(args);
+}
+/** Bind a founded face to its group's digest. */
+export async function bindFaceCustody(fcid: string, groupDigest: string): Promise<void> {
+  return (await openedCustody()).bindFace(fcid, groupDigest);
+}
+/** Retire a bound face's founding ask from the floor index. */
+export async function retireFaceAskCustody(fcid: string): Promise<void> {
+  return (await openedCustody()).retireFaceAsk(fcid);
+}
+/** What the floor index names for a face and whether it stands unlocked. Null when the index names none. */
+export async function faceStandingCustody(face: FaceRef): ReturnType<CustodyHolder["faceStanding"]> {
+  return (await openedCustody()).faceStanding(face);
+}
+/** A reserved face takes its founding ask. */
+export async function bindFaceAskCustody(fcid: string, askDigest: string): Promise<void> {
+  return (await openedCustody()).bindFaceAsk(fcid, askDigest);
+}
+
+/**
+ * The handle indices of the faces standing UNLOCKED on this home's seated holder, ascending. A face's handle index is its ordinal in
+ * the floor index; a locked face stays out, so a reader that lists faces lists the ones it can open.
+ */
+/**
+ * Whether this vessel serves the face of `group` (its raw PersonaGroup id): under a pūlama, a face its lend names; on a vessel
+ * holding its own custody, any face its index names. A reader that walks faces off a list wider than the served set (the
+ * bootstrap's planes) asks this before it reads that face's rows, so no row outside the lend is ever asked.
+ */
+export async function servesFaceOfGroup(group: string): Promise<boolean> {
+  const holder = standingCustody();
+  if (holder === null || !holder.isUnlocked()) return false;
+  return (await holder.faceStanding({ group: personaGroupDigest(group) })) !== null;
+}
+
+export async function unlockedFaceOrdinals(): Promise<number[]> {
+  const holder = await openedCustody();
+  const open = new Set(holder.unlockedFaces());
+  const index = readFaceIndexSync(larIdentityDir());
+  const out: number[] = [];
+  index.faces.forEach((f, ordinal) => { if ("fcid" in f && open.has(f.fcid)) out.push(ordinal); });
+  return out;
+}
+
+
+/**
+ * The face files on disk under the faces this home's seated holder names OPEN, sorted: a reader that walks face rows off the
+ * directory asks only rows this seat serves. A face resting locked stays out, and so does a face outside a pūlama session's lei.
+ */
+export async function openFaceFileNames(): Promise<string[]> {
+  const open = new Set((await openedCustody()).unlockedFaces());
+  const dir = larIdentityDir();
+  return [...new Set(listFaceFiles(dir, readFaceIndexSync(dir)).filter(([fcid]) => open.has(fcid)).map(([, name]) => name))].sort();
+}
+
+// ── the ward: one fresh unlock of a face's ward key per act (seat-harness#/the-ward) ─────────────────────────────────
+
+/**
+ * Run ONE WARD ACT on this home's seated holder: the face's ward key opens fresh from `ward`'s route, `act` runs over that face's
+ * warded rows, and the key zeroes. A missing token refuses `ward-needs-fresh-unlock` before the holder is asked anything.
+ */
+export async function withWardKeyCustody<T>(face: FaceRef, ward: WardCredential | undefined, act: (seat: WardSeat) => Promise<T>, what?: string): Promise<T> {
+  // No token rode the act: the process's seated gatherer (a person at this terminal) asks for this act, or the act refuses.
+  const credentials = wardCredentialsOf(await wardOrGather(ward, what ?? "a ward act"), what);
+  return (await openedCustody()).withWardKey(face, credentials, act);
+}
+
+/**
+ * The face's ward key on this device, its public half (the `wardKey` an admission into the face carries): the face stands unlocked
+ * and no ward opens. A face whose ward holds no key row refuses `ward-key-absent` by name.
+ */
+export async function faceWardKeyCustody(face: FaceRef): Promise<string> {
+  const key = await (await openedCustody()).wardPublicKey(face);
+  if (key === null) throw new WardRefused("ward-key-absent", "this face's ward holds no key row; run ward rewrap (`lares vault rewrap --face <N>`)");
+  return key;
+}
+
+/** Move a pre-ward face's root under a ward (`lares ward rewrap`): the ward tree first, then each root row. */
+export async function rewrapWardCustody(face: FaceRef, ward: WardCredential | undefined): Promise<{ readonly rewrapped: number }> {
+  const credentials = wardCredentialsOf(ward, "the rewrap");
+  return (await openedCustody()).rewrapWard(face, credentials);
 }

@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-012/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-012/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-012/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-012/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-012/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-012/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-12-hand-back`>>
+
+! Step 12 hand-back
+
+Head `03960c0343e5cb4d7d3e0c53bb178d85b175ca5d`; worktree clean; no live seats; no push. Requests 017–020 received receipts; next request 021. Both commits carry the supplied attribution trailers.
+
+* `c33b52e66` commits the aside/lift red with the unchanged-aside control. Relay 017: 28 pass, 1 fail, the same grant remains unseated after a lift and daemon change.
+* `03960c034` retains aside refusals without memoizing them and marks the seat for retry on daemon changes; it also independently refuses an aside even if the supplied verifier accepts. Relay 019: 30 pass, 0 fail. Other final refusals still memoize. Retries with aside never ingest; a later clear standing can ingest the same grant.
+* Important limitation: the tests directly call `daemonChanged`; production subscribes to daemon-bag changes at `operator-daemon-behavior.ts:1540`, while the standing reader reads the fleet board. Whether a fleet-board lift itself reaches that subscription remains unverified; trace and wire a real board-change wake with a caller-level red and control. The stale boot-time KEL snapshot and final fork memoization likewise remain owed. This step does not establish full live lift recovery.
+
+Still owed: all other slice 2 rows in state, including tri-state ring, founder lineage freshness/rollback, epoch-free consumers and test hygiene, join wiring and TOCTOU, independently evidenced complete-view known-dyad census, runApplyAdmitPayload, holder-session-proof, and leaf-peer-proof. The edge board has no roster or completeness proof (`kapae.mem` #/four-edges); never infer fleet completeness from it. Whole non-daemon suites remain due before ready; e2e stays in CI. Blind Opus custody read precedes land; no push without controller go. The roll guard and epoch fields remain intact.
+
+Next: trace and test the actual fleet-board lift wake, and continue the remaining rows red-first with controls. Keep step counter at 12 per step law.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ascjfyOelz5eEj7qLzZ6jiNKbGa_uubEusprcS3S1eQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

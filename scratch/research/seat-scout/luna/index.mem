@@ -1,0 +1,46 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/research/seat-scout/luna/` — 10 record(s) here, 10 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/research/seat-scout/luna/`
+
+The scratch planning records of `.lares-scratch/research/seat-scout/luna/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 10 record(s) stand here and 10 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[research/seat-scout/|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/brief]] | brief | 2026-10-25 | `brief.md` |
+| [[brief2|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/brief2]] | brief | 2026-10-25 | `brief2.md` |
+| [[code-excerpts|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/code-excerpts]] | research | 2026-10-25 | `code-excerpts.md` |
+| [[final|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/final]] | research | 2026-10-25 | `final.md` |
+| [[final2|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/final2]] | research | 2026-10-25 | `final2.md` |
+| [[out|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/out]] | research | 2026-10-25 | `out.md` |
+| [[out2|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/out2]] | research | 2026-10-25 | `out2.md` |
+| [[own-wave1|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/own-wave1]] | research | 2026-10-25 | `own-wave1.md` |
+| [[peer-wave1|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/peer-wave1]] | research | 2026-10-25 | `peer-wave1.md` |
+| [[scout-hits|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/scout-hits]] | research | 2026-10-25 | `scout-hits.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;b3nBJR2DEfimzFvXarHR3iA6XOYN3o5vIQ9KSkXjvN0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

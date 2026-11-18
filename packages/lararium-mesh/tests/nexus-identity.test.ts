@@ -83,7 +83,7 @@ describe("nexus-identity — a shared island names no vessel", () => {
 describe("nexus-identity — the whole fallback chain, one rule for node and leaf", () => {
   // ── THE SHAPE A BROWSER LEAF ALREADY RUNS ─────────────────────────────────────────────────────
   // A browser vessel is a leaf-node lararium — a herm carrying operator/user CRDT caps — and it
-  // already resolves `inviteNexusPubkey ?? relayGatePubKey ?? own DID`, documented as "the Nexus this
+  // resolves `inviteNexusPubkey ?? admitted island ?? own DID`, documented as "the Nexus this
   // vessel crosses into". Composing a shared plane under a FOREIGN key is therefore a supported,
   // witnessed shape rather than a new one: "a node anchors its confederation, so its gate key IS the
   // Nexus key its leaves pass back".

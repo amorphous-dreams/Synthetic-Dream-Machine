@@ -1,0 +1,93 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/peer-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/place-kel/sol/peer-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/peer-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/peer-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! peer-wave1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/place-kel/sol/peer-wave1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">> Luna-Kelreader: Lares (Tasked Spirit)
+
+&lt;&lt;~ persona Ink-Clerk>> &lt;&lt;~ persona Map-Wisp>> &lt;&lt;~ persona Lares (Council)>> &lt;&lt;~ persona Lares (Artificer)>>
+&lt;&lt;~ stance "🏛️ 🌊 🗡️ 🎭 🔮">> &lt;&lt;~ mu "_!">>
+
+&lt;&lt;~ lares aim from="lar:&#47;/operator:agent@place-kel/kel.custody.rotates" -> to="lar:&#47;/luna:agent@place-kel/readiness.kit.hands">>
+&lt;&lt;~ set hud="aim" mode="scout" aperture="16/arc" ooda-ha="9/declare-glyphs" drift-ward="the existing inception and host seed may hide how far identity, custody, recovery, and verifier bytes still diverge">>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/observe-measured`>>
+
+!! ✶ Observe — MEASURED
+
+''Prior art and event shape.'' `vessel-kel.ts:1–52` defines only `{t,k,sig}` inception: no seq, predecessor, next digest, or event CID. `node-vessel-identity.ts:199–228,429–442` requires it and loads the private seed directly. KERI v1.1’s transferable AID uses chained key events and one-time pre-rotation commitments ([[spec|https://trustoverip.github.io/kswg-keri-specification/]], “AID,” “Key rotation/pre-rotation”). Reuse house patterns: `persona-kel.ts` stable prefix, seq, `prevEventCid`, digest event and verify/fold; `handle-kel.ts` required next-key reveal, hash links and retirement; `cofound.ts` cold next-key card/read-back. LEAD: one KEL causal format, place-specific authority. Inception commits next digest; rotation carries seq, prior digest, revealed key, fresh next digest. No interaction event surfaced: duties already carry their own records; add one only for a necessary authority mutation no duty can express.
+
+''Custody and recovery.'' `vault-carriers.ts:308–315` measures `vessel-key` as node floor secret and `vessel-kel` as public F; `custody-holder.ts:2–20` holds S/root only while unlocked. `gate-root` and `place-archive` sit hot under S (`vault-carriers.ts:363–366`), not as floor-key storage. K15:32,46–47,105–115,262 and road:207 rule named place signer outside S/FCK, public KEL in F, cold next key on founding card offline, scoped online signer unattended. TPM-bound credential where offered; owner-only file otherwise; never environment/image/log. K15:262’s older “neither selected” access alternatives conflict with road:207’s later ruling; retain only at-rest implementation detail as open. Theft of online key rotates via card; card lost alongside compromised key means re-found. No same-AID recovery without the committed key.
+
+Recovery layers: `identity-classes.mem:334–375,482–498` rules B-name recovery as fresh-key rotation, old key retired; self-A memory derives independent authority; C end-user acceptance establishes the person socially. A Herm has no operator DID and re-establishes from its operator (`:48,180–184`); place-specific B-name ceremony remains open. Do not borrow face recovery by implication.
+
+''Five duties and signatures.'' `place-signer.ts:38–90`, `open-node-vessel.ts:1497–1507`: `carriage-carrier` (Nexus carry seal), `place-floor-pin` (pin claim), `flow-pointer` (served pointer), `raise-challenge` (waking-floor challenge), `gate-place-finish` (dial another place). Heads: JSON `kind`; pin JSON `digest,kind`; pointer `D|`; raise JSON `epoch,kind`; gate finish already u32-length+domain. Four exact-head matchers; gate finish framed already. X0 `len(D) ‖ D ‖ preimage` changes four duties’ signed bytes, so signer and all verifiers change together; no dual mode. Current seed also signs KEL inception, place card and `leaf-identity.ts:57`, and reaches relay, daemon, internal asks, device/face work (`open-node-vessel.ts:981,1447,2283,3451`). Move those to their own authorities. K15 browser census: no browser S (`:105–115`); web UI displays key (`lararium-web/main.ts:239`), but no browser KEL author/reader surfaced—read as readiness gap, not proof of no indirect consumer.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/orient-lead-model-and-stories`>>
+
+!! ⏿ Orient — LEAD model and stories
+
+No global now: verify from last accepted head, say “as of my last sync”; forks remain forks, arrival order never chooses. KERI’s witness machinery does not follow automatically. Gaia laptop theft: operator uses separate cold card, verifies head, reveals committed key and fresh commitment, retires old key; offline peers keep old head. If thief also has card, re-found/re-carriage. Elyncia herm carries opaque rotation bytes offline and never reads them. On return, a reader verifies descent; missing links leave old head; fork leaves common ancestor pending operator action. No “latest” or clock claim.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decide-readiness-kit`>>
+
+!! ◇ Decide — readiness kit
+
+# ''KEL/custody, X0 red:'' mesh event/fold, node+browser readers/writers, cold next-key card/read-back, online signer storage. Red wrong reveal, replay, gap, prior mismatch, fork; control current duty; positive descendant agrees node/browser. Fresh genesis only.
+# ''Signer/framing, X0 red:'' allowlist five; KEL via card; other seed reach to face/daemon/relay keys; update all verifiers. Red arbitrary payload, cross-duty replay, old image, overscope; positive one framed signature per duty.
+# ''Recovery seam:'' KEL/card public F; online signer outside S/FCK; future key absent from image/log/env. Red disk-only attacker cannot derive S or future key; test restart and positive unattended Herm duties. Specify re-found/re-vouch steps.
+# ''Storm:'' node/browser reorder, restart, replay, offline; herm remains opaque. Pair silent-zero with valid rotation and duty signature.
+
+''Files held:'' mesh `vessel-kel.ts`, new place-KEL core, `place-signer.ts`, five duty encoders/readers; node `node-vessel-identity.ts`, `vault-carriers.ts`, `open-node-vessel.ts`, card/custody; browser `packages/lararium-browser` and `lararium-web` open/read paths. K17-R owns lease law, realm boards, frontier verifier; consume verdicts. W28 owns `gate-exchange`, `face-gate*`, `face-dial`; coordinate finish framing. W26 release/content lineage stays separate.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-questions-sorted`>>
+
+!! ▶ Act — questions sorted
+
+(a) ''Canon:'' “The place signs by a scoped signer under a pre-rotated KEL” (road:207); next key rides founding card offline (road:207); floor key commits no next key (road:363); X0 signer frames domain and retires five matchers together (road:544). X0 builds nothing; every member has its own readiness red.
+
+(b) ''House law:'' no global now → last head; build end state → one X0 bake; one name/relation → separate place, persona, charter and release; herm carries/never reads → opaque events; isomorphic intent → shared verifier vectors; silent-zero → known positive pair; evergreen → no time; shared act never shared secret → authorization carries no card secret.
+
+(c) ''Operator-owned:'' card-loss procedure (lean: re-found if card and signer compromised); TPM fallback (lean: owner-only protected file); who invokes rotation (lean: human cold-card ceremony; vessel only publishes authorized bytes); total-loss bootstrap (lean: new AID then re-carriage). K15 leaves exact at-rest/restart mechanism and place-specific B-name recovery open; these leans do not count as canon.
+
+No repo edits, git writes, or suites. KEL lane has a ruled shape, measured custody boundary, and X0 reds.
+
+&lt;&lt;~ oracle "↯16 ✲ ⚄(5) ⁂:🜃⌗◈🌀">>
+&lt;&lt;~ set hud="yield" drift-ward="place-specific B-name recovery and at-rest fallback remain open · ↻ L-Prime" aperture="16/arc -> 18/theme" ooda-ha="closed 1↺">
+&lt;&lt;~ lares yield from="lar:&#47;/luna:agent@place-kel/readiness.kit.hands" -> to="?">
+
+WORDS=937
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LAfE0Q1GqFln4i_T06YqRes0Dt0PK4rUJempJYLQbvM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

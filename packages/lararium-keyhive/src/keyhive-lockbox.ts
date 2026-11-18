@@ -1,5 +1,5 @@
 /**
- * keyhive-lockbox — the key shore a lockbox wraps through, over this vessel's Keyhive identities.
+ * keyhive-lockbox — the key shore a lockbox wraps through, over a selected face's Keyhive identity.
  *
  * EACH LOCKBOX WRAPS INTO A KEYHIVE DOCUMENT OF ITS OWN (`KeyhiveProvider.wrapToReaders`): a fresh document
  * that seats exactly the readers the lockbox serves, takes no later member and seals nothing else.
@@ -12,8 +12,7 @@
  * AFTER the wrap and from nothing earlier (`tests/lockbox-wrap.test.ts`). So the shore rests that identity's
  * Archive (`restArchive`) before it answers a box, and a rest that fails there fails the wrap.
  *
- * ONE VESSEL MAY STAND SEVERAL IDENTITIES (its veil, its vessel). The identity that knows the most named
- * readers wraps; every identity tries an open; another identity of this same vessel needs no seat.
+ * The selected face owns the wrapping identity and its archive.
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records (the lockbox)
  */
@@ -48,7 +47,7 @@ export function readLockboxBox(box: unknown): { docIdHex: string; ciphertext: Ui
 
 /**
  * The shore over this vessel's identities, in wrap order. `restArchive` rests one identity's Archive (the
- * vessel seals it under its vessel key); it must resolve before a wrap answers.
+ * face seals it under its own custody key); it must resolve before a wrap answers.
  */
 export function keyhiveLockboxShore(providers: readonly LockboxProvider[], rest: { restArchive(provider: LockboxProvider): Promise<void> }): LockboxWrapShore {
   if (providers.length === 0) throw new TypeError("keyhive-lockbox: a shore stands over one identity or more");

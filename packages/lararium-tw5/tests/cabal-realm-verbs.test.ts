@@ -14,13 +14,38 @@ import { describe, expect, test } from "vitest";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeCabalRealmReactors } from "../src/cabal-realm-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
-import { DAEMON_BAG_ID, realmFeedSlotUri } from "@lararium/mesh";
+import { DAEMON_BAG_ID, faceAtomPublicKey, realmFeedAskImage, realmFeedSlotUri, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
 
 const CTX   = {} as VerbContext;
 const REALM = "ab".repeat(32);
 const OTHER = "cd".repeat(32);
-const FACE_A = "11".repeat(32);
-const FACE_B = "22".repeat(32);
+const seedOf = (n: number) => Uint8Array.from({ length: 32 }, (_, i) => (n * 13 + i) & 0xff);
+/** A face that feeds: its leaf key, a session's local context presenting its atom, and its bond for a realm. */
+async function faceOf(n: number) {
+  const atomSeed = seedOf(n);
+  const leafSeed = seedOf(n + 100);
+  const atom = faceAtomPublicKey(atomSeed);
+  const leaf = faceAtomPublicKey(leafSeed);
+  const bondFor = (realm: string) => signFaceLeafBond({ atom, leaf, nexusAid: "bafy-test-nexus", realm },
+    { atom: (b) => signAsFaceAtom(atomSeed, b), leaf: (b) => signAsFaceAtom(leafSeed, b) });
+  let asks = 0;
+  /** One feed's local context and its ask, the atom signing this very request. */
+  const askFor = async (realm: string) => {
+    const requestId = `feed-${n}-${asks++}`;
+    const askSig = await signAsFaceAtom(atomSeed, realmFeedAskImage({ requestId, realm, writer: leaf }));
+    return { askSig, ctx: { presenter: `0x${atom}`, local: true, invocation: { requestId } } as unknown as VerbContext };
+  };
+  return { leaf, bondFor, askFor, ctx: { presenter: `0x${atom}`, local: true } as unknown as VerbContext };
+}
+const A = await faceOf(1);
+const B = await faceOf(2);
+const FACE_A = A.leaf;
+const FACE_B = B.leaf;
+type Face = typeof A;
+const feedAs = async (r: ReturnType<typeof reactorsOver>, realm: string, face: Face) => {
+  const { askSig, ctx } = await face.askFor(realm);
+  return r.feed({ realm, writer: face.leaf, bond: await face.bondFor(realm), askSig }, ctx);
+};
 
 function reactorsOver(store: MemoryTiddlerStore) {
   return makeCabalRealmReactors({ resolveStore: async () => store });
@@ -28,26 +53,28 @@ function reactorsOver(store: MemoryTiddlerStore) {
 const store = (): MemoryTiddlerStore => new MemoryTiddlerStore(DAEMON_BAG_ID);
 
 describe("realm-feed — the offering rolls one writer's own slot", () => {
-  test("a first feed lands epoch 1 and reports itself as first", async () => {
+  test("a first feed lands epoch 1, and its answer names neither the writer nor the epoch", async () => {
     const s = store();
     const r = reactorsOver(s);
-    expect(await r.feed({ realm: REALM, writer: FACE_A }, CTX)).toMatchObject({
-      verb: "realm-feed", realm: REALM, writer: FACE_A, epoch: 1, priorEffective: 0, first: true, federated: false,
+    expect(await feedAs(r, REALM, A)).toEqual({
+      verb: "realm-feed", realm: REALM, fed: true, federated: false,
     });
     expect((await s.get(realmFeedSlotUri(REALM, FACE_A)))?.tiddler.text).toBe("1");
   });
 
   test("feeding again rolls again — the clock measures how hard a hand feeds, so a repeat SHOULD register", async () => {
-    const r = reactorsOver(store());
-    await r.feed({ realm: REALM, writer: FACE_A }, CTX);
-    expect(await r.feed({ realm: REALM, writer: FACE_A }, CTX)).toMatchObject({ epoch: 2, first: false });
+    const s = store();
+    const r = reactorsOver(s);
+    await feedAs(r, REALM, A);
+    await feedAs(r, REALM, A);
+    expect((await s.get(realmFeedSlotUri(REALM, FACE_A)))?.tiddler.text).toBe("2");
   });
 
   test("★ two faces feeding touch DIFFERENT slots — neither roll is ever lost to the other ★", async () => {
     const s = store();
     const r = reactorsOver(s);
-    await r.feed({ realm: REALM, writer: FACE_A }, CTX);      // A → 1
-    await r.feed({ realm: REALM, writer: FACE_B }, CTX);      // B → 2 (it sees A's slot)
+    await feedAs(r, REALM, A);      // A → 1
+    await feedAs(r, REALM, B);      // B → 2 (it sees A's slot)
     expect((await s.get(realmFeedSlotUri(REALM, FACE_A)))?.tiddler.text).toBe("1");
     expect((await s.get(realmFeedSlotUri(REALM, FACE_B)))?.tiddler.text).toBe("2");
   });
@@ -55,8 +82,8 @@ describe("realm-feed — the offering rolls one writer's own slot", () => {
   test("★ a feed never touches ANOTHER realm's slots ★", async () => {
     const s = store();
     const r = reactorsOver(s);
-    await r.feed({ realm: OTHER, writer: FACE_A }, CTX);
-    await r.feed({ realm: REALM, writer: FACE_A }, CTX);
+    await feedAs(r, OTHER, A);
+    await feedAs(r, REALM, A);
     // The other realm's roll stays where it was — the prefix scopes both the read and the write.
     expect((await s.get(realmFeedSlotUri(OTHER, FACE_A)))?.tiddler.text).toBe("1");
     expect(await r.clock({ realm: OTHER }, CTX)).toMatchObject({ maintainerCount: 1, effectiveEpoch: 1 });
@@ -64,8 +91,8 @@ describe("realm-feed — the offering rolls one writer's own slot", () => {
 
   test("a malformed realm and an anonymous feed both REFUSE", async () => {
     const r = reactorsOver(store());
-    await expect(r.feed({ realm: "not-a-realm", writer: FACE_A }, CTX)).rejects.toThrow(/64-hex/);
-    await expect(r.feed({ realm: REALM }, CTX)).rejects.toThrow(/writer/);
+    await expect(r.feed({ realm: "not-a-realm", writer: FACE_A }, A.ctx)).rejects.toThrow(/64-hex/);
+    await expect(r.feed({ realm: REALM }, A.ctx)).rejects.toThrow(/writer/);
   });
 });
 
@@ -79,9 +106,9 @@ describe("realm-clock — it surfaces, it never judges", () => {
 
   test("the read reports standing, spread and the leading set — leaders first", async () => {
     const r = reactorsOver(store());
-    await r.feed({ realm: REALM, writer: FACE_A }, CTX);   // A → 1
-    await r.feed({ realm: REALM, writer: FACE_B }, CTX);   // B → 2
-    await r.feed({ realm: REALM, writer: FACE_B }, CTX);   // B → 3 — B out-feeds A
+    await feedAs(r, REALM, A);   // A → 1
+    await feedAs(r, REALM, B);   // B → 2
+    await feedAs(r, REALM, B);   // B → 3 — B out-feeds A
     const out = await r.clock({ realm: REALM }, CTX) as Record<string, unknown>;
     expect(out).toMatchObject({ maintainerCount: 2, effectiveEpoch: 3, trailingEpoch: 1, spread: 2, leadingCount: 1 });
     expect((out["maintainers"] as Array<{ writerId: string }>)[0]!.writerId).toBe(FACE_B);
@@ -89,8 +116,8 @@ describe("realm-clock — it surfaces, it never judges", () => {
 
   test("★ NO capture verdict rides the outcome — the numbers travel, the conclusion does not ★", async () => {
     const r = reactorsOver(store());
-    await r.feed({ realm: REALM, writer: FACE_A }, CTX);
-    for (let i = 0; i < 20; i++) await r.feed({ realm: REALM, writer: FACE_B }, CTX);   // a stark minority lead
+    await feedAs(r, REALM, A);
+    for (let i = 0; i < 20; i++) await feedAs(r, REALM, B);   // a stark minority lead
     const out = await r.clock({ realm: REALM }, CTX) as Record<string, unknown>;
     expect(out["spread"]).toBeGreaterThan(10);                 // the signal reads loudly…
     for (const banned of ["captured", "capture", "verdict", "alive", "dissolved", "healthy"]) {

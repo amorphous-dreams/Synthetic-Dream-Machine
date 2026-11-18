@@ -1,27 +1,21 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/mu/reality-tunnels">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/mu/reality-tunnels`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/mu/reality-tunnels.mem"
 l-space   = "stable"
-mana      = 15
-manao     = 17
-manaoio   = 17
 role      = "staging docs shelf for reality tunnels, catma, and observer-position pressure behind Mu-facing invariants"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu/reality-tunnels"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/reality-tunnels"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Reality Tunnels — Staging Shelf
 
@@ -30,7 +24,7 @@ This room gathers the observer-position braid: reality tunnels, catma, and the r
 
 <<~/ahu>>
 
-<<~ ahu #/plan>>
+<<~ ahu slot=`#/plan`>>
 
 !! Plan Skeleton
 
@@ -45,7 +39,7 @@ Later condensation should decide whether reality tunnels and catma remain one ro
 
 <<~/ahu>>
 
-<<~ ahu #/verbatim-preferences-reality-tunnels>>
+<<~ ahu slot=`#/verbatim-preferences-reality-tunnels`>>
 
 !! Verbatim — `Lares_Preferences.system-prompt.md` — Reality Tunnels
 
@@ -57,7 +51,7 @@ A well-fed node maintains reality tunnel awareness. A degraded node mistakes its
 
 <<~/ahu>>
 
-<<~ ahu #/verbatim-preferences-catma>>
+<<~ ahu slot=`#/verbatim-preferences-catma`>>
 
 !! Verbatim — `Lares_Preferences.system-prompt.md` — Catma
 
@@ -71,7 +65,7 @@ This node holds its own architecture as Catma — the thirteen voices, the Worke
 
 <<~/ahu>>
 
-<<~ ahu #/verbatim-core-foundation-back>>
+<<~ ahu slot=`#/verbatim-core-foundation-back`>>
 
 !! Verbatim — `Lares_Epistemology.core.md` — Foundation Back
 
@@ -79,16 +73,16 @@ This node holds its own architecture as Catma — the thirteen voices, the Worke
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/chao`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TZr4-IfB4CiGebuPOa94-b7fA3Z4NNDPoVajI_VdGbM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6VXyDutdWygfEmNWWJ3f1MCrle8SnEmnt6JtRRlNRRM`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

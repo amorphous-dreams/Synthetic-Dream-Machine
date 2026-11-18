@@ -30,11 +30,10 @@
 import {
   BagStowage,
   makeWikiActivationCap,
-  slugFromUri, wikiBagUri, tiddlerText, recipeUri, recipeFromRecord,
+  slugFromUri, wikiBagUri, tiddlerText, recipeUri, deriveWikiRecipe,
   DEFAULT_HOT_CAP, DEFAULT_IDLE_MS, DEFAULT_SWEEP_INTERVAL_MS,
-  pinTiddlerUri, pinTiddlerRecord, scanPinTiddlers,
-} from "@lararium/mesh";
-import { plainRecordOrNull, storedRecord } from "@lararium/mesh";
+  pinTiddlerUri, pinTiddlerRecord, scanPinTiddlers, ownEntry, realmStandingDocUrl, wikiCanonAddress} from "@lararium/mesh";
+import { plainRecordOrNull, plainField, storedRecord } from "@lararium/mesh";
 import type {
   ActivationPool, WikiActivationCap, ResolveWikiSpec,
   LarDoc, DocHandle,
@@ -93,6 +92,13 @@ export interface VesselResidencyConfig {
   idle?: number;
   /** Sweeper tick override (default DEFAULT_SWEEP_INTERVAL_MS). */
   sweepIntervalMs?: number;
+  /**
+   * THE VESSEL'S PRIVATE DOCUMENTS (lane `ralias`): a cause where this vessel classes the document a wiki's catalog row
+   * names as private (its daemon document, a face's plane, its catalog), else null. An island stands inside the house, past
+   * the share guard, so a catalog pointer never resolves a wiki onto one: the resolution refuses `no-read-grant` and
+   * teaches the pool nothing. A consult that throws refuses too. Absent, no document reads as private here.
+   */
+  wikiDocRefused?: (wikiUrl: string) => string | null;
 }
 
 /** The now-live pieces `wireToPool` composes over — supplied inside the vessel's makePool, once
@@ -122,9 +128,8 @@ export interface VesselResidency {
 
 // ── Pin durability — the admin-doc write/read half of residency-tiers.mem#/pin-flag ─────────────
 //
-// `BagStowage.pin()` is purely in-memory; nothing before this made an operator pin survive a
-// daemon restart, though the canon and the (until now unused) `pinTiddlerUri` both assumed one
-// did. `writePinTiddler`/`removePinTiddler` persist the durable half under the daemon bag;
+// `BagStowage.pin()` is purely in-memory; this half makes an operator pin survive a daemon
+// restart, as the canon and `pinTiddlerUri` assume. `writePinTiddler`/`removePinTiddler` persist the durable half under the daemon bag;
 // `replayPinsFromDaemonDoc` — called at boot, BEFORE `residency.startSweeper()`, so a replayed
 // pin can never lose a race to the first sweep tick — restores them into a fresh collector.
 
@@ -202,12 +207,25 @@ export function makeVesselResidency(
     //    ACCESS, so no vessel-composite layer mount is needed here. ──
     const resolveWikiSpec: ResolveWikiSpec = async (wikiId) => {
       const slug    = slugFromUri(wikiId);
-      const wikiUrl = tiddlerText(catalogHandle.doc()?.tiddlers?.[wikiBagUri(slug)]) ?? null;
-      if (!wikiUrl || !wikiUrl.startsWith("automerge:")) return null;   // unknown → park/drop
+      // The wiki's canon address by the one order (`wikiCanonAddress`): a house canon wiki keys on the Kahu realm's standing
+      // document, or on its floor address where the vessel holds none; a user wiki keys on its catalog row.
+      const row = ownEntry(catalogHandle.doc()?.tiddlers, wikiBagUri(slug));
+      const wikiUrl = plainField(row, "kind") === "private-synced" ? null : await wikiCanonAddress(wikiBagUri(slug), {
+        realm: (bag) => realmStandingDocUrl(catalogHandle.doc(), bag),
+        row: () => tiddlerText(row) ?? null,
+      });
       // The libraries AND the plugin offerings the wiki's recipe record names lay at boot
       // (`recipeFromRecord`) — R3: this grain's OWN recipe, never the vessel-wide floor.
-      const rec = plainRecordOrNull(catalogHandle.doc()?.tiddlers?.[recipeUri("catalog", slug)]);
-      const grainRecipe = rec ? recipeFromRecord(rec, slug) : undefined;
+      const rec = plainRecordOrNull(ownEntry(catalogHandle.doc()?.tiddlers, recipeUri("catalog", slug)));
+      const derived = deriveWikiRecipe({ slug, record: rec, canonUrl: wikiUrl });
+      if (!derived.ok) return derived;
+      if (!wikiUrl) return { ok: false, cause: "no-such-bag", detail: wikiBagUri(slug) };
+      if (config.wikiDocRefused) {
+        let refused: string | null;
+        try { refused = config.wikiDocRefused(wikiUrl); } catch (err) { refused = `unreadable: ${String(err)}`; }
+        if (refused !== null) return { ok: false, cause: "no-read-grant", detail: `${wikiBagUri(slug)} names a ${refused} document` };
+      }
+      const grainRecipe = derived.recipe;
       const libraryBags = grainRecipe?.libraryBags;
       const pluginOfferings = grainRecipe?.pluginOfferings;
       // M2 — threaded alongside, never thrown: a torn plugin-offerings field on THIS grain's
@@ -225,7 +243,7 @@ export function makeVesselResidency(
         ...(pluginOfferings ? { pluginOfferings } : {}),
         ...(pluginOfferingsFault !== undefined ? { pluginOfferingsFault } : {}),
       });
-      return spec;
+      return { ok: true, spec };
     };
 
     // ── C. The activation-on-reference CAP the vessel HOLDS + the resolver READS. Its grant is
@@ -275,7 +293,7 @@ export function makeVesselResidency(
         requestedBy: "daemon",
       };
       void wikiActivation.ensureActive(wikiId)
-        .then((live) => (live
+        .then((live) => (live.ok
           ? pool.placeWikiVerb(wikiId, verbOpts).then(() => {}).catch(() => hooks.onUndeliverableAlert(wikiId, verbOpts, "raced-cold"))
           : hooks.onUndeliverableAlert(wikiId, verbOpts, "unmounted-no-mailbox")))
         .catch(() => hooks.onUndeliverableAlert(wikiId, verbOpts, "not-activatable"));

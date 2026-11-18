@@ -52,7 +52,7 @@ describe("production genesis bundle — seed + CAS", () => {
       const bytes = new Uint8Array(readFileSync(join(GENESIS_DIR, "cas", blob.cid)));
       expect(sha256HexBytesSync(bytes), blob.id).toBe(blob.cid);
     }
-    expect(seed?.format).toBe("lararium-genesis-seed/v1");
+    expect(seed?.format).toBe("lararium-genesis-seed");
   });
 
   test("seed-derived inventory closes the retained genesis CAS directory", () => {
