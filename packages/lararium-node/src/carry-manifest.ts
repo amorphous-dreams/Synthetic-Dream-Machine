@@ -13,12 +13,12 @@
  *   manifest.json                  this module's {@link CarryManifest}
  *   re-declare.json                {@link CarryRedeclare}
  *   faces/<fk>/working/<interior>  the face's daemon-wiki working carriers and `.kapae` shadows, at their uri-path
- *   faces/<fk>/drafts/<path>       the face's draft recovery files
- *   faces/<fk>/temp/<path>         the face's consented temp carriers
+ *   faces/<fk>/canon/<interior>    the face's daemon canon carriers (`bags/daemon-<F>`)
+ *   faces/<fk>/drafts/<slug>/<path> the face's draft recovery files in each wiki (`faces/<pet name>/recovery/<slug>`)
+ *   faces/<fk>/temp/<slug>/<path>  the face's consented temp carriers in each wiki (`daemon`: its daemon wiki's)
+ *   faces/<fk>/personal/<slug>/<interior> the face's margin over a wiki (`faces/<pet name>/margins/<slug>`)
  *   faces/<fk>/kahua/<path>        the face's kahua stage carriers (the plaintext a person reads)
  *   faces/<fk>/kahua-heads.json    the stage's standing heads as the fold read them: what the import re-lifts
- *   wikis/<slug>/drafts/<path>     another wiki's draft recovery files
- *   wikis/<slug>/temp/<path>       another wiki's consented temp carriers
  *   bags/<slug>/<path>             a house-minted bag's carriers (a user wiki's own canon, `self`, among them)
  *   daemon/canon/<interior>        the daemon wiki's canon (`bags/daemon`), its authored records alone
  *   wikis/<slug>/working/<interior> another wiki's working carriers

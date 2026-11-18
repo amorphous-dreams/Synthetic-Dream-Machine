@@ -155,8 +155,8 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
       if (!opts.all && (opts.cids ?? []).length === 0) throw new KahuaRefused("carry: name the revision cids that keep standing, or `all`");
       return { ...(await door.carry(opts.all ? { all: true } : { cids: opts.cids ?? [] })) };
     }
-    // The list names the face's relation F beside its items: the folder name its private projections carry
-    // (`daemon-<F>`, `kahua-<F>`), so a reader that maps folders to faces (`lares export`) reads it off the verified log.
+    // The list names the face's relation F beside its items: the identity its daemon canon bag carries (`bags/daemon-<F>`),
+    // read off the verified log (its folders take its pet name, `faces/<pet name>/`).
     // A FRESH FACE HOLDS NO STAGE YET: a face whose log pins no stage (no relation yet, or no stage pin) answers an empty
     // stage named `none`, never a refusal, so a reader that maps faces (the founding rite's seed) reads on.
     case "list": return { ...(await listStage(door, faceRelationOf(ports.projection()))) };

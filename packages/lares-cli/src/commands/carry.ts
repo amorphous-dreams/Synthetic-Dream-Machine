@@ -6,16 +6,16 @@
  * CONTENT, never as identity: no key, signature, CRDT history or AID travels, and the import writes NEW changes under
  * the new face's authority. The sensoriums (captured conversation memory, `<root>/sensoriums`) survive by where they
  * stand and never enter a bundle. Control records rest in the vessel control document and never travel in a bundle;
- * the daemon wiki travels through the face's working (`wikis/daemon-<F>`) and canon (`bags/daemon-<F>`) mirrors,
- * and kahua travels through `bags/kahua-<F>`.
+ * the daemon wiki travels through the face's root (`faces/<pet name>/`): its working (`wiki/`) and canon (`canon/`)
+ * mirrors, and kahua through its `stage/`.
  *
  * EXPORT (a vessel that holds a disk store and wears its faces, standing):
  *   1. refuses a dest inside the house root or the workspace, or one that already stands (the config home takes one, and so
  *      does a bound workspace for the keep rite that names it, `../rite-keep.ts`);
  *   2. reads the census (`lares vessel census`): an unsettled carrier, a held save or an unanswered line refuses by name,
  *      unless `--accept-omissions` names the export partial, and then each lands in the manifest's omissions;
- *   3. maps each face folder (`daemon-<F>`, `kahua-<F>`) to the face that wears it, keyed by PET-NAME; a face that holds
- *      memory and no pet-name, or two that share one, refuses;
+ *   3. maps each face root (`faces/<pet name>`) to the face whose pet name makes it; a face that holds memory and no
+ *      pet-name, two that share one, or a root no face carries (without --accept-omissions), refuses;
  *   4. (ONE ROW SET FOR ONE DOCUMENT: a wiki's workbench travels once, from its one folder, a sourced wiki's beside its canon
  *      source included, with the vessel-private share rows that name its owner and its seats by pet-name in `re-declare.json`;
  *      a face-private document, `personal` layers among them, travels for its one face.)
@@ -35,8 +35,8 @@
  *      stands off through the Confluence gate and never overwrites), raising each kāpae a shadow speaks;
  *   5. re-lifts each kahua head under the new face's grant, keyed by title + body digest (a title already holding that
  *      digest reads landed, a title holding a body the bundle never carried stands off);
- *   6. lands draft and temp files back where none stands (a different file there stands off); re-pours the daemon canon
- *      into `bags/daemon-<F>`, each house-minted bag into its bag and each other wiki's working rows into its working layer
+ *   6. lands draft and temp files back in the face's root (`faces/<pet name>/recovery/<slug>`, `temp/<slug>`) where none
+ *      stands (a different file there stands off); re-pours the daemon canon into `bags/daemon-<F>`, each house-minted bag into its bag and each other wiki's working rows into its working layer
  *      through the same gesture, minting first (CREATE) any slug this vessel does not hold, named in the preview; a wiki
  *      another face owns, or whose workbench another face's realm binds, mints nothing under a face that holds no writer's
  *      seat there (that face reads it only through what a share row grants).

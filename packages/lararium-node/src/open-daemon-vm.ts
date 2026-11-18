@@ -103,7 +103,7 @@ export interface DaemonVmOptions {
   casData?:          IslandCasData;
   /** D-VR-C: persist only the explicit daemon document in its owned scope. */
   ownedDocument?:    boolean;
-  /** The house's projections root (`<root>/projections`): `wikis/daemon-<F>/` receives the daemon wiki's working layer. */
+  /** The house's projections root (`<root>/projections`): `faces/<pet name>/wiki/` receives the daemon wiki's working layer. */
   projectionRoot?:   string;
   /** Override the daemon island script URL (tests). */
   workerScriptUrl?:  URL;

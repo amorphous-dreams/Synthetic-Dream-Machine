@@ -1448,8 +1448,8 @@ def build_mcp(coordinator: LaresCoordinator):
         """LIST the face's kahua stage — mirrors `lares kahua list`. Every standing item the stage's signed acts
         verify under the face's grant: {items: [{title, status: standing|siblings, heads: [{cid, text, fields,
         parent, origin, taint, sources, proposal, signer, withdrawn}]}], relation}. `siblings` names two lifts on
-        one parent, both kept. `relation` names the face's opaque relation id F, the folder name its projections
-        carry (`daemon-<F>`, `kahua-<F>`); null where the face's log names none yet. A fresh face whose log pins no
+        one parent, both kept. `relation` names the face's opaque relation id F, the identity its daemon canon
+        bag carries (`bags/daemon-<F>`); null where the face's log names none yet. A fresh face whose log pins no
         stage answers {items: [], relation, `stage: "none"`}, never a refusal. A plain tiddler in the stage doc
         never lists. Rides a `seat` session over the @daemon wire."""
         return uds.session_act("kahua-read", {"action": "list"}, face=_kahua_face(face))
