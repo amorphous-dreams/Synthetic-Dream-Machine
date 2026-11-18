@@ -58,6 +58,11 @@
  * the holder and an import wraps one for the vessel's own seat, so each refuses under the vessel's own shadow.
  * An import adds and never replaces (sealed-store#/the-store, the memory section and the import door).
  *
+ * A ROLL'S REPLACEMENT SIGNS ITS RE-SEAL (the road's #/rulings, the re-seal proof). `resealBlob` opens a body sealed under
+ * a version a removal successor follows, seals it again under that successor, and signs one `re-seal` record naming both
+ * versions, both addresses, the entry it replaces and the removal acts behind the roll; nothing rests unless every
+ * signature landed. `judgeReseals` reads each re-seal record a reader holds and judges every binding its history covers.
+ *
  * Platform-blind: it asks a store, a key shore and its vessel's readings through ports.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
@@ -73,14 +78,14 @@ import { openMemorySection, sealMemorySection, type MemoryEntry } from "./memory
 import { wrapLockbox, openLockbox, type KeyParcel, type LockboxWrapShore, type ReaderId } from "./lockbox-wrap.js";
 import {
   isWellFormedText, keyVersionIdOf, mintContentKey, openChunk, readContentKey, readKeyVersionId, readSealedAddress, sealChunk,
-  type ContentKey, type KeyVersionId, type SealContext, type SealedAddress,
+  type AuthorizedAddress, type ContentKey, type KeyVersionId, type SealContext, type SealedAddress,
 } from "./sealed-chunk.js";
 import {
-  authorizeFromManifest, bagLocatorOf, entryLocatorOf, factOfRecord, indexEntriesOf, joinProofOf, joinProven, readBagLocator, readRecord,
+  authorizeFromManifest, bagLocatorOf, entryLocatorOf, factOfRecord, indexEntriesOf, joinProofOf, joinProven, judgeReseal, readBagLocator, readRecord,
   recordIdOf, recordWriterSubject, signRecord,
   type BagLocator, type CheckpointBody, type HandOverBody, type KeyVersionBody, type KeyVersionPrivate, type LockboxRecord, type ManifestBody, type ManifestEntry,
-  type RecordBodies, type RecordId, type RecordKind, type RecordPrivates, type RecordSigner, type SealedRecord, type VerifiedRecord,
-  type WriterStanding,
+  type ReadRecordRefusalName, type RecordBodies, type RecordId, type RecordKind, type RecordPrivates, type RecordSigner, type ResealBody,
+  type ResealVerdict, type SealedRecord, type VerifiedRecord, type WriterStanding,
 } from "./sealed-records.js";
 import type { SeatRoll } from "./seat-duties.js";
 import type { SealedStore } from "./sealed-store-rest.js";
@@ -115,6 +120,9 @@ export const HOLDER_REFUSALS = [
   "roll-owed",                // a counted raise still owes this bag its removal roll: nothing seals under a head that precedes it
   "chain-absent",             // no chain stands (no session asked, no dial composed): the holder reads no record
   "values-malformed",         // a write batch names no value, or a value reads as no change or checkpoint
+  "head-not-rolled",          // the head this vessel writes under follows no removal: a replacement owes no re-seal
+  "replaced-other-span",      // the body rests only under a version of another span: a replacement never carries it across
+  "value-current",            // a version at or after the roll already names the body: no replacement stays owed
 ] as const;
 export type HolderRefusalName = (typeof HOLDER_REFUSALS)[number];
 /** A refusal names what stopped the act. `cause` carries another module's own refusal name, never a key. */
@@ -272,6 +280,20 @@ function readFreshBase(value: unknown): FreshBase | null {
   if (frontier.some((id) => typeof id !== "string" || id.length === 0)) return null;
   return { plaintext, ref, frontier: sortedText(frontier) };
 }
+
+/** A replacement a roll's successor re-sealed: the new body, the manifest that names it, and the re-seal record it signed. */
+export interface ResealedBlob {
+  readonly body:     SealedPrivateBody;
+  readonly manifest: RecordId;
+  readonly reseal:   RecordId;
+  /** The version the replaced value sealed under. */
+  readonly replaced: KeyVersionId;
+  readonly founding: BagLocator;
+  /** The join of the heads the replacement wrote under, where one minted for it. */
+  readonly joined?:  MintOutcome;
+}
+/** What a reader judges of one re-seal record it holds: its bindings' verdict, or the refusal its reading met. */
+export type ResealJudgement = { readonly id: RecordId } & (ResealVerdict | { readonly verdict: "refused"; readonly refusal: ReadRecordRefusalName });
 
 export interface SealedBlob extends MintlessSeal { readonly founded?: MintOutcome; readonly joined?: MintOutcome }
 interface MintlessSeal { readonly body: SealedPrivateBody; readonly manifest: RecordId; readonly founding: BagLocator }
@@ -878,6 +900,168 @@ export class ContentKeyHolder {
         }
       }
       return met;
+    });
+  }
+
+  // ── The re-seal ───────────────────────────────────────────────────────────────────────────────
+  /**
+   * Replace one body after a roll: open it under the version it sealed under, seal it again under the head this vessel
+   * writes under, which a removal must have minted (`head-not-rolled` otherwise), and sign one `re-seal` record for the
+   * replacement under that head. The replacement, its manifest, its index rows, then its re-seal record rest, and only
+   * once every signature landed. The replaced value stays at rest: a removed reader keeps what it already read.
+   */
+  resealBlob(args: { readonly bagId: string; readonly ref: string; readonly signer: RecordSigner | null; readonly owedActs?: () => readonly string[] }): Promise<ResealedBlob | HolderRefusal> {
+    return this.#inTurn<ResealedBlob>(async () => {
+      if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
+      if (typeof args.ref !== "string" || !HEX64.test(args.ref)) return refuse("open-refused", "reference-malformed");
+      if (args.signer === null) return refuse("signer-unavailable");
+      const signer = args.signer;
+      const { store, random } = this.#ports;
+      const known = (await this.#loaded()).get(args.bagId);
+      // A replacement founds nothing: a bag no key here serves holds no body to replace.
+      if (!known || ![...known.lines.values()].some((line) => this.#usable(line).size > 0)) return refuse("bag-unfounded");
+      // THE HEAD THIS REPLACEMENT WILL WRITE UNDER, read before any key act, so every refusal below lands before a join
+      // of the heads mints (`#place` mints it only once the replacement stands ready).
+      const written = await this.#writeLine(known);
+      if (isRefusal(written)) return written;
+      const lineage = written.lineage;
+      const choice = writeHead(lineage, this.#usable(written), (await this.#lastHead(written)) ?? undefined);
+      if ("refusal" in choice) return refuse(choice.refusal);
+      if ("ambiguous" in choice) return refuse("head-ambiguous");
+      const tips = "head" in choice ? [choice.head] : [...choice.joinOwed];
+      const spans = new Set(tips.map((tip) => lineage.fact(tip)!.span));
+      if (spans.size > 1) return refuse("join-across-spans");
+      const span = [...spans][0]!;
+      // THE ROLL IT ANSWERS: the nearest removal within the head's span, the head itself first. A head after that removal (a
+      // join, a later write) still owes the replacement; a span with no removal owes none.
+      const nearest = lineage.nearestRemoval(tips, span);
+      const roll = nearest !== null && "removal" in nearest ? nearest.removal : null;
+      if (roll === null || roll.cause.kind !== "removal") return refuse("head-not-rolled");
+      const acts = roll.cause.acts;
+      // THE REPLACED VALUE: the body under a version that roll rolled past. THE SPAN FENCE (#/epochs: an inviter never widens
+      // the audience for another writer's past): only a version of the head's own span may hand its body on, and a body
+      // that rests under another span alone refuses by name. Where the body rests under several such versions, the newest
+      // hands it on: one no other of them descends from, the lowest id among equals.
+      let otherSpan = false, current = false;
+      const candidates: { keyVersion: KeyVersionId; address: SealedAddress; entry: string; authorized: AuthorizedAddress }[] = [];
+      for (const keyVersion of this.#usable(written)) {
+        // A version at or after the roll that already names the body holds the replacement itself (or a write after it).
+        const after = keyVersion === roll.keyVersion || lineage.descends(keyVersion, roll.keyVersion);
+        if (!after && !lineage.descends(roll.keyVersion, keyVersion)) continue;
+        const oldKey = written.keys.get(keyVersion)!;
+        const context: SealContext = { bagId: args.bagId, keyVersion, role: "blob", logicalRef: hexToBytes(args.ref) };
+        const entry = entryLocatorOf(oldKey, context);
+        for (const row of await store.rowsAt(written.locator, keyVersion, entry)) {
+          const manifest = await this.#manifest(known, written, oldKey, row.manifest);
+          const authorized = manifest === null ? null : authorizeFromManifest(manifest, oldKey, context);
+          if (authorized === null) continue;
+          if (after) current = true;
+          else if (lineage.fact(keyVersion)!.span !== span) otherSpan = true;
+          else candidates.push({ keyVersion, address: authorized.address, entry, authorized });
+          break;
+        }
+      }
+      // A RETRY NEVER DUPLICATES: a body the roll's side already names refuses by name.
+      if (current) return refuse("value-current");
+      // A REPLACEMENT A STOP LEFT HALF-RESTED: its value and its re-seal record rest, and no manifest names it yet. The
+      // retry finishes that one under the version its record rides under, never a second.
+      for (const carried of await store.records("re-seal")) {
+        const under = carried.body.keyVersion;
+        if (carried.body.bag !== written.locator || !this.#usable(written).has(under)) continue;
+        if (under !== roll.keyVersion && !lineage.descends(under, roll.keyVersion)) continue;
+        const underKey = written.keys.get(under)!;
+        const read = readRecord("re-seal", carried, { bagId: args.bagId, locator: written.locator, key: underKey, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+        if (!("record" in read) || read.record.private.ref !== args.ref || read.record.private.role !== "blob") continue;
+        const rested = await this.#ports.values.read(carried.body.to);
+        if (rested === null) return refuse("value-absent");
+        const context: SealContext = { bagId: args.bagId, keyVersion: under, role: "blob", logicalRef: hexToBytes(args.ref) };
+        const manifest: ManifestBody = {
+          bag: written.locator, keyVersion: under, parents: await this.#cited(known, written, underKey, under),
+          entries: [{ role: "blob", address: carried.body.to, locator: entryLocatorOf(underKey, context), parents: [] }],
+        };
+        const named = await this.#sign("manifest", manifest, { writer: sessionWriter(signer) }, args.bagId, written.locator, underKey, signer);
+        if (isRefusal(named)) return named;
+        const id = await this.#rest(() => store.putRecord(named.carried));
+        await this.#rest(() => store.putIndexEntries(indexEntriesOf(named.verified)));
+        this.#rested(written, id, named.verified);
+        return { body: { cid: carried.body.to, ciphertext: rested, keyVersion: under, ref: args.ref }, manifest: id, reseal: recordIdOf("re-seal", carried.body), replaced: carried.body.replaced, founding: written.locator };
+      }
+      const newest = candidates
+        .filter((c) => !candidates.some((d) => d !== c && lineage.descends(d.keyVersion, c.keyVersion)))
+        .sort((p, q) => ascending(p.keyVersion, q.keyVersion))[0];
+      if (newest === undefined) return refuse(otherSpan ? "replaced-other-span" : "reference-unknown");
+      const ciphertext = await this.#ports.values.read(newest.address);
+      if (ciphertext === null) return refuse("value-absent");
+      const opened = openPrivateBody({ ciphertext, under: { bagId: args.bagId, key: written.keys.get(newest.keyVersion)! }, ref: args.ref, authorized: newest.authorized });
+      if (!("plaintext" in opened)) return refuse("open-refused", opened.refusal);
+      const old = { keyVersion: newest.keyVersion, address: newest.address, entry: newest.entry, plaintext: opened.plaintext };
+      // NOW THE KEY ACT: place the write; a join of the heads mints here where one is owed.
+      const placed = await this.#place(args.bagId, signer, undefined, args.owedActs);
+      if (isRefusal(placed)) { old.plaintext.fill(0); return placed; }
+      const { bag, line, at, owesRoll } = placed;
+      const key = line.keys.get(at.head)!;
+      const sealed = sealPrivateBody(old.plaintext, { bagId: args.bagId, key }, random);
+      old.plaintext.fill(0);
+      if (!("body" in sealed)) return refuse("seal-refused", sealed.refusal);
+      const { body } = sealed;
+      const context: SealContext = { bagId: args.bagId, keyVersion: at.head, role: "blob", logicalRef: hexToBytes(body.ref) };
+      const manifest: ManifestBody = {
+        bag: line.locator, keyVersion: at.head, parents: await this.#cited(bag, line, key, at.head),
+        entries: [{ role: "blob", address: body.cid, locator: entryLocatorOf(key, context), parents: [] }],
+      };
+      const named = await this.#sign("manifest", manifest, { writer: sessionWriter(signer) }, args.bagId, line.locator, key, signer);
+      if (isRefusal(named)) return named;
+      const resealBody: ResealBody = { bag: line.locator, keyVersion: at.head, replaced: old.keyVersion, from: old.address, to: body.cid, entry: old.entry };
+      const reseal = await this.#sign("re-seal", resealBody, { acts: [...acts], role: "blob", ref: args.ref }, args.bagId, line.locator, key, signer);
+      if (isRefusal(reseal)) return reseal;
+      // THE COMMIT POINT, as a blob's seal reads it: a raise counted while the replacement signed binds it here.
+      if (owesRoll()) return refuse("roll-owed");
+      // THE RECORD RESTS BEFORE THE MANIFEST: a stop between leaves a `to` no manifest names yet, which every reader reads
+      // unverified (the safe direction), and the next try finishes it.
+      await this.#rest(() => this.#ports.values.write(body.cid, body.ciphertext));
+      const resealId = await this.#rest(() => store.putRecord(reseal.carried));
+      const id = await this.#rest(() => store.putRecord(named.carried));
+      await this.#rest(() => store.putIndexEntries(indexEntriesOf(named.verified)));
+      await this.#rest(() => this.#noteHead(line, at.head));
+      this.#rested(line, id, named.verified);
+      return { body, manifest: id, reseal: resealId, replaced: old.keyVersion, founding: line.locator, ...(at.joined ? { joined: at.joined } : {}) };
+    });
+  }
+
+  /**
+   * Judge every re-seal record this vessel holds for one bag: each reads as any record under the version it rides under,
+   * then its bindings read against the key versions and manifests this vessel verified. A record under a version this
+   * vessel holds no key for reads nothing, so every binding stays unverified.
+   */
+  judgeReseals(bagId: string): Promise<readonly ResealJudgement[] | HolderRefusal> {
+    return this.#inTurn<readonly ResealJudgement[]>(async () => {
+      if (!isWellFormedText(bagId)) return refuse("bag-malformed");
+      const bag = (await this.#loaded()).get(bagId);
+      if (!bag) return refuse("bag-unfounded");
+      const out: ResealJudgement[] = [];
+      for (const carried of await this.#ports.store.records("re-seal")) {
+        const id = recordIdOf("re-seal", carried.body);
+        const line = bag.lines.get(carried.body.bag);
+        if (line === undefined) continue;
+        // COUNTED KEYS ALONE: a key a lockbox delivered for a version this vessel never counted opens no binding.
+        const counted = new Map([...this.#usable(line)].map((version) => [version, line.keys.get(version)!] as const));
+        const key = counted.get(carried.body.keyVersion);
+        if (key === undefined) { out.push({ id, verdict: "unverified", missing: ["successor", "replaced", "from", "to"] }); continue; }
+        const read = readRecord("re-seal", carried, { bagId, locator: line.locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+        if (!("record" in read)) { out.push({ id, verdict: "refused", refusal: read.refusal }); continue; }
+        const manifests: VerifiedRecord<"manifest">[] = [];
+        for (const version of [carried.body.replaced, carried.body.keyVersion]) {
+          const versionKey = counted.get(version);
+          if (versionKey === undefined) continue;
+          for (const m of await this.#ports.store.records("manifest")) {
+            if (m.body.bag !== line.locator || m.body.keyVersion !== version) continue;
+            const verified = await this.#manifest(bag, line, versionKey, recordIdOf("manifest", m.body));
+            if (verified !== null) manifests.push(verified);
+          }
+        }
+        out.push({ id, ...judgeReseal(read.record, { bagId, lineage: line.lineage, keys: counted, manifests }) });
+      }
+      return out;
     });
   }
 
