@@ -282,6 +282,7 @@ describe("RED the lend draws one kūkulu lei per lent face", () => {
       admitted: (image, by) => pulamaAdmissions(records!).admitted(image, by), admitByRite: (image, rites, by) => pulamaAdmissions(records!).admitByRite(image, rites, by),
       admitByHand: (image, faces, by) => pulamaAdmissions(records!).admitByHand(image, faces, by), reserved: (image, faces, by) => pulamaAdmissions(records!).reserved(image, faces, by),
       list: (by) => pulamaAdmissions(records!).list(by),
+      unadmit: (image, by) => pulamaAdmissions(records!).unadmit(image, by), ended: (by) => pulamaAdmissions(records!).ended(by),
     };
     const s = await standLend(admissions);
     records = s.records;
