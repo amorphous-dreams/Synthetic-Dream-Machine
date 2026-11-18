@@ -19,6 +19,7 @@ import { seatFaceRoute } from "../src/face-route.js";
 import { vesselCustodyHomes, type CustodyHomes } from "../src/vault-carriers.js";
 import { setMountedFace } from "../src/node-vessel-identity.js";
 import { parkWardTicket, wardCredential, type WardCredential } from "../src/ward-credential.js";
+import { seatScratchFaceRoute } from "./support/scratch-custody-setup.js";
 
 /** The synthetic route every fixture custody founds under. */
 export const FIXTURE_PASSPHRASE = "fixture-custody-passphrase";
@@ -35,6 +36,7 @@ export const fixtureWardRef = (verb: string, args: Readonly<Record<string, unkno
 
 // A face founded under this fixture asks its own route; the fixture answers with the same synthetic passphrase.
 seatFaceRoute(async () => [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }]);
+seatScratchFaceRoute(FIXTURE_PASSPHRASE);
 seatFaceAutoFounder(() => [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }]);
 
 export interface SeatedScratchCustody {

@@ -40,7 +40,8 @@ import { seatChairs } from "./seat-fixture.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 import { actingAtomKey } from "./atom-fixture.js";
 import { makeEdgeShadowRing } from "../src/edge-shadow-ring.js";
-import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
 
 const REALM = "a".repeat(64);
@@ -64,7 +65,7 @@ async function seatCharter() {
   return { e0: genesis.head, opened, openedEpoch: rolled.head, roll };
 }
 
-beforeEach(async () => {
+const house = keepHouse("lares-edge-reach-doors-", async () => {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
@@ -76,6 +77,7 @@ beforeEach(async () => {
     writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: packed }) }), "utf8");
   });
 });
+beforeEach(() => house.into(root, scratchHome));
 afterEach(async () => {
   await new Promise((r) => setTimeout(r, 200));
 });

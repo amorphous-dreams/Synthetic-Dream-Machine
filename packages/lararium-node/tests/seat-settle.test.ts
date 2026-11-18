@@ -45,14 +45,15 @@ import { makeEdgeShadowRing, type EdgeShadowFold } from "../src/edge-shadow-ring
 import { makeSeatSettler, raisesOwed, type SeatDutiesAnswer, type SeatSettler } from "../src/seat-settle.js";
 import { IslandAskAbandoned, IslandVerbRefused, askIslandVerb } from "../src/island-verb-ask.js";
 import { larSealHome } from "../src/vessel-paths.js";
-import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import "./custody-seat-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
+import { scratchRoot as root, scratchHome, test as vesselTest } from "./support/scratch-fixture.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
 
 const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
 
 describe("a fold of the fleet's board settles the key side", () => {
-  let custody: SeatedScratchCustody;
   let repo: Repo;
   let fleetRoot: string;
   let vesselKey: string;
@@ -62,11 +63,13 @@ describe("a fold of the fleet's board settles the key side", () => {
   let asked: string[][];
   let logs: string[];
 
-  beforeEach(async () => {
-    custody = await seatScratchCustody("seat-settle");
+  const house = keepHouse("lares-seat-settle-", async () => {
     await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await seedFaceAtom(0);
+  });
+  beforeEach(async () => {
+    house.into(root, scratchHome);
     repo = new Repo({});
     await seedFleet(0, { repo });
     fleetRoot = bare((await loadPersonaGroupRootVerifyingKey(0))!);
@@ -77,7 +80,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     waiting = [];
     reported = new Set();
   });
-  afterEach(async () => { await repo.shutdown().catch(() => {}); await custody.drop(); });
+  afterEach(async () => { await repo.shutdown().catch(() => {}); });
 
   /** The daemon island's part: answer each raise the facts carry as unrolled with one signed roll per edge. */
   const keyShore = async (facts: Pick<EdgeSeatFacts, "fleetRoot" | "acts" | "rolled">): Promise<SeatDutiesAnswer> => {
@@ -137,7 +140,7 @@ describe("a fold of the fleet's board settles the key side", () => {
   const foldReads = (_ring: unknown, cid: string): Promise<void> =>
     new Promise<void>((done) => { if (reported.has(cid)) done(); else waiting.push({ cid, wake: done }); });
 
-  test("S1 — a counted raise gets no roll until a person settles; with the settler on the fold it gets one by itself", async () => {
+  vesselTest("S1 — a counted raise gets no roll until a person settles; with the settler on the fold it gets one by itself", async () => {
     const device = "ab".repeat(32);
     // RED (today's vessel): the ring folds, the raise counts, and nothing answers it.
     const unwired = await stand(false);
@@ -162,7 +165,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     wired.ring.dispose();
   });
 
-  test("S2 — a vessel answers each counted raise once: a later fold plans the new raise alone", async () => {
+  vesselTest("S2 — a vessel answers each counted raise once: a later fold plans the new raise alone", async () => {
     const wired = await stand(true);
     const first = await raise("ab".repeat(32));
     await foldReads(wired.ring, first);
@@ -177,7 +180,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     wired.ring.dispose();
   });
 
-  test("S3 — no revoke authority keeps the roll, stays owed, and gets tried again at the next fold", async () => {
+  vesselTest("S3 — no revoke authority keeps the roll, stays owed, and gets tried again at the next fold", async () => {
     how = "no-authority";
     const wired = await stand(true);
     const held = await raise("ab".repeat(32));
@@ -201,7 +204,7 @@ describe("a fold of the fleet's board settles the key side", () => {
     wired.ring.dispose();
   });
 
-  test("S4 — a shadow over this vessel's own edge places nothing", async () => {
+  vesselTest("S4 — a shadow over this vessel's own edge places nothing", async () => {
     const wired = await stand(true);
     const own = await raise(vesselKey);
     await foldReads(wired.ring, own);

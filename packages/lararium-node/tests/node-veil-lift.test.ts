@@ -15,12 +15,14 @@ import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesse
 import { keepNodeVeilLift, readNodeVeilLift, veilLiftGroupFile } from "../src/node-veil-lift.js";
 import { carrierTable } from "../src/vault-carriers.js";
 import { seedFaceAtom, atomSeedOf } from "./atom-fixture.js";
-import { it } from "./support/scratch-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 
-beforeEach(async () => {
+const house = keepHouse("lares-node-veil-lift-", async () => {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot();
 });
+beforeEach(() => house.into(root, scratchHome));
 
 describe("the node's veil-lift link", () => {
   it("NV1-NV2 RED: the face's ATOM signs the link over the vessel's public key, the record reads back, and a replay keeps the standing record", async () => {

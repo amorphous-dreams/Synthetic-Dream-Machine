@@ -15,12 +15,14 @@ import type { KahuQuorumSeats } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../src/held-quorum.js";
 import { seatChairs } from "./seat-fixture.js";
-import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 
 
-beforeEach(async () => {
+const house = keepHouse("lares-held-quorum-", async () => {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
 });
+beforeEach(() => house.into(root, scratchHome));
 
 class DoorRefusal extends Error {}
 const refuse = (held: number, k: number): Error => new DoorRefusal(`door: ${held} of ${k}`);
