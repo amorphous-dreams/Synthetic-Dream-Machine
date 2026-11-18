@@ -23,6 +23,7 @@ import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, conclude
 import { HAND_PROFILES, type SessionFace } from "@lararium/mesh/session-contract";
 import { makeUdsSeat, serveUdsFront, type UdsSessionDoor, type UdsSessionSigner } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
+import { harnessOnBranch, peerPidsIn, statOf, type ProcReader } from "../src/uds-peer.js";
 
 const HARNESS_MARKS = ["CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"] as const;
 
@@ -141,4 +142,44 @@ test("CONTROL: an in-process client (the vessel's own process) keeps the line's 
   sock.write(JSON.stringify({ verb: "meme-get", args: MEME, requestedBy: "0xop", requestId: "in-process" }) + "\n");
   await answered;
   expect(v.placed.map(askerOf)).toEqual(["cli"]);
+});
+
+// THE READING ITSELF, over a vector `/proc`: the branch walk, the cut at the vessel's line, and the socket-table read.
+const procOf = (rows: Record<number, { comm: string; ppid: number; env?: string[]; argv?: string[] }>): ProcReader => ({
+  stat:    (pid) => rows[pid] ? `${pid} (${rows[pid]!.comm}) S ${rows[pid]!.ppid} ${pid} ${pid}` : null,
+  environ: (pid) => rows[pid] ? (rows[pid]!.env ?? []).join("\0") : null,
+  cmdline: (pid) => rows[pid] ? (rows[pid]!.argv ?? [rows[pid]!.comm]).join("\0") : null,
+});
+
+test("UNIT: a harness mark on any process of the peer's branch reads harness; a mark only above the vessel's line reads none", () => {
+  const proc = procOf({
+    1:  { comm: "init", ppid: 0 },
+    10: { comm: "zsh", ppid: 1, env: ["CLAUDECODE=1"] },      // above both: the vessel descends from it too
+    20: { comm: "node", ppid: 10 },                           // the vessel
+    30: { comm: "bash", ppid: 10, env: ["CODEX_SANDBOX=seatbelt"] },
+    31: { comm: "node", ppid: 30, env: [] },                  // a peer that cleared its own marks
+    40: { comm: "zsh", ppid: 1 },
+    41: { comm: "node", ppid: 40 },                           // the operator's terminal
+    50: { comm: "claude", ppid: 1 },
+    51: { comm: "sh", ppid: 50, env: ["CLAUDECODE=0"] },
+    52: { comm: "node", ppid: 51 },                           // under a harness by name
+  });
+  expect(harnessOnBranch(31, 20, proc)).toBe(true);
+  expect(harnessOnBranch(41, 20, proc)).toBe(false);
+  expect(harnessOnBranch(52, 20, proc)).toBe(true);
+  expect(harnessOnBranch(20, 20, proc)).toBe(false);          // in-process
+  expect(harnessOnBranch(10, 20, proc)).toBe(false);          // the vessel's own ancestor
+  expect(harnessOnBranch(99, 20, proc)).toBe(false);          // unreadable: no reading
+});
+
+test("UNIT: stat lines with spaces and parens in comm read their parent; the socket table names the peer's pids", () => {
+  expect(statOf("77 (a (b) c) S 5 77 77 0")).toEqual({ comm: "a (b) c", ppid: 5 });
+  const table = [
+    "u_str ESTAB 0 0 /run/lar/verbs.sock 1001 * 1000",
+    `u_str ESTAB 0 0 * 1000 * 1001 users:(("node",pid=4242,fd=21))`,
+    "u_str ESTAB 0 0 * 2000 * 2001",
+  ].join("\n");
+  expect(peerPidsIn(table, "1001")).toEqual([4242]);
+  expect(peerPidsIn(table, "2000")).toBeNull();
+  expect(peerPidsIn(table, "3000")).toBeNull();
 });
