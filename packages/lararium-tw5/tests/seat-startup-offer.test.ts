@@ -11,7 +11,7 @@
  * user tag lands.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri, isVerbRefusal, type Verb } from "@lararium/mesh";
+import { CompositeStore, SwarmRefused, bagUri, isVerbRefusal, type ExecLeiPort, type Verb } from "@lararium/mesh";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { makeMemePutReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { makeActionReactorFor } from "../src/action-handler.js";
@@ -27,29 +27,40 @@ const meme = (tags: string | null, title = URI): string =>
   `\`\`\`toml meta\n${tags === null ? "" : `tags = ${tags}\n`}uri-path = "${title.slice("lar:///".length)}"\n\`\`\`\n\n` +
   `<$action-setfield $tiddler="$:/temp/offered" text="ran"/>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
-const ctxOf = (composite: CompositeStore, action: string, asker?: Hand): VerbContext => ({
+const ctxOf = (composite: CompositeStore, action: string, asker?: Hand, execLei?: ExecLeiPort): VerbContext => ({
   daemon: composite,
   invocation: { requestId: "r", title: "t", action, args: {}, targets: [], batchMode: "best-effort", status: "pending", requestedBy: "test", requestedAt: "" } as unknown as Verb,
   cap: async () => ({ ok: true }),
   ...(asker ? { asker } : {}),
+  ...(execLei ? { execLei } : {}),
 } as VerbContext);
+
+/** A vessel's exec-lei port over one standing lei: it spends while returns stay, and refuses as the lei grammar would after. */
+function leiPort(returns: number): ExecLeiPort & { spends: Array<Record<string, unknown>> } {
+  const spends: Array<Record<string, unknown>> = [];
+  return { spends, spend: async (land) => {
+    if (spends.length >= returns) throw new SwarmRefused(returns === 0 ? "swarm-lei-absent" : "swarm-lei-returns-spent", "no return stays");
+    spends.push({ wiki: land.wiki, title: land.title, writer: land.writer });
+    return { lei: "c".repeat(64), n: spends.length };
+  } };
+}
 
 const reasonOf = async (go: () => Promise<unknown>): Promise<string | null> => {
   try { await go(); return null; } catch (e) { return isVerbRefusal(e) ? e.reason : `(${e instanceof Error ? e.message : String(e)})`; }
 };
 
-function rig() {
+function rig(execLei?: ExecLeiPort) {
   const composite = new CompositeStore();
   const garden = new MemoryTiddlerStore(GARDEN);
   const working = new MemoryTiddlerStore(WORKING);
   composite.addLayer({ bagId: GARDEN, store: garden, writable: true });
   composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
   const opts: MemeVerbOptions = { composite, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as unknown as MemeVerbOptions["tw5"] };
-  const put = (text: string, asker?: Hand) => makeMemePutReactor(opts)({ uri: URI, bag: "garden", text }, ctxOf(composite, "meme-put", asker));
+  const put = (text: string, asker?: Hand) => makeMemePutReactor(opts)({ uri: URI, bag: "garden", text }, ctxOf(composite, "meme-put", asker, execLei));
   const ingest = (text: string, asker?: Hand) => makeActionReactorFor("INGEST", { composite, diskMirrors: [{ bagId: WORKING, mirrorRoot: SOURCE, scope: "garden" }] })({
     "source-uri": SOURCE, "to-bag": WORKING, "change-id": `chg-${asker ?? "none"}`,
     carriers: [{ uri: URI, text, diskHash: "sha256:0f", syncedHash: null, file: `${SOURCE}/offer.mem` }],
-  }, ctxOf(composite, "INGEST", asker));
+  }, ctxOf(composite, "INGEST", asker, execLei));
   return { garden, working, put, ingest };
 }
 
@@ -88,5 +99,31 @@ describe("seat-startup-offer — a seat's startup action offers and never lands"
       expect((out["carriers"] as Array<Record<string, unknown>>)[0]).toMatchObject({ uri: URI, decision: "ingest" });
       expect(await r.working.get(URI)).not.toBeNull();
     }
+  });
+
+  test("RED: a seat's executable record lands under a standing exec lei, spending one return per land at the door (meme put and INGEST); CONTROL: past its returns it offers again and lands nothing", async () => {
+    const port = leiPort(2);
+    const r = rig(port);
+    expect((await r.put(meme(`["$:/tags/StartupAction"]`), "seat"))["decision"]).toBe("ingest");
+    expect(await r.garden.get(URI)).not.toBeNull();
+    expect(port.spends).toEqual([{ wiki: "garden", title: URI, writer: "seat" }]);
+    const out = await r.ingest(meme(`["$:/tags/StartupAction"]`), "seat") as Record<string, unknown>;
+    expect((out["carriers"] as Array<Record<string, unknown>>)[0]).toMatchObject({ uri: URI, decision: "ingest" });
+    expect(port.spends).toHaveLength(2);
+    const s = rig(port);
+    expect(await reasonOf(() => s.put(meme(`["$:/tags/StartupAction"]`), "seat"))).toBe("seat-startup-offer");
+    expect(await s.garden.get(URI)).toBeNull();
+  });
+
+  test("RED: with no lei standing the seat's executable record offers, and the refusal names the lei's own reading; CONTROL: a data record spends nothing and lands", async () => {
+    const port = leiPort(0);
+    const r = rig(port);
+    let message = "";
+    try { await r.put(meme(`["$:/tags/StartupAction"]`), "seat"); } catch (e) { message = e instanceof Error ? e.message : String(e); }
+    expect(message).toMatch(/seat-startup-offer/);
+    expect(message).toMatch(/swarm-lei-absent/);
+    expect(await r.garden.get(URI)).toBeNull();
+    expect((await r.put(meme(`["memory"]`), "seat"))["decision"]).toBe("ingest");
+    expect(port.spends).toHaveLength(0);
   });
 });

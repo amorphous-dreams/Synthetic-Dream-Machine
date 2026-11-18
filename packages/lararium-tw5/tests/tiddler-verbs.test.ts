@@ -6,6 +6,7 @@
  * A real engine boots here (`bootTestWiki`), so a filter, a backlink and a render answer as TiddlyWiki answers them.
  */
 import { describe, test, expect } from "vitest";
+import { SwarmRefused } from "@lararium/mesh";
 import { CompositeStore, bagUri, VERB_URI_PREFIX } from "@lararium/mesh";
 import { CARRIER_TYPE as CARRIER } from "@lararium/mesh/carrier-type";
 import { tombstonesOf, type Consequence } from "@lararium/mesh/family";
@@ -332,6 +333,22 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
         expect(await put({ ...A, ...shape, title }, as(asker)), `${title} lands natively`).toMatchObject({ decision: "put" });
       }
     }
+  });
+
+  test("RED: a seat's executable tiddler put lands under a standing exec lei and spends one return at the door; CONTROL: a lei that refuses leaves the offer standing", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const spends: string[] = [];
+    const execLei = { spend: async (land: { wiki: string; title: string; writer: string }) => {
+      if (land.title !== "Lei startup") throw new SwarmRefused("swarm-lei-out-of-scope", "the lei names no such title");
+      spends.push(`${land.wiki}|${land.title}|${land.writer}`);
+      return { lei: "c".repeat(64), n: spends.length };
+    } };
+    const seat: VerbContext = { ...ctx(), asker: "seat", execLei };
+    expect(await put({ ...A, title: "Lei startup", tagsAdd: "$:/tags/StartupAction" }, seat)).toMatchObject({ decision: "put" });
+    expect(spends).toEqual(["default|Lei startup|seat"]);
+    await expect(put({ ...A, title: "Other startup", tagsAdd: "$:/tags/StartupAction" }, seat)).rejects.toMatchObject({ reason: "seat-startup-offer" });
+    expect(r.engine.wiki.getTiddler("Other startup")).toBeUndefined();
   });
 
   test("★ slot-level-put witness: a tiddler put on a meme family's `#/slot` either refuses by name or leaves the carrier sealed; it never lands bytes the block check no longer covers ★", async () => {
