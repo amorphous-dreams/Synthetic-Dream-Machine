@@ -426,9 +426,9 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   // The pet-name the face wore before this naming finds the label it wrote at its creation, where its stage answers no relation.
   const formerPetname = founded.alreadyStood ? await ownPersonaPetname(petnames, index).catch(() => undefined) ?? null : null;
   await renameOwnPersona(petnames, index, name);
-  // THE FACE NAMES ITSELF AT ITS CREATION: its label (relation -> pet-name) lands now, beside the sealed pet-name, so a seed
-  // after a re-founding adopts its folders by this name though no face read ran first. A face that already stood answers its
-  // relation off its own stage, else off the one label naming it under its former pet-name.
+  // THE FACE NAMES ITSELF AT ITS CREATION: its label (relation -> pet-name) lands now, beside the sealed pet-name, though no
+  // face read ran first. A face that already stood answers its relation off its own stage, else off the one label naming it
+  // under its former pet-name; a new pet-name moves its root (`faces/<pet name>/`) along with it.
   await labelFaceAtNaming({ handleIndex: index, petname: name, relation: founded.faceRelation ?? null, formerPetname }, faceRelationOnStage);
 
   // The DECLARATION rides its own store, so the private label never becomes a public commitment by matching

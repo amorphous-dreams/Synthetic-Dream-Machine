@@ -4,9 +4,8 @@
  * THE WORD: seed lays every disk mirror back into the layer it mirrors; import carries a bundle onto this hearth's
  * faces by pet-name. Two legs: the HOLDINGS leg lays the checkout's canon (`bags/<slug>`) back into each canon bag, and
  * then the MIRRORS leg (`seed-mirrors.ts`) lays every mirror under the projections root back into its one layer (face
- * working and canon, house bags, other wikis' working), adopts a former face's folders by pet-name after a
- * re-founding, previews the kahua items it would lift and lifts them on the operator's confirmed count alone, and moves
- * an adopted face's folders to ashes once nothing stands pending.
+ * working and canon from each face root `faces/<pet name>/`, which a re-founding keeps where it stands; house bags; other
+ * wikis' working), previews the kahua items it would lift and lifts them on the operator's confirmed count alone.
  *
  * ONE ROAD, DECIDED BY WHERE CANON STANDS. A holding whose canon source stands on disk (its dir under the canon source
  * the daemon resolves, `daemonBagsDir`, and no private plane: `projectionRoots(...).sourcedSlugs()`) takes the
