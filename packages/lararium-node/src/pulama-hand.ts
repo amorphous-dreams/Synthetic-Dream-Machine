@@ -25,11 +25,22 @@
  *            row carries it: admission moves nothing.
  *   tessera  the tessera halves the pūlama witnessed, as they rest: `rite-begun` for each kūkulu it served, `rite-landed`
  *            for each that composed; and, while lit, the admitted images with each one's count of re-services.
+ *   lei      THE HAND STRINGS, RESTRINGS OR UNSTRINGS A LEI (`act`: `kui` · `restring` · `unstring`), SIGN-ONLY. The vessel under
+ *            a pūlama holds no face root, so the hand's lei acts come here, where the root rests: the face's root opens fresh
+ *            under the operator's route (a ward act; a miss spends the face's own ward attempts), signs ONE record (a lei, or
+ *            an unstring) for the face's own group, and zeroes. The act writes nothing: the vessel lands the record
+ *            (`lares lei land`), where the chain's tip, the returns left and the push co-sign gate judge it. A restring rides
+ *            kui: it names the line's tip it follows (`after`, as `lares lei show` reads it), and signs a lei after that tip.
+ *            An unlit pūlama, an unopened face, a face whose anchors name no group, malformed terms, a count above twelve
+ *            without `confirm` and a restring naming no tip each refuse before the route reads.
  *
  * An answer names a reading, a count or a public digest. No answer and no log line carries a route or a key.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import { swarmTesseraPrefix, type Credential, type SwarmWikiPort } from "@lararium/mesh";
+import {
+  LEI_RETURNS_ASK_ABOVE, isSwarmLeiRite, signSwarmAct, swarmActCid, swarmTesseraPrefix,
+  type Credential, type SwarmBodyParts, type SwarmSignerPort, type SwarmWikiPort,
+} from "@lararium/mesh";
 import { lentFacesOf } from "@lararium/mesh/lent-faces";
 import type { CustodyHolder } from "./custody-holder.js";
 import { pulamaSignerOf } from "./kukulu-gate.js";
@@ -50,6 +61,49 @@ function credentialsOf(v: unknown): readonly Credential[] | null {
   return out;
 }
 
+/** The face root the hand's `lei` act signs under, read in the pūlama, where the root rests. */
+export interface PulamaLeiHand {
+  /** The PersonaGroup the face at this ordinal names (its anchors row); null where none reads. */
+  group(ordinal: number): Promise<string | null>;
+  /** The face root's signer for ONE act, opened fresh under the operator's route (a ward act); a route that opens no slot of the
+   *  face's ward throws the ward's refusal by its reading. */
+  signer(ordinal: number, credentials: readonly Credential[]): Promise<SwarmSignerPort>;
+}
+
+type LeiAct = "kui" | "restring" | "unstring";
+const CID = /^[0-9a-f]{64}$/;
+
+/** The record a lei frame asks the hand to sign, or the refusal its terms read; the shape check runs after (`signSwarmAct`'s own). */
+function leiPartsOf(act: LeiAct, group: string, f: Readonly<Record<string, unknown>>): { readonly parts: SwarmBodyParts; readonly after?: string } | { readonly reading: string; readonly detail: string } {
+  const malformed = (detail: string) => ({ reading: "lei-malformed", detail });
+  const rite = f["rite"], branch = f["branch"];
+  if (!isSwarmLeiRite(rite)) return malformed("a lei names its rite: push, kukulu or keep");
+  if (typeof branch !== "string" || branch === "") return malformed("a lei names its branch");
+  if (act === "unstring") {
+    const lei = f["lei"];
+    if (typeof lei !== "string" || !CID.test(lei)) return malformed("an unstring names its lei by cid");
+    return { parts: { act: "lei-unstrung", group, rite, branch, lei } };
+  }
+  const after = f["after"] ?? null;
+  if (act === "restring" && after === null) return { reading: "lei-restring-names-the-tip", detail: "a restring follows the line's tip: name it (`after`, as `lares lei show` reads it)" };
+  if (after !== null && (typeof after !== "string" || !CID.test(after))) return malformed("a lei names the lei it follows by cid (`after`), or none for the line's first");
+  const reach = f["reach"] ?? "wide";
+  if (reach === "wide") {
+    const returns = f["returns"];
+    if (f["head"] !== undefined) return malformed("a wide lei names no head");
+    if (typeof returns !== "number" || !Number.isSafeInteger(returns) || returns < 1) return malformed("a wide lei names its returns, a count of at least one");
+    if (returns > LEI_RETURNS_ASK_ABOVE && f["confirm"] !== true) return { reading: "swarm-lei-returns-unconfirmed", detail: `this lei would carry ${returns} returns, more than ${LEI_RETURNS_ASK_ABOVE}; confirm the count to string it` };
+    return { parts: { act: "lei", group, rite, branch, after, reach, returns }, ...(after !== null ? { after } : {}) };
+  }
+  if (reach === "head") {
+    const head = f["head"];
+    if (f["returns"] !== undefined) return malformed("a head lei spends once and names no returns");
+    if (typeof head !== "string" || head === "") return malformed("a head lei names its head");
+    return { parts: { act: "lei", group, rite, branch, after, reach, head }, ...(after !== null ? { after } : {}) };
+  }
+  return malformed("a lei's reach reads wide or head");
+}
+
 export function pulamaHandDoor(a: {
   readonly holder: CustodyHolder;
   readonly server: PulamaServer;
@@ -57,6 +111,8 @@ export function pulamaHandDoor(a: {
   readonly records: SwarmWikiPort;
   /** The admitted set the `admit` act rests into. Absent, `admit` refuses `admit-unavailable`. */
   readonly admissions?: PulamaAdmissions;
+  /** The face root the `lei` act signs under. Absent, `lei` refuses `lei-unavailable`. */
+  readonly lei?: PulamaLeiHand;
   readonly onLog?: (line: string) => void;
 }): (frame: unknown) => Promise<PulamaHandAnswer> {
   const { holder, server } = a;
@@ -129,6 +185,38 @@ export function pulamaHandDoor(a: {
         if (ended.already === true) return { op: "unadmit", reading: "unadmitted", already: true, digest: image, ends: ended.ends, ...status() };
         log("unadmitted by hand: an image's admission rests ended under a tombstone");
         return { op: "unadmit", reading: "unadmitted", digest: image, ends: ended.ends, ...status() };
+      }
+      case "lei": {
+        if (!a.lei) return { op: "lei", reading: "lei-unavailable" };
+        // UNLIT REFUSES BEFORE ANYTHING READS: no root rests open to sign under.
+        if (!holder.isUnlocked()) return { op: "lei", reading: "pulama-locked", ...status() };
+        const act = f["act"], face = f["face"];
+        if ((act !== "kui" && act !== "restring" && act !== "unstring") || typeof face !== "number" || !Number.isSafeInteger(face) || face < 0) {
+          return { op: "lei", reading: "lei-malformed", detail: "a lei act names kui, restring or unstring, and the face by its whole ordinal" };
+        }
+        let open = false;
+        for (const fcid of holder.unlockedFaces()) { if ((await holder.faceStanding({ fcid }))?.ordinal === face) { open = true; break; } }
+        if (!open) return { op: "lei", act, reading: "face-locked", face, ...status() };
+        const group = await a.lei.group(face);
+        if (group === null) return { op: "lei", act, reading: "face-group-unread", face, detail: `face h${face} names no PersonaGroup in its anchors, so no lei signs for it` };
+        const terms = leiPartsOf(act, group, f);
+        if ("reading" in terms) return { op: "lei", act, ...terms };
+        // THE SHAPE READS BEFORE THE ROUTE: a body no swarm control forms signs nothing, so a probe that signs nothing judges it.
+        try { await signSwarmAct(terms.parts, { key: "", sign: async () => "" }); }
+        catch { return { op: "lei", act, reading: "lei-malformed", detail: "the lei's terms form no swarm record (its branch reads as no name)" }; }
+        const credentials = credentialsOf(f["credentials"]);
+        if (credentials === null) return { op: "lei", act, reading: "malformed" };
+        // THE ROUTE OPENS THE FACE ROOT FOR THIS ONE SIGNATURE, here in the pūlama; the record leaves, the root never does.
+        let record: Awaited<ReturnType<typeof signSwarmAct>>;
+        try { record = await signSwarmAct(terms.parts, await a.lei.signer(face, credentials)); }
+        catch (err) {
+          const e = err as { reading?: unknown; code?: unknown; message?: unknown };
+          const reading = typeof e.reading === "string" ? e.reading : typeof e.code === "string" ? e.code : "lei-sign-refused";
+          log(`lei ${act}: ${reading}`);
+          return { op: "lei", act, reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
+        }
+        log(`signed by hand: a ${terms.parts.act === "lei-unstrung" ? "lei's unstring" : "lei"} for h${face}; the vessel lands it`);
+        return { op: "lei", act, reading: "signed", face, record, cid: swarmActCid(record), ...(act === "restring" ? { restrung: terms.after } : {}) };
       }
       case "lock": await server.lock(); return { op: "lock", ...status() };
       case "status": return { op: "status", ...status(), ...await admissionDigests() };
