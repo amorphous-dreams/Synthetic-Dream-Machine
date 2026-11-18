@@ -47,11 +47,11 @@ on:
       - "wikis/**"
       - "CHANGELOG.md"
   pull_request:
-    branches: [main]
+    branches: [develop, main]
   # MERGE QUEUE HOOK (not wired yet). A native merge queue raises `merge_group` on the group's merge ref. When it lands, add here
   #   merge_group:
   #     types: [checks_requested]
-  #     branches: [feature/green-jello-dinosaur-5]
+  #     branches: [develop]
   # and add `gh-readonly-queue/**` to the push `branches-ignore` above, so a group raises ONE run, not two. No job guards
   # `merge_group` off (the fork guard below reads only `pull_request`), so the queue's run would raise the same ten jobs.
   # A controller runs CI by hand on a lane head whose own push the ignore list skipped: a meme-only head never

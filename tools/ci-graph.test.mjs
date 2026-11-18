@@ -59,6 +59,12 @@ test("G2 RED: a lane push with an open pull request raises ONE CI run, and a for
   assert.ok(triggers(ci).includes("pull_request"), "a fork's pull request has no push in this repository: the trigger stays");
 });
 
+test("G2d RED: a pull request into `develop` (the integration branch) or `main` raises CI, and the merge queue hook names `develop`", () => {
+  const ci = liveFiles(ROOT)["ci.yml"];
+  assert.match(ci, /^ {2}pull_request:\n {4}branches: \[develop, main\]$/m);
+  assert.match(ci, /^ {2}# {5}branches: \[develop\]$/m);
+});
+
 test("G2b CONTROL: a workflow with no fork guard raises a run per event, a guarded one only its push", () => {
   const open = "on:\n  push:\n  pull_request:\njobs:\n  a:\n    name: A\n";
   const guarded = "on:\n  push:\n  pull_request:\njobs:\n  a:\n    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}\n";
