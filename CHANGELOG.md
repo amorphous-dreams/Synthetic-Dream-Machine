@@ -14,7 +14,6 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 - **The gates fail closed.** Typecheck, mesh coverage, rite commands and the symbol-anchor witness stop passing on prose, empty input or a crash.
 - **An AI seat's write to house canon refuses `seat-canon-reach`** at every door; the seat offers, never writes, and the chore mark persists. The CLI asks as an AI seat wherever a harness mark stands in its environment (`CLAUDECODE`, `CODEX_SANDBOX`, `CODEX_SANDBOX_NETWORK_DISABLED`), so `lares meme put|delete --bag lares`, the residency and routed doors, and a seat-asked `offer promote` run from an AI shell refuse as the MCP seat does.
 - **`vault unlock` never opens around a pūlama.** With the daemon down in a house a pūlama keeps, the unlock refuses `offline-beside-pulama`.
-- **`meme put` naming `@sdm`** as bag or recipe refuses by name and lands nothing.
 
 **Added**
 - **`lares wear N`** moves the daemon mount inside the lent set and asks no route (the frame `{op: "wear", face}`; an AI seat refuses `seat-wears-no-face`). Route prompts name the face that owns them, the keep acts as the keep's face (the face whose keep lei already stands, else h0) whoever wears, and `lares pulama unadmit <digest>` takes an admission back.
