@@ -5,7 +5,7 @@
  */
 import { mkdirSync, writeFileSync, chmodSync, mkdtempSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { vi } from "vitest";
 import { SyncedTree, syncedTreeDir } from "@lararium/node";
 import { closeScratch, openScratch, type Scratch } from "../../../lararium-node/tests/support/scratch-fixture.js";
@@ -52,6 +52,7 @@ export function openSurfaceRig(): SurfaceRig {
     tree: () => tree,
     cwd: () => cwd,
     launch: (argv) => { launched.push([...argv]); return 0; },
+    basePath: (file) => resolve(file),
   };
   return {
     scratch, projections, config, tree, launched, doors,

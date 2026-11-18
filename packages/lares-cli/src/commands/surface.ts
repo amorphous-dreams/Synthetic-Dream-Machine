@@ -12,16 +12,26 @@
  *   - `open [--face N] [--launch]`: print (and run) `code -n <face root> <realm pools>`; writes no workspace file.
  *   - `commit [--face N] [-m <seam>]`: stage only the paths whose disk bytes equal the synced base, and commit them under a
  *     `lar:` subject naming no face; a path standing off reads apart by name and stays unstaged. Never pushes.
+ *   - `face [--face N]`: the face the house resolves and the pet name it wears (the host asks the vessel this alone).
+ *
+ * A HOST VERB. The pools rest on the disk the house's projections rest on, so the door runs where that disk stands and git
+ * never runs inside a container for a host pool ({@link surfaceHouse}). Where LAR_ROOT names the root (a dev or scratch
+ * house, the vessel itself) every door reads it. Where none does and the operator's container house stands
+ * (`~/.lares/lares-surface.env` naming LARES_HOUSE, the file the shim reads), the door reads the host's own spelling of
+ * that house: projections and config under LARES_HOUSE, the Synced tree in LARES_HOUSE/hearth (its bases spelled as the
+ * vessel spells them, `/lar/<class>/...`), and the face off the labels on disk (`projections/face-labels/`). It asks the
+ * vessel, through the shim, only for a face no label settles (`surface face`). `check` reads the disk and local config
+ * alone, so the pre-commit hook's bare `lares surface check` answers on the host with the vessel down.
  *
  * Meme: lar:///ha.ka.ba/kahua/memory/project/face-pools
  */
 import { spawnSync } from "node:child_process";
 import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
-import { join, relative, resolve, sep } from "node:path";
+import { join, posix, relative, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
 import {
   faceRoot, faceSegmentRefusal, HOUSE_IGNORED, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
-  larProjectionsHome, larConfigHome,
+  larProjectionsHome, larConfigHome, syncedTreeDir, labelledRelations, readFaceLabel,
 } from "@lararium/node";
 import { ownPersonaPetname, carrierHash, digestsEqual } from "@lararium/mesh";
 import { emit, refuseUsage } from "../render.js";
@@ -31,6 +41,8 @@ import { openSyncedTree, readCarrierText } from "../ingest-core.js";
 import { sealedPetnameStore } from "../sealed-records.js";
 import { makeFleetPetnameStore } from "../daemon-persona-store.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "../surface-env.js";
+import { locateShim, SHIM_ABSENT_EXIT } from "../host-bridge.js";
 
 // ── the doors ───────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -51,8 +63,11 @@ export interface SurfaceDoors {
   cwd(): string;
   /** Run a command line on this machine (`open --launch`); answers its exit code. */
   launch(argv: readonly string[]): number;
+  /** The spelling a synced base carries for a file this door reads (the vessel's own, where it spells the house apart). */
+  basePath(file: string): string;
 }
 
+/** The doors over the house LAR_ROOT names: the vessel's own reading, and a dev or scratch house's. */
 export const LIVE_SURFACE_DOORS: SurfaceDoors = {
   face: async (args) => {
     const index = faceOption(args).face ?? await actingFace(args);
@@ -65,7 +80,110 @@ export const LIVE_SURFACE_DOORS: SurfaceDoors = {
   tree: () => openSyncedTree(),
   cwd: () => process.cwd(),
   launch: (argv) => spawnSync(argv[0]!, argv.slice(1), { stdio: "inherit" }).status ?? 1,
+  basePath: (file) => resolve(file),
 };
+
+// ── the house, where the door runs ───────────────────────────────────────────────────────────────────────
+
+/** Where the house stands for this door: the root LAR_ROOT names, or the container house's host root. */
+export type SurfaceHouse = { readonly kind: "root" } | { readonly kind: "host"; readonly house: string };
+
+/**
+ * THE HOUSE THIS DOOR READS. LAR_ROOT named (or the vessel's own marker standing): that root, as every house door reads it.
+ * Neither, with LARES_HOUSE named (the environment first, else the env file the shim reads): the container house's host
+ * root, an absolute path. None of those: a refusal by name.
+ */
+export function surfaceHouse(env: Readonly<Record<string, string | undefined>> = process.env): SurfaceHouse {
+  if ((env["LAR_ROOT"] ?? "").trim() !== "" || (env[IN_CONTAINER_ENV] ?? "").trim() !== "") return { kind: "root" };
+  const envFile = surfaceEnvPath(env);
+  let text: string | null = null;
+  try { text = envFile === null ? null : readFileSync(envFile, "utf8"); } catch { text = null; }
+  const house = envValue("LARES_HOUSE", env, text);
+  if (house.startsWith("/")) return { kind: "host", house: resolve(house) };
+  throw new SurfaceRefused("surface-house-unnamed", `LAR_ROOT names no house root and no container house stands (${envFile ?? "~/.lares/lares-surface.env"} names no absolute LARES_HOUSE): set LAR_ROOT, or name LARES_HOUSE there`);
+}
+
+/** The classes the container house binds from LARES_HOUSE at `/lar/<class>` (`tools/lares-container.sh`). */
+const BOUND_CLASSES = ["hearth", "sensoriums", "projections", "library", "config"] as const;
+
+/** A host file under LARES_HOUSE as the vessel spells it (`/lar/<class>/...`); a file under no bound class keeps its own. */
+export function vesselSpelling(house: string, file: string): string {
+  const abs = resolve(file);
+  for (const top of new Set([resolve(house), real(house)])) {
+    for (const c of BOUND_CLASSES) {
+      const dir = join(top, c);
+      if (within(abs, dir)) return posix.join("/lar", c, ...relative(dir, abs).split(sep));
+    }
+  }
+  return abs;
+}
+
+/** What the vessel answered a forwarded line: its exit code and its stdout. */
+export type VesselAsk = (argv: readonly string[]) => { readonly code: number; readonly out: string };
+
+/** Ask the vessel one line through the checkout's shim (the bridge's own door), stdout read back, stderr and stdin the terminal's. */
+const SHIM_ASK: VesselAsk = (argv) => {
+  const shim = locateShim();
+  if (shim === null) return { code: SHIM_ABSENT_EXIT, out: "" };
+  const r = spawnSync("/bin/sh", [shim, ...argv], { stdio: ["inherit", "pipe", "inherit"], encoding: "utf8" });
+  return { code: r.status ?? 1, out: r.stdout ?? "" };
+};
+
+/**
+ * THE FACE THE LABELS SETTLE: the one (index, pet name) the face labels under `projections` name, for `index` where the
+ * command names one. None, or several (two faces, or one index under two pet names), settles nothing: null.
+ */
+export function labelledFace(projections: string, index?: number): SurfaceFace | null {
+  const seen = new Map<string, SurfaceFace>();
+  for (const relation of labelledRelations(projections)) {
+    const label = readFaceLabel(relation, projections);
+    if (label === null || label.petname.trim() === "" || (index !== undefined && label.handleIndex !== index)) continue;
+    const petname = label.petname.normalize("NFC");
+    seen.set(`${label.handleIndex}\0${petname}`, { index: label.handleIndex, petname });
+  }
+  return seen.size === 1 ? [...seen.values()][0]! : null;
+}
+
+/** One answer of the vessel's `surface face --json`, as it rests on stdout's last line. */
+interface FaceAnswer { readonly ok?: boolean; readonly data?: { readonly face?: unknown; readonly petname?: unknown }; readonly error?: { readonly code?: unknown; readonly message?: unknown } }
+
+/** The doors over the container house's host root: everything off this disk, the face alone from the vessel. */
+export function hostSurfaceDoors(house: string, ask: VesselAsk = SHIM_ASK): SurfaceDoors {
+  const projections = join(house, "projections");
+  return {
+    face: async (args) => {
+      const named = faceOption(args).face;
+      const settled = labelledFace(projections, named);
+      if (settled !== null) return settled;
+      const line = ["surface", "face", "--json", ...(named !== undefined ? ["--face", String(named)] : [])];
+      const r = ask(line);
+      let answer: FaceAnswer | null = null;
+      try { answer = JSON.parse(r.out.trim().split("\n").pop() ?? "") as FaceAnswer; } catch { answer = null; }
+      const data = answer?.data;
+      if (answer?.ok === true && typeof data?.face === "number" && typeof data.petname === "string" && data.petname.trim() !== "") {
+        return { index: data.face, petname: data.petname };
+      }
+      if (answer?.ok === false && typeof answer.error?.code === "string") throw new SurfaceRefused(answer.error.code, String(answer.error.message ?? ""));
+      throw new SurfaceRefused("surface-face-unanswered", `no face label under ${join(projections, FACE_LABELS_DIR)} settles ${named !== undefined ? `the face h${named}` : "the face"}, and the vessel answered \`lares ${line.join(" ")}\` with ${r.code}: stand the vessel (\`lares up\`), or name a labelled face (\`--face N\`)`);
+    },
+    projections: () => projections,
+    config: () => join(house, "config"),
+    tree: () => new SyncedTree(syncedTreeDir(join(house, "hearth", "checkpoints", "projection"))),
+    cwd: () => process.cwd(),
+    launch: LIVE_SURFACE_DOORS.launch,
+    basePath: (file) => vesselSpelling(house, file),
+  };
+}
+
+/** The doors for this process: the root's where LAR_ROOT names one, else the container house's host root. */
+export function liveSurfaceDoors(env: Readonly<Record<string, string | undefined>> = process.env, ask: VesselAsk = SHIM_ASK): SurfaceDoors {
+  let house: SurfaceHouse;
+  try { house = surfaceHouse(env); } catch (err) {
+    const refuse = (): never => { throw err; };
+    return { face: async () => refuse(), projections: refuse, config: refuse, tree: refuse, cwd: () => process.cwd(), launch: LIVE_SURFACE_DOORS.launch, basePath: refuse };
+  }
+  return house.kind === "root" ? LIVE_SURFACE_DOORS : hostSurfaceDoors(house.house, ask);
+}
 
 /** A refusal this door names by code. */
 export class SurfaceRefused extends Error {
@@ -302,8 +420,8 @@ type Agreement = { readonly ok: true; readonly uri: string | null } | { readonly
  * A file gone from disk agrees only where no base stands there (the house already removed it); where one stands, the
  * shore holds it pending.
  */
-function agreementAt(file: string, bases: ReadonlyMap<string, ReadonlyArray<{ readonly uri: string; readonly base: SyncedBase }>>): Agreement {
-  const standing = bases.get(resolve(file)) ?? []; // the one spelling a base carries (`syncedPath`: absolute, normalized, symlinks unread)
+function agreementAt(file: string, bases: ReadonlyMap<string, ReadonlyArray<{ readonly uri: string; readonly base: SyncedBase }>>, spell: (file: string) => string): Agreement {
+  const standing = bases.get(spell(file)) ?? []; // the one spelling a base carries (`syncedPath`: absolute, normalized, symlinks unread)
   if (!existsSync(file)) {
     return standing.length === 0
       ? { ok: true, uri: null }
@@ -329,10 +447,10 @@ export const HAND_SEAM = "by-hand";
 /**
  * KEEP THE SITTING: stage only the pool paths the house already agrees with, and commit them under
  * `lar:///surface.keeps.the-sitting/<seam> — N carriers`, the carrier URIs in the body, the author from the pool's local
- * config. A `.meta` sidecar rides with its carrier. A path the operator staged by hand that stands off stays staged and
+ * config. `spell` names a file as the bases spell it (the vessel's `/lar/...` where the door runs on the host). A `.meta` sidecar rides with its carrier. A path the operator staged by hand that stands off stays staged and
  * out of this commit (the commit names its paths). Never pushes.
  */
-export function surfaceCommit(root: string, tree: SyncedTree, seam: string = HAND_SEAM): SurfaceCommitResult {
+export function surfaceCommit(root: string, tree: SyncedTree, seam: string = HAND_SEAM, spell: (file: string) => string = resolve): SurfaceCommitResult {
   if (!SEAM.test(seam)) throw new SurfaceRefused("surface-seam-malformed", `a seam names one slug (a-z, 0-9, -), never ${JSON.stringify(seam)}`);
   if (!existsSync(join(root, ".git"))) throw new SurfaceRefused("surface-no-pool", `no face pool stands at ${root}: run \`lares surface init\``);
   const bases = new Map<string, Array<{ uri: string; base: SyncedBase }>>();
@@ -345,7 +463,7 @@ export function surfaceCommit(root: string, tree: SyncedTree, seam: string = HAN
   const carriers = new Set<string>();
   for (const rel of changedPaths(root).sort()) {
     const content = rel.endsWith(".meta") ? rel.slice(0, -".meta".length) : rel;
-    const agreement = agreementAt(join(root, ...content.split("/")), bases);
+    const agreement = agreementAt(join(root, ...content.split("/")), bases, spell);
     if (!agreement.ok) { apart.push({ path: rel, why: agreement.why }); continue; }
     staged.push(rel);
     if (agreement.uri !== null) carriers.add(agreement.uri);
@@ -365,7 +483,14 @@ export function surfaceCommit(root: string, tree: SyncedTree, seam: string = HAN
 
 // ── the command ────────────────────────────────────────────────────────────────────────────────────────────
 
-const SUB_DOORS = ["init", "check", "open", "commit"] as const;
+const SUB_DOORS = ["init", "check", "open", "commit", "face"] as const;
+
+/** The face the house resolves and the pet name it wears: the one line the host asks the vessel. */
+async function cmdFace(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
+  const face = await doors.face(args);
+  emit(args, { ok: true, data: { face: face.index, petname: face.petname }, human: () => console.log(`h${face.index} ${face.petname}`) });
+  return 0;
+}
 
 async function cmdOpen(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
   const face = await doors.face(args);
@@ -403,7 +528,7 @@ async function cmdCommit(args: ParsedArgs, doors: SurfaceDoors): Promise<number>
   const { seam } = read;
   const face = await doors.face(args);
   const root = faceRoot(doors.projections(), face.petname);
-  const result = surfaceCommit(root, doors.tree(), seam);
+  const result = surfaceCommit(root, doors.tree(), seam, (file) => doors.basePath(file));
   emit(args, {
     ok: true,
     data: { ...result },
@@ -457,7 +582,7 @@ async function cmdCheck(args: ParsedArgs, doors: SurfaceDoors): Promise<number> 
   return 1;
 }
 
-export async function cmdSurface(args: ParsedArgs, doors: SurfaceDoors = LIVE_SURFACE_DOORS): Promise<number> {
+export async function cmdSurface(args: ParsedArgs, doors: SurfaceDoors = liveSurfaceDoors()): Promise<number> {
   const verb = args.positional[0];
   if (verb === undefined || !(SUB_DOORS as readonly string[]).includes(verb)) {
     return refuseUsage(args, "surface", helpLines("surface"), verb === undefined ? "name a sub-verb" : `unknown sub-verb "${verb}"`);
@@ -467,6 +592,7 @@ export async function cmdSurface(args: ParsedArgs, doors: SurfaceDoors = LIVE_SU
       case "init": return await cmdInit(args, doors);
       case "open": return await cmdOpen(args, doors);
       case "commit": return await cmdCommit(args, doors);
+      case "face": return await cmdFace(args, doors);
       default: return await cmdCheck(args, doors);
     }
   } catch (err) {
