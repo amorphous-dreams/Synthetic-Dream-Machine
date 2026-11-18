@@ -112,3 +112,61 @@ def mask_non_code(source: str) -> str:
         else:
             i += 1
     return ''.join(out)
+
+
+def mask_python(source: str) -> str:
+    """Blank `#` comments and string literals (Python lexis: triple-quoted strings span lines), keeping offsets."""
+    out = list(source)
+    n = len(source)
+    i = 0
+    while i < n:
+        c = source[i]
+        if c == '#':
+            end = source.find('\n', i)
+            end = n if end < 0 else end
+        elif source[i:i + 3] in ('"""', "'''"):
+            end = source.find(source[i:i + 3], i + 3)
+            end = n if end < 0 else end + 3
+        elif c in ('"', "'"):
+            end = i + 1
+            while end < n and source[end] != c and source[end] != '\n':
+                end += 2 if source[end] == '\\' else 1
+            end = end + 1 if end < n and source[end] == c else min(end, n)
+        else:
+            i += 1
+            continue
+        for k in range(i, end):
+            if source[k] != '\n':
+                out[k] = ' '
+        i = end
+    return ''.join(out)
+
+
+_TS_MODIFIERS = r'(?:(?:export|default|declare|abstract|async|static|public|private|protected|readonly|override|get|set)\s+)*'
+
+
+def declared_names(source: str, language: str = 'ts') -> set[str]:
+    """Every name the module DECLARES in code: a binding, a function, a class and its members, a type and its fields,
+    an object key. A name that stands only in a comment, a string or a call site declares nothing."""
+    if language == 'py':
+        code = mask_python(source)
+        return (set(re.findall(r'(?m)^\s*(?:async\s+)?(?:def|class)\s+([A-Za-z_]\w*)', code))
+                | set(re.findall(r'(?m)^\s*([A-Za-z_]\w*)\s*(?::[^=\n]+)?=(?!=)', code)))
+    code = mask_non_code(source)
+    names = set(re.findall(
+        r'\b(?:const|let|var|function\*?|class|interface|type|enum|namespace|module)\s+([A-Za-z_$][\w$]*)', code))
+    names.update(re.findall(rf'(?m)^\s*{_TS_MODIFIERS}#?([A-Za-z_$][\w$]*)\s*[?!]?\s*(?:[(<:]|=(?!=))', code))
+    return names
+
+
+if __name__ == '__main__':
+    # A census over many modules at once: a JSON list of paths on stdin, the sorted declared names on stdout.
+    import json, pathlib, sys
+    found: set[str] = set()
+    for path in json.load(sys.stdin):
+        try:
+            text = pathlib.Path(path).read_text(errors='replace')
+        except (FileNotFoundError, IsADirectoryError):
+            continue
+        found.update(declared_names(text, 'py' if path.endswith('.py') else 'ts'))
+    json.dump(sorted(found), sys.stdout)
