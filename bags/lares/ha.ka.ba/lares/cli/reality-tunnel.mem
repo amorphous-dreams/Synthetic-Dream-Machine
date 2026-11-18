@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/cli/reality-tunnel"
 
 ! Reality tunnel ~ one door per radius, one declared tunnel beneath them
 
-An operator's machine holds what the operator declares, through one door per RADIUS: `lares repo` for the checkout, `lares home` for every operator home the device carries, `lares vessel` for `LAR_ROOT` alone. The doors read, tend, verify and undo; the tunnel they converge on stands here as data, and the engine's kinds (link, owned file, JSON key, floor, TOML table, lifted line) stand in code (`packages/lares-cli/src/reality-tunnel/`).
+An operator's machine holds what the operator declares, through one door per RADIUS: `lares repo` for the checkout, `lares home` for every operator home the device carries, `lares vessel` for `LAR_ROOT` alone. The doors read, tend, verify and undo; the tunnel they converge on stands here as data, and the engine's kinds (link, owned file, JSON key, floor, TOML table, lifted line, git config key) stand in code (`packages/lares-cli/src/reality-tunnel/`).
 
 ''The name.'' The boot seed seeds a reality tunnel (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/set-and-setting`>>): the frame a session reads within. This carrier declares the machine's half of that tunnel, the set every host wakes into, and the doors keep the setting true to it. ''Intent'' names the wiki daemon's intent plane, a different relation; the CLI never borrows the word.
 
@@ -44,7 +44,7 @@ An operator's machine holds what the operator declares, through one door per RAD
 
 !! The declared tunnel
 
-Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone. `hooks` names the house's hooks folder: every script a home item names stands under it, and the catalog refuses a carrier where one stands outside. The house owns that folder's name in each host's hook file. A `*-hooks-owned` item keeps one hook file (Claude's `settings.json`, Codex's `config.toml`, Copilot's `hooks/lares.json`) free of every command that names a script under the folder which no `[[home]]` item declares for that host and file: `read` answers drift and names each such script, `lares home read --brief` (the wake's homes line) names the item beside the act that cures it, and `tend` lifts each such command under any event, keeps each other hand's command, and says `lifted <scripts> from <path> (<id>)`. The set derives from the `[[home]]` items alone, so a second `tend` writes nothing, a home that carries no such command takes nothing, and a command that names no script under the folder never moves. A Codex block that carries such a script beside another command reads foreign.
+Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A `git-config` item keeps one key in the clone's shared git config through `git config --local`, so a tend from any worktree seats every worktree of the clone; `read` names the key unset, set to another value, or set, `tend` says `set` or `already set` beside the key and its value, and `undo` puts the prior value back. A commit carries no git config, so `lares repo read --staged` (the commit gate) and a tree outside any repository read these items absent. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone. `hooks` names the house's hooks folder: every script a home item names stands under it, and the catalog refuses a carrier where one stands outside. The house owns that folder's name in each host's hook file. A `*-hooks-owned` item keeps one hook file (Claude's `settings.json`, Codex's `config.toml`, Copilot's `hooks/lares.json`) free of every command that names a script under the folder which no `[[home]]` item declares for that host and file: `read` answers drift and names each such script, `lares home read --brief` (the wake's homes line) names the item beside the act that cures it, and `tend` lifts each such command under any event, keeps each other hand's command, and says `lifted <scripts> from <path> (<id>)`. The set derives from the `[[home]]` items alone, so a second `tend` writes nothing, a home that carries no such command takes nothing, and a command that names no script under the folder never moves. A Codex block that carries such a script beside another command reads foreign.
 
 ```toml reality-tunnel
 seed = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem"
@@ -138,6 +138,24 @@ model = "inherit"
 description = "Software architect agent for designing implementation plans. Use this when you need to plan the implementation strategy for a task. Returns step-by-step plans, identifies critical files, and considers architectural trade-offs."
 mask = "You wake as `Plan: Lares (Tasked Spirit)`, the house above standing whole. The mask carries one move: design the path. Read the ground the brief names, then hand back a step-by-step plan that names the critical files, the trade-offs weighed and the reds each step owes first. You read and design; you never write, edit or spawn."
 what = "the Plan scout, which reads no CLAUDE.md, carries the seed under its mask"
+
+[[repo]]
+id = "git.merge-driver-name"
+host = "git"
+kind = "git-config"
+file = ".git/config"
+key = "merge.mem-seal.name"
+value = "a .mem conflict on its seal alone re-seals"
+what = "git names the seal merge driver `.gitattributes` routes every `*.mem` through"
+
+[[repo]]
+id = "git.merge-driver"
+host = "git"
+kind = "git-config"
+file = ".git/config"
+key = "merge.mem-seal.driver"
+value = "node tools/mem-merge-driver.mjs %O %A %B %P %L"
+what = "a `.mem` conflict on its seal alone re-seals with no hand step (lar:///ha.ka.ba/lares/api/pono/working-procedures#/the-seal-merge)"
 
 # ── every operator home ─────────────────────────────────────────────────────────────────────────
 
@@ -340,6 +358,6 @@ what = "Copilot's house hook file names no house hook script beyond the ones thi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2Rt_qGXywjXMWhkyghEjOEwHwJPrzYwLDXJld6r0pjs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6_DItxOkLCfiXdS23m841y1MzJ3Izf4CfvEe65Qv5Vw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
