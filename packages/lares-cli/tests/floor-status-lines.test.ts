@@ -4,9 +4,10 @@
  * that part and names the Nexus refusal on its own line; the read still answers.
  */
 import { describe, expect, test } from "vitest";
+import type { GenesisRatchet, RatchetDifference } from "@lararium/mesh";
 import { floorStatusLines } from "../src/commands/floor.js";
 
-const same = (r: string) => ({ ratchet: r, record: "x", other: "x", reading: "same" });
+const same = (r: GenesisRatchet): RatchetDifference => ({ ratchet: r, record: "x", other: "x", reading: "same" });
 const record = { engine: "bafkreiengine000000000001", grammar: "bafkreigrammar00000000002", plugins: "bafkreiplugins00000000003", floor: "f".repeat(64) };
 
 describe("the floor status lines", () => {
@@ -14,7 +15,7 @@ describe("the floor status lines", () => {
     const lines = floorStatusLines({
       genesis: {
         record,
-        seed: { cid: "c".repeat(64), ratchets: ["engine", "plugins", "floor"].map(same).concat([{ ratchet: "grammar", record: "a", other: "b", reading: "moved" }]) },
+        seed: { cid: "c".repeat(64), ratchets: (["engine", "plugins", "floor"] as const).map(same).concat([{ ratchet: "grammar", record: "a", other: "b", reading: "moved" }]) },
         floorPin: null,
         line: "",
       },
@@ -33,8 +34,8 @@ describe("the floor status lines", () => {
       board: "absent", newest: null, heads: [], descends: null, fastForward: false, path: [], refused: [],
       genesis: {
         record,
-        seed: { cid: "c".repeat(64), ratchets: ["engine", "grammar", "plugins", "floor"].map(same) },
-        floorPin: { manifestCid: "f".repeat(64), ratchets: ["engine", "grammar", "plugins", "floor"].map(same) },
+        seed: { cid: "c".repeat(64), ratchets: (["engine", "grammar", "plugins", "floor"] as const).map(same) },
+        floorPin: { manifestCid: "f".repeat(64), ratchets: (["engine", "grammar", "plugins", "floor"] as const).map(same) },
         line: "",
       },
     } as never);
