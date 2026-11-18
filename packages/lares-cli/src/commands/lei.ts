@@ -31,6 +31,7 @@ import { sealedAct } from "../sealed-act-door.js";
 import { houseFaces } from "../custody-door.js";
 import { keepFaceOf, lineHeld, type HouseFaces } from "../rite-keep.js";
 import type { RiteVerbAnswer } from "../rite-kukulu.js";
+import { execLeiBranch } from "@lararium/mesh";
 
 export class LeiUsage extends Error {}
 /** A terms line the vessel's own reading refuses, by name: no lei to restring, a forked line, a keep lei standing unseen. */
@@ -78,7 +79,16 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
     return Number(raw);
   };
   const out: Record<string, unknown> = {};
-  const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
+  const rite = word(args.options["rite"]);
+  // AN EXEC LEI'S SCOPE (`--scope '<json>'`: its wiki, the writer, and a title set or one class): the branch derives from the wiki.
+  const scopeRaw = word(args.options["scope"]);
+  let scope: Record<string, unknown> | undefined;
+  if (scopeRaw !== undefined) {
+    if (rite !== "exec") throw new LeiUsage("only an exec lei names a --scope");
+    try { scope = JSON.parse(scopeRaw) as Record<string, unknown>; } catch { throw new LeiUsage("--scope takes one JSON object: {\"wiki\":…,\"writer\":…, \"titles\":[…] | \"class\":…}"); }
+    if (typeof scope !== "object" || scope === null || Array.isArray(scope) || typeof scope["wiki"] !== "string") throw new LeiUsage("--scope names its wiki, the writer, and a title set or one class");
+  } else if (rite === "exec" && args.positional[0] !== "show" && args.positional[0] !== "unstring") throw new LeiUsage("an exec lei names its --scope '<json>' (wiki, writer, titles or class)");
+  const branch = word(args.options["branch"]) ?? (scope ? execLeiBranch(scope["wiki"] as string) : undefined);
   const head = word(args.options["head"]);
   const face = count("face", word(args.options["face"]), 0);
   if (sub === "show") {
@@ -88,9 +98,9 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
       Object.assign(out, { rite, branch, ...(head !== undefined ? { head } : {}) });
     }
   } else {
-    if (rite === undefined) throw new LeiUsage("name the lei's rite: --rite push | kukulu | keep");
+    if (rite === undefined) throw new LeiUsage("name the lei's rite: --rite push | kukulu | keep | exec");
     if (branch === undefined) throw new LeiUsage("name the lei's branch: --branch <name>");
-    Object.assign(out, { rite, branch });
+    Object.assign(out, { rite, branch, ...(scope !== undefined && (sub === "kui" || sub === "restring") ? { scope } : {}) });
     if (sub === "unstring") {
       const lei = word(args.options["lei"]);
       if (lei === undefined) throw new LeiUsage("name the lei to unstring by its cid: --lei <cid>");
@@ -121,11 +131,11 @@ export interface LeiTermsPorts {
 
 /** The flags each pūlama act takes beside `--rite`, `--branch` and `--face`; any other lei flag refuses. */
 const TERMS_TAKES: Readonly<Record<string, readonly string[]>> = {
-  kui: ["returns", "reach", "head", "after", "yes"],
-  restring: ["returns", "reach", "head", "yes"],
+  kui: ["returns", "reach", "head", "after", "yes", "scope"],
+  restring: ["returns", "reach", "head", "yes", "scope"],
   unstring: ["lei"],
 };
-const LEI_FLAGS = ["rite", "branch", "face", "returns", "reach", "head", "after", "lei", "yes"] as const;
+const LEI_FLAGS = ["rite", "branch", "face", "returns", "reach", "head", "after", "lei", "yes", "scope"] as const;
 
 /**
  * `terms`: the one JSON object the pūlama's `lei <act>` takes, in its order (`face`, `rite`, `branch`, then `reach` ·
@@ -168,7 +178,7 @@ export async function leiTerms(args: ParsedArgs, ports: LeiTermsPorts): Promise<
     after = lei.after;
   }
   const out: Record<string, unknown> = { face, rite: a["rite"], branch: a["branch"] };
-  for (const key of ["reach", "returns", "head"] as const) if (a[key] !== undefined) out[key] = a[key];
+  for (const key of ["reach", "returns", "head", "scope"] as const) if (a[key] !== undefined) out[key] = a[key];
   if (act !== "unstring") out["after"] = after ?? null;
   if (a["confirm"] === true) out["confirm"] = true;
   if (a["lei"] !== undefined) out["lei"] = a["lei"];
