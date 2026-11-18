@@ -238,6 +238,12 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * yet. The state query answers outside the chain with this flag, so a caller asking mid-unlock hears it at once.
    */
   let composingDepth = 0;
+  /**
+   * Whether the standing mount came by the opening rule (`unlock --all` mounting the lowest face it opened) rather than a face
+   * a person named (`--face N`, `wear`). Such a mount slides: locking it moves the mount to the next face standing open, as the
+   * unnamed daemon mount did, and never drops the vessel to the floor while another face stands open.
+   */
+  let mountByOpening = false;
   const composing = <A extends unknown[], T>(act: (...args: A) => Promise<T>) => async (...args: A): Promise<T> => {
     composingDepth += 1;
     try { return await act(...args); } finally { composingDepth -= 1; }
@@ -261,6 +267,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return { op: "unlock", reading, ...detail, standing: deps.standing() };
     };
     let mounted: number | undefined = sel.face;
+    let chosenByOpening = false;
+    const byOpeningBefore = mountByOpening;
     let openedOrdinals: number[] = [];
     /** `--all` answers per face: which faces this route opened, and which stayed shut under it (each by its own reading). */
     let faceReadings: Array<{ readonly face: number; readonly reading: string }> | undefined;
@@ -277,7 +285,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       }
       if (standing.length > 0 && opened.length === 0) return refuseFaces("face-refused", { faces: readings.map((r) => r.reading), faceReadings });
       // THE MOUNT AFTER AN OPENING: the one face this route opened, else the lowest of those it opened; `lares wear N` switches.
-      if (mounted === undefined && mountedBefore === undefined && opened.length > 0) mounted = Math.min(...opened);
+      if (mounted === undefined && mountedBefore === undefined && opened.length > 0) { mounted = Math.min(...opened); chosenByOpening = true; }
       // `--all --face N` (the shim's re-wear after a stand): N wears where this route opened it; where it stayed shut, face 0
       // wears where it opened, else the first face that did, so the vessel stands on a face the operator holds open.
       if (sel.face !== undefined && !opened.includes(sel.face) && opened.length > 0) {
@@ -300,7 +308,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     deps.onLog(`unlocked: slot ${u.reading === "opens" ? u.slot : "(held)"} opened the node key${mounted !== undefined ? `; face h${mounted} open` : ""}`);
     // The unlock NAMES the face the composition MOUNTS for the life of the unlock: the composition's own state, never a pointer at
     // rest, and never a face a command defaults to (a command names `--face N`, or resolves the one face standing open).
-    if (mounted !== undefined) setMountedFace(mounted);
+    if (mounted !== undefined) { setMountedFace(mounted); mountByOpening = chosenByOpening; }
     // An unlock over a held key that opens no new face and changes no mounted face stands nothing new.
     if (!freshly && holder.unlockedFaces().every((f) => openBefore.has(f)) && (mounted === undefined || mounted === mountedBefore)) {
       return { op: "unlock", ...u, ...perFace, standing: deps.standing() };
@@ -321,6 +329,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       // operator's standing vessel never drops to the floor because a sibling would not stand.
       if (!freshly && mountedWasOpen && mountedBefore !== undefined && mounted !== undefined && mounted !== mountedBefore) {
         setMountedFace(mountedBefore);
+        mountByOpening = byOpeningBefore;
         deps.onLog(`the composition wearing h${mounted} did not stand; h${mountedBefore} worn again, the node key held`);
         const back = await deps.recompose(true, wardCredential(credentials));
         if (back.refused === undefined) return { op: "unlock", ...u, ...perFace, ...back, held: true, switchRefused: stood.refused, face: mounted, wornAgain: mountedBefore };
@@ -358,14 +367,17 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     }
     const before = mountedFaceOrdinal();
     if (before === face) return { op: "wear", face, held: true, already: true, standing: deps.standing() };
+    const byOpeningBefore = mountByOpening;
     setMountedFace(face);
+    mountByOpening = false;
     deps.onLog(`wear: h${face} worn${before !== undefined ? ` (h${before} before)` : ""}; composing again`);
     let stood: CustodyStanding;
     // A RECOMPOSE THAT THROWS puts the mount back on the face it left before the fault names itself to the caller.
     try { stood = await deps.recompose(true); }
-    catch (e) { setMountedFace(before); throw e; }
+    catch (e) { setMountedFace(before); mountByOpening = byOpeningBefore; throw e; }
     if (stood.refused === undefined) return { op: "wear", face, held: true, ...stood };
     setMountedFace(before);
+    mountByOpening = byOpeningBefore;
     const back = await deps.recompose(true);
     if (back.refused !== undefined) {
       // A KEY NEVER RESTS OVER A FLOOR: the face it left would not stand again either, so the vessel drops the key, as an
@@ -397,6 +409,17 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     }
     await holder.lockFace(named.fcid);
     deps.onLog(`locked: face h${ordinal} key dropped`);
+    // A MOUNT THE OPENING CHOSE SLIDES: locked, it moves to the next face standing open, and the vessel composes there.
+    if (wasOpen && mountByOpening && ordinal === mountedFaceOrdinal()) {
+      const open = new Set(holder.unlockedFaces());
+      const next = listFaceCustodyIds().filter((f) => open.has(f.fcid)).map((f) => f.ordinal).sort((x, y) => x - y)[0];
+      if (next !== undefined) {
+        setMountedFace(next);
+        deps.onLog(`the mount slides to h${next}, the next face standing open`);
+        const stood = await deps.recompose(true);
+        return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
+      }
+    }
     if (wasOpen && wasMounted && !sovereignStands()) {
       const stood = await deps.recompose(true);
       return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
