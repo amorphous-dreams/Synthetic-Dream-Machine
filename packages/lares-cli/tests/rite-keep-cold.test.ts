@@ -14,22 +14,22 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, zeroCounts, type CarryFile, type CarryManifest } from "../src/carry-manifest.js";
+import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, zeroCounts, type BundleFile, type BundleManifest } from "../src/bundle-manifest.js";
 import { KeepRefused, riteKeep, type KeepPorts } from "../src/rite-keep.js";
 
 let root: string;
 const workspace = (): string => join(root, "workspaces", "backup");
 
-function writeBundle(dest: string): CarryManifest {
-  const files: CarryFile[] = [];
+function writeBundle(dest: string): BundleManifest {
+  const files: BundleFile[] = [];
   const put = (rel: string, text: string): void => {
     const abs = join(dest, ...rel.split("/"));
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, text);
     files.push({ path: rel, sha256: sha256Hex(text), bytes: Buffer.byteLength(text) });
   };
-  put(REDECLARE_FILE, `${JSON.stringify({ schema: CARRY_SCHEMA, faces: [] })}\n`);
-  const manifest: CarryManifest = { schema: CARRY_SCHEMA, bundleId: bundleIdOf(files), faces: [], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] };
+  put(REDECLARE_FILE, `${JSON.stringify({ schema: BUNDLE_SCHEMA, faces: [] })}\n`);
+  const manifest: BundleManifest = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: [], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] };
   writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`);
   return manifest;
 }

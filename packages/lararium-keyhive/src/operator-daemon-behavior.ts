@@ -1607,6 +1607,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           };
         });
         const control = controlOf(ctx);
+        const unshare = Array.isArray(args["unshare"]) ? (args["unshare"] as unknown[]).filter((s): s is string => typeof s === "string") : [];
         const ORIGIN = { kind: "lares-verb", requestId: "share-apply" } as const;
         const applied = await applyShares({
           rows: () => readShareEntries(control), faces,
@@ -1649,6 +1650,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const restsUnderOwner = daemonAuth.registerBags.includes(wikiSlotUri(row.slug, "working"));
             return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, seated: landed.seated, removed: landed.removed, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
           },
+          // THE UNSHARE TAKES THE READER BACK: the owner's hive revokes the grantee's agent from the bag, by the pair (the delegation id
+          // lived only in the process that made it).
+          ...(unshare.length > 0 ? { unshare } : {}),
+          revoke: async (g) => {
+            const owner = holderOf(g.ownerGroup), grantee = holderOf(g.granteeGroup);
+            if (!owner || !grantee) throw new VerbRefusal("share-face-shut", "share-face-shut: a face of this grant stands shut here");
+            const { id } = await owner.receiveContactCard(await grantee.contactCard());
+            await owner.revokeAudience(g.bag, id);
+          },
           grant: async (g) => {
             const owner = holderOf(g.ownerGroup), grantee = holderOf(g.granteeGroup);
             if (!owner || !grantee) throw new VerbRefusal("share-face-shut", "share-face-shut: a face of this grant stands shut here");
@@ -1663,7 +1673,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             return { fresh: !held };
           },
         });
-        return { ok: true, ...applied, waiting: [...applied.waiting], workbenches: applied.workbenches.map((w) => ({ ...w, removed: [...w.removed] })) };
+        return { ok: true, ...applied, waiting: [...applied.waiting], ...(applied.standing ? { standing: [...applied.standing] } : {}), workbenches: applied.workbenches.map((w) => ({ ...w, removed: [...w.removed] })) };
       }, { summary: "Land the share config: lift each shared bag's row into each lit grantee's catalog half and delegate it from its owner's hive; a shut face's grant waits behind an opaque flag.", surfaces: [VERB_SURFACE.cli] });
       // THE SEAT A CARRY ACT ASKS (cabal-realm#/the-workbench): a seed or an import lays a workbench once, at the wear of a face
       // that holds a writer's seat there. This answers the worn face's write layer for a wiki and whether the vessel's ledger

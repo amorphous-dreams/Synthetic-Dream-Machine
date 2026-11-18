@@ -118,19 +118,19 @@ test("rite-walk-names-unreached: a receipt that turns an unreached step into a p
   assert.match(receiptFaults(forged("image", { cause: undefined })).join("\n"), /image: unreached and names no cause/);
   assert.match(receiptFaults(forged("found", { via: undefined })).join("\n"), /found: a bare pass over a staged-custody stand-in/);
   assert.match(receiptFaults(rows.filter((r) => r.step !== "export")).join("\n"), /export: the receipt carries no row/);
-  assert.match(receiptFaults(forged("seed", { runbook: "founding-runbook.mem" })).join("\n"), /seed: names no runbook line/);
+  assert.match(receiptFaults(forged("lay", { runbook: "founding-runbook.mem" })).join("\n"), /lay: names no runbook line/);
 });
 
 test("rite-walk-names-unreached: a step whose ground never stood reads `unreached: blocked:<step>`; hands that cannot reach answer their own cause", async () => {
   const failed = await stubWalk(async (step) => (step.id === "found" ? { ok: false, answer: "the founding refused" } : { ok: true, answer: "ok" }));
   assert.equal(row(failed.rows, "found").outcome, "fail");
   assert.deepEqual([row(failed.rows, "up").outcome, row(failed.rows, "up").cause], ["unreached", "blocked:found"]);
-  assert.deepEqual([row(failed.rows, "seed").outcome, row(failed.rows, "seed").cause], ["unreached", "blocked:up"]);
+  assert.deepEqual([row(failed.rows, "lay").outcome, row(failed.rows, "lay").cause], ["unreached", "blocked:up"]);
   assert.deepEqual(failed.rows.filter((r) => r.outcome === "pass").map((r) => r.step), []);
   assert.deepEqual(failed.stood, [], "no stand-in clears a hearth the walk never reached");
   assert.equal(row(failed.rows, "reset").cause, "host-shim");
-  const thrown = await stubWalk(async (step) => { if (step.id === "seed") throw new Error("the seed threw"); return { ok: true, answer: "ok" }; });
-  assert.deepEqual([row(thrown.rows, "seed").outcome, row(thrown.rows, "seed").answer], ["fail", "the seed threw"]);
+  const thrown = await stubWalk(async (step) => { if (step.id === "lay") throw new Error("the lay threw"); return { ok: true, answer: "ok" }; });
+  assert.deepEqual([row(thrown.rows, "lay").outcome, row(thrown.rows, "lay").answer], ["fail", "the lay threw"]);
   const seatless = await stubWalk(async (step) => (step.id === "memory" ? { unreached: "seat-interpreter" } : { ok: true, answer: "ok" }));
   assert.deepEqual([row(seatless.rows, "memory").outcome, row(seatless.rows, "memory").cause], ["unreached", "seat-interpreter"]);
   assert.deepEqual(receiptFaults(seatless.rows), []);
@@ -148,10 +148,10 @@ test("CONTROL rite-walk-names-unreached: the receipt names the head and the carr
   assert.deepEqual([a.tally.unreached, a.tally.fail, a.tally.firstFail], [3, 0, null]);
   const b = receipt({ ...inputs, rows: rows.map((r) => ({ ...r, answer: "another founding minted other ids", ms: 99 })) });
   assert.equal(b.outcomes, a.outcomes);
-  const c = receipt({ ...inputs, rows: rows.map((r) => (r.step === "seed" ? { ...r, outcome: "fail" } : r)) });
+  const c = receipt({ ...inputs, rows: rows.map((r) => (r.step === "lay" ? { ...r, outcome: "fail" } : r)) });
   assert.notEqual(c.outcomes, a.outcomes);
-  assert.equal(c.tally.firstFail, "seed");
-  assert.ok(Buffer.byteLength(row((await stubWalk(async () => ({ ok: true, answer: "é".repeat(900) }))).rows, "seed").answer) <= 400);
+  assert.equal(c.tally.firstFail, "lay");
+  assert.ok(Buffer.byteLength(row((await stubWalk(async () => ({ ok: true, answer: "é".repeat(900) }))).rows, "lay").answer) <= 400);
 });
 
 // ── rite-walk-scratch-only ──────────────────────────────────────────────────────────────────────────────────────────
@@ -227,7 +227,7 @@ test("rite-walk-scratch-only: the walker refuses a root in the checkout or a hom
 test("rite-walk-scratch-only: the walker's arguments refuse by name", () => {
   refuses(() => parseArgs(["--out"]), /--out names nothing/);
   refuses(() => parseArgs(["--live"]), /unknown argument --live/);
-  assert.deepEqual(parseArgs(["--out", "o", "--to", "seed", "--keep"]), { keep: true, bind: false, out: "o", to: "seed" });
+  assert.deepEqual(parseArgs(["--out", "o", "--to", "lay", "--keep"]), { keep: true, bind: false, out: "o", to: "lay" });
 });
 
 // ── the image leg ───────────────────────────────────────────────────────────────────────────────────────────────────

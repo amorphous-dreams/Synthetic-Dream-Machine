@@ -72,6 +72,9 @@ export interface CasReadOptions {
   readonly bagsDir:    string;
   readonly wikisDir:   string;
   readonly genesisDir: string;
+  /** The daemon's own protect set (the seed's blobs and the stored island's, `cas-protect`). Absent, the read
+   *  guards the seed alone, which leaves a blob only the stored island names reading `protected: false`. */
+  readonly protect?:   readonly string[];
 }
 
 export interface CasReadEntry {
@@ -126,7 +129,7 @@ export function readCas(opts: CasReadOptions): CasRead {
   // their engine and plugin blobs as unguarded when nothing could be decided either way.
   const protect = genesisProtectSet(opts.genesisDir);
   const known   = protect !== "unreadable";
-  const genesis = known ? protect : new Set<string>();
+  const genesis = known ? new Set<string>([...protect, ...(opts.protect ?? [])]) : new Set<string>();
   const entries = blobs.map((b) => ({
     cid: b.cid, size: b.size,
     refs: [...(refs.get(b.cid) ?? [])].sort(),
@@ -240,7 +243,19 @@ export function cmdCas(args: ParsedArgs): number | Promise<number> {
   const pin = typeof args.options["pin"] === "string" ? args.options["pin"] : "";
   const release = typeof args.options["release"] === "string" ? args.options["release"] : "";
   if (pin || release) return cmdCasPin(args, pin, release);
-  const r = readCas({ casDir: larCasDir(), bagsDir: larBagsDir(), wikisDir: larWikisDir(), genesisDir: larGenesisDir() });
+  return cmdCasRead(args);
+}
+
+/** The summary read: the daemon's protect set joins when a daemon answers, the seed alone when none does. */
+async function cmdCasRead(args: ParsedArgs): Promise<number> {
+  let daemonProtect: string[] | undefined;
+  try {
+    const answer = await runVerb("cas-protect", {}, await vesselDid());
+    const out = answer.status === "error" ? null : summaryOutput(answer);
+    if (out && Array.isArray(out["protect"])) daemonProtect = (out["protect"] as unknown[]).filter((c): c is string => typeof c === "string");
+  } catch { /* no daemon answers: the seed alone guards, as before */ }
+  const r = readCas({ casDir: larCasDir(), bagsDir: larBagsDir(), wikisDir: larWikisDir(), genesisDir: larGenesisDir(),
+                      ...(daemonProtect ? { protect: daemonProtect } : {}) });
   emit(args, {
     ok: true,
     data: r as unknown as Record<string, unknown>,

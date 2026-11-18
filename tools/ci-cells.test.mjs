@@ -110,8 +110,9 @@ test("C7 RED: ci.yml carries one matrix row per cell, and a gate job named Test 
     const g = block(gate);
     assert.match(g, /^ {4}name: (Test|Witnesses)$/m, `the ${gate} gate job lost its name`);
     assert.match(g, new RegExp(`^ {4}needs: ${needsRx}$`, "m"));
-    // `always()` keeps the gate from skipping on a red cell; the fork guard keeps a same-repository pull_request from raising a second run (ci-graph.test.mjs).
-    assert.match(g, /^ {4}if: \$\{\{ always\(\) && \(github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.fork\) \}\}$/m, `the ${gate} gate skips when a cell fails: a skipped required check reads as nothing to report`);
+    // `always()` keeps the gate from skipping on a red cell; the fork guard keeps a same-repository pull_request from raising a second run, and the
+    // doorstep tail skips the gate on a lane push alone, where no cell runs (ci-graph.test.mjs D1-D3 read the whole run law).
+    assert.match(g, /^ {4}if: \$\{\{ always\(\) && \(github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.fork\) && !\(github\.event_name == 'push' && \(startsWith\(github\.ref, 'refs\/heads\/develop--'\) \|\| startsWith\(github\.ref, 'refs\/heads\/lane\/'\)\)\) \}\}$/m, `the ${gate} gate skips when a cell fails, or runs on a lane push: a skipped required check reads as nothing to report`);
     assert.match(g, new RegExp(`ci-cells\\.mjs ${verb}`));
     assert.match(g, new RegExp(`needs\\.${cells}\\.result`), `the ${gate} gate never reads its cells' own result`);
     assert.match(block(cells), /fail-fast: false/, `${cells} cancels its siblings on one red`);

@@ -24,7 +24,12 @@
  *
  * The host names the head it built from (the shim refuses a dirty checkout and stamps that head on the image), and the vessel
  * signs the landing under it.
+ *
+ * THE SEED THE IMAGE OFFERS (D1). Before the build, the host says the seed (offered) at the head beside the founding record
+ * (the stored genesis island), ratchet by ratchet (`seedOffer`, `kukuluSeedLine`). The kūkulu moves no ratchet: the new
+ * vessel serves the founding record it reloads, and the line only names what waits.
  */
+import { compareGenesisDigests, ratchetWords, ratchetsDiffer, type GenesisDigests } from "@lararium/mesh";
 
 export type RiteVerbAnswer =
   | { readonly ok: true; readonly output: Record<string, unknown> }
@@ -40,6 +45,25 @@ export interface RitePorts {
   /** One verb of the host shim; the answer carries its exit code. */
   shim(verb: "build" | "down" | "up"): Promise<number>;
   say(line: string): void;
+  /**
+   * The founding record's digests beside the seed the image at `head` offers (its CID and digests); null where the host reads
+   * no founding record. Absent, the rite says nothing of the seed.
+   */
+  seedOffer?(head: string): Promise<SeedOffer | null>;
+}
+
+/** The founding record beside the seed an image offers. */
+export interface SeedOffer {
+  readonly record: GenesisDigests;
+  readonly seed: { readonly cid: string; readonly digests: GenesisDigests };
+}
+
+/** The kūkulu's seed line: the seed the image at `head` offers beside the founding record, ratchet by ratchet. */
+export function kukuluSeedLine(head: string, offer: SeedOffer): string {
+  const ratchets = compareGenesisDigests(offer.record, offer.seed.digests);
+  return ratchetsDiffer(ratchets)
+    ? `kūkulu: the image at ${head} offers seed ${offer.seed.cid} beside the founding record: a newer seed waits: ${ratchetWords(ratchets)}; the founding record keeps serving, and the kūkulu moves no ratchet`
+    : `kūkulu: the image at ${head} offers seed ${offer.seed.cid}: same on every ratchet as the founding record`;
 }
 
 export const RITE_KUKULU = "kukulu";
@@ -58,9 +82,20 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
     .map((f) => ({ face: String(f["face"]), ordinal: Number(f["ordinal"]), tessera: String(f["tessera"]) }));
   const waits = Array.isArray(begun.output["waits"]) ? (begun.output["waits"] as unknown[]).map(String) : [];
   const tesserae = begunFaces.map((f) => ({ face: f.face, tessera: f.tessera }));
-  const spent = { tesserae, ...(waits.length > 0 ? { waits } : {}) };
+  const spent: Record<string, unknown> = { tesserae, ...(waits.length > 0 ? { waits } : {}) };
   ports.say(`kūkulu: begun; each lent face's lei returned and its guest half rests (${begunFaces.map((f) => `${f.face} tessera ${f.tessera}`).join(", ")})`);
   for (const face of waits) ports.say(`kūkulu: ${face} carries no kukulu lei on this line and waits; the other faces' rite goes on`);
+  // THE SEED THE IMAGE OFFERS, said before the build; it reads and moves nothing.
+  let seed: { cid: string; ratchets: string } | null = null;
+  if (ports.seedOffer) {
+    const offer = await ports.seedOffer(head);
+    if (offer === null) ports.say("kūkulu: the host reads no founding record beside the seed this image offers; the rite goes on, and moves no ratchet");
+    else {
+      ports.say(kukuluSeedLine(head, offer));
+      seed = { cid: offer.seed.cid, ratchets: ratchetWords(compareGenesisDigests(offer.record, offer.seed.digests)) };
+      spent["seed"] = seed;
+    }
+  }
   const landCall = begunFaces.map((f) => `lares rite land --tessera ${f.tessera} --head ${head} --face ${f.ordinal}`).join("; ");
   for (const verb of ["build", "down", "up"] as const) {
     const code = await ports.shim(verb);

@@ -1,18 +1,18 @@
 /**
- * seed-road — `lares vessel seed` feeds every disk-sourced holding through ONE road: CREATE (converging on the bag
+ * lay-road — `lares vessel lay` feeds every disk-sourced holding through ONE road: CREATE (converging on the bag
  * that stands) then the diff-gated INGEST into its canon bag. The road reads where canon stands (the canon source the
- * daemon resolves), never a name list, and the seed never walks LOAD + MOVE (the human promotion door): it sends no
+ * daemon resolves), never a name list, and the lay never walks LOAD + MOVE (the human promotion door): it sends no
  * act that writes a wiki's working layer.
  *
  * Stories:
  *   S1  (story 4) a disk-sourced non-system bag (sdm, crossroads) takes CREATE then INGEST, no LOAD and no MOVE
- *   S2  (stories 1-3) no gesture the seed sends names a working layer: a working edit, a working-only title and a
+ *   S2  (stories 1-3) no gesture the lay sends names a working layer: a working edit, a working-only title and a
  *       disk-deleted title's working copy stay where the hand left them (the island side: canon-change-weighs-overrides)
  *   S3  a system holding (lares) rides the same road: CREATE converges on the realm's bag, then INGEST
  *   S4  a holding whose canon source stands off disk (a private plane, or a dir outside the canon source) takes no road
  *   S5  a preview sends the INGEST preview alone, no CREATE
- *   S6  (story 6) the seed warns where canon stands fresher than a working copy above it, names capped; nothing writes
- *   S8  house canon on a face outside the Kahu cabal: the CREATE answers `readsFloor`, the seed sends no INGEST, names the
+ *   S6  (story 6) the lay warns where canon stands fresher than a working copy above it, names capped; nothing writes
+ *   S8  house canon on a face outside the Kahu cabal: the CREATE answers `readsFloor`, the lay sends no INGEST, names the
  *       state ("house canon, written by the Kahu steward (h0); this face reads the floor") and reads clean
  */
 
@@ -48,13 +48,13 @@ vi.mock("../src/commands/ingest.js", () => ({
   }),
 }));
 
-import { seedHolding, canonIsDisk, cmdSeed, createReadsFloor, HOUSE_CANON_FLOOR_REASON } from "../src/commands/seed.js";
+import { layHolding, canonIsDisk, cmdLay, createReadsFloor, HOUSE_CANON_FLOOR_REASON } from "../src/commands/lay.js";
 
 let root: string;
 const prior = { root: process.env["LAR_ROOT"], bags: process.env["LAR_BAGS"] };
 beforeEach(() => {
   calls.length = 0; fresherFor = {}; floorFor = new Set();
-  root = mkdtempSync(join(tmpdir(), "lares-seed-road-"));
+  root = mkdtempSync(join(tmpdir(), "lares-lay-road-"));
   for (const b of ["crossroads", "lares", "sdm", "kahua-0f1e2d3c-4b5a-4968-8776-655443322110"]) { mkdirSync(join(root, "bags", b), { recursive: true }); writeFileSync(join(root, "bags", b, "one.mem"), "x"); }
   process.env["LAR_ROOT"] = root;
   process.env["LAR_BAGS"] = join(root, "bags");
@@ -65,17 +65,17 @@ afterEach(() => {
   if (prior.bags === undefined) delete process.env["LAR_BAGS"]; else process.env["LAR_BAGS"] = prior.bags;
 });
 
-const applied: ParsedArgs = { command: "vessel", positional: ["seed"], options: {}, flags: { apply: true, yes: true } };
-const preview: ParsedArgs = { command: "vessel", positional: ["seed"], options: {}, flags: {} };
+const applied: ParsedArgs = { command: "vessel", positional: ["lay"], options: {}, flags: { apply: true, yes: true } };
+const preview: ParsedArgs = { command: "vessel", positional: ["lay"], options: {}, flags: {} };
 const holdingOf = (slug: string) => ({ holding: slug, source: join(root, "bags", slug), toBag: `lar:///ha.ka.ba/bags/${slug}` });
 
-describe("the seed feeds every disk-sourced holding through CREATE then INGEST", () => {
+describe("the lay feeds every disk-sourced holding through CREATE then INGEST", () => {
   test("S1 — a disk-sourced non-system bag takes CREATE then INGEST, never LOAD or MOVE", async () => {
     for (const slug of ["sdm", "crossroads"]) {
       calls.length = 0;
       const h = holdingOf(slug);
       expect(canonIsDisk(h)).toBe(true);
-      const row = await seedHolding(applied, h);
+      const row = await layHolding(applied, h);
       expect(row).toMatchObject({ holding: slug, gesture: "ingest", exitCode: 0 });
       expect(calls.map((c) => `${c.command}:${c.positional[0] ?? ""}`)).toEqual(["act:CREATE", "ingest:"]);
       expect(calls[0]!.options).toMatchObject({ bag: h.toBag });
@@ -83,8 +83,8 @@ describe("the seed feeds every disk-sourced holding through CREATE then INGEST",
     }
   });
 
-  test("S2 — no gesture the seed sends names a working layer", async () => {
-    await cmdSeed(applied);
+  test("S2 — no gesture the lay sends names a working layer", async () => {
+    await cmdLay(applied);
     expect(calls.length).toBeGreaterThan(0);
     for (const c of calls) {
       expect(["CREATE", undefined]).toContain(c.positional[0]);
@@ -93,7 +93,7 @@ describe("the seed feeds every disk-sourced holding through CREATE then INGEST",
   });
 
   test("S3 — a system holding rides the same road", async () => {
-    const row = await seedHolding(applied, holdingOf("lares"));
+    const row = await layHolding(applied, holdingOf("lares"));
     expect(row.gesture).toBe("ingest");
     expect(calls.map((c) => `${c.command}:${c.positional[0] ?? ""}`)).toEqual(["act:CREATE", "ingest:"]);
   });
@@ -101,74 +101,74 @@ describe("the seed feeds every disk-sourced holding through CREATE then INGEST",
   test("S4 — a private plane and a dir outside the canon source take no road", async () => {
     const plane = holdingOf("kahua-0f1e2d3c-4b5a-4968-8776-655443322110");
     expect(canonIsDisk(plane)).toBe(false);
-    expect(await seedHolding(applied, plane)).toMatchObject({ gesture: "skip", exitCode: 0 });
+    expect(await layHolding(applied, plane)).toMatchObject({ gesture: "skip", exitCode: 0 });
     const outside = { holding: "sdm", source: join(root, "elsewhere", "sdm"), toBag: "lar:///ha.ka.ba/bags/sdm" };
     expect(canonIsDisk(outside)).toBe(false);
     expect(calls).toEqual([]);
   });
 
   test("S5 — a preview sends the INGEST preview alone", async () => {
-    const row = await seedHolding(preview, holdingOf("sdm"));
+    const row = await layHolding(preview, holdingOf("sdm"));
     expect(row).toMatchObject({ gesture: "ingest", exitCode: 0 });
     expect(calls.map((c) => c.command)).toEqual(["ingest"]);
     expect(calls[0]!.flags["apply"]).toBeUndefined();
   });
 
-  test("S6 — the seed warns where canon stands fresher than a working copy, names capped", async () => {
+  test("S6 — the lay warns where canon stands fresher than a working copy, names capped", async () => {
     fresherFor["lar:///ha.ka.ba/bags/sdm"] = { working: "lar:///ha.ka.ba/wikis/sdm/working", count: 10, titles: Array.from({ length: 10 }, (_, i) => `t${i}`) };
     const lines: string[] = [], errors: string[] = [];
     const log = console.log, error = console.error;
     console.log = (...a: unknown[]) => { lines.push(a.join(" ")); };
     console.error = (...a: unknown[]) => { errors.push(a.join(" ")); };
-    try { expect(await cmdSeed(applied)).toBe(0); } finally { console.log = log; console.error = error; }
+    try { expect(await cmdLay(applied)).toBe(0); } finally { console.log = log; console.error = error; }
     const warn = errors.find((e) => e.includes("canon is fresher than the working copy above it"));
     expect(warn).toContain("for 10 title(s)");
     expect(warn).toContain("sdm:t0");
     expect(warn).toContain("… 2 more");
     expect(warn).not.toContain("sdm:t9");
     expect(lines.some((l) => l.startsWith("- kahua-0f1e2d3c-4b5a-4968-8776-655443322110: no road"))).toBe(true);
-    expect(lines.at(-1)).toMatch(/^seed: 3\/3 holdings · 1 off disk · \d+s$/);
+    expect(lines.at(-1)).toMatch(/^lay: 3\/3 holdings · 1 off disk · \d+s$/);
   });
 });
 
-import { pendingRemovalLines } from "../src/commands/seed.js";
+import { pendingRemovalLines } from "../src/commands/lay.js";
 describe("house canon on a face outside the Kahu cabal reads the floor", () => {
-  test("S8 — a CREATE that answers readsFloor sends no INGEST; the seed names the state and reads clean", async () => {
+  test("S8 — a CREATE that answers readsFloor sends no INGEST; the lay names the state and reads clean", async () => {
     floorFor = new Set(["lar:///ha.ka.ba/bags/sdm", "lar:///ha.ka.ba/bags/lares"]);
     for (const slug of ["sdm", "lares"]) {
       calls.length = 0;
-      const row = await seedHolding(applied, holdingOf(slug));
+      const row = await layHolding(applied, holdingOf(slug));
       expect(row).toMatchObject({ holding: slug, gesture: "floor", exitCode: 0, reason: HOUSE_CANON_FLOOR_REASON });
       expect(calls.map((c) => `${c.command}:${c.positional[0] ?? ""}`)).toEqual(["act:CREATE"]);
     }
     expect(HOUSE_CANON_FLOOR_REASON).toBe("house canon, written by the Kahu steward (h0); this face reads the floor");
     // CONTROL: the board (crossroads) answers no floor and takes CREATE then INGEST.
     calls.length = 0;
-    expect(await seedHolding(applied, holdingOf("crossroads"))).toMatchObject({ gesture: "ingest", exitCode: 0 });
+    expect(await layHolding(applied, holdingOf("crossroads"))).toMatchObject({ gesture: "ingest", exitCode: 0 });
     expect(calls.map((c) => c.command)).toEqual(["act", "ingest"]);
   });
-  test("S9 — the seed's CREATE names a disk-sourced holding house canon, so an island that never seated it mints no row; the board carries no such claim", async () => {
+  test("S9 — the lay's CREATE names a disk-sourced holding house canon, so an island that never seated it mints no row; the board carries no such claim", async () => {
     floorFor = new Set();
     for (const slug of ["sdm", "lares"]) {
       calls.length = 0;
-      await seedHolding(applied, holdingOf(slug));
+      await layHolding(applied, holdingOf(slug));
       expect(calls[0]).toMatchObject({ command: "act", positional: ["CREATE"], claims: { houseCanon: true } });
     }
     // CONTROL: the Nexus's public board stays an ordinary catalog bag.
     calls.length = 0;
-    await seedHolding(applied, holdingOf("crossroads"));
+    await layHolding(applied, holdingOf("crossroads"));
     expect(calls[0]).toMatchObject({ command: "act", positional: ["CREATE"], claims: { houseCanon: false } });
-    // The claim rides beside the parsed arguments: no flag of the seed's or of `act` carries it, so neither door grows a typed surface.
+    // The claim rides beside the parsed arguments: no flag of the lay's or of `act` carries it, so neither door grows a typed surface.
     for (const call of calls) expect(Object.keys(call.flags)).not.toContain("house-canon");
   });
-  test("S8d — the seed hears the CREATE's answer where `act` writes it as JSON to stdout: no INGEST follows, the answer still prints, and the seed reads clean", async () => {
+  test("S8d — the lay hears the CREATE's answer where `act` writes it as JSON to stdout: no INGEST follows, the answer still prints, and the lay reads clean", async () => {
     floorFor = new Set(["lar:///ha.ka.ba/bags/lares"]);
     floorJson = true;
     const written: string[] = [];
     const spy = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { written.push(String(m)); return true; });
     try {
       calls.length = 0;
-      const row = await seedHolding(applied, holdingOf("lares"));
+      const row = await layHolding(applied, holdingOf("lares"));
       expect(row).toMatchObject({ holding: "lares", gesture: "floor", exitCode: 0, reason: HOUSE_CANON_FLOOR_REASON });
       expect(calls.map((c) => `${c.command}:${c.positional[0] ?? ""}`)).toEqual(["act:CREATE"]);
       expect(written.join("")).toContain('"readsFloor":true');                 // the answer still reaches the caller's stdout
@@ -190,7 +190,7 @@ describe("house canon on a face outside the Kahu cabal reads the floor", () => {
   });
 });
 
-describe("the seed answers a shore flood once", () => {
+describe("the lay answers a shore flood once", () => {
   test("S7 — the summary counts pending removals per fed bag and prints one batch answer each", () => {
     const rows = [
       ...Array.from({ length: 3 }, (_, i) => ({ bagId: "lar:///ha.ka.ba/bags/sdm", uri: `u${i}` })),
@@ -198,8 +198,8 @@ describe("the seed answers a shore flood once", () => {
       { bagId: "lar:///ha.ka.ba/wikis/daemon-x/working", uri: "d" },
     ];
     expect(pendingRemovalLines(rows, ["lar:///ha.ka.ba/bags/sdm", "lar:///ha.ka.ba/bags/crossroads"])).toEqual([
-      "seed: 1 pending removal(s) in lar:///ha.ka.ba/bags/crossroads: the files left disk and nothing tombstoned; answer once with `lares shore remove --all --count 1 --bag lar:///ha.ka.ba/bags/crossroads` (or `restore --all --count 1 --bag lar:///ha.ka.ba/bags/crossroads`)",
-      "seed: 3 pending removal(s) in lar:///ha.ka.ba/bags/sdm: the files left disk and nothing tombstoned; answer once with `lares shore remove --all --count 3 --bag lar:///ha.ka.ba/bags/sdm` (or `restore --all --count 3 --bag lar:///ha.ka.ba/bags/sdm`)",
+      "lay: 1 pending removal(s) in lar:///ha.ka.ba/bags/crossroads: the files left disk and nothing tombstoned; answer once with `lares shore remove --all --count 1 --bag lar:///ha.ka.ba/bags/crossroads` (or `restore --all --count 1 --bag lar:///ha.ka.ba/bags/crossroads`)",
+      "lay: 3 pending removal(s) in lar:///ha.ka.ba/bags/sdm: the files left disk and nothing tombstoned; answer once with `lares shore remove --all --count 3 --bag lar:///ha.ka.ba/bags/sdm` (or `restore --all --count 3 --bag lar:///ha.ka.ba/bags/sdm`)",
     ]);
   });
 });

@@ -3,11 +3,11 @@
  *
  * After a re-founding the former face's folders (`wikis/daemon-<former>`, `bags/daemon-<former>`, `bags/kahua-<former>` and
  * `personal/<former>/`, its personal layer of every wiki) rest
- * under the projections root, keyed by the former relation. Once a seed's adoption or an import landed that face's memory on
+ * under the projections root, keyed by the former relation. Once a lay's adoption or an import landed that face's memory on
  * the face that carries its pet-name, with NOTHING pending (no stand-off, no refusal, no kahua item waiting for a hand),
  * the folders move to `<projections>/ashes/<old-relation>/` beside their face label and bases sidecar: plaintext still, and out of the live
  * mirror set. Nothing walks ashes: the disk projector writes only its grants, the census and the export walk `wikis/` and
- * `bags/`, and the seed classifies those two dirs alone. So nothing reads ashes back into a layer and nothing projects
+ * `bags/`, and the lay classifies those two dirs alone. So nothing reads ashes back into a layer and nothing projects
  * into them, and the next export names none of those folders unclaimed. A person deletes them by hand when they please.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
@@ -48,7 +48,7 @@ export type AshesMove = { readonly relation: string; readonly moved: readonly st
 export function moveFaceToAshes(projections: string, relation: string): AshesMove {
   const moves = faceFolderMoves(projections, relation).filter((m) => existsSync(m.from));
   const taken = moves.filter((m) => existsSync(m.to));
-  if (taken.length > 0) return { relation, left: `a place under ashes already stands (${taken.map((m) => m.to).join(", ")}); move it aside and seed again` };
+  if (taken.length > 0) return { relation, left: `a place under ashes already stands (${taken.map((m) => m.to).join(", ")}); move it aside and lay again` };
   const moved: string[] = [];
   for (const m of moves) {
     mkdirSync(join(m.to, ".."), { recursive: true });
