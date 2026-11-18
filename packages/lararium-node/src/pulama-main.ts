@@ -14,6 +14,10 @@
  *                                                   `image '{"digest":…,"seed":…}'` it carries beside it the seed line the
  *                                                   host read (the seed that image offers beside the founding record)
  *   node dist/src/pulama-main.js tessera            print the pūlama's signed tessera halves
+ *   node dist/src/pulama-main.js lei kui|restring|unstring '<terms>'
+ *                                                   the operator strings, restrings or unstrings a lei: reads the route on a
+ *                                                   real terminal, the face root signs one record here, and the answer prints
+ *                                                   it for the vessel to land (`lares lei land`)
  *
  * Environment (every name required for `serve`; the hand verbs need `LAR_PULAMA_HAND` alone):
  *   LAR_ROOT            the house root whose hearth this pūlama keeps (the same root the vessel names)
@@ -140,7 +144,7 @@ async function main(): Promise<void> {
   const [verb = "serve", ...args] = process.argv.slice(2);
   if (verb === "serve") return serve();
   try {
-    console.log(JSON.stringify(await runHandVerb(verb, verb === "admit" ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what) }), null, 2));
+    console.log(JSON.stringify(await runHandVerb(verb, verb === "admit" || verb === "lei" ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what) }), null, 2));
   } catch (err) {
     if (!(err instanceof PulamaVerbUsage)) throw err;
     console.error(err.message);
