@@ -25,8 +25,8 @@ class FakeTW5Engine {
 
   readonly wiki = {
     addTiddler: (tiddler: { fields?: TiddlerFields } | TiddlerFields): void => {
-      const fields = (tiddler && typeof tiddler === "object" && "fields" in tiddler && tiddler.fields)
-        ? tiddler.fields
+      const fields: TiddlerFields = (tiddler && typeof tiddler === "object" && "fields" in tiddler && tiddler.fields)
+        ? tiddler.fields as TiddlerFields
         : (tiddler as TiddlerFields);
       const title = typeof fields.title === "string" ? fields.title : null;
       if (!title) throw new Error("title required");
@@ -79,7 +79,7 @@ describe("the asker rides the placed ask", () => {
   });
 
   test("RED: the local ask book names the asker of the exact act; CONTROL: other args, an unbooked id and a retired id name none", () => {
-    const book = makeLocalAskBook() as ReturnType<typeof makeLocalAskBook> & { askerOf(ask: unknown): unknown };
+    const book = makeLocalAskBook();
     const ask = { requestId: "r1", action: "meme-put", args: { bag: "lares" }, requestedBy: "me" };
     book.add({ ...ask, origin: "channel", asker: "seat" } as never);
     expect(book.askerOf(ask)).toBe("seat");
@@ -101,14 +101,14 @@ describe("the asker rides the placed ask", () => {
 
   test("RED: the dispatcher hands a booked channel ask's asker to the reactor; CONTROL: a synced verb tiddler (content) names none", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
-    const book = makeLocalAskBook() as ReturnType<typeof makeLocalAskBook> & { askerOf(ask: unknown): unknown };
+    const book = makeLocalAskBook();
     const seen: Array<[string, unknown]> = [];
     const registry = new VerbTable();
     registry.register("probe", async (_args, ctx) => { seen.push([ctx.invocation.requestId, (ctx as { asker?: unknown }).asker]); return {}; });
     const dispatcher = new VerbDispatcher({
       daemonVm: tw5, daemon: makeDaemon(), control: memoryControlStore(), registry,
-      localOf: (inv) => book.has(inv), surfaceOf: (inv) => book.isSurface(inv), askerOf: (inv: Verb) => book.askerOf(inv),
-    } as never);
+      localOf: (inv) => book.has(inv), surfaceOf: (inv) => book.isSurface(inv), askerOf: (inv) => book.askerOf(inv),
+    });
     dispatcher.start();
     const place = async (requestId: string, asker?: string) => {
       const inv = { requestId, action: "probe", args: { x: 1 }, requestedBy: "me" };

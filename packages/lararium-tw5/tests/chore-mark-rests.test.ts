@@ -27,8 +27,8 @@ class FakeTW5Engine {
 
   readonly wiki = {
     addTiddler: (tiddler: { fields?: TiddlerFields } | TiddlerFields): void => {
-      const fields = (tiddler && typeof tiddler === "object" && "fields" in tiddler && tiddler.fields)
-        ? tiddler.fields
+      const fields: TiddlerFields = (tiddler && typeof tiddler === "object" && "fields" in tiddler && tiddler.fields)
+        ? tiddler.fields as TiddlerFields
         : (tiddler as TiddlerFields);
       const title = typeof fields.title === "string" ? fields.title : null;
       if (!title) throw new Error("title required");
@@ -74,13 +74,6 @@ async function settle(turns = 20): Promise<void> {
   for (let i = 0; i < turns; i++) await new Promise((r) => setTimeout(r, 0));
 }
 
-async function outcomeOf(daemon: CompositeStore, requestId: string) {
-  const rec = await daemon.getLive(OUTCOME_URI_PREFIX + requestId);
-  if (!rec) return null;
-  const results = JSON.parse(String(rec.tiddler["results"] ?? "{}")) as Record<string, { ok: boolean; output?: unknown }>;
-  return { fields: rec.tiddler, results };
-}
-
 
 const MARK = { acting: 0, asker: "seat", session: null } as const;
 const meme = (uri: string, slot: string): string =>
@@ -88,7 +81,7 @@ const meme = (uri: string, slot: string): string =>
   `<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\n\`\`\`\n\n<<~ ahu slot=\`#${slot}\`>>\n\n! ${slot}\n\n<<~/ahu>>\n\n` +
   `<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
-type Book = ReturnType<typeof makeLocalAskBook> & { choreOf(ask: unknown): unknown };
+type Book = ReturnType<typeof makeLocalAskBook>;
 
 async function stand(register: (registry: VerbTable) => void) {
   const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
@@ -98,8 +91,8 @@ async function stand(register: (registry: VerbTable) => void) {
   register(registry);
   const dispatcher = new VerbDispatcher({
     daemonVm: tw5, daemon: makeDaemon(), control, registry,
-    localOf: (inv) => book.has(inv), surfaceOf: (inv) => book.isSurface(inv), choreOf: (inv: unknown) => book.choreOf(inv),
-  } as never);
+    localOf: (inv) => book.has(inv), surfaceOf: (inv) => book.isSurface(inv), choreOf: (inv) => book.choreOf(inv),
+  });
   dispatcher.start();
   const place = async (requestId: string, verb: string, args: Record<string, unknown>, chore?: unknown) => {
     if (chore !== undefined) book.add({ requestId, action: verb, args, requestedBy: "me", origin: "channel", asker: "seat", chore } as never);
