@@ -10,9 +10,9 @@
  *
  * Controls: a fault that names no expired wait still throws; a settle that completes clears the record.
  */
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { VERB_RESULT_KEY } from "@lararium/mesh";
 import type { SubmitResult } from "../src/verb-result.js";
@@ -70,16 +70,14 @@ function vessel(answer: (firstUri: string, askNo: number) => "settle" | "wait", 
   return { run, now: () => t, asks };
 }
 
+let house: IsolatedHouse;
 let root = "";
-let savedRoot: string | undefined;
 beforeEach(() => {
-  savedRoot = process.env["LAR_ROOT"];
-  root = mkdtempSync(join(tmpdir(), "settle-progress-"));
-  process.env["LAR_ROOT"] = root;
+  house = openIsolatedHouse();
+  root = house.root;
 });
 afterEach(() => {
-  if (savedRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = savedRoot;
-  rmSync(root, { recursive: true, force: true });
+  house.close();
   hoisted.run = null;
   vi.restoreAllMocks();
 });

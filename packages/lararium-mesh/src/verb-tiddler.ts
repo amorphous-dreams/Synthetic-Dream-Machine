@@ -50,6 +50,7 @@ import {
 import { sha256Hex, canonicalJsonBytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
 import { formatDigest } from "./agile-digest.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
+import type { ChoreReceiptMark } from "./chore-ask.js";
 
 // ── URI prefixes ───────────────────────────────────────────────────────────
 
@@ -455,6 +456,10 @@ export function concludeVerb(opts: {
   /** Machine-readable refusal reason (e.g. "retention-gap") — additive alongside the
    *  human-readable `errorMessage`. Stamped as the `refusal` field. */
   refusal?:      string;
+  /** The chore's receipt mark (the acting face, the asker's hand, its session): house-local, never a key, presenter or
+   *  signature, so the outcome still names no requester. Stamped as the `chore` field, its JSON; read back through
+   *  `choreReceiptMarkOf`. */
+  chore?:        ChoreReceiptMark;
 }): LarTiddlerRecord {
   const title = `${OUTCOME_URI_PREFIX}${opts.requestId}`;
   const base = {
@@ -476,6 +481,7 @@ export function concludeVerb(opts: {
       ...(opts.effectKey    !== undefined && { "effect-key":    opts.effectKey }),
       ...(opts.effectOf     !== undefined && { "effect-of":     opts.effectOf }),
       ...(opts.refusal      !== undefined && { refusal:         opts.refusal }),
+      ...(opts.chore        !== undefined && { chore:           JSON.stringify(opts.chore) }),
     },
     meta: { authority: opts.authority ?? "lares-dispatcher" },
   };

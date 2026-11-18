@@ -24,6 +24,7 @@ import {
   type WikiRecipe,
   type PortIslandToVesselMsg,
   type VesselRestState,
+  type LarDoc,
 } from "@lararium/mesh";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
@@ -69,6 +70,9 @@ export interface BrowserVesselIslandPoolOptions {
   >;
   /** The floor each mount stands on: the vessel's accepted pin (`@lararium/mesh` `vesselFloorCid`); null mounts genesis. */
   floorCid?: () => string | null | Promise<string | null>;
+  /** The founding record (the genesis island document): each wiki mount shadow-reads its floor beside it (`floor-shadow`).
+   *  The browser keeps the tally for this pool's life alone; it prints each reading and the count to the vessel log. */
+  foundingRecord?: () => LarDoc | null | undefined;
 }
 
 /** Browser island pool: VesselIslandPoolCore configured with a Web Worker host. */
@@ -78,6 +82,7 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
     super({
       resolvePluginCids: opts.resolvePluginCids,
       ...(opts.floorCid ? { floorCid: opts.floorCid } : {}),
+      ...(opts.foundingRecord ? { foundingRecord: opts.foundingRecord } : {}),
       host: {
         spawnWorker: () => {
           if (!workerUrl) {

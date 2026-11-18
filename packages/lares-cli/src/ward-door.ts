@@ -15,21 +15,21 @@ import { readWardPassphrase } from "./prompt-secret.js";
 import { RoutedVerbRefused } from "./store-door.js";
 
 /** One ward act's route, as this process asks it: the gatherer the process seated (the binary seats `ttyWardRoute`). */
-export async function gatherWardRoute(verb: string): Promise<Credential[]> {
-  return wardGathererSeated() ? [...await gatherSeatedWardRoute(verb)] : ttyWardRoute(verb);
+export async function gatherWardRoute(verb: string, face?: number): Promise<Credential[]> {
+  return wardGathererSeated() ? [...await gatherSeatedWardRoute(verb)] : ttyWardRoute(verb, face);
 }
 
 /**
  * The terminal's own answer: a passphrase typed at a terminal, and nothing else. No file answers for it: a test harness that
  * drives the CLI with no terminal seats its route explicitly (`tools/test-ward-route.mjs`, loaded ahead of the binary).
  */
-export async function ttyWardRoute(verb: string): Promise<Credential[]> {
-  return [{ kind: "passphrase", passphrase: await readWardPassphrase(verb) }];
+export async function ttyWardRoute(verb: string, face?: number): Promise<Credential[]> {
+  return [{ kind: "passphrase", passphrase: await readWardPassphrase(verb, face !== undefined ? { face } : {}) }];
 }
 
 /** The token an in-process act takes (a direct row, the recovery split). */
-export async function gatherWard(verb: string): Promise<WardCredential> {
-  return wardCredential(await gatherWardRoute(verb));
+export async function gatherWard(verb: string, face?: number): Promise<WardCredential> {
+  return wardCredential(await gatherWardRoute(verb, face));
 }
 
 /**
@@ -40,7 +40,9 @@ export async function gatherWard(verb: string): Promise<WardCredential> {
  */
 export async function wardTicketFor(verb: string, args: Readonly<Record<string, unknown>>, daemonUp: boolean, handed?: readonly Credential[]): Promise<Record<string, unknown>> {
   if (!storeVerbNeedsWard(verb, args)) return {};
-  const route = handed !== undefined ? [...handed] : await gatherWardRoute(`lares ${verb}`);
+  // The act names its face where the row carries one; else the prompt asks the worn face's route.
+  const face = typeof args["face"] === "number" ? args["face"] : undefined;
+  const route = handed !== undefined ? [...handed] : await gatherWardRoute(`lares ${verb}`, face);
   if (!daemonUp) return { wardRef: parkWardTicket(wardCredential(route), { verb, args }) };
   const { sendCustodyFrame } = await import("./custody-door.js");
   const answer = await sendCustodyFrame({ op: "ward", credentials: route, verb, argsDigest: wardBindDigest({ verb, args }) });

@@ -21,7 +21,9 @@ import {
   type WikiRecipe,
   type PortIslandToVesselMsg,
   type CapabilityRecord,
+  type LarDoc,
 } from "@lararium/mesh";
+import { floorShadowFileStore } from "./floor-shadow-file.js";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
 import { readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
@@ -80,6 +82,8 @@ export interface VesselIslandPoolOptions {
   >;
   /** The floor each mount stands on: the vessel's accepted pin (`@lararium/mesh` `vesselFloorCid`); null mounts genesis. */
   floorCid?: () => string | null | Promise<string | null>;
+  /** The founding record (the genesis island document): each wiki mount shadow-reads its floor beside it (`floor-shadow`). */
+  foundingRecord?: () => LarDoc | null | undefined;
   /** Held disk-write capability: canon bag → mirror configs this pool MAY project. */
   diskMirrorGrant?: readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean }[];
   /** Override the mount silence budget in ms (tests). */
@@ -108,6 +112,9 @@ export class VesselIslandPool extends VesselIslandPoolCore {
       diskMirrorGrant: options.diskMirrorGrant ?? [],
       resolvePluginCids: options.resolvePluginCids,
       ...(options.floorCid ? { floorCid: options.floorCid } : {}),
+      // The shadow tally rests beside the vessel store, where `lares vessel read` prints it.
+      ...(options.foundingRecord ? { foundingRecord: options.foundingRecord } : {}),
+      ...(storageRoot ? { floorShadow: floorShadowFileStore(storageRoot) } : {}),
       ...(options.onWorkerEvent ? { onWorkerEvent: options.onWorkerEvent } : {}),
       ...(options.portPolicy ? { portPolicy: options.portPolicy } : {}),
       ...(options.onPortMessage ? { onPortMessage: options.onPortMessage } : {}),

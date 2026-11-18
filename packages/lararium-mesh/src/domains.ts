@@ -142,6 +142,13 @@ export const CADENCE_INCEPTION_DOMAIN = mint("cadence-inception");
 /** A cadence holder's NEXT-KEY commitment: the digest of the hearth's next cadence key. Its own name: a cadence
  *  commitment never reads as a seat's. */
 export const CADENCE_NEXT_KEY_DOMAIN = mint("cadence-next-key");
+/** A cadence OFFER: one engine CID, the inception it rides, the prior offer's digest and the window width k, signed
+ *  by t of the cadence holders; the offers' `prev` chain advances a Nexus's engine window. Its own name: an offer
+ *  never verifies as an inception, a deny or any seat act, and the kahu quorum never signs one. */
+export const CADENCE_OFFER_DOMAIN = mint("cadence-offer");
+/** A cadence RELEASE-DENY: one engine CID dropped from every window of its inception, monotone, under the same t of
+ *  holders. Its own name: a deny never verifies as an offer, so a signature that offers can never withdraw. */
+export const CADENCE_RELEASE_DENY_DOMAIN = mint("cadence-release-deny");
 
 // ── CUSTODY: THE tree key, ITS KEYSLOTS, AND THE VESSEL KEL ───────────────────────────────────────────
 /** The floor key's own inception: the key signed by itself, committing no next key. */

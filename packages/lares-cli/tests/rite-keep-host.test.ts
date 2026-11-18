@@ -37,7 +37,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { CARRY_SCHEMA, MANIFEST_FILE, bundleIdOf, sha256Hex, zeroCounts, type CarryFile } from "../src/carry-manifest.js";
+import { BUNDLE_SCHEMA, MANIFEST_FILE, bundleIdOf, sha256Hex, zeroCounts, type BundleFile } from "../src/bundle-manifest.js";
 import { riteKeepHost, secretShapes, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../src/rite-keep-host.js";
 import { KeepRefused } from "../src/rite-keep.js";
 import { readOrMintDevice, sessionSources, type SessionSources } from "../src/keep-sessions.js";
@@ -62,7 +62,7 @@ const must = (dir: string, ...argv: string[]): string => {
 /** A whole bundle at `dest`: every file hashed, the id over the file list. */
 function writeBundle(dest: string, notes: Readonly<Record<string, string>>): string {
   rmSync(dest, { recursive: true, force: true });
-  const files: CarryFile[] = [];
+  const files: BundleFile[] = [];
   for (const [name, text] of Object.entries(notes)) {
     const rel = `faces/f0/working/${name}.tid`, abs = join(dest, ...rel.split("/"));
     mkdirSync(dirname(abs), { recursive: true });
@@ -71,7 +71,7 @@ function writeBundle(dest: string, notes: Readonly<Record<string, string>>): str
   }
   files.sort((a, b) => (a.path < b.path ? -1 : 1));
   const bundleId = bundleIdOf(files);
-  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ schema: CARRY_SCHEMA, bundleId, faces: [{ key: "f0", petname: "steward" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] }, null, 2)}\n`);
+  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ schema: BUNDLE_SCHEMA, bundleId, faces: [{ key: "f0", petname: "steward" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] }, null, 2)}\n`);
   return bundleId;
 }
 
@@ -456,19 +456,19 @@ describe("the keep rite, host half", () => {
     expect(keepSessionsOn(false, {}, null)).toBe(false);
   });
 
-  test("KH17 keep-acts-as-the-mount: with no face named, the host half carries the face the vessel half acted as into every row after the cut, and names it", async () => {
+  test("KH17 keep-acts-as-the-keep-face: with no face named, the host half carries the face the vessel half acted as into every row after the cut, and names it", async () => {
     const r = rig();
     const row = r.ports.row;
     const ports: KeepHostPorts = { ...r.ports, sessions: null, row: async (verb, args) => {
       const a = await row(verb, args);
-      return verb === "keep-cut" && a.ok ? { ok: true, output: { ...a.output, face: 0, faceBy: "mount" } } : a;
+      return verb === "keep-cut" && a.ok ? { ok: true, output: { ...a.output, face: 0, faceBy: "keep" } } : a;
     } };
     const out = await riteKeepHost(ports, { workspace: "backup" });
-    expect(out).toMatchObject({ code: 0, data: { face: 0, faceBy: "mount", par: true } });
+    expect(out).toMatchObject({ code: 0, data: { face: 0, faceBy: "keep", par: true } });
     expect(r.calls[0]).toBe(`keep-cut ${JSON.stringify({ workspace: "backup", into: "house" })}`);
     expect(r.calls.slice(1).length).toBeGreaterThan(0);
     for (const c of r.calls.slice(1)) expect(c).toContain('"face":0');
-    expect(r.said.some((l) => /acting as h0, the daemon mount/.test(l))).toBe(true);
+    expect(r.said.some((l) => /acting as h0, the keep's face/.test(l))).toBe(true);
     // A named face rides the cut as named.
     const n = rig({ at: join(scratch, "named") });
     const named = await riteKeepHost({ ...n.ports, sessions: null }, { workspace: "backup", face: 2 });

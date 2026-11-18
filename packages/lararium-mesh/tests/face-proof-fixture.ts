@@ -58,6 +58,24 @@ export async function chain(label: string, nexus: string, profile: CapabilityPro
   };
 }
 
+/** A further vessel of one face with a session of its own: the same face and scope (so the same subject), its own
+ *  vessel key and session key, each certificate signed as the face's own chain signs it. */
+export async function siblingChain(of: Chain, label: string, profile: CapabilityProfile = "face"): Promise<Chain> {
+  const vessel = await pair(`${label} vessel`);
+  const session = await pair(`${label} session`);
+  const vesselFaceKey = vessel.key as VesselFaceKey;
+  const sessionKey = session.key as SessionKey;
+  return {
+    face: of.face, vessel, session, scope: of.scope,
+    request:     { scope: of.scope, vesselFaceKey, signature: await signHex(certificateRequestImage(of.scope, vesselFaceKey), vessel) },
+    certificate: { scope: of.scope, vesselFaceKey, signature: await signHex(certificateImage(of.scope, vesselFaceKey), of.face) },
+    sessionCertificate: {
+      scope: of.scope, vesselFaceKey, sessionKey, profile,
+      signature: await signHex(sessionCertificateImage(of.scope, vesselFaceKey, sessionKey, profile), vessel),
+    },
+  };
+}
+
 /** One face at its own vessel's place: the face's atom, a session beneath it, and the atom's certificate. */
 export interface PlaceChain {
   readonly atom:    Pair;

@@ -117,13 +117,14 @@ const ROUTE_IN_ENV = /^LAR(?:ES)?_\w*(?:PASS|WARD)|PASSPHRASE/i;
  * passphrase-shaped environment variable stands (it reads none) and when stdin is not a TTY (a pipe, a file, a script). The route
  * lives for the act that asked and nothing keeps it.
  */
-export function readWardPassphrase(verb: string, opts: { readonly stream?: TtyStream; readonly env?: NodeJS.ProcessEnv } = {}): Promise<string> {
+export function readWardPassphrase(verb: string, opts: { readonly stream?: TtyStream; readonly env?: NodeJS.ProcessEnv; /** The face whose ward opens; absent, the worn face. */ readonly face?: number } = {}): Promise<string> {
   const env = opts.env ?? process.env;
   const carrier = Object.keys(env).find((k) => ROUTE_IN_ENV.test(k) && typeof env[k] === "string" && env[k]!.length > 0);
   if (carrier !== undefined) return Promise.reject(new WardNeedsTty(verb, `the environment carries \`${carrier}\`, which this door never reads`));
   const stream = opts.stream ?? stdin;
   if (!stream.isTTY) return Promise.reject(new WardNeedsTty(verb, "stdin is not a terminal (a pipe or a file carries nothing a ward reads)"));
-  return promptSecret(`${verb}: the face's passphrase for this one act: `, stream);
+  // THE PROMPT NAMES WHOSE ROUTE IT ASKS: the face by its handle index, or the worn face where the act names none.
+  return promptSecret(`${verb}: ${opts.face !== undefined ? `face h${opts.face}'s` : "the worn face's"} passphrase for this one act: `, stream);
 }
 
 /**

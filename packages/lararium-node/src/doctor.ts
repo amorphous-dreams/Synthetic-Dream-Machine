@@ -74,7 +74,7 @@ export function formatDoctorReport(report: DoctorReport, storageDir: string): st
       for (const e of bad) {
         lines.push(`    ${e.documentId}  [${e.status}]  ${e.reason ?? ""}`.trimEnd());
       }
-      lines.push(`  recovery: restore its disk carrier, then run \`lares vessel seed --apply --yes\``);
+      lines.push(`  recovery: restore its disk carrier, then run \`lares vessel lay --apply --yes\``);
     }
     if (unresolved.length > 0) {
       // H2 — never named "condemned": this door never learned whether these docs are sound.

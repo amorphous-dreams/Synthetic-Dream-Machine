@@ -21,6 +21,12 @@
  *   reserved/<image>/<n>          one row per re-service, counted from 1, claimed atomically
  *   admit/<tessera>/guest · host  the hand's own tessera: `admit-begun` rests before the admission, `admit-landed` after
  *                                 it, naming the begun half by its cid. Both halves come from the one hand act.
+ *   unadmitted/<image>/<tessera>  THE HAND'S UNADMIT: a signed tombstone naming the admission tessera it ends. An admission
+ *                                 stands only while no tombstone names its tessera, so a row deleted and brought back from a
+ *                                 keep copy still reads ended; a re-admission writes a new tessera, which no tombstone names.
+ *                                 The tombstone gates FUTURE service: a session the pūlama already served keeps running. And a
+ *                                 host-file write sits outside this lock like any tamper of the state dir: deleting the
+ *                                 tombstone file, or restoring an older state dir, re-admits the image.
  *
  * A READ TRUSTS A ROW ONLY UNDER THE PŪLAMA'S KEY. The key derives from the custody root, so a row written into the state
  * directory by anything that never held that root reads as no admission: the file alone admits nothing. A row the key
@@ -42,6 +48,8 @@ export const pulamaAdmittedTitle = (image: string): string => `${pulamaAdmittedP
 export const pulamaReservedPrefix = (image: string): string => `${PREFIX}reserved/${imageKey(image)}/`;
 export const pulamaAdmitTesseraPrefix = (): string => `${PREFIX}admit/`;
 export const pulamaAdmitTesseraTitle = (tessera: string, half: "guest" | "host"): string => `${pulamaAdmitTesseraPrefix()}${tessera}/${half}`;
+/** The tombstone that ends the admission of `image` resting on `tessera`. */
+export const pulamaUnadmittedTitle = (image: string, tessera: string): string => `${PREFIX}unadmitted/${imageKey(image)}/${tessera}`;
 
 /** The face an admission serves, as the pūlama's custody names it. */
 export interface AdmittedFace { readonly fcid: string; readonly ordinal: number }
@@ -58,7 +66,8 @@ export type PulamaAdmitBody =
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-admitted"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly by: "rite" | "hand"; readonly tessera: string; readonly tesserae: readonly AdmittedTessera[] }
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-reserved"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly n: number }
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-begun"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly tessera: string }
-  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-landed"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly tessera: string; readonly begun: string };
+  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-landed"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly tessera: string; readonly begun: string }
+  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-unadmitted"; readonly image: string; readonly ends: string };
 export interface SignedPulamaAdmit { readonly body: PulamaAdmitBody; readonly signer: string; readonly sig: string }
 
 const cidOf = (act: { readonly body: PulamaAdmitBody; readonly signer: string }): string => sha256HexBytesSync(canonicalJsonBytes({ body: act.body, signer: act.signer }));
@@ -98,6 +107,14 @@ export interface PulamaAdmissions {
   admitByHand(image: string, faces: readonly AdmittedFace[], by: KukuluSigner): Promise<{ readonly tessera: string }>;
   /** Rest one re-service row for `image`; answers its count. */
   reserved(image: string, faces: readonly AdmittedFace[], by: KukuluSigner): Promise<number>;
+  /**
+   * THE HAND'S UNADMIT: rest the tombstone ending the admission of `image` that stands; null where none stands. A slot already
+   * holding a signed tombstone answers `already` (ended by an earlier write); one holding a row no pūlama key signed answers
+   * `occupied`, naming the slot, and the admission still stands. It never answers ended while no signed tombstone rests.
+   */
+  unadmit(image: string, by: KukuluSigner): Promise<{ readonly ends: string; readonly already?: true } | { readonly occupied: string; readonly ends: string } | null>;
+  /** The images whose signed admission row stands ended by a tombstone. */
+  ended(by: KukuluSigner): Promise<readonly string[]>;
   /** Every admission that stands (verifies and names a lent set), and each image's count of re-services. */
   list(by: KukuluSigner): Promise<ReadonlyArray<{ readonly image: string; readonly faces: readonly AdmittedFace[]; readonly by: "rite" | "hand"; readonly tessera: string; readonly tesserae: readonly AdmittedTessera[]; readonly reserved: number }>>;
 }
@@ -136,9 +153,16 @@ function tesseraeOf(raw: unknown, faces: readonly AdmittedFace[], how: "rite" | 
 
 /** The admitted set over the pūlama's record store. */
 export function pulamaAdmissions(records: SwarmWikiPort): PulamaAdmissions {
+  /** Whether a tombstone the pūlama's key signed ends the admission of `image` resting on `tessera`. */
+  const tombstoned = async (image: string, tessera: string, by: KukuluSigner): Promise<boolean> => {
+    const tomb = verified(await records.read(pulamaUnadmittedTitle(image, tessera)), by.key);
+    return tomb !== null && tomb.body.act === "image-unadmitted" && tomb.body.image === image && tomb.body.ends === tessera;
+  };
   const admitted: PulamaAdmissions["admitted"] = async (image, by) => {
     const row = verified(await records.read(pulamaAdmittedTitle(image)), by.key);
     if (row === null || row.body.act !== "image-admitted" || row.body.image !== image) return null;
+    // AN ADMISSION STANDS ONLY WHILE NO TOMBSTONE NAMES ITS TESSERA.
+    if (await tombstoned(image, row.body.tessera, by)) return null;
     const faces = admittedFacesOf(row.body.faces);
     if (!faces.ok) return { refusal: faces.refusal, message: faces.message };
     const tesserae = tesseraeOf(row.body.tesserae, faces.faces, row.body.by, row.body.tessera);
@@ -172,6 +196,24 @@ export function pulamaAdmissions(records: SwarmWikiPort): PulamaAdmissions {
         const act = await sign<"image-reserved">({ act: "image-reserved", image, faces, n }, by);
         if (await records.writeNew(`${pulamaReservedPrefix(image)}${n}`, JSON.stringify(act))) return n;
       }
+    },
+    async unadmit(image, by) {
+      const standing = await admitted(image, by);
+      if (standing === null || "refusal" in standing) return null;
+      const tomb = await sign<"image-unadmitted">({ act: "image-unadmitted", image, ends: standing.tessera }, by);
+      const slot = pulamaUnadmittedTitle(image, standing.tessera);
+      if (await records.writeNew(slot, JSON.stringify(tomb))) return { ends: standing.tessera };
+      // THE SLOT HELD A ROW: a signed tombstone there ended it already; anything else leaves the admission standing.
+      return await tombstoned(image, standing.tessera, by) ? { ends: standing.tessera, already: true } : { occupied: slot, ends: standing.tessera };
+    },
+    async ended(by) {
+      const out: string[] = [];
+      for (const title of await records.list(pulamaAdmittedPrefix())) {
+        const row = verified(await records.read(title), by.key);
+        if (row === null || row.body.act !== "image-admitted" || pulamaAdmittedTitle(row.body.image) !== title) continue;
+        if (await tombstoned(row.body.image, row.body.tessera, by)) out.push(row.body.image);
+      }
+      return out;
     },
     async list(by) {
       const out: Array<{ image: string; faces: readonly AdmittedFace[]; by: "rite" | "hand"; tessera: string; tesserae: readonly AdmittedTessera[]; reserved: number }> = [];
