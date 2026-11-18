@@ -555,8 +555,8 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
 
     // THE ONE PREDICATE, before any other check: a hand outside the Kahu cabal lands nothing in house canon.
     if (opts.kahuReachClearedAtGate !== true) {
-      await requireKahuReach(destinationBag(action), opts.kahuReach, action.verb);
-      if (action.verb === "MOVE") await requireKahuReach(action.fromBag, opts.kahuReach, "MOVE out of canon");
+      await requireKahuReach(destinationBag(action), opts.kahuReach, action.verb, ctx.asker);
+      if (action.verb === "MOVE") await requireKahuReach(action.fromBag, opts.kahuReach, "MOVE out of canon", ctx.asker);
     }
 
     // W27: a write lands on a working layer, and canon takes it by promotion. No door passes a LOAD into canon;

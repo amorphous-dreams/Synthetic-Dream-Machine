@@ -60,7 +60,7 @@ import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, E
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
-import { runLocalVerb, gateRoutedVerb, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
+import { runLocalVerb, gateRoutedVerb, refuseSeatCanonRouted, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
 
 export interface VerbContext {
   readonly daemon: CompositeStore;
@@ -371,6 +371,8 @@ export class VerbDispatcher {
     // A wiki-addressing envelope meets the fence by its presenter. Any other routed ask that did not arrive local (a
     // synced summons, content) names no presenter that can wear a face here, so the fence reads it as naming none.
     this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, surface: given !== undefined || this.opts.surfaceOf?.(invocation) === true, cap: makeCapVerify(this.opts.verifier, presenter, local) }, routedAddressesWiki(invocation) || !local);
+    // A face row (`given`) rides a session the door cleared; a placed ask carries the asker the island booked with it.
+    if (given === undefined) refuseSeatCanonRouted(invocation, this.opts.askerOf?.(invocation));
     // Verify-then-delegate: the keyholder worker gates the cap BEFORE
     // routing to main; main then trusts the worker→main channel as the
     // capability (project_verification_placement). Enforced only when a

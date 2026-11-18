@@ -271,6 +271,7 @@ interface LayerFacts {
  */
 async function layerFactsFor(
   opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], view: EngineWiki, mayRead: (bag: string | null) => Promise<boolean>, title: string,
+  asker?: VerbContext["asker"],
 ): Promise<LayerFacts> {
   const composite = opts.composite;
   const stack = [...composite.layerIds].reverse();
@@ -282,7 +283,7 @@ async function layerFactsFor(
     readable.push(bag);
     if (!composite.hasWritableBag(bag) || workingIndex < 0 || composite.layerIndexOf(bag) < workingIndex) continue;
     try {
-      await requireKahuReach(bag, opts.kahuReach, "tiddler delete");
+      await requireKahuReach(bag, opts.kahuReach, "tiddler delete", asker);
       if ((await cap("admin", bag)).ok) writable.add(bag);
     } catch { /* a layer the Kahu predicate keeps from this hand takes no delete of its */ }
   }
@@ -310,8 +311,8 @@ const placeFields = (place: { position: TiddlerPosition; family: string | null; 
   ({ position: place.position, ...(place.family ? { family: place.family } : {}), ...(place.orphan ? { orphan: true } : {}) });
 
 /** The write gate, in the meme door's own order: the Kahu predicate, then the face's write cap on the landing bag. */
-async function requireWrite(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], verb: string): Promise<void> {
-  await requireKahuReach(anchor.bag, opts.kahuReach, verb);
+async function requireWrite(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], verb: string, asker?: VerbContext["asker"]): Promise<void> {
+  await requireKahuReach(anchor.bag, opts.kahuReach, verb, asker);
   const proof = await cap("admin", anchor.bag);
   if (!proof.ok) throw new Error(`cap-denied: admin on ${anchor.bag} required (${proof.reason ?? "no reason"})`);
 }
@@ -520,7 +521,7 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
     const title = stringArg(args, "title");
     if (!title) throw new Error("tiddler-put: args.title is required");
     refuseWithheld(title, "tiddler-put");
-    await requireWrite(opts, anchor, ctx.cap, "tiddler put");
+    await requireWrite(opts, anchor, ctx.cap, "tiddler put", ctx.asker);
     const { wiki, utils, Tiddler } = anchor.engine;
     const standing = wiki.getTiddler(title);
     const held = standing ? readRecord(standing) : null;
@@ -582,7 +583,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     const title = stringArg(args, "title");
     if (!title) throw new Error("tiddler-delete: args.title is required");
     refuseWithheld(title, "tiddler-delete");
-    await requireWrite(opts, anchor, ctx.cap, "tiddler delete");
+    await requireWrite(opts, anchor, ctx.cap, "tiddler delete", ctx.asker);
     const wiki = anchor.engine.wiki;
     if (title.startsWith("$:/")) throw new VerbRefusal("tiddler-put-code-class", `tiddler-put-code-class: "${title}" names a system title; the tiddler door removes no record the engine reads as configuration or code.`);
     const standing = wiki.tiddlerExists(title) ? wiki.getTiddler(title) : undefined;
@@ -601,7 +602,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     // THE FAMILY LAW DECIDES WHAT A DELETE MOVES: the consequence gets read first, over the reader's view and the
     // layers the composition holds, and a refusal lands nothing. The read stays meme-aware (never `bare`): this door
     // strands no slot.
-    const layers = await layerFactsFor(opts, anchor, ctx.cap, view, mayRead, title);
+    const layers = await layerFactsFor(opts, anchor, ctx.cap, view, mayRead, title, ctx.asker);
     const read: Consequence = consequence(familyViewAt(anchor, view, layers), { kind: "delete", title, mode });
     const refused = (refusal: string, why: string): Record<string, unknown> =>
       ({ recipe: "default", title, decision: "refused", mode, refusal, why: `${refusal}: ${why}`, tombstoned: [], retracted: [], hash, consequence: read });
@@ -668,7 +669,7 @@ export function makeWikiStatusReactor(opts: TiddlerVerbOptions): VerbReactor {
       let why: string | undefined;
       if (mounted) {
         try {
-          await requireKahuReach(bag, opts.kahuReach, "wiki status");
+          await requireKahuReach(bag, opts.kahuReach, "wiki status", ctx.asker);
           const proof = await ctx.cap("admin", bag);
           write = proof.ok;
           if (!proof.ok) why = proof.reason ?? "cap-denied";
