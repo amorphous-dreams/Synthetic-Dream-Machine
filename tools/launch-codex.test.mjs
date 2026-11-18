@@ -6,11 +6,12 @@ import { appendFileSync, closeSync, copyFileSync, openSync, mkdtempSync, mkdirSy
 import { tmpdir, userInfo } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { tokenTail } from "./launch-codex.mjs";
+import { parseSpendTable, tokenTail } from "./launch-codex.mjs";
 import { appendSeatLaw, canaryBrief, leadLaw, canaryVerdict, ceilingFor, COMPACT_LIMIT, TOOL_OUTPUT_LIMIT, distFresh, findRollout, rolloutTokens, watchSeat, mainCheckout, preflight, readPool, realHome, realReaders, run, seatArgs, seatLaw } from "./launch-codex.mjs";
 import { globalStampPath, packageStampPath, sourceDigest } from "./stamp-build.mjs";
 
 const TOOL = fileURLToPath(new URL("./launch-codex.mjs", import.meta.url));
+const SPEND = fileURLToPath(new URL("../bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem", import.meta.url));
 const CANON = fileURLToPath(new URL("../bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem", import.meta.url));
 
 // A recorded rollout line (the newest rollout's own rate_limits record, 2026-10-30), used 60% of a 7-day window.
@@ -33,6 +34,7 @@ function world(over = {}) {
     sharedInodes: () => null,
     bwrap: true,
     canon: () => readFileSync(CANON, "utf8"),
+    spendCarrier: () => readFileSync(SPEND, "utf8"),
     ...over,
   };
   CURRENT = { seatDir };
@@ -1329,4 +1331,64 @@ test("relaunch replaces an older law even when the seat changes mode", () => {
   const result = appendSeatLaw("# brief\nwork\n\n## LEAD LAW (old)\nold rule\n", law);
   assert.doesNotMatch(result, /old rule|## LEAD LAW/);
   assert.ok(result.includes(law));
+});
+
+// ======================= the ruled burn (seat-harness#/the-spend-guard spend table; operator ruling 2026-11-05) =======================
+const WINDOW = 1793791489; // the rate() fixture's resets_at
+const withRows = (rows) => readFileSync(SPEND, "utf8").replace(/^ruling .*$/m, rows);
+const tableWorld = (rows, over = {}) => { const w = world(); return { w, readers: { ...w.readers, spendCarrier: () => withRows(rows), ...over } }; };
+
+test("RULED 1 a ruling row for the current window lifts the limits for every mode and names itself", () => {
+  const { w, readers } = tableWorld(`ruling 2026-11-05 window=${WINDOW} max-used=100 floor=0`);
+  const at95 = { ...readers, rolloutLines: () => [rate(95)] };
+  for (const mode of ["build", "lead", "research", "read"]) assert.match(preflight(ask(w, { mode }), at95).pool, new RegExp(`RULED \\(2026-11-05, window ${WINDOW}\\): limits max-used=100 floor=0`));
+  refuses(w, {}, /at or below its floor/, { ...readers, rolloutLines: () => [rate(100)] });
+});
+
+test("RULED 2 the same row for another window, or pending, applies nothing: the defaults hold", () => {
+  for (const win of [WINDOW + 1, "pending"]) {
+    const { w, readers } = tableWorld(`ruling 2026-11-05 window=${win} max-used=100 floor=0`);
+    refuses(w, {}, /(at or below its floor|used ceiling)/, { ...readers, rolloutLines: () => [rate(95)] });
+    refuses(w, { mode: "lead" }, /at or below its floor/, { ...readers, rolloutLines: () => [rate(85)] });
+    assert.doesNotMatch(preflight(ask(w), { ...readers, rolloutLines: () => [rate(40)] }).pool, /RULED/);
+  }
+});
+
+test("RULED 3 a malformed or unreadable table refuses by name", () => {
+  const w = world();
+  const doc = readFileSync(SPEND, "utf8");
+  const cases = [
+    doc.replace(/^```spend-limits[\s\S]*?^```$/m, ""),
+    doc.replace("default build max-used=80 floor=20\n", ""),
+    doc.replace("default build max-used=80 floor=20\n", "default build max-used=80 floor=20\ndefault build max-used=80 floor=20\n"),
+    doc.replace("default lead max-used=80", "default lead max-used=150"),
+    doc.replace("default lead max-used=80", "default lead max-used=80 extra=1"),
+    doc.replace(/^ruling .*$/m, "ruling 2026-11-05 window=9 max-used=100 floor=0\nruling 2026-11-06 window=9 max-used=100 floor=0"),
+    doc.replace(/^ruling .*$/m, "ruling not-a-date window=9 max-used=100 floor=0"),
+    doc.replace(/^ruling .*$/m, "ruling 2026-11-05 window=0 max-used=100 floor=0"),
+  ];
+  for (const c of cases) refuses(w, {}, /spend table/, { ...w.readers, spendCarrier: () => c });
+  refuses(w, {}, /spend table unreadable/, { ...w.readers, spendCarrier: () => null });
+  refuses(w, {}, /spend table unreadable/, { ...w.readers, spendCarrier: undefined });
+});
+
+test("RULED 4 an unreadable pool and gpt-6-sol still refuse under a ruling row", () => {
+  const { w, readers } = tableWorld(`ruling 2026-11-05 window=${WINDOW} max-used=100 floor=0`);
+  refuses(w, {}, /unreadable.*twice/s, { ...readers, rolloutLines: () => [] });
+  refuses(w, { model: "gpt-6-sol" }, /gpt-6-sol never launches/, readers);
+});
+
+test("RULED 5 CONTROL no ruling row: the defaults stand, and the shipped table equals today's limits", () => {
+  const { w, readers } = tableWorld("");
+  for (const mode of ["build", "lead", "research"]) {
+    refuses(w, { mode }, /at or below its floor/, { ...readers, rolloutLines: () => [rate(80)] });
+    assert.ok(preflight(ask(w, { mode }), { ...readers, rolloutLines: () => [rate(79.9)] }));
+  }
+  assert.ok(preflight(ask(w, { mode: "read" }), { ...readers, rolloutLines: () => [rate(95)] }));
+  const lowered = { ...readers, spendCarrier: () => withRows("").replace("default build max-used=80", "default build max-used=60") };
+  refuses(w, {}, /above the build seat's 60% used ceiling/, { ...lowered, rolloutLines: () => [rate(65)] });
+  const t = parseSpendTable(readFileSync(SPEND, "utf8"));
+  assert.deepEqual(t.defaults, { lead: { maxUsed: 80, floor: 20 }, build: { maxUsed: 80, floor: 20 }, research: { maxUsed: 80, floor: 20 }, read: { maxUsed: 100, floor: 0 } });
+  assert.deepEqual(t.rulings.map((r) => [r.date, r.window]), [["2026-11-05", null]]);
+  assert.equal(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "launch-codex.mjs"), "utf8").includes("LARES_CODEX_BURN"), false);
 });

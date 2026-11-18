@@ -281,7 +281,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 # ''One budget across lineages.'' Item 7's house cap and lane shares, signed by the hand in the live wiki, govern Claude, Codex and Copilot alike. Each seat reads its share through its capability, and the vessel signs the roster's spend entries.
 # ''A fresh-per-step controller.'' The controller seat hands off through <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> instead of living one long session, which grows in cost with the square of its length.
 # ''A Copilot ceiling.'' Copilot spend reads from its log, but no ceiling stops a running Copilot seat; the seat needs one.
-# ''The spend table.'' The launcher reads its limits from a ruled table in `seat-harness#/the-spend-guard`, keyed to the pool window. It was built on a parked lane (`feature/green-jello-dinosaur-5--spend-burn`) and lands after standing.
 
 ''The discipline until then.'' Long, lane-parallel work uses a fresh tasked spirit per lane step, never long resumes, which re-send the whole transcript each time. At most three Claude spirits run in parallel, and the lane steps go to Codex seats first (#/the-tiers, the spend balance). Each spirit's token total is recorded in its lane's road item. Short ad-hoc scouts stay outside the seat. The operator watches the Claude meter, which the house can't read in-session.
 
@@ -301,6 +300,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;81LEHqL_9m5t2joKzHAGtJE3TSmN6HiFMTazackjShc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mHfPVA8gD0S_qhFG3VmTm5GrVXVZSumdVf2FgDBA-qs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
