@@ -1,0 +1,10 @@
+{
+  "format": "lararium-genesis-unbaked",
+  "unbaked": [
+    {
+      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
+      "sha256": "6f1cad11be9873b997d0bc86326cf2bf3e633466455aaec668891e3d3eefbf89",
+      "why": "PR #237 moves the plugin beneath genesis: the meme-patch slot edit (patchSlotCarrier through meme-put's own gate) and the meme-put row's slot, append and replace answers rebuild the memetic-wikitext bundle. Lares-Alpha's ONE labelled GENESIS RE-BAKE, in its own PR, carries these bytes into the seed and deletes this row."
+    }
+  ]
+}
