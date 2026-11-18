@@ -4,7 +4,7 @@
  *   light    read the route on a real terminal, hand it to the hand door: the one act that opens a key
  *   admit    read the route on a real terminal, hand it to the hand door: the route PROVES against the lit holder (it opens
  *            nothing), and the image the host reports rests admitted, so a vessel raised from it wakes served
- *   lock · status · tessera · image <digest>   one frame each, no route
+ *   lock · status · tessera · image <digest> [seed line…]   one frame each, no route
  *
  * ── A ROUTE RIDES A REAL TERMINAL AND NOTHING ELSE ──────────────────────────────────────────────
  * `readRoute` reads with no echo from a terminal, and refuses anything else by name: no pipe, no flag, no argument and no
@@ -70,7 +70,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = "usage: pulama-main.js serve | light | admit [face…] | lock | status | image <digest> | tessera";
+export const PULAMA_VERB_USAGE = "usage: pulama-main.js serve | light | admit [face…] | lock | status | image <digest> [seed line…] | tessera";
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -93,10 +93,14 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     const standing = await ports.ask({ op: "status" });
     if (standing["lit"] !== true) return { op: "admit", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then admit" };
     if (typeof standing["image"] !== "string") return { op: "admit", reading: "image-unreported", detail: "the host reported no image digest to this pūlama, so no image stands to admit" };
-    const passphrase = await ports.route(`pūlama route, to admit ${standing["image"]}: `, "an admission");
+    // The seed the image offers rides the prompt beside it, so the hand reads what waits before it admits (admission moves nothing).
+    const offered = typeof standing["seed"] === "string" ? ` (${standing["seed"]})` : "";
+    const passphrase = await ports.route(`pūlama route, to admit ${standing["image"]}${offered}: `, "an admission");
     return ports.ask({ op: "admit", credentials: [{ kind: "passphrase", passphrase }], faces: args.map(Number) });
   }
   if ((verb === "lock" || verb === "status" || verb === "tessera") && arg === undefined) return ports.ask({ op: verb });
   if (verb === "image" && typeof arg === "string") return ports.ask({ op: "image", digest: arg });
+  // `image <digest> <seed line…>`: the words after the digest ride as the seed line the host read.
+  if (verb === "image" && Array.isArray(arg) && arg.length >= 2) return ports.ask({ op: "image", digest: arg[0], seed: arg.slice(1).join(" ") });
   throw new PulamaVerbUsage();
 }
