@@ -582,6 +582,27 @@ switch ($verb) {
     elseif ($sub -eq 'stop') { if ($rest.Count -ne 1) { Die 'vessel stop takes no option through this shim' }; Compose @('stop', 'lares') }
     else { RouteCli (@($verb) + $rest) (-not $observing) }
   }
+  'lei' {
+    # The lei hand door under a pūlama (#269): the vessel reads the act's terms, the pūlama reads the route on this terminal
+    # and signs one record, the vessel lands it. The signing's terminal output shows as it runs; the answer is its last JSON
+    # line. A signing that answers no record lands nothing. Without a pūlama, every lei act routes as before.
+    $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
+    if ($PulamaMode -and $sub -in @('kui', 'restring', 'unstring')) {
+      if (-not $script:Tty) { Die 'lei under a pūlama reads its route on a terminal; run it on one (nothing signed)' }
+      $terms = ($null | & docker compose @Base exec @PassEnv -T lares node $Cli lei terms @rest) -join ''
+      if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      $answer = ''
+      & docker compose @Base --profile pulama exec pulama node $PulamaMain lei $sub $terms | ForEach-Object {
+        [Console]::Error.WriteLine($_)
+        $line = "$_".Trim("`r")
+        if ($line.StartsWith('{')) { $answer = $line }
+      }
+      if (-not $answer) { Die 'the pūlama signed nothing; nothing lands' }
+      $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli lei land $answer
+      exit $LASTEXITCODE
+    }
+    RouteCli (@($verb) + $rest) $true
+  }
   'wear' {
     # `lares wear N` moves the daemon mount inside the lent set and asks no route; a wear that landed names the face the
     # operator wears, which the shim keeps for the next stand.
