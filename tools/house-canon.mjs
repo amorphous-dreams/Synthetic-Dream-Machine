@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-// house-canon — the HOUSE CANON CLONE: the pinned clone a house reads its canon from, never a developer's working
-// checkout (lar:///ha.ka.ba/lararium/mesh/founding-runbook#/prepare; operator ruling D4, 2026-11-18).
+// house-canon — a PINNED CANON CLONE, a tool where a separate clone serves a house, never a requirement: a workspace
+// is a projection target the operator names, and for the Kahu cabal the repo checkout stands as the working surface
+// (lar:///ha.ka.ba/lararium/mesh/founding-runbook#/prepare; lar:///ha.ka.ba/kahua/memory/state/decisions#/ruled-workspaces).
 //
 //   node tools/house-canon.mjs stand [--at <dir>] [--pin <ref>] [--from <origin>] [--json]
 //   node tools/house-canon.mjs move  [--at <dir>] [--pin <ref>] [--json]
 //   node tools/house-canon.mjs read  [--at <dir>] [--json]
 //
-// THE HOUSE'S CANON MOVES BY AN EXPLICIT ACT. `LARES_WORKSPACE` names the directory the vessel mounts at /workspace and
-// reads canon from (`bags/`, `wikis/`), with a disk mirror that writes back into it. Named at a working checkout, a
-// branch switch there moves the house's canon underneath it. The canon clone stands apart: its own clone of the
-// origin, its HEAD detached at the pin, the pin recorded in the clone's own config (`lares.canonPin`), so the clone
-// names itself and a working checkout reads as none.
+// WHERE A CLONE SERVES, ITS CANON MOVES BY AN EXPLICIT ACT. `LARES_WORKSPACE` names the directory the vessel mounts at
+// /workspace, lays canon from (`bags/`, `wikis/`) and projects back into. A house that wants its canon held apart
+// from a working tree names a clone there: its own clone of the origin, its HEAD detached at the pin, the pin recorded
+// in the clone's own config (`lares.canonPin`), so the clone names itself and a working checkout reads as none.
 //
 //   stand  clones the origin (default: the origin of the checkout this runs in) to <dir> (default $LARES_CANON, else
 //          ~/.lares-canon) and checks out the pin (default `develop`) detached. It refuses a place that already holds
@@ -21,7 +21,7 @@
 //          stays the operator's: `lares vessel lay`, so the standing house reads the moved canon.
 //   read   names the clone, its pin and commit, the commit its last fetch saw for the pin, the write-back it holds, and
 //          what LARES_WORKSPACE (the environment, else ~/.lares/lares-surface.env) names: this clone, a working
-//          checkout (the one dev install, whose write-back lands in source control by design) or another place.
+//          checkout (a working surface, whose write-back lands in source control by design) or another place.
 //
 // Exit: 0 done · 1 refused (the reason on stderr) · 2 usage.
 import { spawnSync } from "node:child_process";
@@ -200,7 +200,7 @@ function human(verb, out) {
       ? [`${out.at} already stands at ${out.pin} (${out.to.slice(0, 12)})`]
       : [`moved ${out.at} to ${out.pin}: ${out.from.slice(0, 12)} -> ${out.to.slice(0, 12)}, ${out.changed.length} path(s) changed`, ...out.next.map((n) => `  next: ${n}`)];
   }
-  const where = { clone: "this clone", "working-checkout": "a working checkout (the one dev install)", other: "another place" }[out.workspace.names];
+  const where = { clone: "this clone", "working-checkout": "a working checkout (a working surface)", other: "another place" }[out.workspace.names];
   return [
     `${out.at} pinned to ${out.pin} at ${out.head.slice(0, 12)}${out.fetched && out.fetched !== out.head ? ` (its last fetch saw ${out.fetched.slice(0, 12)})` : ""}`,
     `write-back held: ${out.dirty.length} path(s)`,

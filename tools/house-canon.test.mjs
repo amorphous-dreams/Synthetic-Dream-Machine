@@ -79,7 +79,7 @@ test('stand defaults to ~/.lares-canon on develop, from the origin the working c
   assert.equal(w.g(out.at, 'remote', 'get-url', 'origin'), w.origin);
 });
 
-test('the D4 property: a branch switch in the working checkout leaves the house canon clone where it stands', (t) => {
+test('the pin property: a branch switch in the working checkout leaves the house canon clone where it stands', (t) => {
   const w = world(t);
   const at = join(w.root, 'canon');
   w.json(['stand', '--at', at, '--from', w.origin]);
@@ -183,7 +183,7 @@ test('read names the pin, the commit, the write-back and whether the surface env
   assert.equal(out.workspace.names, 'clone');
   writeFileSync(join(w.home, '.lares/lares-surface.env'), `LARES_WORKSPACE=${w.dev}\n`);
   out = w.json(['read', '--at', at, '--json']);
-  assert.equal(out.workspace.names, 'working-checkout', 'a surface env naming a checkout with no pin reads as the dev install');
+  assert.equal(out.workspace.names, 'working-checkout', 'a surface env naming a checkout with no pin reads as a working checkout');
   writeFileSync(join(at, 'bags/lares/a.mem'), 'written back\n');
   assert.deepEqual(w.json(['read', '--at', at, '--json']).dirty, ['bags/lares/a.mem']);
 });
