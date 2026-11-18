@@ -606,7 +606,7 @@ export type SlotPatchReading =
  * The body a slot carries spans its record's text and its `$preamble` / `$postamble` carriage (the text before its meta, and
  * the text after its last child). `append` adds to the body's end: the postamble where one stands, the slot's text otherwise.
  * `replace` swaps the whole body: the slot's text takes the new bytes and both carriages leave; a child slot the new body
- * no longer calls leaves with the put's consequence. The slot's fields (its meta) and its authored delimiters stay.
+ * does not call leaves with the put's consequence. The slot's fields (its meta) and its authored delimiters stay.
  */
 export async function patchSlotCarrier(input: SlotPatchInput, sink: Pick<MemeSink, "titles" | "read">): Promise<SlotPatchReading> {
   const hash = input.hash ?? defaultHash;
