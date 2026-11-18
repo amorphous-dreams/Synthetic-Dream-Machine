@@ -111,7 +111,7 @@ import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtect
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
-import { projectionRoots, workspaceRootsOf, PERSONAL_PROJECTION_DIR } from "./bag-paths.js";
+import { projectionRoots, workspaceRootsOf, FACES_PROJECTION_DIR } from "./bag-paths.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
@@ -245,7 +245,7 @@ import { custodyGateDoor }                       from "./custody-seat.js";
 import { intentRelayService, type IntentRelayService } from "./intent-relay.js";
 import { resolveIntentRelayFace } from "./intent-relay-face.js";
 import { vesselFloorKeyDoor, loadPlaceKelChain, loadPlaceAid, placeReadingWatch, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
-import { writeFaceLabel, keepFaceBases } from "./face-labels.js";
+import { writeFaceLabel, keepFaceBases, readFaceLabel, faceSiteOf } from "./face-labels.js";
 import { placeSessionCell, type PlaceWorn } from "./place-session-cell.js";
 import { hearthFloorPins }                       from "./hearth-sovereign-pin.js";
 import { hearthFloorProof }                      from "./hearth-floor-claims.js";
@@ -927,6 +927,19 @@ async function prepareNodeBootOn(
   // --face N` removes N, and its waiting saves stay in memory, never written to disk.
   let wornDeviceGroup: string | null = null;
   let wornDeviceRelation: string | null = null;
+  /** THE WORN FACE'S FOLDER under `faces/` (its pet-name segment, `faceSiteOf`): the face-rooted grants (margins, drafts, temp)
+   *  read it at each mount; null while no face stands lit or its pet name makes no folder. */
+  let wornFaceSegment: string | null = null;
+  /** The folder a face's pet name makes under `faces/`, or null (named in the log) where it makes none. The label names the pet
+   *  name where the sealed row reads none (a locked key); the segment rule reads the other faces' names off the label shelf. */
+  const faceSegmentOf = async (relation: string, handleIndex: number): Promise<string | null> => {
+    const projections = larProjectionsHome();
+    let petname: string | null | undefined = readFaceLabel(relation, projections)?.petname;
+    if (!petname) petname = await (await makeNodePersonaPetnameStore()).get(handleIndex).catch(() => undefined);
+    const read = faceSiteOf({ relation, petname: petname ?? null, handleIndex }, projections);
+    if ("refused" in read) { console.warn(`[faces] the face ${relation} makes no folder under ${FACES_PROJECTION_DIR}/ (${read.refused.code}: ${read.refused.why}); its private planes project nowhere until it does`); return null; }
+    return read.site.segment;
+  };
   const siblingFaces = new Map<string, { readonly relation: string | null; readonly face: string | null }>();
   /** Each lit sibling's handle index, by its group: the lit set the lend's light watch reads. */
   const siblingOrdinals = new Map<string, number>();
@@ -3468,14 +3481,16 @@ async function prepareNodeBootOn(
     // THE FACE LABEL AND ITS BASES, written by the vessel whenever a face stands (`face-labels`): the label names the pet-name
     // the face's relation wears, and the sidecar keeps each working copy's override base, read off the working slots the
     // owner table files under this face's group (never whichever face stands lit later), so a seed after a re-founding
-    // adopts the folders by pet-name and keeps each fork's base with no CLI door having run.
+    // keeps each fork's base with no CLI door having run. The pet name then names the face's root (`faces/<pet name>/`).
     faceBasesKeeper?.stop();
     faceBasesKeeper = null;
+    wornFaceSegment = null;
     if (wornDeviceGroup !== null && wornDeviceRelation !== null) {
       const relation = wornDeviceRelation, group = wornDeviceGroup, projections = larProjectionsHome();
       const handleIndex = wornMount?.handleIndex ?? 0;
       try { writeFaceLabel({ relation, petname: await (await makeNodePersonaPetnameStore()).get(handleIndex), handleIndex }, projections); }
       catch (e) { console.warn(`[face-label] the label for ${relation} did not write: ${e instanceof Error ? e.message : String(e)}`); }
+      wornFaceSegment = await faceSegmentOf(relation, handleIndex);
       faceBasesKeeper = keepFaceBases({ relation, projections, docs: () => deviceDocs.docsOf(DAEMON_WORKING_SLOT, [{ group, relation, face: null }])
         .map((id) => repo.handles[id as keyof typeof repo.handles]).filter((h): h is NonNullable<typeof h> => h !== undefined && h.isReady()) as never });
     }
@@ -3653,7 +3668,11 @@ async function prepareNodeBootOn(
         // The persona plane rides only when a face stands; the daemon VM resolves nothing that is absent.
         ...(bootstrap.personaUrl   ? { personaUrl:   bootstrap.personaUrl }   : {}),
         ...(bootstrap.personaBagId ? { personaBagId: bootstrap.personaBagId } : {}),
-        faceRelation: wornFaceProjection ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null,
+        ...await (async () => {
+          const relation = wornFaceProjection ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null;
+          // The worn face's folder under `faces/`: the pet name carries across a re-found, so the folder does too.
+          return { faceRelation: relation, faceSegment: relation === null ? null : relation === wornDeviceRelation && wornFaceSegment !== null ? wornFaceSegment : await faceSegmentOf(relation, wornMount?.handleIndex ?? 0) };
+        })(),
         ...(wornKahua ? { faceGroup: wornKahua.group } : {}),
         // A joinee at the floor holds no key to present its dial, so its persona plane (served by the hearth it dials) may
         // stand on the hearth alone; the unlocked composition dials and receives it. A founder's plane stays hearth-private.
@@ -4482,14 +4501,16 @@ async function prepareNodeBootOn(
       // ONE FOLDER ANSWERS A WORKBENCH, whichever seated writer wears: `<projections>/wikis/<slug>`, and a sourced slug's beside
       // its canon source (`<source>/../wikis/<slug>`, the repo workspace: git tracks it). No face relation enters that path.
       { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots },
-      // A wiki's personal slot carries the daemon mount's private margin: it projects per face, `personal/<F>/<slug>`.
-      { bagId: "personal",       mirrorRoot: join(projectionRoot, PERSONAL_PROJECTION_DIR), scope: "personal", wikiSlot: "personal", faceFolder: () => wornDeviceRelation },
-      // Recovery remains an explicit, recipe-designated grant with its own directory. A draft holds one face's unsaved hand, so it
-      // rests under the projections root for every slug and never beside a canon source: nothing face-private lands in a checkout.
-      { bagId: "draft",          mirrorRoot: join(projectionRoot, "wikis"),          scope: "draft", wikiSlot: "draft", mirrorClass: "recovery" },
-      // The USER temp layer projects to wikis/{slug}/temp, always under the projections root (never beside a canon
-      // source), and only for a slug the operator's consent row names (`projection.temp.<slug>`); absent, nothing lands.
-      { bagId: "temp",           mirrorRoot: join(projectionRoot, "wikis"),          scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: tempConsentedSlugs(loadLaresConfig()) },
+      // THE FACE-ROOTED GRANTS (face-pools #/shape): each holds one face's hand, so each rests in the wearing face's root
+      // (`<projections>/faces/<pet name>/`), never under the shared `wikis/<slug>/` and never beside a canon source: nothing
+      // face-private lands in a checkout or a realm pool. No face worn (or one whose pet name makes no folder): none stands.
+      // A wiki's personal slot carries the daemon mount's private margin, its overlay over the workbench: `margins/<slug>`.
+      { bagId: "personal",       mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "personal", wikiSlot: "personal", faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
+      // Recovery remains an explicit, recipe-designated grant: a draft holds one face's unsaved hand, `recovery/<slug>`.
+      { bagId: "draft",          mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "draft", wikiSlot: "draft", mirrorClass: "recovery", faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
+      // The USER temp layer projects to `temp/<slug>` beside recovery, and only for a slug the operator's consent row names
+      // (`projection.temp.<slug>`); absent, nothing lands.
+      { bagId: "temp",           mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: tempConsentedSlugs(loadLaresConfig()), faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
       // self-canon = the per-wiki CANON authority: a minted user wiki's own
       // @{slug} bag projects to bags/{slug} (both bagId and leaf fill from the
       // slug at mount). System wikis (lares/lararium) carry literal grants

@@ -17,8 +17,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { CROSSROADS_DOC_URI, DAEMON_BAG_ID, KAHUA_BAG, wikiSlotUri, CONTROL_HOME_ID } from "@lararium/mesh";
 import {
-  projectionRoots, daemonWorkingMirror, kahuaStageMirror, daemonDiskMirrors, daemonFaceFolder, kahuaFaceFolder,
-  isPrivateProjectionSlug,
+  projectionRoots, daemonWorkingMirror, kahuaStageMirror, daemonDiskMirrors, isPrivateProjectionSlug,
 } from "../src/bag-paths.js";
 import { atomicWriteFileSync, durableSyncIo } from "../src/fs-atomic.js";
 import { LarDiskProjector, PROJECTION_FILE_MODE } from "../src/disk-projector.js";
@@ -53,15 +52,15 @@ describe("projectionRoots — the mirror root splits by origin", () => {
     expect(roots.bagRoot("notes").startsWith(join(state, "bags"))).toBe(false);
   });
   test("a private plane stays under the projections root even where a source dir of its name stands", () => {
-    const { projections, canon } = tree("daemon", "kahua", `daemon-${TAG}`, `kahua-${TAG}`);
+    const { projections, canon } = tree("daemon", "kahua");
     const roots = projectionRoots({ projectionRoot: projections, canonBags: canon });
     expect(roots.wikisRootFor("kahua")).toBe(join(projections, "wikis"));
     expect(roots.sourcedSlugs()).toEqual([]);
-    expect(isPrivateProjectionSlug(`daemon-${TAG}`)).toBe(true);
+    expect(isPrivateProjectionSlug("daemon")).toBe(true);
   });
-  test("a workbench folder names no face: a private plane reads by a face's daemon or kahua folder alone", () => {
-    expect(isPrivateProjectionSlug(`daemon-${TAG}`)).toBe(true);
-    expect(isPrivateProjectionSlug(`kahua-${TAG}`)).toBe(true);
+  test("a workbench folder names no face: a face's private planes rest in its own root under faces/, never under bags/ or wikis/", () => {
+    expect(isPrivateProjectionSlug("kahua")).toBe(true);
+    expect(isPrivateProjectionSlug(`daemon-${TAG}`)).toBe(false);
     // A wiki's one workbench folder (`wikis/<slug>`) holds every seated face's shared document: no `<slug>-<F>` folder stands.
     expect(isPrivateProjectionSlug(`lares-${TAG}`)).toBe(false);
     expect(isPrivateProjectionSlug("elyncia-referee")).toBe(false);
@@ -77,22 +76,20 @@ describe("projectionRoots — the mirror root splits by origin", () => {
 describe("the daemon VM's mirrors under distinct state, canon and projection roots", () => {
   test("the daemon working top, kahua and crossroads receive mirrors; the daemon and control documents remain unmirrored", () => {
     const { state, projections, canon } = tree("crossroads");
-    const mirrors = daemonDiskMirrors({ projectionRoot: projections, canonBags: canon, faceRelation: TAG });
+    const mirrors = daemonDiskMirrors({ projectionRoot: projections, canonBags: canon, face: { relation: TAG, segment: "Heron" } });
     const byBag = new Map(mirrors.map((m) => [m.bagId, m.mirrorRoot]));
-    expect(byBag.get(wikiSlotUri("daemon", "working"))).toBe(join(projections, "wikis", `daemon-${TAG}`));
+    expect(byBag.get(wikiSlotUri("daemon", "working"))).toBe(join(projections, "faces", "Heron", "wiki"));
     expect(byBag.has(CONTROL_HOME_ID)).toBe(false);
-    expect(byBag.get(KAHUA_BAG)).toBe(join(projections, "bags", `kahua-${TAG}`));
+    expect(byBag.get(KAHUA_BAG)).toBe(join(projections, "faces", "Heron", "stage"));
     expect(byBag.get(CROSSROADS_DOC_URI)).toBe(join(canon, "crossroads"));
     expect(mirrors.some((m) => m.bagId === DAEMON_BAG_ID)).toBe(false);
     for (const root of byBag.values()) expect(root.startsWith(join(state, "bags")) || root.startsWith(join(state, "wikis"))).toBe(false);
     expect(mirrors.some((m) => m.mirrorRoot.startsWith(join(canon, "daemon")))).toBe(false);
   });
-  test("the daemon wiki's folder names the face as daemon-<F>; the kahua stage keeps kahua-<F>", () => {
-    expect(daemonFaceFolder(TAG)).toBe(`daemon-${TAG}`);
-    expect(kahuaFaceFolder(TAG)).toBe(`kahua-${TAG}`);
-    expect(() => daemonFaceFolder("not-a-relation")).toThrow(/relation/);
-    expect(daemonWorkingMirror("/p", TAG).mirrorRoot).toBe(join("/p", "wikis", `daemon-${TAG}`));
-    expect(kahuaStageMirror("/p", TAG).mirrorRoot).toBe(join("/p", "bags", `kahua-${TAG}`));
+  test("the daemon wiki's folder and the kahua stage rest in the face's root, named by its pet name", () => {
+    expect(daemonWorkingMirror("/p", { relation: TAG, segment: "Heron" }).mirrorRoot).toBe(join("/p", "faces", "Heron", "wiki"));
+    expect(kahuaStageMirror("/p", { relation: TAG, segment: "Heron" }).mirrorRoot).toBe(join("/p", "faces", "Heron", "stage"));
+    expect(() => daemonWorkingMirror("/p", { relation: TAG, segment: "../escape" })).toThrow(/face-segment-separator/);
   });
 });
 
@@ -120,13 +117,13 @@ describe("the projector's write lands durably", () => {
     const { fsyncSync } = durableSyncIo;
     durableSyncIo.fsyncSync = (fd) => { calls.push("fsync"); fsyncSync(fd); };
     const projector = new LarDiskProjector({
-      mirrors: [daemonWorkingMirror(dir, TAG)],
+      mirrors: [daemonWorkingMirror(dir, { relation: TAG, segment: "Heron" })],
       carrierFileFn: async () => ({ ext: ".mem", body: "carrier", defaultRelPath: "ha.ka.ba/t/x.mem" }),
     });
     try {
       await (projector as unknown as { flush(b: string, t: string): Promise<void> }).flush(wikiSlotUri("daemon", "working"), "lar:///ha.ka.ba/t/x");
     } finally { durableSyncIo.fsyncSync = fsyncSync; }
-    const file = join(dir, "wikis", `daemon-${TAG}`, "ha.ka.ba/t/x.mem");
+    const file = join(dir, "faces", "Heron", "wiki", "ha.ka.ba/t/x.mem");
     expect(existsSync(file)).toBe(true);
     expect(statSync(file).mode & 0o777).toBe(PROJECTION_FILE_MODE);
     expect(calls.length).toBeGreaterThanOrEqual(2);

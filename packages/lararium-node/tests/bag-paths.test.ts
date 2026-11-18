@@ -44,11 +44,11 @@ describe("the projection pre-check — what the founding rite reads before it tr
     return join(dir, "bags");
   };
 
-  test("a canon source sources no `daemon` slug, and the daemon working mirror lands under the projections root as daemon-<tag>", () => {
+  test("a canon source sources no `daemon` slug, and the daemon working mirror lands under the projections root, in the face's root", () => {
     const canonBags = fixtureCanon();
     const roots = projectionRoots({ projectionRoot: "/state", canonBags });
     expect(roots.sourcedSlugs()).not.toContain("daemon");
-    expect(daemonWorkingMirror("/state", TAG).mirrorRoot).toBe(`/state/wikis/daemon-${TAG}`);
+    expect(daemonWorkingMirror("/state", { relation: TAG, segment: "Heron" }).mirrorRoot).toBe("/state/faces/Heron/wiki");
   });
 
   test("the checkout's real bags/ sources no `daemon` slug either", () => {

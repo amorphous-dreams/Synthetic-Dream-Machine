@@ -71,7 +71,7 @@ export const HOUSE_CLASSES = ["shares", "wikis"];
 
 /** What a founding re-mints and a restore never carries: named, recorded where a door reads it, never compared. */
 export const MAY_DIFFER = [
-  { name: "face relations", why: "a new founding mints each face's relation F; the import maps faces by pet-name, and a layer named daemon-<F> reads by pet-name here" },
+  { name: "face relations", why: "a new founding mints each face's relation F; the import maps faces by pet-name, and a face's layers rest under its pet name (`faces/<pet name>/`), so any relation a path still names reads by pet-name here" },
   { name: "actors", why: "every landed row is a new act under the new face's authority, so change actors and signers differ" },
   { name: "CRDT heads", why: "no CRDT history rides a bundle; the import writes new changes, so every document's heads differ" },
   { name: "kahua cids", why: "each head re-lifts under the new face's grant, so its signature and cid are new; heads compare by title and body digest" },
@@ -220,7 +220,7 @@ function kapaeShadows(root, relationToPetname) {
       if (!name.endsWith(".kapae")) continue;
       let title;
       try { title = JSON.parse(readFileSync(p, "utf8")).title; } catch { title = `(unreadable ${name})`; }
-      // The layer: the mirror folder the shadow stands under (`wikis/daemon-<F>`, `bags/<slug>`, `personal/<F>/<slug>`, …).
+      // The layer: the mirror folder the shadow stands under (`faces/<pet name>/wiki`, `bags/<slug>`, `faces/<pet name>/margins/<slug>`, …).
       const parts = relative(projections, p).split(sep);
       const at = parts.findIndex((s) => s === "ha.ka.ba" || s === "recovery" || s === "temp");
       const layer = parts.slice(0, at > 0 ? at : parts.length - 1)

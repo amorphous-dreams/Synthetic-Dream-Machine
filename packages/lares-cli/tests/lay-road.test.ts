@@ -55,7 +55,7 @@ const prior = { root: process.env["LAR_ROOT"], bags: process.env["LAR_BAGS"] };
 beforeEach(() => {
   calls.length = 0; fresherFor = {}; floorFor = new Set();
   root = mkdtempSync(join(tmpdir(), "lares-lay-road-"));
-  for (const b of ["crossroads", "lares", "sdm", "kahua-0f1e2d3c-4b5a-4968-8776-655443322110"]) { mkdirSync(join(root, "bags", b), { recursive: true }); writeFileSync(join(root, "bags", b, "one.mem"), "x"); }
+  for (const b of ["crossroads", "lares", "sdm", "kahua"]) { mkdirSync(join(root, "bags", b), { recursive: true }); writeFileSync(join(root, "bags", b, "one.mem"), "x"); }
   process.env["LAR_ROOT"] = root;
   process.env["LAR_BAGS"] = join(root, "bags");
 });
@@ -99,7 +99,7 @@ describe("the lay feeds every disk-sourced holding through CREATE then INGEST", 
   });
 
   test("S4 — a private plane and a dir outside the canon source take no road", async () => {
-    const plane = holdingOf("kahua-0f1e2d3c-4b5a-4968-8776-655443322110");
+    const plane = holdingOf("kahua");
     expect(canonIsDisk(plane)).toBe(false);
     expect(await layHolding(applied, plane)).toMatchObject({ gesture: "skip", exitCode: 0 });
     const outside = { holding: "sdm", source: join(root, "elsewhere", "sdm"), toBag: "lar:///ha.ka.ba/bags/sdm" };
@@ -126,7 +126,7 @@ describe("the lay feeds every disk-sourced holding through CREATE then INGEST", 
     expect(warn).toContain("sdm:t0");
     expect(warn).toContain("… 2 more");
     expect(warn).not.toContain("sdm:t9");
-    expect(lines.some((l) => l.startsWith("- kahua-0f1e2d3c-4b5a-4968-8776-655443322110: no road"))).toBe(true);
+    expect(lines.some((l) => l.startsWith("- kahua: no road"))).toBe(true);
     expect(lines.at(-1)).toMatch(/^lay: 3\/3 holdings · 1 off disk · \d+s$/);
   });
 });

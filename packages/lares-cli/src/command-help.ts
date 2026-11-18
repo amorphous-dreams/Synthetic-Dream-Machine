@@ -424,8 +424,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "THE VESSEL DOOR — one namespace over the vessel's own causal island. Four primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
       "halts it on the port · `lay` lays every disk mirror back into the layer it mirrors (each disk-sourced " +
-      "bags/* holding into its canon through INGEST, then every mirror under the projections root into its one layer, a former " +
-      "face's folders adopted by pet-name; kahua lifts only on a typed count or --lift-kahua N; import carries a bundle onto this hearth's faces by pet-name) · `read` inspects and starts nothing. Compositions ride " +
+      "bags/* holding into its canon through INGEST, then every mirror under the projections root into its one layer, each face root " +
+      "(faces/<pet name>) laid where it stands; kahua lifts only on a typed count or --lift-kahua N; import carries a bundle onto this hearth's faces by pet-name) · `read` inspects and starts nothing. Compositions ride " +
       "`vessel rite <petname>`, so a new cap-stack arrives as a rite rather than another top-level verb. " +
       "Advancing the genesis composition is a MESH act — `nexus kahuli` — never a vessel door.",
     examples: [

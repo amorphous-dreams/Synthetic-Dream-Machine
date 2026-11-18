@@ -243,7 +243,7 @@ The talk-story of 2026-11-14 settled the residency model (<<~ loulou uri=`lar://
 
 ''The rite's ledger and the day's handbacks'' (2026-11-13):
 * The confirm gate rides `C4`, the shared Kahu-cabal workbench for house-canon wikis rides `P21` (#/the-leaps, the leaps of 2026-11-14).
-* ''A draft's recovery mirror shares one path across faces'' (`<projections>/wikis/<slug>/recovery`): each face's unsaved drafts of a shared wiki rest in the one folder, and the export carries them under no face.
+* ''A draft's recovery mirror rests in the writing face's root'' (face-pools lane P1, 2026-11-18): each face's unsaved drafts of a shared wiki rest at `<projections>/faces/<pet name>/recovery/<slug>` (its temp beside, at `temp/<slug>`), never under the shared `wikis/<slug>/`, and the export carries them for that face alone.
 * ''The fifth rehearsal's residue'' (2026-11-14): an export names no omission where a shared workbench's folder carries zero pages (a reader's hold alone wakes no working mirror; the runbook's carry block holds as a seated writer first); the final seed's zero line; the handoff walk's `kahua_list` read per face; a wrong passphrase at the browser reset shows no error line (`C4`); `--base ""`.
 * ''A contract-tier bag never rides the public floor.'' The public floor every DreamNet user reads by CID carries `public`-tier bags alone, read off each bag's own `meta.mem` at the genesis bake and at each release cut (a bag that declares no tier reads `veil` and stays off); the contract-tier `bags/elyncia-referee` keys no snapshot, and a hearth founded earlier sheds its referee snapshot at its next `lares nexus release <file> --cut`, the slug named in `dropped`. Owed under that law: the referee recipe that mounts `elyncia-referee` for a contracted seat.
 * ''One resolver answers house canon.'' `resolveHouseCanon` (`packages/lararium-mesh/src/house-canon-doc.ts`) answers every door that reaches house canon: the Kahu realm's standing document first (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer`>>), a registry entry only where the realm names none. A house-canon wiki the realm names no document for mints none, files no catalog entry and keys its slot bindings on `floorCanonAddress` (`floor:<bag>`). Owed: burning a stale `bags/lares` catalog entry an earlier boot filed.
@@ -1596,6 +1596,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lg6oLofA9RYvcQiDOhGzp55uIAM1sLNtDUDB-4NPYNA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xy39Uq67jdyLD-anY8zx0O62Fzo9-zPqZ-lYAQR6fqw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

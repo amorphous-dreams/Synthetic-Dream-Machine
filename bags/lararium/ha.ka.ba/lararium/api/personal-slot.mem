@@ -74,7 +74,7 @@ Slot URI: `lar:///ha.ka.ba/wikis/{slug}/personal` — a per-wiki live layer root
 at the wiki's identity (`wikis/{slug}`), one per wiki. The `BagResolver` binds the
 DOC per `(PersonaGroup × recipe-fingerprint)`; the URI carries the address.
 
-''Personal holds a face's private margin'' (operator ruling 2026-11-11: //"Personal can absorb the new caps."//). The recipe reads canon → workbench → personal → draft → temp. Every wiki but the daemon's rests its `working` layer in the wiki's realm workbench, shared by every face the realm seats (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>); `personal` carries what one face keeps for itself over that shared layer: its view-state (`$:/StoryList`, `$:/state/folded/*`, `$:/palette`) and the content it shadows privately. It crosses that face's own devices alone and projects per face to `personal/<F>/{slug}/` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>).
+''Personal holds a face's private margin'' (operator ruling 2026-11-11: //"Personal can absorb the new caps."//). The recipe reads canon → workbench → personal → draft → temp. Every wiki but the daemon's rests its `working` layer in the wiki's realm workbench, shared by every face the realm seats (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>); `personal` carries what one face keeps for itself over that shared layer: its view-state (`$:/StoryList`, `$:/state/folded/*`, `$:/palette`) and the content it shadows privately. It crosses that face's own devices alone and projects in the face's root to `faces/<pet name>/margins/{slug}/` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>).
 
 <<~/ahu>>
 
@@ -496,6 +496,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y3jy75dgKDiqWziWRZxIavm2Sjlt-dUcrPceV-4Jm-4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;k20lWzEwtfFRNWKSxWpQGD0y-V09tXFkDonAf5JIBP0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

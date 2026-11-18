@@ -4,7 +4,8 @@
  * Projection follows placement: a record reaches plaintext only through a resting layer with a mirror. A wiki's working slot
  * rests in its realm workbench and projects to `<projections>/wikis/<slug>`, or to the operator workspace its share row names
  * (`<root>/workspaces/<name>`, the host shim's `/lar/workspaces/<name>` bind); a face's personal layer carries its private
- * margin over the workbench and projects per face to `<projections>/personal/<F>/<slug>` (operator ruling 2026-11-11).
+ * margin over the workbench and projects in the face's root to `<projections>/faces/<pet name>/margins/<slug>` (operator rulings
+ * 2026-11-11, 2026-11-18).
  *
  * M1 a workspace resolves under `<root>/workspaces`; one that resolves inside the checkout or the hearth refuses by name, a
  *    checkout-sourced slug refuses, and a workspace with no directory waits unbound (red 6, the vessel's half of tree-clean).
@@ -12,7 +13,7 @@
  *    and the personal margin per face; a host that holds no disk grant (a browser leaf's empty grant) mirrors nothing and
  *    reads the same recipe. No face worn: no personal mirror.
  * M3 (personal survives export -> reset -> seed, the disk half) a reset clears the hearth alone, and the personal folder the
- *    projector wrote stands where the seed reads it back (`<projections>/personal/<F>/<slug>`). The seed's landing into the
+ *    projector wrote stands where the seed reads it back (`<projections>/faces/<pet name>/margins/<slug>`). The seed's landing into the
  *    face's own personal layer rides the CLI seed wave (`seed-mirrors.ts`), CI-proved.
  */
 import { describe, test, expect, afterEach } from "vitest";
@@ -21,9 +22,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { resolveDiskMirrors, type DiskMirrorGrant } from "../../lararium-mesh/src/vessel-island-pool-core.js";
 import { expandRecipe, wikiSlotUri } from "../../lararium-mesh/src/wiki-recipe.js";
-import { workspaceRootsOf, personalFaceRoot, PERSONAL_PROJECTION_DIR } from "../src/bag-paths.js";
+import { workspaceRootsOf, faceMarginsRoot, FACES_PROJECTION_DIR } from "../src/bag-paths.js";
 
-const F = "0b0e2c1a-1111-4222-8333-944445555666";
 const dirs: string[] = [];
 afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });
 function house(): { root: string; checkout: string; workspaces: string; hearth: string; projections: string } {
@@ -66,17 +66,17 @@ describe("M1 — a workspace never rests inside the checkout or the hearth", () 
 describe("M2 — one shared resolution, two host grants", () => {
   const grant = (roots: Record<string, string>, face: string | null): DiskMirrorGrant => [
     { bagId: "working", mirrorRoot: "/lar/projections/wikis", scope: "working", wikiSlot: "working", workspaceRoots: roots },
-    { bagId: "personal", mirrorRoot: `/lar/projections/${PERSONAL_PROJECTION_DIR}`, scope: "personal", wikiSlot: "personal", faceFolder: () => face },
+    { bagId: "personal", mirrorRoot: `/lar/projections/${FACES_PROJECTION_DIR}`, scope: "personal", wikiSlot: "personal", faceFolder: () => face },
   ];
   const designation = [wikiSlotUri("notes", "working"), wikiSlotUri("notes", "personal")];
 
   test("the disk-holding host roots the workbench in its workspace and the personal margin per face", () => {
-    expect(resolveDiskMirrors(grant({ notes: "/lar/workspaces/field-notes" }, F), designation, "notes")).toEqual([
+    expect(resolveDiskMirrors(grant({ notes: "/lar/workspaces/field-notes" }, "Heron"), designation, "notes")).toEqual([
       { bagId: wikiSlotUri("notes", "working"), mirrorRoot: "/lar/workspaces/field-notes", scope: "working", wikiSlot: "working" },
-      { bagId: wikiSlotUri("notes", "personal"), mirrorRoot: `/lar/projections/personal/${F}/notes`, scope: "personal", wikiSlot: "personal" },
+      { bagId: wikiSlotUri("notes", "personal"), mirrorRoot: "/lar/projections/faces/Heron/margins/notes", scope: "personal", wikiSlot: "personal" },
     ]);
     // No workspace named: the workbench projects where the wiki's working layer always did.
-    expect(resolveDiskMirrors(grant({}, F), designation, "notes")[0]!.mirrorRoot).toBe("/lar/projections/wikis/notes");
+    expect(resolveDiskMirrors(grant({}, "Heron"), designation, "notes")[0]!.mirrorRoot).toBe("/lar/projections/wikis/notes");
   });
   test("no face worn: no personal mirror; a host with no disk grant mirrors nothing and reads the same recipe", () => {
     expect(resolveDiskMirrors(grant({}, null), designation, "notes").map((m) => m.bagId)).toEqual([wikiSlotUri("notes", "working")]);
@@ -89,7 +89,7 @@ describe("M2 — one shared resolution, two host grants", () => {
 describe("M3 — personal survives a reset", () => {
   test("a reset clears the hearth alone; the face's personal folder stands where the seed reads it back", () => {
     const h = house();
-    const folder = join(personalFaceRoot(h.projections, F), "notes");
+    const folder = join(faceMarginsRoot(h.projections, "Heron"), "notes");
     mkdirSync(folder, { recursive: true });
     writeFileSync(join(folder, "Private margin.tid"), "title: Private margin\n\nmine alone\n");
     writeFileSync(join(h.hearth, "vessel.key"), "secret");
@@ -97,7 +97,7 @@ describe("M3 — personal survives a reset", () => {
     rmSync(h.hearth, { recursive: true, force: true });
     mkdirSync(h.hearth);
     expect(existsSync(join(h.hearth, "vessel.key"))).toBe(false);
-    expect(readFileSync(join(h.projections, PERSONAL_PROJECTION_DIR, F, "notes", "Private margin.tid"), "utf8")).toContain("mine alone");
-    expect(() => personalFaceRoot(h.projections, "not-a-relation")).toThrow(/invalid relation/);
+    expect(readFileSync(join(h.projections, FACES_PROJECTION_DIR, "Heron", "margins", "notes", "Private margin.tid"), "utf8")).toContain("mine alone");
+    expect(() => faceMarginsRoot(h.projections, "../escape")).toThrow(/face-segment-separator/);
   });
 });

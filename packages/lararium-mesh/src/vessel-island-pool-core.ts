@@ -207,7 +207,9 @@ export type DiskMirrorGrant = readonly {
   sourcedRoots?: Readonly<Record<string, string>>; consentSlugs?: readonly string[]; tempLayer?: boolean;
   /** A wiki's WORKING grant: the operator's workspace dir per slug (`/lar/workspaces/<name>`), where its share row names one. */
   workspaceRoots?: Readonly<Record<string, string>>;
-  /** A wiki's PERSONAL grant: the folder of the face the composition wears (its relation F), read at each mount; none: no mirror. */
+  /** A FACE-ROOTED grant (a wiki's personal margin, its drafts, its temp layer): the face root's folder of the face the composition
+   *  wears (its pet-name segment, `faces/<pet name>`), read at each mount, under the grant's `mirrorRoot` (`<projections>/faces`);
+   *  none: no mirror. */
   faceFolder?: () => string | null;
 }[];
 
@@ -226,9 +228,11 @@ export type DiskMirrorGrant = readonly {
  *    double-project; a system wiki's canon never projects by self-canon at all
  *    (`bags/` projects on the Kahu's vessel alone, road `W26`).
  *
- *  A `temp` slot entry projects the wiki's user temp layer to `wikis/{slug}/temp` and yields only for a slug its
- *  `consentSlugs` names (the operator's consent row, keyed by slug); the resolved entry carries `tempLayer`, so the
- *  projector bars the layer's internal volatile titles by namespace. A draft recovery entry lands in `/recovery`.
+ *  A `temp` slot entry projects the wiki's user temp layer and yields only for a slug its `consentSlugs` names (the
+ *  operator's consent row, keyed by slug); the resolved entry carries `tempLayer`, so the projector bars the layer's
+ *  internal volatile titles by namespace. A temp or draft entry holds one face's hand, so a FACE-ROOTED one (`faceFolder`)
+ *  lands in the writing face's root (`faces/<pet name>/temp/{slug}`, `faces/<pet name>/recovery/{slug}`), never under the
+ *  shared `wikis/{slug}/`; with no face worn it yields no mirror.
  *
  *  A wiki's WORKING slot rests in its realm workbench (cabal-realm#/the-workbench), and its grant may name a workspace for the
  *  slug (`workspaceRoots`): a shared wiki's workbench mirror then roots there. ONE FOLDER ANSWERS A WORKBENCH, whichever
@@ -236,8 +240,9 @@ export type DiskMirrorGrant = readonly {
  *  slug's rests beside its canon source, `{source}/wikis/{slug}` (`sourcedRoots`). No face relation enters that path. A mount
  *  whose face holds no writer's seat in the workbench designates no working mirror at all (`buildWikiMountSpec`), so it writes
  *  nothing there. A wiki's PERSONAL slot carries the wearing face's private margin (operator ruling 2026-11-11), so its
- *  grant roots per face under the grant's OWN root and never beside a canon source: `personal/<F>/{slug}`, read off the
- *  grant's `faceFolder` at each mount; with no face worn it yields no mirror.
+ *  grant roots in the wearing face's root under the grant's OWN root and never beside a canon source:
+ *  `faces/<pet name>/margins/{slug}`, read off the grant's `faceFolder` at each mount; with no face worn it yields no mirror.
+ *  A margin mirrors the face's overlay layer alone, never a copy of the workbench (face-pools #/one-copy).
  *
  *  OCAP-clean: authority stays in the static grant, designation in the synced
  *  recipe, the per-instance bag + subdir resolved here. */
@@ -268,7 +273,10 @@ export function resolveDiskMirrors(
       // A sourced slug's per-wiki root writes back beside its source; every other slug keeps the grant's own root.
       const base = Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug) ? g.sourcedRoots![wikiSlug]! : g.mirrorRoot;
       const { sourcedRoots: _sourced, consentSlugs: _consent, workspaceRoots: _workspaces, faceFolder: _face, ...held } = g;
-      if (g.faceFolder !== undefined) return { ...held, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${g.faceFolder()}/${wikiSlug}` };
+      if (g.faceFolder !== undefined) {
+        const plane = g.wikiSlot === "personal" ? "margins" : g.wikiSlot === "temp" ? "temp" : "recovery";
+        return { ...held, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${g.faceFolder()}/${plane}/${wikiSlug}`, ...(g.wikiSlot === "temp" ? { tempLayer: true } : {}) };
+      }
       if (g.wikiSlot === "working" && Object.hasOwn(g.workspaceRoots ?? {}, wikiSlug)) return { ...held, bagId: perWikiBag(g), mirrorRoot: g.workspaceRoots![wikiSlug]! };
       const leaf = g.wikiSlot === "temp" ? "/temp" : g.mirrorClass === "recovery" ? "/recovery" : "";
       return (g.selfCanon || g.wikiSlot)

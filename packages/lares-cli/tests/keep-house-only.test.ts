@@ -49,8 +49,8 @@ beforeEach(() => {
   out = join(root, "workspaces", "backup", "house");
   mkdirSync(dirname(out), { recursive: true });
   // House-only classes: the face's daemon working layer, its kahua stage, a user wiki's workbench, a minted bag.
-  put(`projections/wikis/daemon-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid("lar:///ha.ka.ba/kahua/memory/heron", "remember the heron"));
-  put(`projections/bags/kahua-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid("lar:///ha.ka.ba/kahua/memory/heron", "remember the heron"));
+  put("projections/faces/steward/wiki/ha.ka.ba/kahua/memory/heron.tid", tid("lar:///ha.ka.ba/kahua/memory/heron", "remember the heron"));
+  put("projections/faces/steward/stage/ha.ka.ba/kahua/memory/heron.tid", tid("lar:///ha.ka.ba/kahua/memory/heron", "remember the heron"));
   put("projections/wikis/notes/ha.ka.ba/notes/pond.tid", tid("lar:///ha.ka.ba/notes/pond", "the pond at dusk"));
   put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid("lar:///ha.ka.ba/garden/rose", "a rose"));
 });

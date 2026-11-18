@@ -57,11 +57,11 @@ beforeEach(() => {
   writeFileSync(join(root, ".lar-test-scratch"), "keep seal suite\n");
   process.env["LAR_ROOT"] = root;
   out = join(mkdtempSync(join(tmpdir(), "lar-keep-seal-out-")), "bundle");
-  put(`projections/wikis/daemon-${F1}/ha.ka.ba/notes/pond.tid`, tid("lar:///ha.ka.ba/notes/pond", "the pond at dusk"));
-  put(`projections/wikis/daemon-${F2}/ha.ka.ba/notes/reed.tid`, tid("lar:///ha.ka.ba/notes/reed", "a reed bends"));
+  put("projections/faces/otter-face/wiki/ha.ka.ba/notes/pond.tid", tid("lar:///ha.ka.ba/notes/pond", "the pond at dusk"));
+  put("projections/faces/kestrel-face/wiki/ha.ka.ba/notes/reed.tid", tid("lar:///ha.ka.ba/notes/reed", "a reed bends"));
   // A repo someone made inside a mirror: its config names a person, and the house never held a byte of it.
-  put(`projections/wikis/daemon-${F1}/.git/config`, "[user]\n\tname = otter-face\n");
-  put(`projections/wikis/daemon-${F1}/.git/HEAD`, "ref: refs/heads/main\n");
+  put("projections/faces/otter-face/wiki/.git/config", "[user]\n\tname = otter-face\n");
+  put("projections/faces/otter-face/wiki/.git/HEAD", "ref: refs/heads/main\n");
   put("projections/wikis/notes/ha.ka.ba/notes/shared.tid", tid("lar:///ha.ka.ba/notes/shared", "a shared page"));
 });
 afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); delete process.env["LAR_ROOT"]; });

@@ -8,7 +8,7 @@
  *       working store never receives it — `meme get --bag wikis/daemon/working` answers not-found.
  *   B2  the DAEMON MIRROR: a record put DIRECTLY into `wikis/daemon/working` (`--bag`, the composite
  *       sink — no bridge needed) reaches the daemon's wiki, but the daemon island mounts no disk
- *       projector and its manifest carries no `diskMirrors`, so `<projections>/wikis/daemon-<F>/…` never appears.
+ *       projector and its manifest carries no `diskMirrors`, so `<projections>/faces/<pet name>/wiki/…` never appears.
  *
  * Each seam reads red for its own reason and flips loud when its wire lands (`test.fails`). The
  * CONTROLS stand green today and MUST stay green under both wires.
@@ -93,7 +93,7 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
   });
 
   test("CONTROL: placement keeps every private home off the mirrors — no control, secret or daemon-document title projects", () => {
-    // The daemon wiki projects under the worn face's F (`wikis/daemon-<F>`, `bags/daemon-<F>`); the daemon document and the
+    // The daemon wiki projects in the worn face's root (`faces/<pet name>/wiki`, `faces/<pet name>/canon`); the daemon document and the
     // control document name no mirror (lar:///ha.ka.ba/lararium/mesh/control-home), so <projections>/bags/daemon never
     // stands and no projected file anywhere names a private home's family.
     expect(existsSync(join(lar.root, "projections", "bags", "daemon")), "the daemon document gained a mirror").toBe(false);
