@@ -130,34 +130,14 @@ describe("a forged or unsigned re-seal record refuses by name", () => {
   });
 
   it("a record whose removal acts the successor never names reads `reseal-unbound`; a reader holding neither manifest reads `unverified`, never complete", async () => {
-    const { v: [x] } = await fleet("x");
-    const k1 = mintContentKey(), k2 = mintContentKey();
-    const v1 = keyVersionIdOf(k1, BAG), v2 = keyVersionIdOf(k2, BAG);
-    const locator = bagLocatorOf(k1, BAG);
-    const reader = (key: ContentKey) => ({ bagId: BAG, locator, key, standing: { holdsWrite: () => true } });
-    const address = (key: ContentKey, keyVersion: KeyVersionId): SealedAddress => {
-      const out = sealChunk({ key, context: { bagId: BAG, keyVersion, role: "blob", logicalRef: new Uint8Array(32) }, plaintext: utf8Bytes("photo") });
-      if (!("chunk" in out)) throw new Error("setup: seal refused");
-      return out.chunk.address;
-    };
-    const successor = await signRecord({ kind: "key-version", bagId: BAG, key: k2, signer: x!.signer,
-      body: { bag: locator, keyVersion: v2, parents: [v1], span: v1 },
-      private: { cause: { kind: "removal", acts: ["raise-1"] }, history: "closed", joinProofs: [], unserved: [] } });
-    if (!("record" in successor)) throw new Error(said(successor));
-    const readSuccessor = readRecord("key-version", successor.record, reader(k2));
-    if (!("record" in readSuccessor)) throw new Error(said(readSuccessor));
-    const versions = new Map<KeyVersionId, VerifiedRecord<"key-version">>([[v2, readSuccessor.record]]);
-    const resealUnder = async (acts: string[]) => {
-      const signed = await signRecord({ kind: "re-seal", bagId: BAG, key: k2, signer: x!.signer,
-        body: { bag: locator, keyVersion: v2, replaced: v1, from: address(k1, v1), to: address(k2, v2), entry: "0".repeat(64) },
-        private: { acts } });
-      if (!("record" in signed)) throw new Error(said(signed));
-      const read = readRecord("re-seal", signed.record, reader(k2));
-      if (!("record" in read)) throw new Error(said(read));
-      return read.record;
-    };
-    expect(judgeReseal(await resealUnder(["raise-other"]), { versions, manifests: [] })).toMatchObject({ verdict: "refused", refusal: "reseal-unbound" });
-    expect(judgeReseal(await resealUnder(["raise-1"]), { versions, manifests: [] })).toMatchObject({ verdict: "unverified" });
+    const s = await keyShore(2);
+    const v0 = await s.version(0, [], 0, { kind: "founding" });
+    const v1 = await s.version(1, [0], 0, { kind: "removal", acts: ["raise-1"] });
+    const lineage = s.lineageOf([v0, v1]);
+    const body = { from: s.address(0, PHOTO), to: s.address(1, PHOTO), entry: s.entry(0, PHOTO) };
+    const held = { bagId: BAG, lineage, keys: s.keyMap(0, 1), manifests: [] };
+    expect(judgeReseal(await s.reseal(1, 0, body, { acts: ["raise-other"] }), held)).toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "successor" });
+    expect(judgeReseal(await s.reseal(1, 0, body, { acts: ["raise-1"] }), held)).toMatchObject({ verdict: "unverified" });
   });
 });
 
@@ -232,7 +212,7 @@ describe("the judge reads counted history alone", () => {
     const record = await s.reseal(1, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"] });
     const manifests = [await s.manifest(0, PHOTO, from), await s.manifest(1, PHOTO, to)];
     // The reader counted the founding alone: the successor's record reached it, and its count never landed.
-    const verdict = judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0]), keys: s.keyMap(0, 1), manifests } as never);
+    const verdict = judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0]), keys: s.keyMap(0, 1), manifests });
     expect(verdict).toMatchObject({ verdict: "unverified" });
     expect((verdict as { missing: string[] }).missing).toContain("successor");
   });

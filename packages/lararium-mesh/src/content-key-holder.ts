@@ -982,16 +982,16 @@ export class ContentKeyHolder {
       for (const carried of await this.#ports.store.records("re-seal")) {
         const id = recordIdOf("re-seal", carried.body);
         const line = bag.lines.get(carried.body.bag);
-        const key = line?.keys.get(carried.body.keyVersion);
-        if (line === undefined || key === undefined) {
-          if (line !== undefined) out.push({ id, verdict: "unverified", missing: ["successor", "replaced", "from", "to"] });
-          continue;
-        }
+        if (line === undefined) continue;
+        // COUNTED KEYS ALONE: a key a lockbox delivered for a version this vessel never counted opens no binding.
+        const counted = new Map([...this.#usable(line)].map((version) => [version, line.keys.get(version)!] as const));
+        const key = counted.get(carried.body.keyVersion);
+        if (key === undefined) { out.push({ id, verdict: "unverified", missing: ["successor", "replaced", "from", "to"] }); continue; }
         const read = readRecord("re-seal", carried, { bagId, locator: line.locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
         if (!("record" in read)) { out.push({ id, verdict: "refused", refusal: read.refusal }); continue; }
         const manifests: VerifiedRecord<"manifest">[] = [];
         for (const version of [carried.body.replaced, carried.body.keyVersion]) {
-          const versionKey = line.keys.get(version);
+          const versionKey = counted.get(version);
           if (versionKey === undefined) continue;
           for (const m of await this.#ports.store.records("manifest")) {
             if (m.body.bag !== line.locator || m.body.keyVersion !== version) continue;
@@ -999,7 +999,7 @@ export class ContentKeyHolder {
             if (verified !== null) manifests.push(verified);
           }
         }
-        out.push({ id, ...judgeReseal(read.record, { versions: line.records, manifests }) });
+        out.push({ id, ...judgeReseal(read.record, { bagId, lineage: line.lineage, keys: counted, manifests }) });
       }
       return out;
     });

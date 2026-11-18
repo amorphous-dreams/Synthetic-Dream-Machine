@@ -36,7 +36,7 @@ import {
   faceProofSubjectRef, own, placeProofSubjectRef, readPlaceSessionCertificate, readPlaceSessionSignature, readSessionCertificate, readSessionSignature,
   type FaceProofRefusalName, type KeysHeldApart, type PlaceSessionCertificate, type Read, type SessionCertificate, type Signature,
 } from "./face-proof-subjects.js";
-import { readActs, type HistoryDeclaration, type KeyCause, type KeyVersionFact } from "./content-key-lineage.js";
+import { readActs, type HistoryDeclaration, type KeyCause, type KeyLineage, type KeyVersionFact } from "./content-key-lineage.js";
 import {
   CONTENT_KEY_LEN, authorizeAddress, contextDigest, isChunkRole, isWellFormedText, keyVersionIdOf, openChunk, readContentKey,
   readKeyVersionId, readSealedAddress, readSealedImage, sealChunk, sealedAddressOf, sealedImage,
@@ -592,42 +592,46 @@ export type ResealVerdict =
   | { readonly verdict: "refused"; readonly refusal: "reseal-unbound"; readonly binding: ResealBinding };
 
 /**
- * Judge a VERIFIED re-seal record against the verified key versions and manifests a reader holds. A version or manifest
- * that never passed `readRecord` counts as history the reader lacks.
+ * Judge a VERIFIED re-seal record against the history a reader holds: its COUNTED lineage of the record's founding, the
+ * keys it holds for counted versions, and the manifests it verified. COUNTED HISTORY ALONE: a key version record the
+ * reader verified and never counted stands in no lineage, so it binds nothing here, and a key the reader holds for a
+ * version its lineage never counted opens no binding; a manifest that never passed `readRecord` counts as history the
+ * reader lacks.
  */
 export function judgeReseal(record: VerifiedRecord<"re-seal">, held: {
-  readonly versions: ReadonlyMap<KeyVersionId, VerifiedRecord<"key-version">>;
+  readonly bagId: string;
+  /** The reader's counted lineage of the record's founding. */
+  readonly lineage: KeyLineage;
+  /** The keys the reader holds, by version: each opens a binding only where `lineage` counted its version. */
+  readonly keys: ReadonlyMap<KeyVersionId, ContentKey>;
   readonly manifests: readonly VerifiedRecord<"manifest">[];
 }): ResealVerdict {
   if (!VERIFIED.has(record) || record.kind !== "re-seal") throw new TypeError("sealed-records: only a verified re-seal record reads its bindings");
   const { bag, keyVersion, replaced, from, to, entry } = record.body;
-  const versionOf = (id: KeyVersionId): VerifiedRecord<"key-version"> | null => {
-    const one = held.versions.get(id);
-    return one !== undefined && VERIFIED.has(one) && one.body.bag === bag && one.body.keyVersion === id ? one : null;
-  };
+  const factOf = (id: KeyVersionId): KeyVersionFact | null => held.lineage.fact(id);
   const manifestsUnder = (id: KeyVersionId): VerifiedRecord<"manifest">[] =>
     held.manifests.filter((m) => VERIFIED.has(m) && m.kind === "manifest" && m.body.bag === bag && m.body.keyVersion === id);
   const missing: ResealBinding[] = [];
   const unbound = (binding: ResealBinding): ResealVerdict => ({ verdict: "refused", refusal: "reseal-unbound", binding });
-  // THE SUCCESSOR: a removal version whose cause names every act the record cites.
-  const successor = versionOf(keyVersion);
+  // THE SUCCESSOR: a counted removal version whose cause names every act the record cites.
+  const successor = factOf(keyVersion);
   if (successor === null) missing.push("successor", "replaced");
   else {
-    const cause = successor.private.cause;
+    const cause = successor.cause;
     if (cause.kind !== "removal" || !record.private.acts.every((act) => cause.acts.includes(act))) return unbound("successor");
-    // THE REPLACED VERSION stands upstream of the successor. A walk that meets a version the reader never verified leaves
+    // THE REPLACED VERSION stands upstream of the successor. A walk that meets a version the reader never counted leaves
     // the binding unread, never complete.
     const seen = new Set<KeyVersionId>();
-    const queue = [...successor.body.parents];
+    const queue = [...successor.parents];
     let found = false, gap = false;
     while (queue.length > 0) {
       const id = queue.shift()!;
       if (seen.has(id)) continue;
       seen.add(id);
       if (id === replaced) { found = true; break; }
-      const one = versionOf(id);
+      const one = factOf(id);
       if (one === null) { gap = true; continue; }
-      queue.push(...one.body.parents);
+      queue.push(...one.parents);
     }
     if (!found) { if (gap) missing.push("replaced"); else return unbound("replaced"); }
   }
