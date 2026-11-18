@@ -4,6 +4,14 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 ## Unreleased
 
+### Develop lives: the integration branch, the road trued, the rite's first heals
+
+- **`develop` stands as the integration branch.** Lanes cut as `develop--<lane>` (and `lane/*`) and merge back into `develop`; `main` carries releases, each a pull request from `develop`. CI raises a run for a pull request into `develop` or `main`; held-out runs on pushes to `develop` and `main` alone. `tools/land-train.mjs` trains onto `develop`, `tools/disk-guard.mjs` counts `develop--` lanes, and the controller handoff, the swarm canon and the road name the same flow.
+- **The road reads the crossing.** Ranks 3, 4, 4a and 4e read built (the house crossed by the operator's hand on 2026-11-17, the scaffolding burned, PR #218 merged); rank 4f carries the rite's heal list; rank 13b names the one-revision drill.
+- **A pūlama route reading says what reached the door.** A reading stopped before Enter, or an empty one, says the pūlama opened nothing and spent no attempt; a bare Enter no longer spends an attempt on an empty route.
+- **A standing vessel offers a new face only a passphrase.** `lares persona new` on a standing vessel asks `bind [p]assphrase (p):` and turns `s` or `b` away before any paper sheet prints.
+- **Parity's flags take every path.** `--old`, `--new` and `--base` take each path up to the next flag, so a shell glob reads every face; a path no flag takes refuses.
+
 ### The lit house: light, lend and wear, the daemon mount, and the house that keeps itself
 
 **Breaking**
