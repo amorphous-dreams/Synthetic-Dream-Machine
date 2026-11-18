@@ -322,6 +322,8 @@ function keepOfferPorts(args: ParsedArgs): KeepOfferPorts {
 
 const CUSTODY_PROBE_UNREAD = "the vessel stands and its custody door read no answer; a pūlama keeps this house, so no route is asked here: run `lares vault status`, then unlock again";
 
+const OFFLINE_BESIDE_PULAMA = "no vessel stands, and a pūlama keeps this house's custody: no route is asked or proved here around it. Raise the vessel (`lares-container.sh up`, or `lares vessel stand`), then run `lares vault unlock`, which asks the pūlama";
+
 async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
   // THE DOOR READS FIRST, before any prompt: a vessel standing by a pūlama takes no route here, so none gets gathered.
   if (daemonUp) {
@@ -339,6 +341,11 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
       emit(args, { ok: true, data: { reading: "already-unlocked", standing, next: "lares wear N" }, human: () => console.log(`already unlocked: the vessel holds its key and stands as ${standing}. No route was asked; to wear another face standing open, run \`lares wear N\`.`) });
       return 0;
     }
+  } else if (pulamaStands()) {
+    // NO VESSEL STANDS AND A PŪLAMA KEEPS THIS HOUSE: a route proved here would open the slot tree around the pūlama, so
+    // nothing gets asked and nothing opens; the vessel stands first, then asks its pūlama.
+    emit(args, { ok: false, error: { code: "offline-beside-pulama", message: OFFLINE_BESIDE_PULAMA }, human: () => console.error(`lares vault unlock: ${OFFLINE_BESIDE_PULAMA}`) });
+    return 1;
   }
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
