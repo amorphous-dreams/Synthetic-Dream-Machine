@@ -50,7 +50,7 @@ A fresh founding needs only a fresh house root (`LARES_HOUSE`) and this househol
 
 All code runs in Docker. The host keeps the shell shim, hooks, mounts, editor, and custody copies. Use a local filesystem for every mount; keep the house root outside the repository and separate from `/workspace`, which points at the household repository checkout. The vessel image carries code and genesis, never household state. The app receives no Docker socket.
 
-Set `LARES_HOUSE` to the first operator's house root (an absolute path; its `hearth/`, `sensoriums/`, `projections/`, `library/` and `config/` bind at `/lar` in the container) and `LARES_WORKSPACE` to the household's git checkout of this repository, which holds tracked `bags/` and receives `wikis/`. Export both paths in this shell before running the host preparation commands, or name them in `~/.lares/lares-surface.env`, which rests outside every bind (the checkout carries none; the shim refuses an env file inside one of the house's binds). On Windows, keep every mount inside the WSL distro. Keep a terminal attached for founding and custody credentials; the CLI refuses a credential act without a TTY.
+Set `LARES_HOUSE` to the first operator's house root (an absolute path; its `hearth/`, `sensoriums/`, `projections/`, `library/` and `config/` bind at `/lar` in the container) and `LARES_WORKSPACE` to the household's git checkout of this repository, which holds tracked `bags/` and receives `wikis/`. Export both paths in this shell before running the host preparation commands, or name them in `~/.lares/lares-surface.env`, which rests outside every bind (the checkout carries none; the shim refuses an env file inside one of the house's binds). On Windows, keep every mount inside the WSL distro; a new operator there walks <<~ loulou uri=`lar:///ha.ka.ba/wsl2/new-hearth`>>, which strings the host runbook, this walk's steps 2, 5 and 6, the keep and the MCP seat into one order, with the house root at `~/.lares` (the root the restore in 11a names). Keep a terminal attached for founding and custody credentials; the CLI refuses a credential act without a TTY.
 
 ''Do'': build the product image and create the house root.
 
@@ -586,6 +586,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BiRustP1Ed0hZz3HErs0WM5MKziXomApRDY3A0eqJdU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lvXwkj6r0zXNAiFURjFeS7o0IWnMzi7bjgdJgXAsXXY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
