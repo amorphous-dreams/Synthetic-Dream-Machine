@@ -60,6 +60,9 @@ function readResting(): RestingSeat | null {
   let text: string;
   try { text = readFileSync(keepSeatPath(), "utf8"); } catch { return null; }
   const read = decodeKeepSeat(text);
+  // A SEAT FROM BEFORE THE REMOTE STRETCH guards its secret at custody's cost alone and signs nothing: it reads as none, so the
+  // next proved unlock seats a fresh pair over it.
+  if (read.reading === "unstretched") return null;
   if (read.reading !== "readable") throw new KeepSeatRefused("keep-seat-unreadable", `${keepSeatPath()} reads no keep pair (${read.why}); the bundle a keep cut before carries the seat whole: restore it from there`);
   let lastRoster: LastRosterSeal | null = null;
   let signingSeed: Uint8Array | null = null;
@@ -96,15 +99,21 @@ function pinOf(c: Credential): PinSpec | null {
 }
 
 /**
- * Seat the house's keep pair under the PROVED route alone (`opener`: the credentials the custody open named), where none rests:
- * one slot holding every pin of the opener, at its threshold, so a custody slot of two pins seats a keep slot of the same two,
- * never the passphrase alone. Right after the mint the seat opens under that route, or nothing rests and the refusal names it.
+ * A passphrase too weak to stand on a remote anyone may copy: under 12 characters, or under 16 drawn from two kinds or fewer
+ * (letters, digits, other). A WARNING, never a refusal: the keep binds the custody's own route, and the steward chose it.
  */
-export async function seatKeepPair(opener: readonly Credential[]): Promise<{ readonly seated: boolean; readonly seat: KeepSeat | null }> {
-  const resting = readResting();
-  if (resting !== null) return { seated: false, seat: resting.seat };
+function weakPassphrase(p: string): boolean {
+  const s = p.normalize("NFKC");
+  const kinds = [/[a-z]/i, /[0-9]/, /[^a-z0-9]/i].filter((re) => re.test(s)).length;
+  return s.length < 12 || (s.length < 16 && kinds <= 2);
+}
+
+const WEAK_LINE = "keep: keep-passphrase-weak: the keep's wrapped secret rides its remote, where anyone who copies it may guess offline; this passphrase reads short. The keep seats anyway; a longer custody passphrase (`lares vault bind --passphrase`, then `lares vault unbind` the old slot) re-seats it stronger";
+
+/** Mint a fresh pair under `opener` and prove it opens before it rests; `replace` writes over a seat that rests. */
+async function mintUnder(opener: readonly Credential[], say: (line: string) => void): Promise<KeepSeat | null> {
   const pins = opener.map(pinOf);
-  if (pins.length === 0 || pins.some((p) => p === null)) return { seated: false, seat: null };
+  if (pins.length === 0 || pins.some((p) => p === null)) return null;
   const { seat, signingSeed } = await mintKeepSeat({ t: pins.length, pins: pins as PinSpec[] }, nativeKdf);
   // THE SELF-CHECK: the seat opens under the very route it seated under before it rests, so no mint locks a restore out, and the
   // verify key it opens to answers the seed the house keeps.
@@ -114,7 +123,32 @@ export async function seatKeepPair(opener: readonly Credential[]): Promise<{ rea
   check.secret.fill(0); check.signingSeed.fill(0);
   if (!answers) throw new KeepSeatRefused("keep-seat-unchecked", "the keep pair minted under this route opened to another signing key; nothing rests");
   writeResting(seat, null, signingSeed);
-  return { seated: true, seat };
+  if (opener.some((c) => c.kind === "passphrase" && weakPassphrase(c.passphrase))) say(WEAK_LINE);
+  return seat;
+}
+
+/**
+ * RE-SEAT: a fresh pair under the PROVED route, over whatever rests (`lares vault reseat`, and every custody unbind, where the
+ * route that opens the house moved). A bundle a keep cut before carries its own seat and still opens under the old route; every
+ * later keep seals to the new pair. A paper slot the old seat held joins again at the next `vault bind --paper`.
+ */
+export async function reseatKeepPair(opener: readonly Credential[], say: (line: string) => void): Promise<boolean> {
+  const seat = await mintUnder(opener, say);
+  if (seat === null) return false;
+  say(`keep: a fresh keep pair seats under the route just proved (${keepSeatPath()}); every later keep seals to it, and a keep cut before still opens under the route it sealed under`);
+  return true;
+}
+
+/**
+ * Seat the house's keep pair under the PROVED route alone (`opener`: the credentials the custody open named), where none rests:
+ * one slot holding every pin of the opener, at its threshold, so a custody slot of two pins seats a keep slot of the same two,
+ * never the passphrase alone. Right after the mint the seat opens under that route, or nothing rests and the refusal names it.
+ */
+export async function seatKeepPair(opener: readonly Credential[], say: (line: string) => void = () => {}): Promise<{ readonly seated: boolean; readonly seat: KeepSeat | null }> {
+  const resting = readResting();
+  if (resting !== null) return { seated: false, seat: resting.seat };
+  const seat = await mintUnder(opener, say);
+  return { seated: seat !== null, seat };
 }
 
 /** What the custody open answered an unlock: `opens` with its opener, or a reading that proved nothing. */
@@ -143,7 +177,7 @@ export async function seatKeepAtUnlock(answer: CustodyOpenAnswer, route: readonl
       say(`keep: keep-seat-unopened: the route this unlock proved opens no slot of the keep pair at ${keepSeatPath()}, so a restore would ask for a route the steward may no longer hold; run \`lares vault reseat\` to seat a fresh pair under this route`);
       return "resting-unopened";
     }
-    const { seated } = await seatKeepPair(opener);
+    const { seated } = await seatKeepPair(opener, say);
     if (!seated) return "unseatable";
     say(`keep: the keep pair seats under the route this unlock proved (${keepSeatPath()}); a keep's roster seals to it, and a restore opens it with that same route`);
     return "seated";

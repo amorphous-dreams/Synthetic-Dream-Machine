@@ -78,7 +78,7 @@ function harness(opts: {
       proved.push(creds);
       if (!unlocked) return { reading: "locked" };
       if (spent >= 3) return { reading: "attempts-spent" };
-      if (creds.some((c) => c.kind === "passphrase" && c.passphrase === RIGHT)) return { reading: "proves" };
+      if (creds.some((c) => c.kind === "passphrase" && c.passphrase === RIGHT)) return { reading: "proves", opener: [0] };
       spent += 1;
       return { reading: "no-slot-opens", attemptsLeft: 3 - spent };
     },

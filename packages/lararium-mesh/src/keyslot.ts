@@ -54,8 +54,15 @@ export const PIN_KINDS: readonly PinKind[] = Object.freeze(["passphrase", "paper
  *  is a change of pin kind, never a stored parameter a tree could lower. */
 const SCRYPT = Object.freeze({ N: 1 << 17, r: 8, p: 1, dkLen: 32 } as const);
 
-/** The cost a KDF port receives on every derivation: always `SCRYPT`, handed over by this module. */
-export type ScryptCost = typeof SCRYPT;
+/**
+ * THE REMOTE COST: a route whose wrapped key rides a remote anyone may copy (the keep seat) stretches here FIRST, then derives
+ * at `SCRYPT` as every pin does, so a guess against the remote copy pays both. N 2^18 · r 8 holds a 256 MiB working set, the
+ * most a laptop and a browser tab both hold; p 2 doubles the time without growing it (~4x custody's stretch, ~5x in all).
+ */
+const REMOTE_SCRYPT = Object.freeze({ N: 1 << 18, r: 8, p: 2, dkLen: 32 } as const);
+
+/** The cost a KDF port receives on a derivation: `SCRYPT`, or `REMOTE_SCRYPT` for a remote route's stretch, handed over by this module. */
+export interface ScryptCost { readonly N: number; readonly r: number; readonly p: number; readonly dkLen: number }
 type Derive = (password: Uint8Array, salt: Uint8Array, cost: ScryptCost) => Promise<Uint8Array>;
 
 declare const kdfBrand: unique symbol;
@@ -209,6 +216,21 @@ async function passphraseMaterial(passphrase: string, salt: Uint8Array, derive: 
   finally { password.fill(0); }
   if (!(out instanceof Uint8Array) || out.length !== SCRYPT.dkLen) throw new Error(`keyslot: kdf-refused: the KDF port answered other than ${SCRYPT.dkLen} bytes`);
   return out;
+}
+
+/**
+ * Stretch a passphrase whose wrapped key rides a remote at `REMOTE_SCRYPT`, under its own random salt, before any pin derives
+ * from it: the answer (hex) stands in for the passphrase at bind and at open. Package-internal: the keep seat calls it.
+ */
+export async function stretchForRemote(passphrase: string, salt: Uint8Array, kdf: KdfPort): Promise<string> {
+  const derive = deriveOf(kdf);
+  const password = utf8(passphrase.normalize("NFKC"));
+  let out: unknown;
+  try { out = await derive(password, salt, REMOTE_SCRYPT); }
+  catch (cause) { throw new Error("keyslot: kdf-refused: the KDF port refused the remote stretch; nothing opened and nothing bound", { cause }); }
+  finally { password.fill(0); }
+  if (!(out instanceof Uint8Array) || out.length !== REMOTE_SCRYPT.dkLen) throw new Error(`keyslot: kdf-refused: the KDF port answered other than ${REMOTE_SCRYPT.dkLen} bytes`);
+  try { return hex(out); } finally { out.fill(0); }
 }
 
 function fromHex(s: string, bytes: number, what: string): Uint8Array {

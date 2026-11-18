@@ -65,7 +65,8 @@ export type HolderUnlock =
 
 /** What `proves` answers: whether a person presented a route of the tree this holder's own key rests in. */
 export type HolderProof =
-  | { readonly reading: "proves" }
+  /** `opener` names, by index into the credentials presented, the ones the custody open proved. */
+  | { readonly reading: "proves"; readonly opener: readonly number[] }
   | { readonly reading: "locked"; readonly fcid?: string }
   | { readonly reading: "no-slot-opens"; readonly attemptsLeft: number }
   | { readonly reading: "attempts-spent" }
@@ -378,7 +379,7 @@ export function makeCustodyHolder(a: {
     // A route that opens a tree whose key differs from the one held proves nothing about this vessel.
     const same = treeKey !== null && treeKeyEquals(result.treeKey, treeKey);
     result.treeKey.fill(0);
-    if (same) { spent -= charge.cost; return { reading: "proves" }; }
+    if (same) { spent -= charge.cost; return { reading: "proves", opener: result.opener.map((i) => credentials.indexOf(charge.offered[i]!)).filter((i) => i >= 0) }; }
     return missed();
   };
   const operation = <T>(fn: () => Promise<T>): Promise<T> => {

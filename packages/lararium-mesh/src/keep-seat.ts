@@ -11,25 +11,44 @@
  * passphrase salts: no face tree's slot, salt or key opens it. The X25519 secret derives from that key under `KEEP_PAIR_INFO`,
  * and the roster seals under `KEEP_ROSTER_INFO`, so neither fuses with another protocol's derivation.
  *
- * THE COST OF A GUESS. The wrapped secret rides the remote, so the passphrase slot meets offline guessing: it derives through
- * keyslot's one scrypt constant, the custody passphrase's production cost, which no argument or stored field lowers. A paper
- * slot carries its sheet's 256 bits and derives through no passphrase KDF.
+ * THE COST OF A GUESS. The wrapped secret rides the remote, so the passphrase slot meets offline guessing: each passphrase first
+ * stretches at keyslot's remote cost under the seat's own random salt (`stretchForRemote`), then derives at the custody
+ * passphrase's production cost as every pin does, so a guess against the remote copy pays both, and no argument or stored field
+ * lowers either. A paper slot carries its sheet's 256 bits and derives through no passphrase KDF.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { constantTimeBytesEqual, hex, hexToBytes } from "./crypto.js";
+import { constantTimeBytesEqual, defaultCryptoProvider, hex, hexToBytes } from "./crypto.js";
 import { KEEP_CUT_DOMAIN, KEEP_PAIR_INFO, KEEP_ROSTER_INFO, KEEP_SIGN_INFO } from "./domains.js";
-import { bindSlot, decodeSlotTree, encodeSlotTree, openTreeKey, type Credential, type KdfPort, type SlotSpec, type SlotTree } from "./keyslot.js";
+import { bindSlot, decodeSlotTree, encodeSlotTree, openTreeKey, stretchForRemote, type Credential, type KdfPort, type PinSpec, type SlotSpec, type SlotTree } from "./keyslot.js";
 import { openFromSender, sealToRecipient, SEALED_BOX_AEAD_NONCE_LEN } from "./sealed-box.js";
 import { mintTreeKey, type TreeKey } from "./tree-key.js";
 
 /** The keep pair as it rests and travels: the public half a cut seals to, and the tree its secret half opens from. */
 export interface KeepSeat {
   readonly publicKey: Uint8Array;
+  /** The salt every passphrase of this seat stretches under at the remote cost, before its pin derives. */
+  readonly stretchSalt: Uint8Array;
   readonly slots: SlotTree;
+}
+
+const STRETCH_SALT_LENGTH = 16;
+
+/** The seat's passphrases stretched at the remote cost; every other credential as presented. */
+async function stretchedCredentials(salt: Uint8Array, credentials: readonly Credential[], kdf: KdfPort): Promise<Credential[]> {
+  const out: Credential[] = [];
+  for (const c of credentials) out.push(c.kind === "passphrase" && c.passphrase !== "" ? { kind: "passphrase", passphrase: await stretchForRemote(c.passphrase, salt, kdf) } : c);
+  return out;
+}
+
+/** A slot spec's passphrase pins stretched at the remote cost; every other pin as given. */
+async function stretchedSpec(salt: Uint8Array, spec: SlotSpec, kdf: KdfPort): Promise<SlotSpec> {
+  const pins: PinSpec[] = [];
+  for (const p of spec.pins) pins.push(p.kind === "passphrase" && p.passphrase !== "" ? { kind: "passphrase", passphrase: await stretchForRemote(p.passphrase, salt, kdf) } : p);
+  return { t: spec.t, pins };
 }
 
 /** A fresh pair: the seat that rests and travels, and the signing seed the minting house keeps beside it, never in a bundle. */
@@ -63,10 +82,11 @@ const signingSeedOf = (treeKey: TreeKey): Uint8Array => hkdf(sha256, treeKey, ne
 /** Mint a keep pair whose secret rests wrapped under `spec`'s routes alone, with the signing seed its cuts sign under. */
 export async function mintKeepSeat(spec: SlotSpec, kdf: KdfPort): Promise<KeepMint> {
   const treeKey = mintTreeKey();
+  const stretchSalt = defaultCryptoProvider.getRandomValues(new Uint8Array(STRETCH_SALT_LENGTH));
   try {
-    const slots = await bindSlot(null, treeKey, spec, kdf);
+    const slots = await bindSlot(null, treeKey, await stretchedSpec(stretchSalt, spec, kdf), kdf);
     const secret = secretOf(treeKey);
-    try { return { seat: { publicKey: x25519.getPublicKey(secret), slots }, signingSeed: signingSeedOf(treeKey) }; } finally { secret.fill(0); }
+    try { return { seat: { publicKey: x25519.getPublicKey(secret), stretchSalt, slots }, signingSeed: signingSeedOf(treeKey) }; } finally { secret.fill(0); }
   } finally { treeKey.fill(0); }
 }
 
@@ -97,7 +117,7 @@ export function verifyKeepCut(verifyKey: Uint8Array, bundleId: string, sealedRos
 }
 
 async function openTree(seat: KeepSeat, credentials: readonly Credential[], kdf: KdfPort): Promise<{ readonly treeKey: TreeKey; readonly slot: string } | Exclude<KeepSecretOpening, { reading: "opens" }>> {
-  const u = await openTreeKey(seat.slots, credentials, kdf);
+  const u = await openTreeKey(seat.slots, await stretchedCredentials(seat.stretchSalt, credentials, kdf), kdf);
   if (u.reading !== "opens") return { reading: "no-slot-opens", notes: u.notes };
   const secret = secretOf(u.treeKey);
   const answers = constantTimeBytesEqual(x25519.getPublicKey(secret), seat.publicKey);
@@ -120,7 +140,7 @@ export async function openKeepSecret(seat: KeepSeat, credentials: readonly Crede
 export async function bindKeepSlot(seat: KeepSeat, openWith: readonly Credential[], spec: SlotSpec, kdf: KdfPort): Promise<KeepSlotBinding> {
   const o = await openTree(seat, openWith, kdf);
   if ("reading" in o) return o;
-  try { return { reading: "bound", seat: { publicKey: seat.publicKey, slots: await bindSlot(seat.slots, o.treeKey, spec, kdf) } }; }
+  try { return { reading: "bound", seat: { publicKey: seat.publicKey, stretchSalt: seat.stretchSalt, slots: await bindSlot(seat.slots, o.treeKey, await stretchedSpec(seat.stretchSalt, spec, kdf), kdf) } }; }
   finally { o.treeKey.fill(0); }
 }
 
@@ -149,19 +169,25 @@ export function openFromKeep(secret: Uint8Array, sealed: Uint8Array, logicalRef:
 
 /** The seat as plain JSON: the public half in hex and the slot tree as keyslot encodes it. Nothing secret without a route. */
 export function encodeKeepSeat(seat: KeepSeat): string {
-  return `${JSON.stringify({ publicKey: hex(seat.publicKey), slots: JSON.parse(new TextDecoder().decode(encodeSlotTree(seat.slots))) }, null, 2)}\n`;
+  return `${JSON.stringify({ publicKey: hex(seat.publicKey), stretchSalt: hex(seat.stretchSalt), slots: JSON.parse(new TextDecoder().decode(encodeSlotTree(seat.slots))) }, null, 2)}\n`;
 }
 
-export type KeepSeatReading = { readonly reading: "readable"; readonly seat: KeepSeat } | { readonly reading: "unreadable"; readonly why: string };
+export type KeepSeatReading =
+  | { readonly reading: "readable"; readonly seat: KeepSeat }
+  /** A seat minted before the remote stretch: its passphrase slot derives at custody's cost alone, so a house re-seats it. */
+  | { readonly reading: "unstretched" }
+  | { readonly reading: "unreadable"; readonly why: string };
 
 /** Read a seat back; every shape fault reads `unreadable` with its reason. */
 export function decodeKeepSeat(text: string): KeepSeatReading {
   let raw: unknown;
   try { raw = JSON.parse(text); } catch { return { reading: "unreadable", why: "the seat holds no JSON" }; }
   if (typeof raw !== "object" || raw === null) return { reading: "unreadable", why: "the seat holds no object" };
-  const { publicKey, slots } = raw as { publicKey?: unknown; slots?: unknown };
+  const { publicKey, stretchSalt, slots } = raw as { publicKey?: unknown; stretchSalt?: unknown; slots?: unknown };
   if (typeof publicKey !== "string" || !/^[0-9a-f]{64}$/.test(publicKey)) return { reading: "unreadable", why: "the seat names no 32-byte public half" };
+  if (stretchSalt === undefined) return { reading: "unstretched" };
+  if (typeof stretchSalt !== "string" || !/^[0-9a-f]{32}$/.test(stretchSalt)) return { reading: "unreadable", why: "the seat names no 16-byte stretch salt" };
   const tree = decodeSlotTree(new TextEncoder().encode(JSON.stringify(slots ?? null)));
   if (tree.reading !== "readable") return { reading: "unreadable", why: tree.reading === "unreadable" ? tree.why : "the seat holds no slot tree" };
-  return { reading: "readable", seat: { publicKey: hexToBytes(publicKey), slots: tree.tree } };
+  return { reading: "readable", seat: { publicKey: hexToBytes(publicKey), stretchSalt: hexToBytes(stretchSalt), slots: tree.tree } };
 }

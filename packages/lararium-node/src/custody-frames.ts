@@ -144,7 +144,7 @@ export interface CustodyFrameDeps {
   readonly backup?: (face: number, bundleKey: Uint8Array, ward: WardCredential) => Promise<FaceBundleCut>;
 }
 
-const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "act", "backup", "face-route", "ward"]);
+const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "act", "backup", "face-route", "ward", "prove"]);
 /** The keys a `wear` frame may carry: a face, and the seat's mark; no route ever rides a wear. */
 const WEAR_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "face", "seat"]);
 const WARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "verb", "argsDigest"]);
@@ -584,6 +584,19 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         return true;
       }
       act = () => unlock(credentials, { ...(named !== undefined ? { face: named as number } : {}), ...(all === true ? { all: true } : {}) });
+    } else if (op === "prove") {
+      // A PROOF THAT A PERSON HOLDS A ROUTE OF THIS VESSEL, over a held key: it opens nothing new and names its opener (by index),
+      // so a CLI act that seats something under the route (`lares vault reseat`) seats under the proved credentials alone. A miss
+      // spends an unlock attempt, as an unlock's does. A pūlama's lent holder proves nothing here: its route rides the pūlama.
+      const credentials = credentialsOf((parsed as { credentials?: unknown }).credentials);
+      if (!credentials) {
+        answer(sock, { op, status: "error", errorMessage: "a prove frame carries one or more credentials (a passphrase or paper sheets)", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      act = async () => {
+        try { return { op: "prove", ...(await holder.proves(credentials)) } as unknown as CustodyAnswer; }
+        catch (e) { return { op: "prove", reading: "prove-refused", errorMessage: e instanceof Error ? e.message : String(e) } as unknown as CustodyAnswer; }
+      };
     } else if (op === "lock") {
       const face = (parsed as { face?: unknown }).face;
       if (face !== undefined && (!Number.isSafeInteger(face) || (face as number) < 0)) {

@@ -174,7 +174,7 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
   test("P1 the vessel's own route proves, opens nothing new and spends no attempt", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
     const before = hashes(root);
-    expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "proves" });
+    expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "proves", opener: [0] });
     expect(h.attemptsLeft()).toBe(3);
     expect(h.isUnlocked()).toBe(true);
     expect(hashes(root)).toEqual(before);
@@ -223,7 +223,7 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
     expect(await h.proves([pass("the-other-vessels-route")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
     // CONTROL: with its own tree back, its own route proves.
     writeFileSync(sSlotsPath(homes.identity), mine);
-    expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "proves" });
+    expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "proves", opener: [0] });
   });
 
   test("P6 a proof's answer carries no credential", async () => {

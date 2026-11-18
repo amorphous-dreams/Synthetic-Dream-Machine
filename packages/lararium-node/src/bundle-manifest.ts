@@ -346,6 +346,7 @@ export function readBundleSeat(bundle: SealedBundle): KeepSeat {
     throw new BundleVerifyRefused(`bundle-keep-key-burned: the bundle carries no ${KEEP_SEAT_FILE}; its roster rests sealed under the loose keep key a house no longer holds: keep again on the house that cut it, and restore from that keep`);
   }
   const read = decodeKeepSeat(bundleBytes(bundle.root, KEEP_SEAT_FILE).toString("utf8"));
+  if (read.reading === "unstretched") throw new BundleVerifyRefused(`bundle-keep-seat-unstretched: ${KEEP_SEAT_FILE} holds a pair from before the remote stretch, whose cut carries no signature either: keep again, and restore from that keep`);
   if (read.reading !== "readable") throw new BundleVerifyRefused(`bundle-keep-seat-shape: ${KEEP_SEAT_FILE} reads no keep pair (${read.why})`);
   return read.seat;
 }

@@ -32,7 +32,7 @@ import { helpLines } from "../command-help.js";
 import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { offerKeepLei, type KeepOfferPorts } from "../keep-at-unlock.js";
-import { keepSlotAtBind, seatKeepAtUnlock } from "../keep-seat.js";
+import { keepSlotAtBind, reseatKeepPair, seatKeepAtUnlock } from "../keep-seat.js";
 import { configuredKeepWorkspace } from "../keep-config.js";
 import { canPromptSecret } from "../prompt-secret.js";
 import { storeFailure, storeVerb } from "../store-door.js";
@@ -73,6 +73,7 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
       case "backup":     return await vaultBackup(args, daemonUp);
       case "restore":    return await vaultRestore(args, daemonUp);
       case "rewrap":     return await vaultRewrap(args);
+      case "reseat":     return await vaultReseat(args, daemonUp);
       default:
         console.error(`lares vault: unknown sub-verb "${sub}"`);
         return usage(args, sub);
@@ -677,6 +678,46 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
     say("  not rotated. A copy of the tree taken before this unbind still opens the key through the removed slot.");
     say("  to end that route now:  lares vault unbind <slot-id> --rotate   (re-reads each staying slot's route)");
   }
+  // THE ROUTE MOVED: the keep re-seats under the staying route that proved this unbind, so the removed one reaches no later keep.
+  await reseatKeepPair(u.opener.map((i) => creds[i]!).filter((c) => c !== undefined), keepSay(args)).catch((e: unknown) => keepSay(args)(`keep: the keep did not re-seat (${e instanceof Error ? e.message : String(e)}); run \`lares vault reseat\``));
   emit(args, { ok: true, data: { slotId, rotated: out.rotated, rotationOffer: out.rotationOffer, slots: out.tree.slots.length }, human: () => undefined });
   return 0;
+}
+
+/**
+ * `vault reseat`: a fresh keep pair under the route custody proves. Beside a standing vessel the route proves against its held key
+ * (a `prove` frame, opening nothing new); with none standing it opens the slot tree here and lets the key go. A house a pūlama keeps
+ * seats at the pūlama's own hand door (`pulama-main.js keep-seat`), where its route rides.
+ */
+async function vaultReseat(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  const door = daemonUp ? await sendCustodyFrame({ op: "custody" }) : null;
+  if (pulamaStands() || (typeof door?.["pulama"] === "object" && door["pulama"] !== null)) {
+    const why = "a pūlama keeps this house's custody, so its route rides the pūlama's own hand door: run `pulama-main.js keep-seat` there";
+    emit(args, { ok: false, error: { code: "keep-seat-at-pulama", message: why }, human: () => console.error(`lares vault reseat: ${why}`) });
+    return 1;
+  }
+  const creds = await gatherCredentials("lares vault reseat", { kind: "vessel" }, routeFlag(args));
+  let opener: readonly number[];
+  if (daemonUp) {
+    const a = await sendCustodyFrame({ op: "prove", credentials: creds });
+    if (a === null || a["reading"] !== "proves" || !Array.isArray(a["opener"])) {
+      const why = a === null ? "the vessel stopped answering before the proof landed" : `the route proves nothing against the vessel's held key (${String(a["reading"] ?? a["errorMessage"] ?? "no reading")}); nothing changed`;
+      emit(args, { ok: false, error: { code: String(a?.["reading"] ?? "daemon-unreachable"), message: why }, human: () => console.error(`lares vault reseat: ${why}`) });
+      return 1;
+    }
+    opener = a["opener"] as number[];
+  } else {
+    const homes = custodyHomes();
+    const u = await openOrRefuse(args, "reseat", homes, new FsCustodyIo(homes), creds);
+    if (!u) return 1;
+    u.treeKey.fill(0); u.sk?.fill(0);
+    opener = u.opener;
+  }
+  const lines: string[] = [];
+  const seated = await reseatKeepPair(opener.map((i) => creds[i]!).filter((c) => c !== undefined), (l) => lines.push(l));
+  emit(args, seated
+    ? { ok: true, data: { reseated: true }, human: () => { for (const l of lines) console.log(l); } }
+    : { ok: false, error: { code: "keep-seat-unseatable", message: "the proved route holds no human route the keep binds (a passkey alone); nothing changed" }, human: () => console.error("lares vault reseat: the proved route holds no human route the keep binds; nothing changed") });
+  if (wantsJson(args)) for (const l of lines) console.error(l);
+  return seated ? 0 : 1;
 }
