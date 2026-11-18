@@ -33,8 +33,7 @@ import {
   isStockTw5PluginTitle,
   buildGenesisDoc,
   computeEngineCid,
-  computeGrammarCid,
-  computePluginsCid,
+  genesisFloorOffering,
   verifyGenesisArtifact,
   verifyPluginAttestation,
   type GenesisInputs,
@@ -228,7 +227,24 @@ async function main(): Promise<void> {
 
   // Layer B: build genesis doc — pure mesh, no fs.
   // Region folds are pure over the exact inputs buildGenesisDoc consumes, so the floor can name them without a provisional second bake.
-  const floor = cutGenesisFloor({ repoRoot: REPO_ROOT, engine: computeEngineCid(coreSha256), grammar: computeGrammarCid(plugins), plugins: computePluginsCid(plugins) });
+  // THE FLOOR'S PLUGINS OFFERING: every blob the mount loads beside the core, signed by the hand the actor seed derives
+  // (`genesisOfferorSeed`), so one tree bakes one offering. Provenance names what is immutable without re-minting genesis at
+  // each checkout commit: a stock theme rides the core's own revision (the core blob's sha256); a house-built blob names the
+  // content address of the tree it packs from (its attestation's manifest digest, else its own bytes); its path is where its
+  // bytes rest in this tree's genesis CAS.
+  const offering = await genesisFloorOffering({
+    actorSeed, plugins,
+    provenanceOf: (p) => ({
+      source:  p.source ?? "lar:///ha.ka.ba/lararium/genesis",
+      commit:  p.kind === "stock" ? coreSha256 : (p.attestation?.sourceManifestSha256 ?? p.attestation?.moduleManifestSha256 ?? p.sha256),
+      path:    `genesis/cas/${p.sha256}`,
+      licence: p.license ?? "MIT",
+      ...(p.author ? { author: p.author } : {}),
+    }),
+  });
+  const cut = cutGenesisFloor({ repoRoot: REPO_ROOT, engine: computeEngineCid(coreSha256), plugins: offering.cid });
+  const floor = { ...cut, offering: { bytes: offering.bytes, cid: offering.cid } };
+  console.log(`[genesis] floor plugins offering = ${offering.cid}  (${offering.offering.blobs.length} blob(s), offeror ${offering.offering.offeror.slice(0, 16)}…)`);
   const inputs: GenesisInputs = {
     floor,
     actorSeed,

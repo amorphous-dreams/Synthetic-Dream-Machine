@@ -1,5 +1,5 @@
 /**
- * floor-manifest — a CID names one history-free snapshot per house-canon bag beside the engine CIDs
+ * floor-manifest — a CID names one history-free snapshot per house-canon bag beside the engine digest and the plugins offering
  * (`lararium-floor`: `snapshots` keyed by slug; a manifest that names any other format refuses by naming the shape it
  * lacks). The floor lends every wiki a read-only oracle-floor face; edits copy into that wiki's
  * working layer. Kit: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane, first slice.
@@ -15,6 +15,7 @@ import { docPrototypeKeyFault } from "./prototype-key-shore.js";
 import { SYSTEM_CANON_SLUGS } from "./kahu-canon-reach.js";
 import { bagUri } from "./lar-uris.js";
 import type { CapTier } from "./cap-tier.js";
+import type { PluginOffering } from "./plugin-offering.js";
 
 /** The floor manifest's shape name. It carries no counter: a shape reads by its fields, and its bytes name it (the CID). */
 import { FLOOR_MANIFEST_FORMAT } from "./wire-names.js";
@@ -33,20 +34,38 @@ export const FLOOR_REQUIRED_SLUGS: readonly string[] = SYSTEM_CANON_SLUGS;
  */
 export function floorCarriesTier(tier: CapTier): boolean { return tier === "public"; }
 
+/** The mime the plugins offering record rides in a seed's blob rows: never `application/json`, so it never loads as a boot plugin. */
+export const FLOOR_OFFERING_MIME = "application/vnd.lararium.plugin-offering+json";
+/** The seed blob row id the genesis floor's plugins offering record stands under. */
+export const FLOOR_OFFERING_BLOB_ID = "floor-plugin-offering";
+
+/** Null where `offered` names exactly the {id, sha256} pairs of `mount`, else the first id that differs. Pure. */
+export function floorOfferingSetDiff(
+  offered: readonly { readonly id: string; readonly sha256: string }[],
+  mount: readonly { readonly id: string; readonly sha256: string }[],
+): string | null {
+  const want = new Map(mount.map((r) => [r.id, r.sha256]));
+  const have = new Map(offered.map((r) => [r.id, r.sha256]));
+  for (const [id, sha] of want) if (have.get(id) !== sha) return `${id} ${have.has(id) ? "carries other bytes" : "rides the mount but not the offering"}`;
+  for (const id of have.keys()) if (!want.has(id)) return `${id} rides the offering but not the mount`;
+  return null;
+}
+
 /**
- * A floor manifest keys ONE snapshot per house-canon bag (`houseCanonSlugs`): the engine CIDs beside a map of slug to
- * snapshot CID, encoded with its slugs sorted. `lares` and `lararium` always stand in it.
+ * A floor manifest keys ONE snapshot per house-canon bag (`houseCanonSlugs`), encoded with its slugs sorted; `lares` and
+ * `lararium` always stand in it. Beside them: `engine`, the core's folded digest, and `plugins`, the CAS address (sha256 hex)
+ * of ONE signed PluginOffering record carrying every non-core blob a mount loads (`floor-offering.ts`), so a release's bytes
+ * travel with it. The floor names no grammar: the parser's bytes ride in the offering, and the formal grammar rides canon.
  */
 export interface FloorManifest {
   readonly format: typeof FLOOR_MANIFEST_FORMAT;
   readonly engine: string;
-  readonly grammar: string;
   readonly plugins: string;
   readonly snapshots: Readonly<Record<string, string>>;
 }
 
-const MANIFEST_KEYS = ["format", "engine", "grammar", "plugins", "snapshots"] as const;
-const SCALAR_KEYS = ["format", "engine", "grammar", "plugins"] as const;
+const MANIFEST_KEYS = ["format", "engine", "plugins", "snapshots"] as const;
+const SCALAR_KEYS = ["format", "engine", "plugins"] as const;
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 const HEX64 = /^[0-9a-f]{64}$/;
 const CONTROL = /[\u0000-\u001f\u007f]/;
@@ -91,6 +110,7 @@ export function floorManifestBytes(m: FloorManifest): Uint8Array {
     }
   }
   if (m.format !== FLOOR_MANIFEST_FORMAT) throw new FloorManifestRefusal("floor-manifest-format", formatLack(m.format));
+  if (!HEX64.test(m.plugins)) throw new FloorManifestRefusal("floor-manifest-malformed", "Invalid floor manifest field: plugins names no offering record's CAS address (sha256 hex)");
   const snaps = m.snapshots;
   if (snaps === null || typeof snaps !== "object" || Array.isArray(snaps)) {
     throw new FloorManifestRefusal("floor-manifest-malformed", "Invalid floor manifest field: snapshots");
@@ -106,7 +126,7 @@ export function floorManifestBytes(m: FloorManifest): Uint8Array {
   for (const slug of FLOOR_REQUIRED_SLUGS) {
     if (!Object.hasOwn(snapshots, slug)) throw new FloorManifestRefusal("floor-manifest-malformed", `Floor manifest names no ${slug} snapshot`);
   }
-  return encoder.encode(JSON.stringify({ format: m.format, engine: m.engine, grammar: m.grammar, plugins: m.plugins, snapshots }));
+  return encoder.encode(JSON.stringify({ format: m.format, engine: m.engine, plugins: m.plugins, snapshots }));
 }
 
 export function floorManifestCid(m: FloorManifest): string {
@@ -124,6 +144,9 @@ export function readFloorManifest(bytes: Uint8Array):
     // house-canon bag, and no reader folds a manifest named or keyed any other way.
     if (raw.format !== FLOOR_MANIFEST_FORMAT && typeof raw.format === "string") {
       return { refusal: "floor-manifest-format", reason: formatLack(raw.format) };
+    }
+    if (Object.hasOwn(raw, "grammar")) {
+      throw new Error("Manifest names a grammar field the floor no longer carries: the parser's bytes ride in the plugins offering");
     }
     if (Object.keys(raw).length !== MANIFEST_KEYS.length || MANIFEST_KEYS.some((key) => !Object.hasOwn(raw, key))) {
       throw new Error("Manifest fields differ from the fixed format");
@@ -213,7 +236,12 @@ export function cutCanonFloor(args: {
   readonly canon: Readonly<Record<string, Readonly<Record<string, LarTiddlerRecord>>>>;
   /** Slugs the prior floor names that this cut leaves off (a bag whose declared tier rides no floor of this cut, `floorCarriesTier`). */
   readonly drop?: readonly string[];
+  /** The engine digest this vessel's genesis names. A prior whose engine differs refuses `floor-engine-unoffered`: no cut offers an engine. */
+  readonly genesisEngine?: string;
 }): { readonly manifest: FloorManifest; readonly manifestCid: string; readonly manifestBytes: Uint8Array; readonly snapshots: Readonly<Record<string, FloorSnapshot>> } {
+  if (args.genesisEngine !== undefined && args.prior.engine !== args.genesisEngine) {
+    throw new FloorManifestRefusal("floor-engine-unoffered", `The prior floor names engine ${args.prior.engine}, not the ${args.genesisEngine} this genesis names; a canon cut carries the engine and never offers one`);
+  }
   const snapshots: Record<string, FloorSnapshot> = {};
   const cids: Record<string, string> = { ...args.prior.snapshots };
   for (const slug of args.drop ?? []) delete cids[slug];
@@ -232,7 +260,7 @@ export function cutCanonFloor(args: {
     snapshots[slug] = cutFloorSnapshot(rows);
     cids[slug] = snapshots[slug]!.cid;
   }
-  const manifest: FloorManifest = { format: args.prior.format, engine: args.prior.engine, grammar: args.prior.grammar, plugins: args.prior.plugins, snapshots: cids };
+  const manifest: FloorManifest = { format: args.prior.format, engine: args.prior.engine, plugins: args.prior.plugins, snapshots: cids };
   const manifestBytes = floorManifestBytes(manifest);
   return { manifest, manifestCid: sha256HexBytesSync(manifestBytes), manifestBytes, snapshots };
 }
@@ -270,9 +298,17 @@ export async function resolveFloor(manifestCid: string, resolveByCid: (cid: stri
   }
 }
 
-/** The CIDs a floor's manifest names: the manifest's own and each snapshot's, slugs sorted. */
-export function floorBlobCids(manifestCid: string, m: FloorManifest): string[] {
-  return [manifestCid, ...floorSlugs(m).map((slug) => m.snapshots[slug]!)];
+/**
+ * The CIDs a floor names: the manifest's own, each snapshot's (slugs sorted) and the plugins offering record's; handed the
+ * offering that record holds, each blob it carries too (sorted by id, each CID once). A caller holding no offering bytes
+ * still names the record, and a reader that resolves it widens to the blobs.
+ */
+export function floorBlobCids(manifestCid: string, m: FloorManifest, offering?: Pick<PluginOffering, "blobs">): string[] {
+  const cids = [manifestCid, ...floorSlugs(m).map((slug) => m.snapshots[slug]!), m.plugins];
+  const seen = new Set(cids);
+  const blobs = [...(offering?.blobs ?? [])].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  for (const blob of blobs) if (!seen.has(blob.sha256)) { seen.add(blob.sha256); cids.push(blob.sha256); }
+  return cids;
 }
 
 /** Each snapshot's rows in the manifest's slug order: the read-only layers the oracle floor stacks. */

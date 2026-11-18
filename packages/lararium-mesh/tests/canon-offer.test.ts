@@ -30,6 +30,7 @@ import {
 import { cutFloorSnapshot, floorManifestBytes, floorReadFace, floorRecordsInOrder, resolveFloor, type FloorManifest } from "../src/floor-manifest.js";
 import { assembleFloorRelease, openFloorReleaseBody } from "../src/floor-release.js";
 import { acceptFloorRelease, type FloorPinPorts } from "../src/floor-pin.js";
+import { signFloorOffering } from "../src/floor-offering.js";
 import { sha256HexBytesSync } from "../src/crypto.js";
 import type { LarTiddlerRecord } from "../src/tiddler-store.js";
 import { kahuHand, strangerHand } from "./kahu-reach-fixture.js";
@@ -347,7 +348,14 @@ describe("the loop", () => {
     const genesisLararium = { "lar:///ha.ka.ba/lararium/x": rec("lar:///ha.ka.ba/lararium/x", "x") };
     const cas = new Map<string, Uint8Array>();
     const gl = cutFloorSnapshot(genesisLares), gr = cutFloorSnapshot(genesisLararium);
-    const genesis: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: gl.cid, lararium: gr.cid } };
+    // The plugins offering the floor names, its one blob's bytes in the same CAS: a release's bytes travel with it.
+    const pluginBytes = new TextEncoder().encode("plugin bytes");
+    const offering = await signFloorOffering({ seed: new Uint8Array(32).fill(3), blobs: [{
+      id: "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", version: "unknown", sha256: sha256HexBytesSync(pluginBytes),
+      provenance: { source: "https://example.test", commit: "0".repeat(40), path: "plugin.json", licence: "MIT" },
+    }] });
+    cas.set(offering.cid, offering.bytes); cas.set(offering.offering.blobs[0]!.sha256, pluginBytes);
+    const genesis: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), plugins: offering.cid, snapshots: { lares: gl.cid, lararium: gr.cid } };
     const gBytes = floorManifestBytes(genesis), gCid = sha256HexBytesSync(gBytes);
     for (const [c, b] of [[gl.cid, gl.bytes], [gr.cid, gr.bytes], [gCid, gBytes]] as const) cas.set(c, b);
 

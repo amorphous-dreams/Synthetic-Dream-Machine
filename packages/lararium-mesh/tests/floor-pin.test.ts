@@ -18,6 +18,7 @@ import { save } from "@automerge/automerge";
 import { sha256HexBytesSync } from "../src/crypto.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 import { floorManifestBytes, cutFloorSnapshot, type FloorManifest } from "../src/floor-manifest.js";
+import { signFloorOffering } from "../src/floor-offering.js";
 import { assembleFloorRelease, openFloorReleaseBody, type FloorRelease } from "../src/floor-release.js";
 import {
   FLOOR_PIN_PREFIX, acceptFloorRelease, decideFloorAccept, floorCidToMount, floorPinOf, floorPinTitle, floorRemountDecision,
@@ -28,12 +29,20 @@ import type { LarTiddlerRecord } from "../src/tiddler-store.js";
 
 const row = (title: string, text: string): LarTiddlerRecord => ({ tiddler: { title, text } });
 
+/** The plugins offering every test floor names: one blob whose bytes ride the floor's CAS beside the record. */
+const PLUGIN_BYTES = new TextEncoder().encode("plugin bytes");
+const OFFERING = await signFloorOffering({ seed: new Uint8Array(32).fill(3), blobs: [{
+  id: "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", version: "unknown", sha256: sha256HexBytesSync(PLUGIN_BYTES),
+  provenance: { source: "https://example.test", commit: "0".repeat(40), path: "plugin.json", licence: "MIT" },
+}] });
+
 function floor(tag: string) {
   const cas = new Map<string, Uint8Array>();
   const lares = cutFloorSnapshot({ [`lar:///t/${tag}/lares`]: row(`lar:///t/${tag}/lares`, `lares ${tag}`) });
   const lararium = cutFloorSnapshot({ [`lar:///t/${tag}/lararium`]: row(`lar:///t/${tag}/lararium`, `lararium ${tag}`) });
   cas.set(lares.cid, lares.bytes); cas.set(lararium.cid, lararium.bytes);
-  const manifest: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } };
+  cas.set(OFFERING.cid, OFFERING.bytes); cas.set(OFFERING.offering.blobs[0]!.sha256, PLUGIN_BYTES);
+  const manifest: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), plugins: OFFERING.cid, snapshots: { lares: lares.cid, lararium: lararium.cid } };
   const manifestBytes = floorManifestBytes(manifest);
   const manifestCid = sha256HexBytesSync(manifestBytes);
   cas.set(manifestCid, manifestBytes);

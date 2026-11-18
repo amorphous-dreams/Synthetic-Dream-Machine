@@ -38,6 +38,7 @@ export * from "./stored-value.js";
 export * from "./stored-record.js";
 export * from "./catalog-entry.js";
 export * from "./floor-manifest.js";
+export * from "./floor-offering.js";
 export * from "./cas.js";
 export * from "./lar-camera.js";
 export * from "./record-port.js";

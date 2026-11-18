@@ -12,7 +12,7 @@ import { verifyPluginOffering } from "../src/plugin-offering.js";
 import { bootSetPluginCids } from "../src/cas.js";
 import { sha256HexBytesSync } from "../src/crypto.js";
 
-const entry = (id: string, kind: GenesisPluginEntry["kind"], text: string): GenesisPluginEntry => {
+const entry = (id: string, kind: NonNullable<GenesisPluginEntry["kind"]>, text: string): GenesisPluginEntry => {
   const blob = new TextEncoder().encode(text);
   return { id, version: "unknown", sha256: sha256HexBytesSync(blob), mimeType: "application/json", blob, license: "MIT", kind };
 };
@@ -29,7 +29,7 @@ async function bake(plugins = PLUGINS, offeringPlugins = PLUGINS) {
   const inputs: GenesisInputs = { actorSeed: ACTOR, coreBlob, coreVersion: "1", plugins };
   const baseline = buildGenesisDoc(inputs);
   const offering = await genesisFloorOffering({ actorSeed: ACTOR, plugins: offeringPlugins, provenanceOf });
-  const lares = cutFloorSnapshot({}), lararium = cutFloorSnapshot({});
+  const lares = cutFloorSnapshot({ "lar:///t/lares": { tiddler: { title: "lar:///t/lares" } } }), lararium = cutFloorSnapshot({});
   const manifest: FloorManifest = { format: "lararium-floor", engine: baseline.engineCid, plugins: offering.cid, snapshots: { lares: lares.cid, lararium: lararium.cid } };
   return { inputs, offering, manifest, floor: { manifest, snapshots: { lares, lararium }, offering: { bytes: offering.bytes, cid: offering.cid } } };
 }

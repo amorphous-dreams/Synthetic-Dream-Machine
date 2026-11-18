@@ -35,7 +35,8 @@ import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { CONTROL_HOME_ID } from "./lar-uris.js";
 import { storedLarRecord } from "./stored-record.js";
 import { ownEntry, plainRecordOrNull } from "./stored-value.js";
-import { GENESIS_FLOOR_TIDDLER, floorBlobCids, resolveFloor } from "./floor-manifest.js";
+import { GENESIS_FLOOR_TIDDLER, floorBlobCids } from "./floor-manifest.js";
+import { resolveFloorWhole } from "./floor-offering.js";
 import { foldFloorReleases, type FloorRelease, type FloorReleaseRefused, type FloorReleaseStanding } from "./floor-release.js";
 
 /** The pin record's shape name: a reader tells a pin by `kind`, never by a counter. */
@@ -196,7 +197,8 @@ export const FLOOR_ACCEPT_REFUSALS = [
   "floor-no-release",       // no release counts on the board, and none was named
   "floor-release-unknown",  // the named release counts nowhere on the board (absent, or refused by the fold)
   "floor-not-descendant",   // the named release does not descend from the pin (another branch, or a rollback)
-  "floor-bytes-absent",     // the release's floor does not stand whole in reach (manifest and snapshots, each re-hashed)
+  "floor-bytes-absent",     // the release's floor does not stand whole in reach (manifest, snapshots, plugins offering and its blobs, each re-hashed)
+  "floor-offering-refused", // the release's plugins offering reads but does not verify (shape, provenance, signature or fold)
 ] as const;
 export type FloorAcceptRefusal = (typeof FLOOR_ACCEPT_REFUSALS)[number];
 
@@ -327,13 +329,15 @@ export async function acceptFloorRelease(ports: FloorPinPorts, target?: string):
   if (!decision.ok) return decision;
   if (!decision.moved) return { ...decision, staged: [], remount: null };
   const blobs = new Map<string, Uint8Array>();
-  const floor = await resolveFloor(decision.pin.manifest, async (cid) => {
+  const floor = await resolveFloorWhole(decision.pin.manifest, async (cid) => {
     const bytes = await ports.fetchCas(cid).catch(() => null);
     if (bytes) blobs.set(cid, bytes);
     return bytes;
   });
-  if ("refusal" in floor) return { ok: false, refusal: "floor-bytes-absent", detail: `${floor.refusal}: ${floor.reason}` };
-  const staged = floorBlobCids(decision.pin.manifest, floor.manifest);
+  if ("refusal" in floor) {
+    return { ok: false, refusal: floor.refusal === "floor-offering-refused" ? "floor-offering-refused" : "floor-bytes-absent", detail: `${floor.refusal}: ${floor.reason}` };
+  }
+  const staged = floorBlobCids(decision.pin.manifest, floor.manifest, floor.offering);
   await ports.stage(staged.map((cid) => ({ cid, bytes: blobs.get(cid)! })));
   ports.home.change((draft) => { writeFloorPin(draft, decision.pin); });
   const remount = floorRemountDecision({ floorSwap: ports.mount.floorSwap === true && ports.mount.swap !== undefined }, decision.pin.manifest);

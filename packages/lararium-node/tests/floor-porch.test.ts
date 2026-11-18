@@ -38,7 +38,7 @@ async function rig(opts: { serveCas?: boolean } = {}) {
   const lararium = cutFloorSnapshot({ "lar:///t/lararium": { tiddler: { title: "lar:///t/lararium", text: "lararium" } } });
   // v2: one snapshot per house-canon bag; sdm rides beside the system canon and the porch serves it under the release.
   const sdm = cutFloorSnapshot({ "lar:///t/sdm": { tiddler: { title: "lar:///t/sdm", text: "sdm" } } });
-  const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid } });
+  const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid } });
   const manifestCid = sha256HexBytesSync(manifestBytes);
   const secret = new TextEncoder().encode("a private blob this vessel holds");
   const secretCid = sha256HexBytesSync(secret);
@@ -101,7 +101,7 @@ describe("the porch answers for the Nexus's floor", () => {
     expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.secret}`))).status).toBe(404);
     // CONTROL: the lawful release names exactly the manifest and each snapshot it keys
     land(r, r.release);
-    expect([...await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })].sort()).toEqual([r.ids.lares, r.ids.lararium, r.ids.sdm, r.ids.manifest].sort());
+    expect([...await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })].sort()).toEqual([r.ids.lares, r.ids.lararium, r.ids.sdm, r.ids.manifest, "b".repeat(64)].sort());
   });
 
   test("a release hand-placed in the mirrored crossroads document answers as no release and opens no blob", async () => {

@@ -43,7 +43,7 @@ import { plainField, ownEntry, isPrototypeKey } from "./stored-value.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { storedRecord } from "./stored-record.js";
 import type { FloorManifest, FloorSnapshot } from "./floor-manifest.js";
-import { GENESIS_FLOOR_TIDDLER, floorManifestBytes, floorManifestCid, floorSlugs } from "./floor-manifest.js";
+import { FLOOR_OFFERING_BLOB_ID, FLOOR_OFFERING_MIME, GENESIS_FLOOR_TIDDLER, floorManifestBytes, floorManifestCid, floorOfferingSetDiff, floorSlugs } from "./floor-manifest.js";
 
 // ---------------------------------------------------------------------------
 // Shared attestation contract
@@ -197,8 +197,15 @@ export interface GenesisInputs {
   readonly coreSha256?:   string;
   /** Vendored plugin blobs. Must include the Lares memetic-wikitext plugin. */
   readonly plugins:       readonly GenesisPluginEntry[];
-  /** The genesis floor: its manifest and one snapshot per slug the manifest keys (`floor-<slug>` blobs). */
-  readonly floor?: { readonly manifest: FloorManifest; readonly snapshots: Readonly<Record<string, FloorSnapshot>> };
+  /**
+   * The genesis floor: its manifest, one snapshot per slug the manifest keys (`floor-<slug>` blobs), and the plugins offering
+   * record the manifest's `plugins` names (`genesisFloorOffering`, the `floor-plugin-offering` blob), over the whole boot set.
+   */
+  readonly floor?: {
+    readonly manifest:  FloorManifest;
+    readonly snapshots: Readonly<Record<string, FloorSnapshot>>;
+    readonly offering:  { readonly bytes: Uint8Array; readonly cid: string };
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -585,6 +592,23 @@ function floorSnapshotsInOrder(manifest: FloorManifest, snapshots: Readonly<Reco
 }
 
 /**
+ * The floor's plugins offering record, checked against the bake: its bytes hash to the CID the manifest's `plugins` names, and
+ * it offers exactly the blobs a mount loads beside the core (every `application/json` plugin row). Signature and fold stay the
+ * taker's (`verifyPluginOffering`, async); the bake signs what it offers (`genesisFloorOffering`).
+ */
+function floorOfferingOf(floor: NonNullable<GenesisInputs["floor"]>, plugins: readonly GenesisPluginEntry[]): { readonly cid: string; readonly bytes: Uint8Array } {
+  const offering = floor.offering;
+  if (!offering || sha256HexBytesSync(offering.bytes) !== offering.cid) throw new Error("[genesis] floor plugins offering absent, or its bytes differ from their CID");
+  if (offering.cid !== floor.manifest.plugins) throw new Error(`[genesis] floor plugins offering ${offering.cid} differs from the record the manifest names (${floor.manifest.plugins})`);
+  let offered: unknown;
+  try { offered = (JSON.parse(new TextDecoder().decode(offering.bytes)) as { blobs?: unknown }).blobs; } catch { offered = undefined; }
+  if (!Array.isArray(offered)) throw new Error("[genesis] floor plugins offering carries no blobs");
+  const diff = floorOfferingSetDiff(offered as { id: string; sha256: string }[], plugins.filter((p) => p.mimeType === "application/json"));
+  if (diff) throw new Error(`[genesis] floor plugins offering differs from the boot set: ${diff}`);
+  return { cid: offering.cid, bytes: offering.bytes };
+}
+
+/**
  * buildGenesisSeed() — assemble the oracle doc's initial state as PLAIN DATA.
  *
  * Platform-neutral, no Automerge: it builds the blob METADATA map (descriptors only;
@@ -623,12 +647,12 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
 
   if (inputs.floor) {
     const { manifest, snapshots } = inputs.floor;
-    const expected = { engine: computeEngineCid(coreSha), grammar: computeGrammarCid(inputs.plugins), plugins: computePluginsCid(inputs.plugins) };
-    for (const name of ["engine", "grammar", "plugins"] as const) {
-      if (manifest[name] !== expected[name]) throw new Error(`[genesis] floor ${name} CID mismatch: floor=${manifest[name]} artifact=${expected[name]}`);
-    }
+    const engine = computeEngineCid(coreSha);
+    if (manifest.engine !== engine) throw new Error(`[genesis] floor engine CID mismatch: floor=${manifest.engine} artifact=${engine}`);
+    const offering = floorOfferingOf(inputs.floor, inputs.plugins);
     for (const [id, snapshot, mimeType] of [
       ["floor-manifest", { cid: floorManifestCid(manifest), bytes: floorManifestBytes(manifest) }, "application/vnd.lararium.floor-manifest+json"],
+      [FLOOR_OFFERING_BLOB_ID, offering, FLOOR_OFFERING_MIME],
       ...floorSnapshotsInOrder(manifest, snapshots).map(([slug, snap]) => [`floor-${slug}`, snap, "application/vnd.lararium.floor-snapshot"] as const),
     ] as const) {
       // METADATA alone, as every genesis blob row: the bytes ride genesis/cas/<cid> (casEntries below).
@@ -790,6 +814,7 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
     ...inputs.plugins.map((p) => ({ cid: p.sha256, bytes: p.blob })),
     ...(inputs.floor ? [
       { cid: floorManifestCid(inputs.floor.manifest), bytes: floorManifestBytes(inputs.floor.manifest) },
+      floorOfferingOf(inputs.floor, inputs.plugins),
       ...floorSnapshotsInOrder(inputs.floor.manifest, inputs.floor.snapshots).map(([, snap]) => ({ cid: snap.cid, bytes: snap.bytes })),
     ] : []),
   ];

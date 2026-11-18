@@ -33,7 +33,7 @@ async function rig() {
   const casDir = join(dir, "cas");
   const lares = cutFloorSnapshot({ [T]: row(T, "canon says") });
   const lararium = cutFloorSnapshot({ "lar:///ha.ka.ba/lararium/x": row("lar:///ha.ka.ba/lararium/x", "x") });
-  const genesis: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } };
+  const genesis: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } };
   const gBytes = floorManifestBytes(genesis);
   const gCid = sha256HexBytesSync(gBytes);
   writeCasEntriesFs([{ cid: lares.cid, bytes: lares.bytes }, { cid: lararium.cid, bytes: lararium.bytes }, { cid: gCid, bytes: gBytes }], casDir);
