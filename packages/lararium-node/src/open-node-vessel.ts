@@ -111,7 +111,9 @@ import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtect
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
-import { projectionRoots, workspaceRootsOf, FACES_PROJECTION_DIR } from "./bag-paths.js";
+import { projectionRoots, workspaceRootsOf, FACES_PROJECTION_DIR, faceRoot } from "./bag-paths.js";
+import { armFacePoolWatch, shoreLookPorts, type FacePoolWatch } from "./watch-core.js";
+import { newRequestId } from "@lararium/mesh";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
@@ -634,6 +636,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   /** The stand-down's last flush of the sealed rest (T3), after every session closed and before the daemon island goes:
    *  answers how many saves still wait unbooked (each rests nowhere new; its change returns by sync). */
   sealedRestStandDown: () => Promise<number>;
+  /** The stand-down's watch close: the worn face's pool drains its final wave and runs its commit seam, as a down. */
+  facePoolStandDown: () => Promise<void>;
   /** The census of saves this vessel's sealed rest holds in memory, by document and never by body (`lares vessel census`). */
   heldSaves: () => readonly HeldSaves[];
 }
@@ -732,6 +736,8 @@ interface NodeBootPrep {
   sealedRestLock:  (signer: object) => Promise<void>;
   /** The stand-down's last flush of the sealed rest (T3), after every session closed: answers how many saves still wait. */
   sealedRestStandDown: () => Promise<number>;
+  /** The stand-down's watch close over the worn face's pool: the final wave, then the commit seam, as a down. */
+  facePoolStandDown: () => Promise<void>;
   /** The census of saves the sealed rest holds in memory, by document and never by body. */
   heldSaves: () => readonly HeldSaves[];
   /** The floor's rest key as this composition began with it (`standFloorKey`). */
@@ -930,6 +936,8 @@ async function prepareNodeBootOn(
   /** THE WORN FACE'S FOLDER under `faces/` (its pet-name segment, `faceSiteOf`): the face-rooted grants (margins, drafts, temp)
    *  read it at each mount; null while no face stands lit or its pet name makes no folder. */
   let wornFaceSegment: string | null = null;
+  /** THE WATCH over the worn face's pool (`watch-core`, face-pools W1, W2): armed at after-live, downed at teardown and stand-down. */
+  let facePoolWatch: FacePoolWatch | null = null;
   /** The folder a face's pet name makes under `faces/`, or null (named in the log) where it makes none. The label names the pet
    *  name where the sealed row reads none (a locked key); the segment rule reads the other faces' names off the label shelf. */
   const faceSegmentOf = async (relation: string, handleIndex: number): Promise<string | null> => {
@@ -4603,6 +4611,21 @@ async function prepareNodeBootOn(
     void pushPromoteSnapshot?.().catch(console.warn);
     const stopPromoteWatch = promoteWiringRef?.watch();
     if (stopPromoteWatch) stood.push({ what: "the promote watcher", down: stopPromoteWatch });
+    // THE WATCH OVER THE WORN FACE'S POOL (face-pools W1, W2): armed here, off the boot path (the arm hands back at once), over
+    // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and hands each settled wave to the daemon island's
+    // disk shore (`shoreLookPorts`). A teardown (a lock, or a wear that moves the mount) sets the face down: the final wave,
+    // then the pool's commit seam; the stand-down runs the same as a down (`facePoolStandDown`).
+    if (wornFaceSegment !== null) {
+      const pool = faceRoot(larProjectionsHome(), wornFaceSegment);
+      const sense = (uris?: readonly string[]): Promise<unknown> => islandAsk(daemonHolder)((ports) => askIslandVerb({
+        ...ports, verb: "shore", args: { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) },
+        requestedBy: `0x${activeAtom?.key ?? ""}`, requestId: newRequestId(),
+      })).answer;
+      const log = (line: string): void => console.log(`[faces] ${line}`);
+      const watch = armFacePoolWatch({ pool, ports: shoreLookPorts(pool, sense, log), log });
+      facePoolWatch = watch;
+      stood.push({ what: "the face pool's watch", down: async () => { await watch.down("lock"); if (facePoolWatch === watch) facePoolWatch = null; } });
+    }
     if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");
   };
 
@@ -4664,6 +4687,7 @@ async function prepareNodeBootOn(
       if (waiting > 0) nameHeldSaves(waiting);
       return waiting;
     },
+    facePoolStandDown: async () => { await facePoolWatch?.down("down"); },
     heldSaves: () => sealedRest.store.held(),
     get floorKey() { return floorKeyGrant; },
     backupDoor: {
@@ -4868,6 +4892,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     sessionSigns:    sessionSign.book,
     sealedRestLock:  p.sealedRestLock,
     sealedRestStandDown: p.sealedRestStandDown,
+    facePoolStandDown: p.facePoolStandDown,
     heldSaves:       p.heldSaves,
     floorKey:        p.floorKey,
     backupDoor:      p.backupDoor,
