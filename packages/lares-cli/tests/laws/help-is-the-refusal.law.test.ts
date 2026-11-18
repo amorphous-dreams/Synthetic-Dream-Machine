@@ -70,6 +70,15 @@ describe("L3 · help and refusal render the same bytes", () => {
     expect(doors.filter((d) => !helpKeys().includes(d))).toEqual([]);
   });
 
+  test("the root door: bare `lares` refuses with the menu `lares help` prints, exit 1 against 0", async () => {
+    const asked = await door(["help"]);
+    const bare = await door([]);
+    expect(asked.code).toBe(0);
+    expect(bare.code).toBe(1);
+    expect(asked.out.length).toBeGreaterThan(0);
+    expect(bare.out).toBe(asked.out);
+  });
+
   test("seed: library's lines keep its verbs", () => {
     expect(helpLines("library").join("\n")).toContain("acquire");
   });
