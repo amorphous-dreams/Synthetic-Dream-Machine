@@ -125,7 +125,8 @@ export interface CustodyFrameDeps {
    */
   readonly pulama?: {
     readonly standing: () => { readonly session: boolean; readonly waits: string | null };
-    readonly dial: () => Promise<{ readonly session: boolean; readonly waits: string | null }>;
+    /** `refused` names the composition's own fault where the vessel refused to compose over the session it was served. */
+    readonly dial: () => Promise<{ readonly session: boolean; readonly waits: string | null; readonly refused?: string }>;
     /** The faces the pūlama lends this vessel (`PulamaHolder.lends`): a wear chooses among them alone. */
     readonly lent: () => readonly number[];
   };
@@ -519,9 +520,12 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       const pulama = deps.pulama;
       act = composing(async (): Promise<CustodyAnswer> => {
         const was = pulama.standing().session;
-        const now = was ? pulama.standing() : await pulama.dial();
-        deps.onLog(now.session ? "unlock: this vessel stands by its pūlama" : `unlock: the pūlama serves no session (${now.waits ?? "unknown"})`);
-        return { op: "unlock", reading: now.session ? (was ? "already-unlocked" : "opens") : "pulama-waits", pulama: now, held: now.session, standing: deps.standing() } as unknown as CustodyAnswer;
+        const dialed: { readonly session: boolean; readonly waits: string | null; readonly refused?: string } = was ? pulama.standing() : await pulama.dial();
+        // THE ANSWER NAMES THE FAULT: a composition refused over the session names its own reason to the caller who asked,
+        // beside the `composition-refused` reading, so no probe of the door and no read of the vessel's log stands between.
+        const { refused, ...now } = dialed;
+        deps.onLog(now.session ? "unlock: this vessel stands by its pūlama" : `unlock: the pūlama serves no session (${now.waits ?? "unknown"}${refused !== undefined ? `: ${refused}` : ""})`);
+        return { op: "unlock", reading: now.session ? (was ? "already-unlocked" : "opens") : "pulama-waits", pulama: now, held: now.session, standing: deps.standing(), ...(refused !== undefined ? { refused } : {}) } as unknown as CustodyAnswer;
       });
     } else if (op === "unlock") {
       const credentials = credentialsOf((parsed as { credentials?: unknown }).credentials);

@@ -299,7 +299,9 @@ async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
     return 0;
   }
   const waits = typeof (a["pulama"] as { waits?: unknown } | undefined)?.waits === "string" ? (a["pulama"] as { waits: string }).waits : "unknown";
-  emit(args, { ok: false, error: { code: "pulama-waits", message: pulamaWaitsLine(waits) }, data: a, human: () => console.error(`lares vault unlock: ${pulamaWaitsLine(waits)}`) });
+  // The vessel names the composition's own fault where it refused over the session: the line carries it.
+  const line = `${pulamaWaitsLine(waits)}${typeof a["refused"] === "string" ? ` The vessel's composition refused: ${a["refused"]}.` : ""}`;
+  emit(args, { ok: false, error: { code: "pulama-waits", message: line }, data: a, human: () => console.error(`lares vault unlock: ${line}`) });
   return 1;
 }
 
