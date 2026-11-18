@@ -385,16 +385,22 @@ async function cmdOpen(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
   return code === 0 ? 0 : 1;
 }
 
-/** The seam a commit names: `-m <seam>` or `--message <seam>`, else the hand's. */
-function seamOf(args: ParsedArgs): string {
-  const at = args.positional.indexOf("-m");
-  const named = at !== -1 ? args.positional[at + 1] : args.options["message"];
-  return named ?? HAND_SEAM;
+/** The seam a commit names (`-m <seam>` or `--message <seam>`, else the hand's), or why the words name none. */
+function seamOf(args: ParsedArgs): { readonly seam: string } | { readonly stray: string } {
+  const words = args.positional.slice(1);
+  const at = words.indexOf("-m");
+  const named = at !== -1 ? words[at + 1] : args.options["message"];
+  const rest = at === -1 ? words : [...words.slice(0, at), ...words.slice(at + 2)];
+  if (rest.length > 0) return { stray: `unknown word "${rest[0]}"` };
+  if (at !== -1 && named === undefined) return { stray: "-m names the seam: give it one, as `-m sitting-close`" };
+  const seam = named ?? HAND_SEAM;
+  return SEAM.test(seam) ? { seam } : { stray: `-m names the seam, one slug (a-z, 0-9, -), never ${JSON.stringify(seam)}` };
 }
 
 async function cmdCommit(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
-  const seam = seamOf(args);
-  if (!SEAM.test(seam)) return refuseUsage(args, "surface commit", helpLines("surface commit"), `-m names the seam, one slug (a-z, 0-9, -), never ${JSON.stringify(seam)}`);
+  const read = seamOf(args);
+  if ("stray" in read) return refuseUsage(args, "surface commit", helpLines("surface commit"), read.stray);
+  const { seam } = read;
   const face = await doors.face(args);
   const root = faceRoot(doors.projections(), face.petname);
   const result = surfaceCommit(root, doors.tree(), seam);
