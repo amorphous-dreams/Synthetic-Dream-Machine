@@ -25,7 +25,7 @@ import { importLines, restoreFromBundle, restoreFromCards, restoreLines } from "
 import { sealedActVia } from "../sealed-act-door.js";
 import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { udsAlive } from "../local-connector.js";
-import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
+import { litFaces, sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { pulamaStands } from "../house-config.js";
 import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -315,8 +315,8 @@ function keepOfferPorts(args: ParsedArgs): KeepOfferPorts {
       catch (err) { const failure = storeFailure(err); return { ok: false, code: failure.code, message: failure.message }; }
     },
     say: (line) => console.log(line),
-    // AN UNLOCK NAMING NO FACE STRINGS THE KEEP LEI AS THE DAEMON MOUNT: the seat's reading of `face.resolve`.
-    mountFace: async () => (await sealedAct<{ face: number }>("face.resolve", { worn: true })).face,
+    // THE KEEP'S FACE reads among the faces standing open: the custody door's lit set.
+    openFaces: async () => litFaces(),
   };
 }
 
@@ -372,7 +372,7 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
         if (landed !== null && Number(landed["lifted"] ?? 0) > 0) console.log(`shares: ${Number(landed["lifted"])} granted bag(s) now stand in this face's catalog`);
       } catch (e) { console.error(`shares: the share config waits (${e instanceof Error ? e.message : String(e)}); \`lares bag share --list\` reads it`); }
       // THE HOUSE KEEPS ITSELF: where the config names a keep workspace, the same act offers its keep lei under this one route.
-      await offerKeepLei(keepOfferPorts(args), { workspace: configuredKeepWorkspace(), route: creds, ...(face !== undefined ? { face } : {}) });
+      await offerKeepLei(keepOfferPorts(args), { workspace: configuredKeepWorkspace(), route: creds });
     }
     return ok ? 0 : 1;
   }

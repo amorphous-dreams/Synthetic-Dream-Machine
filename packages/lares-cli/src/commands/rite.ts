@@ -34,8 +34,8 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { riteKukulu, type RitePorts, type RiteVerbAnswer } from "../rite-kukulu.js";
 import { storeFailure, storeVerb } from "../store-door.js";
-import { KeepRefused, keepWorkspaceDir, mountLine, riteKeep, type KeepPorts } from "../rite-keep.js";
-import { sealedAct } from "../sealed-act-door.js";
+import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
+import { litFaces } from "../custody-door.js";
 import { riteKeepHost, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../rite-keep-host.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "../surface-env.js";
 import { configuredKeepWorkspace } from "../keep-config.js";
@@ -109,8 +109,8 @@ const KEEP_PORTS: KeepPorts = {
     try { return { ok: true, output: (await storeVerb(verb, rowArgs)).output }; }
     catch (err) { const failure = storeFailure(err); return { ok: false, code: failure.code, message: failure.message }; }
   },
-  // A KEEP NAMING NO FACE ACTS AS THE DAEMON MOUNT: the seat's reading of `face.resolve`, which refuses by name at the floor.
-  mountFace: async () => (await sealedAct<{ face: number }>("face.resolve", { worn: true })).face,
+  // A KEEP NAMING NO FACE ACTS AS THE KEEP'S FACE, read among the faces standing open (the custody door's lit set) beside h0.
+  openFaces: async () => litFaces(),
   cut: async (dest, opts) => (await carryExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_CARRY_DOORS, workspace: opts.workspace, houseOnly: true, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) })).manifest,
   // THE WIKI SWITCHER the wake walks: the catalog (`list-wikis`), the live state (`wiki-active`), and the rotatable pin.
   wikis: {
@@ -152,7 +152,7 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
   try {
     const out = await riteKeep(KEEP_PORTS, plan);
     emit(args, { ok: true, data: out, human: () => {
-      if (out.faceBy === "mount" && out.face !== undefined) console.log(`keep: ${mountLine(out.face)}`);
+      if (out.faceBy === "keep" && out.face !== undefined) console.log(`keep: ${keepFaceLine(out.face)}`);
       if (!out.kept) { console.log(`keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`); return; }
       console.log(`keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest} (faces: ${out.faces.join(", ") || "(none)"}), return ${out.n} of the keep lei spent`);
       for (const o of out.omissions) console.log(`  left behind: ${o.kind}${o.count !== undefined ? ` (${o.count})` : ""} — ${o.detail}`);

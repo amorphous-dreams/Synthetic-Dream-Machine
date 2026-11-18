@@ -80,3 +80,10 @@ export function vesselStanding(dataDir?: string | null, waitMs = 5_000): Promise
     (a !== null && a["op"] === "custody" ? { reading: "vessel", unlocked: a["unlocked"] === true, composing: a["composing"] === true } : { reading: "none" }));
   return Promise.race([asked, silent]).finally(() => { if (timer) clearTimeout(timer); });
 }
+
+/** The faces standing open on the vessel, by handle index (the census's lit set); none where no vessel answers. */
+export async function litFaces(dataDir?: string | null): Promise<number[]> {
+  const census = await sendCustodyFrame({ op: "census" }, dataDir);
+  const lit = census?.["facesLit"];
+  return Array.isArray(lit) ? lit.filter((f): f is number => Number.isSafeInteger(f) && (f as number) >= 0) : [];
+}

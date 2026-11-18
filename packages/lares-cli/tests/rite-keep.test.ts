@@ -129,7 +129,7 @@ describe("the keep rite, vessel half", () => {
     const kept = await riteKeep(first.ports, { workspace: "backup" });
     const again = rig();
     const out = await riteKeep(again.ports, { workspace: "backup" });
-    expect(out).toEqual({ kept: false, standing: true, workspace: "backup", into: "house", dest: kept.dest, bundleId: kept.bundleId });
+    expect(out).toEqual({ kept: false, standing: true, workspace: "backup", into: "house", dest: kept.dest, bundleId: kept.bundleId, face: 0, faceBy: "keep" });
     expect(again.calls.map((c) => c.split(" ")[0])).toEqual(["swarm-show", "cut"]);
     expect(readdirSync(workspace()).sort()).toEqual([".git", "README.md", "house"]);
   });

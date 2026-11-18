@@ -7,14 +7,16 @@
  * No terminal (a script, `--json`), no route (a pūlama unlock asks none), a lei that stands, or a no: nothing strings, and the
  * line that strings one by hand gets named.
  *
- * THE FACE: the lei strings as the face the unlock named, else as the daemon mount (`mountFace`), and the question, the answer
- * and the by-hand line all name it; a vessel that stands no mount (the floor) strings nothing and says why.
+ * THE FACE: the keep lei stands one per house, as the keep's face (`keepFaceOf`: the face whose keep line already stands, else
+ * h0), whoever the unlock wears; so the offer fires only while no keep lei stands for that face, never again at a wear. The
+ * question names the face and that the unlock's own passphrase stands as that face's ward; a face whose ward takes another
+ * passphrase refuses at the kui, and the by-hand line names the face.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import type { Credential } from "@lararium/mesh";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
-import { RITE_KEEP, mountLine, type KeepFaceBy } from "./rite-keep.js";
+import { RITE_KEEP, keepFaceLine, keepFaceOf, type KeepFaceBy } from "./rite-keep.js";
 
 /** The returns a keep lei strung at unlock carries: the most a kui takes without its `--yes` confirm. */
 export const KEEP_LEI_RETURNS = 12;
@@ -27,52 +29,44 @@ export interface KeepOfferPorts {
   /** One store row; a ward act takes `route` as its route, asked of nobody. */
   row(verb: "swarm-show" | "swarm-lei-kui", args: Record<string, unknown>, route?: readonly Credential[]): Promise<RiteVerbAnswer>;
   say(line: string): void;
-  /**
-   * The face the daemon mount runs under (`face.resolve` with `worn`), the face an unlock naming none strings the keep lei as;
-   * it throws, naming why, where the vessel stands no mount. Absent: the offer rides no face and the vessel resolves it.
-   */
-  mountFace?(): Promise<number>;
+  /** The faces standing open (the custody door's lit set), read beside h0 for the keep's face. Absent: h0 alone. */
+  openFaces?(): Promise<readonly number[]>;
 }
 
 export interface KeepOfferOutcome {
   readonly offered: boolean;
   readonly strung: boolean;
   readonly workspace: string | null;
-  readonly why?: "no-workspace" | "no-route" | "no-terminal" | "no-face" | "standing" | "forked" | "declined" | "refused" | "unread";
+  readonly why?: "no-workspace" | "no-route" | "no-terminal" | "standing" | "forked" | "declined" | "refused" | "unread";
   readonly lei?: string;
-  /** The face the offer read and strung as, and how it came by it: the unlock named it, or it acts as the daemon mount. */
+  /** The face the offer read and strung as: the keep's face, one per house. */
   readonly face?: number;
   readonly faceBy?: KeepFaceBy;
 }
 
 const byHand = (ws: string, face?: number): string => `lares lei kui --rite ${RITE_KEEP} --branch ${ws} --returns <n>${face === undefined ? "" : ` --face ${face}`}`;
 
-export async function offerKeepLei(ports: KeepOfferPorts, opts: { readonly workspace: string | null; readonly route: readonly Credential[] | null; readonly face?: number }): Promise<KeepOfferOutcome> {
+export async function offerKeepLei(ports: KeepOfferPorts, opts: { readonly workspace: string | null; readonly route: readonly Credential[] | null }): Promise<KeepOfferOutcome> {
   const ws = opts.workspace;
   if (ws === null) return { offered: false, strung: false, workspace: null, why: "no-workspace" };
   if (opts.route === null || !opts.route.some((c) => c.kind === "passphrase")) return { offered: false, strung: false, workspace: ws, why: "no-route" };
   if (!ports.canAsk()) return { offered: false, strung: false, workspace: ws, why: "no-terminal" };
-  // THE FACE THE LEI STRINGS AS: the one the unlock named, else the daemon mount; no mount (the floor) strings nothing.
-  let acting: { face?: number; faceBy?: KeepFaceBy } = opts.face === undefined ? {} : { face: opts.face, faceBy: "named" };
-  if (opts.face === undefined && ports.mountFace !== undefined) {
-    try { acting = { face: await ports.mountFace(), faceBy: "mount" }; }
-    catch (e) {
-      ports.say(`keep: no keep lei offered for workspace "${ws}": the unlock named no face and the vessel stands no daemon mount (${e instanceof Error ? e.message : String(e)}); string one by hand as the face it belongs to: ${byHand(ws)} --face N`);
-      return { offered: false, strung: false, workspace: ws, why: "no-face" };
-    }
-  }
-  const face = acting.face === undefined ? {} : { face: acting.face };
-  const as = acting.faceBy === "mount" && acting.face !== undefined ? `, ${mountLine(acting.face)}` : "";
-  const hand = (): string => byHand(ws, acting.face);
-  const line = await ports.row("swarm-show", { rite: RITE_KEEP, branch: ws, ...face });
+  // THE KEEP'S FACE, ONE PER HOUSE: the face whose keep line stands, else h0; whoever the unlock wears.
+  const show = (at: number) => ports.row("swarm-show", { rite: RITE_KEEP, branch: ws, face: at });
+  const keep = await keepFaceOf(show, ports.openFaces ? await ports.openFaces() : []);
+  const acting: { face: number; faceBy: KeepFaceBy } = { face: keep.face, faceBy: "keep" };
+  const face = { face: keep.face };
+  const as = `, ${keepFaceLine(keep.face).replace(/^acting /, "")}`;
+  const hand = (): string => byHand(ws, keep.face);
+  const line = keep.line ?? await show(keep.face);
   if (!line.ok) { ports.say(`keep: the keep line for workspace "${ws}" reads no answer (${line.code}); string a lei by hand: ${hand()}`); return { offered: false, strung: false, workspace: ws, why: "unread", ...acting }; }
   const lei = (line.output["lei"] ?? {}) as { standing?: boolean; returnsLeft?: number; after?: string | null; forks?: string[] };
   if (lei.standing === true && Number(lei.returnsLeft ?? 0) > 0) return { offered: false, strung: false, workspace: ws, why: "standing", ...acting };
   if (Array.isArray(lei.forks) && lei.forks.length > 0) {
-    ports.say(`keep: the keep line for workspace "${ws}" stands forked; settle it by hand (lares lei show --rite ${RITE_KEEP} --branch ${ws}${acting.face === undefined ? "" : ` --face ${acting.face}`})`);
+    ports.say(`keep: the keep line for workspace "${ws}" stands forked; settle it by hand (lares lei show --rite ${RITE_KEEP} --branch ${ws} --face ${acting.face})`);
     return { offered: false, strung: false, workspace: ws, why: "forked", ...acting };
   }
-  if (!(await ports.ask(`string a keep lei for workspace "${ws}" (${KEEP_LEI_RETURNS} returns${as}) under this same passphrase?`))) {
+  if (!(await ports.ask(`string a keep lei for workspace "${ws}" (${KEEP_LEI_RETURNS} returns${as}) under this same passphrase, as face h${keep.face}'s ward?`))) {
     ports.say(`keep: no keep lei strung; \`lares rite keep\` waits for one (${hand()})`);
     return { offered: true, strung: false, workspace: ws, why: "declined", ...acting };
   }
@@ -82,6 +76,6 @@ export async function offerKeepLei(ports: KeepOfferPorts, opts: { readonly works
     return { offered: true, strung: false, workspace: ws, why: "refused", ...acting };
   }
   const cid = typeof strung.output["cid"] === "string" ? strung.output["cid"] : undefined;
-  ports.say(`keep: a keep lei of ${KEEP_LEI_RETURNS} returns stands for workspace "${ws}"${cid ? ` (${cid.slice(0, 12)})` : ""}; \`lares rite keep --workspace ${ws}${acting.face === undefined ? "" : ` --face ${acting.face}`}\` spends one`);
+  ports.say(`keep: a keep lei of ${KEEP_LEI_RETURNS} returns stands for workspace "${ws}"${cid ? ` (${cid.slice(0, 12)})` : ""}; \`lares rite keep --workspace ${ws}\` spends one, as h${acting.face}`);
   return { offered: true, strung: true, workspace: ws, ...(cid ? { lei: cid } : {}), ...acting };
 }
