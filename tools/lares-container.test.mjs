@@ -33,6 +33,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
       `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
+      `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
+      `case " $* " in *"pulama-main.js lei "*) printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\r\\n' "\${FAKE_LEI_ANSWER}"; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
       `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" vessel census "*) [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
@@ -867,6 +869,27 @@ test(`${name}: pulama-mode up reads the image's offered seed one-shot (no house 
   const bare = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
   assert.equal(bare.status, 0, bare.stderr);
   assert.match(bare.calls, /pulama-main\.js image sha256:abc123$/m);
+});
+test(`${name}: lei-hand-door-chain: under a pūlama, lei kui reads the terms in the vessel, the pūlama signs on this terminal, and the vessel lands the answer; a refused signing lands nothing`, { skip }, async () => {
+  const terms = '{"face":1,"rite":"push","branch":"feature/x","returns":3,"after":null}';
+  const answer = '{"op":"lei","reading":"signed","face":1,"record":{"body":{"act":"lei"}}}';
+  const r = await run(shim, ["lei", "kui", "--rite", "push", "--branch", "feature/x", "--returns", "3"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_LEI_TERMS: terms, FAKE_LEI_ANSWER: answer } });
+  assert.equal(r.status, 0, r.stdout);
+  const lines = r.calls.split("\n");
+  const read = lines.findIndex((l) => /exec (?:-e \S+ )*-T lares node \S+ lei terms kui --rite push --branch feature\/x --returns 3$/.test(l));
+  const sign = lines.findIndex((l) => l.includes(`pulama-main.js lei kui ${terms}`) && !/ -T /.test(l));
+  const land = lines.findIndex((l) => l.includes(`lei land ${answer}`));
+  assert.ok(read >= 0 && sign > read && land > sign, `order terms, sign (attached), land:\n${r.calls}`);
+  const refused = await run(shim, ["lei", "kui", "--rite", "push", "--branch", "feature/x"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_LEI_TERMS: terms } });
+  assert.notEqual(refused.status, 0);
+  assert.match(refused.stdout, /the pūlama signed nothing; nothing lands/);
+  assert.doesNotMatch(refused.calls, /lei land/);
+  const noTty = await run(shim, ["lei", "kui", "--rite", "push", "--branch", "feature/x"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid", FAKE_LEI_TERMS: terms, FAKE_LEI_ANSWER: answer } });
+  assert.notEqual(noTty.status, 0);
+  assert.match(noTty.stderr, /lei under a pūlama reads its route on a terminal/);
+  const plain = await run(shim, ["lei", "show", "--rite", "push", "--branch", "x"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid" } });
+  assert.match(plain.calls, /lares node \S+ lei show --rite push --branch x/);
+  assert.doesNotMatch(plain.calls, /pulama-main\.js lei/);
 });
 test(`${name}: CONTROL a house without LARES_PULAMA stands the vessel alone, and names no pūlama`, { skip }, async () => {
   const r = await run(shim, ["up"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\n" });

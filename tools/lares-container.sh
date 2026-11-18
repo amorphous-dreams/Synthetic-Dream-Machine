@@ -677,6 +677,26 @@ case "$verb" in
       rite) route_cli "$verb" "$@" ;;
       *) route_cli "$verb" "$@" ;;
     esac ;;
+  lei)
+    # THE LEI HAND DOOR UNDER A PŪLAMA (#269): the pūlama opens no document, so the vessel reads the act's terms (the
+    # face, and for a restring the line's tip), the pūlama reads the route on THIS terminal and signs one record, and the
+    # vessel lands it. The signing's terminal output shows here as it runs (its prompt among it); the answer is its last
+    # JSON line. A signing that answers no record lands nothing. Without a pūlama, every lei act routes as before.
+    case "${1:-}" in
+      kui|restring|unstring)
+        if [ -n "$PULAMA_MODE" ]; then
+          act=$1
+          [ -n "$HAVE_TTY" ] || die "lei under a pūlama reads its route on a terminal; run it on one (nothing signed)"
+          # shellcheck disable=SC2046
+          terms=$(compose exec $(pass_env) -T lares node "$CLI" lei terms "$@" </dev/null) || exit $?
+          answer=$(compose --profile pulama exec pulama node "$PULAMA_MAIN" lei "$act" "$terms" | tee /dev/stderr | tr -d '\r' | grep '^{' | tail -n 1)
+          [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
+          # shellcheck disable=SC2046
+          waited_exec $(pass_env) -T lares node "$CLI" lei land "$answer" </dev/null
+          exit $?
+        fi ;;
+    esac
+    route_cli "$verb" "$@" ;;
   wear)
     # `lares wear N` moves the daemon mount inside the lent set and asks no route; a wear that landed names the face the
     # operator wears, which the shim keeps for the next stand.
