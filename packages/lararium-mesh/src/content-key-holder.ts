@@ -122,6 +122,7 @@ export const HOLDER_REFUSALS = [
   "values-malformed",         // a write batch names no value, or a value reads as no change or checkpoint
   "head-not-rolled",          // the head this vessel writes under follows no removal: a replacement owes no re-seal
   "replaced-other-span",      // the body rests only under a version of another span: a replacement never carries it across
+  "value-current",            // a version at or after the roll already names the body: no replacement stays owed
 ] as const;
 export type HolderRefusalName = (typeof HOLDER_REFUSALS)[number];
 /** A refusal names what stopped the act. `cause` carries another module's own refusal name, never a key. */
@@ -941,10 +942,12 @@ export class ContentKeyHolder {
       // the audience for another writer's past): only a version of the head's own span may hand its body on, and a body
       // that rests under another span alone refuses by name. Where the body rests under several such versions, the newest
       // hands it on: one no other of them descends from, the lowest id among equals.
-      let otherSpan = false;
+      let otherSpan = false, current = false;
       const candidates: { keyVersion: KeyVersionId; address: SealedAddress; entry: string; authorized: AuthorizedAddress }[] = [];
       for (const keyVersion of this.#usable(written)) {
-        if (keyVersion === roll.keyVersion || !lineage.descends(roll.keyVersion, keyVersion)) continue;
+        // A version at or after the roll that already names the body holds the replacement itself (or a write after it).
+        const after = keyVersion === roll.keyVersion || lineage.descends(keyVersion, roll.keyVersion);
+        if (!after && !lineage.descends(roll.keyVersion, keyVersion)) continue;
         const oldKey = written.keys.get(keyVersion)!;
         const context: SealContext = { bagId: args.bagId, keyVersion, role: "blob", logicalRef: hexToBytes(args.ref) };
         const entry = entryLocatorOf(oldKey, context);
@@ -952,10 +955,36 @@ export class ContentKeyHolder {
           const manifest = await this.#manifest(known, written, oldKey, row.manifest);
           const authorized = manifest === null ? null : authorizeFromManifest(manifest, oldKey, context);
           if (authorized === null) continue;
-          if (lineage.fact(keyVersion)!.span !== span) otherSpan = true;
+          if (after) current = true;
+          else if (lineage.fact(keyVersion)!.span !== span) otherSpan = true;
           else candidates.push({ keyVersion, address: authorized.address, entry, authorized });
           break;
         }
+      }
+      // A RETRY NEVER DUPLICATES: a body the roll's side already names refuses by name.
+      if (current) return refuse("value-current");
+      // A REPLACEMENT A STOP LEFT HALF-RESTED: its value and its re-seal record rest, and no manifest names it yet. The
+      // retry finishes that one under the version its record rides under, never a second.
+      for (const carried of await store.records("re-seal")) {
+        const under = carried.body.keyVersion;
+        if (carried.body.bag !== written.locator || !this.#usable(written).has(under)) continue;
+        if (under !== roll.keyVersion && !lineage.descends(under, roll.keyVersion)) continue;
+        const underKey = written.keys.get(under)!;
+        const read = readRecord("re-seal", carried, { bagId: args.bagId, locator: written.locator, key: underKey, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+        if (!("record" in read) || read.record.private.ref !== args.ref || read.record.private.role !== "blob") continue;
+        const rested = await this.#ports.values.read(carried.body.to);
+        if (rested === null) return refuse("value-absent");
+        const context: SealContext = { bagId: args.bagId, keyVersion: under, role: "blob", logicalRef: hexToBytes(args.ref) };
+        const manifest: ManifestBody = {
+          bag: written.locator, keyVersion: under, parents: await this.#cited(known, written, underKey, under),
+          entries: [{ role: "blob", address: carried.body.to, locator: entryLocatorOf(underKey, context), parents: [] }],
+        };
+        const named = await this.#sign("manifest", manifest, { writer: sessionWriter(signer) }, args.bagId, written.locator, underKey, signer);
+        if (isRefusal(named)) return named;
+        const id = await this.#rest(() => store.putRecord(named.carried));
+        await this.#rest(() => store.putIndexEntries(indexEntriesOf(named.verified)));
+        this.#rested(written, id, named.verified);
+        return { body: { cid: carried.body.to, ciphertext: rested, keyVersion: under, ref: args.ref }, manifest: id, reseal: recordIdOf("re-seal", carried.body), replaced: carried.body.replaced, founding: written.locator };
       }
       const newest = candidates
         .filter((c) => !candidates.some((d) => d !== c && lineage.descends(d.keyVersion, c.keyVersion)))
@@ -987,12 +1016,14 @@ export class ContentKeyHolder {
       if (isRefusal(reseal)) return reseal;
       // THE COMMIT POINT, as a blob's seal reads it: a raise counted while the replacement signed binds it here.
       if (owesRoll()) return refuse("roll-owed");
+      // THE RECORD RESTS BEFORE THE MANIFEST: a stop between leaves a `to` no manifest names yet, which every reader reads
+      // unverified (the safe direction), and the next try finishes it.
       await this.#rest(() => this.#ports.values.write(body.cid, body.ciphertext));
+      const resealId = await this.#rest(() => store.putRecord(reseal.carried));
       const id = await this.#rest(() => store.putRecord(named.carried));
       await this.#rest(() => store.putIndexEntries(indexEntriesOf(named.verified)));
       await this.#rest(() => this.#noteHead(line, at.head));
       this.#rested(line, id, named.verified);
-      const resealId = await this.#rest(() => store.putRecord(reseal.carried));
       return { body, manifest: id, reseal: resealId, replaced: old.keyVersion, founding: line.locator, ...(at.joined ? { joined: at.joined } : {}) };
     });
   }

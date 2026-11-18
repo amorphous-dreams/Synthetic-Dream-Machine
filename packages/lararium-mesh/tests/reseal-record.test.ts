@@ -113,6 +113,11 @@ describe("a roll's replacement signs one re-seal record", () => {
 describe("a forged or unsigned re-seal record refuses by name", () => {
   it("a clear part moved to another address reads `sealed-part-refused` at the reader; a signature by another session reads `signature-refused`", async () => {
     const { a, b, photo } = await rolledShelf();
+    // B's session signing over A's certificate: the signature covers no record A's session signed, so nothing rests. (It
+    // runs first: once the replacement stands, a retry refuses `value-current` before any signature.)
+    const swapped = await a.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: { certificate: a.signer.certificate, sign: b.signer.sign } });
+    expect(said(swapped)).toMatch(/^record-refused:signature-refused/);
+    expect(await a.store.records("re-seal")).toEqual([]);
     const replaced = await a.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: a.signer });
     if ("refusal" in replaced) throw new Error(said(replaced));
     const [record] = await a.store.records("re-seal");
@@ -124,9 +129,6 @@ describe("a forged or unsigned re-seal record refuses by name", () => {
     const verdicts = await b.holder.judgeReseals(BAG);
     expect(verdicts).toContainEqual({ id: replaced.reseal, verdict: "complete" });          // CONTROL: the record as signed
     expect(verdicts).toContainEqual({ id: recordIdOf("re-seal", forged.body), verdict: "refused", refusal: "sealed-part-refused" });
-    // B's session signing over A's certificate: the signature covers no record A's session signed, so nothing rests.
-    const swapped = await a.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: { certificate: a.signer.certificate, sign: b.signer.sign } });
-    expect(said(swapped)).toMatch(/^record-refused:signature-refused/);
   });
 
   it("a record whose removal acts the successor never names reads `reseal-unbound`; a reader holding neither manifest reads `unverified`, never complete", async () => {
