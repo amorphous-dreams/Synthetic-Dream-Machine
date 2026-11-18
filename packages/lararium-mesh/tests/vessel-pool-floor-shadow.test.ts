@@ -31,7 +31,7 @@ function founding(genesisFloor: string | null): LarDoc {
 }
 const spec: WikiMountSpec = { coreHash: CORE, recipe: { wikiSlug: "wiki" }, grants: { islandUrl: "automerge:fixture", wikiUrl: null } };
 
-function rig(opts: { pin: string | null; record: LarDoc; held: Array<{ cid: string; bytes: Uint8Array }>; tally?: { value: unknown } }) {
+function rig(opts: { pin: string | null; record: LarDoc; held: Array<{ cid: string; bytes: Uint8Array }>; tally?: { value: unknown }; hangLoad?: boolean; hangRead?: boolean }) {
   const manifests: Array<Record<string, unknown>> = [];
   const listeners = new Set<(raw: unknown) => void>();
   const hear = (msg: unknown): void => { for (const fn of [...listeners]) fn(msg); };
@@ -50,9 +50,9 @@ function rig(opts: { pin: string | null; record: LarDoc; held: Array<{ cid: stri
   const pool = new VesselIslandPoolCore({
     host, resolvePluginCids: async () => ({ ok: true, pluginCids: [] }),
     floorCid: () => opts.pin,
-    readContent: (cid) => opts.held.find((m) => m.cid === cid)?.bytes ?? null,
+    readContent: (cid) => opts.hangRead ? new Promise<Uint8Array | null>(() => {}) : opts.held.find((m) => m.cid === cid)?.bytes ?? null,
     foundingRecord: () => opts.record,
-    floorShadow: { load: () => tally.value, save: (t: FloorShadowTally) => { tally.value = JSON.parse(JSON.stringify(t)); } },
+    floorShadow: { load: () => opts.hangLoad ? new Promise<unknown>(() => {}) : tally.value, save: (t: FloorShadowTally) => { tally.value = JSON.parse(JSON.stringify(t)); } },
   });
   return { pool, manifests, tally };
 }
@@ -67,10 +67,11 @@ describe("the floor shadow read rides each wiki mount and never moves serving", 
     await pool.mountWiki("wiki", spec);
     expect(pool.has("wiki")).toBe(true);
     expect(manifests[0]?.["floorCid"]).toBe(moved.cid);
+    await vi.waitFor(() => expect(tally.value).not.toBeNull());
     const t = tally.value as FloorShadowTally;
     expect(t.mismatchBoots).toBe(1);
     expect(t.firstMismatch?.moved.map((m) => m.field)).toEqual(["engine"]);
-    expect(warn.mock.calls.flat().join(" ")).toContain("engine");
+    await vi.waitFor(() => expect(warn.mock.calls.flat().join(" ")).toContain("engine"));
     await pool.disposeAll();
   });
 
@@ -80,7 +81,7 @@ describe("the floor shadow read rides each wiki mount and never moves serving", 
     const same = manifest();
     const { pool, tally } = rig({ pin: same.cid, record: founding(null), held: [same], tally: { value: { cleanBoots: 4, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null } } });
     await pool.mountWiki("wiki", spec);
-    expect((tally.value as FloorShadowTally).cleanBoots).toBe(5);
+    await vi.waitFor(() => expect((tally.value as FloorShadowTally).cleanBoots).toBe(5));
     expect(warn).not.toHaveBeenCalled();
     await pool.disposeAll();
   });
@@ -91,6 +92,7 @@ describe("the floor shadow read rides each wiki mount and never moves serving", 
     const { pool, manifests, tally } = rig({ pin: null, record: founding(genesis.cid), held: [genesis] });
     await pool.mountWiki("wiki", spec);
     expect(manifests[0]?.["floorCid"]).toBeUndefined();
+    await vi.waitFor(() => expect(tally.value).not.toBeNull());
     const t = tally.value as FloorShadowTally;
     expect(t.firstMismatch?.manifest).toBe(genesis.cid);
     await pool.disposeAll();
@@ -101,8 +103,10 @@ describe("the floor shadow read rides each wiki mount and never moves serving", 
     const same = manifest();
     const { pool, tally } = rig({ pin: same.cid, record: founding(null), held: [same] });
     await pool.mountWiki("wiki", spec);
+    await vi.waitFor(() => expect(tally.value).not.toBeNull());
     await pool.unmountWiki("wiki");
     await pool.mountWiki("wiki", spec);
+    await new Promise((r) => setTimeout(r, 20));
     expect((tally.value as FloorShadowTally).cleanBoots).toBe(1);
     await pool.disposeAll();
   });
@@ -113,9 +117,48 @@ describe("the floor shadow read rides each wiki mount and never moves serving", 
     const { pool, tally } = rig({ pin: same.cid, record: founding(null), held: [] });
     await pool.mountWiki("wiki", spec);
     expect(pool.has("wiki")).toBe(true);
+    await vi.waitFor(() => expect(tally.value).not.toBeNull());
     const t = tally.value as FloorShadowTally;
     expect(t.unreadBoots).toBe(1);
     expect(t.mismatchBoots).toBe(0);
+    await pool.disposeAll();
+  });
+});
+
+/** A mount that does not land inside the budget reads as a stall, so a hung shadow read shows as a failure, not a hung suite. */
+async function mountsWithin(pool: VesselIslandPoolCore, ms = 1000): Promise<"mounted" | "stalled"> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const stall = new Promise<"stalled">((r) => { timer = setTimeout(() => r("stalled"), ms); });
+  try { return await Promise.race([pool.mountWiki("wiki", spec).then(() => "mounted" as const), stall]); }
+  finally { clearTimeout(timer); }
+}
+
+describe("the floor shadow read never sits on the boot path", () => {
+  test("a shadow store whose load never resolves still lets the wiki mount", async () => {
+    vi.spyOn(console, "info").mockImplementation(() => {});
+    const same = manifest();
+    const { pool } = rig({ pin: same.cid, record: founding(null), held: [same], hangLoad: true });
+    expect(await mountsWithin(pool)).toBe("mounted");
+    expect(pool.has("wiki")).toBe(true);
+    await pool.disposeAll();
+  });
+
+  test("a content reader that never resolves still lets the wiki mount", async () => {
+    vi.spyOn(console, "info").mockImplementation(() => {});
+    const same = manifest();
+    const { pool } = rig({ pin: same.cid, record: founding(null), held: [same], hangRead: true });
+    expect(await mountsWithin(pool)).toBe("mounted");
+    expect(pool.has("wiki")).toBe(true);
+    await pool.disposeAll();
+  });
+
+  test("CONTROL: a resolving store folds one reading, and floorShadowTally answers that last fold", async () => {
+    vi.spyOn(console, "info").mockImplementation(() => {});
+    const same = manifest();
+    const { pool, tally } = rig({ pin: same.cid, record: founding(null), held: [same] });
+    expect(await mountsWithin(pool)).toBe("mounted");
+    await vi.waitFor(() => expect((tally.value as FloorShadowTally | null)?.cleanBoots).toBe(1));
+    expect(pool.floorShadowTally()?.cleanBoots).toBe(1);
     await pool.disposeAll();
   });
 });
