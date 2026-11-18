@@ -42,11 +42,13 @@ const say = (line = ""): void => { stdout.write(`${line}\n`); };
 
 type Route = "passphrase" | "paper";
 
-async function askRoute(question: string, allowBoth: boolean): Promise<readonly Route[]> {
-  const menu = allowBoth ? "[p]assphrase, [s]heet (paper pin), [b]oth" : "[p]assphrase or [s]heet (paper pin)";
+async function askRoute(question: string, allowBoth: boolean, passphraseOnly?: string): Promise<readonly Route[]> {
+  // A PASSPHRASE-ONLY ROUTE offers the passphrase alone and refuses a sheet here, before any sheet prints.
+  const menu = passphraseOnly !== undefined ? "[p]assphrase" : allowBoth ? "[p]assphrase, [s]heet (paper pin), [b]oth" : "[p]assphrase or [s]heet (paper pin)";
   for (let i = 0; i < 3; i++) {
     const a = (await promptLine(`${question} ${menu} (p): `)).trim().toLowerCase();
     if (a === "" || a.startsWith("p")) return ["passphrase"];
+    if (passphraseOnly !== undefined && (a.startsWith("s") || a.startsWith("b"))) { say(`  ${passphraseOnly}; choose p`); continue; }
     if (a.startsWith("s")) return ["paper"];
     if (allowBoth && a.startsWith("b")) return ["passphrase", "paper"];
     say("  (choose one of the letters shown)");
@@ -155,13 +157,14 @@ export async function gatherNewSlot(verb: string, route: Route): Promise<SlotSpe
 
 /**
  * The founding route: one slot per chosen route, each opening the S key on its own. Refuses by name with no TTY and names
- * the container recipe.
+ * the container recipe. `passphraseOnly` names why only a passphrase binds here (a standing vessel's door): the prompt then
+ * offers the passphrase alone and refuses a sheet before any sheet prints.
  */
-export async function gatherFoundingRoute(): Promise<SlotSpec[]> {
+export async function gatherFoundingRoute(opts: { readonly passphraseOnly?: string } = {}): Promise<SlotSpec[]> {
   requireTty("lares vessel found", CONTAINER_FOUND_HOW);
   say("A founding seals the vessel's custody from birth and binds a HUMAN ROUTE to it.");
   say("Lose every route and the sealed state opens for no one; keep the passphrase or the paper safe.");
-  const routes = await askRoute("bind", true);
+  const routes = await askRoute("bind", true, opts.passphraseOnly);
   const slots: SlotSpec[] = [];
   for (const r of routes) slots.push({ t: 1, pins: [await newPin(r)] });
   return slots;
