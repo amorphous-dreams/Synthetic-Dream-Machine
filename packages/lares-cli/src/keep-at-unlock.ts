@@ -16,7 +16,7 @@
  */
 import type { Credential } from "@lararium/mesh";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
-import { RITE_KEEP, keepFaceLine, keepFaceOf, type KeepFaceBy } from "./rite-keep.js";
+import { RITE_KEEP, keepFaceLine, keepFaceOf, lineHeld, type HouseFaces, type KeepFaceBy } from "./rite-keep.js";
 
 /** The returns a keep lei strung at unlock carries: the most a kui takes without its `--yes` confirm. */
 export const KEEP_LEI_RETURNS = 12;
@@ -29,15 +29,15 @@ export interface KeepOfferPorts {
   /** One store row; a ward act takes `route` as its route, asked of nobody. */
   row(verb: "swarm-show" | "swarm-lei-kui", args: Record<string, unknown>, route?: readonly Credential[]): Promise<RiteVerbAnswer>;
   say(line: string): void;
-  /** The faces standing open (the custody door's lit set), read beside h0 for the keep's face. Absent: h0 alone. */
-  openFaces?(): Promise<readonly number[]>;
+  /** The faces the house holds, open and shut (the custody door's census). Absent: h0 alone, and none shut. */
+  houseFaces?(): Promise<HouseFaces>;
 }
 
 export interface KeepOfferOutcome {
   readonly offered: boolean;
   readonly strung: boolean;
   readonly workspace: string | null;
-  readonly why?: "no-workspace" | "no-route" | "no-terminal" | "standing" | "forked" | "declined" | "refused" | "unread";
+  readonly why?: "no-workspace" | "no-route" | "no-terminal" | "faces-unread" | "standing" | "forked" | "declined" | "refused" | "unread";
   readonly lei?: string;
   /** The face the offer read and strung as: the keep's face, one per house. */
   readonly face?: number;
@@ -53,8 +53,12 @@ export async function offerKeepLei(ports: KeepOfferPorts, opts: { readonly works
   if (!ports.canAsk()) return { offered: false, strung: false, workspace: ws, why: "no-terminal" };
   // THE KEEP'S FACE, ONE PER HOUSE: the face whose keep line stands, else h0; whoever the unlock wears.
   const show = (at: number) => ports.row("swarm-show", { rite: RITE_KEEP, branch: ws, face: at });
-  const keep = await keepFaceOf(show, ports.openFaces ? await ports.openFaces() : []);
+  const house = ports.houseFaces ? await ports.houseFaces() : { open: [], shut: [] };
+  const keep = await keepFaceOf(show, house.open);
   const acting: { face: number; faceBy: KeepFaceBy } = { face: keep.face, faceBy: "keep" };
+  // THE OFFER SPEAKS ONLY OVER THE WHOLE HOUSE: a face shut, or a line the door would not read, may hold the keep lei unseen,
+  // so the unlock stays quiet rather than string a second one; `lares rite keep` names where it may stand.
+  if (!lineHeld(keep.line) && (house.shut.length > 0 || keep.unread.length > 0)) return { offered: false, strung: false, workspace: ws, why: "faces-unread", ...acting };
   const face = { face: keep.face };
   const as = `, ${keepFaceLine(keep.face).replace(/^acting /, "")}`;
   const hand = (): string => byHand(ws, keep.face);

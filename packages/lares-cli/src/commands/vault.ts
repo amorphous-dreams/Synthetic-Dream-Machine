@@ -25,7 +25,7 @@ import { importLines, restoreFromBundle, restoreFromCards, restoreLines } from "
 import { sealedActVia } from "../sealed-act-door.js";
 import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { udsAlive } from "../local-connector.js";
-import { litFaces, sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
+import { houseFaces, sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { pulamaStands } from "../house-config.js";
 import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -315,8 +315,8 @@ function keepOfferPorts(args: ParsedArgs): KeepOfferPorts {
       catch (err) { const failure = storeFailure(err); return { ok: false, code: failure.code, message: failure.message }; }
     },
     say: (line) => console.log(line),
-    // THE KEEP'S FACE reads among the faces standing open: the custody door's lit set.
-    openFaces: async () => litFaces(),
+    // THE KEEP'S FACE reads over the faces the house holds: the custody door's census, open and shut.
+    houseFaces: async () => houseFaces(),
   };
 }
 
