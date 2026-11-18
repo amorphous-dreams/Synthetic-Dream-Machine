@@ -143,7 +143,8 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   const root = larRoot();
   // Derive the pack path (mirror-relative, WITH extension) exactly as the island recorded it in the
   // aside provenance: the `lar:` URI's path + the file's extension.
-  const uri = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() })(root, source);
+  const sited = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() })(root, source);
+  const uri = typeof sited === "string" ? sited : null;
   if (!uri || !uri.startsWith("lar:///")) {
     emit(args, { ok: false, error: { code: "usage", message: `no address derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`lares act REPACK: no address derivation for "${source}"`) });
     return exitFor("usage");

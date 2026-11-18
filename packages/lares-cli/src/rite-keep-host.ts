@@ -19,8 +19,8 @@
  *   5. the return    sessions that moved over a house that did not spend a return of their own: `rite begin` over the
  *                    standing bundle, IN THE VESSEL. A cut that kept already spent the one return this push rides, and so did
  *                    a keep whose tessera conferre still reads `landed-absent` at this bundle
- *   6. git           `git add <into> devices/<name>-<id8>`, ONE commit `keep <bundleId>`, fetch, rebase onto the upstream,
- *                    ONE push
+ *   6. git           `git add <into> devices/<name>-<id8>`, ONE commit `keep <bundleId>` under the keep's own neutral name
+ *                    ({@link KEEP_AUTHOR}, never the host's identity), fetch, rebase onto the upstream, ONE push
  *   7. rite-land     IN THE VESSEL: land each keep tessera owed at the bundle id read from the PUSHED manifest; conferre
  *                    reads it par
  *
@@ -45,7 +45,7 @@ import { join } from "node:path";
 import { MANIFEST_FILE, unsafeRelPath } from "./bundle-manifest.js";
 import { configuredKeepSessions } from "./keep-config.js";
 import { DEVICES_DIR, SessionsRefused, mirrorSessions, readOrMintDevice, sessionSources, type SessionSources } from "./keep-sessions.js";
-import { KEEP_INTO, KeepRefused, RITE_KEEP, mountLine } from "./rite-keep.js";
+import { KEEP_INTO, KeepRefused, RITE_KEEP, keepFaceLine } from "./rite-keep.js";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
 
 /**
@@ -55,6 +55,14 @@ import type { RiteVerbAnswer } from "./rite-kukulu.js";
 export const KEEP_SECRET_PATTERN = /(sk-ant-[A-Za-z0-9_-]{10,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY|xox[baprs]-[A-Za-z0-9-]{10,})/g;
 /** Known fixtures a match may hold and still pass: the AWS documentation key, and the house's PLANTED test values. */
 export const KEEP_SECRET_ALLOW: readonly string[] = ["AKIAIOSFODNN7EXAMPLE", "PLANTED"];
+
+/**
+ * THE KEEP'S OWN NAME ON ITS COMMITS: a keep's remote crosses to another vessel, so its commits carry this fixed neutral author
+ * and committer, never the host's ambient git identity (a name and an address that tie the bundle to one human's account). The
+ * commit and the rebase that replays it both name it, through `-c`, so no config of the host's speaks in either.
+ */
+export const KEEP_AUTHOR = { name: "Lares Keep", email: "keep@lares.invalid" } as const;
+const KEEP_IDENTITY: readonly string[] = ["-c", `user.name=${KEEP_AUTHOR.name}`, "-c", `user.email=${KEEP_AUTHOR.email}`];
 
 export interface GitAnswer { readonly code: number; readonly stdout: string; readonly stderr: string }
 
@@ -204,9 +212,9 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     const actedAs = cut.output["face"];
     if (typeof actedAs === "number" && Number.isSafeInteger(actedAs)) {
       face = { face: actedAs };
-      const by = cut.output["faceBy"] === "mount" ? "mount" : "named";
+      const by = cut.output["faceBy"] === "keep" ? "keep" : "named";
       Object.assign(base, { face: actedAs, faceBy: by });
-      if (by === "mount") ports.say(`keep: ${mountLine(actedAs)}`);
+      if (by === "keep") ports.say(`keep: ${keepFaceLine(actedAs)}`);
     } else if (opts.face !== undefined) Object.assign(base, { face: opts.face, faceBy: "named" });
     const kept = cut.output["kept"] === true;
     const bundleId = String(cut.output["bundleId"]);
@@ -273,14 +281,14 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     stage = "commit";
     await git(["add", "-A", "--", into, ...(devRel !== null ? [devRel] : [])], "keep-commit-refused");
     const staged = (await ports.git(dir, ["diff", "--cached", "--quiet"])).code !== 0;
-    if (staged) await git(["commit", "-q", "-m", `keep ${bundleId}`], "keep-commit-refused");
+    if (staged) await git([...KEEP_IDENTITY, "commit", "-q", `--author=${KEEP_AUTHOR.name} <${KEEP_AUTHOR.email}>`, "-m", `keep ${bundleId}`], "keep-commit-refused");
     base["committed"] = staged;
     stage = "push";
     await git(["fetch", "-q", remote], "keep-push-refused");
     const upstream = `refs/remotes/${remote}/${branch}`;
     const tracked = (await ports.git(dir, ["rev-parse", "--verify", "-q", upstream])).code === 0;
     if (tracked) {
-      const rebased = await ports.git(dir, ["rebase", "-q", upstream]);
+      const rebased = await ports.git(dir, [...KEEP_IDENTITY, "rebase", "-q", upstream]);
       if (rebased.code !== 0) {
         await ports.git(dir, ["rebase", "--abort"]);
         throw new HostRefused("keep-rebase-refused", `the keep commit does not rebase onto ${remote}/${branch} (${rebased.stderr.trim()}); the workspace stands as the commit left it. Settle ${remote}/${branch} by hand, then run the rite again`);

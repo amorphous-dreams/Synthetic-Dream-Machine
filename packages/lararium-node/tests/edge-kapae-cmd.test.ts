@@ -22,15 +22,19 @@ import { seatOwnCharter, presentFace } from "./acting-face-fixture.js";
 import { FaceNotNamed } from "../src/face-selector.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
-import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 
 const EDGE = "a".repeat(64), REALM = "b".repeat(64), MEMBER = "c".repeat(64), DEVICE = "d".repeat(64);
-beforeEach(async () => {
+// The house stands once per file (kept-house): a founding's worth of derivations per case ran past the 10 s hook
+// default on a loaded runner. Each case takes its own copy, so no case reads another's acts.
+const house = keepHouse("lares-ekc-", async () => {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
   await seedFleet(0);
 });
+beforeEach(() => house.into(root, scratchHome));
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();

@@ -71,7 +71,7 @@ function writeBundle(dest: string, notes: Readonly<Record<string, string>>): str
   }
   files.sort((a, b) => (a.path < b.path ? -1 : 1));
   const bundleId = bundleIdOf(files);
-  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ schema: BUNDLE_SCHEMA, bundleId, faces: [{ key: "f0", petname: "steward" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] }, null, 2)}\n`);
+  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ schema: BUNDLE_SCHEMA, bundleId, faces: [{ key: "f0" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] }, null, 2)}\n`);
   return bundleId;
 }
 
@@ -250,6 +250,21 @@ describe("the keep rite, host half", () => {
     expect(out).toMatchObject({ code: 0, data: { pushed: true, par: true } });
     expect(must(r.remote, "log", "--format=%s", "main").split("\n")).toEqual([`keep ${String(out.data["bundleId"])}`, "elsewhere", "guard"]);
     expect(existsSync(join(r.ws, "README"))).toBe(true);
+  });
+
+  test("KH17 RED: a keep commit carries the fixed neutral author and committer the code names, never the host's ambient git identity, and the rebase over a moved upstream keeps it; CONTROL: another clone's own commit keeps its own identity", async () => {
+    const r = rig();
+    const other = join(scratch, "other");
+    must(scratch, "clone", "-q", r.remote, other);
+    writeFileSync(join(other, "README"), "another device's note\n");
+    must(other, "add", "README");
+    must(other, "commit", "-q", "-m", "elsewhere");
+    must(other, "push", "-q", "origin", "HEAD:refs/heads/main");
+    const out = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(out).toMatchObject({ code: 0, data: { pushed: true, par: true } });
+    const who = must(r.remote, "log", "--format=%an <%ae>|%cn <%ce>", "main").split("\n");
+    expect(who[0], "the keep commit names the keep, never the operator").toBe("Lares Keep <keep@lares.invalid>|Lares Keep <keep@lares.invalid>");
+    expect(who[1], "CONTROL: the other clone's commit carries the identity its own config names").toBe("Keeper <keeper@example.invalid>|Keeper <keeper@example.invalid>");
   });
 
   test("KH8 RED: beside the container house the host reads the workspace's directory from LARES_WORKSPACES; a name it never pairs, or a relative dir, refuses by name", () => {
@@ -456,19 +471,19 @@ describe("the keep rite, host half", () => {
     expect(keepSessionsOn(false, {}, null)).toBe(false);
   });
 
-  test("KH17 keep-acts-as-the-mount: with no face named, the host half carries the face the vessel half acted as into every row after the cut, and names it", async () => {
+  test("KH17 keep-acts-as-the-keep-face: with no face named, the host half carries the face the vessel half acted as into every row after the cut, and names it", async () => {
     const r = rig();
     const row = r.ports.row;
     const ports: KeepHostPorts = { ...r.ports, sessions: null, row: async (verb, args) => {
       const a = await row(verb, args);
-      return verb === "keep-cut" && a.ok ? { ok: true, output: { ...a.output, face: 0, faceBy: "mount" } } : a;
+      return verb === "keep-cut" && a.ok ? { ok: true, output: { ...a.output, face: 0, faceBy: "keep" } } : a;
     } };
     const out = await riteKeepHost(ports, { workspace: "backup" });
-    expect(out).toMatchObject({ code: 0, data: { face: 0, faceBy: "mount", par: true } });
+    expect(out).toMatchObject({ code: 0, data: { face: 0, faceBy: "keep", par: true } });
     expect(r.calls[0]).toBe(`keep-cut ${JSON.stringify({ workspace: "backup", into: "house" })}`);
     expect(r.calls.slice(1).length).toBeGreaterThan(0);
     for (const c of r.calls.slice(1)) expect(c).toContain('"face":0');
-    expect(r.said.some((l) => /acting as h0, the daemon mount/.test(l))).toBe(true);
+    expect(r.said.some((l) => /acting as h0, the keep's face/.test(l))).toBe(true);
     // A named face rides the cut as named.
     const n = rig({ at: join(scratch, "named") });
     const named = await riteKeepHost({ ...n.ports, sessions: null }, { workspace: "backup", face: 2 });

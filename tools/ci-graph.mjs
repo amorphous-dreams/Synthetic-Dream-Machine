@@ -186,9 +186,12 @@ export function runsPerLanePush(workflowText) {
  * THE FOUR CHECKS THE `develop` RULESET REQUIRES (ruleset 27537551, `required_status_checks`). A lane enters the merge queue
  * only when each one reports on its head sha, so each name must stand on every run that sha raises: run, or skipped by its
  * own `if:` (GitHub reads a skipped required check as passing). A name the run never raises reads "expected" and holds the
- * lane out of the queue for good; a name two jobs raise lets a skipped twin answer for a red one.
+ * lane out of the queue for good; a name two jobs raise lets a skipped twin answer for a red one. The list lives ONCE, in
+ * tools/land-rule.json (the land rule's own file); this reads it.
  */
-export const REQUIRED_CHECKS = ["Quick gates", "Test", "Witnesses", "E2E / Merge shard reports"];
+export const REQUIRED_CHECKS = Object.freeze(
+  JSON.parse(readFileSync(new URL("./land-rule.json", import.meta.url), "utf8")).requiredChecks,
+);
 
 const STATUS_FN = /\b(always|success|failure|cancelled)\(\)/;
 

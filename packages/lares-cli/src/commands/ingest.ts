@@ -22,7 +22,7 @@ import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
-import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames } from "../ingest-core.js";
+import { openSyncedTree, scanSource, skipLines, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 import { askShore, askSettle, type SettleReading } from "../shore-core.js";
@@ -63,7 +63,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
   // scan — observations only, never a work queue
   const projections = larProjectionsDirOrNone();
   const dirs = { bags: larBagsDir(), wikis: larWikisDir(), ...(projections !== undefined ? { projections } : {}) };
-  const scan = scanSource(root, source, toBag, tree, fileToUriForSource(root, source, dirs));
+  const scan = scanSource(root, source, toBag, tree, fileToUriForSource(root, source, dirs, tree));
   if (scan === null) {
     emit(args, { ok: false, error: { code: "usage", message: `source "${source}" does not resolve` }, human: () => console.error(`lares ingest: source "${source}" does not resolve`) });
     return exitFor("usage");
@@ -71,7 +71,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
   const { rows, skipped } = scan;
   // A scan that skipped every carrier is no success: say which mirror directories it derived against.
   if (rows.length === 0 && skipped.length > 0) {
-    const message = `scanned 0 carriers; ${skipped.length} skipped (no address derivation). Derived against bags dir ${dirs.bags} and wikis dir ${dirs.wikis}; first skipped: ${skipped[0]}`;
+    const message = `scanned 0 carriers; ${skipped.length} skipped. Derived against bags dir ${dirs.bags} and wikis dir ${dirs.wikis}; first skipped: ${skipped[0]!.file} (${skipped[0]!.why})`;
     emit(args, {
       ok: false,
       error: { code: "usage", message, hint: "the source must sit under the bags dir (LAR_BAGS) or wikis dir (LAR_WIKIS) as <holding>/<w.w.w>/…/<name>.<ext>" },
@@ -129,7 +129,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
         for (const r of rows) console.log(`  ${r.status.toUpperCase().padEnd(10)} ${r.uri}`);
         for (const t of shadows) console.log(`  ${"KAPAE".padEnd(10)} ${t}`);
         for (const r of refusedShadows) console.error(`  ${"REFUSE".padEnd(10)} ${r.file} (${r.refusal})`);
-        for (const f of skipped) console.log(`  SKIPPED    ${f} (no address derivation — outside bags//wikis/, non-.md, or rootless interior)`);
+        for (const line of skipLines(skipped)) console.log(`  ${line}`);
         console.log(`\n  ${rows.length} scanned · ${candidates.length} would submit · preview only (pass --apply)`);
         if (wouldFault.length > 0) console.log(`  ${wouldFault.length} large un-flagged file(s) would fault during ingest — run \`--tag-blobs\` to flag them.`);
       },

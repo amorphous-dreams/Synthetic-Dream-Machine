@@ -8,8 +8,8 @@
  * the door's usage. Behaviour over a seated charter belongs to `lararium-node/tests/nexus-cabal.test.ts`.
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { join } from "node:path";
 import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
@@ -19,12 +19,14 @@ const run = (positional: string[], options: Record<string, string> = {}): Parsed
   ({ command: "nexus", positional, options, flags: { json: true } } as unknown as ParsedArgs);
 
 describe("lares nexus cabal", () => {
+  let house: IsolatedHouse;
   let root: string;
   let said: string[];
   const saved: Record<string, string | undefined> = {};
-  const ENV = ["LAR_ROOT", "LAR_SEAL_HOME", "LAR_DATA_DIR"];
+  const ENV = ["LAR_SEAL_HOME", "LAR_DATA_DIR"];
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "lares-nexus-cabal-"));
+    house = openIsolatedHouse();
+    root = house.root;
     for (const k of ENV) { saved[k] = process.env[k]; process.env[k] = root; }
     said = [];
     vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { said.push(a.join(" ")); });
@@ -34,7 +36,7 @@ describe("lares nexus cabal", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     for (const k of ENV) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]!; }
-    rmSync(root, { recursive: true, force: true });
+    house.close();
   });
   const answer = async (a: ParsedArgs): Promise<{ code: number; out: string }> => {
     said = [];

@@ -210,8 +210,8 @@ def test_meme_tools_carry_a_slug_as_written(daemon):
     # The seat reshapes no slug: whatever names the container rides to the daemon byte for byte, and the
     # daemon's own door answers for it. An empty slug names nothing and refuses before the wire.
     daemon.output = _PUT_OUTPUT
-    _put(uri=_URI, text="x", recipe="@sdm")
-    assert daemon.wire()["args"]["recipe"] == "@sdm"
+    _put(uri=_URI, text="x", recipe="sdm")
+    assert daemon.wire()["args"]["recipe"] == "sdm"
     with pytest.raises(ValueError, match="names no slug"):
         _get(uri=_URI, bag="")
     assert len(daemon.lines) == 1

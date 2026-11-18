@@ -15,7 +15,7 @@
 import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -357,6 +357,9 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     houses.push(fresh);
     fresh.must(["persona", "new", "1", "--name", "engineer"]);
     await fresh.unlock();
+    // The bundle's roster rests sealed under the old house's keep key: the new house takes a copy before the import.
+    mkdirSync(join(fresh.root, "config"), { recursive: true });
+    cpSync(join(old.root, "config", "keep-key"), join(fresh.root, "config", "keep-key"));
     const imported = fresh.lares(["import", bundle, "--apply", "--json"]);
     assert.equal(JSON.parse(imported.stdout.trim().split("\n").pop()).data?.applied, true, `import: ${imported.stdout}\n${imported.stderr}`);
     fresh.must(["wiki", "hold", "notes"]);

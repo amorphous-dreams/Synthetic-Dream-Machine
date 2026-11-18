@@ -14,6 +14,8 @@
  *   C7  a diverged id stands off (working through the gate, kahua by body digest) and never overwrites.
  *   C8  preview writes nothing; a re-declare row replays as fresh acts on an unnamed face.
  */
+import { checkHouseTeardown } from "./support/check-house-teardown.js";
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { mkdirSync, mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync, readdirSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -24,7 +26,8 @@ import { kapaeShadowBody, SyncedTree } from "@lararium/node";
 import { DAEMON_BAG_ID, daemonFaceCanonBag } from "@lararium/mesh";
 import { scanFiles } from "../src/ingest-core.js";
 import { houseExport, houseImport, bundleJournalPath, BundleRefused, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
-import { BundleVerifyRefused, MANIFEST_FILE } from "../src/bundle-manifest.js";
+import { BundleVerifyRefused, MANIFEST_FILE, openBundle, verifyBundle } from "../src/bundle-manifest.js";
+import { readKeepKey } from "../src/keep-key.js";
 import type { CensusReading } from "../src/commands/census.js";
 import type { BundleKahuaHead } from "../src/bundle-manifest.js";
 
@@ -88,6 +91,7 @@ class FakeVessel {
   }
 }
 
+let house: IsolatedHouse;
 let root: string, out: string;
 const put = (rel: string, text: string): void => { const p = join(root, ...rel.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, text); };
 const tid = (title: string, text: string): string => `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`;
@@ -114,13 +118,16 @@ function refound(over: Partial<BundleVesselFace> = {}): FakeVessel {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lar-house-bundle-"));
+  house = openIsolatedHouse({ home: true, gitConfig: true });
+  root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "house bundle suite\n");
-  process.env["LAR_ROOT"] = root;
-  out = join(mkdtempSync(join(tmpdir(), "lar-house-bundle-out-")), "bundle");
+  out = join(house.scratchDir, "export", "bundle");
+  mkdirSync(dirname(out));
   seedHouse();
 });
-afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); });
+afterEach(() => { house.close(); });
+
+checkHouseTeardown();
 
 describe("the house bundle verbs", () => {
   test("★ an import over unseeded disk canon refuses by name and names the seed; a preview reads on ★", async () => {
@@ -288,7 +295,8 @@ describe("the house bundle verbs", () => {
     expect(manifest.omissions.some((o) => o.kind === "daemon-bag")).toBe(false);
     expect(manifest.counts).toMatchObject({ working: 2, kapae: 1, draft: 1, temp: 1, "kahua-carrier": 1, "kahua-head": 1, bag: 1 });
     expect(manifest.tempBytes["lar:///ha.ka.ba/wikis/daemon/temp"]).toBe(tid("scratch", "a passing note").length);
-    const redeclare = JSON.parse(readFileSync(join(out, "re-declare.json"), "utf8"));
+    // The re-declare list rests sealed under the house's keep key; the house that cut it opens it.
+    const redeclare = openBundle(verifyBundle(out), readKeepKey()!).redeclare;
     expect(redeclare.faces).toEqual([{ face: "f0", handleIndex: 0, petname: "hearth-one", handle: "Heron", seat: true, chair: "east" }]);
   });
 

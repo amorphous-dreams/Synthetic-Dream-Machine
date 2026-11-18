@@ -22,11 +22,11 @@ export { atomicWriteFileSync } from "./fs-atomic.js";
 // vessel, so the vessel derives a keep's bundle id from the staged tree itself (`commands/rite.ts#keepStagedTree`).
 export {
   BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, BundleVerifyRefused,
-  sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder,
+  sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder, openBundle, sealRedeclare, KEEP_SEAL_BAG,
 } from "./bundle-manifest.js";
 export type {
   BundleLayer, BundleFile, BundleRow, BundleFace, BundleOmission, BundleManifest, BundleRedeclareFace, BundleShareEntry, BundleRedeclare,
-  BundleKahuaHead, VerifiedBundle,
+  BundleKahuaHead, VerifiedBundle, SealedBundle, BundleDiskManifest, BundleFaceKey,
 } from "./bundle-manifest.js";
 export { fileJournal } from "./vessel-journal-file.js";
 
@@ -199,7 +199,7 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
 export { PERSONAL_PROJECTION_DIR, personalFaceRoot, workspaceRootsOf } from "./bag-paths.js";
-export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, isTempLayerInternalTitle, TEMP_LAYER_DIR,
+export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, isTempLayerInternalTitle, TEMP_LAYER_DIR,
   daemonFaceFolder, isDaemonFaceFolder, kahuaFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";

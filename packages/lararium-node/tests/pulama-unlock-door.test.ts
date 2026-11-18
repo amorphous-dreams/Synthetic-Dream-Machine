@@ -35,6 +35,7 @@ function door(pulama: { session: boolean; waits: string | null; onDial?: () => {
     ...(state && pulama ? { pulama: {
       standing: () => ({ ...state }),
       dial: async () => { dials += 1; Object.assign(state, pulama.onDial?.() ?? {}); return { ...state }; },
+      lent: () => [],
     } } : {}),
   });
   const send = (frame: unknown) => { const { sock, answer } = fakeSock(); expect(handle(frame, sock)).toBe(true); return answer; };

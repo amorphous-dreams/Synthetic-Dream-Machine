@@ -17,12 +17,12 @@
  *   3. maps each face folder (`daemon-<F>`, `kahua-<F>`) to the face that wears it, keyed by PET-NAME; a face that holds
  *      memory and no pet-name, or two that share one, refuses;
  *   4. (ONE ROW SET FOR ONE DOCUMENT: a wiki's workbench travels once, from its one folder, a sourced wiki's beside its canon
- *      source included, with the vessel-private share rows that name its owner and its seats by pet-name in `re-declare.json`;
+ *      source included, with the vessel-private share rows that name its owner and its seats by pet-name in the sealed re-declare list;
  *      a face-private document, `personal` layers among them, travels for its one face.)
  *      copies face working and canon mirrors, granted draft recovery files, consented temp carriers, kahua stage carriers and the stage's standing heads; every
  *      other wiki's working, draft and consented temp files; house-minted bags (a user wiki's own canon among them); and
  *      lists the acquired library's collections by index digest (the originals survive in place and never travel);
- *   5. writes `manifest.json` and `re-declare.json` (with every user wiki the catalog holds, by slug, so a wiki that holds no
+ *   5. writes `manifest.json` and `re-declare.sealed` (the roster sealed under the keep key, `../keep-key.ts`; with every user wiki the catalog holds, by slug, so a wiki that holds no
  *      page still carries), reads every byte back against the manifest, and only then moves
  *      the bundle into place.
  *
@@ -57,7 +57,7 @@ import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLab
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, projectedFileTitle, SyncedTree, TEMP_LAYER_DIR,
   KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, PERSONAL_PROJECTION_DIR, daemonBagsDir,
-  listCollections, libraryCollectionDir, atomicWriteFileSync, parseTidCarrier,
+  listCollections, libraryCollectionDir, atomicWriteFileSync, parseTidCarrier, houseIgnored,
 } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
@@ -74,11 +74,12 @@ import { writeFaceLabels, readFaceLabel, readFaceBases, labelFaceAtNaming, faceR
 import { moveFaceToAshes } from "../ashes.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
-  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, BundleVerifyRefused,
-  type BundleFace, type BundleFile, type BundleKahuaHead, type BundleManifest, type BundleOmission, type BundleRedeclare,
+  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, openBundle, sealRedeclare, BundleVerifyRefused,
+  type BundleDiskManifest, type BundleFaceKey, type BundleFile, type BundleKahuaHead, type BundleManifest, type BundleOmission, type BundleRedeclare,
   type BundleRedeclareFace, type BundleRow, type BundleShareEntry, type VerifiedBundle,
 } from "../bundle-manifest.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs } from "../share-doors.js";
+import { keepKeyForCut, keepKeyPath, readKeepKey } from "../keep-key.js";
 
 /** One document a keep left to another holder (`BundleManifest.elsewhere`). */
 type BundleElsewhere = NonNullable<BundleManifest["elsewhere"]>[number];
@@ -389,14 +390,19 @@ const inside = (base: string, path: string): boolean => {
   return p === b || p.startsWith(b + sep);
 };
 
-/** Every plain file under `dir` (posix rel paths, sorted), each link or special file named apart; an absent dir reads empty. */
-function plainFiles(dir: string): { files: string[]; odd: string[] } {
-  const files: string[] = [], odd: string[] = [];
+/**
+ * Every plain file under `dir` (posix rel paths, sorted), each link or special file named apart; an absent dir reads empty. A
+ * `.git` a mirror holds (a repo someone made there) stays out whole, named apart: the house never held a byte of it, and its
+ * commits carry authorship.
+ */
+function plainFiles(dir: string): { files: string[]; odd: string[]; repos: string[] } {
+  const files: string[] = [], odd: string[] = [], repos: string[] = [];
   const visit = (abs: string, rel: string): void => {
     let names: string[];
     try { names = readdirSync(abs).sort(); } catch { return; }
     for (const name of names) {
       const a = join(abs, name), r = rel === "" ? name : `${rel}/${name}`;
+      if (name === ".git") { repos.push(r); continue; }
       const st = lstatSync(a);
       if (st.isDirectory()) visit(a, r);
       else if (st.isFile()) files.push(r);
@@ -404,7 +410,7 @@ function plainFiles(dir: string): { files: string[]; odd: string[] } {
     }
   };
   visit(dir, "");
-  return { files, odd };
+  return { files, odd, repos };
 }
 
 const isStray = (rel: string): boolean => rel.includes(".lar-tmp-");
@@ -489,7 +495,8 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     if (prior !== undefined) throw new BundleRefused("carry-face-duplicate-petname", `the faces at h${prior} and h${f.handleIndex} both carry the pet-name "${f.petname}", and a bundle keys each face by its pet-name alone: rename one and export again`);
     seenNames.set(f.petname!, f.handleIndex);
   }
-  const bundleFaces: BundleFace[] = named.map((f, i) => ({ key: `f${i}`, petname: f.petname! }));
+  // THE BUNDLE NAMES EACH FACE BY ITS PATH KEY ALONE: the pet-names ride the sealed re-declare list.
+  const bundleFaces: BundleFaceKey[] = named.map((_f, i) => ({ key: `f${i}` }));
   const keyOf = new Map(named.map((f, i) => [f.handleIndex, `f${i}`] as const));
 
   // THE OVERRIDE BASES: a base rides the record's meta envelope and never projects, so the export reads it by title and
@@ -517,11 +524,14 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   const tempBytes: Record<string, number> = {};
   const consented = new Set(doors.tempConsented());
   let strays = 0, odd = 0;
+  const repos: string[] = [];
   const addTree = (srcDir: string, toDir: string, rowOf: (rel: string, abs: string) => Omit<BundleRow, "sha256" | "path"> | null, skipTop: readonly string[] = []): void => {
     const listed = plainFiles(srcDir);
     odd += listed.odd.length;
+    repos.push(...listed.repos.map((r) => `${toDir}/${r}`));
     for (const rel of listed.files) {
       if (skipTop.includes(rel.split("/")[0]!)) continue;
+      if (houseIgnored(rel) !== null) continue;          // HOUSE_IGNORED: a workspace's `.git`, the shore's renders, orphan folders, atomic temps
       if (isStray(rel)) { strays++; continue; }
       const abs = join(srcDir, ...rel.split("/"));
       plan.push({ from: abs, to: `${toDir}/${rel}`, row: rowOf(rel, abs) });
@@ -532,21 +542,21 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     const face = faceFolderOf(name);
     if (isDaemonFaceFolder(name)) {
       if (face === null) continue;
-      const fk = keyOf.get(face.handleIndex)!, pet = face.petname!;
+      const fk = keyOf.get(face.handleIndex)!;
       const faceBases = readFaceBases(face.relation!, projections);
       addTree(src, `faces/${fk}/working`, (rel, abs) => {
         if (rel.endsWith(KAPAE_EXT)) {
           const read = readKapaeShadow(readFileSync(abs, "utf8"));
-          return { face: pet, bag: wikiSlotUri("daemon", "working"), layer: "kapae", title: "title" in read ? read.title : null, rowKey: null };
+          return { face: fk, bag: wikiSlotUri("daemon", "working"), layer: "kapae", title: "title" in read ? read.title : null, rowKey: null };
         }
-        return withBase({ face: pet, bag: wikiSlotUri("daemon", "working"), layer: "working", title: carriedFileTitle(wikisDir, abs), rowKey: null }, faceBases);
+        return withBase({ face: fk, bag: wikiSlotUri("daemon", "working"), layer: "working", title: carriedFileTitle(wikisDir, abs), rowKey: null }, faceBases);
       }, [TEMP_LAYER_DIR, "recovery"]);
-      addTree(join(src, "recovery"), `faces/${fk}/drafts`, () => ({ face: pet, bag: wikiSlotUri("daemon", "draft"), layer: "draft", title: null, rowKey: null }));
+      addTree(join(src, "recovery"), `faces/${fk}/drafts`, () => ({ face: fk, bag: wikiSlotUri("daemon", "draft"), layer: "draft", title: null, rowKey: null }));
       if (consented.has("daemon")) {
         addTree(join(src, TEMP_LAYER_DIR), `faces/${fk}/temp`, (_rel, abs) => {
           const bag = wikiSlotUri("daemon", "temp");
           tempBytes[bag] = (tempBytes[bag] ?? 0) + lstatSync(abs).size;
-          return { face: pet, bag, layer: "temp", title: null, rowKey: null };
+          return { face: fk, bag, layer: "temp", title: null, rowKey: null };
         });
       } else if (existsSync(join(src, TEMP_LAYER_DIR))) omissions.push({ kind: "temp-unconsented", detail: `the daemon wiki's temp folder stands with no consent row (projection.temp.daemon); it stays behind` });
       continue;
@@ -588,11 +598,12 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     for (const slug of folders(own)) {
       const listed = plainFiles(join(own, slug));
       odd += listed.odd.length;
+      repos.push(...listed.repos.map((r) => `faces/${fk}/personal/${slug}/${r}`));
       for (const rel of listed.files) {
         if (isStray(rel)) { strays++; continue; }
-        if (isViewState(rel)) continue;
+        if (isViewState(rel) || houseIgnored(rel) !== null) continue;
         const abs = join(own, slug, ...rel.split("/"));
-        plan.push({ from: abs, to: `faces/${fk}/personal/${slug}/${rel}`, row: { face: f.petname!, bag: wikiSlotUri(slug, "personal"), layer: "personal", title: carriedFileTitle(own, abs), rowKey: null } });
+        plan.push({ from: abs, to: `faces/${fk}/personal/${slug}/${rel}`, row: { face: fk, bag: wikiSlotUri(slug, "personal"), layer: "personal", title: carriedFileTitle(own, abs), rowKey: null } });
       }
     }
   }
@@ -602,14 +613,14 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
       const face = faceFolderOf(name);
       if (face === null) continue;
       const fk = keyOf.get(face.handleIndex)!;
-      addTree(src, `faces/${fk}/canon`, (_rel, abs) => ({ face: face.petname!, bag: daemonFaceCanonBag(face.relation!), layer: "daemon-canon", title: carriedFileTitle(bagsDir, abs), rowKey: null }));
+      addTree(src, `faces/${fk}/canon`, (_rel, abs) => ({ face: fk, bag: daemonFaceCanonBag(face.relation!), layer: "daemon-canon", title: carriedFileTitle(bagsDir, abs), rowKey: null }));
       continue;
     }
     if (isKahuaFaceFolder(name)) {
       const face = faceFolderOf(name);
       if (face === null) continue;
       const fk = keyOf.get(face.handleIndex)!;
-      addTree(src, `faces/${fk}/kahua`, () => ({ face: face.petname!, bag: KAHUA_BAG, layer: "kahua-carrier", title: null, rowKey: null }));
+      addTree(src, `faces/${fk}/kahua`, () => ({ face: fk, bag: KAHUA_BAG, layer: "kahua-carrier", title: null, rowKey: null }));
       continue;
     }
     if (name === "daemon") {
@@ -630,6 +641,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     catch (e) { throw new BundleRefused("carry-wikis-unread", `the catalog's wiki list would not read (${e instanceof Error ? e.message : String(e)}), so a wiki that holds no page would stay behind unnamed: stand the vessel and export again`); }
   }
   if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });
+  if (repos.length > 0) omissions.push({ kind: "mirror-repos", detail: "a `.git` inside a mirror: the house never held a byte of it, and its commits carry authorship, so none travels", items: [...repos].sort(), count: repos.length });
   if (odd > 0) omissions.push({ kind: "links-or-special-files", detail: "entries under the projections root that stand as neither a plain file nor a directory", count: odd });
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
 
@@ -662,23 +674,26 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
       const fk = keyOf.get(f.handleIndex)!;
       const heads = [...f.kahua].sort((a, b) => (a.title < b.title ? -1 : a.title > b.title ? 1 : a.cid < b.cid ? -1 : 1));
       const file = put(`faces/${fk}/${KAHUA_HEADS_FILE}`, `${JSON.stringify(heads, null, 2)}\n`);
-      for (const h of heads) { rows.push({ face: f.petname, bag: KAHUA_BAG, layer: "kahua-head", title: h.title, rowKey: h.cid, sha256: sha256Hex(h.text), path: file.path }); counts["kahua-head"]++; }
+      for (const h of heads) { rows.push({ face: fk, bag: KAHUA_BAG, layer: "kahua-head", title: h.title, rowKey: h.cid, sha256: sha256Hex(h.text), path: file.path }); counts["kahua-head"]++; }
     }
     const redeclare: BundleRedeclare = {
       schema: BUNDLE_SCHEMA,
       faces: named.map((f): BundleRedeclareFace => ({ face: keyOf.get(f.handleIndex)!, handleIndex: f.handleIndex, petname: f.petname!, handle: f.handle, seat: f.seat, chair: f.seat ? f.chair : null })),
-      // THE SHARE ROWS travel with the workbenches they seat: owner and seats by pet-name, the operator's own private carry.
+      // THE SHARE ROWS travel with the workbenches they seat: owner and seats by pet-name, sealed with the faces they name.
       ...((): { shares?: BundleShareEntry[] } => { const rows = doors.shareRows?.read() ?? []; return rows.length > 0 ? { shares: rows.map((r) => ({ ...r })) } : {}; })(),
       // EVERY USER WIKI, by slug: a wiki stands before it holds a page, so one with no workbench row still re-stands at the import.
       ...(userWikis.length > 0 ? { wikis: userWikis } : {}),
     };
-    put(REDECLARE_FILE, `${JSON.stringify(redeclare, null, 2)}\n`);
+    // THE ROSTER RIDES SEALED under the house's keep key: a remote the bundle reaches crosses to another vessel.
+    const key = keepKeyForCut();
+    put(REDECLARE_FILE, sealRedeclare(key, redeclare));
     files.sort((a, b) => (a.path < b.path ? -1 : 1));
-    const manifest: BundleManifest = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
+    const manifest: BundleDiskManifest = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
     writeFileSync(join(staging, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`, { flag: "wx" });
-    verifyBundle(staging);      // every byte read back against the manifest before the bundle takes its name
+    // Every byte read back against the manifest, and the roster opened under the key, before the bundle takes its name.
+    const opened = openBundle(verifyBundle(staging), key);
     renameSync(staging, target);
-    return { dest: target, manifest };
+    return { dest: target, manifest: opened.manifest };
   } catch (e) {
     rmSync(staging, { recursive: true, force: true });
     throw e;
@@ -819,7 +834,11 @@ const SHUT_VESSEL_CODES: ReadonlySet<string> = new Set(["vessel-locked", "daemon
 
 export async function houseImport(src: string, opts: { readonly apply: boolean; readonly doors: BundleDoors }): Promise<HouseImportResult> {
   const { doors, apply } = opts;
-  const bundle: VerifiedBundle = verifyBundle(resolve(src));
+  const sealed = verifyBundle(resolve(src));
+  // THE ROSTER OPENS UNDER THE HOUSE'S KEEP KEY: a house holding none refuses by name, before anything moves.
+  const key = readKeepKey();
+  if (key === null) throw new BundleRefused("keep-key-absent", `this house holds no keep key at ${keepKeyPath()}, and the bundle's roster rests sealed under the key of the house that cut it: copy that house's config/keep-key there, then import again`);
+  const bundle: VerifiedBundle = openBundle(sealed, key);
   const { manifest, redeclare } = bundle;
   // THE ORDER GUARD: the walk runs found -> up -> lay -> import. An import lands its rows over the canon the lay
   // laid, so its bag rows meet the checkout's canon at INGEST's three-way gate and stand off where they diverge; over
@@ -950,10 +969,13 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   }
 
   // An import restores each file into its mirror, then ingest reads it there so the placement ward sees the bag's own mirror.
-  const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: BundleTally, kapaeTally: BundleTally | null, wiki: string | null = null, freshLayer = false, faceArg: { face?: number } = {}): Promise<void> => {
+  const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, carried: readonly string[], keyPrefix: string, workTally: BundleTally, kapaeTally: BundleTally | null, wiki: string | null = null, freshLayer = false, faceArg: { face?: number } = {}): Promise<void> => {
+    // HOUSE_IGNORED: a bundle an older export wrote may carry a mirror's `.git/` or a stand-off render; none of it restores.
+    const files: string[] = [];
+    for (const f of carried) { if (houseIgnored(relative(sourceDir, join(bundle.root, ...f.split("/")))) === null) files.push(f); else skipped.push(join(bundle.root, ...f.split("/"))); }
     if (files.length === 0) return;
     const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => carriedFileTitle(uriDir, file));
-    for (const s of scan.skipped) if (!s.endsWith(".meta")) skipped.push(s);
+    for (const s of scan.skipped) if (!s.file.endsWith(".meta")) skipped.push(s.file);
     for (const r of scan.refusedShadows ?? []) kapaeTally?.refused.push(`${r.file} (${r.refusal})`);
     const keyed = (r: ScanRow): string => `${keyPrefix}:${r.uri}:${r.diskHash}`;
     let candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; })
@@ -1222,7 +1244,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   const weigh = (r: string, fk: string): { same: number; beyond: number } => {
     let same = 0, beyond = 0;
     for (const { dir, kind } of faceDirs(r)) {
-      for (const rel of plainFiles(dir).files.filter((x) => !isStray(x))) {
+      for (const rel of plainFiles(dir).files.filter((x) => !isStray(x) && houseIgnored(x) === null)) {
         if (kind === "working" && (rel.startsWith("recovery/") || rel.startsWith(`${TEMP_LAYER_DIR}/`))) continue;
         if (kind === "personal" && isViewState(rel)) continue;
         const sha = sha256Hex(readFileSync(join(dir, ...rel.split("/"))));

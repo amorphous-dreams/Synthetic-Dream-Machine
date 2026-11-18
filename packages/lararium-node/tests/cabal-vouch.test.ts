@@ -28,7 +28,8 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { runCabalVouch, CabalVouchError } from "../src/commands/cabal-vouch.js";
 import { direct } from "./direct-store.js";
 import { seedFaceAtom } from "./atom-fixture.js";
-import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 
 
 const REALM  = "a".repeat(64);
@@ -38,13 +39,16 @@ const OTHER  = "c".repeat(64);
 const verify = (bytes: Uint8Array, sigHex: string, did: string) =>
   ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
 
-beforeEach(async () => {
+// The house stands once per file (kept-house): a founding's worth of derivations per case ran past the 10 s hook
+// default on a loaded runner. Each case takes its own copy, so no case reads another's vouches.
+const house = keepHouse("lares-vouch-", async () => {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });   // the REALM's key — scopes the board
   await generateOrLoadPersonaGroupRoot(); // the HUMAN's face — the hand that stakes
   await seedFaceAtom(0);
   await seatOwnCharter([0]);              // the Nexus the realm stands under
   face = await presentFace(0);            // the acting face's key there — the key that signs
 });
+beforeEach(() => house.into(root, scratchHome));
 let face: string;
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.

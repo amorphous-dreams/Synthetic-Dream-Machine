@@ -16,8 +16,8 @@ import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { cpSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { cpSync, mkdirSync, writeFileSync } from "node:fs";
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { join } from "node:path";
 import { sha256HexBytesSync } from "@lararium/mesh";
 import { cmdNexus } from "../src/commands/nexus.js";
@@ -51,23 +51,21 @@ function offeringSourceDir(root: string): string {
 }
 
 describe("lares nexus publish — the operator's own collection, apart from the ratchets", () => {
+  let house: IsolatedHouse;
   let root: string;
   let errs: string[];
   let logs: string[];
-  const saved: Record<string, string | undefined> = {};
 
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "lares-publish-"));
-    saved["LAR_ROOT"] = process.env["LAR_ROOT"];
-    process.env["LAR_ROOT"] = root;               // isolates the genesis read to an empty tree
+    house = openIsolatedHouse();
+    root = house.root;
     errs = []; logs = [];
     vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { errs.push(a.join(" ")); });
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { logs.push(a.join(" ")); });
   });
   afterEach(() => {
     vi.restoreAllMocks();
-    if (saved["LAR_ROOT"] === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = saved["LAR_ROOT"];
-    rmSync(root, { recursive: true, force: true });
+    house.close();
   });
 
   test("★ `publish plugins` with no --source refuses through usage, never genesis ★", async () => {

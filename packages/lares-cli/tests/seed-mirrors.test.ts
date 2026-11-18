@@ -36,19 +36,25 @@
  *   M15 one refused folder never halts the rest: an unmatched folder records its line while a labelled one adopts and lands
  *   M16 a face whose pet-name would not read blocks only the folders no other face claims; a SHUT face waits for its own
  *   M17 a kahua refusal holds ashes for the former folder that held it alone, and names its face
+ *   M23 the walked loss: reset -> found -> lay keeps every plain-title working tiddler under its own title
+ *   M24 a file no rule reads names itself and its reason in the lay's lines
+ *   M25 HOUSE_IGNORED reaches the bundle: an export carries no `.git/`, an adoption copies none
  */
+import { checkHouseTeardown } from "./support/check-house-teardown.js";
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
-import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/node";
+import { kapaeShadowBody, readKapaeShadow, SyncedTree } from "@lararium/node";
 import { daemonFaceCanonBag, carrierHash, type ShareEntry } from "@lararium/mesh";
-import { seedMirrors, liveLay, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, kahuaPendingPath, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
+import { seedMirrors, liveLay, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, kahuaPendingPath, siteWaveFile, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { houseExport, houseImport, foldWaveRefusal, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
 import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
 import { runMirrorLeg } from "../src/commands/lay.js";
 import type { BundleKahuaHead } from "../src/bundle-manifest.js";
+import { openBundle, verifyBundle } from "../src/bundle-manifest.js";
+import { readKeepKey } from "../src/keep-key.js";
 
 const F1 = "11111111-1111-4111-8111-111111111111";
 const F2 = "22222222-2222-4222-8222-222222222222";
@@ -132,7 +138,7 @@ class FakeHouse {
     if (wave.face === undefined) return this.layAsWorn(wave, apply);
     const named = this.faces.find((f) => f.handleIndex === wave.face);
     if (named === undefined || named.relation === null || this.unresolved.has(wave.face)) {
-      return { planned: [], kapae: [], landed: [], kapaeRaised: [], conflicts: [], refused: [{ uri: wave.source, why: "face-unresolved" }], unanswered: [] };
+      return { planned: [], kapae: [], landed: [], kapaeRaised: [], conflicts: [], refused: [{ uri: wave.source, why: "face-unresolved" }], unanswered: [], skipped: [] };
     }
     const prior = this.worn;
     this.worn = named.relation;
@@ -144,18 +150,21 @@ class FakeHouse {
     const bench = /\/wikis\/([^/]+)\/working$/.exec(wave.toBag);
     if (apply && bench && wave.toBag !== WORKING && !this.seats.has(bench[1]!)) this.seats.set(bench[1]!, new Set([this.worn]));
     const planned: string[] = [], kapae: string[] = [];
+    const skipped: Array<{ file: string; why: string }> = [];
     const cands: Array<{ uri: string; key: string; text: string; base: string | undefined }> = [];
     for (const rel of mirrorFiles(wave.source, wave.skipTop).filter((r) => !r.endsWith(".meta"))) {
       const abs = join(wave.source, ...rel.split("/"));
       if (rel.endsWith(".kapae")) { const k = readKapaeShadow(readFileSync(abs, "utf8")); if ("title" in k) kapae.push(k.title); continue; }
-      const uri = mirrorDirFileToUri(wave.uriDir, abs);
-      if (!uri) continue;
+      // The fake sites a file as the live lay does (the projector's precedence run backward), and names each skip.
+      const sited = siteWaveFile(wave, abs, new SyncedTree(null));
+      if ("why" in sited) { skipped.push({ file: abs, why: sited.why }); continue; }
+      const uri = sited.title;
       const text = readFileSync(abs, "utf8"), key = `${wave.toBag}\n${abs}`, base = this.synced.get(key);
       if (base === sha(text)) continue;
       cands.push({ uri, key, text, base });
       planned.push(uri);
     }
-    const out = { planned, kapae, landed: [] as string[], kapaeRaised: [] as string[], conflicts: [] as Array<{ uri: string; why: string }>, refused: [], unanswered: [] };
+    const out = { planned, kapae, landed: [] as string[], kapaeRaised: [] as string[], conflicts: [] as Array<{ uri: string; why: string }>, refused: [], unanswered: [], skipped };
     if (!apply) return out;
     for (const c of cands) {
       const held = this.live(wave.toBag, c.uri);
@@ -238,6 +247,7 @@ class FakeHouse {
   }
 }
 
+let house: IsolatedHouse;
 let root: string, out: string;
 const put = (rel: string, text: string): void => { const p = join(root, ...rel.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, text); };
 const tid = (title: string, text: string, extra = ""): string => `title: ${title}\n${extra}type: text/vnd.tiddlywiki\n\n${text}\n`;
@@ -282,13 +292,16 @@ function refound(faces: Array<Partial<BundleVesselFace> & { handleIndex: number 
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lar-seed-mirrors-"));
+  house = openIsolatedHouse({ home: true, gitConfig: true });
+  root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "seed-mirrors suite\n");
-  process.env["LAR_ROOT"] = root;
-  out = join(mkdtempSync(join(tmpdir(), "lar-seed-mirrors-out-")), "bundle");
+  out = join(house.scratchDir, "export", "bundle");
+  mkdirSync(dirname(out));
   oldDisk();
 });
-afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); });
+afterEach(() => { house.close(); });
+
+checkHouseTeardown();
 
 describe("the lay lays every mirror back into its one layer", () => {
   test("M1 — export -> reset -> found -> lay -> import: every record in its layer with its bytes, the base kept, kahua on the confirmed count, ashes; nothing twice", async () => {
@@ -910,7 +923,8 @@ describe("the lay lays every mirror back into its one layer", () => {
     expect(manifest.rows.filter((r) => r.layer === "wiki-working").map((r) => [r.title, r.face]).sort()).toEqual([[SOURCED, null], [DRAFTED, null]].sort());
     expect(manifest.rows.filter((r) => r.layer === "personal").map((r) => [r.title, r.face, r.bag])).toEqual([[MARGIN, "engineer", "lar:///ha.ka.ba/wikis/lares/personal"]]);
     expect(manifest.files.some((f) => f.path.includes("$__")), "a view-state carrier never travels").toBe(false);
-    const redeclare = JSON.parse(readFileSync(join(out, "re-declare.json"), "utf8")) as { shares?: unknown };
+    // The re-declare list rests sealed under the house's keep key; the house that cut it opens it.
+    const redeclare = openBundle(verifyBundle(out), readKeepKey()!).redeclare;
     expect(redeclare.shares, "the share row travels beside the workbench it seats, owner and seats by pet-name").toEqual([{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }]);
 
     // A RE-FOUNDING, with the mirrors gone (the bundle alone carries them): the engineer imports first.
@@ -958,6 +972,44 @@ describe("the lay lays every mirror back into its one layer", () => {
   });
 });
 
+describe("no plain-title working tiddler drops at a re-found (tideline-surface#/rehearsal, the walked loss)", () => {
+  const PLAIN: Record<string, string> = { "My Notes.tid": "My Notes", "Time_ dusk.tid": "Time: dusk", "$__config_Foo.tid": "$:/config/Foo", "Room 4.tid": "Room 4" };
+
+  test("M23 — reset -> found -> lay keeps every plain-title working tiddler of the former face, each under its own title", async () => {
+    for (const [file, title] of Object.entries(PLAIN)) put(`projections/wikis/daemon-${F1}/${file}`, tid(title, `the words of ${title}`));
+    const old = await oldVessel();
+    for (const title of Object.values(PLAIN)) expect(old.live(WORKING, title)?.text, title).toBe(tid(title, `the words of ${title}`));
+    const after = refound();
+    await seedMirrors({ apply: true, doors: after.mirrorDoors(), liftKahua: 1 });
+    for (const title of Object.values(PLAIN)) expect(after.live(WORKING, title)?.text, title).toBe(tid(title, `the words of ${title}`));
+    // The loci carriers still land beside them.
+    expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
+  });
+
+  test("M24 — a file no rule reads names itself in the lay's lines, and the lay says it skipped", async () => {
+    put(`projections/wikis/daemon-${F1}/$__state_fold.tid`, tid("$:/state/fold", "a fold"));
+    const v = new FakeHouse([{ handleIndex: 0, petname: "hearth-one", relation: F1 }], "grant", F1);
+    v.held.add("garden");
+    const r = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    const working = r.layers.find((t) => t.toBag === WORKING)!;
+    expect(working.skipped.map((s) => s.file)).toEqual([P(`wikis/daemon-${F1}/$__state_fold.tid`)]);
+    expect(mirrorLines(r).err.some((l) => l.includes("$__state_fold.tid") && /projection filter/.test(l))).toBe(true);
+  });
+
+  test("M25 — HOUSE_IGNORED reaches the bundle: an export carries no `.git/` from a mirror, and an adoption copies none", async () => {
+    put(`projections/wikis/daemon-${F1}/.git/config`, "[user]\n  name = someone\n");
+    put(`projections/wikis/daemon-${F1}/.git/objects/ab/cdef`, "blob");
+    put(`projections/wikis/daemon-${F1}/.vscode/settings.json`, "{}");
+    const old = await oldVessel();
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
+    expect(manifest.files.filter((f) => /(^|\/)\.(git|vscode)\//.test(f.path))).toEqual([]);
+    const after = refound();
+    await seedMirrors({ apply: true, doors: after.mirrorDoors(), liftKahua: 1 });
+    expect(existsSync(P(`wikis/daemon-${F2}/.git`))).toBe(false);
+    expect(existsSync(P(`wikis/daemon-${F2}/.vscode`))).toBe(false);
+  });
+});
+
 describe("a carry act waits by name for a face that stands open and unworn, and accounts for every row (the carry block, walked)", () => {
   const [G0, G1] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1"];
   const [R0, R1] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1"];
@@ -1001,7 +1053,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R0);
     const sealed = "[document-unavailable] lar:///ha.ka.ba/wikis/daemon/working (a lit face's own layer) unavailable: doc automerge:2rZ45c35 was reported unavailable by every reachable peer; make the document reachable from a peer, then restart.";
     const refusing = (why: string): MirrorDoors => ({ ...v.mirrorDoors(), lay: async (wave, apply) => wave.face === undefined ? v.lay(wave, apply)
-      : { planned: [NOTE], kapae: [], landed: [], kapaeRaised: [], conflicts: [], refused: apply ? [{ uri: NOTE, why }] : [], unanswered: [] } });
+      : { planned: [NOTE], kapae: [], landed: [], kapaeRaised: [], conflicts: [], refused: apply ? [{ uri: NOTE, why }] : [], unanswered: [], skipped: [] } });
     const r = await seedMirrors({ apply: true, doors: refusing(sealed) });
     expect(r.layers.flatMap((t) => t.refused)).toEqual([]);
     expect(r.waiting.map((w) => [w.handleIndex, w.why])).toEqual([[1, "unresolved"]]);
