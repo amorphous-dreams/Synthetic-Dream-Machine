@@ -385,6 +385,9 @@ export function harnessSeatMarked(env: NodeJS.ProcessEnv = process.env): boolean
   return Boolean(env["CODEX_SANDBOX"]) || Boolean(env["CODEX_SANDBOX_NETWORK_DISABLED"]);
 }
 
+/** The marks `harnessSeatMarked` reads, by name: the one list a suite clears so a run inside a harness reads as CI does. */
+export const HARNESS_SEAT_MARKS: readonly string[] = ["CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"];
+
 export async function invokeLocal(
   verb:        string,
   args:        Record<string, unknown>,
