@@ -390,14 +390,19 @@ const inside = (base: string, path: string): boolean => {
   return p === b || p.startsWith(b + sep);
 };
 
-/** Every plain file under `dir` (posix rel paths, sorted), each link or special file named apart; an absent dir reads empty. */
-function plainFiles(dir: string): { files: string[]; odd: string[] } {
-  const files: string[] = [], odd: string[] = [];
+/**
+ * Every plain file under `dir` (posix rel paths, sorted), each link or special file named apart; an absent dir reads empty. A
+ * `.git` a mirror holds (a repo someone made there) stays out whole, named apart: the house never held a byte of it, and its
+ * commits carry authorship.
+ */
+function plainFiles(dir: string): { files: string[]; odd: string[]; repos: string[] } {
+  const files: string[] = [], odd: string[] = [], repos: string[] = [];
   const visit = (abs: string, rel: string): void => {
     let names: string[];
     try { names = readdirSync(abs).sort(); } catch { return; }
     for (const name of names) {
       const a = join(abs, name), r = rel === "" ? name : `${rel}/${name}`;
+      if (name === ".git") { repos.push(r); continue; }
       const st = lstatSync(a);
       if (st.isDirectory()) visit(a, r);
       else if (st.isFile()) files.push(r);
@@ -405,7 +410,7 @@ function plainFiles(dir: string): { files: string[]; odd: string[] } {
     }
   };
   visit(dir, "");
-  return { files, odd };
+  return { files, odd, repos };
 }
 
 const isStray = (rel: string): boolean => rel.includes(".lar-tmp-");
@@ -519,9 +524,11 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   const tempBytes: Record<string, number> = {};
   const consented = new Set(doors.tempConsented());
   let strays = 0, odd = 0;
+  const repos: string[] = [];
   const addTree = (srcDir: string, toDir: string, rowOf: (rel: string, abs: string) => Omit<BundleRow, "sha256" | "path"> | null, skipTop: readonly string[] = []): void => {
     const listed = plainFiles(srcDir);
     odd += listed.odd.length;
+    repos.push(...listed.repos.map((r) => `${toDir}/${r}`));
     for (const rel of listed.files) {
       if (skipTop.includes(rel.split("/")[0]!)) continue;
       if (isStray(rel)) { strays++; continue; }
@@ -590,6 +597,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     for (const slug of folders(own)) {
       const listed = plainFiles(join(own, slug));
       odd += listed.odd.length;
+      repos.push(...listed.repos.map((r) => `faces/${fk}/personal/${slug}/${r}`));
       for (const rel of listed.files) {
         if (isStray(rel)) { strays++; continue; }
         if (isViewState(rel)) continue;
@@ -632,6 +640,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     catch (e) { throw new BundleRefused("carry-wikis-unread", `the catalog's wiki list would not read (${e instanceof Error ? e.message : String(e)}), so a wiki that holds no page would stay behind unnamed: stand the vessel and export again`); }
   }
   if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });
+  if (repos.length > 0) omissions.push({ kind: "mirror-repos", detail: "a `.git` inside a mirror: the house never held a byte of it, and its commits carry authorship, so none travels", items: [...repos].sort(), count: repos.length });
   if (odd > 0) omissions.push({ kind: "links-or-special-files", detail: "entries under the projections root that stand as neither a plain file nor a directory", count: odd });
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
 
