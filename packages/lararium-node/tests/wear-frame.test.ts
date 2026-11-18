@@ -209,3 +209,25 @@ describe("RED a seat never wears", () => {
     expect(await v.send({ op: "wear", face: 1 })).toMatchObject({ op: "wear", face: 1, held: true });
   });
 });
+
+describe("RED lock of the mount after unlock --all slides to the next open face", () => {
+  test("lock-face-of-the-mount-slides-to-the-next-open-face: never the floor while another face stands open", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    expect(mountedFaceOrdinal()).toBe(0);
+    v.composed.length = 0;
+    expect(await v.send({ op: "lock", face: 0 })).toMatchObject({ op: "lock", locked: true, face: 0, was: "unlocked", standing: "hearth" });
+    expect(mountedFaceOrdinal()).toBe(1);
+    expect(sovereignStands()).toBe(true);
+    expect(v.composed.map((c) => [c.sovereign, c.mount])).toEqual([[true, 1]]);
+  });
+
+  test("CONTROL: the last open face locked leaves the floor, the node key held", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE]);
+    await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true });
+    await v.send({ op: "lock", face: 0 });
+    expect(sovereignStands()).toBe(false);
+    expect(v.holder.isUnlocked()).toBe(true);
+  });
+});
+
