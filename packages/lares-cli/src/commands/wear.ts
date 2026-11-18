@@ -8,7 +8,8 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house
  */
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
-import { emit, exitFor } from "../render.js";
+import { helpLines } from "../command-help.js";
+import { emit, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /**
@@ -18,8 +19,6 @@ import type { ParsedArgs } from "../parse-args.js";
  */
 const SEAT_MARKS = ["CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"] as const;
 const seatMarked = (env: NodeJS.ProcessEnv = process.env): boolean => SEAT_MARKS.some((k) => (env[k] ?? "") !== "");
-
-const USAGE = "usage: lares wear <N>   (N names a face standing open, a whole number from 0; `--face N` reads the same)";
 
 /** The face the line names: the positional, else `--face N`; null where neither names a handle index. */
 function faceNamed(args: ParsedArgs): number | null {
@@ -46,8 +45,7 @@ function wearLine(a: CustodyDoorAnswer): string {
 export async function cmdWear(args: ParsedArgs): Promise<number> {
   const face = faceNamed(args);
   if (face === null) {
-    emit(args, { ok: false, error: { code: "usage", message: `lares wear: name the face to wear. ${USAGE}` }, human: () => console.error(`lares wear: name the face to wear.\n${USAGE}`) });
-    return exitFor("usage");
+    return refuseUsage(args, "wear", helpLines("wear"), "name the face to wear");
   }
   const refuse = (code: string, message: string, data?: CustodyDoorAnswer): number => {
     emit(args, { ok: false, error: { code, message }, ...(data ? { data } : {}), human: () => console.error(`lares wear: ${message}`) });
