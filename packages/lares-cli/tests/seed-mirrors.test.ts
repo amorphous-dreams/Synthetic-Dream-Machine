@@ -1236,7 +1236,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
 //   FR1 a re-found keeps the SAME folder: the re-minted face under the same pet name lays `faces/<pet name>/` where it stands:
 //       no adoption copy, no `ashes/` move, no relation-keyed folder written
 //   FR2 a folder whose pet name no standing face carries refuses by name and lands nothing; nothing moves to ashes
-//   FR3 `moveFaceToAshes` serves only a face whose pet name no longer stands
+//   FR3 `moveFaceToAshes` serves only a face whose pet name no standing face carries
 //   FR4 export reads every face plane off `faces/<pet name>/` (drafts from `recovery/<slug>`), and import lands them back there
 //   FR5 no index file ever rests under `faces/`, and no two faces share a root
 //   FR6 a face rename moves its folder

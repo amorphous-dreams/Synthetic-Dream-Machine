@@ -456,13 +456,13 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   const folders = (dir: string): string[] => { try { return readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(); } catch { return []; } };
   /** The face whose pet name makes a face root's folder (`faces/<pet name>`), or null where none does. */
   const faceOfRoot = (seg: string): CarryVesselFace | null => faces.find((f) => f.petname !== null && f.relation !== null && f.petname.normalize("NFC") === seg.normalize("NFC")) ?? null;
-  // A FACE ROOT NO FACE THIS VESSEL WEARS CLAIMS: a face whose key stands shut, or a face whose pet name stands no longer. The
+  // A FACE ROOT NO FACE THIS VESSEL WEARS CLAIMS: a face whose key stands shut, or a face whose pet name no standing face carries. The
   // refusal names each root and the step that clears it.
   const unclaimedFolders: string[] = folders(facesDir).filter((seg) => faceOfRoot(seg) === null).map((seg) => join(facesDir, seg));
   const unclaimed = unclaimedFolders.length;
   if (unclaimed > 0) {
     if (!acceptOmissions) throw new CarryRefused("carry-unclaimed-face-folder", `${unclaimed} face root(s) belong to no face this vessel wears:\n  ${unclaimedFolders.join("\n  ")}\n`
-      + `each holds a face's private memory in cleartext: a face whose key stands shut (unlock every face and export again), or a face whose pet name no longer stands (found it again under that pet name, or rename the face that should hold it). `
+      + `each holds a face's private memory in cleartext: a face whose key stands shut (unlock every face and export again), or a face whose pet name no standing face carries (found it again under that pet name, or rename the face that should hold it). `
       + `For a face you mean to burn, move its root out of the house root (\`mv <folder> <a place outside ${resolve(house)}>\`) and export again; `
       + `or export with --accept-omissions to leave them where they stand, out of the bundle`);
     omissions.push({ kind: "unclaimed-face-folders", detail: "face roots no face this vessel wears claims; they stay under the projections root", items: unclaimedFolders, count: unclaimed });

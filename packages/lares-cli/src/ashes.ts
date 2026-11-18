@@ -1,9 +1,9 @@
 /**
- * ashes — where a BURNED face's root rests: a face whose pet name no longer stands on this vessel.
+ * ashes — where a BURNED face's root rests: a face whose pet name no standing face carries.
  *
  * A face's private planes rest in ONE root keyed by its pet name (`<projections>/faces/<pet name>/`, `bag-paths.ts`), so a
  * re-found finds them where they stand: the re-minted face under the same pet name keeps the same folder, and nothing adopts,
- * copies or moves. Ashes serve the one case left: a face whose pet name no standing face carries any longer. Its root moves to
+ * copies or moves. Ashes serve the one case left: a face whose pet name no standing face carries. Its root moves to
  * `<projections>/ashes/<pet name>/`, beside the labels that named it: plaintext still, and out of the live mirror set. A face
  * whose pet name still stands never moves (the move refuses by name). Nothing walks ashes: the disk projector writes only its
  * grants, and the census, the seed and the export walk `faces/`, `wikis/` and `bags/` alone. A person deletes them by hand
