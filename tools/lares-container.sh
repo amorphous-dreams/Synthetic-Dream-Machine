@@ -431,9 +431,9 @@ verb=$1; shift
 # A WORKSPACE (cabal-realm#/the-workbench): an operator-configured directory a private wiki's workbench mirror rests in,
 # bound read-write at `/lar/workspaces/<name>` (a wiki's share row names it: `lares wiki share <wiki> --workspace <name>`).
 # They come from `--workspace <name>=<dir>` on `up` and from LARES_WORKSPACES (the environment or the env file: `;`-separated
-# `<name>=<dir>` pairs, so they stand on every up). A workspace inside the checkout (this shim's repo or LARES_WORKSPACE) or
-# inside LARES_HOUSE/hearth refuses by name: projection follows placement, and a private wiki never rests in the tracked tree or
-# in what a re-founding clears. A name binds once.
+# `<name>=<dir>` pairs, so they stand on every up). A workspace inside LARES_HOUSE/hearth refuses by name: a re-founding
+# clears the hearth. The checkout and LARES_WORKSPACE bind like any directory (founding road rank 4j: the checkout counts as
+# the cabal's working surface). A name binds once.
 workspace_names=" "
 workspace_bind() { # $1 = name=dir; appends one bind to $files
   pair=$1
@@ -443,11 +443,7 @@ workspace_bind() { # $1 = name=dir; appends one bind to $files
   case "$workspace_names" in *" $name "*) die "--workspace: \"$name\" binds once" ;; esac
   real=$(realpath -e -- "$wdir" 2>/dev/null) || die "--workspace $name: $wdir is no directory"
   [ -d "$real" ] || die "--workspace $name: $wdir is no directory"
-  checkout_real=$(realpath -m -- "$ROOT")
-  ws_real=$(realpath -m -- "$(value_of LARES_WORKSPACE)")
   hearth_real=$(realpath -m -- "$HOUSE/hearth")
-  case "$real/" in "$checkout_real/"*) die "--workspace $name refuses $real — it rests inside the checkout ($checkout_real)" ;; esac
-  case "$real/" in "$ws_real/"*) die "--workspace $name refuses $real — it rests inside LARES_WORKSPACE ($ws_real)" ;; esac
   case "$real/" in "$hearth_real/"*) die "--workspace $name refuses $real — it rests inside the hearth ($hearth_real)" ;; esac
   case "$real" in *"
 "*) die "--workspace refuses a path that holds a newline" ;; esac
