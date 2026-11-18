@@ -10,12 +10,12 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records
  */
 import { describe, expect, it } from "vitest";
-import { utf8Bytes } from "../src/crypto.js";
-import { contentKeyRollSink, type RollOutcome } from "../src/content-key-lineage.js";
+import { hexToBytes, utf8Bytes } from "../src/crypto.js";
+import { KeyLineage, contentKeyRollSink, type KeyCause, type RollOutcome } from "../src/content-key-lineage.js";
 import type { SealedBlob } from "../src/content-key-holder.js";
 import { keyVersionIdOf, mintContentKey, sealChunk, type ContentKey, type KeyVersionId, type SealedAddress } from "../src/sealed-chunk.js";
 import {
-  RECORD_KINDS, bagLocatorOf, judgeReseal, readRecord, recordIdOf, signRecord,
+  RECORD_KINDS, bagLocatorOf, entryLocatorOf, factOfRecord, judgeReseal, readRecord, recordIdOf, signRecord,
   type RecordSigner, type VerifiedRecord,
 } from "../src/sealed-records.js";
 import type { SeatRoll } from "../src/seat-duties.js";
@@ -158,5 +158,82 @@ describe("a forged or unsigned re-seal record refuses by name", () => {
     };
     expect(judgeReseal(await resealUnder(["raise-other"]), { versions, manifests: [] })).toMatchObject({ verdict: "refused", refusal: "reseal-unbound" });
     expect(judgeReseal(await resealUnder(["raise-1"]), { versions, manifests: [] })).toMatchObject({ verdict: "unverified" });
+  });
+});
+
+// ── The judge, over a key shore this suite mints ───────────────────────────────────────────────
+/** Every transition this suite counts verifies: the judge's own reading is what each case moves. */
+const EVIDENCE = { raiseCounts: () => true, admissionVerifies: () => true, joinProven: () => true };
+/** N content keys of one bag, the locator its founding key derives, and two capable writers to sign with. */
+async function keyShore(n: number) {
+  const { v: [x, y] } = await fleet("x", "y");
+  const keys = Array.from({ length: n }, () => mintContentKey());
+  const ids = keys.map((key) => keyVersionIdOf(key, BAG));
+  const locator = bagLocatorOf(keys[0]!, BAG);
+  const reader = (i: number) => ({ bagId: BAG, locator, key: keys[i]!, standing: { holdsWrite: () => true } });
+  /** A key version record for version i, verified under its own key. */
+  const version = async (i: number, parents: number[], span: number, cause: KeyCause): Promise<VerifiedRecord<"key-version">> => {
+    const signed = await signRecord({ kind: "key-version", bagId: BAG, key: keys[i]!, signer: x!.signer,
+      body: { bag: locator, keyVersion: ids[i]!, parents: parents.map((p) => ids[p]!).sort(), span: ids[span]! },
+      private: { cause, history: "closed", joinProofs: [], unserved: [] } });
+    if (!("record" in signed)) throw new Error(said(signed));
+    const read = readRecord("key-version", signed.record, reader(i));
+    if (!("record" in read)) throw new Error(said(read));
+    return read.record;
+  };
+  /** Count the versions, in order, into one reader's lineage; `unheld` names parents it holds no record for. */
+  const lineageOf = (records: VerifiedRecord<"key-version">[], unheld: KeyVersionId[] = []): KeyLineage => {
+    let lineage = KeyLineage.empty();
+    for (const record of records) {
+      const counted = lineage.count(factOfRecord(record), EVIDENCE, unheld);
+      if (!("lineage" in counted)) throw new Error(`setup: count refused ${counted.refusal}`);
+      lineage = counted.lineage;
+    }
+    return lineage;
+  };
+  const ctx = (i: number, ref: string) => ({ bagId: BAG, keyVersion: ids[i]!, role: "blob" as const, logicalRef: hexToBytes(ref) });
+  /** A sealed blob address under version i for a logical reference. */
+  const address = (i: number, ref: string, plaintext = "photo"): SealedAddress => {
+    const out = sealChunk({ key: keys[i]!, context: ctx(i, ref), plaintext: utf8Bytes(plaintext) });
+    if (!("chunk" in out)) throw new Error("setup: seal refused");
+    return out.chunk.address;
+  };
+  /** A verified manifest under version i naming one blob address under the reference's entry locator. */
+  const manifest = async (i: number, ref: string, at: SealedAddress, signer: RecordSigner = x!.signer): Promise<VerifiedRecord<"manifest">> => {
+    const signed = await signRecord({ kind: "manifest", bagId: BAG, key: keys[i]!, signer,
+      body: { bag: locator, keyVersion: ids[i]!, parents: [], entries: [{ role: "blob", address: at, locator: entryLocatorOf(keys[i]!, ctx(i, ref)), parents: [] }] },
+      private: { writer: `session:${signer.certificate.sessionKey}` } });
+    if (!("record" in signed)) throw new Error(said(signed));
+    const read = readRecord("manifest", signed.record, reader(i));
+    if (!("record" in read)) throw new Error(said(read));
+    return read.record;
+  };
+  /** A verified re-seal record riding under version `under`, replacing a value of version `old`. */
+  const reseal = async (under: number, old: number, body: { from: SealedAddress; to: SealedAddress; entry: string }, secret: Record<string, unknown>): Promise<VerifiedRecord<"re-seal">> => {
+    const signed = await signRecord({ kind: "re-seal", bagId: BAG, key: keys[under]!, signer: x!.signer,
+      body: { bag: locator, keyVersion: ids[under]!, replaced: ids[old]!, ...body }, private: secret as never });
+    if (!("record" in signed)) throw new Error(said(signed));
+    const read = readRecord("re-seal", signed.record, reader(under));
+    if (!("record" in read)) throw new Error(said(read));
+    return read.record;
+  };
+  const keyMap = (...held: number[]) => new Map(held.map((i) => [ids[i]!, keys[i]!] as const));
+  const entry = (i: number, ref: string) => entryLocatorOf(keys[i]!, ctx(i, ref));
+  return { x: x!, y: y!, keys, ids, locator, version, lineageOf, ctx, address, manifest, reseal, keyMap, entry };
+}
+const PHOTO = "a".repeat(64);
+
+describe("the judge reads counted history alone", () => {
+  it("a successor the reader verified and never counted stands as no history: unverified, never complete", async () => {
+    const s = await keyShore(2);
+    const v0 = await s.version(0, [], 0, { kind: "founding" });
+    await s.version(1, [0], 0, { kind: "removal", acts: ["raise-1"] });
+    const from = s.address(0, PHOTO), to = s.address(1, PHOTO);
+    const record = await s.reseal(1, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"] });
+    const manifests = [await s.manifest(0, PHOTO, from), await s.manifest(1, PHOTO, to)];
+    // The reader counted the founding alone: the successor's record reached it, and its count never landed.
+    const verdict = judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0]), keys: s.keyMap(0, 1), manifests } as never);
+    expect(verdict).toMatchObject({ verdict: "unverified" });
+    expect((verdict as { missing: string[] }).missing).toContain("successor");
   });
 });
