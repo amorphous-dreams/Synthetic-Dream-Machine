@@ -34,6 +34,7 @@ export type FloorStatusOutput = Partial<FloorStatus> & {
     readonly seed: { readonly cid: string; readonly ratchets: readonly RatchetDifference[] } | null;
     readonly floorPin: { readonly manifestCid: string; readonly ratchets: readonly RatchetDifference[] } | null;
     readonly line: string;
+    readonly unread?: string;
   };
   readonly nexusRefused?: { readonly refusal: string; readonly message: string };
 };
@@ -42,7 +43,8 @@ export type FloorStatusOutput = Partial<FloorStatus> & {
 export function floorStatusLines(s: FloorStatusOutput): string[] {
   const lines: string[] = [s.nexus !== undefined ? `floor status · nexus ${s.nexus}` : "floor status"];
   const g = s.genesis;
-  if (g) {
+  if (g?.unread !== undefined) lines.push(`  founding record: unread here (${g.unread})`);
+  else if (g) {
     const d = (v: string | null) => v ?? "absent";
     lines.push(`  founding record: engine ${d(g.record.engine)} · grammar ${d(g.record.grammar)} · plugins ${d(g.record.plugins)} · floor ${d(g.record.floor)}`);
     lines.push(g.seed === null

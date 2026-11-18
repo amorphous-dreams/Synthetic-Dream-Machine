@@ -237,8 +237,14 @@ export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer", row
  * checkout, so its seed stands at the head). Null where either does not read. Reads only.
  */
 async function hostSeedOffer(): Promise<SeedOffer | null> {
+  try { return await hostSeedOfferRead(); }
+  catch { return null; }   // a read-only line never stops the rite
+}
+
+async function hostSeedOfferRead(): Promise<SeedOffer | null> {
   const status = await cliVerb(["vessel", "floor", "status"]);
-  const record = status.ok ? (status.output["genesis"] as { record?: GenesisDigests } | undefined)?.record : undefined;
+  const genesis = status.ok ? status.output["genesis"] as { record?: GenesisDigests; unread?: string } | undefined : undefined;
+  const record = genesis?.unread === undefined ? genesis?.record : undefined;
   if (!record) return null;
   let bytes: Buffer;
   try { bytes = readFileSync(join(CHECKOUT, "genesis", "seed.json")); } catch { return null; }

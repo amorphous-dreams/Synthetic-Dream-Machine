@@ -6,6 +6,10 @@
  * founding record unchanged; nothing moves at boot, and lay moves canon into the bags, never the founding record.
  * The comparison itself lives in the mesh (`genesis-compare`, pure); this file reads the seed off disk and words
  * the line the boot and `lares floor status` print. It moves nothing.
+ *
+ * IT NEVER THROWS. The boot prints this read inline, and a read-only print must never stop a boot: a null record, a blob row
+ * the fold cannot read, or a seed carrying one answers an unread reading (`unread: <reason>`), which the line prints as
+ * `founding record: unread here (<reason>)`.
  */
 
 import {
@@ -21,13 +25,19 @@ export interface FoundingRecordTruths {
   readonly seed: { readonly cid: string; readonly ratchets: readonly RatchetDifference[] } | null;
   /** The floor pin and its reading per ratchet, or null where the caller held no pin. */
   readonly floorPin: { readonly manifestCid: string; readonly ratchets: readonly RatchetDifference[] } | null;
+  /** Why the read could not fold, where it could not; absent on a clean read. */
+  readonly unread?: string;
 }
+
+const NO_DIGESTS: GenesisDigests = Object.freeze({ engine: null, grammar: null, plugins: null, floor: null });
 
 /** Read the seed at `genesisDir` (the genesis artifact's own default where unnamed), or null where none reads. */
 function seedAt(genesisDir: string | undefined): { cid: string; body: GenesisRecordLike } | null {
-  const bytes = readGenesisSeedBytes(genesisDir);
-  const body = bytes ? parseGenesisSeed(bytes) : null;
-  return bytes && body ? { cid: genesisSeedCid(bytes), body } : null;
+  try {
+    const bytes = readGenesisSeedBytes(genesisDir);
+    const body = bytes ? parseGenesisSeed(bytes) : null;
+    return bytes && body ? { cid: genesisSeedCid(bytes), body } : null;
+  } catch { return null; }
 }
 
 /** The founding record beside the seed (offered) at `genesisDir` and, when the caller holds one, the floor pin. */
@@ -36,13 +46,19 @@ export function readFoundingRecordTruths(input: {
   readonly genesisDir: string | undefined;
   readonly floorPin?: FloorPinLike | null;
 }): FoundingRecordTruths {
-  const seed = seedAt(input.genesisDir);
-  const read = compareSeedToFoundingRecord({ record: input.record, seed: seed?.body ?? null, floorPin: input.floorPin ?? null });
-  return Object.freeze({
-    record: read.record,
-    seed: seed && read.seed ? Object.freeze({ cid: seed.cid, ratchets: read.seed }) : null,
-    floorPin: input.floorPin && read.floorPin ? Object.freeze({ manifestCid: input.floorPin.manifestCid, ratchets: read.floorPin }) : null,
-  });
+  try {
+    if (input.record === null || typeof input.record !== "object") throw new Error("no founding record reads (the island doc stands empty)");
+    const seed = seedAt(input.genesisDir);
+    const read = compareSeedToFoundingRecord({ record: input.record, seed: seed?.body ?? null, floorPin: input.floorPin ?? null });
+    return Object.freeze({
+      record: read.record,
+      seed: seed && read.seed ? Object.freeze({ cid: seed.cid, ratchets: read.seed }) : null,
+      floorPin: input.floorPin && read.floorPin ? Object.freeze({ manifestCid: input.floorPin.manifestCid, ratchets: read.floorPin }) : null,
+    });
+  } catch (e) {
+    const reason = (e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim() || "the fold refused";
+    return Object.freeze({ record: NO_DIGESTS, seed: null, floorPin: null, unread: reason });
+  }
 }
 
 /** A digest shortened for a line: its tail, or `absent`. */
@@ -54,6 +70,7 @@ const short = (digest: string | null): string => (digest === null ? "absent" : d
  * the founding record`, then the floor pin, per ratchet where held, else `pinNote` (the boot's own default: `unread here`).
  */
 export function foundingRecordLine(truths: FoundingRecordTruths, opts: { readonly pinNote?: string } = {}): string {
+  if (truths.unread !== undefined) return `[genesis] founding record: unread here (${truths.unread})`;
   const r = truths.record;
   const record = `founding record: engine ${short(r.engine)} · grammar ${short(r.grammar)} · plugins ${short(r.plugins)} · floor ${short(r.floor)}`;
   const seed = truths.seed === null
