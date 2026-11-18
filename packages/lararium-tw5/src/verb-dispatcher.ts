@@ -84,6 +84,11 @@ export interface VerbContext {
    * (`seat-canon-reach`); never read off args, a payload or a tiddler.
    */
   readonly asker?: Hand;
+  /**
+   * The vessel's exec-lei port (`ExecLeiPort`): a write door asks it to spend one return of a standing executable-record lei
+   * before a seat's executable record lands. Absent, every seat's executable record offers.
+   */
+  readonly execLei?: import("@lararium/mesh").ExecLeiPort;
   readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
 }
 

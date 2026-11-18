@@ -60,7 +60,7 @@
  */
 
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, refuseSeatExecutable, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, admitSeatExecutable, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
   carrierHashOf, isWorkingLayerBag, overrideBaseOf,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
@@ -477,9 +477,11 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
         else shown = standing;
       }
     }
-    // THE ONE WALL A SEAT KEEPS: a seat's executable record offers and never lands, whatever bag it names.
-    const vet = (records: readonly Record<string, unknown>[]): void => {
-      for (const record of records) refuseSeatExecutable(String(record["title"] ?? target.uri), record, "meme put", ctx.asker);
+    // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, whatever bag it names, or lands spending one return of a
+    // standing exec lei for the wiki the put names.
+    const wiki = target.recipe ?? (typeof args["bag"] === "string" ? args["bag"] : bag);
+    const vet = async (records: readonly Record<string, unknown>[]): Promise<void> => {
+      for (const record of records) await admitSeatExecutable(String(record["title"] ?? target.uri), record, "meme put", ctx.asker, { wiki, port: ctx.execLei });
     };
     const receipt = await placeMeme({ uri: target.uri, text, baseHash, vet }, sink);
     // THE ANSWER NAMES THE LAYER: the bag the put landed in, and for a named wiki the slot of it (`working`, or `personal`

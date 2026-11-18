@@ -55,7 +55,7 @@
  */
 
 import {
-  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseSeatExecutable, requireKahuReach, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, admitSeatExecutable, requireKahuReach, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -545,11 +545,12 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
     if ((place.position !== "plain" && structural.length > 0) || joinsFamily) {
       throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares meme put\` (meme_put) lands a family's text through the Confluence gate. A field or tag patch on a standing root or slot lands here.`);
     }
-    refuseSeatExecutable(title, next, "tiddler put", ctx.asker);
     refuseMalformedStagePath(title);
 
     const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
     if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
+    // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei.
+    await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: "default", port: ctx.execLei });
     // The record lands through the live wiki, so the in-wiki cascade routes it to the working layer as a person's edit would.
     wiki.addTiddler(new Tiddler(next));
     const landed = readRecord(wiki.getTiddler(title)!).fields;

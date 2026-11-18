@@ -43,7 +43,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, refuseSeatExecutable, requireKahuReach, resolveHouseCanon, ownEntry, isExecutableRecord } from "@lararium/mesh";
+import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, admitSeatExecutable, requireKahuReach, resolveHouseCanon, ownEntry, isExecutableRecord } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -672,12 +672,13 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
 
     // THE ONE WALL A SEAT KEEPS (state/decisions, "Native TW5 wikis"; "Five floors walked" (2)): a wave a seat asks lands no
     // executable record, since one runs in the operator's tab. The executor runs once through the capturing access first, and a
-    // record it would land that the mesh's one executable-class list names refuses the whole wave before a byte moves.
+    // record it would land that the mesh's one executable-class list names refuses the whole wave before a byte moves, unless a
+    // standing exec lei for the destination admits it (each such record spends one return).
     if (ctx.asker === "seat" && (action.verb === "INGEST" || action.verb === "LOAD")) {
       const startup: LarTiddlerRecord[] = [];
       const vet = makeCapturingBagAccess(access, (record) => { if (isExecutableRecord(record.tiddler)) startup.push(record); });
       await executeAction(action, vet.access, opts.tw5, opts.resolveByCid, opts.yieldHostTask);
-      for (const record of startup) refuseSeatExecutable(String(record.tiddler.title), record.tiddler, action.verb, ctx.asker);
+      for (const record of startup) await admitSeatExecutable(String(record.tiddler.title), record.tiddler, action.verb, ctx.asker, { wiki: destBag, port: ctx.execLei });
     }
 
     // `--dry-run`: run the executor through the capturing access — content writes
