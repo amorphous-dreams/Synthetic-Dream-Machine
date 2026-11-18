@@ -14,7 +14,8 @@ name: E2E shards
 # run that push triggers here, reads this workflow's verdict, and deletes the branch — never a second
 # `workflow_dispatch` on top of that push (see the helper's docblock). `ci.yml` CALLS this workflow as
 # its `E2E` job (`workflow_call`), so a branch push takes its e2e verdict from this same matrix and
-# merge gate; a lane push (`develop--*`, `lane/*`) hands in `doorstep` and the merge queue's run walks its shards. `ci.yml`'s own push trigger excludes `ci/**`, so a lane push never raises full CI beside
+# merge gate; a lane push (`develop--*`, `lane/*`) and a canon-only push (ci.yml's scope job) hand in `doorstep`, and the
+# merge queue's run walks the shards. `ci.yml`'s own push trigger excludes `ci/**`, so a lane push never raises full CI beside
 # its shards: one push, one e2e verdict.
 #
 # ONE BUILD PER SHARD. A single build shared across runners would need its own artifact-transfer
@@ -26,8 +27,9 @@ on:
     branches: ["ci/**"]
   workflow_dispatch: {}
   # `ci.yml`'s `E2E` job calls this workflow and hands back no output but its verdict. Its one input, `doorstep`, reads true
-  # on a push to a lane branch (`develop--*`, `lane/*`): the shards hold for the queue and the merge gate answers on its
-  # doorstep step alone, so the required `E2E / Merge shard reports` check still reports on the lane's head.
+  # on a push to a lane branch (`develop--*`, `lane/*`) and on a push that changes canon alone (ci.yml's scope job, any
+  # branch): the shards hold and the merge gate answers on its doorstep step alone, so the required
+  # `E2E / Merge shard reports` check still reports on that head.
   workflow_call:
     inputs:
       doorstep:
@@ -203,8 +205,8 @@ jobs:
     # let one red shard SKIP the merge gate instead of failing it, and a skipped required check
     # reads as "nothing to report" rather than as the red this gate exists to surface.
     #
-    # THE DOORSTEP. On a lane push this job still runs, walks its one doorstep step and passes, so the required check
-    # `E2E / Merge shard reports` reports on the lane's head and the lane can enter the queue. It runs rather than skips
+    # THE DOORSTEP. On a lane push or a canon-only push this job still runs, walks its one doorstep step and passes, so the
+    # required check `E2E / Merge shard reports` reports on that head and the lane can enter the queue. It runs rather than skips
     # because GitHub names a called job's check `E2E / Merge shard reports` only while the calling job runs, and a twin
     # job of the same name in ci.yml would leave a skipped twin to answer for a red gate on every full run. Every other
     # step reads `!inputs.doorstep`, which carries its implicit success() as before.

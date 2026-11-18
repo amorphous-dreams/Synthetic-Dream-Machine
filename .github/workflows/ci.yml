@@ -43,7 +43,7 @@ name: CI
 # (develop and main against the push's own `before`, any other branch against its merge base with develop) and hands on
 # `canon`, and every job a lane push skips reads it beside the lane test. The push trigger ignores no path: a trigger filter
 # cannot vary by branch and stops the run before any job is read, so a canon pull request never saw its four required
-# checks and could not enter the queue (PR #242). A canon pull request now reports all four and enqueues; a canon push to
+# checks and could not enter the queue (PR #242). A canon pull request reports all four and enqueues; a canon push to
 # `develop` costs the scope read, the Quick gates and the doorstep step, never the battery. A mixed push reads as code,
 # and `merge_group`, dispatch and a fork's pull request run whole whatever the scope reads. A scope that cannot read the
 # push answers code. tools/ci-graph.test.mjs (D4-D6) and tools/ci-ignored-paths.test.mjs hold it.
@@ -83,7 +83,7 @@ on:
   workflow_dispatch:
 
 # A newer push to a lane or a feature span supersedes its older run. On `develop` and `main` the run in flight finishes: a
-# canon push there raises a run of its own now (THE CANON DOORSTEP), and its doorstep must never cancel the battery a
+# canon push there raises a run of its own (THE CANON DOORSTEP), and its doorstep must never cancel the battery a
 # code push before it raised, the way a canon push that raised no run never did (tools/span-push.mjs pushes canon on it).
 concurrency:
   group: ci-${{ github.ref }}
