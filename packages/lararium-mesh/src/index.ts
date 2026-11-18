@@ -294,6 +294,7 @@ export * from "./content-handle.js";
 export * from "./effect-record.js";
 export * from "./kumu-device.js";
 export * from "./genesis-doc.js";
+export * from "./genesis-compare.js";
 export * from "./genesis-intake.js";
 export * from "./island-protocol.js";
 export * from "./conformance-verb-breathing.js";
