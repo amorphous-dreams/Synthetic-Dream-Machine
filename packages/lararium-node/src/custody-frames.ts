@@ -21,6 +21,8 @@
  *   custody  read: unlocked or not, the slot that opened, attempts left, what stands. Opens nothing.
  *   act      run one act of the sealed-act table (`sealed-acts`) against the key a person already opened, and
  *            answer its caller alone. A locked vessel refuses `custody-locked`: an act never opens a key.
+ *   wear     move the mount to a face already standing open (under a pūlama, one inside the lent set) and compose again.
+ *            It carries no route and hands none to the composition: unlock opens custody, wear chooses the face.
  *   backup   cut one face's backup bundle body (`face-bundle-cut`) and answer it SEALED under the bundle key the
  *            frame carries. The frame also carries the vessel's own route: see below.
  *
@@ -55,6 +57,8 @@ import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.j
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
   | { readonly op: "lock"; readonly face?: number }
+  /** Wear face `face`: the session's choice among the faces standing open. No credential rides it. */
+  | { readonly op: "wear"; readonly face: number }
   | { readonly op: "custody" }
   /** The census of saves held in memory, read before a stop: no credential, no act, no chain. */
   | { readonly op: "census" }
@@ -85,6 +89,8 @@ export type CustodyAnswer =
     } & HolderUnlock & Partial<CustodyStanding>)
   /** The node key opened and a face did not (`face-refused`), or the vessel holds several faces and none was named (`face-not-named`): nothing stays open. */
   | { readonly op: "unlock"; readonly reading: "face-refused" | "face-not-named"; readonly standing: string; readonly face?: number; readonly faceReading?: string; readonly faces?: readonly unknown[]; readonly faceReadings?: ReadonlyArray<{ readonly face: number; readonly reading: string }> }
+  /** A wear that stood: the face it wears, or (`switchRefused`) the face it named, why, and the face worn again. */
+  | ({ readonly op: "wear"; readonly face: number; readonly held: true; readonly already?: true; readonly switchRefused?: string; readonly wornAgain?: number } & Partial<CustodyStanding>)
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
   | { readonly op: "custody"; readonly pulama?: { readonly session: boolean; readonly waits: string | null }; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
@@ -120,6 +126,8 @@ export interface CustodyFrameDeps {
   readonly pulama?: {
     readonly standing: () => { readonly session: boolean; readonly waits: string | null };
     readonly dial: () => Promise<{ readonly session: boolean; readonly waits: string | null }>;
+    /** The faces the pūlama lends this vessel (`PulamaHolder.lends`): a wear chooses among them alone. */
+    readonly lent: () => readonly number[];
   };
   /**
    * Run one act of the sealed-act table against the seated holder (`runSealedAct`, bound to what the standing
@@ -134,7 +142,9 @@ export interface CustodyFrameDeps {
   readonly backup?: (face: number, bundleKey: Uint8Array, ward: WardCredential) => Promise<FaceBundleCut>;
 }
 
-const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody", "census", "act", "backup", "face-route", "ward"]);
+const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "act", "backup", "face-route", "ward"]);
+/** The keys a `wear` frame may carry: a face and nothing else, so no route ever rides a wear. */
+const WEAR_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "face"]);
 const WARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "verb", "argsDigest"]);
 /** The keys a `face-route` frame may carry. */
 const FACE_ROUTE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "slots", "purpose", "argsDigest"]);
@@ -264,7 +274,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         faceReadings.push({ face: ordinal, reading: reading === "opened" ? "opened" : `stayed-shut:${reading}` });
       }
       if (standing.length > 0 && opened.length === 0) return refuseFaces("face-refused", { faces: readings.map((r) => r.reading), faceReadings });
-      if (mounted === undefined && mountedBefore === undefined && opened.length === 1) mounted = opened[0];
+      // THE MOUNT AFTER AN OPENING: the one face this route opened, else the lowest of those it opened; `lares wear N` switches.
+      if (mounted === undefined && mountedBefore === undefined && opened.length > 0) mounted = Math.min(...opened);
       // `--all --face N` (the shim's re-wear after a stand): N wears where this route opened it; where it stayed shut, face 0
       // wears where it opened, else the first face that did, so the vessel stands on a face the operator holds open.
       if (sel.face !== undefined && !opened.includes(sel.face) && opened.length > 0) {
@@ -319,6 +330,40 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return { op: "unlock", ...u, ...perFace, ...stood, held: false };
     }
     return { op: "unlock", ...u, ...perFace, ...stood, held: true };
+  });
+
+  /**
+   * WEAR CHOOSES THE FACE; UNLOCK OPENED IT. The face must stand open already (under a pūlama, inside the lent set); the mount
+   * moves first, so the sovereign gate reads it, and the composition stands again with NO ward credential: a wear is no ward
+   * act, so a face that would need a fresh certificate at a new scope waits for an act that carries its own route. A wear whose
+   * composition refuses wears the face it left, and the node key stays held either way: wear never opened it.
+   */
+  const wear = composing(async (face: number): Promise<CustodyAnswer> => {
+    const refuse = (reason: string, errorMessage: string, extra: object = {}): CustodyAnswer => {
+      deps.onLog(`wear h${face}: refused (${reason})`);
+      return { op: "wear", status: "error", errorMessage, refusal: { reason, ...extra } };
+    };
+    if (!holder.isUnlocked()) return refuse("custody-locked", "this vessel holds no key: open it first (`lares vault unlock`); a wear opens nothing");
+    if (deps.pulama) {
+      const lent = [...deps.pulama.lent()];
+      if (!lent.includes(face)) return refuse("face-not-lent", `the pūlama lends this vessel ${lent.length > 0 ? lent.map((o) => `h${o}`).join(", ") : "no face"}, and h${face} stands outside that set`, { lent });
+    }
+    const at = await holder.faceStanding({ ordinal: face });
+    if (at === null || !at.unlocked) {
+      return refuse("face-not-open", at === null
+        ? `no face h${face} stands on this vessel`
+        : `face h${face} stands shut: open it under its own route (\`lares vault unlock --all\`), then wear it`);
+    }
+    const before = mountedFaceOrdinal();
+    if (before === face) return { op: "wear", face, held: true, already: true, standing: deps.standing() };
+    setMountedFace(face);
+    deps.onLog(`wear: h${face} worn${before !== undefined ? ` (h${before} before)` : ""}; composing again`);
+    const stood = await deps.recompose(true);
+    if (stood.refused === undefined) return { op: "wear", face, held: true, ...stood };
+    setMountedFace(before);
+    deps.onLog(`the composition wearing h${face} did not stand; ${before !== undefined ? `h${before} worn again` : "no face named"}, the node key held`);
+    const back = await deps.recompose(true);
+    return { op: "wear", face, held: true, ...back, switchRefused: stood.refused, ...(before !== undefined ? { wornAgain: before } : {}) };
   });
 
   /**
@@ -459,6 +504,15 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       }
       const purpose = frame["purpose"] as "persona-new" | "bundle.restore";
       act = async () => { const ref = parkFaceRoute(slots, purpose, frame["argsDigest"] as string); deps.onLog("face-route: parked for one operation"); return { op: "face-route", ref }; };
+    } else if (op === "wear") {
+      const frame = parsed as Record<string, unknown>;
+      const face = frame["face"];
+      if (Object.keys(frame).some((k) => !WEAR_FRAME_KEYS.has(k)) || !Number.isSafeInteger(face) || (face as number) < 0) {
+        deps.onLog("wear: refused (bad-custody-frame)");
+        answer(sock, { op, status: "error", errorMessage: "a wear frame carries `op` and a `face` (a handle index, a whole number from 0), and nothing beside them: no route rides a wear", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      act = () => wear(face as number);
     } else if (op === "unlock" && deps.pulama) {
       // A PŪLAMA HOLDS THIS VESSEL'S CUSTODY: the frame's credentials go unread (no route opens anything here), the vessel
       // dials the pūlama again, and the answer names a session or what the pūlama waits on.
