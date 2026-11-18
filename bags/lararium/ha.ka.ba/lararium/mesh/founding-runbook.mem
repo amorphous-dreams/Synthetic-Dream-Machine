@@ -358,11 +358,11 @@ A live vessel may continue with its local corpus while household HTTPS, browser 
 
 A re-founding restores the house from its keep, at one revision: the keep (`lares rite keep`, below) holds the house's last cut as a cleartext bundle under `house/` of the operator's own private repo, and a brand-new house founds at a fresh root, `~/.lares-next`, beside the house it replaces, imports a clone of that keep, reads par, and swaps into `~/.lares` by rename. The face's memory crosses as content onto the new face that carries the same pet-name. Both houses stand on the one image the checkout builds. The pūlama stands after the swap, on the renamed root, with the first keep after it: it binds `$LARES_HOUSE/hearth` and `$LARES_HOUSE/pulama` by path and restarts unless stopped, so a pūlama lit at `~/.lares-next` would keep binding a path the rename empties.
 
-''Do'': in this order, each line on the operator's real terminal; a line that ends `# each face` runs once per face, `N` taking 0, 1, 2, and `<pet-name>` the face `N`'s pet-name. The census files rest outside both house roots (`~/carry-census`), so the rename moves none of them. Where the standing house cannot answer (a lost disk, a torn hearth), skip its census and its keep: the keep the remote already holds restores it, and the census of the new house after the import stands as the record.
+''Do'': in this order, each line on the operator's real terminal; a line that ends `# each face` runs once per face, `N` taking 0, 1, 2, and `<pet-name>` the face `N`'s pet-name. The census files rest outside both house roots (`~/census-drill`), so the rename moves none of them. Where the standing house cannot answer (a lost disk, a torn hearth), skip its census and its keep: the keep the remote already holds restores it, and the census of the new house after the import stands as the record.
 
 ```sh
 # THE STANDING HOUSE (~/.lares): no LARES_HOUSE in the environment, so the env file names ~/.lares
-tools/lares-container.sh vault unlock --face N && node tools/carry-parity.mjs census --root ~/.lares --label 'old <pet-name>' --out ~/carry-census/old-<pet-name>.json --lares tools/lares-container.sh   # each face
+tools/lares-container.sh vault unlock --face N && node tools/census-drill.mjs census --root ~/.lares --label 'old <pet-name>' --out ~/census-drill/old-<pet-name>.json --lares tools/lares-container.sh   # each face
 lares rite keep --workspace house-backup --face 0               # on the host, as the steward: the last cut, pushed and landed
 lares rite receipts --face 0                                     # conferre reads the keep's tessera par
 tools/lares-container.sh down                                    # never accept-loss: a census that asks for it means vault unlock, let it settle, down again
@@ -376,19 +376,19 @@ tools/lares-container.sh persona new 2 --name '<face 2 pet-name>'
 tools/lares-container.sh vault unlock --all --face 1             # each face stands lit in a composition once
 tools/lares-container.sh vault unlock --face N && tools/lares-container.sh vessel lay --apply --yes   # each face: canon first, then that face's mirrors
 tools/lares-container.sh vessel lay --apply --lift-kahua <K>    # still wearing that face, where its lay said `kahua: K item(s) stand pending`
-tools/lares-container.sh vault unlock --face N && node tools/carry-parity.mjs census --root ~/.lares-next --label 'new-base <pet-name>' --out ~/carry-census/new-base-<pet-name>.json --lares tools/lares-container.sh   # each face, before the import
+tools/lares-container.sh vault unlock --face N && node tools/census-drill.mjs census --root ~/.lares-next --label 'new-base <pet-name>' --out ~/census-drill/new-base-<pet-name>.json --lares tools/lares-container.sh   # each face, before the import
 tools/lares-container.sh vault unlock --face 0 && tools/lares-container.sh import /lar/config/carry/keep-clone/house   # a preview: writes nothing; every pet-name maps to a face
 tools/lares-container.sh vault unlock --face N && tools/lares-container.sh import /lar/config/carry/keep-clone/house --apply   # each face
 tools/lares-container.sh vault unlock --face N && tools/lares-container.sh import /lar/config/carry/keep-clone/house --apply && tools/lares-container.sh vessel lay --apply --yes   # each face again: lands 0
-tools/lares-container.sh vault unlock --face N && node tools/carry-parity.mjs census --root ~/.lares-next --label 'new <pet-name>' --out ~/carry-census/new-<pet-name>.json --lares tools/lares-container.sh   # each face
-node tools/carry-parity.mjs compare --old ~/carry-census/old-*.json --new ~/carry-census/new-[!b]*.json --base ~/carry-census/new-base-*.json --json --out ~/carry-census/parity.json   # par
+tools/lares-container.sh vault unlock --face N && node tools/census-drill.mjs census --root ~/.lares-next --label 'new <pet-name>' --out ~/census-drill/new-<pet-name>.json --lares tools/lares-container.sh   # each face
+node tools/census-drill.mjs compare --old ~/census-drill/old-*.json --new ~/census-drill/new-[!b]*.json --base ~/census-drill/new-base-*.json --json --out ~/census-drill/parity.json   # par
 tools/lares-container.sh lei kui --rite keep --branch house-backup --returns 12 --face 0   # before any pūlama: a ward act, which a pūlama refuses `needs-the-human`; the lei door names its face, since several faces stand open
 # THE SWAP
 tools/lares-container.sh down
 mv ~/.lares ~/.lares-prior && mv ~/.lares-next ~/.lares && cp ~/.lares-prior/lares-surface.env ~/.lares/ && unset LARES_HOUSE
 tools/lares-container.sh up                                      # the renamed house, the workspace bound at /lar/workspaces/house-backup
-tools/lares-container.sh vault unlock --face N && node tools/carry-parity.mjs census --root ~/.lares --label 'swap <pet-name>' --out ~/carry-census/swap-<pet-name>.json --lares tools/lares-container.sh   # each face
-node tools/carry-parity.mjs compare --old ~/carry-census/new-[!b]*.json --new ~/carry-census/swap-*.json --json --out ~/carry-census/swap.json   # par against the census before the swap
+tools/lares-container.sh vault unlock --face N && node tools/census-drill.mjs census --root ~/.lares --label 'swap <pet-name>' --out ~/census-drill/swap-<pet-name>.json --lares tools/lares-container.sh   # each face
+node tools/census-drill.mjs compare --old ~/census-drill/new-[!b]*.json --new ~/census-drill/swap-*.json --json --out ~/census-drill/swap.json   # par against the census before the swap
 # THE LIT HOUSE: ~/.lares/lares-surface.env carries LARES_PULAMA=1
 tools/lares-container.sh pulama up                               # standing unlit
 tools/lares-container.sh pulama light                            # the operator's own route lights every face
@@ -591,6 +591,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kkvV851Q3QiyoED2fEh38HWnroLP3q2quTFFwRsKOSA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wYTJfYb5ydR7UAf2JrXtZyr7Gx8MYSX-mtIod2O8wGc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

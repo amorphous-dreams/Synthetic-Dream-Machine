@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// carry-parity — the QA proof of a restore at one revision: read two houses (`--old`, the house an export or a keep read, and
+// census-drill — road 13b's census drill, the QA proof of a restore at one revision: read two houses (`--old`, the house an export or a keep read, and
 // `--new`, the brand-new house an import filled) and answer `par`, or name every difference, per class, as missing (the
 // exporting house holds it, the new one does not), changed (both hold it, the bytes differ) or extra (the new house holds it,
 // and neither the exporting house nor the new house's own founding does).
@@ -23,19 +23,19 @@
 //   kapae   each kāpae shadow under the projections: `<layer> <title>`, the face relation in the layer named by pet-name;
 // and house-wide:
 //   shares  each share row: `<kind> <slug>` -> owner, readers and writers by pet-name;
-//   wikis   each wiki the catalog lists (`wiki list`): slug -> kind, so a wiki that holds no page still reads, and a carry that
+//   wikis   each wiki the catalog lists (`wiki list`): slug -> kind, so a wiki that holds no page still reads, and a restore that
 //           leaves one behind reads red by name.
 //
-// WHAT MAY DIFFER, BY NAME (`MAY_DIFFER`): what a founding re-mints and the carry never carries. The census records the face
+// WHAT MAY DIFFER, BY NAME (`MAY_DIFFER`): what a founding re-mints and a restore never carries. The census records the face
 // relations and kahua cids under `allowed` so a person sees them; nothing there decides the verdict.
 //
 // USAGE
-//   node tools/carry-parity.mjs --old <root|census.json> --new <root|census.json> [--old-port N] [--new-port N]
+//   node tools/census-drill.mjs --old <root|census.json> --new <root|census.json> [--old-port N] [--new-port N]
 //                               [--base <census.json>] [--json] [--out <receipt.json>] [--lares <cmd>]
 //       both houses standing (or a census taken earlier on either side): census each, then compare.
-//   node tools/carry-parity.mjs census --root <LAR_ROOT> [--port N] [--label L] [--out <census.json>] [--lares <cmd>]
+//   node tools/census-drill.mjs census --root <LAR_ROOT> [--port N] [--label L] [--out <census.json>] [--lares <cmd>]
 //       one reading of the standing house's worn face, for a rite where the two houses never stand at once.
-//   node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--json] [--out F]
+//   node tools/census-drill.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--json] [--out F]
 //       several readings per side merge by face pet-name (one census per worn face); one flag takes every path after it
 //       up to the next flag, so `--old old-*.json` reads each face the glob names, and a path no flag takes refuses.
 // `--lares <cmd>` names the CLI to call (a host shim, e.g. `lares`); by default the built CLI under this checkout, with
@@ -69,9 +69,9 @@ const byPetname = (s, relationToPetname) => s.replace(RELATION, (rel) => relatio
 export const FACE_CLASSES = ["memes", "unread", "index", "plain", "kahua", "kapae"];
 export const HOUSE_CLASSES = ["shares", "wikis"];
 
-/** What a founding re-mints and the carry never carries: named, recorded where a door reads it, never compared. */
+/** What a founding re-mints and a restore never carries: named, recorded where a door reads it, never compared. */
 export const MAY_DIFFER = [
-  { name: "face relations", why: "a new founding mints each face's relation F; the carry maps faces by pet-name, and a layer named daemon-<F> reads by pet-name here" },
+  { name: "face relations", why: "a new founding mints each face's relation F; the import maps faces by pet-name, and a layer named daemon-<F> reads by pet-name here" },
   { name: "actors", why: "every landed row is a new act under the new face's authority, so change actors and signers differ" },
   { name: "CRDT heads", why: "no CRDT history rides a bundle; the import writes new changes, so every document's heads differ" },
   { name: "kahua cids", why: "each head re-lifts under the new face's grant, so its signature and cid are new; heads compare by title and body digest" },
@@ -161,9 +161,9 @@ export function compareCensus(oldReadings, newReadings, baseReadings = []) {
 export function receiptLines(receipt) {
   const c = receipt.counts;
   if (receipt.verdict === "par") {
-    return [`carry-parity: par — ${c.faces} face(s): ${c.memes} memes, ${c.index} index rows, ${c.plain} plain records, ${c.kahua} kahua heads, ${c.kapae} kāpae, ${c.shares} share rows, ${c.wikis} wikis read equal`];
+    return [`census-drill: par — ${c.faces} face(s): ${c.memes} memes, ${c.index} index rows, ${c.plain} plain records, ${c.kahua} kahua heads, ${c.kapae} kāpae, ${c.shares} share rows, ${c.wikis} wikis read equal`];
   }
-  const lines = [`carry-parity: red — ${receipt.differences.length} difference(s)`];
+  const lines = [`census-drill: red — ${receipt.differences.length} difference(s)`];
   for (const d of receipt.differences) {
     const values = d.kind === "changed" ? ` (old ${d.old} · new ${d.new})` : "";
     lines.push(`  ${d.scope} · ${d.class}: ${d.kind} ${d.key}${values}`);
@@ -341,9 +341,9 @@ function parse(argv) {
 }
 
 const USAGE = [
-  "usage: node tools/carry-parity.mjs --old <root|census.json> --new <root|census.json> [--old-port N] [--new-port N] [--base <census.json>] [--json] [--out <receipt.json>] [--lares <cmd>]",
-  "       node tools/carry-parity.mjs census --root <LAR_ROOT> [--port N] [--label L] [--out <census.json>] [--lares <cmd>]",
-  "       node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--json] [--out <receipt.json>]",
+  "usage: node tools/census-drill.mjs --old <root|census.json> --new <root|census.json> [--old-port N] [--new-port N] [--base <census.json>] [--json] [--out <receipt.json>] [--lares <cmd>]",
+  "       node tools/census-drill.mjs census --root <LAR_ROOT> [--port N] [--label L] [--out <census.json>] [--lares <cmd>]",
+  "       node tools/census-drill.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--json] [--out <receipt.json>]",
 ];
 
 const isCensusFile = (p) => existsSync(p) && statSync(p).isFile();
@@ -358,7 +358,7 @@ async function side(paths, port, laresCmd, label) {
 
 export async function main(argv) {
   let opts;
-  try { opts = parse(argv); } catch (e) { console.error(`carry-parity: ${e.message}`); console.error(USAGE.join("\n")); return 2; }
+  try { opts = parse(argv); } catch (e) { console.error(`census-drill: ${e.message}`); console.error(USAGE.join("\n")); return 2; }
   if (opts.help) { console.log(USAGE.join("\n")); return 0; }
   const verb = opts._[0];
   try {
@@ -366,7 +366,7 @@ export async function main(argv) {
       if (!opts.root) throw new Error("census names the house it reads (--root <LAR_ROOT>)");
       const reading = await census({ root: resolve(opts.root), port: opts.port, lares: opts.lares, label: opts.label ?? "" });
       const text = `${JSON.stringify(reading, null, 2)}\n`;
-      if (opts.out) { writeFileSync(opts.out, text); console.error(`carry-parity: census of ${Object.keys(reading.face).join(", ") || "no worn face"} written to ${opts.out}`); }
+      if (opts.out) { writeFileSync(opts.out, text); console.error(`census-drill: census of ${Object.keys(reading.face).join(", ") || "no worn face"} written to ${opts.out}`); }
       else process.stdout.write(text);
       return 0;
     }
@@ -381,7 +381,7 @@ export async function main(argv) {
     else for (const line of receiptLines(receipt)) console.log(line);
     return receipt.verdict === "par" ? 0 : 1;
   } catch (e) {
-    console.error(`carry-parity: ${e instanceof Error ? e.message : String(e)}`);
+    console.error(`census-drill: ${e instanceof Error ? e.message : String(e)}`);
     if (!(e instanceof DoorRefused) && !(e instanceof CensusEmpty)) console.error(USAGE.join("\n"));
     return 2;
   }
