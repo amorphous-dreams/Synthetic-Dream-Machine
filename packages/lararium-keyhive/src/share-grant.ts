@@ -3,6 +3,8 @@
  *
  * The owner's hive registers the bag where it stands unregistered, takes the grantee's contact card, delegates the grade the
  * row names (a writer takes Keyhive's `admin`, `FACE_SEATS_AND_UNSEATS`), and hands the grantee's hive the cap events.
+ * The grantee's hive then names the owner's Document for the bag (`adoptBag`), so its own read resolves there; without the
+ * adoption it held the events and answered `bag-not-registered`.
  */
 import type { KeyhiveProvider } from "./keyhive-provider.js";
 
@@ -23,5 +25,6 @@ export async function grantShare({ owner, grantee, bag, access: grade }: ShareGr
   const held = (await owner.verify({ bagUrl: bag, presenter: id, access }).catch(() => ({ ok: false }))).ok;
   await owner.delegate({ audience: id, bagUrl: bag, access });
   await grantee.ingestPeerEvents(await owner.eventsForPeer(id));
+  grantee.adoptBag(bag, owner.docIdOfBag(bag)!);
   return { fresh: !held };
 }
