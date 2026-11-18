@@ -13,7 +13,7 @@ import { describe, expect, it } from "vitest";
 import { hexToBytes, utf8Bytes } from "../src/crypto.js";
 import { KeyLineage, contentKeyRollSink, type KeyCause, type RollOutcome } from "../src/content-key-lineage.js";
 import type { SealedBlob } from "../src/content-key-holder.js";
-import { keyVersionIdOf, mintContentKey, sealChunk, type ContentKey, type KeyVersionId, type SealedAddress } from "../src/sealed-chunk.js";
+import { keyVersionIdOf, mintContentKey, sealChunk, type KeyVersionId, type SealedAddress } from "../src/sealed-chunk.js";
 import {
   RECORD_KINDS, bagLocatorOf, entryLocatorOf, factOfRecord, joinProofOf, judgeReseal, readRecord, recordIdOf, signRecord,
   type RecordSigner, type VerifiedRecord,
@@ -216,7 +216,7 @@ describe("the judge reads counted history alone", () => {
     // The reader counted the founding alone: the successor's record reached it, and its count never landed.
     const verdict = judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0]), keys: s.keyMap(0, 1), manifests });
     expect(verdict).toMatchObject({ verdict: "unverified" });
-    expect((verdict as { missing: string[] }).missing).toContain("successor");
+    expect((verdict as unknown as { missing: string[] }).missing).toContain("successor");
   });
 });
 
