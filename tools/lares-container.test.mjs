@@ -227,6 +227,20 @@ for (const [name, shim] of shims) {
     assert.match(offline.calls, /--profile offline run --rm --name lares-offline-[0-9a-f]+ -e TERM -T offline persona list/);
   });
 
+  test(`${name}: a harness mark crosses into the vessel by name, so an AI shell's CLI asks as a seat (#231); an unmarked shell carries none`, async () => {
+    const marks = { CLAUDECODE: "1", CODEX_SANDBOX: "seatbelt", CODEX_SANDBOX_NETWORK_DISABLED: "1" };
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", ...marks } });
+    assert.equal(r.status, 0, r.stderr);
+    const exec = r.calls.split("\n").find((l) => / exec /.test(l) && / vessel read$/.test(l));
+    assert.ok(exec, r.calls);
+    for (const n of Object.keys(marks)) assert.match(exec, new RegExp(`(^| )-e ${n}( |$)`));
+    assert.doesNotMatch(r.calls, /seatbelt/, "the value never rides argv");
+    const offline = await run(shim, ["persona", "list"], { env: { ...MOUNTS, CLAUDECODE: "1" } });
+    assert.match(offline.calls, /--profile offline run --rm --name lares-offline-[0-9a-f]+ (?:-e \S+ )*-e CLAUDECODE /);
+    const bare = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.doesNotMatch(bare.calls, /-e (?:CLAUDECODE|CODEX_SANDBOX)/);
+  });
+
   test(`${name}: an act carries its stop handle: an exec its LARES_EXEC_TAG by name, a run its lares-offline-<tag> name`, async () => {
     const standing = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.match(standing.calls, /exec -e LARES_EXEC_TAG -T lares node \S+ vessel read$/m);
