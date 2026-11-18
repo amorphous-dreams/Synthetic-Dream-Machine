@@ -45,7 +45,7 @@ const GLYPH: Record<Row["state"], string> = { aligned: "✓", drift: "~", foreig
  * settings files at will), and one whose host now stands `absent` on this machine leaves the tunnel nothing to keep there, yet
  * the house once wrote it, so the line names it.
  */
-export function briefLine(rows: readonly Row[]): string {
+export function briefLine(rows: readonly Row[], door: Door = "home"): string {
   const off = rows.filter((r) => r.state === "drift" || r.state === "foreign" || r.state === "unreachable");
   const ids = (some: readonly Row[]): string => some.map((r) => r.id).join(", ");
   const rewritten = rows.filter((r) => r.touched && r.state === "aligned");
@@ -58,7 +58,7 @@ export function briefLine(rows: readonly Row[]): string {
   // A house hook script no row declares needs no reading to cure: the line names the act that lifts it.
   const stray = off.filter((r) => r.lifts !== undefined && r.state === "drift").sort((a, b) => a.id.localeCompare(b.id));
   const lift = stray.length === 0 ? "" : `; ${stray.length} item(s) name a house hook script no row declares: ${ids(stray)} (lares home tend lifts each)`;
-  return `reality tunnel: ${off.length} item(s) off the tunnel — ${ids(off)} (lares home read)${apart ? `; ${apart}` : ""}${lift}`;
+  return `reality tunnel: ${off.length} item(s) off the tunnel — ${ids(off)} (lares ${door} read)${apart ? `; ${apart}` : ""}${lift}`;
 }
 
 /** What a tend lifted, one line per target: the house hook scripts a row named before the tend and no row names after it. */
@@ -78,8 +78,8 @@ export function externalLines(items: readonly Item[], r: Pick<TendResult, "rows"
     .map((row) => `  ${r.set.includes(row.id) ? "set" : "already set"} ${row.detail} (${row.id})`);
 }
 
-function show(rows: readonly Row[], brief: boolean): void {
-  if (brief) { console.log(briefLine(rows)); return; }
+function show(rows: readonly Row[], brief: boolean, door: Door = "home"): void {
+  if (brief) { console.log(briefLine(rows, door)); return; }
   for (const r of rows) {
     console.log(`  ${GLYPH[r.state]} ${r.state.padEnd(11)} ${r.id.padEnd(30)} ${r.detail}${r.touched ? " · touched since the house last wrote it" : ""}`);
     console.log(`    ${" ".repeat(11)} ${r.path}`);
@@ -131,7 +131,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<numbe
     const rows = read(items, ledger, reader);
     const code = exitOf(rows);
     // `--brief` prints the one line a hook reads, terminal or none: the wake hook calls it with no TTY.
-    if (args.flags["brief"] === true) { show(rows, true); return code; }
+    if (args.flags["brief"] === true) { show(rows, true, door); return code; }
     emit(args, { ok: code === 0, data: { radius: door, rows, exit: code }, human: () => show(rows, false) });
     return code;
   }
