@@ -13,7 +13,7 @@ import { dirname, join } from "node:path";
 import { EXIT, Ledger, exitOf, read, tend, undo, type External, type Item, type Row } from "../src/reality-tunnel/engine.js";
 import { windowsProfile } from "../src/reality-tunnel/homes.js";
 import { radiusLock } from "../src/reality-tunnel/lock.js";
-import { briefLine, indexReader, liftedLines } from "../src/commands/tunnel-door.js";
+import { briefLine, externalLines, indexReader, liftedLines } from "../src/commands/tunnel-door.js";
 import {
   claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
   tomlTableKey, tomlTableUnset, tomlTopFloor,
@@ -193,8 +193,106 @@ describe("the repo radius", () => {
 
   it("the live tree's checkout holds its reality tunnel, read without a write", () => {
     const rows = read(repoItems(REPO), new Ledger(join(dir, "never-written")));
-    expect(rows.filter((r) => r.state !== "aligned")).toEqual([]);
+    // The clone's git config rests outside the tree, and a lane's runner never tends the operator's clone; the scratch
+    // clones below prove the driver's rows.
+    expect(rows.filter((r) => r.state !== "aligned" && r.host !== "git")).toEqual([]);
     expect(existsSync(join(dir, "never-written"))).toBe(false);
+  });
+});
+
+describe("the repo radius seats the seal merge driver in the clone's shared git config", () => {
+  const DRIVER = "node tools/mem-merge-driver.mjs %O %A %B %P %L";
+  const NAME = "a .mem conflict on its seal alone re-seals";
+  const git = (root: string, ...args: string[]): string | null => {
+    try { return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); }
+    catch { return null; }
+  };
+  const configBytes = (root: string): string => readFileSync(join(root, ".git", "config"), "utf8");
+
+  it("the carrier declares both driver keys as repo items", () => {
+    const rows = declared(REPO).repo.filter((s) => s.kind === "git-config");
+    expect(rows.map((s) => [s["key"], s["value"]])).toEqual([["merge.mem-seal.name", NAME], ["merge.mem-seal.driver", DRIVER]]);
+  });
+
+  it("a scratch clone reads drift unset; tend sets both keys; a second tend changes nothing", async () => {
+    const root = clone();
+    const l = ledger();
+    const before = read(repoItems(root), l).filter((r) => r.host === "git");
+    expect(before.map((r) => r.state)).toEqual(["drift", "drift"]);
+    expect(before.every((r) => /unset/.test(r.detail))).toBe(true);
+    const r1 = await tend(repoItems(root), l);
+    expect(r1.set.sort()).toEqual(["git.merge-driver", "git.merge-driver-name"]);
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBe(DRIVER);
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.name")).toBe(NAME);
+    const bytes = configBytes(root);
+    const r2 = await tend(repoItems(root), l);
+    expect(r2.wrote).toEqual([]);
+    expect(r2.set).toEqual([]);
+    expect(r2.generation).toBeNull();
+    expect(configBytes(root)).toBe(bytes);
+    const after = r2.rows.filter((r) => r.host === "git");
+    expect(after.map((r) => [r.state, r.touched])).toEqual([["aligned", false], ["aligned", false]]);
+  });
+
+  it("a worktree's tend lands in the clone's shared config, so every worktree of the clone reads it", async () => {
+    const root = clone();
+    execFileSync("git", ["-C", root, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "--no-verify", "-m", "root"]);
+    const wt = join(dir, "wt");
+    execFileSync("git", ["-C", root, "worktree", "add", "-q", wt]);
+    for (const rel of [CARRIER, declared(REPO).seed]) {
+      mkdirSync(join(wt, dirname(rel)), { recursive: true });
+      writeFileSync(join(wt, rel), readFileSync(join(root, rel), "utf8"));
+    }
+    await tend(repoItems(wt), ledger());
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBe(DRIVER);
+  });
+
+  it("a value set by another hand reads drift naming it, and tend sets the tunnel's", async () => {
+    const root = clone();
+    execFileSync("git", ["-C", root, "config", "merge.mem-seal.driver", "node elsewhere.mjs"]);
+    const row = read(repoItems(root), ledger()).find((r) => r.id === "git.merge-driver")!;
+    expect(row.state).toBe("drift");
+    expect(row.detail).toContain("node elsewhere.mjs");
+    await tend(repoItems(root), ledger());
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBe(DRIVER);
+  });
+
+  it("undo puts the keys back unset", async () => {
+    const root = clone();
+    const l = ledger();
+    await tend(repoItems(root), l);
+    const items = repoItems(root);
+    undo(l, undefined, { externals: new Map(items.filter((i) => i.external).map((i) => [i.id, i.external!] as const)) });
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBeNull();
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.name")).toBeNull();
+  });
+
+  it("the commit gate reads the index alone, so an unset driver reads absent there", () => {
+    const root = clone();
+    const show = (rel: string): string | null => { try { return execFileSync("git", ["-C", root, "show", `:${rel}`], { encoding: "utf8" }); } catch { return null; } };
+    execFileSync("git", ["-C", root, "add", "-A"]);
+    const rows = read(repoItems(root, declared(root, show), show, { staged: true }), ledger(), indexReader(root)).filter((r) => r.host === "git");
+    expect(rows.map((r) => r.state)).toEqual(["absent", "absent"]);
+  });
+
+  it("a tree outside any git repository reads the driver absent", () => {
+    const root = mkdtempSync(join(dir, "nogit-"));
+    for (const rel of [CARRIER, declared(REPO).seed]) {
+      mkdirSync(join(root, dirname(rel)), { recursive: true });
+      writeFileSync(join(root, rel), readFileSync(join(REPO, rel), "utf8"));
+    }
+    const rows = read(repoItems(root), ledger()).filter((r) => r.host === "git");
+    expect(rows.map((r) => r.state)).toEqual(["absent", "absent"]);
+  });
+
+  it("tend's report names what it set and what it found already set, in plain words", async () => {
+    const root = clone();
+    const l = ledger();
+    const first = await tend(repoItems(root), l);
+    const set = externalLines(repoItems(root), first);
+    expect(set).toContain(`  set merge.mem-seal.driver = ${DRIVER} (git.merge-driver)`);
+    const second = await tend(repoItems(root), l);
+    expect(externalLines(repoItems(root), second)).toContain(`  already set merge.mem-seal.driver = ${DRIVER} (git.merge-driver)`);
   });
 });
 
