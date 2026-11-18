@@ -13,15 +13,62 @@
  *
  * Both rows ride the store door (`floor-status`, `floor-accept`), so a standing vessel's own Repo answers.
  *
+ * `status` prints both truths for every place (D1, shore recommendation 8): the founding record (the stored genesis island)
+ * beside the seed (offered) and the floor pin, ratchet by ratchet. A place in no Nexus charter prints that part and names
+ * the Nexus refusal on its own line; the read still answers.
+ *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
-import type { FloorAcceptOutcome, FloorStatus } from "@lararium/mesh";
+import { ratchetWords, ratchetsDiffer, type FloorAcceptOutcome, type FloorStatus, type GenesisDigests, type RatchetDifference } from "@lararium/mesh";
 import { FloorRefused } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import { storeVerb, storeFailure } from "../store-door.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 const short = (cid: string | null | undefined): string => (cid ? `${cid.slice(0, 16)}…` : "(genesis floor)");
+
+/** What the floor-status row answers: the Nexus part where a charter stands, and both truths always. */
+export type FloorStatusOutput = Partial<FloorStatus> & {
+  readonly genesis?: {
+    readonly record: GenesisDigests;
+    readonly seed: { readonly cid: string; readonly ratchets: readonly RatchetDifference[] } | null;
+    readonly floorPin: { readonly manifestCid: string; readonly ratchets: readonly RatchetDifference[] } | null;
+    readonly line: string;
+    readonly unread?: string;
+  };
+  readonly nexusRefused?: { readonly refusal: string; readonly message: string };
+};
+
+/** The human lines of `floor status`: both truths, then the Nexus part or its refusal by name. */
+export function floorStatusLines(s: FloorStatusOutput): string[] {
+  const lines: string[] = [s.nexus !== undefined ? `floor status · nexus ${s.nexus}` : "floor status"];
+  const g = s.genesis;
+  if (g?.unread !== undefined) lines.push(`  founding record: unread here (${g.unread})`);
+  else if (g) {
+    const d = (v: string | null) => v ?? "absent";
+    lines.push(`  founding record: engine ${d(g.record.engine)} · grammar ${d(g.record.grammar)} · plugins ${d(g.record.plugins)} · floor ${d(g.record.floor)}`);
+    lines.push(g.seed === null
+      ? "  seed (offered):  none reads"
+      : ratchetsDiffer(g.seed.ratchets)
+        ? `  seed (offered):  ${g.seed.cid} — a newer seed waits: ${ratchetWords(g.seed.ratchets)}; the founding record keeps serving, and lay moves canon, never the founding record`
+        : `  seed (offered):  ${g.seed.cid} — same on every ratchet`);
+    lines.push(g.floorPin !== null
+      ? `  floor pin:       ${g.floorPin.manifestCid} — ${ratchetWords(g.floorPin.ratchets)}`
+      : s.nexusRefused
+        ? "  floor pin:       none (no Nexus charter; the founding record's genesis floor serves)"
+        : `  floor pin:       ${s.pinned?.manifest ?? "?"} — its manifest does not read from this vessel's CAS`);
+  }
+  if (s.nexusRefused) {
+    lines.push(`  nexus:           refused ${s.nexusRefused.refusal} — ${s.nexusRefused.message}`);
+    return lines;
+  }
+  if (s.pinned) lines.push(`  pinned:  ${short(s.pinned.release)}  floor ${short(s.pinned.manifest)}  (${s.pinSource})`);
+  if (s.fork) lines.push(`  FORK:    ${s.fork.join(" · ")} — the cabal settles it; no accept moves until then`);
+  else if (s.newest === null || s.newest === undefined) lines.push("  newest:  no release counts on the board");
+  else lines.push(`  newest:  ${short(s.newest)}  ${s.newest === s.pinned?.release ? "(the pin)" : s.descends ? `fast-forward over ${s.path?.length ?? 0} release(s)` : "does NOT descend from the pin"}`);
+  if (s.refused && s.refused.length > 0) lines.push(`  set aside: ${s.refused.map((r) => `${short(r.keyCid)} ${r.reason}`).join(", ")}`);
+  return lines;
+}
 
 export async function cmdFloor(args: ParsedArgs): Promise<number> {
   const act = args.positional[0];
@@ -37,17 +84,10 @@ export async function cmdFloor(args: ParsedArgs): Promise<number> {
     if (act === "status") {
       const { output } = await storeVerb("floor-status", common);
       if (typeof output["refused"] === "string") throw new FloorRefused(String(output["refusal"] ?? "floor-status-refused"), output["refused"]);
-      const s = output as unknown as FloorStatus;
+      const s = output as unknown as FloorStatusOutput;
       emit(args, {
         ok: true, data: { ...s },
-        human: () => {
-          console.log(`floor status · nexus ${s.nexus}`);
-          console.log(`  pinned:  ${short(s.pinned.release)}  floor ${short(s.pinned.manifest)}  (${s.pinSource})`);
-          if (s.fork) console.log(`  FORK:    ${s.fork.join(" · ")} — the cabal settles it; no accept moves until then`);
-          else if (s.newest === null) console.log("  newest:  no release counts on the board");
-          else console.log(`  newest:  ${short(s.newest)}  ${s.newest === s.pinned.release ? "(the pin)" : s.descends ? `fast-forward over ${s.path.length} release(s)` : "does NOT descend from the pin"}`);
-          if (s.refused.length > 0) console.log(`  set aside: ${s.refused.map((r) => `${short(r.keyCid)} ${r.reason}`).join(", ")}`);
-        },
+        human: () => { for (const line of floorStatusLines(s)) console.log(line); },
       });
       return 0;
     }

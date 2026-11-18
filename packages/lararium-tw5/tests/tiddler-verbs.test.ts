@@ -10,7 +10,8 @@ import { CompositeStore, bagUri, VERB_URI_PREFIX } from "@lararium/mesh";
 import { CARRIER_TYPE as CARRIER } from "@lararium/mesh/carrier-type";
 import { tombstonesOf, type Consequence } from "@lararium/mesh/family";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { placeMeme, wikiMemeSink } from "../src/place-meme.js";
+import { evaluateMeme, placeMeme, readMeme, wikiMemeSink } from "../src/place-meme.js";
+import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 import {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor,
   makeWikiStatusReactor, pageFilterAnswer, WIKI_FILTER_ROWS, type FilterPage, type TiddlerVerbOptions,
@@ -305,6 +306,35 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     ]) await expect(put({ ...A, ...bad }, ctx())).rejects.toMatchObject({ reason: expect.stringMatching(/^(tiddler-put-code-class|tiddler-withheld)$/) });
     await expect(put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/Feedback/x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "stage-path-shape" });
     expect(await put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/feedback/x", text: "y" }, ctx())).toMatchObject({ decision: "put" });
+  });
+
+  test("★ slot-level-put witness: a tiddler put on a meme family's `#/slot` either refuses by name or leaves the carrier sealed; it never lands bytes the block check no longer covers ★", async () => {
+    const r = await rig();
+    const sealed = stampCarrier(memeText(["a", "b"]));
+    expect(verifyBcc(sealed)).toMatch(/^(ok|head-unbound)$/);
+    const placed = await placeMeme({ uri: MEME, text: sealed }, wikiMemeSink(r.engine.wiki));
+    expect(placed.decision).toBe("ingest");
+    const put = makeTiddlerPutReactor(r.opts);
+    // SEALED, AND THE GATE'S OWN FIXED POINT: the render the meme door hands out verifies its block check (the render mints the
+    // check over the bytes it frames), and that render put back under its own hash reads a clean noop at the Confluence gate.
+    const sealedNow = async (): Promise<boolean> => {
+      const now = (await readMeme(MEME, wikiMemeSink(r.engine.wiki)))!;
+      const gate = await evaluateMeme({ uri: MEME, text: now.text, baseHash: now.canonicalHash }, wikiMemeSink(r.engine.wiki));
+      return ["ok", "head-unbound"].includes(verifyBcc(now.text)) && gate.decision === "noop" && gate.grade === "clean";
+    };
+    expect(await sealedNow()).toBe(true);
+    // The slot's TEXT, through `text` or through `fields.text`, and its carriage fields: each refuses by name and nothing moves.
+    for (const move of [{ text: "a new body" }, { fields: { text: "a new body" } }, { fields: { "$slot": "#/z" } }, { fields: { type: "text/plain" } }, { unset: ["text"] }]) {
+      await expect(put({ ...A, title: `${MEME}#/a`, ...move }, ctx())).rejects.toMatchObject({ reason: "tiddler-put-in-a-family" });
+    }
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("body of a");
+    // A NEW slot title joining the family refuses too.
+    await expect(put({ ...A, title: `${MEME}#/c`, text: "x", fields: { "$fragment-parent": MEME } }, ctx())).rejects.toMatchObject({ reason: "tiddler-put-in-a-family" });
+    // A field or tag patch lands (a root field rides the render's meta block), and the carrier still reads sealed and gate-clean.
+    expect(await put({ ...A, title: `${MEME}#/a`, fields: { status: "ripe" }, tagsAdd: "memory" }, ctx())).toMatchObject({ decision: "put", position: "slot" });
+    expect(await sealedNow()).toBe(true);
+    expect(await put({ ...A, title: MEME, fields: { status: "ripe" } }, ctx())).toMatchObject({ decision: "put", position: "root" });
+    expect(await sealedNow()).toBe(true);
   });
 
   test("tiddler-delete: a meme root or slot answers its consequence and refuses without the family flag; a plain tiddler leaves with its consequence named; a stale base moves nothing", async () => {

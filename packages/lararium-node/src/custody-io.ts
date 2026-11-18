@@ -170,6 +170,9 @@ export class FsCustodyIo implements CustodyIo {
         await Promise.race([letGo(path), paced]);
         if (!(await answers(path))) continue;
         await paced;
+        // The hang-up comes at once, so the ask above reads the holder at the START of the wait. The look counts
+        // only on what stands at its END: a holder that left during the rest of the wait spends nothing.
+        if (!(await answers(path))) continue;
         if (++looks > this.maxWaits) {
           throw new CustodyLockRefused(this.claimPath(), `a live holder kept the custody claim through ${this.maxWaits} looks; nothing was seized`);
         }

@@ -165,7 +165,7 @@ The story pair that tested these. Gaia, 2026: a nurse keeps her notes on a phone
 # ''WebTransport datagrams ARE the carriage lane.'' "multiple streams that won't block each other" + unreliable datagrams ↔ Socket B "SEPARATE from the Automerge /ws relay (Socket A)" (`open-node-vessel.ts:567-572`), ciphertext blocks a relay serves "secret-free" (`cas-transit.ts:17`). ''Where it breaks:'' the herm sits on a node, and Node ships no WebTransport server in core; the lane rides HTTP/3 the home hearth (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/nexus-topology`>>) must terminate with a certificate — the same DNS-01 wall, one layer up.
 # ''A Service Worker IS a herm at the waking floor.'' It carries fetches and pushes for an origin while no page stands ↔ "the 'dumb' relay IS the Herm, LOAD-BEARING". ''Where it breaks:'' a Service Worker holds no socket and no timer the vendor honours (Background Sync refused on two engines; Push on iOS only after install); it wakes for a push the relay sends — so it rhymes with the herm's DOORBELL, never the herm.
 # ''`persist()` IS the residency verb PIN.'' "cannot be cleared without user consent" ↔ clause 7 of the blob law, "GC and PIN ride the residency verbs and the cap-tier — DESIGNED, UNBUILT" (`blob-carriage.mem:190`). ''Where it breaks:'' `persist()` pins the ORIGIN whole ("all-or-nothing per origin", `secure-context-gate.ts:134`) where PIN pins a CID; the house grain stays finer than the platform's.
-# ''iOS "every site can be a web app" IS the founding rite's "stand".'' A Home Screen install turns a tab into a seat with its own day-counter ↔ found · stand · seed (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>). ''Where it breaks:'' the install belongs to the human's gesture, never to the vessel; a vessel may ASK (the `beforeinstallprompt` Chromium alone fires) and on WebKit may only explain.
+# ''iOS "every site can be a web app" IS the founding rite's "stand".'' A Home Screen install turns a tab into a seat with its own day-counter ↔ found · stand · lay (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>). ''Where it breaks:'' the install belongs to the human's gesture, never to the vessel; a vessel may ASK (the `beforeinstallprompt` Chromium alone fires) and on WebKit may only explain.
 
 <<~/ahu>>
 
@@ -250,6 +250,6 @@ Owed measurements: owner-kill, one-tab lock fallback, long background, PRF deriv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rxm0LXsPCGB8v8FU1Or-3Q6jJfZZ9hzFJyaWlW_uQs8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o3VOYniJopQ2EZn5n4rjXA9MWAEEhrIvKYP8KBQGSRk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

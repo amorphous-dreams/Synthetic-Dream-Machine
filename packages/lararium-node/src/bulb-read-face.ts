@@ -180,6 +180,22 @@ export function publicCasShore(opts: {
   };
 }
 
+/**
+ * The line the face prints for what it mounts. Where the house's founding record serves the blobs the seed names, it
+ * reads `bulb=<cid>`. Where the two differ, it names the founding record first (its blobs, and how many the seed lacks
+ * or adds) and prints the shipped seed as `offered`: a traveler reads that the house serves another genesis than the one
+ * this face hands out.
+ */
+export function bulbFaceLine(seedCid: string, blobCount: number, seedBlobs: readonly string[], founding?: readonly string[]): string {
+  if (!founding) return `bulb read-face: bulb=${seedCid} blobs=${blobCount}`;
+  const held = new Set(founding), named = new Set(seedBlobs);
+  const moved = founding.filter((c) => !named.has(c)), absent = seedBlobs.filter((c) => !held.has(c));
+  if (moved.length === 0 && absent.length === 0) return `bulb read-face: bulb=${seedCid} blobs=${blobCount}`;
+  const short = (cids: readonly string[]): string => cids.map((c) => `${c.slice(0, 16)}…`).join(",") || "none";
+  return `bulb read-face: the founding record serves ${founding.length} blobs (founding-only ${short(moved)}; seed-only ${short(absent)}) — ` +
+    `offered seed bulb=${seedCid} blobs=${blobCount} stands apart from the house's founding genesis`;
+}
+
 /** Mount the bulb read-face: the seed under the bulb CID and every seed-named CAS blob under its own. */
 export async function mountBulbReadFace(args: {
   readonly httpServer: Server;
@@ -190,12 +206,15 @@ export async function mountBulbReadFace(args: {
   readonly dispatcher?: HttpFaceDispatcher;
   /** The Herm re-share shore; absent, `/cas/<cid>` answers the closed door for every cid. */
   readonly publicCas?: PublicCasShore;
+  /** The CAS cids the house's founding record (its stored oracle island) serves. Present and unlike the seed's
+   *  inventory, the face names the founding record and prints the shipped seed as OFFERED; the bytes served stay the seed's. */
+  readonly founding?: readonly string[];
 }): Promise<FlowReadFace> {
-  const { httpServer, bulb, onLog, publicCas, dispatcher } = args;
+  const { httpServer, bulb, onLog, publicCas, dispatcher, founding } = args;
   const { cid, blobs } = buildBulb(bulb);
   const blobByCid = new Map<string, Uint8Array>(blobs.map((b) => [b.cid, b.bytes]));
 
-  onLog?.(`bulb read-face: bulb=${cid} blobs=${blobs.length}`);
+  onLog?.(bulbFaceLine(cid, blobs.length, bulb.casEntries.map((e) => e.cid), founding));
   const SERVED: Record<string, string> = {
     "access-control-allow-origin": "*",
     "content-type":                "application/octet-stream",

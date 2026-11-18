@@ -211,7 +211,7 @@ export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-ve
 // Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).
 export { makeInitWikiReactor, makeOpenWikiReactor }   from "./wiki-mint-handlers.js";
 export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handlers.js";
-export { makeMemePutReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
+export { makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
 export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
 export {

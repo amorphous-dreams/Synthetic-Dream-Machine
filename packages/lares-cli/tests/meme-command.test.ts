@@ -139,6 +139,105 @@ describe("lares meme get", () => {
     h.reply = { uri: "lar:///t/x", meme: null };
     expect(await cmdMeme(memeArgs(["get", "lar:///t/x"], { recipe: "default" }))).toBe(3);
   });
+
+  /** Run one get with exactly these flags (no `--json` default), catching stdout bytes and stderr lines. */
+  const carrierRun = async (flags: Record<string, boolean>): Promise<{ code: number; out: string; err: string[] }> => {
+    h.reply = { uri: "lar:///t/x", meme: { text: "<<^ code=`&#x0001;`>> body\n", canonicalHash: "sha256:9" } };
+    const out: string[] = [];
+    const err: string[] = [];
+    const w = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { out.push(String(m)); return true; });
+    const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
+    const tty = process.stdout.isTTY;
+    // A PIPE: stdout holds no terminal, where every other verb answers JSON.
+    Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true });
+    try {
+      const code = await cmdMeme({ command: "meme", positional: ["get", "lar:///t/x"], options: { recipe: "default" }, flags } as unknown as ParsedArgs);
+      return { code, out: out.join(""), err };
+    } finally {
+      Object.defineProperty(process.stdout, "isTTY", { value: tty, configurable: true });
+      w.mockRestore(); e.mockRestore();
+    }
+  };
+
+  test("★ through a pipe, a bare get answers the CARRIER on stdout and the base on stderr as one line ★", async () => {
+    const r = await carrierRun({});
+    expect(r.code).toBe(0);
+    expect(r.out).toBe("<<^ code=`&#x0001;`>> body\n");
+    expect(r.err).toEqual(["base: sha256:9"]);
+  });
+
+  test("`--no-json` stays a working alias of the carrier default", async () => {
+    const r = await carrierRun({ json: false });
+    expect(r.out).toBe("<<^ code=`&#x0001;`>> body\n");
+    expect(r.err).toEqual(["base: sha256:9"]);
+  });
+
+  test("CONTROL: `--json` asks for the envelope, the base inside it", async () => {
+    const r = await carrierRun({ json: true });
+    expect(r.code).toBe(0);
+    expect(JSON.parse(r.out)["data"]).toEqual({ uri: "lar:///t/x", text: "<<^ code=`&#x0001;`>> body\n", canonicalHash: "sha256:9" });
+  });
+
+  test("through a pipe, an absent meme refuses in prose on stderr and leaves stdout empty, so a redirect never saves an error as a meme", async () => {
+    h.reply = { uri: "lar:///t/x", meme: null };
+    const err: string[] = [];
+    const w = vi.spyOn(process.stdout, "write").mockImplementation(() => { throw new Error("stdout took bytes"); });
+    const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
+    const tty = process.stdout.isTTY;
+    Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true });
+    try {
+      expect(await cmdMeme({ command: "meme", positional: ["get", "lar:///t/x"], options: { recipe: "default" }, flags: {} } as unknown as ParsedArgs)).toBe(3);
+    } finally {
+      Object.defineProperty(process.stdout, "isTTY", { value: tty, configurable: true });
+      w.mockRestore(); e.mockRestore();
+    }
+    expect(err.join(" ")).toMatch(/no meme at lar:\/\/\/t\/x/);
+  });
+});
+
+describe("lares meme patch — one slot's body, a base required", () => {
+  const ingest = { uri: "lar:///t/x", slot: "#/a", decision: "ingest", grade: "clean", landed: ["lar:///t/x", "lar:///t/x#/a"], tombstoned: [], canonicalHash: "sha256:2", warnings: [], diagnostics: [] };
+
+  test("★ --append reads its file and dispatches meme-patch with uri · slot · append · base · container ★", async () => {
+    h.reply = ingest;
+    const file = tmpFile("* a new bullet\n");
+    expect(await cmdMeme(memeArgs(["patch", "lar:///t/x"], { slot: "#/a", append: file, base: "sha256:1", recipe: "default" }))).toBe(0);
+    expect(h.calls).toEqual([{ verb: "meme-patch", args: { uri: "lar:///t/x", recipe: "default", slot: "#/a", append: "* a new bullet\n", base: "sha256:1" } }]);
+  });
+
+  test("--replace rides as `replace`; the human answer names the next base", async () => {
+    h.reply = ingest;
+    const lines: string[] = [];
+    const spy = vi.spyOn(console, "log").mockImplementation((m: unknown) => { lines.push(String(m)); });
+    try {
+      expect(await cmdMeme(memeArgs(["patch", "lar:///t/x"], { slot: "#/a", replace: tmpFile("new body"), base: "sha256:1", bag: "sdm" }, { json: false }))).toBe(0);
+    } finally { spy.mockRestore(); }
+    expect(h.calls[0]).toEqual({ verb: "meme-patch", args: { uri: "lar:///t/x", bag: "sdm", slot: "#/a", replace: "new body", base: "sha256:1" } });
+    expect(lines).toContain("  base: sha256:2");
+  });
+
+  test("★ a stale base exits as the conflict class; a missing slot as verb-error ★", async () => {
+    h.reply = { ...ingest, decision: "conflict", reason: "stale-base", landed: [], warnings: ["stale-base: the meme moved past sha256:1"] };
+    expect(await cmdMeme(memeArgs(["patch", "lar:///t/x"], { slot: "#/a", append: tmpFile("x"), base: "sha256:1", recipe: "default" }))).toBe(4);
+    h.reply = { ...ingest, decision: "refuse", landed: [], warnings: ["slot-missing: lar:///t/x holds no slot #/a"] };
+    expect(await cmdMeme(memeArgs(["patch", "lar:///t/x"], { slot: "#/a", append: tmpFile("x"), base: "sha256:1", recipe: "default" }))).toBe(4);
+    h.reply = { uri: "lar:///t/x", decision: "absent" };
+    expect(await cmdMeme(memeArgs(["patch", "lar:///t/x"], { slot: "#/a", append: tmpFile("x"), base: "sha256:1", recipe: "default" }))).toBe(3);
+  });
+
+  test("the argument law refuses before the wire: no --base, no --slot, both or neither of --append and --replace", async () => {
+    const file = tmpFile("x");
+    const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      for (const options of [
+        { slot: "#/a", append: file, recipe: "default" },
+        { append: file, base: "sha256:1", recipe: "default" },
+        { slot: "#/a", base: "sha256:1", recipe: "default" },
+        { slot: "#/a", append: file, replace: file, base: "sha256:1", recipe: "default" },
+      ]) expect(await cmdMeme(memeArgs(["patch", "lar:///t/x"], options, { json: false })), JSON.stringify(options)).toBe(2);
+    } finally { stderr.mockRestore(); }
+    expect(h.calls).toEqual([]);
+  });
 });
 
 describe("lares meme list — roots by default, --tree nests the slots", () => {

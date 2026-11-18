@@ -112,6 +112,17 @@ test("E6 numbered formats and numeric version fields read; string version does n
   assert.equal(scanText("a.ts", 'const record = { version: "1.2.3" };').length, 0);
   assert.equal(scanText("a.ts", 'const url = "https://example.org/version";').length, 0);
 });
+test("E6b a minted tag that ends in a bare number reads; paths, urls, dates and ratios do not", () => {
+  for (const body of ['export const FACE_LABEL_SCHEMA = "lar-face-label/1";', "const KAHUA_PENDING_SCHEMA = 'lar-kahua-pending/1';",
+    'emit({ schema: "lar-carry-census/12" });', "const tag = `lararium-seed/3`;"]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "version").length, 1, body);
+  }
+  for (const body of ['const schema = "lar-face-label";', 'const url = "https://example.org/lar-face/1";', 'const file = "a/b/1";',
+    'const rel = "fixtures/case/2";', 'const day = "2026/11/18";', 'const ratio = "1/2";', 'const aspect = "16/9";', 'const http = "HTTP/1";',
+    'const route = "/api/items/1";', 'const glob = "**/1";', 'const label = "page 3/4";']) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "version").length, 0, body);
+  }
+});
 test("E7 stale and empty-reason exceptions fail classification", () => {
   const findings = scanText("a.ts", "schemaVersion: 1");
   assert.equal(classify(findings, [{ rule: "version", file: "a.ts", match: "absent", reason: "This names an external format." }]).stale.length, 1);

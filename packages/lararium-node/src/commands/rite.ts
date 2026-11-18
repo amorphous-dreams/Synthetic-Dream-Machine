@@ -31,7 +31,7 @@ import { treeOfHead } from "../git-tree-reader.js";
 import { openedCustody, unlockedFaceOrdinals } from "../custody-seat.js";
 import { kukuluOfferPath, writeKukuluOffer, type KukuluOfferFace } from "../kukulu-offer.js";
 import { larWorkspacesHome } from "../vessel-paths.js";
-import { CarryBundleRefused, unsafeRelPath, verifyBundle } from "../carry-manifest.js";
+import { BundleVerifyRefused, unsafeRelPath, verifyBundle } from "../bundle-manifest.js";
 
 export type RiteAction = "begin" | "land" | "receipts" | "receipt" | "offer";
 
@@ -62,12 +62,12 @@ export function keepStagedTree(branch: string, staged: string, home: string = la
   catch { throw new SwarmRefused("rite-tree-unreadable", `no staged bundle stands at ${staged} in the workspace "${branch}"`); }
   if (!dir.startsWith(ws + sep) || !lstatSync(dir).isDirectory()) throw new SwarmRefused("rite-tree-unreadable", `the staged path ${staged} resolves outside the workspace "${branch}" or to no directory`);
   try { return verifyBundle(dir).manifest.bundleId; }
-  catch (e) { if (e instanceof CarryBundleRefused) throw new SwarmRefused("rite-tree-unreadable", `the staged bundle reads unwhole: ${e.message}`); throw e; }
+  catch (e) { if (e instanceof BundleVerifyRefused) throw new SwarmRefused("rite-tree-unreadable", `the staged bundle reads unwhole: ${e.message}`); throw e; }
 }
 
 /**
  * THE TREE A RITE'S RETURN RESTS ON. A rite over the checkout (`push`, `kukulu`) reads its tree off the head through git. A
- * `keep` runs over no checkout: its head names a carry bundle by its id (the sha-256 over the bundle's sorted file list), and
+ * `keep` runs over no checkout: its head names a house bundle by its id (the sha-256 over the bundle's sorted file list), and
  * a content name already names its tree. THE VESSEL DERIVES THAT ID ITSELF from the staged bundle (`keepTree`), so a keep
  * never rests on an id its spender chose: a head that spells no bundle id, or a keep that names no staged bundle, refuses
  * `rite-tree-unreadable`; a staged tree that derives another id than the head refuses `rite-tree-differs`. The receipt the
@@ -75,7 +75,7 @@ export function keepStagedTree(branch: string, staged: string, home: string = la
  */
 export async function riteTreeOf(rite: SwarmLeiRite, head: string, gitTree: (head: string) => Promise<string> = gitTreeOf, keepTree?: () => string): Promise<string> {
   if (rite !== "keep") return gitTree(head);
-  if (!/^[0-9a-f]{64}$/.test(head)) throw new SwarmRefused("rite-tree-unreadable", `a keep's head names a carry bundle by its id (64 hex), and ${JSON.stringify(head.slice(0, 80))} spells none`);
+  if (!/^[0-9a-f]{64}$/.test(head)) throw new SwarmRefused("rite-tree-unreadable", `a keep's head names a house bundle by its id (64 hex), and ${JSON.stringify(head.slice(0, 80))} spells none`);
   if (keepTree === undefined) throw new SwarmRefused("rite-tree-unreadable", "a keep names the bundle it staged (`staged`, a path inside its workspace), so the vessel derives the id itself");
   const derived = keepTree();
   if (derived !== head) throw new SwarmRefused("rite-tree-differs", `the staged bundle derives ${derived}, and the keep names ${head}; the vessel begins no keep over an id the tree never derived`);
