@@ -4,6 +4,13 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 ## Unreleased
 
+### One root per face, keyed by pet name
+
+**Breaking**
+- **Each face's private planes rest in one root named by its pet name:** `projections/faces/<pet name>/` holds `wiki/` (the daemon working layer), `canon/` (the daemon canon), `stage/` (the kahua stage), `margins/<slug>/`, `recovery/<slug>/` and `temp/<slug>/`. The house writes no `wikis/daemon-<F>`, `bags/daemon-<F>`, `bags/kahua-<F>` or `personal/<F>` folder, and a shared wiki's drafts and temp leave `wikis/<slug>/`. A shared workbench and every domain bag stay in their realm pool, one copy whichever face wears; no file that links faces rests under `faces/`. Burn the old folders by hand at the re-stand, after one `lares vessel lay --apply` reads any hand edits back.
+- **A re-found keeps the same root.** The re-minted face under the same pet name finds its root where it stands, so the seed lays it in place: no adoption copy, no move to ashes. A root no face carries refuses `seed-face-unmatched`, and a pet name that meets another face's without case refuses `face-segment-collision`. A pet name holding `/`, `\`, `:`, NUL or a leading dot makes no root, each refused by name. A rename moves the root.
+- **The carry bundle keys drafts and temp by face:** `faces/<fk>/drafts/<slug>/` and `faces/<fk>/temp/<slug>/` (the daemon wiki's temp as `temp/daemon`); `wikis/<slug>/drafts` and `wikis/<slug>/temp` leave. The seed and import results drop `adoptions`, `ashes` and `ashesLeft`; ashes take a burned pet name alone.
+
 ### Every branch settles: the O-TAKIAGE, the genesis re-bake, Freyja's lore, the Loom kept home
 
 - **The branches settle into `main` and `develop`.** A survey of 448 refs (a Codex seat and an Opus spirit, collided) burned every merged or superseded branch, landed the live work as PRs into `develop` (the reach-vault canon #219, the ruled spend table #220, the art-sigils companions #223), and kept the parked work as `archive/*` tags canon names (`archive/p27-wire`, `archive/gate-ancestry`, `archive/stryker-probe`, `archive/w26-own-canon`, `archive/fold-trial-2026-11-01-b`, `archive/loom/*`, `archive/pr84-markdown-pre-otakiage-20261031`, `archive/lady-aki-character-sheet`).
