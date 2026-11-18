@@ -1,39 +1,3 @@
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "lares"
-version = "0.1.0"
-description = "Modular MCP server and agentic framework."
-authors = [
-    { name="Your Name", email="your@email.com" }
-]
-readme = "README.md"
-# The stack RUNS on 3.12 and writes 3.12 (PEP 701 f-strings in the scorer's report path), and the one
-# venv the setup enforces carries 3.12. A floor of 3.8 declared a compatibility the code never held —
-# and it read as a lint error rather than a broken promise, because the linter believed the floor.
-requires-python = ">=3.12"
-license = { file = "LICENSE" }
-
-[project.optional-dependencies]
-dev = [
-    "pytest",
-    "pytest-cov"
-]
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["lares*"]
-exclude = [
-    "mempalace*",
-    "kowloon*",
-    "kowloon-client*",
-    "kowloon-frontend*",
-    "tiddlywiki5*",
-    "tldraw*"
-]
-
 [tool.pytest.ini_options]
 # WHERE THE PYTHON SUITES ACTUALLY LIVE. The sensorium holders keep their tests beside the modules
 # they exercise (flat-import idiom — `import holder_caps`, no package prefix), so the suite root sits

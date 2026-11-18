@@ -11,6 +11,8 @@
 # So this passes `--pretty false` and greps the plain form. It also drops TS6059 ("not under
 # rootDir"), which every package emits by design: they resolve siblings through path mappings into
 # source, and that arrangement is the monorepo's, not a fault in the code being checked.
+# Dropping TS6059 never drops the exit code: a compiler that exits nonzero on anything but TS6059
+# reads red even when it printed no diagnostic at all.
 #
 # Run it rather than a hand-rolled grep. A check worth trusting is one whose failure mode you have
 # seen fail.
@@ -28,10 +30,26 @@ for dir in packages/*/ tests/; do
   cfg="tsconfig.json"
   [ -f "$dir/tsconfig.typecheck.json" ] && cfg="tsconfig.typecheck.json"
 
-  errs=$( (cd "$dir" && npx tsc --noEmit --pretty false -p "$cfg" 2>&1) | grep "error TS" | grep -v "TS6059" )
+  output=$(cd "$dir" && npx tsc --noEmit --pretty false -p "$cfg" 2>&1)
+  compiler_status=$?
+  rootdir_line='^([^[:space:]][^[:cntrl:]]*\([0-9]+,[0-9]+\): )?error TS6059:'
+  errs=$(printf '%s\n' "$output" | grep "error TS" | grep -Ev "$rootdir_line")
   count=$(printf '%s' "$errs" | grep -c . )
+  # ── A CRASH IS NOT A CLEAN COMPILE ──────────────────────────────────────────────────────────────
+  # The count above reads diagnostics, so a compiler that died before it printed one (a missing
+  # `typescript`, a stack overflow, an OOM kill, a config it could not parse in a shape it reports
+  # without a code) counted zero and printed `ok`. A NONZERO EXIT therefore reads clean only when
+  # every top-level line of its output is a TS6059 diagnostic; indented lines continue the diagnostic
+  # above them ("The file is in the program because: …"). Anything else, or no output at all, names
+  # the exit and prints what the compiler said.
+  stray=$(printf '%s\n' "$output" | grep -v '^[[:space:]]' | grep . | grep -Ev "$rootdir_line")
+  rootdir_count=$(printf '%s\n' "$output" | grep -cE "$rootdir_line")
 
-  if [ "$count" -eq 0 ]; then
+  if [ "$compiler_status" -ne 0 ] && [ "$count" -eq 0 ] && { [ -n "$stray" ] || [ "$rootdir_count" -eq 0 ]; }; then
+    printf '  %-22s compiler failed (exit %s) with no diagnostic but TS6059\n' "$pkg" "$compiler_status"
+    printf '%s\n' "${output:-(no output)}" | sed 's/^/      /'
+    status=1
+  elif [ "$count" -eq 0 ]; then
     printf '  %-22s ok\n' "$pkg"
   else
     printf '  %-22s %s error(s)\n' "$pkg" "$count"

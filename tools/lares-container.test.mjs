@@ -353,6 +353,24 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(same.stderr, /image names revision/);
   });
 
+  test(`${name}: a workspace names a projection target, so a working checkout, a pinned clone and a plain corpus all stand silent; the shim names no canon clone and no dev-install switch`, async () => {
+    const places = await mkdtemp(join(tmpdir(), "lares-workspace-places-"));
+    try {
+      const git = (repo, ...a) => spawnSync("git", ["-C", repo, "-c", "user.name=t", "-c", "user.email=t@t", ...a], { encoding: "utf8" });
+      const checkout = join(places, "checkout"), clone = join(places, "clone"), corpus = join(places, "corpus");
+      for (const d of [checkout, clone, corpus]) await mkdir(d, { recursive: true });
+      git(checkout, "init", "-q"); git(clone, "init", "-q"); git(clone, "config", "lares.canonPin", "develop");
+      const stand = (ws) => run(shim, ["up"], { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: ws, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: checkoutRev(), FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}', GIT_CEILING_DIRECTORIES: places } });
+      for (const ws of [checkout, clone, corpus]) {
+        const r = await stand(ws);
+        assert.equal(r.status, 0, r.stderr);
+        assert.doesNotMatch(r.stderr, /names a working checkout|canon clone|house-canon|LARES_DEV_INSTALL|dev install/, `${ws} stands with no canon-clone warning`);
+      }
+      const source = await readFile(shim, "utf8");
+      assert.doesNotMatch(source, /LARES_DEV_INSTALL|lares\.canonPin|warn_workspace_canon|WarnWorkspaceCanon|HOUSE CANON CLONE/, "the shim carries no canon-clone warning and no dev-install switch");
+    } finally { await rm(places, { recursive: true, force: true }); }
+  });
+
   test(`${name}: a restart the shim performs names vault unlock again`, async () => {
     const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },

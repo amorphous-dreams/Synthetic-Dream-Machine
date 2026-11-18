@@ -10,7 +10,10 @@
  *     the social planes that names no catalog and no oracle), the status answers the genesis pin and the cut answers a
  *     manifest, each reading the oracle island at its deterministic address and the catalog its pointer file names, the two
  *     sources the standing vessel's own composition reads. CONTROLS: a bare place in no charter, and a founded store that
- *     holds no oracle island, each refuse by their own name (the row carries the refusal's own name, never the verb's).
+ *     holds no oracle island, each refuse by their own name (the row carries the refusal's own name, never the verb's);
+ *   · THE STATUS NAMES BOTH TRUTHS CHARTER-FREE (D1, shore recommendation 8): the founding record beside the seed (offered)
+ *     and the floor pin, ratchet by ratchet. A place in no Nexus charter whose store holds the island answers that part and
+ *     refuses only the Nexus part, by name.
  */
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -102,6 +105,11 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       const status = await storeDoorDirect("floor-status", {}, { sealHome: larSealHome() });
       expect(status["refused"]).toEqual([]);                                      // the status's own list of releases it set aside: a refusal reads as a string
       expect(status).toMatchObject({ verb: "floor-status", pinSource: "genesis", pinned: { manifest: genesisFloor, release: null }, board: "absent" });
+      // Both truths beside the Nexus part: the founding record against the seed (offered) and against the floor pin it reads.
+      const truths = status["genesis"] as { line?: string } | undefined;
+      expect(truths?.line).toContain("seed (offered) ");
+      expect(truths?.line).toContain(": same on every ratchet");
+      expect(truths?.line).toContain(`floor pin ${genesisFloor}: engine same · grammar same · plugins same · floor same`);
 
       // The cut reads the founding's own realm documents through the catalog the pointer file names. They hold no row yet (no
       // seed ran), so the steward names both thin; every other slug the genesis floor names holds no document here and keeps its snapshot.
@@ -116,6 +124,20 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       expect(sha256HexBytesSync(new Uint8Array(readFileSync(out)))).toBe(cut["manifestCid"]);
       const floor = await resolveFloor(String(cut["manifestCid"]), async (cid) => readVerifiedCasBlobFromFs(cid, casDirForStorage(larDataDir())));
       expect("refusal" in floor ? floor.refusal : null).toBeNull();
+    });
+  });
+
+  test("RED: a place in no charter whose store holds the island answers the founding record beside the seed (offered), refusing only the Nexus part by name", async () => {
+    const lone = freshRoot("charterless");
+    await withLarRoot(lone, async () => {
+      await ownedStore(larDataDir(), async (repo) => { await loadOrMaterializeOracle(repo, join(lone, "genesis")); await repo.flush(); });
+      const out = await storeDoorDirect("floor-status", {}, { sealHome: larSealHome() });
+      expect(out["refusal"]).toBeUndefined();
+      expect(out["nexusRefused"]).toMatchObject({ refusal: "floor-no-charter" });
+      const line = String((out["genesis"] as { line?: string } | undefined)?.line);
+      expect(line).toMatch(/^\[genesis\] founding record: engine \S+ · grammar \S+ · plugins \S+ · floor \S+/);
+      expect(line).toContain(": same on every ratchet");
+      expect(line).toContain("floor pin: none — this vessel stands in no Nexus charter");
     });
   });
 

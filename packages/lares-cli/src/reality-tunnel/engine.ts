@@ -123,9 +123,18 @@ export class Ledger {
 
   /** The hash the house last wrote at `path`, or undefined when it never wrote there. */
   lastWrote(path: string): string | null | undefined {
+    return this.last((x) => x.path === path && x.external === undefined);
+  }
+
+  /** The hash of the host store's snapshot the house last left for one external item, or undefined when it never changed it. */
+  lastSet(id: string): string | null | undefined {
+    return this.last((x) => x.external === id);
+  }
+
+  private last(match: (e: LedgerEntry) => boolean): string | null | undefined {
     const gens = this.generations();
     for (let i = gens.length - 1; i >= 0; i--) {
-      const e = gens[i]!.entries.find((x) => x.path === path);
+      const e = gens[i]!.entries.find(match);
       if (e) return e.wrote;
     }
     return undefined;
@@ -166,7 +175,12 @@ export function read(items: readonly Item[], ledger: Ledger, reader: Reader = di
       const last = ledger.lastWrote(path);
       return last !== undefined && last !== liveHash(live);
     })();
-    for (const it of group) rows.push(rowOf(it, live, touchedAt));
+    for (const it of group) {
+      // An external item's bytes rest in its host's store, never at its path: it reads touched by that store's snapshot.
+      const last = it.external ? ledger.lastSet(it.id) : undefined;
+      const touched = it.external ? last !== undefined && last !== sha(it.external.snapshot()) : touchedAt;
+      rows.push(rowOf(it, live, touched));
+    }
   }
   return rows;
 }
@@ -213,6 +227,8 @@ function writeKeepingMode(path: string, bytes: string, mode: number | undefined)
 export interface TendResult {
   readonly rows: Row[];
   readonly wrote: string[];
+  /** The external items whose host store this tend changed, by id. */
+  readonly set: string[];
   readonly refused: Row[];
   /** External items whose host refused or failed the change: the exit reads 4. */
   readonly failed: Array<{ id: string; detail: string }>;
@@ -229,6 +245,7 @@ export async function tend(
   const reader = opts.reader ?? diskReader;
   const entries: LedgerEntry[] = [];
   const wrote: string[] = [];
+  const set: string[] = [];
   const failed: Array<{ id: string; detail: string }> = [];
   const refusedPaths = new Set<string>();
   let generation: Generation | null = null;
@@ -246,6 +263,7 @@ export async function tend(
         if (r.ok) {
           entries.push({ path, external: it.id, snapshot, prior: { kind: "absent" }, wrote: sha(it.external!.snapshot()) });
           wrote.push(`${path} (${it.id})`);
+          set.push(it.id);
         } else failed.push({ id: it.id, detail: r.detail });
       }
       const fileItems = acting.filter((x) => !x.external);
@@ -285,7 +303,7 @@ export async function tend(
     finally { await radius?.release(); }
   }
   const rows = read(items, ledger, reader);
-  return { rows, wrote, refused: rows.filter((r) => refusedPaths.has(r.path) && r.state === "foreign"), failed, generation };
+  return { rows, wrote, set, refused: rows.filter((r) => refusedPaths.has(r.path) && r.state === "foreign"), failed, generation };
 }
 
 // ── Undo ────────────────────────────────────────────────────────────────────────────────────────

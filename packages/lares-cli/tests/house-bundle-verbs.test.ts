@@ -23,10 +23,10 @@ import { repoRoot } from "@lararium/mesh/node";
 import { kapaeShadowBody, SyncedTree } from "@lararium/node";
 import { DAEMON_BAG_ID, daemonFaceCanonBag } from "@lararium/mesh";
 import { scanFiles } from "../src/ingest-core.js";
-import { carryExport, carryImport, carryJournalPath, CarryRefused, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
-import { CarryBundleRefused, MANIFEST_FILE } from "../src/carry-manifest.js";
+import { houseExport, houseImport, bundleJournalPath, BundleRefused, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
+import { BundleVerifyRefused, MANIFEST_FILE } from "../src/bundle-manifest.js";
 import type { CensusReading } from "../src/commands/census.js";
-import type { CarryKahuaHead } from "../src/carry-manifest.js";
+import type { BundleKahuaHead } from "../src/bundle-manifest.js";
 
 const F1 = "11111111-1111-4111-8111-111111111111";
 const F2 = "22222222-2222-4222-8222-222222222222";
@@ -36,24 +36,24 @@ const NOTE = "lar:///ha.ka.ba/notes/pond";
 
 /** A vessel the doors reach: faces, the worn face's daemon working records, each face's kahua stage. */
 class FakeVessel {
-  faces: CarryVesselFace[];
+  faces: BundleVesselFace[];
   records = new Map<string, string>();
   bagRecords = new Map<string, Map<string, string>>();
   kapae = new Set<string>();
   lifts: Array<{ face: number; title: string; text: string; signer: string; parent: string | null }> = [];
-  stage = new Map<number, CarryKahuaHead[]>();
+  stage = new Map<number, BundleKahuaHead[]>();
   ingestCalls = 0;
-  waves: Array<Parameters<CarryDoors["ingest"]>[0]> = [];
+  waves: Array<Parameters<BundleDoors["ingest"]>[0]> = [];
   inWikiBags: string[] = [];
   held = new Set<string>(["garden"]);
   mints: string[] = [];
   acts: string[] = [];
   census: CensusReading = { clean: true, items: [], unanswered: [] };
-  constructor(faces: Array<Partial<CarryVesselFace> & { handleIndex: number }>, readonly grant: string) {
+  constructor(faces: Array<Partial<BundleVesselFace> & { handleIndex: number }>, readonly grant: string) {
     this.faces = faces.map((f) => ({ petname: null, relation: null, handle: null, seat: false, chair: null, kahua: [], ...f }));
     for (const f of this.faces) this.stage.set(f.handleIndex, [...(f.kahua ?? [])]);
   }
-  doors(): CarryDoors {
+  doors(): BundleDoors {
     return {
       census: async () => this.census,
       faces: async () => this.faces.map((f) => ({ ...f, kahua: [...(this.stage.get(f.handleIndex) ?? [])] })),
@@ -91,7 +91,7 @@ class FakeVessel {
 let root: string, out: string;
 const put = (rel: string, text: string): void => { const p = join(root, ...rel.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, text); };
 const tid = (title: string, text: string): string => `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`;
-const head = (title: string, text: string, cid: string): CarryKahuaHead => ({ title, cid, text, fields: { tags: "memory" }, taint: [], sources: [{ title: NOTE, revision: "r1" }] });
+const head = (title: string, text: string, cid: string): BundleKahuaHead => ({ title, cid, text, fields: { tags: "memory" }, taint: [], sources: [{ title: NOTE, revision: "r1" }] });
 
 /** The house as the old founding left it: a worn face's working folder, stage, drafts, temp, a minted bag, and what never travels. */
 function seedHouse(): void {
@@ -108,39 +108,39 @@ function seedHouse(): void {
 
 const oldVessel = (): FakeVessel => new FakeVessel([{ handleIndex: 0, petname: "hearth-one", relation: F1, handle: "Heron", seat: true, chair: "east", kahua: [head(MEMORY, "remember the heron", sha("old-cid-1"))] }], "old-grant");
 /** A re-founding: the hearth cleared, persona zero founded fresh under the same pet-name, a new relation and grant. */
-function refound(over: Partial<CarryVesselFace> = {}): FakeVessel {
+function refound(over: Partial<BundleVesselFace> = {}): FakeVessel {
   rmSync(join(root, "hearth"), { recursive: true, force: true });
   return new FakeVessel([{ handleIndex: 0, petname: "hearth-one", relation: F2, ...over }], "new-grant");
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lar-carry-house-"));
-  writeFileSync(join(root, ".lar-test-scratch"), "carry suite\n");
+  root = mkdtempSync(join(tmpdir(), "lar-house-bundle-"));
+  writeFileSync(join(root, ".lar-test-scratch"), "house bundle suite\n");
   process.env["LAR_ROOT"] = root;
-  out = join(mkdtempSync(join(tmpdir(), "lar-carry-out-")), "bundle");
+  out = join(mkdtempSync(join(tmpdir(), "lar-house-bundle-out-")), "bundle");
   seedHouse();
 });
 afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); });
 
-describe("the carry verbs", () => {
+describe("the house bundle verbs", () => {
   test("★ an import over unseeded disk canon refuses by name and names the seed; a preview reads on ★", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
     const guarded = { ...after.doors(), unseeded: () => ["sdm", "crossroads"] };
-    await expect(carryImport(out, { apply: true, doors: guarded })).rejects.toThrow(/carry-canon-unseeded|stands unseeded.*lares vessel seed --apply/);
+    await expect(houseImport(out, { apply: true, doors: guarded })).rejects.toThrow(/carry-canon-unseeded|stands unlaid.*lares vessel lay --apply/);
     expect(after.waves).toEqual([]);
-    await expect(carryImport(out, { apply: false, doors: guarded })).resolves.toMatchObject({ applied: false });
+    await expect(houseImport(out, { apply: false, doors: guarded })).resolves.toMatchObject({ applied: false });
     // CONTROL: seeded canon (nothing unseeded) imports.
-    await expect(carryImport(out, { apply: true, doors: { ...after.doors(), unseeded: () => [] } })).resolves.toMatchObject({ applied: true });
+    await expect(houseImport(out, { apply: true, doors: { ...after.doors(), unseeded: () => [] } })).resolves.toMatchObject({ applied: true });
   });
 
   test("apply restores wave files to their mirror before ingest, including shadows", async () => {
     put("projections/wikis/pond/ha.ka.ba/notes/gone.kapae", kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
     rmSync(join(root, "projections/bags/garden"), { recursive: true });
     rmSync(join(root, "projections/wikis/pond"), { recursive: true });
-    await carryImport(out, { apply: true, doors: after.doors() });
+    await houseImport(out, { apply: true, doors: after.doors() });
     const mirror = join(root, "projections/bags/garden");
     const wave = after.waves.find((w) => w.toBag === "lar:///ha.ka.ba/bags/garden")!;
     expect(wave.source).toBe(mirror);
@@ -153,11 +153,11 @@ describe("the carry verbs", () => {
     const gone = "lar:///ha.ka.ba/memory/gone", canon = "lar:///ha.ka.ba/memory/canon";
     put(`projections/wikis/daemon-${F1}/ha.ka.ba/memory/gone.kapae`, kapaeShadowBody(gone));
     put(`projections/bags/daemon-${F1}/ha.ka.ba/memory/canon.tid`, tid(canon, "canon memory"));
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     expect(manifest.rows.some((r) => r.layer === "kapae" && r.title === gone)).toBe(true);
     expect(manifest.rows.some((r) => r.layer === "daemon-canon" && r.title === canon)).toBe(true);
     const after = refound();
-    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    const result = await houseImport(out, { apply: true, doors: after.doors() });
     expect(after.kapae.has(gone)).toBe(true);
     expect(result.tallies.kapae.landed).toBe(2);
     expect(after.bagRecords.get(daemonFaceCanonBag(F2))?.get(canon)).toBe(tid(canon, "canon memory"));
@@ -168,12 +168,12 @@ describe("the carry verbs", () => {
   });
 
   test("a mirror file holding a different record is left as it stands, and the row rides on to INGEST's three-way gate — no byte-drift stand-off", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
     const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
     writeFileSync(path, tid("lar:///ha.ka.ba/garden/rose", "another rose"));
     after.bagRecords.set("lar:///ha.ka.ba/bags/garden", new Map([["lar:///ha.ka.ba/garden/rose", tid("lar:///ha.ka.ba/garden/rose", "another rose")]]));
-    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    const result = await houseImport(out, { apply: true, doors: after.doors() });
     expect(readFileSync(path, "utf8")).toBe(tid("lar:///ha.ka.ba/garden/rose", "another rose"));           // nothing wrote over it
     expect(after.waves.flatMap((w) => w.candidates).some((c) => c.uri === "lar:///ha.ka.ba/garden/rose")).toBe(true);
     // INGEST decided: the records here say something else, so the gate stands it off (never the bytes alone).
@@ -181,69 +181,69 @@ describe("the carry verbs", () => {
   });
 
   test("G2 — a mirror file holding the SAME record in another framing reads already landed: no stand-off, no wave", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
     const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
     // The same fields in another order and without the projector's trailing newline: one record, other bytes.
     writeFileSync(path, "type: text/vnd.tiddlywiki\ntitle: lar:///ha.ka.ba/garden/rose\n\na rose");
-    const preview = await carryImport(out, { apply: false, doors: after.doors() });
+    const preview = await houseImport(out, { apply: false, doors: after.doors() });
     expect(preview.tallies.bag).toMatchObject({ already: 1, planned: 0, stoodOff: [] });
-    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    const result = await houseImport(out, { apply: true, doors: after.doors() });
     expect(result.tallies.bag).toMatchObject({ already: 1, landed: 0, stoodOff: [], refused: [] });
     expect(after.waves.flatMap((w) => w.candidates).some((c) => c.uri === "lar:///ha.ka.ba/garden/rose")).toBe(false);
   });
 
   test("G3 — the preview counts `already` for rows the mirror holds byte for byte, and names an unseeded canon as a warning", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
     // The garden mirror still holds the rose the bundle carries, byte for byte.
-    const preview = await carryImport(out, { apply: false, doors: { ...after.doors(), unseeded: () => ["sdm"] } });
+    const preview = await houseImport(out, { apply: false, doors: { ...after.doors(), unseeded: () => ["sdm"] } });
     expect(preview.tallies.bag).toMatchObject({ already: 1, planned: 0 });
-    expect(preview.warnings).toEqual([expect.stringMatching(/^carry-canon-unseeded: the canon of sdm stands unseeded[\s\S]*lares vessel seed --apply/)]);
+    expect(preview.warnings).toEqual([expect.stringMatching(/^carry-canon-unseeded: the canon of sdm stands unlaid[\s\S]*lares vessel lay --apply/)]);
     expect(after.waves).toEqual([]);
     // CONTROL: the apply still refuses by name.
-    await expect(carryImport(out, { apply: true, doors: { ...after.doors(), unseeded: () => ["sdm"] } })).rejects.toThrow(/carry-canon-unseeded/);
+    await expect(houseImport(out, { apply: true, doors: { ...after.doors(), unseeded: () => ["sdm"] } })).rejects.toThrow(/carry-canon-unseeded/);
   });
 
   test("G1 — the journal keys by the bundle AND the target faces: the same bundle walked onto fresh faces after a re-founding imports afresh", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const first = refound();
-    await carryImport(out, { apply: true, doors: first.doors() });
+    await houseImport(out, { apply: true, doors: first.doors() });
     expect(first.records.has(NOTE)).toBe(true);
     const manifest = JSON.parse(readFileSync(join(out, MANIFEST_FILE), "utf8")) as { bundleId: string };
-    expect(existsSync(carryJournalPath(manifest.bundleId, [F2]))).toBe(true);
+    expect(existsSync(bundleJournalPath(manifest.bundleId, [F2]))).toBe(true);
     // reset -> found again: config (and its journal) stays; the face stands on a fresh relation with an empty mirror.
     const F3 = "33333333-3333-4333-8333-333333333333";
     rmSync(join(root, `projections/wikis/daemon-${F2}`), { recursive: true, force: true });
     rmSync(join(root, "projections/bags/garden"), { recursive: true, force: true });
     const second = refound({ relation: F3 });
-    const again = await carryImport(out, { apply: true, doors: second.doors() });
+    const again = await houseImport(out, { apply: true, doors: second.doors() });
     expect(second.records.has(NOTE)).toBe(true);
     expect(second.records.has(MEMORY)).toBe(true);
     expect(again.tallies.working.landed).toBeGreaterThan(0);
-    expect(carryJournalPath(manifest.bundleId, [F3])).not.toBe(carryJournalPath(manifest.bundleId, [F2]));
+    expect(bundleJournalPath(manifest.bundleId, [F3])).not.toBe(bundleJournalPath(manifest.bundleId, [F2]));
   });
 
   test("the journal prevents repeated mirror writes and candidates", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
-    await carryImport(out, { apply: true, doors: after.doors() });
+    await houseImport(out, { apply: true, doors: after.doors() });
     const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
     const before = readFileSync(path);
     const calls = after.waves.length;
     const { mtimeMs } = (await import("node:fs")).statSync(path);
-    await carryImport(out, { apply: true, doors: after.doors() });
+    await houseImport(out, { apply: true, doors: after.doors() });
     expect(readFileSync(path)).toEqual(before);
     expect((await import("node:fs")).statSync(path).mtimeMs).toBe(mtimeMs);
     expect(after.waves.slice(calls).flatMap((w) => w.candidates)).toEqual([]);
   });
-  test("C1 — carry follows active mirrors: kahua heads, drafts and temp land under the new face", async () => {
+  test("C1 — the bundle follows active mirrors: kahua heads, drafts and temp land under the new face", async () => {
     const before = oldVessel();
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: before.doors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: before.doors() });
     expect(manifest.counts.working).toBeGreaterThan(0);
 
     const after = refound();
-    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    const result = await houseImport(out, { apply: true, doors: after.doors() });
     expect(result.faceMap).toEqual({ "hearth-one": 0 });
     expect(after.records.has(MEMORY)).toBe(true);
     expect(after.records.has(NOTE)).toBe(true);
@@ -261,26 +261,26 @@ describe("the carry verbs", () => {
   });
 
   test("C2 — a second import of the same bundle lands nothing, and without its journal still lands nothing new", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
-    await carryImport(out, { apply: true, doors: after.doors() });
+    await houseImport(out, { apply: true, doors: after.doors() });
     const records = new Map(after.records), lifts = after.lifts.length, calls = after.ingestCalls;
-    const again = await carryImport(out, { apply: true, doors: after.doors() });
+    const again = await houseImport(out, { apply: true, doors: after.doors() });
     expect(after.ingestCalls).toBe(calls);
     expect(after.lifts.length).toBe(lifts);
     expect(Object.values(again.tallies).every((t) => t.landed === 0 && t.planned === 0)).toBe(true);
     expect(after.acts).toEqual(["handle h0 Heron", "seat h0 east"]);
 
     const manifest = JSON.parse(readFileSync(join(out, MANIFEST_FILE), "utf8")) as { bundleId: string };
-    rmSync(carryJournalPath(manifest.bundleId, [F2]));
-    await carryImport(out, { apply: true, doors: after.doors() });
+    rmSync(bundleJournalPath(manifest.bundleId, [F2]));
+    await houseImport(out, { apply: true, doors: after.doors() });
     expect(after.records).toEqual(records);
     expect(after.lifts.length).toBe(lifts);
     expect(after.stage.get(0)!.filter((h) => h.title === MEMORY)).toHaveLength(1);
   });
 
   test("C3 — the bundle excludes sensoriums and daemon control files; faces key by pet-name", async () => {
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     for (const f of manifest.files) expect(f.path).not.toMatch(/sensorium|bags\/daemon|hearth/);
     const bundleText = manifest.files.map((f) => readFileSync(join(out, ...f.path.split("/")), "utf8")).join("\n") + readFileSync(join(out, MANIFEST_FILE), "utf8");
     expect(bundleText).not.toContain(F1);
@@ -293,67 +293,67 @@ describe("the carry verbs", () => {
   });
 
   test("C4 — a tampered byte, an unlisted file or an unsafe path refuses before any write", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const target = join(out, "bags/garden/ha.ka.ba/garden/rose.tid");
     const good = readFileSync(target, "utf8");
     writeFileSync(target, good.replace("rose", "dawn"));
     const after = refound();
-    await expect(carryImport(out, { apply: true, doors: after.doors() })).rejects.toThrow(/bundle-hash-mismatch/);
+    await expect(houseImport(out, { apply: true, doors: after.doors() })).rejects.toThrow(/bundle-hash-mismatch/);
     expect(after.ingestCalls + after.lifts.length + after.acts.length).toBe(0);
     expect(existsSync(join(root, `projections/wikis/daemon-${F2}`))).toBe(false);
     writeFileSync(target, good);
 
     writeFileSync(join(out, "faces/f0/stray.tid"), "slipped in");
-    await expect(carryImport(out, { apply: true, doors: after.doors() })).rejects.toThrow(/bundle-unlisted-file/);
+    await expect(houseImport(out, { apply: true, doors: after.doors() })).rejects.toThrow(/bundle-unlisted-file/);
     rmSync(join(out, "faces/f0/stray.tid"));
 
     const m = JSON.parse(readFileSync(join(out, MANIFEST_FILE), "utf8"));
     m.files[0].path = `../${m.files[0].path}`;
     writeFileSync(join(out, MANIFEST_FILE), JSON.stringify(m));
-    await expect(carryImport(out, { apply: true, doors: after.doors() })).rejects.toBeInstanceOf(CarryBundleRefused);
+    await expect(houseImport(out, { apply: true, doors: after.doors() })).rejects.toBeInstanceOf(BundleVerifyRefused);
     expect(after.ingestCalls + after.lifts.length + after.acts.length).toBe(0);
   });
 
   test("C5 — a dest inside the house or the workspace refuses; an unsettled census refuses unless the export names itself partial", async () => {
     const v = oldVessel();
-    await expect(carryExport(join(root, "backup"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
-    await expect(carryExport(join(repoRoot, "tmp-carry-bundle"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-workspace/);
-    expect(existsSync(join(repoRoot, "tmp-carry-bundle"))).toBe(false);
+    await expect(houseExport(join(root, "backup"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
+    await expect(houseExport(join(repoRoot, "tmp-house-bundle"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-workspace/);
+    expect(existsSync(join(repoRoot, "tmp-house-bundle"))).toBe(false);
     symlinkSync(root, join(dirname(out), "house-link"));
-    await expect(carryExport(join(dirname(out), "house-link", "backup"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
+    await expect(houseExport(join(dirname(out), "house-link", "backup"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
     rmSync(join(dirname(out), "house-link"));
     v.census = { clean: false, items: [{ kind: "carrier", state: "pending", uri: NOTE, bagId: "daemon", island: "daemon" }, { kind: "held-save", refusal: "save-unbooked", documentId: "doc-1", saves: 1, bagId: null }], unanswered: [] };
-    await expect(carryExport(out, { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-unsettled[\s\S]*pending/);
+    await expect(houseExport(out, { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-unsettled[\s\S]*pending/);
     expect(existsSync(out)).toBe(false);
     expect(readdirSync(dirname(out))).toEqual([]);
-    const { manifest } = await carryExport(out, { acceptOmissions: true, doors: v.doors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: true, doors: v.doors() });
     expect(manifest.omissions.find((o) => o.kind === "unsettled-carriers")?.count).toBe(1);
     expect(manifest.omissions.find((o) => o.kind === "held-saves")?.count).toBe(1);
-    await expect(carryExport(out, { acceptOmissions: true, doors: v.doors() })).rejects.toThrow(/carry-dest-stands/);
+    await expect(houseExport(out, { acceptOmissions: true, doors: v.doors() })).rejects.toThrow(/carry-dest-stands/);
   });
 
   test("C6 — no matching pet-name refuses by name; duplicate pet-names refuse on either side", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const stranger = refound({ petname: "someone-else" });
-    await expect(carryImport(out, { apply: true, doors: stranger.doors() })).rejects.toThrow(/carry-face-unmatched[\s\S]*hearth-one/);
+    await expect(houseImport(out, { apply: true, doors: stranger.doors() })).rejects.toThrow(/carry-face-unmatched[\s\S]*hearth-one/);
     expect(stranger.ingestCalls + stranger.lifts.length + stranger.acts.length).toBe(0);
 
     const twins = new FakeVessel([{ handleIndex: 0, petname: "hearth-one", relation: F2 }, { handleIndex: 1, petname: "hearth-one", relation: "33333333-3333-4333-8333-333333333333" }], "g");
-    await expect(carryImport(out, { apply: true, doors: twins.doors() })).rejects.toThrow(/carry-face-duplicate-petname/);
+    await expect(houseImport(out, { apply: true, doors: twins.doors() })).rejects.toThrow(/carry-face-duplicate-petname/);
 
     const out2 = join(dirname(out), "bundle-two");
     const twinsOld = new FakeVessel([{ handleIndex: 0, petname: "same", relation: F1 }, { handleIndex: 1, petname: "same", relation: "33333333-3333-4333-8333-333333333333" }], "g");
-    await expect(carryExport(out2, { acceptOmissions: false, doors: twinsOld.doors() })).rejects.toThrow(/carry-face-duplicate-petname/);
+    await expect(houseExport(out2, { acceptOmissions: false, doors: twinsOld.doors() })).rejects.toThrow(/carry-face-duplicate-petname/);
     const unnamed = new FakeVessel([{ handleIndex: 0, petname: null, relation: F1 }], "g");
-    await expect(carryExport(out2, { acceptOmissions: false, doors: unnamed.doors() })).rejects.toThrow(/carry-face-unnamed/);
+    await expect(houseExport(out2, { acceptOmissions: false, doors: unnamed.doors() })).rejects.toThrow(/carry-face-unnamed/);
   });
 
   test("C7 — a diverged id stands off and never overwrites, in the wiki and on the stage", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound({ kahua: [head(MEMORY, "a different heron", sha("x"))] });
     after.records.set(NOTE, tid(NOTE, "the pond rewritten"));
     put(`projections/wikis/daemon-${F2}/recovery/draft-one.tid`, "someone else's draft");
-    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    const result = await houseImport(out, { apply: true, doors: after.doors() });
     expect(after.records.get(NOTE)).toBe(tid(NOTE, "the pond rewritten"));
     expect(result.tallies.working.stoodOff.join()).toContain(NOTE);
     expect(result.tallies.kahua.stoodOff.join()).toContain(MEMORY);
@@ -363,34 +363,34 @@ describe("the carry verbs", () => {
   });
 
   test("C8 — preview writes nothing; an unnamed face at the bundle's index takes the pet-name as a fresh act", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound({ petname: null });
-    const preview = await carryImport(out, { apply: false, doors: after.doors() });
+    const preview = await houseImport(out, { apply: false, doors: after.doors() });
     expect(preview.redeclare).toEqual(['h0: pet-name "hearth-one"', 'h0: Handle "Heron"', 'h0: stands for the chair "east"']);
     expect(preview.tallies.working.planned).toBeGreaterThan(0);
     expect(preview.tallies.kahua.planned).toBe(1);
     expect(after.ingestCalls + after.lifts.length + after.acts.length).toBe(0);
     expect(existsSync(join(root, `projections/wikis/daemon-${F2}`))).toBe(false);
     expect(existsSync(join(root, "config", "carry-journal"))).toBe(false);
-    await carryImport(out, { apply: true, doors: after.doors() });
+    await houseImport(out, { apply: true, doors: after.doors() });
     expect(after.acts[0]).toBe("rename h0 hearth-one");
     expect(after.records.has(MEMORY)).toBe(true);
   });
 
-  test("C10 — files under bags/daemon have no carry grant", async () => {
+  test("C10 — files under bags/daemon have no bundle grant", async () => {
     const STAGE = "lar:///ha.ka.ba/kahua/memory/stage-note";
     put("projections/bags/daemon/ha.ka.ba/kahua/memory/stage-note.tid", tid(STAGE, "a committed memory"));
     put("projections/bags/daemon/ha.ka.ba/bags/persona/group-secret/abc.tid", tid("lar:///ha.ka.ba/bags/persona/group-secret/abc", "sealed"));
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     expect(manifest.rows.some((r) => r.layer === "daemon-canon")).toBe(false);
     expect(manifest.files.some((f) => f.path.startsWith("daemon/canon/"))).toBe(false);
     expect(manifest.files.some((f) => f.path.includes("persona"))).toBe(false);
     expect(manifest.omissions.some((o) => o.kind === "daemon-bag")).toBe(false);
     const after = refound();
-    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    const result = await houseImport(out, { apply: true, doors: after.doors() });
     expect(after.bagRecords.get(DAEMON_BAG_ID)?.get(STAGE)).toBeUndefined();
     const calls = after.ingestCalls;
-    await carryImport(out, { apply: true, doors: after.doors() });
+    await houseImport(out, { apply: true, doors: after.doors() });
     expect(after.ingestCalls).toBe(calls);
   });
 
@@ -398,14 +398,14 @@ describe("the carry verbs", () => {
     const PAGE = "lar:///ha.ka.ba/notes/field-page";
     put("projections/wikis/field-notes/ha.ka.ba/notes/field-page.tid", tid(PAGE, "a field note"));
     put("projections/wikis/field-notes/recovery/half.tid", tid("half", "a draft"));
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     expect(manifest.rows.filter((r) => r.layer === "wiki-working").map((r) => [r.bag, r.title])).toEqual([["lar:///ha.ka.ba/wikis/field-notes/working", PAGE]]);
     const after = refound();
     after.held = new Set();
-    const preview = await carryImport(out, { apply: false, doors: after.doors() });
+    const preview = await houseImport(out, { apply: false, doors: after.doors() });
     expect(preview.minted).toEqual(["lar:///ha.ka.ba/bags/field-notes", "lar:///ha.ka.ba/bags/garden"]);
     expect(after.mints).toEqual([]);
-    await carryImport(out, { apply: true, doors: after.doors() });
+    await houseImport(out, { apply: true, doors: after.doors() });
     expect(after.mints).toEqual(["lar:///ha.ka.ba/bags/field-notes", "lar:///ha.ka.ba/bags/garden"]);
     expect(after.bagRecords.get("lar:///ha.ka.ba/wikis/field-notes/working")?.get(PAGE)).toBe(tid(PAGE, "a field note"));
     expect(after.inWikiBags).toEqual(["lar:///ha.ka.ba/wikis/field-notes/working in field-notes"]);
@@ -416,11 +416,11 @@ describe("the carry verbs", () => {
     put(`projections/wikis/daemon-${F1}/plain note.tid`, tid("plain note", "a free note"));
     // CONTROL: a file whose own title names a lar: address its siting does not derive stays skipped, never re-addressed.
     put(`projections/wikis/daemon-${F1}/stray.tid`, tid("lar:///ha.ka.ba/notes/elsewhere", "misplaced"));
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     expect(manifest.rows.find((r) => r.path === "faces/f0/working/plain note.tid")?.title).toBe("plain note");
     expect(manifest.rows.find((r) => r.path === "faces/f0/working/stray.tid")?.title).toBeNull();
     const after = refound();
-    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    const result = await houseImport(out, { apply: true, doors: after.doors() });
     expect(after.records.get("plain note")).toBe(tid("plain note", "a free note"));
     expect(after.records.get(MEMORY)).toBe(tid(MEMORY, "remember the heron"));
     expect(result.skipped.map((s) => s.slice(s.lastIndexOf("/") + 1))).toEqual(["stray.tid"]);
@@ -430,17 +430,17 @@ describe("the carry verbs", () => {
   test("carry-mints-an-empty-shared-wiki — every wiki the catalog holds carries, a wiki with no page and its share row among them", async () => {
     const shares = [{ slug: "quiet", kind: "wiki" as const, read: "hearth-one", write: "", owner: "hearth-one" }];
     const before = oldVessel();
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: { ...before.doors(), shareRows: { read: () => shares, write: () => {} }, userWikis: async () => ["quiet", "unshared"] } });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: { ...before.doors(), shareRows: { read: () => shares, write: () => {} }, userWikis: async () => ["quiet", "unshared"] } });
     expect(manifest.files.some((f) => f.path.startsWith("wikis/quiet/"))).toBe(false);
     const after = refound();
     after.held = new Set(["garden"]);
     const wikiMints: string[] = [];
     let written: readonly unknown[] = [];
     const doors = { ...after.doors(), mintWiki: async (slug: string) => { wikiMints.push(slug); after.held.add(slug); }, shareRows: { read: () => [], write: (rows: readonly unknown[]) => { written = rows; } } };
-    const preview = await carryImport(out, { apply: false, doors });
+    const preview = await houseImport(out, { apply: false, doors });
     expect(preview.minted).toEqual(["lar:///ha.ka.ba/bags/quiet", "lar:///ha.ka.ba/bags/unshared"]);
     expect(wikiMints).toEqual([]);
-    const result = await carryImport(out, { apply: true, doors });
+    const result = await houseImport(out, { apply: true, doors });
     expect(result.minted).toEqual(["lar:///ha.ka.ba/bags/quiet", "lar:///ha.ka.ba/bags/unshared"]);
     expect(wikiMints).toEqual(["quiet", "unshared"]);
     expect(written).toEqual(shares);
@@ -450,14 +450,14 @@ describe("the carry verbs", () => {
 
   test("carry-mints-no-wiki-another-face-stood — a wiki whose workbench another face's realm binds mints nothing under a face that holds no writer's seat: it waits by name, and the share landing alone hands that face what its rows grant", async () => {
     const before = oldVessel();
-    await carryExport(out, { acceptOmissions: false, doors: { ...before.doors(), shareRows: { read: () => [], write: () => {} }, userWikis: async () => ["quiet", "unshared"] } });
+    await houseExport(out, { acceptOmissions: false, doors: { ...before.doors(), shareRows: { read: () => [], write: () => {} }, userWikis: async () => ["quiet", "unshared"] } });
     const after = refound();
     after.held = new Set(["garden"]);
     const wikiMints: string[] = [];
     // `quiet` stands bound under the owner face's realm (it imported first); this face holds no seat there, so it writes `personal`.
     const doors = { ...after.doors(), mintWiki: async (slug: string) => { wikiMints.push(slug); after.held.add(slug); }, shareRows: { read: () => [], write: () => {} },
       benchSeat: async (slug: string) => ({ bound: slug === "quiet", writeSlot: "personal" as const }) };
-    const result = await carryImport(out, { apply: true, doors });
+    const result = await houseImport(out, { apply: true, doors });
     expect(result.minted).toEqual(["lar:///ha.ka.ba/bags/unshared"]);
     expect(wikiMints).toEqual(["unshared"]);
     expect(result.benchWaiting).toContainEqual({ slug: "quiet", why: "writer" });
@@ -466,7 +466,7 @@ describe("the carry verbs", () => {
   test("C12 — the manifest lists the library's collections by index digest; no original enters the bundle", async () => {
     put("library/books/index.mem", "the books index\n");
     put("library/books/abc123/moby-dick.txt", "Call me Ishmael.");
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     expect(manifest.library).toEqual([{ collection: "books", indexSha256: sha("the books index\n") }]);
     expect(manifest.files.some((f) => f.path.includes("moby") || f.path.includes("library"))).toBe(false);
   });
@@ -491,9 +491,9 @@ describe("the carry verbs", () => {
     // reset -> found: projections stay (survive-refound), the new face wears F2, and nothing claims daemon-F1 / kahua-F1.
     const after = refound();
     put(`projections/wikis/daemon-${F2}/ha.ka.ba/notes/new.tid`, tid("lar:///ha.ka.ba/notes/new", "after"));
-    const refused = await carryExport(out, { acceptOmissions: false, doors: after.doors() }).then(() => null, (e: Error) => e);
-    expect(refused).toBeInstanceOf(CarryRefused);
-    expect((refused as CarryRefused).code).toBe("carry-unclaimed-face-folder");
+    const refused = await houseExport(out, { acceptOmissions: false, doors: after.doors() }).then(() => null, (e: Error) => e);
+    expect(refused).toBeInstanceOf(BundleRefused);
+    expect((refused as BundleRefused).code).toBe("carry-unclaimed-face-folder");
     const msg = (refused as Error).message;
     expect(msg).toContain(join(root, "projections", "wikis", `daemon-${F1}`));
     expect(msg).toContain(join(root, "projections", "bags", `kahua-${F1}`));
@@ -504,18 +504,18 @@ describe("the carry verbs", () => {
   });
 
   test("C15 — an import onto a face that pins no relation because the vessel stands locked or down says: run up and vault unlock first", async () => {
-    await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const locked = refound({ relation: null, kahuaRefusal: "vessel-locked: open the vessel key", kahuaRefusalCode: "vessel-locked" });
-    await expect(carryImport(out, { apply: true, doors: locked.doors() })).rejects.toThrow(/carry-face-unworn[\s\S]*run up and vault unlock first[\s\S]*lares vault unlock/);
+    await expect(houseImport(out, { apply: true, doors: locked.doors() })).rejects.toThrow(/carry-face-unworn[\s\S]*run up and vault unlock first[\s\S]*lares vault unlock/);
     // CONTROL: a face that read whole and pins no relation keeps the stand-wearing-it cure, and never names the unlock.
     const bare = refound({ relation: null });
-    const e = await carryImport(out, { apply: true, doors: bare.doors() }).then(() => null, (x: Error) => x);
+    const e = await houseImport(out, { apply: true, doors: bare.doors() }).then(() => null, (x: Error) => x);
     expect(e?.message).toMatch(/carry-face-unworn/);
     expect(e?.message).not.toMatch(/vault unlock/);
   });
 
   test("C16 — export's closing line says the bundle rests unencrypted", async () => {
-    const { cmdExport } = await import("../src/commands/carry-export.js");
+    const { cmdExport } = await import("../src/commands/export.js");
     const said: string[] = [];
     const log = console.log;
     console.log = (...a: unknown[]) => { said.push(a.join(" ")); };
@@ -529,13 +529,13 @@ describe("the carry verbs", () => {
 
   test("C17 — the house's config home takes a bundle (a reset keeps it, and the container binds it to the host); every other house class refuses", async () => {
     const v = oldVessel();
-    await expect(carryExport(join(root, "projections", "carry"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
-    await expect(carryExport(join(root, "hearth", "carry"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
+    await expect(houseExport(join(root, "projections", "carry"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
+    await expect(houseExport(join(root, "hearth", "carry"), { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
     const dest = join(root, "config", "carry", "bundle-one");
-    const { manifest } = await carryExport(dest, { acceptOmissions: false, doors: v.doors() });
+    const { manifest } = await houseExport(dest, { acceptOmissions: false, doors: v.doors() });
     expect(manifest.files.some((f) => f.path.includes("carry/bundle-one"))).toBe(false);
     const after = refound();
-    await carryImport(dest, { apply: true, doors: after.doors() });
+    await houseImport(dest, { apply: true, doors: after.doors() });
     expect([...after.records.keys()]).toContain(MEMORY);
   });
 
@@ -544,20 +544,20 @@ describe("the carry verbs", () => {
     const workspace = join(root, "workspaces", "backup");
     mkdirSync(workspace, { recursive: true });
     const dest = join(workspace, "house");
-    await expect(carryExport(dest, { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
+    await expect(houseExport(dest, { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
     expect(existsSync(dest)).toBe(false);
-    await expect(carryExport(join(root, "projections", "carry"), { acceptOmissions: false, doors: v.doors(), workspace })).rejects.toThrow(/carry-dest-inside-house/);
-    await expect(carryExport(join(root, "workspaces", "other", "house"), { acceptOmissions: false, doors: v.doors(), workspace })).rejects.toThrow(/carry-dest-inside-house/);
-    const { manifest } = await carryExport(dest, { acceptOmissions: false, doors: v.doors(), workspace });
+    await expect(houseExport(join(root, "projections", "carry"), { acceptOmissions: false, doors: v.doors(), workspace })).rejects.toThrow(/carry-dest-inside-house/);
+    await expect(houseExport(join(root, "workspaces", "other", "house"), { acceptOmissions: false, doors: v.doors(), workspace })).rejects.toThrow(/carry-dest-inside-house/);
+    const { manifest } = await houseExport(dest, { acceptOmissions: false, doors: v.doors(), workspace });
     expect(JSON.parse(readFileSync(join(dest, MANIFEST_FILE), "utf8")).bundleId).toBe(manifest.bundleId);
     expect(readdirSync(workspace)).toEqual(["house"]);          // the staging dir left nothing beside the bundle
     // CONTROL: the bundle a workspace holds imports as any other.
     const after = refound();
-    await carryImport(dest, { apply: true, doors: after.doors() });
+    await houseImport(dest, { apply: true, doors: after.doors() });
     expect([...after.records.keys()]).toContain(MEMORY);
   });
 
   test("C9 — the refusal classes carry their codes", () => {
-    expect(new CarryRefused("carry-x", "why").message).toBe("carry-x: why");
+    expect(new BundleRefused("carry-x", "why").message).toBe("carry-x: why");
   });
 });

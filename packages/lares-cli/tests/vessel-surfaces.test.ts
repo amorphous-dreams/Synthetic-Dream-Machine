@@ -116,6 +116,6 @@ describe("vessel surfaces", () => {
   });
 
   test("the vessel surface table names its live doors", () => {
-    expect(VESSEL_SUBS).toEqual(expect.arrayContaining(["found", "stand", "stop", "seed", "read", "rite"]));
+    expect(VESSEL_SUBS).toEqual(expect.arrayContaining(["found", "stand", "stop", "lay", "read", "rite"]));
   });
 });

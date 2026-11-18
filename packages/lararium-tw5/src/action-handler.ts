@@ -725,7 +725,7 @@ async function faceWaveTarget(action: IngestAction, resolve: FaceTargetResolver 
   // wears that session's face, so an AI seat (or any session) naming a face other than the one it wears refuses by name. The
   // operator's own gestures (the CLI seed and import, a ward credential) ride no session and may name any open face.
   if (face !== undefined && hand !== undefined && hand.ordinal !== face) {
-    throw new VerbRefusal("face-hand-refused", `face-hand-refused: this call wears face h${hand.ordinal}, and only the operator's own hand (\`lares vessel seed\`, \`lares vessel import\`) names another face (h${face}); no seat lands one face's memory in another`);
+    throw new VerbRefusal("face-hand-refused", `face-hand-refused: this call wears face h${hand.ordinal}, and only the operator's own hand (\`lares vessel lay\`, \`lares import\`) names another face (h${face}); no seat lands one face's memory in another`);
   }
   if (face === undefined) {
     if (!resolve || !isFaceOwnedLayer(action.toBag)) return null;
