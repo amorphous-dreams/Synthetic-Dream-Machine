@@ -19,8 +19,8 @@
 import type { LarBlobEntry } from "./base-doc.js";
 import { ENGINE_CORE_ID } from "./base-doc.js";
 import { GENESIS_FLOOR_TIDDLER, type FloorManifest } from "./floor-manifest.js";
-import { computeEngineCid, computeGrammarCid, computePluginsCid, regionEntriesOf } from "./genesis-doc.js";
-import { ownEntry, plainField, type StoredLarRecord } from "./stored-value.js";
+import { computeEngineCid, computeGrammarCid, computePluginsCid, regionEntriesOf, type GenesisSeed } from "./genesis-doc.js";
+import { isPlainMap, ownEntry, plainValue, type StoredTiddlers } from "./stored-value.js";
 
 /** The ratchets, in the order every line names them. */
 export const GENESIS_RATCHETS = ["engine", "grammar", "plugins", "floor"] as const;
@@ -39,11 +39,17 @@ export interface RatchetDifference {
   readonly reading: RatchetReading;
 }
 
-/** What a founding record or a seed hands in: a blob map and a tiddlers map, stored (an island doc) or plain (seed.json). */
-export interface GenesisRecordLike {
+/** A founding record as its island document holds it: the blob map and the stored tiddlers map. */
+export interface StoredGenesisRecord {
   readonly blobs?: Readonly<Record<string, LarBlobEntry>> | null | undefined;
-  readonly tiddlers?: Readonly<Record<string, unknown>> | null | undefined;
+  readonly tiddlers?: Readonly<StoredTiddlers> | null | undefined;
 }
+
+/**
+ * What a founding record or a seed hands in: the island doc's stored shape, or the seed's own plain shape
+ * (seed.json, `GenesisSeed`). Either way the floor witness reads through the read door (`plainValue`).
+ */
+export type GenesisRecordLike = StoredGenesisRecord | Partial<Pick<GenesisSeed, "blobs" | "tiddlers">>;
 
 /** The pinned floor as the comparison reads it: its manifest CID and its three folded fields. */
 export interface FloorPinLike {
@@ -60,7 +66,9 @@ export function foundingRecordDigests(record: GenesisRecordLike): GenesisDigests
   const blobs = record.blobs ?? null;
   const core = blobs ? ownEntry(blobs, ENGINE_CORE_ID) : undefined;
   const entries = blobs ? regionEntriesOf(blobs) : null;
-  const floor = plainField(ownEntry(record.tiddlers as Record<string, StoredLarRecord> | null | undefined, GENESIS_FLOOR_TIDDLER), "cid");
+  const witness = plainValue(ownEntry<unknown>(record.tiddlers, GENESIS_FLOOR_TIDDLER));
+  const fields = isPlainMap(witness) ? witness["tiddler"] : undefined;
+  const floor = isPlainMap(fields) ? fields["cid"] : undefined;
   return Object.freeze({
     engine: core && typeof core.sha256 === "string" && core.sha256.length > 0 ? computeEngineCid(core.sha256) : null,
     grammar: entries ? computeGrammarCid(entries) : null,
