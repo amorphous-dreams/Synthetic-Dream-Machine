@@ -15,7 +15,7 @@ import { KeyLineage, contentKeyRollSink, type KeyCause, type RollOutcome } from 
 import type { SealedBlob } from "../src/content-key-holder.js";
 import { keyVersionIdOf, mintContentKey, sealChunk, type ContentKey, type KeyVersionId, type SealedAddress } from "../src/sealed-chunk.js";
 import {
-  RECORD_KINDS, bagLocatorOf, entryLocatorOf, factOfRecord, judgeReseal, readRecord, recordIdOf, signRecord,
+  RECORD_KINDS, bagLocatorOf, entryLocatorOf, factOfRecord, joinProofOf, judgeReseal, readRecord, recordIdOf, signRecord,
   type RecordSigner, type VerifiedRecord,
 } from "../src/sealed-records.js";
 import type { SeatRoll } from "../src/seat-duties.js";
@@ -155,7 +155,7 @@ async function keyShore(n: number) {
   const version = async (i: number, parents: number[], span: number, cause: KeyCause): Promise<VerifiedRecord<"key-version">> => {
     const signed = await signRecord({ kind: "key-version", bagId: BAG, key: keys[i]!, signer: x!.signer,
       body: { bag: locator, keyVersion: ids[i]!, parents: parents.map((p) => ids[p]!).sort(), span: ids[span]! },
-      private: { cause, history: "closed", joinProofs: [], unserved: [] } });
+      private: { cause, history: "closed", joinProofs: cause.kind === "join" ? [...parents].sort((p, q) => (ids[p]! < ids[q]! ? -1 : 1)).map((p) => joinProofOf(keys[p]!, ids[i]!)) : [], unserved: [] } });
     if (!("record" in signed)) throw new Error(said(signed));
     const read = readRecord("key-version", signed.record, reader(i));
     if (!("record" in read)) throw new Error(said(read));
@@ -243,5 +243,51 @@ describe("a replacement never crosses a span (sealed-store #/epochs: an inviter 
     const manifests = [await s.manifest(0, PHOTO, from), await s.manifest(2, PHOTO, to)];
     expect(judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0, v1, v2]), keys: s.keyMap(0, 1, 2), manifests }))
       .toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "replaced" });
+  });
+});
+
+describe("a head after the removal still owes the replacement: the nearest removal within the head's span rules", () => {
+  /** A and B each answer one raise apart, so A holds two removal successors of one span: its next write joins them. */
+  async function forkedRoll() {
+    const { w, v: [a, b, c] } = await fleet("a", "b", "c");
+    const photo = await seal(a!, "the harbour photo");
+    await carry(a!, b!, BAG); await carry(a!, c!, BAG);
+    counts(w, a!, "raise-1"); counts(w, b!, "raise-1"); counts(w, c!, "raise-1");
+    w.group.delete(c!.id);
+    await rolls(a!, roll(["raise-1"], c!)); await rolls(b!, roll(["raise-1"], c!));
+    await carry(b!, a!, BAG);
+    const reading = await a!.holder.reading(BAG);
+    if ("refusal" in reading) throw new Error(said(reading));
+    expect(reading.foundings[0]!.heads.length).toBe(2);
+    return { a: a!, photo, heads: reading.foundings[0]!.heads };
+  }
+
+  it("A JOIN HEAD AFTER TWO REMOVALS replaces the photo: the record rides under the join, carries it as `joined`, and its own reader judges it complete", async () => {
+    const { a, photo, heads } = await forkedRoll();
+    const replaced = await a.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: a.signer });
+    if ("refusal" in replaced) throw new Error(`reseal refused ${said(replaced)}`);
+    expect(replaced.joined).toBeDefined();
+    expect(heads).not.toContain(replaced.body.keyVersion);
+    expect(replaced.body.keyVersion).toBe(replaced.joined!.keyVersion);
+    expect(await a.holder.judgeReseals(BAG)).toEqual([{ id: replaced.reseal, verdict: "complete" }]);
+  });
+
+  it("a replacement that refuses mints no join first: an unknown reference refuses `reference-unknown` and the two heads still stand", async () => {
+    const { a, heads } = await forkedRoll();
+    expect(said(await a.holder.resealBlob({ bagId: BAG, ref: "c".repeat(64), signer: a.signer }))).toBe("reference-unknown");
+    const after = await a.holder.reading(BAG);
+    expect("foundings" in after && after.foundings[0]!.heads).toEqual(heads);
+  });
+
+  it("the judge reads a record under a join of two removal successors by the nearest removal within the span: complete", async () => {
+    const s = await keyShore(4);
+    const v0 = await s.version(0, [], 0, { kind: "founding" });
+    const v1 = await s.version(1, [0], 0, { kind: "removal", acts: ["raise-1"] });
+    const v2 = await s.version(2, [0], 0, { kind: "removal", acts: ["raise-1"] });
+    const v3 = await s.version(3, [1, 2], 0, { kind: "join" });
+    const from = s.address(0, PHOTO), to = s.address(3, PHOTO);
+    const record = await s.reseal(3, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"] });
+    const manifests = [await s.manifest(0, PHOTO, from), await s.manifest(3, PHOTO, to)];
+    expect(judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0, v1, v2, v3]), keys: s.keyMap(0, 1, 2, 3), manifests })).toEqual({ verdict: "complete" });
   });
 });
