@@ -15,12 +15,18 @@
  *   · `mount`    — no node island swaps its `@oracle` read-face live today, so an accept raises the reboot-pending alert in
  *                  every live wiki through the standing vessel (`floorAlert`); a direct act holds no live wiki and says so.
  *
+ * THE STATUS NAMES BOTH TRUTHS, CHARTER-FREE (D1, shore recommendation 8). Beside the Nexus part, `status` reads the
+ * founding record (the stored genesis island) against the seed (offered) on disk and against the floor pin, ratchet by
+ * ratchet (`genesis-truths`). A place in no Nexus charter still answers that part and refuses only the Nexus part, by name
+ * (`nexusRefused`); a place whose store holds no island refuses whole, as before.
+ *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   acceptFloorRelease, floorReleaseEntriesFromBoard, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
-  oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
+  oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorManifest, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
+  type FloorPinLike,
   type FloorAcceptOutcome, type FloorPinPorts, type FloorRemount, type FloorStatus, type LarDoc,
 } from "@lararium/mesh";
 import { bootDaemonUrl } from "../boot-face-planes.js";
@@ -31,6 +37,8 @@ import { readVerifiedCasBlobFromFs, writeCasEntriesFs } from "../node-cas.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { larBootstrapPath } from "../vessel-paths.js";
+import { daemonGenesisDir } from "../lares-config.js";
+import { foundingRecordLine, readFoundingRecordTruths, type FoundingRecordTruths } from "../genesis-truths.js";
 
 /** A floor door refused by name. */
 export class FloorRefused extends Error {
@@ -67,6 +75,8 @@ export interface NodeFloorOptions {
   /** The standing vessel's alert delivery; absent on a direct act (no live wiki to alert). */
   readonly floorAlert?: (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]>;
   readonly fetchFn?: typeof fetch;
+  /** The genesis dir whose seed reads as the offer; absent, the daemon's own resolution (`daemonGenesisDir`). */
+  readonly genesisDir?: string;
 }
 
 /** Bind the node's substrate to the floor pin ports. */
@@ -109,9 +119,42 @@ export async function nodeFloorPorts(opts: NodeFloorOptions): Promise<FloorPinPo
   };
 }
 
-/** `lares floor status`. */
-export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatus> {
-  return readFloorStatus(await nodeFloorPorts(opts));
+/** What `lares floor status` answers: the Nexus part where a charter stands, and both truths always. */
+export type FloorStatusRead = Partial<FloorStatus> & {
+  /** The founding record beside the seed (offered) and the floor pin, ratchet by ratchet, and its one line. */
+  readonly genesis: FoundingRecordTruths & { readonly line: string };
+  /** The Nexus part's refusal, by name, where this place stands in no charter. */
+  readonly nexusRefused?: { readonly refusal: string; readonly message: string };
+};
+
+/** The pinned floor's manifest from this vessel's own CAS (an accept stages it there), or null where it does not read. */
+function pinnedFloorOf(manifestCid: string, casDir: string): FloorPinLike | null {
+  const bytes = readVerifiedCasBlobFromFs(manifestCid, casDir);
+  if (!bytes) return null;
+  const read = readFloorManifest(bytes);
+  return "manifest" in read ? { manifestCid, manifest: read.manifest } : null;
+}
+
+/** `lares floor status`: both truths for every place, and the Nexus part where a charter stands. */
+export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatusRead> {
+  let status: FloorStatus | null = null;
+  let nexusRefused: FloorRefused | null = null;
+  try { status = await readFloorStatus(await nodeFloorPorts(opts)); }
+  catch (e) { if (!(e instanceof FloorRefused && e.refusal === "floor-no-charter")) throw e; nexusRefused = e; }
+  // A store with no island has no founding record to read: the Nexus refusal (where one stands) names the place first.
+  let island: LarDoc | undefined;
+  try { island = (await storedGenesisIsland(opts.repo)).doc(); }
+  catch (e) { throw nexusRefused ?? e; }
+  if (!island) throw nexusRefused ?? new FloorRefused("floor-no-genesis", "this vessel's oracle island reads empty");
+  const floorPin = status ? pinnedFloorOf(status.pinned.manifest, opts.casDir) : null;
+  const truths = readFoundingRecordTruths({ record: island, genesisDir: opts.genesisDir ?? daemonGenesisDir(), floorPin });
+  const pinNote = nexusRefused
+    ? "none — this vessel stands in no Nexus charter, so the founding record's genesis floor serves"
+    : `${status?.pinned.manifest ?? "?"} does not read from this vessel's CAS`;
+  const genesis = { ...truths, line: foundingRecordLine(truths, { pinNote }) };
+  return nexusRefused
+    ? { genesis, nexusRefused: { refusal: nexusRefused.refusal, message: nexusRefused.message } }
+    : { ...status!, genesis };
 }
 
 /** `lares floor accept [<release-cid>]`: the outcome, and the live wikis the alert reached. */

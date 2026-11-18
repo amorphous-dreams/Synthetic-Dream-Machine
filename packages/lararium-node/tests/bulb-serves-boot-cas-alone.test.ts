@@ -71,3 +71,32 @@ describe("the bulb read-face serves the BOOT CAS alone — an operator's staged 
     expect(await probe.text()).toBe(CLOSED_DOOR.body);
   });
 });
+
+describe("the bulb read-face names the founding record's genesis, and offers the shipped seed only as offered", () => {
+  const servers: Server[] = [];
+  afterEach(async () => { for (const s of servers.splice(0)) await new Promise<void>((r) => s.close(() => r())); });
+  const mount = async (founding: readonly string[] | undefined): Promise<string[]> => {
+    const lines: string[] = [];
+    const httpServer = createServer(); servers.push(httpServer);
+    await new Promise<void>((r) => httpServer.listen(0, "127.0.0.1", () => r()));
+    await mountBulbReadFace({ httpServer, bulb: fixtureBulb(), onLog: (l) => lines.push(l), ...(founding ? { founding } : {}) });
+    return lines;
+  };
+
+  test("a founding record that differs from the shipped seed: the line names the founding blobs and the seed as offered", async () => {
+    const bulb = fixtureBulb();
+    const shipped = bulb.casEntries.map((e) => e.cid);
+    const founding = [shipped[0]!, "f".repeat(64)];
+    const lines = await mount(founding);
+    expect(lines.join("\n")).toMatch(/founding record/);
+    expect(lines.join("\n")).toMatch(/offered/);
+    expect(lines.join("\n")).toContain("f".repeat(64).slice(0, 16));
+  });
+
+  test("CONTROL: a founding record that agrees with the shipped seed prints the plain bulb line, no `offered`", async () => {
+    const shipped = fixtureBulb().casEntries.map((e) => e.cid);
+    const lines = await mount(shipped);
+    expect(lines.join("\n")).toMatch(/bulb=/);
+    expect(lines.join("\n")).not.toMatch(/offered/);
+  });
+});

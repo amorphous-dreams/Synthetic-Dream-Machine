@@ -151,23 +151,19 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 | `packages/lares-cli/` | the vessel door |
 | `TiddlyWiki5/`, `VSCode-TW5-Syntax/`, `mempalace/`, `kowloon*/` | submodules the reference deployment runs on |
 
-#### A house reads a pinned canon clone
+#### Workspaces take the house's projection
 
-A Lararium house reads its canon (`bags/`, `wikis/`) from the directory `LARES_WORKSPACE` names and writes canon edits back there. Name a **house canon clone** there, never the checkout you develop in, so a branch switch never moves a house's canon:
+A Lararium house lays its canon (`bags/`, `wikis/`) from the workspace `LARES_WORKSPACE` names and projects bags, wikis and rendered artifacts back into it. The operator names each workspace; for the Kahu cabal the repo checkout stands as the working surface, so canon edits land in the tracked tree as source-control write-back. Read-back follows descent: a fast-forward of the workspace's commit flows in, a fork (a branch switch, a rebase, a reset) holds the house's canon and asks which side stands. What notices the commit moving stands owed; until then the operator reads moved canon in by hand:
 
 ```sh
-node tools/house-canon.mjs stand            # clone the origin to ~/.lares-canon, detached at develop
-# LARES_WORKSPACE=$HOME/.lares-canon        # in ~/.lares/lares-surface.env
-node tools/house-canon.mjs move             # fetch and check out the pin (--pin <branch|tag|commit> re-pins)
-lares vessel seed                           # the standing house reads the moved canon
-node tools/house-canon.mjs read             # the pin, the commit, the write-back the clone holds
+lares vessel lay                            # the standing house reads the workspace's canon
 ```
 
-`move` refuses while the clone holds the house's write-back, naming each path. One dev install MAY name its working checkout instead, so canon edits land in source control. The [founding runbook](bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem) (`#/prepare`) carries the whole walk.
+`tools/house-canon.mjs` stays as a tool where a separate pinned clone serves a house (`stand`, `move`, `read`). The [founding runbook](bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem) (`#/prepare`) carries the whole walk.
 
 #### The seal merge driver
 
-Two branches that each re-seal one carrier conflict on its `bcc=` seal line even when their bodies merge clean. `.gitattributes` routes `*.mem` through `tools/mem-merge-driver.mjs`, which re-seals a seal-only conflict and leaves every other conflict standing. Install it once per clone, from the checkout root, after a build:
+Two branches that each re-seal one carrier conflict on its `bcc=` seal line even when their bodies merge clean. `.gitattributes` routes `*.mem` through `tools/mem-merge-driver.mjs`, which re-seals a seal-only conflict and leaves every other conflict standing. `pnpm build` ends with `lares repo tend`, which seats the driver in the clone's shared git config (every worktree of the clone reads it) and says `set` or `already set` for each key; run `lares repo tend` again any time to check. The keys it writes:
 
 ```sh
 git config merge.mem-seal.name "a .mem conflict on its seal alone re-seals"

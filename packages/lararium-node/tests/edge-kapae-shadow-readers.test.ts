@@ -11,8 +11,9 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
-import { afterEach, beforeEach, describe, expect } from "vitest";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect } from "vitest";
+import { cpSync, lstatSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
@@ -30,13 +31,15 @@ import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { direct } from "./direct-store.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
-import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { scratchRoot as root, scratchHome, it, openScratch, closeScratch } from "./support/scratch-fixture.js";
 import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
 
 
 const REALM = "a".repeat(64);
 
-beforeEach(async () => {
+/** Stand the house every case reads: the vessel, two faces, the fleet, the daemon document, the realm's charter and each
+ *  face's hand there. Sixteen passphrase derivations at the fixed scrypt cost, so it stands ONCE per file. */
+async function standTheHouse(): Promise<void> {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
@@ -54,8 +57,34 @@ beforeEach(async () => {
   await seatOwnCharter([0]);
   face1 = await presentFace(1);
   face0 = await presentFace(0);
-});
+}
 let face0: string, face1: string;
+
+/** The house stood once, kept whole beside the scratch roots; each case takes its own copy, so no case reads another's acts. */
+const kept = { root: "", home: "" };
+/** A socket a holder left behind is a name, never state: nothing listens at a copy of it. */
+const notSocket = (src: string): boolean => !lstatSync(src).isSocket();
+
+// Standing the house costs a founding's worth of derivations, so it takes the room the suites give a founding (the
+// config's `testTimeout`), once; each case's own hook then copies files and derives nothing. Standing it per case put
+// sixteen derivations inside every case's 10 s hook, and a loaded runner ran past it.
+beforeAll(async () => {
+  const at = openScratch("lares-eksr-house-");
+  try {
+    await standTheHouse();
+    kept.root = mkdtempSync(join(tmpdir(), "lares-eksr-kept-"));
+    kept.home = mkdtempSync(join(tmpdir(), "lares-eksr-kept-home-"));
+    cpSync(at.root, kept.root, { recursive: true, filter: notSocket });
+    cpSync(at.home, kept.home, { recursive: true, filter: notSocket });
+  } finally { closeScratch(at); }
+}, 30_000);
+afterAll(() => {
+  for (const d of [kept.root, kept.home]) if (d) rmSync(d, { recursive: true, force: true });
+});
+beforeEach(() => {
+  cpSync(kept.root, root, { recursive: true, filter: notSocket });
+  cpSync(kept.home, scratchHome, { recursive: true, filter: notSocket });
+});
 /** Face `i`'s signing seed at the realm's Nexus: the hand a carried invite signs with. */
 const faceSeed = async (i: number): Promise<Uint8Array> => (await nexusLeafFor(i, primaryAid()))!.seed;
 afterEach(async () => {

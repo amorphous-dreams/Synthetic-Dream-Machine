@@ -33,7 +33,7 @@
  * waiting as the bag's record under the house's run dir (`settlePendingPath`), and this act asks the word
  * again over them alone, then clears the record (settled whole) or rewrites it (still waiting).
  *
- * `lift-kahua --count <n>` lifts the kahua items a seed previewed and left pending (`seed-mirrors.ts`): it runs the seed's
+ * `lift-kahua --count <n>` lifts the kahua items a lay previewed and left pending (`seed-mirrors.ts`): it runs the lay's
  * mirror leg again, and lifts only where n equals the count the preview reads now; a wrong count refuses and lifts nothing.
  * `list` names each pending item (face, title, body digest) beside the shore's own rows.
  */
@@ -69,7 +69,7 @@ function printUsage(): void {
   console.log("  restore       write a vanished file back from the records;");
   console.log("  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);");
   console.log("  settle        resume a settle word that stalled, over the carriers its record names (--pending);");
-  console.log("  lift-kahua    lift the kahua items a seed left pending, each under its face's grant (--count names the preview's count);");
+  console.log("  lift-kahua    lift the kahua items a lay left pending, each under its face's grant (--count names the preview's count);");
   console.log("  an answer over more than one carrier names the count that stands pending (--count).");
 }
 
@@ -216,7 +216,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       data: { op: "list", standoffs, standoffCount: standoffs.length, pending, pendingCount: pending.length, kahuaPending: kahua, kahuaPendingCount: kahua.length },
       human: () => {
         if (kahua.length > 0) {
-          console.log(`${kahua.length} kahua item(s) wait for a hand: a seed previewed them and nothing lifted on --yes alone`);
+          console.log(`${kahua.length} kahua item(s) wait for a hand: a lay previewed them and nothing lifted on --yes alone`);
           for (const k of kahua) console.log(`  h${k.handleIndex}${k.petname ? ` ("${k.petname}")` : ""}  ${k.title}  sha256:${k.digest.slice(0, 16)}  ${k.state === "differs" ? "differs from the standing head" : "new"}`);
           // A lift rides its own face's wear: the count names what the daemon MOUNT's items come to, face by face.
           for (const handleIndex of [...new Set(kahua.map((k) => k.handleIndex))].sort((a, b) => a - b)) {
