@@ -12,7 +12,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { join } from "node:path";
 import { claimStore } from "@lararium/node";
 import { cmdVessel } from "../src/commands/vessel.js";
@@ -22,7 +22,7 @@ import { larDataDir, larIdentityDir } from "../src/env.js";
 // row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
 vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
-let house: IsolatedHouse;
+let house: Scratch;
 let root: string;
 const found = (force = false) =>
   cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true, ...(force ? { force: true } : {}) } });
@@ -41,7 +41,7 @@ function hashes(dir: string, base = dir): Record<string, string> {
 
 beforeEach(async () => {
   vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
-  house = openIsolatedHouse();
+  house = openScratch();
   root = house.root;
   vi.spyOn(console, "log").mockImplementation(() => {});
   cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
@@ -50,7 +50,7 @@ beforeEach(async () => {
 });
 afterEach(() => {
   vi.restoreAllMocks();
-  house.close();
+  closeScratch(house);
 });
 
 describe("vessel found — only with no vessel standing", () => {

@@ -41,7 +41,7 @@
  *   M25 HOUSE_IGNORED reaches the bundle: an export carries no `.git/`, an adoption copies none
  */
 import { checkHouseTeardown } from "./support/check-house-teardown.js";
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -247,7 +247,7 @@ class FakeHouse {
   }
 }
 
-let house: IsolatedHouse;
+let house: Scratch;
 let root: string, out: string;
 const put = (rel: string, text: string): void => { const p = join(root, ...rel.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, text); };
 const tid = (title: string, text: string, extra = ""): string => `title: ${title}\n${extra}type: text/vnd.tiddlywiki\n\n${text}\n`;
@@ -292,14 +292,14 @@ function refound(faces: Array<Partial<BundleVesselFace> & { handleIndex: number 
 }
 
 beforeEach(() => {
-  house = openIsolatedHouse({ home: true, gitConfig: true });
+  house = openScratch({ gitConfig: "private" });
   root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "seed-mirrors suite\n");
-  out = join(house.scratchDir, "export", "bundle");
+  out = join(house.home, "export", "bundle");
   mkdirSync(dirname(out));
   oldDisk();
 });
-afterEach(() => { house.close(); });
+afterEach(() => { closeScratch(house); });
 
 checkHouseTeardown();
 

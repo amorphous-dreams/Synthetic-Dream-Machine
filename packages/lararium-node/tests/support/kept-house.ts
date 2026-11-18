@@ -8,10 +8,8 @@
  * `into` copies that copy over a case's fresh root: each case reads its own acts and derives nothing in its hook.
  */
 import { afterAll, beforeAll } from "vitest";
-import { cpSync, lstatSync, mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { closeScratch, openScratch } from "./scratch-fixture.js";
+import { cpSync, lstatSync } from "node:fs";
+import { closeScratch, openScratch, removeScratchDirs, scratchDirs } from "./scratch-fixture.js";
 
 /** The founding budget the config gives a test (`testTimeout`), which the one standing takes. */
 const FOUNDING_BUDGET = 30_000;
@@ -26,20 +24,17 @@ export interface KeptHouse {
 
 /** Register the file's `beforeAll` that stands the house through `stand`, and the `afterAll` that clears the copy. */
 export function keepHouse(prefix: string, stand: () => Promise<void>): KeptHouse {
-  const kept = { root: "", home: "" };
+  let kept = { root: "", home: "" };
   beforeAll(async () => {
     const at = openScratch(`${prefix}house-`);
     try {
       await stand();
-      kept.root = mkdtempSync(join(tmpdir(), `${prefix}kept-`));
-      kept.home = mkdtempSync(join(tmpdir(), `${prefix}kept-home-`));
+      kept = scratchDirs(`${prefix}kept-`);
       cpSync(at.root, kept.root, { recursive: true, filter: notSocket });
       cpSync(at.home, kept.home, { recursive: true, filter: notSocket });
     } finally { closeScratch(at); }
   }, FOUNDING_BUDGET);
-  afterAll(() => {
-    for (const d of [kept.root, kept.home]) if (d) rmSync(d, { recursive: true, force: true });
-  });
+  afterAll(() => removeScratchDirs(kept));
   return {
     into(root, home) {
       cpSync(kept.root, root, { recursive: true, filter: notSocket });

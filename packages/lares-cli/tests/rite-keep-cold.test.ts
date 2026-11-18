@@ -10,14 +10,14 @@
  *   C3  a cut that throws still hands the pins back;
  *   C4  no lei standing: no pin moves, and no wiki list reads.
  */
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, zeroCounts, type BundleFile, type BundleManifest } from "../src/bundle-manifest.js";
 import { KeepRefused, riteKeep, type KeepPorts } from "../src/rite-keep.js";
 
-let house: IsolatedHouse;
+let house: Scratch;
 let root: string;
 const workspace = (): string => join(root, "workspaces", "backup");
 
@@ -71,13 +71,13 @@ function rig(over: { listed?: string[]; active?: string[]; held?: string[]; budg
 }
 
 beforeEach(() => {
-  house = openIsolatedHouse();
+  house = openScratch();
   root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "keep cold suite\n");
   mkdirSync(join(root, "hearth"), { recursive: true });
   mkdirSync(join(workspace(), ".git"), { recursive: true });
 });
-afterEach(() => { house.close(); });
+afterEach(() => { closeScratch(house); });
 
 describe("the keep wakes cold wikis", () => {
   test("C1 RED: each cold listed wiki holds in turn after the line and before the cut, the cut hears the woken slugs, and the pins that stood come back; CONTROL: the daemon and a running wiki take no hold", async () => {
