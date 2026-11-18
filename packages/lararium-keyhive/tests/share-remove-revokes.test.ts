@@ -35,7 +35,7 @@ function landing(granteeLit: boolean) {
     ...(unshare ? { unshare } : {}),
     revoke: async (g) => { revoked.push(`${g.ownerGroup}->${g.granteeGroup}`); },
     flag: { set: async () => {}, clear: async () => {} },
-  } as never);
+  });
   return { run, granted, revoked };
 }
 
