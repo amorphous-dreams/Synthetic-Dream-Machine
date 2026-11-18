@@ -27,7 +27,7 @@
  * answers no read and takes no write. Every other record lands natively, as a person's edit in the wiki lands it: a `$:/`
  * title or tag, a module or plugin field and a script type alike (the island holds a document's code as data; its code
  * comes from the floor-admitted preloads alone). THE ONE WALL A SEAT KEEPS: a seat-asked put carrying a
- * `$:/tags/StartupAction*` tag refuses `seat-startup-offer` (a wiki's startup action runs in the operator's tab), and the
+ * record the mesh's one executable-class list names refuses `seat-startup-offer` (it runs in the operator's tab), and the
  * operator's own hand lands it. No action string and no `tm-*` message rides this door (the `act` ask, phase 2).
  *
  * THE FAMILY LAW (`@lararium/mesh/family`) DECIDES WHERE A RECORD STANDS AND WHAT A DELETE MOVES. `position` and
@@ -55,7 +55,7 @@
  */
 
 import {
-  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseSeatStartupAction, requireKahuReach, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseSeatExecutable, requireKahuReach, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -545,7 +545,7 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
     if ((place.position !== "plain" && structural.length > 0) || joinsFamily) {
       throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares meme put\` (meme_put) lands a family's text through the Confluence gate. A field or tag patch on a standing root or slot lands here.`);
     }
-    refuseSeatStartupAction(title, tags, "tiddler put", ctx.asker);
+    refuseSeatExecutable(title, next, "tiddler put", ctx.asker);
     refuseMalformedStagePath(title);
 
     const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
