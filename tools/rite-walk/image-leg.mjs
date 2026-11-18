@@ -84,8 +84,7 @@ export function surfaceEnvText(scope, { uid, gid, pulama = false }) {
   return [
     `LARES_HOUSE=${scope.house}`, `LARES_WORKSPACE=${scope.workspace}`, `LARES_PORT=${scope.port}`, "LARES_BIND=127.0.0.1",
     `LARES_IMAGE=${scope.image}`, ...(pulama ? ["LARES_PULAMA=1"] : []), `LARES_UID=${uid}`, `LARES_GID=${gid}`, `COMPOSE_PROJECT_NAME=${scope.project}`,
-    // A scope that binds workspaces (the carry leg's keep) names them where the shim and the host CLI both read them.
-    ...(scope.workspaces ? [`LARES_WORKSPACES=${scope.workspaces}`] : []), "",
+    "",
   ].join("\n");
 }
 
@@ -321,11 +320,11 @@ function toolAnswer(msg) {
 }
 
 /**
- * The hands the image steps run with, over one scope. `checkout` names the tree the shim, the tools, the compose source,
- * the build context and the workspace clone come from: the checkout by default, a clone pinned at one revision for a leg
- * that walks two images (`carry-leg.mjs`).
+ * The hands the image steps run with, over one scope. The checkout holds the shim, the tools, the compose source, the
+ * build context and the tree the workspace clones.
  */
-export function imageHands(scope, state, { checkout = CHECKOUT } = {}) {
+export function imageHands(scope, state) {
+  const checkout = CHECKOUT;
   const uid = process.getuid(), gid = process.getgid();
   const env = (() => {
     const e = { ...process.env };

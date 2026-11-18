@@ -863,9 +863,9 @@ test(`${name}: image-digest-names-the-raised-image: the rite reads, as the last 
   assert.equal(r.status, 0, r.stderr);
   assert.equal(r.stdout.trim().split("\n").at(-1).trim(), "sha256:abc123");
   assert.match(r.calls, /image inspect --format \{\{\.Id\}\} lares-surface:local/);
-  const named = await run(shim, ["image-digest"], { envFile: PULAMA_ENV + "LARES_IMAGE=lares-rehearsal:local\n", env: { FAKE_IMAGE_ID: "sha256:beef" } });
+  const named = await run(shim, ["image-digest"], { envFile: PULAMA_ENV + "LARES_IMAGE=lares-image-walk:local\n", env: { FAKE_IMAGE_ID: "sha256:beef" } });
   assert.equal(named.status, 0, named.stderr);
-  assert.match(named.calls, /image inspect --format \{\{\.Id\}\} lares-rehearsal:local/);
+  assert.match(named.calls, /image inspect --format \{\{\.Id\}\} lares-image-walk:local/);
   const extra = await run(shim, ["image-digest", "x"], { envFile: PULAMA_ENV });
   assert.equal(extra.status, 2);
 });
