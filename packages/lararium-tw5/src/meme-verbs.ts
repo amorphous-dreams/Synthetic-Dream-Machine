@@ -215,14 +215,24 @@ function readTarget(args: Readonly<Record<string, unknown>>, verb: string): Meme
 }
 
 /**
+ * A SLUG CARRIES NO MARKER (state/decisions, "Naming freedom and the `@` marker"): the kind-plane segment names the entity, so a
+ * leading `@` on a bag or recipe slug reads as the slug itself (`@notes` -> `notes`), as `bag declare` reads it. A `lar:` URI
+ * passes untouched; a bare `@` names nothing and reads as no slug.
+ */
+function unmarked(slug: string | null): string | null {
+  if (slug === null || slug.startsWith("lar:")) return slug;
+  return slug.replace(/^@/, "") || null;
+}
+
+/**
  * THE CONTAINER LAW, for every meme verb at this door: a content verb names its container. Exactly one of
  * `args.recipe` (a wiki, read or written AS that wiki) or `args.bag` (that one bag) stands; neither, or
  * both, refuses as `no-container` before any cap ask, read or write. No default wiki exists: the daemon's
  * own wiki answers to its explicit name, `recipe: "default"`.
  */
 export function readContainer(args: Readonly<Record<string, unknown>>, verb: string): Omit<MemeArgs, "uri"> {
-  const recipe = optionalStringArg(args, "recipe");
-  const bag = optionalStringArg(args, "bag");
+  const recipe = unmarked(optionalStringArg(args, "recipe"));
+  const bag = unmarked(optionalStringArg(args, "bag"));
   const realm = optionalStringArg(args, "realm")?.trim().toLowerCase() || null;
   if (realm && recipe) throw new VerbRefusal("no-container", `no-container: ${verb} --realm names a bag's realm; it cannot accompany args.recipe.`);
   if (recipe && bag) throw new VerbRefusal("no-container", `no-container: ${verb} names both args.recipe and args.bag; name one of them, never both.`);
