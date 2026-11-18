@@ -46,6 +46,17 @@ async function readCardLines(chair: string): Promise<string> {
   return code;
 }
 
+/** Count the line feeds written to stdout until `stop` restores it, so a card's erase covers exactly what it printed. */
+function tapLineFeeds(): { count: () => number; stop: () => void } {
+  const original = process.stdout.write;
+  let lineFeeds = 0;
+  process.stdout.write = ((chunk: unknown, ...rest: unknown[]) => {
+    lineFeeds += String(chunk).split("\n").length - 1;
+    return (original as (...a: unknown[]) => boolean).call(process.stdout, chunk, ...rest);
+  }) as typeof process.stdout.write;
+  return { count: () => lineFeeds, stop: () => { process.stdout.write = original; } };
+}
+
 /**
  * Print each card and read it back. A card a person mis-copies would freeze the
  * chair at its next roll, so the rite asks each one back on the terminal and writes nothing until every card reads
@@ -69,29 +80,38 @@ export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], gen
     // open` and `join`, a seat with no inception image) prints the three it holds and no charter line, never a refusal.
     const fields = charterFingerprint === "" ? (["purpose", "chairLabel", "generation"] as const) : COLD_KEY_CARD_DEFAULT_FIELDS;
     if (!json && cards.length > 1) say(`${cards.length} cards print in order: ${cards.map((card) => card.chair).join(", ")}.`);
+    // On a terminal, a confirmed card's printed lines leave the screen: cursor up over exactly the lines written for
+    // the card (a tap counts the line feeds the card, its prompts and any retry notes wrote), then erase to the end.
+    const onTerminal = process.stdout.isTTY === true && !standIn && !json;
     for (const card of cards) {
-      if (!json) {
-        say(`── cold-key card · ${card.chair} ──`);
-        for (const line of coldKeyCardLines(card.seed, { purpose: "the next key of one chair; it rolls the charter once", chairLabel: card.chair, generation, charterFingerprint }, fields)) say(`  ${line}`);
-      }
-      if (standIn) continue;
-      for (let tries = 0; ; tries++) {
-        const typed = await readCardLines(card.chair);
-        let back: Uint8Array | null = null;
-        let reason = "reads as another card";
-        try { back = coldKeySeedFromCode(typed); } catch (err) {
-          const fault = err instanceof Error ? err.message : "";
-          if (fault.endsWith(": length")) reason = `${typed.replace(/[\s-]/g, "").length} of 72 characters`;
-          else if (fault.endsWith(": character")) reason = "a character outside 0-9 a-f";
-          else if (fault.endsWith(": checksum")) reason = "a typo somewhere (checksum)";
-          else throw err;
+      const tap = onTerminal ? tapLineFeeds() : null;
+      try {
+        if (!json) {
+          say(`── cold-key card · ${card.chair} ──`);
+          for (const line of coldKeyCardLines(card.seed, { purpose: "the next key of one chair; it rolls the charter once", chairLabel: card.chair, generation, charterFingerprint }, fields)) say(`  ${line}`);
         }
-        const same = back !== null && Buffer.from(back).equals(Buffer.from(card.seed));
-        back?.fill(0);
-        if (same) break;
-        if (tries >= 2) throw new CardReadBackRefused(`the card for ${card.chair}: ${reason}; three attempts never matched — nothing was written; run the rite again. A new run prints new cards: discard these and write down the new ones`);
-        say(`  ${reason} — try again`);
-      }
+        if (standIn) continue;
+        for (let tries = 0; ; tries++) {
+          const typed = await readCardLines(card.chair);
+          let back: Uint8Array | null = null;
+          let reason = "reads as another card";
+          try { back = coldKeySeedFromCode(typed); } catch (err) {
+            const fault = err instanceof Error ? err.message : "";
+            if (fault.endsWith(": length")) reason = `${typed.replace(/[\s-]/g, "").length} of 72 characters`;
+            else if (fault.endsWith(": character")) reason = "a character outside 0-9 a-f";
+            else if (fault.endsWith(": checksum")) reason = "a typo somewhere (checksum)";
+            else throw err;
+          }
+          const same = back !== null && Buffer.from(back).equals(Buffer.from(card.seed));
+          back?.fill(0);
+          if (same) break;
+          if (tries >= 2) throw new CardReadBackRefused(`the card for ${card.chair}: ${reason}; three attempts never matched — nothing was written; run the rite again. A new run prints new cards: discard these and write down the new ones`);
+          say(`  ${reason} — try again`);
+        }
+      } finally { tap?.stop(); }
+      if (standIn || json) continue;
+      if (tap) process.stdout.write(`\u001b[${tap.count()}A\u001b[0J`);
+      else say(`  ${card.chair}'s card read back true; clear your scrollback so its code lines do not linger.`);
     }
     return cards.map((card) => {
       const code = coldKeyCode(card.seed);

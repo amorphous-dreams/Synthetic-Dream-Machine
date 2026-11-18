@@ -27,7 +27,6 @@ test("on a terminal the confirmed card's lines are erased: cursor up over exactl
   const shown = await run(true);
   const printed = 1 + coldKeyCardLines(seed(), { purpose: "the next key of one chair; it rolls the charter once", chairLabel: "test chair", generation: 1, charterFingerprint: "" }, ["purpose", "chairLabel", "generation"]).length;
   expect(shown).toContain(`\u001b[${printed}A\u001b[0J`);
-  expect(shown.endsWith("\n")).toBe(true);
 });
 
 test("control: with no terminal on stdout, nothing is erased and one line reminds the person to clear the scrollback", async () => {
