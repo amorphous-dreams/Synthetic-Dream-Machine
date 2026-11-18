@@ -31,7 +31,22 @@ export class RouteNeedsTerminal extends Error {
   constructor(what: string) { super(`${what} reads its route from a real terminal alone: the route rides no pipe, no flag, no argument and no environment`); }
 }
 
-/** Read the operator's route from a real terminal, with no echo. Anything but a terminal refuses. */
+/**
+ * The refusal a route reader gives when no route reaches the pūlama: an empty line, or Ctrl-C / Ctrl-D before Enter.
+ * The reader knows only whether anything was typed, never whether it would have fit: nothing it read went to the hand
+ * door, so the route opened nothing and spent no attempt. `typed` says whether a stop cut a typed route short.
+ */
+export class RouteNotGiven extends Error {
+  override readonly name = "RouteNotGiven";
+  readonly reading = "route-not-given";
+  constructor(readonly typed: boolean) {
+    super(typed
+      ? "the route reading stopped (Ctrl-C or Ctrl-D) before Enter, so what you typed never reached the pūlama: it opened nothing and spent no attempt; run it again and end the route with Enter"
+      : "no route was given, so nothing reached the pūlama: it opened nothing and spent no attempt; run it again and type the route, then Enter");
+  }
+}
+
+/** Read the operator's route from a real terminal, with no echo. Anything but a terminal refuses; an empty or cut-short reading refuses `RouteNotGiven`. */
 export function readRoute(label: string, what: string, terminal: RouteTerminal = { input: process.stdin, output: process.stderr }): Promise<string> {
   const { input, output } = terminal;
   if (!input.isTTY) return Promise.reject(new RouteNeedsTerminal(what));
@@ -44,8 +59,9 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
     const done = (act: () => void): void => { input.setRawMode(false); input.pause(); input.removeListener("data", onData); output.write("\n"); act(); };
     const onData = (chunk: string): void => {
       for (const ch of chunk) {
-        if (ch === "\r" || ch === "\n") return done(() => resolve(line));
-        if (ch === "\u0003" || ch === "\u0004") return done(() => reject(new Error("no route was given")));
+        // A BARE ENTER sends no empty route to the door, where it would spend an attempt for nothing.
+        if (ch === "\r" || ch === "\n") return done(() => line === "" ? reject(new RouteNotGiven(false)) : resolve(line));
+        if (ch === "\u0003" || ch === "\u0004") return done(() => reject(new RouteNotGiven(line !== "")));
         if (ch === "\u007f" || ch === "\b") line = line.slice(0, -1);
         else if (ch >= " ") line += ch;
       }

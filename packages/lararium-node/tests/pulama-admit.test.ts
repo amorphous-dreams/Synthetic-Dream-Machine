@@ -284,3 +284,38 @@ describe("RED pulama-admit-refuses-unlit-or-unreported", () => {
     expect(prompts).toBe(1);
   });
 });
+
+describe("RED pulama-route-reading-names-what-it-heard", () => {
+  test("a stop before Enter over a typed route says the route went nowhere and spent no attempt; only an empty reading says no route was given", async () => {
+    const s = await stand();
+    await s.fx.server.lock();
+    const frames: string[] = [];
+    const light = (t: ReturnType<typeof terminal>) => runHandVerb("light", undefined, {
+      ask: (frame) => { frames.push(String(frame["op"])); return s.door(frame); },
+      route: (label, what) => readRoute(label, what, t.port),
+    }).catch((e: unknown) => e as Error);
+    // A TYPED ROUTE, then Ctrl-D before Enter: the pūlama hears nothing, and the answer says so.
+    const typed = terminal(true);
+    const stopped = light(typed);
+    typed.type("a-wrong-route\u0004");
+    const typedRefusal = await stopped;
+    expect((typedRefusal as Error).message).not.toMatch(/no route was given/);
+    expect((typedRefusal as Error).message).toMatch(/opened nothing/);
+    expect((typedRefusal as Error).message).toMatch(/no attempt/);
+    expect((typedRefusal as Error).message).not.toContain("a-wrong-route");
+    // NOTHING TYPED, then Ctrl-C: the one case that reads "no route was given", and it still names the unspent attempt.
+    const empty = terminal(true);
+    const nothing = light(empty);
+    empty.type("\u0003");
+    const emptyRefusal = await nothing;
+    expect((emptyRefusal as Error).message).toMatch(/no route was given/);
+    expect((emptyRefusal as Error).message).toMatch(/no attempt/);
+    // A BARE ENTER sends no empty route to the door: it reads as no route, and spends nothing.
+    const bare = terminal(true);
+    const blank = light(bare);
+    bare.type("\r");
+    expect(((await blank) as Error).message).toMatch(/no route was given/);
+    expect(frames).toEqual([]);
+    expect((await s.door({ op: "status" }))["attemptsLeft"]).toBe(3);
+  });
+});
