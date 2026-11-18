@@ -1,5 +1,5 @@
 /**
- * rite-keep — the keep rite's vessel half: the house lays its authored memory, cut as a cleartext carry bundle, into one of the
+ * rite-keep — the keep rite's vessel half: the house lays its authored memory, cut as a cleartext house bundle, into one of the
  * operator's bound workspaces, and the cut spends a return of the keep lei the operator strung for that workspace.
  *
  *   K1  with no keep lei standing the rite refuses by the lei's own refusal, cuts nothing and writes nothing;
@@ -19,7 +19,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, verifyBundle, zeroCounts, type CarryFile, type CarryManifest } from "../src/carry-manifest.js";
+import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, verifyBundle, zeroCounts, type BundleFile, type BundleManifest } from "../src/bundle-manifest.js";
 import { KEEP_CHECK, KeepRefused, riteKeep, type KeepPorts } from "../src/rite-keep.js";
 import type { RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { RiteUsage, keepPlan } from "../src/commands/rite.js";
@@ -29,8 +29,8 @@ let root: string;
 const TESSERA = "e".repeat(64), LEI = "d".repeat(64);
 
 /** A whole, small bundle at `dest`, as an export leaves one: every file hashed, the id over the file list. */
-function writeBundle(dest: string, notes: Readonly<Record<string, string>>): CarryManifest {
-  const files: CarryFile[] = [];
+function writeBundle(dest: string, notes: Readonly<Record<string, string>>): BundleManifest {
+  const files: BundleFile[] = [];
   const put = (rel: string, text: string): void => {
     const abs = join(dest, ...rel.split("/"));
     mkdirSync(dirname(abs), { recursive: true });
@@ -38,9 +38,9 @@ function writeBundle(dest: string, notes: Readonly<Record<string, string>>): Car
     files.push({ path: rel, sha256: sha256Hex(text), bytes: Buffer.byteLength(text) });
   };
   for (const [name, text] of Object.entries(notes)) put(`faces/f0/working/${name}.tid`, text);
-  put(REDECLARE_FILE, `${JSON.stringify({ schema: CARRY_SCHEMA, faces: [{ face: "f0", handleIndex: 0, petname: "steward", handle: null, seat: false, chair: null }] })}\n`);
+  put(REDECLARE_FILE, `${JSON.stringify({ schema: BUNDLE_SCHEMA, faces: [{ face: "f0", handleIndex: 0, petname: "steward", handle: null, seat: false, chair: null }] })}\n`);
   files.sort((a, b) => (a.path < b.path ? -1 : 1));
-  const manifest: CarryManifest = { schema: CARRY_SCHEMA, bundleId: bundleIdOf(files), faces: [{ key: "f0", petname: "steward" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] };
+  const manifest: BundleManifest = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: [{ key: "f0", petname: "steward" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] };
   writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`);
   return manifest;
 }
@@ -77,6 +77,16 @@ beforeEach(() => {
 afterEach(() => { rmSync(root, { recursive: true, force: true }); });
 
 describe("the keep rite, vessel half", () => {
+  test("K0 RED: the bundle the keep cuts names its format, never counts it: `lar-house-bundle`, no `/N`; CONTROL: a manifest under the numbered name refuses, with no back-compat reader", () => {
+    expect(BUNDLE_SCHEMA).toBe("lar-house-bundle");
+    const dest = join(root, "old-name");
+    mkdirSync(dest, { recursive: true });
+    const manifest = writeBundle(dest, { heron: "remember the heron\n" });
+    expect(verifyBundle(dest).manifest.schema).toBe("lar-house-bundle");
+    writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ ...manifest, schema: "lar-carry/1" }, null, 2)}\n`);
+    expect(() => verifyBundle(dest)).toThrow(/bundle-schema/);
+  });
+
   test("K1 RED: with no keep lei standing the rite refuses by the lei's own refusal, cuts nothing and writes nothing; CONTROL: the line it read names the keep rite at this workspace", async () => {
     const r = rig({ lei: { standing: false, refusal: "absent", after: null } });
     expect(await refusal(riteKeep(r.ports, { workspace: "backup" }))).toBe("swarm-lei-absent");
@@ -97,7 +107,7 @@ describe("the keep rite, vessel half", () => {
     expect(r.calls).toEqual([
       `swarm-show ${JSON.stringify({ rite: "keep", branch: "backup" })}`,
       `cut ${workspace()} accept=false`,
-      `rite-receipt ${JSON.stringify({ tree: id, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(CARRY_SCHEMA) })}`,
+      `rite-receipt ${JSON.stringify({ tree: id, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(BUNDLE_SCHEMA) })}`,
       expect.stringMatching(new RegExp(`^rite-begin \\{"rite":"keep","branch":"backup","head":"${id}","staged":"\\.house\\.keep-[0-9a-f]{12}"\\}$`)),
     ]);
     // The begin names the staged tree by its place inside the workspace, and the tree stands whole there when the vessel reads it.

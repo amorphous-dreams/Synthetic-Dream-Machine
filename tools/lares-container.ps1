@@ -6,9 +6,9 @@
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
 # LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
-# bind; never beside the compose file). LARES_WORKSPACE names the HOUSE CANON CLONE (`node tools/house-canon.mjs stand`);
-# one with no `lares.canonPin` reads as a working checkout and every stand warns by name, unless LARES_DEV_INSTALL=1
-# names the one dev install. LARES_HOUSE names the ONE host house root, absolute: its hearth, sensoriums,
+# bind; never beside the compose file). LARES_WORKSPACE names the workspace the house lays canon from and projects into,
+# a projection target the operator names; for the Kahu cabal it names the repo checkout, the working surface
+# (founding-runbook#/prepare). LARES_HOUSE names the ONE host house root, absolute: its hearth, sensoriums,
 # projections, library and config bind under /lar, and this shim makes those five directories before a container stands. Keep every
 # mount inside the WSL distro's filesystem, never a Windows share. One lararium per HUMAN: nothing here names a face.
 # A VESSEL STANDS HOLDING NO KEY. Every start returns it to the floor, so after `up`, after `vessel stand`, and after
@@ -214,19 +214,7 @@ function ResolveGitRev {
     }
   } catch { $script:GitRev = '' }
 }
-# A working checkout named as LARES_WORKSPACE moves the house's canon with every branch switch there (founding-runbook
-# #/prepare). A corpus with no repository, a pinned canon clone and the named dev install read nothing.
-function WarnWorkspaceCanon {
-  if ((ValueOf 'LARES_DEV_INSTALL') -eq '1') { return }
-  $ws = ValueOf 'LARES_WORKSPACE'
-  & git -C $ws rev-parse --git-dir *> $null
-  if ($LASTEXITCODE -ne 0) { return }
-  $pin = & git -C $ws config --get lares.canonPin 2> $null
-  if ($pin) { return }
-  [Console]::Error.WriteLine("lares-container: LARES_WORKSPACE ($ws) names a working checkout, so a branch switch there moves this house's canon; stand a canon clone (``node tools/house-canon.mjs stand``) and name it, or set LARES_DEV_INSTALL=1 for the one dev install")
-}
 function WarnImageRevision {
-  WarnWorkspaceCanon
   if (-not $script:GitRev) { ResolveGitRev }
   $rev = $script:GitRev
   if (-not $rev) {

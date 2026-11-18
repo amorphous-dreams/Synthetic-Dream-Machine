@@ -278,18 +278,18 @@ const wear = (face, all = false) => async (ctx) => {
   const lit = (a?.faceReadings ?? []).filter((f) => f.reading === "opened").length;
   return { ok: a?.held !== false && a?.wears === face && (!all || lit === 3), answer: JSON.stringify(a) };
 };
-const seed = async (ctx) => {
-  const r = await ctx.cli(["vessel", "seed", "--apply", "--yes", "--no-json"]);
+const lay = async (ctx) => {
+  const r = await ctx.cli(["vessel", "lay", "--apply", "--yes", "--no-json"]);
   const text = `${r.stdout}\n${r.stderr}`;
-  // The count the WORN face's seed previewed; an item waiting on another face's wear names no count here.
+  // The count the WORN face's lay previewed; an item waiting on another face's wear names no count here.
   const preview = /kahua: (\d+) item\(s\) stand pending/.exec(text);
   ctx.vars.liftKahua = preview ? Number(preview[1]) : 0;
-  return r.code === 0 ? { ok: true, answer: [lineOf(text, "seed:"), preview ? lineOf(text, "stand pending") : ""].filter(Boolean).join(" · ") } : { ok: false, answer: refusalOf(r) };
+  return r.code === 0 ? { ok: true, answer: [lineOf(text, "lay:"), preview ? lineOf(text, "stand pending") : ""].filter(Boolean).join(" · ") } : { ok: false, answer: refusalOf(r) };
 };
 const liftKahua = async (ctx) => {
   const n = ctx.vars.liftKahua ?? 0;
-  if (n === 0) return { ok: true, answer: "the worn face's seed previewed no kahua item; nothing to lift" };
-  return await cli(["vessel", "seed", "--apply", "--lift-kahua", String(n), "--no-json"])(ctx);
+  if (n === 0) return { ok: true, answer: "the worn face's lay previewed no kahua item; nothing to lift" };
+  return await cli(["vessel", "lay", "--apply", "--lift-kahua", String(n), "--no-json"])(ctx);
 };
 const found = cli((ctx) => ["vessel", "found", "--hearth", "--name", FACES.steward, "--chair", "dreamnet-kahu-0", "--root", ctx.root, "--skip-build", "--no-json"], "the hearth stands");
 const up = async (ctx) => ({ ok: true, answer: await ctx.up() });
@@ -298,8 +298,8 @@ const persona = (n, name) => cli(["persona", "new", String(n), "--name", name, "
 const hold = cli(["wiki", "hold", "notes", "--no-json"]);
 
 const FOUND = "lares found --hearth --name 'joshua-fontany' --chair 'dreamnet-kahu-0'";
-const SEED = "lares vessel seed --apply --yes";
-const LIFT = "lares vessel seed --apply --lift-kahua <N>";
+const LAY = "lares vessel lay --apply --yes";
+const LIFT = "lares vessel lay --apply --lift-kahua <N>";
 const P1 = "lares persona new 1 --name 'joshua-fontany-engineer'";
 const P2 = "lares persona new 2 --name 'joshua-fontany-referee'";
 const SC = "staged-custody";
@@ -310,7 +310,7 @@ export const STEPS = Object.freeze([
   // Stand.
   { id: "found", fence: FOUND, via: SC, expect: "the hearth stands", run: found },
   { id: "up", fence: "lares up", via: SC, needs: ["found"], expect: "phase → live, then the unlock", run: up },
-  { id: "seed", fence: SEED, needs: ["up"], run: seed },
+  { id: "lay", fence: LAY, needs: ["up"], run: lay },
   { id: "floor-status", fence: "lares vessel floor status", needs: ["up"], expect: "genesis floor", quoted: ["the pin reads the genesis floor"], run: cli(["vessel", "floor", "status", "--no-json"], "genesis floor") },
   { id: "persona-engineer", fence: P1, via: SC, needs: ["up"], expect: "persona h1 minted", run: persona(1, FACES.engineer) },
   { id: "persona-referee", fence: P2, via: SC, needs: ["up"], expect: "persona h2 minted", run: persona(2, FACES.referee) },
@@ -387,7 +387,7 @@ export const STEPS = Object.freeze([
       const promoted = await ctx.cli(["meme", "offer", "promote", cid, "--yes", "--no-json"]);
       return promoted.code === 0 ? { ok: true, answer: lineOf(promoted.stdout) } : { ok: false, answer: refusalOf(promoted) };
     } },
-  { id: "release-cut", fence: "lares nexus release floor.json --cut", needs: ["seed", "wear-steward"], expect: "the manifest cuts from live canon",
+  { id: "release-cut", fence: "lares nexus release floor.json --cut", needs: ["lay", "wear-steward"], expect: "the manifest cuts from live canon",
     run: cli((ctx) => ["nexus", "release", ctx.path("floor.json"), "--cut", "--no-json"]) },
   { id: "down-to-sign", fence: "lares down", needs: ["up"], expect: "the vessel stops", run: down },
   { id: "promote-open", fence: "lares nexus promote open floor.json --purpose floor-release --surface floor-release --class high-impact --out approval.json", via: SC, needs: ["release-cut", "down-to-sign"],
@@ -414,17 +414,17 @@ export const STEPS = Object.freeze([
   { id: "persona-engineer-again", fence: P1, nth: 1, via: SC, needs: ["up-refounded"], expect: "persona h1 minted", run: persona(1, FACES.engineer) },
   { id: "persona-referee-again", fence: P2, nth: 1, via: SC, needs: ["up-refounded"], expect: "persona h2 minted", run: persona(2, FACES.referee) },
   { id: "unlock-all-again", fence: "lares vault unlock --all --face 1", nth: 1, via: SC, needs: ["persona-engineer-again", "persona-referee-again"], expect: "wears 1", run: wear(1, true) },
-  { id: "seed-wear-steward", fence: "lares vault unlock --face 0", nth: 2, via: SC, needs: ["unlock-all-again"], expect: "wears 0", run: wear(0) },
-  { id: "seed-steward", fence: SEED, nth: 1, needs: ["seed-wear-steward"], run: seed },
-  { id: "lift-kahua-steward", fence: LIFT, via: SC, needs: ["seed-steward"], run: liftKahua },
-  { id: "seed-wear-engineer", fence: "lares vault unlock --face 1", via: SC, needs: ["unlock-all-again"], expect: "wears 1", run: wear(1) },
-  { id: "seed-engineer", fence: SEED, nth: 2, needs: ["seed-wear-engineer"], run: seed },
-  { id: "lift-kahua-engineer", fence: LIFT, nth: 1, via: SC, needs: ["seed-engineer"], run: liftKahua },
-  { id: "seed-wear-referee", fence: "lares vault unlock --face 2", nth: 1, via: SC, needs: ["unlock-all-again"], expect: "wears 2", run: wear(2) },
-  { id: "seed-referee", fence: SEED, nth: 3, needs: ["seed-wear-referee"], run: seed },
+  { id: "lay-wear-steward", fence: "lares vault unlock --face 0", nth: 2, via: SC, needs: ["unlock-all-again"], expect: "wears 0", run: wear(0) },
+  { id: "lay-steward", fence: LAY, nth: 1, needs: ["lay-wear-steward"], run: lay },
+  { id: "lift-kahua-steward", fence: LIFT, via: SC, needs: ["lay-steward"], run: liftKahua },
+  { id: "lay-wear-engineer", fence: "lares vault unlock --face 1", via: SC, needs: ["unlock-all-again"], expect: "wears 1", run: wear(1) },
+  { id: "lay-engineer", fence: LAY, nth: 2, needs: ["lay-wear-engineer"], run: lay },
+  { id: "lift-kahua-engineer", fence: LIFT, nth: 1, via: SC, needs: ["lay-engineer"], run: liftKahua },
+  { id: "lay-wear-referee", fence: "lares vault unlock --face 2", nth: 1, via: SC, needs: ["unlock-all-again"], expect: "wears 2", run: wear(2) },
+  { id: "lay-referee", fence: LAY, nth: 3, needs: ["lay-wear-referee"], run: lay },
 
   // The read-backs.
-  { id: "read-back", prose: "Read back per face", via: SC, needs: ["seed-referee", "two-face-put"], expect: "each face reads its own margin of the shared wiki",
+  { id: "read-back", prose: "Read back per face", via: SC, needs: ["lay-referee", "two-face-put"], expect: "each face reads its own margin of the shared wiki",
     run: async (ctx) => {
       const said = [];
       for (const [face, name] of [[1, "engineer"], [2, "referee"]]) {
@@ -437,7 +437,7 @@ export const STEPS = Object.freeze([
       }
       return { ok: true, answer: said.join(" · ") };
     } },
-  { id: "import", prose: "Then `lares import ~/.lares/config/carry-2 --apply`", needs: ["export", "seed-referee"], expect: "lands nothing and counts every record as `already` or `waiting`",
+  { id: "import", prose: "Then `lares import ~/.lares/config/carry-2 --apply`", needs: ["export", "lay-referee"], expect: "lands nothing and counts every record as `already` or `waiting`",
     quoted: ["lands nothing and counts every record as `already`"],
     run: async (ctx) => {
       const r = await ctx.cli(["import", ctx.carry(), "--apply", "--no-json"]);
