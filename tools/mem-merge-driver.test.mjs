@@ -15,6 +15,7 @@ import { distModule } from './corpus-read.mjs';
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DRIVER = join(REPO, 'tools/mem-merge-driver.mjs');
 const { stampCarrier, verifyBcc } = await distModule(REPO, 'packages/lararium-memetic-frame/dist/index.js', 'mem-merge-driver.test', 'pnpm --filter @lararium/memetic-frame build');
+const { CARRIER_TYPE } = await distModule(REPO, 'packages/lararium-mesh/dist/carrier-type.js', 'mem-merge-driver.test', 'pnpm --filter @lararium/mesh build');
 
 const TITLE = 'lar:///ha.ka.ba/lares/test/seal-merge';
 const carrier = (lines) => stampCarrier([
@@ -25,7 +26,7 @@ const carrier = (lines) => stampCarrier([
   '',
   '```toml meta',
   `title = "${TITLE}"`,
-  'type  = "text/memetic-wikitext+tiddlywiki"',
+  `type  = "${CARRIER_TYPE}"`,
   '```',
   '',
   ...lines,
