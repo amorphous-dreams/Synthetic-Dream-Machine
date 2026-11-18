@@ -40,7 +40,7 @@
 
 import { faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
 import { choreAtDoor, isChore } from "./chore-face.js";
-import type { ChoreReceiptMark } from "@lararium/mesh/chore-ask";
+import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type Socket } from "node:net";
 import { randomUUID } from "node:crypto";
 import { PARK_LIMIT } from "./owned-store.js";
@@ -124,7 +124,7 @@ export interface UdsChannelOptions {
    * document, which this channel awaits through `control`. For a session call, the seat supplies
    * `requestedBy` from the verified presenter and `face` from the verified proof subject.
    */
-  readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; ordinal?: number; asker?: Hand; effectKey?: string }) => void;
+  readonly placeVerb: (o: { origin: "channel"; verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; face?: string; ordinal?: number; asker?: Hand; chore?: ChoreReceiptMark; effectKey?: string }) => void;
   /** The ask under this id concluded here (its outcome read, or its wait ended): main's booking for it retires. */
   readonly retireAsk?: (requestId: string) => void;
   /** The vessel's claim on its store — the rendezvous socket (`/tmp/lares-<uid>/<digest>.sock`) both sides derive. */
@@ -224,6 +224,8 @@ interface Invocation {
   /** The asker's hand as this door read it (the session's own hand, or `seat`/`cli` off the one-shot line's seat kind); set
    *  by the door alone, never read off a frame, and handed to the placed ask so the reactor's context names it. */
   asker?: Hand;
+  /** The chore's receipt mark this door built; set by the door alone, it rides the placed ask into the durable outcome. */
+  chore?: ChoreReceiptMark;
 }
 
 /** A read-only receipt query — `{op:"receipt", requestId}`. Never reaches `placeVerb`; see H1. */
@@ -261,6 +263,9 @@ export interface ReceiptAnswer {
   /** Additive, mirroring the socket's own direct-refusal shape — a terminal outcome's own
    *  machine-readable reason, when it carried one (D1 commit 1, mesh). */
   readonly refusal?: { readonly reason: string };
+  /** The chore's receipt mark the outcome carries (the acting face, the asker's hand, its session), where the act was a
+   *  chore the door marked; read back through `choreReceiptMarkOf`, so a malformed mark reads as none. */
+  readonly chore?: ChoreReceiptMark;
 }
 
 /**
@@ -644,6 +649,12 @@ export class FactLedger {
  *  The worker's own formula ({@link verbInputDigest}, mesh), so a request-id reuse compares against
  *  EXACTLY the digest the dispatcher itself would stamp onto the outcome — never a second, locally
  *  invented hash that could drift from it. */
+/** A chore mark read off an outcome's `chore` field (its JSON), or null where absent or malformed. */
+function choreMarkField(raw: unknown): ChoreReceiptMark | null {
+  if (typeof raw !== "string" || raw.length === 0) return null;
+  try { return choreReceiptMarkOf(JSON.parse(raw)); } catch { return null; }
+}
+
 function inputDigestOf(inv: Pick<Invocation, "verb" | "args" | "face" | "effectKey">): Promise<string> {
   return verbInputDigest({
     verb: inv.verb, args: inv.args ?? {}, face: inv.face,
@@ -811,6 +822,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // evicted-effect guard), told back in the SAME additive shape the socket's own direct
       // refusals already use (`fail()` below), never as a second, differently-shaped field.
       ...(typeof fields["refusal"] === "string" ? { refusal: { reason: fields["refusal"] } } : {}),
+      // T4-5: the chore's receipt mark rests in the outcome; a malformed one reads as none.
+      ...(() => { const mark = choreMarkField(fields["chore"]); return mark ? { chore: mark } : {}; })(),
       // D1 effect-dedup (P2.5 iter 6, G2): the worker's own `concludeVerb({effectOf})` names the
       // PRIOR requestId whose effect this outcome answers under a fresh attempt — surfaced here so
       // every reader of a terminal outcome (a fresh dispatch's own await, OR a legitimate
@@ -876,6 +889,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       ...(inv.face !== undefined && { face: inv.face }),
       ...(inv.face !== undefined && inv.ordinal !== undefined && { ordinal: inv.ordinal }),
       ...(inv.asker !== undefined && { asker: inv.asker }),
+      ...(inv.chore !== undefined && { chore: inv.chore }),
       ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
     });
     try { return await awaitOutcome(inv.verb, requestId, inv.timeoutMs); }
@@ -906,6 +920,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         ...(outcome["results"] !== undefined ? { results: outcome["results"] as Record<string, unknown> } : {}),
         ...(outcome["errorMessage"] !== undefined ? { errorMessage: outcome["errorMessage"] as string } : {}),
         ...(outcome["refusal"] !== undefined ? { refusal: outcome["refusal"] as { reason: string } } : {}),
+        ...(outcome["chore"] !== undefined ? { chore: outcome["chore"] as ChoreReceiptMark } : {}),
       };
     }
     if (fact?.state === "abandoned") return { requestId, state: "abandoned" };
@@ -1401,7 +1416,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       delete oneShot.face;
       delete oneShot.ordinal;
       delete oneShot.asker;
-      const inv: Invocation = sessionRequestId === undefined ? oneShot : parsed as Invocation;
+      delete oneShot.chore;
+      const inv: Invocation = sessionRequestId === undefined ? oneShot : { ...(parsed as Invocation), ...(mark ? { chore: mark } : {}) };
       if (!inv.verb || !inv.requestedBy) return fail("verb + requestedBy required");
       // A ROW THAT ACTS AS A FACE RIDES THAT FACE'S SESSION: the maintenance frame carries no face, so it serves none.
       if (sessionRequestId === undefined && opts.sessionVerbs?.has(inv.verb)) {
@@ -1439,7 +1455,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         if (oneShotChore) {
           const chore = choreAtDoor({ verb: inv.verb, face: named ?? mount!, mount, lent, hand: seat !== null ? "seat" : "cli", session: null, generation: null });
           if (chore !== null && !chore.ok) return fail(chore.message, chore.refusal);
-          if (chore?.ok) choreMark = chore.mark;
+          if (chore?.ok) { choreMark = chore.mark; inv.chore = chore.mark; }
         }
         // The worker's own digest formula (`verbInputDigest`, mesh) — async, so computed inside
         // this deferred tick rather than synchronously in the `data` handler above.

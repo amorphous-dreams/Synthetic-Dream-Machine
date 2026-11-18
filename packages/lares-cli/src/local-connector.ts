@@ -287,6 +287,8 @@ export interface ReceiptAnswer {
   readonly errorMessage?: string;
   /** The vessel's own name for a refusal it answers with (a torn fact reads `receipt-fact-torn`). */
   readonly refusal?: { readonly reason: string };
+  /** The chore's receipt mark the outcome rests with: the acting face, the asker's hand (`seat`, `cli`, `tab`), its session. */
+  readonly chore?: { readonly acting: number; readonly asker: string; readonly session: string | null };
 }
 
 /** This READ's own patience ended with no line back — mirrors `LocalWaitExpired` for the dispatch

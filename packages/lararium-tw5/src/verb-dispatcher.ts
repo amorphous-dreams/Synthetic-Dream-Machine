@@ -44,6 +44,7 @@
 import {
   type Verb,
   type Hand,
+  type ChoreReceiptMark,
   type CompositeStore,
   type CapabilityVerifier,
   type VerbTargetResult,
@@ -285,6 +286,8 @@ export interface VerbDispatcherOptions {
   readonly surfaceOf?: (invocation: Verb) => boolean;
   /** The asker's hand the island booked for this exact act; absent where no door read one. */
   readonly askerOf?: (invocation: Verb) => Hand | undefined;
+  /** The chore's receipt mark the island booked for this exact act; the outcome carries it. Absent where none. */
+  readonly choreOf?: (invocation: Verb) => ChoreReceiptMark | undefined;
   /** Route a verb to main. `signal` aborts when the dispatcher gives up on the ask (a mount that timed out), so the router drops what it holds for it. */
   readonly routeFn?:  (invocation: Verb, signal?: AbortSignal) => Promise<Record<string, unknown>>;
 }
@@ -482,6 +485,7 @@ export class VerbDispatcher {
           invocation, status: "error",
           errorMessage: `effect "${effectKey}" indexes a prior outcome ("${priorRequestId}") that is no longer retained`,
           refusal: "retention-gap",
+          ...this.markOf(invocation),
         });
         removeVerb(this.opts.daemonVm, invocation.title);
         return;
@@ -490,14 +494,20 @@ export class VerbDispatcher {
       if (priorDigest === inputDigest && this.replayAdmitted(invocation)) {
         const priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>;
         await copyEffectOutcome(this.opts.daemonVm, this.opts.control, invocation, {
-          priorRequestId, priorResults, inputDigest,
+          priorRequestId, priorResults, inputDigest, ...this.markOf(invocation),
         });
         return;
       }
       if (priorDigest !== inputDigest) console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
     }
 
-    await dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, signal));
+    await dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, signal), this.opts.choreOf?.(invocation));
+  }
+
+  /** The chore mark the island booked for this act, as an outcome's spread (empty where none). */
+  private markOf(invocation: Verb): { chore?: ChoreReceiptMark } {
+    const chore = this.opts.choreOf?.(invocation);
+    return chore !== undefined ? { chore } : {};
   }
 
   start(): void {
@@ -546,7 +556,7 @@ export class VerbDispatcher {
           // Effect dedup (D1): a distinct requestId naming the SAME effect skips the
           // handler entirely when a prior done attempt's digest matches; see above.
           if (invocation.effectKey) return this.dispatchWithEffectDedup(invocation, abort.signal);
-          return dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, abort.signal));
+          return dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, abort.signal), this.opts.choreOf?.(invocation));
         }).catch((err) => {
           console.error("[verb-dispatcher] verb dispatch crashed:", err);
         }).finally(() => {

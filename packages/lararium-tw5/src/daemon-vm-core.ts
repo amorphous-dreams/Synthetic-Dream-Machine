@@ -90,6 +90,7 @@ import {
   type DaemonMsg_WikiAlert,
   type BatchMode,
   type Hand,
+  type ChoreReceiptMark,
   type IslandMsg_Ea,
   type IslandMsg_TeardownAck,
   isTeardownFault,
@@ -220,6 +221,8 @@ export interface VesselPlaceVerbRequest {
   ordinal?:     number;
   /** The asker's hand the vessel's door read (`seat`, `cli`, `tab`); the island books it with the act (`ctx.asker`). */
   asker?:       Hand;
+  /** The chore's receipt mark the vessel's door built; the island stamps it into the durable outcome. */
+  chore?:       ChoreReceiptMark;
   requestId?:   string;
   targets?:     readonly string[];
   batchMode?:   string;
@@ -907,6 +910,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         ...(o.effectKey       ? { effectKey: o.effectKey } : {}),
         ...(o.face            ? { face: o.face } : {}),
         ...(o.asker           ? { asker: o.asker } : {}),
+        ...(o.chore           ? { chore: o.chore } : {}),
       }));
     },
     placeTelemetry: (turnText: string, sourceFile: string, frontier?: readonly string[], turnKey?: string, chunkIndex?: number) => {

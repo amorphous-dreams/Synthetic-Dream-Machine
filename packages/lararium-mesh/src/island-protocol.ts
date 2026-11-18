@@ -63,6 +63,7 @@
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { FaceAnchor } from "./face-anchor.js";
 import type { Hand } from "./session-contract.js";
+import type { ChoreReceiptMark } from "./chore-ask.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
@@ -407,6 +408,9 @@ export interface DaemonMsg_PlaceVerb {
    * hands it to the reactor as `ctx.asker`; nothing reads it off args, a payload or a tiddler.
    */
   asker?: Hand;
+  /** The chore's receipt mark the vessel's door built (`ChoreReceiptMark`); the island books it with the act and the
+   *  dispatcher stamps it into the durable outcome. Absent for a read, a refusal, or an ask no door read. */
+  chore?: ChoreReceiptMark;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -1322,6 +1326,7 @@ export function mkDaemonPlaceVerb(opts: {
   requestedBy: string;
   face?: string;
   asker?: Hand;
+  chore?: ChoreReceiptMark;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -1344,6 +1349,7 @@ export function mkDaemonPlaceVerb(opts: {
   if (opts.effectKey)        msg.effectKey  = opts.effectKey;
   if (opts.face)             msg.face       = opts.face;
   if (opts.asker)            msg.asker      = opts.asker;
+  if (opts.chore)            msg.chore      = opts.chore;
   return msg;
 }
 
