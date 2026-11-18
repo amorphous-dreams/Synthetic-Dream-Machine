@@ -7,8 +7,9 @@
  *   U2  unlock-strings-no-keep-lei-without-a-workspace (CONTROL): a config that names no keep workspace reads no line, asks
  *       nothing and strings nothing; a lei that already stands, a no, a script (no terminal) and a pūlama unlock (no route)
  *       each string nothing.
- *   U4  unlock-offers-as-the-mount: an unlock that names no face strings the keep lei as the daemon mount, names it, and its
- *       by-hand hint names `--face N`; a named face asks no mount; with no mount (the floor) it strings nothing and names why.
+ *   U4  keep-lei-stands-once-across-two-faces: the keep lei stands one per house, as the keep's face: the face whose keep lei
+ *       already stands, else h0. Whoever wears, the offer reads that face's line; a lei standing on h1 offers nothing at an
+ *       unlock that wears h0, and with none standing the offer strings as h0 and names it.
  *   U3  the house config's keep workspace: `LARES_KEEP_WORKSPACE` names it (the environment first, else the operator's
  *       surface env file); with none named, the one pair LARES_WORKSPACES binds; several pairs and no name read none.
  *
@@ -22,7 +23,7 @@ import { wardTicketFor } from "../src/ward-door.js";
 
 const ROUTE: Credential[] = [{ kind: "passphrase", passphrase: "test-founding-passphrase" }];
 
-function rig(over: { lei?: Record<string, unknown>; yes?: boolean; terminal?: boolean; mount?: number | Error } = {}) {
+function rig(over: { lei?: Record<string, unknown>; leiOn?: Record<number, Record<string, unknown>>; yes?: boolean; terminal?: boolean; open?: readonly number[] } = {}) {
   const calls: string[] = [], said: string[] = [], asked: string[] = [], routes: (readonly Credential[])[] = [];
   const ports: KeepOfferPorts = {
     canAsk: () => over.terminal !== false,
@@ -30,11 +31,14 @@ function rig(over: { lei?: Record<string, unknown>; yes?: boolean; terminal?: bo
     row: async (verb, args, route) => {
       calls.push(`${verb} ${JSON.stringify(args)}`);
       if (route !== undefined) routes.push(route);
-      if (verb === "swarm-show") return { ok: true, output: { lei: over.lei ?? { standing: false, refusal: "absent", after: null } } };
+      if (verb === "swarm-show") {
+        const per = over.leiOn?.[Number(args["face"])];
+        return { ok: true, output: { lei: per ?? over.lei ?? { standing: false, refusal: "absent", after: null } } };
+      }
       return { ok: true, output: { cid: "c".repeat(64), rite: "keep", branch: args["branch"], returns: args["returns"] } };
     },
     say: (line) => { said.push(line); },
-    ...(over.mount === undefined ? {} : { mountFace: async () => { if (over.mount instanceof Error) throw over.mount; return over.mount as number; } }),
+    ...(over.open === undefined ? {} : { openFaces: async () => over.open! }),
   };
   return { calls, said, asked, routes, ports };
 }
@@ -47,8 +51,8 @@ describe("the keep lei at unlock", () => {
     expect(r.asked).toHaveLength(1);
     expect(r.asked[0]).toMatch(/keep lei.*"backup".*same passphrase/);
     expect(r.calls).toEqual([
-      `swarm-show ${JSON.stringify({ rite: "keep", branch: "backup" })}`,
-      `swarm-lei-kui ${JSON.stringify({ rite: "keep", branch: "backup", returns: KEEP_LEI_RETURNS, after: null })}`,
+      `swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 0 })}`,
+      `swarm-lei-kui ${JSON.stringify({ rite: "keep", branch: "backup", returns: KEEP_LEI_RETURNS, after: null, face: 0 })}`,
     ]);
     expect(r.routes).toEqual([ROUTE]);
     expect(r.routes[0]).toBe(ROUTE);
@@ -90,27 +94,23 @@ describe("the keep lei at unlock", () => {
     expect(keepWorkspaceName({ LARES_KEEP_WORKSPACE: "Not A Name" }, null)).toBeNull();
   });
 
-  test("U4 unlock-offers-as-the-mount: no face named, the offer reads and strings as the daemon mount and names it; a named face asks no mount; the floor strings nothing and says why", async () => {
-    const r = rig({ mount: 1 });
-    const out = await offerKeepLei(r.ports, { workspace: "backup", route: ROUTE });
-    expect(out).toMatchObject({ offered: true, strung: true, face: 1, faceBy: "mount" });
-    expect(r.calls).toEqual([
-      `swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 1 })}`,
-      `swarm-lei-kui ${JSON.stringify({ rite: "keep", branch: "backup", returns: KEEP_LEI_RETURNS, after: null, face: 1 })}`,
-    ]);
-    expect(r.asked[0]).toMatch(/acting as h1, the daemon mount/);
-    // The by-hand hint names the face.
-    const no = rig({ mount: 1, yes: false });
-    await offerKeepLei(no.ports, { workspace: "backup", route: ROUTE });
-    expect(no.said.join("\n")).toContain("lares lei kui --rite keep --branch backup --returns <n> --face 1");
-    // A named face asks no mount.
-    const named = rig({ mount: new Error("never asked") });
-    expect(await offerKeepLei(named.ports, { workspace: "backup", route: ROUTE, face: 2 })).toMatchObject({ strung: true, face: 2, faceBy: "named" });
-    expect(named.calls[0]).toBe(`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 2 })}`);
-    // THE FLOOR: no mount stands; nothing reads, nothing strings, and the line says why.
-    const floor = rig({ mount: new Error("this vessel stands faces h0, h1 open and wears none of them") });
-    expect(await offerKeepLei(floor.ports, { workspace: "backup", route: ROUTE })).toMatchObject({ offered: false, strung: false, why: "no-face" });
-    expect(floor.calls).toEqual([]);
-    expect(floor.said.join("\n")).toMatch(/wears none of them.*--face N/);
+  test("U4 keep-lei-stands-once-across-two-faces: whoever wears, the offer reads the keep's face; a lei standing there offers nothing", async () => {
+    // A lei stands on h1: an unlock (wearing anything) reads h0, then h1, finds it standing, and offers nothing.
+    const onOne = rig({ open: [0, 1], leiOn: { 1: { standing: true, reach: "wide", returnsLeft: 4, after: "e".repeat(64) } } });
+    expect(await offerKeepLei(onOne.ports, { workspace: "backup", route: ROUTE })).toMatchObject({ offered: false, why: "standing", face: 1, faceBy: "keep" });
+    expect(onOne.asked).toEqual([]);
+    expect(onOne.calls.filter((c) => c.startsWith("swarm-lei-kui"))).toEqual([]);
+    // keep-lei-offers-nothing-at-unlock-after-the-change: the lei on h0 stands, so a second face open asks nothing either.
+    const onZero = rig({ open: [0, 1], leiOn: { 0: { standing: true, reach: "wide", returnsLeft: 4, after: "e".repeat(64) } } });
+    expect(await offerKeepLei(onZero.ports, { workspace: "backup", route: ROUTE })).toMatchObject({ offered: false, why: "standing", face: 0 });
+    expect(onZero.calls).toEqual([`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 0 })}`]);
+    // None stands: the offer strings as h0, the keep's face, and names it with whose route stands behind the ward.
+    const none = rig({ open: [1, 2] });
+    expect(await offerKeepLei(none.ports, { workspace: "backup", route: ROUTE })).toMatchObject({ offered: true, strung: true, face: 0, faceBy: "keep" });
+    expect(none.calls.at(-1)).toBe(`swarm-lei-kui ${JSON.stringify({ rite: "keep", branch: "backup", returns: KEEP_LEI_RETURNS, after: null, face: 0 })}`);
+    expect(none.asked[0]).toMatch(/as h0, the keep's face/);
+    expect(none.asked[0]).toMatch(/face h0's ward/);
+    // The unlock never names the keep's face: no `face` option rides the offer.
+    expect("face" in ({} as Parameters<typeof offerKeepLei>[1])).toBe(false);
   });
 });

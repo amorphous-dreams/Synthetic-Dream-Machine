@@ -456,19 +456,19 @@ describe("the keep rite, host half", () => {
     expect(keepSessionsOn(false, {}, null)).toBe(false);
   });
 
-  test("KH17 keep-acts-as-the-mount: with no face named, the host half carries the face the vessel half acted as into every row after the cut, and names it", async () => {
+  test("KH17 keep-acts-as-the-keep-face: with no face named, the host half carries the face the vessel half acted as into every row after the cut, and names it", async () => {
     const r = rig();
     const row = r.ports.row;
     const ports: KeepHostPorts = { ...r.ports, sessions: null, row: async (verb, args) => {
       const a = await row(verb, args);
-      return verb === "keep-cut" && a.ok ? { ok: true, output: { ...a.output, face: 0, faceBy: "mount" } } : a;
+      return verb === "keep-cut" && a.ok ? { ok: true, output: { ...a.output, face: 0, faceBy: "keep" } } : a;
     } };
     const out = await riteKeepHost(ports, { workspace: "backup" });
-    expect(out).toMatchObject({ code: 0, data: { face: 0, faceBy: "mount", par: true } });
+    expect(out).toMatchObject({ code: 0, data: { face: 0, faceBy: "keep", par: true } });
     expect(r.calls[0]).toBe(`keep-cut ${JSON.stringify({ workspace: "backup", into: "house" })}`);
     expect(r.calls.slice(1).length).toBeGreaterThan(0);
     for (const c of r.calls.slice(1)) expect(c).toContain('"face":0');
-    expect(r.said.some((l) => /acting as h0, the daemon mount/.test(l))).toBe(true);
+    expect(r.said.some((l) => /acting as h0, the keep's face/.test(l))).toBe(true);
     // A named face rides the cut as named.
     const n = rig({ at: join(scratch, "named") });
     const named = await riteKeepHost({ ...n.ports, sessions: null }, { workspace: "backup", face: 2 });
