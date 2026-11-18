@@ -7,8 +7,10 @@
  * margin over the workbench and projects in the face's root to `<projections>/faces/<pet name>/margins/<slug>` (operator rulings
  * 2026-11-11, 2026-11-18).
  *
- * M1 a workspace resolves under `<root>/workspaces`; one that resolves inside the checkout or the hearth refuses by name, a
- *    checkout-sourced slug refuses, and a workspace with no directory waits unbound (red 6, the vessel's half of tree-clean).
+ * M1 a workspace resolves under `<root>/workspaces`, and one that resolves inside the repository checkout binds (founding road
+ *    rank 4j, operator 2026-11-18: the checkout stands as the cabal's working surface, no carve-out); one inside the hearth
+ *    refuses by name, a checkout-sourced slug refuses (its one workbench folder already rests beside its canon source, in that
+ *    working surface), and a workspace with no directory waits unbound.
  * M2 one shared resolution, two host grants: the disk-holding host (a node pool's grant) roots the workbench in its workspace
  *    and the personal margin per face; a host that holds no disk grant (a browser leaf's empty grant) mirrors nothing and
  *    reads the same recipe. No face worn: no personal mirror.
@@ -17,7 +19,7 @@
  *    face's own personal layer rides the CLI seed wave (`seed-mirrors.ts`), CI-proved.
  */
 import { describe, test, expect, afterEach } from "vitest";
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync, existsSync, readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync, existsSync, readFileSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { resolveDiskMirrors, type DiskMirrorGrant } from "../../lararium-mesh/src/vessel-island-pool-core.js";
@@ -34,7 +36,7 @@ function house(): { root: string; checkout: string; workspaces: string; hearth: 
   return { root, checkout, workspaces: join(root, "workspaces"), hearth: join(root, "hearth"), projections: join(root, "projections") };
 }
 
-describe("M1 — a workspace never rests inside the checkout or the hearth", () => {
+describe("M1 — a workspace binds in the working surface and never rests inside the hearth", () => {
   test("bound, refused and unbound workspaces, each by name", () => {
     const h = house();
     mkdirSync(join(h.workspaces, "field-notes"));
@@ -54,12 +56,22 @@ describe("M1 — a workspace never rests inside the checkout or the hearth", () 
       ],
       workspacesHome: h.workspaces, checkoutRoot: h.checkout, hearth: h.hearth, sourcedSlugs: ["sdm"],
     });
-    expect(Object.keys(read.roots)).toEqual(["notes"]);
+    expect(Object.keys(read.roots).sort()).toEqual(["notes", "tree"]);
     expect(read.roots["notes"]).toMatch(/workspaces\/field-notes$/);
-    expect(read.refused.join("\n")).toMatch(/tree: workspace "in-tree" resolves inside the checkout/);
+    // The checkout counts as the cabal's working surface: a workspace resting inside it binds at its real path.
+    expect(read.roots["tree"]).toBe(realpathSync(join(h.checkout, "notes-in-tree")));
+    expect(read.refused.join("\n")).not.toMatch(/inside the checkout/);
     expect(read.refused.join("\n")).toMatch(/deep: workspace "in-hearth" resolves inside the hearth/);
-    expect(read.refused.join("\n")).toMatch(/sdm: workbench-checkout-sourced/);
+    expect(read.refused.join("\n")).toMatch(/sdm: workbench-checkout-sourced \(its one workbench folder rests beside its canon source, in the working surface\)/);
+    expect(read.refused).toHaveLength(2);
     expect(read.unbound.join("\n")).toMatch(/later: workspace "not-bound" stands unbound/);
+  });
+  test("a workspace naming the hearth root itself refuses", () => {
+    const h = house();
+    symlinkSync(h.hearth, join(h.workspaces, "the-hearth"));
+    const read = workspaceRootsOf({ rows: [{ slug: "hot", kind: "wiki", workspace: "the-hearth" }], workspacesHome: h.workspaces, hearth: h.hearth, sourcedSlugs: [] });
+    expect(read.roots).toEqual({});
+    expect(read.refused.join("\n")).toMatch(/hot: workspace "the-hearth" resolves inside the hearth/);
   });
 });
 
