@@ -65,13 +65,14 @@ function memoryHome(doc: LarDoc = emptyLarDoc()): { changes: number; doc(): LarD
 const GENESIS = floor("genesis");
 
 /** Ports over one board and one CAS; `staged` and `alerts` record what the accept did. */
-function portsOver(args: { home: FloorPinHome; nexus: string; releases: readonly FloorRelease[]; cas: Map<string, Uint8Array>; floorSwap?: boolean }) {
+function portsOver(args: { home: FloorPinHome; nexus: string; releases: readonly FloorRelease[]; cas: Map<string, Uint8Array>; floorSwap?: boolean; required?: readonly string[] }) {
   const staged: string[] = [];
   const alerts: FloorRemount[] = [];
   const swapped: string[] = [];
   const local = new Map<string, Uint8Array>(GENESIS.cas);
   const ports: FloorPinPorts = {
     home: args.home, nexus: args.nexus, genesisManifest: GENESIS.manifestCid,
+    requiredBlobIds: args.required ?? [OFFERING.offering.blobs[0]!.id],
     rows: async () => args.releases.map((r) => ({ keyCid: r.cid, record: JSON.parse(JSON.stringify(r)) as unknown })),
     fetchCas: async (cid) => local.get(cid) ?? args.cas.get(cid) ?? null,
     stage: async (blobs) => { for (const b of blobs) { staged.push(b.cid); local.set(b.cid, b.bytes); } },
@@ -112,6 +113,17 @@ describe("the vessel's pin", () => {
     expect(alerts).toHaveLength(1);
     // CONTROL: the status now reads current: the head IS the pin, nothing to fast-forward.
     expect(await readFloorStatus(ports)).toMatchObject({ newest: r2.cid, descends: true, fastForward: false, path: [] });
+  });
+
+  test("RED: a release whose offering drops a blob every mount needs refuses `floor-offering-incomplete`, naming it, and lands nothing", async () => {
+    const c = await seatedCharter({ seats: 3, threshold: 1 });
+    const f1 = floor("one");
+    const r1 = await released(c, f1);
+    const home = memoryHome();
+    const { ports, staged, alerts } = portsOver({ home, nexus: c.aid, releases: [r1], cas: f1.cas, required: [OFFERING.offering.blobs[0]!.id, "lararium-boot-shadows"] });
+    const out = await acceptFloorRelease(ports);
+    expect(out).toMatchObject({ ok: false, refusal: "floor-offering-incomplete", detail: expect.stringContaining("lararium-boot-shadows") });
+    expect({ staged: staged.length, changes: home.changes, alerts: alerts.length }).toEqual({ staged: 0, changes: 0, alerts: 0 });
   });
 
   test("RED: a release that does not descend from the pin refuses `floor-not-descendant` (a rollback), and lands nothing", async () => {
