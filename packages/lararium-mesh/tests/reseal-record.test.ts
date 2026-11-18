@@ -19,7 +19,7 @@ import {
   type RecordSigner, type VerifiedRecord,
 } from "../src/sealed-records.js";
 import type { SeatRoll } from "../src/seat-duties.js";
-import { carry, counts, introduce, said, text, vessel, world, type Vessel, type World } from "./content-key-fixture.js";
+import { carry, counts, introduce, said, text, verifies, vessel, world, type Vessel, type World } from "./content-key-fixture.js";
 
 const BAG = "lar:///ha.ka.ba/@test/bags/photo-shelf";
 const SCOPE = "fleet:test-scope";
@@ -215,5 +215,33 @@ describe("the judge reads counted history alone", () => {
     const verdict = judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0]), keys: s.keyMap(0, 1), manifests });
     expect(verdict).toMatchObject({ verdict: "unverified" });
     expect((verdict as { missing: string[] }).missing).toContain("successor");
+  });
+});
+
+describe("a replacement never crosses a span (sealed-store #/epochs: an inviter never widens the audience for another writer's past)", () => {
+  it("FOUNDING, A FROM-NOW ADMISSION, THEN A REMOVAL: the photo under the closed founding span refuses `replaced-other-span`, and no record rests", async () => {
+    const { w, v: [a, b, c] } = await fleet("a", "b", "c");
+    const photo = await seal(a!, "a photo from before the admission");
+    await carry(a!, b!, BAG); await carry(a!, c!, BAG);
+    verifies(w, a!, "admit-1"); verifies(w, b!, "admit-1");
+    const admitted = await a!.holder.admitFromNow({ bagId: BAG, act: "admit-1", history: "closed", signer: a!.signer });
+    if ("refusal" in admitted) throw new Error(said(admitted));
+    counts(w, a!, "raise-1"); counts(w, b!, "raise-1"); counts(w, c!, "raise-1");
+    w.group.delete(c!.id);
+    expect((await rolls(a!, roll(["raise-1"], c!))).map((r) => r.result)).toEqual(["rolled"]);
+    expect(said(await a!.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: a!.signer }))).toBe("replaced-other-span");
+    expect(await a!.store.records("re-seal")).toEqual([]);
+  });
+
+  it("the judge refuses a record whose replaced version stands in another span than its successor (`reseal-unbound`, binding `replaced`)", async () => {
+    const s = await keyShore(3);
+    const v0 = await s.version(0, [], 0, { kind: "founding" });
+    const v1 = await s.version(1, [0], 1, { kind: "admission", act: "admit-1" });
+    const v2 = await s.version(2, [1], 1, { kind: "removal", acts: ["raise-1"] });
+    const from = s.address(0, PHOTO), to = s.address(2, PHOTO);
+    const record = await s.reseal(2, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"] });
+    const manifests = [await s.manifest(0, PHOTO, from), await s.manifest(2, PHOTO, to)];
+    expect(judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0, v1, v2]), keys: s.keyMap(0, 1, 2), manifests }))
+      .toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "replaced" });
   });
 });
