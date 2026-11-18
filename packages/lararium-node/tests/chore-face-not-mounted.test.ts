@@ -147,3 +147,31 @@ test("CONTROL: reads keep their path from the h1 session (a meme read, a recall)
   }
   expect(v.placed.map((p) => p.verb)).toEqual(["meme-get", "recall", "floor-status"]);
 });
+
+// THE ASKER RIDES THE PLACEMENT (seat-canon-reach, T4-2): the door hands the hand it read (`seat` off the seat kind, `cli`
+// for the operator's own line, the session's own hand) to the placed ask, so the reactor's context can name it. Never read
+// off the frame: a line naming its own `asker` places under the hand the door read.
+const askerOf = (p: unknown): unknown => (p as { asker?: unknown }).asker;
+
+test("RED: the AI seat's one-shot meme write places with asker seat; the operator's line with asker cli", async () => {
+  const v = await stand();
+  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai" });
+  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop" });
+  expect(v.placed.map(askerOf)).toEqual(["seat", "cli"]);
+});
+
+test("RED: a frame naming its own asker never chooses it: an unmarked line claiming asker tab places as cli; a seat line claiming cli places as seat", async () => {
+  const v = await stand();
+  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop", asker: "tab" });
+  await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai", asker: "cli" });
+  expect(v.placed.map(askerOf)).toEqual(["cli", "seat"]);
+});
+
+test("RED: a session's call places with the session's own hand; CONTROL: a read from the session places with it too", async () => {
+  const v = await stand();
+  const opened = await v.peer.ask({ op: "session:open", requestId: "open-tab", faceRef: "h0", hand: "tab" });
+  const env = { ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] };
+  await v.peer.ask({ op: "session:call", ...env, requestId: "put-hand", verb: "meme-put", args: MEME });
+  await v.peer.ask({ op: "session:call", ...env, requestId: "read-hand", verb: "meme-get", args: {} });
+  expect(v.placed.map(askerOf)).toEqual(["tab", "tab"]);
+});
