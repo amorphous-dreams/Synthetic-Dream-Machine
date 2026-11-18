@@ -448,3 +448,17 @@ def test_meme_get_and_meme_list_texts_name_the_floor_word():
     listed = _described("meme_list")
     assert "`floor: true`" in listed and "floor snapshot" in listed
     assert "{bag, floor, roots, next}" in listed and "each row" in listed
+
+
+def test_meme_put_text_names_the_seat_canon_refusal_and_the_true_layer():
+    # The seat meets its canon fence in the tool's own text (reach-mu T4-2): a `bag` naming house canon refuses
+    # `seat-canon-reach`, and the road reads copy-up then offer. A `recipe` lands in the wiki's writable bag (its working
+    # layer, or the face's personal layer without a writer's seat), never "its top bag" (reach-mu decision 8).
+    said = _described("meme_put")
+    assert "seat-canon-reach" in said and "meme_offer" in said
+    assert "top bag" not in said and "personal" in said and "`layer`" in said
+
+
+def test_tiddler_put_text_names_the_seat_canon_refusal():
+    said = _described("tiddler_put")
+    assert "seat-canon-reach" in said
