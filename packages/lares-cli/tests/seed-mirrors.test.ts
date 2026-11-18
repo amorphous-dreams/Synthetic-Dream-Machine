@@ -41,15 +41,17 @@
  *   M25 HOUSE_IGNORED reaches the carry: an export carries no `.git/`, an adoption copies none
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, sep } from "node:path";
 import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, SyncedTree } from "@lararium/node";
-import { daemonFaceCanonBag, carrierHash, type ShareEntry } from "@lararium/mesh";
+import { daemonFaceCanonBag, carrierHash, wikiSlotUri, type ShareEntry } from "@lararium/mesh";
 import { seedMirrors, liveLay, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, siteWaveFile, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { carryExport, carryImport, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
-import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
+import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel, labelFaceAtNaming } from "../src/face-labels.js";
+import { moveFaceToAshes } from "../src/ashes.js";
+import { fileToUriForSource } from "../src/ingest-core.js";
 import { runMirrorLeg } from "../src/commands/seed.js";
 import type { CarryKahuaHead } from "../src/carry-manifest.js";
 
@@ -1271,5 +1273,142 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(sets, "CONTROL: a row the file already held sets again").toBe(1);
     expect(second.tallies.personal, "the reader's margin mounts the wiki its half now names").toMatchObject({ landed: 1, waiting: 0, refused: [] });
     expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's margin of the steward's wiki"));
+  });
+});
+
+// ── P1, THE FACE ROOT (face-pools #/shape): one working tree per face, keyed by pet name ──────────────────────────
+//
+//   FR1 a re-found keeps the SAME folder: the re-minted face under the same pet name lays `faces/<pet name>/` where it stands:
+//       no adoption copy, no `ashes/` move, no relation-keyed folder written
+//   FR2 a folder whose pet name no standing face carries refuses by name and lands nothing; nothing moves to ashes
+//   FR3 `moveFaceToAshes` serves only a face whose pet name no longer stands
+//   FR4 export reads every face plane off `faces/<pet name>/` (drafts from `recovery/<slug>`), and import lands them back there
+//   FR5 no index file ever rests under `faces/`, and no two faces share a root
+//   FR6 a face rename moves its folder
+//   FR7 the ingest's reverse siting reads a face plane and a margin under `faces/`
+describe("P1 — the face root, keyed by pet name", () => {
+  const FACE = "hearth-one";
+  /** The face's pool as the projector lays it now: every plane under `faces/<pet name>/`. */
+  const poolDisk = (): void => {
+    rmSync(join(root, "projections"), { recursive: true, force: true });
+    put(`projections/faces/${FACE}/canon/ha.ka.ba/notes/pond.tid`, POND_CANON);
+    put(`projections/faces/${FACE}/wiki/ha.ka.ba/notes/pond.tid`, POND_WORKING);
+    put(`projections/faces/${FACE}/wiki/ha.ka.ba/kahua/memory/heron.tid`, tid(HERON, "remember the heron"));
+    put(`projections/faces/${FACE}/wiki/My Notes.tid`, tid("My Notes", "a plain-title working tiddler"));
+    put(`projections/faces/${FACE}/margins/notes/Aside.tid`, tid("Aside", "a margin over the notes wiki"));
+    put(`projections/faces/${FACE}/recovery/notes/draft-one.tid`, tid("draft one", "half a thought"));
+  };
+  const snapshot = (dir: string): string[] => mirrorFiles(dir).sort();
+
+  test("FR1 — RED: a re-found keeps the same folder: no adoption copy, no ashes, no relation-keyed folder", async () => {
+    poolDisk();
+    const old = new FakeHouse([{ handleIndex: 0, petname: FACE, relation: F1 }], "old-grant", F1);
+    old.held.add("notes");
+    await seedMirrors({ apply: true, doors: old.mirrorDoors() });
+    expect(old.live(WORKING, POND)?.text).toBe(POND_WORKING);
+    expect(old.live(WORKING, "My Notes")?.text).toBe(tid("My Notes", "a plain-title working tiddler"));
+    expect(old.live(daemonFaceCanonBag(F1), POND)?.text).toBe(POND_CANON);
+    const before = snapshot(P(`faces/${FACE}`));
+
+    const after = refound([{ handleIndex: 0, petname: FACE, relation: F2 }]);
+    after.held.add("notes");
+    const seeded = await seedMirrors({ apply: true, doors: after.mirrorDoors() });
+    expect(seeded.refusals).toEqual([]);
+    expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
+    expect(after.live(WORKING, "My Notes")?.text).toBe(tid("My Notes", "a plain-title working tiddler"));
+    expect(after.live(daemonFaceCanonBag(F2), POND)?.text).toBe(POND_CANON);
+    expect(after.personalOf(F2, "notes").get("Aside")?.text).toBe(tid("Aside", "a margin over the notes wiki"));
+    // Every wave read the face's one root; nothing copied, nothing moved, no relation-keyed folder stands.
+    for (const s of after.laid) if (s.includes(`${sep}faces${sep}`)) expect(s.startsWith(P(`faces/${FACE}`))).toBe(true);
+    expect(snapshot(P(`faces/${FACE}`))).toEqual(before);
+    expect(existsSync(P("ashes"))).toBe(false);
+    for (const gone of [`wikis/daemon-${F1}`, `wikis/daemon-${F2}`, `bags/daemon-${F2}`, `bags/kahua-${F2}`, `personal/${F2}`]) expect(existsSync(P(gone)), gone).toBe(false);
+    // A second seed lands nothing.
+    const again = await seedMirrors({ apply: true, doors: after.mirrorDoors() });
+    expect(again.layers.reduce((n, t) => n + t.landed + t.kapae, 0)).toBe(0);
+  });
+
+  test("FR2 — RED: a folder whose pet name no face carries refuses by name, lands nothing, and stays where it stands", async () => {
+    poolDisk();
+    const stranger = refound([{ handleIndex: 0, petname: "someone-else", relation: F2 }]);
+    const r = await seedMirrors({ apply: true, doors: stranger.mirrorDoors() });
+    expect(r.refusals.map((x) => x.code)).toEqual(["seed-face-unmatched"]);
+    expect(r.refusals[0]!.message).toContain(FACE);
+    expect(stranger.live(WORKING, POND)).toBeUndefined();
+    expect(stranger.laid.some((s) => s.startsWith(P(`faces/${FACE}`)))).toBe(false);
+    expect(existsSync(P(`faces/${FACE}/wiki/ha.ka.ba/notes/pond.tid`))).toBe(true);
+    expect(existsSync(P("ashes"))).toBe(false);
+  });
+
+  test("FR3 — RED: moveFaceToAshes refuses a standing pet name and moves a burned one", () => {
+    poolDisk();
+    const projections = join(root, "projections");
+    expect(moveFaceToAshes(projections, FACE, [FACE])).toMatchObject({ left: expect.stringMatching(/stands/) });
+    expect(existsSync(P(`faces/${FACE}`))).toBe(true);
+    const moved = moveFaceToAshes(projections, FACE, ["someone-else"]);
+    expect(moved).toMatchObject({ segment: FACE });
+    expect(existsSync(P(`faces/${FACE}`))).toBe(false);
+    expect(existsSync(P(`ashes/${FACE}/wiki/ha.ka.ba/notes/pond.tid`))).toBe(true);
+  });
+
+  test("FR4 — RED: export reads each plane off the face root, and import lands each back there", async () => {
+    poolDisk();
+    const old = new FakeHouse([{ handleIndex: 0, petname: FACE, relation: F1 }], "old-grant", F1);
+    old.held.add("notes");
+    await seedMirrors({ apply: true, doors: old.mirrorDoors() });
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    const rowOf = (layer: string, title: string | null) => manifest.rows.find((r) => r.layer === layer && (title === null || r.title === title));
+    expect(rowOf("working", POND)).toMatchObject({ face: FACE });
+    expect(rowOf("daemon-canon", POND)).toMatchObject({ face: FACE });
+    expect(rowOf("personal", "Aside")).toMatchObject({ face: FACE });
+    expect(rowOf("draft", null)).toMatchObject({ face: FACE, bag: wikiSlotUri("notes", "draft") });
+    rmSync(join(root, "projections"), { recursive: true, force: true });
+    const after = refound([{ handleIndex: 0, petname: FACE, relation: F2 }]);
+    after.held.add("notes");
+    const imported = await carryImport(out, { apply: true, doors: after.carryDoors() });
+    expect(Object.values(imported.tallies).every((t) => t.stoodOff.length === 0 && t.refused.length === 0)).toBe(true);
+    expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
+    expect(readFileSync(P(`faces/${FACE}/wiki/ha.ka.ba/notes/pond.tid`), "utf8")).toBe(POND_WORKING);
+    expect(readFileSync(P(`faces/${FACE}/recovery/notes/draft-one.tid`), "utf8")).toBe(tid("draft one", "half a thought"));
+    expect(existsSync(P("wikis/notes/recovery"))).toBe(false);
+  });
+
+  test("FR5 — RED: no index file rests under faces/, and two faces never share a root", async () => {
+    poolDisk();
+    put("projections/faces/Egret/wiki/Shell.tid", tid("Shell", "egret's own"));
+    const v = new FakeHouse([{ handleIndex: 0, petname: FACE, relation: F1 }, { handleIndex: 1, petname: "Egret", relation: F2 }], "grant", F1);
+    v.held.add("notes");
+    await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    writeFaceLabels(v.facesNow(), join(root, "projections"));
+    await carryExport(out, { acceptOmissions: false, doors: v.carryDoors() });
+    const walk = (dir: string): string[] => { try { return readdirSync(dir, { recursive: true }).map(String); } catch { return []; } };
+    for (const rel of walk(P("faces"))) expect(rel, rel).not.toMatch(/(^|[\\/])(face-labels|kahua-index\.toml|share\.tid|kahua-pending\.json)([\\/]|$)/);
+    expect(v.workingOf(F2).get("Shell")?.text).toBe(tid("Shell", "egret's own"));
+    expect(v.workingOf(F1).get("Shell")).toBeUndefined();
+    // A face whose pet name case-folds onto another face's refuses by name: two faces never share one root.
+    const twins = new FakeHouse([{ handleIndex: 0, petname: FACE, relation: F1 }, { handleIndex: 1, petname: FACE.toUpperCase(), relation: F2 }], "grant", F1);
+    const r = await seedMirrors({ apply: true, doors: twins.mirrorDoors() });
+    expect(r.refusals.map((x) => x.code)).toContain("face-segment-collision");
+  });
+
+  test("FR6 — RED: a face rename moves its folder", async () => {
+    poolDisk();
+    const projections = join(root, "projections");
+    writeFaceLabels([{ relation: F1, petname: FACE, handleIndex: 0 }], projections);
+    await labelFaceAtNaming({ handleIndex: 0, petname: "Night Heron", relation: F1, formerPetname: FACE }, async () => F1, projections);
+    expect(existsSync(P(`faces/${FACE}`))).toBe(false);
+    expect(readFileSync(P("faces/Night Heron/wiki/ha.ka.ba/notes/pond.tid"), "utf8")).toBe(POND_WORKING);
+    expect(readFaceLabel(F1, projections)?.petname).toBe("Night Heron");
+  });
+
+  test("FR7 — RED: the ingest's reverse siting reads a face plane and a margin under faces/", () => {
+    poolDisk();
+    const projections = join(root, "projections");
+    const dirs = { bags: join(root, "bags"), wikis: join(root, "wikis"), projections };
+    const read = (source: string, file: string) => fileToUriForSource(root, source, dirs)(root, file);
+    expect(read(P(`faces/${FACE}/wiki`), P(`faces/${FACE}/wiki/My Notes.tid`))).toBe("My Notes");
+    expect(read(P(`faces/${FACE}/wiki`), P(`faces/${FACE}/wiki/ha.ka.ba/notes/pond.tid`))).toBe(POND);
+    expect(read(P(`faces/${FACE}/canon`), P(`faces/${FACE}/canon/ha.ka.ba/notes/pond.tid`))).toBe(POND);
+    expect(read(P(`faces/${FACE}/margins/notes`), P(`faces/${FACE}/margins/notes/Aside.tid`))).toBe("Aside");
   });
 });
