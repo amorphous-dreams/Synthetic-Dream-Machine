@@ -90,7 +90,7 @@ export type CustodyAnswer =
   /** The node key opened and a face did not (`face-refused`), or the vessel holds several faces and none was named (`face-not-named`): nothing stays open. */
   | { readonly op: "unlock"; readonly reading: "face-refused" | "face-not-named"; readonly standing: string; readonly face?: number; readonly faceReading?: string; readonly faces?: readonly unknown[]; readonly faceReadings?: ReadonlyArray<{ readonly face: number; readonly reading: string }> }
   /** A wear that stood: the face it wears, or (`switchRefused`) the face it named, why, and the face worn again. */
-  | ({ readonly op: "wear"; readonly face: number; readonly held: true; readonly already?: true; readonly switchRefused?: string; readonly wornAgain?: number } & Partial<CustodyStanding>)
+  | ({ readonly op: "wear"; readonly face: number; readonly held: boolean; readonly already?: true; readonly switchRefused?: string; readonly wornAgain?: number } & Partial<CustodyStanding>)
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
   | { readonly op: "custody"; readonly pulama?: { readonly session: boolean; readonly waits: string | null }; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
@@ -359,11 +359,21 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (before === face) return { op: "wear", face, held: true, already: true, standing: deps.standing() };
     setMountedFace(face);
     deps.onLog(`wear: h${face} worn${before !== undefined ? ` (h${before} before)` : ""}; composing again`);
-    const stood = await deps.recompose(true);
+    let stood: CustodyStanding;
+    // A RECOMPOSE THAT THROWS puts the mount back on the face it left before the fault names itself to the caller.
+    try { stood = await deps.recompose(true); }
+    catch (e) { setMountedFace(before); throw e; }
     if (stood.refused === undefined) return { op: "wear", face, held: true, ...stood };
     setMountedFace(before);
-    deps.onLog(`the composition wearing h${face} did not stand; ${before !== undefined ? `h${before} worn again` : "no face named"}, the node key held`);
     const back = await deps.recompose(true);
+    if (back.refused !== undefined) {
+      // A KEY NEVER RESTS OVER A FLOOR: the face it left would not stand again either, so the vessel drops the key, as an
+      // unlock whose composition refused does, and the answer says so.
+      await holder.lock();
+      deps.onLog(`the composition wearing h${face} did not stand, nor ${before !== undefined ? `h${before} again` : "the floor's sovereign rows"}; the node key dropped`);
+      return { op: "wear", face, held: false, ...back, switchRefused: stood.refused };
+    }
+    deps.onLog(`the composition wearing h${face} did not stand; ${before !== undefined ? `h${before} worn again` : "no face named"}, the node key held`);
     return { op: "wear", face, held: true, ...back, switchRefused: stood.refused, ...(before !== undefined ? { wornAgain: before } : {}) };
   });
 

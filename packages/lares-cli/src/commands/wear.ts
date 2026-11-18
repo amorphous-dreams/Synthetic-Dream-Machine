@@ -25,6 +25,9 @@ function faceNamed(args: ParsedArgs): number | null {
 function wearLine(a: CustodyDoorAnswer): string {
   const standing = typeof a["standing"] === "string" ? a["standing"] : "?";
   if (a["already"] === true) return `face h${String(a["face"])} stands worn already; the vessel stands as ${standing}.`;
+  if (typeof a["switchRefused"] === "string" && a["held"] === false) {
+    return `the composition wearing h${String(a["face"])} did not stand (${a["switchRefused"]}), and the face it left would not stand again either: the vessel dropped its key and stands as ${standing}; open it again (\`lares vault unlock\`).`;
+  }
   if (typeof a["switchRefused"] === "string") {
     const again = typeof a["wornAgain"] === "number" ? `h${String(a["wornAgain"])} worn again` : "no face worn";
     return `the composition wearing h${String(a["face"])} did not stand: h${String(a["face"])} did not stand (${a["switchRefused"]}); ${again}, and the vessel key stays held.`;
