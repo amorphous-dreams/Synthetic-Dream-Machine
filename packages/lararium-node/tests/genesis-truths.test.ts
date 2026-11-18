@@ -61,3 +61,38 @@ describe("the founding record beside the seed (offered)", () => {
     expect(foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: SHIPPED }))).toContain("floor pin: unread here");
   });
 });
+
+describe("a read-only print never stops a boot", () => {
+  /** A genesis dir whose seed.json names the genesis format but carries a blob row the fold cannot read. */
+  function oddSeedDir(): string {
+    const dir = mkdtempSync("/tmp/lararium-genesis-truths-"); dirs.push(dir);
+    mkdirSync(join(dir, "genesis"));
+    writeFileSync(join(dir, "genesis", "seed.json"), JSON.stringify({ ...shipped(), blobs: { odd: null } }));
+    return join(dir, "genesis");
+  }
+
+  test("RED: a record whose blobs make the fold refuse yields an unread line and no throw", () => {
+    let line = "";
+    expect(() => { line = foundingRecordLine(readFoundingRecordTruths({ record: { blobs: { odd: null } } as never, genesisDir: SHIPPED })); }).not.toThrow();
+    expect(line).toMatch(/^\[genesis\] founding record: unread here \(.+\)$/);
+  });
+
+  test("RED: a null record yields an unread line and no throw", () => {
+    let line = "";
+    expect(() => { line = foundingRecordLine(readFoundingRecordTruths({ record: null as never, genesisDir: SHIPPED })); }).not.toThrow();
+    expect(line).toMatch(/^\[genesis\] founding record: unread here \(.+\)$/);
+  });
+
+  test("RED: a seed.json the fold cannot read yields a line and no throw", () => {
+    let line = "";
+    expect(() => { line = foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: oddSeedDir() })); }).not.toThrow();
+    expect(line).toMatch(/^\[genesis\] founding record: unread here \(.+\)$/);
+  });
+
+  test("CONTROL: a torn seed.json still reads the founding record and names the offer absent; the clean case reads same", () => {
+    const torn = mkdtempSync("/tmp/lararium-genesis-truths-"); dirs.push(torn);
+    mkdirSync(join(torn, "genesis")); writeFileSync(join(torn, "genesis", "seed.json"), "{ torn");
+    expect(foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: join(torn, "genesis") }))).toContain("seed (offered): none reads");
+    expect(foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: SHIPPED }))).toContain(": same on every ratchet");
+  });
+});

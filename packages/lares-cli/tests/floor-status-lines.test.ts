@@ -45,3 +45,14 @@ describe("the floor status lines", () => {
     expect(lines.some((l) => l.startsWith("  nexus:           refused"))).toBe(false);
   });
 });
+
+describe("an unread founding record", () => {
+  test("RED: the status prints the founding record unread with its reason, and no ratchet words", () => {
+    const lines = floorStatusLines({
+      genesis: { record: { engine: null, grammar: null, plugins: null, floor: null }, seed: null, floorPin: null, line: "", unread: "the fold refused a blob row" },
+      nexusRefused: { refusal: "floor-no-charter", message: "no charter" },
+    });
+    expect(lines).toContain("  founding record: unread here (the fold refused a blob row)");
+    expect(lines.some((l) => l.startsWith("  seed (offered):"))).toBe(false);
+  });
+});
