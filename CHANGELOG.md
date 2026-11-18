@@ -11,10 +11,13 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 - **The words unblur.** `lares vessel seed` reads `lares vessel lay`; the carry's command and manifest read the house bundle (`commands/house-bundle.ts`, `bundle-manifest.ts`), and `tools/carry-parity.mjs` reads `tools/census-drill.mjs`. Schemas carry names, never numbers: `lar-carry/1` reads `lar-house-bundle`, `lar-carry-census/1` reads `lar-census`, `lar-carry-parity/1` reads `lar-census-compare`. A keep pushed under the old tag gets one fresh `lares rite keep` to re-lay it.
 - **The shim's canon-clone warning retires** with the workspaces ruling (road rank 4j): neither shim nor the compose reads `LARES_DEV_INSTALL`.
 - **The gates fail closed.** Typecheck, mesh coverage, rite commands and the symbol-anchor witness stop passing on prose, empty input or a crash.
-- **An AI seat's write to house canon refuses `seat-canon-reach`** at every door; the seat offers, never writes, and the chore mark persists.
+- **An AI seat's write to house canon refuses `seat-canon-reach`** at every door; the seat offers, never writes, and the chore mark persists. The CLI asks as an AI seat wherever a harness mark stands in its environment (`CLAUDECODE`, `CODEX_SANDBOX`, `CODEX_SANDBOX_NETWORK_DISABLED`), so `lares meme put|delete --bag lares`, the residency and routed doors, and a seat-asked `offer promote` run from an AI shell refuse as the MCP seat does.
+- **`vault unlock` never opens around a pūlama.** With the daemon down in a house a pūlama keeps, the unlock refuses `offline-beside-pulama`.
+- **`meme put` naming `@sdm`** as bag or recipe refuses by name and lands nothing.
+- **The pūlama's admit and kūkulu frame names the image as `{digest, seed}`;** a caller sending a bare image digest sends the new frame.
 
 **Added**
-- **`lares wear N`** moves the daemon mount inside the lent set and asks no route (the frame `{op: "wear", face}`; an AI seat refuses `seat-wears-no-face`). Route prompts name the face that owns them, the keep lei strings once per house, and `lares pulama unadmit <digest>` takes an admission back.
+- **`lares wear N`** moves the daemon mount inside the lent set and asks no route (the frame `{op: "wear", face}`; an AI seat refuses `seat-wears-no-face`). Route prompts name the face that owns them, the keep acts as the keep's face (the face whose keep lei already stands, else h0) whoever wears, and `lares pulama unadmit <digest>` takes an admission back.
 - **`lares meme patch`** edits one slot through the put's own gate: `--slot '#/x'` with `--append <file>` or `--replace <file>`, under `--base <hash>`.
 - **`share --remove` takes back the grant it delegated,** or refuses naming what still reads through it.
 - **The cadence offer** (`@lararium/mesh` `cadence-offer`): a pure slice where the cadence threshold alone offers engines, never an endorsement. `engineWindow` folds signed offers and release denies against an inception and answers the engines or one refusal (`cadence-offer-malformed`, `-foreign-inception`, `-foreign-signer`, `-unsigned`, `-chain-broken`).
@@ -22,6 +25,8 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 - **The land rule stands as a house witness:** one sha, one verdict.
 
 **Fixed**
+- **A mount the opening chose slides, never drops.** Locking the face that `unlock --all` (or the lowest face) mounted slides the mount to another open face, never down to the floor while a face stands open; a wear whose rollback also fails drops the node key and answers `held: false`.
+- **The keep lei reads over every face the house holds,** so a lei on a shut face still counts.
 - **A confirmed cold-key card leaves the screen,** and a minted wiki stands held, so its census reads at once.
 - **`lares cas` reads the daemon's protect set,** the bulb names the founding record, and the seed witness's header trues to canon alone.
 - **The repository tidies:** the dead Python package and dev scripts burn, and the MCP and Playwright configs drop their pinned browser path.
