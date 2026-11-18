@@ -238,11 +238,9 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     assert.equal(fresh.answer(refused).error?.code, "carry-bundle-refused", refused.stdout);
     assert.match(fresh.answer(refused).error?.message ?? "", /bundle-hash-mismatch/);
     const imported = fresh.lares(["import", join(restore, "house"), "--apply", "--json"]);
-    const importAnswer = join(scratch, "import-0.json");
-    writeFileSync(importAnswer, imported.stdout);
     assert.equal(fresh.answer(imported).data?.applied, true, `import: ${imported.stdout}\n${imported.stderr}`);
     assert.equal(fresh.answer(imported).data?.bundleId, kept.bundleId, "the clone holds the very bundle the keep cut");
-    const r = spawnSync(process.execPath, [tool, "--old", snapshot, "--new", fresh.root, "--new-port", String(fresh.port), "--imports", importAnswer, "--json"], { cwd: repo, encoding: "utf8", env: process.env, maxBuffer: 256 * 1024 * 1024 });
+    const r = spawnSync(process.execPath, [tool, "--old", snapshot, "--new", fresh.root, "--new-port", String(fresh.port), "--json"], { cwd: repo, encoding: "utf8", env: process.env, maxBuffer: 256 * 1024 * 1024 });
     let receipt = null;
     try { receipt = JSON.parse(r.stdout); } catch { assert.fail(`the witness answered no receipt (exit ${r.status}):\n${r.stdout.slice(0, 2000)}\n${r.stderr.slice(-3000)}`); }
     assert.equal(receipt.verdict, "par", `${JSON.stringify(receipt.differences, null, 1)}\nimport: ${imported.stdout.slice(0, 4000)}`);

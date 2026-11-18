@@ -120,10 +120,10 @@ test("P1 RED: a census of nothing never reads par: a side that read no face, or 
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test("P1 RED: the census reads a face the image under proof answers `worn` (the exporting image) or `mounted` (the new one)", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-images-"));
+test("P1 RED: the census reads the face row the vessel answers `mounted`, and a row that names no mount reads no face classes", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-mount-"));
   try {
-    // A stand-in `lares` answering each read door the census walks, its face row in the given image's spelling.
+    // A stand-in `lares` answering each read door the census walks, its face row marked by the given word.
     const fake = join(dir, "lares.mjs");
     writeFileSync(fake, [
       "const [, , ...a] = process.argv; const s = a.join(' '); const out = (x) => console.log(JSON.stringify(x));",
@@ -135,12 +135,14 @@ test("P1 RED: the census reads a face the image under proof answers `worn` (the 
       "else { console.error('unread door: ' + s); process.exit(9); }",
     ].join("\n"));
     const root = join(dir, "root");
-    for (const word of ["worn", "mounted"]) {
-      process.env.FAKE_FACE_WORD = word;
-      const r = await census({ root, lares: `${process.execPath} ${fake}`, label: word });
-      assert.deepEqual(Object.keys(r.face), ["steward"], `${word}: ${JSON.stringify(r.faces)}`);
-      assert.deepEqual(Object.keys(r.face.steward.memes), ["default lar:///ha.ka.ba/kahua/memory/state/heron"], word);
-    }
+    process.env.FAKE_FACE_WORD = "mounted";
+    const r = await census({ root, lares: `${process.execPath} ${fake}`, label: "mounted" });
+    assert.deepEqual(Object.keys(r.face), ["steward"], JSON.stringify(r.faces));
+    assert.deepEqual(Object.keys(r.face.steward.memes), ["default lar:///ha.ka.ba/kahua/memory/state/heron"]);
+    process.env.FAKE_FACE_WORD = "lent";
+    const none = await census({ root, lares: `${process.execPath} ${fake}`, label: "no mount" });
+    assert.deepEqual(Object.keys(none.face), [], `a row that names no mount reads no face classes: ${JSON.stringify(none.faces)}`);
+    assert.equal(none.faces[0].mounted, false);
   } finally { delete process.env.FAKE_FACE_WORD; rmSync(dir, { recursive: true, force: true }); }
 });
 
@@ -152,45 +154,17 @@ test("P1 a new-base reading takes the new house's own founding rows out of extra
   assert.deepEqual(r.differences.map((d) => `${d.kind} ${d.key}`), ["extra default lar:///ha.ka.ba/x/stray"]);
 });
 
-test("P1 a changed row whose new value equals the new-base reading reads as moved canon, named in the receipt and never red; a row the bundle carried stays red", () => {
-  const canon = "lares lar:///ha.ka.ba/lares/docs/heron-law", copy = "lares lar:///ha.ka.ba/lares/docs/pond-law", edit = "lares lar:///ha.ka.ba/lares/docs/kite-law";
+test("P1 RED: a changed row whose new value equals the new-base reading stays red: at one revision a copy that lands as plain canon is a loss", () => {
+  const copy = "lares lar:///ha.ka.ba/lares/docs/pond-law";
   const memes = (m) => ({ ...reading().face.steward.memes, ...m });
-  const old = reading({ steward: { memes: memes({ [canon]: "sha256:c1", [copy]: "sha256:w1", [edit]: "sha256:e1" }) } });
-  const base = reading({ steward: { memes: { [canon]: "sha256:c2", [copy]: "sha256:c2p", [edit]: "sha256:e2" }, index: {}, plain: {} }, house: { shares: {} } });
-  // canon moved under the image (new == new-base); the carried working copy landed as canon (a loss); the edit differs from both.
-  const fresh = reading({ steward: { memes: memes({ [canon]: "sha256:c2", [copy]: "sha256:c2p", [edit]: "sha256:e3" }) } });
-  const r = compareCensus([old], [fresh], [base], { carried: ["lar:///ha.ka.ba/lares/docs/pond-law"] });
+  const old = reading({ steward: { memes: memes({ [copy]: "sha256:w1" }) } });
+  const base = reading({ steward: { memes: { [copy]: "sha256:c1" }, index: {}, plain: {} }, house: { shares: {} } });
+  const fresh = reading({ steward: { memes: memes({ [copy]: "sha256:c1" }) } });
+  const r = compareCensus([old], [fresh], [base]);
   assert.equal(r.verdict, "red");
-  assert.deepEqual(r.differences.map((d) => `${d.kind} ${d.key}`).sort(), [`changed ${edit}`, `changed ${copy}`]);
-  assert.deepEqual(r.moved.map((d) => `${d.scope} ${d.class} ${d.key} ${d.old} -> ${d.new}`), [`face:steward memes ${canon} sha256:c1 -> sha256:c2`]);
-  // Moved canon alone reads par, and the receipt's text names the moved count.
-  const only = compareCensus([old], [reading({ steward: { memes: memes({ [canon]: "sha256:c2", [copy]: "sha256:w1", [edit]: "sha256:e1" }) } })], [base]);
-  assert.equal(only.verdict, "par", JSON.stringify(only.differences));
-  assert.equal(only.moved.length, 1);
-  assert.ok(receiptLines(only).some((l) => /moved canon \(may differ\): face:steward · memes: changed lares lar:\/\/\/ha\.ka\.ba\/lares\/docs\/heron-law/.test(l)), receiptLines(only).join("\n"));
-  // Without a base nothing moves: the same row reads changed.
-  assert.equal(compareCensus([old], [fresh]).moved.length, 0);
-  // Moved canon never excuses a missing row.
-  const gone = reading({ steward: { memes: memes({ [copy]: "sha256:w1", [edit]: "sha256:e1" }) } });
-  assert.ok(compareCensus([old], [gone], [base]).differences.some((d) => d.kind === "missing" && d.key === canon));
-});
-
-test("P1 --manifest reads the carried uris from the bundle's manifest rows: a carried row equal to the new-base reading stays red", () => {
-  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-manifest-"));
-  try {
-    const key = "lares lar:///ha.ka.ba/lares/docs/pond-law";
-    const memes = (v) => ({ steward: { memes: { ...reading().face.steward.memes, [key]: v } } });
-    const a = join(dir, "old.json"), b = join(dir, "new.json"), base = join(dir, "base.json"), manifest = join(dir, "manifest.json");
-    writeFileSync(a, JSON.stringify(reading(memes("sha256:w1"))));
-    writeFileSync(b, JSON.stringify(reading(memes("sha256:c2"))));
-    writeFileSync(base, JSON.stringify(reading({ steward: { memes: { [key]: "sha256:c2" }, index: {}, plain: {} }, house: { shares: {} } })));
-    writeFileSync(manifest, JSON.stringify({ schema: "lar-carry/1", rows: [{ layer: "wiki-working", bag: "lar:///ha.ka.ba/wikis/lares/working", title: "lar:///ha.ka.ba/lares/docs/pond-law" }] }));
-    const moved = spawnSync(process.execPath, [tool, "compare", "--old", a, "--new", b, "--base", base], { encoding: "utf8" });
-    assert.equal(moved.status, 0, moved.stdout + moved.stderr);
-    const carried = spawnSync(process.execPath, [tool, "compare", "--old", a, "--new", b, "--base", base, "--manifest", manifest], { encoding: "utf8" });
-    assert.equal(carried.status, 1, carried.stdout + carried.stderr);
-    assert.match(carried.stdout, /changed lares lar:\/\/\/ha\.ka\.ba\/lares\/docs\/pond-law/);
-  } finally { rmSync(dir, { recursive: true, force: true }); }
+  assert.deepEqual(r.differences.map((d) => `${d.kind} ${d.key} ${d.old} -> ${d.new}`), [`changed ${copy} sha256:w1 -> sha256:c1`]);
+  const known = ["schema", "verdict", "from", "to", "base", "counts", "differences", "allowed", "mayDiffer"];
+  assert.deepEqual(Object.keys(r).filter((k) => !known.includes(k)), [], "the receipt carries no excused class");
 });
 
 test("P1 the compare verb reads census files: par exits 0, red exits 1 and prints one line per difference", () => {
@@ -209,40 +183,6 @@ test("P1 the compare verb reads census files: par exits 0, red exits 1 and print
     assert.equal(JSON.parse(readFileSync(out, "utf8")).verdict, "red");
     const refused = spawnSync(process.execPath, [tool, "compare", "--old", dir, "--new", b], { encoding: "utf8" });
     assert.equal(refused.status, 2, "compare refuses a path that names no census file");
-  } finally { rmSync(dir, { recursive: true, force: true }); }
-});
-
-test("P1 a row the import stood off reads under its own named set, never red; an unnamed difference stays red", () => {
-  const pond = "lar:///ha.ka.ba/kahua/memory/reference/pond", heron = "lar:///ha.ka.ba/kahua/memory/state/heron";
-  const fresh = reading({ steward: { memes: { [`default ${heron}`]: "sha256:a2" } } });
-  // Named: heron (changed) stands off; pond (missing) was never named and stays red.
-  const r = compareCensus([reading()], [fresh], [], { standOffs: [heron] });
-  assert.equal(r.verdict, "red");
-  assert.deepEqual(r.differences.map((d) => `${d.kind} ${d.key}`), [`missing default ${pond}`]);
-  assert.deepEqual(r.standOffs.map((d) => `${d.kind} ${d.key}`), [`changed default ${heron}`]);
-  // Both named: par, with each stand-off kept in the receipt by name.
-  const both = compareCensus([reading()], [fresh], [], { standOffs: [heron, pond] });
-  assert.equal(both.verdict, "par", JSON.stringify(both.differences));
-  assert.equal(both.standOffs.length, 2);
-  // A stand-off never excuses an extra row: the import wrote nothing over a row it stood off.
-  const extra = reading({ steward: { memes: { ...reading().face.steward.memes, "default lar:///ha.ka.ba/x/new": "sha256:ee" } } });
-  assert.equal(compareCensus([reading()], [extra], [], { standOffs: ["lar:///ha.ka.ba/x/new"] }).verdict, "red");
-});
-
-test("P1 --imports reads the stood-off uris from each import's --json answer, whatever the import's exit said", () => {
-  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-imports-"));
-  try {
-    const heron = "lar:///ha.ka.ba/kahua/memory/state/heron";
-    const a = join(dir, "old.json"), b = join(dir, "new.json"), imp = join(dir, "import-0.json");
-    writeFileSync(a, JSON.stringify(reading()));
-    writeFileSync(b, JSON.stringify(reading({ steward: { memes: { ...reading().face.steward.memes, [`default ${heron}`]: "sha256:a2" } } })));
-    // The import's own answer on a stand-off: ok false, exit 1, the row named in its class's stoodOff list.
-    writeFileSync(imp, `${JSON.stringify({ ok: false, data: { tallies: { working: { landed: 3, stoodOff: [`${heron} (no-base)`], refused: [] } } }, error: { code: "conflict" } })}\n`);
-    const red = spawnSync(process.execPath, [tool, "compare", "--old", a, "--new", b], { encoding: "utf8" });
-    assert.equal(red.status, 1, "unnamed, the fork reads red");
-    const par = spawnSync(process.execPath, [tool, "compare", "--old", a, "--new", b, "--imports", imp, "--json"], { encoding: "utf8" });
-    assert.equal(par.status, 0, par.stdout + par.stderr);
-    assert.deepEqual(JSON.parse(par.stdout).standOffs.map((d) => d.key), [`default ${heron}`]);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
@@ -306,8 +246,8 @@ const PAGE = "lar:///ha.ka.ba/notes/shared-page";
 const FREE = "plain note";
 
 /** Run the instrument over the exporting house's snapshot and the standing new house; answers its exit and its receipt. */
-const witness = (snapshot, fresh, importAnswer) => {
-  const r = spawnSync(process.execPath, [tool, "--old", snapshot, "--new", fresh.root, "--new-port", String(fresh.port), "--imports", importAnswer, "--json"], {
+const witness = (snapshot, fresh) => {
+  const r = spawnSync(process.execPath, [tool, "--old", snapshot, "--new", fresh.root, "--new-port", String(fresh.port), "--json"], {
     cwd: repo, encoding: "utf8", env: process.env, maxBuffer: 256 * 1024 * 1024,
   });
   let answer = null;
@@ -378,17 +318,13 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     houses.push(fresh);
     fresh.must(["persona", "new", "1", "--name", "engineer"]);
     await fresh.unlock();
-    // The import's exit is no verdict here (it exits 1 on an expected stand-off); its --json answer rides to the witness,
-    // which reads each stood-off row as a named may-differ.
     const imported = fresh.lares(["import", bundle, "--apply", "--json"]);
-    const importAnswer = join(scratch, "import-0.json");
-    writeFileSync(importAnswer, imported.stdout);
     assert.equal(JSON.parse(imported.stdout.trim().split("\n").pop()).data?.applied, true, `import: ${imported.stdout}\n${imported.stderr}`);
     fresh.must(["wiki", "hold", "notes"]);
     fresh.must(["wiki", "hold", "quiet"]);
 
     // ── PAR over the real read doors ────────────────────────────────────────────────────────────────────────────
-    const par = witness(snapshot, fresh, importAnswer);
+    const par = witness(snapshot, fresh);
     const parAnswer = par.answer;
     assert.equal(parAnswer.verdict, "par", `${JSON.stringify(parAnswer.differences, null, 1)}\nimport: ${imported.stdout.slice(0, 4000)}`);
     assert.ok(parAnswer.counts.plain >= 2, `the reading saw both plain records: ${JSON.stringify(parAnswer.counts)}`);
@@ -410,7 +346,7 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     assert.ok(rows.some((r) => r.slug === "notes"), "the import wrote the notes share row");
     writeFileSync(shareFile, mesh.serializeShareFile(rows.filter((r) => r.slug !== "notes")));
 
-    const red = witness(snapshot, fresh, importAnswer);
+    const red = witness(snapshot, fresh);
     const redAnswer = red.answer;
     assert.equal(redAnswer.verdict, "red", red.stdout);
     assert.notEqual(red.status, 0);

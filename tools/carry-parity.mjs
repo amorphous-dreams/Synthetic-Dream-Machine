@@ -1,15 +1,14 @@
 #!/usr/bin/env node
-// carry-parity — the QA proof of a carry: read two houses (`--old`, the house an export read, and `--new`, the brand-new house an
-// import filled) and answer `par`, or name every difference, per class, as missing (the exporting house holds it, the new one
-// does not), changed (both hold it, the bytes differ) or extra (the new house holds it, and neither the exporting house nor the
-// new house's own founding does).
+// carry-parity — the QA proof of a restore at one revision: read two houses (`--old`, the house an export or a keep read, and
+// `--new`, the brand-new house an import filled) and answer `par`, or name every difference, per class, as missing (the
+// exporting house holds it, the new one does not), changed (both hold it, the bytes differ) or extra (the new house holds it,
+// and neither the exporting house nor the new house's own founding does).
 //
 // WHERE IT READS FROM: THE HOUSE'S OWN READ DOORS. Every meme, index row, plain record and kahua head comes back through the
 // `lares` CLI (`persona list`, `kahua list`, `wiki list`, `meme list`, `wiki filter`, and `tiddler get` for a record too large
 // for one filter page), the doors a person reads
-// with. So it reads the store through the same gate on an old image and a new one, and never parses a store format that a
-// later image may move (a raw store read would compare one image's layout against another's, and the house never promised
-// that layout). Two classes stand behind no read door, and those it reads from the house's own files, through the house's
+// with. So it reads the store through the gate every face reads through, and never parses a store format (the house
+// promises its doors, never its layout). Two classes stand behind no read door, and those it reads from the house's own files, through the house's
 // own parser: the share rows (`config/share.tid`, the person's hand door, which wins at boot; parsed by `@lararium/mesh`),
 // and the kāpae shadows (`<projections>/**/*.kapae`, the marker the mirror writes where a raised kāpae stands; no verb lists
 // them).
@@ -32,25 +31,18 @@
 //
 // USAGE
 //   node tools/carry-parity.mjs --old <root|census.json> --new <root|census.json> [--old-port N] [--new-port N]
-//                               [--base <census.json>] [--imports <import.json>]... [--stand-off <uri>]...
-//                               [--json] [--out <receipt.json>] [--lares <cmd>]
+//                               [--base <census.json>] [--json] [--out <receipt.json>] [--lares <cmd>]
 //       both houses standing (or a census taken earlier on either side): census each, then compare.
 //   node tools/carry-parity.mjs census --root <LAR_ROOT> [--port N] [--label L] [--out <census.json>] [--lares <cmd>]
 //       one reading of the standing house's worn face, for a rite where the two houses never stand at once.
-//   node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...]
-//                               [--imports <import.json>]... [--stand-off <uri>]... [--manifest <manifest.json>] [--json] [--out F]
+//   node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--json] [--out F]
 //       several readings per side merge by face pet-name (one census per worn face).
 // `--lares <cmd>` names the CLI to call (a host shim, e.g. `lares`); by default the built CLI under this checkout, with
 // LAR_ROOT (and LAR_PORT where named) set to the house read. `--base` is a census of the new house taken after its founding
-// and seed and before the import: its rows leave `extra`, so a red never hides behind the new house's own genesis, and a
-// `changed` row whose new value equals its reading reads `moved` (canon the image under proof moved; `moved` in the receipt,
-// named, never red). `--manifest <manifest.json>` names the bundle's manifest: a row it carried never reads as moved, so a
-// working copy that lands as plain canon stays red.
+// and seed and before the import: its rows leave `extra`, so a red never hides behind the new house's own genesis. Both houses
+// stand at one revision, so every `changed` and `missing` row reads red: a working copy that lands as plain canon is a loss.
 // THE RITE'S ORDER: the exporting house goes down before the new one stands (one image tag, one port), so take its census
 // with `census --out` while it stands and hand that file to `--old` afterwards.
-// `--imports <file>` names each `lares import --apply --json` answer: every row it stood off (a working row forked over canon
-// that moved) reads as a named may-differ (`standOffs` in the receipt) where it reads changed or missing, never as red; an
-// import's exit decides nothing here. `--stand-off <uri>` names one by hand.
 // Exit: 0 par · 1 red · 2 a usage error or a door that would not read.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -85,7 +77,6 @@ export const MAY_DIFFER = [
   { name: "Nexus AID", why: "the new house founds a new Nexus; the AID, the charter, the KELs and the seed card are re-minted" },
   { name: "floor pin", why: "signed control records never travel; the floor pin starts again at genesis" },
   { name: "house plumbing records", why: "bag descriptors, persona bindings, oracle blobs and genesis cids (`lar:///ha.ka.ba/bags/…`), keyhive bag-docs, the current-wiki config, the working layer's residency ledger (`…/wikis/daemon/working/ledger/…`, which an import's landing writes) and the verb trail (`lar:///lararium.local.vm/verbs/…`) each house mints for itself; the plain class reads around them (`PLAIN_FILTER`)" },
-  { name: "image and revision", why: "the new house stands on the image under proof, which is the point of the carry" },
 ];
 
 const sha256 = (s) => createHash("sha256").update(s).digest("hex");
@@ -123,7 +114,7 @@ function refuseEmpty(side, merged) {
 function compareMap(scope, cls, old, fresh, base, differences) {
   for (const [key, value] of Object.entries(old)) {
     if (!(key in fresh)) differences.push({ scope, class: cls, kind: "missing", key, old: value });
-    else if (fresh[key] !== value) differences.push({ scope, class: cls, kind: "changed", key, old: value, new: fresh[key], ...(base && key in base && base[key] === fresh[key] ? { baseEqual: true } : {}) });
+    else if (fresh[key] !== value) differences.push({ scope, class: cls, kind: "changed", key, old: value, new: fresh[key] });
   }
   for (const [key, value] of Object.entries(fresh)) {
     if (key in old) continue;
@@ -137,12 +128,11 @@ function compareMap(scope, cls, old, fresh, base, differences) {
  * Answers the receipt body: the verdict, every difference by scope, class, kind and key, the counts the `--old` side held,
  * and the may-differ list.
  */
-export function compareCensus(oldReadings, newReadings, baseReadings = [], { standOffs = [], carried = [] } = {}) {
+export function compareCensus(oldReadings, newReadings, baseReadings = []) {
   const old = mergeReadings(oldReadings), fresh = mergeReadings(newReadings);
   for (const [side, r] of [["old", old], ["new", fresh]]) refuseEmpty(side, r);
   const base = baseReadings.length > 0 ? mergeReadings(baseReadings) : null;
-  const found = [];
-  const differences = found;
+  const differences = [];
   for (const [pet, classes] of Object.entries(old.face)) {
     const scope = `face:${pet}`;
     const theirs = fresh.face[pet];
@@ -153,70 +143,31 @@ export function compareCensus(oldReadings, newReadings, baseReadings = [], { sta
     if (!(pet in old.face) && !(base && pet in base.face)) differences.push({ scope: `face:${pet}`, class: "face", kind: "extra", key: pet });
   }
   for (const c of HOUSE_CLASSES) compareMap("house", c, old.house[c], fresh.house[c], base?.house[c] ?? null, differences);
-  // AN IMPORT'S STAND-OFF IS A NAMED MAY-DIFFER: the gate kept the new house's row and wrote nothing over it, so that one
-  // uri may read changed or missing. It never excuses an extra row, and a uri the imports never named stays red.
-  const named = new Set(standOffs);
-  const keyUri = (key) => key.slice(key.indexOf(" ") + 1);
-  const stoodOff = found.filter((d) => d.kind !== "extra" && (d.class === "memes" || d.class === "plain") && named.has(keyUri(d.key)));
-  // CANON THE IMAGE MOVED IS A NAMED MAY-DIFFER: a changed row whose new value equals the new house's own founding reading
-  // holds the canon the image under proof ships, so it reads `moved`, never red. A row the bundle carried (a working copy,
-  // a margin, a page) stays red when it lands equal to that canon: the carry dropped what the house wrote over it.
-  const carriedUris = new Set(carried);
-  const moved = found.filter((d) => d.baseEqual === true && !stoodOff.includes(d) && !carriedUris.has(keyUri(d.key)));
-  for (const d of found) delete d.baseEqual;
-  const red = found.filter((d) => !stoodOff.includes(d) && !moved.includes(d));
   const counts = { faces: Object.keys(old.face).length };
   for (const c of FACE_CLASSES) counts[c] = Object.values(old.face).reduce((n, f) => n + Object.keys(f[c] ?? {}).length, 0);
   for (const c of HOUSE_CLASSES) counts[c] = Object.keys(old.house[c]).length;
   return {
     schema: RECEIPT_SCHEMA,
-    verdict: red.length === 0 ? "par" : "red",
+    verdict: differences.length === 0 ? "par" : "red",
     from: { labels: old.labels }, to: { labels: fresh.labels }, ...(base ? { base: { labels: base.labels } } : {}),
-    counts, differences: red, standOffs: stoodOff, moved,
+    counts, differences,
     allowed: { old: old.allowed, new: fresh.allowed },
     mayDiffer: MAY_DIFFER,
   };
-}
-
-const standOffLines = (receipt) => [
-  ...(receipt.standOffs ?? []).map((d) => `  stood off by the import (may differ): ${d.scope} · ${d.class}: ${d.kind} ${d.key}`),
-  ...(receipt.moved ?? []).map((d) => `  moved canon (may differ): ${d.scope} · ${d.class}: ${d.kind} ${d.key} (old ${d.old} · new ${d.new}, the new-base reading)`),
-];
-
-/** The uris a carry bundle carried, read from its `manifest.json` (each row's title): those rows never read as moved canon. */
-export function carriedUris(manifestText) {
-  const rows = JSON.parse(String(manifestText)).rows ?? [];
-  return [...new Set(rows.map((r) => r?.title).filter((t) => typeof t === "string" && t.length > 0))];
-}
-
-/**
- * The uris an import stood off, read from its `--json` answer (`data.tallies.<class>.stoodOff`, each `<uri> (<why>)`). The
- * answer counts, never the exit: an import exits 1 on an expected stand-off and still prints the whole answer.
- */
-export function stoodOffUris(importText) {
-  const out = [];
-  for (const line of String(importText).trim().split("\n")) {
-    let answer;
-    try { answer = JSON.parse(line); } catch { continue; }
-    for (const tally of Object.values(answer?.data?.tallies ?? {})) {
-      for (const row of Array.isArray(tally?.stoodOff) ? tally.stoodOff : []) out.push(String(row).replace(/ \([^()]*\)$/, ""));
-    }
-  }
-  return out;
 }
 
 /** The receipt as a person reads it: one verdict line, then one line per difference. */
 export function receiptLines(receipt) {
   const c = receipt.counts;
   if (receipt.verdict === "par") {
-    return [`carry-parity: par — ${c.faces} face(s): ${c.memes} memes, ${c.index} index rows, ${c.plain} plain records, ${c.kahua} kahua heads, ${c.kapae} kāpae, ${c.shares} share rows, ${c.wikis} wikis read equal`, ...standOffLines(receipt)];
+    return [`carry-parity: par — ${c.faces} face(s): ${c.memes} memes, ${c.index} index rows, ${c.plain} plain records, ${c.kahua} kahua heads, ${c.kapae} kāpae, ${c.shares} share rows, ${c.wikis} wikis read equal`];
   }
   const lines = [`carry-parity: red — ${receipt.differences.length} difference(s)`];
   for (const d of receipt.differences) {
     const values = d.kind === "changed" ? ` (old ${d.old} · new ${d.new})` : "";
     lines.push(`  ${d.scope} · ${d.class}: ${d.kind} ${d.key}${values}`);
   }
-  return [...lines, ...standOffLines(receipt)];
+  return lines;
 }
 
 // ── the census: one reading of a standing house, through its read doors ──────────────────────────────────────
@@ -305,10 +256,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
     const r = lares(["kahua", "list", "--face", String(p.handleIndex)]);
     let answer = null;
     try { answer = JSON.parse(r.stdout.trim().split("\n").pop() ?? ""); } catch { /* the face stands shut */ }
-    // CROSSING SCAFFOLDING, READING BOTH IMAGES: the exporting image (983c705) answers the face row `worn`, the image under
-    // proof answers `mounted`, and a carry census reads one house of each. It burns once the swap lands and no house
-    // standing answers `worn`.
-    const face = { petname: p.petname, handleIndex: p.handleIndex, mounted: answer?.mounted === true || answer?.worn === true, relation: answer?.relation ?? null, ...(answer ? {} : { unread: (r.stderr || r.stdout).trim().slice(0, 300) }) };
+    const face = { petname: p.petname, handleIndex: p.handleIndex, mounted: answer?.mounted === true, relation: answer?.relation ?? null, ...(answer ? {} : { unread: (r.stderr || r.stdout).trim().slice(0, 300) }) };
     faces.push(face);
     if (face.relation && face.petname) relations[face.petname] = face.relation;
     if (face.mounted) mounted = { face, items: Array.isArray(answer.items) ? answer.items : [] };
@@ -372,8 +320,8 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
 // ── the command ───────────────────────────────────────────────────────────────────────────────────────────────
 
 function parse(argv) {
-  const opts = { _: [], old: [], new: [], base: [], imports: [], "stand-off": [] };
-  const many = new Set(["old", "new", "base", "imports", "stand-off"]);
+  const opts = { _: [], old: [], new: [], base: [] };
+  const many = new Set(["old", "new", "base"]);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (!a.startsWith("--")) { opts._.push(a); continue; }
@@ -387,9 +335,9 @@ function parse(argv) {
 }
 
 const USAGE = [
-  "usage: node tools/carry-parity.mjs --old <root|census.json> --new <root|census.json> [--old-port N] [--new-port N] [--base <census.json>] [--imports <import.json>]... [--stand-off <uri>]... [--json] [--out <receipt.json>] [--lares <cmd>]",
+  "usage: node tools/carry-parity.mjs --old <root|census.json> --new <root|census.json> [--old-port N] [--new-port N] [--base <census.json>] [--json] [--out <receipt.json>] [--lares <cmd>]",
   "       node tools/carry-parity.mjs census --root <LAR_ROOT> [--port N] [--label L] [--out <census.json>] [--lares <cmd>]",
-  "       node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--imports <import.json>]... [--stand-off <uri>]... [--manifest <manifest.json>] [--json] [--out <receipt.json>]",
+  "       node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--json] [--out <receipt.json>]",
 ];
 
 const isCensusFile = (p) => existsSync(p) && statSync(p).isFile();
@@ -421,9 +369,7 @@ export async function main(argv) {
     const old = await side(opts.old, opts["old-port"], opts.lares, "old");
     const fresh = await side(opts.new, opts["new-port"], opts.lares, "new");
     const base = opts.base.map(loadCensus);
-    const standOffs = [...opts["stand-off"], ...opts.imports.flatMap((f) => stoodOffUris(readFileSync(f, "utf8")))];
-    const carried = opts.manifest ? carriedUris(readFileSync(opts.manifest, "utf8")) : [];
-    const receipt = compareCensus(old, fresh, base, { standOffs, carried });
+    const receipt = compareCensus(old, fresh, base);
     if (opts.out) writeFileSync(opts.out, `${JSON.stringify(receipt, null, 2)}\n`);
     if (opts.json) process.stdout.write(`${JSON.stringify(receipt)}\n`);
     else for (const line of receiptLines(receipt)) console.log(line);
