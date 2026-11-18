@@ -56,7 +56,10 @@
 # refuses. With no vessel standing, `down` runs as it always has.
 #
 # LARES_HOUSE and LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (KEY=VALUE
-# lines, as compose reads them). Neither standing refuses by name, and so does a LARES_HOUSE that reads relative.
+# lines, as compose reads them). LARES_WORKSPACE names the HOUSE CANON CLONE (`node tools/house-canon.mjs stand`): a clone
+# pinned by its own `lares.canonPin` config, so a branch switch in a working checkout never moves the house's canon. A
+# LARES_WORKSPACE that names a repository with no pin reads as a working checkout, and every stand warns by name, unless
+# LARES_DEV_INSTALL=1 names the one dev install, whose canon write-back lands in source control by design. Neither standing refuses by name, and so does a LARES_HOUSE that reads relative.
 # LARES_HOUSE names the ONE host house root: its hearth, sensoriums, projections, library and config bind under /lar,
 # and this shim makes those five directories as the operator before any container stands. THE ENV FILE RESTS OUTSIDE EVERY
 # BIND, at `~/.lares/lares-surface.env`, the same file the MCP seat's resolver reads to know the hearth stands in this
@@ -228,7 +231,17 @@ if GIT_REV=$(git -C "$SHIM_DIR" rev-parse HEAD 2>/dev/null) && [ -n "$GIT_REV" ]
 else
   GIT_REV=""
 fi
+# A working checkout named as LARES_WORKSPACE moves the house's canon with every branch switch there (founding-runbook
+# #/prepare). A corpus with no repository, a pinned canon clone and the named dev install read nothing.
+warn_workspace_canon() {
+  [ "$(value_of LARES_DEV_INSTALL)" != 1 ] || return 0
+  ws=$(value_of LARES_WORKSPACE)
+  git -C "$ws" rev-parse --git-dir >/dev/null 2>&1 || return 0
+  [ -z "$(git -C "$ws" config --get lares.canonPin 2>/dev/null)" ] || return 0
+  printf 'lares-container: LARES_WORKSPACE (%s) names a working checkout, so a branch switch there moves this house'"'"'s canon; stand a canon clone (`node tools/house-canon.mjs stand`) and name it, or set LARES_DEV_INSTALL=1 for the one dev install\n' "$ws" >&2
+}
 warn_image_revision() {
+  warn_workspace_canon
   if [ -z "$GIT_REV" ]; then
     printf '%s\n' 'lares-container: no git checkout answers here, so the image revision check is skipped' >&2
     return 0

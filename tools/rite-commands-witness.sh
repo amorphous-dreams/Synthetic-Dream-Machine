@@ -34,6 +34,7 @@ from code_scan import mask_non_code
 RITES = [
     pathlib.Path("bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem"),
     pathlib.Path("bags/lararium/ha.ka.ba/lararium/api/sensorium-runbook.mem"),
+    pathlib.Path("bags/lares/ha.ka.ba/wsl2/new-hearth.mem"),
 ]
 BIN  = "packages/lares-cli/dist/src/bin/lares.js"
 for _r in RITES:

@@ -28,7 +28,7 @@ written           = "2026-11-01"
 
 ''Why it waits, in one line.'' The mechanical port takes half a day; the security model underneath it moves, and four house laws written against 0.3's behaviour stop holding on 0.6 until the operator rules how the house restores or retires each.
 
-''Measured marks.'' A line marked MEASURED cites its date and its source: the fold-trial hand-back, the trial outputs in the controller's scratch (`fold-trial/out/`, runs B and B2), the dep survey (`dep-survey/report.md`), or the trial branch `fold-trial-2026-11-01-b` (commits `4706b71cb` and `432e2f6f1`, never pushed). A line marked INFERRED rests on a changelog or a diff read, never a run.
+''Measured marks.'' A line marked MEASURED cites its date and its source: the fold-trial hand-back, the trial outputs in the controller's scratch (`fold-trial/out/`, runs B and B2), the dep survey (`dep-survey/report.md`), or the tag `archive/fold-trial-2026-11-01-b` (`432e2f6f1`, holding commits `4706b71cb` and `432e2f6f1`). A line marked INFERRED rests on a changelog or a diff read, never a run.
 
 <<~/ahu>>
 
@@ -63,7 +63,7 @@ The cost side of the same delta: `Access` renames to `Power`, `Agent` to `Princi
 
 !! The measured port
 
-Trial B ported the provider only far enough to compile and run the empty-CGKA probe (`tests/fold-trial-06.probe.test.ts` on the trial branch). MEASURED 2026-11-01 throughout this slot, fold-trial hand-back and `fold-trial/out/`.
+Trial B ported the provider only far enough to compile and run the empty-CGKA probe (`tests/fold-trial-06.probe.test.ts` at the trial's tag). MEASURED 2026-11-01 throughout this slot, fold-trial hand-back and `fold-trial/out/`.
 
 ''Compile.'' 45 errors, every one inside `packages/lararium-keyhive`; `lararium-web` compiled clean.
 
@@ -192,6 +192,6 @@ The port reopens on any of three keys:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8zjI37bsqjbLJiVi3c_2UqyL6N-kcAOct3a-dSqjZLg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eHgfEHoUlJxjmcg5qEk49BIAK_HgCT9m6ZY6Ps5d6t0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

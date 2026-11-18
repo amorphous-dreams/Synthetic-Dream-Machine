@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 /**
- * span-push — the controller's gated push of a branch it carried lanes onto by pick (tools/lane-pick.mjs), most often the
- * span (mixed-model-swarm#/the-lanes: the span pushes only while no run flies on it).
+ * span-push — the controller's gated DIRECT push of a branch it carried commits onto by pick (tools/lane-pick.mjs), most often
+ * the span (mixed-model-swarm#/the-lanes). Code lands on `develop` through the native merge queue (a pull request that
+ * enters it); this push carries canon, and code only as the controller's emergency path past the queue (the ruleset's
+ * bypass).
  *
  *   node tools/span-push.mjs <branch> [--remote <name>]      run from the checkout that stands on <branch>
  *
  * In order: the PINS run, every one of them, since canon a tool quotes (the rite runbook, any sealed carrier, the evergreen
- * ceilings) moves with a pick and no CI run reads the push of a canon-only change; a red pin refuses by name. Then ONE read
- * of `gh run list --branch <branch>` per active status (land-train's `activeRuns`: every status in flight, never only the
+ * ceilings) moves with a pick and no CI run reads the push of a canon-only change; a red pin refuses by name. A push whose
+ * every path (over the remote's head as this checkout last fetched it) the CI ignore list skips (tools/ci-ignored-paths.json)
+ * raises no run, so it cancels none, and pushes with no CI read. Any other push (one path outside the list, or a remote head
+ * the checkout cannot read) raises a run whose concurrency group cancels the one in flight: ONE read of
+ * `gh run list --branch <branch>` per active status (land-train's `activeRuns`: every status in flight, never only the
  * newest five runs), and a run in flight refuses: push after it completes. The read happens once; this tool never waits,
  * polls or watches, so the pace stays the caller's (POLL_FLOOR_S in tools/ci-verdict.mjs governs any read again).
  *
@@ -18,6 +23,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { userInfo } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { onlyIgnoredPaths } from "./ci-ignored-paths.mjs";
 import { classifyFailure } from "./ci-verdict.mjs";
 import { activeRuns, ghEnv, repoOfRemote, spanPushRefusal } from "./land-train.mjs";
 
@@ -30,7 +36,8 @@ export const PINS = [
   { name: "evergreen", cmd: "bash", args: ["tools/evergreen-boundary-witness.sh"] },
 ];
 
-/** ops: pin(step) -> exit code · gh(args) -> parsed JSON · push(remote, branch) -> {status, stderr} · head() -> sha · say(line). */
+/** ops: pin(step) -> exit code · changed(remote, branch) -> the paths the push carries, or null · gh(args) -> parsed JSON
+ *  · push(remote, branch) -> {status, stderr} · head() -> sha · say(line). */
 export async function spanPush({ branch, remote = "origin" }, ops) {
   const red = [];
   for (const step of PINS) {
@@ -41,6 +48,9 @@ export async function spanPush({ branch, remote = "origin" }, ops) {
   }
   if (red.length) { ops.say(`SPAN PUSH REFUSES: ${red.join(", ")}`); return { code: 1 }; }
 
+  const paths = ops.changed(remote, branch);
+  if (paths && onlyIgnoredPaths(paths)) return pushNow(ops, remote, branch, `span-push: ${paths.length} ignored paths alone (tools/ci-ignored-paths.json): the push raises no run and cancels none, so no CI read`);
+
   let runs;
   try { runs = activeRuns(ops.gh, branch); }
   catch (err) {
@@ -50,7 +60,11 @@ export async function spanPush({ branch, remote = "origin" }, ops) {
   }
   const refusal = spanPushRefusal(runs);
   if (refusal) { ops.say(refusal.replace("on the span", `on ${branch}`)); return { code: 3 }; }
+  return pushNow(ops, remote, branch);
+}
 
+function pushNow(ops, remote, branch, why) {
+  if (why) ops.say(why);
   const p = ops.push(remote, branch);
   if (p.status !== 0) { ops.say(`span-push: the push of ${branch} failed: ${String(p.stderr).trim()}`); return { code: 6 }; }
   ops.say(`pushed ${ops.head().slice(0, 12)} to ${remote}/${branch}`);
@@ -66,6 +80,10 @@ function realOps(cwd, env = process.env) {
   };
   return {
     pin: (step) => spawnSync(step.cmd, step.args, { cwd, stdio: "inherit" }).status ?? 1,
+    changed: (remote, branch) => {
+      const r = spawnSync("git", ["diff", "--name-only", "-z", `refs/remotes/${remote}/${branch}`, "HEAD"], { cwd, encoding: "utf8" });
+      return r.status === 0 ? r.stdout.split("\0").filter(Boolean) : null;
+    },
     gh,
     push: (remote, branch) => spawnSync("git", ["push", "-q", remote, `HEAD:refs/heads/${branch}`], { cwd, encoding: "utf8" }),
     head: () => git(["rev-parse", "HEAD"]),

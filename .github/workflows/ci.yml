@@ -23,7 +23,8 @@ name: CI
 #
 # ONE RUN PER SHA. A push to a branch and a pull request from the same repository name one sha, so the push owns it and
 # every job stands guarded off on the same-repository `pull_request` event; a fork's pull request has no push here and runs
-# whole. `merge_group` (a native merge queue) has its hook as a comment in the `on:` block below.
+# whole. The native merge queue on `develop` raises `merge_group` on each group's merge commit, and every job runs there
+# (the fork guard reads `pull_request` alone): the queue's run reads a lane on top of every lane queued ahead of it.
 # Defense-in-depth, not a single flag: build-freshness (CI, authoritative) is
 # backed by the always-on plugin-artifact-parity unit test in `test` (local-first,
 # runs in every `pnpm test`). Dropping one gate does not open the hole.
@@ -38,7 +39,10 @@ on:
     # pushes it and watches that ONE run). Without this exclusion the same push would also raise the
     # whole full-CI matrix here — two answers to one push, and the shard lane's point (a cheap,
     # throwaway proof run) would cost a full CI run every time.
-    branches-ignore: ["ci/**"]
+    #
+    # The merge queue pushes each group to `gh-readonly-queue/<base>/...` and raises `merge_group` on that same sha; skipping
+    # those refs here leaves the group ONE run, the merge_group one the queue waits on.
+    branches-ignore: ["ci/**", "gh-readonly-queue/**"]
     # Meme, docs and wiki paths raise no run on a push (tools/ci-ignored-paths.json; a test pins these globs equal
     # to it). A push that changes only these leaves the in-flight run alone. pull_request stays un-ignored.
     paths-ignore:
@@ -48,12 +52,15 @@ on:
       - "CHANGELOG.md"
   pull_request:
     branches: [develop, main]
-  # MERGE QUEUE HOOK (not wired yet). A native merge queue raises `merge_group` on the group's merge ref. When it lands, add here
-  #   merge_group:
-  #     types: [checks_requested]
-  #     branches: [develop]
-  # and add `gh-readonly-queue/**` to the push `branches-ignore` above, so a group raises ONE run, not two. No job guards
-  # `merge_group` off (the fork guard below reads only `pull_request`), so the queue's run would raise the same ten jobs.
+  # THE MERGE QUEUE. A lane lands as a pull request into `develop` that enters the queue (the repository ruleset on `develop`
+  # names the queue and its required checks); the queue builds each group on top of the groups ahead of it and raises
+  # `merge_group` on the group's merge commit. That run raises the same ten jobs a push does, and on green the queue moves
+  # `develop` to that exact sha. `merge_group` reads no `paths-ignore` (GitHub filters it by branch alone), so a group
+  # of meme-only lanes still raises a full run: canon goes direct (tools/span-push.mjs), never through the queue.
+  # held-out.yml answers the push of the group's merge onto `develop`, not the queue.
+  merge_group:
+    types: [checks_requested]
+    branches: [develop]
   # A controller runs CI by hand on a lane head whose own push the ignore list skipped: a meme-only head never
   # raises a run of its own, and the land guard reads a head's verdict, not its ancestor's alone.
   workflow_dispatch:
