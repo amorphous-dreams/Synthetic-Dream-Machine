@@ -15,6 +15,8 @@
  *        fresh house seats the bundle's pair, so its next keep seals to the same pair.
  *   KQ5  RED: a restore that refuses after the roster opened (an unlaid canon) seats no pair: the adoption lands at the end of
  *        a whole apply alone.
+ *   KQ6  RED: whoever writes the remote seals a roster of their own to the published public half and re-hashes the manifest:
+ *        the restore refuses by name (`keep-roster-unsigned`) before any door is touched. CONTROL: the house's own cut restores.
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -22,7 +24,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import type { Credential, ShareEntry } from "@lararium/mesh";
 import { houseExport, houseImport, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
-import { MANIFEST_FILE } from "../src/bundle-manifest.js";
+import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sealRedeclare, sha256Hex, type BundleFile } from "../src/bundle-manifest.js";
 import { TEST_ROUTE_PASSPHRASE } from "../src/offline-custody.js";
 
 vi.setConfig({ testTimeout: 60_000 });
@@ -167,5 +169,29 @@ describe("the keep seals its roster to a pair whose secret rests under the human
       await expect(houseImport(out, { apply: true, doors: unlaid })).rejects.toThrow(/carry-canon-unseeded/);
       expect(existsSync(join(fresh, "config", "keep-seat.json")), "a refused apply seats no pair").toBe(false);
     } finally { rmSync(fresh, { recursive: true, force: true }); }
+  });
+
+  test("KQ6 RED: a roster forged to the published public half refuses by name before any door; CONTROL: the house's own cut restores", async () => {
+    await houseExport(out, { acceptOmissions: true, doors: doors(oldFaces(), SHARES) });
+    const control = await houseImport(out, { apply: false, doors: doors(newFaces(), [], RIGHT) });
+    expect(control.faceMap, "CONTROL: the house's own cut restores").toEqual({ "otter-face": 0, "kestrel-face": 1 });
+    // THE FORGER holds the remote: it reads the public half the bundle publishes, seals a roster of its own text to it, and
+    // re-hashes the manifest so the bundle proves whole.
+    const carried = JSON.parse(readFileSync(join(out, "keep-seat.json"), "utf8")) as { publicKey: string };
+    const forged = sealRedeclare(Uint8Array.from(Buffer.from(carried.publicKey, "hex")), {
+      schema: BUNDLE_SCHEMA,
+      faces: [{ face: "f0", handleIndex: 0, petname: "otter-face", handle: "Forgedhandle", seat: true, chair: "forged-chair" }, { face: "f1", handleIndex: 1, petname: "kestrel-face", handle: null, seat: false, chair: null }],
+      shares: [{ slug: "notes", kind: "wiki", read: "", write: "otter-face", owner: "intruder" }],
+    });
+    writeFileSync(join(out, REDECLARE_FILE), forged);
+    const manifest = JSON.parse(readFileSync(join(out, MANIFEST_FILE), "utf8")) as { bundleId: string; files: BundleFile[] };
+    manifest.files = manifest.files.map((f) => (f.path === REDECLARE_FILE ? { path: f.path, sha256: sha256Hex(forged), bytes: forged.length } : f));
+    manifest.bundleId = bundleIdOf(manifest.files);
+    writeFileSync(join(out, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`);
+    const calls: string[] = [];
+    const after = doors(newFaces(), [], RIGHT);
+    await expect(houseImport(out, { apply: true, doors: watched(after, calls) })).rejects.toThrow(/keep-roster-unsigned/);
+    expect(calls, "a forged roster touches no door").toEqual([]);
+    expect(after.written).toEqual([]);
   });
 });
