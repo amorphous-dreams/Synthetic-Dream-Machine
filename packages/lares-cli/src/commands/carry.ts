@@ -953,7 +953,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null, freshLayer = false, faceArg: { face?: number } = {}): Promise<void> => {
     if (files.length === 0) return;
     const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => carriedFileTitle(uriDir, file));
-    for (const s of scan.skipped) if (!s.endsWith(".meta")) skipped.push(s);
+    for (const s of scan.skipped) if (!s.file.endsWith(".meta")) skipped.push(s.file);
     for (const r of scan.refusedShadows ?? []) kapaeTally?.refused.push(`${r.file} (${r.refusal})`);
     const keyed = (r: ScanRow): string => `${keyPrefix}:${r.uri}:${r.diskHash}`;
     let candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; })

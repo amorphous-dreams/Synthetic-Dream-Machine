@@ -48,7 +48,7 @@ import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } 
 
 /** The projections root when one stands, as the optional `MirrorDirs` field. */
 const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
-import { openSyncedTree, scanFiles, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type ArmedDeletion, type StandingAsks } from "../ingest-core.js";
+import { openSyncedTree, scanFiles, skipLines, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type ArmedDeletion, type StandingAsks } from "../ingest-core.js";
 import { askShore } from "../shore-core.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 
@@ -202,6 +202,8 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     const unpaired = (): void => { if (ride.length > 0) for (const c of candidates) buffer.add(c.file); };
     for (const uri of moved) if (!rode.has(uri)) unsensed.add(uri);
     const nowGone = moved.filter((uri) => vanished.has(uri) && !rode.has(uri));
+    // NO SILENT SKIPS: a file this drain read no carrier from says so by name, whether or not anything rides the wave.
+    for (const line of skipLines(skipped)) console.error(`    ${line}`);
 
     if (candidates.length === 0 && ride.length === 0) {
       if (nowGone.length > 0) console.log(`  ${nowGone.length} carrier(s) vanished from disk · nothing tombstones (${vanished.size} stand vanished in all)`);
@@ -216,7 +218,6 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       for (const r of candidates) console.log(`    ${r.status.toUpperCase().padEnd(8)} ${r.uri}`);
       for (const d of ride)       console.log(`    RENAME-FROM ${d.uri}`);
       for (const uri of nowGone)  console.log(`    VANISHED ${uri}`);
-      if (skipped.length) console.log(`    (${skipped.length} skipped — outside bags/ or unreadable)`);
       await tellShore();
       return;
     }

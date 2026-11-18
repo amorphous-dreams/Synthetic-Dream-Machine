@@ -72,7 +72,7 @@ import { parseShareFile, type ShareEntry } from "@lararium/mesh";
 import { LIVE_CARRY_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
 import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
-import { scanFiles, candidatesOf, settleIngest, openSyncedTree, submitIngest, carriedBasesOf, type SubmitIngestOpts } from "./ingest-core.js";
+import { scanFiles, skipLines, candidatesOf, settleIngest, openSyncedTree, submitIngest, carriedBasesOf, type SubmitIngestOpts, type ScanSkip } from "./ingest-core.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { vesselDid } from "./env.js";
 import { canonIsDisk } from "./holdings.js";
@@ -115,6 +115,8 @@ export interface MirrorLaid {
   readonly conflicts: ReadonlyArray<{ readonly uri: string; readonly why: string }>;
   readonly refused: ReadonlyArray<{ readonly uri: string; readonly why: string }>;
   readonly unanswered: readonly string[];
+  /** NO SILENT SKIPS: each file the scan read no carrier from, with why (`ScanResult.skipped`). */
+  readonly skipped: readonly ScanSkip[];
 }
 
 /** The doors the mirror leg reaches a vessel through, injectable so a test drives them with no vessel standing. */
@@ -175,6 +177,8 @@ export interface MirrorLayerTally {
   kapae: number;
   stoodOff: string[];
   refused: string[];
+  /** The files the wave read no carrier from, each with why. */
+  skipped: ScanSkip[];
 }
 
 export interface MirrorSeedResult {
@@ -480,11 +484,11 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
         for (const r of owners) markPartial(r, `its daemon memory lays at h${wave.face}'s own wear`);
         return;
       }
-      const t: MirrorLayerTally = { mirror: label, toBag: wave.toBag, planned: laid.planned.length, landed: laid.landed.length, kapae: laid.kapaeRaised.length, stoodOff: [], refused: [] };
+      const t: MirrorLayerTally = { mirror: label, toBag: wave.toBag, planned: laid.planned.length, landed: laid.landed.length, kapae: laid.kapaeRaised.length, stoodOff: [], refused: [], skipped: [...(laid.skipped ?? [])] };
       for (const c of laid.conflicts) t.stoodOff.push(`${c.uri} (${c.why})`);
       for (const c of laid.refused) t.refused.push(`${c.uri} (${c.why})`);
       for (const u of laid.unanswered) t.refused.push(`${u} (no answer; seed again)`);
-      if (t.planned + t.landed + t.kapae + t.stoodOff.length + t.refused.length > 0 || laid.kapae.length > 0) layers.push(t);
+      if (t.planned + t.landed + t.kapae + t.stoodOff.length + t.refused.length + t.skipped.length > 0 || laid.kapae.length > 0) layers.push(t);
       if (t.stoodOff.length + t.refused.length > 0) for (const r of owners) markPartial(r, `${label} left ${t.stoodOff.length} stand-off(s) and ${t.refused.length} refusal(s)`);
     };
 
@@ -739,9 +743,10 @@ export function mirrorLines(r: MirrorSeedResult): { out: string[]; err: string[]
   }
   for (const b of r.minted) out.push(`  ${r.applied ? "minted" : "would mint"} ${b} (this vessel held no such wiki)`);
   for (const t of r.layers) {
-    out.push(`  ${t.mirror} -> ${t.toBag}: ${r.applied ? `landed ${t.landed}` : `would land ${t.planned}`}${t.kapae > 0 ? ` · kāpae ${t.kapae}` : ""} · stood off ${t.stoodOff.length} · refused ${t.refused.length}`);
+    out.push(`  ${t.mirror} -> ${t.toBag}: ${r.applied ? `landed ${t.landed}` : `would land ${t.planned}`}${t.kapae > 0 ? ` · kāpae ${t.kapae}` : ""} · stood off ${t.stoodOff.length} · refused ${t.refused.length}${t.skipped.length > 0 ? ` · skipped ${t.skipped.length}` : ""}`);
     for (const s of t.stoodOff) err.push(`    stands off: ${s}`);
     for (const s of t.refused) err.push(`    refused: ${s}`);
+    for (const line of skipLines(t.skipped)) err.push(`    ${line}`);
   }
   if (r.files.placed + r.files.planned > 0) out.push(`  drafts and temp: ${r.applied ? `placed ${r.files.placed}` : `would place ${r.files.planned}`}`);
   for (const s of r.files.stoodOff) err.push(`    stands off: ${s}`);
@@ -795,7 +800,7 @@ export async function liveLay(wave: MirrorWave, apply: boolean, ports: LayPorts 
     ...scan.rows.filter((r) => r.status === "non-nfc").map((r) => ({ uri: r.uri, why: "non-NFC bytes" })),
     ...(scan.refusedShadows ?? []).map((r) => ({ uri: r.file, why: r.refusal })),
   ];
-  const read: MirrorLaid = { planned: candidates.map((c) => c.uri), kapae, landed: [], kapaeRaised: [], conflicts: [], refused, unanswered: [] };
+  const read: MirrorLaid = { planned: candidates.map((c) => c.uri), kapae, landed: [], kapaeRaised: [], conflicts: [], refused, unanswered: [], skipped: scan.skipped };
   if (!apply || (candidates.length === 0 && kapae.length === 0)) return read;
   const settled = await settleIngest({
     source: wave.source, toBag: wave.toBag, candidates, did: await ports.did(), unattended: true,

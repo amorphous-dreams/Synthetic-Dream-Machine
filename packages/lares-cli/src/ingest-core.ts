@@ -93,9 +93,23 @@ export function carriedBasesOf(uri: string, bases: Readonly<Record<string, strin
   };
 }
 
+/** A file a scan read no carrier from, and why: every file a scan lists lands as a row, a shadow, or one of these. */
+export interface ScanSkip {
+  readonly file: string;
+  readonly why:  string;
+}
+
+/** The lines a person reads for a scan's skips: each file beside its reason, never a bare count. */
+export function skipLines(skipped: readonly ScanSkip[]): string[] {
+  return skipped.map((s) => `skips: ${s.file} (${s.why})`);
+}
+
 export interface ScanResult {
   readonly rows:    ScanRow[];
-  readonly skipped: string[];
+  /** NO SILENT SKIPS: each file the scan read no carrier from, named with why. Over a source holding no kāpae shadow,
+   *  `skipped.length + rows.length` equals the files the scan was handed (a shadow speaks in `shadows` or
+   *  `refusedShadows`, and a carrier its own shadow stands beside rides out under that shadow's raise). */
+  readonly skipped: ScanSkip[];
   /** R2 — the rename-deletions a FULL scan discovered (each `renamed` row's gone
    *  source), threaded into the INGEST wave's `deletions[]` so the island pairs
    *  them and re-homes records. Absent on a partial (watcher) scan, which pairs
@@ -168,8 +182,9 @@ function listSourceFiles(source: string): string[] | null {
 
 /** Derive a file's carrier-root URI for one mirror plane (bags/ canon vs
  *  wikis/ working write-layer). The watcher and CLI both feed a source; this
- *  names which address reverse-derivation a row carries. */
-export type FileToUriFn = (root: string, file: string) => string | null;
+ *  names which address reverse-derivation a row carries. A file no rule reads answers null, or `{ why }` naming the reason
+ *  the scan's skip carries (a bare null reads "no address derives"). */
+export type FileToUriFn = (root: string, file: string) => string | null | { readonly why: string };
 
 /** The mirror directories a vessel reads — `LAR_BAGS` / `LAR_WIKIS` (cli `larBagsDir()` / `larWikisDir()`),
  *  which may sit outside `LAR_ROOT`, and the house's projections root (`<root>/projections`), whose `bags/` and
@@ -212,17 +227,18 @@ export function scanFiles(
   fileToUri: FileToUriFn = bagsFileToUri,
 ): ScanResult {
   const rows: ScanRow[] = [];
-  const skipped: string[] = [];
+  const skipped: ScanSkip[] = [];
   const shadows = new Set<string>();
   const refusedShadows: Array<{ file: string; refusal: string }> = [];
   for (const file of files) {
-    const uri = fileToUri(root, file);
-    if (!uri) { skipped.push(file); continue; }
+    const sited = fileToUri(root, file);
+    if (sited === null || typeof sited !== "string") { skipped.push({ file, why: sited?.why ?? "no address derives from its path" }); continue; }
+    const uri = sited;
     const ext = extname(file);
     // A KĀPAE SHADOW speaks an exclusion: it names a title and carries no record of its own.
     if (ext === KAPAE_EXT) {
       let text: string;
-      try { text = readFileSync(file, "utf8"); } catch { continue; }   // a shadow gone from disk speaks nothing
+      try { text = readFileSync(file, "utf8"); } catch { skipped.push({ file, why: "a kāpae shadow gone from disk speaks nothing" }); continue; }
       const read = readKapaeShadow(text);
       if ("refusal" in read) { refusedShadows.push({ file, refusal: read.refusal }); continue; }
       if (read.title !== uri) { refusedShadows.push({ file, refusal: "kapae-shadow-title-disagrees-with-siting" }); continue; }
@@ -237,7 +253,7 @@ export function scanFiles(
       // until a person answers). A gone path that holds no base skips: no agreement ever stood there.
       const goneSynced = tree.baseAt(syncedTreeKey(toBag, uri), file)?.disk ?? null;
       if (goneSynced !== null) rows.push({ file, uri, text: "", diskHash: "", syncedHash: goneSynced, status: "deleted", ext });
-      else skipped.push(file);
+      else skipped.push({ file, why: "gone from disk, and no base ever stood at its path" });
       continue;
     }
     // The NFC shore assertion (spec: memetic-wikitext-framing #carrier-bytes) — foreign
@@ -271,8 +287,7 @@ export function scanFiles(
     rows.push({ file, uri, text, diskHash, syncedHash, ...(syncedRecordsHash !== undefined ? { syncedRecordsHash } : {}), status, ext, binary, ...(meta !== undefined ? { meta } : {}) });
   }
   // REMOVE-WINS INSIDE ONE EXPORT: a carrier standing beside the shadow of its own title carries nothing.
-  const kept = shadows.size > 0 ? rows.filter((row) => !shadows.has(row.uri)) : rows;
-  return {
+  const kept = shadows.size > 0 ? rows.filter((row) => !shadows.has(row.uri)) : rows;  return {
     rows: kept, skipped,
     ...(shadows.size > 0 ? { shadows: [...shadows].sort() } : {}),
     ...(refusedShadows.length > 0 ? { refusedShadows } : {}),
