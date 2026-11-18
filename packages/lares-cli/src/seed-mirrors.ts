@@ -67,6 +67,7 @@ import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
 import {
   larProjectionsHome, larConfigHome, mirrorDirFileToUri, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug,
   daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, PERSONAL_PROJECTION_DIR, houseIgnored,
+  siteFileToTitle, type FileSiting, type SyncedTree,
 } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh";
 import { LIVE_CARRY_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
@@ -785,6 +786,21 @@ export interface LayPorts {
 export const LIVE_LAY_PORTS: LayPorts = { did: vesselDid, submit: submitIngest };
 
 /**
+ * THE TITLE A WAVE'S FILE READS BACK UNDER, or why it reads none: the projector's siting run backward (`siteFileToTitle`) over
+ * the wave's plane, the vessel's synced base first. A plain-title working tiddler (`My Notes.tid`, `Time_ dusk.tid` stating
+ * `Time: dusk`) reads home under its own title, so a re-found's seed lands it beside the loci carriers instead of dropping it.
+ * A PERSONAL LAYER'S VIEW STATE (a `$:/` title: the story list, a fold state) reads back only where a base stands at its path:
+ * one the house never agreed there stays with the face that set it, as an adoption never copies one.
+ */
+export function siteWaveFile(wave: Pick<MirrorWave, "uriDir" | "toBag">, file: string, tree: SyncedTree): FileSiting {
+  const sited = siteFileToTitle({ planeDir: wave.uriDir, uriAt: (path) => tree.uriAt(path) }, file);
+  if ("title" in sited && sited.by !== "base" && sited.title.startsWith("$:/") && wave.toBag.endsWith("/personal")) {
+    return { why: `${sited.title} names a personal layer's view state, which stays with the face that set it` };
+  }
+  return sited;
+}
+
+/**
  * Lay one folder through INGEST's three-way gate against the vessel's synced base: a carrier whose disk equals its base
  * takes no wave (the second seed lands nothing), a moved one lands, and one whose records moved too stands off. The wave
  * rides unattended, so a file that holds no base over records that say something else stands off rather than adopting.
@@ -792,7 +808,7 @@ export const LIVE_LAY_PORTS: LayPorts = { did: vesselDid, submit: submitIngest }
 export async function liveLay(wave: MirrorWave, apply: boolean, ports: LayPorts = LIVE_LAY_PORTS): Promise<MirrorLaid> {
   const tree = openSyncedTree();
   const abs = mirrorFiles(wave.source, wave.skipTop).filter((r) => !r.endsWith(".meta")).map((r) => join(wave.source, ...r.split("/")));
-  const scan = scanFiles(wave.source, abs, wave.toBag, tree, (_r, f) => mirrorDirFileToUri(wave.uriDir, f));
+  const scan = scanFiles(wave.source, abs, wave.toBag, tree, (_r, f) => { const s = siteWaveFile(wave, f, tree); return "why" in s ? s : s.title; });
   const bases = wave.bases ?? {};
   const candidates = candidatesOf(scan.rows).map((r) => ({ ...r, ...carriedBasesOf(r.uri, bases) }));
   const kapae = scan.shadows ?? [];
