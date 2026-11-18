@@ -16,7 +16,7 @@ export type CustodyFrame =
   | { readonly op: "unlock" }
   | { readonly op: "lock"; readonly face?: number }
   /** Wear face `face`, one already standing open: no route rides it, and the face is all it names. */
-  | { readonly op: "wear"; readonly face: number }
+  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai" }
   | { readonly op: "custody" }
   /** The census of saves the vessel holds in memory, read before a stop: no credential, answered at once. */
   | { readonly op: "census" }

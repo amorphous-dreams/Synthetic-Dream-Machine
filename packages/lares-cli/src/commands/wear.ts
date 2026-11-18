@@ -11,6 +11,14 @@ import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
+/**
+ * The harness's own marks, as each AI harness sets them in the shells it runs (Claude Code, Codex's sandbox). A wear sent under
+ * one carries `seat: "ai"`, and the vessel refuses it: a seat never wears. Swap for local-connector's HARNESS_SEAT_MARKS once
+ * that list lands (#231), which reads these same names.
+ */
+const SEAT_MARKS = ["CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"] as const;
+const seatMarked = (env: NodeJS.ProcessEnv = process.env): boolean => SEAT_MARKS.some((k) => (env[k] ?? "") !== "");
+
 const USAGE = "usage: lares wear <N>   (N names a face standing open, a whole number from 0; `--face N` reads the same)";
 
 /** The face the line names: the positional, else `--face N`; null where neither names a handle index. */
@@ -49,7 +57,7 @@ export async function cmdWear(args: ParsedArgs): Promise<number> {
   const door = await sendCustodyFrame({ op: "custody" });
   if (door === null || door["op"] !== "custody") return refuse("daemon-unreachable", "no vessel answers its custody door: stand it (`lares vessel stand`), then unlock and wear");
   if (door["unlocked"] !== true) return refuse("custody-locked", "this vessel holds no key: open it first (`lares vault unlock`); a wear opens nothing");
-  const a = await sendCustodyFrame({ op: "wear", face });
+  const a = await sendCustodyFrame({ op: "wear", face, ...(seatMarked() ? { seat: "ai" as const } : {}) });
   if (a === null) return refuse("daemon-unreachable", "the vessel stopped answering before the wear landed — check `lares vault status`, then wear again");
   const refusal = a["refusal"] as { reason?: unknown } | undefined;
   if (a["status"] === "error") {

@@ -57,8 +57,9 @@ import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.j
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
   | { readonly op: "lock"; readonly face?: number }
-  /** Wear face `face`: the session's choice among the faces standing open. No credential rides it. */
-  | { readonly op: "wear"; readonly face: number }
+  /** Wear face `face`: the session's choice among the faces standing open. No credential rides it; `seat: "ai"` marks a frame
+   *  an AI seat sent, which the door refuses (a seat never wears). */
+  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai" }
   | { readonly op: "custody" }
   /** The census of saves held in memory, read before a stop: no credential, no act, no chain. */
   | { readonly op: "census" }
@@ -144,8 +145,8 @@ export interface CustodyFrameDeps {
 }
 
 const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "act", "backup", "face-route", "ward"]);
-/** The keys a `wear` frame may carry: a face and nothing else, so no route ever rides a wear. */
-const WEAR_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "face"]);
+/** The keys a `wear` frame may carry: a face, and the seat's mark; no route ever rides a wear. */
+const WEAR_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "face", "seat"]);
 const WARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "verb", "argsDigest"]);
 /** The keys a `face-route` frame may carry. */
 const FACE_ROUTE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "slots", "purpose", "argsDigest"]);
@@ -518,9 +519,15 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     } else if (op === "wear") {
       const frame = parsed as Record<string, unknown>;
       const face = frame["face"];
-      if (Object.keys(frame).some((k) => !WEAR_FRAME_KEYS.has(k)) || !Number.isSafeInteger(face) || (face as number) < 0) {
+      if (Object.keys(frame).some((k) => !WEAR_FRAME_KEYS.has(k)) || !Number.isSafeInteger(face) || (face as number) < 0 || (frame["seat"] !== undefined && frame["seat"] !== "ai")) {
         deps.onLog("wear: refused (bad-custody-frame)");
-        answer(sock, { op, status: "error", errorMessage: "a wear frame carries `op` and a `face` (a handle index, a whole number from 0), and nothing beside them: no route rides a wear", refusal: { reason: "bad-custody-frame" } });
+        answer(sock, { op, status: "error", errorMessage: "a wear frame carries `op`, a `face` (a handle index, a whole number from 0) and at most `seat: \"ai\"`, and nothing beside them: no route rides a wear", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      // A SEAT NEVER WEARS: the worn face stays the operator's choice (the standing orders: no spirit switches the worn face).
+      if (frame["seat"] === "ai") {
+        deps.onLog("wear: refused (seat-wears-no-face)");
+        answer(sock, { op, status: "error", errorMessage: "a seat wears no face: the worn face stays the operator's choice; run `lares wear N` from the operator's own terminal", refusal: { reason: "seat-wears-no-face" } });
         return true;
       }
       act = () => wear(face as number);
