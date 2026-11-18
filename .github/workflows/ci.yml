@@ -140,6 +140,14 @@ jobs:
       - name: Every dependency names ONE version
         if: ${{ !cancelled() }}
         run: tools/exact-deps-witness.sh
+      # A misspelt trailer key drops a record line silently (`Braking:` renders nowhere in tools/changelog-render.mjs). The
+      # checkout stands shallow, so this step alone fetches the base's history (no blobs) and reads the range from the merge
+      # base. A push to develop itself reads an empty range. This costs no build.
+      - name: Every trailer key names a known key
+        if: ${{ !cancelled() }}
+        run: |
+          git fetch --no-tags --filter=blob:none --unshallow origin "${{ github.base_ref || 'develop' }}"
+          node tools/trailer-keys.mjs "$(git merge-base FETCH_HEAD HEAD)..HEAD"
       - name: Generated artifacts must be fresh (build emits no tracked diff)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
