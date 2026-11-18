@@ -117,6 +117,11 @@ export function pulamaHandDoor(a: {
         if (proof.reading !== "proves") { log(`unadmit: ${proof.reading}`); return { op: "unadmit", ...proof, ...status() }; }
         const ended = await a.admissions.unadmit(image, await pulamaSignerOf(holder));
         if (ended === null) return { op: "unadmit", reading: "image-not-admitted", digest: image, ...status() };
+        if ("occupied" in ended) {
+          log("unadmit: the tombstone slot holds a row the pūlama never signed; the admission still stands");
+          return { op: "unadmit", reading: "unadmit-slot-occupied", digest: image, slot: ended.occupied, detail: `the tombstone slot ${ended.occupied} holds a row the pūlama's key never signed, so no tombstone rests and the admission still stands; clear that row from the pūlama's state dir, then unadmit again`, ...status() };
+        }
+        if (ended.already === true) return { op: "unadmit", reading: "unadmitted", already: true, digest: image, ends: ended.ends, ...status() };
         log("unadmitted by hand: an image's admission rests ended under a tombstone");
         return { op: "unadmit", reading: "unadmitted", digest: image, ends: ended.ends, ...status() };
       }

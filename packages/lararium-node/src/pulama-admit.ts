@@ -24,6 +24,9 @@
  *   unadmitted/<image>/<tessera>  THE HAND'S UNADMIT: a signed tombstone naming the admission tessera it ends. An admission
  *                                 stands only while no tombstone names its tessera, so a row deleted and brought back from a
  *                                 keep copy still reads ended; a re-admission writes a new tessera, which no tombstone names.
+ *                                 The tombstone gates FUTURE service: a session the pūlama already served keeps running. And a
+ *                                 host-file write sits outside this lock like any tamper of the state dir: deleting the
+ *                                 tombstone file, or restoring an older state dir, re-admits the image.
  *
  * A READ TRUSTS A ROW ONLY UNDER THE PŪLAMA'S KEY. The key derives from the custody root, so a row written into the state
  * directory by anything that never held that root reads as no admission: the file alone admits nothing. A row the key
@@ -104,8 +107,12 @@ export interface PulamaAdmissions {
   admitByHand(image: string, faces: readonly AdmittedFace[], by: KukuluSigner): Promise<{ readonly tessera: string }>;
   /** Rest one re-service row for `image`; answers its count. */
   reserved(image: string, faces: readonly AdmittedFace[], by: KukuluSigner): Promise<number>;
-  /** THE HAND'S UNADMIT: rest the tombstone ending the admission of `image` that stands; null where none stands. */
-  unadmit(image: string, by: KukuluSigner): Promise<{ readonly ends: string } | null>;
+  /**
+   * THE HAND'S UNADMIT: rest the tombstone ending the admission of `image` that stands; null where none stands. A slot already
+   * holding a signed tombstone answers `already` (ended by an earlier write); one holding a row no pūlama key signed answers
+   * `occupied`, naming the slot, and the admission still stands. It never answers ended while no signed tombstone rests.
+   */
+  unadmit(image: string, by: KukuluSigner): Promise<{ readonly ends: string; readonly already?: true } | { readonly occupied: string; readonly ends: string } | null>;
   /** The images whose signed admission row stands ended by a tombstone. */
   ended(by: KukuluSigner): Promise<readonly string[]>;
   /** Every admission that stands (verifies and names a lent set), and each image's count of re-services. */
@@ -194,8 +201,10 @@ export function pulamaAdmissions(records: SwarmWikiPort): PulamaAdmissions {
       const standing = await admitted(image, by);
       if (standing === null || "refusal" in standing) return null;
       const tomb = await sign<"image-unadmitted">({ act: "image-unadmitted", image, ends: standing.tessera }, by);
-      await records.writeNew(pulamaUnadmittedTitle(image, standing.tessera), JSON.stringify(tomb));
-      return { ends: standing.tessera };
+      const slot = pulamaUnadmittedTitle(image, standing.tessera);
+      if (await records.writeNew(slot, JSON.stringify(tomb))) return { ends: standing.tessera };
+      // THE SLOT HELD A ROW: a signed tombstone there ended it already; anything else leaves the admission standing.
+      return await tombstoned(image, standing.tessera, by) ? { ends: standing.tessera, already: true } : { occupied: slot, ends: standing.tessera };
     },
     async ended(by) {
       const out: string[] = [];

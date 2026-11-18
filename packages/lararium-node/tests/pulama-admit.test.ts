@@ -374,7 +374,9 @@ describe("RED pulama-unadmit-ends-an-admission by a signed tombstone", () => {
     });
     expect(frames.map((f) => f["op"])).toEqual(["status", "unadmit"]);
     expect(asked[0]).toContain(IMAGE);
-    expect(answer).toMatchObject({ reading: "unadmitted", ends: tessera });
+    // The forged row holds the slot, so no signed tombstone can rest there: the answer names it and the admission still stands.
+    expect(answer).toMatchObject({ reading: "unadmit-slot-occupied", slot: pulamaUnadmittedTitle(IMAGE, tessera) });
+    expect(await s.hello({})).toBe("opens");
     await expect(runHandVerb("unadmit", undefined, { ask: (f) => s.door(f), route: async () => FIXTURE_PASSPHRASE })).rejects.toBeInstanceOf(PulamaVerbUsage);
     await s.fx.server.lock();
     const unlit: string[] = [];
