@@ -267,7 +267,7 @@ Then, inside WSL:
 
 ```bash
 cd ~/Synthetic-Dream-Machine
-code-insiders Synthetic-Dream-Machine.code-workspace
+code-insiders .
 source .venv/bin/activate
 ./scripts/ollama-wsl-setup.sh
 ```
