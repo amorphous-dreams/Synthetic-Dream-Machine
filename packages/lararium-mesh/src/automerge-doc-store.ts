@@ -38,6 +38,15 @@ import { headsEqual } from "./wiki-recipe.js";
 import { plainField, plainRecord, plainValue, storedDeleted, type StoredLarRecord, ownEntry, hasOwnEntry, isPrototypeKey } from "./stored-value.js";
 import { storedRecord, storedValue, PROTOTYPE_KEY_CODE } from "./stored-record.js";
 import { VerbRefusal } from "./verb-refusal.js";
+import { changeUnderActor, type WireIdentity } from "./wire-identity.js";
+
+/** The door a store writes a worn face's change through: the actor that face derives for a document in this composition. */
+export type FaceActorDoor = Pick<WireIdentity, "actor">;
+
+/** A write naming a face the store cannot write as (it holds no actor door): it refuses, and lands nothing. */
+export const WORN_FACE_UNWRITABLE = "worn-face-unwritable";
+/** A stale-base write naming a face the store cannot write as at its base: it refuses, never landing under the engine's actor. */
+export const STALE_BASE_UNDER_WORN_FACE = "stale-base-under-worn-face";
 
 type MutableLarTiddlerRecord = {
   tiddler: Record<string, unknown> & { title: string };
@@ -146,10 +155,13 @@ export class AutomergeDocStore implements LarTiddlerStore {
    *  origin, marked a redelivery. Undefined outside the store's own change: the event then carries a remote or sync merge. */
   private _applying: ChangeOrigin | undefined;
   private readonly _draftListeners = new Set<(change: ParallelDraftsChange) => void | Promise<void>>();
+  /** The composition's actor door: a write whose origin names a face lands under that face's actor through it. */
+  private readonly _wear: FaceActorDoor | undefined;
 
-  constructor(handle: DocHandle<LarDoc>, bagId?: string) {
+  constructor(handle: DocHandle<LarDoc>, bagId?: string, options?: { readonly wear?: FaceActorDoor }) {
     this.handle  = handle;
     this.bagId   = bagId;
+    this._wear   = options?.wear;
     // MemeProvider gets the tiddlers submap — keeps MemeProvider path-agnostic.
     this.provider = new MemeProvider(
       (title) => { const raw = ownEntry(handle.doc()?.tiddlers, title); return raw ? plainRecord(raw) : null; },
@@ -171,6 +183,24 @@ export class AutomergeDocStore implements LarTiddlerStore {
       this.provider.handleChange(remapped, own ?? remoteOrigin, own !== undefined);
       this._surfaceConflicts(remapped);
     });
+  }
+
+  /**
+   * THE WORN FACE'S ACTOR for a write whose origin names one (undefined: the write names no face, and rides the engine's
+   * actor). A store with no actor door refuses by name, so a face's write never lands under the engine's actor: a write
+   * at a stale base refuses `stale-base-under-worn-face`, any other `worn-face-unwritable`.
+   */
+  private async _faceActor(origin: ChangeOrigin, base: readonly string[] | undefined): Promise<string | undefined> {
+    if (origin?.face === undefined) return undefined;
+    const wear = this._wear;
+    if (wear === undefined || typeof (this.handle as Partial<DocHandle<LarDoc>>).update !== "function") {
+      const now = this.handle.doc() ? this.headsNow() : null;
+      const stale = base !== undefined && (now === null || !headsEqual(base, now));
+      const who = origin.face === null ? "the veil floor" : "a worn face";
+      if (stale) throw new VerbRefusal(STALE_BASE_UNDER_WORN_FACE, `${STALE_BASE_UNDER_WORN_FACE}: a write at a stale base names ${who}, and the store of ${this.bagId ?? "this document"} holds no actor door to write at that base under the face's actor; it refuses rather than land under the engine's actor`);
+      throw new VerbRefusal(WORN_FACE_UNWRITABLE, `${WORN_FACE_UNWRITABLE}: a write names ${who}, and the store of ${this.bagId ?? "this document"} holds no actor door to write under the face's actor; it refuses rather than land under the engine's actor`);
+    }
+    return wear.actor(origin.face, this.handle.documentId);
   }
 
   private _own<T>(origin: ChangeOrigin, apply: () => T): T {
@@ -374,8 +404,11 @@ export class AutomergeDocStore implements LarTiddlerStore {
     // refuses by name before any byte moves (`title-law.ts`).
     for (const record of puts) assertStorableTitle(record.tiddler.title);
     for (const title of tombstones) assertStorableTitle(title);
-    const docNow = this.handle.doc();
     const requestedBase = options?.base;
+    // THE FACE'S ACTOR SETTLES FIRST, ahead of every read: no await stands between the read of the doc and the change,
+    // and a write that names no face awaits nothing here (the store notifies synchronously).
+    const faceActor = origin?.face === undefined ? undefined : await this._faceActor(origin, requestedBase);
+    const docNow = this.handle.doc();
     let currentHeads: readonly string[] | null = null;
     if (requestedBase !== undefined) {
       try {
@@ -456,7 +489,11 @@ export class AutomergeDocStore implements LarTiddlerStore {
     };
     let madeAt: readonly string[] | undefined;
     try {
-      if (based) {
+      if (faceActor !== undefined) {
+        // A WORN FACE'S WRITE lands under the face's actor, a stale base at its base (the isolation form of that actor).
+        const made = this._own(origin, () => changeUnderActor(this.handle, faceActor, change, based ? requestedBase : undefined));
+        if (based && made) madeAt = made;
+      } else if (based) {
         const made = this._own(origin, () => this.handle.changeAt(encodeHeads(requestedBase as string[]), change));
         if (made) madeAt = Object.freeze([...decodeHeads(made)]);
       } else this._own(origin, () => this.handle.change(change));
@@ -538,7 +575,8 @@ export class AutomergeDocStore implements LarTiddlerStore {
    *  the cascade), never a kāpae tombstone. The MOVE/promotion source retract. */
   async remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void> {
     let removed = true;
-    this._own(origin, () => this.handle.change((doc) => {
+    const faceActor = origin?.face === undefined ? undefined : await this._faceActor(origin, undefined);
+    const removal = (doc: LarDoc) => {
       const tiddlers = doc.tiddlers as unknown as Record<string, MutableLarTiddlerRecord>;
       // THE TEST AND THE REMOVAL SHARE ONE CHANGE: no write lands between them.
       // A title holding a concurrent value the live one hides (a parallel draft, field or whole record) stays: removing
@@ -547,7 +585,8 @@ export class AutomergeDocStore implements LarTiddlerStore {
       if (options?.only && (!holdsOnly(ownEntry(tiddlers, title) as unknown as LarTiddlerRecord | undefined, options.only)
         || this.parallelDrafts(title).length > 0)) { removed = false; return; }
       delete tiddlers[title];
-    }));
+    };
+    this._own(origin, () => faceActor !== undefined ? changeUnderActor(this.handle, faceActor, removal) : this.handle.change(removal));
     if (!removed) return;
     // Fire record:null — absence; the adaptor's cross-bag resolution surfaces
     // whatever lower-bag copy now resolves beneath (vs a kāpae stop).

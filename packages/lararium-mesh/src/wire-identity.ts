@@ -105,11 +105,41 @@ export interface WireIdentity {
   actor(face: string | null, documentId: string): Promise<string>;
   /**
    * WRITE ONE CHANGE AS A FACE: `change` lands on the handle's document under the actor `face` derives for it, and the
-   * document then stands again under the actor it held, so a write that names no face never rides a face's actor.
+   * document then stands again under the actor it held, so a write that names no face never rides a face's actor. With
+   * `at` (hex heads in the document's past) the change lands at those heads under the face actor's isolation form, and
+   * the answer names the heads of the change it made (`changeUnderActor`).
    */
-  writeAs<T>(handle: ActorWritable<T>, face: string | null, change: (doc: T) => void): Promise<void>;
-  /** Whether this composition derived `actor`: a change under it reads as this replica's own, never a peer's. */
+  writeAs<T>(handle: ActorWritable<T>, face: string | null, change: (doc: T) => void, at?: readonly string[]): Promise<readonly string[] | undefined>;
+  /** Whether this composition derived `actor` (or names its isolation form, a change at a past base): a change under it
+   *  reads as this replica's own, never a peer's. */
   ownsActor(actor: string): boolean;
+}
+
+/** A derived actor's length in hex: sixteen bytes. */
+const ACTOR_HEX = 32;
+
+/**
+ * LAND ONE CHANGE UNDER `actor`, synchronously, through the handle's own snapshot door: the change lands on a fork of the
+ * document under `actor`, and the document then stands again under the actor it held, so a write that names no face
+ * never rides a face's actor. With `at` (hex heads in the document's past) the change lands AT those heads, as the
+ * engine's `changeAt` lands it: beside whatever landed after them, so a concurrent value stays a conflict, under the
+ * isolation form of `actor` (the engine's prefix and counter ahead of it). Answers the heads of the change `at` made.
+ */
+export function changeUnderActor<T>(handle: ActorWritable<T>, actor: string, change: (doc: T) => void, at?: readonly string[]): readonly string[] | undefined {
+  let madeAt: readonly string[] | undefined;
+  handle.update((doc) => {
+    const held = A.getActorId(doc);
+    const fork = A.clone(doc, { actor });
+    let written: A.Doc<T>;
+    if (at !== undefined) {
+      const made = A.changeAt(fork, at as A.Heads, change as A.ChangeFn<T>);
+      written = made.newDoc;
+      if (made.newHeads) madeAt = Object.freeze([...made.newHeads]);
+    } else written = A.change(fork, change as A.ChangeFn<T>);
+    // The document stands again under the actor it held: the engine's own, which no face's write rides.
+    return held === actor ? written : A.clone(written, { actor: held });
+  });
+  return madeAt;
 }
 
 /** The engine's own key for a store's id, and the key segment under which it rests a peer's sync state. */
@@ -363,19 +393,13 @@ export function wireIdentityOf(input: { readonly store: StorageAdapterInterface;
     }
     return reading;
   };
-  const writeAs = async <T>(handle: ActorWritable<T>, face: string | null, change: (doc: T) => void): Promise<void> => {
-    const as = await actor(face, handle.documentId);
-    handle.update((doc) => {
-      const held = A.getActorId(doc);
-      const written = A.change(A.clone(doc, { actor: as }), change as A.ChangeFn<T>);
-      // The document stands again under the actor it held: the engine's own, which no face's write rides.
-      return held === as ? written : A.clone(written, { actor: held });
-    });
-  };
+  const writeAs = async <T>(handle: ActorWritable<T>, face: string | null, change: (doc: T) => void, at?: readonly string[]): Promise<readonly string[] | undefined> =>
+    changeUnderActor(handle, await actor(face, handle.documentId), change, at);
 
   return {
     storage, peerId, alias, leg, actor, writeAs,
-    ownsActor: (name) => owned.has(name),
+    // A change at a past base names its writer's actor in its isolation form (the engine's prefix and counter ahead of it).
+    ownsActor: (name) => owned.has(name) || (name.length > ACTOR_HEX && owned.has(name.slice(-ACTOR_HEX))),
     storeId: async () => new TextDecoder().decode(await storage.load([STORE_ID])),
   };
 }
