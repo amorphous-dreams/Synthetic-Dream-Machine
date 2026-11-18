@@ -17,7 +17,7 @@
  *   found  mints the vessel identity, the persona root, the social planes and the bootstrap —
  *          idempotent, skips what stands
  *   stand  brings the daemon up, foreground or detached, and reports what it found
- *   seed   plants every bags holding back into its doc, kind-routed, diff-gated — idempotent
+ *   lay    lays every bags holding back into its doc, kind-routed, diff-gated — idempotent
  *   read   the pure inspection that starts nothing
  *
  * Re-deriving the genesis island is NOT a standalone door: advancing the composition is a MESH act that
@@ -40,7 +40,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { cmdFound }     from "./found.js";
 import { cmdStand }     from "./stand.js";
 import { posturePlan, posturePlanNotice } from "./posture-plan.js";
-import { cmdSeed }     from "./seed.js";
+import { cmdLay }     from "./lay.js";
 import { cmdRead, cmdStop } from "./read.js";
 import { cmdRotatePlace } from "./rotate-place.js";
 import { cmdCensus } from "./census.js";
@@ -57,7 +57,7 @@ type Sub = (args: ParsedArgs) => Promise<number>;
 /**
  * Hand the sub-door's own args down, with the sub-door NAME consumed.
  *
- * The handlers beneath read `positional[0]` as their first real argument, so leaving "seed" or "read"
+ * The handlers beneath read `positional[0]` as their first real argument, so leaving "lay" or "read"
  * sitting there would silently feed each handler its own name — the kind of defect that reads as a
  * mysterious argument rather than as a dispatch bug.
  */
@@ -112,13 +112,13 @@ const RITES: Readonly<Record<string, { readonly composes: string; readonly run: 
   //
   // The rite REPORTS which one it got, because the two look identical from outside and an operator who
   // expected a hearth reads a crossroads as a broken founding rather than an unlit one.
-  founding: { composes: "found · stand · seed", run: runFoundingRite },
+  founding: { composes: "found · stand · lay", run: runFoundingRite },
   refresh:  { composes: "build · stop · stand",         run: cmdRiteRefresh },
   rebuild:  { composes: "re-derive · stand",            run: cmdRiteRebuild },
 };
 
 /**
- * The founding rite — found · stand · seed, halting at the first step that refuses.
+ * The founding rite — found · stand · lay, halting at the first step that refuses.
  *
  * It runs the primitives rather than reimplementing them, so the rite carries no behaviour of its own and
  * every fix to a primitive reaches it for free. A composition that grows its own logic stops being a
@@ -128,7 +128,7 @@ async function runFoundingRite(args: ParsedArgs): Promise<number> {
   const steps: ReadonlyArray<readonly [string, Sub]> = [
     ["found", (a) => cmdFound(a)],
     ["stand", (a) => standVessel({ ...a, positional: ["stand"] })],
-    ["seed",  (a) => cmdSeed({ ...a, flags: { ...a.flags, apply: true, yes: true } })],
+    ["lay",   (a) => cmdLay({ ...a, flags: { ...a.flags, apply: true, yes: true } })],
   ];
   for (const [name, run] of steps) {
     const code = await run({ ...args, positional: [] });
@@ -177,7 +177,7 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
   rotate: { summary: "rotate the place's online signer by its founding card — reads the card, prints and reads back the replacement", run: (a) => cmdRotatePlace(under(a)) },
   stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart]", run: standVessel },
   stop:  { summary: "halt the daemon on the port (graceful → forced); a free port reads as stopped",     run: (a) => cmdStop(under(a)) },
-  seed:  { summary: "plant every bags/* holding back into its doc, kind-routed and diff-gated",         run: (a) => cmdSeed(under(a)) },
+  lay:   { summary: "lay every bags/* holding back into its doc, kind-routed and diff-gated",           run: (a) => cmdLay(under(a)) },
   read:  { summary: "inspect and start nothing — bootstrap, storage, port, seal, personas, quorum",      run: (a) => cmdRead(under(a)) },
   floor: { summary: "the vessel's floor pin, one per Nexus: `status` (pinned, newest seen, fast-forward, fork) · `accept [<release>]` walks prior from the pin — [--nexus <aid>] [--porch <origin>]", run: (a) => cmdFloor(under(a)) },
   census: { summary: "name what a stop would drop: saves held in memory, carriers the projector owes — [--json]", run: (a) => cmdCensus(under(a)) },
@@ -217,7 +217,7 @@ function printVesselHelp(): void {
   // that follow live at other doors. A reader who meets only the first stops there and reads the floor
   // as a fault.
   console.log("\n  A fresh founding, end to end:");
-  console.log("    lares vessel rite founding            found · stand · seed");
+  console.log("    lares vessel rite founding            found · stand · lay");
   console.log("    lares persona new 0 --name '<label>'  light a face — this lifts it off the floor");
   console.log("    lares vessel stand                    stand again; the lift lands here");
   console.log("    lares home tend                       keep this device's homes on intent (another door, another radius)");

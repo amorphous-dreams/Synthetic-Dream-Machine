@@ -8,7 +8,7 @@
  *              (`--workspace <name> [--into <path>]`, `../rite-keep-host.ts`); `--if-due` keeps only where the house moved since
  *              the bundle its remote-tracking branch holds (or a keep still waits for its push or landing), and with no
  *              `--workspace` reads the configured keep workspace (`../keep-config.ts`): the one call `down` makes
- *   keep-cut   IN THE VESSEL: the keep's vessel half: lay the house's authored memory, cut as a cleartext carry bundle, into the
+ *   keep-cut   IN THE VESSEL: the keep's vessel half: lay the house's authored memory, cut as a cleartext house bundle, into the
  *              bound workspace, spending a return of the keep lei strung for that workspace (`../rite-keep.ts`); it holds each
  *              cold wiki the house lists in turn before the cut, then hands the pins back
  *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei (a kūkulu: each lent face's own),
@@ -39,7 +39,7 @@ import { sealedAct } from "../sealed-act-door.js";
 import { riteKeepHost, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../rite-keep-host.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "../surface-env.js";
 import { configuredKeepWorkspace } from "../keep-config.js";
-import { carryExport, carryRefusal, LIVE_CARRY_DOORS } from "./carry.js";
+import { houseExport, bundleRefusal, LIVE_BUNDLE_DOORS } from "./house-bundle.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { vesselDid } from "../env.js";
@@ -103,7 +103,7 @@ export function keepPlan(args: ParsedArgs): { readonly workspace?: string; reado
   return { ...(workspace !== undefined ? { workspace } : {}), ...(into !== undefined ? { into } : {}), acceptOmissions: args.flags["accept-omissions"] === true, ...(faceWord !== undefined ? { face: Number(faceWord) } : {}), ...(ifDue ? { ifDue: true as const } : {}), ...(sessions !== undefined ? { sessions } : {}) };
 }
 
-/** The keep's live ports: the vessel's rows through the store door, and the cut through the carry export. */
+/** The keep's live ports: the vessel's rows through the store door, and the cut through the house export. */
 const KEEP_PORTS: KeepPorts = {
   row: async (verb, rowArgs) => {
     try { return { ok: true, output: (await storeVerb(verb, rowArgs)).output }; }
@@ -111,7 +111,7 @@ const KEEP_PORTS: KeepPorts = {
   },
   // A KEEP NAMING NO FACE ACTS AS THE DAEMON MOUNT: the seat's reading of `face.resolve`, which refuses by name at the floor.
   mountFace: async () => (await sealedAct<{ face: number }>("face.resolve", { worn: true })).face,
-  cut: async (dest, opts) => (await carryExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_CARRY_DOORS, workspace: opts.workspace, houseOnly: true, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) })).manifest,
+  cut: async (dest, opts) => (await houseExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_BUNDLE_DOORS, workspace: opts.workspace, houseOnly: true, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) })).manifest,
   // THE WIKI SWITCHER the wake walks: the catalog (`list-wikis`), the live state (`wiki-active`), and the rotatable pin.
   wikis: {
     read: async () => {
@@ -164,7 +164,7 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
       emit(args, { ok: false, error: { code: err.code, message: err.message }, human: () => console.error(`lares rite keep-cut: ${err.message}`) });
       return exitFor(err.code);
     }
-    return carryRefusal(args, "rite keep-cut", err);
+    return bundleRefusal(args, "rite keep-cut", err);
   }
 }
 

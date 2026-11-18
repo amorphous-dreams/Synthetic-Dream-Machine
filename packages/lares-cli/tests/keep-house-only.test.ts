@@ -1,5 +1,5 @@
 /**
- * carry-keep-house-only — THE KEEP CUTS HOUSE-ONLY CONTENT (K2). A sourced wiki's one workbench folder rests beside the canon
+ * keep-house-only — THE KEEP CUTS HOUSE-ONLY CONTENT (K2). A sourced wiki's one workbench folder rests beside the canon
  * source; where that folder rests inside the checkout, git already holds it, so a KEEP leaves it out and names it under the
  * manifest's `elsewhere`. The rule reads where each mirror rests, never a slug list; a plain export keeps carrying it.
  *
@@ -14,8 +14,8 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync 
 import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { carryExport, type CarryDoors } from "../src/commands/carry.js";
-import { verifyBundle } from "../src/carry-manifest.js";
+import { houseExport, type BundleDoors } from "../src/commands/house-bundle.js";
+import { verifyBundle } from "../src/bundle-manifest.js";
 
 const F1 = "11111111-1111-4111-8111-111111111111";
 const tid = (title: string, text: string): string => `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`;
@@ -26,7 +26,7 @@ const put = (rel: string, text: string): void => { const p = join(root, ...rel.s
 const checkoutWikis = join(repoRoot, "wikis");
 const SOURCED = readdirSync(checkoutWikis, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort()[0]!;
 
-function doors(canonWikis: string): CarryDoors {
+function doors(canonWikis: string): BundleDoors {
   const no = async (): Promise<never> => { throw new Error("no import here"); };
   return {
     census: async () => ({ clean: true, items: [], unanswered: [] }),
@@ -59,7 +59,7 @@ const houseOnly = ["faces/f0/working/ha.ka.ba/kahua/memory/heron.tid", "faces/f0
 describe("the keep cuts house-only content", () => {
   test("H1 RED: a keep leaves a workbench resting in the checkout out and names it under `elsewhere`; CONTROL: every house-only class rides whole", async () => {
     expect(existsSync(join(checkoutWikis, SOURCED))).toBe(true);
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: doors(checkoutWikis), workspace: workspace(), houseOnly: true });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: doors(checkoutWikis), workspace: workspace(), houseOnly: true });
     expect(manifest.files.filter((f) => f.path.startsWith(`wikis/${SOURCED}/`))).toEqual([]);
     expect(manifest.elsewhere).toEqual([{ slug: SOURCED, layer: "wiki-working", bag: `lar:///ha.ka.ba/wikis/${SOURCED}/working`, holder: "checkout", path: relative(repoRoot, join(checkoutWikis, SOURCED)).split("\\").join("/") }]);
     for (const p of houseOnly) expect(manifest.files.map((f) => f.path)).toContain(p);
@@ -69,7 +69,7 @@ describe("the keep cuts house-only content", () => {
   test("H2 RED-CONTROL: the same workbench resting outside the checkout still rides the keep, and `elsewhere` names nothing", async () => {
     const outside = join(root, "canon", "wikis");
     put(`canon/wikis/${SOURCED}/ha.ka.ba/x/page.tid`, tid("lar:///ha.ka.ba/x/page", "a page"));
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: doors(outside), workspace: workspace(), houseOnly: true });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: doors(outside), workspace: workspace(), houseOnly: true });
     expect(manifest.files.map((f) => f.path)).toContain(`wikis/${SOURCED}/working/ha.ka.ba/x/page.tid`);
     expect(manifest.elsewhere ?? []).toEqual([]);
   });
@@ -77,7 +77,7 @@ describe("the keep cuts house-only content", () => {
   test("H3 CONTROL: a plain export carries the checkout's workbench as before and names no `elsewhere`", async () => {
     const plain = join(mkdtempSync(join(tmpdir(), "lar-keep-plain-out-")), "bundle");
     try {
-      const { manifest } = await carryExport(plain, { acceptOmissions: false, doors: doors(checkoutWikis) });
+      const { manifest } = await houseExport(plain, { acceptOmissions: false, doors: doors(checkoutWikis) });
       expect(manifest.files.some((f) => f.path.startsWith(`wikis/${SOURCED}/working/`))).toBe(true);
       expect(manifest.elsewhere).toBeUndefined();
     } finally { rmSync(dirname(plain), { recursive: true, force: true }); }

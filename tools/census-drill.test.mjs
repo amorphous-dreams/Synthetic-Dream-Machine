@@ -1,8 +1,8 @@
-// carry-parity — the instrument that reads two houses and answers `par`, or names every difference (missing, changed,
+// census-drill — the instrument that reads two houses and answers `par`, or names every difference (missing, changed,
 // extra) per class. It must be able to fail, so this test plants the reds it owes:
 //
 //   P1  the comparison over census readings: equal readings read par; a missing, a changed and an extra row each name their
-//       class and key; the classes the carry re-mints by design (face relations, kahua cids, CRDT heads, the Nexus AID, the
+//       class and key; the classes a restore re-mints by design (face relations, kahua cids, CRDT heads, the Nexus AID, the
 //       floor pin) never decide the verdict; a new-base reading takes the new house's own founding rows out of `extra`.
 //   P2  TWO REAL HOUSES: found a scratch house, write memory into its steward's daemon wiki (a free-titled record among it),
 //       found a second face after the stand, share one wiki with a page and one with none, `lares export`, take its census
@@ -21,20 +21,20 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { census, compareCensus, MAY_DIFFER, receiptLines } from "./carry-parity.mjs";
+import { census, compareCensus, CENSUS_SCHEMA, MAY_DIFFER, RECEIPT_SCHEMA, receiptLines } from "./census-drill.mjs";
 import { unlockTestCustody } from "./unlock-test-custody.mjs";
 import { daemonStood } from "./daemon-stood.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
 const nodeMain = join(repo, "packages/lararium-node/dist/src/main.js");
-const tool = join(repo, "tools/carry-parity.mjs");
+const tool = join(repo, "tools/census-drill.mjs");
 
 // ── P1: the comparison ────────────────────────────────────────────────────────────────────────────────────────
 
 /** A census reading as the instrument writes one: per face by pet-name, then the house-wide classes. */
 const reading = (over = {}) => ({
-  schema: "lar-carry-census/1",
+  schema: "lar-census",
   label: "fixture",
   faces: [{ petname: "steward", handleIndex: 0, mounted: true, relation: "11111111-1111-4111-8111-111111111111" }],
   face: {
@@ -51,7 +51,7 @@ const reading = (over = {}) => ({
   allowed: { relations: { steward: "11111111-1111-4111-8111-111111111111" }, kahuaCids: {}, ...over.allowed },
 });
 
-test("P1 equal readings read par, and what the carry re-mints by design never decides it", () => {
+test("P1 equal readings read par, and what a restore re-mints by design never decides it", () => {
   const old = reading();
   const fresh = reading({ allowed: { relations: { steward: "22222222-2222-4222-8222-222222222222" }, kahuaCids: { "t": "bafy-new" } } });
   fresh.faces = [{ ...fresh.faces[0], relation: "22222222-2222-4222-8222-222222222222" }];
@@ -61,6 +61,13 @@ test("P1 equal readings read par, and what the carry re-mints by design never de
   for (const name of ["face relations", "CRDT heads", "kahua cids", "Nexus AID", "floor pin"]) {
     assert.ok(MAY_DIFFER.some((m) => m.name === name), `the may-differ list names ${name}`);
   }
+});
+
+test("P1 the census and its compare receipt name their format, never count it: `lar-census` and `lar-census-compare`, no `/N`", () => {
+  assert.equal(CENSUS_SCHEMA, "lar-census");
+  assert.equal(RECEIPT_SCHEMA, "lar-census-compare");
+  assert.equal(compareCensus([reading()], [reading()]).schema, "lar-census-compare");
+  assert.throws(() => compareCensus([{ ...reading(), schema: "lar-carry-census/1" }], [reading()]), /not lar-census/, "a reading under the numbered name refuses: no back-compat reader");
 });
 
 test("P1 a missing, a changed and an extra row each read red under their class and key", () => {
@@ -108,7 +115,7 @@ test("P1 RED: a census of nothing never reads par: a side that read no face, or 
     assert.throws(() => compareCensus([old], [fresh]), (e) => e.fault === "census-empty" && e.side === side && e.message.includes(what), label);
   }
   // The compare verb refuses the same way: exit 2, the fault named, no receipt.
-  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-empty-"));
+  const dir = mkdtempSync(join(tmpdir(), "lares-census-drill-empty-"));
   try {
     const a = join(dir, "old.json"), b = join(dir, "new.json");
     writeFileSync(a, JSON.stringify(faceless));
@@ -121,7 +128,7 @@ test("P1 RED: a census of nothing never reads par: a side that read no face, or 
 });
 
 test("P1 RED: the census reads the face row the vessel answers `mounted`, and a row that names no mount reads no face classes", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-mount-"));
+  const dir = mkdtempSync(join(tmpdir(), "lares-census-drill-mount-"));
   try {
     // A stand-in `lares` answering each read door the census walks, its face row marked by the given word.
     const fake = join(dir, "lares.mjs");
@@ -168,18 +175,18 @@ test("P1 RED: a changed row whose new value equals the new-base reading stays re
 });
 
 test("P1 the compare verb reads census files: par exits 0, red exits 1 and prints one line per difference", () => {
-  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-census-"));
+  const dir = mkdtempSync(join(tmpdir(), "lares-census-drill-census-"));
   try {
     const a = join(dir, "census-old.json"), b = join(dir, "census-new.json"), out = join(dir, "receipt.json");
     writeFileSync(a, JSON.stringify(reading()));
     writeFileSync(b, JSON.stringify(reading()));
     const par = spawnSync(process.execPath, [tool, "compare", "--old", a, "--new", b], { encoding: "utf8" });
     assert.equal(par.status, 0, par.stderr);
-    assert.match(par.stdout, /^carry-parity: par — 1 face\(s\): 2 memes/);
+    assert.match(par.stdout, /^census-drill: par — 1 face\(s\): 2 memes/);
     writeFileSync(b, JSON.stringify(reading({ house: { shares: {} } })));
     const red = spawnSync(process.execPath, [tool, "compare", "--old", a, "--new", b, "--out", out], { encoding: "utf8" });
     assert.equal(red.status, 1, red.stderr);
-    assert.match(red.stdout, /carry-parity: red — 1 difference\(s\)\n  house · shares: missing wiki notes/);
+    assert.match(red.stdout, /census-drill: red — 1 difference\(s\)\n  house · shares: missing wiki notes/);
     assert.equal(JSON.parse(readFileSync(out, "utf8")).verdict, "red");
     const refused = spawnSync(process.execPath, [tool, "compare", "--old", dir, "--new", b], { encoding: "utf8" });
     assert.equal(refused.status, 2, "compare refuses a path that names no census file");
@@ -187,7 +194,7 @@ test("P1 the compare verb reads census files: par exits 0, red exits 1 and print
 });
 
 test("P1 one --old, --new or --base takes every census path after it (a shell glob's expansion), and a stray path refuses", () => {
-  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-glob-"));
+  const dir = mkdtempSync(join(tmpdir(), "lares-census-drill-glob-"));
   try {
     /** The reading of one more worn face, as a census of that face alone writes it. */
     const engineer = (over = {}) => {
@@ -227,7 +234,7 @@ const freePort = () => new Promise((resolve) => {
 
 /** One scratch house: a marked root, the test custody seeded, founded under `name`, standing and unlocked. */
 async function standHouse(tag, name) {
-  const root = mkdtempSync(join(tmpdir(), `lares-carry-parity-${tag}-`));
+  const root = mkdtempSync(join(tmpdir(), `lares-census-drill-${tag}-`));
   for (const script of ["test-scratch-marker.mjs", "seed-test-custody.mjs"]) {
     const r = spawnSync(process.execPath, [join(repo, "tools", script), root], { encoding: "utf8", env: { ...process.env, LAR_ROOT: root } });
     assert.equal(r.status, 0, `${script}: ${r.stderr}`);
@@ -288,7 +295,7 @@ const witness = (snapshot, fresh) => {
 };
 
 test("a-face-born-after-the-stand-exports: a face `persona new` founds on a standing vessel composes at its birth, so its stage reads and the export carries it", { timeout: 600_000 }, async () => {
-  const scratch = mkdtempSync(join(tmpdir(), "lares-carry-parity-late-"));
+  const scratch = mkdtempSync(join(tmpdir(), "lares-census-drill-late-"));
   let house = null;
   try {
     house = await standHouse("late", "steward");
@@ -307,7 +314,7 @@ test("a-face-born-after-the-stand-exports: a face `persona new` founds on a stan
 });
 
 test("P2 two real houses: export, import, par; then a deleted meme, a changed meme and a dropped share each read red by name", { timeout: 900_000 }, async () => {
-  const scratch = mkdtempSync(join(tmpdir(), "lares-carry-parity-files-"));
+  const scratch = mkdtempSync(join(tmpdir(), "lares-census-drill-files-"));
   const houses = [];
   try {
     // ── the exporting house: a steward and an engineer, memory in the steward's daemon wiki, one shared wiki ──────────
@@ -333,7 +340,7 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
       old.must(["meme", "put", uri, "--recipe", "default", "--file", file, "--json"]);
     }
     // Plain records (no uri-path): one under a stable name, and one under a free title, which the mirror sites at the flattened
-    // default (`plain note.tid`) and the carry names by the title its own file states.
+    // default (`plain note.tid`) and the restore names by the title its own file states.
     old.must(["tiddler", "put", PLAIN, "--recipe", "default", "--text", "a plain record", "--json"]);
     old.must(["tiddler", "put", FREE, "--recipe", "default", "--text", "a free-titled note", "--json"]);
     const bundle = join(scratch, "bundle");
