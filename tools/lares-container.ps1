@@ -451,8 +451,14 @@ function StandPulama {
   & docker compose @Base --profile pulama up -d --no-recreate pulama
   if ($LASTEXITCODE -ne 0) { Die 'the pūlama did not stand; nothing raised' }
   $digest = ImageDigest
-  & docker compose @Base --profile pulama exec -T pulama node $PulamaMain image $digest
-  if ($LASTEXITCODE -ne 0) { Die "the pūlama refused the image digest $digest; nothing raised" }
+  # The image offers its seed beside its digest: a one-shot of the image (no house mounted) prints the whole frame on one
+  # stdout line; a read that prints no frame falls back to the bare digest, so a seed read never blocks a stand.
+  $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
+  $frame = ''
+  try { $frame = ((& docker run --rm -e LAR_ROOT=/lar $image node $Cli vessel floor seed --genesis /app/genesis --image $digest 2>$null) | Select-Object -Last 1) } catch { $frame = '' }
+  $report = if ("$frame".StartsWith('{')) { "$frame" } else { $digest }
+  & docker compose @Base --profile pulama exec -T pulama node $PulamaMain image $report
+  if ($LASTEXITCODE -ne 0) { Die "the pūlama refused the image report for $digest; nothing raised" }
 }
 # Does a pūlama run beside the vessel? It reads the container itself, whatever LARES_PULAMA now says: running, absent, or
 # unknown where the ps fails.

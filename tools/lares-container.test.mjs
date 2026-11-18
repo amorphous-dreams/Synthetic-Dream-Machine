@@ -33,6 +33,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
       `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
+      `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" vessel census "*) [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
       `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
@@ -854,6 +855,19 @@ test(`${name}: pulama-mode up stands the pūlama first, reports the image digest
   const img = lines.findIndex((l) => /exec -T pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js image sha256:abc123/.test(l));
   const ves = lines.findIndex((l) => /up -d --wait lares/.test(l));
   assert.ok(pul >= 0 && img > pul && ves > img, `order pūlama, digest, vessel:\n${r.calls}`);
+});
+test(`${name}: pulama-mode up reads the image's offered seed one-shot (no house mounted) and reports the whole frame; a read that prints nothing falls back to the bare digest`, { skip }, async () => {
+  const frame = '{"digest":"sha256:abc123","seed":"seed bafkseed offered; the founding record reads at boot"}';
+  const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123", FAKE_SEED_FRAME: frame } });
+  assert.equal(r.status, 0, r.stderr);
+  const read = r.calls.split("\n").find((l) => / vessel floor seed /.test(l));
+  assert.ok(read, r.calls);
+  assert.match(read, /^run --rm -e LAR_ROOT=\/lar \S+ node packages\/lares-cli\/bin\/lares\.mjs vessel floor seed --genesis \/app\/genesis --image sha256:abc123$/);
+  assert.doesNotMatch(read, / -v /, "the one-shot mounts no house");
+  assert.ok(r.calls.includes(`pulama-main.js image ${frame}`), `the frame reaches the pūlama whole:\n${r.calls}`);
+  const bare = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+  assert.equal(bare.status, 0, bare.stderr);
+  assert.match(bare.calls, /pulama-main\.js image sha256:abc123$/m);
 });
 test(`${name}: CONTROL a house without LARES_PULAMA stands the vessel alone, and names no pūlama`, { skip }, async () => {
   const r = await run(shim, ["up"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\n" });
