@@ -490,4 +490,17 @@ describe("the keep rite, host half", () => {
     expect(n.calls[0]).toBe(`keep-cut ${JSON.stringify({ workspace: "backup", into: "house", face: 2 })}`);
     expect(named.data).toMatchObject({ face: 2, faceBy: "named" });
   });
+
+  test("KH18 keep-names-its-code-once: a vessel half refused under a message that already leads with its code says the code once", async () => {
+    const r = rig();
+    const ports: KeepHostPorts = { ...r.ports, sessions: null, row: async (verb, args) => {
+      if (verb === "keep-cut") { r.calls.push(`${verb} ${JSON.stringify(args)}`); return { ok: false, code: "vessel-locked", message: "vessel-locked: run `lares vault unlock`, then run again" }; }
+      return r.ports.row(verb, args);
+    } };
+    const out = await riteKeepHost(ports, { workspace: "backup" });
+    expect(out).toMatchObject({ code: 1, data: { refusal: "vessel-locked" } });
+    const line = r.said.find((l) => l.startsWith("keep: vessel-locked"));
+    expect(line).toBe("keep: vessel-locked: run `lares vault unlock`, then run again");
+    expect(String((out.data as { message?: unknown }).message)).not.toMatch(/vessel-locked: vessel-locked/);
+  });
 });

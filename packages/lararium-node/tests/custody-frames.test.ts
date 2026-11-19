@@ -552,6 +552,15 @@ describe("the census frame", () => {
     expect(await ask(door(() => [], false)), "a shut node key lights no face").not.toHaveProperty("facesLit");
   });
 
+  test("N5 census-names-the-worn-face: under a held key the census names the face worn; none worn, or a shut key, leaves `worn` absent", async () => {
+    setMountedFace(1);
+    try {
+      expect(await ask(door(() => [], true))).toMatchObject({ locked: false, worn: 1 });
+      expect(await ask(door(() => [], false)), "a shut node key wears no face").not.toHaveProperty("worn");
+    } finally { setMountedFace(undefined); }
+    expect(await ask(door(() => [], true))).not.toHaveProperty("worn");
+  });
+
   test("N4 — under a held key, each standing face whose key stays shut answers in facesLocked; none shut leaves the field absent", async () => {
     const shut = listFaceCustodyIds().map((f) => f.ordinal);
     const answer = await ask(door(() => [], true, false));

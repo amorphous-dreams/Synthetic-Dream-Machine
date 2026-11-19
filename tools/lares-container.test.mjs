@@ -611,6 +611,23 @@ for (const [name, shim] of shims) {
     assert.equal(stopped(r.calls), false, r.calls);
   });
 
+  // THE WAY TO SETTLE READS THE VESSEL'S STATE: faces open and none worn wear one; a key not held unlocks; a worn face waits.
+  const NONE_WORN = "census: no face worn (h0, h1, h2 stand open): wear one (`lares wear N`), then down\ncensus: 2 item(s) rest nowhere yet; a stop now drops them";
+  const HELD = '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}';
+  test(`${name}: down-names-the-wear-when-none-worn: faces open and none worn name wear N, never vault unlock`, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_ERR: NONE_WORN, FAKE_CENSUS_RC: "3", FAKE_CUSTODY_OUTPUT: HELD } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /wear a face and let it settle: tools\/lares-container\.(sh|ps1) wear N \(faces stand open and none worn\), then tools\/lares-container\.(sh|ps1) down again/);
+    assert.doesNotMatch(r.stderr, /vault unlock/);
+    assert.equal(stopped(r.calls), false, r.calls);
+  });
+  test(`${name}: down-waits-on-a-worn-face: a key held under a worn face names the wait alone, never vault unlock`, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_ERR: "census: 2 item(s) rest nowhere yet; a stop now drops them", FAKE_CENSUS_RC: "3", FAKE_CUSTODY_OUTPUT: HELD } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /let it settle: give the vessel a moment, then tools\/lares-container\.(sh|ps1) down again/);
+    assert.doesNotMatch(r.stderr, /vault unlock|wear N/);
+  });
+
   test(`${name}: a census that cannot answer refuses by name, never a silent stop`, async () => {
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "1", FAKE_CENSUS_ERR: "container wedged" } });
     assert.equal(r.status, 2);
