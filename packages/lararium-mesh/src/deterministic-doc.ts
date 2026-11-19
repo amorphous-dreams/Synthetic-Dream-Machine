@@ -25,8 +25,21 @@ import { emptyLarDoc, type LarDoc } from "./base-doc.js";
 /** Derive a deterministic automerge: URL from a seed string — the first 16 bytes of its sha256 as the doc-id. */
 export function deterministicDocUrl(seed: string): AutomergeUrl {
   const binId = sha256BytesSync(utf8Bytes(seed)).slice(0, 16) as BinaryDocumentId;
-  return stringifyAutomergeUrl({ documentId: binId });
+  const url = stringifyAutomergeUrl({ documentId: binId });
+  if (!derived.has(url)) derived.set(url, seedLabel(seed));
+  return url;
 }
+
+/**
+ * THE DERIVED ADDRESSES THIS PROCESS COMPUTED, by URL: each names the document a derivation reaches (`deterministicDocUrl`),
+ * labelled by the seed's head (the part before any `#`, so no key a seed carries after it rides the label) or by the board
+ * label a materialize names (`materializeSharedLarDoc`). The document census reads them as `derived` names.
+ */
+const derived = new Map<string, string>();
+const seedLabel = (seed: string): string => (seed.split("#")[0] ?? seed).slice(0, 96);
+
+/** The derived addresses this process computed, by URL, each with its label. */
+export function derivedDocAddresses(): ReadonlyMap<string, string> { return derived; }
 
 /** The Nexus's crossroads doc URL — the public plane's per-island address (deterministic). */
 export function crossroadsDocUrl(nexusPubkey: string): AutomergeUrl {
@@ -210,6 +223,7 @@ export async function materializeSharedLarDoc(
   url: AutomergeUrl,
   label: string,
 ): Promise<DocHandle<LarDoc>> {
+  derived.set(url, label);
   try {
     const existing = await resolveBootDoc<LarDoc>(repo, url, { tideline: "hearth-private", label });
     return existing;   // present (persisted or synced) → use it

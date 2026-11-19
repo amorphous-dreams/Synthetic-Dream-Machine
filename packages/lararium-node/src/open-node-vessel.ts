@@ -77,7 +77,8 @@ import { makeEdgeShadowRing, ringDyadDoor, type EdgeShadowRing } from "./edge-sh
 import { floorShadowRing } from "./floor-fleet-lanes.js";
 import type { JoinedFaceAuth, WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
-import type { HeldSaves, MountManifest } from "@lararium/mesh";
+import type { DocCensusReading, DocRef, HeldSaves, MountManifest } from "@lararium/mesh";
+import { readDocCensus, type DocCensusDoor } from "./doc-census-door.js";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
@@ -646,6 +647,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   facePoolStandDown: () => Promise<void>;
   /** The census of saves this vessel's sealed rest holds in memory, by document and never by body (`lares vessel census`). */
   heldSaves: () => readonly HeldSaves[];
+  /** The document census of this vessel's stores, read-only (`lares vessel census --docs`). */
+  docCensus: () => Promise<DocCensusReading>;
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -683,6 +686,8 @@ export interface NodeHermResult {
   backupDoor:      BackupDoor;
   /** The census of saves this herm's sealed rest holds in memory, by document and never by body (`lares vessel census`). */
   heldSaves:       () => readonly HeldSaves[];
+  /** The document census of this herm's stores, read-only (`lares vessel census --docs`). */
+  docCensus:       () => Promise<DocCensusReading>;
   /** The floor's rest key as this composition began with it: `stands` on an unlocked veil floor, else the floor's refusal. */
   floorKey:        "stands" | "vessel-locked" | "floor-unkeyed";
   /** M15: which social planes mounted live vs degraded vs PENDING — see `NodeVesselResult.mountManifest`. */
@@ -746,6 +751,8 @@ interface NodeBootPrep {
   facePoolStandDown: () => Promise<void>;
   /** The census of saves the sealed rest holds in memory, by document and never by body. */
   heldSaves: () => readonly HeldSaves[];
+  /** The document census of this vessel's stores, read-only (`lares vessel census --docs`). */
+  docCensus: () => Promise<DocCensusReading>;
   /** The floor's rest key as this composition began with it (`standFloorKey`). */
   floorKey: "stands" | "vessel-locked" | "floor-unkeyed";
   /** THE SESSION SIGN LIFT, built and seated by the lift alone: each call stands a fresh book and its door over this
@@ -4778,6 +4785,23 @@ async function prepareNodeBootOn(
     },
     facePoolStandDown: async () => { await facePoolWatch?.down("down"); await Promise.all([...workspaceWatches].map((w) => w.down("down"))); },
     heldSaves: () => sealedRest.store.held(),
+    // THE DOCUMENT CENSUS reads this vessel's own stores, read-only: the pointers this composition reads back, the roles
+    // it knows its documents by, and the sealed rest under the worn session for a sealed document no handle holds.
+    docCensus: () => {
+      const idOf = (url: string | null | undefined): string | null => (url ? url.replace(/^automerge:/, "").split("#")[0]! : null);
+      const daemonId = idOf(bootstrap?.daemonUrl);
+      const roles = new Map<string, string>();
+      const catalogId = idOf(catalogHandle.url)!;
+      const pointers: Array<{ id: string } & DocRef> = [{ id: catalogId, kind: "catalog", by: "the catalog pointer" }];
+      roles.set(catalogId, "catalog");
+      if (faceCatalogDocId !== null) { roles.set(faceCatalogDocId, "catalog"); pointers.push({ id: faceCatalogDocId, kind: "catalog", by: "the face's catalog" }); }
+      if (controlDocId !== null) { roles.set(controlDocId, "control"); pointers.push({ id: controlDocId, kind: "control", by: "the control home" }); }
+      if (daemonId !== null) { roles.set(daemonId, "daemon"); pointers.push({ id: daemonId, kind: "pointer", by: "the bootstrap's daemon document" }); }
+      return readDocCensus({
+        storageDir, repo: repo as unknown as DocCensusDoor["repo"], roles: () => roles, pointers: () => pointers,
+        openSealed: async (id) => (await sealedRest.store.loadRange([id])).flatMap((c) => (c.data !== undefined ? [c.data] : [])),
+      });
+    },
     get floorKey() { return floorKeyGrant; },
     backupDoor: {
       mountFace: () => mountFace,
@@ -4995,6 +5019,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     sealedRestStandDown: p.sealedRestStandDown,
     facePoolStandDown: p.facePoolStandDown,
     heldSaves:       p.heldSaves,
+    docCensus:       p.docCensus,
     floorKey:        p.floorKey,
     backupDoor:      p.backupDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
@@ -5156,6 +5181,7 @@ async function composeNodeHermOn(
     hostingDoor:      p.hostingDoor,
     backupDoor:      p.backupDoor,
     heldSaves:        p.heldSaves,
+    docCensus:        p.docCensus,
     floorKey:         p.floorKey,
     mountManifest:    herm.assembly.mountManifest,
     dispose,

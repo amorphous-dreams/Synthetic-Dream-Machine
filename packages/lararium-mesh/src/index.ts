@@ -358,6 +358,7 @@ export { LEAF_RETRY_CAP_MS, LEAF_SILENCE_LOG_EVERY, LarWSClientAdapter } from ".
 export type { LarWSClientOptions, LarLeafSession, FacePresentation } from "./lar-ws-client-adapter.js";
 export * from "./cap-compose.js";
 export * from "./mint-census.js";
+export * from "./doc-census.js";
 export * from "./carriage-caps.js";
 export * from "./persona-hd.js";
 export * from "./persona-identity.js";
