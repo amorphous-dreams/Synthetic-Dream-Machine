@@ -7,13 +7,10 @@
 //
 //   F0  the unlocked vessel takes `lares wiki init` + `lares wiki open`: the marker names the user wiki for the next boot.
 //   F1  a fresh `lares vessel stand` stands the floor: the process lives, the custody door reads the key not held, and
-//       the marker's wiki stands unmounted (`lares wiki active` names it not).
+//       the marker's wiki stands unmounted (`lares wiki active` names it not). The floor stands as the herm and names no
+//       wiki: the marker rests in the face's sealed daemon doc, behind the key the floor waits on.
 //   F2  `lares vault unlock` (the harness's test route, tools/unlock-test-custody.mjs) opens the key, the composition
 //       stands as the hearth, `lares wiki active` names the marker's wiki, and the custody door names none waiting.
-//   F1w TODO (an open operator call): the process floor composes as the HERM (`standAs`: a hearth whose archive opens
-//       not stands at the floor, and the floor composes wiki-less), so `lares vault status` names no waiting wiki; the
-//       in-process floor-wiki naming (tests/e2e/floor-user-wiki-refuses W2) runs only where a caller composes a
-//       Lararium at the floor. Measured 2026-11-06: the door reads `standing: "herm"`, `wikiAwaits: null`.
 //
 // Run under bwrap with a scratch HOME and LAR_ROOT, LAR_BAGS unset: it stands real daemons.
 import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
@@ -36,7 +33,7 @@ const freePort = () => new Promise((resolve) => {
   s.listen(0, "127.0.0.1", () => { const { port } = s.address(); s.close(() => resolve(port)); });
 });
 
-test("the floor stands over the marker's user wiki and lives; the unlock mounts it", { timeout: 1_200_000 }, async (t) => {
+test("the floor stands over the marker's user wiki and lives; the unlock mounts it", { timeout: 1_200_000 }, async () => {
   const root = mkdtempSync(join(tmpdir(), "lares-floor-unlock-"));
   const port = await freePort();
   const env = { ...process.env, LAR_ROOT: root, LAR_PORT: String(port), LAR_SAME_ORIGIN: "true" };
@@ -72,9 +69,8 @@ test("the floor stands over the marker's user wiki and lives; the unlock mounts 
     const atFloor = door();
     assert.equal(atFloor?.unlocked, false, `the vessel stands at the floor: ${JSON.stringify(atFloor)}`);
     assert.doesNotMatch(lares("wiki", "active").out, new RegExp(WIKI), "the floor mounts not the marker's wiki");
-    await t.test("F1w the floor names the waiting wiki", { todo: "operator call: the process floor stands as the herm, wiki-less" }, () => {
-      assert.match(String(atFloor?.wikiAwaits), new RegExp(`${WIKI}.*awaits your face.*lares vault unlock`), JSON.stringify(atFloor));
-    });
+    assert.equal(atFloor?.standing, "herm", JSON.stringify(atFloor));
+    assert.ok(atFloor?.wikiAwaits == null, `the herm names no wiki: ${JSON.stringify(atFloor)}`);
 
     // F2: the unlock's composition mounts it.
     const opened = await unlockTestCustody(root);
