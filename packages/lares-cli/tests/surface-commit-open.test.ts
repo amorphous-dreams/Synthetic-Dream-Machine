@@ -11,7 +11,7 @@ import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "no
 import { join, resolve } from "node:path";
 import { carrierHash } from "@lararium/mesh";
 import { ensureRealmLabel, faceRoot, syncedTreeKey } from "@lararium/node";
-import { cmdSurface } from "../src/commands/surface.js";
+import { cmdSurface, LIVE_SURFACE_DOORS, SURFACE_EDITOR_FILE, SURFACE_EDITOR_TITLE } from "../src/commands/surface.js";
 import { git, openSurfaceRig, plant, stubLaresOnPath, surfaceArgs, type SurfaceRig } from "./support/surface-rig.js";
 
 const BAG = "lar:///ha.ka.ba/wikis/daemon/working";
@@ -168,6 +168,25 @@ describe("lares surface open", () => {
   test("--launch runs that one line", async () => {
     expect(await cmdSurface(surfaceArgs(["open"], {}, { launch: true }), rig.doors)).toBe(0);
     expect(rig.launched).toEqual([["code", "-n", heron]]);
+  });
+
+  test("★ RED: the editor reads from the house config tiddler `$:/config/lares/surface/Editor`; `code` where none stands ★", async () => {
+    expect(await cmdSurface(surfaceArgs(["open"], {}, { launch: true }), rig.doors)).toBe(0);
+    expect(rig.launched).toEqual([["code", "-n", heron]]);
+    writeFileSync(join(rig.config, SURFACE_EDITOR_FILE), `title: ${SURFACE_EDITOR_TITLE}\ntype: text/plain\n\ncode-insiders\n`);
+    expect(await cmdSurface(surfaceArgs(["open"], {}, { launch: true }), rig.doors)).toBe(0);
+    expect(rig.launched.at(-1)).toEqual(["code-insiders", "-n", heron]);
+    expect(rig.said()).toContain(`code-insiders -n '${heron}'`);
+  });
+
+  test("RED: an editor this machine holds no binary for refuses by name, naming the tiddler to set", async () => {
+    writeFileSync(join(rig.config, SURFACE_EDITOR_FILE), `title: ${SURFACE_EDITOR_TITLE}\ntype: text/plain\n\nno-such-editor-here\n`);
+    const doors = { ...rig.doors, launch: LIVE_SURFACE_DOORS.launch };
+    expect(await cmdSurface(surfaceArgs(["open"], {}, { launch: true }), doors)).toBe(1);
+    const said = rig.said();
+    expect(said).toContain("no-such-editor-here");
+    expect(said).toContain(SURFACE_EDITOR_TITLE);
+    expect(said).toContain(join(rig.config, SURFACE_EDITOR_FILE));
   });
 
   test("a face whose root stands nowhere yet names `surface init`", async () => {
