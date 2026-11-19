@@ -37,7 +37,13 @@ export interface CensusReading {
   readonly unanswered: ReadonlyArray<{ readonly part: string; readonly why: string }>;
   /** THE LIT SET: each face whose key stands open, each sealing its own memory under its own key (absent where none reads). */
   readonly facesLit?: readonly number[];
+  /** THE WORN FACE beside the lit set (present where the lit set reads): the daemon mount, or null where none wears. */
+  readonly worn?: number | null;
 }
+
+/** The line a census over faces lit and none worn adds: the wear that lets the house settle, in the order a person runs it. */
+export const noFaceWornLine = (lit: readonly number[]): string =>
+  `no face worn (${lit.map((n) => `h${n}`).join(", ")} stand open): wear one (\`lares wear N\`), then down`;
 
 /** The two lines the census reads, injectable so a test drives them without a vessel. */
 export interface CensusLines {
@@ -107,7 +113,8 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
     return { clean: false, items, unanswered: [{ part: "the vessel", why: VESSEL_LOCKED_CENSUS }] };
   }
   const facesLit = Array.isArray(custody?.["facesLit"]) ? (custody!["facesLit"] as unknown[]).filter((n): n is number => Number.isSafeInteger(n)) : [];
-  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered, ...(facesLit.length > 0 ? { facesLit } : {}) };
+  const worn = Number.isSafeInteger(custody?.["worn"]) ? (custody!["worn"] as number) : null;
+  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered, ...(facesLit.length > 0 ? { facesLit, worn } : {}) };
 }
 
 /** One item as one printed line: kind, state, name, and where it belongs. Never a body. */
@@ -131,6 +138,7 @@ export async function cmdCensus(args: ParsedArgs, lines: CensusLines = LIVE_LINE
       for (const item of reading.items) console.log(censusLine(item));
       for (const u of reading.unanswered) console.error(u.why === VESSEL_LOCKED_CENSUS ? `census: ${u.why}` : `census: unanswered — ${u.part}: ${u.why}`);
       if (reading.items.length > 0) console.error(`census: ${reading.items.length} item(s) rest nowhere yet; a stop now drops them`);
+      if (reading.facesLit !== undefined && reading.worn === null) console.error(`census: ${noFaceWornLine(reading.facesLit)}`);
     },
   });
   return code;

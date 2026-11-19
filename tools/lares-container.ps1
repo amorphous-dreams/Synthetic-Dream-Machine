@@ -17,7 +17,8 @@
 # A STOP NEVER DROPS CONTENT SILENTLY. While a vessel stands, `down` asks it first (`vessel census`, by compose exec,
 # bounded): the saves its sealed rest holds in memory and the carriers its disk projector has not settled. A clean
 # answer stops as before; any item, or a census that cannot answer, prints what it learned and refuses, naming two ways
-# on: unlock and let it settle (`vault unlock`, then `down` again), or type `accept-loss` on this terminal. With no
+# on: let it settle, by the way the vessel's state names (`wear N` where faces stand open and none worn, `vault unlock`
+# where the key stands shut, a wait where a worn face holds it), then `down` again; or type `accept-loss` on this terminal. With no
 # terminal it refuses. With no vessel standing, `down` runs as it always has.
 $ErrorActionPreference = 'Stop'
 
@@ -336,9 +337,21 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
 
 # THE CENSUS BEFORE A STOP, bounded over the whole exec, so a wedged vessel never hangs `down`.
 $CensusWaitSeconds = 60
-function OfferAcceptLoss {
+# THE WAY TO SETTLE READS THE VESSEL'S STATE: faces open and none worn (the census says so) wear one; a key the vessel holds
+# under a worn face waits alone; a key it does not hold, or a census that never answered, unlocks.
+function SettleWay([string]$err, [bool]$timedOut) {
+  $lines = $err -split "`r?`n"
+  if ($lines | Where-Object { $_ -like 'census: no face worn*' }) {
+    return '  - wear a face and let it settle: tools/lares-container.ps1 wear N (faces stand open and none worn), then tools/lares-container.ps1 down again'
+  }
+  if (-not $timedOut -and -not ($lines | Where-Object { $_ -like 'census: vessel locked*' }) -and (KeyHeld)) {
+    return '  - let it settle: give the vessel a moment, then tools/lares-container.ps1 down again'
+  }
+  return '  - unlock it and let it settle: tools/lares-container.ps1 vault unlock, then tools/lares-container.ps1 down again'
+}
+function OfferAcceptLoss([string]$err = '', [bool]$timedOut = $false) {
   [Console]::Error.WriteLine('lares-container: the vessel stands. Two ways on:')
-  [Console]::Error.WriteLine('  - unlock it and let it settle: tools/lares-container.ps1 vault unlock, then tools/lares-container.ps1 down again')
+  [Console]::Error.WriteLine((SettleWay $err $timedOut))
   [Console]::Error.WriteLine('  - stop anyway, dropping what the list names: type accept-loss below')
   if (-not $script:Tty) { Die 'down refuses: no terminal stands here to type accept-loss on; the vessel stands' }
   [Console]::Out.Write('Type accept-loss to stop anyway: ')
@@ -381,7 +394,7 @@ function CensusBeforeStop {
   # A LOCKED HEARTH: the census names the cure in one line (`census: vessel locked: ...`); say it plainly, not "could not answer".
   if (-not $timedOut -and ($err -split "`r?`n" | Where-Object { $_ -like 'census: vessel locked*' })) {
     [Console]::Error.WriteLine('lares-container: down refuses a silent stop: vessel locked: run tools/lares-container.ps1 vault unlock, then down')
-    OfferAcceptLoss
+    OfferAcceptLoss $err $timedOut
     return
   }
   if ($rc -eq 3 -and -not $timedOut) {
@@ -393,7 +406,7 @@ function CensusBeforeStop {
     [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
     if ($env:LARES_DEBUG -eq '1') { Indent $out; Indent $err }
   }
-  OfferAcceptLoss
+  OfferAcceptLoss $err $timedOut
 }
 
 $script:Tty = (-not [Console]::IsInputRedirected) -and (-not [Console]::IsOutputRedirected)

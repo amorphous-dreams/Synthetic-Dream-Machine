@@ -10,7 +10,7 @@
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { VERB_RESULT_KEY } from "@lararium/mesh";
 import { cmdCensus, readCensus, type CensusLines } from "../src/commands/census.js";
-import { askShoreCensus } from "../src/shore-core.js";
+import { askShoreCensus, type ShoreCensus } from "../src/shore-core.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import type { SubmitResult } from "../src/verb-result.js";
 
@@ -69,6 +69,20 @@ describe("the vessel census", () => {
     const reading = await readCensus(lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLit: [0, 1], facesLocked: [2] }) }));
     expect(reading.facesLit).toEqual([0, 1]);
     expect(reading.unanswered).toEqual([{ part: "the face h2", why: "h2 stands locked; unlock it (`lares vault unlock --face 2`), then down" }]);
+  });
+
+  test("V6 census-names-none-worn: faces lit and none worn, the census says so and names the wear; CONTROL: a worn face names none", async () => {
+    const c = capture();
+    const unsettled: ShoreCensus = { carriers: [{ state: "pending", uri: "lar:///ha.ka.ba/notes/pond", bagId: "notes", island: "wiki" }], unanswered: [] };
+    const noneWorn = lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLit: [0, 1, 2] }), shore: async () => unsettled });
+    expect((await readCensus(noneWorn)).worn).toBeNull();
+    expect(await cmdCensus(args(false), noneWorn)).toBe(3);
+    expect(c.err.join("\n")).toMatch(/^census: no face worn \(h0, h1, h2 stand open\): wear one \(`lares wear N`\), then down$/m);
+    c.err.length = 0;
+    const worn = lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLit: [0, 1, 2], worn: 1 }), shore: async () => unsettled });
+    expect((await readCensus(worn)).worn).toBe(1);
+    expect(await cmdCensus(args(false), worn)).toBe(3);
+    expect(c.err.join("\n")).not.toMatch(/no face worn/);
   });
 
   test("V3 — a line that cannot answer exits 2 by name and never reads clean", async () => {

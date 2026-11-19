@@ -14,6 +14,9 @@
  *   K8  keep-reads-the-keep-face-whoever-wears: a keep that names no face acts as the keep's face, one per house (the face whose
  *       keep lei already stands, else h0), names it on every row and in its answer; a named `--face N` rides as named; the lei
  *       hint names the keep's face.
+ *   K10 keep-acts-as-the-keep-face-with-none-worn: a pūlama lent h0, h1 and h2 and the vessel wears none of them: the keep
+ *       acts as the face whose keep lei stands (else h0), rides it on every row and answers it, never asking a worn face.
+ *   K11 keep-names-its-code-once: a row refused under a message that already leads with its code reads that code once.
  */
 import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
@@ -52,15 +55,16 @@ function writeBundle(dest: string, notes: Readonly<Record<string, string>>): Bun
 }
 
 /** The vessel's rows and the cut, recorded; `lei` names what the keep line reads, `begin` what the begin row answers. */
-function rig(over: { lei?: Record<string, unknown>; leiOn?: Record<number, Record<string, unknown>>; begin?: RiteVerbAnswer; notes?: Record<string, string>; mount?: number } = {}) {
+function rig(over: { lei?: Record<string, unknown>; leiOn?: Record<number, Record<string, unknown>>; begin?: RiteVerbAnswer; notes?: Record<string, string>; mount?: number | null } = {}) {
   const calls: string[] = [], stagedAtBegin: string[] = [];
   const state = { notes: over.notes ?? { heron: "remember the heron\n" }, begin: over.begin, lei: over.lei ?? { standing: true, reach: "wide", returnsLeft: 2, after: LEI } };
   const ports: KeepPorts = {
     row: async (verb, args) => {
       calls.push(`${verb} ${JSON.stringify(args)}`);
-      // THE DOOR'S CHORE GATE: a row asked as a face other than the daemon mount refuses, naming both.
-      const mount = over.mount ?? 0;
-      if (typeof args["face"] === "number" && args["face"] !== mount) return { ok: false, code: "chore-face-not-mounted", message: `chore-face-not-mounted: asked as h${String(args["face"])}, the daemon mount runs h${mount}` };
+      // THE DOOR'S CHORE GATE: a row asked as a face other than the daemon mount refuses, naming both. A vessel that wears
+      // no face (`mount: null`) stands no gate (`choreAtDoor` answers null), as a pūlama's lend with none worn leaves it.
+      const mount = over.mount === undefined ? 0 : over.mount;
+      if (mount !== null && typeof args["face"] === "number" && args["face"] !== mount) return { ok: false, code: "chore-face-not-mounted", message: `chore-face-not-mounted: asked as h${String(args["face"])}, the daemon mount runs h${mount}` };
       if (verb === "swarm-show") return { ok: true, output: { lei: over.leiOn !== undefined ? (over.leiOn[Number(args["face"])] ?? { standing: false, refusal: "absent", after: null }) : state.lei } };
       if (verb === "rite-receipt") return { ok: true, output: { tree: args["tree"], verdict: "pass" } };
       if (typeof args["staged"] === "string") stagedAtBegin.push(verifyBundle(join(workspace(), ...String(args["staged"]).split("/"))).manifest.bundleId);
@@ -210,6 +214,37 @@ describe("the keep rite, vessel half", () => {
     const two = await riteKeep({ ...named.ports, houseFaces: async () => ({ open: [0, 1, 2], shut: [] }) }, { workspace: "backup", into: "elsewhere", face: 2 });
     expect(two).toMatchObject({ face: 2, faceBy: "named" });
     expect(named.calls[0]).toBe(`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 2 })}`);
+  });
+
+  test("K10 keep-acts-as-the-keep-face-with-none-worn: faces lent h0, h1, h2 and none worn: the face whose lei stands acts on every row, else h0, and the answer says which", async () => {
+    const STANDING = { standing: true, reach: "wide", returnsLeft: 3, tip: LEI };
+    const lent = async () => ({ open: [0, 1, 2], shut: [] });
+    // The lei stands on h2, and the vessel wears no face: the keep acts as h2.
+    const r = rig({ leiOn: { 2: STANDING }, mount: null });
+    const out = await riteKeep({ ...r.ports, houseFaces: lent }, { workspace: "backup" });
+    expect(out).toMatchObject({ kept: true, face: 2, faceBy: "keep" });
+    const rows = r.calls.filter((c) => !c.startsWith("cut"));
+    expect(rows.slice(0, 3)).toEqual([0, 1, 2].map((f) => `swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: f })}`));
+    expect(rows.slice(3).map((c) => c.split(" ")[0])).toEqual(["rite-receipt", "rite-begin"]);
+    expect(rows.slice(3).every((c) => c.includes('"face":2'))).toBe(true);
+    // The lei stands on h0: h0, and no other face read (the bundle the first keep laid stands, so this one spends nothing).
+    const zero = rig({ leiOn: { 0: STANDING }, mount: null });
+    expect(await riteKeep({ ...zero.ports, houseFaces: lent }, { workspace: "backup" })).toMatchObject({ face: 0, faceBy: "keep" });
+    expect(zero.calls.filter((c) => c.startsWith("swarm-show"))).toHaveLength(1);
+    // No lei stands on any lent face: the keep's face reads h0, and the cure strings the lei there.
+    const none = rig({ leiOn: {}, mount: null });
+    await expect(riteKeep({ ...none.ports, houseFaces: lent }, { workspace: "backup" })).rejects.toThrow(/lares lei kui --rite keep --branch backup --returns <n> --face 0/);
+  });
+
+  test("K11 keep-names-its-code-once: a refused row whose message already leads with its code reads the code once", async () => {
+    const seat = rig({ mount: 0 });
+    const c = await riteKeep({ ...seat.ports, houseFaces: async () => ({ open: [0, 1], shut: [] }) }, { workspace: "backup", face: 1 }).catch((e: unknown) => e as KeepRefused);
+    expect(c).toBeInstanceOf(KeepRefused);
+    expect((c as KeepRefused).message).toMatch(/^chore-face-not-mounted: asked as h1/);
+    expect((c as KeepRefused).message).not.toMatch(/chore-face-not-mounted: chore-face-not-mounted/);
+    // CONTROL: a message that does not lead with its code takes the prefix once.
+    expect(new KeepRefused("keep-into-unsafe", "--into names a dotted segment").message).toBe("keep-into-unsafe: --into names a dotted segment");
+    expect(new KeepRefused("vessel-locked", "vessel-locked: run `lares vault unlock`").message).toBe("vessel-locked: run `lares vault unlock`");
   });
 
   test("K9 keep-names-a-lei-it-cannot-see: none read standing while a face stands shut, or its line refused, names `lares rite keep --face N`; a row refused at the chore gate says the keep belongs to the operator's hand", async () => {

@@ -45,7 +45,7 @@ import { join } from "node:path";
 import { MANIFEST_FILE, unsafeRelPath } from "./bundle-manifest.js";
 import { configuredKeepSessions } from "./keep-config.js";
 import { DEVICES_DIR, SessionsRefused, mirrorSessions, readOrMintDevice, sessionSources, type SessionSources } from "./keep-sessions.js";
-import { KEEP_INTO, KeepRefused, RITE_KEEP, keepFaceLine } from "./rite-keep.js";
+import { KEEP_INTO, KeepRefused, RITE_KEEP, codedMessage, keepFaceLine } from "./rite-keep.js";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
 
 /**
@@ -90,7 +90,7 @@ export interface KeepHostOutcome { readonly code: number; readonly data: Record<
 
 /** A refusal the host half raises by name; the message carries the cure. */
 class HostRefused extends Error {
-  constructor(readonly code: string, message: string, readonly extra: Record<string, unknown> = {}) { super(`${code}: ${message}`); }
+  constructor(readonly code: string, message: string, readonly extra: Record<string, unknown> = {}) { super(codedMessage(code, message)); }
 }
 
 const under = (path: string, into: string): boolean => path === into || path.startsWith(`${into}/`);

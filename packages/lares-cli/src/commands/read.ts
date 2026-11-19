@@ -190,11 +190,19 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
   // THE MEMORY GUARDS. Every harness's session store seeds the operator's memory, and each host prunes
   // by its own retention; `lares home` keeps each at its maximum. The read surfaces the guards' rows so a
   // lowered one (a hand, a host update) stays visible here as well as at the wake.
-  const guards = readIntent(
-    homeItems({ repo: repoRoot, homes: resolveHomes(), mcp: null, claudeCli: false }).filter((i) => /\.retain/.test(i.id)),
-    new Ledger(homeLedgerDir()),
-  ).filter((r) => r.state !== "absent");
-  const guardsHeld = guards.every((r) => r.state === "aligned");
+  // A TREE WITHOUT THE CATALOG (an older image against a newer checkout, or the reverse) names the skew and reads on: the
+  // read never throws over the guards it cannot find.
+  let guards: ReturnType<typeof readIntent> | null = null;
+  let guardsUnread: string | null = null;
+  try {
+    guards = readIntent(
+      homeItems({ repo: repoRoot, homes: resolveHomes(), mcp: null, claudeCli: false }).filter((i) => /\.retain/.test(i.id)),
+      new Ledger(homeLedgerDir()),
+    ).filter((r) => r.state !== "absent");
+  } catch (e) {
+    guardsUnread = `${e instanceof Error ? e.message : String(e)} under ${repoRoot}: this CLI and the tree it reads stand at different revisions; rebuild the image (or update the checkout) so both carry one catalog`;
+  }
+  const guardsHeld = guards === null ? null : guards.every((r) => r.state === "aligned");
 
   // Snapshot fields — the same data the prose renders, shaped for an agent.
   const data: Record<string, unknown> = {
@@ -202,8 +210,9 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
     storage:   storageStr,
     port,
     portInUse,
-    memoryGuards: guards.map((r) => ({ id: r.id, path: r.path, state: r.state })),
+    memoryGuards: guards === null ? null : guards.map((r) => ({ id: r.id, path: r.path, state: r.state })),
     memoryGuardsHeld: guardsHeld,
+    ...(guardsUnread !== null ? { memoryGuardsUnread: guardsUnread } : {}),
   };
   // THE FLOOR SHADOW COUNT (backlog-awakens 3a): the tally each boot's mounts keep beside the vessel store, read from the
   // file whether or not the vessel stands, keyed by floor: the line names the current floor's count and sets older floors
@@ -251,7 +260,9 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
       console.log(`  port ${port}:  ${portInUse ? "in use (node likely running)" : "free"}`);
       if (residencyLine) console.log(`  residency:   ${residencyLine}`);
       console.log(`  ${shadowLine}`);
-      console.log(guardsHeld
+      console.log(guards === null
+        ? `  memory:      the retention guards read nowhere: ${guardsUnread ?? "unread"}`
+        : guardsHeld
         ? `  memory:      ${guards.length} retention guard(s) at their maximum`
         : `  memory:      ${guards.filter((r) => r.state !== "aligned").map((r) => r.id).join(", ")} below the maximum — \`lares home tend\` raises them`);
     },

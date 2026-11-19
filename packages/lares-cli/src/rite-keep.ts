@@ -46,10 +46,16 @@ export const KEEP_CHECK = "carry-verify";
 /** Where a keep rests inside its workspace where the line names no other place. */
 export const KEEP_INTO = "house";
 
+/**
+ * A refusal's message, led by its code ONCE: a message handed on from a row or a nested line already leads with the code it
+ * refused by (`vessel-locked: …`), so it rides as it came.
+ */
+export const codedMessage = (code: string, message: string): string => (message.startsWith(`${code}: `) ? message : `${code}: ${message}`);
+
 /** A refusal the keep raises by name; the message carries the cure. */
 export class KeepRefused extends Error {
   override readonly name = "KeepRefused";
-  constructor(readonly code: string, message: string) { super(`${code}: ${message}`); }
+  constructor(readonly code: string, message: string) { super(codedMessage(code, message)); }
 }
 
 /**
