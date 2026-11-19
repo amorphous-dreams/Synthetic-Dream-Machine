@@ -188,7 +188,7 @@ export async function riteWalk(opts, say = console.log) {
       run: (step) => step.run(ctx),
       standIn: () => ctx.reset(),
       passed: state.passed,
-      say: (row) => say(`${verdict(row).padEnd(28)} ${row.step.padEnd(24)} ${row.runbook}  ${row.answer ? `→ ${row.answer.slice(0, 160)}` : ""}`),
+      say: (row) => say(`${verdict(row).padEnd(28)} ${row.step.padEnd(24)} ${row.runbook}  ${row.answer ? `→ ${row.answer.slice(0, 160)}` : ""}${row.refusal ? `\n${" ".repeat(29)}✗ ${row.refusal}` : ""}`),
     });
   } catch (e) {
     await ctx.close();
@@ -220,7 +220,7 @@ export async function riteWalk(opts, say = console.log) {
   const lines = [
     `rite-walk · ${report.rite}`,
     `head ${report.inputs.head}${report.inputs.dirty ? " (dirty)" : ""} · runbook sha256:${report.inputs.runbook.sha256} · walker ${report.inputs.walker}`,
-    ...report.steps.map((r) => `${verdict(r).padEnd(28)} ${r.step.padEnd(24)} ${r.runbook}  ${r.command}${r.answer ? `\n${" ".repeat(29)}→ ${r.answer}` : ""}`),
+    ...report.steps.map((r) => `${verdict(r).padEnd(28)} ${r.step.padEnd(24)} ${r.runbook}  ${r.command}${r.answer ? `\n${" ".repeat(29)}→ ${r.answer}` : ""}${r.refusal ? `\n${" ".repeat(29)}✗ ${r.refusal}` : ""}`),
     `pass ${report.tally.pass} · fail ${report.tally.fail} · unreached ${report.tally.unreached}${report.tally.firstFail ? ` · first fail ${report.tally.firstFail}` : ""} · outcomes ${report.outcomes}`,
   ];
   writeFileSync(join(opts.out, "rite-report.txt"), `${lines.join("\n")}\n`);

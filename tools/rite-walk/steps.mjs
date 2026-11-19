@@ -161,6 +161,20 @@ export function refusalOf(r) {
   const lines = `${r.stderr}\n${r.stdout}`.split("\n").map((l) => l.trim()).filter((l) => l && !/^at /.test(l) && !/^(file|node):/.test(l) && l !== "^");
   return `exit ${r.code}: ${lines.find((l) => /error|refus|lares |cannot|never|unknown|no /i.test(l)) ?? lines[0] ?? ""}`;
 }
+/**
+ * The words a refused act carried, whole: the `switchRefused` or `refused` an answer's JSON names (a wear whose switch
+ * refused, a composition that refused), else its `errorMessage`. The answer's cut never reaches them.
+ */
+export function refusalIn(answer) {
+  const text = String(answer ?? "");
+  for (let at = text.indexOf("{"); at !== -1; at = text.indexOf("{", at + 1)) {
+    let a;
+    try { a = JSON.parse(text.slice(at)); } catch { continue; }
+    const words = a?.switchRefused ?? a?.refused ?? a?.errorMessage;
+    return typeof words === "string" ? words : null;
+  }
+  return null;
+}
 export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 /** One step's verdict as a word: `pass`, `pass (staged-custody)`, `fail`, `unreached: host-shim`. */
@@ -238,7 +252,10 @@ export async function walk(bound, { run, standIn = async () => {}, now = () => p
       try { result = await run(step); } catch (e) { result = { ok: false, answer: e?.message ?? String(e) }; }
       if (result?.unreached) row = { ...base, outcome: "unreached", cause: result.unreached, answer: quote(result.answer ?? CAUSES[result.unreached] ?? "") };
       else if (result?.ok) { row = { ...base, outcome: "pass", ...(step.via ? { via: step.via } : {}), answer: quote(result.answer) }; passed.add(step.id); }
-      else row = { ...base, outcome: "fail", answer: quote(result?.answer) };
+      else {
+        const refusal = refusalIn(result?.answer);
+        row = { ...base, outcome: "fail", answer: quote(result?.answer), ...(refusal ? { refusal } : {}) };
+      }
     }
     row.ms = Math.round(now() - from);
     rows.push(row);
@@ -272,11 +289,11 @@ const cli = (args, expect) => async (ctx) => {
 };
 /** Where a put landed, as its receipt names it: `layer: working in <bag>`. */
 const landing = (put) => `layer: ${put.json?.data?.layer ?? "(unnamed)"} in ${put.json?.data?.bag ?? "(no bag)"}`;
-/** Wear a face through the staged custody's unlock door. */
+/** Wear a face through the staged custody's unlock door: a switch that refused wears the face it left, and fails the step. */
 const wear = (face, all = false) => async (ctx) => {
   const a = await ctx.wear(face);
   const lit = (a?.faceReadings ?? []).filter((f) => f.reading === "opened").length;
-  return { ok: a?.held !== false && a?.wears === face && (!all || lit === 3), answer: JSON.stringify(a) };
+  return { ok: a?.held !== false && a?.switchRefused === undefined && a?.wears === face && (!all || lit === 3), answer: JSON.stringify(a) };
 };
 const lay = async (ctx) => {
   const r = await ctx.cli(["vessel", "lay", "--apply", "--yes", "--no-json"]);

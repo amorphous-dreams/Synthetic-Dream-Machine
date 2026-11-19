@@ -136,6 +136,39 @@ test("rite-walk-names-unreached: a step whose ground never stood reads `unreache
   assert.deepEqual(receiptFaults(seatless.rows), []);
 });
 
+// ── rite-walk-wears-what-stood ──────────────────────────────────────────────────────────────────────────────────────
+
+const ATTACH_CAUSE = "[vessel-host] fault while waiting for ea: manifest handler threw: WorkingLayerAttachRefusal: [daemon] WorkingLayerAttachRefusal: working layer \"lar:///ha.ka.ba/wikis/daemon/working\" could not attach (" + "the cause the walker must carry whole ".repeat(20) + "); start the vessel again";
+const switchRefusedAnswer = (wears) => ({ op: "unlock", reading: "already-unlocked", wears, standing: "hearth", held: true, switchRefused: ATTACH_CAUSE, face: 2, wornAgain: 1 });
+const runStep = (id, answer) => STEPS.find((s) => s.id === id).run({ vars: {}, wear: async () => answer });
+
+test("rite-walk-wears-what-stood: a wear whose switch refused fails the step, whatever face the frame names", async () => {
+  for (const id of ["wear-referee", "hold-wear-referee", "lay-wear-referee"]) {
+    for (const wears of [2, 1]) assert.equal((await runStep(id, switchRefusedAnswer(wears))).ok, false, `${id} passed over a refused switch (wears ${wears})`);
+  }
+});
+
+test("CONTROL rite-walk-wears-what-stood: a wear that stood the asked face passes", async () => {
+  assert.equal((await runStep("lay-wear-referee", { op: "unlock", reading: "already-unlocked", wears: 2, standing: "hearth", held: true })).ok, true);
+});
+
+test("rite-walk-wears-what-stood: a refused switch's cause rides the row whole, past the answer's cut", async () => {
+  const step = STEPS.find((s) => s.id === "lay-wear-referee");
+  const [r] = await walk([{ ...step, needs: [], line: 1 }], { run: (s) => s.run({ vars: {}, wear: async () => switchRefusedAnswer(1) }), now: () => 0 });
+  assert.equal(r.outcome, "fail");
+  assert.ok(Buffer.byteLength(r.answer) <= 400, "the answer keeps its cut");
+  assert.equal(r.refusal, ATTACH_CAUSE);
+});
+
+test("rite-walk-wears-what-stood: a refused act's words ride whole, and a pass carries no refusal", async () => {
+  const long = { op: "unlock", reading: "opens", held: false, refused: ATTACH_CAUSE };
+  const [failed, passed] = await walk([{ id: "a", line: 1 }, { id: "b", line: 2 }], {
+    run: async (s) => (s.id === "a" ? { ok: false, answer: `the engineer never stood worn: ${JSON.stringify(long)}` } : { ok: true, answer: "ok" }), now: () => 0,
+  });
+  assert.equal(failed.refusal, ATTACH_CAUSE);
+  assert.equal("refusal" in passed, false);
+});
+
 test("CONTROL rite-walk-names-unreached: the receipt names the head and the carrier, and its outcome digest moves with an outcome and never with an answer", async () => {
   const { rows } = await stubWalk();
   const inputs = { head: "0".repeat(40), dirty: false, runbook: carrierIdentity(RUNBOOK, LIVE), walker: "sha256:w" };
