@@ -333,6 +333,16 @@ export function isPrivateProjectionSlug(slug: string): boolean {
   return PRIVATE_PROJECTION_SLUGS.has(slug);
 }
 
+/**
+ * A PRE-FACE-ROOT FOLDER: before the face roots (`faces/<pet name>/`), a face's daemon canon and kahua stage rested in
+ * relation-keyed folders (`bags/daemon-<F>`, `bags/kahua-<F>`, F the face's relation). Such a slug names one face's memory,
+ * never a house bag: the plane and the relation it names, or null for any other slug.
+ */
+export function staleFaceFolder(slug: string): { readonly plane: "daemon" | "kahua"; readonly relation: string } | null {
+  const m = /^(daemon|kahua)-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.exec(slug);
+  return m === null ? null : { plane: m[1] as "daemon" | "kahua", relation: m[2]! };
+}
+
 /** Where a house's disk mirrors root, split by ORIGIN. */
 export interface ProjectionRoots {
   /** The slugs whose bag source dir stands under the canon source (sorted), the private planes excepted. */

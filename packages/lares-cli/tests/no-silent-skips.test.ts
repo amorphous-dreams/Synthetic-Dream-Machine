@@ -75,7 +75,7 @@ describe("no silent skips", () => {
 
   test("S3 — the lay's lines print each skip, file and reason", () => {
     const r: MirrorSeedResult = {
-      applied: true, minted: [], any: true, benchWaiting: [],
+      applied: true, minted: [], setAside: [], any: true, benchWaiting: [],
       kahua: { preview: [], lifted: [], pending: [], waiting: [], refused: [] }, waiting: [], refusals: [],
       layers: [{ mirror: "working hearth-one", toBag: WORKING, planned: 0, landed: 0, kapae: 0, stoodOff: [], refused: [], skipped: [{ file: "/m/README", why: "carries no filetype extension" }] }],
     };
