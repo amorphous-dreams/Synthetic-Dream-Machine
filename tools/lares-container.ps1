@@ -589,6 +589,22 @@ function WarnPulamaSkew {
 
 # THE DOWN PATH (`down`, and every act that must stop the vessel first): the keep while the vessel stands, the census,
 # the refusal of a silent stop; then the vessel alone stops where a pūlama runs, or the whole project downs.
+# THE VESSEL'S LOG OUTLIVES THE DOWN. A down removes the container, and its log leaves with it, so the down path saves
+# the last $VesselLogLines lines (stdout and stderr) to the house's run/vessel-last.log first, overwritten each down,
+# and names the file. A log that cannot be read is named and never blocks the down.
+$VesselLogLines = 20000
+function SaveVesselLog([string]$id) {
+  $id = (($id -split "`r?`n") | Where-Object { $_.Trim() } | Select-Object -First 1)
+  $file = Join-Path (Join-Path $House 'run') 'vessel-last.log'
+  try {
+    New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') | Out-Null
+    $lines = & docker logs --tail $VesselLogLines $id.Trim() 2>&1 | ForEach-Object { "$_" }
+    $rc = $LASTEXITCODE
+    if ($rc -ne 0) { throw "docker logs exited $rc" }
+    Set-Content -LiteralPath $file -Value $lines -Encoding utf8
+    [Console]::Error.WriteLine("lares-container: the vessel's log (its last $VesselLogLines lines) rests at $file")
+  } catch { [Console]::Error.WriteLine("lares-container: the vessel's log could not be read; the down goes on") }
+}
 function DownVessel([string[]]$opts) {
   # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
   $pulama = PulamaState
@@ -600,7 +616,7 @@ function DownVessel([string[]]$opts) {
     [Console]::Error.WriteLine('lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown')
     [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
     OfferAcceptLoss
-  } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { KeepBeforeDown; CensusBeforeStop }
+  } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { KeepBeforeDown; CensusBeforeStop; SaveVesselLog ($ids -join "`n") }
   else { $script:KeepSaid = 'no vessel stood, so no keep ran' }
   if ($pulama -eq 'running') {
     # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.

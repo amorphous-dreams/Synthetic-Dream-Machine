@@ -615,8 +615,22 @@ warn_pulama_skew() {
   esac
 }
 
+# THE VESSEL'S LOG OUTLIVES THE DOWN. A down removes the container, and its log leaves with it, so the down path saves
+# the last VESSEL_LOG_LINES lines (stdout and stderr) to the house's run/vessel-last.log first, overwritten each down,
+# and names the file. A log that cannot be read is named and never blocks the down.
+VESSEL_LOG_LINES=20000
+save_vessel_log() { # $1 = the running vessel's container id
+  sv_id=$(printf '%s\n' "$1" | tr -d '\r' | sed -n '1p')
+  sv_file="$HOUSE/run/vessel-last.log"
+  if mkdir -p -- "$HOUSE/run" && docker logs --tail "$VESSEL_LOG_LINES" "$sv_id" > "$sv_file" 2>&1; then
+    printf "lares-container: the vessel's log (its last %s lines) rests at %s\n" "$VESSEL_LOG_LINES" "$sv_file" >&2
+  else
+    printf '%s\n' "lares-container: the vessel's log could not be read; the down goes on" >&2
+  fi
+}
+
 # THE DOWN PATH (`down`, and every act that must stop the vessel first): the keep while the vessel stands, the census,
-# the refusal of a silent stop; then the vessel alone stops where a pūlama runs, or the whole project downs.
+# the refusal of a silent stop, the vessel's log; then the vessel alone stops where a pūlama runs, or the whole project downs.
 down_vessel() { # $@ = compose-down options
   # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
   d_pulama=$(pulama_state)
@@ -630,6 +644,7 @@ down_vessel() { # $@ = compose-down options
   elif [ -n "$down_id" ]; then
     keep_before_down
     census_before_stop
+    save_vessel_log "$down_id"
   else
     KEEP_SAID="no vessel stood, so no keep ran"
   fi
