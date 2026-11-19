@@ -33,7 +33,7 @@
 import {
   CONTROL_HOME_ID, FloorUnavailable, floorDaemonSlotTitle, floorRegistryOf, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, slotBindingKey,
   computeRecipeFingerprint, emptyLarDoc, floorSlotTitle, realmWorkbenchDocUrl, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, tiddlerText,
-  wikiBagUri, wikiDraftDocKey, requireLarDid, didFromVerifyingKey,
+  wikiBagUri, wikiDraftDocKey, requireLarDid, didFromVerifyingKey, pointMint,
   type CompositeStore, type FloorRegistry, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
@@ -233,6 +233,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         "minted-by": args.mintedByHex(),
       }, "slot-doc:floor");
     });
+    pointMint(handle.url);   // the catalog names it: the mint census reads no cap mint here
     return handle.url;
   };
 
@@ -353,6 +354,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         await created.whenReady?.();
         await minter.flush([created.documentId]);
         await names.put(created.url);
+        pointMint(created.url);
         return { url: created.url, reach: "vessel-only" };
       }
       const documentId = mintVesselDocumentId();
@@ -402,6 +404,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         const doc = minter.create<LarDoc>(emptyLarDoc());
         args.announceFloor?.(slug, kind, doc.documentId);
         await name(doc.url);
+        pointMint(doc.url);
         await doc.whenReady?.();
         await minter.flush([doc.documentId]);
         return { url: doc.url, reach: "vessel-only" };

@@ -3,7 +3,7 @@
  *
  * The meshpalace cap stands the vessel's own public FLOW-map (one document holding its `dial` and `routes` rows). A cap
  * that mints a fresh document at every compose, with no pointer it can read back, leaves one orphan per boot in the root
- * store: the operator's house held 79 of them on 2026-11-19. The map's address derives from the vessel's own key (the
+ * store. The map's address derives from the vessel's own key (the
  * house's `deterministicDocUrl` road, the one `edgeLedgerDocUrl` takes for a vessel's own ledger), so every compose of one
  * vessel finds the one map, and two vessels never share one.
  */
@@ -13,6 +13,7 @@ import { composeVessel, type CapModule } from "../src/cap-compose.js";
 import { meshPalaceCap, CARRIAGE_CAP, type MeshPalaceComponent } from "../src/carriage-caps.js";
 import { CompositeStore } from "../src/composite-store.js";
 import { dialUri, routeUri, type DialEntry } from "../src/mesh-palace.js";
+import { seatMintCensus, capMintsUnpointed } from "../src/mint-census.js";
 
 const KEY_A = "a".repeat(64);
 const KEY_B = "b".repeat(64);
@@ -69,6 +70,15 @@ describe("the meshpalace cap mints its map once", () => {
     const tiddlers = Object.keys(second.handle.doc()?.tiddlers ?? {}).sort();
     expect(tiddlers).toEqual([dialUri(SEED[0]!.bearing), routeUri(SEED[0]!.bearing)].sort());
     await boot2.shutdown();
+  });
+
+  test("the mint census reads no unpointed create across two composes of the map", { timeout: 15_000 }, async () => {
+    const repo = new Repo({ sharePolicy: async () => false });
+    seatMintCensus(repo);
+    await composeMap(repo, KEY_A);
+    await composeMap(repo, KEY_A);
+    expect(capMintsUnpointed(repo)).toEqual([]);
+    await repo.shutdown();
   });
 
   test("two vessels' maps stand apart: the address follows the vessel's own key", { timeout: 15_000 }, async () => {

@@ -1,10 +1,9 @@
 /**
  * THE UNBOUND INSTRUMENT READS A CAP'S UNPOINTED MINT.
  *
- * `unboundMints` once read binding mints alone, so a cap that minted a fresh document at every compose (the meshpalace
- * cap, 79 orphans in the operator's root store on 2026-11-19) printed `unbound documents: 0` over every one of them. A
- * compose mints nothing it cannot find again: a document a cap creates while it builds, and names under no pointer,
- * reads here as a `cap-mint`, so the next such leak reads non-zero.
+ * A compose mints nothing it cannot find again. A census of binding mints alone reads zero over a cap that mints a
+ * fresh document at every compose, so a document a cap creates while it builds, and names under no pointer, reads here
+ * as a `cap-mint`: such a leak reads non-zero.
  *
  * Controls: a cap that names its pointer reads bound; a create outside any compose stays this instrument's silence (a
  * verb's mint answers to its own rows). The cured meshpalace map, which creates nothing, reads zero in the mesh's own

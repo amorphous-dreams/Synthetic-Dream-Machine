@@ -164,8 +164,8 @@ export function edgeLedgerDocUrl(vesselKey: string): AutomergeUrl {
 
 /**
  * A vessel's OWN meshpalace FLOW-map URL — deterministic over the vessel's own key, so every compose of one vessel finds
- * the one map it rested before and two vessels never stand one map between them. A compose mints nothing it cannot find
- * again: a map minted fresh at each compose, with no pointer read back, leaves one orphan per boot in the root store.
+ * the one map a prior boot rested and two vessels never stand one map between them. A compose mints nothing it cannot
+ * find again: a map minted fresh at each compose, with no pointer read back, leaves one orphan per boot in the root store.
  * The map carries PUBLIC reachability (each vessel's own dials and routing slots, and what its carriage merges in), so a
  * derived address grants nothing: peers reach it through the signed read-face, never by its id.
  */
