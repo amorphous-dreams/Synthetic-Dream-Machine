@@ -11,6 +11,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed · lar:///ha.ka.ba/lararium/api/personal-slot
  */
 import { afterEach, describe, expect, it } from "vitest";
+import * as A from "@automerge/automerge";
 import { Repo, type AutomergeUrl, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { utf8Bytes } from "../src/crypto.js";
 import { faceProofSubjectRef } from "../src/face-proof-subjects.js";
@@ -92,7 +93,14 @@ function standVessel(a: Vessel, inner: StorageAdapterInterface, slotDocsNamed: M
     }),
     flushRepo: async () => { await repo?.flush(); },
   });
-  return { rest, own, map, session: { id: "s-a", subject: own, signer: a.signer } as Session, seat: (r: Repo) => { repo = r; } };
+  const notices = docStorePortCell(async () => null, {
+    onSlot: (bagId, documentId) => {
+      announce(slotDocsNamed, bagId, documentId);
+      rest.store.mapMoved();
+    },
+  });
+  notices.attach(vesselSide);
+  return { rest, own, map, announce: (bagId: string, documentId: string) => announceSlotDocFiled(islandSide, bagId, documentId), session: { id: "s-a", subject: own, signer: a.signer } as Session, seat: (r: Repo) => { repo = r; } };
 }
 
 /** Name `documentId` as `bagId`'s document, as the vessel's `onSlotNamed` files a resolver's announcement. */
@@ -110,18 +118,23 @@ async function restsSealedUnder(bagId: string) {
   const v = standVessel(a, inner, named);
   const repo = new Repo({ storage: v.rest.store, network: [] });
   v.seat(repo);
-  const doc = repo.create<{ note?: string }>();
-  // THE NAMING LEADS THE FIRST BYTE: the resolver names the binding before its caller writes.
-  announce(named, bagId, doc.documentId);
-  v.rest.wrote(doc.documentId, v.session);
+  // The island owns the fresh document before the vessel's Repo encounters it.
+  const islandRepo = new Repo({ network: [] });
+  const fresh = islandRepo.create<{ note?: string }>();
+  const bytes = A.save(fresh.doc()!);
+  await v.announce(bagId, fresh.documentId);
+  expect(restsAny(inner, fresh.documentId), "the announcement precedes the first storage access").toBe(false);
+  v.rest.wrote(fresh.documentId, v.session);
+  const doc = repo.import<{ note?: string }>(bytes, { docId: fresh.documentId });
   doc.change((d) => { d.note = SECRET; });
+  await islandRepo.shutdown();
   await repo.flush();
   await v.rest.store.flush();
   return { a, inner, named, v, repo, doc };
 }
 
 describe("the worn face's resolver names a slot document: it rests sealed under that face", () => {
-  it("the mounted wiki's personal layer (wikis/lares/personal): the rest answers sealed, and a save rests a sealed pointer, never clear", async () => {
+  it("the mounted wiki's personal layer (wikis/lares/personal): an acked announcement followed by an edit reaches storage sealed", async () => {
     const bagId = wikiSlotUri("lares", "personal");
     const { a, inner, named, v, repo, doc } = await restsSealedUnder(bagId);
     expect(v.map.bagOf(doc.documentId), "the map names the personal layer under the worn face").toEqual({ bagId, face: v.own });

@@ -1,3 +1,4 @@
+import { CompositionShutdownError, shutdownExitCode } from "./composition-shutdown.js";
 /**
  * Lararium Node Vessel — local-first relay + TW5 engine entrypoint.
  *
@@ -427,8 +428,8 @@ async function main(): Promise<void> {
   let composition: StandingComposition | null = null;
   /** A floor that itself refuses ends the process: nothing lower stands to fall back to. */
   const floorRefused = async (err: unknown): Promise<never> => {
-    front.close();
-    await floor.release();
+    await front.close();
+    if (!(err instanceof CompositionShutdownError) || err.storeClosed) await floor.release();
     throw err;
   };
   /** Compose with the sovereign rows; a refusal there names itself once and the floor stands instead. */
@@ -437,6 +438,7 @@ async function main(): Promise<void> {
     try {
       return { stood: await composeStanding(readers, ward) };
     } catch (err) {
+      if (err instanceof CompositionShutdownError && !err.storeClosed) throw err;
       const refused = err instanceof Error ? err.message : String(err);
       console.error(`[lararium] the sovereign composition refused: ${refused}`);
       console.error("[lararium]   standing at the WAKING FLOOR instead — carrying and serving the public shelf; every sovereign act waits.");
@@ -877,50 +879,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     (e) => console.log(`[lararium] mempalace pre-warm skipped: ${e instanceof Error ? e.message : String(e)}`),
   );
 
-  // ── Graceful, DURABLE shutdown (flush-then-force) ────────────────────────────
-  // A bare process.exit() (or a SIGKILL escalation when the handler runs too slow)
-  // while an island writes DESYNCS the actively-written doc — the recurring
-  // "working never arrived over syncPort" gap. The reliable path:
-  //   1. stop new inbound work (uds + http + read-face),
-  //   2. flush the MAIN replica — the durable floor for every record that has reached it,
-  //   3. tear down the wiki islands (disposeAll → each island flushes its OWN
-  //      partition, incl. working, before it acks), and BESIDE them
-  //   4. the daemon island gracefully (it flushes its docs + capture WAL),
-  //   5. flush MAIN again to land anything that synced during teardown.
-  //
-  // THE FORCE NEVER CUTS A MAIN FLUSH ON ITS OWN. The budget's REPORT arms before step 2, so a
-  // hung main-flush itself gets named too: a notice armed after it would leave a main flush that
-  // never returns pinning the process silently. What a force never does on its own timer is cut a step — only the
-  // OPERATOR'S OWN SECOND SIGNAL does that (below), as an event, never a clock.
-  //
-  // THE "EVERY RECEIPT LANDED" CLAIM MUST BE TRUE. The island pool and the daemon VM BOTH still
-  // terminate their own worker past their own handshake timeout ("teardown handshake failed —
-  // … terminating anyway") — that claim is THEIRS to make honestly, not main.ts's to overwrite:
-  // `disposeAll()`/`daemon.shutdown()` report which acked and which got cut, and the final
-  // line names both rather than asserting every receipt landed.
-  //
-  // THE BUDGET'S BOUND, MEASURED. A stand that just LOADed a corpus keeps its wiki island busy with the load's
-  // after-waves for tens of seconds; that island cannot read its teardown before the waves drain, and answers
-  // nothing for the pool's 10 s handshake window. So a stop right after a LOAD is bounded by the budget, not by
-  // the islands (measured on the whole lares corpus: main flush ~4 s, islands silent to 10 s; the same stop after
-  // the waves drained: 271 ms whole). A whole stop therefore runs the main flush plus at most the budget plus the
-  // re-flush. `port-control.stopIncumbent` NEVER escalates to SIGKILL past its own grace window (M3): past
-  // `graceMs` it keeps waiting on this same SIGTERM's own effect and only NAMES the still-live holder
-  // (`onPastGrace`) — UNLESS the caller asked `--cut`, which delivers exactly one further signal, read below.
-  //
-  // THE WAY OUT OF A HUNG TEARDOWN (M4): the operator's OWN SECOND SIGINT/SIGTERM while a
-  // shutdown already runs. An EVENT, never a timer — nothing here measures how long to wait
-  // before treating it as a cut; the operator's second signal simply IS the cut. It logs the
-  // step still outstanding, reflushes main ONE more time if main itself is not the hung step
-  // (a hung main-flush gets no further flush attempt — it is already the thing that is stuck),
-  // and exits a DISTINCT nonzero code (75, "cut by operator") so a supervisor can tell a cut
-  // shutdown apart from a clean one or a flush error. `lares vessel stop --cut` reaches this by
-  // delivering that second signal itself, past the grace it already reported (port-control.ts).
-  // Only an EXTERNAL SIGKILL (outside this process entirely) cuts anything harder than this: the
-  // writes tear nothing (every save lands by rename, and a stranded temp never reads as a
-  // chunk), and records still in memory are lost as in any crash.
-  const SHUTDOWN_BUDGET_MS  = Number(process.env["LAR_SHUTDOWN_BUDGET_MS"] ?? 6_000);
-  const DAEMON_SHUTDOWN_MS  = Math.max(1_000, Math.floor(SHUTDOWN_BUDGET_MS / 2));
+  // Signals and recomposition close the same composition: producers, sealed flush, signers, islands,
+  // Repo, then the process floor's claim. A second signal cuts the pending stop with a distinct exit.
+  const SHUTDOWN_BUDGET_MS = Number(process.env["LAR_SHUTDOWN_BUDGET_MS"] ?? 6_000);
   let shuttingDown  = false;
   let cutRequested  = false;
   let currentStep   = "start";
@@ -934,16 +895,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       }
       cutRequested = true;
       console.error(`[lararium] ${sig} — operator's SECOND signal: cutting the hung step "${currentStep}" now (done so far: ${spans.join(" · ") || "(none)"})`);
-      if (currentStep !== "main-flush") {
-        try {
-          await result.repo.flush();
-          console.error("[lararium] cut: main replica reflushed before exit");
-        } catch (e) {
-          console.error(`[lararium] cut: main reflush failed — ${e instanceof Error ? e.message : String(e)}`);
-        }
-      } else {
-        console.error("[lararium] cut: main-flush itself is the hung step — exiting with no further flush attempt");
-      }
+      console.error(`[lararium] cut: composition shutdown still awaits ${currentStep}`);
       console.error(`[lararium] cut by operator — exiting 75 (never a clean shutdown's 0, never a flush error's 1)`);
       process.exit(75);
     }
@@ -960,10 +912,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
         onDone?.(ms);
       }
     };
-    // THE REPORT ARMS BEFORE THE FIRST STEP (M4c) — a hung main-flush now gets named too, never
-    // left silent until islands/daemon even get a turn. It only ever REPORTS; the operator's own
-    // second signal above is the sole cut.
-    // PACING: this only reports pending shutdown; completion or a second signal ends it.
+    // Report overdue shutdown without interrupting its pending step; the operator's second signal cuts it.
     const pastBudget = setTimeout(() => {
       console.error(`[lararium] shutdown past its ${SHUTDOWN_BUDGET_MS}ms report budget — pending shutdown, still awaiting receipts from: ${[...running].join(", ") || "(none named)"}; done so far: ${spans.join(" · ") || "(none)"}; a second SIGINT/SIGTERM (or \`lares vessel stop --cut\`) cuts it now`);
     }, SHUTDOWN_BUDGET_MS);
@@ -971,51 +920,17 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       readinessFace.dispose();
       pronaos?.dispose();
       dispatcher.dispose();
-      // T3: the verb socket's seat closes first, and each standing session's flush lands sealed under it before its
-      // signer drops, while the daemon island still answers the seal; then the sealed rest names what still waits.
-      const sessionsClosed = front.close();
       lanSocket()?.close();
       httpServer.close();
-      // THE WORN FACE'S POOL CLOSES ITS SITTING (face-pools W2): the final wave reaches the daemon island's shore while it still
-      // answers, then the pool's commit seam runs, as a down.
-      await step("face-pool", () => result.facePoolStandDown());
-      await step("sessions-flush", () => sessionsClosed);
-      await step("sealed-rest", () => result.sealedRestStandDown());
-      // M17: print the INSTANT this step resolves, never waiting for the final line below. The
-      // final "shutdown complete" line only prints once islands AND daemon have also acked (or
-      // been named cut), which the harness's own SIGKILL grace can outrun on a busy island — a
-      // local witness-all run measured exactly that (main-flush landed in 4.6s; the islands'
-      // handshake went ack-silent past it, and the test's own 15s grace SIGKILLed before the final
-      // line ever printed). This line carries the durable-floor claim ALONE, the instant it is true.
-      await step("main-flush", () => result.repo.flush(), (ms) =>
-        console.log(`[lararium] main replica flushed durably (main-flush ${ms}ms)`));
-      // The two teardowns run side by side: a wiki island busy past the budget never holds the daemon island's own
-      // flush (its outcomes and markers — a `wiki open` the next boot reads) behind it. Both are AWAITED to their
-      // own receipt — nothing here races them against a clock.
-      const [islandsResult, daemonResult] = await Promise.all([
-        step("islands", () => result.pool.disposeAll()),                            // wiki islands flush their partitions + ack
-        step("daemon", () => result.daemon.shutdown(DAEMON_SHUTDOWN_MS)),           // daemon island flushes docs + capture, then acks
-      ]);
+      await step("composition", () => result.teardown(() => front.close()));
+      await floor.release();
       clearTimeout(pastBudget);
-      await step("main-reflush", () => result.repo.flush());                        // land what synced during teardown
-      // THE HONEST LINE (H3): never "every teardown receipt landed" when a handshake timed out
-      // and this door terminated the worker anyway. Names exactly what acked and what got cut.
-      const daemonLine  = daemonResult.acked ? "daemon ok" : "daemon cut (ack silent)";
-      const islandsLine = islandsResult.cut.length === 0
-        ? "islands ok"
-        : `islands cut (${islandsResult.cut.join(", ")}${islandsResult.acked.length > 0 ? `; ok: ${islandsResult.acked.join(", ")}` : ""})`;
-      console.log(`[lararium] shutdown complete — main replica flushed durably; teardown receipts: ${daemonLine} · ${islandsLine} (${spans.join(" · ")})`);
-      // L6: a handshake that timed out and got terminated by THIS DOOR'S OWN PATIENCE (never the
-      // operator's cut, which already exits 75 above) is a true line that still cannot read as
-      // clean to a supervisor watching the exit code alone. Exit 0 only when every receipt
-      // genuinely acked; otherwise 76 ("teardown cut by this door's own patience"), distinct from
-      // both a clean stop (0) and a flush error (1).
-      const everyReceiptAcked = daemonResult.acked && islandsResult.cut.length === 0;
-      process.exit(everyReceiptAcked ? 0 : 76);
+      console.log(`[lararium] shutdown complete — composition closed durably (${spans.join(" · ")})`);
+      process.exit(0);
     } catch (e) {
       clearTimeout(pastBudget);
-      console.error("[lararium] shutdown flush error:", e instanceof Error ? e.message : String(e));
-      process.exit(1);
+      console.error("[lararium] shutdown error:", e instanceof Error ? e.message : String(e));
+      process.exit(shutdownExitCode(e));
     }
   };
   return {
@@ -1023,7 +938,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
     lightFace: result.lightFace, dropFace: result.dropFace,
     onSignal: (sig) => void shutdown(sig),
-    teardown: async () => { await front.detach(); await result.teardown(); },
+    teardown: () => result.teardown(() => front.detach()),
     kelHead: async (prefix) => (await makeLocalPersonaKelHeadAndSeqResolver(result.repo))(prefix),
     personaSelves: result.personaSelves,
     walk: result.walkDial,

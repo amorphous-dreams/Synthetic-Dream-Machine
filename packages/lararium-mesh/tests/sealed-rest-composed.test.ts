@@ -40,6 +40,12 @@ describe("each vessel's Repo stands on the sealed rest", () => {
     expect(browser).toMatch(/await sealedRest\.lock\(\)[\s\S]{0,300}await lifted\.dispose\(\)/);
   });
 
+  it("the browser derives registration and live announced-slot sealing through the mesh bag classification", () => {
+    const browser = stripped(["lararium-browser", "src", "open-browser-vessel.ts"]);
+    expect(browser).toMatch(/wikiBags:\s*\[\s*\.\.\.wornFaceWikiBags\(\{[\s\S]*?announced:\s*catalogFaceSlotBags\(catalogHandle\.doc\(\)\)[\s\S]*?\}\)\.registered/);
+    expect(browser).toMatch(/sealedCells\.bags = \(\) => wornFaceWikiBags\(\{[\s\S]*?announced:\s*slotDocsNamed\.keys\(\)[\s\S]*?\}\)\.sealed/);
+  });
+
   it("each daemon island answers the document store's door beside its holder", () => {
     expect(stripped(["lararium-node", "src", "node-daemon-island.ts"])).toMatch(/docStoreDoor\s*:/);
     expect(stripped(["lararium-browser", "src", "daemon-island-start.ts"])).toMatch(/docStoreDoor\s*:/);
@@ -50,9 +56,9 @@ describe("each vessel's Repo stands on the sealed rest", () => {
 describe("the node holds the lit set (sealed-store#/the-lit-set)", () => {
   it("each sibling stands its own place session in the book, its own canon and bases keeper; a lock drops its waiting saves and handles", () => {
     const node = stripped(["lararium-node", "src", "open-node-vessel.ts"]);
-    expect(node).toMatch(/const litSibling = \(entry: JoinedFaceAuth\): void => \{[\s\S]{0,600}standSiblingSession\(\{ group, atomKey: entry\.atom\.key \}\)/);
+    expect(node).toMatch(/const litSibling = async \(entry: JoinedFaceAuth, live: \(\) => boolean\): Promise<void> => \{[\s\S]{0,900}await standSiblingSession\(\{ group, atomKey: entry\.atom\.key \}, current\)/);
     expect(node).toMatch(/for \(const sibling of siblingSessions\.values\(\)\) sibling\.seat\.book\(book\)/);
-    expect(node).toMatch(/standFaceDaemonCanon\(\{ repo, control: await readControlDoc\(\), faceRelation: relation/);
+    expect(node).toMatch(/standFaceDaemonCanon\(\{ repo, control, faceRelation: relation/);
     expect(node).toMatch(/siblingBasesKeepers\.set\(group, keepFaceBases\(/);
     expect(node).toMatch(/const dropped = sealedRest\.forget\(owned\);[\s\S]{0,120}repo\.removeFromCache\(/);
     expect(node).toMatch(/sealedRest\.watch\(repo, standingSaveSessionFor\)/);
