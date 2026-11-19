@@ -700,7 +700,7 @@ for (const [name, shim] of shims) {
   test(`${name}: CONTROL up over a vessel on the image that stands asks no census`, async () => {
     const r = await run(shim, ["up"], { env: { ...STANDING, FAKE_VESSEL_IMAGE: "sha256:same", FAKE_IMAGE_ID: "sha256:same", FAKE_CUSTODY_OUTPUT: HELD } });
     assert.equal(r.status, 0, r.stderr);
-    assert.doesNotMatch(r.calls, /vessel census/);
+    assert.doesNotMatch(r.calls, /vessel census --no-json/, "no stop census: the one census read names the mount");
     assert.equal(stopped(r.calls), false);
   });
 
@@ -1070,6 +1070,31 @@ test(`${name}: pulama-keep-seat-writes-the-seat: the pūlama's seat line lands v
   const noTty = await run(shim, ["pulama", "keep-seat"], { envFile: PULAMA_ENV, env: { FAKE_KEEP_SEAT_LINE: line } });
   assert.notEqual(noTty.status, 0);
   assert.match(noTty.stderr, /reads its route on a terminal/);
+});
+// RE-WEAR AFTER A STAND: the worn face lives in the vessel's process memory, so a re-stand under a pūlama can hold the key
+// with faces lent and none worn. The shim reads the mount (the census frame's `worn`), not the key alone, and wears the
+// face last worn through it.
+const NONE_WORN_JSON = '{"ok":true,"data":{"clean":true,"items":[],"unanswered":[],"facesLit":[0,2],"worn":null}}';
+const WORN_JSON = '{"ok":true,"data":{"clean":true,"items":[],"unanswered":[],"facesLit":[0,2],"worn":2}}';
+const KEY_HELD = '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}';
+test(`${name}: rewear-after-up: under a pūlama, a held key with faces lent and none worn wears the face last worn; a worn face draws no wear`, { skip }, async () => {
+  const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: NONE_WORN_JSON } });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.calls, /exec (?:-e \S+ )*-T lares node \S+ vessel census --json/);
+  assert.match(r.calls, /exec (?:-e \S+ )*-T lares node \S+ wear 2$/m);
+  assert.match(r.stderr, /faces stand lent and none worn; wearing h2, the face last worn/);
+  const worn = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: WORN_JSON } });
+  assert.equal(worn.status, 0, worn.stderr);
+  assert.doesNotMatch(worn.calls, / wear 2$/m);
+});
+test(`${name}: rewear-after-vault-unlock: under a pūlama, an unlock that names no face and leaves none worn wears the face last worn; one naming --face wears nothing more`, { skip }, async () => {
+  const r = await run(shim, ["vault", "unlock", "--all"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CENSUS_JSON: NONE_WORN_JSON } });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.calls, /vault unlock --all[\s\S]*vessel census --json[\s\S]*-T lares node \S+ wear 1$/m);
+  const named = await run(shim, ["vault", "unlock", "--face", "2"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CENSUS_JSON: NONE_WORN_JSON } });
+  assert.equal(named.status, 0, named.stderr);
+  assert.doesNotMatch(named.calls, / wear \d+$/m);
+  assert.equal(named.worn, "2");
 });
 test(`${name}: CONTROL a house without LARES_PULAMA stands the vessel alone, and names no pūlama`, { skip }, async () => {
   const r = await run(shim, ["up"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\n" });

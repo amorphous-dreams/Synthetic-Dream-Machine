@@ -271,7 +271,13 @@ function DetachedWear([string]$face) {
   return $LASTEXITCODE
 }
 function UnlockOrName {
-  if (KeyHeld) { return }
+  if (KeyHeld) {
+    # A HELD KEY IS NOT A WORN FACE. Under a pūlama the vessel redials its key at boot, while the mount lives in process
+    # memory and leaves with every restart: the census frame names the worn face, and over faces lent and none worn the
+    # shim wears the face last worn.
+    if (NoneWorn) { WearLastFace }
+    return
+  }
   $wear = LastWornFace
   if ($PulamaMode) {
     if ((DetachedUnlock @('--all')) -eq 0) {
@@ -383,9 +389,10 @@ function KeepBeforeDown {
   if ($LASTEXITCODE -ne 0) { $script:KeepSaid = 'the keep did not complete'; [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand') }
   else { $script:KeepSaid = 'kept (rite keep --if-due)' }
 }
-function CensusBeforeStop {
+# The census exec, bounded: `--no-json` gives the lines down prints, `--json` the frame a mount read greps.
+function RunCensus([string]$fmt = '--no-json') {
   $psi = [System.Diagnostics.ProcessStartInfo]::new('docker')
-  foreach ($a in (@('compose') + $Base + @('exec', '-T', 'lares', 'node', $Cli, 'vessel', 'census', '--no-json'))) { $psi.ArgumentList.Add([string]$a) }
+  foreach ($a in (@('compose') + $Base + @('exec', '-T', 'lares', 'node', $Cli, 'vessel', 'census', $fmt))) { $psi.ArgumentList.Add([string]$a) }
   $psi.UseShellExecute = $false
   $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true; $psi.RedirectStandardInput = $true
   $out = ''; $err = ''; $rc = -1; $timedOut = $false
@@ -398,6 +405,21 @@ function CensusBeforeStop {
     if ($outTask.Wait(5000)) { $out = $outTask.Result }
     if ($errTask.Wait(5000)) { $err = $errTask.Result }
   } catch { $err = $_.Exception.Message }
+  return [pscustomobject]@{ Out = $out; Err = $err; Rc = $rc; TimedOut = $timedOut }
+}
+# THE MOUNT, read: the census frame names `worn` beside the lit set, null where faces stand lent and none worn. Any
+# other answer, or none, reads as no need to wear.
+function NoneWorn { return ((RunCensus '--json').Out -match '"worn"\s*:\s*null') }
+$script:Wore = ''
+function WearLastFace {
+  $wear = LastWornFace
+  [Console]::Error.WriteLine("lares-container: faces stand lent and none worn; wearing h$wear, the face last worn")
+  if ((DetachedWear "$wear") -eq 0) { $script:Wore = "h$wear" }
+  else { $script:Wore = ''; [Console]::Error.WriteLine("lares-container: h$wear stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``") }
+}
+function CensusBeforeStop {
+  $c = RunCensus '--no-json'
+  $out = $c.Out; $err = $c.Err; $rc = $c.Rc; $timedOut = $c.TimedOut
   if ($rc -eq 0 -and ($out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) { return }
   # A LOCKED HEARTH: the census names the cure in one line (`census: vessel locked: ...`); say it plainly, not "could not answer".
   if (-not $timedOut -and ($err -split "`r?`n" | Where-Object { $_ -like 'census: vessel locked*' })) {
@@ -856,6 +878,9 @@ switch ($verb) {
       $rc = DetachedUnlock @($rest | Select-Object -Skip 1)
       if ($rc -ne 0) { exit $rc }
       RememberWornFace $rest
+      # An unlock under a pūlama that named no face can leave faces lent and none worn: the shim wears the last one.
+      $namedFace = @($rest | Where-Object { $_ -eq '--face' -or $_ -like '--face=*' }).Count -gt 0
+      if (-not $namedFace -and (NoneWorn)) { WearLastFace }
       return
     }
     RouteCli (@($verb) + $rest) $true

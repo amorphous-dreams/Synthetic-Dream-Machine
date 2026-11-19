@@ -200,12 +200,33 @@ remember_worn_face() { # the argv of a `vault unlock` that landed
   mkdir -p -- "$HOUSE/config" && printf '%s\n' "$face" > "$WORN_FACE_FILE" || printf '%s\n' 'lares-container: the worn face could not be remembered; the next stand wears face 0' >&2
 }
 
+# THE MOUNT, read: the census frame (`vessel census --json`, bounded as down's census is) names `worn` beside the lit
+# set, null where faces stand lent and none worn. Any other answer, or none, reads as no need to wear.
+none_worn() {
+  run_census --json >/dev/null 2>&1 || true
+  printf '%s\n' "$census_out" | grep -q '"worn"[[:space:]]*:[[:space:]]*null'
+}
+wear_last_face() {
+  wear=$(last_worn_face)
+  printf 'lares-container: faces stand lent and none worn; wearing h%s, the face last worn\n' "$wear" >&2
+  # shellcheck disable=SC2046
+  if waited_exec $(pass_env) -T lares node "$CLI" wear "$wear" </dev/null; then WORE="h$wear"
+  else WORE=""; printf 'lares-container: h%s stands outside the lent set or locked; wear another face with `lares-container.sh wear N`\n' "$wear" >&2; fi
+}
+WORE=""
+
 # The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached: it opens every face the
 # credential opens (`--all`), then `lares wear` takes the last worn face again (or face 0); without one, name both commands. A refused or
 # abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it. A hint never names the
 # bare command that fails on a vessel of several faces.
 unlock_or_name() {
-  if key_held; then return 0; fi
+  if key_held; then
+    # A HELD KEY IS NOT A WORN FACE. Under a pūlama the vessel redials its key at boot, while the mount lives in process
+    # memory and leaves with every restart: the census frame names the worn face, and over faces lent and none worn the
+    # shim wears the face last worn.
+    if none_worn; then wear_last_face; fi
+    return 0
+  fi
   wear=$(last_worn_face)
   if [ -n "$PULAMA_MODE" ]; then
     # UNDER A PŪLAMA THE ROUTE GOES TO THE PŪLAMA ALONE. The vessel's own unlock asks nothing there (it redials the
@@ -300,11 +321,12 @@ route_cli() {
 # per island page), and this bound stands over the whole exec, so a wedged vessel never hangs `down`.
 CENSUS_WAIT_SECONDS=60
 census_out=""; census_err=""; census_timed_out=""
-run_census() {
+run_census() { # $1 = --no-json (the default: the lines down prints) or --json (the frame a mount read greps)
+  census_fmt=${1:---no-json}
   census_dir=$(mktemp -d) || return 125
   (
-    if [ -n "$ENV_ARGS" ]; then exec docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" exec -T lares node "$CLI" vessel census --no-json
-    else exec docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" exec -T lares node "$CLI" vessel census --no-json; fi
+    if [ -n "$ENV_ARGS" ]; then exec docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" exec -T lares node "$CLI" vessel census "$census_fmt"
+    else exec docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" exec -T lares node "$CLI" vessel census "$census_fmt"; fi
   ) >"$census_dir/out" 2>"$census_dir/err" </dev/null &
   census_pid=$!
   # The watch polls once a second and leaves on its own once the exec ends, so no sleeper outlives the census by more
@@ -931,7 +953,11 @@ case "$verb" in
       if route_cli "$verb" "$@" </dev/null; then rc=0; else rc=$?; fi
       HAVE_TTY=$attached
     elif route_cli "$verb" "$@"; then rc=0; else rc=$?; fi
-    if [ "$rc" -eq 0 ] && [ "${1:-}" = unlock ]; then remember_worn_face "$@"; fi
+    if [ "$rc" -eq 0 ] && [ "${1:-}" = unlock ]; then
+      remember_worn_face "$@"
+      # An unlock under a pūlama that named no face can leave faces lent and none worn: the shim wears the last one.
+      if [ -n "$PULAMA_MODE" ] && [ -z "$face" ] && none_worn; then wear_last_face; fi
+    fi
     exit "$rc" ;;
   *) route_cli "$verb" "$@" ;;
 esac
