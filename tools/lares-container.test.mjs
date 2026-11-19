@@ -77,6 +77,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
+    // The host's own build answers through pnpm: the fake names each call and fails where a test asks it to.
+    await writeFile(join(dir, "pnpm"), `#!/bin/sh\nprintf 'PNPM %s\\n' "$*" >> "$CALL_LOG"\nexit "\${FAKE_PNPM_RC:-0}"\n`);
+    await chmod(join(dir, "pnpm"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
     await writeFile(compose, "services: {}\n");
     const house = join(dir, "house");
@@ -934,6 +937,19 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(bad.calls, / build /);
   });
 
+  test(`${name}: build-builds-the-host: the checkout's own commit builds the host CLI after the image; another commit keeps the host's build and names both; a failed host build refuses by name`, async () => {
+    const same = await run(shim, ["build"], { env: MOUNTS, checkout: "submodule" });
+    assert.equal(same.status, 0, same.stderr);
+    assert.match(same.calls, /PNPM --dir \S+ run --silent build:host/);
+    const other = await run(shim, ["build", "--at", "HEAD~1"], { env: MOUNTS, checkout: "submodule" });
+    assert.equal(other.status, 0, other.stderr);
+    assert.doesNotMatch(other.calls, /PNPM /);
+    assert.match(other.stderr, /the checkout stands at \w{12} and the image carries \w{12}, so the host CLI keeps its own build/);
+    const failed = await run(shim, ["build"], { env: { ...MOUNTS, FAKE_PNPM_RC: "1" }, checkout: "clean" });
+    assert.notEqual(failed.status, 0);
+    assert.match(failed.stderr, /the host CLI build failed \(above\); the image stands built from \w{12}/);
+  });
+
   // L4 (RD3): THE OUTGOING IMAGE KEEPS A REVISION TAG, and the newest three revision tags stand; the rest prune.
   test(`${name}: build tags the outgoing image lares-surface:rev-<short rev> before it moves the tag; an unlabeled one by its id; none standing tags nothing`, async () => {
     const labeled = await run(shim, ["build"], { env: { ...MOUNTS, FAKE_OUTGOING_REV: "0123456789abcdef0123456789abcdef01234567" }, checkout: "clean" });
@@ -1022,6 +1038,12 @@ for (const [name, shim] of shims) {
     const keep = r.calls.indexOf("HOSTCLI rite keep --if-due"), census = r.calls.indexOf("vessel census --no-json"), down = r.calls.indexOf("down --remove-orphans"), build = r.calls.indexOf(" build "), up = r.calls.indexOf("up -d --wait lares");
     assert.ok(keep >= 0 && census > keep && down > census && build > down && up > build, `order keep, census, down, build, up:\n${r.calls}`);
     assert.match(r.stderr, /rebuilt: the vessel stands on revision 0123456789ab, wearing h2; keep: kept \(rite keep --if-due\)/);
+    // THE HOST BUILDS FROM THE SAME REVISION: the checkout stands at the commit the image built, so its CLI builds after
+    // the image and before the vessel stands, and the line says so.
+    const host = r.calls.indexOf("PNPM --dir ");
+    assert.ok(host > build && up > host, `order build, host build, up:\n${r.calls}`);
+    assert.match(r.calls, /PNPM --dir \S+ run --silent build:host/);
+    assert.match(r.stderr, /the host CLI builds from \w{12}, the revision the image carries/);
     assert.doesNotMatch(r.calls, /checkout|switch|pulama-main/, "no branch moves, and no pūlama is touched");
   });
   test(`${name}: rebuild-stops-on-a-refused-census: the census naming items refuses, and nothing builds or stands`, async () => {
