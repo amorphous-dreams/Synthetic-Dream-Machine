@@ -51,7 +51,7 @@ describe("the floor's plugin offering", () => {
     expect(readFloorManifest(bytes)).toEqual({ manifest });
   });
 
-  test("an old-shape manifest that still names grammar refuses by name; plugins must name a CAS address", async () => {
+  test("a manifest that names a grammar field refuses by name; plugins must name a CAS address", async () => {
     const { manifest } = await fixture();
     const old = readFloorManifest(enc({ format: "lararium-floor", engine: manifest.engine, grammar: "a".repeat(64), plugins: manifest.plugins, snapshots: manifest.snapshots }));
     expect(old).toMatchObject({ refusal: "floor-manifest-malformed", reason: expect.stringMatching(/grammar/) });
