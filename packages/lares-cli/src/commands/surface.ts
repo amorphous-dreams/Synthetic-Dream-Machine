@@ -42,7 +42,7 @@ import { sealedPetnameStore } from "../sealed-records.js";
 import { makeFleetPetnameStore } from "../daemon-persona-store.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "../surface-env.js";
-import { locateShim, SHIM_ABSENT_EXIT } from "../host-bridge.js";
+import { locateShim, SHIM_ABSENT_EXIT } from "../shim-locate.js";
 
 // ── the doors ───────────────────────────────────────────────────────────────────────────────────────────────
 
