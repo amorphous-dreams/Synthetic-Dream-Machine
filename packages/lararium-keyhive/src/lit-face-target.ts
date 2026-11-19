@@ -2,14 +2,17 @@
  * lit-face-target — THE FACE-NAMED WAVE'S TARGET on the daemon island (the lit set, sealed-store#/the-lit-set).
  *
  * One seed lays every open face's memory, each in its own layer. A wave naming face h<N> resolves h<N>'s OWN document for the
- * target bag: the daemon wiki's device slots by h<N>'s group (`daemon-slot/<kind>/<group>` in the control document, minted
- * under h<N>'s own resolver where none stands), its daemon canon by h<N>'s relation (`daemon-canon/<relation>`). The answer
- * carries the document's OWNER as the control document names it, so the action handler lands the wave only where that owner
- * is h<N>, and never on the worn face. A face outside the lit set resolves nothing.
+ * target bag: its daemon canon by h<N>'s relation (`daemon-canon/<relation>`), and the daemon wiki's device slots at h<N>'s own
+ * wear alone, the worn face's mounted layer. A SIBLING'S DAEMON SLOT OPENS NOTHING HERE: the island seals under the worn face's
+ * session alone, so a document it stood for a sibling would refuse its seal (`session-face-foreign`), leave unsealed at the next
+ * composition, and leave the control row naming a document no store holds; that face's own wear would then refuse to attach its
+ * working layer. The wave refuses `face-unresolved`, and the seed names the face as waiting for its own wear. The answer carries
+ * the document's OWNER as the control document names it, so the action handler lands the wave only where that owner is h<N>,
+ * and never on the worn face. A face outside the lit set resolves nothing.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { CONTROL_HOME_ID, documentIdOfUrl, tiddlerText, wikiSlotUri, type LarTiddlerStore } from "@lararium/mesh";
+import { CONTROL_HOME_ID, documentIdOfUrl, tiddlerText, type LarTiddlerStore } from "@lararium/mesh";
 import type { FaceTargetResolver } from "@lararium/tw5";
 
 /** One face of the lit set as the island holds it. */
@@ -28,8 +31,6 @@ export interface LitFaceTargetDeps {
   readonly control: () => { get(title: string): Promise<unknown> } | null;
   /** The worn face's mounted store for a bag (the composite's layer), or null. */
   readonly wornStore: (bag: string) => LarTiddlerStore | null;
-  /** A sibling's daemon device slot url, minted under that sibling's own resolver where none stands. */
-  readonly siblingSlot: (face: LitFace, kind: "working" | "draft" | "personal") => Promise<string | null>;
   /** A store over a document url, as `bag`. */
   readonly storeOf: (url: string, bag: string) => Promise<LarTiddlerStore>;
 }
@@ -67,16 +68,10 @@ export function makeLitFaceTarget(deps: LitFaceTargetDeps): FaceTargetResolver {
     const worn = deps.worn();
     const target = face === null ? worn : lit().find((f) => f.handleIndex === face) ?? null;
     if (target === null) return null;
-    let store: LarTiddlerStore | null = null;
-    if (worn !== null && target.handleIndex === worn.handleIndex) store = deps.wornStore(bag);
-    if (store === null) {
-      if (slot) {
-        const url = worn !== null && target.handleIndex === worn.handleIndex ? null : await deps.siblingSlot(target, slot[1] as "working" | "draft" | "personal");
-        if (url) store = await deps.storeOf(url, wikiSlotUri("daemon", slot[1] as never));
-      } else if (target.relation !== null && decodeURIComponent(canon![1]!) === target.relation) {
-        const id = await named(canonTitle(target.relation));
-        if (id) store = await deps.storeOf(`automerge:${id}`, bag);
-      }
+    let store: LarTiddlerStore | null = worn !== null && target.handleIndex === worn.handleIndex ? deps.wornStore(bag) : null;
+    if (store === null && canon && target.relation !== null && decodeURIComponent(canon[1]!) === target.relation) {
+      const id = await named(canonTitle(target.relation));
+      if (id) store = await deps.storeOf(`automerge:${id}`, bag);
     }
     if (store === null) return null;
     return { store, owner: await ownerOf(bag, docIdOf(store)), worn: worn?.handleIndex ?? null };
