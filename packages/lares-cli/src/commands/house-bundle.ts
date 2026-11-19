@@ -83,7 +83,7 @@ import {
   type BundleRedeclareFace, type BundleRow, type BundleShareEntry, type VerifiedBundle,
 } from "../bundle-manifest.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs } from "../share-doors.js";
-import { KeepSeatRefused, adoptKeepSeat, bundleSeatText, keepSeatForCut, liveKeepRoute, openKeepSeat, sealRosterForCut, signCut } from "../keep-seat.js";
+import { KeepSeatRefused, adoptKeepSeat, isTestRoute, bundleSeatText, keepSeatForCut, liveKeepRoute, openKeepSeat, sealRosterForCut, signCut } from "../keep-seat.js";
 import { verifyKeepCut, type Credential } from "@lararium/mesh";
 
 /** A keep seat refusal, as the bundle verbs name it. */
@@ -1268,7 +1268,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
 
   // THE PAIR SEATS LAST: only a whole apply seats the bundle's keep pair where this house rests none, so a restore that refused
   // anywhere above leaves the house's config as it stood.
-  if (apply) adoptKeepSeat(seat, adoptSeed);
+  if (apply) adoptKeepSeat(seat, adoptSeed, isTestRoute(route));
   adoptSeed.fill(0);
   return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, waiting, warnings, benchWaiting, personalWaiting, kahuaWaiting, daemonWaiting, shares: { written: carriedShares.map((r) => r.slug), landed: sharesLanded } };
 }

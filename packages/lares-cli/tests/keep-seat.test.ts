@@ -123,13 +123,16 @@ describe("the keep seals its roster to a pair whose secret rests under the human
   });
 
   test("KQ2 RED: once seated, a cut with no credential seals, and its roster opens under the route", async () => {
-    await houseExport(`${out}-seat`, { acceptOmissions: true, doors: doors(oldFaces(), SHARES) });
+    // A REAL SEAT: a proved unlock seated the pair under the steward's own route (a test-route seat refuses on an unmarked root).
+    const STEWARD: Credential[] = [{ kind: "passphrase", passphrase: "the steward's own long passphrase" }];
+    const { seatKeepAtUnlock } = await import("../src/keep-seat.js");
+    expect(await seatKeepAtUnlock({ reading: "opens", opener: [0] }, STEWARD, () => {})).toBe("seated");
     // NO MARKER, NO TERMINAL: any ask for a credential would refuse, so a cut that lands asked for none.
     rmSync(join(root, ".lar-test-scratch"));
     const cut = await houseExport(out, { acceptOmissions: true, doors: doors(oldFaces(), SHARES) });
     expect(existsSync(join(out, "re-declare.sealed"))).toBe(true);
     expect(cut.manifest.faces.length).toBe(2);
-    const imported = await houseImport(out, { apply: false, doors: doors(newFaces(), [], RIGHT) });
+    const imported = await houseImport(out, { apply: false, doors: doors(newFaces(), [], STEWARD) });
     expect(imported.faceMap).toEqual({ "otter-face": 0, "kestrel-face": 1 });
   });
 

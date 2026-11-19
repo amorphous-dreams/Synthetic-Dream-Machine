@@ -286,10 +286,15 @@ export async function seatKeepAtUnlock(answer: CustodyOpenAnswer, route: readonl
 
 /** Adopt a pair a bundle carried, where this house rests none, with the signing seed its opening derived: the next keep seals to
  *  the pair the restore opened and signs as the house that minted it. */
-export function adoptKeepSeat(seat: KeepSeat, signingSeed: Uint8Array): boolean {
+export function adoptKeepSeat(seat: KeepSeat, signingSeed: Uint8Array, testRoute = false): boolean {
   if (readResting() !== null) return false;
-  writeResting(seat, null, signingSeed);
+  writeResting(seat, null, signingSeed, testRoute);
   return true;
+}
+
+/** Whether a route is the published test route alone: a seat it opened stays marked so a real route replaces it. */
+export function isTestRoute(route: readonly Credential[]): boolean {
+  return route.length > 0 && route.every((c) => c.kind === "passphrase" && c.passphrase === TEST_ROUTE_PASSPHRASE);
 }
 
 /**
@@ -384,6 +389,11 @@ export async function keepSeatForCut(): Promise<CutSeat> {
     resting = readResting();
   }
   if (resting !== null) {
+    // A TEST-ROUTE SEAT on a root whose custody the test route no longer takes (a person founded it) seals to a pair the world's
+    // test passphrase opens: refuse it by name, and name this house's road to a real seat.
+    if (resting.testRoute && !(testScratchRoot() && await custodyTakesTestRoute())) {
+      throw new KeepSeatRefused("keep-seat-test-route", `the keep pair at ${keepSeatPath()} rests under the published test route, and this house's custody takes no test route: ${keepSeatRoad(await houseFacts())}, which replaces it, then cut again`);
+    }
     if (resting.signingSeed === null) throw new KeepSeatRefused("keep-seat-unsigned", `the keep pair at ${keepSeatPath()} rests with no signing seed, so a cut would carry a roster no restore accepts: ${keepSeatRoad(await houseFacts())}, then cut again`);
     return { seat: resting.seat, signingSeed: resting.signingSeed };
   }
