@@ -23,7 +23,9 @@
  */
 import * as A from "@automerge/automerge";
 import { isValidDocumentId, type Chunk, type Repo, type StorageAdapterInterface } from "@automerge/automerge-repo";
-import type { DocumentValue, HolderRefusal, OpenedValue } from "./content-key-holder.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { PEER_WRITER_BOUND, type DocumentValue, type HolderRefusal, type OpenedValue } from "./content-key-holder.js";
+import { hex, utf8Bytes } from "./crypto.js";
 import { DOCUMENT_HANG_BOUND_MS } from "./find-or-throw.js";
 import { readSealedAddress } from "./sealed-chunk.js";
 import { SealedDocumentStore, type HeldNotice, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
@@ -102,6 +104,18 @@ export function chunkActors(data: Uint8Array): readonly string[] | null {
   return actors.size > 0 ? [...actors].sort() : null;
 }
 const MAGIC = [0x85, 0x6f, 0x4a, 0x83] as const;
+
+/**
+ * A PEER'S WRITER NAMES ITS WHOLE SET WITHIN THE SEAL'S BOUND. A snapshot carries every actor its document's history
+ * holds, and a document each boot writes under a fresh actor (a face's catalog) gathers one more per boot; the listed
+ * set outgrows the name a manifest's writer holds, and the holder refuses the batch whole (`values-malformed`). So a set
+ * that lists within `PEER_WRITER_BOUND` names itself; a longer one names its count and the digest of the sorted list.
+ */
+export function peerWriterName(actors: readonly string[]): string {
+  const sorted = [...new Set(actors)].sort();
+  const listed = sorted.join(",");
+  return listed.length <= PEER_WRITER_BOUND ? listed : `${sorted.length}-actors-sha256-${hex(sha256(utf8Bytes(listed)))}`;
+}
 
 // ── The door's messages ───────────────────────────────────────────────────────────────────────────
 export interface DocStoreMsg_Seal {
@@ -505,7 +519,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
       const own = watched.actorOf(documentId);
       const session = standingFor(documentId);
       // A handle not ready yet holds no change of this replica's own: what it saves arrived from a peer.
-      if (actors !== null && (own === null || !actors.includes(own))) book.receive(documentId, actors.join(","), session ?? book.of(documentId));
+      if (actors !== null && (own === null || !actors.includes(own))) book.receive(documentId, peerWriterName(actors), session ?? book.of(documentId));
       else if (actors !== null && session !== null) book.book(documentId, session);
       else if (session !== null && book.of(documentId) === null) book.seal(documentId, session);
     }
