@@ -250,6 +250,7 @@ export function runSovereignKernel(
     breathe();
     // PACING: this emits breaths; the vessel judges their progress and silence.
     const breathTimer = setInterval(() => breathe(), breathEveryMs);
+    _mountBreath = { slot: (slot) => tick(`slot ${slot}`), advance: () => { _progress++; } };
     // Any throw during init (incl. a behavior.onEa gate failure, e.g.
     // bootDaemonKeyhive Gate A/B/C) posts fault so the vessel times out cleanly
     // instead of hanging without an ea.
@@ -259,37 +260,32 @@ export function runSovereignKernel(
       _post(mkFault(msg.wikiUri, `manifest handler threw: ${String(err)}`));
     } finally {
       clearInterval(breathTimer);
+      _mountBreath = null;
     }
   }
 
-  // ── Slot resolution — silence-measured wait, fault loudly, never hang ──────
+  // ── Slot resolution — the wait ends on events, faults loudly, never hangs ──
   //
-  // Partition-as-normal-state: a doc that has not yet arrived over syncPort
-  // gets a bounded wait; a doc that never arrives produces a LOUD fault the
-  // vessel can read, never a mute hang the vessel must guess at by timeout.
-  //
-  // Silence is MEASURED on the syncPort (monotonic, suspend-blind), never
-  // inferred from a fixed wall deadline: during a fresh-corpus boot both the
-  // vessel main thread and this island wedge for whole seconds in synchronous
-  // automerge/keyhive work, so a bare 8s `Promise.race` faulted a LIVE sync
-  // whose response sat queued behind the wedge (personal never
-  // "arrived" while its doc sat on disk the whole time).
-  // The vessel-host ea-wait carries the same law; this is its island-side twin:
-  //   - the budget clocks port-silence, re-armed by ANY inbound sync traffic
-  //     (a busy peer mid-corpus-sync reads live, not absent);
-  //   - a verdict defers one turn so queued port messages land first;
-  //   - a hard cap keeps the loud-fault law when traffic flows forever without
-  //     the doc (the vessel's mount stall budget backstops far above it).
-  const SLOT_SILENCE_TIMEOUT_MS = 8_000;
-  const SLOT_READY_HARD_CAP_MS  = 60_000;
-  const SLOT_POLL_MS            = 250;
+  // NO CLOCK DECIDES AN ARRIVAL (road C16). A wiki island keeps no store, so every slot document arrives from the
+  // vessel's Repo over the sync port, and the wait ends on an event (`slot-wait`): the document arriving, the Repo's
+  // refusal, or the vessel's verdict that it holds no such document, which stands a grace window with nothing moving on
+  // the port before it ends the wait. A silent port while an ask stands says only that the vessel still works: a corpus
+  // load, a key derivation, a big store read. The hard cap stays as the one last-resort bound, and its fault names
+  // itself and the phase the wait stood in. Each slot names itself on the island's breath while it waits, and inbound
+  // sync advances the breath's progress, so the vessel's own stall budget reads a moving wait as moving and a still one
+  // by the slot it waits on.
+  const SLOT_VERDICT_GRACE_MS = 8_000;
+  const SLOT_READY_HARD_CAP_MS = 60_000;
+  const SLOT_POLL_MS           = 250;
   const mono = (): number => performance.now();
   const defer = (): Promise<void> =>
     // PACING: defer yields to the host task queue without deciding readiness.
     new Promise((res) => (typeof setImmediate === "function" ? setImmediate(res) : setTimeout(res, 0)));
   let _lastSyncHeardAt = mono();
   const _syncWakes = new Set<() => void>();
-  const _markSyncHeard = (): void => { _lastSyncHeardAt = mono(); for (const wake of _syncWakes) wake(); };
+  // The mount's breath, while a manifest mounts: a slot names its wait, and inbound sync advances the progress.
+  let _mountBreath: { slot(slot: string): void; advance(): void } | null = null;
+  const _markSyncHeard = (): void => { _lastSyncHeardAt = mono(); _mountBreath?.advance(); for (const wake of _syncWakes) wake(); };
   // THE DAEMON ISLAND'S OWN STORE, read for each of its Repos (`store-liveness`), the one island store that stands: a read
   // there may wait on the vessel's rest answer, so a slot wait that ends at the hard cap names a read still in flight.
   const _storeOf = new WeakMap<object, StoreLiveness>();
@@ -308,7 +304,8 @@ export function runSovereignKernel(
     // The wait's law lives in `slot-wait`: a rejection counts as a verdict only when a peer stood connected to
     // give it. This island's one peer is the vessel's main thread, and a Repo with no peer connected settles a
     // find "unavailable" at once, so an ask that lands while the main thread stalls (a key derivation at an
-    // unlock, a corpus load) gets asked again inside the same silence and hard-cap budgets.
+    // unlock, a corpus load) gets asked again when the peer stands.
+    _mountBreath?.slot(slot);
     const out = await waitForSlotDocument<DocHandle<LarDoc>>({
       find:      () => repo.find<LarDoc>(docUrl as AutomergeUrl),
       peerCount: () => repo.peers.length,
@@ -318,7 +315,7 @@ export function runSovereignKernel(
       now:       mono,
       lastHeard: () => _lastSyncHeardAt,
       ...(_storeOf.has(repo) ? { store: () => _storeOf.get(repo)!.reading() } : {}),
-      // LIVENESS: slot waits use this for peer-silence and hard-cap bounds as well as polling.
+      // LIVENESS: slot waits use this for the verdict's grace and the last-resort hard cap alone.
       sleep:     (ms) => new Promise((res) => setTimeout(res, ms)),
       defer,
       onWake: (wake) => {
@@ -326,19 +323,17 @@ export function runSovereignKernel(
         repo.networkSubsystem.on("peer", wake);
         return () => { _syncWakes.delete(wake); repo.networkSubsystem.off("peer", wake); };
       },
-      budgets:   { silenceMs: SLOT_SILENCE_TIMEOUT_MS, hardCapMs: SLOT_READY_HARD_CAP_MS, pollMs: SLOT_POLL_MS },
+      budgets:   { verdictGraceMs: SLOT_VERDICT_GRACE_MS, hardCapMs: SLOT_READY_HARD_CAP_MS, pollMs: SLOT_POLL_MS },
     });
     if (out.outcome === "ready") return out.handle;
-    if (out.outcome === "never-arrived") {
-      // A wait that ended while the island's own store still read names that store, never the port: the read there waits
-      // on the store itself or on the vessel's rest answer for it (`islandRestGuard`).
-      _post(mkFault(wikiUri, out.storeReads > 0
-        ? `slot ${slot} unavailable — doc ${docUrl} never resolved: the island's own store still held ${out.storeReads} read(s) ` +
-          `in flight at the hard cap (${out.elapsedMs}ms elapsed; hard cap ${SLOT_READY_HARD_CAP_MS}ms), each waiting on that store ` +
-          `or on the vessel's rest answer for its document`
-        : `slot ${slot} unavailable — doc ${docUrl} never arrived over syncPort ` +
-          `(${out.silentMs}ms port-silence, ${out.elapsedMs}ms elapsed; ` +
-          `silence budget ${SLOT_SILENCE_TIMEOUT_MS}ms, hard cap ${SLOT_READY_HARD_CAP_MS}ms)`));
+    if (out.outcome === "hard-cap") {
+      const stood = out.phase === "store" ? `the island's own store still held ${out.storeReads} read(s) in flight, each waiting on that store or on the vessel's rest answer for its document`
+        : out.phase === "asked" ? "the vessel stood connected and never answered the ask"
+        : out.phase === "no-peer" ? "no vessel stood connected to ask"
+        : "the vessel answered unavailable while traffic kept flowing";
+      _post(mkFault(wikiUri,
+        `slot ${slot} unavailable — LAST-RESORT HARD CAP: no event ended the wait for doc ${docUrl} in ${out.elapsedMs}ms ` +
+        `(${stood}; hard cap ${SLOT_READY_HARD_CAP_MS}ms)`));
       return null;
     }
     if (out.outcome === "refused") {
@@ -696,11 +691,11 @@ export function runSovereignKernel(
         repo.networkSubsystem.on("peer", wake);
         return () => { _syncWakes.delete(wake); repo.networkSubsystem.off("peer", wake); };
       },
-      budgets:   { silenceMs: SLOT_SILENCE_TIMEOUT_MS, hardCapMs: SLOT_READY_HARD_CAP_MS, pollMs: SLOT_POLL_MS },
+      budgets:   { verdictGraceMs: SLOT_VERDICT_GRACE_MS, hardCapMs: SLOT_READY_HARD_CAP_MS, pollMs: SLOT_POLL_MS },
     }).catch((error: unknown) => ({ outcome: "refused" as const, why: error instanceof Error ? error.message : String(error) }));
     if (_composite !== composite) return;
     if (out.outcome !== "ready") {
-      console.warn(`[island] the face's canon ${slot} did not mount after ea (${out.outcome}${"why" in out ? `: ${String(out.why)}` : ""}): the daemon wiki stands on its other layers`);
+      console.warn(`[island] the face's canon ${slot} did not mount after ea (${out.outcome}${"why" in out ? `: ${String(out.why)}` : ""}${"phase" in out ? `, ${out.phase}` : ""}): the daemon wiki stands on its other layers`);
       return;
     }
     if (composite.hasBag(slot)) return;

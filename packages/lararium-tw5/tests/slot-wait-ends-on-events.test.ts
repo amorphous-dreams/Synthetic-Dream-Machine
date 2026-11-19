@@ -7,9 +7,9 @@
  * ends on an event: the document arriving, a refusal, or the vessel's verdict. The hard cap stays as the one last-resort
  * bound, and it names itself and the phase the wait stood in.
  *
- *   E1  RED: an ask stands unanswered with the vessel connected and the port silent past every silence budget; the document
+ *   E1  an ask stands unanswered with the vessel connected and the port silent past every silence budget; the document
  *       then arrives: the wait answers the HANDLE.
- *   E2  RED: with no event at all, the wait ends only at the hard cap, as `hard-cap`, naming the phase it stood in (`asked`:
+ *   E2  with no event at all, the wait ends only at the hard cap, as `hard-cap`, naming the phase it stood in (`asked`:
  *       the vessel connected and the ask unanswered; `no-peer`: no vessel connected).
  *       control: a connected vessel's verdict still ends the wait as `verdict`, well before the hard cap.
  */
@@ -33,7 +33,7 @@ function world(over: Partial<SlotWaitDeps<string>> & { find: () => Promise<strin
 }
 
 describe("the slot wait ends on events, never on silence alone", () => {
-  test("E1 — RED: an unanswered ask past every silence budget still meets the document when it arrives", async () => {
+  test("E1 — an unanswered ask past every silence budget still meets the document when it arrives", async () => {
     let arrive!: (handle: string) => void;
     const arrival = new Promise<string>((resolve) => { arrive = resolve; });
     const w = world({ find: () => arrival });
@@ -44,9 +44,9 @@ describe("the slot wait ends on events, never on silence alone", () => {
     expect(await out).toEqual({ outcome: "ready", handle: "handle-after-a-long-load" });
   });
 
-  test("E2 — RED: with no event, only the hard cap ends the wait, naming itself and its phase", async () => {
+  test("E2 — with no event, only the hard cap ends the wait, naming itself and its phase", async () => {
     const asked = world({ find: () => new Promise<string>(() => {}) });
-    expect(await waitForSlotDocument(asked.deps)).toEqual({ outcome: "hard-cap", phase: "asked", elapsedMs: 60_000 });
+    expect(await waitForSlotDocument(asked.deps)).toEqual({ outcome: "hard-cap", phase: "asked", elapsedMs: 60_000, storeReads: 0 });
 
     const lonely = world({ peerCount: () => 0, find: async () => { throw new Error("unavailable"); } });
     const out = await waitForSlotDocument(lonely.deps);
