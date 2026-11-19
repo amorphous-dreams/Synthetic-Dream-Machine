@@ -116,4 +116,12 @@ describe("composition shutdown owns its last wave and store", () => {
     expect(signal).not.toContain('result.daemon.shutdown(');
     expect(main).toContain('teardown: () => result.teardown(() => front.detach())');
   });
+
+  test("a signal flushes the main replica and names it on its own line before any producer drains", () => {
+    const signal = main.slice(main.indexOf('const shutdown = async (sig: string)', main.indexOf('async function composeHearthStanding(')));
+    const flush = signal.indexOf('await step("main-flush", () => result.repo.flush(), (ms) =>');
+    expect(flush).toBeGreaterThan(-1);
+    expect(signal).toContain("console.log(`[lararium] main replica flushed durably (main-flush ${ms}ms)`)");
+    expect(flush).toBeLessThan(signal.indexOf('await step("composition"'));
+  });
 });
