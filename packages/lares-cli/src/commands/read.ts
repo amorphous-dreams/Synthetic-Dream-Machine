@@ -26,7 +26,7 @@ import { read as readIntent, Ledger } from "../reality-tunnel/engine.js";
 import { homeItems } from "../reality-tunnel/catalog.js";
 import { resolveHomes } from "../reality-tunnel/homes.js";
 import { homeLedgerDir } from "../reality-tunnel/places.js";
-import { emit } from "../render.js";
+import { emit, proseFirst } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 
@@ -156,7 +156,10 @@ async function cmdReadVessel(args: ParsedArgs): Promise<number> {
   return report.degraded ? 1 : 0;
 }
 
-export async function cmdRead(args: ParsedArgs): Promise<number> {
+export async function cmdRead(given: ParsedArgs): Promise<number> {
+  // EVERY LENS ANSWERS A PIPE IN PROSE (render.ts `proseFirst`): the deep probe's JSON names every document in the store, so a
+  // piped read prints the terminal's lines and only `--json` answers the envelope.
+  const args = proseFirst(given);
   // An explicit --root moves the whole reading, as it does for `vessel found` (never a default).
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
   // The one named lens is `vessel`; any other positional names a door that does not exist (no alias stands),

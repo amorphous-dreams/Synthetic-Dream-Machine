@@ -42,7 +42,7 @@ test("a scratch root founds on the build's shipped genesis with no hand copy, an
     assert.equal(found.status, 0, found.stderr);
     assert.match(found.stdout + found.stderr, /genesis: shipped seed [0-9a-f]{64} at /);
 
-    const read = run(root, ["vessel", "read", "--root", root, "--skip-build"]);
+    const read = run(root, ["vessel", "read", "--root", root, "--skip-build", "--json"]);
     assert.equal(read.status, 0, read.stderr);
     assert.equal(JSON.parse(read.stdout).data.bootstrap, "present");
   } finally {
