@@ -373,7 +373,7 @@ export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bag
 export interface DocStoreMsg_SlotFiled { readonly type: "docstore:slot-filed"; readonly requestId: string }
 
 let slotNoticeSeq = 0;
-/** How long an island waits on the vessel's filing before its caller writes anyway (the vessel's heal seals what rested). */
+/** How long an island waits on the vessel's filing before its caller writes (the vessel's naming seals a write that outran it). */
 const SLOT_FILED_BOUND_MS = 10_000;
 
 /**

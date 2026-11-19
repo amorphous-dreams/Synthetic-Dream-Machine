@@ -12,11 +12,10 @@
  */
 import { afterEach, describe, expect, it } from "vitest";
 import { Repo, type AutomergeUrl, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
-import * as A from "@automerge/automerge";
 import { utf8Bytes } from "../src/crypto.js";
 import { faceProofSubjectRef } from "../src/face-proof-subjects.js";
 import type { RecordSigner } from "../src/sealed-records.js";
-import { announceSlotDocFiled, answerDocStoreAsks, composeSealedRest, docStorePortCell, islandRestGuard, sealedBagMap, vesselDocStoreDoor, type SealedRest } from "../src/sealed-rest.js";
+import { announceSlotDocFiled, answerDocStoreAsks, composeSealedRest, docStorePortCell, sealedBagMap, vesselDocStoreDoor, type SealedRest } from "../src/sealed-rest.js";
 import { wornFaceWikiBags, type WikiSlotBags } from "../src/register-bags.js";
 import { wikiBagUri, wikiSlotUri } from "../src/wiki-recipe.js";
 import { vessel, world, type Vessel } from "./content-key-fixture.js";
@@ -164,7 +163,7 @@ describe("the worn face's resolver names a slot document: it rests sealed under 
     await repo.shutdown();
   });
 
-  it("CONTROL: a document no resolver named stays unmapped and rests clear, as before", async () => {
+  it("CONTROL: a document no resolver named stays unmapped and rests clear", async () => {
     const w = world();
     const a = await vessel(w, "a");
     const inner = memoryAdapter();
@@ -176,42 +175,6 @@ describe("the worn face's resolver names a slot document: it rests sealed under 
     expect(await v.rest.restsSealed(doc.documentId)).toBe(false);
     expect(restsClear(inner, doc.documentId, SECRET)).toBe(true);
     await repo.shutdown();
-  });
-});
-
-describe("a slot document that already rests clear seals and leaves once the map names it", () => {
-  it("the vessel's clear chunks seal and leave rest at the naming (`sealMapped`); an island's clear copy leaves at its guard's first sealed answer", async () => {
-    const w = world();
-    const a = await vessel(w, "a");
-    const inner = memoryAdapter();
-    const named = new Map<string, Set<string>>();
-    const v = standVessel(a, inner, named);
-    const repo = new Repo({ storage: v.rest.store, network: [] });
-    v.seat(repo);
-    // AN EARLIER BUILD: the margin rested clear on the vessel, and an island synced it and rested its own clear copy.
-    const doc = repo.create<{ note?: string }>();
-    doc.change((d) => { d.note = SECRET; });
-    await repo.flush();
-    expect(restsClear(inner, doc.documentId, SECRET), "the setup took: the margin rests clear").toBe(true);
-    const islandInner = memoryAdapter();
-    const clearCopy = A.save(doc.doc() as A.Doc<unknown>);
-    await islandInner.save([doc.documentId, "snapshot", "an-earlier-build"], clearCopy);
-    const guard = islandRestGuard(islandInner, (documentId) => v.rest.restsSealed(documentId));
-    // THIS BUILD'S BOOT: the resolver names the margin again, and the vessel seals what rested clear.
-    announce(named, wikiSlotUri("lares", "personal"), doc.documentId);
-    expect(await v.rest.sealMapped(doc.documentId, v.session), "the clear chunks sealed").toBe(true);
-    await v.rest.store.flush();
-    expect(restsAny(inner, doc.documentId), "the margin still rests, sealed").toBe(true);
-    expect(restsClear(inner, doc.documentId, SECRET), "no clear chunk of the margin remains on the vessel").toBe(false);
-    // The island's guard asks at its next act on the document, and its clear copy leaves.
-    expect(await guard.load([doc.documentId, "snapshot", "an-earlier-build"])).toBeUndefined();
-    expect(restsAny(islandInner, doc.documentId), "the island's clear copy left its rest").toBe(false);
-    await repo.shutdown();
-    a.restart();
-    const again = standVessel(a, inner, named);
-    const repo2 = new Repo({ storage: again.rest.store, network: [] });
-    expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc()).toMatchObject({ note: SECRET });
-    await repo2.shutdown();
   });
 });
 
