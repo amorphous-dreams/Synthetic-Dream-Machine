@@ -539,7 +539,66 @@ warn_pulama_skew() {
 # context and the revision as the label. So an untracked or uncommitted file never rides an image; a dirty tree builds
 # from HEAD and names what it left out. A submodule whose checkout lacks the pinned commit is named and left out.
 IMAGE_REF=$(value_of LARES_IMAGE); [ -n "$IMAGE_REF" ] || IMAGE_REF=lares-surface:local
+case "${IMAGE_REF##*/}" in *:*) IMAGE_REPO=${IMAGE_REF%:*} ;; *) IMAGE_REPO=$IMAGE_REF ;; esac
 BUILT_REV=""
+
+# THE OUTGOING IMAGE KEEPS A REVISION TAG (road rank 4l, RD3). Before a build moves the image tag, the image it held
+# takes `<repo>:rev-<12 hex of its revision label>` (`rev-unlabeled-<12 hex of its id>` where it names no revision), so
+# the house can step back by hand. After a build lands, the newest three revision tags stand and the rest untag, never a
+# hand tag (a tag this shim did not write), an image a container runs, or the image the pūlama admitted last or last
+# raised. A prune only untags: the pūlama's admission record of a pruned image stays in its state.
+REV_TAGS_KEPT=3
+tag_outgoing() {
+  t_line=$(docker image inspect --format '{{.Id}}|{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$IMAGE_REF" 2>/dev/null | tr -d '\r') || t_line=""
+  [ -n "$t_line" ] || { printf 'lares-container: no image stands at %s yet, so no outgoing image takes a revision tag\n' "$IMAGE_REF" >&2; return 0; }
+  t_id=${t_line%%|*}; t_rev=${t_line#*|}
+  if printf '%s' "$t_rev" | grep -Eq '^[0-9a-f]{12,40}(-dirty)?$'; then
+    t_tag="rev-$(printf '%s' "$t_rev" | cut -c1-12)"
+    case "$t_rev" in *-dirty) t_tag="$t_tag-dirty" ;; esac
+  else
+    t_tag="rev-unlabeled-$(printf '%s' "${t_id#sha256:}" | cut -c1-12)"
+  fi
+  if docker tag "$IMAGE_REF" "$IMAGE_REPO:$t_tag"; then
+    printf 'lares-container: the outgoing image keeps the tag %s:%s\n' "$IMAGE_REPO" "$t_tag" >&2
+  else
+    printf 'lares-container: the outgoing image could not take the tag %s:%s; the build goes on\n' "$IMAGE_REPO" "$t_tag" >&2
+  fi
+}
+# The image the pūlama admitted last (its newest admission row, read from its state on the host) and the image it last
+# raised (the host's report). Either may read empty.
+pulama_admitted_last() {
+  a_dir="$HOUSE/pulama/state/records"
+  [ -d "$a_dir" ] || return 0
+  # shellcheck disable=SC2012
+  a_row=$(grep -l 'lares/pulama/admitted/' "$a_dir"/*.json 2>/dev/null | xargs -r ls -t 2>/dev/null | head -n 1) || a_row=""
+  [ -n "$a_row" ] || return 0
+  sed -n 's/.*image\\*"[[:space:]]*:[[:space:]]*\\*"\(sha256:[0-9a-f]\{64\}\).*/\1/p' "$a_row" 2>/dev/null | head -n 1
+}
+prune_rev_tags() {
+  p_tags=$(docker image ls --format '{{.Tag}}' "$IMAGE_REPO" 2>/dev/null | tr -d '\r') || return 0
+  p_admitted=$(pulama_admitted_last)
+  p_raised=$(tr -d '\r\n' < "$HOUSE/pulama/state/image" 2>/dev/null) || p_raised=""
+  p_rows=""
+  for p_tag in $p_tags; do
+    printf '%s' "$p_tag" | grep -Eq '^rev-([0-9a-f]{12}(-dirty)?|unlabeled-[0-9a-f]{1,12})$' || continue
+    p_info=$(docker image inspect --format '{{.Created}} {{.Id}}' "$IMAGE_REPO:$p_tag" 2>/dev/null | tr -d '\r') || continue
+    [ -n "$p_info" ] || continue
+    p_rows="$p_rows$p_info $p_tag
+"
+  done
+  [ -n "$p_rows" ] || return 0
+  p_n=0
+  printf '%s' "$p_rows" | LC_ALL=C sort -r | while read -r p_created p_id p_tag; do
+    p_n=$((p_n + 1))
+    [ "$p_n" -gt "$REV_TAGS_KEPT" ] || continue
+    if [ -n "$p_admitted" ] && [ "$p_id" = "$p_admitted" ]; then printf 'lares-container: keeps %s:%s: the pūlama admitted it last\n' "$IMAGE_REPO" "$p_tag" >&2; continue; fi
+    if [ -n "$p_raised" ] && [ "$p_id" = "$p_raised" ]; then printf 'lares-container: keeps %s:%s: the image the pūlama last raised\n' "$IMAGE_REPO" "$p_tag" >&2; continue; fi
+    p_runs=$(docker ps -q --filter "ancestor=$p_id" 2>/dev/null) || p_runs="unknown"
+    if [ -n "$p_runs" ]; then printf 'lares-container: keeps %s:%s: a container runs it\n' "$IMAGE_REPO" "$p_tag" >&2; continue; fi
+    if docker rmi "$IMAGE_REPO:$p_tag" >/dev/null; then printf 'lares-container: pruned %s:%s (created %s)\n' "$IMAGE_REPO" "$p_tag" "$p_created" >&2
+    else printf 'lares-container: %s:%s could not prune; it stands\n' "$IMAGE_REPO" "$p_tag" >&2; fi
+  done
+}
 build_image() { # $1 = the revision; the rest = compose-build args
   b_at=$1; shift
   [ -n "$GIT_REV" ] || die "build refuses: no git checkout answers at $SHIM_DIR, so the image's revision label would name no commit; build from a checkout"
@@ -578,12 +637,14 @@ EOF
   fi
   printf "services:\n  lares:\n    build:\n      context: '%s'\n      args:\n        GIT_REV: '%s'\n" "$b_ctx" "$b_rev" > "$b_ov"
   GIT_REV=$b_rev; export GIT_REV
+  tag_outgoing
   printf 'lares-container: building the vessel image (every package) from commit %s\n' "$b_short" >&2
   if [ -n "$ENV_ARGS" ]; then b_envf=$ENV_FILE; else b_envf=/dev/null; fi
   if docker compose --env-file "$b_envf" -f "$COMPOSE_FILE_PATH" -f "$b_ov" build "$@" lares; then b_rc=0; else b_rc=$?; fi
   rm -rf -- "$b_ctx" "$b_ov"
   [ "$b_rc" -eq 0 ] || die "the build failed (above); $IMAGE_REF stands as it stood"
   BUILT_REV=$b_rev
+  prune_rev_tags
   printf 'lares-container: the vessel image stands rebuilt from %s (revision %s); `up` stands it\n' "$b_short" "$b_rev" >&2
 }
 

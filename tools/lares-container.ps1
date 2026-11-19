@@ -502,7 +502,65 @@ function WarnPulamaSkew {
 # context and the revision as the label. So an untracked or uncommitted file never rides an image; a dirty tree builds
 # from HEAD and names what it left out. A submodule whose checkout lacks the pinned commit is named and left out.
 $ImageRef = ValueOf 'LARES_IMAGE'; if (-not $ImageRef) { $ImageRef = 'lares-surface:local' }
+$ImageRepo = if (($ImageRef -split '/')[-1].Contains(':')) { $ImageRef.Substring(0, $ImageRef.LastIndexOf(':')) } else { $ImageRef }
 $script:BuiltRev = ''
+
+# THE OUTGOING IMAGE KEEPS A REVISION TAG (road rank 4l, RD3). Before a build moves the image tag, the image it held
+# takes `<repo>:rev-<12 hex of its revision label>` (`rev-unlabeled-<12 hex of its id>` where it names no revision).
+# After a build lands, the newest three revision tags stand and the rest untag, never a hand tag, an image a container
+# runs, or the image the pūlama admitted last or last raised. A prune only untags: the admission record stays.
+$RevTagsKept = 3
+function TagOutgoing {
+  $line = ((& docker image inspect --format '{{.Id}}|{{ index .Config.Labels "org.opencontainers.image.revision" }}' $ImageRef 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $line) { [Console]::Error.WriteLine("lares-container: no image stands at $ImageRef yet, so no outgoing image takes a revision tag"); return }
+  $bar = $line.IndexOf('|'); $id = $line.Substring(0, $bar); $rev = $line.Substring($bar + 1)
+  if ($rev -cmatch '^[0-9a-f]{12,40}(-dirty)?$') {
+    $tag = "rev-$($rev.Substring(0, 12))"; if ($rev.EndsWith('-dirty')) { $tag += '-dirty' }
+  } else {
+    $hex = $id -replace '^sha256:', ''; $tag = "rev-unlabeled-$($hex.Substring(0, [Math]::Min(12, $hex.Length)))"
+  }
+  & docker tag $ImageRef "${ImageRepo}:$tag"
+  if ($LASTEXITCODE -eq 0) { [Console]::Error.WriteLine("lares-container: the outgoing image keeps the tag ${ImageRepo}:$tag") }
+  else { [Console]::Error.WriteLine("lares-container: the outgoing image could not take the tag ${ImageRepo}:$tag; the build goes on") }
+}
+# The image the pūlama admitted last (its newest admission row, read from its state on the host). It may read empty.
+function PulamaAdmittedLast {
+  $dir = Join-Path (Join-Path (Join-Path $House 'pulama') 'state') 'records'
+  if (-not (Test-Path -PathType Container $dir)) { return '' }
+  $rows = @(Get-ChildItem -Path $dir -Filter '*.json' -File -ErrorAction SilentlyContinue | Where-Object { (Get-Content -Raw -LiteralPath $_.FullName -ErrorAction SilentlyContinue) -like '*lares/pulama/admitted/*' } | Sort-Object LastWriteTime -Descending)
+  if ($rows.Count -eq 0) { return '' }
+  $m = [regex]::Match((Get-Content -Raw -LiteralPath $rows[0].FullName), 'image\\*"\s*:\s*\\*"(sha256:[0-9a-f]{64})')
+  if ($m.Success) { return $m.Groups[1].Value } else { return '' }
+}
+function PruneRevTags {
+  $tags = @(& docker image ls --format '{{.Tag}}' $ImageRepo 2>$null)
+  if ($LASTEXITCODE -ne 0) { return }
+  $admitted = PulamaAdmittedLast
+  $raised = ''
+  try { $raised = (Get-Content -Raw -LiteralPath (Join-Path (Join-Path (Join-Path $House 'pulama') 'state') 'image') -ErrorAction Stop).Trim() } catch {}
+  $rows = @()
+  foreach ($t in $tags) {
+    $t = "$t".Trim()
+    if ($t -cnotmatch '^rev-([0-9a-f]{12}(-dirty)?|unlabeled-[0-9a-f]{1,12})$') { continue }
+    $info = ((& docker image inspect --format '{{.Created}} {{.Id}}' "${ImageRepo}:$t" 2>$null) -join '').Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $info) { continue }
+    $parts = $info -split ' '
+    $rows += [pscustomobject]@{ Created = $parts[0]; Id = $parts[1]; Tag = $t }
+  }
+  $n = 0
+  foreach ($row in ($rows | Sort-Object -Property Created -Descending)) {
+    $n++
+    if ($n -le $RevTagsKept) { continue }
+    $named = "${ImageRepo}:$($row.Tag)"
+    if ($admitted -and $row.Id -eq $admitted) { [Console]::Error.WriteLine("lares-container: keeps ${named}: the pūlama admitted it last"); continue }
+    if ($raised -and $row.Id -eq $raised) { [Console]::Error.WriteLine("lares-container: keeps ${named}: the image the pūlama last raised"); continue }
+    $runs = ((& docker ps -q --filter "ancestor=$($row.Id)" 2>$null) -join '').Trim()
+    if ($LASTEXITCODE -ne 0 -or $runs) { [Console]::Error.WriteLine("lares-container: keeps ${named}: a container runs it"); continue }
+    & docker rmi $named *> $null
+    if ($LASTEXITCODE -eq 0) { [Console]::Error.WriteLine("lares-container: pruned $named (created $($row.Created))") }
+    else { [Console]::Error.WriteLine("lares-container: $named could not prune; it stands") }
+  }
+}
 function BuildImage([string]$at, [string[]]$more) {
   ResolveGitRev
   if (-not $script:GitRev) { Die "build refuses: no git checkout answers at $PSScriptRoot, so the image's revision label would name no commit; build from a checkout" }
@@ -553,6 +611,7 @@ function BuildImage([string]$at, [string[]]$more) {
     }
     Set-Content -Path $ov -Value "services:`n  lares:`n    build:`n      context: '$ctx'`n      args:`n        GIT_REV: '$rev'" -Encoding utf8
     $env:GIT_REV = $rev; $script:GitRev = $rev
+    TagOutgoing
     [Console]::Error.WriteLine("lares-container: building the vessel image (every package) from commit $short")
     & docker compose @Base -f $ov build @more lares
     $rc = $LASTEXITCODE
@@ -561,6 +620,7 @@ function BuildImage([string]$at, [string[]]$more) {
   }
   if ($rc -ne 0) { Die "the build failed (above); $ImageRef stands as it stood" }
   $script:BuiltRev = $rev
+  PruneRevTags
   [Console]::Error.WriteLine("lares-container: the vessel image stands rebuilt from $short (revision $rev); ``up`` stands it")
 }
 

@@ -24,7 +24,7 @@ const havePwsh = spawnSync("pwsh", ["-NoProfile", "-Command", "1"]).status === 0
  * and a scratch house root, so no test reads a real `~/.lares`. `envAt: "clone"` plants the file beside the compose
  * file instead, where the shim must not look. `@HOUSE@` in an env value or an env file names the run's scratch house.
  */
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {} } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -66,6 +66,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     // `wornFace` plants the face the shim last saw worn (`config/last-worn-face`), as a prior `vault unlock --face N` left it.
     if (wornFace !== undefined) { await mkdir(join(house, "config"), { recursive: true }); await writeFile(join(house, "config", "last-worn-face"), `${wornFace}\n`); }
     // `keepSeat` plants a keep seat already resting (`config/keep-seat.json`), as an earlier seating left it.
+    // `houseFiles` plants files under the house root by relative path (a pūlama's state rows, a pending rebuild).
+    for (const [rel, text] of Object.entries(houseFiles)) { await mkdir(join(house, rel, ".."), { recursive: true }); await writeFile(join(house, rel), text); }
     if (keepSeat !== undefined) { await mkdir(join(house, "config"), { recursive: true }); await writeFile(join(house, "config", "keep-seat.json"), JSON.stringify(keepSeat) + "\n", { mode: 0o600 }); }
     const fill = (v) => typeof v === "string" ? v.replaceAll("@HOUSE@", house) : v;
     const home = env.HOME ? fill(env.HOME) : join(dir, "home");
@@ -829,6 +831,52 @@ for (const [name, shim] of shims) {
     assert.equal(bad.status, 2, bad.stderr);
     assert.match(bad.stderr, /build refuses: no-such-rev names no commit/);
     assert.doesNotMatch(bad.calls, / build /);
+  });
+
+  // L4 (RD3): THE OUTGOING IMAGE KEEPS A REVISION TAG, and the newest three revision tags stand; the rest prune.
+  test(`${name}: build tags the outgoing image lares-surface:rev-<short rev> before it moves the tag; an unlabeled one by its id; none standing tags nothing`, async () => {
+    const labeled = await run(shim, ["build"], { env: { ...MOUNTS, FAKE_OUTGOING_REV: "0123456789abcdef0123456789abcdef01234567" }, checkout: "clean" });
+    assert.equal(labeled.status, 0, labeled.stderr);
+    assert.match(labeled.calls, /^tag lares-surface:local lares-surface:rev-0123456789ab$/m);
+    assert.ok(labeled.calls.indexOf("tag lares-surface:local") < labeled.calls.indexOf(" build "), labeled.calls);
+    assert.match(labeled.stderr, /the outgoing image keeps the tag lares-surface:rev-0123456789ab/);
+    const unlabeled = await run(shim, ["build"], { env: { ...MOUNTS, FAKE_IMAGE_ID: "sha256:" + "9a".repeat(32) }, checkout: "clean" });
+    assert.match(unlabeled.calls, /^tag lares-surface:local lares-surface:rev-unlabeled-9a9a9a9a9a9a$/m);
+    const none = await run(shim, ["build"], { env: { ...MOUNTS, FAKE_NO_OUTGOING: "1" }, checkout: "clean" });
+    assert.equal(none.status, 0, none.stderr);
+    assert.doesNotMatch(none.calls, /^tag /m);
+  });
+
+  test(`${name}: build keeps the newest three revision tags and prunes the rest, never a hand tag, an image a container runs, or the image the pūlama admitted last`, async () => {
+    const id = (c) => "sha256:" + c.repeat(64);
+    const tags = ["rev-aaaaaaaaaaaa", "rev-bbbbbbbbbbbb", "rev-cccccccccccc", "rev-dddddddddddd", "rev-eeeeeeeeeeee", "rev-ffffffffffff", "rev-111111111111", "keep-me", "rev-handmade", "local"];
+    const info = [
+      ["rev-aaaaaaaaaaaa", "2026-11-19T05:00:00Z", id("a")], ["rev-bbbbbbbbbbbb", "2026-11-18T05:00:00Z", id("b")],
+      ["rev-cccccccccccc", "2026-11-17T05:00:00Z", id("c")], ["rev-dddddddddddd", "2026-11-16T05:00:00Z", id("d")],
+      ["rev-eeeeeeeeeeee", "2026-11-15T05:00:00Z", id("e")], ["rev-ffffffffffff", "2026-11-14T05:00:00Z", id("f")],
+      ["rev-111111111111", "2026-11-13T05:00:00Z", id("1")],
+      ["keep-me", "2026-01-01T05:00:00Z", id("7")], ["rev-handmade", "2026-01-01T05:00:00Z", id("8")],
+    ].map((r) => r.join(" ")).join("\n");
+    const admitted = JSON.stringify({ title: "$:/lares/pulama/admitted/" + "0".repeat(64), text: JSON.stringify({ body: { act: "image-admitted", image: id("e") }, sig: "x" }) });
+    const r = await run(shim, ["build"], {
+      env: { ...MOUNTS, FAKE_IMAGE_TAGS: tags.join("\n"), FAKE_TAG_INFO: info, FAKE_RUNNING_IMAGES: id("d") },
+      checkout: "clean",
+      houseFiles: { [`pulama/state/records/${"ab".repeat(32)}.json`]: admitted, "pulama/state/image": id("1") + "\n" },
+    });
+    assert.equal(r.status, 0, r.stderr);
+    const pruned = [...r.calls.matchAll(/^rmi (\S+)$/gm)].map((m) => m[1]);
+    assert.deepEqual(pruned, ["lares-surface:rev-ffffffffffff"], r.calls);
+    assert.ok(r.calls.indexOf(" build ") < r.calls.indexOf("rmi "), "the prune follows the build");
+    assert.match(r.stderr, /pruned lares-surface:rev-ffffffffffff/);
+    assert.match(r.stderr, /keeps lares-surface:rev-dddddddddddd: a container runs it/);
+    assert.match(r.stderr, /keeps lares-surface:rev-eeeeeeeeeeee: the pūlama admitted it last/);
+    assert.match(r.stderr, /keeps lares-surface:rev-111111111111: the image the pūlama last raised/);
+    assert.doesNotMatch(r.calls, /rmi \S*(keep-me|handmade|:local)/);
+    assert.doesNotMatch(r.calls, /rmi -f|pulama-main\.js unadmit/, "a prune only untags; the admission record stays");
+    // A build that fails prunes nothing.
+    const failed = await run(shim, ["build"], { env: { ...MOUNTS, FAKE_BUILD_RC: "1", FAKE_IMAGE_TAGS: tags.join("\n"), FAKE_TAG_INFO: info }, checkout: "clean" });
+    assert.notEqual(failed.status, 0);
+    assert.doesNotMatch(failed.calls, /^rmi /m);
   });
 
   test(`${name}: build archives each submodule at its pinned commit, never where its checkout has moved`, async () => {
