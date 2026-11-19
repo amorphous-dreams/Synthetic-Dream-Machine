@@ -915,6 +915,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vault status --verbose           # the same, plus one reading of each standing file",
       "lares vault unlock                     # hand the standing vessel a TTY credential: it opens its key and composes with what the key opens",
       "                                       # where LARES_KEEP_WORKSPACE (or the one LARES_WORKSPACES pair) names a keep workspace and no keep lei stands, it asks once to string one under the same passphrase, as the face --face names, else the daemon mount",
+      "lares vault unlock --face N            # open face N under its own route; the vessel wears it",
+      "lares vault unlock --all [--face N]    # try the route on every face; --face N wears N, and refuses by name where N stays shut under it",
       "lares vault lock [--face N]            # the standing vessel drops its key and stands at the floor; --face N drops that face alone",
       "lares vault bind [--face N] [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back); --face N binds into that face's own tree",
       "lares vault unbind <slot-id> [--face N]   # unlock, remove a slot; the rotation offer prints; --face N leaves the node tree alone",

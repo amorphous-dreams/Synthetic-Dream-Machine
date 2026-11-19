@@ -273,6 +273,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const standing = listFaceOrdinals();
     const refuseFaces = async (reading: "face-refused" | "face-not-named", detail: object): Promise<CustodyAnswer> => {
       if (freshly) await holder.lock();           // a key never rests over a floor
+      else for (const fcid of holder.unlockedFaces()) if (!openBefore.has(fcid)) await holder.lockFace(fcid);
       deps.onLog(`unlock: ${reading}`);
       return { op: "unlock", reading, ...detail, standing: deps.standing() };
     };
@@ -294,14 +295,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         faceReadings.push({ face: ordinal, reading: reading === "opened" ? "opened" : `stayed-shut:${reading}` });
       }
       if (standing.length > 0 && opened.length === 0) return refuseFaces("face-refused", { faces: readings.map((r) => r.reading), faceReadings });
+      // `--all --face N` wears N where this route opened it; where N stayed shut, or stands nowhere, the unlock refuses by name.
+      if (sel.face !== undefined && !opened.includes(sel.face)) {
+        const named = faceReadings.find((r) => r.face === sel.face);
+        return refuseFaces("face-refused", { face: sel.face, faceReading: named === undefined ? "not-standing" : named.reading.replace(/^stayed-shut:/, "") });
+      }
       // THE MOUNT AFTER AN OPENING: the one face this route opened, else the lowest of those it opened; `lares wear N` switches.
       if (mounted === undefined && mountedBefore === undefined && opened.length > 0) { mounted = Math.min(...opened); chosenByOpening = true; }
-      // `--all --face N` (the shim's re-wear after a stand): N wears where this route opened it; where it stayed shut, face 0
-      // wears where it opened, else the first face that did, so the vessel stands on a face the operator holds open.
-      if (sel.face !== undefined && !opened.includes(sel.face) && opened.length > 0) {
-        mounted = opened.includes(0) ? 0 : opened[0];
-        deps.onLog(`unlock: face h${sel.face} stayed shut under this route; h${String(mounted)} worn instead`);
-      }
     } else if (sel.face !== undefined) {
       const r = await holder.unlockFace({ ordinal: sel.face }, credentials);
       if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: sel.face, faceReading: r.reading });
