@@ -6,12 +6,12 @@
  */
 import { describe, expect, test } from "vitest";
 import { sha256HexBytesSync } from "../src/crypto.js";
-import { FLOOR_MANIFEST_FORMAT, floorManifestBytes } from "../src/floor-manifest.js";
+import { FLOOR_MANIFEST_FORMAT, FLOOR_PREDATES_LINE, floorManifestBytes } from "../src/floor-manifest.js";
 import { computeEngineCid } from "../src/genesis-doc.js";
 import { signFloorOffering } from "../src/floor-offering.js";
 import { ENGINE_CORE_ID, type LarBlobEntry } from "../src/base-doc.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
-import { floorShadowLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally } from "../src/floor-shadow.js";
+import { floorShadowLine, floorShadowReadingLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally } from "../src/floor-shadow.js";
 
 const CORE_SHA = "c".repeat(64);
 const blobs: Record<string, LarBlobEntry> = {
@@ -170,5 +170,29 @@ describe("the shadow tally keys its count by the floor each boot read", () => {
     t = foldFloorShadowTally(t, unread);
     expect(floorShadowLine(t)).toContain("first mismatch");
     expect(floorShadowLine(t)).toContain("plugins");
+  });
+});
+
+describe("a founding floor that predates the floor format", () => {
+  const priorBytes = new TextEncoder().encode(JSON.stringify({
+    format: FLOOR_MANIFEST_FORMAT, engine: truth.engine, grammar: "1".repeat(64), plugins: "bafkreiplugins",
+    snapshots: { lararium: "b".repeat(64), lares: "a".repeat(64) },
+  }));
+  const prior = { cid: sha256HexBytesSync(priorBytes), bytes: priorBytes };
+
+  test("reads predates on the founding record's own floor, and the tally and its line say so plainly; CONTROL: the same floor as a pin reads unread", async () => {
+    const r = await readFloorShadow({ manifestCid: prior.cid, readBytes: store(prior), islandBlobs: blobs, coreSha256: CORE_SHA, foundingCid: prior.cid });
+    expect(r).toEqual({ verdict: "predates", manifest: prior.cid });
+    expect(floorShadowReadingLine(r)).toContain(FLOOR_PREDATES_LINE);
+    let t = foldFloorShadowTally(null, r);
+    t = foldFloorShadowTally(t, r);
+    expect(t.current).toMatchObject({ floor: prior.cid, unreadBoots: 2, predates: true });
+    expect(floorShadowLine(t)).toContain(FLOOR_PREDATES_LINE);
+    // The tally keeps between boots: its stored form reads back whole.
+    expect(readFloorShadowTally(JSON.parse(JSON.stringify(t)))).toEqual(t);
+    expect(readFloorShadowTally({ current: { ...t.current, predates: "yes" }, prior: [] })).toBeNull();
+    const pinned = await readFloorShadow({ manifestCid: prior.cid, readBytes: store(prior), islandBlobs: blobs, coreSha256: CORE_SHA, foundingCid: "e".repeat(64) });
+    expect(pinned.verdict).toBe("unread");
+    if (pinned.verdict === "unread") expect(pinned.why).toMatch(/predates the floor format/);
   });
 });
