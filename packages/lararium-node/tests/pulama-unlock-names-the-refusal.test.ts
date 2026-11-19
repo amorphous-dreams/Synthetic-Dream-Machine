@@ -20,7 +20,7 @@ function pulamaHolder(): PulamaHolder {
     isUnlocked: () => open,
     unlock: async () => { open = true; return { reading: "opens", slot: "pulama" }; },
     lock: async () => { open = false; for (const l of closed) l(); },
-    lends: () => [0], waiting: () => [], waits: () => null,
+    lends: () => [0], waiting: () => [], waits: () => null, worn: () => undefined,
     attemptsLeft: () => 0, openedSlot: () => (open ? "pulama" : null), unlockedFaces: () => [],
     landRite: async () => ({ par: true }),
   } as unknown as PulamaHolder;
@@ -42,7 +42,7 @@ describe("RED pulama-unlock-answers-while-its-composition-refuses", () => {
     const logs: string[] = [];
     const handle = custodyFrameHandler({
       holder: pulama as unknown as CustodyHolder, testScratch: false, standing: () => "herm", recompose, onLog: (l) => logs.push(l),
-      pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.isUnlocked() ? null : by.waits() }), dial: () => by.dial(), lent: () => pulama.lends() },
+      pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.isUnlocked() ? null : by.waits() }), dial: () => by.dial(), lent: () => pulama.lends(), tellWorn: async () => {} },
     });
     const a = await sent(handle, { op: "unlock" });
     expect(a).toMatchObject({ op: "unlock", reading: "pulama-waits", held: false, pulama: { session: false, waits: "composition-refused" } });
@@ -56,7 +56,7 @@ describe("RED pulama-unlock-answers-while-its-composition-refuses", () => {
     const by = pulamaStandBy({ holder: pulama, recompose, onLog: () => {} });
     const handle = custodyFrameHandler({
       holder: pulama as unknown as CustodyHolder, testScratch: false, standing: () => (pulama.isUnlocked() ? "hearth" : "herm"), recompose, onLog: () => {},
-      pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: null }), dial: () => by.dial(), lent: () => pulama.lends() },
+      pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: null }), dial: () => by.dial(), lent: () => pulama.lends(), tellWorn: async () => {} },
     });
     const a = await sent(handle, { op: "unlock" });
     expect(a).toMatchObject({ op: "unlock", reading: "opens", held: true });

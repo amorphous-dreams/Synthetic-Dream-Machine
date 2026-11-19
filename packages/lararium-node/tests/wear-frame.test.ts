@@ -136,7 +136,7 @@ function pulamaDoor(lent: readonly number[], open: readonly number[]) {
   const handle = custodyFrameHandler({
     holder, testScratch: false, standing: () => "hearth", onLog: () => {},
     recompose: async () => { composed.push(mountedFaceOrdinal()); return { standing: "hearth" }; },
-    pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => lent },
+    pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => lent, tellWorn: async () => {} },
   });
   return { send: sender(handle), unlockFaceCalls, composed };
 }

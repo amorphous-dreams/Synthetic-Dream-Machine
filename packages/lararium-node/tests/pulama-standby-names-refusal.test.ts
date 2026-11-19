@@ -19,6 +19,7 @@ function fakeHolder(): PulamaHolder & { helloReading: string | null } {
     unlock: async () => { open = true; return { reading: "opens", slot: "pulama" }; },
     lock: async () => { open = false; },
     lends: () => [0],
+    worn: () => undefined,
     waiting: () => [],
     waits: () => (open ? null : h.helloReading),
     landRite: async () => { throw Object.assign(new Error("rite-not-begun"), { reading: "rite-not-begun" }); },

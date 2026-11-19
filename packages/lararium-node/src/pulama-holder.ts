@@ -29,6 +29,10 @@
  * doubled refuses by the set's own reading (`lent-faces-empty`, `lent-faces-malformed`, `lent-faces-duplicate`) and no
  * session stands: no set never reads as a lend of every face.
  *
+ * ── THE PŪLAMA REMEMBERS THE WORN FACE ──────────────────────────────────────────────────────────
+ * `tellWorn` sends the pūlama the one ordinal the wear door just wore (`face.worn`), and `worn` reads back the ordinal the
+ * session's standing carried at the hello. Nothing else rides that op: no route, no key, no row.
+ *
  * `derive` answers synchronously from the children the session carried, under the domains the pūlama serves a session.
  * The holder names no host: `dial` hands it a channel.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
@@ -48,6 +52,8 @@ export interface PulamaStanding {
   readonly faces: readonly string[];
   /** The lent faces still dark at the pūlama, by ordinal. */
   readonly waiting: readonly number[];
+  /** The face a wear door last wore, as the pūlama remembers it; absent where it heard no wear since it was lit. */
+  readonly worn?: number;
 }
 
 /** What a session serves: the faces the pūlama lends this vessel. */
@@ -64,6 +70,11 @@ export interface PulamaHolder extends CustodyHolder {
   landRite(): Promise<{ readonly par: boolean }>;
   /** What the pūlama answered this side's last hello, where it refused one and no session stood since; null otherwise. */
   waits(): string | null;
+  /** The face the pūlama remembers a wear door last wore, by ordinal, as the session's standing carries it; undefined
+   *  with no session or no wear heard. The ordinal may name a face outside this session's lend: the reader checks. */
+  worn(): number | undefined;
+  /** Tell the pūlama the face this vessel now wears: one ordinal, nothing beside it. Only the wear door calls it. */
+  tellWorn(ordinal: number): Promise<void>;
 }
 
 interface Session {
@@ -78,12 +89,13 @@ const needsHuman = (what: string): Promise<never> =>
   Promise.reject(new PulamaRefused("needs-the-human", `${what} asks a human route, and a pūlama session carries none: ask it at the pūlama's own hand door`));
 
 const standingOf = (raw: unknown): PulamaStanding => {
-  const s = (raw ?? {}) as { slot?: unknown; attemptsLeft?: unknown; faces?: unknown; waiting?: unknown };
+  const s = (raw ?? {}) as { slot?: unknown; attemptsLeft?: unknown; faces?: unknown; waiting?: unknown; worn?: unknown };
   return {
     slot: typeof s.slot === "string" ? s.slot : null,
     attemptsLeft: typeof s.attemptsLeft === "number" ? s.attemptsLeft : 0,
     faces: Array.isArray(s.faces) ? s.faces.filter((f): f is string => typeof f === "string") : [],
     waiting: Array.isArray(s.waiting) ? s.waiting.filter((o): o is number => Number.isSafeInteger(o) && o >= 0) : [],
+    ...(Number.isSafeInteger(s.worn) && (s.worn as number) >= 0 ? { worn: s.worn as number } : {}),
   };
 };
 const derivedOf = (raw: unknown): Record<string, Uint8Array> => {
@@ -257,6 +269,8 @@ export function makePulamaHolder(a: {
     lends: () => session?.scope.faces.map((f) => f.ordinal) ?? [],
     waiting: () => session?.standing.waiting ?? [],
     waits: () => (session === null ? refused : null),
+    worn: () => session?.standing.worn,
+    async tellWorn(ordinal) { await call("face.worn", { ordinal }); },
     async landRite() { return { par: (await call("rite.land") as { par?: unknown }).par === true }; },
     attemptsLeft: () => session?.standing.attemptsLeft ?? 0,
     openedSlot: () => session?.standing.slot ?? null,
