@@ -111,7 +111,8 @@ import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtect
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
-import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
+import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
+import { realmPlacement, realmWaitingLine } from "./realm-labels.js";
 import { armFacePoolWatch, armWorkspaceWatch, type FacePoolWatch } from "./watch-core.js";
 import { islandIngestSubmit, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
 import { poolHeads } from "./pool-head.js";
@@ -945,7 +946,8 @@ async function prepareNodeBootOn(
   /** THE WATCH over the worn face's pool (`watch-core`, face-pools W1, W2): armed at after-live, downed at teardown and stand-down. */
   let facePoolWatch: FacePoolWatch | null = null;
   /** THE WORKBENCH FOLDERS a shared wiki's one disk copy rests in (`workbenchFolders`, its reader set in makePool): each bound
-   *  workspace, then each default `<projections>/wikis/<slug>` no workspace takes, read afresh at each after-live. */
+   *  workspace, then each `<projections>/realms/<realm pet name>/wikis/<slug>` a named realm holds that no workspace takes, read
+   *  afresh at each after-live. */
   let readWorkbenches: () => WorkbenchFolder[] = () => [];
   /** THE WATCHES over the workbench folders (`armWorkspaceWatch`): armed at after-live beside the face pool's, downed with it. */
   const workspaceWatches = new Set<FacePoolWatch>();
@@ -4514,7 +4516,19 @@ async function prepareNodeBootOn(
       for (const line of read.unbound) console.warn(`[workspaces] ${line}`);
       return read;
     })();
-    readWorkbenches = () => workbenchFolders({ projectionRoot, workspaces, sourcedSlugs: projection.sourcedSlugs() });
+    readWorkbenches = () => workbenchFolders({ projectionRoot, workspaces, sourcedSlugs: projection.sourcedSlugs(), realms: realmPlacement(projectionRoot).realms() });
+    // THE REALM LABELS PLACE EACH SHARED WIKI (operator ruling 2026-11-19): a wiki's workbench and its canon bag lay under the
+    // realm that holds the slug (`realms/<realm pet name>/`), read at each mount, so a realm the operator names later places
+    // its wikis at their next mount. A wiki no named realm holds lays neither and WAITS BY NAME, once per slug in the log,
+    // until the operator names its realm; it never falls back to a plain `wikis/` or `bags/`.
+    const realmWaiting = new Set<string>();
+    const realmBaseOf = (plane: "wikis" | "bags") => (slug: string): string | null => {
+      const placement = realmPlacement(projectionRoot);
+      const base = plane === "wikis" ? placement.wikisBase(slug) : placement.bagsBase(slug);
+      if (base === null && !realmWaiting.has(slug)) { realmWaiting.add(slug); console.warn(`[realms] ${realmWaitingLine(slug)}`); }
+      if (base !== null) realmWaiting.delete(slug);
+      return base;
+    };
     const diskMirrorGrant: DiskMirrorGrant = [
       // `bags/` PROJECTS ON THE KAHU'S VESSEL ALONE: a vessel the cabal did not admit holds neither live document, so it
       // grants neither mirror and writes nothing under `bags/lares` or `bags/lararium`.
@@ -4532,15 +4546,16 @@ async function prepareNodeBootOn(
       // which one. `resolveDiskMirrors` branches on `selfCanon`/`wikiSlot`, never on any marker in the
       // string — a marker here would decorate a decision two booleans already carry.
       //
-      // working = the live write layer; projects per-wiki to wikis/{slug} (BOTH
+      // working = the live write layer; projects per-wiki to realms/<realm pet name>/wikis/{slug} (BOTH
       // the bag `wikis/{slug}/working` and the leaf fill from the slug at mount —
-      // wikiSlot). The authority (the wikis base) stays static here; designation
+      // wikiSlot). The authority (the realms base) stays static here; designation
       // rides the recipe's mirrorBags.
       // A wiki's working slot rests in its realm workbench (cabal-realm#/the-workbench); a share row may root its mirror in an
       // operator workspace (`/lar/workspaces/<name>`), the checkout included and never inside the hearth (`workspaceRootsOf`).
-      // ONE FOLDER ANSWERS A WORKBENCH, whichever seated writer wears: `<projections>/wikis/<slug>`, and a sourced slug's beside
-      // its canon source (`<source>/../wikis/<slug>`, the repo workspace: git tracks it). No face relation enters that path.
-      { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots },
+      // ONE FOLDER ANSWERS A WORKBENCH, whichever seated writer wears: `<projections>/realms/<realm pet name>/wikis/<slug>` (the
+      // realm label that holds the slug, `realmBase`), and a sourced slug's beside its canon source (`<source>/../wikis/<slug>`,
+      // the repo workspace: git tracks it). No face relation enters that path; a slug no named realm holds lays none.
+      { bagId: "working",        mirrorRoot: join(projectionRoot, REALMS_PROJECTION_DIR), scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots, realmBase: realmBaseOf("wikis") },
       // THE FACE-ROOTED GRANTS (face-pools #/shape): each holds one face's hand, so each rests in the wearing face's root
       // (`<projections>/faces/<pet name>/`), never under the shared `wikis/<slug>/` and never beside a canon source: nothing
       // face-private lands in a checkout or a realm pool. No face worn (or one whose pet name makes no folder): none stands.
@@ -4552,10 +4567,10 @@ async function prepareNodeBootOn(
       // (`projection.temp.<slug>`); absent, nothing lands.
       { bagId: "temp",           mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: tempConsentedSlugs(loadLaresConfig()), faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
       // self-canon = the per-wiki CANON authority: a minted user wiki's own
-      // @{slug} bag projects to bags/{slug} (both bagId and leaf fill from the
-      // slug at mount). System wikis (lares/lararium) carry literal grants
+      // @{slug} bag projects to realms/<realm pet name>/bags/{slug} (both bagId and leaf fill from the
+      // slug at mount), in the realm that holds it, else nowhere until one does. System wikis (lares/lararium) carry literal grants
       // above, so resolveDiskMirrors skips this for them — no double-project.
-      { bagId: "self",          mirrorRoot: join(projectionRoot, "bags"),           scope: "self",    perWikiSlug: true, selfCanon: true, sourcedRoots: projection.sourcedRoots("bags") },
+      { bagId: "self",          mirrorRoot: join(projectionRoot, REALMS_PROJECTION_DIR), scope: "self",    perWikiSlug: true, selfCanon: true, sourcedRoots: projection.sourcedRoots("bags"), realmBase: realmBaseOf("bags") },
     ];
     // R3 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
     // through the selector + CAS (`resolveNodeIslandPluginCids`), never one vessel-wide floor.

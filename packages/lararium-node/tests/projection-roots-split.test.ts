@@ -41,20 +41,17 @@ describe("projectionRoots — the mirror root splits by origin", () => {
     const roots = projectionRoots({ projectionRoot: projections, canonBags: canon });
     expect(roots.bagRoot("lares")).toBe(join(canon, "lares"));
     expect(roots.bagRoot("elyncia")).toBe(join(canon, "elyncia"));
-    expect(roots.wikisRootFor("elyncia")).toBe(join(dir, "checkout", "wikis"));
     expect(roots.sourcedSlugs()).toEqual(["elyncia", "lares"]);
   });
   test("a house bag with no source dir projects under the projections root, never the state root", () => {
     const { state, projections, canon } = tree("lares");
     const roots = projectionRoots({ projectionRoot: projections, canonBags: canon });
     expect(roots.bagRoot("notes")).toBe(join(projections, "bags", "notes"));
-    expect(roots.wikisRootFor("notes")).toBe(join(projections, "wikis"));
     expect(roots.bagRoot("notes").startsWith(join(state, "bags"))).toBe(false);
   });
   test("a private plane stays under the projections root even where a source dir of its name stands", () => {
     const { projections, canon } = tree("daemon", "kahua");
     const roots = projectionRoots({ projectionRoot: projections, canonBags: canon });
-    expect(roots.wikisRootFor("kahua")).toBe(join(projections, "wikis"));
     expect(roots.sourcedSlugs()).toEqual([]);
     expect(isPrivateProjectionSlug("daemon")).toBe(true);
   });

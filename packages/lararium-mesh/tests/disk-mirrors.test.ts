@@ -174,6 +174,33 @@ describe("resolveDiskMirrors — one folder answers a workbench, and nothing fac
   });
 });
 
+// A REALM HOLDS ITS WIKIS UNDER ITS PET NAME (operator ruling 2026-11-19): the node's per-wiki grants read the realm labels at
+// each mount (`realmBase`), so a wiki a named realm holds lays its workbench under `realms/<pet>/wikis/<slug>` and its canon bag
+// under `realms/<pet>/bags/<slug>`; a wiki no named realm holds lays neither and WAITS BY NAME, never under a plain `wikis/`. A
+// workspace a share row binds and a sourced slug's canon source still answer first.
+describe("resolveDiskMirrors — a realm's pet name roots its wikis and bags, and an unnamed realm's wiki waits", () => {
+  const realms: Record<string, string> = {};
+  const grant = (workspaces: Record<string, string> = {}): DiskMirrorGrant => [
+    { bagId: "working", mirrorRoot: "/state/realms", scope: "working", wikiSlot: "working", sourcedRoots: { elyncia: "/checkout/wikis" }, workspaceRoots: workspaces, realmBase: (slug) => realms[slug] === undefined ? null : `/state/realms/${realms[slug]}/wikis` },
+    { bagId: "self", mirrorRoot: "/state/realms", scope: "self", perWikiSlug: true, selfCanon: true, sourcedRoots: { elyncia: "/checkout/bags" }, realmBase: (slug) => realms[slug] === undefined ? null : `/state/realms/${realms[slug]}/bags` },
+  ];
+  const designation = (slug: string): string[] => [wikiSlotUri(slug, "working"), wikiBagUri(slug)];
+  test("no named realm: neither the workbench nor the canon bag lays anywhere", () => {
+    expect(resolveDiskMirrors(grant(), designation("notes"), "notes")).toEqual([]);
+  });
+  test("named: both lay under the realm's pet name, and the resolved entry carries no resolver", () => {
+    realms["notes"] = "Garden";
+    const out = resolveDiskMirrors(grant(), designation("notes"), "notes");
+    expect(out.map((m) => m.mirrorRoot)).toEqual(["/state/realms/Garden/wikis/notes", "/state/realms/Garden/bags/notes"]);
+    for (const m of out) expect(Object.keys(m)).not.toContain("realmBase");
+    delete realms["notes"];
+  });
+  test("CONTROL: a workspace and a sourced slug answer before any realm", () => {
+    expect(resolveDiskMirrors(grant({ notes: "/lar/workspaces/notes" }), [wikiSlotUri("notes", "working")], "notes")[0]!.mirrorRoot).toBe("/lar/workspaces/notes");
+    expect(resolveDiskMirrors(grant(), designation("elyncia"), "elyncia").map((m) => m.mirrorRoot)).toEqual(["/checkout/wikis/elyncia", "/checkout/bags/elyncia"]);
+  });
+});
+
 test("a recovery grant sites designated drafts separately from working", () => {
   const draft = wikiSlotUri("garden", "draft");
   const working = wikiSlotUri("garden", "working");

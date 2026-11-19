@@ -4,7 +4,7 @@
  *
  * A wiki's temp layer (`wikis/{slug}/temp`) lives in the island's memory and comes up empty at every restart. Where the
  * wiki's recipe designates the layer AND the operator's consent row names the wiki's slug (`projection.temp.<slug>` in
- * `<root>/config/config.json`), a recovery-class mirror projects it under `<projections>/wikis/<wiki-folder>/temp/`,
+ * `<root>/config/config.json`), a recovery-class mirror projects it under the wearing face's root, `<projections>/faces/<pet name>/temp/<slug>/`,
  * one `.tid` per carrier, the shape the draft recovery mirror writes. The projector bars the layer's internal volatile
  * state by namespace (`isTempLayerInternalTitle`); this module carries the rest:
  *
