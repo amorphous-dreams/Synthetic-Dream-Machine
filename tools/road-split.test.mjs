@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { RANK_GATHER, RANK_HEAD, ROAD, ROAD_URI_BASE, gatheredItems, inlineItems, moveFaults, readCarrier, readChildren, rulingGather, slotLines, structureFaults } from "./road-split.mjs";
+import { ASHES_OTHER_GATHER, ASHES_RANK_GATHER, ASHES_TAG, RANK_GATHER, RANK_HEAD, ROAD, ROAD_ASHES, ashesFaults, ashesRanks, ROAD_URI_BASE, gatheredItems, inlineItems, moveFaults, readCarrier, readChildren, rulingGather, slotLines, structureFaults } from "./road-split.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const LIVE = readFileSync(join(ROOT, ROAD), "utf8");
@@ -18,7 +18,8 @@ test("road-split-live: the road holds no inline rank or ruling, and every child 
   const g = gatheredItems(LIVE, children);
   assert.ok(g.ranks.length >= 60, `the road gathers ${g.ranks.length} ranks; it holds more`);
   assert.ok(g.rulings.length >= 280, `the road gathers ${g.rulings.length} rulings; it holds more`);
-  assert.equal(g.ranks.length + g.rulings.length, children.length, "every child stands in exactly one gather");
+  const ashes = children.filter((c) => (c.fields.tags ?? []).includes(ASHES_TAG)).length;
+  assert.equal(g.ranks.length + g.rulings.length + ashes, children.length, "every child stands in exactly one gather, or in the ashes");
 });
 
 test("road-split-anchors: every slot a `stable-founding-road#/…` cite names still stands in the road", () => {
@@ -86,4 +87,30 @@ test("road-split-structure RED: an inline item, an orphaned group, a shared orde
   assert.match(structureFaults(broken, KIDS).join("\n"), /the ruling gather for group first stands broken/);
   const empty = KIDS.filter((k) => k.fields.group !== "second");
   assert.match(structureFaults(SPLIT, empty).join("\n"), /the ruling gather for group second gathers nothing/);
+});
+
+test("road-split-ashes: a rank tagged road/ashes leaves the road's gather, and a ruling never takes the tag", () => {
+  assert.match(RANK_GATHER, /\[tag\[road\/rank\]!tag\[road\/ashes\]sort\[order\]/);
+  const burned = KIDS.map((k) => (k.file === "rank-2.mem" ? { ...k, fields: { ...k.fields, tags: ["road/rank", ASHES_TAG] } } : k));
+  assert.deepEqual(gatheredItems(SPLIT, burned).ranks.map((r) => r.id), ["4j"]);
+  assert.deepEqual(structureFaults(SPLIT, burned), []);
+  const lawBurned = KIDS.map((k) => (k.file === "ruling-first-two.mem" ? { ...k, fields: { ...k.fields, tags: ["road/ruling", ASHES_TAG] } } : k));
+  assert.match(structureFaults(SPLIT, lawBurned).join("\n"), /ruling-first-two\.mem carries road\/ashes; a ruling stays law/);
+});
+
+test("road-split-ashes-live: the ashes carrier gathers every rank in the ashes, and the road and the ashes together hold every rank", () => {
+  const children = readChildren(ROOT);
+  const ashes = readFileSync(join(ROOT, ROAD_ASHES), "utf8");
+  assert.deepEqual(ashesFaults(ashes, children), []);
+  const ranks = children.filter((c) => (c.fields.tags ?? []).includes("road/rank")).length;
+  assert.equal(gatheredItems(LIVE, children).ranks.length + ashesRanks(children).length, ranks);
+  for (const slot of ["#/landed-leaps", "#/o-takiage", "#/ashes"]) assert.ok(slotLines(ashes, slot), `the ashes hold ${slot}`);
+});
+
+test("road-split-ashes RED: an ashes carrier without its gathers, or a child in the ashes with no road tag, reads by name", () => {
+  assert.match(ashesFaults(null, []).join("\n"), /the road's ashes stand absent/);
+  assert.match(ashesFaults(ASHES_OTHER_GATHER, []).join("\n"), /no whole rank gather/);
+  assert.match(ashesFaults(ASHES_RANK_GATHER, []).join("\n"), /no whole gather for their other children/);
+  const stray = [child("rank-2", { order: "0010", tags: [ASHES_TAG] }, "| 2 | NOW | a | b |")];
+  assert.match(ashesFaults(ASHES_RANK_GATHER + "\n" + ASHES_OTHER_GATHER, stray).join("\n"), /rank-2\.mem carries road\/ashes beside no road tag/);
 });

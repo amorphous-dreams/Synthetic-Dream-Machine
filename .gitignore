@@ -65,6 +65,8 @@ wikis/kahua-*/
 # workbench as a live wiki object beside its `.meta`; the sources carry the truth, so the render stays out of git.
 wikis/lares/road.html
 wikis/lares/road.html.meta
+wikis/lares/road-ashes.html
+wikis/lares/road-ashes.html.meta
 
 # Integration test isolation root (LAR_ROOT=tests/).
 # The daemon writes wikis/, bags/, and genesis/ under tests/ during integration runs.
