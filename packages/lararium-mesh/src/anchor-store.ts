@@ -32,8 +32,8 @@ export interface IdentityAnchors {
    *  daemon doc, but an added compartment (N>0) founds mount:false and pins NONE. Persisting the three here,
    *  out of every substrate wipe, lets a reboot RE-PIN a switched-to persona's mount from its own anchors —
    *  the boot re-verifies the edge's signature (the gate is a signature, never a list), so a stored edge
-   *  confers nothing a fresh signature-check would not. OPTIONAL: anchors written before this slot existed,
-   *  a joinee (no self-minted edge), and h0 (whose live pins already carry them) may hold none. */
+   *  confers nothing a fresh signature-check would not. OPTIONAL: a joinee (no self-minted edge) and h0
+   *  (whose live pins already carry them) may hold none. */
   readonly deviceEdge?: DeviceDelegationTiddler;
   /** The digest of the founding ask that minted this face. A re-seeded founding of the same ask re-enters the
    *  group's atom through it. PUBLIC (a hash, never a seed). OPTIONAL: a joinee holds none. */

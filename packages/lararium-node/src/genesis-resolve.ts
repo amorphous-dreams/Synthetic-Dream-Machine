@@ -86,7 +86,7 @@ export function pinGenesisSeed(storageDir: string, resolution: GenesisResolution
 
 /**
  * Read back the line the boot prints about its seed: `witnessed <cid>` where this boot's seed matches the seed witness,
- * `unwitnessed` where no witness stands (a vessel founded before every source witnessed, or the witness's crash window),
+ * `unwitnessed` where no witness stands (the witness's crash window),
  * and `a newer seed waits: <ratchet words>` where the seed differs: the seed (offered) beside the seed witness, ratchet
  * by ratchet. A differing seed never refuses the boot; the founding record keeps serving, and nothing moves at boot.
  * Only a torn witness throws. The witness and the seed both sit on this host, so the compare reads SELF-CONSISTENCY.
