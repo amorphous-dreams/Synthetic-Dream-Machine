@@ -187,6 +187,29 @@ describe("the keep rite, vessel half", () => {
     expect(readdirSync(workspace()).sort()).toEqual([".git", "README.md", "notes"]);
   });
 
+  test("K6b keep-dest-retired-names-the-git-retire: a place holding the keep's own earlier bundle (`lar-carry/1`) refuses naming the git retire, whose history keeps it, then keep again; CONTROL: a foreign manifest keeps the foreign refusal; nothing moved", async () => {
+    const r = rig();
+    const old = join(workspace(), "house");
+    mkdirSync(old, { recursive: true });
+    const manifest = writeBundle(old, { heron: "remember the heron\n" });
+    writeFileSync(join(old, MANIFEST_FILE), `${JSON.stringify({ ...manifest, schema: "lar-carry/1" }, null, 2)}\n`);
+    const retired = await riteKeep(r.ports, { workspace: "backup" }).catch((e: unknown) => e as KeepRefused);
+    expect(retired).toBeInstanceOf(KeepRefused);
+    expect((retired as KeepRefused).code).toBe("keep-dest-retired");
+    expect((retired as KeepRefused).message).toContain("lar-carry/1");
+    expect((retired as KeepRefused).message).toContain(`git -C ${workspace()} rm -r house && git -C ${workspace()} commit`);
+    expect((retired as KeepRefused).message).toMatch(/history keeps it/);
+    expect((retired as KeepRefused).message).toMatch(/then keep again/);
+    expect((retired as KeepRefused).message).not.toMatch(/name another place/);
+    mkdirSync(join(workspace(), "elsewhere"));
+    writeFileSync(join(workspace(), "elsewhere", MANIFEST_FILE), `${JSON.stringify({ schema: "someone-elses/1" })}\n`);
+    const foreign = await riteKeep(r.ports, { workspace: "backup", into: "elsewhere" }).catch((e: unknown) => e as KeepRefused);
+    expect((foreign as KeepRefused).code).toBe("keep-dest-foreign");
+    expect((foreign as KeepRefused).message).toMatch(/name another place with --into/);
+    expect(r.calls).toEqual([]);
+    expect(JSON.parse(readFileSync(join(old, MANIFEST_FILE), "utf8")).schema).toBe("lar-carry/1");
+  });
+
   test("K7 RED: a keep line that names no workspace refuses with usage; CONTROL: the line's workspace, place, partial flag and face each read", () => {
     const plan = (...argv: string[]) => keepPlan(parseArgs(["rite", "keep", ...argv]));
     expect(() => plan()).toThrow(RiteUsage);
