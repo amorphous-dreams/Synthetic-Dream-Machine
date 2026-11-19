@@ -1103,7 +1103,9 @@ case "$verb" in
           [ -n "$HAVE_TTY" ] || die "lei under a pūlama reads its route on a terminal; run it on one (nothing signed)"
           # shellcheck disable=SC2046
           terms=$(compose exec $(pass_env) -T lares node "$CLI" lei terms "$@" </dev/null) || exit $?
-          answer=$(compose --profile pulama exec pulama node "$PULAMA_MAIN" lei "$act" "$terms" | tee /dev/stderr | tr -d '\r' | grep '^{' | tail -n 1)
+          # The answer rides a pipe (tee, then the last JSON line), and a captured stdout makes compose drop the pty, so the
+          # exec forces one (`--no-TTY=false`): the pūlama reads the route on the operator's terminal.
+          answer=$(compose --profile pulama exec --no-TTY=false pulama node "$PULAMA_MAIN" lei "$act" "$terms" | tee /dev/stderr | tr -d '\r' | grep '^{' | tail -n 1)
           [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
           # shellcheck disable=SC2046
           waited_exec $(pass_env) -T lares node "$CLI" lei land "$answer" </dev/null

@@ -1035,7 +1035,9 @@ switch ($verb) {
       $terms = ($null | & docker compose @Base exec @PassEnv -T lares node $Cli lei terms @rest) -join ''
       if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       $answer = ''
-      & docker compose @Base --profile pulama exec pulama node $PulamaMain lei $sub $terms | ForEach-Object {
+      # The answer rides the pipeline, and a captured stdout makes compose drop the pty, so the exec forces one
+      # (--no-TTY=false): the pūlama reads the route on the operator's terminal.
+      & docker compose @Base --profile pulama exec --no-TTY=false pulama node $PulamaMain lei $sub $terms | ForEach-Object {
         [Console]::Error.WriteLine($_)
         $line = "$_".Trim("`r")
         if ($line.StartsWith('{')) { $answer = $line }

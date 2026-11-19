@@ -62,7 +62,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"pulama-main.js keep-seat"*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '{"op":"keep-seat","reading":"refused","code":"route-needs-a-terminal","message":"a keep seat reads its route from a real terminal alone"}'; exit 1;; esac; printf '%s' 'pūlama route, to seat the house'"'"'s keep pair: '; printf '\\r\\n'; [ -z "\${FAKE_KEEP_SEAT_LINE:-}" ] || printf '%s\\r\\n' "\${FAKE_KEEP_SEAT_LINE}"; exit "\${FAKE_KEEP_SEAT_RC:-0}";; esac\n` +
       `case " $* " in *" pulama node -e "*) code=''; take=''; for a in "$@"; do if [ -n "$take" ]; then code=$a; take=''; elif [ "$a" = -e ]; then take=1; fi; done; exec node -e "$code";; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
-      `case " $* " in *"pulama-main.js lei "*) printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\r\\n' "\${FAKE_LEI_ANSWER}"; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
+      `case " $* " in *"pulama-main.js lei "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\r\\n' "\${FAKE_LEI_ANSWER}"; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
       `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" vessel census --json "*) printf '%s\\n' "\${FAKE_CENSUS_JSON:-}"; exit 0;; esac\n` +
@@ -1147,7 +1147,8 @@ test(`${name}: lei-hand-door-chain: under a pūlama, lei kui reads the terms in 
   assert.equal(r.status, 0, r.stdout);
   const lines = r.calls.split("\n");
   const read = lines.findIndex((l) => /exec (?:-e \S+ )*-T lares node \S+ lei terms kui --rite push --branch feature\/x --returns 3$/.test(l));
-  const sign = lines.findIndex((l) => l.includes(`pulama-main.js lei kui ${terms}`) && !/ -T /.test(l));
+  // A captured stdout makes compose drop the pty, so the signing exec forces one: the route reads on the operator's terminal.
+  const sign = lines.findIndex((l) => l.includes(`--profile pulama exec --no-TTY=false pulama node packages/lararium-node/dist/src/pulama-main.js lei kui ${terms}`));
   const land = lines.findIndex((l) => l.includes(`lei land ${answer}`));
   assert.ok(read >= 0 && sign > read && land > sign, `order terms, sign (attached), land:\n${r.calls}`);
   const refused = await run(shim, ["lei", "kui", "--rite", "push", "--branch", "feature/x"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_LEI_TERMS: terms } });
