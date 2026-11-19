@@ -68,11 +68,16 @@ export function kukuluSeedLine(head: string, offer: SeedOffer): string {
 
 export const RITE_KUKULU = "kukulu";
 
-export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string }): Promise<{ code: number; data: Record<string, unknown> }> {
+/**
+ * `face` names the face the begin's and the offer's sessions act as where several faces stand open; each row still gathers
+ * every lent face, one lei and one vouch apiece. Naming none, the rows name none, and the vessel resolves its one open face.
+ */
+export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number }): Promise<{ code: number; data: Record<string, unknown> }> {
   const checkout = await ports.checkout();
   const head = checkout.head, branch = opts.branch ?? checkout.branch;
   const base = { rite: RITE_KUKULU, branch, head };
-  const begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head });
+  const asFace = opts.face === undefined ? {} : { face: opts.face };
+  const begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asFace });
   if (!begun.ok) {
     ports.say(`kūkulu: the rite begins nothing: ${begun.message}`);
     return { code: 1, data: { ...base, begun: false, refusal: begun.code } };
@@ -112,7 +117,7 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
       ports.say("kūkulu: the host names no digest for the image it built, so no offer rests for a pūlama; the rite goes on, and a vessel standing by a pūlama will wake at the floor.");
       continue;
     }
-    const offered = await ports.row("rite-offer", { branch, head, image });
+    const offered = await ports.row("rite-offer", { branch, head, image, ...asFace });
     if (!offered.ok) {
       ports.say(`kūkulu: the standing vessel wrote no offer (${offered.message}); it still stands, the lei's return stays spent, and the begun half reads red until a vessel at ${head} lands it (${landCall}).`);
       return { code: 1, data: { ...base, ...spent, begun: true, landed: false, stopped: "offer", refusal: offered.code } };

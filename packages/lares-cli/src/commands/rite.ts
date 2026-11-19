@@ -324,7 +324,9 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
       return 2;
     }
     const branch = typeof args.options["branch"] === "string" && args.options["branch"].trim() !== "" ? args.options["branch"].trim() : undefined;
-    const out = await riteKukulu(hostPorts((verb) => runShim(shim, verb), (line) => console.error(line), async () => { const d = await readShim(shim, SHIM_IMAGE_VERB); return d !== null && /^[a-z0-9]+:[0-9a-f]{32,128}$/.test(d) ? d : null; }), branch === undefined ? {} : { branch });
+    const faceWord = typeof args.options["face"] === "string" ? args.options["face"].trim() : undefined;
+    if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
+    const out = await riteKukulu(hostPorts((verb) => runShim(shim, verb), (line) => console.error(line), async () => { const d = await readShim(shim, SHIM_IMAGE_VERB); return d !== null && /^[a-z0-9]+:[0-9a-f]{32,128}$/.test(d) ? d : null; }), { ...(branch === undefined ? {} : { branch }), ...(faceWord === undefined ? {} : { face: Number(faceWord) }) });
     emit(args, out.code === 0
       ? { ok: true, data: out.data, human: () => console.log(JSON.stringify(out.data)) }
       : { ok: false, data: out.data, error: { code: String(out.data["refusal"] ?? `rite-stopped-at-${String(out.data["stopped"] ?? "landing")}`), message: "the kūkulu rite did not complete; the lines above name where it stopped" }, human: () => console.log(JSON.stringify(out.data)) });

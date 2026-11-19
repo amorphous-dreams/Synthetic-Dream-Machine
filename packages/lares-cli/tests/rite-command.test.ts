@@ -60,6 +60,18 @@ describe("rite-begun-before-down", () => {
     expect(f.said.join("\n")).toMatch(/the lei's return stays spent/);
   });
 
+  it("RED: a `--face` rides the begin and the offer as the face their session acts as, beside every lent face they gather; CONTROL: naming none, the rows name none", async () => {
+    const IMAGE = "sha256:" + "ab".repeat(32);
+    const f = fakes({});
+    f.ports.image = async () => IMAGE;
+    await riteKukulu(f.ports, { face: 0 });
+    expect(f.calls[1]).toBe(`rite-begin ${JSON.stringify({ rite: "kukulu", branch: "main", head: HEAD, face: 0 })}`);
+    expect(f.calls.find((c) => c.startsWith("rite-offer"))).toBe(`rite-offer ${JSON.stringify({ branch: "main", head: HEAD, image: IMAGE, face: 0 })}`);
+    const bare = fakes({});
+    await riteKukulu(bare.ports, {});
+    expect(bare.calls[1]).toBe(`rite-begin ${JSON.stringify({ rite: "kukulu", branch: "main", head: HEAD })}`);
+  });
+
   it("RED: a raise that fails ends the rite with the vessel down and names it; CONTROL: a `--branch` names the line where the checkout's own differs", async () => {
     const f = fakes({ shim: { up: 9 } });
     const out = await riteKukulu(f.ports, { branch: "feature/x" });
