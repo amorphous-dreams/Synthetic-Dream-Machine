@@ -28,6 +28,7 @@ import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { constantTimeBytesEqual, defaultCryptoProvider, hex, hexToBytes } from "./crypto.js";
 import { KEEP_CUT_DOMAIN, KEEP_PAIR_INFO, KEEP_ROSTER_INFO, KEEP_SIGN_INFO } from "./domains.js";
+import { verifyEd25519 } from "./ed25519-door.js";
 import { bindSlot, confirmHeldPaper, decodeSlotTree, encodeSlotTree, openTreeKey, stretchForRemote, type Credential, type KdfPort, type PinSpec, type SlotSpec, type SlotTree } from "./keyslot.js";
 import { openFromSender, sealToRecipient, SEALED_BOX_AEAD_NONCE_LEN } from "./sealed-box.js";
 import { mintTreeKey, type TreeKey } from "./tree-key.js";
@@ -152,7 +153,7 @@ export function keepVerifyKeyOf(signingSeed: Uint8Array): Uint8Array {
 
 /** Whether `signature` signs this bundle id, sealed roster and manifest digest under `verifyKey`; false on any fault. */
 export function verifyKeepCut(verifyKey: Uint8Array, bundleId: string, sealedRoster: Uint8Array, manifestDigest: Uint8Array, signature: Uint8Array): boolean {
-  try { return ed25519.verify(signature, cutMessage(bundleId, sealedRoster, manifestDigest), verifyKey); } catch { return false; }
+  try { return verifyEd25519(signature, cutMessage(bundleId, sealedRoster, manifestDigest), verifyKey); } catch { return false; }
 }
 
 async function openTree(seat: KeepSeat, credentials: readonly Credential[], kdf: KdfPort): Promise<{ readonly treeKey: TreeKey; readonly slot: string } | Exclude<KeepSecretOpening, { reading: "opens" }>> {
