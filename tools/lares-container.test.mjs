@@ -331,13 +331,28 @@ for (const [name, shim] of shims) {
   // A VESSEL STANDS HOLDING NO KEY. With no TTY the shim names the one command that opens it, after every act
   // that stands or restarts the vessel; a vessel that already holds its key draws no line.
   // A vessel of several faces refuses a bare unlock, so the hint names every face the credential opens and the face to wear.
-  const NAMES_UNLOCK = new RegExp(`the vessel stands holding no vessel key; open it on a terminal: lares-container\\.${name} vault unlock --all, then lares-container\\.${name} wear 0 `);
+  // A house that remembers no face worn names no wear: the vessel mounts its own (face 0 where it stands open, else the
+  // lowest face open or lent), and the shim never tells the vessel, or a pūlama, a face it never saw worn.
+  const NAMES_UNLOCK = new RegExp(`the vessel stands holding no vessel key; open it on a terminal: lares-container\\.${name} vault unlock --all \\(every face the credential opens; no face rests remembered, so the vessel mounts its own; another face: wear N\\)`);
   test(`${name}: up names vault unlock when the vessel holds no key`, async () => {
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}' } });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /up -d --wait lares[\s\S]*exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status --json/);
     assert.match(r.stderr, NAMES_UNLOCK);
     assert.doesNotMatch(r.calls, /vault unlock/, "no TTY: the shim sends no unlock, it only names it");
+  });
+
+  test(`${name}: empty-worn-face-names-no-wear: an empty config/last-worn-face draws no wear 0, on a terminal or off one`, async () => {
+    const LOCKED = '{"data":{"door":{"unlocked":false}}}';
+    const hint = await run(shim, ["up"], { wornFace: "", env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: LOCKED } });
+    assert.equal(hint.status, 0, hint.stderr);
+    assert.match(hint.stderr, NAMES_UNLOCK);
+    assert.doesNotMatch(hint.stderr, /wear 0|wear h0/);
+    const attached = await run(shim, ["up"], { wornFace: "", tty: "", env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: LOCKED } });
+    assert.equal(attached.status, 0, attached.stdout);
+    assert.match(attached.calls, /lares node \S+ vault unlock --all/);
+    assert.doesNotMatch(attached.calls, / wear \d+$/m);
+    assert.match(attached.stdout, /no face rests remembered \(config\/last-worn-face reads empty\), so the shim wears none and the vessel's own mount stands/);
   });
 
   test(`${name}: the unlock hint wears the face last worn through the shim, never the bare command`, async () => {
@@ -1154,6 +1169,24 @@ test(`${name}: rewear-after-vault-unlock: under a pūlama, an unlock that names 
   const r = await run(shim, ["vault", "unlock", "--all"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CENSUS_JSON: NONE_WORN_JSON } });
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.calls, /vault unlock --all[\s\S]*vessel census --json[\s\S]*-T lares node \S+ wear 1$/m);
+});
+// AN EMPTY MEMORY TELLS THE PŪLAMA NOTHING. A `wear` writes the pūlama's `face.worn`, which it wears again after every
+// restart: a house whose config/last-worn-face reads empty sends no `wear 0` (a face it never saw worn), so the vessel's
+// own mount stands, and the shim says so.
+test(`${name}: empty-worn-face-tells-the-pulama-nothing: a held key over none worn, and an unlock under a pūlama, send no wear when no face rests remembered`, { skip }, async () => {
+  const held = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: "", env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: NONE_WORN_JSON } });
+  assert.equal(held.status, 0, held.stderr);
+  assert.match(held.calls, /vessel census --json/);
+  assert.doesNotMatch(held.calls, / wear \d+$/m);
+  assert.match(held.stderr, /faces stand lent and none worn, and no face rests remembered \(config\/last-worn-face reads empty\); the shim wears none/);
+  const shut = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: "", env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}' } });
+  assert.equal(shut.status, 0, shut.stderr);
+  assert.match(shut.calls, /-T lares node \S+ vault unlock --all/);
+  assert.doesNotMatch(shut.calls, / wear \d+$/m);
+  assert.match(shut.stderr, /no face rests remembered \(config\/last-worn-face reads empty\), so the shim wears none and the vessel's own mount stands/);
+  const bare = await run(shim, ["vault", "unlock", "--all"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid", FAKE_CENSUS_JSON: NONE_WORN_JSON } });
+  assert.equal(bare.status, 0, bare.stderr);
+  assert.doesNotMatch(bare.calls, / wear \d+$/m);
 });
 // THE UNLOCK'S FACE REACHES THE PŪLAMA. The pūlama keeps the face worn in its memory (`standing.worn`) and re-wears it
 // after a restart, and only `wear` writes it, never the unlock: an unlock naming --face N that landed draws `wear N`,
