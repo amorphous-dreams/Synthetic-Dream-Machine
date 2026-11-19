@@ -581,7 +581,7 @@ function WarnPulamaSkew {
   if ($p.State -in @('absent', 'unread')) { return }
   $v = VesselClause
   switch ($p.State) {
-    'level' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Stands), the image $ImageRef stands at$v") }
+    'level' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at the same $($p.Stands)$v") }
     'moved' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands)$v; its code closure moved (or reads unlabeled), so it keeps the older code until ``tools/lares-container.ps1 down`` and ``tools/lares-container.ps1 pulama restand`` (then light it by hand, ``up``, and ``pulama admit``)") }
     'closure-level' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands)$v; its code closure reads the same ($($p.Closure.Substring(0, 19))), so it stands lit and owes no restand") }
   }

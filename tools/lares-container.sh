@@ -609,7 +609,7 @@ warn_pulama_skew() {
   case "$pr_state" in absent|unread) return 0 ;; esac
   pr_vessel=$(vessel_clause)
   case "$pr_state" in
-    level) printf 'lares-container: the pūlama runs image %s, the image %s stands at%s\n' "$pr_stands" "$IMAGE_REF" "$pr_vessel" >&2 ;;
+    level) printf 'lares-container: the pūlama runs image %s, and %s stands at the same %s%s\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" "$pr_vessel" >&2 ;;
     moved) printf 'lares-container: the pūlama runs image %s, and %s stands at %s%s; its code closure moved (or reads unlabeled), so it keeps the older code until `tools/lares-container.sh down` and `tools/lares-container.sh pulama restand` (then light it by hand, `up`, and `pulama admit`)\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" "$pr_vessel" >&2 ;;
     closure-level) printf 'lares-container: the pūlama runs image %s, and %s stands at %s%s; its code closure reads the same (%s), so it stands lit and owes no restand\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" "$pr_vessel" "$(printf '%s' "$pr_closure" | cut -c1-19)" >&2 ;;
   esac
