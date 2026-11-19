@@ -72,6 +72,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
       // A build lists its context (the folder the override names), so a test reads what rode into the image.
       `case " $* " in *" build "*) printf 'GIT_REV=%s\\n' "\${GIT_REV:-}" >> "$CALL_LOG"; for a in "$@"; do if [ -f "$a" ] && grep -q 'context:' "$a"; then ctx=$(sed -n "s/^ *context: '\\\\(.*\\\\)'$/\\\\1/p" "$a"); (cd "$ctx" && find . -type f | LC_ALL=C sort | sed 's/^/CTX /') >> "$CALL_LOG"; for f in "$ctx"/tools/lares-container.*; do [ ! -f "$f" ] || grep -c 'edited' "$f" | sed 's/^/EDITED /' >> "$CALL_LOG"; done; fi; done; exit "\${FAKE_BUILD_RC:-0}";; esac\n` +
+      // THE VESSEL'S LOG before a down removes it: stdout and stderr both, as the engine writes them.
+      `case " $* " in *" logs --tail "*) printf '%s\\n' "\${FAKE_VESSEL_LOG:-}"; printf '%s\\n' "\${FAKE_VESSEL_LOG_ERR:-}" >&2; exit "\${FAKE_LOGS_RC:-0}";; esac\n` +
       `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
@@ -135,7 +137,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const made = {};
     for (const c of ["hearth", "sensoriums", "projections", "library", "config", "pulama/socket"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
     let cacheLeft = null; try { cacheLeft = await readdir(join(house, "cache")); } catch {}
-    return { ...r, calls, dir, made, worn, seat, seatMode, cacheLeft };
+    let vesselLog = null; try { vesselLog = await readFile(join(house, "run", "vessel-last.log"), "utf8"); } catch {}
+    return { ...r, calls, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, house };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
@@ -626,6 +629,27 @@ for (const [name, shim] of shims) {
     assert.ok(r.calls.indexOf("vessel census") < r.calls.indexOf("down --remove-orphans"), r.calls);
     // down's own flags still pass through.
     assert.match(r.calls, /down --remove-orphans --timeout 5/);
+  });
+
+  // THE VESSEL'S LOG OUTLIVES THE DOWN. A down removes the container and its log with it (a captured repro once lost its
+  // [wire] lines so), so down saves the last 20000 lines to the house's run/vessel-last.log first, overwritten each
+  // down, and names the file in one line. A log that cannot be read never blocks the down.
+  test(`${name}: down-saves-the-vessel-log: the container's log lands in run/vessel-last.log before the stop, named in one line; a refused read still stops`, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_VESSEL_LOG: "[wire] share verdict landed", FAKE_VESSEL_LOG_ERR: "[wire] stderr side" }, houseFiles: { "run/vessel-last.log": "an older down's log\n" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /^logs --tail 20000 vessel$/m);
+    assert.ok(r.calls.indexOf("logs --tail") < r.calls.indexOf("down --remove-orphans"), r.calls);
+    assert.match(r.vesselLog ?? "", /\[wire\] share verdict landed/);
+    assert.match(r.vesselLog ?? "", /\[wire\] stderr side/);
+    assert.doesNotMatch(r.vesselLog ?? "", /an older down's log/, "each down overwrites the file");
+    assert.equal(r.stderr.split("\n").filter((l) => /vessel-last\.log/.test(l)).length, 1, r.stderr);
+    assert.match(r.stderr, new RegExp(`lares-container: the vessel's log \\(its last 20000 lines\\) rests at ${r.house.replaceAll("/", "\\/")}\\/run\\/vessel-last\\.log`));
+    const refused = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_LOGS_RC: "1" } });
+    assert.equal(refused.status, 0, refused.stderr);
+    assert.match(refused.stderr, /the vessel's log could not be read; the down goes on/);
+    assert.match(refused.calls, /down --remove-orphans/);
+    const none = await run(shim, ["down"], { env: { ...MOUNTS } });
+    assert.doesNotMatch(none.calls, /logs --tail/, "no vessel stood, so no log is read");
   });
 
   // THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
