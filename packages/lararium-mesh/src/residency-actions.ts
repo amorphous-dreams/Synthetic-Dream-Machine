@@ -247,6 +247,11 @@ export interface IngestCarrier {
    *  disk side for its echo and this side for "the records stand where the base left them". Absent =
    *  one hash names both sides (a text-writer's base, or a disk that held the canonical render). */
   readonly syncedRecordsHash?: string;
+  /** THE BASE CAME FROM THE POOL'S HEAD (face-pools A5): no synced base stood after a re-found, so the gesture read the
+   *  face pool's last commit as the base. HEAD vouches only for a record the house still holds: where the records hold
+   *  nothing under the carrier, the island drops this base and the carrier weighs as one that holds none. Rides only
+   *  beside a disk side. */
+  readonly headBase?:  boolean;
   /** The carrier's file extension (".mem" / ".tid" / ".json" / ".md" …) as the
    *  gesture read it from disk. The island routes by it: a memetic carrier (SOH
    *  heading / `.mem`) decomposes at the memetic shore; any other legal TW5
@@ -481,7 +486,7 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
       for (const c of rawCarriers) {
         if (!c || typeof c !== "object") return null;
         const o = c as Record<string, unknown>;
-        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"]; const overrideBase = o["overrideBase"]; const familyBases = o["familyBases"];
+        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const headBase = o["headBase"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"]; const overrideBase = o["overrideBase"]; const familyBases = o["familyBases"];
         if (typeof uri !== "string" || !uri) return null;
         if (file !== undefined && typeof file !== "string") return null;
         // A verb NEVER inlines a body: a carrier rides EITHER an inline `text` OR a
@@ -493,13 +498,14 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
         if (syncedHash !== null && typeof syncedHash !== "string") return null;
         // The records side rides only beside a disk side: a base holds both or neither.
         if (syncedRecordsHash !== undefined && (typeof syncedRecordsHash !== "string" || !syncedRecordsHash || syncedHash === null)) return null;
+        if (headBase !== undefined && (typeof headBase !== "boolean" || (headBase && syncedHash === null))) return null;
         if (ext !== undefined && typeof ext !== "string") return null;
         if (meta !== undefined && typeof meta !== "string") return null;
         if (size !== undefined && typeof size !== "number") return null;
         if (skinny !== undefined && typeof skinny !== "boolean") return null;
         if (overrideBase !== undefined && (typeof overrideBase !== "string" || !/^sha256:[0-9a-f]{64}$/.test(overrideBase))) return null;
         if (familyBases !== undefined && !familyBasesOf(uri, familyBases)) return null;
-        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}), ...(typeof overrideBase === "string" ? { overrideBase } : {}), ...(familyBases !== undefined ? { familyBases: { ...(familyBases as Record<string, string>) } } : {}) });
+        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(headBase === true ? { headBase: true } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}), ...(typeof overrideBase === "string" ? { overrideBase } : {}), ...(familyBases !== undefined ? { familyBases: { ...(familyBases as Record<string, string>) } } : {}) });
       }
     }
     const deletions: IngestDeletion[] = [];

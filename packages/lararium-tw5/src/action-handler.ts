@@ -1329,7 +1329,13 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
   const results: Array<Record<string, unknown>> = [];
   const unattended = action.unattended === true;
 
-  for (const carrier of action.carriers) {
+  for (const sent of action.carriers) {
+    // NO RECORD, NO BASE (face-pools A5): a base the gesture read off the pool's HEAD vouches only for a record the house
+    // still holds. Where the records hold nothing under the carrier, it drops, and the carrier weighs as one that holds no
+    // base: the file lands as an arrival, and no echo of HEAD pins a base for a record that stands nowhere.
+    const carrier = sent.headBase === true && sent.syncedHash !== null && !(await holdsRecord(access, action.toBag, sent.uri))
+      ? dropHeadBase(sent)
+      : sent;
     // A rename's target re-homes from the vanished carrier's records (identity
     // preserved); skip its normal fresh ingest so the re-link is not overwritten.
     if (renameTargets.has(carrier.uri)) {
@@ -1891,6 +1897,18 @@ export function makeFresherCanonReactor(opts: ActionHandlerOptions): VerbReactor
 }
 
 /** Read a bag's OWN Manifestation of title (or null if absent / bag unreachable). */
+/** Whether the bag holds a live record under `title` (a tombstone holds none). */
+async function holdsRecord(access: BagAccess, bag: string, title: string): Promise<boolean> {
+  const record = await readFromBag(access, bag, title);
+  return record !== null && record.meta?.deleted !== true;
+}
+
+/** The carrier with its HEAD base set down: it weighs as one that holds no base. */
+function dropHeadBase(carrier: IngestAction["carriers"][number]): IngestAction["carriers"][number] {
+  const { syncedRecordsHash: _records, headBase: _head, ...rest } = carrier;
+  return { ...rest, syncedHash: null };
+}
+
 async function readFromBag(access: BagAccess, fromBag: string, title: string): Promise<LarTiddlerRecord | null> {
   const store = await access.read(fromBag);
   return store ? store.get(title) : null;

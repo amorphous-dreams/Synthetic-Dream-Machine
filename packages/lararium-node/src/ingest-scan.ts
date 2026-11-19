@@ -29,6 +29,7 @@ import { larProjectionCheckpointDir } from "./vessel-paths.js";
 import { KAPAE_EXT, readKapaeShadow } from "./kapae-shadow.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
 import type { FacePoolPorts } from "./watch-core.js";
+import type { BaseFromGit } from "./pool-head.js";
 
 export type ScanStatus = "new" | "unchanged" | "changed" | "non-nfc" | "deleted" | "renamed";
 
@@ -62,6 +63,10 @@ export interface ScanRow {
   /** The base's RECORDS side, where it differs from the disk side (`syncedHash`): the disk stood in a
    *  framing the records' render would normalize. Absent = one hash names both sides. */
   readonly syncedRecordsHash?: string;
+  /** THE BASE CAME FROM THE POOL'S HEAD (`pool-head`, face-pools A5): no synced base stood, so HEAD's blob names both sides.
+   *  The island drops such a base where the records hold nothing under the carrier (no record, no base), and an echo of it
+   *  pins HEAD's records side, never the records' present render. Absent for a base the Synced tree holds. */
+  readonly headBase?:   true;
   readonly status:     ScanStatus;
   /** The file's extension (".mem" / ".tid" / ".json" / ".md" …); rides the
    *  INGEST carrier so the island routes by TW5's own filetype registry. */
@@ -276,6 +281,8 @@ export function scanFiles(
   toBag: string,
   tree:  SyncedTree,
   fileToUri: FileToUriFn = bagsFileToUri,
+  /** HEAD's words for a file with no synced base (`poolHeads`): absent, no git history stands in for a base. */
+  heads?: BaseFromGit,
 ): ScanResult {
   const rows: ScanRow[] = [];
   const skipped: ScanSkip[] = [];
@@ -329,13 +336,18 @@ export function scanFiles(
     // wave so the island's gate can tell "the records moved" from "the disk stands in another framing".
     // A BASE STANDS AT ONE PATH: an agreement the carrier reached at another path names no base for this file.
     const base       = tree.baseAt(syncedTreeKey(toBag, uri), file);
-    const syncedHash = base?.disk ?? null;
-    const syncedRecordsHash = base !== null && !digestsEqual(base.disk, base.records) ? base.records : undefined;
     // Both sides ride tagged (`carrierHash` emits `sha256:…`; the tree stores the same
     // tagged form); `digestsEqual` compares them as `(algo, hex)`.
     const status: ScanStatus =
-      syncedHash === null ? "new" : digestsEqual(diskHash, syncedHash) ? "unchanged" : "changed";
-    rows.push({ file, uri, text, diskHash, syncedHash, ...(syncedRecordsHash !== undefined ? { syncedRecordsHash } : {}), status, ext, binary, ...(meta !== undefined ? { meta } : {}) });
+      base === null ? "new" : digestsEqual(diskHash, base.disk) ? "unchanged" : "changed";
+    // NO SYNCED BASE: the pool's HEAD stands in where it holds the file (a re-found cleared the tree, the pool kept its
+    // history). The row still reads `new` and rides the wave, so the island weighs it against the records and drops the
+    // HEAD base where they hold nothing.
+    const head = base === null && !binary && heads !== undefined ? headBaseOf(uri, heads(file)) : null;
+    const sides = base ?? head;
+    const syncedHash = sides?.disk ?? null;
+    const syncedRecordsHash = sides !== null && !digestsEqual(sides.disk, sides.records) ? sides.records : undefined;
+    rows.push({ file, uri, text, diskHash, syncedHash, ...(syncedRecordsHash !== undefined ? { syncedRecordsHash } : {}), ...(head !== null ? { headBase: true as const } : {}), status, ext, binary, ...(meta !== undefined ? { meta } : {}) });
   }
   // REMOVE-WINS INSIDE ONE EXPORT: a carrier standing beside the shadow of its own title carries nothing.
   const kept = shadows.size > 0 ? rows.filter((row) => !shadows.has(row.uri)) : rows;  return {
@@ -343,6 +355,13 @@ export function scanFiles(
     ...(shadows.size > 0 ? { shadows: [...shadows].sort() } : {}),
     ...(refusedShadows.length > 0 ? { refusedShadows } : {}),
   };
+}
+
+/** The base HEAD's words name: their bytes on the disk side, their render through the pure door on the records side. */
+function headBaseOf(uri: string, head: { readonly body: string; readonly meta?: string } | null): { disk: string; records: string } | null {
+  if (head === null) return null;
+  const disk = carrierHash(head.body, head.meta);
+  return { disk, records: recordsSideOf(uri, head.body, head.meta, false) ?? disk };
 }
 
 /**
@@ -377,9 +396,12 @@ export function recordLandedCarriers(
     if (diskHashNow(cand.file) !== cand.diskHash) continue;
     const key = syncedTreeKey(toBag, cand.uri);
     const standing = tree.baseAt(key, cand.file);
+    // AN ECHO OF HEAD'S BASE PINS HEAD'S RECORDS SIDE: the disk stands at HEAD, and the records may have moved past it, so
+    // the records' present render would name an agreement no side reached. The projector then reads the records moved.
+    const headEcho = cand.headBase === true && c["decision"] === "noop" && c["reason"] === "disk-matches-synced" && cand.syncedHash !== null;
     const answered = typeof c["canonicalHash"] === "string" && c["canonicalHash"] ? (c["canonicalHash"] as string) : null;
-    const recordsHash = answered
-      ?? (standing !== null && digestsEqual(standing.disk, cand.diskHash) ? standing.records : cand.diskHash);
+    const recordsHash = headEcho ? (cand.syncedRecordsHash ?? cand.syncedHash!)
+      : answered ?? (standing !== null && digestsEqual(standing.disk, cand.diskHash) ? standing.records : cand.diskHash);
     tree.set(key, cand.file, cand.diskHash, recordsHash);
     recorded++;
   }
@@ -587,9 +609,13 @@ export function standingAfterWave(standing: StandingAsks, s: IngestSettlement): 
  * island's own row names their render.
  */
 function ownRecordsSide(c: ScanRow): string | null {
-  if (c.meta !== undefined || c.binary) return null;
+  return recordsSideOf(c.uri, c.text, c.meta, c.binary === true);
+}
+
+function recordsSideOf(uri: string, text: string, meta: string | undefined, binary: boolean): string | null {
+  if (meta !== undefined || binary) return null;
   let canonical: string | null;
-  try { canonical = canonicalizeCarrierText(c.uri, c.text); } catch { canonical = null; }
+  try { canonical = canonicalizeCarrierText(uri, text); } catch { canonical = null; }
   return canonical === null ? null : carrierHash(canonical);
 }
 
@@ -914,7 +940,7 @@ export function ingestWaveArgs(opts: SubmitIngestOpts, stage: CarrierStage = inl
       const staged = stage(r);
       return {
         uri: r.uri, file: r.file, size: staged.size, diskHash: r.diskHash, syncedHash: r.syncedHash,
-        ...(r.syncedRecordsHash !== undefined ? { syncedRecordsHash: r.syncedRecordsHash } : {}), ext: r.ext,
+        ...(r.syncedRecordsHash !== undefined ? { syncedRecordsHash: r.syncedRecordsHash } : {}), ...(r.headBase === true ? { headBase: true } : {}), ext: r.ext,
         ...(staged.staged ? { textCid: staged.cid } : { text: r.text }),
         ...(staged.skinny ? { skinny: true } : {}),
         ...(r.meta !== undefined ? { meta: r.meta } : {}),
@@ -1129,6 +1155,8 @@ export interface PoolIngestOptions {
   readonly did: string;
   /** The Synced tree each wave reads afresh; absent, the projection checkpoint's (`openSyncedTree`). */
   readonly tree?: () => SyncedTree;
+  /** HEAD's words for a pool file with no synced base (`poolHeads(pool)` in the vessel): absent, no history stands in. */
+  readonly heads?: BaseFromGit;
   readonly log?: (line: string) => void;
 }
 
@@ -1162,7 +1190,7 @@ export function poolIngestPorts(o: PoolIngestOptions): Pick<FacePoolPorts, "catc
     const files = new Set(touched);
     for (const v of gone.values()) files.add(v.file);
     const tree = o.tree?.() ?? openSyncedTree();
-    const scan = scanFiles(o.pool, [...files], bag, tree, (_r, file) => titleOf(siteFaceFile(o.pool, plane, file, tree)));
+    const scan = scanFiles(o.pool, [...files], bag, tree, (_r, file) => titleOf(siteFaceFile(o.pool, plane, file, tree)), o.heads);
     for (const line of skipLines(scan.skipped)) log(line);
     const sense: string[] = [];
     let vanishedNow = false;
