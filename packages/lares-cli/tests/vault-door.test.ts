@@ -407,4 +407,15 @@ describe("vault status answers a pipe in prose (quiet-pipe)", () => {
     expect(j.ok).toBe(true);
     expect(j.data.custody.rows.some((r: { row: string }) => r.row === "gate-root")).toBe(true);
   });
+
+  it("★ a piped `vault unlock` answers in prose: its refusal names itself on stderr and stdout carries no JSON; `--json` keeps the envelope ★", async () => {
+    piped();
+    tty = false;
+    expect(await cmdVault(parseArgs(["vault", "unlock", "--all"]))).toBe(1);
+    expect(out.join("")).toBe("");
+    expect(err.join("\n")).toMatch(/lares vault unlock: CredentialTtyRefusal/);
+    err.length = 0;
+    expect(await cmdVault(parseArgs(["vault", "unlock", "--all", "--json"]))).toBe(1);
+    expect(JSON.parse(out.join("").trim()).error.code).toBe("CredentialTtyRefusal");
+  });
 });

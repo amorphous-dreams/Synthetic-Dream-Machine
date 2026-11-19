@@ -58,14 +58,19 @@ const RELATION_LINE =
   "rotation never repairs the loss of a relation carrier: a relation secret derives from no house key, so only the " +
   "other party can re-issue it. Back the carrier itself up.";
 
-export async function cmdVault(args: ParsedArgs): Promise<number> {
-  const sub = args.positional[0];
+/** The vault reads that answer a pipe in prose (render.ts `proseFirst`): the custody reading and the unlock the shim chains. */
+const PROSE_FIRST_SUBS: ReadonlySet<string> = new Set(["status", "unlock"]);
+
+export async function cmdVault(given: ParsedArgs): Promise<number> {
+  const sub = given.positional[0];
+  // The refusals below render through the same args, so a piped unlock refuses in prose too.
+  const args = PROSE_FIRST_SUBS.has(sub ?? "") ? proseFirst(given) : given;
   if (!sub) { usage(args); return 2; }
   const daemonUp = await udsAlive();
 
   try {
     switch (sub) {
-      case "status":     return await vaultStatus(proseFirst(args), daemonUp);
+      case "status":     return await vaultStatus(args, daemonUp);
       case "unlock":     return await vaultUnlock(args, daemonUp);
       case "lock":       return await vaultLock(args, daemonUp);
       case "bind":       return await vaultBind(args);

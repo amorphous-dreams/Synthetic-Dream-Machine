@@ -931,7 +931,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--memory           (restore) import the bundle's memory section instead of its lineage",
       "--cards            (restore) read a root split's cards on the terminal instead of a bundle; needs --face and --as",
       "--verbose          (status) one reading of each standing file the carrier table names, beside the summary",
-      "--json             (status) the whole custody object (the slot tree, every row, the files outside the table, the door), the form a caller parses",
+      "--json             (status) the whole custody object (the slot tree, every row, the files outside the table, the door); (unlock) the door's answer as one object; the form a caller parses, since a pipe reads prose",
       "--face <key|pfx>   (restore --cards) the face the cards should rebuild: its root's public key or its prefix",
       "unlock | bind | unbind | reseat | backup | restore read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
     ],
