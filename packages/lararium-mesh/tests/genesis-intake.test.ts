@@ -11,6 +11,9 @@
  */
 
 import { describe, test, expect, afterEach } from "vitest";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Repo } from "@automerge/automerge-repo";
 import {
   validateGenesisBytes,
@@ -77,6 +80,24 @@ describe("genesis-intake — the one intake core", () => {
     expect(restarted.url).toBe(first.url);
     expect(restarted.url).toBe(oracleGenesisDocUrl());
     expect(genesisCasCidsFromOracle(restarted.doc()!)).toEqual(["1".repeat(64), "2".repeat(64)]);
+  });
+
+  test("no source merges one genesis document into another: reconcileGenesisCid and its result type name nothing in src/", () => {
+    const src = fileURLToPath(new URL("../src/", import.meta.url));
+    const naming = readdirSync(src, { recursive: true, encoding: "utf8" })
+      .filter((f) => /\.(ts|mts|js)$/.test(f))
+      .filter((f) => /\breconcileGenesisCid\b|\bGenesisReconcileResult\b/.test(readFileSync(join(src, f), "utf8")));
+    expect(naming).toEqual([]);
+  });
+
+  test("CONTROL: a persisted island reloads untouched when a differing seed arrives", async () => {
+    const repo = newRepo();
+    const first = await materializeGenesisIsland(repo, RESTART_SEED, "first-breath");
+    const other = { ...RESTART_SEED, blobs: { ...RESTART_SEED.blobs,
+      [LARES_MEMETIC_WIKITEXT_PLUGIN_URI]: { ...RESTART_SEED.blobs[LARES_MEMETIC_WIKITEXT_PLUGIN_URI], sha256: "3".repeat(64) } } };
+    const again = await materializeGenesisIsland(repo, other, "restart");
+    expect(again.url).toBe(first.url);
+    expect(genesisCasCidsFromOracle(again.doc()!)).toEqual(["1".repeat(64), "2".repeat(64)]);
   });
 
   test("first breath without seed refuses before an oracle or worker can stand", async () => {
