@@ -3,6 +3,7 @@
  *
  *   C1  prose by default: a summary per class, then the unnamed list (each orphan by id, store, bytes and why); exit 0.
  *   C2  a sealed document left unread says an orphan may be named inside it, so no orphan reads proven.
+ *   C2b the unread footer names documents and copies apart, and its `sealed-unread` share reads the class line's count.
  *   C3  `--json` answers the full rows.
  *   C4  no vessel, a silent door, or a refusal exits 2 by name and never reads as an empty house.
  *   C5  the vessel door routes `census --docs` here and `census` alone to the stop census.
@@ -24,7 +25,7 @@ function capture(): { out: string[]; err: string[] } {
 }
 
 const base = { clearChunks: 1, sealedChunks: 0, syncStates: 0, temps: 0, read: "clear" as const };
-const reading = (unreadSealed = 0): DocCensusReading => ({
+const reading = (unreadSealed = 0, unreadSealedCopies: DocCensusReading["unreadSealedCopies"] = {}): DocCensusReading => ({
   stores: [{ name: "(root)", documents: 3, bytes: 3_400 }, { name: "notes", documents: 1, bytes: 1_000 }],
   rows: [
     { ...base, id: "docCatalog", store: "(root)", bytes: 2_000, class: "current", names: [{ kind: "catalog", by: "the catalog pointer" }] },
@@ -34,6 +35,7 @@ const reading = (unreadSealed = 0): DocCensusReading => ({
   ],
   counts: { current: 1, duplicate: 1, orphan: 2, "last-version": 0, "sealed-unread": 0 },
   unreadSealed,
+  unreadSealedCopies,
 });
 
 describe("the document census", () => {
@@ -53,8 +55,29 @@ describe("the document census", () => {
 
   test("C2 — a sealed document left unread says an orphan may be named inside it", async () => {
     const c = capture();
-    await cmdDocCensus(args(), async () => ({ op: "doc-census", census: reading(2), standing: "hearth" }));
+    await cmdDocCensus(args(), async () => ({ op: "doc-census", census: reading(2, { "sealed-unread": 2 }), standing: "hearth" }));
     expect(c.out.join("\n")).toMatch(/2 sealed document\(s\) stand unread/);
+  });
+
+  test("C2b — the unread footer names documents and copies apart, and its sealed-unread share reads the class line", async () => {
+    const c = capture();
+    const sealedRow = { clearChunks: 0, sealedChunks: 1, syncStates: 0, temps: 0, read: "sealed-unread" as const, bytes: 100, names: [] };
+    const census: DocCensusReading = {
+      stores: [{ name: "(root)", documents: 2, bytes: 200 }, { name: "notes", documents: 2, bytes: 200 }],
+      rows: [
+        { ...sealedRow, id: "docShared", store: "(root)", class: "sealed-unread" },
+        { ...sealedRow, id: "docShared", store: "notes", class: "duplicate" },
+        { ...sealedRow, id: "docIsland", store: "notes", class: "sealed-unread" },
+        { ...sealedRow, id: "docReached", store: "(root)", class: "current", names: [{ kind: "pointer", by: "a sealed home" }] },
+      ],
+      counts: { current: 1, duplicate: 1, orphan: 0, "last-version": 0, "sealed-unread": 2 },
+      unreadSealed: 3,
+      unreadSealedCopies: { "sealed-unread": 2, duplicate: 1, current: 1 },
+    };
+    await cmdDocCensus(args(), async () => ({ op: "doc-census", census, standing: "hearth" }));
+    const text = c.out.join("\n");
+    expect(text).toMatch(/sealed-unread\s+2\s/);
+    expect(text).toMatch(/3 sealed document\(s\) stand unread in 4 cop\(ies\) across the stores: 2 sealed-unread · 1 current · 1 duplicate/);
   });
 
   test("C3 — --json answers the full rows", async () => {
