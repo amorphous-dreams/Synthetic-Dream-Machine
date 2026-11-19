@@ -174,18 +174,18 @@ describe("resolveDiskMirrors — one folder answers a workbench, and nothing fac
   });
 });
 
-// A REALM HOLDS ITS WIKIS UNDER ITS PET NAME (operator ruling 2026-11-19): the node's per-wiki grants read the realm labels at
-// each mount (`realmBase`), so a wiki a named realm holds lays its workbench under `realms/<pet>/wikis/<slug>` and its canon bag
-// under `realms/<pet>/bags/<slug>`; a wiki no named realm holds lays neither and WAITS BY NAME, never under a plain `wikis/`. A
-// workspace a share row binds and a sourced slug's canon source still answer first.
-describe("resolveDiskMirrors — a realm's pet name roots its wikis and bags, and an unnamed realm's wiki waits", () => {
+// A REALM HOLDS ITS WIKIS UNDER ITS PET NAME (operator rulings 2026-11-19): the node's per-wiki grants read the realm labels at
+// each mount (`realmBase`, which mints a realm's default label on first read), so a wiki lays its workbench under
+// `realms/<pet>/wikis/<slug>` and its canon bag under `realms/<pet>/bags/<slug>`, never under a plain `wikis/`. A base that names
+// no folder (a refusal the host logs) lays none. A workspace a share row binds and a sourced slug's canon source answer first.
+describe("resolveDiskMirrors — a realm's pet name roots its wikis and bags", () => {
   const realms: Record<string, string> = {};
   const grant = (workspaces: Record<string, string> = {}): DiskMirrorGrant => [
     { bagId: "working", mirrorRoot: "/state/realms", scope: "working", wikiSlot: "working", sourcedRoots: { elyncia: "/checkout/wikis" }, workspaceRoots: workspaces, realmBase: (slug) => realms[slug] === undefined ? null : `/state/realms/${realms[slug]}/wikis` },
     { bagId: "self", mirrorRoot: "/state/realms", scope: "self", perWikiSlug: true, selfCanon: true, sourcedRoots: { elyncia: "/checkout/bags" }, realmBase: (slug) => realms[slug] === undefined ? null : `/state/realms/${realms[slug]}/bags` },
   ];
   const designation = (slug: string): string[] => [wikiSlotUri(slug, "working"), wikiBagUri(slug)];
-  test("no named realm: neither the workbench nor the canon bag lays anywhere", () => {
+  test("a realm base that names no folder lays neither the workbench nor the canon bag", () => {
     expect(resolveDiskMirrors(grant(), designation("notes"), "notes")).toEqual([]);
   });
   test("named: both lay under the realm's pet name, and the resolved entry carries no resolver", () => {

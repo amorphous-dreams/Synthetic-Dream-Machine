@@ -112,7 +112,8 @@ import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type D
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
 import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
-import { realmPlacement, realmWaitingLine } from "./realm-labels.js";
+import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
+import { ledgerWorkbenches, ledgerWorkbenchRealms } from "@lararium/mesh";
 import { armFacePoolWatch, armWorkspaceWatch, type FacePoolWatch } from "./watch-core.js";
 import { islandIngestSubmit, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
 import { poolHeads } from "./pool-head.js";
@@ -946,9 +947,11 @@ async function prepareNodeBootOn(
   /** THE WATCH over the worn face's pool (`watch-core`, face-pools W1, W2): armed at after-live, downed at teardown and stand-down. */
   let facePoolWatch: FacePoolWatch | null = null;
   /** THE WORKBENCH FOLDERS a shared wiki's one disk copy rests in (`workbenchFolders`, its reader set in makePool): each bound
-   *  workspace, then each `<projections>/realms/<realm pet name>/wikis/<slug>` a named realm holds that no workspace takes, read
+   *  workspace, then each `<projections>/realms/<realm pet name>/wikis/<slug>` a realm label holds that no workspace takes, read
    *  afresh at each after-live. */
   let readWorkbenches: () => WorkbenchFolder[] = () => [];
+  /** THE QUIET POINT'S REALM MOVES (`settleRealmMoves`), set in makePool: run at the re-stand and at the last workbench watch's lock. */
+  let settleRealmFolders: () => void = () => {};
   /** THE WATCHES over the workbench folders (`armWorkspaceWatch`): armed at after-live beside the face pool's, downed with it. */
   const workspaceWatches = new Set<FacePoolWatch>();
   /** The folder a face's pet name makes under `faces/`, or null (named in the log) where it makes none. The label names the pet
@@ -4507,27 +4510,44 @@ async function prepareNodeBootOn(
     // THE WORKSPACES the share rows name (`$LAR_ROOT/config/share.tid`): each bound dir under `<root>/workspaces`, one inside the
     // checkout included (the cabal's working surface); one inside the hearth, or for a checkout-sourced slug, refuses by name
     // and its workbench projects under projections.
-    const workspaces = (() => {
+    const shareRows = (() => {
       const path = join(larConfigHome(), SHARE_CONFIG_FILE);
-      let rows: ShareEntry[] = [];
-      try { rows = existsSync(path) ? parseShareFile(readFileSync(path, "utf8")) : []; } catch (err) { console.warn(`[workspaces] the share file reads as none: ${String(err)}`); }
+      try { return existsSync(path) ? parseShareFile(readFileSync(path, "utf8")) : []; } catch (err) { console.warn(`[workspaces] the share file reads as none: ${String(err)}`); return [] as ShareEntry[]; }
+    })();
+    const workspaces = (() => {
+      const rows: ShareEntry[] = shareRows;
       const read = workspaceRootsOf({ rows, workspacesHome: larWorkspacesHome(), hearth: larHearthHome(), sourcedSlugs: projection.sourcedSlugs() });
       for (const line of read.refused) console.warn(`[workspaces] refused: ${line}`);
       for (const line of read.unbound) console.warn(`[workspaces] ${line}`);
       return read;
     })();
+    // EVERY REALM CARRIES A PET NAME (operator ruling 2026-11-19): a wiki's workbench and its canon bag lay under the realm that
+    // holds the slug (`realms/<realm pet name>/`, `realm-labels.ts`), and a realm standing with no label takes one on first read,
+    // under its default pet name (the slug; a collision takes the shortest prefix of its canon realm id), written once and named
+    // in the log. Nothing waits and no plaintext mirror goes dark.
+    const realmIdOf = (slug: string): string | null => { const ids = ledgerWorkbenchRealms(workbenchLedger?.doc(), slug); return ids.length === 1 ? ids[0]! : null; };
+    const ensureRealm = (slug: string): boolean => {
+      try { const e = ensureRealmLabel(projectionRoot, slug, realmIdOf(slug)); if (e.line !== undefined) console.log(`[realms] ${e.line}`); return true; }
+      catch (err) { console.warn(`[realms] ${slug}: ${err instanceof Error ? err.message : String(err)}`); return false; }
+    };
+    // THE QUIET POINT AT THE RE-STAND: a rename or regroup the operator made while a watch held the folders moves them now, before
+    // any mount reads them (`settleRealmMoves`, never half-moved); the last workbench watch's lock settles the same way.
+    settleRealmFolders = (): void => {
+      const r = settleRealmMoves(projectionRoot);
+      for (const m of r.moved) console.log(`[realms] moved ${m.from} -> ${m.to}`);
+      for (const h of r.held) console.warn(`[realms] held: ${h}`);
+    };
+    settleRealmFolders();
+    // FIRST READ AT BOOT: each realm standing on this house (a workbench the ledger binds, a wiki a share row names) takes its
+    // label now if it holds none, so an existing house lays its folders at once with no step.
+    const sourced = projection.sourcedSlugs();
+    const standingRealms = new Set([...ledgerWorkbenches(workbenchLedger?.doc()).map((b) => b.slug), ...shareRows.filter((r) => r.kind === "wiki").map((r) => r.slug)]);
+    for (const slug of [...standingRealms].sort()) if (!sourced.includes(slug) && slug !== "daemon" && slug !== "kahua") ensureRealm(slug);
     readWorkbenches = () => workbenchFolders({ projectionRoot, workspaces, sourcedSlugs: projection.sourcedSlugs(), realms: realmPlacement(projectionRoot).realms() });
-    // THE REALM LABELS PLACE EACH SHARED WIKI (operator ruling 2026-11-19): a wiki's workbench and its canon bag lay under the
-    // realm that holds the slug (`realms/<realm pet name>/`), read at each mount, so a realm the operator names later places
-    // its wikis at their next mount. A wiki no named realm holds lays neither and WAITS BY NAME, once per slug in the log,
-    // until the operator names its realm; it never falls back to a plain `wikis/` or `bags/`.
-    const realmWaiting = new Set<string>();
     const realmBaseOf = (plane: "wikis" | "bags") => (slug: string): string | null => {
+      if (!ensureRealm(slug)) return null;
       const placement = realmPlacement(projectionRoot);
-      const base = plane === "wikis" ? placement.wikisBase(slug) : placement.bagsBase(slug);
-      if (base === null && !realmWaiting.has(slug)) { realmWaiting.add(slug); console.warn(`[realms] ${realmWaitingLine(slug)}`); }
-      if (base !== null) realmWaiting.delete(slug);
-      return base;
+      return plane === "wikis" ? placement.wikisBase(slug) : placement.bagsBase(slug);
     };
     const diskMirrorGrant: DiskMirrorGrant = [
       // `bags/` PROJECTS ON THE KAHU'S VESSEL ALONE: a vessel the cabal did not admit holds neither live document, so it
@@ -4554,7 +4574,7 @@ async function prepareNodeBootOn(
       // operator workspace (`/lar/workspaces/<name>`), the checkout included and never inside the hearth (`workspaceRootsOf`).
       // ONE FOLDER ANSWERS A WORKBENCH, whichever seated writer wears: `<projections>/realms/<realm pet name>/wikis/<slug>` (the
       // realm label that holds the slug, `realmBase`), and a sourced slug's beside its canon source (`<source>/../wikis/<slug>`,
-      // the repo workspace: git tracks it). No face relation enters that path; a slug no named realm holds lays none.
+      // the repo workspace: git tracks it). No face relation enters that path; a slug with no label takes its default one.
       { bagId: "working",        mirrorRoot: join(projectionRoot, REALMS_PROJECTION_DIR), scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots, realmBase: realmBaseOf("wikis") },
       // THE FACE-ROOTED GRANTS (face-pools #/shape): each holds one face's hand, so each rests in the wearing face's root
       // (`<projections>/faces/<pet name>/`), never under the shared `wikis/<slug>/` and never beside a canon source: nothing
@@ -4568,7 +4588,7 @@ async function prepareNodeBootOn(
       { bagId: "temp",           mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: tempConsentedSlugs(loadLaresConfig()), faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
       // self-canon = the per-wiki CANON authority: a minted user wiki's own
       // @{slug} bag projects to realms/<realm pet name>/bags/{slug} (both bagId and leaf fill from the
-      // slug at mount), in the realm that holds it, else nowhere until one does. System wikis (lares/lararium) carry literal grants
+      // slug at mount), in the realm that holds it (its default label minted on first read). System wikis (lares/lararium) carry literal grants
       // above, so resolveDiskMirrors skips this for them — no double-project.
       { bagId: "self",          mirrorRoot: join(projectionRoot, REALMS_PROJECTION_DIR), scope: "self",    perWikiSlug: true, selfCanon: true, sourcedRoots: projection.sourcedRoots("bags"), realmBase: realmBaseOf("bags") },
     ];
@@ -4669,7 +4689,7 @@ async function prepareNodeBootOn(
       facePoolWatch = watch;
       stood.push({ what: "the face pool's watch", down: async () => { await watch.down("lock"); if (facePoolWatch === watch) facePoolWatch = null; } });
       // THE WATCH OVER EACH SHARED WIKI'S WORKBENCH (a workbench serves as a pool): a wiki's one disk copy whichever face wears,
-      // `<projections>/wikis/<slug>` or the workspace its share row names (`workbenchFolders`, read afresh here). The same seat
+      // `<projections>/realms/<realm pet name>/wikis/<slug>` or the workspace its share row names (`workbenchFolders`, read afresh here). The same seat
       // stands over it, off the boot path: each settle lands as ONE unattended INGEST wave in that wiki's working layer, run in the
       // wiki's own island (activated on reference, as `wiki-act` does) under the WORN face's actor, and a stand-off goes to that
       // wiki's shore. A lock or a wear downs it with the final wave and the commit seam (naming no face) where the folder's git
@@ -4688,7 +4708,8 @@ async function prepareNodeBootOn(
         const wsSense = (uris?: readonly string[]): Promise<unknown> => inWiki(slug, "shore", { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) });
         const wsWatch = armWorkspaceWatch({ workspace: dir, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, did: requestedBy, heads: poolHeads(dir), log: wsLog }), log: wsLog });
         workspaceWatches.add(wsWatch);
-        stood.push({ what: `the workbench ${name}'s watch`, down: async () => { await wsWatch.down("lock"); workspaceWatches.delete(wsWatch); } });
+        // The last workbench watch's down marks a quiet point: a rename or regroup the operator made while it held the folder moves now.
+        stood.push({ what: `the workbench ${name}'s watch`, down: async () => { await wsWatch.down("lock"); workspaceWatches.delete(wsWatch); if (workspaceWatches.size === 0) settleRealmFolders(); } });
       }
     }
     if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");

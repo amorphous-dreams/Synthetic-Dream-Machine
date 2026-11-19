@@ -621,8 +621,8 @@ export interface WorkbenchFolder { readonly slug: string; readonly dir: string; 
  * THE WORKBENCH FOLDERS a vessel watches as pools: each workspace a share row binds (`workspaceRootsOf`), then each wiki a named
  * realm holds, at `<projections>/realms/<realm pet name>/wikis/<slug>/` (`realms`: the realm labels' placement,
  * `realmPlacement(...).realms()`), that no workspace takes. ONE FOLDER PER WORKBENCH, so a bound slug's realm folder takes no
- * second seat. A wiki no named realm holds lays no workbench and takes no seat: it waits by name for `lares realm name`, never
- * under a plain `wikis/`. The daemon wiki's working layer rests in the face's own pool (`faces/<pet name>/wiki`), and a SOURCED
+ * second seat. Every realm carries a pet name (its default, the slug, minted on first read), so no wiki waits for one, and no
+ * plain `wikis/` folder takes a seat. The daemon wiki's working layer rests in the face's own pool (`faces/<pet name>/wiki`), and a SOURCED
  * slug's workbench rests beside its canon source in the checkout, which the checkout's own history keeps and the vessel never
  * commits into, so none of those takes one either. A slug whose folder stands nowhere on disk yet takes none: the next sitting's
  * arm reads it.

@@ -212,8 +212,9 @@ export type DiskMirrorGrant = readonly {
    *  none: no mirror. */
   faceFolder?: () => string | null;
   /** A per-wiki grant's REALM BASE (a wiki's working slot, its self canon): the folder a slug's mirror lays under by the realm
-   *  that holds it (`<projections>/realms/<pet name>/wikis` or `/bags`), read at each mount; null: no named realm holds the slug,
-   *  so it lays no mirror and waits by name. A workspace and a sourced slug's canon source answer first. */
+   *  that holds it (`<projections>/realms/<pet name>/wikis` or `/bags`), read at each mount (the node mints a realm's default label
+   *  on first read, so every realm names one); null: the host named no folder (a refusal it logs), so no mirror lays. A workspace
+   *  and a sourced slug's canon source answer first. */
   realmBase?: (wikiSlug: string) => string | null;
 }[];
 
@@ -242,8 +243,8 @@ export type DiskMirrorGrant = readonly {
  *  slug (`workspaceRoots`): a shared wiki's workbench mirror then roots there. ONE FOLDER ANSWERS A WORKBENCH, whichever
  *  seated writer wears: with no workspace named, a SOURCED slug's rests beside its canon source, `{source}/wikis/{slug}`
  *  (`sourcedRoots`), and a REALM-ROOTED grant (`realmBase`, the node's) lays it under the realm the slug's label names,
- *  `realms/<pet name>/wikis/{slug}`, or lays none while no named realm holds the slug (it waits by name); a grant with no
- *  realm base keeps `{slug}` under its own root. No face relation enters that path. A mount
+ *  `realms/<pet name>/wikis/{slug}` (every realm carries a pet name: its default, the slug, minted on first read); a grant with
+ *  no realm base keeps `{slug}` under its own root. No face relation enters that path. A mount
  *  whose face holds no writer's seat in the workbench designates no working mirror at all (`buildWikiMountSpec`), so it writes
  *  nothing there. A wiki's PERSONAL slot carries the wearing face's private margin (operator ruling 2026-11-11), so its
  *  grant roots in the wearing face's root under the grant's OWN root and never beside a canon source:
@@ -269,7 +270,7 @@ export function resolveDiskMirrors(
       // A consent-keyed grant (the user temp layer) yields only for a slug the operator's consent row names.
       if (g.consentSlugs !== undefined && !g.consentSlugs.includes(wikiSlug)) return false;
       if (g.faceFolder !== undefined && !g.faceFolder()) return false;
-      // A REALM-ROOTED grant lays only where a named realm holds the slug, or a workspace or the canon source answers first.
+      // A REALM-ROOTED grant lays where its realm base names a folder, or where a workspace or the canon source answers first.
       if (g.realmBase !== undefined && !Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug)
         && !(g.wikiSlot === "working" && Object.hasOwn(g.workspaceRoots ?? {}, wikiSlug)) && g.realmBase(wikiSlug) === null) return false;
       // A SYSTEM wiki's canon projects through its LITERAL grant alone, which only the Kahu's vessel holds: self-canon

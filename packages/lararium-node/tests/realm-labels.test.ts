@@ -3,22 +3,23 @@
  * realms should include their 'pet-name' to match faces."). The label rests local beside the face labels, at
  * `<projections>/realm-labels/<pet name>.json` (0600), and names the canon realms it holds (`{ id, slug }`: the realm id the
  * vessel's workbench ledger binds for the slug, null until read) and the domain bags beside them. Never a share row, never a
- * replicated document.
+ * replicated document. EVERY REALM CARRIES A PET NAME: one minted with none takes its slug, so nothing waits.
  *
  *   RL1 a label round-trips: name, place a wiki (its canon bag rides with it), read back; a second naming says "already"
  *   RL2 the pet-name rule refuses by name: empty, a separator, a colon, NUL, a leading dot (`.`, `..`), a case twin of another
  *       realm, and a face's pet name
- *   RL3 one slug rests in one realm: placing a slug another realm holds refuses by name
- *   RL4 a rename moves the realm's folder with its label; a rename onto a standing folder refuses and moves nothing
- *   RL5 the placement reads the labels: a wiki in a named realm lays under `realms/<pet>/wikis`, its bag under
- *       `realms/<pet>/bags`; a slug no realm holds answers null (it waits by name)
+ *   RL3 one slug rests in one realm: placing it in another regroups it; it reads where it stands until the quiet point's
+ *       settle moves its folder (its `.git` with it), and an emptied realm folder leaves
+ *   RL4 a rename relabels at once; the settle moves the folder, and a folder standing in both places moves nothing, named
+ *   RL5 the default pet name: a realm with no label takes its slug, written once (`realms/<slug>/wikis`, `/bags`); a default that
+ *       meets another realm's pet name takes the slug plus the shortest prefix of its canon realm id, or the shortest counter
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  nameRealm, placeInRealm, readRealmLabels, realmLabelPath, realmPlacement, RealmRefused, REALM_LABEL_SCHEMA,
+  ensureRealmLabel, nameRealm, placeInRealm, readRealmLabels, realmLabelPath, realmPlacement, RealmRefused, REALM_LABEL_SCHEMA, settleRealmMoves,
 } from "../src/realm-labels.js";
 import { realmRoot, REALMS_PROJECTION_DIR } from "../src/bag-paths.js";
 
@@ -61,42 +62,69 @@ describe("the realm label", () => {
     expect(readRealmLabels(p).map((l) => l.petName)).toEqual(["Garden"]);
   });
 
-  test("RL3 one slug rests in one realm", () => {
+  test("RL3 one slug rests in one realm: placing it elsewhere regroups it, and its folder follows at the quiet point", () => {
     nameRealm(p, "Garden"); nameRealm(p, "Forge");
-    placeInRealm(p, "Garden", { slug: "notes", id: null });
-    expect(code(() => placeInRealm(p, "Forge", { slug: "notes", id: null }))).toBe("realm-slug-held");
+    placeInRealm(p, "Garden", { slug: "notes", id: "ab".repeat(32) });
+    mkdirSync(join(realmRoot(p, "Garden"), "wikis", "notes", ".git"), { recursive: true });
+    placeInRealm(p, "Forge", { slug: "notes", id: null });
+    expect(readRealmLabels(p).map((l) => [l.petName, l.realms, l.bags])).toEqual([
+      ["Forge", [{ slug: "notes", id: "ab".repeat(32) }], ["notes"]],
+      ["Garden", [], []],
+    ]);
+    // Until the quiet point, the wiki reads where it stands: no mount lays a second folder.
+    expect(realmPlacement(p).wikisBase("notes")).toBe(join(p, "realms", "Garden", "wikis"));
+    expect(settleRealmMoves(p).moved).toEqual([{ from: join(p, "realms", "Garden", "wikis", "notes"), to: join(p, "realms", "Forge", "wikis", "notes") }]);
+    expect(existsSync(join(p, "realms", "Forge", "wikis", "notes", ".git")), "the history moves with the folder").toBe(true);
+    expect(existsSync(join(p, "realms", "Garden")), "an emptied realm folder leaves").toBe(false);
+    expect(realmPlacement(p).wikisBase("notes")).toBe(join(p, "realms", "Forge", "wikis"));
     expect(code(() => placeInRealm(p, "Nowhere", { slug: "works", id: null }))).toBe("realm-unnamed");
     expect(code(() => placeInRealm(p, "Forge", { slug: "daemon", id: null }))).toBe("realm-slug-private");
   });
 
-  test("RL4 a rename moves the folder with the label, and refuses onto a standing folder", () => {
+  test("RL4 a rename relabels at once; the folder moves at the quiet point, and never half-moved", () => {
     nameRealm(p, "Garden");
     placeInRealm(p, "Garden", { slug: "notes", id: "ab".repeat(32) });
     mkdirSync(join(realmRoot(p, "Garden"), "wikis", "notes"), { recursive: true });
     writeFileSync(join(realmRoot(p, "Garden"), "wikis", "notes", "a.tid"), "title: a\n\nx\n");
-    // By the canon realm id it holds, as by its old pet name.
+    // By the canon realm id it holds, as by its current pet name.
     const r = nameRealm(p, "Orchard", { from: "ab".repeat(32) });
     expect(r.did).toBe("renamed");
-    expect(existsSync(join(p, REALMS_PROJECTION_DIR, "Garden"))).toBe(false);
-    expect(readFileSync(join(realmRoot(p, "Orchard"), "wikis", "notes", "a.tid"), "utf8")).toContain("x");
     expect(existsSync(realmLabelPath("Garden", p))).toBe(false);
     expect(readRealmLabels(p).map((l) => [l.petName, l.realms.map((x) => x.slug)])).toEqual([["Orchard", ["notes"]]]);
-    // A folder standing under the new name already: refused, nothing moves.
-    mkdirSync(realmRoot(p, "Grove"), { recursive: true });
-    expect(code(() => nameRealm(p, "Grove", { from: "Orchard" }))).toBe("realm-folder-standing");
+    expect(realmPlacement(p).wikisBase("notes"), "read where it stands until the quiet point").toBe(join(p, "realms", "Garden", "wikis"));
+    settleRealmMoves(p);
+    expect(existsSync(join(p, REALMS_PROJECTION_DIR, "Garden"))).toBe(false);
+    expect(readFileSync(join(realmRoot(p, "Orchard"), "wikis", "notes", "a.tid"), "utf8")).toContain("x");
+    // Both places standing: nothing moves, and the settle names it.
+    nameRealm(p, "Grove", { from: "Orchard" });
+    mkdirSync(join(realmRoot(p, "Grove"), "wikis", "notes"), { recursive: true });
+    const held = settleRealmMoves(p);
+    expect(held.moved).toEqual([]);
+    expect(held.held.join("\n")).toMatch(/where a folder already stands/);
     expect(existsSync(join(realmRoot(p, "Orchard"), "wikis", "notes", "a.tid"))).toBe(true);
     expect(code(() => nameRealm(p, "Elsewhere", { from: "Nobody" }))).toBe("realm-unnamed");
   });
 
-  test("RL5 the placement waits by name until a realm holds the slug", () => {
+  test("RL5 every realm carries a pet name: the default is the slug, written once; a collision takes the shortest id prefix", () => {
     expect(realmPlacement(p).wikisBase("notes")).toBeNull();
-    expect(realmPlacement(p).bagsBase("notes")).toBeNull();
-    nameRealm(p, "Garden");
-    placeInRealm(p, "Garden", { slug: "notes", id: null });
+    const first = ensureRealmLabel(p, "notes", "ab".repeat(32));
+    expect(first.minted).toBe(true);
+    expect(first.line).toMatch(/default pet name "notes"/);
+    expect(readRealmLabels(p)).toEqual([{ schema: REALM_LABEL_SCHEMA, petName: "notes", realms: [{ slug: "notes", id: "ab".repeat(32) }], bags: ["notes"] }]);
+    expect(ensureRealmLabel(p, "notes", null).minted, "written once").toBe(false);
     const at = realmPlacement(p);
-    expect(at.wikisBase("notes")).toBe(join(p, "realms", "Garden", "wikis"));
-    expect(at.bagsBase("notes")).toBe(join(p, "realms", "Garden", "bags"));
-    expect(at.petNameOf("notes")).toBe("Garden");
-    expect(at.wikisBase("works")).toBeNull();
+    expect(at.wikisBase("notes")).toBe(join(p, "realms", "notes", "wikis"));
+    expect(at.bagsBase("notes")).toBe(join(p, "realms", "notes", "bags"));
+    expect(at.petNameOf("notes")).toBe("notes");
+    // THE COLLISION: an operator-named realm "Works" holds another wiki; the wiki `works` takes `works-` plus the shortest prefix.
+    nameRealm(p, "Works");
+    placeInRealm(p, "Works", { slug: "garden", id: null });
+    nameRealm(p, "works-c");
+    const collided = ensureRealmLabel(p, "works", "cd".repeat(32));
+    expect(collided.label.petName).toBe("works-cd");
+    expect(collided.line).toMatch(/names another realm already, so this realm takes "works-cd"/);
+    // No id read yet: the shortest counter names it apart.
+    nameRealm(p, "Pond");
+    expect(ensureRealmLabel(p, "pond", null).label.petName).toBe("pond-2");
   });
 });

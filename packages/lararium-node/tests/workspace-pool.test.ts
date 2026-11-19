@@ -15,8 +15,8 @@
  *       the worn face's actor; a stand-off goes to that wiki's shore
  *   WP4 the witness on a scratch house: a user wiki bound to a workspace (as `notes` would be) flows a disk edit back by itself
  *       and commits at lock
- *   WP5 the workbench folders: each bound workspace, then each `realms/<pet>/wikis/<slug>/` a named realm holds that no workspace
- *       takes; control: a wiki no named realm holds waits by name, and a realm's slug with no folder on disk takes no seat
+ *   WP5 the workbench folders: each bound workspace, then each `realms/<pet>/wikis/<slug>/` a realm label holds that no workspace
+ *       takes; control: a plain `wikis/<slug>/` takes no seat, and a realm's slug with no folder on disk takes none
  *   WP6 the vessel arms one seat per workbench folder in its after-live step, unawaited, under the worn face's actor, and downs
  *       each at lock, wear and shutdown
  */
@@ -233,7 +233,7 @@ describe("WP4 — the witness on a scratch house: a user wiki bound to a workspa
   });
 });
 
-describe("WP5 — the workbench folders: each bound workspace, then each wiki a named realm holds", () => {
+describe("WP5 — the workbench folders: each bound workspace, then each wiki a realm label holds", () => {
   test("a bound workspace and a realm's workbench each take one seat; the bound slug's realm folder takes none", () => {
     const projections = join(house, "projections");
     nameRealm(projections, "Garden");
@@ -248,7 +248,7 @@ describe("WP5 — the workbench folders: each bound workspace, then each wiki a 
     ]);
   });
 
-  test("control: a wiki no named realm holds waits by name (even with a plain wikis/<slug> folder standing), and a realm's slug with no folder takes no seat", () => {
+  test("control: a plain wikis/<slug> folder takes no seat (only a realm's folder does), and a realm's slug with no folder takes none", () => {
     const projections = join(house, "projections");
     expect(workbenchFolders({ projectionRoot: projections, workspaces: { roots: {}, names: {} }, sourcedSlugs: [], realms: [] })).toEqual([]);
     mkdirSync(join(projections, "wikis", "notes"), { recursive: true });
