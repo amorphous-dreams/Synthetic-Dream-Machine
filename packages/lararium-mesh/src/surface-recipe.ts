@@ -32,7 +32,7 @@ import { plainRecordOrNull, type StoredLarRecord } from "./stored-value.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { bootSetIds, bootSetPluginCids, verifyCasBytesAsync, type CasBlobLike } from "./cas.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
-import { GENESIS_FLOOR_TIDDLER, floorBlobCids, predatingFloorBlobCids, readFloorManifest, readFoundingFloorManifest } from "./floor-manifest.js";
+import { GENESIS_FLOOR_TIDDLER, floorBlobCids, readFloorManifest } from "./floor-manifest.js";
 import { readFloorOffering } from "./floor-offering.js";
 import { wikiUri } from "./lar-uris.js";
 import { selectPluginBlobs, selectedPluginCids, type OfferingLookup } from "./plugin-offering-selector.js";
@@ -262,9 +262,7 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
   if (!plugins.ok) return refused("plugins-refused", plugins.error);
 
   // The seed's floor witness admits the manifest, each house-canon snapshot it keys, its plugins offering record and each blob
-  // the offering carries to the session's content view. A pin reads the current shape alone; the founding record's own floor
-  // may predate the floor format, and then admits its manifest and snapshots alone (`readFoundingFloorManifest`, KEEP).
-  const founding = input.floorCid === undefined || input.floorCid === null;
+  // the offering carries to the session's content view.
   const floorCid = input.floorCid ?? plainRecordOrNull(planes.read("oracle", GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
   const floorCids: string[] = [];
   if (typeof floorCid === "string" && floorCid.length > 0) {
@@ -275,19 +273,15 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
     if (sha256HexBytesSync(bytes) !== floorCid) {
       return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: manifest bytes differ from CID: ${floorCid}`);
     }
-    const opened = founding ? readFoundingFloorManifest(bytes) : readFloorManifest(bytes);
+    const opened = readFloorManifest(bytes);
     if ("refusal" in opened) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: ${opened.refusal}: ${opened.reason}`);
-    if ("prior" in opened) {
-      floorCids.push(...predatingFloorBlobCids(floorCid, opened.prior));
-    } else {
-      let offeringBytes: Uint8Array | null;
-      try { offeringBytes = await input.plugins.readBytes(opened.manifest.plugins); }
-      catch (error) { return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: plugins offering: ${String(error)}`); }
-      if (!offeringBytes) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: plugins offering bytes absent: ${opened.manifest.plugins}`);
-      const offering = readFloorOffering(offeringBytes, opened.manifest.plugins);
-      if ("refusal" in offering) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: ${offering.refusal}: ${offering.reason}`);
-      floorCids.push(...floorBlobCids(floorCid, opened.manifest, offering.offering));
-    }
+    let offeringBytes: Uint8Array | null;
+    try { offeringBytes = await input.plugins.readBytes(opened.manifest.plugins); }
+    catch (error) { return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: plugins offering: ${String(error)}`); }
+    if (!offeringBytes) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: plugins offering bytes absent: ${opened.manifest.plugins}`);
+    const offering = readFloorOffering(offeringBytes, opened.manifest.plugins);
+    if ("refusal" in offering) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: ${offering.refusal}: ${offering.reason}`);
+    floorCids.push(...floorBlobCids(floorCid, opened.manifest, offering.offering));
   }
 
   const coreHash = input.plugins.coreHash;

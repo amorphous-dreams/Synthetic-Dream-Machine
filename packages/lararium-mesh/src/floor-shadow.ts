@@ -7,13 +7,11 @@
  * the parser's bytes ride the offering. It only reads: a mismatch names each field that moved, absent or unreadable bytes read
  * `unread` by name, and nothing throws. The tally counts boots per floor (keyed by the manifest CID each boot read) so the
  * operator reads the flip condition for the floor the house stands on ("clean across N boots", or the first mismatch named),
- * with every older floor's count set aside, before mounts move to reading the floor. The founding record's own floor may
- * predate the floor format (`readFoundingFloorManifest`, KEEP): it then reads `predates`, names no offering to compare, and
- * the tally and the status line say so plainly.
+ * with every older floor's count set aside, before mounts move to reading the floor.
  */
 import type { LarBlobEntry } from "./base-doc.js";
 import { sha256HexBytesSync } from "./crypto.js";
-import { FLOOR_PREDATES_LINE, readFloorManifest, readFoundingFloorManifest } from "./floor-manifest.js";
+import { readFloorManifest } from "./floor-manifest.js";
 import { readFloorOffering, verifyFloorOfferingSet } from "./floor-offering.js";
 import { foundingRecordDigests } from "./genesis-compare.js";
 import { computeEngineCid } from "./genesis-doc.js";
@@ -28,8 +26,7 @@ export interface FloorShadowMove { readonly field: FloorShadowField; readonly fl
 export type FloorShadowReading =
   | { readonly verdict: "clean"; readonly manifest: string }
   | { readonly verdict: "mismatch"; readonly manifest: string; readonly moved: readonly FloorShadowMove[] }
-  | { readonly verdict: "unread"; readonly manifest: string | null; readonly why: string }
-  | { readonly verdict: "predates"; readonly manifest: string };
+  | { readonly verdict: "unread"; readonly manifest: string | null; readonly why: string };
 
 /** Read the floor `manifestCid` names beside the founding record. Never throws. */
 export async function readFloorShadow(args: {
@@ -37,8 +34,6 @@ export async function readFloorShadow(args: {
   readonly readBytes:   ((cid: string) => Uint8Array | null | Promise<Uint8Array | null>) | null;
   readonly islandBlobs: Readonly<Record<string, LarBlobEntry>> | undefined;
   readonly coreSha256:  string | null;
-  /** The floor the founding record's witness names: that floor alone may read in the prior shape. */
-  readonly foundingCid?: string | null;
 }): Promise<FloorShadowReading> {
   const manifest = args.manifestCid;
   if (!manifest) return { verdict: "unread", manifest: null, why: "no floor named: no pin stands and the founding record names no genesis floor" };
@@ -50,9 +45,8 @@ export async function readFloorShadow(args: {
     const bytes = await args.readBytes(manifest);
     if (!bytes) return { verdict: "unread", manifest, why: "floor manifest bytes absent from this vessel's content store" };
     if (!HEX64.test(manifest) || sha256HexBytesSync(bytes) !== manifest) return { verdict: "unread", manifest, why: "floor manifest bytes differ from their CID" };
-    const opened = args.foundingCid === manifest ? readFoundingFloorManifest(bytes) : readFloorManifest(bytes);
+    const opened = readFloorManifest(bytes);
     if ("refusal" in opened) return { verdict: "unread", manifest, why: `${opened.refusal}: ${opened.reason}` };
-    if ("prior" in opened) return { verdict: "predates", manifest };
     const offeringCid = opened.manifest.plugins;
     const offeringBytes = await args.readBytes(offeringCid);
     if (!offeringBytes) return { verdict: "unread", manifest, why: `the floor's plugins offering bytes absent from this vessel's content store: ${offeringCid}` };
@@ -80,8 +74,6 @@ export interface FloorShadowCount {
   readonly mismatchBoots: number;
   readonly unreadBoots:   number;
   readonly firstMismatch: { readonly manifest: string; readonly moved: readonly FloorShadowMove[] } | null;
-  /** True where this floor read as a founding floor that predates the floor format; its boots count unread. */
-  readonly predates?: true;
 }
 
 /** The count the operator reads before the flip, keyed by floor: `current` counts the floor the latest boot read; `prior`
@@ -116,8 +108,7 @@ function readCount(v: Record<string, unknown>): Omit<FloorShadowCount, "floor"> 
     }
     firstMismatch = { manifest: fm["manifest"], moved };
   }
-  if (v["predates"] !== undefined && v["predates"] !== true) return null;
-  return { cleanBoots: v["cleanBoots"], mismatchBoots: v["mismatchBoots"], unreadBoots: v["unreadBoots"], firstMismatch, ...(v["predates"] === true ? { predates: true as const } : {}) };
+  return { cleanBoots: v["cleanBoots"], mismatchBoots: v["mismatchBoots"], unreadBoots: v["unreadBoots"], firstMismatch };
 }
 
 function readFloorCount(value: unknown): FloorShadowCount | null {
@@ -166,12 +157,9 @@ export function foldFloorShadowTally(prior: FloorShadowTally | null, reading: Fl
     if (kept.current) aside.push(kept.current);
     t = resumed ? { ...resumed, floor } : { floor, cleanBoots: 0, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null };
   }
-  // `predates` names the latest reading alone: any other verdict on the same floor drops it.
-  const { predates: _was, ...counts } = t;
-  const next = reading.verdict === "clean" ? { ...counts, cleanBoots: t.cleanBoots + 1 }
-    : reading.verdict === "unread" ? { ...counts, unreadBoots: t.unreadBoots + 1 }
-    : reading.verdict === "predates" ? { ...counts, unreadBoots: t.unreadBoots + 1, predates: true as const }
-    : { ...counts, mismatchBoots: t.mismatchBoots + 1, firstMismatch: t.firstMismatch ?? { manifest: reading.manifest, moved: reading.moved } };
+  const next = reading.verdict === "clean" ? { ...t, cleanBoots: t.cleanBoots + 1 }
+    : reading.verdict === "unread" ? { ...t, unreadBoots: t.unreadBoots + 1 }
+    : { ...t, mismatchBoots: t.mismatchBoots + 1, firstMismatch: t.firstMismatch ?? { manifest: reading.manifest, moved: reading.moved } };
   return { current: next, prior: aside };
 }
 
@@ -186,7 +174,6 @@ export function floorShadowLine(tally: FloorShadowTally | null): string {
   if (!c) return `floor shadow: no boot read on the current floor yet${aside}`;
   const on = `floor shadow on floor ${c.floor ? short(c.floor) : "(none named)"}`;
   const unread = `${c.unreadBoots} unread`;
-  if (c.predates) return `${on}: ${FLOOR_PREDATES_LINE} (${c.unreadBoots} boot${c.unreadBoots === 1 ? "" : "s"})${aside}`;
   if (c.firstMismatch) {
     const fields = c.firstMismatch.moved.map((m) => `${m.field} floor ${short(m.floor)} vs island ${m.field === "engine" ? short(m.island) : m.island}`).join(", ");
     return `${on}: first mismatch ${fields}; ${c.mismatchBoots} mismatched, ${c.cleanBoots} clean, ${unread}${aside}`;
@@ -197,7 +184,6 @@ export function floorShadowLine(tally: FloorShadowTally | null): string {
 /** One reading's own line, for the boot log. */
 export function floorShadowReadingLine(reading: FloorShadowReading): string {
   if (reading.verdict === "clean") return `[floor shadow] floor ${short(reading.manifest)} agrees with the founding record`;
-  if (reading.verdict === "predates") return `[floor shadow] floor ${short(reading.manifest)}: ${FLOOR_PREDATES_LINE}`;
   if (reading.verdict === "unread") return `[floor shadow] unread${reading.manifest ? ` floor ${short(reading.manifest)}` : ""}: ${reading.why}`;
   return `[floor shadow] MISMATCH on floor ${short(reading.manifest)}: ${reading.moved.map((m) => `${m.field} floor ${m.floor} vs island ${m.island}`).join("; ")} — serving stays on the founding record`;
 }
