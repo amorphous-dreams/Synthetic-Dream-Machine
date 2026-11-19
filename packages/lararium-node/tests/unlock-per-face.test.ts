@@ -149,6 +149,14 @@ describe("the unlock answers honestly, and a failed switch wears the face it lef
     expect(v.composed.length).toBe(composedBefore + 2);                        // the refused switch, then h0 again
   });
 
+  test("RED: an `--all --face N` switch whose composition refuses answers the face it wears again, never N", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, FIXTURE_PASSPHRASE], 1);
+    expect(await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true, face: 0 })).toMatchObject({ reading: "opens", held: true, wears: 0 });
+    const sw = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true, face: 1 });
+    expect(sw).toMatchObject({ op: "unlock", held: true, switchRefused: "h1 would not stand", face: 1, wornAgain: 0, wears: 0 });
+    expect(mountedFaceOrdinal()).toBe(0);
+  });
+
   test("RED: `--all --face N` (the shim's re-wear) wears N where the route opened it, else face 0 — never a face that stayed shut", async () => {
     const v = await vessel([FIXTURE_PASSPHRASE, "the-second-face-route", FIXTURE_PASSPHRASE]);
     const a = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true, face: 2 });

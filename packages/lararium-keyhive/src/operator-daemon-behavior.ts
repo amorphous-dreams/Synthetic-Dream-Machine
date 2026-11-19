@@ -166,7 +166,7 @@ import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, nexusO
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace, answerDocStoreAsks, announceSlotDoc, announceLiftedDoc, floorSlotTitle, floorRegistryOf, FloorUnavailable, type FloorRegistry } from "@lararium/mesh";
-import { makeSlotDocResolver, litFaceSlotDocs, type SlotDocResolver, type LitFaceSlotDocs } from "./slot-doc-resolver.js";
+import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { slotAnnouncer } from "./slot-announcer.js";
 import { makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
 import { type FaceJoinSummons } from "./face-join.js";
@@ -299,7 +299,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const litInputs = new Map<string, string>();
   /** THE LIT SET: every sibling face lit beside the mounted one, by bare atom key (each under its own hive, `providers`). */
   const litSiblings = new Map<string, JoinedFaceAuth>();
-  let siblingSlots: LitFaceSlotDocs | null = null;
   const lightJoinedFace = async (face: JoinedFaceAuth, ctx: IslandContext): Promise<void> => {
     const key = bareKey(face.atom.key);
     if (providers.has(key)) {
@@ -414,8 +413,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   let heedIntentDoor: (() => void) | null = null;
   // V3: every slot document the resolver answers reaches the vessel's bag map before any write lands in it
   // (`announceSlotDoc`): the face's derived working address and a draft binding stand under no catalog row.
-  // A sibling's resolver names its documents as the SIBLING's (`slot-announcer`): the vessel maps them, and the host's
-  // working layer follows the worn face's own slot alone.
   // A FACE'S OWN LAYER OF A WIKI (its `personal` layer, its `draft` binding) registers on the mounted face's hive before the
   // vessel hears its name (`registerLateFaceBags`), so the vessel seals it under that face from its first byte. The floor
   // wears no face: its layers file as the vessel's own (`announceFloor`) and register nothing here.
@@ -426,20 +423,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       await registerLateFaceBags(daemonAuth.atom.key, [bagId], announceCtx);
     },
   });
-  const siblingNotices = slotAnnouncer(docStoreDoor, "sibling");
   const announced = wornSlots.announced;
   const announcing = wornSlots.announcing;
-  /** The lit set's slot resolvers: each sibling's daemon device slots under its own group, hive and door. */
-  const siblingSlotsOf = (ctx: IslandContext): LitFaceSlotDocs => {
-    if (siblingSlots) return siblingSlots;
-    siblingSlots = litFaceSlotDocs({
-      repo: ctx.repo, deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx),
-      ...(docStoreDoor ? { announceDevice: siblingNotices.device } : {}),
-      daemonStore: ctx.composite, catalog: null,
-    });
-    return siblingSlots;
-  };
-  /** The face-named wave's target over the lit set (`lit-face-target`). */
+  /** The face-named wave's target over the lit set (`lit-face-target`): a sibling's daemon slot opens at its own wear alone. */
   const litFaceTargetOf = (ctx: IslandContext) => {
     const asLit = (f: { readonly handleIndex?: number; readonly personaGroupId?: string; readonly faceRelation?: string }): LitFace | null =>
       typeof f.handleIndex === "number" && f.personaGroupId ? { handleIndex: f.handleIndex, group: f.personaGroupId, relation: f.faceRelation ?? null } : null;
@@ -448,21 +434,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       siblings: () => [...litSiblings.values()].map(asLit).filter((f): f is LitFace => f !== null),
       control: () => controlOf(ctx),
       wornStore: (bag) => ctx.composite.hasBag(bag) ? ctx.composite.storeForBag(bag) : null,
-      siblingSlot: async (face, kind) => {
-        const entry = [...litSiblings.values()].find((e) => e.personaGroupId === face.group);
-        const provider = entry ? providers.get(bareKey(entry.atom.key))?.provider : undefined;
-        if (!entry || !provider) return null;
-        const resolver = siblingSlotsOf(ctx).of({
-          group: entry.personaGroupId, atomKey: entry.atom.key,
-          keyhive: provider as never,
-          workbenchRealm: faceWorkbench(ctx, () => provider, entry.personaGroupId),
-          workbenchWrites: faceWrites(ctx, () => provider),
-          workbenchFounds: faceFounds(ctx, () => provider, entry.personaGroupId),
-          faceDoor: makeFaceBagDoor({ face: provider as never, groupId: entry.personaGroupId }),
-        });
-        const out = await siblingNotices.announcing(resolver).slotDoc(DAEMON_WIKI_SLUG, kind);
-        return out?.url ?? null;
-      },
       storeOf: async (url, bag) => new AutomergeDocStore(await findOrThrow(ctx.repo, url, `${bag} (a lit face's own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never, bag, wearOf(ctx.repo)),
     });
   };
@@ -1739,9 +1710,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           if (face) {
             providers.delete(key);
             litInputs.delete(key);
-            const left = litSiblings.get(key);
             litSiblings.delete(key);
-            if (left) siblingSlots?.drop(left.personaGroupId);
             await Promise.allSettled([...(inFlight.get(face.provider) ?? [])]);
             await face.provider.dispose();
           }

@@ -6,14 +6,12 @@
  *   L1 — FIRST: each face's working slot answers through its OWN workbench port (cabal-realm#/the-workbench): the worn face,
  *        seated in the wiki's realm, reads the realm's workbench; a sibling its realm never seated reads none. The daemon wiki's
  *        device slots stand under each face's own group in the control document
- *   L2 — the target for a named sibling resolves that sibling's own device slot (minted under its group) and names it owner
+ *   L2 — a named sibling's daemon slot opens at its own wear alone: under another face's wear the target resolves nothing and
+ *        names no document for it (the island seals under the worn face's session alone)
  *   L3 — the worn face (or no face named) resolves the composite's own layer, owner the worn face
  *   L4 — a face outside the lit set resolves nothing; a canon bag resolves by the face's relation alone, never another's
- *   L5 — a sibling's daemon slot names itself to the vessel as the SIBLING's (`slot-announcer`), so the host's working layer
- *        never follows it; a sibling's daemon CANON resolves off the control document and posts no slot notice at all, so the
- *        face-canon wave never reaches the host-working follow. CONTROL: the worn face's own resolver names its slot unmarked
- *
- * Written beside the cure (written, unrun here; CI runs it).
+ *   L5 — a sibling's daemon CANON resolves off the control document and posts no slot notice, and a wave naming the sibling's
+ *        daemon slot posts none either. CONTROL: the worn face's own resolver names its slot unmarked
  */
 import { describe, expect, test } from "vitest";
 import { makeIslandRepo } from "@lararium/mesh";
@@ -92,7 +90,7 @@ describe("every lit face resolves its own slots", () => {
   });
 
   function targetRig() {
-    const { repo, control, slots } = stand();
+    const { repo, control } = stand();
     const worn: LitFace = { handleIndex: 0, group: "group-h0", relation: R0 };
     const sib: LitFace = { handleIndex: 1, group: "group-h1", relation: R1 };
     const wornHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -100,20 +98,22 @@ describe("every lit face resolves its own slots", () => {
     const target = makeLitFaceTarget({
       worn: () => worn, siblings: () => [sib], control: () => control,
       wornStore: (bag) => (bag === WORKING ? wornStore : null),
-      siblingSlot: async (face, kind) => (await slots.of({ group: face.group, atomKey: "a2".repeat(32), faceDoor: { mint: async () => {} } as never }).slotDoc("daemon", kind))?.url ?? null,
       storeOf: async (url, bag) => new AutomergeDocStore(await repo.find<LarDoc>(url as never), bag),
     });
     return { repo, control, worn, sib, wornHandle, wornStore, target };
   }
 
-  test("L2 — a named sibling resolves its own device slot, minted under its group, and reads as its owner", async () => {
+  // MEASURED (a kept rite-walk hearth, re-founded, three faces): a sibling slot minted under another face's wear refused its seal
+  // `session-face-foreign`, left unsealed at the next composition, and its control row named a document no store held, so the
+  // sibling's own wear refused `WorkingLayerAttachRefusal` (`document-unavailable`).
+  test("L2 — a named sibling's daemon slot opens at its own wear alone: under another face's wear it resolves nothing and names no document", async () => {
     const r = targetRig();
     await r.control.put(mutableLarRecord(`${CONTROL_HOME_ID}/daemon-slot/working/group-h0`, { text: r.wornHandle.url }, "test"), { kind: "lares-verb", requestId: "t" });
-    const out = await r.target(1, WORKING);
-    expect(out).not.toBeNull();
-    expect(out!.owner).toBe(1);
-    expect(out!.worn).toBe(0);
-    expect((out!.store as unknown as { documentId: string }).documentId).not.toBe(r.wornHandle.documentId);
+    for (const kind of ["working", "personal", "draft"] as const) {
+      expect(await r.target(1, wikiSlotUri("daemon", kind)), `the sibling's ${kind} slot resolves nothing under h0's wear`).toBeNull();
+      expect(await r.control.get(`${CONTROL_HOME_ID}/daemon-slot/${kind}/group-h1`), `no control row names a ${kind} document for the sibling`).toBeNull();
+    }
+    expect((await r.target(0, WORKING))!.store, "CONTROL: the worn face's own slot resolves").toBe(r.wornStore);
   });
 
   test("L3 — the worn face, named or not, resolves the composite's layer and reads as its owner", async () => {
@@ -137,32 +137,26 @@ describe("every lit face resolves its own slots", () => {
     expect(await r.target(1, daemonFaceCanonBag(R0))).toBeNull();
   });
 
-  test("L5 — a sibling's daemon slot names itself as the sibling's; a sibling's canon posts no slot notice; CONTROL: the worn face's names itself unmarked", async () => {
+  test("L5 — a sibling's canon and a wave naming a sibling's daemon slot post no slot notice; CONTROL: the worn face's names itself unmarked", async () => {
     const { repo, control } = stand();
     const notices: Array<{ bagId: string; documentId: string; sibling?: true }> = [];
     const door = { post: (msg: unknown) => { notices.push(msg as never); } };
-    const siblingNotices = slotAnnouncer(door, "sibling");
     const wornNotices = slotAnnouncer(door, "worn");
     const faceDoor = { mint: async () => {} } as never;
-    const sibSlots = litFaceSlotDocs({ repo, daemonStore: control, control, catalog: null, deviceScoped: (slug) => slug === "daemon", announceDevice: siblingNotices.device });
     const worn: LitFace = { handleIndex: 0, group: "group-h0", relation: R0 };
     const sib: LitFace = { handleIndex: 1, group: "group-h1", relation: R1 };
     const target = makeLitFaceTarget({
       worn: () => worn, siblings: () => [sib], control: () => control,
       wornStore: () => null,
-      siblingSlot: async (face, kind) => (await siblingNotices.announcing(sibSlots.of({ group: face.group, atomKey: "a1".repeat(32), faceDoor })).slotDoc("daemon", kind))?.url ?? null,
       storeOf: async (url, bag) => new AutomergeDocStore(await repo.find<LarDoc>(url as never), bag),
     });
     // The face-canon wave: the sibling's canon reads its document off the control document, and names no slot.
     const canon = repo.create<LarDoc>(emptyLarDoc());
     await control.put(mutableLarRecord(`${CONTROL_HOME_ID}/daemon-canon/${R1}`, { text: canon.url }, "test"), { kind: "lares-verb", requestId: "t" });
     expect((await target(1, daemonFaceCanonBag(R1)))!.owner, "the setup took: the sibling's canon resolves").toBe(1);
-    expect(notices, "a sibling's canon posts no slot notice").toEqual([]);
-    // The face-named working wave: every notice names the sibling's slot, marked.
-    const out = await target(1, WORKING);
-    expect(out!.owner).toBe(1);
-    expect(notices.length, "the sibling's slot named itself to the vessel").toBeGreaterThan(0);
-    for (const n of notices) expect(n, "each notice of a sibling's slot rides marked").toMatchObject({ bagId: WORKING, sibling: true });
+    // The face-named working wave opens nothing of the sibling's.
+    expect(await target(1, WORKING)).toBeNull();
+    expect(notices, "neither wave posts a slot notice").toEqual([]);
     // CONTROL: the worn face's own resolver names its slot unmarked.
     notices.length = 0;
     const own = await wornNotices.announcing(litFaceSlotDocs({ repo, daemonStore: control, control, catalog: null, deviceScoped: (slug) => slug === "daemon", announceDevice: wornNotices.device })
