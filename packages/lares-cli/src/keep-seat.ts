@@ -85,9 +85,6 @@ function readResting(): RestingSeat | null {
   let text: string;
   try { text = fromPulamaLine(readFileSync(keepSeatPath(), "utf8")); } catch (e) { if (e instanceof KeepSeatRefused) throw e; return null; }
   const read = decodeKeepSeat(text);
-  // A SEAT FROM BEFORE THE REMOTE STRETCH guards its secret at custody's cost alone and signs nothing: it reads as none, so the
-  // next proved unlock seats a fresh pair over it.
-  if (read.reading === "unstretched") return null;
   if (read.reading !== "readable") throw new KeepSeatRefused("keep-seat-unreadable", `${keepSeatPath()} reads no keep pair (${read.why}); the bundle a keep cut before carries the seat whole: restore it from there`);
   let lastRoster: LastRosterSeal | null = null;
   let signingSeed: Uint8Array | null = null;
