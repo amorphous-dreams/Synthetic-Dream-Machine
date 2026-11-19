@@ -295,8 +295,12 @@ function LiftVessel([string[]]$output) {
   $reason = 'the standing requires a re-stand'
   try { $reason = (ConvertFrom-Json -InputObject ($output -join "`n")).data.standing.reason } catch {}
   [Console]::Error.WriteLine("lares-container: $reason; restarting the vessel")
-  & docker compose @Base restart lares
-  if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel restart failed'); exit $LASTEXITCODE }
+  # A lift over a moved image recreates the vessel, so the down path runs first; on the image that stands, a restart.
+  if (VesselMoved) { DownIfMoved }
+  else {
+    & docker compose @Base restart lares
+    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel restart failed'); exit $LASTEXITCODE }
+  }
   # THE RESTART KEEPS THE WORKSPACES: the restart's `up` carries every LARES_WORKSPACES bind, as the operator's `up` did.
   $script:WorkspaceNames = @()
   $wsBinds = @()
@@ -367,14 +371,17 @@ function Indent([string]$text) {
 # THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
 # still stands (it keeps only a house that moved); a keep that refuses never blocks the down. LARES_HOST_CLI names the
 # host's lares door, else the checkout's own bin under the host's node.
+$script:KeepSaid = ''
 function KeepBeforeDown {
+  $script:KeepSaid = 'no keep workspace named'
   if ([string]::IsNullOrEmpty((ValueOf 'LARES_KEEP_WORKSPACE') + (ValueOf 'LARES_WORKSPACES'))) { return }
   $hostCli = ValueOf 'LARES_HOST_CLI'
   if ($hostCli) { $cmd = $hostCli; $pre = @() }
   elseif (Get-Command node -ErrorAction SilentlyContinue) { $cmd = 'node'; $pre = @((Join-Path $Root 'packages/lares-cli/bin/lares.mjs')) }
-  else { [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
+  else { $script:KeepSaid = 'no host node answered, so nothing kept'; [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
   & $cmd @pre rite keep --if-due --no-json
-  if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand') }
+  if ($LASTEXITCODE -ne 0) { $script:KeepSaid = 'the keep did not complete'; [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand') }
+  else { $script:KeepSaid = 'kept (rite keep --if-due)' }
 }
 function CensusBeforeStop {
   $psi = [System.Diagnostics.ProcessStartInfo]::new('docker')
@@ -494,6 +501,44 @@ function WarnPulamaSkew {
   if ($LASTEXITCODE -ne 0) { return }
   if (-not $ran -or -not $stands -or $ran -eq $stands) { return }
   [Console]::Error.WriteLine("lares-container: the pūlama runs image $ran, and $image stands at $stands; it keeps the older code until ``tools/lares-container.ps1 down`` and ``tools/lares-container.ps1 pulama restand`` (then light it by hand, ``up``, and ``pulama admit``)")
+}
+
+# THE DOWN PATH (`down`, and every act that must stop the vessel first): the keep while the vessel stands, the census,
+# the refusal of a silent stop; then the vessel alone stops where a pūlama runs, or the whole project downs.
+function DownVessel([string[]]$opts) {
+  # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
+  $pulama = PulamaState
+  if ($pulama -eq 'unknown') { Die 'down refuses: docker compose ps failed for the pūlama, so whether the pūlama stands reads unknown; the vessel and the pūlama stand' }
+  # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
+  # acceptance guards the stop.
+  $ids = & docker compose @Base ps -q --status running lares
+  if ($LASTEXITCODE -ne 0) {
+    [Console]::Error.WriteLine('lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown')
+    [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
+    OfferAcceptLoss
+  } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { KeepBeforeDown; CensusBeforeStop }
+  else { $script:KeepSaid = 'no vessel stood, so no keep ran' }
+  if ($pulama -eq 'running') {
+    # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
+    Compose (@('stop') + $opts + @('lares')); Compose @('rm', '-f', 'lares')
+  } else { Compose (@('down', '--remove-orphans') + $opts) }
+}
+
+# A MOVED IMAGE NEVER RECREATES SILENTLY (road rank 4l, RD4). Compose recreates a vessel whose image moved, and a
+# recreate drops whatever the vessel holds in memory. So `up`, and a lift, over a running vessel whose image differs from
+# the image the tag names runs the down path first. A read that fails names no move (the act goes on as it did).
+$script:MovedRan = ''; $script:MovedStands = ''
+function VesselMoved {
+  $id = ((& docker compose @Base ps -q --status running lares 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $id) { return $false }
+  $script:MovedRan = ((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()
+  $script:MovedStands = ((& docker image inspect --format '{{.Id}}' $ImageRef 2>$null) -join '').Trim()
+  return ($script:MovedRan -and $script:MovedStands -and $script:MovedRan -ne $script:MovedStands)
+}
+function DownIfMoved {
+  if (-not (VesselMoved)) { return }
+  [Console]::Error.WriteLine("lares-container: the vessel runs image $($script:MovedRan), and $ImageRef stands at $($script:MovedStands); the down path runs first (keep, census), never a silent recreate")
+  DownVessel @()
 }
 
 # THE IMAGE BUILDS FROM A COMMIT (road rank 4l, RD2), never from the live tree. `git archive <rev>`, and each submodule's
@@ -651,6 +696,7 @@ switch ($verb) {
       $i += 2
     }
     foreach ($pair in ((ValueOf 'LARES_WORKSPACES') -split ';')) { if ($pair) { $binds += WorkspaceBind $pair } }
+    DownIfMoved
     StandPulama
     WarnPulamaSkew
     if ($binds.Count -gt 0) {
@@ -667,23 +713,7 @@ switch ($verb) {
     WarnImageRevision
     UnlockOrName
   }
-  'down'  {
-    # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
-    $pulama = PulamaState
-    if ($pulama -eq 'unknown') { Die 'down refuses: docker compose ps failed for the pūlama, so whether the pūlama stands reads unknown; the vessel and the pūlama stand' }
-    # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
-    # acceptance guards the stop.
-    $ids = & docker compose @Base ps -q --status running lares
-    if ($LASTEXITCODE -ne 0) {
-      [Console]::Error.WriteLine('lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown')
-      [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
-      OfferAcceptLoss
-    } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { KeepBeforeDown; CensusBeforeStop }
-    if ($pulama -eq 'running') {
-      # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
-      Compose (@('stop') + $rest + @('lares')); Compose @('rm', '-f', 'lares')
-    } else { Compose (@('down', '--remove-orphans') + $rest) }
-  }
+  'down'  { DownVessel $rest }
   'pulama' {
     if (-not $PulamaMode) { Die "pulama needs LARES_PULAMA=1 in the environment or $EnvFile" }
     $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }

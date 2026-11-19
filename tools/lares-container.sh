@@ -123,13 +123,16 @@ done
 # THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
 # still stands (it keeps only a house that moved); a keep that refuses never blocks the down. LARES_HOST_CLI names the
 # host's lares door, else the checkout's own bin under the host's node.
+KEEP_SAID=""
 keep_before_down() {
+  KEEP_SAID="no keep workspace named"
   [ -n "$(value_of LARES_KEEP_WORKSPACE)$(value_of LARES_WORKSPACES)" ] || return 0
   host_cli=$(value_of LARES_HOST_CLI)
   if [ -n "$host_cli" ]; then set -- "$host_cli"
   elif command -v node >/dev/null 2>&1; then set -- node "$ROOT/packages/lares-cli/bin/lares.mjs"
-  else printf '%s\n' 'lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand' >&2; return 0; fi
-  "$@" rite keep --if-due --no-json || printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2
+  else KEEP_SAID="no host node answered, so nothing kept"; printf '%s\n' 'lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand' >&2; return 0; fi
+  if "$@" rite keep --if-due --no-json; then KEEP_SAID="kept (rite keep --if-due)"
+  else KEEP_SAID="the keep did not complete"; printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2; fi
 }
 
 # Make every bound class as the operator, so the engine never makes one owned by root.
@@ -261,7 +264,9 @@ warn_image_revision() {
 lift_vessel() {
   reason=$(printf '%s\n' "$observe_output" | sed -n 's/.*"standing"[[:space:]]*:[[:space:]]*{[^}]*"reason"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
   printf 'lares-container: %s; restarting the vessel\n' "${reason:-the standing requires a re-stand}" >&2
-  if ! compose restart lares; then printf '%s\n' 'lares-container: the vessel restart failed' >&2; return 1; fi
+  # A lift over a moved image recreates the vessel, so the down path runs first; on the image that stands, a restart.
+  if vessel_moved; then down_if_moved
+  elif ! compose restart lares; then printf '%s\n' 'lares-container: the vessel restart failed' >&2; return 1; fi
   if ! up_with_workspaces; then printf '%s\n' 'lares-container: the vessel did not answer healthy after its restart' >&2; return 1; fi
   warn_image_revision
   unlock_or_name
@@ -533,6 +538,48 @@ warn_pulama_skew() {
   printf 'lares-container: the pūlama runs image %s, and %s stands at %s; it keeps the older code until `tools/lares-container.sh down` and `tools/lares-container.sh pulama restand` (then light it by hand, `up`, and `pulama admit`)\n' "$skew_ran" "$skew_image" "$skew_stands" >&2
 }
 
+# THE DOWN PATH (`down`, and every act that must stop the vessel first): the keep while the vessel stands, the census,
+# the refusal of a silent stop; then the vessel alone stops where a pūlama runs, or the whole project downs.
+down_vessel() { # $@ = compose-down options
+  # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
+  d_pulama=$(pulama_state)
+  [ "$d_pulama" != unknown ] || die "down refuses: docker compose ps failed for the pūlama, so whether the pūlama stands reads unknown; the vessel and the pūlama stand"
+  # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
+  # acceptance guards the stop.
+  if ! down_id=$(compose ps -q --status running lares); then
+    printf '%s\n' 'lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown' >&2
+    printf '%s\n' 'lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.' >&2
+    offer_accept_loss
+  elif [ -n "$down_id" ]; then
+    keep_before_down
+    census_before_stop
+  else
+    KEEP_SAID="no vessel stood, so no keep ran"
+  fi
+  if [ "$d_pulama" = running ]; then
+    # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
+    compose stop "$@" lares && compose rm -f lares
+  else
+    compose down --remove-orphans "$@"
+  fi
+}
+
+# A MOVED IMAGE NEVER RECREATES SILENTLY (road rank 4l, RD4). Compose recreates a vessel whose image moved, and a
+# recreate drops whatever the vessel holds in memory. So `up`, and a lift, over a running vessel whose image differs from
+# the image the tag names runs the down path first. A read that fails names no move (the act goes on as it did).
+vessel_moved() {
+  m_id=$(compose ps -q --status running lares 2>/dev/null) || return 1
+  [ -n "$m_id" ] || return 1
+  m_ran=$(docker inspect --format '{{.Image}}' "$m_id" 2>/dev/null | tr -d '\r') || m_ran=""
+  m_stands=$(docker image inspect --format '{{.Id}}' "$IMAGE_REF" 2>/dev/null | tr -d '\r') || m_stands=""
+  [ -n "$m_ran" ] && [ -n "$m_stands" ] && [ "$m_ran" != "$m_stands" ]
+}
+down_if_moved() {
+  vessel_moved || return 0
+  printf 'lares-container: the vessel runs image %s, and %s stands at %s; the down path runs first (keep, census), never a silent recreate\n' "$m_ran" "$IMAGE_REF" "$m_stands" >&2
+  down_vessel || die "the down path did not complete (above); the vessel stands on its older image"
+}
+
 # THE IMAGE BUILDS FROM A COMMIT (road rank 4l, RD2), never from the live tree. `git archive <rev>`, and each submodule's
 # own archive at the commit the revision pins, unpack in a scratch folder under the house's cache (outside the checkout
 # and outside every bind), and compose builds from there through the env file, an override naming that folder as the
@@ -687,6 +734,7 @@ case "$verb" in
       for pair in $configured; do IFS=$old_ifs; [ -z "$pair" ] || workspace_bind "$pair"; IFS=';'; done
       IFS=$old_ifs
     fi
+    down_if_moved
     stand_pulama
     warn_pulama_skew
     if [ -n "$files" ]; then
@@ -704,26 +752,7 @@ case "$verb" in
     if [ "$up_rc" -ne 0 ]; then printf '%s\n' 'lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again' >&2; exit "$up_rc"; fi
     warn_image_revision
     unlock_or_name ;;
-  down)
-    # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
-    pulama=$(pulama_state)
-    [ "$pulama" != unknown ] || die "down refuses: docker compose ps failed for the pūlama, so whether the pūlama stands reads unknown; the vessel and the pūlama stand"
-    # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
-    # acceptance guards the stop.
-    if ! down_id=$(compose ps -q --status running lares); then
-      printf '%s\n' 'lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown' >&2
-      printf '%s\n' 'lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.' >&2
-      offer_accept_loss
-    elif [ -n "$down_id" ]; then
-      keep_before_down
-      census_before_stop
-    fi
-    if [ "$pulama" = running ]; then
-      # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
-      compose stop "$@" lares && compose rm -f lares
-    else
-      compose down --remove-orphans "$@"
-    fi ;;
+  down) down_vessel "$@" ;;
   pulama)
     [ -n "$PULAMA_MODE" ] || die "pulama needs LARES_PULAMA=1 in the environment or $ENV_FILE"
     case "${1:-}" in

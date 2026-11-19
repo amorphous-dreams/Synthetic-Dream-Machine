@@ -673,6 +673,37 @@ for (const [name, shim] of shims) {
     assert.equal(stopped(r.calls), false, r.calls);
   });
 
+  // L5 (RD4): A MOVED IMAGE NEVER RECREATES SILENTLY. `up`, or a lift, over a vessel whose image differs from the one the
+  // tag names runs the down path first: the keep, the census, the refusal of a silent stop.
+  const MOVED = { ...STANDING, FAKE_VESSEL_IMAGE: "sha256:old", FAKE_IMAGE_ID: "sha256:new", FAKE_CUSTODY_OUTPUT: HELD };
+  test(`${name}: up-on-a-moved-image-runs-the-down-path: the census, then the stop, then the stand on the new image`, async () => {
+    const cli = await fakeHostCli(0);
+    const r = await run(shim, ["up"], { env: { ...MOVED, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: cli } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stderr, /the vessel runs image sha256:old, and lares-surface:local stands at sha256:new; the down path runs first \(keep, census\), never a silent recreate/);
+    const keep = r.calls.indexOf("HOSTCLI rite keep"), census = r.calls.indexOf("vessel census"), stop = r.calls.indexOf("down --remove-orphans"), up = r.calls.indexOf("up -d --wait lares");
+    assert.ok(keep >= 0 && census > keep && stop > census && up > stop, `order keep, census, stop, up:\n${r.calls}`);
+  });
+  test(`${name}: up-on-a-moved-image-refuses-a-silent-stop: a census naming items stops nothing and stands nothing`, async () => {
+    const r = await run(shim, ["up"], { env: { ...MOVED, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /accept-loss/);
+    assert.equal(stopped(r.calls), false, r.calls);
+    assert.doesNotMatch(r.calls, /up -d --wait lares/);
+  });
+  test(`${name}: a-lift-on-a-moved-image-runs-the-down-path: a restand verdict over a moved image takes the census, never a bare restart`, async () => {
+    const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], { env: { ...MOVED, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.calls, /restart lares/);
+    assert.ok(r.calls.indexOf("vessel census") >= 0 && r.calls.indexOf("vessel census") < r.calls.lastIndexOf("up -d --wait lares"), r.calls);
+  });
+  test(`${name}: CONTROL up over a vessel on the image that stands asks no census`, async () => {
+    const r = await run(shim, ["up"], { env: { ...STANDING, FAKE_VESSEL_IMAGE: "sha256:same", FAKE_IMAGE_ID: "sha256:same", FAKE_CUSTODY_OUTPUT: HELD } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.calls, /vessel census/);
+    assert.equal(stopped(r.calls), false);
+  });
+
   test(`${name}: up translates compose failure after its own error`, async () => {
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_UP_RC: "1" } });
     assert.notEqual(r.status, 0);
