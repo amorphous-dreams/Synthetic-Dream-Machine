@@ -8,6 +8,9 @@
  *   KT1  RED: a marked root whose custody a real passphrase founded refuses the cut `keep-seat-absent`, and no seat rests.
  *   KT2  CONTROL: a marked root with no custody tree seats under the test route, and the cut lands.
  *   KT3  RED: a seat the test route made gives way to the first real proved unlock: the keep then opens under the real route.
+ *   KT4  RED: a test-route seat resting on a root whose custody a real passphrase founded refuses the cut by name
+ *        (`keep-seat-test-route`): the world's test passphrase opens that keep.
+ *   KT5  RED: a restore that opened a bundle's seat under the test route, and adopts it, keeps the seat's test-route mark.
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -15,7 +18,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { FsCustodyIo, foundCustody, vesselCustodyHomes } from "@lararium/node";
 import type { Credential } from "@lararium/mesh";
-import { houseExport, type BundleDoors } from "../src/commands/house-bundle.js";
+import { houseExport, houseImport, type BundleDoors } from "../src/commands/house-bundle.js";
 import { keepSeatPath, openKeepSeat, readKeepSeat, seatKeepAtUnlock } from "../src/keep-seat.js";
 import { TEST_ROUTE_PASSPHRASE } from "../src/offline-custody.js";
 
@@ -68,5 +71,24 @@ describe("the test route seats a keep only over a test custody", () => {
     expect(await seatKeepAtUnlock({ reading: "opens", opener: [0] }, REAL, (l) => said.push(l))).toBe("seated");
     expect((await openKeepSeat(readKeepSeat()!, REAL)).reading).toBe("opens");
     expect((await openKeepSeat(readKeepSeat()!, [{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }])).reading).toBe("no-slot-opens");
+  });
+
+  test("KT4 RED: a test-route seat over a custody a real passphrase founded refuses the cut", async () => {
+    await houseExport(out, { acceptOmissions: true, doors: doors() });
+    const homes = vesselCustodyHomes();
+    await foundCustody({ io: new FsCustodyIo(homes), homes, slots: [{ t: 1, pins: [REAL[0] as { kind: "passphrase"; passphrase: string }] }] });
+    await expect(houseExport(`${out}-again`, { acceptOmissions: true, doors: doors() })).rejects.toThrow(/keep-seat-test-route/);
+  });
+
+  test("KT5 RED: adopting a bundle's seat opened under the test route keeps the test-route mark", async () => {
+    await houseExport(out, { acceptOmissions: true, doors: doors() });
+    const fresh = mkdtempSync(join(tmpdir(), "lar-keep-test-route-fresh-"));
+    try {
+      process.env["LAR_ROOT"] = fresh;
+      writeFileSync(join(fresh, ".lar-test-scratch"), "keep test route fresh\n");
+      await houseImport(out, { apply: true, doors: { ...doors(), faces: async () => [{ handleIndex: 0, petname: "otter-face", relation: "33333333-3333-4333-8333-333333333333", handle: null, seat: false, chair: null, kahua: [], mounted: true }], keepRoute: async () => [{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }] } as BundleDoors });
+      const { readFileSync } = await import("node:fs");
+      expect((JSON.parse(readFileSync(join(fresh, "config", "keep-seat.json"), "utf8")) as { route?: string }).route).toBe("test");
+    } finally { rmSync(fresh, { recursive: true, force: true }); }
   });
 });
