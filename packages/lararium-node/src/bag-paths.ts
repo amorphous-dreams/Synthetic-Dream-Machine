@@ -574,8 +574,8 @@ export function workspaceRootsOf(opts: {
   readonly workspacesHome: string;
   readonly hearth: string;
   readonly sourcedSlugs: readonly string[];
-}): { readonly roots: Readonly<Record<string, string>>; readonly refused: readonly string[]; readonly unbound: readonly string[] } {
-  const roots: Record<string, string> = {};
+}): { readonly roots: Readonly<Record<string, string>>; readonly names: Readonly<Record<string, string>>; readonly refused: readonly string[]; readonly unbound: readonly string[] } {
+  const roots: Record<string, string> = {}, names: Record<string, string> = {};
   const refused: string[] = [], unbound: string[] = [];
   const real = (p: string): string | null => { try { return realpathSync(p); } catch { return null; } };
   const hearth = real(opts.hearth) ?? resolvePath(opts.hearth);
@@ -588,6 +588,34 @@ export function workspaceRootsOf(opts: {
     if (dir === null) { unbound.push(`${row.slug}: workspace "${name}" stands unbound (no ${joinPath(opts.workspacesHome, name)})`); continue; }
     if (within(dir, hearth)) { refused.push(`${row.slug}: workspace "${name}" resolves inside the hearth (${dir})`); continue; }
     roots[row.slug] = dir;
+    names[row.slug] = name;
   }
-  return { roots, refused, unbound };
+  return { roots, names, refused, unbound };
+}
+
+/** One shared wiki's workbench folder the vessel watches as a pool: the slug, the folder, and the name the log gives it. */
+export interface WorkbenchFolder { readonly slug: string; readonly dir: string; readonly name: string }
+
+/**
+ * THE WORKBENCH FOLDERS a vessel watches as pools: each workspace a share row binds (`workspaceRootsOf`), then each default
+ * workbench standing under `<projections>/wikis/<slug>/` that no workspace takes. ONE FOLDER PER WORKBENCH, so a bound slug's
+ * default folder takes no second seat. The daemon wiki's working layer rests in the face's own pool (`faces/<pet name>/wiki`), so
+ * no `wikis/daemon` folder takes a seat; a SOURCED slug's workbench rests beside its canon source in the checkout, which the
+ * checkout's own history keeps and the vessel never commits into, so none of those takes one either. A slug whose folder stands
+ * nowhere on disk yet takes none: the next sitting's arm reads it.
+ */
+export function workbenchFolders(opts: {
+  readonly projectionRoot: string;
+  readonly workspaces: { readonly roots: Readonly<Record<string, string>>; readonly names: Readonly<Record<string, string>> };
+  readonly sourcedSlugs: readonly string[];
+}): WorkbenchFolder[] {
+  const out: WorkbenchFolder[] = Object.entries(opts.workspaces.roots).map(([slug, dir]) => ({ slug, dir, name: opts.workspaces.names[slug] ?? slug }));
+  const wikis = joinPath(opts.projectionRoot, "wikis");
+  let slugs: string[] = [];
+  try { slugs = readdirSync(wikis, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort(); } catch { /* no wikis plane yet */ }
+  for (const slug of slugs) {
+    if (slug === "daemon" || slug.startsWith(".") || Object.hasOwn(opts.workspaces.roots, slug) || opts.sourcedSlugs.includes(slug)) continue;
+    out.push({ slug, dir: joinPath(wikis, slug), name: slug });
+  }
+  return out;
 }
