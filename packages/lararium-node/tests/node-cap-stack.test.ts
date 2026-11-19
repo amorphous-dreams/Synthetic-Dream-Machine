@@ -64,7 +64,7 @@ describe("meshpalace cap — a writable meshpalace FLOW-map layer + residency pi
 
     const stack: CapModule[] = [
       { id: CAP.substrate, build: () => ({ composite }) },
-      meshPalaceCap({ repo, residency: residency as never }),
+      meshPalaceCap({ repo, vesselKey: "a".repeat(64), residency: residency as never }),
     ];
     const v = await composeVessel(stack);
 

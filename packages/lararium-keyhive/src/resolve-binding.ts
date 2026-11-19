@@ -28,6 +28,8 @@ import {
   tiddlerText,
   canonicalJson,
   slotBindingKey,
+  type CapMint,
+  pointMint,
 } from "@lararium/mesh";
 import type { CapabilityProvider } from "./capability-provider.js";
 import type { FaceBagDoor } from "./face-bag-door.js";
@@ -191,6 +193,8 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
     fingerprint: args.fingerprint,
     "minted-by": args.mintedByHex,
   }, "binding-mints"), originFor(`binding-mint-${args.fingerprint}`), { bag: DAEMON_BAG_ID });
+  // The mint row above answers for this document, so the mint census reads no cap mint for it.
+  pointMint(handle.url);
   await handle.whenReady?.();
   await args.repo.flush([handle.documentId]);
 
@@ -213,8 +217,16 @@ function originFor(fingerprint: string): ChangeOrigin {
   return { kind: "lares-verb", requestId: fingerprint.slice(0, 32) };
 }
 
-/** Mints without a matching binding remain visible for operator inspection. */
-export async function unboundMints(daemonStore: CompositeStore): Promise<Array<{ kind: BindingKind; fingerprint: string; url: string }>> {
+/**
+ * Mints without a matching binding remain visible for operator inspection: the binding mints the daemon document
+ * records, then each document a cap created while it built and named under no pointer (`capMints`, the mint census of
+ * the Repo that composition stood, `capMintsUnpointed`). A cap mint reads `cap-mint`, its cap's id in `fingerprint`.
+ * Where no census reaches (the daemon island answers over its own Repo), `capMints` stands empty.
+ */
+export async function unboundMints(
+  daemonStore: CompositeStore,
+  capMints: readonly CapMint[] = [],
+): Promise<Array<{ kind: BindingKind | "cap-mint"; fingerprint: string; url: string }>> {
   const entries = await daemonStore.entries();
   // A document reads bound where ANY row of its kind and fingerprint names it: the floor's, or any face's own.
   const bound = new Set<string>();
@@ -226,7 +238,7 @@ export async function unboundMints(daemonStore: CompositeStore): Promise<Array<{
       }
     }
   }
-  const unbound: Array<{ kind: BindingKind; fingerprint: string; url: string }> = [];
+  const unbound: Array<{ kind: BindingKind | "cap-mint"; fingerprint: string; url: string }> = [];
   for (const { title, bagId, record } of entries) {
     if (bagId !== DAEMON_BAG_ID || !title.includes("-minted/")) continue;
     const fields = record.tiddler as Record<string, unknown>;
@@ -237,5 +249,6 @@ export async function unboundMints(daemonStore: CompositeStore): Promise<Array<{
       if (!bound.has(`${kind}\n${fingerprint}\n${url}`)) unbound.push({ kind, fingerprint, url });
     }
   }
+  for (const { cap, url } of capMints) unbound.push({ kind: "cap-mint", fingerprint: cap, url });
   return unbound;
 }

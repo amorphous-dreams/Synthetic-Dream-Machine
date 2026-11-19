@@ -19,7 +19,7 @@ import { save as automergeSave } from "@automerge/automerge";
 import { pinnedDoc } from "./pinned-doc.js";
 import { sha256BytesSync, utf8Bytes } from "./crypto.js";
 import { resolveBootDoc } from "./boot-resolver.js";
-import { CROSSROADS_DOC_URI, nexusHandlesUri, nexusRegistryUri } from "./lar-uris.js";
+import { CROSSROADS_DOC_URI, bagUri, nexusHandlesUri, nexusRegistryUri } from "./lar-uris.js";
 import { emptyLarDoc, type LarDoc } from "./base-doc.js";
 
 /** Derive a deterministic automerge: URL from a seed string — the first 16 bytes of its sha256 as the doc-id. */
@@ -160,6 +160,17 @@ export function fleetEdgeBoardDocUrl(fleetRootDid: string): AutomergeUrl {
  */
 export function edgeLedgerDocUrl(vesselKey: string): AutomergeUrl {
   return deterministicDocUrl(`${EDGE_LEDGER_URI}/${vesselKey.trim().toLowerCase().replace(/^0x/, "")}`);
+}
+
+/**
+ * A vessel's OWN meshpalace FLOW-map URL — deterministic over the vessel's own key, so every compose of one vessel finds
+ * the one map a prior boot rested and two vessels never stand one map between them. A compose mints nothing it cannot
+ * find again: a map minted fresh at each compose, with no pointer read back, leaves one orphan per boot in the root store.
+ * The map carries PUBLIC reachability (each vessel's own dials and routing slots, and what its carriage merges in), so a
+ * derived address grants nothing: peers reach it through the signed read-face, never by its id.
+ */
+export function meshPalaceDocUrl(vesselKey: string): AutomergeUrl {
+  return deterministicDocUrl(`${bagUri("meshpalace")}#vessel/${vesselKey.trim().toLowerCase().replace(/^0x/, "")}`);
 }
 
 /**

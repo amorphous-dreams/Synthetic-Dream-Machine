@@ -17,7 +17,7 @@
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom } from "@lararium/mesh";
+import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -1493,6 +1493,9 @@ async function prepareNodeBootOn(
   // THE COMPOSITION'S ACTOR DOOR, seated on its Repo: every store over this Repo's documents (`wearOf(repo)`) writes a worn
   // face's change under the actor the wire identity derives, and the daemon island's own Repo asks for its actors here.
   seatRepoWear(repo, wire);
+  // THE MINT CENSUS, seated on the same Repo: each document a cap creates while it builds and names under no pointer reads
+  // as an unbound `cap-mint` once the composition stands (a compose mints nothing it cannot find again).
+  seatMintCensus(repo);
   // The SECOND half of the probe — a doc enters a peer's sync session exactly when sync messages start moving
   // for that (doc, peer) pair, and leaves it when they stop. `doc-metrics` carries both directions.
   if (wireProbe) {
@@ -4876,12 +4879,23 @@ export interface SessionSignLift {
   readonly seated: () => void;
 }
 
+/**
+ * The composition's own unbound line, beside the daemon island's (which reads binding mints over its own Repo): each
+ * document a cap created on this vessel's Repo while it built and named under no pointer (`capMintsUnpointed`).
+ */
+function sayCapMints(repo: Repo, say: (line: string) => void): void {
+  const loose = capMintsUnpointed(repo);
+  const caps = [...new Set(loose.map((m) => m.cap))];
+  say(`unbound documents a cap minted at compose: ${loose.length}${caps.length > 0 ? ` (${caps.join(", ")})` : ""}`);
+}
+
 async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Promise<NodeVesselResult> {
   // A Lararium is a hearth that is ALSO a first-class mesh-node: when self-announce params are supplied,
   // it composes the carriage (meshpalace + carriage) ALONGSIDE the wiki-full core — it carries + navigates
   // the FLOW-map for its own routing (carry-without-reserve; no second read-face, no conflict over the oracle doc).
   const carriageCaps = opts.meshSelf ? carriageStack({
     repo:        p.repo,
+    vesselKey:   p.vesselGateKey,
     self:        { ...opts.meshSelf, gatePubKey: p.vesselGateKey },
     cadenceKey: p.vesselGateKey,
     pullFlow:  p.carriagePull,
@@ -4949,6 +4963,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
 
   // NO EARLY READY: the composition returns standing on its working layer (red 3).
   await p.hostWorkingMounted();
+  sayCapMints(p.repo, (line) => console.log(`[lararium] ${line}`));
   return {
     islandCaps: p.islandCaps,
     activeWikiId: p.slotActiveWikiId(),
@@ -5054,6 +5069,7 @@ async function composeNodeHermOn(
     wireVerbs:   p.wireVerbs,
     afterDaemon: p.afterDaemon,
     repo:        p.repo,
+    vesselKey:   p.vesselGateKey,
     residency:   p.residency,
     httpServer:  opts.httpServer,
     ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}),
@@ -5104,6 +5120,7 @@ async function composeNodeHermOn(
   });
   // NO EARLY READY: the herm reports live only once its working layer stands (red 3); the porch stands down if it refuses.
   try { await p.hostWorkingMounted(); } catch (e) { await hermLift?.dispose(); porch.dispose(); await herm.vessel.dispose(); throw e; }
+  sayCapMints(p.repo, (line) => console.log(`[herm] ${line}`));
   p.emit("vessel-ready");
   p.emit("live");
 

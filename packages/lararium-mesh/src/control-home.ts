@@ -24,6 +24,7 @@ import { AutomergeDocStore } from "./automerge-doc-store.js";
 import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
 import { EFFECT_URI_PREFIX, OUTCOME_URI_PREFIX } from "./verb-tiddler.js";
 import { RETIRED_EVENT_ID, effectRecordUri } from "./effect-record.js";
+import { pointMint } from "./mint-census.js";
 
 /** The documents the place's daemon document names as the FLOOR's own (`FLOOR_REGISTRY_ROOT`): each stays on this vessel. */
 export function floorOnlyDocIds(daemonDoc: LarDoc | null | undefined): Set<string> {
@@ -270,6 +271,7 @@ export async function standControlHome(repo: Repo, daemonHandle: DocHandle<LarDo
     }
     const handle = repo.create<LarDoc>(emptyLarDoc());
     nameControlHome(daemonHandle, handle.url);
+    pointMint(handle.url);
     return handle;
   }
   // A holder whose custody stands open stands the vessel's key first (a direct holder's act opens the home's row, which
