@@ -54,7 +54,8 @@ import { openCustodyNodeKey, unlockCustody } from "./custody-session.js";
 import { carrierTable, sSlotsPath, type CarrierRow, type CustodyHome, type CustodyHomes, type FaceSelector } from "./vault-carriers.js";
 
 export type HolderUnlock =
-  | { readonly reading: "opens"; readonly slot: string }
+  /** `opener` names, by index into the credentials the unlock received, the ones the custody open proved. */
+  | { readonly reading: "opens"; readonly slot: string; readonly opener: readonly number[]; readonly proved?: ReadonlyArray<{ readonly slot: string; readonly t: number; readonly pins: number; readonly opener: readonly number[] }> }
   | { readonly reading: "already-unlocked" }
   | { readonly reading: "no-slot-opens"; readonly attemptsLeft: number }
   | { readonly reading: "attempts-spent" }
@@ -64,7 +65,8 @@ export type HolderUnlock =
 
 /** What `proves` answers: whether a person presented a route of the tree this holder's own key rests in. */
 export type HolderProof =
-  | { readonly reading: "proves" }
+  /** `opener` names, by index into the credentials presented, the ones the custody open proved. */
+  | { readonly reading: "proves"; readonly opener: readonly number[]; readonly proved?: ReadonlyArray<{ readonly slot: string; readonly t: number; readonly pins: number; readonly opener: readonly number[] }> }
   | { readonly reading: "locked"; readonly fcid?: string }
   | { readonly reading: "no-slot-opens"; readonly attemptsLeft: number }
   | { readonly reading: "attempts-spent" }
@@ -359,7 +361,9 @@ export function makeCustodyHolder(a: {
     slot = result.slot;
     keyOpened();
     // The node key opens alone: no face key hangs from it. A face opens by its own unlock (`unlockFace`, `unlockFaces`).
-    return { reading: "opens", slot };
+    // THE OPENER, by index into what the unlock received: the offering's order differs, so each offered credential maps back.
+    const back = (ix: readonly number[]): number[] => ix.map((i) => credentials.indexOf(charge.offered[i]!)).filter((i) => i >= 0);
+    return { reading: "opens", slot, opener: back(result.opener), proved: result.proved.map((p) => ({ slot: p.slot, t: p.t, pins: p.pins, opener: back(p.opener) })) };
   };
   const doProve = async (credentials: readonly Credential[]): Promise<HolderProof> => {
     if (treeKey === null || !accepting) return { reading: "locked" };
@@ -375,7 +379,8 @@ export function makeCustodyHolder(a: {
     // A route that opens a tree whose key differs from the one held proves nothing about this vessel.
     const same = treeKey !== null && treeKeyEquals(result.treeKey, treeKey);
     result.treeKey.fill(0);
-    if (same) { spent -= charge.cost; return { reading: "proves" }; }
+    const back = (ix: readonly number[]): number[] => ix.map((i) => credentials.indexOf(charge.offered[i]!)).filter((i) => i >= 0);
+    if (same) { spent -= charge.cost; return { reading: "proves", opener: back(result.opener), proved: result.proved.map((p) => ({ slot: p.slot, t: p.t, pins: p.pins, opener: back(p.opener) })) }; }
     return missed();
   };
   const operation = <T>(fn: () => Promise<T>): Promise<T> => {

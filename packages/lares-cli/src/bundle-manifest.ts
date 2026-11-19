@@ -5,7 +5,7 @@
  */
 export {
   BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, BundleVerifyRefused,
-  sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder, openBundle, rosterView, sealRedeclare, redeclareBytes, readBundleSeat, KEEP_SEAT_FILE,
+  sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder, openBundle, rosterView, sealRedeclare, redeclareBytes, readBundleSeat, keepManifestDigest, KEEP_SEAT_FILE,
 } from "@lararium/node";
 export type {
   BundleLayer, BundleFile, BundleRow, BundleFace, BundleOmission, BundleManifest, BundleRedeclareFace, BundleShareEntry, BundleRedeclare,

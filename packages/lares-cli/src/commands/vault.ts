@@ -16,7 +16,7 @@ import {
   FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus, bindFaceSlot, unbindFaceSlot, openFaceTree, readFaceIndexSync,
   type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
 } from "@lararium/node";
-import { openTreeKey, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
+import { openTreeKey, decodeSlotTree, slotsOpenedBy, type Credential, type SlotSpec, type SlotTree } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
 import { askYesNo, gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
@@ -32,7 +32,7 @@ import { helpLines } from "../command-help.js";
 import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { offerKeepLei, type KeepOfferPorts } from "../keep-at-unlock.js";
-import { keepSlotAtBind, seatKeepAtUnlock } from "../keep-seat.js";
+import { keepSlotAtBind, provedRoutes, reseatKeepPair, seatKeepAtUnlock, type CustodyOpenAnswer } from "../keep-seat.js";
 import { configuredKeepWorkspace } from "../keep-config.js";
 import { canPromptSecret } from "../prompt-secret.js";
 import { storeFailure, storeVerb } from "../store-door.js";
@@ -73,6 +73,7 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
       case "backup":     return await vaultBackup(args, daemonUp);
       case "restore":    return await vaultRestore(args, daemonUp);
       case "rewrap":     return await vaultRewrap(args);
+      case "reseat":     return await vaultReseat(args, daemonUp);
       default:
         console.error(`lares vault: unknown sub-verb "${sub}"`);
         return usage(args, sub);
@@ -378,14 +379,14 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
       // THE HOUSE KEEPS ITSELF: where the config names a keep workspace, the same act offers its keep lei under this one route,
       // and the keep pair seats under this passphrase where none rests (`../keep-seat.ts`).
       await offerKeepLei(keepOfferPorts(args), { workspace: configuredKeepWorkspace(), route: creds });
-      await seatKeepAtUnlock(creds, keepSay(args));
+      await seatKeepAtUnlock({ reading: String(a["reading"]), ...(Array.isArray(a["opener"]) ? { opener: a["opener"] as number[] } : {}), ...(Array.isArray(a["proved"]) ? { proved: a["proved"] as CustodyOpenAnswer["proved"] & object } : {}) }, creds, keepSay(args));
     }
     return ok ? 0 : 1;
   }
   const u = await openOrRefuse(args, "unlock", homes, io, creds);
   if (!u) return 1;
   // THE PASSPHRASE STANDS PROVED: the keep pair seats under it where none rests, with no vessel standing as with one.
-  await seatKeepAtUnlock(creds, keepSay(args));
+  await seatKeepAtUnlock(u, creds, keepSay(args));
   emit(args, {
     ok: true, data: { reading: "opens", slot: u.slot, held: false },
     human: () => console.log(`slot ${u.slot} opens the vessel key. No vessel stands on this store, so nothing holds it open — stand the vessel (\`lares vessel stand\`), then run \`lares vault unlock\` again.`),
@@ -677,6 +678,60 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
     say("  not rotated. A copy of the tree taken before this unbind still opens the key through the removed slot.");
     say("  to end that route now:  lares vault unbind <slot-id> --rotate   (re-reads each staying slot's route)");
   }
+  // THE ROUTE MOVED: the keep re-seats under a route that opens the tree the unbind LEFT, proved again against `out.tree`, never
+  // under the opener of the open before it: a steward who typed the removed passphrase to authorise the unbind proves nothing now.
+  await reseatAfterUnbind(out.tree, creds, keepSay(args));
   emit(args, { ok: true, data: { slotId, rotated: out.rotated, rotationOffer: out.rotationOffer, slots: out.tree.slots.length }, human: () => undefined });
   return 0;
+}
+
+/** Re-seat the keep under what opens the tree an unbind left; where nothing typed opens it, seat nothing and name the road. */
+async function reseatAfterUnbind(tree: SlotTree, creds: readonly Credential[], say: (line: string) => void): Promise<void> {
+  try {
+    const proved = provedRoutes({ reading: "opens", proved: await slotsOpenedBy(tree, creds, nativeKdf) }, creds);
+    if (proved === null) {
+      say("keep: the route that authorised this unbind opens none of the slots that stay, so the keep seats no fresh pair under it; run `lares vault reseat` with a staying route");
+      return;
+    }
+    await reseatKeepPair(proved.map((r) => r.creds), say, proved);
+  } catch (e) { say(`keep: the keep did not re-seat (${e instanceof Error ? e.message : String(e)}); run \`lares vault reseat\``); }
+}
+
+/**
+ * `vault reseat`: a fresh keep pair under the route custody proves. Beside a standing vessel the route proves against its held key
+ * (a `prove` frame, opening nothing new); with none standing it opens the slot tree here and lets the key go. A house a pūlama keeps
+ * seats at the pūlama's own hand door (`pulama-main.js keep-seat`), where its route rides.
+ */
+async function vaultReseat(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  const door = daemonUp ? await sendCustodyFrame({ op: "custody" }) : null;
+  if (pulamaStands() || (typeof door?.["pulama"] === "object" && door["pulama"] !== null)) {
+    const why = "a pūlama keeps this house's custody, so its route rides the pūlama's own hand door: run `pulama-main.js keep-seat` there";
+    emit(args, { ok: false, error: { code: "keep-seat-at-pulama", message: why }, human: () => console.error(`lares vault reseat: ${why}`) });
+    return 1;
+  }
+  const creds = await gatherCredentials("lares vault reseat", { kind: "vessel" }, routeFlag(args));
+  let answer: CustodyOpenAnswer;
+  if (daemonUp) {
+    const a = await sendCustodyFrame({ op: "prove", credentials: creds });
+    if (a === null || a["reading"] !== "proves" || !Array.isArray(a["opener"])) {
+      const why = a === null ? "the vessel stopped answering before the proof landed" : `the route proves nothing against the vessel's held key (${String(a["reading"] ?? a["errorMessage"] ?? "no reading")}); nothing changed`;
+      emit(args, { ok: false, error: { code: String(a?.["reading"] ?? "daemon-unreachable"), message: why }, human: () => console.error(`lares vault reseat: ${why}`) });
+      return 1;
+    }
+    answer = { reading: "opens", opener: a["opener"] as number[], ...(Array.isArray(a["proved"]) ? { proved: a["proved"] as CustodyOpenAnswer["proved"] & object } : {}) };
+  } else {
+    const homes = custodyHomes();
+    const u = await openOrRefuse(args, "reseat", homes, new FsCustodyIo(homes), creds);
+    if (!u) return 1;
+    u.treeKey.fill(0); u.sk?.fill(0);
+    answer = u;
+  }
+  const lines: string[] = [];
+  const proved = provedRoutes(answer, creds);
+  const seated = proved !== null && await reseatKeepPair(proved.map((r) => r.creds), (l) => lines.push(l), proved);
+  emit(args, seated
+    ? { ok: true, data: { reseated: true }, human: () => { for (const l of lines) console.log(l); } }
+    : { ok: false, error: { code: "keep-seat-unseatable", message: "the proved route holds no human route the keep binds (a passkey alone); nothing changed" }, human: () => console.error("lares vault reseat: the proved route holds no human route the keep binds; nothing changed") });
+  if (wantsJson(args)) for (const l of lines) console.error(l);
+  return seated ? 0 : 1;
 }

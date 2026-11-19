@@ -30,8 +30,8 @@
  *
  * IMPORT (previews by default; `--apply` writes):
  *   1. verifies the whole bundle before touching anything (`verifyBundle`), and opens the keep seat it carries with the passphrase
- *      or paper sheet the human supplies, then the roster (a wrong route refuses by name, before anything moves); on apply, a house
- *      that rests no keep pair seats the bundle's, so its next keep seals to the same pair;
+ *      or paper sheet the human supplies, then the roster (a wrong route refuses by name, before anything moves); at the end of a
+ *      whole apply, a house that rests no keep pair seats the bundle's, so its next keep seals to the same pair;
  *   2. replays the re-declare list as fresh acts (pet-name, Handle, seat and chair) where the vessel's face holds none;
  *   3. maps each bundle face's pet-name to the ONE face on this vessel that carries it, refusing by name where none or
  *      two do (never a silent merge into another face's memory);
@@ -78,18 +78,26 @@ import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "..
 import { writeFaceLabels, readFaceBases, labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
-  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KEEP_SEAT_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, openBundle, rosterView, readBundleSeat, BundleVerifyRefused,
+  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KEEP_SEAT_FILE, KAHUA_HEADS_FILE, bundleIdOf, bundleBytes, keepManifestDigest, sha256Hex, zeroCounts, verifyBundle, openBundle, rosterView, readBundleSeat, BundleVerifyRefused,
   type BundleDiskManifest, type BundleFaceKey, type BundleFile, type BundleKahuaHead, type BundleManifest, type BundleOmission, type BundleRedeclare,
   type BundleRedeclareFace, type BundleRow, type BundleShareEntry, type VerifiedBundle,
 } from "../bundle-manifest.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs } from "../share-doors.js";
-import { KeepSeatRefused, adoptKeepSeat, bundleSeatText, keepSeatForCut, liveKeepRoute, openKeepSeat, sealRosterForCut } from "../keep-seat.js";
-import type { Credential } from "@lararium/mesh";
+import { KeepSeatRefused, adoptKeepSeat, isTestRoute, bundleSeatText, keepSeatForCut, liveKeepRoute, openKeepSeat, sealRosterForCut, signCut } from "../keep-seat.js";
+import { verifyKeepCut, type Credential } from "@lararium/mesh";
 
 /** A keep seat refusal, as the bundle verbs name it. */
 async function seatAct<T>(act: () => Promise<T>): Promise<T> {
   try { return await act(); } catch (e) { if (e instanceof KeepSeatRefused) throw new BundleRefused(e.code, e.detail); throw e; }
 }
+
+/** The bag a daemon-canon row names: the daemon's canon, with no face relation. The import lands each row in the canon bag of the
+ *  face its key maps to. */
+const FACE_CANON_ROW_BAG = wikiBagUri("daemon");
+
+/** A mirror folder named for a face relation (`daemon-<F>`, `kahua-<F>`, the layout before face roots): the name itself ties a
+ *  face to the house, so its slug rides no bundle path; a face's memory travels from its face root alone. */
+const namesFaceRelation = (slug: string): boolean => /^(daemon|kahua)-[0-9a-f]{8}-[0-9a-f]{4}-/.test(slug);
 
 /** One document a keep left to another holder (`BundleManifest.elsewhere`). */
 type BundleElsewhere = NonNullable<BundleManifest["elsewhere"]>[number];
@@ -461,9 +469,11 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     if (!acceptOmissions) throw new BundleRefused("carry-unsettled", `the census names ${lines.length} item(s) the projection has not settled, so a copy now would leave them out:\n  ${lines.join("\n  ")}\nsettle them (unlock the vault, let the projector drain) and export again, or pass --accept-omissions for an explicitly partial bundle`);
     const held = census.items.filter((i) => i.kind === "held-save").map(censusLine);
     const carriers = census.items.filter((i) => i.kind === "carrier").map(censusLine);
-    if (held.length > 0) omissions.push({ kind: "held-saves", detail: "saves the sealed rest holds in memory, never on disk", items: held, count: held.length });
-    if (carriers.length > 0) omissions.push({ kind: "unsettled-carriers", detail: "carriers the disk projector had not settled", items: carriers, count: carriers.length });
-    if (census.unanswered.length > 0) omissions.push({ kind: "census-unanswered", detail: "census lines that could not answer", items: census.unanswered.map((u) => `${u.part}: ${u.why}`) });
+    // THE OMISSIONS NAME KINDS AND COUNTS ALONE: a census line names documents, bags and uris that carry a face's relation, and the
+    // bundle crosses to a remote; `lares vessel census` reads the lines themselves on the house.
+    if (held.length > 0) omissions.push({ kind: "held-saves", detail: "saves the sealed rest holds in memory, never on disk (`lares vessel census` names them on the house)", count: held.length });
+    if (carriers.length > 0) omissions.push({ kind: "unsettled-carriers", detail: "carriers the disk projector had not settled (`lares vessel census` names them on the house)", count: carriers.length });
+    if (census.unanswered.length > 0) omissions.push({ kind: "census-unanswered", detail: "census lines that could not answer (`lares vessel census` names them on the house)", count: census.unanswered.length });
   }
 
   const faces = await doors.faces();
@@ -491,7 +501,12 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   for (const f of faces) {
     if (carries(f) && (f.petname === null || f.petname.trim() === "")) throw new BundleRefused("carry-face-unnamed", `the face at h${f.handleIndex} carries memory and no pet-name, and a bundle keys each face by its pet-name: name it (\`lares persona new ${f.handleIndex} --name '<label>'\`) and export again`);
     if (f.kahuaRefusal !== undefined && f.relation === null && !acceptOmissions) throw new BundleRefused("carry-face-unread", `the face at h${f.handleIndex} would not read its stage or relation (${f.kahuaRefusal}); unlock it, or export with --accept-omissions to leave its memory behind`);
-    if (f.kahuaRefusal !== undefined) omissions.push({ kind: "face-unread", detail: `the face at h${f.handleIndex} would not read its stage: ${f.kahuaRefusal}` });
+    if (f.kahuaRefusal !== undefined) {
+      // THE FACE BY COUNT: its handle index and the stage's own refusal text name the face, and the bundle crosses to a remote.
+      const at = omissions.find((o) => o.kind === "face-unread");
+      if (at === undefined) omissions.push({ kind: "face-unread", detail: "a face would not read its stage, so its stage stays behind: unlock each face and export again", count: 1 });
+      else omissions[omissions.indexOf(at)] = { ...at, count: (at.count ?? 1) + 1 };
+    }
   }
   const named = faces.filter((f) => f.petname !== null && f.petname.trim() !== "").sort((a, b) => a.handleIndex - b.handleIndex);
   const seenNames = new Map<string, number>();
@@ -518,7 +533,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     if (held) return held;
     let read: Readonly<Record<string, string>> = {};
     try { read = await doors.overrideBases(workingBag); }
-    catch (e) { omissions.push({ kind: "override-bases-unread", detail: `the daemon's override-bases read did not answer for ${workingBag} (${e instanceof Error ? e.message : String(e)}): the daemon may not reach that layer. Its working rows travel WITHOUT their override bases, and each copy forks a fresh base off the canon standing where it lands, so canon's fresher-than-the-copy warning may stay silent for them after the import` }); }
+    catch { omissions.push({ kind: "override-bases-unread", detail: "the daemon's override-bases read did not answer for a working layer: the daemon may not reach that layer. Its working rows travel WITHOUT their override bases, and each copy forks a fresh base off the canon standing where it lands, so canon's fresher-than-the-copy warning may stay silent for them after the import" }); }
     basesOf.set(workingBag, read);
     return read;
   };
@@ -569,7 +584,9 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
         return { face: fk, bag, layer: "temp", title: null, rowKey: null };
       });
     } else if (existsSync(join(wiki, TEMP_LAYER_DIR))) omissions.push({ kind: "temp-unconsented", detail: `the daemon wiki's temp folder stands with no consent row (projection.temp.daemon); it stays behind` });
-    addTree(join(root, FACE_PLANES.canon), `faces/${fk}/canon`, (_rel, abs) => ({ face: fk, bag: daemonFaceCanonBag(f.relation!), layer: "daemon-canon", title: carriedFileTitle(root, abs), rowKey: null }));
+    // THE CANON ROW BY FACE KEY: the face's own canon bag names its relation, so the row names the daemon's canon bag alone and the
+    // import resolves the landing face's relation (`daemonFaceCanonBag` of the face it maps to).
+    addTree(join(root, FACE_PLANES.canon), `faces/${fk}/canon`, (_rel, abs) => ({ face: fk, bag: FACE_CANON_ROW_BAG, layer: "daemon-canon", title: carriedFileTitle(root, abs), rowKey: null }));
     addTree(join(root, FACE_PLANES.stage), `faces/${fk}/kahua`, () => ({ face: fk, bag: KAHUA_BAG, layer: "kahua-carrier", title: null, rowKey: null }));
     const margins = join(root, FACE_PLANES.margins);
     for (const slug of folders(margins)) {
@@ -595,7 +612,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   }
   for (const name of folders(wikisDir)) {
     const src = join(wikisDir, name);
-    if (isPrivateProjectionSlug(name)) continue;
+    if (isPrivateProjectionSlug(name) || namesFaceRelation(name)) continue;
     const wikiBases = await baseFor(wikiSlotUri(name, "working"));
     addTree(src, `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: carriedFileTitle(wikisDir, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
   }
@@ -605,7 +622,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   const elsewhere: BundleElsewhere[] = [];
   if (canonWikis !== null && resolve(canonWikis) !== resolve(wikisDir)) {
     for (const name of folders(canonWikis)) {
-      if (doors.sourced?.(name) !== true || isPrivateProjectionSlug(name)) continue;
+      if (doors.sourced?.(name) !== true || isPrivateProjectionSlug(name) || namesFaceRelation(name)) continue;
       const bench = join(canonWikis, name);
       if (opts.houseOnly === true && inside(repoRoot, bench)) {
         elsewhere.push({ slug: name, layer: "wiki-working", bag: wikiSlotUri(name, "working"), holder: "checkout", path: relative(realish(repoRoot), realish(bench)).split(sep).join("/") });
@@ -621,17 +638,17 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
       // This directory has no disk mirror grant, so its files stay out of the house bundle.
       continue;
     }
-    if (isPrivateProjectionSlug(name)) continue;
+    if (isPrivateProjectionSlug(name) || namesFaceRelation(name)) continue;
     addTree(src, `bags/${name}`, (_rel, abs) => ({ face: null, bag: wikiBagUri(name), layer: "bag", title: carriedFileTitle(bagsDir, abs), rowKey: null }));
   }
   // A COLD WIKI'S PUTS RIDE NO MIRROR (cabal-realm#/the-workbench, OWED): the copy reads disk, so it names what disk cannot show.
   const woken = new Set(opts.woken ?? []);
-  const cold = (doors.coldWikis ? await doors.coldWikis().catch(() => [] as readonly string[]) : []).filter((slug) => !woken.has(slug));
+  const cold = (doors.coldWikis ? await doors.coldWikis().catch(() => [] as readonly string[]) : []).filter((slug) => !woken.has(slug) && !namesFaceRelation(slug));
   if (cold.length > 0) omissions.push({ kind: "cold-wikis", detail: `${[...cold].sort().join(", ")} stand${cold.length === 1 ? "s" : ""} cold (no island mounts ${cold.length === 1 ? "it" : "them"} now): a page a face put into a cold wiki since its last wake rests in its layer and projected nowhere, so no such page travels. Wearing each face that wrote there, wake the wiki (\`lares wiki hold <slug>\`), then export again`, items: [...cold].sort(), count: cold.length });
   // A WIKI THAT HOLDS NO PAGE carries by its catalog row alone; a sourced wiki rides git with its canon, and the daemon wiki is each face's own.
   let userWikis: string[] = [];
   if (doors.userWikis) {
-    try { userWikis = [...(await doors.userWikis())].filter((slug) => slug !== "daemon" && doors.sourced?.(slug) !== true && !isPrivateProjectionSlug(slug)).sort(); }
+    try { userWikis = [...(await doors.userWikis())].filter((slug) => slug !== "daemon" && doors.sourced?.(slug) !== true && !isPrivateProjectionSlug(slug) && !namesFaceRelation(slug)).sort(); }
     catch (e) { throw new BundleRefused("carry-wikis-unread", `the catalog's wiki list would not read (${e instanceof Error ? e.message : String(e)}), so a wiki that holds no page would stay behind unnamed: stand the vessel and export again`); }
   }
   if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });
@@ -640,7 +657,8 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
 
   // THE KEEP PAIR the roster seals to, read before any byte stages: a house that rests none refuses the cut by name.
-  const seat = await seatAct(keepSeatForCut);
+  const cutSeat = await seatAct(keepSeatForCut);
+  const { seat, signingSeed } = cutSeat;
   // WRITE BESIDE THE DEST, VERIFY, THEN MOVE INTO PLACE.
   const staging = join(dirname(target), `.${basename(target)}.lar-tmp-${randomBytes(6).toString("hex")}`);
   mkdirSync(staging, { recursive: true });
@@ -682,10 +700,16 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     };
     // THE ROSTER RIDES SEALED to the keep pair's public half: a remote the bundle reaches crosses to another vessel, and the cut
     // asks for no credential. The pair rides beside it, its secret wrapped under the human's routes.
-    put(REDECLARE_FILE, sealRosterForCut(seat, redeclare));
+    const sealedRoster = sealRosterForCut(cutSeat, redeclare);
+    put(REDECLARE_FILE, sealedRoster);
     put(KEEP_SEAT_FILE, bundleSeatText(seat));
     files.sort((a, b) => (a.path < b.path ? -1 : 1));
-    const manifest: BundleDiskManifest = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
+    // THE CUT SIGNS ITS ROSTER: the bundle id and the sealed roster, under the seed the house keeps, so a restore refuses a roster
+    // sealed to the published public half by anyone else.
+    const bundleId = bundleIdOf(files);
+    const unsigned: BundleDiskManifest = { schema: BUNDLE_SCHEMA, bundleId, faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
+    // THE WHOLE MANIFEST SIGNED: every field it holds (its rows' override and family bases, its omissions) rides the signature.
+    const manifest: BundleDiskManifest = { ...unsigned, keepSignature: signCut(signingSeed, bundleId, sealedRoster, keepManifestDigest(JSON.parse(JSON.stringify(unsigned)) as Record<string, unknown>)) };
     writeFileSync(join(staging, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`, { flag: "wx" });
     // Every byte read back against the manifest, the seat read whole, and the roster read against the manifest, before the bundle
     // takes its name.
@@ -841,9 +865,21 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
       ? "a slot of the bundle's keep seat opened a secret that answers another pair: the seat stands torn; restore from another keep"
       : "the route presented opens no slot of the bundle's keep seat: present the steward's passphrase or paper sheet the keep sealed under, then import again");
   }
+  // THE ROSTER'S ORIGIN: the verify key rides inside the slot that opened, so a roster the house never signed refuses here,
+  // before its text reaches any door.
+  const signature = sealed.manifest.keepSignature;
+  const signed = typeof signature === "string" && verifyKeepCut(opening.verifyKey, sealed.manifest.bundleId, bundleBytes(sealed.root, REDECLARE_FILE), keepManifestDigest(sealed.manifest as unknown as Record<string, unknown>), Uint8Array.from(Buffer.from(signature, "hex")));
+  if (!signed) {
+    opening.secret.fill(0); opening.signingSeed.fill(0);
+    throw new BundleRefused("keep-roster-unsigned", "the bundle's roster or manifest carries no signature the opened keep seat answers: whoever wrote the remote may have sealed a roster of its own to the published public half; nothing moved. Restore from a keep this house cut");
+  }
   let bundle: VerifiedBundle;
-  try { bundle = openBundle(sealed, opening.secret); } finally { opening.secret.fill(0); }
-  if (apply) adoptKeepSeat(seat);
+  try { bundle = openBundle(sealed, opening.secret); }
+  catch (e) { opening.signingSeed.fill(0); throw e; }
+  finally { opening.secret.fill(0); }
+  const adoptSeed = opening.signingSeed;
+  // THE SEED LEAVES WITH THE IMPORT: a refusal anywhere below zero-fills it as surely as a whole apply does.
+  try {
   const { manifest, redeclare } = bundle;
   // THE ORDER GUARD: the walk runs found -> up -> lay -> import. An import lands its rows over the canon the lay
   // laid, so its bag rows meet the checkout's canon at INGEST's three-way gate and stand off where they diverge; over
@@ -1234,7 +1270,11 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   let sharesLanded = false;
   if (apply && allShares.length > 0 && doors.landShares !== undefined) sharesLanded = (await doors.landShares().catch(() => null)) !== null;
 
+  // THE PAIR SEATS LAST: only a whole apply seats the bundle's keep pair where this house rests none, so a restore that refused
+  // anywhere above leaves the house's config as it stood.
+  if (apply) adoptKeepSeat(seat, adoptSeed, isTestRoute(route));
   return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, waiting, warnings, benchWaiting, personalWaiting, kahuaWaiting, daemonWaiting, shares: { written: carriedShares.map((r) => r.slug), landed: sharesLanded } };
+  } finally { adoptSeed.fill(0); }
 }
 
 // ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────
