@@ -184,12 +184,23 @@ key_held() {
 
 # THE FACE TO WEAR AGAIN. The mount is the composition's own state and never survives a restart, so the shim keeps the
 # face the operator last wore through it (`vault unlock --face N`) in the house's config (`config/last-worn-face`, a reset
-# keeps it): after a stand or a restart it opens every face the credential opens and wears that one again, else face 0.
+# keeps it): after a stand or a restart it opens every face the credential opens and wears that one again.
+# AN EMPTY MEMORY NAMES NO FACE. A file that reads empty (or absent, or no ordinal) answers empty, and the shim wears
+# nothing: a `wear` writes the pūlama's `face.worn`, which it wears again after every restart, so a guessed face 0 would
+# outlive the guess. The vessel's own mount stands instead (node-vessel-identity's daemonMountOf: face 0 where it stands
+# open, else the lowest face open, under a pūlama the lowest it lends lit).
 WORN_FACE_FILE="$HOUSE/config/last-worn-face"
 last_worn_face() {
   worn=$(cat -- "$WORN_FACE_FILE" 2>/dev/null) || worn=""
-  case "$worn" in ''|*[!0-9]*) worn=0 ;; esac
+  case "$worn" in ''|*[!0-9]*) worn="" ;; esac
   printf '%s' "$worn"
+}
+NO_FACE_REMEMBERED='no face rests remembered (config/last-worn-face reads empty), so the shim wears none and the vessel'"'"'s own mount stands; another face: wear N'
+# After an unlock that landed: wear the face last worn, or, with none remembered, say the vessel's own mount stands.
+wear_after_unlock() {
+  if [ -z "$wear" ]; then printf 'lares-container: the vessel opened; %s\n' "$NO_FACE_REMEMBERED" >&2; return 0; fi
+  # shellcheck disable=SC2046
+  waited_exec $(pass_env) -T lares node "$CLI" wear "$wear" </dev/null || printf 'lares-container: the vessel opened, but h%s stands outside the lent set or locked; wear another face with `lares-container.sh wear N`\n' "$wear" >&2
 }
 remember_worn_face() { # the argv of a `vault unlock` that landed
   face=""
@@ -201,7 +212,7 @@ remember_worn_face() { # the argv of a `vault unlock` that landed
     shift
   done
   case "$face" in ''|*[!0-9]*) return 0 ;; esac
-  mkdir -p -- "$HOUSE/config" && printf '%s\n' "$face" > "$WORN_FACE_FILE" || printf '%s\n' 'lares-container: the worn face could not be remembered; the next stand wears face 0' >&2
+  mkdir -p -- "$HOUSE/config" && printf '%s\n' "$face" > "$WORN_FACE_FILE" || printf '%s\n' 'lares-container: the worn face could not be remembered; the next stand wears the face remembered before, or none' >&2
 }
 
 # THE MOUNT, read: the census frame (`vessel census --json`, bounded as down's census is) names `worn` beside the lit
@@ -212,6 +223,11 @@ none_worn() {
 }
 wear_last_face() {
   wear=$(last_worn_face)
+  if [ -z "$wear" ]; then
+    WORE=""
+    printf '%s\n' 'lares-container: faces stand lent and none worn, and no face rests remembered (config/last-worn-face reads empty); the shim wears none: wear one with `lares-container.sh wear N`' >&2
+    return 0
+  fi
   printf 'lares-container: faces stand lent and none worn; wearing h%s, the face last worn\n' "$wear" >&2
   # shellcheck disable=SC2046
   if waited_exec $(pass_env) -T lares node "$CLI" wear "$wear" </dev/null; then WORE="h$wear"
@@ -220,7 +236,7 @@ wear_last_face() {
 WORE=""
 
 # The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached: it opens every face the
-# credential opens (`--all`), then `lares wear` takes the last worn face again (or face 0); without one, name both commands. A refused or
+# credential opens (`--all`), then `lares wear` takes the last worn face again (none remembered: the vessel's own mount); without one, name both commands. A refused or
 # abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it. A hint never names the
 # bare command that fails on a vessel of several faces.
 unlock_or_name() {
@@ -237,24 +253,26 @@ unlock_or_name() {
     # pūlama), so it runs detached from this terminal: an image that prompts anyway reads no keystroke.
     # shellcheck disable=SC2046
     if waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all </dev/null; then
-      # shellcheck disable=SC2046
-      waited_exec $(pass_env) -T lares node "$CLI" wear "$wear" </dev/null || printf 'lares-container: the vessel opened, but h%s stands outside the lent set or locked; wear another face with `lares-container.sh wear N`\n' "$wear" >&2
+      wear_after_unlock
       return 0
     fi
     printf '%s\n' 'lares-container: the vessel stands at the floor, unserved by the pūlama; read it with `lares-container.sh pulama status`, light it with `lares-container.sh pulama light`, admit the image that stands with `lares-container.sh pulama admit`, or raise a served vessel with `lares rite kukulu`' >&2
     return 0
   fi
+  if [ -n "$wear" ]; then then_wear=", then wear h$wear"; else then_wear=", then the vessel's own mount"; fi
   if [ -n "$HAVE_TTY" ]; then
-    printf 'lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens, then wear h%s)\n' "$wear" >&2
+    printf 'lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens%s)\n' "$then_wear" >&2
     # shellcheck disable=SC2046
     if ! waited_exec $(pass_env) lares node "$CLI" vault unlock --all; then
-      printf 'lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.sh vault unlock --all`, then `lares-container.sh wear %s`\n' "$wear" >&2
-    # shellcheck disable=SC2046
-    elif ! waited_exec $(pass_env) -T lares node "$CLI" wear "$wear" </dev/null; then
-      printf 'lares-container: the vessel opened, but h%s stands locked or outside the lent set; wear another face with `lares-container.sh wear N`\n' "$wear" >&2
+      if [ -n "$wear" ]; then printf 'lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.sh vault unlock --all`, then `lares-container.sh wear %s`\n' "$wear" >&2
+      else printf '%s\n' 'lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.sh vault unlock --all`' >&2; fi
+    else
+      wear_after_unlock
     fi
-  else
+  elif [ -n "$wear" ]; then
     printf 'lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.sh vault unlock --all, then lares-container.sh wear %s (every face the credential opens, then wear h%s; another face: wear N)\n' "$wear" "$wear" >&2
+  else
+    printf '%s\n' 'lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.sh vault unlock --all (every face the credential opens; no face rests remembered, so the vessel mounts its own; another face: wear N)' >&2
   fi
 }
 

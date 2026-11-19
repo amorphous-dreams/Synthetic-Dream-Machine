@@ -240,12 +240,17 @@ function WarnImageRevision {
 
 # THE FACE TO WEAR AGAIN. The mount never survives a restart, so the shim keeps the face the operator last wore through it
 # (`vault unlock --face N`) in the house's config (`config/last-worn-face`, a reset keeps it): after a stand or a restart it
-# opens every face the credential opens and wears that one again, else face 0.
+# opens every face the credential opens and wears that one again.
+# AN EMPTY MEMORY NAMES NO FACE. A file that reads empty (or absent, or no ordinal) answers '', and the shim wears
+# nothing: a `wear` writes the pūlama's `face.worn`, which it wears again after every restart, so a guessed face 0 would
+# outlive the guess. The vessel's own mount stands instead (node-vessel-identity's daemonMountOf: face 0 where it stands
+# open, else the lowest face open, under a pūlama the lowest it lends lit).
 $WornFaceFile = Join-Path (Join-Path $House 'config') 'last-worn-face'
 function LastWornFace {
   try { $w = (Get-Content -Raw -Path $WornFaceFile -ErrorAction Stop).Trim() } catch { $w = '' }
-  if ($w -match '^[0-9]+$') { return $w } else { return '0' }
+  if ($w -match '^[0-9]+$') { return $w } else { return '' }
 }
+$NoFaceRemembered = "no face rests remembered (config/last-worn-face reads empty), so the shim wears none and the vessel's own mount stands; another face: wear N"
 # The face an unlock's argv names (`--face N` or `--face=N`), '' where it names none or no ordinal.
 function NamedFace([string[]]$argv) {
   $face = ''
@@ -261,11 +266,11 @@ function RememberWornFace([string[]]$argv) {
   try {
     New-Item -ItemType Directory -Force -Path (Join-Path $House 'config') | Out-Null
     Set-Content -Path $WornFaceFile -Value $face -Encoding ascii
-  } catch { [Console]::Error.WriteLine('lares-container: the worn face could not be remembered; the next stand wears face 0') }
+  } catch { [Console]::Error.WriteLine('lares-container: the worn face could not be remembered; the next stand wears the face remembered before, or none') }
 }
 
 # The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached: it opens every face the
-# credential opens (`--all`), then `lares wear` takes the last worn face again (or face 0); without one, name both commands. A refused or
+# credential opens (`--all`), then `lares wear` takes the last worn face again (none remembered: the vessel's own mount); without one, name both commands. A refused or
 # abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it. A hint never names the
 # bare command that fails on a vessel of several faces.
 # UNDER A PŪLAMA THE ROUTE GOES TO THE PŪLAMA ALONE. The vessel's own unlock asks nothing there (it redials the pūlama),
@@ -278,6 +283,11 @@ function DetachedWear([string]$face) {
   $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli wear $face
   return $LASTEXITCODE
 }
+# After an unlock that landed: wear the face last worn, or, with none remembered, say the vessel's own mount stands.
+function WearAfterUnlock([string]$wear) {
+  if (-not $wear) { [Console]::Error.WriteLine("lares-container: the vessel opened; $NoFaceRemembered"); return }
+  if ((DetachedWear "$wear") -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel opened, but h$wear stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``") }
+}
 function UnlockOrName {
   if (KeyHeld) {
     # A HELD KEY IS NOT A WORN FACE. Under a pūlama the vessel redials its key at boot, while the mount lives in process
@@ -289,19 +299,25 @@ function UnlockOrName {
   $wear = LastWornFace
   if ($PulamaMode) {
     if ((DetachedUnlock @('--all')) -eq 0) {
-      if ((DetachedWear "$wear") -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel opened, but h$wear stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``") }
+      WearAfterUnlock $wear
     } else {
       [Console]::Error.WriteLine('lares-container: the vessel stands at the floor, unserved by the pūlama; read it with `lares-container.ps1 pulama status`, light it with `lares-container.ps1 pulama light`, admit the image that stands with `lares-container.ps1 pulama admit`, or raise a served vessel with `lares rite kukulu`')
     }
     return
   }
+  $thenWear = if ($wear) { ", then wear h$wear" } else { ", then the vessel's own mount" }
   if ($script:Tty) {
-    [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens, then wear h$wear)")
+    [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens$thenWear)")
     & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv lares node $Cli vault unlock --all
-    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel still stands at the floor; open every face the credential opens with ``lares-container.ps1 vault unlock --all``, then ``lares-container.ps1 wear $wear``") }
-    elseif ((DetachedWear "$wear") -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel opened, but h$wear stands locked or outside the lent set; wear another face with ``lares-container.ps1 wear N``") }
-  } else {
+    if ($LASTEXITCODE -ne 0) {
+      if ($wear) { [Console]::Error.WriteLine("lares-container: the vessel still stands at the floor; open every face the credential opens with ``lares-container.ps1 vault unlock --all``, then ``lares-container.ps1 wear $wear``") }
+      else { [Console]::Error.WriteLine('lares-container: the vessel still stands at the floor; open every face the credential opens with `lares-container.ps1 vault unlock --all`') }
+    }
+    else { WearAfterUnlock $wear }
+  } elseif ($wear) {
     [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock --all, then lares-container.ps1 wear $wear (every face the credential opens, then wear h$wear; another face: wear N)")
+  } else {
+    [Console]::Error.WriteLine('lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock --all (every face the credential opens; no face rests remembered, so the vessel mounts its own; another face: wear N)')
   }
 }
 
@@ -421,6 +437,11 @@ function NoneWorn { return ((RunCensus '--json').Out -match '"worn"\s*:\s*null')
 $script:Wore = ''
 function WearLastFace {
   $wear = LastWornFace
+  if (-not $wear) {
+    $script:Wore = ''
+    [Console]::Error.WriteLine('lares-container: faces stand lent and none worn, and no face rests remembered (config/last-worn-face reads empty); the shim wears none: wear one with `lares-container.ps1 wear N`')
+    return
+  }
   [Console]::Error.WriteLine("lares-container: faces stand lent and none worn; wearing h$wear, the face last worn")
   if ((DetachedWear "$wear") -eq 0) { $script:Wore = "h$wear" }
   else { $script:Wore = ''; [Console]::Error.WriteLine("lares-container: h$wear stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``") }
