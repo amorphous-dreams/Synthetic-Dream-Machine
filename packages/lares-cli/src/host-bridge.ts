@@ -63,6 +63,7 @@ const SHIM_VERB_HELP: Readonly<Record<string, { readonly usage: string; readonly
   found: { usage: "lares found [vessel-found args]", about: ["The founding act, at a terminal: it gathers the human route (a passphrase and/or a paper pin); `--hearth` prints the seed card and reads it back.", "Run it before `up`: the act holds the store. `lares vessel found --help` names its flags."] },
   logs:  { usage: "lares logs [compose-logs args]", about: ["Read the vessel's log (`-f` follows it)."] },
   build: { usage: "lares build [compose-build args]", about: ["Rebuild the vessel image from the committed checkout and stamp HEAD as its revision label.", "A dirty checkout, or none, refuses: the label must name a real commit."] },
+  rebuild: { usage: "lares rebuild [--at <rev>] | lares rebuild --resume", about: ["Re-stand the house onto a new image: down (keep, census), build from the commit (HEAD unless --at names another), then up, the pūlama's admit on this terminal and the last face worn.", "Where the pūlama's code closure moved it restands the pūlama and stops for your light: `pulama light`, then `rebuild --resume`."] },
 };
 export const SHIM_VERBS: ReadonlySet<string> = new Set(Object.keys(SHIM_VERB_HELP));
 

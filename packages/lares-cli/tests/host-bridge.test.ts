@@ -63,8 +63,10 @@ describe("decideRoute — every branch", () => {
     }
   });
 
-  it("the shim's own verbs forward (up, down, reset, found, logs, build)", () => {
-    for (const v of ["up", "down", "reset", "found", "logs", "build"]) expect(decideRoute(input([v])), v).toBe("forward");
+  it("the shim's own verbs forward (up, down, reset, found, logs, build, rebuild)", () => {
+    for (const v of ["up", "down", "reset", "found", "logs", "build", "rebuild"]) expect(decideRoute(input([v])), v).toBe("forward");
+    // The rebuild's own flags ride to the shim whole: `--at <rev>` and `--resume`.
+    for (const argv of [["rebuild", "--at", "abc123"], ["rebuild", "--resume"]]) expect(decideRoute(input(argv)), argv.join(" ")).toBe("forward");
   });
 
   it("host verbs stay local: home, repo, help, wing-of, mempalace, mcp", () => {
