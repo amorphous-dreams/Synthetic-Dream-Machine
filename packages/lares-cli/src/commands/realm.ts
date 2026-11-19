@@ -1,5 +1,5 @@
 /**
- * `lares realm` — name each realm and place wikis in it (operator ruling 2026-11-19: "The filepath for realms should include
+ * `lares realm` — rename realms and move wikis between them (operator ruling 2026-11-19: "The filepath for realms should include
  * their 'pet-name' to match faces."). A realm holds its wikis on disk at `projections/realms/<realm pet name>/wikis/<slug>/` and
  * its domain bags at `projections/realms/<realm pet name>/bags/<slug>/`, as a face holds its planes at `projections/faces/<pet
  * name>/`. The label rests local (`projections/realm-labels/<pet>.json`, `@lararium/node` `realm-labels.ts`): never a share row,
@@ -8,95 +8,30 @@
  * EVERY REALM CARRIES A PET NAME: a realm minted with none takes its wiki's slug (`realms/<slug>/wikis/<slug>/`), and the vessel
  * mints that label on first read, so nothing waits. Naming stays the operator's act and never gates flow:
  *
- *   - `name <pet> [--realm <current pet | realm id>]`: name a new realm, or rename one.
- *   - `add <pet> <slug>`: place a wiki (and its canon bag) in a named realm, or regroup it there from another, recording the canon
- *     realm id the vessel's workbench ledger binds for the slug where a vessel answers.
+ * The verb, then the thing acted on, then `--to` its destination, as `mv` reads:
  *
- * A rename or a regroup relabels at once, and the folder moves at a QUIET POINT (`settleRealmMoves`), its `.git` with it: at once
+ *   - `rename <current pet | realm id> --to <new pet>`: the realm takes a new pet name.
+ *   - `move <wiki slug> --to <realm pet>`: the wiki (and its canon bag) moves to that realm, minted where no label wears the pet
+ *     name; it keeps its canon realm id (the label only gathers it), and a label the move empties leaves, named.
+ *
+ * A rename or a move relabels at once, and the folder moves at a QUIET POINT (`settleRealmMoves`), its `.git` with it: at once
  * where no vessel answers; else at the vessel's next lock or re-stand, which the line says. Until then the wiki reads where it
  * stands, never half-moved.
  *   - `list`: each realm, its pet name, its wikis' folders and the canon realm ids it holds. Local alone.
  *
- * `lares wiki init <slug> --realm <pet>` places the wiki before it mints (`placeWikiInRealm`), so its first mount lays under the
- * realm.
+ * `lares wiki init <slug> --realm <pet>` places the wiki in an existing realm before it mints (`placeWikiInRealm`), so its first
+ * mount lays under the realm.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
  */
-import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import {
-  FACES_PROJECTION_DIR, findRealmLabel, labelledRelations, larProjectionsHome, nameRealm, placeInRealm, readFaceLabel, readRealmLabels,
-  ensureRealmLabel, realmPlacement, RealmRefused, settleRealmMoves, type RealmEnsured, type RealmLabel,
-} from "@lararium/node";
-import { vesselDid } from "../env.js";
+import { moveWikiToRealm, nameRealm, placeInRealm, readRealmLabels, realmPlacement, RealmRefused, settleRealmMoves } from "@lararium/node";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { runVerb } from "../verb-call.js";
-import { summaryOutput } from "../verb-result.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { houseFaceNames, LIVE_REALM_DOORS, oneId, type RealmDoors } from "./realm-doors.js";
 
-/** What the vessel answered a wiki's seat: whether any vessel answered at all, and the realm ids its ledger binds. */
-export interface RealmSeat { readonly answered: boolean; readonly realms: readonly string[] }
-
-/** What `lares realm` reads, injectable for a scratch house. */
-export interface RealmDoors {
-  /** The house's projections home. */
-  projections(): string;
-  /** Ask the vessel a wiki's workbench seat (`workbench-seat`); `answered: false` where no vessel answers. */
-  seat(slug: string): Promise<RealmSeat>;
-  out(line: string): void;
-  err(line: string): void;
-}
-
-const UNREACHED = /daemon-unreachable|DaemonUnreachable|ECONNREFUSED|ENOENT|no vessel/i;
-
-/** The doors over the house LAR_ROOT names. */
-export const LIVE_REALM_DOORS: RealmDoors = {
-  projections: () => larProjectionsHome(),
-  seat: async (slug) => {
-    try {
-      const r = await runVerb("workbench-seat", { slug }, await vesselDid());
-      if (r.status === "error") return { answered: true, realms: [] };
-      const out = summaryOutput(r) as { realms?: unknown } | null;
-      return { answered: true, realms: Array.isArray(out?.realms) ? out.realms.filter((x): x is string => typeof x === "string") : [] };
-    } catch (e) {
-      if (UNREACHED.test(e instanceof Error ? `${e.name} ${e.message}` : String(e))) return { answered: false, realms: [] };
-      return { answered: true, realms: [] };
-    }
-  },
-  out: (line) => console.log(line),
-  err: (line) => console.error(line),
-};
-
-/** The pet names the house's faces wear: each face root's folder and each face label's pet name. */
-export function houseFaceNames(projections: string): string[] {
-  const names = new Set<string>();
-  try {
-    for (const n of readdirSync(join(projections, FACES_PROJECTION_DIR))) {
-      try { if (statSync(join(projections, FACES_PROJECTION_DIR, n)).isDirectory()) names.add(n.normalize("NFC")); } catch { /* left since the listing */ }
-    }
-  } catch { /* no faces plane yet */ }
-  for (const relation of labelledRelations(projections)) {
-    const label = readFaceLabel(relation, projections);
-    if (label !== null && label.petname.trim() !== "") names.add(label.petname.normalize("NFC"));
-  }
-  return [...names];
-}
-
-/** The one realm id a seat names for a slug, else null (none, or several: the label waits for a later read). */
-const oneId = (seat: RealmSeat): string | null => (seat.realms.length === 1 ? seat.realms[0]! : null);
-
-/**
- * PLACE A WIKI IN A NAMED REALM: the label takes the slug (and its canon bag), regrouping it from any other label, with the canon
- * realm id the vessel's ledger binds where one answers. Throws {@link RealmRefused} by name (an unnamed realm, a private slug).
- */
-export async function placeWikiInRealm(doors: RealmDoors, slug: string, petName: string): Promise<RealmLabel> {
-  const projections = doors.projections();
-  if (findRealmLabel(projections, petName) === null) throw new RealmRefused("realm-unnamed", `no realm on this house wears the pet name ${JSON.stringify(petName)}: name it first (\`lares realm name ${petName}\`)`);
-  placeInRealm(projections, petName, { slug, id: null });
-  const id = oneId(await doors.seat(slug));
-  return id === null ? findRealmLabel(projections, petName)! : placeInRealm(projections, petName, { slug, id });
-}
+export { ensureWikiRealm, houseFaceNames, LIVE_REALM_DOORS, placeWikiInRealm, type RealmDoors, type RealmSeat } from "./realm-doors.js";
 
 /**
  * THE QUIET POINT FOR A MOVE: where no vessel answers, settle now (the folders move in one rename each); where one answers, its
@@ -108,40 +43,55 @@ async function settleOrDefer(doors: RealmDoors, probe: string): Promise<{ readon
   return { now: true, lines: [...r.moved.map((m) => `moved ${m.from} -> ${m.to}`), ...r.held.map((h) => `held: ${h}`)] };
 }
 
-async function cmdName(args: ParsedArgs, doors: RealmDoors): Promise<number> {
-  const [pet, ...rest] = args.positional.slice(1);
-  if (pet === undefined || rest.length > 0) return refuseUsage(args, "realm name", helpLines("realm"), pet === undefined ? "name the realm's pet name" : `unknown word "${rest[0]}"`);
-  const from = args.options["realm"];
-  if (from !== undefined && typeof from !== "string") return refuseUsage(args, "realm name", helpLines("realm"), "--realm names the realm to rename: its pet name or a canon realm id it holds");
+/** The destination `--to` names, or why the line names none. */
+function toOption(args: ParsedArgs): string | null {
+  const to = args.options["to"];
+  return typeof to === "string" && to !== "" ? to : null;
+}
+
+/** `lares realm rename <current pet> --to <new pet>`: the label moves at once; its folders follow at a quiet point. */
+async function cmdRename(args: ParsedArgs, doors: RealmDoors): Promise<number> {
+  const [current, ...rest] = args.positional.slice(1);
+  const to = toOption(args);
+  if (current === undefined || rest.length > 0 || to === null) {
+    return refuseUsage(args, "realm rename", helpLines("realm rename"), rest.length > 0 ? `unknown word "${rest[0]}"` : "name the realm and its new pet name: `lares realm rename <current pet> --to <new pet>`");
+  }
   const projections = doors.projections();
-  const r = nameRealm(projections, pet, { ...(from !== undefined ? { from } : {}), faceNames: houseFaceNames(projections) });
+  const r = nameRealm(projections, to, { from: current, faceNames: houseFaceNames(projections) });
   const move = r.did === "renamed" ? await settleOrDefer(doors, r.label.realms[0]?.slug ?? r.label.bags[0] ?? "") : null;
   emit(args, {
     ok: true,
     data: { petName: r.label.petName, did: r.did, ...(r.from !== undefined ? { from: r.from } : {}), ...(move ? { movedNow: move.now, moves: move.lines } : {}) },
     human: () => {
-      doors.out(
-        r.did === "already" ? `lares realm name: already a realm "${r.label.petName}"`
-        : r.did === "renamed" ? `lares realm name: "${r.from}" now reads "${r.label.petName}" (its folder: ${join(projections, "realms", r.label.petName)})`
-        : `lares realm name: "${r.label.petName}" (place a wiki: \`lares realm add ${r.label.petName} <slug>\`)`);
+      doors.out(r.did === "already" ? `lares realm rename: the realm already reads "${r.label.petName}"`
+        : `lares realm rename: "${r.from}" now reads "${r.label.petName}" (its folder: ${join(projections, "realms", r.label.petName)})`);
       for (const l of move?.lines ?? []) doors.out(`  ${l}`);
     },
   });
   return 0;
 }
 
-async function cmdAdd(args: ParsedArgs, doors: RealmDoors): Promise<number> {
-  const [pet, slug, ...rest] = args.positional.slice(1);
-  if (pet === undefined || slug === undefined || rest.length > 0) return refuseUsage(args, "realm add", helpLines("realm add"), rest.length > 0 ? `unknown word "${rest[0]}"` : "name the realm's pet name and the wiki's slug");
-  const label = await placeWikiInRealm(doors, slug, pet);
-  const id = label.realms.find((r) => r.slug === slug)?.id ?? null;
+/** `lares realm move <wiki slug> --to <realm pet>`: the wiki and its canon bag move to that realm (minted where none wears the pet
+ *  name), keeping its canon realm id; a label the move empties leaves, named; the folder follows at a quiet point. */
+async function cmdMove(args: ParsedArgs, doors: RealmDoors): Promise<number> {
+  const [slug, ...rest] = args.positional.slice(1);
+  const to = toOption(args);
+  if (slug === undefined || rest.length > 0 || to === null) {
+    return refuseUsage(args, "realm move", helpLines("realm move"), rest.length > 0 ? `unknown word "${rest[0]}"` : "name the wiki and its realm: `lares realm move <wiki slug> --to <realm pet>`");
+  }
+  const projections = doors.projections();
+  const r = moveWikiToRealm(projections, slug, to, { faceNames: houseFaceNames(projections) });
+  const id = oneId(await doors.seat(slug));
+  const label = id === null ? r.label : placeInRealm(projections, r.label.petName, { slug, id });
+  const held = label.realms.find((x) => x.slug === slug)?.id ?? null;
   const move = await settleOrDefer(doors, slug);
-  const dir = realmPlacement(doors.projections()).wikisBase(slug);
+  const dir = realmPlacement(projections).wikisBase(slug);
   emit(args, {
     ok: true,
-    data: { petName: label.petName, slug, id, folder: dir === null ? null : join(dir, slug), movedNow: move.now, moves: move.lines },
+    data: { slug, petName: label.petName, from: r.from, minted: r.minted, dropped: r.dropped, id: held, folder: dir === null ? null : join(dir, slug), movedNow: move.now, moves: move.lines },
     human: () => {
-      doors.out(`lares realm add: "${slug}" rests in the realm "${label.petName}"${dir === null ? "" : ` (${join(dir, slug)})`}${id === null ? "; its realm id reads at a later `lares realm add`, once a vessel binds it" : `; realm ${id.slice(0, 12)}…`}`);
+      doors.out(`lares realm move: "${slug}" rests in the realm "${label.petName}"${r.minted ? " (named now)" : ""}${r.from !== null ? `, from "${r.from}"` : ""}${held === null ? "" : `; realm ${held.slice(0, 12)}…`}`);
+      for (const d of r.dropped) doors.out(`  the realm "${d}" holds no wiki now, so its label leaves`);
       for (const l of move.lines) doors.out(`  ${l}`);
     },
   });
@@ -157,7 +107,7 @@ async function cmdList(args: ParsedArgs, doors: RealmDoors): Promise<number> {
     ok: true,
     data: { realms: labels.map((l) => ({ petName: l.petName, realms: l.realms, bags: l.bags })) },
     human: () => {
-      if (labels.length === 0) { doors.out("lares realm list: no realm named on this house (`lares realm name <pet>`)"); return; }
+      if (labels.length === 0) { doors.out("lares realm list: no realm labelled on this house yet (each wiki takes its own at its first mount)"); return; }
       for (const l of labels) {
         doors.out(`${l.petName}`);
         for (const r of l.realms) doors.out(`  wiki ${r.slug.padEnd(16)} ${join(placement.wikisBase(r.slug) ?? "", r.slug)}  ${r.id === null ? "(realm id unread)" : `realm ${r.id.slice(0, 12)}…`}`);
@@ -169,7 +119,7 @@ async function cmdList(args: ParsedArgs, doors: RealmDoors): Promise<number> {
   return 0;
 }
 
-const SUB_DOORS = ["name", "add", "list"] as const;
+const SUB_DOORS = ["rename", "move", "list"] as const;
 
 export async function cmdRealm(args: ParsedArgs, doors: RealmDoors = LIVE_REALM_DOORS): Promise<number> {
   const verb = args.positional[0];
@@ -178,8 +128,8 @@ export async function cmdRealm(args: ParsedArgs, doors: RealmDoors = LIVE_REALM_
   }
   try {
     switch (verb) {
-      case "name": return await cmdName(args, doors);
-      case "add": return await cmdAdd(args, doors);
+      case "rename": return await cmdRename(args, doors);
+      case "move": return await cmdMove(args, doors);
       default: return await cmdList(args, doors);
     }
   } catch (err) {
@@ -189,11 +139,4 @@ export async function cmdRealm(args: ParsedArgs, doors: RealmDoors = LIVE_REALM_
     }
     throw err;
   }
-}
-
-/** THE DEFAULT AT MINT: a wiki minted with no `--realm` takes its own realm label under its slug (or the collision rule's name), with
- *  the canon realm id the vessel's ledger binds where one answers; a wiki some label already holds keeps it. */
-export async function ensureWikiRealm(doors: RealmDoors, slug: string): Promise<RealmEnsured> {
-  const seat = await doors.seat(slug);
-  return ensureRealmLabel(doors.projections(), slug, seat.realms.length === 1 ? seat.realms[0]! : null);
 }

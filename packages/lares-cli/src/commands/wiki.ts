@@ -24,7 +24,7 @@ import { emit } from "../render.js";
 import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-result.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { cmdShare } from "./share-cmd.js";
-import { ensureWikiRealm, LIVE_REALM_DOORS, placeWikiInRealm, type RealmDoors } from "./realm.js";
+import { ensureWikiRealm, LIVE_REALM_DOORS, placeWikiInRealm, type RealmDoors } from "./realm-doors.js";
 import { RealmRefused } from "@lararium/node";
 import { containerArgs } from "../container-target.js";
 import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
@@ -743,7 +743,7 @@ async function cmdWikiStatus(args: ParsedArgs): Promise<number> {
 }
 
 const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
-  "init":  { handler: (a) => cmdWikiInit(a),  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent. Its workbench lays at projections/realms/<slug>/wikis/<slug>/ (the realm's default pet name, the slug); `--realm <pet>` places it in an existing named realm instead (`lares realm name`)." },
+  "init":  { handler: (a) => cmdWikiInit(a),  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent. Its workbench lays at projections/realms/<slug>/wikis/<slug>/ (the realm's default pet name, the slug); `--realm <pet>` places it in an existing realm instead (`lares realm list`)." },
   "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>); --list shows the resolved answer; --remove unshares it. A bag row standing for the slug refuses (share-kind-standing). The daemon wiki never shares." },
   "open":  { handler: cmdWikiOpen,  summary: "Set which wiki the next `lares vessel stand --foreground` boot mounts as active. Does not live-remount the current vessel." },
   "switch": { handler: cmdWikiSwitch, summary: "LIVE-activate a wiki (no reboot — the true swap; wakes it cold from its recipe). Browser flips the projection surface." },

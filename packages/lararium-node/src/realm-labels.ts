@@ -6,7 +6,7 @@
  * EVERY REALM CARRIES A PET NAME, so nothing waits and no plaintext mirror goes dark. A realm minted with no name takes its
  * wiki's slug (`ensureRealmLabel`: canon stands each wiki as its own realm, so the folder reads `realms/<slug>/wikis/<slug>/`),
  * and a vessel mints that label on first read for every realm standing with none. Naming stays the operator's act and never
- * gates flow: `lares realm name <new> --realm <current>` renames, `lares realm add <pet> <slug>` regroups, and the folders move
+ * gates flow: `lares realm rename <current> --to <new>` renames, `lares realm move <slug> --to <pet>` regroups, and the folders move
  * at a quiet point (`settleRealmMoves`), never half-moved.
  *
  * THE RECORD. `<projections>/realm-labels/<pet name>.json` (0600):
@@ -127,7 +127,7 @@ export function realmPetNameRefusal(petName: string, others: readonly string[] =
   const face = faceSegmentRefusal(petName);
   if (face !== null) {
     const code = face.code.replace(/^face-segment-/, "realm-name-") as RealmRefusalCode;
-    return { code, why: face.code === "face-segment-empty" ? "a realm with no pet name makes no folder: name it (`lares realm name <pet>`)" : face.why.replace("so it names no single folder", "so it names no single realm folder") };
+    return { code, why: face.code === "face-segment-empty" ? "a realm with no pet name makes no folder: give it one (`lares realm rename <current> --to <pet>`)" : face.why.replace("so it names no single folder", "so it names no single realm folder") };
   }
   const twin = others.find((o) => fold(o) === fold(petName));
   if (twin !== undefined) return { code: "realm-name-collision", why: `the pet name ${JSON.stringify(petName.normalize("NFC"))} meets the realm ${JSON.stringify(twin)} (folders compare without case): name it apart` };
@@ -180,7 +180,7 @@ export function placeInRealm(projections: string, petName: string, wiki: { reado
   if (isPrivateProjectionSlug(wiki.slug)) throw new RealmRefused("realm-slug-private", `"${wiki.slug}" holds one face's memory, which rests in that face's root (faces/<pet name>/): it joins no realm`);
   const labels = readRealmLabels(projections);
   const label = labels.find((l) => fold(l.petName) === fold(petName));
-  if (label === undefined) throw new RealmRefused("realm-unnamed", `no realm on this house wears the pet name ${JSON.stringify(petName)}: name it first (\`lares realm name ${petName}\`)`);
+  if (label === undefined) throw new RealmRefused("realm-unnamed", `no realm on this house wears the pet name ${JSON.stringify(petName)}: gather a wiki into it first (\`lares realm move <slug> --to ${petName}\`)`);
   let carried: string | null = null;
   for (const other of labels) {
     if (other === label || !(other.realms.some((r) => r.slug === wiki.slug) || other.bags.includes(wiki.slug))) continue;
@@ -195,6 +195,30 @@ export function placeInRealm(projections: string, petName: string, wiki: { reado
   const next: RealmLabel = { ...label, realms, bags };
   if (JSON.stringify(next) !== JSON.stringify(label)) writeRealmLabel(projections, next);
   return next;
+}
+
+/** What one move did: the label the wiki now rests in, the realm it left (null where it rested in none, or already here), whether
+ *  the target label was minted for it, and each label the move emptied and dropped. */
+export interface RealmMove { readonly label: RealmLabel; readonly from: string | null; readonly minted: boolean; readonly dropped: readonly string[] }
+
+/**
+ * MOVE A WIKI TO A REALM (`lares realm move <slug> --to <pet>`): the wiki (and its canon bag) leaves the label that holds it and
+ * joins the realm wearing `petName`, minted now under the pet-name rule where no label wears it. The wiki keeps its canon realm
+ * id (the label only gathers it). A label the move empties leaves, named in `dropped`. The folders follow at the next quiet point.
+ */
+export function moveWikiToRealm(projections: string, slug: string, petName: string, opts: { readonly faceNames?: readonly string[] } = {}): RealmMove {
+  const before = readRealmLabels(projections);
+  const from = before.find((l) => l.realms.some((r) => r.slug === slug) || l.bags.includes(slug)) ?? null;
+  const minted = findRealmLabel(projections, petName) === null;
+  if (minted) nameRealm(projections, petName, opts.faceNames !== undefined ? { faceNames: opts.faceNames } : {});
+  const label = placeInRealm(projections, petName, { slug, id: null });
+  const dropped: string[] = [];
+  for (const l of readRealmLabels(projections)) {
+    if (l.petName === label.petName || l.realms.length > 0 || l.bags.length > 0 || !before.some((b) => b.petName === l.petName && (b.realms.some((r) => r.slug === slug) || b.bags.includes(slug)))) continue;
+    rmSync(realmLabelPath(l.petName, projections), { force: true });
+    dropped.push(l.petName);
+  }
+  return { label, from: from !== null && from.petName !== label.petName ? from.petName : null, minted, dropped };
 }
 
 /** What `ensureRealmLabel` found or minted for a slug, and the line it says where it minted. */
@@ -224,8 +248,8 @@ export function ensureRealmLabel(projections: string, slug: string, id: string |
   const label: RealmLabel = { schema: REALM_LABEL_SCHEMA, petName, realms: [{ slug, id: realmId }], bags: [slug] };
   writeRealmLabel(projections, label);
   const line = petName === slug
-    ? `${slug}: the realm takes its default pet name "${petName}" (its folder: realms/${petName}/); \`lares realm name <pet> --realm ${petName}\` renames it`
-    : `${slug}: the default pet name "${slug}" names another realm already, so this realm takes "${petName}" (the slug plus the shortest ${realmId !== null ? "prefix of its realm id" : "counter"} that names it apart; its folder: realms/${petName}/); \`lares realm name <pet> --realm ${petName}\` renames it`;
+    ? `${slug}: the realm takes its default pet name "${petName}" (its folder: realms/${petName}/); \`lares realm rename ${petName} --to <pet>\` renames it`
+    : `${slug}: the default pet name "${slug}" names another realm already, so this realm takes "${petName}" (the slug plus the shortest ${realmId !== null ? "prefix of its realm id" : "counter"} that names it apart; its folder: realms/${petName}/); \`lares realm rename ${petName} --to <pet>\` renames it`;
   return { label, minted: true, line };
 }
 

@@ -744,7 +744,7 @@ async function cmdInitRealm(args: ParsedArgs, doors: SurfaceDoors, petName: stri
   const projections = doors.projections();
   const standing = pools.filter((p) => dirOrNull(p.root) !== null);
   const unlaid = pools.filter((p) => dirOrNull(p.root) === null);
-  if (standing.length === 0) throw new SurfaceRefused("surface-realm-unlaid", `no wiki folder of the realm "${realm}" stands yet${pools.length === 0 ? " (it holds no wiki: `lares realm add " + realm + " <slug>`)" : ` (${unlaid.map((p) => p.root).join(", ")})`}: the house lays each at the wiki's next mount`);
+  if (standing.length === 0) throw new SurfaceRefused("surface-realm-unlaid", `no wiki folder of the realm "${realm}" stands yet${pools.length === 0 ? " (it holds no wiki: `lares realm move <slug> --to " + realm + "`)" : ` (${unlaid.map((p) => p.root).join(", ")})`}: the house lays each at the wiki's next mount`);
   for (const { root } of standing) {
     for (const face of houseFaceRoots(projections)) {
       if (within(real(root), real(face))) throw new SurfaceRefused("surface-realm-in-face", `${root} rests inside the face root ${face}: a realm pool belongs to no face`);

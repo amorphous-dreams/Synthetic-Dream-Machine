@@ -19,7 +19,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, wri
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  ensureRealmLabel, nameRealm, placeInRealm, readRealmLabels, realmLabelPath, realmPlacement, RealmRefused, REALM_LABEL_SCHEMA, settleRealmMoves,
+  ensureRealmLabel, moveWikiToRealm, nameRealm, placeInRealm, readRealmLabels, realmLabelPath, realmPlacement, RealmRefused, REALM_LABEL_SCHEMA, settleRealmMoves,
 } from "../src/realm-labels.js";
 import { realmRoot, REALMS_PROJECTION_DIR } from "../src/bag-paths.js";
 
@@ -79,6 +79,14 @@ describe("the realm label", () => {
     expect(realmPlacement(p).wikisBase("notes")).toBe(join(p, "realms", "Forge", "wikis"));
     expect(code(() => placeInRealm(p, "Nowhere", { slug: "works", id: null }))).toBe("realm-unnamed");
     expect(code(() => placeInRealm(p, "Forge", { slug: "daemon", id: null }))).toBe("realm-slug-private");
+  });
+
+  test("RL3b a move mints the target realm where none wears it, keeps the canon realm id, and drops the label it empties", () => {
+    ensureRealmLabel(p, "notes", "ab".repeat(32));
+    const r = moveWikiToRealm(p, "notes", "Garden");
+    expect(r).toEqual({ label: { schema: REALM_LABEL_SCHEMA, petName: "Garden", realms: [{ slug: "notes", id: "ab".repeat(32) }], bags: ["notes"] }, from: "notes", minted: true, dropped: ["notes"] });
+    expect(readRealmLabels(p).map((l) => l.petName)).toEqual(["Garden"]);
+    expect(code(() => moveWikiToRealm(p, "notes", "a/b"))).toBe("realm-name-separator");
   });
 
   test("RL4 a rename relabels at once; the folder moves at the quiet point, and never half-moved", () => {

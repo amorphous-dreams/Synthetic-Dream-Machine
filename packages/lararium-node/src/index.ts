@@ -234,7 +234,7 @@ export { buildCardBody, CardRestoreRefused, CARD_REFUSALS } from "./face-card-re
 // THE REALM LABELS: each realm's local pet name and the canon realms and bags its folder holds (`realm-labels`).
 export { REALM_LABELS_DIR, REALM_LABEL_SCHEMA, realmLabelsDir, realmLabelPath, readRealmLabels, findRealmLabel, realmPetNameRefusal,
   nameRealm, placeInRealm, ensureRealmLabel, settleRealmMoves, realmPlacement, RealmRefused, type RealmLabel, type RealmLabelRealm, type RealmRefusalCode,
-  realmFoldersOnDisk, type RealmFolder, type RealmNaming, type RealmPlacement, type RealmEnsured, type RealmSettle } from "./realm-labels.js";
+  realmFoldersOnDisk, moveWikiToRealm, type RealmMove, type RealmFolder, type RealmNaming, type RealmPlacement, type RealmEnsured, type RealmSettle } from "./realm-labels.js";
 // THE FACE LABELS: each face's pet-name and its copies' override bases, in plaintext outside every mirror (`face-labels`).
 export { FACE_LABELS_DIR, FACE_LABEL_SCHEMA, FACE_BASES_SCHEMA, faceLabelsDir, faceLabelPath, faceBasesPath, readFaceLabel, writeFaceLabel, labelledRelations,
   moveFaceLabelFile, faceSiteOf, readFaceBases, writeFaceBases, basesOfDoc, keepFaceBases, type FaceLabel, type KeptDoc, type KeptDocState } from "./face-labels.js";
