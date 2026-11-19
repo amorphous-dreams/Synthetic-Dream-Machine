@@ -122,20 +122,27 @@ export async function mintKeepSeatUnder(route: readonly Credential[], kdf: KdfPo
   return mint;
 }
 
-/** The bytes a cut signs: the domain, the bundle id, and the sealed roster's digest. */
-function cutMessage(bundleId: string, sealedRoster: Uint8Array): Uint8Array {
+/**
+ * The bytes a cut signs: the domain, the bundle id, the sealed roster's digest, and the digest of the whole manifest save its
+ * signature (`manifestDigest`, 32 bytes), so no manifest field outside the hashed files (a row's override base, its family
+ * bases, an omission) changes on a remote unchallenged.
+ */
+function cutMessage(bundleId: string, sealedRoster: Uint8Array, manifestDigest: Uint8Array): Uint8Array {
+  if (manifestDigest.length !== 32) throw new Error("keep-seat: a cut signs a 32-byte manifest digest");
   const id = new TextEncoder().encode(bundleId);
   const digest = sha256(sealedRoster);
-  const out = new Uint8Array(CUT_DOMAIN.length + 1 + id.length + 1 + digest.length);
+  const out = new Uint8Array(CUT_DOMAIN.length + 1 + id.length + 1 + digest.length + manifestDigest.length);
   out.set(CUT_DOMAIN, 0);
   out.set(id, CUT_DOMAIN.length + 1);
   out.set(digest, CUT_DOMAIN.length + 1 + id.length + 1);
+  out.set(manifestDigest, CUT_DOMAIN.length + 1 + id.length + 1 + digest.length);
   return out;
 }
 
-/** Sign a cut: the bundle id and its sealed roster, under the keep's signing seed. Deterministic, so an unmoved cut signs alike. */
-export function signKeepCut(signingSeed: Uint8Array, bundleId: string, sealedRoster: Uint8Array): Uint8Array {
-  return ed25519.sign(cutMessage(bundleId, sealedRoster), signingSeed);
+/** Sign a cut: the bundle id, its sealed roster and its manifest's digest, under the keep's signing seed. Deterministic, so an
+ *  unmoved cut signs alike. */
+export function signKeepCut(signingSeed: Uint8Array, bundleId: string, sealedRoster: Uint8Array, manifestDigest: Uint8Array): Uint8Array {
+  return ed25519.sign(cutMessage(bundleId, sealedRoster, manifestDigest), signingSeed);
 }
 
 /** The verify key a signing seed answers to. */
@@ -143,9 +150,9 @@ export function keepVerifyKeyOf(signingSeed: Uint8Array): Uint8Array {
   return ed25519.getPublicKey(signingSeed);
 }
 
-/** Whether `signature` signs this bundle id and sealed roster under `verifyKey`; false on any fault. */
-export function verifyKeepCut(verifyKey: Uint8Array, bundleId: string, sealedRoster: Uint8Array, signature: Uint8Array): boolean {
-  try { return ed25519.verify(signature, cutMessage(bundleId, sealedRoster), verifyKey); } catch { return false; }
+/** Whether `signature` signs this bundle id, sealed roster and manifest digest under `verifyKey`; false on any fault. */
+export function verifyKeepCut(verifyKey: Uint8Array, bundleId: string, sealedRoster: Uint8Array, manifestDigest: Uint8Array, signature: Uint8Array): boolean {
+  try { return ed25519.verify(signature, cutMessage(bundleId, sealedRoster, manifestDigest), verifyKey); } catch { return false; }
 }
 
 async function openTree(seat: KeepSeat, credentials: readonly Credential[], kdf: KdfPort): Promise<{ readonly treeKey: TreeKey; readonly slot: string } | Exclude<KeepSecretOpening, { reading: "opens" }>> {

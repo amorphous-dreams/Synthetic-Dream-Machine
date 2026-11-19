@@ -78,7 +78,7 @@ import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "..
 import { writeFaceLabels, readFaceBases, labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
-  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KEEP_SEAT_FILE, KAHUA_HEADS_FILE, bundleIdOf, bundleBytes, sha256Hex, zeroCounts, verifyBundle, openBundle, rosterView, readBundleSeat, BundleVerifyRefused,
+  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KEEP_SEAT_FILE, KAHUA_HEADS_FILE, bundleIdOf, bundleBytes, keepManifestDigest, sha256Hex, zeroCounts, verifyBundle, openBundle, rosterView, readBundleSeat, BundleVerifyRefused,
   type BundleDiskManifest, type BundleFaceKey, type BundleFile, type BundleKahuaHead, type BundleManifest, type BundleOmission, type BundleRedeclare,
   type BundleRedeclareFace, type BundleRow, type BundleShareEntry, type VerifiedBundle,
 } from "../bundle-manifest.js";
@@ -707,8 +707,9 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     // THE CUT SIGNS ITS ROSTER: the bundle id and the sealed roster, under the seed the house keeps, so a restore refuses a roster
     // sealed to the published public half by anyone else.
     const bundleId = bundleIdOf(files);
-    const keepSignature = signCut(signingSeed, bundleId, sealedRoster);
-    const manifest: BundleDiskManifest = { schema: BUNDLE_SCHEMA, bundleId, keepSignature, faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
+    const unsigned: BundleDiskManifest = { schema: BUNDLE_SCHEMA, bundleId, faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
+    // THE WHOLE MANIFEST SIGNED: every field it holds (its rows' override and family bases, its omissions) rides the signature.
+    const manifest: BundleDiskManifest = { ...unsigned, keepSignature: signCut(signingSeed, bundleId, sealedRoster, keepManifestDigest(JSON.parse(JSON.stringify(unsigned)) as Record<string, unknown>)) };
     writeFileSync(join(staging, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`, { flag: "wx" });
     // Every byte read back against the manifest, the seat read whole, and the roster read against the manifest, before the bundle
     // takes its name.
@@ -867,10 +868,10 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   // THE ROSTER'S ORIGIN: the verify key rides inside the slot that opened, so a roster the house never signed refuses here,
   // before its text reaches any door.
   const signature = sealed.manifest.keepSignature;
-  const signed = typeof signature === "string" && verifyKeepCut(opening.verifyKey, sealed.manifest.bundleId, bundleBytes(sealed.root, REDECLARE_FILE), Uint8Array.from(Buffer.from(signature, "hex")));
+  const signed = typeof signature === "string" && verifyKeepCut(opening.verifyKey, sealed.manifest.bundleId, bundleBytes(sealed.root, REDECLARE_FILE), keepManifestDigest(sealed.manifest as unknown as Record<string, unknown>), Uint8Array.from(Buffer.from(signature, "hex")));
   if (!signed) {
     opening.secret.fill(0); opening.signingSeed.fill(0);
-    throw new BundleRefused("keep-roster-unsigned", "the bundle's roster carries no signature the opened keep seat answers: whoever wrote the remote may have sealed a roster of its own to the published public half; nothing moved. Restore from a keep this house cut");
+    throw new BundleRefused("keep-roster-unsigned", "the bundle's roster or manifest carries no signature the opened keep seat answers: whoever wrote the remote may have sealed a roster of its own to the published public half; nothing moved. Restore from a keep this house cut");
   }
   let bundle: VerifiedBundle;
   try { bundle = openBundle(sealed, opening.secret); } finally { opening.secret.fill(0); }

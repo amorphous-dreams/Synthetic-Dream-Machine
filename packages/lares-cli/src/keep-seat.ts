@@ -410,9 +410,9 @@ export function sealRosterForCut(cut: CutSeat, redeclare: BundleRedeclare): Buff
   return sealed;
 }
 
-/** Sign a cut: the bundle id and the sealed roster, under the seed the house keeps. Answers the signature in hex. */
-export function signCut(signingSeed: Uint8Array, bundleId: string, sealedRoster: Uint8Array): string {
-  return Buffer.from(signKeepCut(signingSeed, bundleId, sealedRoster)).toString("hex");
+/** Sign a cut: the bundle id, the sealed roster and the manifest's digest, under the seed the house keeps. Answers it in hex. */
+export function signCut(signingSeed: Uint8Array, bundleId: string, sealedRoster: Uint8Array, manifestDigest: Uint8Array): string {
+  return Buffer.from(signKeepCut(signingSeed, bundleId, sealedRoster, manifestDigest)).toString("hex");
 }
 
 /**

@@ -46,7 +46,7 @@
 import { createHash } from "node:crypto";
 import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { join, posix, sep } from "node:path";
-import { decodeKeepSeat, openFromKeep, sealToKeep, type KeepSeat } from "@lararium/mesh";
+import { canonicalJson, decodeKeepSeat, openFromKeep, sealToKeep, type KeepSeat } from "@lararium/mesh";
 
 /** The schema a bundle names; an import refuses any other. */
 export const BUNDLE_SCHEMA = "lar-house-bundle";
@@ -335,6 +335,15 @@ export function redeclareBytes(redeclare: BundleRedeclare): Uint8Array {
 export function sealRedeclare(publicKey: Uint8Array, redeclare: BundleRedeclare): Buffer {
   if (publicKey.length !== 32) throw new BundleVerifyRefused("bundle-keep-seat-shape: the keep pair's public half rides no 32 bytes");
   return Buffer.from(sealToKeep(publicKey, redeclareBytes(redeclare), REDECLARE_FILE));
+}
+
+/**
+ * The digest a keep cut signs over its manifest: sha-256 of the manifest's canonical JSON (sorted keys) with `keepSignature` left
+ * out, so the cut signs every field the manifest holds and a restore re-derives the same bytes from the file it reads.
+ */
+export function keepManifestDigest(manifest: Readonly<Record<string, unknown>>): Uint8Array {
+  const { keepSignature: _unsigned, ...rest } = manifest as Record<string, unknown>;
+  return createHash("sha256").update(canonicalJson(rest)).digest();
 }
 
 /**
