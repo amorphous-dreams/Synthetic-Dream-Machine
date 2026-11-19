@@ -1,7 +1,7 @@
 /**
  * genesis-artifact — node genesis byte SOURCE + the node genesis office.
  *
- * The intake core (validate → import → verify, CID reconcile) lives ONCE in
+ * The intake core (validate → import → verify) lives ONCE in
  * @lararium/mesh `genesis-intake`; this file
  * keeps only what genuinely belongs to node:
  *   - the fs byte source (genesis/seed.json + cas/)

@@ -42,9 +42,16 @@ function house(): { root: string; store: string } {
 describe("vessel read names the floor shadow count", () => {
   test("a kept tally reads back on the read's answer", async () => {
     const { root, store } = house();
-    const tally = { cleanBoots: 7, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null };
+    const tally = { current: { floor: "a".repeat(64), cleanBoots: 7, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null }, prior: [] };
     writeFileSync(join(store, "floor-shadow.json"), JSON.stringify(tally));
     expect((await readJson(root)).data["floorShadow"]).toEqual(tally);
+  });
+
+  test("a tally kept before the count named its floor reads as a prior floor's history", async () => {
+    const { root, store } = house();
+    const unkeyed = { cleanBoots: 2, mismatchBoots: 1, unreadBoots: 4, firstMismatch: null };
+    writeFileSync(join(store, "floor-shadow.json"), JSON.stringify(unkeyed));
+    expect((await readJson(root)).data["floorShadow"]).toEqual({ current: null, prior: [{ floor: null, ...unkeyed }] });
   });
 
   test("CONTROL: a house with no tally answers null, never a guess", async () => {

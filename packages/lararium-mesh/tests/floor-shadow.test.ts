@@ -92,7 +92,7 @@ describe("the floor's plugins offering beside the founding record's boot set", (
   });
 });
 
-describe("the shadow tally counts boots and keeps the first mismatch", () => {
+describe("the shadow tally counts boots and keeps the first mismatch on each floor", () => {
   test("clean boots count; the first mismatch stays named once later ones land; unread counts apart", async () => {
     const same = manifest();
     const moved = manifest({ plugins: SHORT.cid });
@@ -101,20 +101,74 @@ describe("the shadow tally counts boots and keeps the first mismatch", () => {
     const unread = await readFloorShadow({ manifestCid: same.cid, readBytes: async () => null, islandBlobs: blobs, coreSha256: CORE_SHA });
     let t = foldFloorShadowTally(null, clean);
     t = foldFloorShadowTally(t, clean);
-    expect(floorShadowLine(t)).toBe("floor shadow: clean across 2 boots");
-    t = foldFloorShadowTally(t, bad);
-    t = foldFloorShadowTally(t, bad);
+    expect(floorShadowLine(t)).toBe(`floor shadow on floor ${same.cid.slice(0, 12)}…: clean across 2 boots, 0 unread`);
     t = foldFloorShadowTally(t, unread);
-    expect(t.cleanBoots).toBe(2);
-    expect(t.mismatchBoots).toBe(2);
-    expect(t.unreadBoots).toBe(1);
-    expect(t.firstMismatch?.manifest).toBe(moved.cid);
-    expect(t.firstMismatch?.moved.map((m) => m.field)).toEqual(["plugins"]);
+    expect(t.current).toMatchObject({ floor: same.cid, cleanBoots: 2, unreadBoots: 1, mismatchBoots: 0 });
+    t = foldFloorShadowTally(t, bad);
+    t = foldFloorShadowTally(t, bad);
+    expect(t.current?.floor).toBe(moved.cid);
+    expect(t.current?.mismatchBoots).toBe(2);
+    expect(t.current?.firstMismatch?.manifest).toBe(moved.cid);
+    expect(t.current?.firstMismatch?.moved.map((m) => m.field)).toEqual(["plugins"]);
     expect(floorShadowLine(t)).toContain("first mismatch");
     expect(floorShadowLine(t)).toContain("plugins");
     // The tally reads back from its stored JSON, and a malformed value reads null, never a guess.
     expect(readFloorShadowTally(JSON.parse(JSON.stringify(t)))).toEqual(t);
     expect(readFloorShadowTally({ cleanBoots: "two" })).toBeNull();
     expect(floorShadowLine(null)).toBe("floor shadow: no boot read yet");
+  });
+});
+
+describe("the shadow tally keys its count by the floor each boot read", () => {
+  const short = (cid: string): string => `${cid.slice(0, 12)}…`;
+
+  test("an older floor's mismatch stays set aside: the new floor reads clean after N clean boots", async () => {
+    const old = manifest({ plugins: SHORT.cid });
+    const now = manifest();
+    const bad = await readFloorShadow({ manifestCid: old.cid, readBytes: store(old), islandBlobs: blobs, coreSha256: CORE_SHA });
+    const clean = await readFloorShadow({ manifestCid: now.cid, readBytes: store(now), islandBlobs: blobs, coreSha256: CORE_SHA });
+    let t = foldFloorShadowTally(null, bad);
+    for (let i = 0; i < 3; i++) t = foldFloorShadowTally(t, clean);
+    expect(floorShadowLine(t)).toBe(`floor shadow on floor ${short(now.cid)}: clean across 3 boots, 0 unread; 1 older floor set aside`);
+    expect(t).toMatchObject({
+      current: { floor: now.cid, cleanBoots: 3, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null },
+      prior:   [{ floor: old.cid, cleanBoots: 0, mismatchBoots: 1, unreadBoots: 0 }],
+    });
+    expect(readFloorShadowTally(JSON.parse(JSON.stringify(t)))).toEqual(t);
+  });
+
+  test("a stored tally that names no floor reads as a prior floor's history, never a fault", async () => {
+    const now = manifest();
+    const unkeyed = { cleanBoots: 0, mismatchBoots: 2, unreadBoots: 5,
+      firstMismatch: { manifest: "e".repeat(64), moved: [{ field: "plugins", floor: "f".repeat(64), island: "$:/plugins/operator/extra" }] } };
+    const kept = readFloorShadowTally(unkeyed);
+    expect(kept).toEqual({ current: null, prior: [{ floor: null, ...unkeyed }] });
+    const clean = await readFloorShadow({ manifestCid: now.cid, readBytes: store(now), islandBlobs: blobs, coreSha256: CORE_SHA });
+    let t = foldFloorShadowTally(kept, clean);
+    t = foldFloorShadowTally(t, clean);
+    t = foldFloorShadowTally(t, clean);
+    expect(floorShadowLine(t)).toBe(`floor shadow on floor ${short(now.cid)}: clean across 3 boots, 0 unread; 1 older floor set aside`);
+  });
+
+  test("a boot back on an older floor picks that floor's own count back up", async () => {
+    const a = manifest();
+    const b = manifest({ plugins: SHORT.cid });
+    const onA = await readFloorShadow({ manifestCid: a.cid, readBytes: store(a), islandBlobs: blobs, coreSha256: CORE_SHA });
+    const onB = await readFloorShadow({ manifestCid: b.cid, readBytes: store(b), islandBlobs: blobs, coreSha256: CORE_SHA });
+    let t = foldFloorShadowTally(null, onA);
+    t = foldFloorShadowTally(t, onA);
+    t = foldFloorShadowTally(t, onB);
+    t = foldFloorShadowTally(t, onA);
+    expect(t).toMatchObject({ current: { floor: a.cid, cleanBoots: 3 }, prior: [{ floor: b.cid, mismatchBoots: 1 }] });
+  });
+
+  test("CONTROL: on one floor the first mismatch stays named once later boots land", async () => {
+    const moved = manifest({ plugins: SHORT.cid });
+    const bad = await readFloorShadow({ manifestCid: moved.cid, readBytes: store(moved), islandBlobs: blobs, coreSha256: CORE_SHA });
+    const unread = await readFloorShadow({ manifestCid: moved.cid, readBytes: async () => null, islandBlobs: blobs, coreSha256: CORE_SHA });
+    let t = foldFloorShadowTally(null, bad);
+    t = foldFloorShadowTally(t, unread);
+    expect(floorShadowLine(t)).toContain("first mismatch");
+    expect(floorShadowLine(t)).toContain("plugins");
   });
 });

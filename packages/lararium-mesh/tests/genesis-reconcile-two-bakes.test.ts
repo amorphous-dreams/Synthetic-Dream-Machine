@@ -1,24 +1,17 @@
 /**
- * genesis-reconcile-two-bakes.test.ts — KNOWN RED, UNCURED: two genesis bakes under the one oracle doc id.
+ * genesis-reconcile-two-bakes.test.ts — two genesis bakes under the one oracle doc id.
  *
  * Two real seeds, pinned as fixtures by the grammar blob each carries:
  *   bake A — grammar aacd2f0d…, grammarCid bafkreihllvx6…, floor e50202e5…, actor 192d60dd…  (baked first)
  *   bake B — grammar 2f9cf234…, grammarCid bafkreidxhckj…, floor 3bd74e21…, actor 0c42190a…  (the re-bake)
  * Both materialize under `oracleGenesisDocUrl()`, one fixed id for every bake.
  *
- * WHAT THE INTAKE DOES, measured:
- *   1. `reconcileGenesisCid(liveA, incomingB)` reads `live.url === incoming.url` (the one id) as the self-merge
- *      guard, merges nothing and answers `updated: false` with every `previous*Cid` set to the INCOMING value,
- *      while the live doc still reads grammarCid bafkreihllvx6…, grammar blob aacd2f0d…, floor e50202e5….
- *   2. A merge of the two histories (the shape a sync of the one id takes) settles the root `blobs` and
- *      `tiddlers` maps as ONE conflict each, won whole by the higher actor (192d… > 0c42…), never by the later
- *      bake: in BOTH merge orders the island reads bake A entire, and an operator write that rested in bake B's
- *      `tiddlers` map leaves the island.
- *   3. Where the reconcile DOES merge (the incoming island under an id of its own), it merges first and then rewrites
- *      only the three region witnesses to the incoming bake, so the grammar witness names bake B while the island
- *      serves bake A's grammar blob. The node keel never reaches this merge at boot: open-node-vessel's loadGenesis
- *      reloads a persisted oracle as it stands ("no merge-into-stale"), so a store founded on bake A keeps bake A.
- * Each red states the correct island; it turns green (and `test.fails` turns red) the day the intake lands it.
+ * The island stays the founding record: no source merges one genesis document into another, and a store founded on
+ * bake A keeps bake A until its floor pin moves. A merge of the two histories (the shape a sync of the one id takes)
+ * settles the root `blobs` and `tiddlers` maps as ONE conflict each, won whole by the higher actor (192d… > 0c42…), never
+ * by the later bake; that red stands (`test.fails` turns red the day a sync lands the later bake). What a store that
+ * takes bake B must read (the island whole, every witness naming the blob it serves) rides 3d, adopt per ratchet
+ * (lar:///ha.ka.ba/kahua/memory/research/plan-floor-flip#/adopt), as a skipped title until that move exists.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/genesis-intake
  */
@@ -26,11 +19,11 @@
 import { describe, test, expect, afterEach } from "vitest";
 import { readFileSync } from "node:fs";
 import { Repo, type DocHandle } from "@automerge/automerge-repo";
-import { materializeGenesisIsland, reconcileGenesisCid } from "../src/genesis-intake.js";
+import { materializeGenesisIsland } from "../src/genesis-intake.js";
 import { mergeGuarded } from "../src/prototype-key-shore.js";
 import {
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
-  computeEngineCid, computeGrammarCid, materializeGenesisDoc, oracleGenesisDocUrl, type GenesisSeed,
+  computeEngineCid, computeGrammarCid, oracleGenesisDocUrl, type GenesisSeed,
 } from "../src/genesis-doc.js";
 import { plainField, ENGINE_CORE_ID, LARES_MEMETIC_WIKITEXT_PLUGIN_URI, type LarDoc } from "../src/index.js";
 
@@ -80,7 +73,7 @@ function servedMatchesWitness(doc: LarDoc | undefined): { engine: boolean; gramm
 }
 const ALL_SERVED = { engine: true, grammar: true, floor: true };
 
-describe("genesis reconcile — two bakes under the one oracle doc id", () => {
+describe("genesis intake — two bakes under the one oracle doc id", () => {
   const repos: Repo[] = [];
   afterEach(async () => { for (const r of repos.splice(0)) await r.shutdown(); });
 
@@ -111,17 +104,16 @@ describe("genesis reconcile — two bakes under the one oracle doc id", () => {
     expect(BAKE_A.actorSeed > BAKE_B.actorSeed, "bake A's actor sorts higher: the actor tiebreak favours the bake made first").toBe(true);
   });
 
-  test.fails("RED (uncured): a store founded on bake A reconciles bake B under the one id — the island reads bake B and the result names bake A's grammar as previous", async () => {
-    const live     = await island(BAKE_A);
-    const incoming = await island(BAKE_B);
-    const result   = reconcileGenesisCid(live, incoming);
-    // Measured: updated false, previousGrammarCid === incomingGrammarCid, the live island still bake A whole.
-    expect(result.previousGrammarCid).toBe(seedReading(BAKE_A).grammar);
-    expect(result.updated).toBe(true);
+  test.skip("3d · adopt per ratchet carries this, skipped until the adopt lands: a store founded on bake A that adopts bake B reads bake B's island whole, every witness naming the blob it serves, and bake A stands as the prior the undo reverts to", async () => {
+    const live = await island(BAKE_A);
+    const prior = readIsland(live.doc());
+    // 3d's adopt moves this store's floor pin to bake B here.
+    expect(prior.grammar, "the undo's prior names bake A's grammar").toBe(seedReading(BAKE_A).grammar);
     expect(readIsland(live.doc())).toEqual(seedReading(BAKE_B));
+    expect(servedMatchesWitness(live.doc())).toEqual(ALL_SERVED);
   });
 
-  test.fails("RED (uncured): merging the two bakes' histories lands bake B and keeps the operator's row, in either merge order", async () => {
+  test.fails("RED: merging the two bakes' histories lands bake B and keeps the operator's row, in either merge order", async () => {
     // Order 1: the operator's row rests on a store founded on bake A, bake B arrives.
     const liveA = await island(BAKE_A);
     writeOperatorNote(liveA);
@@ -136,22 +128,5 @@ describe("genesis reconcile — two bakes under the one oracle doc id", () => {
     expect(liveB.doc()?.tiddlers[OPERATOR_NOTE], "the operator's row survives the merge").toBeTruthy();
     expect(readIsland(liveA.doc())).toEqual(seedReading(BAKE_B));
     expect(readIsland(liveB.doc())).toEqual(seedReading(BAKE_B));
-  });
-
-  test.fails("RED (uncured): where the reconcile does merge (bake B arriving under its own id), every witness names the blob the island serves", async () => {
-    const live = await island(BAKE_A);
-    const repo = new Repo({ sharePolicy: async () => false });
-    repos.push(repo);
-    const incoming = repo.import<LarDoc>(materializeGenesisDoc(BAKE_B));
-    await incoming.whenReady();
-    expect(incoming.url).not.toBe(live.url);
-    const result = reconcileGenesisCid(live, incoming);
-    expect(result.updated).toBe(true);
-    // Measured: the merge keeps bake A's blobs whole (actor order) and the reconcile then rewrites the three witnesses to
-    // bake B: the grammar witness names bafkreidxhckj… while the island serves grammar blob aacd2f0d… (folds to
-    // bafkreihllvx6…); the floor witness, never rewritten, keeps naming bake A's e50202e5… and so matches bake A's blob;
-    // the engine matches only because both bakes carry one core (4da77b10…). The island reads neither bake.
-    expect(servedMatchesWitness(live.doc())).toEqual(ALL_SERVED);
-    expect(readIsland(live.doc())).toEqual(seedReading(BAKE_B));
   });
 });
