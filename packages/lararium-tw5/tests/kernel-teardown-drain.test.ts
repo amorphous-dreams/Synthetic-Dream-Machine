@@ -113,13 +113,14 @@ describe("sovereign kernel teardown drains its queued write", () => {
     expect(events.indexOf("receipt-close")).toBeLessThan(events.indexOf("shutdown"));
     expect(reopen().get(TITLE)).toBe(VALUE);
   });
-  test("CONTROL: a quiet vessel lets shutdown finish without acknowledging the unwritten save", async () => {
+  test("CONTROL: a quiet vessel lets shutdown finish without acknowledging the unwritten save, and names the heads it never settled", async () => {
     const { events, reopen } = await scenario(false);
     expect(events).toContain("receipt-request");
     expect(events).toContain("receipt-asks-done");
     expect(events.indexOf("receipt-asks-done")).toBeLessThan(events.indexOf("receipt-close"));
     expect(events).toContain("save-refused");
-    expect(events).toContain("shutdown");
+    // The island keeps no store, so heads the vessel never settled end the teardown by name, never as a silent ack.
+    expect(events.find((event) => event.startsWith("fault "))).toContain("the last heads of");
     expect(events).not.toContain("save-ack");
     expect(reopen().has(TITLE)).toBe(false);
   });
@@ -173,6 +174,7 @@ describe("vessel stand-down releases receipt waits", () => {
     let closePort: (() => void) | undefined;
     let ready!: () => void;
     let acked = false;
+    let faulted = "";
     let refused = false;
     let asksDone = false;
     const ea = new Promise<void>((resolve) => { ready = resolve; });
@@ -194,6 +196,7 @@ describe("vessel stand-down releases receipt waits", () => {
       post: (message) => {
         if (message.type === "ea") ready();
         if (message.type === "teardown:ack") acked = true;
+        if (message.type === "fault" && message.error.startsWith("teardown-fault:")) faulted = message.error;
         if ((message as { type: string }).type === "receipt:asks-done") asksDone = true;
       },
     };
@@ -224,7 +227,10 @@ describe("vessel stand-down releases receipt waits", () => {
         deliver({ type: "receipt:close" });
       }
       for (let i = 0; i < 50; i++) await Promise.resolve();
-      expect(acked, "stand-down must reach teardown:ack without a timer").toBe(true);
+      // The stand-down ends the teardown without a timer. The island keeps no store, so the heads the vessel never settled
+      // end it by name in place of the ack.
+      expect(acked || faulted !== "", "stand-down must end the teardown without a timer").toBe(true);
+      expect(faulted, "the unsettled heads reach the vessel by name").toContain("the last heads of");
       if (kind !== "unfinished-act") expect(refused).toBe(true);
     } finally { clock.mockRestore(); }
   }

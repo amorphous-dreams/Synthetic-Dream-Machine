@@ -109,7 +109,7 @@ describe("a wiki island keeps no store of its own", () => {
       await s.pool.unmountWiki(wikiId);
       await s.pool.mountWiki(wikiId, s.spec);
       const named = warned.filter((line) => line.includes("an island store stands unused at"));
-      expect(named).toEqual([`[vessel-pool] an island store stands unused at ${left}: the vessel holds every doc (2 files, 1010 bytes, 1 stranded temp); the census and the re-found sweep clear it`]);
+      expect(named).toEqual([`[vessel-pool] an island store stands unused at ${left}: the vessel holds every doc (2 files, 1010 bytes, 1 stranded temp); nothing reads it, nothing removes it; a re-found leaves it behind`]);
       expect(readFileSync(chunk).byteLength).toBe(1_000);
     } finally { spy.mockRestore(); await s.close(); }
   }, 60_000);

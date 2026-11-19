@@ -182,7 +182,8 @@ export function runSovereignKernel(
   let _activeWikiUri                    = "";
   // A session island's two asked gates (catalog names, content addresses) ride this channel; null outside a session.
   let _view: ViewChannel | null         = null;
-  /** Whether this island's Repo stands over a store of its own (the daemon island's); every other island relays. */
+  /** Whether this island is the daemon island, the one with a store of its own (its Repo's, or its owned document's);
+   *  every wiki island relays through the vessel's Repo and settles its last heads at teardown. */
   let _keepsStore = false;
   // THE SECRET HOME rides the daemon manifest alone (`daemonAuth.secretUrl`), and only where the host can ask the vessel's
   // rest; a wiki island's manifest carries no daemonAuth and reaches none.
@@ -275,8 +276,12 @@ export function runSovereignKernel(
   // sync advances the breath's progress, so the vessel's own stall budget reads a moving wait as moving and a still one
   // by the slot it waits on.
   const SLOT_VERDICT_GRACE_MS = 8_000;
-  const SLOT_READY_HARD_CAP_MS = 60_000;
+  // The cap sits above any pull a live mount makes of its documents (a wiki island holds no local copy, so it pulls each
+  // slot whole) and below the node pool's own mount stall budget, so the island names the slot before the vessel kills it.
+  const SLOT_READY_HARD_CAP_MS = 300_000;
   const SLOT_POLL_MS           = 250;
+  // The most documents one receipt ask names (`receipt-with-heads` answers a longer ask malformed).
+  const SETTLE_BATCH = 64;
   const mono = (): number => performance.now();
   const defer = (): Promise<void> =>
     // PACING: defer yields to the host task queue without deciding readiness.
@@ -377,7 +382,7 @@ export function runSovereignKernel(
     _view = msg.view ? makeViewChannel(_post) : null;
     const own = _counted(msg.view || !msg.storage ? undefined : host.storage(msg));
     const storageAdapter = own.storage;
-    _keepsStore = storageAdapter !== undefined;
+    _keepsStore = storageAdapter !== undefined || msg.ownedDocument !== undefined;
     _repo = makeIslandRepo({
       ...(storageAdapter ? { storage: storageAdapter } : {}),
       syncPort: msg.syncPort,
@@ -725,13 +730,23 @@ export function runSovereignKernel(
     // AN ISLAND WITH NO STORE OF ITS OWN SETTLES ITS LAST HEADS. What it wrote rests only once the vessel's Repo holds it, and a
     // change that rode no owed write (a verb's direct edit) reaches the vessel by sync alone. So once its owed asks have left, the
     // island asks one more receipt over every document it laid, naming the heads it holds; the vessel answers once its own copy
-    // holds them and has flushed. The ask leaves before `receipt:asks-done`, so the round's close answers it.
+    // holds them and has flushed. The ask leaves before `receipt:asks-done`, so the round's close answers it. It rides in asks of
+    // at most SETTLE_BATCH documents, the most one receipt names. A settle the vessel refuses names its documents' slots among the
+    // unsaved, so the teardown faults by name rather than acking over a change no store holds.
     let settling: Promise<void> | null = null;
+    const unsettled: string[] = [];
     const settleLastHeads = (): void => {
       if (settling || !receipt || _keepsStore || _handles.size === 0) return;
-      settling = receipt.ack([..._handles.keys()]).catch((err: unknown) => {
-        console.warn(`[sovereign-kernel] teardown settle: the vessel holds no receipt for this island's last heads (${String(err)})`);
-      });
+      const slots = [..._handles.keys()];
+      const asks: Promise<void>[] = [];
+      for (let at = 0; at < slots.length; at += SETTLE_BATCH) {
+        const batch = slots.slice(at, at + SETTLE_BATCH);
+        asks.push(receipt.ack(batch).catch((err: unknown) => {
+          console.warn(`[sovereign-kernel] teardown settle: the vessel holds no receipt for this island's last heads (${String(err)})`);
+          unsettled.push(...batch.map((slot) => `the last heads of ${slot}`));
+        }));
+      }
+      settling = Promise.all(asks).then(() => undefined);
     };
     const announce = async (): Promise<void> => {
       if (!receipt) return;
@@ -748,7 +763,7 @@ export function runSovereignKernel(
       await settling;
       await receipt?.idle();
       // A port write or act whose receipt refused or closed never reached durable storage either: it joins the drain's titles by name.
-      if (receipt) unsaved = [...new Set([...unsaved, ...receipt.unrested()])];
+      if (receipt) unsaved = [...new Set([...unsaved, ...receipt.unrested(), ...unsettled])];
     } finally {
       receipt?.close();
     }

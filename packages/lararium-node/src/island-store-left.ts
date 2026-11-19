@@ -5,8 +5,8 @@
  * once. A house an older composition stood still holds each wiki island's own store beside the vessel's, at
  * `<storageRoot>/<wiki id, path-safe>`: second copies of documents the vessel rests, clear copies of a face's margins
  * among them, stale snapshots never compacted, and temps a writer left when a faulted island died mid-save. No code
- * reads it again, and no code here removes it: what it holds is the operator's until the census and the re-found sweep
- * clear it. The pool names it once per process, at the wiki's first mount, with what it holds.
+ * reads it again, and no code removes it: what it holds stays the operator's, and a re-found, which stands a new hearth,
+ * leaves it behind. The pool names it once per process, at the wiki's first mount, with what it holds.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/vessel-island-pool
  */
@@ -48,5 +48,5 @@ export function islandStoreLeftLine(dir: string): string | null {
   const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
   return `[vessel-pool] an island store stands unused at ${dir}: the vessel holds every doc ` +
     `(${plural(held.files, "file", "files")}, ${held.bytes} bytes, ${plural(held.temps, "stranded temp", "stranded temps")}); ` +
-    `the census and the re-found sweep clear it`;
+    `nothing reads it, nothing removes it; a re-found leaves it behind`;
 }
