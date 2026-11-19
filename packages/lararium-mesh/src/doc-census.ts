@@ -12,7 +12,7 @@
  *   current        a live name reaches it: named by the composition, or by a document a live name reaches
  *   duplicate      an island store's copy of a document the root store also holds
  *   orphan         no live name reaches it (unnamed, or named only by documents no live name reaches)
- *   last-version   a shape the house no longer reads: a document holding no chunk (sync state or a stranded temp
+ *   last-version   a shape the current house does not read: a document holding no chunk (sync state or a stranded temp
  *                  alone), or one the composition marks by name
  *   sealed-unread  a sealed document this vessel could not open, which no live name reaches: never guessed an orphan
  *
@@ -97,7 +97,7 @@ export interface DocCensusInput {
   readonly named: ReadonlyArray<{ readonly id: string } & DocRef>;
   /** The role the composition knows a document by (`catalog`, `control`, `daemon`): it labels the names that document carries. */
   readonly roles?: ReadonlyMap<string, string>;
-  /** Shapes the house no longer reads, by document id and why (the composition's own marks). */
+  /** Shapes the current house does not read, by document id and why (the composition's own marks). */
   readonly lastVersion?: ReadonlyMap<string, string>;
   /** Read one document's content (clear chunks, a live handle, or the sealed rest under the worn session). */
   readonly read: (row: StoreDocRow) => Promise<DocContent>;
