@@ -49,7 +49,8 @@ import {
 } from "@lararium/mesh";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { actingFace, faceOption, FaceOptionMalformed } from "../face-option.js";
+import { faceOption, FaceOptionMalformed } from "../face-option.js";
+import { sealedAct } from "../sealed-act-door.js";
 import { openSyncedTree, readCarrierText } from "../ingest-core.js";
 import { sealedPetnameStore } from "../sealed-records.js";
 import { makeFleetPetnameStore } from "../daemon-persona-store.js";
@@ -88,7 +89,9 @@ const dirOrNull = (dir: string): string | null => { try { return statSync(dir).i
 /** The doors over the house LAR_ROOT names: the vessel's own reading, and a dev or scratch house's. */
 export const LIVE_SURFACE_DOORS: SurfaceDoors = {
   face: async (args) => {
-    const index = faceOption(args).face ?? await actingFace(args);
+    // THE WORN FACE: with no `--face` the door acts as the face the operator wears (the daemon mount), so several faces
+    // standing open with one worn answer that one; the vessel refuses by name only when none stands worn.
+    const index = faceOption(args).face ?? (await sealedAct<{ face: number }>("face.resolve", { worn: true })).face;
     const petname = await ownPersonaPetname(makeFleetPetnameStore(sealedPetnameStore()), index);
     if (petname === undefined || petname.trim() === "") throw new SurfaceRefused("surface-face-unnamed", `the face h${index} wears no pet name, so it makes no folder under faces/: name it (\`lares persona new ${index} --name <label>\`)`);
     return { index, petname };
