@@ -58,13 +58,43 @@ let whenNeeded: { readonly make: () => CustodyHolder; readonly open: CustodyOpen
  * clears every seat and the when-needed maker.
  */
 export function seatCustody(holder: CustodyHolder | null, open: CustodyOpener | null = null): void {
-  if (holder === null) { seats.clear(); whenNeeded = null; return; }
+  if (holder === null) { seats.clear(); whenNeeded = null; seatMoved(); return; }
   seats.set(holder.homes.identity, { holder, open, opening: null });
+  seatMoved();
 }
 
 /** Clear `holder`'s own seat, when it still sits there. */
 export function unseatCustody(holder: CustodyHolder): void {
-  if (seats.get(holder.homes.identity)?.holder === holder) seats.delete(holder.homes.identity);
+  if (seats.get(holder.homes.identity)?.holder === holder) { seats.delete(holder.homes.identity); seatMoved(); }
+}
+
+/** Who hears each seat that stands or clears: the open watches (`watchCustodyOpened`). */
+const seatListeners = new Set<() => void>();
+function seatMoved(): void { for (const listener of [...seatListeners]) { try { listener(); } catch { /* a listener's fault never holds the seat */ } } }
+
+/**
+ * THE OPEN A COMPOSITION HEARS FOLLOWS THE SEAT. Under a pūlama the dial opens the custody before the vessel composes, and
+ * a restand seats a holder the composition never saw, so a watch taken once, on the holder standing at composition, hears
+ * neither. This watch hears the holder standing for this home now and each holder a later seat stands, never one that left
+ * its seat; a holder that already stands open when the watch takes it is heard once, at once. Returns the unwatch.
+ */
+export function watchCustodyOpened(listener: () => void): () => void {
+  const hear = (): void => { try { listener(); } catch { /* a listener's fault never holds the seat */ } };
+  let watched: CustodyHolder | null = null;
+  let stopHolder: (() => void) | null = null;
+  const follow = (): void => {
+    const holder = standingCustody();
+    if (holder === watched) return;
+    stopHolder?.();
+    stopHolder = null;
+    watched = holder;
+    if (holder === null) return;
+    stopHolder = holder.onOpened?.(hear) ?? null;
+    if (holder.isUnlocked()) hear();
+  };
+  follow();
+  seatListeners.add(follow);
+  return () => { seatListeners.delete(follow); stopHolder?.(); stopHolder = null; watched = null; };
 }
 
 /**
@@ -83,6 +113,7 @@ function seatOfThisHome(): Seat | null {
   const holder = whenNeeded.make();
   const made: Seat = { holder, open: whenNeeded.open, opening: null };
   seats.set(holder.homes.identity, made);
+  seatMoved();
   return holder.homes.identity === home ? made : null;
 }
 

@@ -170,7 +170,7 @@ import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-stor
 import { raiseAnchorFromSlots } from "./lease-observation.js";
 import { readFacePersonaRecords } from "./persona-act-store.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
-import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals } from "./custody-seat.js";
+import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
 import { joinedFaceAuth, unlitServedFaces, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
@@ -1093,10 +1093,6 @@ async function prepareNodeBootOn(
     // THE ISLAND'S DOOR STANDS (`docstore:answering`): the map re-reads and the standing session's waiting saves seal, once.
     onReady: () => rebookWaiting(standingSaveSession(), "the island's door stood"),
   });
-  // THE CUSTODY KEY OPENED: a save the island refused `wrap-failed` while this vessel's key rested unopened (its wrap
-  // rests the face's Archive through custody) waits in memory, and seals again on the open, never on a timer.
-  const stopCustodyOpened = standingCustody()?.onOpened?.(() => rebookWaiting(standingSaveSession(), "the custody key opened")) ?? null;
-  stood.push({ what: "the custody open watch", down: () => { stopCustodyOpened?.(); } });
   const docStoreDoor: NonNullable<CapabilityRecord["docStore"]> = (port) => docStorePort.attach(port);
   // V2: each island's own store rests no document this rest seals (`islandRestGuard`).
   const restsSealedDoor: NonNullable<CapabilityRecord["restsSealed"]> = (documentId) => sealedRest.restsSealed(documentId);
@@ -1593,6 +1589,12 @@ async function prepareNodeBootOn(
   // and rests as received under that session.
   // P2-4: with no call in flight, a change books a session of the daemon mount that stands seated (open, its signer standing).
   sealedRest.watch(repo, standingSaveSessionFor);
+  // THE CUSTODY KEY OPENED: a save the island refused `wrap-failed` while this vessel's key rested unopened (its wrap
+  // rests the face's Archive through custody) waits in memory, and seals again on the open, never on a timer. The watch
+  // follows the seat (`watchCustodyOpened`): a custody a pūlama dial opened before this composition rebooks once here
+  // (it stands after the rest it rebooks composes and watches its Repo), and a holder a restand seats is heard at its own open.
+  const stopCustodyOpened = watchCustodyOpened(() => rebookWaiting(standingSaveSession(), "the custody key opened"));
+  stood.push({ what: "the custody open watch", down: () => { stopCustodyOpened(); } });
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
