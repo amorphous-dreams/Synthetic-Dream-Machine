@@ -19,16 +19,18 @@ import type { CapModule } from "./cap-compose.js";
 import { AutomergeDocStore } from "./automerge-doc-store.js";
 import { wearOf } from "./repo-wear.js";
 import {
-  MESH_PALACE_BAG, emptyMeshPalaceDoc, type MeshPalaceDoc,
+  MESH_PALACE_BAG, type MeshPalaceDoc,
   dialEntryToRecord, dialEntries, type DialEntry,
   routingSlots, routingSlotToRecord, hyperbolicDistance, radialCoordinate, type Coord, type RoutingSlot,
 } from "./mesh-palace.js";
 import type { FlowPullResult } from "./flow-read-client.js";
 import { plainRecord, sameStoredRecord, type StoredTiddlers, ownEntry } from "./stored-value.js";
 import type { LarDoc } from "./base-doc.js";
+import type { LarTiddlerRecord } from "./tiddler-store.js";
 import type { VesselCoreAssembly } from "./open-vessel-core.js";
 import type { BagStowage } from "./bag-residency.js";
 import { storedRecord } from "./stored-record.js";
+import { materializeSharedLarDoc, meshPalaceDocUrl } from "./deterministic-doc.js";
 
 /**
  * The carriage cap-ids. A vessel's #has-cap-stack names these to wire the meshpalace FLOW-map + carriage.
@@ -49,28 +51,37 @@ const SUBSTRATE_CAP_ID = "substrate";
 export interface MeshPalaceComponent { readonly handle: DocHandle<MeshPalaceDoc>; }
 
 /** meshpalace — a writable meshpalace AutomergeDocStore layer (the vessel's own public FLOW-map) +
- *  a residency pin. Requires substrate (the composite to layer into). */
-export function meshPalaceCap(deps: { repo: Repo; residency?: BagStowage; seed?: readonly DialEntry[]; selfCoord?: Coord }): CapModule {
+ *  a residency pin. Requires substrate (the composite to layer into).
+ *
+ *  ONE MAP PER VESSEL, FOUND AGAIN AT EVERY COMPOSE. The map stands at an address derived from the vessel's own key
+ *  (`meshPalaceDocUrl`, the `deterministicDocUrl` road a vessel's edge ledger takes): a compose finds the map a prior
+ *  boot rested and materializes it only when none stands. No pointer row stands between, so the map stands at every
+ *  tier — a herm and the waking floor too, where the control home stays shut. */
+export function meshPalaceCap(deps: { repo: Repo; /** The vessel's own key: the map's address derives from it. */ vesselKey: string; residency?: BagStowage; seed?: readonly DialEntry[]; selfCoord?: Coord }): CapModule {
   return {
     id: CARRIAGE_CAP.meshpalace, requires: [SUBSTRATE_CAP_ID],
     build: async (resolve) => {
       const assembly = resolve<VesselCoreAssembly>(SUBSTRATE_CAP_ID);
-      const handle   = deps.repo.create<MeshPalaceDoc>(emptyMeshPalaceDoc());
+      const handle: DocHandle<MeshPalaceDoc> = await materializeSharedLarDoc(deps.repo, meshPalaceDocUrl(deps.vesselKey), "map:meshpalace");
       // Self-announce: a source Herm seeds its OWN dial(s) on the FLOW-map (public reachability — never
       // others' content), and — with a self-coord — a ROUTING-SLOT per dial so peers can re-rank toward
-      // it on the hyperbolic chart. Absent = a leaf/relay that only carries what it pulls.
+      // it on the hyperbolic chart. Absent = a leaf/relay that only carries what it pulls. A map found
+      // again already holds what an unchanged self announces, so only a row that differs writes (the
+      // carriage's write-amplification guard: automerge appends ops for a byte-identical set).
       if (deps.seed && deps.seed.length > 0) {
-        handle.change((d) => {
-          for (const e of deps.seed!) {
-            const rec = dialEntryToRecord(e, "herm-self-announce");
-            d.tiddlers[rec.tiddler.title] = storedRecord(rec);
-            if (deps.selfCoord) {
-              const slot: RoutingSlot = { bearing: e.bearing, r: deps.selfCoord.r, theta: deps.selfCoord.theta };
-              const srec = routingSlotToRecord(slot, "herm-self-announce");
-              d.tiddlers[srec.tiddler.title] = storedRecord(srec);
-            }
+        const announce: LarTiddlerRecord[] = [];
+        for (const e of deps.seed) {
+          announce.push(dialEntryToRecord(e, "herm-self-announce"));
+          if (deps.selfCoord) {
+            const slot: RoutingSlot = { bearing: e.bearing, r: deps.selfCoord.r, theta: deps.selfCoord.theta };
+            announce.push(routingSlotToRecord(slot, "herm-self-announce"));
           }
-        });
+        }
+        const stored = handle.doc()?.tiddlers;
+        const changed = announce.filter((rec) => !sameStoredRecord(ownEntry(stored, rec.tiddler.title), rec));
+        if (changed.length > 0) {
+          handle.change((d) => { for (const rec of changed) d.tiddlers[rec.tiddler.title] = storedRecord(rec); });
+        }
       }
       assembly.composite.addLayer({
         bagId: MESH_PALACE_BAG, store: new AutomergeDocStore(handle, MESH_PALACE_BAG, wearOf(deps.repo)),
@@ -401,6 +412,8 @@ export function carriageCap(deps: {
  */
 export function carriageStack(deps: {
   repo:            Repo;
+  /** The vessel's own key: its meshpalace map's address derives from it, so every compose finds the one map. */
+  vesselKey:       string;
   residency?:      BagStowage;
   self?:           MeshSelf;
   /** Public place id, never seed material; a leaf without one uses process-local randomness. */
@@ -414,6 +427,7 @@ export function carriageStack(deps: {
   return [
     meshPalaceCap({
       repo: deps.repo,
+      vesselKey: deps.vesselKey,
       ...(deps.residency ? { residency: deps.residency } : {}),
       ...(self ? { seed: meshSelfSeed(self), selfCoord: self.coord } : {}),
     }),

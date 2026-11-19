@@ -152,6 +152,8 @@ export const composeLararium = composeCoreVessel;
 export interface HermStackDeps extends DaemonCapDeps {
   readonly keel:           VesselKeel;
   readonly repo:           Repo;
+  /** The Herm's own vessel key: its meshpalace map's address derives from it, so every compose finds the one map. */
+  readonly vesselKey:      string;
   readonly residency?:     BagStowage;
   readonly httpServer:     Server;
   readonly signer:         PlaceSigner;
@@ -205,6 +207,7 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
     // one. That is what a crossroads IS before anyone passes.
     ...carriageStack({
       repo:        d.repo,
+      vesselKey:   d.vesselKey,
       ...(d.meshSelf?.gatePubKey ? { cadenceKey: d.meshSelf.gatePubKey } : {}),
       ...(d.residency ? { residency: d.residency } : {}),
       ...(d.meshSelf ? { self: d.meshSelf } : {}),

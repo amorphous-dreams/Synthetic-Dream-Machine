@@ -38,7 +38,7 @@ function assembly(repo: Repo): CompositeStore {
 }
 
 const VESSELS: ReadonlyArray<readonly [string, (repo: Repo) => CapModule[], readonly string[]]> = [
-  ["the node hearth's assembly composite", (repo) => [meshPalaceCap({ repo }), whoFaceCap({ repo, crossroadsHandle: repo.create<LarDoc>(emptyLarDoc()), nexusPubkey: NEXUS })], [MESH_PALACE_BAG, nexusHandlesUri(NEXUS)]],
+  ["the node hearth's assembly composite", (repo) => [meshPalaceCap({ repo, vesselKey: NEXUS }), whoFaceCap({ repo, crossroadsHandle: repo.create<LarDoc>(emptyLarDoc()), nexusPubkey: NEXUS })], [MESH_PALACE_BAG, nexusHandlesUri(NEXUS)]],
   ["the browser vessel's composite", (repo) => [whoFaceCap({ repo, crossroadsHandle: repo.create<LarDoc>(emptyLarDoc()), nexusPubkey: NEXUS })], [nexusHandlesUri(NEXUS)]],
 ];
 

@@ -4882,6 +4882,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   // the FLOW-map for its own routing (carry-without-reserve; no second read-face, no conflict over the oracle doc).
   const carriageCaps = opts.meshSelf ? carriageStack({
     repo:        p.repo,
+    vesselKey:   p.vesselGateKey,
     self:        { ...opts.meshSelf, gatePubKey: p.vesselGateKey },
     cadenceKey: p.vesselGateKey,
     pullFlow:  p.carriagePull,
@@ -5054,6 +5055,7 @@ async function composeNodeHermOn(
     wireVerbs:   p.wireVerbs,
     afterDaemon: p.afterDaemon,
     repo:        p.repo,
+    vesselKey:   p.vesselGateKey,
     residency:   p.residency,
     httpServer:  opts.httpServer,
     ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}),
