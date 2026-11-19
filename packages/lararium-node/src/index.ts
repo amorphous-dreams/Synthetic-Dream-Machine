@@ -212,12 +212,12 @@ export {
   carriedBasesOf, skipLines, openSyncedTree, readCarrierText, listCarriers, listSourceFiles, fileToUriForSource, siteFaceFile, siteMirrorFile,
   scanFiles, recordLandedCarriers, readCarrierAnswer, INGEST_PAGE, ingestVerdict, renamesOf, renamedSources, absentSources, NO_STANDING_ASKS,
   standsClean, standingAfterFault, standingAfterWave, settleIngest, candidatesOf, applyConfirmedRenames, deletionsOf, pairedDeletions,
-  carrierCasFlagged, declaredType, inlineStage, ridesInline, ingestWaveArgs, ingestWaveVerb, islandIngestSubmit, poolIngestPorts,
+  carrierCasFlagged, declaredType, inlineStage, ridesInline, ingestWaveArgs, ingestWaveVerb, islandIngestSubmit, poolIngestPorts, workspaceIngestPorts,
   foldWaveRefusal, mirrorFiles, siteWaveFile, liveLay,
   type ScanStatus, type PendingDeletion, type ArmedDeletion, type ScanRow, type ScanSkip, type ScanResult, type FileToUriFn, type MirrorDirs,
   type CarrierAnswer, type AskingCarrier, type IngestSettlement, type IngestVerdict, type StandingAsks, type SubmitIngestOpts,
   type IngestSubmitResult, type IngestSubmit, type StagedCarrier, type CarrierStage, type IslandVerbAsk, type MirrorWave, type MirrorLaid,
-  type LayPorts, type PoolPlaneBags, type PoolIngestOptions,
+  type LayPorts, type PoolPlaneBags, type PoolIngestOptions, type WorkspaceIngestOptions,
 } from "./ingest-scan.js";
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";
