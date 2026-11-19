@@ -896,8 +896,8 @@ test(`${name}: lei-hand-door-chain: under a pūlama, lei kui reads the terms in 
   assert.match(plain.calls, /lares node \S+ lei show --rite push --branch x/);
   assert.doesNotMatch(plain.calls, /pulama-main\.js lei/);
 });
-test(`${name}: pulama-keep-seat-writes-the-seat: the pūlama's seat line lands as config/keep-seat.json (0600) with its signer, the signer never shown; an existing seat refuses without --reseat; a refusal writes nothing`, { skip }, async () => {
-  const seat = { publicKey: "ab".repeat(32), tree: { slots: [{ kind: "passphrase", salt: "s1" }] }, verifyKey: "cd".repeat(32) };
+test(`${name}: pulama-keep-seat-writes-the-seat: the pūlama's seat line lands verbatim as config/keep-seat.json (0600), the signer never shown; an existing seat refuses without --reseat; a refusal writes nothing`, { skip }, async () => {
+  const seat = { publicKey: "ab".repeat(32), stretchSalt: "11".repeat(16), tree: { slots: [{ kind: "passphrase", salt: "s1" }] }, verifyKey: "cd".repeat(32) };
   const signer = "ef".repeat(32);
   const line = JSON.stringify({ op: "keep-seat", reading: "seated", seat, signer });
   const env = (house) => ({ FAKE_KEEP_SEAT_LINE: line, LARES_HOUSE_PROBE: house });
@@ -905,7 +905,7 @@ test(`${name}: pulama-keep-seat-writes-the-seat: the pūlama's seat line lands a
   assert.equal(r.status, 0, r.stdout);
   assert.doesNotMatch(r.stdout + (r.stderr ?? ""), new RegExp(signer), "the signer never shows");
   assert.match(r.calls, /--profile pulama exec pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js keep-seat/);
-  assert.deepEqual(r.seat, { ...seat, signer });
+  assert.deepEqual(r.seat, JSON.parse(line), "the line lands verbatim: the house CLI reads it whole");
   assert.equal(r.seatMode, 0o600);
   const again = await run(shim, ["pulama", "keep-seat"], { envFile: PULAMA_ENV, tty: "", env: env(""), keepSeat: r.seat });
   assert.notEqual(again.status, 0);
