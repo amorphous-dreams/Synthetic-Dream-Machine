@@ -1,15 +1,15 @@
 import { describe, expect, test } from "vitest";
 import { deriveRegisterBags, litFaceOwnBags, daemonFaceCanonBag, wikiSlotUri } from "@lararium/mesh";
-import { joinedFaceAuth, unlitServedFaces, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
+import { joinedFaceAuth, unlitServedFaces, siblingFaceWork, litSiblingOrdinals, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
 
-const edge = { deviceVerifyingKey: "ab" } as NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchors"]>>>["deviceEdge"];
+const edge = { deviceVerifyingKey: "ab" } as NonNullable<NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchors"]>>>["deviceEdge"]>;
 const anchor = {} as NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchor"]>>>;
-const chain = [{}] as NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["chain"]>>>;
+const chain = [{}] as unknown as NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["chain"]>>>;
 function fixture() {
   const logs: string[] = [];
   const seeds: Uint8Array[] = [];
   const ports: JoinedFaceAuthPorts = {
-    ordinals: () => [0, 1, 2, 3, 4], mounted: 0,
+    ordinals: () => [0, 1, 2, 3, 4], mounted: 0, current: () => true,
     unlocked: async (n) => n !== 2,
     anchors: async (n) => n === 3 ? null : ({ personaGroupId: `group-${n}`, meshCabalDocIdHex: `cabal-${n}`, signerDid: `did-${n}`, personaKelPrefix: `prefix-${n}`, deviceEdge: edge }),
     anchor: async () => anchor, chain: async () => chain,
@@ -54,5 +54,111 @@ describe("a face the lend serves after the composition stood", () => {
     expect(unlitServedFaces([2, 0, 1], 0, new Set([2]))).toEqual([1]);
     expect(unlitServedFaces([0, 2], 0, new Set([2]))).toEqual([]);
     expect(unlitServedFaces([0, 1, 2], null, new Set())).toEqual([]);
+  });
+});
+
+function deferred() {
+  let resolve!: () => void;
+  const promise = new Promise<void>((done) => { resolve = done; });
+  return { promise, resolve };
+}
+
+describe("sibling generation ownership", () => {
+  test("removing an owning entry makes its served ordinal eligible for automatic lighting", () => {
+    const entries = new Map([["sibling", { ordinal: 1 }]]);
+    expect(unlitServedFaces([0, 1], 0, litSiblingOrdinals(entries.values()))).toEqual([]);
+    entries.delete("sibling");
+    expect(unlitServedFaces([0, 1], 0, litSiblingOrdinals(entries.values()))).toEqual([1]);
+  });
+
+  test("a failed mint rejects its awaited light and an explicit light retries", async () => {
+    const work = siblingFaceWork();
+    await expect(work.run(1, async () => { throw new Error("custody locked"); })).rejects.toThrow("custody locked");
+    let retries = 0;
+    await work.run(1, async (live) => { if (live()) retries++; });
+    expect(retries).toBe(1);
+  });
+
+  test("drop invalidates work immediately, drains its provider admission, then permits a new light", async () => {
+    const work = siblingFaceWork(), gate = deferred(), entered = deferred();
+    const events: string[] = [];
+    const first = work.run(1, async (live) => {
+      entered.resolve();
+      await gate.promise;
+      events.push("provider admitted");
+      if (live()) events.push("session seated");
+    });
+    await entered.promise;
+    const dropping = work.remove(1, async () => { events.push("provider dropped"); });
+    const next = work.run(1, async (live) => { if (live()) events.push("replacement seated"); });
+    gate.resolve();
+    await Promise.all([first, dropping, next]);
+    expect(events).toEqual(["provider admitted", "provider dropped", "replacement seated"]);
+  });
+
+  test("a completed light's detached sidecar cannot install a keeper after drop or teardown", async () => {
+    for (const ending of ["drop", "teardown"]) {
+      const work = siblingFaceWork(), gate = deferred();
+      let sidecar!: Promise<void>, keepers = 0;
+      await work.run(1, async (live) => {
+        sidecar = gate.promise.then(() => { if (live()) keepers++; });
+      });
+      if (ending === "drop") await work.remove(1, async () => {});
+      else work.close();
+      gate.resolve();
+      await sidecar;
+      await work.run(2, async (live) => { if (ending === "teardown" && live()) keepers++; });
+      expect(keepers).toBe(0);
+    }
+  });
+
+  test("an open event overtaken during custody enumeration cannot start a new generation", async () => {
+    const work = siblingFaceWork(), gate = deferred();
+    const eventGeneration = work.capture(1);
+    let lights = 0;
+    const event = (async () => {
+      await gate.promise;
+      if (eventGeneration()) await work.run(1, async () => { lights++; });
+    })();
+    await work.remove(1, async () => {});
+    gate.resolve();
+    await event;
+    expect(lights).toBe(0);
+    await work.run(1, async () => { lights++; });
+    expect(lights).toBe(1);
+  });
+
+  test("an obsolete failure cannot clear its replacement flight, and another face lights independently", async () => {
+    const work = siblingFaceWork(), gate = deferred(), entered = deferred();
+    const replacementGate = deferred(), replacementEntered = deferred();
+    const first = work.run(1, async () => { entered.resolve(); await gate.promise; throw new Error("mint failed"); });
+    const rejected = expect(first).rejects.toThrow("mint failed");
+    await entered.promise;
+    const dropping = work.remove(1, async () => {});
+    let calls = 0;
+    const replacement = work.run(1, async () => { calls++; replacementEntered.resolve(); await replacementGate.promise; });
+    let other = false;
+    await work.run(2, async () => { other = true; });
+    expect(other).toBe(true);
+    gate.resolve();
+    await rejected;
+    await dropping;
+    await replacementEntered.promise;
+    expect(work.run(1, async () => { calls++; })).toBe(replacement);
+    replacementGate.resolve();
+    await replacement;
+    expect(calls).toBe(1);
+  });
+
+  test("proof stops after an overtaken await and wipes secrets already read", async () => {
+    const { ports, seeds } = fixture();
+    let live = true, archiveReads = 0;
+    const entries = await joinedFaceAuth({ ...ports, ordinals: () => [1], current: () => live,
+      addressSecret: async () => { live = false; return new Uint8Array([10]); },
+      veilArchive: async () => { archiveReads++; return null; },
+    });
+    expect(entries).toEqual([]);
+    expect(archiveReads).toBe(0);
+    expect(seeds.every((seed) => seed.every((byte) => byte === 0))).toBe(true);
   });
 });

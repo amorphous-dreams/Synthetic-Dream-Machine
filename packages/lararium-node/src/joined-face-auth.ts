@@ -7,6 +7,7 @@ type Chain = JoinedFaceAuth["personaKel"]["chain"];
 export interface JoinedFaceAuthPorts {
   readonly ordinals: () => readonly number[];
   readonly mounted: number;
+  readonly current: (ordinal: number) => boolean;
   readonly unlocked: (ordinal: number) => Promise<boolean>;
   readonly anchors: (ordinal: number) => Promise<IdentityAnchors | null>;
   readonly anchor: (group: string) => Promise<FaceAnchor | null>;
@@ -41,19 +42,27 @@ export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<Joined
     let seed: Uint8Array | null = null;
     let secret: Uint8Array | null = null;
     try {
-      if (!await ports.unlocked(ordinal)) continue;
+      if (!ports.current(ordinal)) continue;
+      if (!await ports.unlocked(ordinal) || !ports.current(ordinal)) continue;
       const pins = await ports.anchors(ordinal);
+      if (!ports.current(ordinal)) continue;
       if (!pins?.personaGroupId || !pins.signerDid || !pins.personaKelPrefix || !pins.deviceEdge) throw new Error("identity anchors missing");
       const group = pins.personaGroupId;
       const anchor = await ports.anchor(group);
+      if (!ports.current(ordinal)) continue;
       const chain = await ports.chain(pins.personaKelPrefix);
+      if (!ports.current(ordinal)) continue;
       seed = await ports.atomSeed(group);
+      if (!ports.current(ordinal)) continue;
       if (!anchor || !chain?.length || !seed) throw new Error("face anchor, KEL chain, or atom missing");
       const key = ports.atomKey(seed, group);
       if (key !== pins.deviceEdge.deviceVerifyingKey) throw new Error("atom differs from device edge");
       secret = await ports.addressSecret(group);
+      if (!ports.current(ordinal)) continue;
       const archive = await ports.veilArchive(group);
+      if (!ports.current(ordinal)) continue;
       const relation = (await ports.relation?.(group)) ?? null;
+      if (!ports.current(ordinal)) continue;
       result.push({ atom: { seed: Buffer.from(seed).toString("hex"), key }, personaGroupId: group, faceAnchor: anchor, handleIndex: ordinal,
         ...(relation ? { faceRelation: relation } : {}),
         personaKel: { prefix: pins.personaKelPrefix, chain }, deviceEdge: pins.deviceEdge, signerDid: pins.signerDid,
@@ -65,4 +74,52 @@ export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<Joined
     } finally { seed?.fill(0); secret?.fill(0); }
   }
   return result;
+}
+
+/** Read the lit set from the entries that own each face's live resources. */
+export function litSiblingOrdinals(entries: Iterable<{ readonly ordinal: number }>): ReadonlySet<number> {
+  return new Set(Array.from(entries, (entry) => entry.ordinal));
+}
+
+/** Own each face's generation and serialize its provider admission/removal. Detached work retains the same live check. */
+export function siblingFaceWork() {
+  type Generation = { readonly live: () => boolean; flight?: Promise<void> };
+  const generations = new Map<number, Generation>();
+  const tails = new Map<number, Promise<void>>();
+  let closed = false;
+  const generation = (ordinal: number): Generation => {
+    let held = generations.get(ordinal);
+    if (!held) {
+      const next: Generation = { live: () => !closed && generations.get(ordinal) === next };
+      held = next;
+      if (!closed) generations.set(ordinal, held);
+    }
+    return held;
+  };
+  const track = (ordinal: number, task: Promise<void>): Promise<void> => {
+    // Keep a handled tail so a failed task neither escapes nor poisons an explicit retry.
+    const tail = task.then(() => {}, () => {});
+    tails.set(ordinal, tail);
+    void tail.then(() => { if (tails.get(ordinal) === tail) tails.delete(ordinal); });
+    return task;
+  };
+  return {
+    capture: (ordinal: number): (() => boolean) => generation(ordinal).live,
+    invalidate: (ordinal: number): void => { generations.delete(ordinal); },
+    run(ordinal: number, action: (live: () => boolean) => Promise<void>): Promise<void> {
+      if (closed) return Promise.resolve();
+      const held = generation(ordinal);
+      if (held.flight) return held.flight;
+      const task = (tails.get(ordinal) ?? Promise.resolve()).then(async () => {
+        if (held.live()) await action(held.live);
+      }).finally(() => { if (held.flight === task) delete held.flight; });
+      held.flight = task;
+      return track(ordinal, task);
+    },
+    remove(ordinal: number, action: () => Promise<void>): Promise<void> {
+      generations.delete(ordinal);
+      return track(ordinal, (tails.get(ordinal) ?? Promise.resolve()).then(action));
+    },
+    close(): void { closed = true; generations.clear(); },
+  };
 }

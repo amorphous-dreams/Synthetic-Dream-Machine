@@ -28,7 +28,7 @@ import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import { browserDeviceFiling } from "./browser-device-filing.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, DAEMON_WIKI_SLOT_BAGS, type LitDeviceFaces, type SecretHome, type SealedBag, selvesRecordBagOf } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, type LitDeviceFaces, type SecretHome, type SealedBag, selvesRecordBagOf } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import { standBrowserFloorKey } from "./browser-floor-key.js";
 import { browserSeatKept, type SeatVerifyGround } from "./browser-fleet-seat.js";   // leaf-fleet (Leaf-Finisher)
@@ -50,7 +50,7 @@ import {
   materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, publicationDocUrl, whoBoardDocUrl, registerCrossroadsPointer,
   personaKelBoardDocUrl, personaKelChainForPrefix,
-  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, catalogFaceSlotBags, wornFaceWikiBags, personaBagIdFor, personaSiblingBagIds,
   handleClaimFrom, HANDLE_CLAIM_SURFACES,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, admittedJoineeIsland, type NexusIdentityAt,
   climbNexusBoards, carryPersonaKelUpTheGradient,
@@ -1985,9 +1985,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         ...(wornGroup ? { personaGroupId: wornGroup } : {}),
         ...(faceAnchor ? { faceAnchor } : {}),
         ...(bootFace ? { meshCabalDocIdHex: wornMount?.meshCabalDocIdHex ?? bootFace.meshCabalDocIdHex } : {}),
-        // Derived, never enumerated — the same derivation the node vessel runs, so neither can drift on
-        // which bags a cap check can resolve. This vessel had been carrying neither the shared substrate
-        // bag nor any bag its own catalog named, which no test could see and no throw announced.
+        // The face registers its catalog's wiki layers before the island resolves their documents.
         registerBags: deriveRegisterBags({
           // EVERY compartment registers; exactly one mounts. The two verbs part company here.
           // Only the planes a face proof vouched for: the worn face's and each anchored face's own (never a raw bootstrap entry).
@@ -1995,8 +1993,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             personaGroupId,
             catalogNamed: personaGroupId === wornGroup ? catalogNamedBags(catalogHandle.doc()) : [],
           })),
-          // The daemon wiki's device slots and the worn face's daemon canon ride with the lit face, which seals them (as the node).
-          wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId, ...DAEMON_WIKI_SLOT_BAGS, ...(wornRelation ? [daemonFaceCanonBag(wornRelation)] : []), ...(provenKahuaUrl ? [KAHUA_BAG] : [])],
+          wikiBags: [...wornFaceWikiBags({
+            slot, lit: wornAtom !== null && wornGroup !== null && faced?.wornFaceProjection != null,
+            ...(wornRelation ? { daemonCanon: daemonFaceCanonBag(wornRelation) } : {}),
+            announced: catalogFaceSlotBags(catalogHandle.doc()),
+          }).registered, ...(provenKahuaUrl ? [KAHUA_BAG] : [])],
         }),
         // The WORN persona-root's binding (founder-signed): the gate pins personaKel.prefix and walks the KEL
         // to the current head; deviceEdge is the signed device→hearth edge. From the single bootstrap.
@@ -2126,7 +2127,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // THE LIT FACE'S DEVICE DAEMON DOCUMENTS seal under its key while the lift stands (the node's law, isomorphic by intent).
         litDeviceGroup = wornGroup;
         litDeviceRelation = wornRelation;
-        sealedCells.bags = () => [slot.wikiBagId, slot.workingBagId, slot.draftBagId, ...DAEMON_WIKI_SLOT_BAGS, ...(wornRelation ? [daemonFaceCanonBag(wornRelation)] : [])];
+        // Read the resolver's names live: its ack files each bag before the document's first storage access.
+        sealedCells.bags = () => wornFaceWikiBags({
+          slot, lit: true,
+          ...(wornRelation ? { daemonCanon: daemonFaceCanonBag(wornRelation) } : {}),
+          announced: slotDocsNamed.keys(),
+        }).sealed;
         sealedCells.catalog = () => catalogHandle.doc() as LarDoc | undefined;
         sealedCells.mounted = (bagId) => mountedDocumentId(assembly.composite.storeForBag(bagId));
         sealedCells.hold = (ask, verb) => lift.hold(ask, verb);
