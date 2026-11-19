@@ -950,7 +950,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares wear 1                           # move the mount to face h1, a face already standing open",
       "lares wear --face 0                    # the same move, the face named by flag",
     ],
-    flags: ["--face <N>         the face to wear, read where no positional names one"],
+    flags: [
+      "--face <N>         the face to wear, read where no positional names one",
+      "--json             the door's answer as one object, the form a caller parses; a pipe reads the one prose line",
+    ],
     next: ["lares vault status", "lares vault unlock   # a vessel holding no key opens here first"],
     meme: "lar:///ha.ka.ba/lares/docs/pono/the-worn-house",
   },
