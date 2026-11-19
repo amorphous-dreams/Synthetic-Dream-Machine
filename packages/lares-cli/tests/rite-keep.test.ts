@@ -90,13 +90,13 @@ beforeEach(() => {
 afterEach(() => { closeScratch(house); });
 
 describe("the keep rite, vessel half", () => {
-  test("K0 RED: the bundle the keep cuts names its format, never counts it: `lar-house-bundle`, no `/N`; CONTROL: a manifest under the numbered name refuses, with no back-compat reader", () => {
+  test("K0 RED: the bundle the keep cuts names its format `lar-house-bundle`; CONTROL: a manifest under any other schema refuses `bundle-schema`", () => {
     expect(BUNDLE_SCHEMA).toBe("lar-house-bundle");
-    const dest = join(root, "old-name");
+    const dest = join(root, "other-schema");
     mkdirSync(dest, { recursive: true });
     const manifest = writeBundle(dest, { heron: "remember the heron\n" });
     expect(verifyBundle(dest).manifest.schema).toBe("lar-house-bundle");
-    writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ ...manifest, schema: "lar-carry/1" }, null, 2)}\n`);
+    writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ ...manifest, schema: "someone-elses" }, null, 2)}\n`);
     expect(() => verifyBundle(dest)).toThrow(/bundle-schema/);
   });
 
@@ -189,22 +189,22 @@ describe("the keep rite, vessel half", () => {
 
   test("K6b keep-dest-foreign-reads-every-other-manifest: a place holding any manifest but the keep's own `lar-house-bundle` refuses as foreign and names another place, whatever schema the manifest names; nothing moved", async () => {
     const r = rig();
-    const old = join(workspace(), "house");
-    mkdirSync(old, { recursive: true });
-    const manifest = writeBundle(old, { heron: "remember the heron\n" });
-    writeFileSync(join(old, MANIFEST_FILE), `${JSON.stringify({ ...manifest, schema: "lar-carry/1" }, null, 2)}\n`);
-    const older = await riteKeep(r.ports, { workspace: "backup" }).catch((e: unknown) => e as KeepRefused);
-    expect(older).toBeInstanceOf(KeepRefused);
-    expect((older as KeepRefused).code).toBe("keep-dest-foreign");
-    expect((older as KeepRefused).message).toMatch(/name another place with --into/);
-    expect((older as KeepRefused).message).not.toMatch(/git -C/);
+    const standing = join(workspace(), "house");
+    mkdirSync(standing, { recursive: true });
+    const manifest = writeBundle(standing, { heron: "remember the heron\n" });
+    writeFileSync(join(standing, MANIFEST_FILE), `${JSON.stringify({ ...manifest, schema: "another-bundle" }, null, 2)}\n`);
+    const whole = await riteKeep(r.ports, { workspace: "backup" }).catch((e: unknown) => e as KeepRefused);
+    expect(whole).toBeInstanceOf(KeepRefused);
+    expect((whole as KeepRefused).code).toBe("keep-dest-foreign");
+    expect((whole as KeepRefused).message).toMatch(/name another place with --into/);
+    expect((whole as KeepRefused).message).not.toMatch(/git -C/);
     mkdirSync(join(workspace(), "elsewhere"));
     writeFileSync(join(workspace(), "elsewhere", MANIFEST_FILE), `${JSON.stringify({ schema: "someone-elses/1" })}\n`);
     const foreign = await riteKeep(r.ports, { workspace: "backup", into: "elsewhere" }).catch((e: unknown) => e as KeepRefused);
     expect((foreign as KeepRefused).code).toBe("keep-dest-foreign");
     expect((foreign as KeepRefused).message).toMatch(/name another place with --into/);
     expect(r.calls).toEqual([]);
-    expect(JSON.parse(readFileSync(join(old, MANIFEST_FILE), "utf8")).schema).toBe("lar-carry/1");
+    expect(JSON.parse(readFileSync(join(standing, MANIFEST_FILE), "utf8")).schema).toBe("another-bundle");
   });
 
   test("K7 RED: a keep line that names no workspace refuses with usage; CONTROL: the line's workspace, place, partial flag and face each read", () => {
