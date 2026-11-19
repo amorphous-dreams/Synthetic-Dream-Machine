@@ -26,7 +26,7 @@ import { fileURLToPath } from "node:url";
 import { realpathSync }  from "node:fs";
 import { stdout }         from "node:process";
 import { parseArgs, ArgsError, type ParsedArgs } from "../parse-args.js";
-import { CustodyLocked, CustodyRecordUnavailable } from "@lararium/node";
+import { CustodyLocked, CustodyRecordUnavailable, SealedActRefused } from "@lararium/node";
 import { bridge, commandScope, shimHelpLines, HOUSE_ABSENT_EXIT } from "../host-bridge.js";
 import { seatOfflineCustody, OfflineCustodyRefused } from "../offline-custody.js";
 import { seatNewFaceRoute } from "../face-route-prompt.js";
@@ -409,6 +409,11 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     if (err instanceof OfflineCustodyRefused || err instanceof CustodyLocked || err instanceof CustodyRecordUnavailable) {
       console.error(`lares ${cmd.name}: ${err.message}`);
       return 1;
+    }
+    // A sealed act the vessel refused names itself on one line under its reason, whichever command let it travel.
+    if (err instanceof SealedActRefused) {
+      emit(args, { ok: false, error: { code: err.reason, message: err.message }, human: () => console.error(`lares ${cmd.name}: ${err.message}`) });
+      return exitFor(err.reason);
     }
     // A failure that came through the store door names itself wherever no command caught it: a refusal travels
     // as one parseable object under its own code, never as a stack trace.
