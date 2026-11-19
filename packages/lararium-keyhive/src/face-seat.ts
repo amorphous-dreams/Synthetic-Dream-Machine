@@ -239,7 +239,7 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
     return active;
   };
   const wake = () => { void run(); };
-  // A change during an in-flight read queues a pass too: that read's standing predates the change, and the grant
+  // A change during an in-flight read queues a pass too: that read's standing precedes the change, and the grant
   // stands unmarked as waiting until the pass ends. A seat with no pass running and no pending proof does no work.
   const daemonChanged = (_title: string) => { proofVersion++; if (waitingOnProof || active) wake(); };
   return { seated, daemonChanged, settled: async () => { if (active) await active; }, wake, run };

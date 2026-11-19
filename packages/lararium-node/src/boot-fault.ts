@@ -43,7 +43,7 @@ export function bootFaultReport(err: unknown): { lines: string[]; code: number }
       code: SERDE_SKEW_EXIT,
       lines: [
         `[lararium] fatal: stored-bytes serde skew — the stored genesis engine no longer deserializes; cure: run \`${SERDE_SKEW_CURE}\` (identity-safe, no data loss)`,
-        "[lararium]   Cause: stored bytes predate a dependency bump (keyhive / automerge / beelay / TW5).",
+        "[lararium]   Cause: a dependency (keyhive / automerge / beelay / TW5) moved under the stored bytes.",
         "[lararium]   The rebuild re-derives the genesis engine under current deps; the operator key and card stay untouched.",
         `[lararium]   underlying: ${message}`,
       ],

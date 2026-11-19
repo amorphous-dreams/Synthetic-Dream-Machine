@@ -1574,7 +1574,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         }
 
         // Members the re-ingest DROPPED from the file (in the prior membership, absent now)
-        // tombstone — the aside path map alone holds a pack's prior shape (a pack's foreign-
+        // tombstone — the aside path map alone holds a pack's prior membership (a pack's foreign-
         // titled members never nest under the carrier URI). A conflicted member stays a
         // CURRENT member → never dropped.
         const dropped = membersOfPack(prevPaths, packInfo.packPath).filter((t) => !currentMemberTitles.has(t));

@@ -149,7 +149,7 @@ lineage stands and every delegation edge still verifies, because the binding rid
 ''It CAN break the on-disk serde'' — stored bytes serialized by a format the new deserializer cannot
 read. The vessel already names that condition and its cure rather than boot-looping on it:
 
-> ''Cause'': stored bytes predate a dependency bump (keyhive / automerge / beelay / TW5).
+> ''Cause'': a dependency (keyhive / automerge / beelay / TW5) moved under the stored bytes.
 > ''Cure (identity-safe, no data loss)'': run `lares vessel rite rebuild` — rebuilds the genesis engine under current
 > deps; your operator key/card are untouched.
 
@@ -244,6 +244,6 @@ count as acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xr3Ot4ivZJzhUAo5ufxpI4lvulHyqV4eHqgrfoHu9yo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8dTMivR_057-FkmZzOyEJzCJx719__rzapH4lfZflZE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

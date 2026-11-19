@@ -84,7 +84,7 @@ export interface VerbFailure {
  *   crossing-outward                       → crossing-outward (5) — the crossing relaxes confinement
  *                                             and wants the kahu quorum.
  *
- * An unrecognized reason (a future server-side addition this build predates) falls to `verb-error`
+ * An unrecognized reason (one this table names no code for) falls to `verb-error`
  * rather than crashing or silently inventing a code — the additive contract means an older CLI
  * still reads `errorMessage` either way.
  */

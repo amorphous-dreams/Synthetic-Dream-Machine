@@ -12,7 +12,7 @@
  *     row rests it, and `drop` overwrites it.
  *   · A SIGNER SERVES ONE SESSION AT ONE GENERATION, AND THE OWNER'S TABLE SAYS WHETHER IT STILL STANDS.
  *     A signer keeps the owner's table and the binding its session opened on, and asks the table before
- *     every signature. No caller hands it a record: a record kept from before a close or a switch proves
+ *     every signature. No caller hands it a record: a record kept across a close or a switch proves
  *     nothing. A session the table has dropped at the signer's generation DROPS the signer: the close
  *     or the switch already happened, and this key outlived it by one call at most. A session the table
  *     holds FROZEN (mid-switch, revoked, closing) signs nothing and keeps its signer: a refused preflight

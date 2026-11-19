@@ -147,7 +147,7 @@ test("RED: the recorded held-out run reads red for its own head and names each d
   assert.equal(h.coversHead, true);
   assert.equal(h.behind, 0);
   assert.deepEqual(Object.fromEntries(h.drivers.map((d) => [d.driver, d.result])),
-    // The recorded run predates the roll cell, so that driver answered no job there.
+    // The recorded run holds no roll cell, so that driver answered no job there.
     { "browser-weld": "failure", civic: "success", crossing: "success", "herm-mesh": "failure", "herm-mesh-roll": "unread", "mesh-scenarios": "success" });
   const text = renderHeldOut(h).join("\n");
   assert.match(text, /^held-out: RED for cb8a1a9a8 — run 38491127984 reads failure: browser-weld, herm-mesh failed/);

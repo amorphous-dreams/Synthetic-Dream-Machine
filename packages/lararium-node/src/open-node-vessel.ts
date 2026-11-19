@@ -3337,7 +3337,7 @@ async function prepareNodeBootOn(
         // A re-presentation has nothing to move while no presentation stands; the hook stays so the boards' callers keep it.
         representIfMoved = () => Promise.resolve();
       } catch (e) {
-        // A re-dial that failed keeps no pin from before it: the vessel stands at its place anchor.
+        // A re-dial that failed keeps no pin it held going in: the vessel stands at its place anchor.
         dialAnchor.clear(); dialSeat.stand(null);
         console.log(`[nexus-join] dial-out skipped: ${e instanceof Error ? e.message : String(e)}`);
       }

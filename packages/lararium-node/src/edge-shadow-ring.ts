@@ -111,7 +111,7 @@ export interface EdgeShadowRing extends ShadowConsult {
 /**
  * THE DYAD CAPABILITY the vessel serves its daemon island off this ring. A fold a board's move overtook publishes nothing, so
  * the door asks again; three folds each overtaken leave the reading dark, and a dark reading answers `aside`. A board move
- * turns the reading dark at once (`follow`), so an ask that follows a move never reads the fold from before it. The fleets a
+ * turns the reading dark at once (`follow`), so an ask that follows a move never reads the fold that preceded it. The fleets a
  * fold reads are the faces' roots as they stand when it runs, so a fleet the standing fold never read (a face founded after it)
  * folds again once before the door answers: absence from an older fold names no shadow.
  */
@@ -143,7 +143,7 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
     if (watched.has(url) || disposed) return;
     const onChange = (): void => {
       if (disposed) return;
-      // THE READING GOES DARK THE MOMENT A BOARD MOVES. The last fold may predate the very act that just
+      // THE READING GOES DARK THE MOMENT A BOARD MOVES. The last fold may precede the very act that just
       // arrived, so every gate answers closed until the next fold lands; a peer asked in that gap draws the
       // same Mu, and the standing vessel re-reads its verdicts when the fold completes.
       last = null;
@@ -171,7 +171,7 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
 
   const ring: EdgeShadowRing = {
     async refold() {
-      // The last reading may predate the very act that set this fold off. A fold that fails therefore leaves NO
+      // The last reading may precede the very act that set this fold off. A fold that fails therefore leaves NO
       // reading, and the gates fail closed, where a kept one would go on admitting a relation a hand set aside.
       const startedAt = moved;
       try { return await foldOnce(); }

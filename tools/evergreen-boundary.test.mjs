@@ -72,10 +72,33 @@ test("E1d old-shape: a reading or comment that names an earlier shape reads; a p
     const red = one(body); assert.equal(red.status, 1); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
   }
   const lawful = [
-    '// tombstone: the aside path map alone holds a pack\'s prior shape.',
+    '// tombstone: the aside path map alone holds a pack\'s prior membership.',
     '// the previous frame\'s posterior is this frame\'s prior.',
     '// A source already gone (a re-entered founding recovered its seed from an earlier group row) keeps the destination.',
     'const shape = "torn";',
+  ].join("\n");
+  assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
+  const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
+});
+
+test("E1e old-shape: a comment or reading that carries a shape forward reads, one planted line per word; a present order of acts does not", () => {
+  for (const body of [
+    '// A roster of bare indices predates the ward: it refuses by name.',
+    'const why = "this doc predates the veil-born founding";',
+    '// The reader keeps the prior shape of the row beside the new one.',
+    '// A pre-face-root store names its face at the top of the record.',
+    'const cure = "this face was founded before the secret minted, and re-founds";',
+    '/** The ward-key row from before the key moved under its own ward: the next ask sweeps it. */',
+  ]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "old-shape").length, 1, body);
+    const red = one(body); assert.equal(red.status, 1, body); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
+  }
+  const lawful = [
+    '// The last fold may precede the very act that set this one off.',
+    '// A founding checkpoint rests before the Repo reads a byte of it.',
+    '// The seat returns and receives no key minted while it stood away.',
+    'const predator = "the wordlist keeps its own words";',
+    '// The face founds, and before the ward binds its route reads twice.',
   ].join("\n");
   assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
   const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
