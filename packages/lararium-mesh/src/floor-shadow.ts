@@ -166,10 +166,12 @@ export function foldFloorShadowTally(prior: FloorShadowTally | null, reading: Fl
     if (kept.current) aside.push(kept.current);
     t = resumed ? { ...resumed, floor } : { floor, cleanBoots: 0, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null };
   }
-  const next = reading.verdict === "clean" ? { ...t, cleanBoots: t.cleanBoots + 1 }
-    : reading.verdict === "unread" ? { ...t, unreadBoots: t.unreadBoots + 1 }
-    : reading.verdict === "predates" ? { ...t, unreadBoots: t.unreadBoots + 1, predates: true as const }
-    : { ...t, mismatchBoots: t.mismatchBoots + 1, firstMismatch: t.firstMismatch ?? { manifest: reading.manifest, moved: reading.moved } };
+  // `predates` names the latest reading alone: any other verdict on the same floor drops it.
+  const { predates: _was, ...counts } = t;
+  const next = reading.verdict === "clean" ? { ...counts, cleanBoots: t.cleanBoots + 1 }
+    : reading.verdict === "unread" ? { ...counts, unreadBoots: t.unreadBoots + 1 }
+    : reading.verdict === "predates" ? { ...counts, unreadBoots: t.unreadBoots + 1, predates: true as const }
+    : { ...counts, mismatchBoots: t.mismatchBoots + 1, firstMismatch: t.firstMismatch ?? { manifest: reading.manifest, moved: reading.moved } };
   return { current: next, prior: aside };
 }
 

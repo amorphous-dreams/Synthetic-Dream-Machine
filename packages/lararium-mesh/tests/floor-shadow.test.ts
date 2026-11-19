@@ -194,5 +194,9 @@ describe("a founding floor that predates the floor format", () => {
     const pinned = await readFloorShadow({ manifestCid: prior.cid, readBytes: store(prior), islandBlobs: blobs, coreSha256: CORE_SHA, foundingCid: "e".repeat(64) });
     expect(pinned.verdict).toBe("unread");
     if (pinned.verdict === "unread") expect(pinned.why).toMatch(/predates the floor format/);
+    // The flag names the latest reading alone: the same floor read otherwise drops it.
+    const after = foldFloorShadowTally(t, pinned);
+    expect(after.current?.predates).toBeUndefined();
+    expect(floorShadowLine(after)).not.toContain(FLOOR_PREDATES_LINE);
   });
 });
