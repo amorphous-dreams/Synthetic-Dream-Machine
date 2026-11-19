@@ -466,6 +466,22 @@ function PulamaState {
   return 'running'
 }
 
+# THE PŪLAMA'S IMAGE AGAINST THE IMAGE THAT STANDS. `up` keeps a lit pūlama lit (--no-recreate), so after a `build` it
+# runs the code it stood from. A running pūlama whose container image differs from the vessel image names the skew and
+# the verb that cures it (`pulama restand`); it warns and stands. A read that fails names nothing and blocks nothing.
+function WarnPulamaSkew {
+  if (-not $PulamaMode) { return }
+  $id = ((& docker compose @Base --profile pulama ps -q --status running pulama 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $id) { return }
+  $ran = ((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0) { return }
+  $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
+  $stands = ((& docker image inspect --format '{{.Id}}' $image 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0) { return }
+  if (-not $ran -or -not $stands -or $ran -eq $stands) { return }
+  [Console]::Error.WriteLine("lares-container: the pūlama runs image $ran, and $image stands at $stands; it keeps the older code until ``tools/lares-container.ps1 down`` and ``tools/lares-container.ps1 pulama restand`` (then light it by hand, ``up``, and ``pulama admit``)")
+}
+
 switch ($verb) {
   'up' {
     EnsureHouse
@@ -494,6 +510,7 @@ switch ($verb) {
     }
     foreach ($pair in ((ValueOf 'LARES_WORKSPACES') -split ';')) { if ($pair) { $binds += WorkspaceBind $pair } }
     StandPulama
+    WarnPulamaSkew
     if ($binds.Count -gt 0) {
       $override = [IO.Path]::GetTempFileName()
       try {
@@ -531,7 +548,30 @@ switch ($verb) {
     switch ($sub) {
       'up' { EnsureHouse; Compose @('--profile', 'pulama', 'up', '-d', '--no-recreate', 'pulama') }
       'down' { Compose @('--profile', 'pulama', 'stop', 'pulama') }
-      { $_ -in @('light', 'lock', 'status', 'tessera') } { Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, $sub)) }
+      'restand' {
+        # THE PŪLAMA RE-STANDS ON THE IMAGE THAT STANDS. `up` never recreates a lit pūlama, so after a `build` this verb
+        # does: with no vessel standing (down first), it locks a running pūlama (every session drops, every key zero-fills),
+        # then recreates it on the current image. It stands unlit: the operator lights it by hand, then `up` and
+        # `pulama admit`. It reads no route and types none.
+        if ($rest.Count -ne 1) { Die 'pulama restand takes no arguments' }
+        $vessel = & docker compose @Base ps -q --status running lares
+        if ($LASTEXITCODE -ne 0) { Die 'pulama restand refuses: docker compose ps failed, so whether a vessel stands reads unknown; nothing recreated' }
+        if (-not [string]::IsNullOrWhiteSpace(($vessel -join ''))) { Die 'pulama restand refuses while the lares vessel stands; run `tools/lares-container.ps1 down` first (nothing recreated)' }
+        $state = PulamaState
+        if ($state -eq 'unknown') { Die 'pulama restand refuses: docker compose ps failed for the pūlama, so whether it stands reads unknown; nothing recreated' }
+        EnsureHouse
+        if ($state -eq 'running') {
+          & docker compose @Base --profile pulama exec -T pulama node $PulamaMain lock
+          if ($LASTEXITCODE -ne 0) { Die 'the pūlama refused the lock; nothing recreated' }
+        }
+        & docker compose @Base --profile pulama up -d --force-recreate pulama
+        if ($LASTEXITCODE -ne 0) { Die 'the pūlama did not stand on the current image' }
+        $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
+        $digest = ((& docker image inspect --format '{{.Id}}' $image 2>$null) -join '').Trim()
+        if ($LASTEXITCODE -ne 0 -or -not $digest) { $digest = $image }
+        [Console]::Error.WriteLine("lares-container: the pūlama stands unlit on $digest; light it by hand (``tools/lares-container.ps1 pulama light``), then ``tools/lares-container.ps1 up`` and ``tools/lares-container.ps1 pulama admit``")
+      }
+      { $_ -in @('light', 'lock', 'status', 'tessera') } { if ($sub -eq 'status') { WarnPulamaSkew }; Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, $sub)) }
       'admit' {
         # admit reads the route on a real terminal inside the pūlama; the face ordinals name the lent set (none names every lit face).
         $face = @($rest | Select-Object -Skip 1)
@@ -571,7 +611,7 @@ switch ($verb) {
         Move-Item -Force -LiteralPath $tmp -Destination $seatFile
         [Console]::Error.WriteLine("lares-container: the keep seat rests at $seatFile (0600); a keep now seals under it")
       }
-      default { Die 'pulama takes up, down, light, admit, unadmit, keep-seat, lock, status or tessera' }
+      default { Die 'pulama takes up, down, restand, light, admit, unadmit, keep-seat, lock, status or tessera' }
     }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
