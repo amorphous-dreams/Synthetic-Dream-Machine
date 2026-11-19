@@ -33,6 +33,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
       `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
+      `case " $* " in *"inspect --format {{.Image}} "*) printf '%s\\n' "\${FAKE_PULAMA_IMAGE:-}"; exit "\${FAKE_PULAMA_INSPECT_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js keep-seat"*) printf '%s\\r\\n' 'pūlama: route proved'; [ -z "\${FAKE_KEEP_SEAT_LINE:-}" ] || printf '%s\\r\\n' "\${FAKE_KEEP_SEAT_LINE}"; exit "\${FAKE_KEEP_SEAT_RC:-0}";; esac\n` +
       `case " $* " in *" pulama node -e "*) code=''; take=''; for a in "$@"; do if [ -n "$take" ]; then code=$a; take=''; elif [ "$a" = -e ]; then take=1; fi; done; exec node -e "$code";; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
@@ -978,7 +979,7 @@ test(`${name}: pulama-admit-reaches-the-hand-door: admit forwards to the pūlama
   assert.equal(face.status, 0, face.stderr);
   assert.match(face.calls, /pulama-main\.js admit 2/);
   const bad = await run(shim, ["pulama", "burn"], { envFile: PULAMA_ENV });
-  assert.match(bad.stderr, /pulama takes up, down, light, admit, unadmit, keep-seat, lock, status or tessera/);
+  assert.match(bad.stderr, /pulama takes up, down, restand, light, admit, unadmit, keep-seat, lock, status or tessera/);
 });
 test(`${name}: pulama-unadmit-reaches-the-hand-door: unadmit forwards one image digest to the pūlama's own verb; a bare or malformed digest refuses and sends nothing`, { skip }, async () => {
   const digest = "sha256:" + "ab".repeat(32);
@@ -1019,6 +1020,70 @@ test(`${name}: down-carries-its-options-beside-a-pulama: the vessel's stop takes
   const r = await run(shim, ["down", "--timeout", "5"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_ID: "p1" } });
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.calls, /stop --timeout 5 lares/);
+});
+test(`${name}: pulama-skew-names-the-old-image: up and pulama status name a pūlama running another image than the one that stands, and point at pulama restand; one image names nothing`, { skip }, async () => {
+  const skewed = { FAKE_IMAGE_ID: "sha256:new", FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old" };
+  const up = await run(shim, ["up"], { envFile: PULAMA_ENV, env: skewed });
+  assert.equal(up.status, 0, up.stderr);
+  assert.match(up.calls, /inspect --format \{\{\.Image\}\} p1/);
+  assert.match(up.stderr, /the pūlama runs image sha256:old, and lares-surface:local stands at sha256:new/);
+  assert.match(up.stderr, /pulama restand/);
+  const status = await run(shim, ["pulama", "status"], { envFile: PULAMA_ENV, env: skewed });
+  assert.equal(status.status, 0, status.stderr);
+  assert.match(status.stderr, /the pūlama runs image sha256:old, and lares-surface:local stands at sha256:new/);
+  assert.match(status.calls, /pulama-main\.js status/);
+  const level = { FAKE_IMAGE_ID: "sha256:new", FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:new" };
+  for (const argv of [["up"], ["pulama", "status"]]) {
+    const r = await run(shim, argv, { envFile: PULAMA_ENV, env: level });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.stderr, /the pūlama runs image/);
+  }
+  // No pūlama running, or a pūlama inspect that fails, names nothing and never blocks the act.
+  const none = await run(shim, ["pulama", "status"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:new" } });
+  assert.doesNotMatch(none.stderr, /the pūlama runs image/);
+  const blind = await run(shim, ["pulama", "status"], { envFile: PULAMA_ENV, env: { ...skewed, FAKE_PULAMA_INSPECT_RC: "1" } });
+  assert.equal(blind.status, 0, blind.stderr);
+  assert.doesNotMatch(blind.stderr, /the pūlama runs image/);
+});
+test(`${name}: pulama-restand-recreates-on-the-current-image: it locks a running pūlama, recreates it with --force-recreate, and names it unlit (light by hand, then up and pulama admit); it never lights or admits`, { skip }, async () => {
+  const r = await run(shim, ["pulama", "restand"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_ID: "p1", FAKE_IMAGE_ID: "sha256:new" } });
+  assert.equal(r.status, 0, r.stderr);
+  const lines = r.calls.split("\n");
+  const lock = lines.findIndex((l) => /--profile pulama exec -T pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js lock$/.test(l));
+  const recreate = lines.findIndex((l) => /--profile pulama up -d --force-recreate pulama$/.test(l));
+  assert.ok(lock >= 0 && recreate > lock, `order lock, recreate:\n${r.calls}`);
+  assert.doesNotMatch(r.calls, /--no-recreate/);
+  assert.doesNotMatch(r.calls, /pulama-main\.js (light|admit|image)/, "restand reads no route and reports no image");
+  assert.match(r.stderr, /stands unlit on sha256:new/);
+  assert.match(r.stderr, /pulama light/);
+  assert.match(r.stderr, /then `?(tools\/lares-container\.(sh|ps1) )?up`?/);
+  assert.match(r.stderr, /pulama admit/);
+  // A pūlama that stands stopped holds no key: nothing to lock, and it recreates.
+  const stopped = await run(shim, ["pulama", "restand"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:new" } });
+  assert.equal(stopped.status, 0, stopped.stderr);
+  assert.doesNotMatch(stopped.calls, /pulama-main\.js lock/);
+  assert.match(stopped.calls, /--profile pulama up -d --force-recreate pulama/);
+});
+test(`${name}: pulama-restand-refuses-beside-a-vessel: a standing vessel, an unknown vessel or pūlama, an argument, or a refused lock recreate nothing`, { skip }, async () => {
+  const standing = await run(shim, ["pulama", "restand"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid", FAKE_PULAMA_ID: "p1" } });
+  assert.notEqual(standing.status, 0);
+  assert.match(standing.stderr, /pulama restand refuses while the lares vessel stands; run `?(tools\/lares-container\.(sh|ps1) )?down`? first/);
+  const unknown = await run(shim, ["pulama", "restand"], { envFile: PULAMA_ENV, env: { FAKE_PS_RC: "1", FAKE_PULAMA_ID: "p1" } });
+  assert.notEqual(unknown.status, 0);
+  assert.match(unknown.stderr, /pulama restand refuses: .*reads unknown/);
+  const pUnknown = await run(shim, ["pulama", "restand"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_PS_RC: "1" } });
+  assert.notEqual(pUnknown.status, 0);
+  assert.match(pUnknown.stderr, /pulama restand refuses: .*reads unknown/);
+  const extra = await run(shim, ["pulama", "restand", "now"], { envFile: PULAMA_ENV });
+  assert.notEqual(extra.status, 0);
+  assert.match(extra.stderr, /pulama restand takes no arguments/);
+  const refused = await run(shim, ["pulama", "restand"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_ID: "p1", FAKE_EXEC_RC: "1" } });
+  assert.notEqual(refused.status, 0);
+  assert.match(refused.stderr, /the pūlama refused the lock; nothing recreated/);
+  for (const r of [standing, unknown, pUnknown, extra, refused]) {
+    assert.doesNotMatch(r.calls, /--force-recreate/);
+    assert.doesNotMatch(r.calls, /pulama-main\.js (light|admit)/);
+  }
 });
 test(`${name}: pulama light reaches the pūlama's hand verb, and pulama down stops it`, { skip }, async () => {
   const light = await run(shim, ["pulama", "light"], { envFile: PULAMA_ENV });

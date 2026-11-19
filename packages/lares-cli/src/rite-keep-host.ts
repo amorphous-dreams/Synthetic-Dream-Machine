@@ -50,9 +50,40 @@ import type { RiteVerbAnswer } from "./rite-kukulu.js";
 
 /**
  * The secret-shaped strings no keep pushes, the same list the operator's claude-backup sync scans with: an Anthropic key, a
- * GitHub token, an AWS access key id, a PEM private key, a Slack token.
+ * GitHub token, an AWS access key id, a Slack token. A PEM private key reads apart (`KEEP_KEY_HEADER`): its header alone
+ * names no secret, and a transcript that discusses one names it in prose.
  */
-export const KEEP_SECRET_PATTERN = /(sk-ant-[A-Za-z0-9_-]{10,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY|xox[baprs]-[A-Za-z0-9-]{10,})/g;
+export const KEEP_SECRET_PATTERN = /(sk-ant-[A-Za-z0-9_-]{10,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,})/g;
+/**
+ * A PEM private key's header. It trips the guard only where key material follows it: within `KEEP_KEY_BODY_LINES` lines,
+ * before any END line, a run of base64 lines holding at least `KEEP_KEY_BODY_MIN` characters (a real key's body runs to
+ * hundreds). The lines read through the carriages a file meets: real newlines, CRLF, and `\n` escaped once or more inside
+ * JSONL; an encrypted PEM's header fields (`Proc-Type:`, `DEK-Info:`) and blank lines may stand before the body.
+ */
+export const KEEP_KEY_HEADER = /-----BEGIN [A-Z ]*PRIVATE KEY-----/g;
+export const KEEP_KEY_BODY_MIN = 64;
+export const KEEP_KEY_BODY_LINES = 64;
+const KEY_BODY_WINDOW = 16384;
+const KEY_BREAK = /(?:\\+r)?\\+n|\r?\n|\r/g;
+const KEY_BASE64_LINE = /^[A-Za-z0-9+/]+={0,2}$/;
+const KEY_FIELD_LINE = /^[A-Za-z][A-Za-z0-9-]*: /;
+
+/** Does key material follow a private-key header? `after` holds the text right after the header's closing dashes. */
+function keyBodyFollows(after: string): boolean {
+  const lines = after.slice(0, KEY_BODY_WINDOW).replace(/\\+\//g, "/").split(KEY_BREAK).slice(0, KEEP_KEY_BODY_LINES);
+  let body = 0, started = false;
+  for (const raw of lines) {
+    // A body run on one line with its END: the base64 stops where the END line's dashes start.
+    const line = raw.split("-----END ")[0]!.trim();
+    const ends = raw.includes("-----END ");
+    if (line === "" || (!started && KEY_FIELD_LINE.test(line))) { if (ends) break; if (started) break; continue; }
+    if (!KEY_BASE64_LINE.test(line)) break;
+    started = true;
+    body += line.length;
+    if (ends) break;
+  }
+  return body >= KEEP_KEY_BODY_MIN;
+}
 /** Known fixtures a match may hold and still pass: the AWS documentation key, and the house's PLANTED test values. */
 export const KEEP_SECRET_ALLOW: readonly string[] = ["AKIAIOSFODNN7EXAMPLE", "PLANTED"];
 
@@ -129,9 +160,13 @@ export function workspaceFromPairs(name: string, configured: string): string {
 export const KEEP_VESSEL_UNREACHED: ReadonlySet<string> = new Set(["rite-row-unreached", "swarm-no-daemon", "daemon-unreachable", "vessel-silent", "store-door-timeout"]);
 export const KEEP_VESSEL_DOWN = "the keep lei lives in the vessel; up, then keep";
 
-/** The secret-shaped strings one text holds, the allowed fixtures dropped. */
+/**
+ * The secret-shaped strings one text holds, the allowed fixtures dropped. A private-key header counts only where key material
+ * follows it, and reads as the header without its closing dashes.
+ */
 export function secretShapes(text: string): string[] {
-  return [...text.matchAll(KEEP_SECRET_PATTERN)].map((m) => m[0]).filter((m) => !KEEP_SECRET_ALLOW.some((a) => m.includes(a)));
+  const keys = [...text.matchAll(KEEP_KEY_HEADER)].filter((m) => keyBodyFollows(text.slice(m.index + m[0].length))).map((m) => m[0].slice(0, -5));
+  return [...keys, ...[...text.matchAll(KEEP_SECRET_PATTERN)].map((m) => m[0])].filter((m) => !KEEP_SECRET_ALLOW.some((a) => m.includes(a)));
 }
 
 export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions): Promise<KeepHostOutcome> {

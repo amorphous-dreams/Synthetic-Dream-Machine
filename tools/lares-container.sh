@@ -513,6 +513,22 @@ pulama_state() {
   if [ -n "$p_id" ]; then printf running; else printf absent; fi
 }
 
+# THE PŪLAMA'S IMAGE AGAINST THE IMAGE THAT STANDS. `up` keeps a lit pūlama lit (--no-recreate), so after a `build` it
+# runs the code it stood from. A running pūlama whose container image differs from the vessel image names the skew and
+# the verb that cures it (`pulama restand`); it warns and stands. A read that fails names nothing and blocks nothing.
+warn_pulama_skew() {
+  [ -n "$PULAMA_MODE" ] || return 0
+  skew_id=$(compose --profile pulama ps -q --status running pulama 2>/dev/null) || return 0
+  [ -n "$skew_id" ] || return 0
+  skew_ran=$(docker inspect --format '{{.Image}}' "$skew_id" 2>/dev/null) || return 0
+  skew_ran=$(printf '%s' "$skew_ran" | tr -d '\r')
+  skew_image=$(value_of LARES_IMAGE); [ -n "$skew_image" ] || skew_image=lares-surface:local
+  skew_stands=$(docker image inspect --format '{{.Id}}' "$skew_image" 2>/dev/null) || return 0
+  skew_stands=$(printf '%s' "$skew_stands" | tr -d '\r')
+  [ -n "$skew_ran" ] && [ -n "$skew_stands" ] && [ "$skew_ran" != "$skew_stands" ] || return 0
+  printf 'lares-container: the pūlama runs image %s, and %s stands at %s; it keeps the older code until `tools/lares-container.sh down` and `tools/lares-container.sh pulama restand` (then light it by hand, `up`, and `pulama admit`)\n' "$skew_ran" "$skew_image" "$skew_stands" >&2
+}
+
 case "$verb" in
   up)
     ensure_house
@@ -553,6 +569,7 @@ case "$verb" in
       IFS=$old_ifs
     fi
     stand_pulama
+    warn_pulama_skew
     if [ -n "$files" ]; then
       override=$(mktemp)
       printf 'services:\n  lares:\n    volumes:%s\n' "$files" > "$override"
@@ -593,7 +610,27 @@ case "$verb" in
     case "${1:-}" in
       up) ensure_house; compose --profile pulama up -d --no-recreate pulama ;;
       down) compose --profile pulama stop pulama ;;
+      restand)
+        # THE PŪLAMA RE-STANDS ON THE IMAGE THAT STANDS. `up` never recreates a lit pūlama, so after a `build` this verb
+        # does: with no vessel standing (down first), it locks a running pūlama (every session drops, every key zero-fills),
+        # then recreates it on the current image. It stands unlit: the operator lights it by hand, then `up` and
+        # `pulama admit`. It reads no route and types none.
+        [ "$#" -eq 1 ] || die "pulama restand takes no arguments"
+        restand_vessel=$(compose ps -q --status running lares) || die "pulama restand refuses: docker compose ps failed, so whether a vessel stands reads unknown; nothing recreated"
+        [ -z "$restand_vessel" ] || die "pulama restand refuses while the lares vessel stands; run \`tools/lares-container.sh down\` first (nothing recreated)"
+        restand_state=$(pulama_state)
+        [ "$restand_state" != unknown ] || die "pulama restand refuses: docker compose ps failed for the pūlama, so whether it stands reads unknown; nothing recreated"
+        ensure_house
+        if [ "$restand_state" = running ]; then
+          compose --profile pulama exec -T pulama node "$PULAMA_MAIN" lock </dev/null || die "the pūlama refused the lock; nothing recreated"
+        fi
+        compose --profile pulama up -d --force-recreate pulama || die "the pūlama did not stand on the current image"
+        restand_image=$(value_of LARES_IMAGE); [ -n "$restand_image" ] || restand_image=lares-surface:local
+        restand_digest=$(docker image inspect --format '{{.Id}}' "$restand_image" 2>/dev/null) || restand_digest=""
+        restand_digest=$(printf '%s' "$restand_digest" | tr -d '\r')
+        printf 'lares-container: the pūlama stands unlit on %s; light it by hand (`tools/lares-container.sh pulama light`), then `tools/lares-container.sh up` and `tools/lares-container.sh pulama admit`\n' "${restand_digest:-$restand_image}" >&2 ;;
       light|lock|status|tessera)
+        [ "$1" != status ] || warn_pulama_skew
         # light reads the operator's route on a real terminal inside the pūlama, never through a pipe.
         # shellcheck disable=SC2046
         compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" "$1" ;;
@@ -638,7 +675,7 @@ case "$verb" in
         tmp="$seat_file.$$.tmp"
         ( umask 077; printf '%s\n' "$file" > "$tmp" ) && chmod 600 "$tmp" && mv -f -- "$tmp" "$seat_file" || { rm -f -- "$tmp"; die "the seat could not be written to $seat_file"; }
         printf 'lares-container: the keep seat rests at %s (0600); a keep now seals under it\n' "$seat_file" >&2 ;;
-      *) die "pulama takes up, down, light, admit, unadmit, keep-seat, lock, status or tessera" ;;
+      *) die "pulama takes up, down, restand, light, admit, unadmit, keep-seat, lock, status or tessera" ;;
     esac ;;
   reset)
     [ "$#" -eq 0 ] || die "reset takes no arguments"

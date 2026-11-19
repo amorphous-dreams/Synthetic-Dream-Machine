@@ -29,6 +29,9 @@
  *   KH15 sessions that moved over an unmoved house spend a return of their own (`begin` over the standing bundle) before
  *        anything commits; with no return left, nothing commits and nothing pushes; `--if-due` reads moved sessions as due;
  *   KH16 `sessions: false` (`--no-sessions`, LARES_KEEP_SESSIONS=0) keeps the house alone.
+ *   KH17 a private-key header trips the guard only with key material after it (a base64 body of real length, in real lines,
+ *        CRLF, or escaped `\n` inside JSONL): a header named in prose passes; the other shapes read as before;
+ *   KH18 both guards (the sessions and the bundle) pass a header named in prose and refuse a planted header with its body.
  *
  * Real git over scratch repos; the vessel's rows answer from a recorded fake.
  */
@@ -376,6 +379,65 @@ describe("the keep rite, host half", () => {
     rmSync(join(r.ws, r.device, "projects/-home-me-proj/sessions/bbbb.jsonl.zst"));
     const passed = await riteKeepHost(r.ports, { workspace: "backup" });
     expect(passed.data, JSON.stringify(passed.data)).toMatchObject({ committed: true, pushed: true, par: true });
+  });
+
+  test("KH17 a private-key header trips the guard only with key material after it: a header named in prose passes, a header with a base64 body refuses, in real lines, CRLF, escaped \\n and doubly escaped \\\\n", () => {
+    const BEGIN = `${"-----"}BEGIN OPENSSH PRIVATE KEY-----`, END = `${"-----"}END OPENSSH PRIVATE KEY-----`;
+    const lines = Array.from({ length: 5 }, (_, i) => `b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQ${i}`);
+    const header = `${"-----"}BEGIN OPENSSH PRIVATE KEY`;
+    // PROSE: the header named in discussion, again and again, with no body after any mention, passes.
+    const prose = Array.from({ length: 14 }, (_, i) => `{"type":"assistant","text":"turn ${i}: the guard reads \`${BEGIN}\` in a transcript\\nand no key follows it"}`).join("\n");
+    expect(secretShapes(prose)).toEqual([]);
+    expect(secretShapes(`the header ${BEGIN} then prose`)).toEqual([]);
+    expect(secretShapes(`${BEGIN}\nMIIEvQ\n${END}`)).toEqual([]);
+    expect(secretShapes(`${BEGIN}\n${"0123456789abcdef".repeat(2)}\nthe commit, not a key`)).toEqual([]);
+    expect(secretShapes(`${BEGIN}\n${END}`)).toEqual([]);
+    // MATERIAL: the header, then a base64 body of real length, refuses in every carriage a file meets.
+    expect(secretShapes(`${BEGIN}\n${lines.join("\n")}\n${END}\n`)).toEqual([header]);
+    expect(secretShapes(`${BEGIN}\r\n${lines.join("\r\n")}\r\n${END}\r\n`)).toEqual([header]);
+    expect(secretShapes(`{"text":"${BEGIN}\\n${lines.join("\\n")}\\n${END}\\n"}`)).toEqual([header]);
+    expect(secretShapes(`{"text":"{\\"text\\":\\"${BEGIN}\\\\n${lines.join("\\\\n")}\\\\n${END}\\"}"}`)).toEqual([header]);
+    expect(secretShapes(`${BEGIN}${lines.join("")}${END}`)).toEqual([header]);
+    expect(secretShapes(`  ${BEGIN}\n  ${lines.join("\n  ")}\n  ${END}`)).toEqual([header]);
+    // A body with no END line inside the window still reads as material; so does an encrypted PEM with its header fields.
+    expect(secretShapes(`${BEGIN}\n${lines.join("\n")}`)).toEqual([header]);
+    const rsa = `${"-----"}BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,0123456789ABCDEF\n\n${lines.join("\n")}\n${"-----"}END RSA PRIVATE KEY-----`;
+    expect(secretShapes(rsa)).toEqual([`${"-----"}BEGIN RSA PRIVATE KEY`]);
+    // Prose that mentions the header and a key that stands later both read: the key alone counts.
+    expect(secretShapes(`${prose}\n${BEGIN}\n${lines.join("\n")}\n${END}`)).toEqual([header]);
+    // The other shapes read as before.
+    expect(secretShapes(`token ${"ghp_"}${"x".repeat(30)}`)).toEqual([`${"ghp_"}${"x".repeat(30)}`]);
+  });
+
+  test("KH18 the session guard and the bundle guard each pass a header named in prose and refuse a planted header with its body", async () => {
+    const BEGIN = `${"-----"}BEGIN OPENSSH PRIVATE KEY-----`, END = `${"-----"}END OPENSSH PRIVATE KEY-----`;
+    const body = Array.from({ length: 5 }, (_, i) => `b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQ${i}`);
+    const prose = Array.from({ length: 14 }, (_, i) => `{"type":"assistant","text":"turn ${i}: \`${BEGIN}\` names a header\\nno key follows"}`).join("\n") + "\n";
+    // SESSIONS, prose: the transcript discussing the header keeps.
+    const r = rig();
+    r.sessions.put("projects/-home-me-proj/cccc.jsonl", prose);
+    r.state.notes = { heron: `the guard reads ${BEGIN} in discussion\nno key follows\n` };
+    const kept = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(kept.data, JSON.stringify(kept.data)).toMatchObject({ committed: true, pushed: true, par: true });
+    // SESSIONS, planted: a transcript carrying the header and its body, escaped inside JSONL, refuses before any return spends.
+    const n = r.commits();
+    const returns = r.state.returns;
+    r.calls.length = 0;
+    r.sessions.put("projects/-home-me-proj/dddd.jsonl", `{"type":"user","text":"${BEGIN}\\n${body.join("\\n")}\\n${END}\\n"}\n`, 1800);
+    const planted = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(planted).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
+    expect(String(planted.data["message"])).toContain(`${r.device}/projects/-home-me-proj/sessions/dddd.jsonl.zst (-----BEG…)`);
+    expect(r.commits()).toBe(n);
+    expect(r.calls).toEqual([]);
+    expect(r.state.returns).toBe(returns);
+    // BUNDLE, planted: a record carrying the header and its body refuses at the bundle guard and commits nothing.
+    const b = rig({ at: join(scratch, "bundle") });
+    const m = b.commits();
+    b.state.notes = { heron: `remember the heron\n${BEGIN}\n${body.join("\n")}\n${END}\n` };
+    const bundled = await riteKeepHost(b.ports, { workspace: "backup", sessions: false });
+    expect(bundled).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
+    expect(String(bundled.data["message"])).toMatch(/heron\.tid \(-----BEG…\)/);
+    expect(b.commits()).toBe(m);
   });
 
   test("KH14 RED: with the vessel down the keep names where the lei lives, exits non-zero, and commits and pushes nothing", async () => {
