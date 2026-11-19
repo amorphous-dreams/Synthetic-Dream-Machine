@@ -4,8 +4,8 @@
  *
  *   H1 the composition arms `armFacePoolWatch` in its after-live step, unawaited (boot never waits), over the worn face's
  *      root, and its teardown (a lock, a wear that moves the mount) runs the host's down as a lock
- *   H2 the vessel's result hands `facePoolStandDown`, and the hearth's graceful shutdown runs it (the final wave and the
- *      commit seam, as a down) before the sessions flush and the islands go
+ *   H2 the hearth's graceful shutdown runs the one composition teardown, where the face pool's watch stands in the
+ *      producers phase (its final wave and commit seam, as a down) ahead of the flush, the signers and the islands
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -26,8 +26,9 @@ describe("the vessel hosts the watch over the worn face's pool", () => {
   test("H2 — the hearth's shutdown downs the host before the sessions flush", () => {
     expect(vessel).toMatch(/facePoolStandDown:\s*\(\)\s*=>\s*Promise<void>/);
     const shut = main.slice(main.indexOf("const shutdown = async"), main.indexOf("main-reflush"));
-    const pool = shut.indexOf('step("face-pool", () => result.facePoolStandDown())');
-    expect(pool).toBeGreaterThan(-1);
-    expect(pool).toBeLessThan(shut.indexOf('step("sessions-flush"'));
+    expect(shut).toMatch(/step\("composition", \(\) => result\.teardown\(/);
+    expect(vessel).toMatch(/stood\.push\(\{ what: "the face pool's watch", phase: "producers"/);
+    const order = readFileSync(new URL("../src/composition-shutdown.ts", import.meta.url), "utf8");
+    expect(order).toMatch(/\["producers", "flush", "signers", "islands", "resources", "repo"\]/);
   });
 });
