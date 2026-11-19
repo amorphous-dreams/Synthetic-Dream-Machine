@@ -17,6 +17,11 @@
  *     out;
  *   · `refused`: the Repo turned the ask itself away (an address it cannot read); no wait cures that, so it ends at once;
  *   · `never-arrived`: the port stayed silent past its budget, or traffic flowed past the hard cap, with no document.
+ *
+ * THE ISLAND'S OWN STORE SPEAKS TOO. The Repo reads its own store before it asks the port, and that read may itself wait
+ * on the vessel (the rest guard asks whether the document rests sealed there). A read in flight holds the silence clock,
+ * and its settling re-arms it as an inbound message does; the hard cap still bounds the wait, and a wait that ends with a
+ * read still in flight names it (`storeReads`), so the fault points at the store, never at a port that was never asked.
  */
 
 export interface SlotWaitBudgets {
@@ -36,6 +41,13 @@ export interface SlotWaitDeps<H> {
   readonly now:       () => number;
   /** The monotonic reading at the last inbound sync message. */
   readonly lastHeard: () => number;
+  /**
+   * THE ISLAND'S OWN STORE, read for the Repo (`store-liveness`). The Repo reads its own store before it asks the port,
+   * and that read may wait on the vessel's rest answer (`islandRestGuard`): while a read stands in flight the island is
+   * waiting on its own store, never on a silent port, so the silence clock holds; it runs again from the read's settling.
+   * The hard cap bounds the wait either way. Absent: the port alone decides silence.
+   */
+  readonly store?: () => { readonly inFlight: number; readonly lastSettled: number | null };
   readonly sleep:     (ms: number) => Promise<void>;
   /** One turn of the event loop, so queued port messages land before a fault fires. */
   readonly defer:     () => Promise<void>;
@@ -48,7 +60,8 @@ export type SlotWaitOutcome<H> =
   | { readonly outcome: "ready"; readonly handle: H }
   | { readonly outcome: "verdict" }
   | { readonly outcome: "refused"; readonly why: string }
-  | { readonly outcome: "never-arrived"; readonly silentMs: number; readonly elapsedMs: number };
+  /** `storeReads`: the reads the island's own store still held in flight when the wait ended (0: the port alone stood silent). */
+  | { readonly outcome: "never-arrived"; readonly silentMs: number; readonly elapsedMs: number; readonly storeReads: number };
 
 /** Wait for one slot document inside the island's budgets ({@link SlotWaitDeps}). */
 export async function waitForSlotDocument<H>(deps: SlotWaitDeps<H>): Promise<SlotWaitOutcome<H>> {
@@ -74,8 +87,15 @@ export async function waitForSlotDocument<H>(deps: SlotWaitDeps<H>): Promise<Slo
   };
   // The silence budget clocks from max(last inbound message, THIS wait's start): a slot that resolves from the
   // island's own storage moves no port traffic, so quiet accrued before the ask says nothing about this document.
-  const silence = (): number => deps.now() - Math.max(deps.lastHeard(), started);
+  // A read of the island's own store in flight holds the clock, and its settling re-arms it as an inbound message does.
+  const storeReads = (): number => deps.store?.().inFlight ?? 0;
+  const silence = (): number => {
+    const store = deps.store?.();
+    if (store && store.inFlight > 0) return 0;
+    return deps.now() - Math.max(deps.lastHeard(), store?.lastSettled ?? started, started);
+  };
   const within = (): boolean => silence() < budgets.silenceMs && deps.now() - started < budgets.hardCapMs;
+  const neverArrived = (): SlotWaitOutcome<H> => ({ outcome: "never-arrived", silentMs: Math.round(silence()), elapsedMs: Math.round(deps.now() - started), storeReads: storeReads() });
   // A verdict ends the wait only once the budget is spent: until then it is the relay's word for this instant.
   const done = (final: boolean): SlotWaitOutcome<H> | null => {
     if (settled === undefined || settled === "no-peer") return null;
@@ -104,7 +124,7 @@ export async function waitForSlotDocument<H>(deps: SlotWaitDeps<H>): Promise<Slo
           await deps.defer();
           const late = done(!within());
           if (late) return late;
-          if (!within()) return { outcome: "never-arrived", silentMs: Math.round(silence()), elapsedMs: Math.round(deps.now() - started) };
+          if (!within()) return neverArrived();
         }
         if (changed) { changed = false; continue; }
         deadline ??= deps.sleep(Math.max(0, Math.min(budgets.silenceMs - silence(), budgets.hardCapMs - (deps.now() - started)))).then(() => { deadline = undefined; });
@@ -129,6 +149,6 @@ export async function waitForSlotDocument<H>(deps: SlotWaitDeps<H>): Promise<Slo
     const late = done(!within());
     if (late) return late;
     if (within()) continue;
-    return { outcome: "never-arrived", silentMs: Math.round(silence()), elapsedMs: Math.round(deps.now() - started) };
+    return neverArrived();
   }
 }
