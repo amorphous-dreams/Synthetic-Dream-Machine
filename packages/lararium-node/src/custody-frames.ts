@@ -342,7 +342,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         mountByOpening = byOpeningBefore;
         deps.onLog(`the composition wearing h${mounted} did not stand; h${mountedBefore} worn again, the node key held`);
         const back = await deps.recompose(true, wardCredential(credentials));
-        if (back.refused === undefined) return { op: "unlock", ...u, ...perFace, ...back, held: true, switchRefused: stood.refused, face: mounted, wornAgain: mountedBefore };
+        // The answer names the face the vessel wears: `wears` follows the mount back, and `face` names the one that refused.
+        const wornBack = faceReadings !== undefined ? { wears: mountedBefore } : {};
+        if (back.refused === undefined) return { op: "unlock", ...u, ...perFace, ...wornBack, ...back, held: true, switchRefused: stood.refused, face: mounted, wornAgain: mountedBefore };
       }
       // A KEY NEVER RESTS OVER A FLOOR. When the composition that should have stood on the key refused, the vessel
       // stands at the floor and the holder drops what it opened: held and standing never disagree.
