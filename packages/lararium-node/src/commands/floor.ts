@@ -26,6 +26,7 @@ import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   acceptFloorRelease, floorReleaseEntriesFromBoard, floorRequiredBlobIds, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
   oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorManifest, readFloorOffering, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
+  FLOOR_PREDATES_LINE, readFoundingFloorManifest,
   type FloorPinLike,
   type FloorAcceptOutcome, type FloorPinPorts, type FloorRemount, type FloorStatus, type LarDoc,
 } from "@lararium/mesh";
@@ -156,9 +157,15 @@ export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatu
   if (!island) throw nexusRefused ?? new FloorRefused("floor-no-genesis", "this vessel's oracle island reads empty");
   const floorPin = status ? pinnedFloorOf(status.pinned.manifest, opts.casDir) : null;
   const truths = readFoundingRecordTruths({ record: island, genesisDir: opts.genesisDir ?? daemonGenesisDir(), floorPin });
+  // The founding record's own floor may predate the floor format (`readFoundingFloorManifest`, KEEP): the line says so plainly.
+  const foundingCid = genesisFloorCidOf(island);
+  const foundingBytes = foundingCid ? readVerifiedCasBlobFromFs(foundingCid, opts.casDir) : null;
+  const predates = foundingBytes !== null && "prior" in readFoundingFloorManifest(foundingBytes);
   const pinNote = nexusRefused
-    ? "none — this vessel stands in no Nexus charter, so the founding record's genesis floor serves"
-    : `${status?.pinned.manifest ?? "?"} does not read from this vessel's CAS`;
+    ? `none — this vessel stands in no Nexus charter, so the founding record's genesis floor serves${predates ? `; ${FLOOR_PREDATES_LINE}` : ""}`
+    : predates && status?.pinned.manifest === foundingCid
+      ? `${foundingCid} — ${FLOOR_PREDATES_LINE}`
+      : `${status?.pinned.manifest ?? "?"} does not read from this vessel's CAS`;
   const genesis = { ...truths, line: foundingRecordLine(truths, { pinNote }) };
   return nexusRefused
     ? { genesis, nexusRefused: { refusal: nexusRefused.refusal, message: nexusRefused.message } }

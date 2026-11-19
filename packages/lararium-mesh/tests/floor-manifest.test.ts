@@ -4,6 +4,8 @@ import { sha256HexBytesSync } from "../src/crypto.js";
 import {
   cutFloorSnapshot, openFloorSnapshot, floorManifestBytes, floorManifestCid,
   readFloorManifest, resolveFloor, type FloorManifest,
+  floorCanonReader, floorRecordsInOrder, predatingFloorBlobCids, readFoundingFloorManifest, resolveFoundingFloor, resolveIslandFloor,
+  type PredatingFloorManifest, type ResolvedPredatingFloor,
 } from "../src/floor-manifest.js";
 
 const rows = {
@@ -76,5 +78,65 @@ describe("floor manifest and snapshots", () => {
     expect(await resolveFloor(cid, async (key) => key === cid ? bytes : null)).toMatchObject({ refusal: "floor-absent" });
     map.set(lares.cid, Uint8Array.of(9));
     expect(await resolveFloor(cid, async (key) => map.get(key) ?? null)).toMatchObject({ refusal: "floor-snapshot-cid-mismatch" });
+  });
+});
+
+describe("a founding floor that predates the floor format", () => {
+  const enc = new TextEncoder();
+  const lares = cutFloorSnapshot(rows), lararium = cutFloorSnapshot({});
+  const prior = { format: "lararium-floor", engine: "bafkreiengine", grammar: "a".repeat(64), plugins: "bafkreiplugins", snapshots: { lararium: lararium.cid, lares: lares.cid } };
+  const priorBytes = enc.encode(JSON.stringify(prior));
+  const priorCid = sha256HexBytesSync(priorBytes);
+  const cas = new Map([[priorCid, priorBytes], [lares.cid, lares.bytes], [lararium.cid, lararium.bytes]]);
+  const fetch = async (cid: string) => cas.get(cid) ?? null;
+
+  test("the founding reader takes the prior shape at its own canonical bytes; the strict reader refuses it by name", () => {
+    expect(readFoundingFloorManifest(priorBytes)).toEqual({ prior });
+    const strict = readFloorManifest(priorBytes);
+    expect(strict).toMatchObject({ refusal: "floor-manifest-malformed", reason: expect.stringMatching(/predates the floor format/) });
+    // A current floor reads the same through both readers.
+    const current = floorManifestBytes(manifest);
+    expect(readFoundingFloorManifest(current)).toEqual({ manifest });
+    expect(predatingFloorBlobCids(priorCid, prior as PredatingFloorManifest)).toEqual([priorCid, lararium.cid, lares.cid]);
+  });
+
+  test("a forged or malformed prior shape refuses through the founding reader too", () => {
+    const text = new TextDecoder().decode(priorBytes);
+    for (const forged of [
+      text.replaceAll(",", ", "),
+      JSON.stringify({ ...prior, snapshots: { lares: lares.cid, lararium: lararium.cid } }),
+      JSON.stringify({ format: prior.format, grammar: prior.grammar, engine: prior.engine, plugins: prior.plugins, snapshots: prior.snapshots }),
+      JSON.stringify({ ...prior, snapshots: { lares: lares.cid } }),
+      JSON.stringify({ ...prior, grammar: "" }),
+      JSON.stringify({ ...prior, extra: "x" }),
+    ]) {
+      expect(readFoundingFloorManifest(enc.encode(forged))).toMatchObject({ refusal: "floor-manifest-malformed" });
+    }
+    expect(readFoundingFloorManifest(enc.encode(JSON.stringify({ ...prior, format: "lararium-floor/v1" })))).toMatchObject({ refusal: "floor-manifest-format" });
+  });
+
+  test("resolveFoundingFloor resolves the prior shape's snapshots alone; resolveFloor refuses it", async () => {
+    const founding = await resolveFoundingFloor(priorCid, fetch);
+    expect(founding).toMatchObject({ prior, snapshots: { lares: rows, lararium: {} } });
+    expect(floorRecordsInOrder(founding as ResolvedPredatingFloor)).toEqual([{}, rows]);
+    expect(floorCanonReader(founding as ResolvedPredatingFloor)("lar:///ha.ka.ba/bags/lares")).toEqual(rows);
+    expect(await resolveFloor(priorCid, fetch)).toMatchObject({ refusal: "floor-manifest-malformed", reason: expect.stringMatching(/predates/) });
+    const flipped = priorBytes.slice(); flipped[10] ^= 1;
+    expect(await resolveFoundingFloor(priorCid, async (cid) => (cid === priorCid ? flipped : fetch(cid)))).toMatchObject({ refusal: "floor-manifest-malformed", reason: expect.stringMatching(/differ from their CID/) });
+    expect(await resolveFoundingFloor(priorCid, async (cid) => (cid === lares.cid ? null : fetch(cid)))).toMatchObject({ refusal: "floor-absent" });
+  });
+
+  test("the island mounts the founding record's prior floor (named none, or named the witness's own CID); a pin naming another prior floor refuses; a current floor reads", async () => {
+    expect(await resolveIslandFloor({ named: undefined, founding: priorCid, resolveByCid: fetch })).toMatchObject({ prior });
+    expect(await resolveIslandFloor({ named: null, founding: priorCid, resolveByCid: fetch })).toMatchObject({ prior });
+    expect(await resolveIslandFloor({ named: priorCid, founding: priorCid, resolveByCid: fetch })).toMatchObject({ prior });
+    expect(await resolveIslandFloor({ named: undefined, founding: null, resolveByCid: fetch })).toBeNull();
+    // A pin names a floor the founding witness does not: the strict reader answers, and the prior shape refuses.
+    expect(await resolveIslandFloor({ named: priorCid, founding: "e".repeat(64), resolveByCid: fetch })).toMatchObject({ refusal: "floor-manifest-malformed" });
+    const current: FloorManifest = { ...manifest, snapshots: { lararium: lararium.cid, lares: lares.cid } };
+    const currentCid = floorManifestCid(current);
+    cas.set(currentCid, floorManifestBytes(current));
+    expect(await resolveIslandFloor({ named: currentCid, founding: priorCid, resolveByCid: fetch })).toMatchObject({ manifest: current });
+    expect(await resolveIslandFloor({ named: undefined, founding: currentCid, resolveByCid: fetch })).toMatchObject({ manifest: current });
   });
 });

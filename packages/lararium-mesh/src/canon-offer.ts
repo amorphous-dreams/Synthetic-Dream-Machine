@@ -797,7 +797,7 @@ export async function cutReleaseFloor(ports: ReleaseFloorPorts, args: { readonly
   const prior = await ports.prior();
   if (prior === null) throw new Error("floor-cut refused: no prior floor stands here (no genesis floor and no release), so a cut has no engine to carry");
   const opened = readFloorManifest(prior.bytes);
-  if ("refusal" in opened) throw new Error(`floor-cut refused: the prior floor reads unread (${opened.refusal})`);
+  if ("refusal" in opened) throw new Error(`floor-cut refused: the prior floor reads unread (${opened.refusal}: ${opened.reason})`);
   const canon: Record<string, Readonly<Record<string, LarTiddlerRecord>>> = {};
   const kept: string[] = [];
   const dropped: string[] = [];
