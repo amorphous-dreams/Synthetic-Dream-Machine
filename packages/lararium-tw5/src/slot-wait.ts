@@ -132,7 +132,7 @@ export async function waitForSlotDocument<H>(deps: SlotWaitDeps<H>): Promise<Slo
       }
       if (changed) { changed = false; continue; }
       const toCap = budgets.hardCapMs - elapsed();
-      // With a wake subscription the timer runs no longer than one grace window, so a wait that ends early leaves no long
+      // With a wake subscription the timer runs at most one grace window, so a wait that ends early leaves no long
       // timer behind it; a wake past it only goes round the loop again.
       const wait = Math.max(0, deps.onWake
         ? Math.min(toCap, settled === "verdict" ? graceLeft() : budgets.verdictGraceMs)
