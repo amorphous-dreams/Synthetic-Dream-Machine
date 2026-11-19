@@ -509,20 +509,41 @@ function PulamaState {
   return 'running'
 }
 
-# THE PŪLAMA'S IMAGE AGAINST THE IMAGE THAT STANDS. `up` keeps a lit pūlama lit (--no-recreate), so after a `build` it
-# runs the code it stood from. A running pūlama whose container image differs from the vessel image names the skew and
-# the verb that cures it (`pulama restand`); it warns and stands. A read that fails names nothing and blocks nothing.
-function WarnPulamaSkew {
-  if (-not $PulamaMode) { return }
+# THE PŪLAMA'S CODE AGAINST THE IMAGE THAT STANDS. `up` keeps a lit pūlama lit (--no-recreate), so after a `build` it runs
+# the image it stood from. The pūlama runs the vessel's image, so the image id moves with every vessel build; what decides
+# a re-stand is the pūlama's own code closure, the `lares.pulama.closure` label a build stamps. One reading serves the
+# line `up` and `pulama status` print and the `rebuild` verb's choice: absent, level, closure-level (an older image, the
+# same closure: it stays lit), moved (the closure moved or reads unlabeled: restand, then a light by hand), unread.
+$PulamaClosureFormat = '{{ index .Config.Labels "lares.pulama.closure" }}'
+function ClosureLabel([string]$kind, [string]$ref) {
+  if ($kind -eq 'image') { $o = ((& docker image inspect --format $PulamaClosureFormat $ref 2>$null) -join '').Trim() }
+  else { $o = ((& docker inspect --format $PulamaClosureFormat $ref 2>$null) -join '').Trim() }
+  if ($LASTEXITCODE -eq 0 -and $o -cmatch '^sha256:[0-9a-f]{64}$') { return $o } else { return '' }
+}
+$script:Pr = [pscustomobject]@{ State = 'unread'; Ran = ''; Stands = ''; Closure = '' }
+function PulamaReading {
+  $script:Pr = [pscustomobject]@{ State = 'unread'; Ran = ''; Stands = ''; Closure = '' }
   $id = ((& docker compose @Base --profile pulama ps -q --status running pulama 2>$null) -join '').Trim()
-  if ($LASTEXITCODE -ne 0 -or -not $id) { return }
+  if ($LASTEXITCODE -ne 0) { return }
+  if (-not $id) { $script:Pr.State = 'absent'; return }
   $ran = ((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()
   if ($LASTEXITCODE -ne 0) { return }
-  $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
-  $stands = ((& docker image inspect --format '{{.Id}}' $image 2>$null) -join '').Trim()
+  $stands = ((& docker image inspect --format '{{.Id}}' $ImageRef 2>$null) -join '').Trim()
   if ($LASTEXITCODE -ne 0) { return }
-  if (-not $ran -or -not $stands -or $ran -eq $stands) { return }
-  [Console]::Error.WriteLine("lares-container: the pūlama runs image $ran, and $image stands at $stands; it keeps the older code until ``tools/lares-container.ps1 down`` and ``tools/lares-container.ps1 pulama restand`` (then light it by hand, ``up``, and ``pulama admit``)")
+  if (-not $ran -or -not $stands) { return }
+  $script:Pr.Ran = $ran; $script:Pr.Stands = $stands
+  if ($ran -eq $stands) { $script:Pr.State = 'level'; return }
+  $script:Pr.Closure = ClosureLabel 'container' $id
+  if ($script:Pr.Closure -and $script:Pr.Closure -eq (ClosureLabel 'image' $ImageRef)) { $script:Pr.State = 'closure-level' } else { $script:Pr.State = 'moved' }
+}
+function WarnPulamaSkew {
+  if (-not $PulamaMode) { return }
+  PulamaReading
+  $p = $script:Pr
+  switch ($p.State) {
+    'moved' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands); its code closure moved (or reads unlabeled), so it keeps the older code until ``tools/lares-container.ps1 down`` and ``tools/lares-container.ps1 pulama restand`` (then light it by hand, ``up``, and ``pulama admit``)") }
+    'closure-level' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands); its code closure reads the same ($($p.Closure.Substring(0, 19))), so it stands lit and owes no restand") }
+  }
 }
 
 # THE DOWN PATH (`down`, and every act that must stop the vessel first): the keep while the vessel stands, the census,
@@ -676,7 +697,16 @@ function BuildImage([string]$at, [string[]]$more) {
         [Console]::Error.WriteLine("lares-container: the submodule $path stands unchecked-out or lacks its pinned commit $($sha.Substring(0, 12)) here, so the image builds without it")
       }
     }
-    Set-Content -Path $ov -Value "services:`n  lares:`n    build:`n      context: '$ctx'`n      args:`n        GIT_REV: '$rev'" -Encoding utf8
+    # THE PŪLAMA'S CODE CLOSURE rides the image as a label (`lares.pulama.closure`): the pūlama runs the vessel's image,
+    # so a build compares this digest, never the image id, to decide whether the standing pūlama must re-stand and re-light.
+    $closure = ''
+    if (Get-Command node -ErrorAction SilentlyContinue) {
+      $closure = ((& node (Join-Path $PSScriptRoot 'pulama-closure.mjs') $ctx 2>$null) -join '').Trim()
+      if ($LASTEXITCODE -ne 0) { $closure = '' }
+    }
+    if ($closure -cmatch '^sha256:[0-9a-f]{64}$') { [Console]::Error.WriteLine("lares-container: the pūlama's code closure reads $($closure.Substring(0, 19))") }
+    else { $closure = ''; [Console]::Error.WriteLine('lares-container: no pūlama code closure reads from this tree (no host node, or no pūlama entry), so the image carries none and a pūlama beside it reads as moved') }
+    Set-Content -Path $ov -Value "services:`n  lares:`n    build:`n      context: '$ctx'`n      args:`n        GIT_REV: '$rev'`n        PULAMA_CLOSURE: '$closure'" -Encoding utf8
     $env:GIT_REV = $rev; $script:GitRev = $rev
     TagOutgoing
     [Console]::Error.WriteLine("lares-container: building the vessel image (every package) from commit $short")

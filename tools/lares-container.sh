@@ -544,20 +544,41 @@ pulama_state() {
   if [ -n "$p_id" ]; then printf running; else printf absent; fi
 }
 
-# THE PŪLAMA'S IMAGE AGAINST THE IMAGE THAT STANDS. `up` keeps a lit pūlama lit (--no-recreate), so after a `build` it
-# runs the code it stood from. A running pūlama whose container image differs from the vessel image names the skew and
-# the verb that cures it (`pulama restand`); it warns and stands. A read that fails names nothing and blocks nothing.
+# THE PŪLAMA'S CODE AGAINST THE IMAGE THAT STANDS. `up` keeps a lit pūlama lit (--no-recreate), so after a `build` it runs
+# the image it stood from. The pūlama runs the vessel's image, so the image id moves with every vessel build; what decides
+# a re-stand is the pūlama's own code closure, the `lares.pulama.closure` label a build stamps. One reading serves the
+# line `up` and `pulama status` print and the `rebuild` verb's choice:
+#   absent         no pūlama runs
+#   level          the pūlama runs the image that stands
+#   closure-level  it runs an older image whose code closure matches the new one: it stays lit, no restand owed
+#   moved          the closure moved, or either side carries none: `pulama restand`, then a light by hand
+#   unread         a read failed: it names nothing and blocks nothing (rebuild refuses on it)
+PULAMA_CLOSURE_FORMAT='{{ index .Config.Labels "lares.pulama.closure" }}'
+closure_label() { # $1 = image|container, $2 = the reference; a label that reads no digest reads empty
+  if [ "$1" = image ]; then c_out=$(docker image inspect --format "$PULAMA_CLOSURE_FORMAT" "$2" 2>/dev/null | tr -d '\r') || c_out=""
+  else c_out=$(docker inspect --format "$PULAMA_CLOSURE_FORMAT" "$2" 2>/dev/null | tr -d '\r') || c_out=""; fi
+  if printf '%s' "$c_out" | grep -Eq '^sha256:[0-9a-f]{64}$'; then printf '%s' "$c_out"; fi
+}
+pr_state=unread; pr_ran=""; pr_stands=""; pr_closure=""
+pulama_reading() {
+  pr_state=unread; pr_ran=""; pr_stands=""; pr_closure=""
+  pr_id=$(compose --profile pulama ps -q --status running pulama 2>/dev/null) || return 0
+  if [ -z "$pr_id" ]; then pr_state=absent; return 0; fi
+  pr_ran=$(docker inspect --format '{{.Image}}' "$pr_id" 2>/dev/null) || pr_ran=""
+  pr_stands=$(docker image inspect --format '{{.Id}}' "$IMAGE_REF" 2>/dev/null) || pr_stands=""
+  pr_ran=$(printf '%s' "$pr_ran" | tr -d '\r'); pr_stands=$(printf '%s' "$pr_stands" | tr -d '\r')
+  [ -n "$pr_ran" ] && [ -n "$pr_stands" ] || return 0
+  if [ "$pr_ran" = "$pr_stands" ]; then pr_state=level; return 0; fi
+  pr_closure=$(closure_label container "$pr_id")
+  if [ -n "$pr_closure" ] && [ "$pr_closure" = "$(closure_label image "$IMAGE_REF")" ]; then pr_state=closure-level; else pr_state=moved; fi
+}
 warn_pulama_skew() {
   [ -n "$PULAMA_MODE" ] || return 0
-  skew_id=$(compose --profile pulama ps -q --status running pulama 2>/dev/null) || return 0
-  [ -n "$skew_id" ] || return 0
-  skew_ran=$(docker inspect --format '{{.Image}}' "$skew_id" 2>/dev/null) || return 0
-  skew_ran=$(printf '%s' "$skew_ran" | tr -d '\r')
-  skew_image=$(value_of LARES_IMAGE); [ -n "$skew_image" ] || skew_image=lares-surface:local
-  skew_stands=$(docker image inspect --format '{{.Id}}' "$skew_image" 2>/dev/null) || return 0
-  skew_stands=$(printf '%s' "$skew_stands" | tr -d '\r')
-  [ -n "$skew_ran" ] && [ -n "$skew_stands" ] && [ "$skew_ran" != "$skew_stands" ] || return 0
-  printf 'lares-container: the pūlama runs image %s, and %s stands at %s; it keeps the older code until `tools/lares-container.sh down` and `tools/lares-container.sh pulama restand` (then light it by hand, `up`, and `pulama admit`)\n' "$skew_ran" "$skew_image" "$skew_stands" >&2
+  pulama_reading
+  case "$pr_state" in
+    moved) printf 'lares-container: the pūlama runs image %s, and %s stands at %s; its code closure moved (or reads unlabeled), so it keeps the older code until `tools/lares-container.sh down` and `tools/lares-container.sh pulama restand` (then light it by hand, `up`, and `pulama admit`)\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" >&2 ;;
+    closure-level) printf 'lares-container: the pūlama runs image %s, and %s stands at %s; its code closure reads the same (%s), so it stands lit and owes no restand\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" "$(printf '%s' "$pr_closure" | cut -c1-19)" >&2 ;;
+  esac
 }
 
 # THE DOWN PATH (`down`, and every act that must stop the vessel first): the keep while the vessel stands, the census,
@@ -592,8 +613,9 @@ down_vessel() { # $@ = compose-down options
 vessel_moved() {
   m_id=$(compose ps -q --status running lares 2>/dev/null) || return 1
   [ -n "$m_id" ] || return 1
-  m_ran=$(docker inspect --format '{{.Image}}' "$m_id" 2>/dev/null | tr -d '\r') || m_ran=""
-  m_stands=$(docker image inspect --format '{{.Id}}' "$IMAGE_REF" 2>/dev/null | tr -d '\r') || m_stands=""
+  m_ran=$(docker inspect --format '{{.Image}}' "$m_id" 2>/dev/null) || m_ran=""
+  m_stands=$(docker image inspect --format '{{.Id}}' "$IMAGE_REF" 2>/dev/null) || m_stands=""
+  m_ran=$(printf '%s' "$m_ran" | tr -d '\r'); m_stands=$(printf '%s' "$m_stands" | tr -d '\r')
   [ -n "$m_ran" ] && [ -n "$m_stands" ] && [ "$m_ran" != "$m_stands" ]
 }
 down_if_moved() {
@@ -704,7 +726,17 @@ build_image() { # $1 = the revision; the rest = compose-build args
 $b_mods
 EOF
   fi
-  printf "services:\n  lares:\n    build:\n      context: '%s'\n      args:\n        GIT_REV: '%s'\n" "$b_ctx" "$b_rev" > "$b_ov"
+  # THE PŪLAMA'S CODE CLOSURE rides the image as a label (`lares.pulama.closure`): the pūlama runs the vessel's image, so a
+  # build compares this digest, never the image id, to decide whether the standing pūlama must re-stand and re-light.
+  b_closure=""
+  if command -v node >/dev/null 2>&1; then b_closure=$(node "$HERE/pulama-closure.mjs" "$b_ctx" 2>/dev/null | tr -d '\r') || b_closure=""; fi
+  if printf '%s' "$b_closure" | grep -Eq '^sha256:[0-9a-f]{64}$'; then
+    printf "lares-container: the pūlama's code closure reads %s\n" "$(printf '%s' "$b_closure" | cut -c1-19)" >&2
+  else
+    b_closure=""
+    printf '%s\n' 'lares-container: no pūlama code closure reads from this tree (no host node, or no pūlama entry), so the image carries none and a pūlama beside it reads as moved' >&2
+  fi
+  printf "services:\n  lares:\n    build:\n      context: '%s'\n      args:\n        GIT_REV: '%s'\n        PULAMA_CLOSURE: '%s'\n" "$b_ctx" "$b_rev" "$b_closure" > "$b_ov"
   GIT_REV=$b_rev; export GIT_REV
   tag_outgoing
   printf 'lares-container: building the vessel image (every package) from commit %s\n' "$b_short" >&2

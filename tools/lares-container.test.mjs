@@ -24,6 +24,19 @@ const havePwsh = spawnSync("pwsh", ["-NoProfile", "-Command", "1"]).status === 0
  * and a scratch house root, so no test reads a real `~/.lares`. `envAt: "clone"` plants the file beside the compose
  * file instead, where the shim must not look. `@HOUSE@` in an env value or an env file names the run's scratch house.
  */
+/** A small tree with a pūlama entry, one module it imports, a workspace package it imports, and a vessel-only module. */
+async function plantPulamaTree(root) {
+  const put = async (rel, text) => { await mkdir(join(root, rel, ".."), { recursive: true }); await writeFile(join(root, rel), text); };
+  await put("packages/lararium-node/package.json", '{"name":"@lararium/node"}\n');
+  await put("packages/lararium-node/src/pulama-main.ts", 'import { a } from "./pulama-a.js";\nimport { m } from "@lararium/mesh";\nimport { readFileSync } from "node:fs";\nexport const x = a + m;\n');
+  await put("packages/lararium-node/src/pulama-a.ts", "export const a = 1;\n");
+  await put("packages/lararium-node/src/main.ts", 'import { a } from "./pulama-a.js";\nexport const vessel = a;\n');
+  await put("packages/lararium-mesh/package.json", '{"name":"@lararium/mesh"}\n');
+  await put("packages/lararium-mesh/src/index.ts", "export const m = 2;\n");
+  await put("packages/lararium-web/package.json", '{"name":"@lararium/web"}\n');
+  await put("packages/lararium-web/src/index.ts", "export const w = 3;\n");
+}
+
 async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {} } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
@@ -82,6 +95,10 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       await mkdir(join(repo, "tools"), { recursive: true });
       script = join(repo, "tools", shim === SH ? "lares-container.sh" : "lares-container.ps1");
       await writeFile(script, await readFile(shim, "utf8"));
+      // The closure reader rides beside the shim, as it does in the checkout.
+      await writeFile(join(repo, "tools", "pulama-closure.mjs"), await readFile(join(ROOT, "tools", "pulama-closure.mjs"), "utf8"));
+      // "pulama": a clean checkout that carries a pūlama entry, so a build reads its code closure.
+      if (checkout === "pulama") await plantPulamaTree(repo);
       gitEnv.GIT_CEILING_DIRECTORIES = dir;
       if (checkout !== "none") {
         const git = (...a) => spawnSync("git", ["-C", repo, "-c", "user.name=t", "-c", "user.email=t@t", ...a], { encoding: "utf8" });
@@ -910,6 +927,18 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(failed.calls, /^rmi /m);
   });
 
+  // THE PŪLAMA'S CODE CLOSURE rides the image as a label, so a vessel-only build keeps the standing pūlama.
+  test(`${name}: build labels the image with the pūlama's code closure, read from the archived tree`, async () => {
+    const r = await run(shim, ["build"], { env: MOUNTS, checkout: "pulama" });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /PULAMA_CLOSURE: 'sha256:[0-9a-f]{64}'/, r.calls);
+    assert.match(r.stderr, /the pūlama's code closure reads sha256:[0-9a-f]{12}/);
+    const bare = await run(shim, ["build"], { env: MOUNTS, checkout: "clean" });
+    assert.equal(bare.status, 0, bare.stderr);
+    assert.match(bare.calls, /PULAMA_CLOSURE: ''/);
+    assert.match(bare.stderr, /no pūlama code closure reads from this tree/);
+  });
+
   test(`${name}: build archives each submodule at its pinned commit, never where its checkout has moved`, async () => {
     const r = await run(shim, ["build"], { env: MOUNTS, checkout: "submodule" });
     assert.equal(r.status, 0, r.stderr);
@@ -1205,6 +1234,20 @@ test(`${name}: pulama-skew-names-the-old-image: up and pulama status name a pūl
   assert.equal(blind.status, 0, blind.stderr);
   assert.doesNotMatch(blind.stderr, /the pūlama runs image/);
 });
+test(`${name}: pulama-skew-reads-the-closure: a pūlama on an older image whose code closure matches the new image's stands as lit, no restand named; a moved or unlabeled closure names the restand`, { skip }, async () => {
+  const c = (h) => "sha256:" + h.repeat(64);
+  const same = { FAKE_IMAGE_ID: "sha256:new", FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_IMAGE_CLOSURE: c("a"), FAKE_PULAMA_CLOSURE: c("a") };
+  for (const argv of [["up"], ["pulama", "status"]]) {
+    const r = await run(shim, argv, { envFile: PULAMA_ENV, env: same });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stderr, /the pūlama runs image sha256:old, and lares-surface:local stands at sha256:new; its code closure reads the same \(sha256:aaaaaaaaaaaa\), so it stands lit and owes no restand/);
+    assert.doesNotMatch(r.stderr, /pulama restand/);
+  }
+  const moved = await run(shim, ["pulama", "status"], { envFile: PULAMA_ENV, env: { ...same, FAKE_IMAGE_CLOSURE: c("b") } });
+  assert.match(moved.stderr, /its code closure moved[\s\S]*pulama restand/);
+  const unlabeled = await run(shim, ["pulama", "status"], { envFile: PULAMA_ENV, env: { ...same, FAKE_PULAMA_CLOSURE: "" } });
+  assert.match(unlabeled.stderr, /pulama restand/);
+});
 test(`${name}: pulama-restand-recreates-on-the-current-image: it locks a running pūlama, recreates it with --force-recreate, and names it unlit (light by hand, then up and pulama admit); it never lights or admits`, { skip }, async () => {
   const r = await run(shim, ["pulama", "restand"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_ID: "p1", FAKE_IMAGE_ID: "sha256:new" } });
   assert.equal(r.status, 0, r.stderr);
@@ -1257,3 +1300,27 @@ test(`${name}: pulama light reaches the pūlama's hand verb, and pulama down sto
   assert.match(bad.stderr, /pulama takes/);
 });
 }
+
+// THE PŪLAMA'S CODE CLOSURE (tools/pulama-closure.mjs): a vessel-only change keeps the digest; a change the pūlama reaches moves it.
+test("pulama-closure: a vessel-only change keeps the digest; a module the entry imports, or a workspace package it imports, moves it", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "pulama-closure-"));
+  try {
+    await plantPulamaTree(dir);
+    const digest = () => { const r = spawnSync("node", [join(ROOT, "tools/pulama-closure.mjs"), dir], { encoding: "utf8" }); assert.equal(r.status, 0, r.stderr); return r.stdout.trim(); };
+    const first = digest();
+    assert.match(first, /^sha256:[0-9a-f]{64}$/);
+    await writeFile(join(dir, "packages/lararium-node/src/main.ts"), "export const vessel = 99;\n");
+    await writeFile(join(dir, "packages/lararium-web/src/index.ts"), "export const w = 99;\n");
+    assert.equal(digest(), first, "the vessel's own code and a package the pūlama never imports leave the closure");
+    await writeFile(join(dir, "packages/lararium-node/src/pulama-a.ts"), "export const a = 2;\n");
+    const moved = digest();
+    assert.notEqual(moved, first, "a module the entry imports moves it");
+    await writeFile(join(dir, "packages/lararium-mesh/src/index.ts"), "export const m = 3;\n");
+    assert.notEqual(digest(), moved, "a workspace package the entry imports moves it");
+    const list = spawnSync("node", [join(ROOT, "tools/pulama-closure.mjs"), dir, "--list"], { encoding: "utf8" }).stdout;
+    assert.match(list, /  packages\/lararium-node\/src\/pulama-main\.ts$/m);
+    assert.doesNotMatch(list, /  packages\/lararium-node\/src\/main\.ts$/m, "the vessel's entry rides outside the closure");
+    const none = spawnSync("node", [join(ROOT, "tools/pulama-closure.mjs"), tmpdir()], { encoding: "utf8" });
+    assert.notEqual(none.status, 0);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});

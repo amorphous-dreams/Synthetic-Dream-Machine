@@ -197,6 +197,10 @@ USER node
 # Last in the stage: a new revision rebuilds this layer alone.
 ARG GIT_REV=unknown
 LABEL org.opencontainers.image.revision=$GIT_REV
+# THE PŪLAMA'S CODE CLOSURE (tools/pulama-closure.mjs, computed by the host shim's build over the archived tree): the
+# pūlama runs this same image, so the shim compares this digest, not the image id, before it re-stands a lit pūlama.
+ARG PULAMA_CLOSURE=
+LABEL lares.pulama.closure="$PULAMA_CLOSURE"
 
 # The daemon's flags (`--root /x` and `--root=/x` read alike; main.js and the CLI refuse a flag nobody reads).
 ENTRYPOINT ["node", "packages/lararium-node/dist/src/main.js"]
