@@ -84,7 +84,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash> [--face N]",
+    usage: "usage: lares rite kukulu [--branch <name>] [--face N] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash> [--face N]",
     synopsis:
       "A rite spends a lei. kūkulu raises the vessel again around its hearth: the rite begins in the vessel (the lei's return and " +
       "the guest half of a tessera) before the host shim rebuilds the image and raises a new vessel, which rests the host half. " +
