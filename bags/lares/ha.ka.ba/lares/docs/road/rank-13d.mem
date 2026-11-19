@@ -11,8 +11,8 @@ type     = "text/memetic-wikitext+tiddlywiki"
 uri-path = "ha.ka.ba/lares/docs/road/rank-13d"
 ```
 
-| 13d | WAVE TWO, after rank 13a | `K6` the keep's policy as tiddlers: the workspace name and the classes the keep cuts rest in one house config tiddler (`packages/lares-cli/src/keep-config.ts` and the wake core's twin) | The operator's law names everything but the boot core a tiddler, and `LARES_KEEP_WORKSPACE` stands as the keep's last environment name. |
+| 13d | WAVE TWO, after rank 13a | `K6` the keep's policy as tiddlers: the workspace name and the classes the keep cuts rest in one house config tiddler (`packages/lares-cli/src/keep-config.ts` and the wake core's twin). Unbuilt as of 2026-11-19; `lares surface open --launch` already reads its editor from the house tiddler `$:/config/lares/surface/Editor` (PR #313), resting as a file, its write from inside the wiki owed | The operator's law names everything but the boot core a tiddler, and `LARES_KEEP_WORKSPACE` stands as the keep's last environment name. |
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wSRTTdvIPAe_xBQSogzyKSjPEKP3dI161n8MCSo5LMI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hE8L_CezOs0MGt4GRk3S-lmQajIAzNc5xPmRB_xqOMI`>>
 
 <<^ code=`&#x0004;` to=`?`>>
