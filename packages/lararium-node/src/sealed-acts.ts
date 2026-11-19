@@ -39,7 +39,7 @@
 import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
 import { wardCredentialOfArgs, type WardCredential } from "./ward-credential.js";
 import { FaceNotNamed, resolveFace } from "./face-selector.js";
-import { rewrapWardCustody, unlockedFaceOrdinals } from "./custody-seat.js";
+import { unlockedFaceOrdinals } from "./custody-seat.js";
 import {
   HandleBook,
   type HandleBookSnapshot, type PersonaDeclaration,
@@ -693,8 +693,6 @@ export const SEALED_ACTS = Object.freeze({
 
   // A NAMED REFUSAL ANSWERS, IT DOES NOT THROW: the command prints the refusal's own name (custody#/the-restore),
   // and the door's log carries the act's name and how it ended, never the name of a face or a word of a bundle.
-  // THE WARD'S REWRAP (seat-harness#/the-ward): a face founded before the ward moves its root under one, over the route this act carries.
-  "ward.rewrap": act({ handleIndex: index, ward }, async (a) => ({ ...(await rewrapWardCustody({ ordinal: a.handleIndex }, a.ward)) })),
   "bundle.restore": act({ body: sealedBody, key: bundleKey, as: optional(index), ward: optional(ward), faceRouteRef: optional(text) }, async (a, ctx) => {
     try {
       if (!ctx.hosting) throw refuse("no store stands to land a face on: stand the vessel, or run the restore with no vessel standing");

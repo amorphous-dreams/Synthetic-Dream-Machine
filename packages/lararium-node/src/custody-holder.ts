@@ -32,9 +32,9 @@
  * A face's root seed rests `ward-cold`, under the face's WARD key (`ward-slots`), never under its FCK. No door of an unlocked
  * holder reads, writes, moves or removes such a row: each refuses `ward-needs-fresh-unlock`. `withWardKey` opens the ward key
  * fresh from a human route for ONE act, spending the face's own unlock attempts on a miss, runs the act over that face's warded
- * rows, and zeroes the key when the act settles; the key never enters `faces` and a lock zeroes one in flight. A face founded here
- * binds its ward tree over the same human routes as its face tree; a face founded before the ward refuses `ward-absent` until
- * `rewrapWard` moves its root under a ward (the tree first, then each row, so a torn rewrap resumes).
+ * rows, and zeroes the key when the act settles; the key never enters `faces` and a lock zeroes one in flight. A face's founding
+ * binds its ward tree over the same human routes as its face tree; a face whose ward tree stands absent refuses `ward-absent`,
+ * and its restore (`lares vault restore`) founds the ward again.
  *
  * Node-main only: a worker never imports this module.
  */
@@ -42,13 +42,13 @@ import { createHash } from "node:crypto";
 import {
   openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal, treeKeyEquals,
   openFaceCarrier, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, commitFaceTree, bindSlot, mintFck,
-  bindWardSlot, commitWardTree, confirmHeldPaper, decodeSlotTree, mintWardKey, openWardCarrier, openWardKey, readFckCarrier, readWardCarrier,
-  updateWardCarrier, openUnderWard, sealUnderWard, SEALING_SUFFIX, WardRefused, wardSigningSeed, wardPublicKeyOf, isWardKey, ed25519SignerFromSeed,
-  type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type PinSpec, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type WardKey,
+  bindWardSlot, commitWardTree, decodeSlotTree, mintWardKey, openWardCarrier, openWardKey,
+  updateWardCarrier, WardRefused, wardSigningSeed, wardPublicKeyOf, isWardKey, ed25519SignerFromSeed,
+  type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type WardKey,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 import { faceCarrierFor, openFaceTree } from "./face-custody.js";
-import { appendFaceEntry, bindFaceAsk, FaceIndexRefused, bindFaceGroup, faceDir, faceTreePath, findFace, readFaceIndex, retireFaceAsk, wardTreePath } from "./face-index.js";
+import { appendFaceEntry, bindFaceAsk, FaceIndexRefused, bindFaceGroup, faceTreePath, findFace, readFaceIndex, retireFaceAsk, wardTreePath } from "./face-index.js";
 import { custodyDerive, custodyRootFromBytes, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
 import { openCustodyNodeKey, unlockCustody } from "./custody-session.js";
 import { carrierTable, sSlotsPath, type CarrierRow, type CustodyHome, type CustodyHomes, type FaceSelector } from "./vault-carriers.js";
@@ -118,11 +118,11 @@ export class WardNeedsFreshUnlock extends Error {
   readonly reading = "ward-needs-fresh-unlock";
   constructor(what: string) { super(`ward-needs-fresh-unlock: ${what} rests under the face's ward, which opens only fresh from the face's own route for one act; unlocked custody never reaches it`); }
 }
-/** A face founded before the ward: no ward tree stands, so no ward act runs until `ward rewrap` moves its root under one. */
+/** A face whose ward tree stands absent: no ward act runs, and the face's restore (`lares vault restore`) founds its ward again. */
 export class WardAbsent extends Error {
   override readonly name = "WardAbsent";
   readonly reading = "ward-absent";
-  constructor(fcid: string) { super(`ward-absent: run ward rewrap (\`lares vault rewrap --face <N>\`) — face ${fcid.slice(0, 8)} holds no ward tree, so its root opens to no ward act`); }
+  constructor(fcid: string) { super(`ward-absent: face ${fcid.slice(0, 8)} holds no ward tree, so its root opens to no ward act; restore the face (\`lares vault restore\`)`); }
 }
 
 /** What a ward act holds: its face's warded rows, under the ward key opened for this act alone. */
@@ -270,11 +270,6 @@ export interface CustodyHolder {
    * Null where the face's ward stands with no key row.
    */
   wardPublicKey(face: FaceRef): Promise<string | null>;
-  /**
-   * Move a pre-ward face's root under a ward: prove `credentials` open the face's own tree, bind the ward tree over them (or open
-   * the one a torn rewrap left), then re-seal each FCK-framed root row under the ward key. Answers how many rows moved.
-   */
-  rewrapWard(face: FaceRef, credentials: readonly Credential[]): Promise<{ readonly rewrapped: number }>;
   /** Test seam: watch each ward key this holder opens, to witness that it zeroes. The product seats none. */
   watchWardKeys(watch: ((key: WardKey) => void) | null): void;
   isFaceUnlocked(face: FaceRef): Promise<boolean>;
@@ -470,7 +465,7 @@ export function makeCustodyHolder(a: {
     if (!row) throw new CustodyRecordUnknown("identity", file, "no warded row matches");
     return faceCarrierFor(a.homes, fcid, file, row);
   };
-  /** The ward tree standing for a face, or the reading that refuses: absent names the rewrap. */
+  /** The ward tree standing for a face, or the reading that refuses. */
   const readWardTree = async (fcid: string): Promise<SlotTree> => {
     const reading = decodeSlotTree(await a.io.read(wardTreePath(a.homes.identity, fcid)));
     if (reading.reading === "absent") throw new WardAbsent(fcid);
@@ -537,92 +532,6 @@ export function makeCustodyHolder(a: {
     const { fcid } = await openFaceFor(by);
     return { fcid, key: await openWardFresh(fcid, await readWardTree(fcid), credentials) };
   };
-  /** The files of one face's directory that a warded row names. */
-  const wardFilesOf = async (fcid: string): Promise<string[]> => {
-    const dir = faceDir(a.homes.identity, fcid);
-    const rows = carrierTable().filter((r) => r.custody === "ward-cold" && r.faceRecord !== undefined);
-    return (await a.io.list()).filter((p) => p.startsWith(`${dir}/`)).map((p) => p.slice(dir.length + 1))
-      .filter((f) => !f.includes("/") && rows.some((r) => r.faceRecord!.inner.test(f)));
-  };
-  const doRewrapWard = async (by: FaceRef, credentials: readonly Credential[]): Promise<{ readonly rewrapped: number }> => {
-    const { fcid } = await openFaceFor(by);
-    const fck = faces.get(fcid)!.fck;
-    let ward: WardKey;
-    const standing = decodeSlotTree(await a.io.read(wardTreePath(a.homes.identity, fcid)));
-    if (standing.reading === "unreadable") throw new WardRefused("ward-tree-unreadable", standing.why);
-    if (standing.reading === "readable") ward = await openWardFresh(fcid, standing.tree, credentials);
-    else {
-      // THE ROUTE PROVES THE FACE FIRST: the ward binds only over a route that opens this face's own tree to the key held. The
-      // proof spends the face's own attempts as an unlock's miss does (CHARGE FIRST: a miss or a throw keeps the charge).
-      if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) throw new WardRefused("ward-attempts-spent", "this face's unlock attempts are spent until the vessel restarts");
-      const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
-      faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
-      const proof = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials: charge.offered });
-      if (proof.reading !== "opens") {
-        const left = UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0);
-        throw new WardRefused(charge.short || left <= 0 ? "ward-attempts-spent" : "ward-no-slot-opens", `the route opens no slot of this face's own tree, so no ward binds over it (${left} attempt(s) left)`);
-      }
-      faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) - charge.cost);
-      const same = treeKeyEquals(proof.fck, fck);
-      proof.fck.fill(0);
-      if (!same) throw new WardRefused("ward-no-slot-opens", "the route opens another key than the face's own");
-      // THE WARD NEVER WEAKENS THE FACE: it binds ONE slot over the routes presented, at the threshold of the face slot they opened,
-      // so a k-of-n face rewraps to a ward that asks k of these routes, never one.
-      const faceTree = decodeSlotTree(await a.io.read(faceTreePath(a.homes.identity, fcid)));
-      const opened = faceTree.reading === "readable" ? faceTree.tree.slots.find((sl) => sl.id === proof.slot) : undefined;
-      const threshold = opened?.t ?? credentials.length;
-      // THE REWRAP KEEPS THE KEY: it changes the ward's wrapping, never the key the face's ward signs under. A face whose ward key row
-      // stands already founded the key its admission names; a ward bound fresh here would sign under another, so every approve that
-      // device signs would stop verifying. Its tree went missing, so the rows it sealed stay sealed under it, and nothing binds here.
-      if ((await openFaceCarrier({ io: a.io, key: fck, carrier: wardKeyCarrier(fcid) })).reading !== "absent") {
-        throw new WardRefused("ward-key-would-rotate", "this face's ward founded the ward key its admission carries, and its tree stands absent; a fresh ward would sign under a key no admission names: restore the ward tree, or re-found the face");
-      }
-      ward = mintWardKey();
-      wardKeys.add(ward);
-      wardWatch?.(ward);
-      try {
-        const pins: PinSpec[] = credentials.map((c): PinSpec => c.kind === "passphrase" ? { kind: "passphrase", passphrase: c.passphrase } : c.kind === "paper" ? { kind: "paper", confirmed: confirmHeldPaper(c.sheets) } : (() => { throw new WardRefused("ward-passkey-refused", "the ward binds human routes alone"); })());
-        if (pins.length === 0) throw new WardRefused("ward-needs-human-route", "a rewrap binds the ward over a passphrase or a paper pin; none was given");
-        const tree = await bindWardSlot(null, ward, { t: Math.min(Math.max(threshold, 1), pins.length), pins }, nativeKdf);
-        // THE TREE LANDS FIRST, so a rewrap torn after it resumes by opening the ward it left.
-        await commitWardTree({ io: a.io, path: wardTreePath(a.homes.identity, fcid), expected: null, key: ward, tree, carriers: [] });
-
-      } catch (err) { dropWard(ward); throw err; }
-    }
-    try {
-      // The ward key's public half stands beside the tree, the one the ward signs under (a torn rewrap writes it again, the same bytes).
-      const keyBytes = await wardKeyBytes(ward);
-      await updateFaceCarrier({ io: a.io, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: wardKeyCarrier(fcid), decide: () => ({ plaintext: keyBytes, value: undefined }) });
-      let moved = 0;
-      for (const file of await wardFilesOf(fcid)) {
-        const carrier = wardCarrierOf(fcid, file);
-        const bytes = await a.io.read(carrier.path);
-        if (readWardCarrier(bytes) === "sealed") continue;
-        if (readFckCarrier(bytes) !== "sealed") throw new CustodyRecordUnavailable("identity", file, `reads ${readFckCarrier(bytes)}, neither warded nor face-sealed`);
-        const faceSealed = await openFaceCarrier({ io: a.io, key: fck, carrier });
-        if (faceSealed.reading !== "opens") throw new CustodyRecordUnavailable("identity", file, faceSealed.reading);
-        try {
-          // The FCK-framed bytes stand where a warded row belongs: the ward's writer would refuse them, so the move seals to a sidecar,
-          // reads it back under the ward, and only then renames over them (the writer's own law, held here for the one frame it crosses).
-          await a.io.exclusive(async () => {
-            const sealed = sealUnderWard(ward, carrier, faceSealed.plaintext);
-            const side = `${carrier.path}${SEALING_SUFFIX}`;
-            await a.io.write(side, sealed);
-            const back = openUnderWard(ward, carrier, await a.io.read(side));
-            if (back.reading !== "opens" || !back.plaintext.every((b, i) => b === faceSealed.plaintext[i]) || back.plaintext.length !== faceSealed.plaintext.length) {
-              await a.io.remove(side);
-              throw new CustodyRecordUnavailable("identity", file, "the ward seal did not read back; the face-sealed row stands as it was");
-            }
-            back.plaintext.fill(0);
-            await a.io.rename(side, carrier.path);
-          });
-        } finally { faceSealed.plaintext.fill(0); }
-        moved++;
-      }
-      return { rewrapped: moved };
-    } finally { dropWard(ward); }
-  };
-
   const doBindFace = async (fcid: string, groupDigest: string): Promise<void> => {
     const seat = faces.get(fcid);
     if (!seat) throw new FaceLocked(fcid);
@@ -1004,11 +913,6 @@ export function makeCustodyHolder(a: {
       unlockChain = run.catch(() => undefined);
       const { fcid, key } = await run;
       try { return await act(seatOf(fcid, key)); } finally { dropWard(key); }
-    },
-    rewrapWard(face, credentials) {
-      const run = unlockChain.then(() => doRewrapWard(face, credentials), () => doRewrapWard(face, credentials));
-      unlockChain = run.catch(() => undefined);
-      return run;
     },
     async wardPublicKey(face) {
       const found = await resolveFace(face);

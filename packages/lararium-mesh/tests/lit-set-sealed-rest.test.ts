@@ -85,7 +85,7 @@ async function twoFaces() {
     onHeld: (h) => held.push(`${h.refusal}:${h.documentId}`),
   });
   repo = new Repo({ storage: rest.store, network: [] });
-  // The OLD shape: one standing session (a's) for every document. The watch must refuse it for b's documents.
+  // One standing session (a's) answers for every document: the watch must refuse it for b's documents.
   rest.watch(repo, () => (open.has(faceA) ? sessionA : null));
   return { rest, repo, inner, faceA, faceB, sessionA, sessionB, sealedBy, held, open, docsOfB, a, b };
 }

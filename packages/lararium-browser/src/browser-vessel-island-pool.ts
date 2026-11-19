@@ -42,7 +42,7 @@ export type PageLifeFeed = (listener: (life: PageLife) => void) => () => void;
 export interface BrowserVesselIslandPoolOptions {
   /**
    * URL of the compiled browser-wiki-worker entry script. Optional at
-   * construction; required before mountWiki (a placeholder pool may predate the
+   * construction; required before mountWiki (a placeholder pool may stand ahead of the
    * genesis island that supplies TW5 core bytes).
    */
   workerScriptUrl?: URL;

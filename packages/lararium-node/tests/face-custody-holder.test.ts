@@ -184,108 +184,14 @@ describe("the ward holds the face root apart from unlocked custody", () => {
     for (const k of opened) expect(k.every((b) => b === 0), "every ward key zeroes once its act settles").toBe(true);
   });
 
-  test("RED: a pre-ward face (an FCK-sealed root, no ward tree) refuses `ward-absent: run ward rewrap`; CONTROL: after the rewrap it opens, and an interrupted rewrap resumes", async () => {
-    const { wardCredential } = await import("../src/ward-credential.js");
-    const { loadPersonaGroupRootSeed } = await import("../src/node-vessel-identity.js");
-    const { rewrapWardCustody } = await import("../src/custody-seat.js");
-    const { openFaceTree, faceCarrierFor } = await import("../src/face-custody.js");
-    const { carrierTable } = await import("../src/vault-carriers.js");
-    const { wardTreePath, faceTreePath } = await import("../src/face-index.js");
-    const { writeFaceCarrier, readFckCarrier, readWardCarrier } = await import("@lararium/mesh");
+  test("RED: a face whose ward tree stands absent runs a ward act; it refuses `ward-absent` and names the restore; CONTROL: the face itself still stands unlocked", async () => {
+    const { wardTreePath } = await import("../src/face-index.js");
     const { rmSync } = await import("node:fs");
     const { holder, face } = await wardedFace();
-    const s = seat!;
-    // Stand the face as a build before the ward founded it: no ward tree, no ward key row, and the root sealed under the face key.
-    rmSync(wardTreePath(s.homes.identity, face.fcid));
-    rmSync(faceCarrierFor(s.homes, face.fcid, "face-ward-key.bin", carrierTable().find((r) => r.row === "face-ward-key")!).path);
-    const opened = await openFaceTree({ io: s.io, homes: s.homes, fcid: face.fcid, credentials: cred(PASS) });
-    if (opened.reading !== "opens") throw new Error("the face tree did not open");
-    const file = ".persona-group-root-h0.json";
-    const row = carrierTable().find((r) => r.row === "persona-root")!;
-    const carrier = faceCarrierFor(s.homes, face.fcid, file, row);
-    const keypair = { verifyingKey: "ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c", signingKey: "f".repeat(64) };
-    // A keypair whose public half derives from its seed: mint one.
-    const { generateKeyPairSync } = await import("node:crypto");
-    const k = generateKeyPairSync("ed25519");
-    const priv = (k.privateKey.export({ format: "jwk" }) as { d: string }).d, pub = (k.publicKey.export({ format: "jwk" }) as { x: string }).x;
-    Object.assign(keypair, { signingKey: Buffer.from(priv, "base64url").toString("hex"), verifyingKey: Buffer.from(pub, "base64url").toString("hex") });
-    await writeFaceCarrier({ io: s.io, key: opened.fck, treePath: faceTreePath(s.homes.identity, face.fcid), carrier, plaintext: new TextEncoder().encode(JSON.stringify(keypair)) });
-    await holder.writeRecord("identity", ".persona-roster-h0.json", new TextEncoder().encode(JSON.stringify({ roots: [{ handleIndex: 0, verifyingKey: keypair.verifyingKey }] })));
-    await expect(loadPersonaGroupRootSeed(0, wardCredential(cred(PASS)))).rejects.toThrow(/ward-absent: run ward rewrap/);
-
-    // An interrupted rewrap: the ward tree lands, then the root row's write fails before it lands.
-    const { makeCustodyHolder } = await import("../src/custody-holder.js");
-    const torn = { ...s.io, read: s.io.read.bind(s.io), rename: s.io.rename.bind(s.io), remove: s.io.remove.bind(s.io), list: s.io.list.bind(s.io), exclusive: s.io.exclusive.bind(s.io),
-      write: async (path: string, bytes: Uint8Array) => { if (path.includes(".persona-group-root-h0.json")) throw new Error("the disk went away"); return s.io.write(path, bytes); } };
-    const second = makeCustodyHolder({ io: torn as typeof s.io, homes: s.homes });
-    await second.adopt(s.treeKey);
-    expect((await second.unlockFace({ ordinal: 0 }, cred(PASS))).reading).toBe("opens");
-    await expect(second.rewrapWard({ ordinal: 0 }, cred(PASS))).rejects.toThrow(/the disk went away/);
-    const { readFileSync, existsSync } = await import("node:fs");
-    expect(existsSync(wardTreePath(s.homes.identity, face.fcid))).toBe(true);
-    expect(readFckCarrier(readFileSync(carrier.path))).toBe("sealed");
-    await second.lock();
-
-    // The rewrap runs again over the tree it left, and the root moves under the ward.
-    const done = await rewrapWardCustody({ ordinal: 0 }, wardCredential(cred(PASS)));
-    expect(done).toMatchObject({ rewrapped: 1 });
-    expect(readWardCarrier(readFileSync(carrier.path))).toBe("sealed");
-    const seed = await loadPersonaGroupRootSeed(0, wardCredential(cred(PASS)));
-    expect(Buffer.from(seed).toString("hex")).toBe(keypair.signingKey);
-    // A second rewrap over a warded face moves nothing.
-    expect(await rewrapWardCustody({ ordinal: 0 }, wardCredential(cred(PASS)))).toMatchObject({ rewrapped: 0 });
-  });
-});
-
-describe("the rewrap keeps the face's ward signing key (row 7, S3b)", () => {
-  const PASS = "ward-route";
-  const IMAGE = new TextEncoder().encode("an approve's ward image");
-  test("RED: a rewrap from an absent ward over a face whose ward key its admission already names mints a fresh key, so that key's approvals stop verifying; it refuses `ward-key-would-rotate` and the key stands; CONTROL: a rewrap over the standing ward keeps the key, and the ward still signs under it", async () => {
-    const { rmSync } = await import("node:fs");
-    const { wardTreePath } = await import("../src/face-index.js");
-    const { verifyEd25519 } = await import("@lararium/mesh");
-    seat = await seatScratchCustody("ward-rewrap-keeps-key");
-    const { holder } = seat;
-    const face = await holder.foundFace({ ordinal: 0, slots: [slot(PASS)] });
-    const admitted = await holder.wardPublicKey({ ordinal: 0 });
-    expect(admitted).toMatch(/^[0-9a-f]{64}$/);
-    // CONTROL: the standing ward rewraps over its own key; the key the admission carries still verifies the ward's signature.
-    await holder.rewrapWard({ ordinal: 0 }, cred(PASS));
-    expect(await holder.wardPublicKey({ ordinal: 0 })).toBe(admitted);
-    expect(verifyEd25519(await holder.withWardKey({ ordinal: 0 }, cred(PASS), (w) => w.wardSign(IMAGE)), IMAGE, admitted!)).toBe(true);
-    // The ward tree goes missing while the key row stands: a fresh ward would sign under a key no admission names.
-    rmSync(wardTreePath(seat.homes.identity, face.fcid));
-    const reading = await holder.rewrapWard({ ordinal: 0 }, cred(PASS)).then(() => "rewrapped", (e: Error) => /ward-[a-z-]+/.exec(e.message)?.[0] ?? e.message);
-    expect(reading).toBe("ward-key-would-rotate");
-    expect(await holder.wardPublicKey({ ordinal: 0 })).toBe(admitted);
-  });
-});
-
-describe("the rewrap never weakens a ward, and its proof is charged (S2 cold read, P3)", () => {
-  test("RED: a face behind a 2-of-2 route rewraps to a ward that one passphrase alone does not open; a wrong route's proof spends the face's attempts; CONTROL: both passphrases open the rewrapped ward", async () => {
-    const { rmSync } = await import("node:fs");
-    const { wardTreePath } = await import("../src/face-index.js");
-    seat = await seatScratchCustody("ward-rewrap-threshold");
-    const { holder } = seat;
-    const twoOfTwo: SlotSpec = { t: 2, pins: [{ kind: "passphrase", passphrase: "first half" }, { kind: "passphrase", passphrase: "second half" }] };
-    const face = await holder.foundFace({ ordinal: 0, slots: [twoOfTwo] });
-    // A pre-ward face: no ward tree and no ward key row (a face whose row stands refuses `ward-key-would-rotate`).
-    const { faceCarrierFor } = await import("../src/face-custody.js");
-    const { carrierTable } = await import("../src/vault-carriers.js");
-    const keyRow = faceCarrierFor(seat.homes, face.fcid, "face-ward-key.bin", carrierTable().find((r) => r.row === "face-ward-key")!).path;
-    rmSync(wardTreePath(seat.homes.identity, face.fcid));
-    rmSync(keyRow);
-    const both = [...cred("first half"), ...cred("second half")];
-    await holder.rewrapWard({ ordinal: 0 }, both);
-    await expect(holder.withWardKey({ ordinal: 0 }, cred("first half"), async () => "opened")).rejects.toThrow(/ward-no-slot-opens|ward-attempts-spent/);
-    expect(await holder.withWardKey({ ordinal: 0 }, both, async () => "opened")).toBe("opened");
-
-    // A wrong route's rewrap proof charges the face's own attempts until they spend.
-    rmSync(wardTreePath(seat.homes.identity, face.fcid));
-    rmSync(keyRow);
-    const wrong = cred("not this face's route");
-    const readings: string[] = [];
-    for (let i = 0; i < 4; i++) readings.push(await holder.rewrapWard({ ordinal: 0 }, wrong).then(() => "rewrapped", (e: Error) => /ward-[a-z-]+/.exec(e.message)?.[0] ?? e.message));
-    expect(readings.at(-1)).toBe("ward-attempts-spent");
+    rmSync(wardTreePath(seat!.homes.identity, face.fcid));
+    const refused = await holder.withWardKey({ ordinal: 0 }, cred(PASS), async () => "ran").then(() => null, (e: Error) => e);
+    expect(refused).toMatchObject({ name: "WardAbsent", reading: "ward-absent" });
+    expect(refused!.message).toContain("lares vault restore");
+    expect(holder.unlockedFaces()).toEqual([face.fcid]);
   });
 });

@@ -27,7 +27,7 @@
  *                  that one ordinal in its own memory (never on disk) and hands it back in the standing of every session
  *                  it serves after, so a vessel that restarts wears the face again. An ordinal outside the session's lend
  *                  refuses `outside-the-lei`. The lock forgets it, as a restart does: a fresh light remembers no wear.
- *   everything else (an unlock, a proof for a backup, an adoption, a founding, a ward act, a rewrap, a lock) holds no
+ *   everything else (an unlock, a proof for a backup, an adoption, a founding, a ward act, a lock) holds no
  *                  operation here and refuses `needs-the-human`
  *
  * ── THE SESSION DROPS WITH ITS CHANNEL ──────────────────────────────────────────────────────────

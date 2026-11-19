@@ -355,12 +355,7 @@ export async function withWardKeyCustody<T>(face: FaceRef, ward: WardCredential 
  */
 export async function faceWardKeyCustody(face: FaceRef): Promise<string> {
   const key = await (await openedCustody()).wardPublicKey(face);
-  if (key === null) throw new WardRefused("ward-key-absent", "this face's ward holds no key row; run ward rewrap (`lares vault rewrap --face <N>`)");
+  if (key === null) throw new WardRefused("ward-key-absent", "this face's ward holds no key row; restore the face (`lares vault restore`)");
   return key;
 }
 
-/** Move a pre-ward face's root under a ward (`lares ward rewrap`): the ward tree first, then each root row. */
-export async function rewrapWardCustody(face: FaceRef, ward: WardCredential | undefined): Promise<{ readonly rewrapped: number }> {
-  const credentials = wardCredentialsOf(ward, "the rewrap");
-  return (await openedCustody()).rewrapWard(face, credentials);
-}

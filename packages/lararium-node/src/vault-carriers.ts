@@ -335,7 +335,7 @@ function buildTable(): readonly CarrierRow[] {
           custody: "floor", keyClass: null, writer: "face-custody (founding)",
           bare: "a face's slot tree wraps the face custody key under each human route of that face, so the key it wraps cannot seal it" }),
     row({ row: "ward-slots", target: tgt(["D"]), home: "identity", under: FACES_DIR, match: new RegExp(`^${FACES_DIR}/[0-9a-f]{32}/${escape(WARD_TREE_FILE)}$`),
-          custody: "floor", keyClass: null, writer: "custody-holder (founding, ward rewrap)",
+          custody: "floor", keyClass: null, writer: "custody-holder (founding)",
           bare: "a face's ward tree wraps the ward key under each human route of that face; the ward key opens only fresh from a route, so neither the face key nor the vessel key may wrap it" }),
 
     // ── floor-plain: the floor reads it, or it reads public ────────────────────────────────────

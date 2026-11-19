@@ -1009,7 +1009,7 @@ async function prepareNodeBootOn(
     const bag = sealedBagOf(documentId);
     return bag === null || bag.held !== undefined ? standingSaveSession() : sessionOfFace(bag.face);
   };
-  // A document the map names sealed only now may hold clear chunks from before: they seal under the standing session.
+  // A document the map names sealed after it rested holds clear chunks: they seal under the standing session.
   const sealNowMapped = (documentId: string): void => {
     const session = standingSaveSession();
     if (session === null || sealedBagOf(documentId) === null) return;
@@ -3337,7 +3337,7 @@ async function prepareNodeBootOn(
         // A re-presentation has nothing to move while no presentation stands; the hook stays so the boards' callers keep it.
         representIfMoved = () => Promise.resolve();
       } catch (e) {
-        // A re-dial that failed keeps no pin from before it: the vessel stands at its place anchor.
+        // A re-dial that failed keeps no pin it held going in: the vessel stands at its place anchor.
         dialAnchor.clear(); dialSeat.stand(null);
         console.log(`[nexus-join] dial-out skipped: ${e instanceof Error ? e.message : String(e)}`);
       }
