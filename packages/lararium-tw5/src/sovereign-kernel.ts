@@ -76,6 +76,7 @@ import {
   AutomergeDocStore, slotLayerFlags } from "@lararium/mesh";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
+import { storeLiveness, type StoreLiveness } from "./store-liveness.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
 import { openIslandStory } from "./island-story.js";
 import { preloadsFromCasBlob } from "./cas-preloads.js";
@@ -287,6 +288,14 @@ export function runSovereignKernel(
   let _lastSyncHeardAt = mono();
   const _syncWakes = new Set<() => void>();
   const _markSyncHeard = (): void => { _lastSyncHeardAt = mono(); for (const wake of _syncWakes) wake(); };
+  // THE ISLAND'S OWN STORE, read for each Repo (`store-liveness`): a slot its own store holds resolves with no port traffic,
+  // and a read there may wait on the vessel's rest answer, so the slot wait reads it beside the port.
+  const _storeOf = new WeakMap<object, StoreLiveness>();
+  const _counted = <S extends object>(repoStorage: S | undefined): { storage: S | undefined; liveness: StoreLiveness | null } => {
+    if (!repoStorage) return { storage: undefined, liveness: null };
+    const { storage, liveness } = storeLiveness(repoStorage, mono);
+    return { storage, liveness };
+  };
 
   async function _resolveSlot(
     repo: Repo,
@@ -306,6 +315,7 @@ export function runSovereignKernel(
       absence:   (rejection) => rejection instanceof Error && /is unavailable/.test(rejection.message),
       now:       mono,
       lastHeard: () => _lastSyncHeardAt,
+      ...(_storeOf.has(repo) ? { store: () => _storeOf.get(repo)!.reading() } : {}),
       // LIVENESS: slot waits use this for peer-silence and hard-cap bounds as well as polling.
       sleep:     (ms) => new Promise((res) => setTimeout(res, ms)),
       defer,
@@ -318,10 +328,15 @@ export function runSovereignKernel(
     });
     if (out.outcome === "ready") return out.handle;
     if (out.outcome === "never-arrived") {
-      _post(mkFault(wikiUri,
-        `slot ${slot} unavailable — doc ${docUrl} never arrived over syncPort ` +
-        `(${out.silentMs}ms port-silence, ${out.elapsedMs}ms elapsed; ` +
-        `silence budget ${SLOT_SILENCE_TIMEOUT_MS}ms, hard cap ${SLOT_READY_HARD_CAP_MS}ms)`));
+      // A wait that ended while the island's own store still read names that store, never the port: the read there waits
+      // on the store itself or on the vessel's rest answer for it (`islandRestGuard`).
+      _post(mkFault(wikiUri, out.storeReads > 0
+        ? `slot ${slot} unavailable — doc ${docUrl} never resolved: the island's own store still held ${out.storeReads} read(s) ` +
+          `in flight at the hard cap (${out.elapsedMs}ms elapsed; hard cap ${SLOT_READY_HARD_CAP_MS}ms), each waiting on that store ` +
+          `or on the vessel's rest answer for its document`
+        : `slot ${slot} unavailable — doc ${docUrl} never arrived over syncPort ` +
+          `(${out.silentMs}ms port-silence, ${out.elapsedMs}ms elapsed; ` +
+          `silence budget ${SLOT_SILENCE_TIMEOUT_MS}ms, hard cap ${SLOT_READY_HARD_CAP_MS}ms)`));
       return null;
     }
     if (out.outcome === "refused") {
@@ -362,13 +377,15 @@ export function runSovereignKernel(
     // behind its Repo whatever the host would offer, and its Repo announces the one peer ID its scoped view
     // admits. The vessel's owner alone persists.
     _view = msg.view ? makeViewChannel(_post) : null;
-    const storageAdapter = msg.view ? undefined : host.storage(msg);
+    const own = _counted(msg.view ? undefined : host.storage(msg));
+    const storageAdapter = own.storage;
     _repo = makeIslandRepo({
       ...(storageAdapter ? { storage: storageAdapter } : {}),
       syncPort: msg.syncPort,
       ...(msg.view ? { peerId: msg.view.peerId } : {}),
       ...(msg.ownedDocument ? { denyDocument: msg.ownedDocument.documentUrl } : {}),
     });
+    if (own.liveness) _storeOf.set(_repo, own.liveness);
     // A SESSION ISLAND HOLDS NO CONTENT STORE: every content read asks its view, and the vessel's owner answers
     // with the bytes or a refusal. The host's own resolver never gets asked. Each caller below re-checks the
     // bytes against the address, as it does for bytes from any store.
@@ -378,12 +395,14 @@ export function runSovereignKernel(
       const ownedManifest = msg.ownedDocument.storage
         ? { ...msg, storage: msg.ownedDocument.storage, syncPort: msg.ownedDocument.syncPort }
         : { ...msg, syncPort: msg.ownedDocument.syncPort };
-      const ownedStorage = host.storage(ownedManifest);
+      const owned = _counted(host.storage(ownedManifest));
+      const ownedStorage = owned.storage;
       _ownedRepo = makeIslandRepo({
         ...(ownedStorage ? { storage: ownedStorage } : {}),
         syncPort: msg.ownedDocument.syncPort,
         documentScope: msg.ownedDocument.documentUrl,
       });
+      if (owned.liveness) _storeOf.set(_ownedRepo, owned.liveness);
     }
 
     _composite = new CompositeStore();
@@ -665,6 +684,7 @@ export function runSovereignKernel(
       absence:   (rejection) => rejection instanceof Error && /is unavailable/.test(rejection.message),
       now:       mono,
       lastHeard: () => _lastSyncHeardAt,
+      ...(_storeOf.has(repo) ? { store: () => _storeOf.get(repo)!.reading() } : {}),
       sleep:     (ms) => new Promise((res) => setTimeout(res, ms)),
       defer,
       onWake: (wake) => {

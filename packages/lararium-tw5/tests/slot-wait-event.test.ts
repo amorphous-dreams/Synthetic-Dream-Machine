@@ -47,7 +47,7 @@ describe("slot wait wakes on document readiness", () => {
     vi.setSystemTime(0);
     const silent = waitForSlotDocument(deps(() => new Promise<string>(() => {})));
     await vi.advanceTimersByTimeAsync(8_000);
-    expect(await silent).toEqual({ outcome: "never-arrived", silentMs: 8_000, elapsedMs: 8_000 });
+    expect(await silent).toEqual({ outcome: "never-arrived", silentMs: 8_000, elapsedMs: 8_000, storeReads: 0 });
 
     const refused = waitForSlotDocument(deps(() => Promise.reject(new Error("invalid address"))));
     await vi.advanceTimersByTimeAsync(250);
