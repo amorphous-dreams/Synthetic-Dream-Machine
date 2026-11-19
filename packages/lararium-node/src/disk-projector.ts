@@ -93,6 +93,7 @@ import { surfaceOrphanAlert, tendOrphanAlerts, wikiFamilyView } from "@lararium/
 import { familyRootOf, memeOrphanAlertTitle, orphansUnder, rootAddressOf, ORPHAN_FOLDER_SUFFIX } from "@lararium/mesh/family";
 import type { BagMirrorConfig } from "./bag-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
+import type { BaseFromGit } from "./pool-head.js";
 
 /** The mode every projected file takes at creation: the operator alone reads the house's plaintext renders. */
 export const PROJECTION_FILE_MODE = 0o600;
@@ -272,6 +273,13 @@ export interface LarDiskProjectorOptions {
    * and a restart reads every carrier as never agreed.
    */
   readonly syncedTree?: SyncedTree;
+  /**
+   * HEAD'S WORDS WHERE NO SYNCED BASE STANDS (`facePoolHeads`, face-pools A5). A re-found clears the Synced tree; a face
+   * pool keeps its git history. For a carrier these records render and no base covers, HEAD's blob names the base: its
+   * bytes the disk side, its canonical render the records side. Read only for records this projector renders, so a
+   * record the house no longer holds never gains a base. Absent → no history stands in for a base.
+   */
+  readonly baseFromGit?: BaseFromGit;
   /**
    * Vessel journal writer. When present, the projector appends one `bag-projected` entry per bag after
    * that bag's mirror first gains a carrier file on disk.
@@ -501,6 +509,7 @@ export class LarDiskProjector {
   private readonly readinessMap: ReadinessMap | undefined;
   private readonly debugJson: boolean;
   private readonly syncedTree: SyncedTree;
+  private readonly baseFromGit: BaseFromGit | undefined;
   private readonly documentOf: LarDiskProjectorOptions["documentOf"];
   private readonly journal: VesselJournal | undefined;
   private readonly onBagProjected: ((info: { bagId: string; path: string }) => void) | undefined;
@@ -531,6 +540,7 @@ export class LarDiskProjector {
     this.readinessMap = opts.readinessMap;
     this.debugJson    = opts.debugJson ?? false;
     this.syncedTree   = opts.syncedTree ?? new SyncedTree(null);
+    this.baseFromGit  = opts.baseFromGit;
     this.journal      = opts.journal;
     this.onBagProjected = opts.onBagProjected;
     for (const entry of this.journal?.since() ?? []) {
@@ -1157,6 +1167,27 @@ export class LarDiskProjector {
   private ownBaseAt(bagId: string, uri: string, path: string): SyncedBase | null {
     const base = this.syncedTree.baseAt(syncedTreeKey(bagId, uri), path);
     return this.otherDocument(bagId, base) ? null : base;
+  }
+
+  /**
+   * THE BASE THE POOL'S HEAD NAMES for a carrier at `path` (face-pools A5), where no synced base stands: HEAD's bytes on
+   * the disk side, the render they say on the records side (folded as the gate's `≈` folds the disk), or null where no
+   * port stands, the body rides binary, or HEAD never held the file.
+   */
+  private headBaseAt(uri: string, path: string, ext: string, isBinary: boolean): SyncedBase | null {
+    if (this.baseFromGit === undefined || isBinary) return null;
+    const head = this.baseFromGit(path);
+    if (head === null) return null;
+    const disk = carrierHash(head.body, head.meta);
+    const records = (() => {
+      if (ext === MEME_EXT) {
+        const canonical = this.canonicalizeFn ? this.canonicalizeFn(uri, head.body) : null;
+        return canonical === null ? null : carrierHash(canonical, head.meta);
+      }
+      const canonical = this.canonicalizeNativeFn ? this.canonicalizeNativeFn(uri, ext, head.body, head.meta) : null;
+      return canonical === null ? null : carrierHash(canonical.body, canonical.metaBody);
+    })();
+    return { path, disk, records: records ?? disk };
   }
 
   /** Every base the carrier holds for THIS document's records. */
@@ -2033,7 +2064,17 @@ export class LarDiskProjector {
       // A BASE STANDS AT ONE PATH: an agreement this carrier reached at another path names no base here.
       // A base that names ANOTHER DOCUMENT names no agreement of this one: the gate reads none.
       let another = this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate));
-      let base = this.ownBaseAt(bagId, tiddlerUri, candidate);
+      // NO SYNCED BASE AND NO OTHER DOCUMENT'S: the pool's HEAD stands in where it holds the file (a re-found cleared the
+      // tree). These records stand, so HEAD vouches for an agreement with a record the house holds.
+      // A HEAD base rests in no tree, so an agreement it names still pins.
+      let headed = false;
+      const baseOf = (): SyncedBase | null => {
+        const own = this.ownBaseAt(bagId, tiddlerUri, candidate);
+        const head = own === null && !another ? this.headBaseAt(tiddlerUri, candidate, file.ext, isBinary) : null;
+        headed = head !== null;
+        return own ?? head;
+      };
+      let base = baseOf();
       /** Weigh the carrier against the base as it stands: the disk's hash, the standoff those states fold to, and the gate's answer. */
       const weigh = (): { diskHash: string | null; standoff: string; decision: ReturnType<typeof decideProjection> } => {
         const diskHash = onDisk !== null ? carrierHash(onDisk.body, onDisk.meta)
@@ -2062,7 +2103,7 @@ export class LarDiskProjector {
       if (weighed.decision.kind !== "noop") {
         this.syncedTree.reread(syncedTreeKey(bagId, tiddlerUri));
         another = this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate));
-        base = this.ownBaseAt(bagId, tiddlerUri, candidate);
+        base = baseOf();
         weighed = weigh();
       }
       const { diskHash, standoff, decision } = weighed;
@@ -2080,7 +2121,7 @@ export class LarDiskProjector {
         // render on the other, so the ingest scan reads the file `unchanged` and each gate still tells a
         // later disk edit from a later record edit. A base that already names this agreement stays put.
         if (decision.reason === "canonical-equivalent" && diskHash !== null && !another
-            && !(base !== null && base.disk === diskHash && base.records === gateRecords)) {
+            && !(base !== null && !headed && base.disk === diskHash && base.records === gateRecords)) {
           this.pin(bagId, tiddlerUri, candidate, diskHash, gateRecords);
         }
         // A PENDING POINTER'S SIDECAR STANDS AS THE RECORDS RENDER IT, and no base stands here: that
