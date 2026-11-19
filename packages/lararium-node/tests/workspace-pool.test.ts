@@ -146,7 +146,7 @@ describe("WP2 — the seat over a workspace: off the boot path, the whole tree, 
     fire("My Notes.tid");
     const reading = await seat.down("lock");
     expect(order).toEqual(["wave My Notes.tid"]);
-    expect(reading.committed).toBe(true);
+    expect(reading).toEqual({ committed: true, sha: expect.any(String) });
     const subject = git("log", "-1", "--format=%s");
     expect(subject.startsWith("lar:///workspace.closes.the-sitting/lock")).toBe(true);
     expect(git("log", "-1", "--format=%ae")).toBe("notes@workspace.invalid");
@@ -226,7 +226,7 @@ describe("WP4 — the witness on a scratch house: a user wiki bound to a workspa
     expect(landed?.unattended).toBe(true);
     expect(tree.baseAt(syncedTreeKey(NOTES_WORKING, "Fresh Note"), plain)).not.toBeNull();
     const reading = await seat.down("lock");
-    expect(reading.committed).toBe(true);
+    expect(reading).toEqual({ committed: true, sha: expect.any(String) });
     expect(gitIn(dir, "show", "--name-only", "--format=", "HEAD").out.split("\n")).toEqual(["Fresh Note.tid"]);
   });
 });

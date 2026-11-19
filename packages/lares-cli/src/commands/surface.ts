@@ -30,7 +30,7 @@ import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSy
 import { join, posix, relative, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
 import {
-  faceRoot, faceSegmentRefusal, HOUSE_IGNORED, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
+  faceRoot, faceSegmentRefusal, houseExcludeLines, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
   larProjectionsHome, larConfigHome, syncedTreeDir, labelledRelations, readFaceLabel,
 } from "@lararium/node";
 import { ownPersonaPetname, carrierHash, digestsEqual } from "@lararium/mesh";
@@ -219,18 +219,9 @@ function localConfig(root: string, key: string): string | null {
 const EXCLUDE_OPEN = "# >>> lares surface: the house's one ignore list (HOUSE_IGNORED); `lares surface init` keeps this block";
 const EXCLUDE_CLOSE = "# <<< lares surface";
 
-/**
- * THE EXCLUDE RULES, from `HOUSE_IGNORED` alone: each top folder but `.git` (git keeps its own), each orphan folder
- * suffix, and the atomic writer's temp (`<path>.<pid>[.<uuid>].tmp`). The patterns float (no leading `/`), since the
- * mirrors rest one folder down (`wiki/`, `canon/`, `margins/<slug>/`). The pointer carriers (`.meta`, `.kapae`, `.mem`,
- * `.tid`) never appear here: the pool commits them.
- */
+/** THE EXCLUDE RULES: the house's one ignore list as git reads it (`houseExcludeLines`), the same list a workspace's tree carries. */
 export function surfaceExcludeLines(): string[] {
-  return [
-    ...HOUSE_IGNORED.topDirs.filter((d) => d !== ".git").map((d) => `${d}/`),
-    ...HOUSE_IGNORED.dirSuffixes.map((s) => `*${s}/`),
-    "*.[0-9]*.tmp",
-  ];
+  return houseExcludeLines();
 }
 
 /** The house's block, whole. */

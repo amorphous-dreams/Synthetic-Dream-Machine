@@ -199,10 +199,11 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
 export { workspaceRootsOf, FACES_PROJECTION_DIR, FACE_PLANES, faceSegment, faceSegmentRefusal, FaceSegmentRefused, faceRoot, faceMarginsRoot, type FaceSite, type FaceSegmentCode } from "./bag-paths.js";
-export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, isTempLayerInternalTitle, TEMP_LAYER_DIR,
+export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, houseExcludeLines, isTempLayerInternalTitle, TEMP_LAYER_DIR,
   isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
 // The drain, one seat (face-pools W1, W2): the CLI's `lares watch` and the vessel's host over the worn face's pool.
 export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolWatch, poolCommitSeam, stageEditsSinceSitting, wakeStageLine, runGit,
+  armWorkspaceWatch, standWorkspaceTree, workspaceCommitSeam, WORKSPACE_SKIP, WORKSPACE_CLOSE_PREFIX, type WorkspaceTreeReading, type WorkspaceWatchOptions,
   WATCHED_PLANES, SITTING_CLOSE_PREFIX, POOL_SETTLE_MS, type DrainSeat, type FacePoolWatch, type FacePoolPorts, type FacePoolWatchOptions, type SeamReading,
   type SittingClose, type StageEdit, type WatchState, type GitRun } from "./watch-core.js";
 // The disk→records gesture's pure machinery behind one submit port (tideline-surface #/seam point 1): the CLI fills it with the

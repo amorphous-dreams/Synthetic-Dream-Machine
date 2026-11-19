@@ -19,13 +19,17 @@
  * `inotify-dead`, and holds no poll loop: no interval ever arms, no timer reads the disk again. The final wave at the seam
  * reads the whole pool once (the catch-up), since no event ever named what moved.
  *
+ * A NAMED WORKSPACE TAKES THE SAME SEAT (`armWorkspaceWatch`): a shared wiki whose share row names a workspace projects its
+ * workbench there, one disk copy whichever face wears, and the vessel watches that folder whole, founds it as a git working
+ * tree off the boot path (`standWorkspaceTree`), and commits it at each close (`workspaceCommitSeam`), naming no face.
+ *
  * Meme: lar:///ha.ka.ba/kahua/memory/project/face-pools
  */
 
-import { watch as fsWatch, existsSync, mkdirSync, rmSync, writeFileSync, type FSWatcher, type WatchListener } from "node:fs";
+import { watch as fsWatch, chmodSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync, type FSWatcher, type WatchListener } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { isAbsolute, join, sep } from "node:path";
-import { FACE_PLANES, houseIgnored, siteFileToTitle } from "./bag-paths.js";
+import { FACE_PLANES, HOUSE_IGNORED, TEMP_LAYER_DIR, houseExcludeLines, houseIgnored, siteFileToTitle } from "./bag-paths.js";
 
 // ── the drain seat ─────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -278,8 +282,163 @@ export const POOL_SETTLE_MS = 400;
  * the catch-up or a wave names itself in the log and the watch stands.
  */
 export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
-  const log = o.log ?? ((line: string) => console.log(`[faces] ${line}`));
   const git = o.git ?? runGit;
+  return armSeat({
+    root: o.pool, ports: o.ports, ...(o.settleMs !== undefined ? { settleMs: o.settleMs } : {}),
+    log: o.log ?? ((line: string) => console.log(`[faces] ${line}`)),
+    ...(o.watch ? { watch: o.watch } : {}), ...(o.cookie ? { cookie: o.cookie } : {}),
+    accepts: (rel) => WATCHED_PLANES.includes(rel.split("/")[0] ?? "") && rel.includes("/"),
+    wake: () => stageEditsSinceSitting(o.pool, git),
+    commit: o.ports.commit ?? ((c: SittingClose) => poolCommitSeam(o.pool, c, git)),
+    covers: WATCHED_PLANES.join(", "),
+  });
+}
+
+// ── a named workspace as a pool ────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * A NAMED WORKSPACE SERVES AS A POOL (cabal-realm#/the-workbench). A shared wiki whose share row names a workspace projects its
+ * workbench into `<root>/workspaces/<name>` (the host shim binds it there: `--workspace <name>=<dir>`, `LARES_WORKSPACES`), ONE
+ * disk copy whichever face wears. That folder stands as a git working tree as a face pool does, and the vessel holds the same
+ * seat over it: the whole folder watched, each settle an unattended INGEST wave in the wiki's own working layer, the commit seam
+ * at each sitting's close. Several faces share the copy, so nothing here names a face: not the author, not the subject.
+ */
+
+/** The top folders a workspace holds that ride no wave and no commit: an older layout's drafts, the temp layer. */
+export const WORKSPACE_SKIP: readonly string[] = ["recovery", TEMP_LAYER_DIR];
+
+/** The subject a workspace's sitting closes under: a `lar:` subject that names the close and never a face. */
+export const WORKSPACE_CLOSE_PREFIX = "lar:///workspace.closes.the-sitting/";
+
+const WORKSPACE_EXCLUDE_OPEN = "# >>> lares workspace: the house's one ignore list (HOUSE_IGNORED); the vessel keeps this block";
+const WORKSPACE_EXCLUDE_CLOSE = "# <<< lares workspace";
+
+/** What one stand did: founded the tree, found it standing, or found the folder inside another history it leaves alone. */
+export interface WorkspaceTreeReading {
+  readonly stood: "founded" | "already" | "inside-another-history";
+  /** Each thing the stand changed; empty where everything stood as the house writes it. */
+  readonly changed: readonly string[];
+}
+
+/**
+ * STAND A WORKSPACE AS A GIT WORKING TREE, changing only what does not already stand: `.git` at its top (0700), the house's one
+ * ignore list in `.git/info/exclude` (the operator's own lines kept), a local author `workspace <name>` <`<name>@workspace.invalid`>
+ * that names no face, signing off. A folder that already rests inside another history (a workspace bound inside the checkout)
+ * founds no nested repository: that history holds its base, and the seam commits nothing there. Throws where git refuses.
+ */
+export function standWorkspaceTree(dir: string, name: string, git: GitRun = runGit): WorkspaceTreeReading {
+  const changed: string[] = [];
+  mkdirSync(dir, { recursive: true });
+  const dotGit = join(dir, ".git");
+  let founded = false;
+  if (!existsSync(join(dotGit, "HEAD"))) {
+    if (git(["rev-parse", "--show-toplevel"], dir).code === 0) return { stood: "inside-another-history", changed };
+    const r = git(["init", "-q", "-b", "main"], dir);
+    if (r.code !== 0) throw new Error(`git init in ${dir} answered ${r.code}: ${firstLine(r.stderr)}`);
+    founded = true;
+    changed.push("git repository");
+  }
+  if ((statSync(dotGit).mode & 0o777) !== 0o700) { chmodSync(dotGit, 0o700); changed.push(".git mode 0700"); }
+  const exclude = join(dotGit, "info", "exclude");
+  const was = existsSync(exclude) ? readFileSync(exclude, "utf8") : "";
+  const block = [WORKSPACE_EXCLUDE_OPEN, ...houseExcludeLines(), WORKSPACE_EXCLUDE_CLOSE].join("\n") + "\n";
+  const start = was.indexOf(WORKSPACE_EXCLUDE_OPEN);
+  const end = start === -1 ? -1 : was.indexOf(WORKSPACE_EXCLUDE_CLOSE, start);
+  const now = start !== -1 && end !== -1
+    ? was.slice(0, start) + block + was.slice(end + WORKSPACE_EXCLUDE_CLOSE.length).replace(/^\n/, "")
+    : (was === "" || was.endsWith("\n") ? was : `${was}\n`) + block;
+  if (now !== was) { mkdirSync(join(dotGit, "info"), { recursive: true }); writeFileSync(exclude, now); changed.push("info/exclude"); }
+  const want: ReadonlyArray<readonly [string, string]> = [["user.name", `workspace ${name}`], ["user.email", `${name}@workspace.invalid`], ["commit.gpgsign", "false"]];
+  for (const [key, value] of want) {
+    const held = git(["config", "--local", "--get", key], dir);
+    if (held.code === 0 && held.stdout.trim() === value) continue;
+    const r = git(["config", "--local", key, value], dir);
+    if (r.code !== 0) throw new Error(`git config --local ${key} in ${dir} answered ${r.code}: ${firstLine(r.stderr)}`);
+    changed.push(key);
+  }
+  return { stood: founded ? "founded" : "already", changed };
+}
+
+/** The pathspecs a workspace's seam stages: the whole folder but its skipped tops. A top the exclude block already ignores takes no
+ *  pathspec of its own: git refuses an `add` that names an ignored path, even to exclude it. */
+const workspacePaths = (): string[] => [".", ...WORKSPACE_SKIP.filter((d) => !HOUSE_IGNORED.topDirs.includes(d)).map((d) => `:(exclude)${d}`)];
+
+/**
+ * THE WORKSPACE'S COMMIT SEAM: its own git history takes the folder as it stands (but its skipped tops), under
+ * `lar:///workspace.closes.the-sitting/<close>`, authored by the workspace's local author. Nothing staged commits nothing; a
+ * folder with no history of its own at its top (none founded, or one resting inside another history) commits nothing, by name.
+ * The workspace's own hooks run: a seam never passes `--no-verify`.
+ */
+export async function workspaceCommitSeam(dir: string, close: SittingClose, git: GitRun = runGit): Promise<SeamReading> {
+  if (!poolHistoryStands(dir)) return { committed: false, why: "no-pool-history" };
+  const paths = workspacePaths();
+  const added = git(["add", "-A", "--", ...paths], dir);
+  if (added.code !== 0) return { committed: false, why: "commit-refused", detail: firstLine(added.stderr) };
+  if (git(["diff", "--cached", "--quiet", "--", ...paths], dir).code === 0) return { committed: false, why: "nothing-moved" };
+  const subject = `${WORKSPACE_CLOSE_PREFIX}${close} — the sitting closes at ${close}; the workspace commits as it stands`;
+  const done = git(["commit", "-q", "-m", subject, "--", ...paths], dir);
+  if (done.code !== 0) return { committed: false, why: "commit-refused", detail: firstLine(done.stderr || done.stdout) };
+  return { committed: true, sha: git(["rev-parse", "HEAD"], dir).stdout.trim() };
+}
+
+export interface WorkspaceWatchOptions {
+  /** The workspace folder: `<root>/workspaces/<name>`, where the wiki's workbench mirror rests. */
+  readonly workspace: string;
+  /** The workspace's name, as the share row names it: the local author's name carries it. */
+  readonly name: string;
+  readonly ports: FacePoolPorts;
+  readonly settleMs?: number;
+  readonly log?: (line: string) => void;
+  readonly watch?: FacePoolWatchOptions["watch"];
+  readonly cookie?: FacePoolWatchOptions["cookie"];
+  readonly git?: GitRun;
+}
+
+/**
+ * ARM THE WATCH over a named workspace, the same seat a face pool takes. Hands back at once; off the boot path it stands the
+ * folder as a git working tree (`standWorkspaceTree`), then the watch, the cookie and the catch-up. Every file of the folder
+ * wakes a wave but the house's ignore list, its skipped tops and editor litter. The down runs the final wave, then the
+ * workspace's commit seam. The wake names nothing: a workspace holds no stage.
+ */
+export function armWorkspaceWatch(o: WorkspaceWatchOptions): FacePoolWatch {
+  const git = o.git ?? runGit;
+  const log = o.log ?? ((line: string) => console.log(`[workspaces] ${line}`));
+  return armSeat({
+    root: o.workspace, ports: o.ports, ...(o.settleMs !== undefined ? { settleMs: o.settleMs } : {}), log,
+    ...(o.watch ? { watch: o.watch } : {}), ...(o.cookie ? { cookie: o.cookie } : {}),
+    accepts: (rel) => !(rel.includes("/") && WORKSPACE_SKIP.includes(rel.split("/")[0] ?? "")),
+    prepare: () => {
+      const stood = standWorkspaceTree(o.workspace, o.name, git);
+      if (stood.stood === "founded") log(`the workspace ${o.name} stands as a git working tree at ${o.workspace}`);
+      else if (stood.stood === "inside-another-history") log(`the workspace ${o.name} rests inside another history (${o.workspace}); that history holds its base, and no seam commits there`);
+    },
+    commit: o.ports.commit ?? ((c: SittingClose) => workspaceCommitSeam(o.workspace, c, git)),
+    covers: `the workspace ${o.name}`,
+  });
+}
+
+// ── the one seat both hosts take ───────────────────────────────────────────────────────────────────────────────
+
+interface SeatOptions {
+  readonly root: string;
+  readonly ports: FacePoolPorts;
+  readonly settleMs?: number;
+  readonly log: (line: string) => void;
+  readonly watch?: FacePoolWatchOptions["watch"];
+  readonly cookie?: FacePoolWatchOptions["cookie"];
+  /** Whether a path (posix, relative to the root, already past the house's noise) opens a wave. */
+  readonly accepts: (rel: string) => boolean;
+  /** The first step off the boot path, before the wake (a workspace stands its tree here). */
+  readonly prepare?: () => void;
+  /** The wake's read: every stage edit made on disk since the last sitting. Absent: the wake names nothing and logs nothing. */
+  readonly wake?: () => readonly StageEdit[];
+  readonly commit: (close: SittingClose) => Promise<SeamReading>;
+  /** What the live line names the watch stands over. */
+  readonly covers: string;
+}
+
+function armSeat(o: SeatOptions): FacePoolWatch {
+  const log = o.log;
   let state: WatchState = "arming";
   let watcher: FSWatcher | null = null;
   let downing: Promise<SeamReading> | null = null;
@@ -289,9 +448,8 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
   const onEvent: WatchListener<string> = (_event, filename) => {
     if (!filename || state === "down") return;
     const rel = filename.toString().split(sep).join("/");
-    const plane = rel.split("/")[0] ?? "";
-    if (!WATCHED_PLANES.includes(plane) || !rel.includes("/") || isWatchNoise(rel)) return;
-    seat.hint(isAbsolute(rel) ? rel : join(o.pool, ...rel.split("/")));
+    if (isWatchNoise(rel) || !o.accepts(rel)) return;
+    seat.hint(isAbsolute(rel) ? rel : join(o.root, ...rel.split("/")));
   };
 
   let wakeDone: (edits: readonly StageEdit[]) => void = () => {};
@@ -300,31 +458,34 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
   const armed = (async (): Promise<WatchState> => {
     // Off the boot path: the arm's caller already holds its handle when this first step runs.
     await Promise.resolve();
+    if (o.prepare) { try { o.prepare(); } catch (e) { fault("the stand of the tree")(e); } }
     let edits: readonly StageEdit[] = [];
-    try { edits = stageEditsSinceSitting(o.pool, git); } catch (e) { fault("the wake's stage read")(e); }
+    if (o.wake) {
+      try { edits = o.wake(); } catch (e) { fault("the wake's stage read")(e); }
+      log(wakeStageLine(edits));
+    }
     wakeDone(edits);
-    log(wakeStageLine(edits));
     // `state` moves under a down that lands mid-arm: each step reads it afresh.
     const now = (): WatchState => state;
     if (now() === "down") return now();
     let live = false;
     try {
-      mkdirSync(o.pool, { recursive: true });
-      watcher = (o.watch ?? ((d, w, l) => fsWatch(d, w, l)))(o.pool, { recursive: true }, onEvent);
-      watcher.on("error", (e) => { if (now() !== "down") { state = "inotify-dead"; log(`inotify-dead: the watch over ${o.pool} failed (${e.message}); no poll stands, and the seam reads the whole pool once`); } });
-      live = await (o.cookie ?? cookieSelfTest)(o.pool, watcher);
+      mkdirSync(o.root, { recursive: true });
+      watcher = (o.watch ?? ((d, w, l) => fsWatch(d, w, l)))(o.root, { recursive: true }, onEvent);
+      watcher.on("error", (e) => { if (now() !== "down") { state = "inotify-dead"; log(`inotify-dead: the watch over ${o.root} failed (${e.message}); no poll stands, and the seam reads the whole pool once`); } });
+      live = await (o.cookie ?? cookieSelfTest)(o.root, watcher);
     } catch (e) {
-      log(`the watch over ${o.pool} would not stand (${e instanceof Error ? e.message : String(e)})`);
+      log(`the watch over ${o.root} would not stand (${e instanceof Error ? e.message : String(e)})`);
     }
     if (now() === "down") return now();
     if (!live) {
       watcher?.close();
       watcher = null;
       state = "inotify-dead";
-      log(`inotify-dead: no event echoed under ${o.pool} (WSL2 /mnt emits none: keep the house on ext4); no poll stands, and the seam reads the whole pool once`);
+      log(`inotify-dead: no event echoed under ${o.root} (WSL2 /mnt emits none: keep the house on ext4); no poll stands, and the seam reads the whole pool once`);
     } else state = "catching-up";
     try { await o.ports.catchUp(); } catch (e) { fault("the wear's catch-up")(e); }
-    if (now() === "catching-up") { state = "live"; log(`the watch stands over ${o.pool} (${WATCHED_PLANES.join(", ")})`); }
+    if (now() === "catching-up") { state = "live"; log(`the watch stands over ${o.root} (${o.covers})`); }
     return now();
   })();
 
@@ -342,7 +503,7 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
         // THE FINAL WAVE: what stands buffered drains; where no event could name what moved, the whole pool reads once.
         if (stood === "inotify-dead") { try { await o.ports.catchUp(); } catch (e) { fault("the final catch-up")(e); } }
         else await seat.flush();
-        const reading = await (o.ports.commit ?? ((c: SittingClose) => poolCommitSeam(o.pool, c, git)))(close).catch((e: unknown): SeamReading =>
+        const reading = await o.commit(close).catch((e: unknown): SeamReading =>
           ({ committed: false, why: "commit-refused", detail: e instanceof Error ? e.message : String(e) }));
         log(reading.committed ? `the sitting closes at ${close}: the pool commits ${reading.sha.slice(0, 12)}`
           : reading.why === "commit-refused" ? `the sitting closes at ${close}: the pool's commit refused (${reading.detail})`

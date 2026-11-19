@@ -428,6 +428,20 @@ export const HOUSE_IGNORED = {
   tempFile: /\.\d+(?:\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?\.tmp$/,
 } as const;
 
+/**
+ * THE HOUSE'S IGNORE LIST AS GIT EXCLUDE LINES, from `HOUSE_IGNORED` alone: each top folder but `.git` (git keeps its own), each
+ * orphan folder suffix, and the atomic writer's temp (`<path>.<pid>[.<uuid>].tmp`). The patterns float (no leading `/`), so one
+ * list serves a face pool (its mirrors rest one folder down) and a workspace (its mirror rests at the top). The pointer carriers
+ * (`.meta`, `.kapae`, `.mem`, `.tid`) never appear here: a pool commits them.
+ */
+export function houseExcludeLines(): string[] {
+  return [
+    ...HOUSE_IGNORED.topDirs.filter((d) => d !== ".git").map((d) => `${d}/`),
+    ...HOUSE_IGNORED.dirSuffixes.map((s) => `*${s}/`),
+    "*.[0-9]*.tmp",
+  ];
+}
+
 /** Why the house ignores the file at `rel` (posix, relative to its mirror's holding folder), or null where it reads. */
 export function houseIgnored(rel: string): string | null {
   const segments = rel.split(/[\\/]/).filter((s) => s !== "" && s !== ".");
