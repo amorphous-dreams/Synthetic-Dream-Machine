@@ -631,16 +631,26 @@ export function documentIdOfUrl(url: string | null | undefined): string | null {
  * sync. The first answer that names a document sealed sweeps every clear chunk the island's store held of it (a copy
  * written before the document mapped sealed). A sealed answer holds for the island's life. An ask that refuses (the
  * vessel's rest faulted, the post failed) refuses the store's act by name: the save rests no byte and the load reads
- * none, and the next act asks again. Only a vessel's unsealed answer lets a byte rest.
+ * none, and the next act asks again. Only a vessel's unsealed answer lets a byte rest. Acts on one document that overlap (a
+ * load reads several ranges at once) share one ask, so a load costs the vessel's thread one round trip, never one per range.
  */
 export function islandRestGuard(inner: StorageAdapterInterface, restsAtVessel: (documentId: string) => Promise<boolean>): StorageAdapterInterface {
   const sealed = new Set<string>();
   const sweeps = new Map<string, Promise<void>>();
+  const asking = new Map<string, Promise<boolean>>();
+  const ask = (documentId: string): Promise<boolean> => {
+    let answer = asking.get(documentId);
+    if (answer === undefined) {
+      answer = restsAtVessel(documentId).finally(() => { asking.delete(documentId); });
+      asking.set(documentId, answer);
+    }
+    return answer;
+  };
   const isSealed = async (documentId: unknown): Promise<boolean> => {
     // A key that names no document (the store's own `storage-adapter-id`) holds no document's byte: it asks nothing.
     if (typeof documentId !== "string" || !isValidDocumentId(documentId)) return false;
     if (!sealed.has(documentId)) {
-      if (!(await restsAtVessel(documentId))) return false;
+      if (!(await ask(documentId))) return false;
       sealed.add(documentId);
     }
     let sweep = sweeps.get(documentId);
