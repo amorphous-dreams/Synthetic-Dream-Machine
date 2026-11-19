@@ -921,9 +921,13 @@ switch ($verb) {
         if (-not $script:Tty) { Die 'pulama keep-seat reads its route on a terminal; run it on one (nothing seated)' }
         $seatFile = Join-Path (Join-Path $House 'config') 'keep-seat.json'
         if ((Test-Path $seatFile) -and -not $reseat) { Die "a keep seat already rests at $seatFile; pass --reseat to replace it" }
-        [Console]::Error.WriteLine("lares-container: the pūlama now reads the steward's route to seat the keep (typed, unseen)")
+        # The route rides a forced terminal, the answer a capture: a captured stdout makes compose drop the pseudo-terminal
+        # (--no-TTY defaults to "stdout reads no terminal") and the pūlama refuses route-needs-a-terminal, so the exec forces
+        # one (--no-TTY=false): keystrokes reach the pūlama's pty in raw mode (no echo), and every byte it writes, its own
+        # prompt and the seat line, folds into the capture, never the screen. The line below stands as the prompt.
+        [Console]::Error.WriteLine("lares-container: the pūlama now reads the steward's route to seat the keep: type it, then Enter (typed, unseen)")
         $line = ''
-        & docker compose @Base --profile pulama exec pulama node $PulamaMain keep-seat | ForEach-Object {
+        & docker compose @Base --profile pulama exec --no-TTY=false pulama node $PulamaMain keep-seat | ForEach-Object {
           $l = "$_".Trim("`r")
           if ($l.StartsWith('{"op":"keep-seat"')) { $line = $l }
         }

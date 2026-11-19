@@ -962,9 +962,16 @@ case "$verb" in
         [ -n "$HAVE_TTY" ] || die "pulama keep-seat reads its route on a terminal; run it on one (nothing seated)"
         seat_file="$HOUSE/config/keep-seat.json"
         if [ -e "$seat_file" ] && [ -z "$reseat" ]; then die "a keep seat already rests at $seat_file; pass --reseat to replace it"; fi
-        printf '%s\n' 'lares-container: the pūlama now reads the steward'"'"'s route to seat the keep (typed, unseen)' >&2
-        out=$(compose --profile pulama exec pulama node "$PULAMA_MAIN" keep-seat) || true
+        # THE ROUTE RIDES A FORCED TERMINAL, THE ANSWER A CAPTURE: a captured stdout makes compose drop the pseudo-terminal
+        # (`--no-TTY` defaults to "stdout reads no terminal"), and the pūlama then refuses route-needs-a-terminal, so the
+        # exec forces one (`--no-TTY=false`): the operator's keystrokes reach the pūlama's pty in raw mode (no echo), while
+        # every byte it writes, its own prompt and the seat line, folds into the capture and never reaches the screen. The
+        # shim's line below stands as the prompt; the CRLF the pty writes strips before the one seat line is read, and the
+        # capture clears at once (a key typed before the pūlama lifts echo lands there, never on screen or in a log).
+        printf '%s\n' 'lares-container: the pūlama now reads the steward'"'"'s route to seat the keep: type it, then Enter (typed, unseen)' >&2
+        out=$(compose --profile pulama exec --no-TTY=false pulama node "$PULAMA_MAIN" keep-seat) || true
         line=$(printf '%s\n' "$out" | tr -d '\r' | grep '^{"op":"keep-seat"' | tail -n 1)
+        out=""
         case "$line" in
           *'"reading":"seated"'*) ;;
           *'"reading":"refused"'*) die "the pūlama seated nothing: $(printf '%s' "$line" | sed -e 's/.*"code":"\([^"]*\)".*"message":"\([^"]*\)".*/\1 (\2)/')" ;;

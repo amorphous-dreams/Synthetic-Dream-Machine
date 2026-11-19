@@ -57,7 +57,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
       // A container's image: the pūlama's (FAKE_PULAMA_ID) or the vessel's.
       `case " $* " in *"inspect --format {{.Image}} "*) if [ -n "\${FAKE_PULAMA_ID:-}" ] && [ "$last" = "\${FAKE_PULAMA_ID}" ]; then printf '%s\\n' "\${FAKE_PULAMA_IMAGE:-}"; exit "\${FAKE_PULAMA_INSPECT_RC:-0}"; fi; printf '%s\\n' "\${FAKE_VESSEL_IMAGE:-}"; exit 0;; esac\n` +
-      `case " $* " in *"pulama-main.js keep-seat"*) printf '%s\\r\\n' 'pūlama: route proved'; [ -z "\${FAKE_KEEP_SEAT_LINE:-}" ] || printf '%s\\r\\n' "\${FAKE_KEEP_SEAT_LINE}"; exit "\${FAKE_KEEP_SEAT_RC:-0}";; esac\n` +
+      // A keep seat reads its route on a pty alone: the fake answers the pūlama's refusal unless the exec forces one, and
+      // under one writes as a pty does, the prompt with no newline, then CRLF lines.
+      `case " $* " in *"pulama-main.js keep-seat"*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '{"op":"keep-seat","reading":"refused","code":"route-needs-a-terminal","message":"a keep seat reads its route from a real terminal alone"}'; exit 1;; esac; printf '%s' 'pūlama route, to seat the house'"'"'s keep pair: '; printf '\\r\\n'; [ -z "\${FAKE_KEEP_SEAT_LINE:-}" ] || printf '%s\\r\\n' "\${FAKE_KEEP_SEAT_LINE}"; exit "\${FAKE_KEEP_SEAT_RC:-0}";; esac\n` +
       `case " $* " in *" pulama node -e "*) code=''; take=''; for a in "$@"; do if [ -n "$take" ]; then code=$a; take=''; elif [ "$a" = -e ]; then take=1; fi; done; exec node -e "$code";; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js lei "*) printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\r\\n' "\${FAKE_LEI_ANSWER}"; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
@@ -1116,7 +1118,9 @@ test(`${name}: pulama-keep-seat-writes-the-seat: the pūlama's seat line lands v
   const r = await run(shim, ["pulama", "keep-seat"], { envFile: PULAMA_ENV, tty: "", env: env("") });
   assert.equal(r.status, 0, r.stdout);
   assert.doesNotMatch(r.stdout + (r.stderr ?? ""), new RegExp(signer), "the signer never shows");
-  assert.match(r.calls, /--profile pulama exec pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js keep-seat/);
+  // A captured stdout makes compose drop the pty, so the exec forces one: the route reads on the operator's terminal.
+  assert.match(r.calls, /--profile pulama exec --no-TTY=false pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js keep-seat/);
+  assert.match(r.stdout, /type it, then Enter/, "the shim's own line stands as the prompt the capture swallows");
   assert.deepEqual(r.seat, JSON.parse(line), "the line lands verbatim: the house CLI reads it whole");
   assert.equal(r.seatMode, 0o600);
   const again = await run(shim, ["pulama", "keep-seat"], { envFile: PULAMA_ENV, tty: "", env: env(""), keepSeat: r.seat });
