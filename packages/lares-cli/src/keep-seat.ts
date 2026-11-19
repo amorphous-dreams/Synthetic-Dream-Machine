@@ -23,8 +23,11 @@
  *
  * AN UNMOVED HOUSE CUTS THE SAME BUNDLE. A seal to a public half draws fresh randomness, so the seat keeps its last seal beside a
  * digest of the roster it covers and a vouch over both, each keyed by the house's signing seed (ciphertext and keyed digests,
- * never the roster): a re-cut of the same roster hands back the same bytes only where the vouch answers, so bytes swapped into
- * the config home re-seal instead of shipping, and an unmoved keep spends nothing.
+ * never the roster): a re-cut of the same roster hands back the same bytes only where the vouch answers, and an unmoved keep
+ * spends nothing. THE VOUCH GUARDS ACCIDENTAL AND WRITE-ONLY SWAPS: a corrupted cache, or a hand that writes the config home but
+ * cannot read it. A vouch that fails refuses the cut by name (`keep-roster-cache-unvouched`), so a swap leaves a trace; a cache
+ * with no vouch (a cut from before it) re-seals. A hand that READS the config home holds the signing seed itself, and no vouch
+ * stands against it.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -414,6 +417,7 @@ export function sealRosterForCut(cut: CutSeat, redeclare: BundleRedeclare): Buff
     const cached = Buffer.from(resting.lastRoster.sealed, "base64");
     const expected = Buffer.from(vouchOf(cached), "hex"), held = Buffer.from(resting.lastRoster.vouch, "hex");
     if (held.length === expected.length && timingSafeEqual(held, expected)) return cached;
+    throw new KeepSeatRefused("keep-roster-cache-unvouched", `the last roster seal cached in ${keepSeatPath()} answers no vouch of this house's signing seed: something changed the config home's cache. Nothing shipped; remove the seat file's "lastRoster" entry to re-seal from the house's own roster, and look at who wrote the file`);
   }
   const sealed = sealRedeclare(seat.publicKey, redeclare);
   if (samePair) writeResting(resting.seat, { digest, sealed: sealed.toString("base64"), vouch: vouchOf(sealed) }, resting.signingSeed, resting.testRoute);

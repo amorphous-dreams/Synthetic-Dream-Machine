@@ -874,8 +874,12 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
     throw new BundleRefused("keep-roster-unsigned", "the bundle's roster or manifest carries no signature the opened keep seat answers: whoever wrote the remote may have sealed a roster of its own to the published public half; nothing moved. Restore from a keep this house cut");
   }
   let bundle: VerifiedBundle;
-  try { bundle = openBundle(sealed, opening.secret); } finally { opening.secret.fill(0); }
+  try { bundle = openBundle(sealed, opening.secret); }
+  catch (e) { opening.signingSeed.fill(0); throw e; }
+  finally { opening.secret.fill(0); }
   const adoptSeed = opening.signingSeed;
+  // THE SEED LEAVES WITH THE IMPORT: a refusal anywhere below zero-fills it as surely as a whole apply does.
+  try {
   const { manifest, redeclare } = bundle;
   // THE ORDER GUARD: the walk runs found -> up -> lay -> import. An import lands its rows over the canon the lay
   // laid, so its bag rows meet the checkout's canon at INGEST's three-way gate and stand off where they diverge; over
@@ -1269,8 +1273,8 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   // THE PAIR SEATS LAST: only a whole apply seats the bundle's keep pair where this house rests none, so a restore that refused
   // anywhere above leaves the house's config as it stood.
   if (apply) adoptKeepSeat(seat, adoptSeed, isTestRoute(route));
-  adoptSeed.fill(0);
   return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, waiting, warnings, benchWaiting, personalWaiting, kahuaWaiting, daemonWaiting, shares: { written: carriedShares.map((r) => r.slug), landed: sharesLanded } };
+  } finally { adoptSeed.fill(0); }
 }
 
 // ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────
