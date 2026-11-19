@@ -21,7 +21,9 @@ import {
   type PortIslandToVesselMsg,
   type CapabilityRecord,
   type LarDoc,
+  type WikiMountSpec,
 } from "@lararium/mesh";
+import { islandStoreDir, islandStoreLeftLine } from "./island-store-left.js";
 import { floorShadowFileStore } from "./floor-shadow-file.js";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
@@ -95,6 +97,10 @@ export interface VesselIslandPoolOptions {
 
 /** Node island pool: VesselIslandPoolCore configured with a worker_threads host. */
 export class VesselIslandPool extends VesselIslandPoolCore {
+  readonly #storageRoot: string | null;
+  /** Each left island store this pool has named, so a remount names nothing twice. */
+  readonly #named = new Set<string>();
+
   constructor(options: VesselIslandPoolOptions) {
     const workerUrl   = options.workerScriptUrl ?? DEFAULT_WORKER_URL;
     const storageRoot = options.storageRoot ?? null;
@@ -121,6 +127,20 @@ export class VesselIslandPool extends VesselIslandPoolCore {
       ...(options.mountStallMs         !== undefined ? { mountStallMs:         options.mountStallMs }         : {}),
       ...(options.maxMountFailures     !== undefined ? { maxMountFailures:     options.maxMountFailures }     : {}),
     });
+    this.#storageRoot = storageRoot;
+  }
+
+  /** A wiki's first mount names the island store an older composition left for it (`island-store-left`), once. */
+  override mountWiki(wikiId: string, spec: WikiMountSpec, opts: { pinned?: boolean } = {}): Promise<void> {
+    if (this.#storageRoot) {
+      const dir = islandStoreDir(this.#storageRoot, wikiId);
+      if (!this.#named.has(dir)) {
+        this.#named.add(dir);
+        const line = islandStoreLeftLine(dir);
+        if (line) console.warn(line);
+      }
+    }
+    return super.mountWiki(wikiId, spec, opts);
   }
 }
 

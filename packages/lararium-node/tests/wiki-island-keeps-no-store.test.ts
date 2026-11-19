@@ -21,6 +21,7 @@ import { fileURLToPath } from "node:url";
 import { Repo, type PeerId } from "@automerge/automerge-repo";
 import { automergeLoad, ENGINE_CORE_ID, emptyLarDoc, storedLarRecord, wikiBagUri, wikiSlotUri, wikiUri, type LarDoc } from "@lararium/mesh";
 import { VesselIslandPool } from "../src/vessel-island-pool.js";
+import { islandStoreDir } from "../src/island-store-left.js";
 import { setupCasFromGenesis } from "./cas-test-setup.js";
 import { GENESIS_SEED, loadGenesisBytes } from "./genesis-test-source.js";
 
@@ -30,8 +31,7 @@ const missing = !existsSync(GENESIS_SEED) ? "genesis/seed.json absent — build 
 
 const SLUG = "keeps-no-store";
 /** Where a wiki island's own store stood: `<storageRoot>/<wiki id, path-safe>`. */
-const islandStorePath = (root: string, wikiId: string): string =>
-  join(root, wikiId.replace(/^lar:\/\/\//, "").replace(/[^a-zA-Z0-9@._-]/g, "_"));
+const islandStorePath = islandStoreDir;
 
 function stand() {
   if (missing) throw new Error(missing);
