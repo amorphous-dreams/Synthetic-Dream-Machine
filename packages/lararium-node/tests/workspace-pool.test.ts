@@ -1,22 +1,24 @@
 /**
- * workspace-pool — A NAMED WORKSPACE SERVES AS A POOL (face-pools; cabal-realm#/the-workbench). A shared wiki whose share row
- * names a workspace (`lares wiki share <wiki> --workspace <name>`, bound at `<root>/workspaces/<name>`) projects its workbench
- * there, one disk copy whichever face wears; the watch core, the unattended flow-back and the commit seam serve that copy as
- * they serve the worn face's own pool.
+ * workspace-pool — A SHARED WIKI'S WORKBENCH SERVES AS A POOL (face-pools; cabal-realm#/the-workbench). A wiki's workbench
+ * mirror rests in ONE folder whichever face wears: `<projections>/wikis/<slug>/`, or the workspace its share row names
+ * (`lares wiki share <wiki> --workspace <name>`, bound at `<root>/workspaces/<name>`). The watch core, the unattended flow-back
+ * and the commit seam serve that copy as they serve the worn face's own pool.
  *
- *   WP1 the workspace stands as a git working tree: `.git` at its top (0700), the house's one ignore list in
- *       `.git/info/exclude`, a local author that names no face, signing off; a second stand changes nothing; a workspace that
- *       rests inside another history (the checkout) founds no nested repository
- *   WP2 the vessel's seat over a workspace arms off the boot path (founding the tree there), watches the whole workspace
- *       (its `.git/`, `temp/`, `recovery/` and litter wake no wave), and downs at lock with the final wave, then a commit
- *       whose subject and author name no face
- *   WP3 the workspace's ports land a clean edit as an UNATTENDED INGEST wave in the wiki's working layer, run IN that wiki's
- *       island, under the worn face's actor; a stand-off goes to that wiki's shore
- *   WP4 the witness on a scratch house: a user wiki bound to a workspace (as `notes` would be) flows a disk edit back by
- *       itself and commits at lock
- *   WP5 control: a wiki with no workspace binds none, keeps projecting to `wikis/<slug>/`, and stands unwatched
- *   WP6 the vessel arms one seat per bound workspace in its after-live step, unawaited, under the worn face's actor, and
- *       downs each at lock, wear and shutdown
+ * THE SEAT FOUNDS NO HISTORY: the folder's git tree comes from `lares surface init` (Lares-Alpha's lane, not yet on develop);
+ * this rig stubs it with a plain `git init`, the house's ignore lines in `.git/info/exclude` and a local author naming no face.
+ *
+ *   WP1 a folder with no tree serves as a plain mirror: the arm founds none and names it, and the seam reads `no-pool-history`;
+ *       a folder inside another history (the checkout) commits nothing there either
+ *   WP2 the seat arms off the boot path, watches the whole folder (its `.git/`, `temp/`, `recovery/` and litter wake no wave),
+ *       and downs at lock with the final wave, then a commit whose subject names no face
+ *   WP3 the ports land a clean edit as an UNATTENDED INGEST wave in the wiki's working layer, run IN that wiki's island, under
+ *       the worn face's actor; a stand-off goes to that wiki's shore
+ *   WP4 the witness on a scratch house: a user wiki bound to a workspace (as `notes` would be) flows a disk edit back by itself
+ *       and commits at lock
+ *   WP5 the workbench folders: each bound workspace, then each default `wikis/<slug>/` no workspace takes; control: `daemon`, a
+ *       sourced slug, and a slug with no folder on disk take no seat
+ *   WP6 the vessel arms one seat per workbench folder in its after-live step, unawaited, under the worn face's actor, and downs
+ *       each at lock, wear and shutdown
  */
 import { describe, test, expect, beforeAll, beforeEach, afterEach } from "vitest";
 import { EventEmitter } from "node:events";
@@ -25,9 +27,8 @@ import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { carrierHash, VERB_RESULT_KEY, wikiSlotUri } from "@lararium/mesh";
-import { resolveDiskMirrors } from "../../lararium-mesh/src/vessel-island-pool-core.js";
 import { SyncedTree, syncedTreeKey } from "../src/synced-tree.js";
-import { workspaceRootsOf } from "../src/bag-paths.js";
+import { workspaceRootsOf, workbenchFolders } from "../src/bag-paths.js";
 
 type WatchCore = typeof import("../src/watch-core.js");
 type IngestScan = typeof import("../src/ingest-scan.js");
@@ -91,32 +92,40 @@ function fakeWatch() {
 }
 const settle = (ms = 30): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-describe("WP1 — the workspace stands as a git working tree", () => {
-  test("0700 .git, the house's ignore list, an author naming no face, signing off; a second stand changes nothing", () => {
-    const first = wc.standWorkspaceTree(ws, "notes");
-    expect(first.stood).toBe("founded");
-    expect(statSync(join(ws, ".git")).mode & 0o777).toBe(0o700);
-    const exclude = readFileSync(join(ws, ".git", "info", "exclude"), "utf8");
-    for (const line of ["temp/", ".shore/", ".vscode/"]) expect(exclude.split("\n")).toContain(line);
-    expect(git("config", "--local", "user.email")).toBe("notes@workspace.invalid");
-    expect(git("config", "--local", "user.name")).not.toMatch(/face/i);
-    expect(git("config", "--local", "commit.gpgsign")).toBe("false");
-    const again = wc.standWorkspaceTree(ws, "notes");
-    expect(again).toEqual({ stood: "already", changed: [] });
+/** THE STUB of the tree `lares surface init` founds (Lares-Alpha's lane): plain `git init`, the house's ignore lines, a local author naming no face. */
+const stubTree = (dir: string): void => {
+  for (const args of [["init", "-q"], ["config", "user.name", "workbench"], ["config", "user.email", "workbench@pool.invalid"], ["config", "commit.gpgsign", "false"]]) expect(gitIn(dir, ...args).code).toBe(0);
+  writeFileSync(join(dir, ".git", "info", "exclude"), ".vscode/\n.shore/\ntemp/\n*.orphans/\n*.[0-9]*.tmp\n");
+};
+
+describe("WP1 — a folder with no tree serves as a plain mirror", () => {
+  test("the arm founds no repository and names the plain mirror; the seam reads no-pool-history by name", async () => {
+    const lines: string[] = [];
+    const { watch } = fakeWatch();
+    const seat = wc.armWorkspaceWatch({
+      workspace: ws, name: "notes", watch, cookie: async () => true, settleMs: 5, log: (l) => lines.push(l),
+      ports: { catchUp: async () => {}, wave: async () => {} },
+    });
+    expect(await seat.armed).toBe("live");
+    expect(() => statSync(join(ws, ".git"))).toThrow();
+    expect(lines.some((l) => /plain mirror/.test(l))).toBe(true);
+    put("My Notes.tid", tid("My Notes"));
+    expect(await seat.down("lock")).toEqual({ committed: false, why: "no-pool-history" });
   });
 
-  test("a workspace inside another history (the checkout) founds no nested repository", () => {
+  test("a folder inside another history (the checkout) commits nothing there, by name", async () => {
     const outer = join(house, "checkout");
-    mkdirSync(join(outer, "wikis", "notes"), { recursive: true });
-    expect(gitIn(outer, "init", "-q").code).toBe(0);
     const inner = join(outer, "wikis", "notes");
-    expect(wc.standWorkspaceTree(inner, "notes").stood).toBe("inside-another-history");
-    expect(() => statSync(join(inner, ".git"))).toThrow();
+    mkdirSync(inner, { recursive: true });
+    gitIn(outer, "init", "-q");
+    writeFileSync(join(inner, "My Notes.tid"), tid("My Notes"));
+    expect(await wc.workspaceCommitSeam(inner, "lock")).toEqual({ committed: false, why: "no-pool-history" });
   });
 });
 
-describe("WP2 — the seat over a workspace: off the boot path, the whole tree, down at lock", () => {
-  test("arms at once and founds the tree off the boot path; the whole workspace wakes waves, its tooling none", async () => {
+describe("WP2 — the seat over a workbench: off the boot path, the whole folder, down at lock", () => {
+  test("arms at once; the whole folder wakes waves, its tooling none", async () => {
+    stubTree(ws);
     const waves: string[] = [];
     const { watch, fire } = fakeWatch();
     const seat = wc.armWorkspaceWatch({
@@ -125,7 +134,6 @@ describe("WP2 — the seat over a workspace: off the boot path, the whole tree, 
     });
     expect(["arming", "catching-up"]).toContain(seat.state());
     expect(await seat.armed).toBe("live");
-    expect(statSync(join(ws, ".git")).isDirectory()).toBe(true);
     for (const rel of ["My Notes.tid", "ha.ka.ba/notes/pond.mem", "journal/2026-11-18.tid"]) fire(rel);
     for (const rel of [".git/index", "temp/x.tid", "recovery/Draft.tid", ".My Notes.tid.swp", "x.tid~", "x.tid.123.tmp", ".shore/x.tid"]) fire(rel);
     await settle(40);
@@ -133,7 +141,8 @@ describe("WP2 — the seat over a workspace: off the boot path, the whole tree, 
     await seat.down("down");
   });
 
-  test("lock: the final wave, then a commit whose subject and author name no face", async () => {
+  test("lock: the final wave, then a commit whose subject names no face; recovery/ and temp/ stay out", async () => {
+    stubTree(ws);
     const order: string[] = [];
     const { watch, fire } = fakeWatch();
     const seat = wc.armWorkspaceWatch({
@@ -143,24 +152,15 @@ describe("WP2 — the seat over a workspace: off the boot path, the whole tree, 
     await seat.armed;
     put("My Notes.tid", tid("My Notes"));
     put("temp/scratch.tid", tid("scratch"));
+    put("recovery/Draft.tid", tid("Draft"));
     fire("My Notes.tid");
     const reading = await seat.down("lock");
     expect(order).toEqual(["wave My Notes.tid"]);
     expect(reading).toEqual({ committed: true, sha: expect.any(String) });
     const subject = git("log", "-1", "--format=%s");
     expect(subject.startsWith("lar:///workspace.closes.the-sitting/lock")).toBe(true);
-    expect(git("log", "-1", "--format=%ae")).toBe("notes@workspace.invalid");
     expect(git("show", "--name-only", "--format=", "HEAD").split("\n")).toEqual(["My Notes.tid"]);
     expect(await wc.workspaceCommitSeam(ws, "down")).toEqual({ committed: false, why: "nothing-moved" });
-  });
-
-  test("a workspace inside another history commits nothing there, by name", async () => {
-    const outer = join(house, "checkout");
-    const inner = join(outer, "wikis", "notes");
-    mkdirSync(inner, { recursive: true });
-    gitIn(outer, "init", "-q");
-    writeFileSync(join(inner, "My Notes.tid"), tid("My Notes"));
-    expect(await wc.workspaceCommitSeam(inner, "lock")).toEqual({ committed: false, why: "no-pool-history" });
   });
 });
 
@@ -209,6 +209,7 @@ describe("WP4 — the witness on a scratch house: a user wiki bound to a workspa
     const bound = workspaceRootsOf({ rows: [{ slug: "notes", kind: "wiki", workspace: "notes" }], workspacesHome: join(house, "workspaces"), hearth: join(house, "hearth"), sourcedSlugs: [] });
     expect(Object.keys(bound.roots)).toEqual(["notes"]);
     const dir = bound.roots["notes"]!;
+    stubTree(dir);
     const { waves, submit } = island();
     const { sense } = shore();
     const { watch, fire } = fakeWatch();
@@ -231,27 +232,40 @@ describe("WP4 — the witness on a scratch house: a user wiki bound to a workspa
   });
 });
 
-describe("WP5 — control: a wiki with no workspace keeps projecting to wikis/<slug>/, unwatched", () => {
-  test("no workspace binds; the working mirror rests at wikis/<slug>", () => {
-    const bound = workspaceRootsOf({ rows: [{ slug: "works", kind: "wiki" }], workspacesHome: join(house, "workspaces"), hearth: join(house, "hearth"), sourcedSlugs: [] });
-    expect(bound.roots).toEqual({});
+describe("WP5 — the workbench folders: each bound workspace, then each default wikis/<slug>/", () => {
+  test("a bound workspace and a default workbench each take one seat; the bound slug's default folder takes none", () => {
     const projections = join(house, "projections");
-    const grant = [{ bagId: "working", mirrorRoot: join(projections, "wikis"), scope: "working", wikiSlot: "working" as const, workspaceRoots: bound.roots }];
-    const mirrors = resolveDiskMirrors(grant, [wikiSlotUri("works", "working")], "works");
-    expect(mirrors.map((m) => m.mirrorRoot)).toEqual([`${join(projections, "wikis")}/works`]);
+    for (const slug of ["notes", "works", "daemon", "lares", "elyncia"]) mkdirSync(join(projections, "wikis", slug), { recursive: true });
+    const bound = workspaceRootsOf({ rows: [{ slug: "notes", kind: "wiki", workspace: "notes" }, { slug: "works", kind: "wiki" }], workspacesHome: join(house, "workspaces"), hearth: join(house, "hearth"), sourcedSlugs: [] });
+    const folders = workbenchFolders({ projectionRoot: projections, workspaces: bound, sourcedSlugs: ["lares"] });
+    expect(folders).toEqual([
+      { slug: "notes", dir: bound.roots["notes"], name: "notes" },
+      { slug: "elyncia", dir: join(projections, "wikis", "elyncia"), name: "elyncia" },
+      { slug: "works", dir: join(projections, "wikis", "works"), name: "works" },
+    ]);
+  });
+
+  test("control: daemon, a sourced slug and a slug with no folder take no seat; no wikis plane reads none", () => {
+    const projections = join(house, "projections");
+    expect(workbenchFolders({ projectionRoot: projections, workspaces: { roots: {}, names: {} }, sourcedSlugs: [] })).toEqual([]);
+    mkdirSync(join(projections, "wikis", "daemon"), { recursive: true });
+    mkdirSync(join(projections, "wikis", "lares"), { recursive: true });
+    expect(workbenchFolders({ projectionRoot: projections, workspaces: { roots: {}, names: {} }, sourcedSlugs: ["lares"] })).toEqual([]);
   });
 });
 
-describe("WP6 — the vessel arms one seat per bound workspace", () => {
+describe("WP6 — the vessel arms one seat per workbench folder", () => {
   const vessel = readFileSync(new URL("../src/open-node-vessel.ts", import.meta.url), "utf8");
   const afterLive = vessel.slice(vessel.indexOf("const afterLive:"), vessel.indexOf("const orchestration:"));
-  test("after-live arms armWorkspaceWatch unawaited over each bound workspace, with the worn face's actor, downed at lock", () => {
+  test("after-live arms armWorkspaceWatch unawaited over each workbench folder, with the worn face's actor, downed at lock", () => {
+    expect(afterLive).toMatch(/readWorkbenches\(\)/);
+    expect(vessel).toMatch(/workbenchFolders\(\{\s*projectionRoot,\s*workspaces,/);
     expect(afterLive).toMatch(/armWorkspaceWatch\(/);
     expect(afterLive).not.toMatch(/await\s+armWorkspaceWatch/);
     expect(afterLive).toMatch(/workspaceIngestPorts\(\{[^}]*did:\s*requestedBy/);
-    expect(afterLive).toMatch(/stood\.push\(\{\s*what:\s*`the workspace \$\{name\}'s watch`/);
+    expect(afterLive).toMatch(/stood\.push\(\{\s*what:\s*`the workbench \$\{name\}'s watch`/);
   });
-  test("the shutdown's stand-down downs every workspace seat beside the face pool", () => {
+  test("the shutdown's stand-down downs every workbench seat beside the face pool", () => {
     expect(vessel).toMatch(/facePoolStandDown:\s*async\s*\(\)\s*=>\s*\{[^}]*workspaceWatches/);
   });
 });

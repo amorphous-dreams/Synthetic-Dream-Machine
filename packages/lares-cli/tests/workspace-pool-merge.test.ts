@@ -2,15 +2,17 @@
  * workspace-pool-merge — TAKE-DISK MERGES PER SLOT AGAINST A WORKSPACE'S OWN GIT BASE (face-pools; cabal-realm#/the-workbench).
  *
  * A shared wiki bound to a workspace (`lares wiki share notes --workspace notes`) projects its workbench at
- * `<root>/workspaces/notes`. The vessel stands that folder as a git working tree (`standWorkspaceTree`) and commits it at each
- * sitting's close (`workspaceCommitSeam`), so a both-moved stand-off there reads its base's words from the workspace's own
- * history and merges per slot, as one in a face pool does.
+ * `<root>/workspaces/notes` (or by default `<projections>/wikis/notes`). Where that folder's git tree stands (`lares surface
+ * init`, Lares-Alpha's lane, stubbed here with a plain `git init`), the vessel commits it at each sitting's close
+ * (`workspaceCommitSeam`), so a both-moved stand-off there reads its base's words from the folder's own history and merges per
+ * slot, as one in a face pool does.
  *
  *   M1 a records edit to #/a and a disk edit to #/b both stand after take-disk, the base read from the workspace's commit
- *   M2 control: the same workspace with no commit lands the file whole and names why
+ *   M2 control: a workspace with no tree (a plain mirror) lands the file whole and names "no history"
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { carrierHash, VERB_RESULT_KEY, wikiSlotUri } from "@lararium/mesh";
@@ -49,7 +51,15 @@ const carrier = (a: string, b: string): string => stampCarrier([
 ].join("\n"));
 const BASE = carrier("a holds.", "b holds.");
 
-type WorkspaceSeam = { standWorkspaceTree(dir: string, name: string): { stood: string }; workspaceCommitSeam(dir: string, close: "lock" | "down"): Promise<{ committed: boolean }> };
+type WorkspaceSeam = { workspaceCommitSeam(dir: string, close: "lock" | "down"): Promise<{ committed: boolean }> };
+
+/** THE STUB of the tree `lares surface init` founds over a workbench (Lares-Alpha's lane): plain `git init` and a local author. */
+function stubTree(dir: string): void {
+  const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
+  for (const args of [["init", "-q"], ["config", "user.name", "workbench"], ["config", "user.email", "workbench@pool.invalid"], ["config", "commit.gpgsign", "false"]]) {
+    expect(spawnSync("git", args, { cwd: dir, env, encoding: "utf8" }).status).toBe(0);
+  }
+}
 
 async function rig(disk: string, records: string, commitBase: boolean): Promise<{ path: string; waves: SubmitIngestOpts[]; deps: TakeDiskDeps }> {
   tmp = mkdtempSync(join(tmpdir(), "workspace-merge-"));
@@ -58,8 +68,8 @@ async function rig(disk: string, records: string, commitBase: boolean): Promise<
   mkdirSync(dir, { recursive: true });
   const path = join(dir, "pond.mem");
   const seam = node as unknown as WorkspaceSeam;
-  expect(seam.standWorkspaceTree(ws, "notes").stood).toBe("founded");
   if (commitBase) {
+    stubTree(ws);
     writeFileSync(path, BASE);
     expect((await seam.workspaceCommitSeam(ws, "lock")).committed).toBe(true);
   }
@@ -91,11 +101,12 @@ describe("take-disk over a workspace merges per slot against the workspace's git
     expect(onDisk).toContain("b turns on the disk.");
   });
 
-  test("M2 — control: a workspace with no commit lands the file whole and names why", async () => {
+  test("M2 — control: a plain mirror (no tree) lands the file whole and names no history", async () => {
     const disk = carrier("a holds.", "b turns on the disk.");
     const r = await rig(disk, carrier("a turns in the records.", "b holds."), false);
     const taken = await takeDisk({ uri: URI, key: KEY }, r.deps);
     expect(taken).toMatchObject({ ok: true, merge: { kind: "whole" } });
+    expect((taken as { merge: { why: string } }).merge.why).toMatch(/no git history/);
     expect(r.waves[0]!.candidates[0]!.text).toBe(disk);
   });
 });
