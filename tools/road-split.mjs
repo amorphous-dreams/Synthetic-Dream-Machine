@@ -25,6 +25,8 @@ import { fileURLToPath } from "node:url";
 
 export const ROAD = "bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem";
 export const ROAD_DIR = "bags/lares/ha.ka.ba/lares/docs/road";
+/** The road's ashes: every child tagged `road/ashes`, gathered beside the road's finished prose. */
+export const ROAD_ASHES = "bags/lares/ha.ka.ba/lares/docs/road-ashes.mem";
 export const ROAD_URI_BASE = "lar:///ha.ka.ba/lares/docs/road/";
 export const RANK_TAG = "road/rank";
 export const RULING_TAG = "road/ruling";
@@ -37,6 +39,10 @@ export const RANK_HEAD = "|! Rank |! Band |! Items |! Reason |";
 // list renders as a block and never inside a paragraph (an inline widget wraps a table or a list in `<p>`).
 /** The one rank gather: the rows join under the head and render as ONE table (a list widget would cut one table per row). */
 export const RANK_GATHER = ['<$let nl={{{ [charcode[10]] }}} rows={{{ [tag[road/rank]!tag[road/ashes]sort[order]get[text]join<nl>] }}} table={{{ [[' + RANK_HEAD + ']] [<rows>] +[join<nl>] }}}>', "", '<$transclude $variable="table" $mode="block"/>', "", "</$let>"].join("\n");
+/** The ashes' rank gather: the same table, holding only the ranks in the ashes. */
+export const ASHES_RANK_GATHER = RANK_GATHER.replace("[tag[road/rank]!tag[road/ashes]", "[tag[road/ashes]tag[road/rank]");
+/** The ashes' gather for every other child that takes the tag. */
+export const ASHES_OTHER_GATHER = ['<$list filter="[tag[road/ashes]!tag[road/rank]sort[order]]">', "", '<$transclude mode="block"/>', "", "</$list>"].join("\n");
 const RULING_GATHER_BODY = ["", '<$transclude mode="block"/>', "", "</$list>"];
 /** A ruling gather for one group: each ruling renders as its own block, in order. */
 export const rulingGather = (group) => [`<$list filter="[tag[road/ruling]field:group[${group}]sort[order]]">`, ...RULING_GATHER_BODY].join("\n");
@@ -167,6 +173,19 @@ export function structureFaults(text, children) {
   return faults;
 }
 
+/** The ashes' faults: the carrier holds both whole gathers, and each child in the ashes carries a road tag of its own. */
+export function ashesFaults(text, children) {
+  if (text === null) return [`the road's ashes stand absent (${ROAD_ASHES})`];
+  const faults = [];
+  if (!text.includes(ASHES_RANK_GATHER)) faults.push("the ashes hold no whole rank gather");
+  if (!text.includes(ASHES_OTHER_GATHER)) faults.push("the ashes hold no whole gather for their other children");
+  for (const c of children.filter(burned)) if (!(c.fields.tags ?? []).some((t) => t === RANK_TAG || t === RULING_TAG)) faults.push(`${c.file} carries ${ASHES_TAG} beside no road tag`);
+  return faults;
+}
+
+/** The ranks the ashes gather, in order. */
+export const ashesRanks = (children) => tagged(children, RANK_TAG).filter(burned).map((c) => ({ id: rankId(c.body), text: c.body, file: c.file }));
+
 /** The move faults: each base item stands byte for byte in exactly one gathered place, in the base's order, and nothing more. */
 export function moveFaults(base, gathered) {
   const faults = [];
@@ -193,12 +212,15 @@ export function main(argv, root = fileURLToPath(new URL("..", import.meta.url)))
   const text = readFileSync(join(root, ROAD), "utf8");
   const children = readChildren(root);
   const faults = structureFaults(text, children);
+  let ashes = null;
+  try { ashes = readFileSync(join(root, ROAD_ASHES), "utf8"); } catch { /* absent: the fault names it */ }
+  faults.push(...ashesFaults(ashes, children));
   if (i >= 0) {
     const baseText = execFileSync("git", ["-C", root, "show", `${argv[i + 1]}:${ROAD}`], { encoding: "utf8", maxBuffer: 1 << 26 });
     faults.push(...moveFaults(inlineItems(baseText), gatheredItems(text, children)));
   }
   const g = gatheredItems(text, children);
-  console.log(`[road-split] ${children.length} child carrier(s); the road gathers ${g.ranks.length} rank(s) and ${g.rulings.length} ruling(s)`);
+  console.log(`[road-split] ${children.length} child carrier(s); the road gathers ${g.ranks.length} rank(s) and ${g.rulings.length} ruling(s); the ashes ${ashesRanks(children).length} rank(s)`);
   for (const f of faults) console.log(`[road-split] FAULT ${f}`);
   return faults.length === 0 ? 0 : 1;
 }

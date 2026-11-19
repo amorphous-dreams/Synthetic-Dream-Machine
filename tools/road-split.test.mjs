@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { ASHES_TAG, RANK_GATHER, RANK_HEAD, ROAD, ROAD_URI_BASE, gatheredItems, inlineItems, moveFaults, readCarrier, readChildren, rulingGather, slotLines, structureFaults } from "./road-split.mjs";
+import { ASHES_OTHER_GATHER, ASHES_RANK_GATHER, ASHES_TAG, RANK_GATHER, RANK_HEAD, ROAD, ROAD_ASHES, ashesFaults, ashesRanks, ROAD_URI_BASE, gatheredItems, inlineItems, moveFaults, readCarrier, readChildren, rulingGather, slotLines, structureFaults } from "./road-split.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const LIVE = readFileSync(join(ROOT, ROAD), "utf8");
@@ -96,4 +96,21 @@ test("road-split-ashes: a rank tagged road/ashes leaves the road's gather, and a
   assert.deepEqual(structureFaults(SPLIT, burned), []);
   const lawBurned = KIDS.map((k) => (k.file === "ruling-first-two.mem" ? { ...k, fields: { ...k.fields, tags: ["road/ruling", ASHES_TAG] } } : k));
   assert.match(structureFaults(SPLIT, lawBurned).join("\n"), /ruling-first-two\.mem carries road\/ashes; a ruling stays law/);
+});
+
+test("road-split-ashes-live: the ashes carrier gathers every rank in the ashes, and the road and the ashes together hold every rank", () => {
+  const children = readChildren(ROOT);
+  const ashes = readFileSync(join(ROOT, ROAD_ASHES), "utf8");
+  assert.deepEqual(ashesFaults(ashes, children), []);
+  const ranks = children.filter((c) => (c.fields.tags ?? []).includes("road/rank")).length;
+  assert.equal(gatheredItems(LIVE, children).ranks.length + ashesRanks(children).length, ranks);
+  for (const slot of ["#/landed-leaps", "#/o-takiage", "#/ashes"]) assert.ok(slotLines(ashes, slot), `the ashes hold ${slot}`);
+});
+
+test("road-split-ashes RED: an ashes carrier without its gathers, or a child in the ashes with no road tag, reads by name", () => {
+  assert.match(ashesFaults(null, []).join("\n"), /the road's ashes stand absent/);
+  assert.match(ashesFaults(ASHES_OTHER_GATHER, []).join("\n"), /no whole rank gather/);
+  assert.match(ashesFaults(ASHES_RANK_GATHER, []).join("\n"), /no whole gather for their other children/);
+  const stray = [child("rank-2", { order: "0010", tags: [ASHES_TAG] }, "| 2 | NOW | a | b |")];
+  assert.match(ashesFaults(ASHES_RANK_GATHER + "\n" + ASHES_OTHER_GATHER, stray).join("\n"), /rank-2\.mem carries road\/ashes beside no road tag/);
 });
