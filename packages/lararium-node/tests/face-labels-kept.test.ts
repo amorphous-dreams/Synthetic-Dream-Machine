@@ -105,4 +105,13 @@ describe("the vessel keeps each face's label and bases", () => {
     expect(writeFaceLabel({ relation: F3, petname: "numbered", handleIndex: 1 }, root)).toBe(true);
     expect(JSON.parse(readFileSync(faceLabelPath(F3, root), "utf8")).schema).toBe("lar-face-label");
   });
+
+  test("K5b — RED: a numbered sidecar rewrites under its name at the keeper's next write, a face holding no bases included", () => {
+    mkdirSync(faceLabelsDir(root), { recursive: true });
+    writeFileSync(faceBasesPath(F3, root), JSON.stringify({ schema: "lar-face-bases/1", relation: F3, bases: {} }));
+    expect(writeFaceBases(F3, {}, root)).toBe(true);
+    expect(JSON.parse(readFileSync(faceBasesPath(F3, root), "utf8")).schema).toBe("lar-face-bases");
+    // CONTROL: a sidecar standing under its name with the same bases takes no write.
+    expect(writeFaceBases(F3, {}, root)).toBe(false);
+  });
 });

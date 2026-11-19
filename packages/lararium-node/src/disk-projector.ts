@@ -86,7 +86,7 @@ import { contentHash, syncedTreeKey, SyncedTree, type SyncedBase } from "./synce
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
 import { isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual, projectionWithheld, hasEffectRecordKind, type ProjectionClass } from "@lararium/mesh";
-import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
+import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember, isEffectRecordUri } from "@lararium/mesh";
 import type { ReadinessMap, VesselJournal, LarTiddlerStore } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
 import { surfaceOrphanAlert, tendOrphanAlerts, wikiFamilyView } from "@lararium/tw5";
@@ -627,6 +627,15 @@ export class LarDiskProjector {
       scans.push(store.listVisible().then((titles) => {
         for (const title of titles) gate.mark(LarDiskProjector.rootOf(title));
       }));
+    }
+    // A KĀPAE STANDING IN A MIRROR'S BAG WRITES ITS SHADOW AT START. `listVisible` hides a tombstone, and a mirror root that
+    // stood up after the kāpae rose (a face's planes moving to `faces/<pet name>/`, a re-pour into a fresh root) never heard
+    // the change that wrote the shadow, so the bag's own tombstones mark their roots: each settles its shadow where it sites.
+    for (const mirror of this.mirrors) {
+      if (mirror.mirrorClass === "recovery") continue;
+      const store = this.recoveryStore?.(mirror.bagId) as (LarTiddlerStore & { listTombstoned?: () => string[] }) | null | undefined;
+      if (typeof store?.listTombstoned !== "function") continue;
+      for (const title of store.listTombstoned()) if (!isEffectRecordUri(title)) gate.mark(LarDiskProjector.rootOf(title));
     }
     // listVisible excludes a record tombstoned while stopped. The
     // persisted agreements name the recovery files that still need a store read.

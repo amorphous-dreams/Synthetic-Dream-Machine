@@ -9,7 +9,8 @@
  *
  *   - `init [--face N]`: make the worn (or named) face's root a pool; a second run changes nothing and says "already".
  *   - `check [--face N]`: the roster witness over the repo standing here (or the named face's pool); exit 1 names each breach.
- *   - `open [--face N] [--launch]`: print (and run) `code -n <face root> <realm pools>`; writes no workspace file.
+ *   - `open [--face N] [--launch]`: print (and run) `<editor> -n <face root> <realm pools>`; writes no workspace file. The
+ *     editor reads from the house config tiddler `$:/config/lares/surface/Editor` (`<config>/surface-editor.tid`), else `code`.
  *   - `commit [--face N] [-m <seam>]`: stage only the paths whose disk bytes equal the synced base, and commit them under a
  *     `lar:` subject naming no face; a path standing off reads apart by name and stays unstaged. Never pushes.
  *   - `face [--face N]`: the face the house resolves and the pet name it wears (the host asks the vessel this alone).
@@ -49,7 +50,8 @@ import {
 } from "@lararium/mesh";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { actingFace, faceOption, FaceOptionMalformed } from "../face-option.js";
+import { faceOption, FaceOptionMalformed } from "../face-option.js";
+import { sealedAct } from "../sealed-act-door.js";
 import { openSyncedTree, readCarrierText } from "../ingest-core.js";
 import { sealedPetnameStore } from "../sealed-records.js";
 import { makeFleetPetnameStore } from "../daemon-persona-store.js";
@@ -74,7 +76,7 @@ export interface SurfaceDoors {
   tree(): SyncedTree;
   /** Where the command runs (`check` with no `--face` reads the repo standing here). */
   cwd(): string;
-  /** Run a command line on this machine (`open --launch`); answers its exit code. */
+  /** Run a command line on this machine (`open --launch`); answers its exit code, {@link EDITOR_ABSENT_EXIT} where no such binary stands. */
   launch(argv: readonly string[]): number;
   /** The spelling a synced base carries for a file this door reads (the vessel's own, where it spells the house apart). */
   basePath(file: string): string;
@@ -88,7 +90,9 @@ const dirOrNull = (dir: string): string | null => { try { return statSync(dir).i
 /** The doors over the house LAR_ROOT names: the vessel's own reading, and a dev or scratch house's. */
 export const LIVE_SURFACE_DOORS: SurfaceDoors = {
   face: async (args) => {
-    const index = faceOption(args).face ?? await actingFace(args);
+    // THE WORN FACE: with no `--face` the door acts as the face the operator wears (the daemon mount), so several faces
+    // standing open with one worn answer that one; the vessel refuses by name only when none stands worn.
+    const index = faceOption(args).face ?? (await sealedAct<{ face: number }>("face.resolve", { worn: true })).face;
     const petname = await ownPersonaPetname(makeFleetPetnameStore(sealedPetnameStore()), index);
     if (petname === undefined || petname.trim() === "") throw new SurfaceRefused("surface-face-unnamed", `the face h${index} wears no pet name, so it makes no folder under faces/: name it (\`lares persona new ${index} --name <label>\`)`);
     return { index, petname };
@@ -97,7 +101,10 @@ export const LIVE_SURFACE_DOORS: SurfaceDoors = {
   config: () => larConfigHome(),
   tree: () => openSyncedTree(),
   cwd: () => process.cwd(),
-  launch: (argv) => spawnSync(argv[0]!, argv.slice(1), { stdio: "inherit" }).status ?? 1,
+  launch: (argv) => {
+    const r = spawnSync(argv[0]!, argv.slice(1), { stdio: "inherit" });
+    return (r.error as NodeJS.ErrnoException | undefined)?.code === "ENOENT" ? EDITOR_ABSENT_EXIT : r.status ?? 1;
+  },
   basePath: (file) => resolve(file),
   workspace: (name) => dirOrNull(join(larWorkspacesHome(), name)),
 };
@@ -544,9 +551,32 @@ export function realmPools(projections: string, root: string): string[] {
     .filter((p): p is string => { try { return p !== null && statSync(p).isDirectory(); } catch { return false; } });
 }
 
-/** The one window line: `code -n` over the face's root, then its realm pools. */
-export function surfaceOpenArgv(root: string, pools: readonly string[]): string[] {
-  return ["code", "-n", root, ...pools];
+/**
+ * THE EDITOR `surface open` RUNS, a house setting the operator keeps: the config tiddler `$:/config/lares/surface/Editor`, whose
+ * text names the command (`code-insiders`, or several words, as `flatpak run com.visualstudio.code`). It rests in the house's
+ * config home beside the share rows (`<config>/surface-editor.tid`, a .tid a person edits by hand), which the host reads with the
+ * vessel down and a re-founding keeps. A file that holds no such tiddler, or names no command, reads the default `code`.
+ */
+export const SURFACE_EDITOR_TITLE = "$:/config/lares/surface/Editor";
+export const SURFACE_EDITOR_FILE = "surface-editor.tid";
+export const SURFACE_EDITOR_DEFAULT = "code";
+/** The exit a launch answers where this machine holds no binary by the editor's name (the shell's own "command not found"). */
+export const EDITOR_ABSENT_EXIT = 127;
+
+/** The editor command's words, off the house config tiddler, else the default. */
+export function surfaceEditor(config: string): string[] {
+  let text: string;
+  try { text = readFileSync(join(config, SURFACE_EDITOR_FILE), "utf8"); } catch { return [SURFACE_EDITOR_DEFAULT]; }
+  const at = text.replace(/\r\n/g, "\n").indexOf("\n\n");
+  const head = at < 0 ? text : text.slice(0, at), body = at < 0 ? "" : text.slice(at + 2);
+  const title = /^title:\s*(.*)$/m.exec(head)?.[1]?.trim();
+  const words = (body.split("\n").find((l) => l.trim() !== "") ?? "").trim().split(/\s+/).filter((w) => w !== "");
+  return title === SURFACE_EDITOR_TITLE && words.length > 0 ? words : [SURFACE_EDITOR_DEFAULT];
+}
+
+/** The one window line: the editor's words and `-n` over the face's root, then its realm pools. */
+export function surfaceOpenArgv(root: string, pools: readonly string[], editor: readonly string[] = [SURFACE_EDITOR_DEFAULT]): string[] {
+  return [...editor, "-n", root, ...pools];
 }
 
 /** A word as a POSIX shell reads it back unchanged. */
@@ -673,15 +703,20 @@ async function cmdOpen(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
   const projections = doors.projections();
   const root = faceRoot(projections, face.petname);
   if (!existsSync(root)) throw new SurfaceRefused("surface-no-pool", `the face "${face.petname}" holds no root at ${root} yet: run \`lares surface init\``);
-  const argv = surfaceOpenArgv(root, realmPools(projections, root));
+  const editor = surfaceEditor(doors.config());
+  const argv = surfaceOpenArgv(root, realmPools(projections, root), editor);
   const line = argv.map(shellWord).join(" ");
   const launch = args.flags["launch"] === true;
   const code = launch ? doors.launch(argv) : 0;
+  const settingAt = join(doors.config(), SURFACE_EDITOR_FILE);
+  const error = code === 0 ? null : code === EDITOR_ABSENT_EXIT
+    ? { code: "surface-editor-absent", message: `this machine holds no \`${editor[0]}\` to run: name the editor in the house config tiddler ${SURFACE_EDITOR_TITLE} (${settingAt}: a \`title: ${SURFACE_EDITOR_TITLE}\` line, a blank line, then the command, as \`code-insiders\`)` }
+    : { code: "surface-launch-failed", message: `${line} answered ${code}` };
   emit(args, {
     ok: code === 0,
-    data: { face: face.index, argv, launched: launch, ...(launch ? { exit: code } : {}) },
-    ...(code === 0 ? {} : { error: { code: "surface-launch-failed", message: `${line} answered ${code}` } }),
-    human: () => console.log(line),
+    data: { face: face.index, argv, editor, launched: launch, ...(launch ? { exit: code } : {}) },
+    ...(error === null ? {} : { error }),
+    human: () => { console.log(line); if (error !== null) console.error(`lares surface open: ${error.message}`); },
   });
   return code === 0 ? 0 : 1;
 }

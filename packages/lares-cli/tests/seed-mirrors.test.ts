@@ -1306,6 +1306,27 @@ describe("P1 — the face root, keyed by pet name", () => {
     expect(again.layers.reduce((n, t) => n + t.landed + t.kapae, 0)).toBe(0);
   });
 
+  test("FR8 — RED: a pre-face-root folder (`bags/daemon-<F>`, `bags/kahua-<F>`) lays nothing and mints no bag named for a relation: the lay names it a stale folder to set aside, beside the face root that holds those planes now", async () => {
+    put(`projections/bags/daemon-${F1}/ha.ka.ba/notes/pond.tid`, tid(POND, "the pond as the old folder kept it"));
+    put(`projections/bags/kahua-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid(HERON, "an old stage line"));
+    const v = new FakeHouse([{ handleIndex: 0, petname: "hearth-one", relation: F1 }], "grant", F1);
+    v.held.add("garden");
+    const r = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(r.minted).toEqual([]);
+    expect(v.mints).toEqual([]);
+    expect(v.laid.some((s) => s.includes(`daemon-${F1}`) || s.includes(`kahua-${F1}`))).toBe(false);
+    expect(r.setAside.map((x) => x.folder)).toEqual([P(`bags/daemon-${F1}`), P(`bags/kahua-${F1}`)]);
+    expect(r.setAside[0]!.face).toBe("hearth-one");
+    const lines = mirrorLines(r).out.join("\n");
+    expect(lines).toContain(`set aside ${P(`bags/daemon-${F1}`)}`);
+    expect(lines).toContain(P("faces/hearth-one"));
+    expect(lines).not.toMatch(/minted|would mint/);
+    // The face root still lays as ever, and the stale folder stays as it stands for the operator to burn.
+    expect(v.live(WORKING, POND)?.text).toBe(POND_WORKING);
+    expect(existsSync(P(`bags/daemon-${F1}/ha.ka.ba/notes/pond.tid`))).toBe(true);
+    expect(mirrorsLeftWork(r)).toBe(false);
+  });
+
   test("FR2 — RED: a folder whose pet name no face carries refuses by name, lands nothing, and stays where it stands", async () => {
     poolDisk();
     const stranger = refound([{ handleIndex: 0, petname: "someone-else", relation: F2 }]);
