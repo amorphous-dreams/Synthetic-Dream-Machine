@@ -1,12 +1,14 @@
 /**
- * bag-show-projected — a bag with no canon source rests under the house's projections (`<root>/projections/bags`), and the
- * bag doors find it there when no `--dir` names another survey; the canon source still reads first.
+ * bag-show-projected — a bag with no canon source rests under the house's projections (`<root>/projections/bags`, or a shared
+ * wiki's canon bag under its realm, `<root>/projections/realms/<realm pet name>/bags/<slug>`), and the bag doors find it there
+ * when no `--dir` names another survey; the canon source still reads first.
  */
 import { afterEach, expect, test } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { cmdBagShow } from "../src/commands/bag-declare-cmd.js";
+import { readBagManifest } from "@lararium/node";
+import { cmdBagDeclare, cmdBagShow } from "../src/commands/bag-declare-cmd.js";
 
 const saved = { LAR_ROOT: process.env["LAR_ROOT"], LAR_BAGS: process.env["LAR_BAGS"] };
 let root = "";
@@ -25,6 +27,18 @@ test("a bag resting under projections/bags answers `bag show` with no --dir", as
   mkdirSync(join(root, "canon"), { recursive: true });
   mkdirSync(join(root, "projections", "bags", "book"), { recursive: true });
   expect(await show("book")).toBe(0);
+});
+
+test("RED: a shared wiki's canon bag resting under its realm folder answers `bag show` and `bag declare` with no --dir", async () => {
+  root = mkdtempSync(join(tmpdir(), "bag-show-projected-"));
+  process.env["LAR_ROOT"] = root;
+  process.env["LAR_BAGS"] = join(root, "canon");
+  mkdirSync(join(root, "canon"), { recursive: true });
+  const dir = join(root, "projections", "realms", "photos", "bags", "book");
+  mkdirSync(dir, { recursive: true });
+  expect(await show("book")).toBe(0);
+  expect(await cmdBagDeclare({ command: "bag", positional: ["book"], options: { tier: "public" }, flags: { json: true } } as never)).toBe(0);
+  expect(readBagManifest(dir, "book").tier).toBe("public");
 });
 
 test("CONTROL: a named --dir reads that survey alone, and a bag absent from it refuses", async () => {

@@ -77,7 +77,9 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
     }
     /** The rotatable pins `wiki active` marks, in its own order. */
     const held = () => h.must(["wiki", "active"]).stdout.split("\n").filter((l) => l.includes("📌")).map((l) => l.replace(/.*📌\s*/, "").split(/\s+/)[0]).sort();
-    const mirrored = (slug) => existsSync(join(h.root, "projections", "wikis", slug, "ha.ka.ba", "notes", "page", `${slug}-one.mem`));
+    // A minted wiki stands in its own realm under its slug, the realm's default pet name, so its workbench mirror rests at
+    // `projections/realms/<slug>/wikis/<slug>`.
+    const mirrored = (slug) => existsSync(join(h.root, "projections", "realms", slug, "wikis", slug, "ha.ka.ba", "notes", "page", `${slug}-one.mem`));
     // THE RED STANDS: the cold wikis' pages reach no mirror.
     assert.deepEqual(SLUGS.filter(mirrored), ["bravo"], "a put into a cold wiki projects nowhere");
     assert.deepEqual(held(), ["bravo"]);

@@ -30,7 +30,8 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
-import { faceRoot } from "../../packages/lararium-node/src/bag-paths.js";
+import { faceRoot, realmRoot, REALM_PLANES } from "../../packages/lararium-node/src/bag-paths.js";
+import { realmPlacement } from "../../packages/lararium-node/src/realm-labels.js";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -325,10 +326,19 @@ export function daemonWikiDir(root: string): string {
 
 /**
  * Where a staged vessel's workbench of a wiki projects on disk when its canon stands under no canon source: the ONE
- * folder `<root>/projections/wikis/<slug>`, whichever seated writer wears (cabal-realm#/the-workbench).
+ * folder `<root>/projections/realms/<realm pet name>/wikis/<slug>`, whichever seated writer wears (cabal-realm#/the-workbench).
+ * The realm labels name the pet name; before any label stands, the realm's default pet name, its slug.
  */
 export function wikiWorkbenchDir(root: string, slug: string): string {
-  return join(root, "projections", "wikis", slug);
+  const projections = join(root, "projections");
+  return join(realmPlacement(projections).wikisBase(slug) ?? join(realmRoot(projections, slug), REALM_PLANES.wikis), slug);
+}
+
+/** Where a staged vessel's canon bag of a minted wiki projects on disk: `<root>/projections/realms/<realm pet name>/bags/<slug>`,
+ *  the realm's default pet name (its slug) before any label stands. */
+export function wikiCanonBagDir(root: string, slug: string): string {
+  const projections = join(root, "projections");
+  return join(realmPlacement(projections).bagsBase(slug) ?? join(realmRoot(projections, slug), REALM_PLANES.bags), slug);
 }
 
 /** The face's kahua stage on a staged hearth: `<root>/projections/faces/<pet name>/stage`. */

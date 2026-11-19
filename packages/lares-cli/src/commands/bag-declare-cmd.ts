@@ -32,7 +32,7 @@
 
 import {
   bagHomeRoots, surveyBags, readBagManifest, writeBagManifest, moveBagHome,
-  readRepoRegistry, registerRepo, unregisterRepo, repoRegistryPath,
+  readRepoRegistry, registerRepo, unregisterRepo, repoRegistryPath, realmFoldersOnDisk,
 } from "@lararium/node";
 import {
   parseCapTier, isBagHome, bagUri, placeBag, BAG_HOMES, bagHomeTravelsWithAClone,
@@ -53,12 +53,18 @@ function surveyDir(args: ParsedArgs): string {
 
 /**
  * One bag's sighting: the survey dir first, then (with no `--dir` named) the house's projected bags, where a bag with no
- * canon source rests (`<root>/projections/bags`). Absent from both, it refuses naming each place it read.
+ * canon source rests (`<root>/projections/bags`), and a shared wiki's canon bag under the realm folder it stands in
+ * (`<root>/projections/realms/<realm pet name>/bags/<slug>`, read off the disk). Absent from all, it refuses naming each place
+ * it read.
  */
 function findBag(args: ParsedArgs, bag: string, roots: ReturnType<typeof bagHomeRoots>): ReturnType<typeof surveyBags>[number] {
   const dirs = [surveyDir(args)];
   const projections = args.options["dir"] === undefined ? larProjectionsDirOrNone() : undefined;
-  if (projections !== undefined) dirs.push(join(projections, "bags"));
+  if (projections !== undefined) {
+    dirs.push(join(projections, "bags"));
+    const inRealm = realmFoldersOnDisk(projections).find((f) => f.plane === "bags" && f.slug === bag);
+    if (inRealm !== undefined) dirs.push(inRealm.base);
+  }
   for (const dir of dirs) {
     const found = surveyBags(dir, roots).find((s) => s.bag === bag);
     if (found) return found;

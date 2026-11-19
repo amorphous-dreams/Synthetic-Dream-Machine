@@ -1,11 +1,12 @@
 /**
  * merge-guard — a direct `handle.merge(other)` runs the prototype-key door on both sides.
  *
- * `wait-handle.ts` (a late remote merging into the fallback handle) and `genesis-intake.ts` (the live genesis handle merging
- * the incoming one) merged two documents with no assertion on the result. `mergeGuarded` refuses a hostile SOURCE by name
- * before the merge, so the target never takes the bytes, and asserts the MERGED result after, since a merge result's view can
- * hide the key. Reds: a hostile source refuses and leaves the target untouched; both call sites merge through the guard.
- * CONTROLS: a clean source merges; the call sites still wait, and a clean late remote still merges.
+ * `wait-handle.ts` (a late remote merging into the fallback handle) merges two documents. `mergeGuarded` refuses a hostile
+ * SOURCE by name before the merge, so the target never takes the bytes, and asserts the MERGED result after, since a merge
+ * result's view can hide the key. `genesis-intake.ts` merges no genesis document into another at all (the island stays the
+ * founding record), so it holds no `.merge(` of any kind. Reds: a hostile source refuses and leaves the target untouched; the
+ * one call site merges through the guard, and genesis intake merges nothing. CONTROLS: a clean source merges; the helper still
+ * merges through the handle's own merge.
  */
 import { describe, expect, test } from "vitest";
 import { createHash } from "node:crypto";
@@ -49,11 +50,10 @@ describe("mergeGuarded", () => {
 
 describe("the call sites merge through the guard", () => {
   const src = (f: string) => readFileSync(new URL(`../src/${f}`, import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-  test("RED: wait-handle.ts and genesis-intake.ts hold no bare `.merge(` of a handle", () => {
+  test("RED: wait-handle.ts merges through the guard alone, and genesis-intake.ts merges nothing", () => {
     expect(src("wait-handle.ts")).toMatch(/mergeGuarded\(/);
-    expect(src("genesis-intake.ts")).toMatch(/mergeGuarded\(/);
     expect(src("wait-handle.ts")).not.toMatch(/fresh\.merge\(/);
-    expect(src("genesis-intake.ts")).not.toMatch(/liveHandle\.merge\(incomingHandle\)/);
+    expect(src("genesis-intake.ts")).not.toMatch(/\.merge\(|mergeGuarded\(/);
   });
   test("CONTROL: the helper itself still merges through the handle's own merge", () => {
     expect(src("prototype-key-shore.ts")).toMatch(/target\.merge\(source as never\)/);
