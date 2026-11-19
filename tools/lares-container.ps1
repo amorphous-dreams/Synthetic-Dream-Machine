@@ -780,6 +780,23 @@ function BuildImage([string]$at, [string[]]$more) {
   $script:BuiltRev = $rev
   PruneRevTags
   [Console]::Error.WriteLine("lares-container: the vessel image stands rebuilt from $short (revision $rev); ``up`` stands it")
+  BuildHost $top $rev
+}
+
+# THE HOST BUILDS FROM THE SAME REVISION. The host's own `lares` runs this checkout's build, so an image built from the
+# commit the checkout stands at takes the host CLI with it (`pnpm run build:host`): one verb keeps the two in step. A
+# checkout standing elsewhere (a `--at` of another commit) keeps its own build, and the line names both revisions.
+function BuildHost([string]$top, [string]$rev) {
+  $head = ((& git -C $top rev-parse HEAD 2>$null) -join '').Trim()
+  $short = $rev.Substring(0, 12)
+  if ($head -ne $rev) {
+    $headShort = if ($head.Length -ge 12) { $head.Substring(0, 12) } else { $head }
+    [Console]::Error.WriteLine("lares-container: the checkout stands at $headShort and the image carries $short, so the host CLI keeps its own build; build from the checkout's commit to bring both into step")
+    return
+  }
+  [Console]::Error.WriteLine("lares-container: the host CLI builds from $short, the revision the image carries")
+  & pnpm --dir $top run --silent build:host 2>&1 | ForEach-Object { [Console]::Error.WriteLine($_) }
+  if ($LASTEXITCODE -ne 0) { Die "the host CLI build failed (above); the image stands built from $short, and the host keeps its prior build" }
 }
 
 # THE STAND (`up`, and the rebuild's stand): the moved-image down path, the pūlama, the vessel healthy, the revision and

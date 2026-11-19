@@ -800,6 +800,21 @@ EOF
   BUILT_REV=$b_rev
   prune_rev_tags
   printf 'lares-container: the vessel image stands rebuilt from %s (revision %s); `up` stands it\n' "$b_short" "$b_rev" >&2
+  build_host "$b_top" "$b_rev"
+}
+
+# THE HOST BUILDS FROM THE SAME REVISION. The host's own `lares` runs this checkout's build, so an image built from the
+# commit the checkout stands at takes the host CLI with it (`pnpm run build:host`): one verb keeps the two in step. A
+# checkout standing elsewhere (a `--at` of another commit) keeps its own build, and the line names both revisions.
+build_host() { # $1 = the checkout's top, $2 = the revision the image carries
+  h_head=$(git -C "$1" rev-parse HEAD 2>/dev/null) || h_head=""
+  h_short=$(printf '%s' "$2" | cut -c1-12)
+  if [ "$h_head" != "$2" ]; then
+    printf 'lares-container: the checkout stands at %s and the image carries %s, so the host CLI keeps its own build; build from the checkout'"'"'s commit to bring both into step\n' "$(printf '%s' "$h_head" | cut -c1-12)" "$h_short" >&2
+    return 0
+  fi
+  printf 'lares-container: the host CLI builds from %s, the revision the image carries\n' "$h_short" >&2
+  pnpm --dir "$1" run --silent build:host >&2 || die "the host CLI build failed (above); the image stands built from $h_short, and the host keeps its prior build"
 }
 
 # THE STAND (`up`, and the rebuild's stand): the moved-image down path, the pūlama, the vessel healthy, the revision and

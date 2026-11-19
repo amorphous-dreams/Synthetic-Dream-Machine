@@ -28,7 +28,8 @@
     "witness:roundtrip": "tools/round-trip-witness.sh",
     "witness:pronaos": "node --test tools/pronaos-deployment-receipt.test.mjs tools/pronaos-runtime-wiring.test.mjs tools/pronaos-live-witness.test.mjs",
     "witness": "tools/witness-all.sh",
-    "test:e2e:live": "pnpm --filter @lares/harness test:live"
+    "test:e2e:live": "pnpm --filter @lares/harness test:live",
+    "build:host": "pnpm -r --filter '!@lararium/web' build && node tools/stamp-build.mjs ."
   },
   "devDependencies": {
     "@lares/cli": "workspace:*",
