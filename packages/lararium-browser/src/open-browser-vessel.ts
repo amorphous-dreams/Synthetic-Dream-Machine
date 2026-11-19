@@ -214,9 +214,8 @@ interface BrowserBootstrap extends VesselBootstrap {
 /** One face's overlay as the boot record keeps it: every field a face's landing wrote, and neither the floor nor another face. */
 type FaceOverlay = Omit<BrowserBootstrap, "floor" | "faces">;
 const overlayOf = (b: BrowserBootstrap): FaceOverlay => { const { floor: _floor, faces: _faces, ...overlay } = b; return overlay; };
-/** The overlays a record holds, by PersonaGroup: its `faces`, and the face a record from before the map names at its top. */
-const overlaysOf = (b: BrowserBootstrap | undefined): Record<string, FaceOverlay> =>
-  b === undefined ? {} : { ...(b.personaGroupId && !b.faces?.[b.personaGroupId] ? { [b.personaGroupId]: overlayOf(b) } : {}), ...(b.faces ?? {}) };
+/** The overlays a record holds, by PersonaGroup: its `faces`. */
+const overlaysOf = (b: BrowserBootstrap | undefined): Record<string, FaceOverlay> => b?.faces ?? {};
 /** `landed` laid over `prior`: the floor record stays as it stood, and every earlier face's overlay stays beside the new one. */
 function overlayFace(prior: BrowserBootstrap | undefined, landed: BrowserBootstrap & { personaGroupId: string }): BrowserBootstrap {
   const floor = prior?.floor;
