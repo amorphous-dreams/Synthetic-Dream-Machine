@@ -110,7 +110,7 @@ describe("a vessel-held home whose key has not opened refuses `holder-locked`, a
       door: { seal: async () => { throw new Error("no"); }, open: async () => { throw new Error("no"); } },
       flushRepo: async () => {}, hydrates: true,
       onHydrationWait: (w: { documentId: string; refusal: string; bagId: string | null }) => waits.push(w),
-    } as never);
+    });
     moved = () => rest.store.mapMoved();
     homeRest.enrollBeside?.(documentId, CONTROL_HOME_ID);
     const chunks = await inner.loadRange([documentId]);

@@ -44,8 +44,8 @@
     }
   },
   "webListeners": {
-    "web wiki": 2,
-    "web session": 2,
+    "web wiki": 1,
+    "web session": 1,
     "web daemon": "unmeasured"
   },
   "callSites": [
