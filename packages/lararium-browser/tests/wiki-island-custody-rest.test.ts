@@ -7,7 +7,7 @@
  *       the wiki island.
  *   W2  a wiki island stands no store of its own, so no byte of any document rests in an island partition; CONTROL: the
  *       daemon island's own store rests no byte of a document the vessel holds sealed, and a page document rests there.
- *   W4  the pool marks every island it attaches (bare leg and session view) a wiki island, and the browser and node verdicts
+ *   W4  the pool marks every island it attaches (bare leg and session view) a wiki island serving its mount, and the browser and node verdicts
  *       read that mark.
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed (V2)
@@ -51,8 +51,8 @@ describe("a wiki island holds no custody document", () => {
 
   test("W4 — the pool marks every island it attaches a wiki island, and both vessels' verdicts read the mark", () => {
     const pool = strip(SOURCES["../../lararium-mesh/src/vessel-island-pool-core.ts"] ?? "");
-    expect(pool).toMatch(/markWikiIslandPeer\(repo, view\.peerId\)/);
-    expect(pool).toMatch(/attachMessageChannelSync\(repo, mainPort, \(peerId\) => \{ markWikiIslandPeer\(repo, peerId\);/);
+    expect(pool).toMatch(/markWikiIslandPeer\(repo, view\.peerId, mount\)/);
+    expect(pool).toMatch(/attachMessageChannelSync\(repo, mainPort, \(peerId\) => \{ markWikiIslandPeer\(repo, peerId, mount\);/);
     const browser = strip(SOURCES["../src/open-browser-vessel.ts"] ?? "");
     expect(browser).toMatch(/wikiIslands = wikiIslandPeersOf\(repo\)/);
     expect(browser).toMatch(/restsSealed: \(documentId\) => sealedRest\.restsSealed\(documentId\)/);

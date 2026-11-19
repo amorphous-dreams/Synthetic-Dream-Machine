@@ -7,6 +7,7 @@
 description = "The test-architecture total-refactor plan (2026-11-19): the operator's ask, the five decisions Lares-Alpha landed on the operator's word, and both Fable research handbacks whole: Estate-Seer's measured map and Design-Seer's design. A design first, so a cut never trades coverage for wall-clock time."
 title       = "lar:///ha.ka.ba/lararium/docs/test-architecture"
 type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/docs/test-architecture"
 ```
 
 <<~ ahu slot=`#/entry`>>
@@ -668,6 +669,6 @@ Repo files read: `.github/workflows/ci.yml`, `e2e-shards.yml`, `held-out.yml` (h
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZXREU7KfIipZ2s-QJvLELGECApP3yXexSBox03Jip_M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4o7YICxHwI8dGdKQ6pJzuILTFTS1XR_ioJg9GAaZ4rI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

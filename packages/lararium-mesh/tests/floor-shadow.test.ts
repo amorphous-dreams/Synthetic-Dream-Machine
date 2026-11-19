@@ -11,7 +11,7 @@ import { computeEngineCid } from "../src/genesis-doc.js";
 import { signFloorOffering } from "../src/floor-offering.js";
 import { ENGINE_CORE_ID, type LarBlobEntry } from "../src/base-doc.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
-import { floorShadowLine, floorShadowReadingLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally } from "../src/floor-shadow.js";
+import { floorShadowLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally } from "../src/floor-shadow.js";
 
 const CORE_SHA = "c".repeat(64);
 const blobs: Record<string, LarBlobEntry> = {
