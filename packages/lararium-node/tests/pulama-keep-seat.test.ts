@@ -4,12 +4,14 @@
  * A house a pūlama keeps never reads a route on the vessel's side, so `lares vault unlock` there seats no keep pair, and a keep
  * would refuse `keep-seat-absent`. The pūlama's hand door gains the keep-seat act: the route rides the pūlama's own terminal,
  * proves against its lit custody, and the pair mints there (public half, the slot tree wrapping the secret, the signing seed).
- * The verb writes the house's seat file; the line it prints carries no secret and no tree.
+ * The pūlama's container stands read-only with no config home, so the verb writes NOTHING: it prints exactly one stdout line the
+ * host's shim writes to `keep-seat.json` (0600), or one refusal line and a nonzero exit.
  *
  *   PK1  RED: a lit pūlama seats a keep pair under the route it proves: the seat opens under that route, and its verify key
  *        answers the signing seed handed back. A wrong route refuses by name and mints nothing; an unlit one refuses before it.
- *   PK2  RED: `pulama-main.js keep-seat` reads the door, reads the route, hands one keep-seat frame, writes the seat through its
- *        writer, and prints no signing seed and no slot tree. CONTROL: an unlit pūlama asks no route.
+ *   PK2  RED: `keep-seat` over the real hand door prints ONE line: `{"op","reading":"seated","seat":{"publicKey","stretchSalt",
+ *        "tree","verifyKey"},"signer"}` and exit 0, the tree as keep-seat.json holds it and opening under the route; a wrong
+ *        route prints one `{"op","reading":"refused","code","message"}` line and a nonzero exit; no route reads no route at all.
  */
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -21,7 +23,7 @@ import { makeCustodyHolder } from "../src/custody-holder.js";
 import { pulamaHandDoor } from "../src/pulama-hand.js";
 import { servePulama } from "../src/pulama-server.js";
 import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
-import { runHandVerb } from "../src/pulama-verbs.js";
+import { RouteNotGiven, keepSeatLine } from "../src/pulama-verbs.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
 import { SESSION_DERIVES, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
@@ -61,24 +63,29 @@ describe("the keep seat at the pūlama's hand door", () => {
     expect(JSON.stringify(seated)).not.toContain(FIXTURE_PASSPHRASE);
   });
 
-  test("PK2 RED: the verb writes the seat through its writer and prints no secret; CONTROL: an unlit pūlama asks no route", async () => {
-    const frames: Array<Record<string, unknown>> = [], asked: string[] = [], written: string[] = [];
-    const ports = (lit: boolean) => ({
-      ask: async (frame: Readonly<Record<string, unknown>>) => {
-        frames.push({ ...frame });
-        if (frame["op"] === "status") return { op: "status", lit };
-        return { op: "keep-seat", reading: "seated", seat: JSON.stringify({ publicKey: "a".repeat(64), stretchSalt: "b".repeat(32), slots: { keyCheck: "c", slots: [] } }), signingSeed: "d".repeat(64) };
-      },
-      route: async (label: string) => { asked.push(label); return "the-route"; },
-      keepSeat: (answer: Readonly<Record<string, unknown>>) => { written.push(JSON.stringify(answer)); return "/lar/config/keep-seat.json"; },
-    });
-    expect(await runHandVerb("keep-seat", undefined, ports(false)), "CONTROL: an unlit pūlama asks no route").toMatchObject({ op: "keep-seat", reading: "pulama-locked" });
-    expect(asked).toEqual([]);
-    const printed = await runHandVerb("keep-seat", undefined, ports(true));
-    expect(printed).toMatchObject({ op: "keep-seat", reading: "seated", path: "/lar/config/keep-seat.json", publicKey: "a".repeat(64) });
-    expect(JSON.stringify(printed)).not.toContain("d".repeat(64));
-    expect(JSON.stringify(printed)).not.toContain("keyCheck");
-    expect(written[0]).toContain("d".repeat(64));
-    expect(frames.at(-1)).toEqual({ op: "keep-seat", credentials: [{ kind: "passphrase", passphrase: "the-route" }] });
+  test("PK2 RED: the verb prints one seated line over the real door, one refusal line and a nonzero exit on a miss", async () => {
+    const s = await stand();
+    await s.light();
+    const ask = (frame: Readonly<Record<string, unknown>>) => s.door(frame);
+    const ok = await keepSeatLine({ ask, route: async () => FIXTURE_PASSPHRASE });
+    expect(ok.code).toBe(0);
+    expect(ok.line.includes("\n"), "exactly one line").toBe(false);
+    const line = JSON.parse(ok.line) as { op: string; reading: string; seat: Record<string, unknown>; signer: string };
+    expect(Object.keys(line).sort()).toEqual(["op", "reading", "seat", "signer"]);
+    expect({ op: line.op, reading: line.reading }).toEqual({ op: "keep-seat", reading: "seated" });
+    expect(Object.keys(line.seat).sort()).toEqual(["publicKey", "stretchSalt", "tree", "verifyKey"]);
+    const read = decodeKeepSeat(JSON.stringify({ publicKey: line.seat["publicKey"], stretchSalt: line.seat["stretchSalt"], slots: line.seat["tree"] }));
+    expect(read.reading, "the tree reads as keep-seat.json holds it").toBe("readable");
+    const opened = await openKeepSecret((read as { seat: Parameters<typeof openKeepSecret>[0] }).seat, route, nobleKdf);
+    expect(opened.reading).toBe("opens");
+    expect(Buffer.from((opened as { verifyKey: Uint8Array }).verifyKey).toString("hex")).toBe(line.seat["verifyKey"]);
+    expect(Buffer.from(keepVerifyKeyOf(Uint8Array.from(Buffer.from(line.signer, "hex")))).toString("hex")).toBe(line.seat["verifyKey"]);
+    const miss = await keepSeatLine({ ask, route: async () => "not the route" });
+    expect(miss.code).not.toBe(0);
+    expect(JSON.parse(miss.line)).toMatchObject({ op: "keep-seat", reading: "refused", code: "no-slot-opens" });
+    expect(Object.keys(JSON.parse(miss.line)).sort()).toEqual(["code", "message", "op", "reading"]);
+    const none = await keepSeatLine({ ask, route: async () => { throw new RouteNotGiven(false); } });
+    expect(none.code).not.toBe(0);
+    expect(JSON.parse(none.line)).toMatchObject({ op: "keep-seat", reading: "refused", code: "route-not-given" });
   });
 });
