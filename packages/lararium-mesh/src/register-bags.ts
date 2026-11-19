@@ -41,9 +41,9 @@
  */
 
 import { type LarDoc, tiddlerText } from "./base-doc.js";
-import { BAG_IDS, CATALOG_DOC_URI, DAEMON_BAG_ID, isBagId, wikiUri } from "./lar-uris.js";
+import { BAG_IDS, CATALOG_DOC_URI, DAEMON_BAG_ID, isBagId, recipeUri, wikiUri } from "./lar-uris.js";
 import { isFaceScopedBag, personaScopedBagIds, personaSelvesBagIdFor } from "./persona-scope.js";
-import { ownEntry } from "./stored-value.js";
+import { ownEntry, plainMeta } from "./stored-value.js";
 import { houseCanonBagsSeated, isHouseCanonBag } from "./kahu-canon-reach.js";
 import { DAEMON_WIKI_SLUG, daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 
@@ -71,6 +71,26 @@ export function catalogNamedBags(doc: LarDoc | undefined | null): string[] {
   return Object.keys(tiddlers).filter(
     (title) => isBagId(title) && (tiddlerText(ownEntry(tiddlers, title)) ?? "").startsWith("automerge:"),
   );
+}
+
+/**
+ * THE FACE'S OWN LAYERS A CATALOG ANNOUNCES: the `personal` margin and the `draft` binding (`isFaceSlotBag`) of every wiki
+ * the catalog names by its recipe row (`catalog/recipes/<slug>`, the row `wiki init` writes). The catalog a vessel reads
+ * merges the WORN face's own rows over the floor's (`catalog-view`), and no other face's catalog binds there, so the
+ * answer names the worn face's layers alone. The boot registers each before any slot document opens, so the holder's
+ * reading founds every margin the resolver names afterwards.
+ */
+export function catalogFaceSlotBags(doc: LarDoc | undefined | null): string[] {
+  const tiddlers = doc?.tiddlers ?? {};
+  const prefix = recipeUri("catalog", "");
+  const out: string[] = [];
+  for (const title of Object.keys(tiddlers)) {
+    if (!title.startsWith(prefix)) continue;
+    const slug = title.slice(prefix.length);
+    if (!slug || slug.includes("/") || plainMeta(ownEntry(tiddlers, title) as never, "deleted") === true) continue;
+    out.push(...[wikiSlotUri(slug, "personal"), wikiSlotUri(slug, "draft")].filter(isFaceSlotBag));
+  }
+  return [...new Set(out)];
 }
 
 /** One PersonaGroup this vessel stands in, and the work that group brings with it. */
@@ -192,7 +212,10 @@ export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefin
   // EVERY MARGIN AND DRAFT THE WORN FACE'S RESOLVER NAMED (`isFaceSlotBag`): the face's own layers of each wiki, the mount
   // slot's and every other wiki's alike, seal under the lit face. The island registers each on the face's hive before it
   // names it (`announceSlotDoc`), so the seal finds the writer capable.
-  const named = input.lit ? [...new Set([...(input.announced ?? [])].filter(isFaceSlotBag))] : [];
+  // THE MOUNT'S OWN MARGIN rides with them from the boot: the slot names the wiki, so the face's `personal` layer of it
+  // derives off the slot's draft, and no naming has to come first.
+  const margin = input.slot ? faceMarginBeside(input.slot.draftBagId) : null;
+  const named = input.lit ? [...new Set([...(margin ? [margin] : []), ...(input.announced ?? [])].filter(isFaceSlotBag))] : [];
   // The face's own catalog (U1's D half of the catalog) rides with the daemon wiki's slots: the island registers it at
   // boot, so its holder holds the catalog's key before the lift opens the sealed document. The vessel's control document
   // seals beside the secret home under the vessel's own key (`secret-home`), never under one face.
@@ -202,6 +225,12 @@ export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefin
     registered: [...new Set([...user, ...faceOwn, ...named])],
     sealed: [...new Set([...(input.lit ? user : []), ...faceOwn, ...named])],
   };
+}
+
+/** The `personal` margin of the wiki whose `draft` binding `draftBagId` names, or null where it names no face's layer. */
+function faceMarginBeside(draftBagId: string): string | null {
+  const suffix = "/draft";
+  return isFaceSlotBag(draftBagId) && draftBagId.endsWith(suffix) ? `${draftBagId.slice(0, -suffix.length)}/personal` : null;
 }
 
 /**
