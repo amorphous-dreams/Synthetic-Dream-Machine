@@ -58,7 +58,8 @@ import {
   sha256HexBytesSync,
   GENESIS_FLOOR_TIDDLER,
   plainRecordOrNull,
-  resolveFloor,
+  resolveIslandFloor,
+  FLOOR_PREDATES_LINE,
   floorRecordsInOrder,
   floorCanonReader,
   islandSecretHome,
@@ -515,17 +516,19 @@ export function runSovereignKernel(
     }
 
     // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): the manifest names it where the vessel's pin moved past genesis; absent,
-    // the genesis seed's own floor witness.
-    const floorCidField = msg.floorCid ?? plainRecordOrNull(ownEntry(laraiumHandle.doc()?.tiddlers, GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
+    // the genesis seed's own floor witness. The founding record's own floor may predate the floor format and then serves its
+    // snapshots alone (`resolveIslandFloor`, KEEP); any other floor reads the current shape alone.
+    const foundingCid = plainRecordOrNull(ownEntry(laraiumHandle.doc()?.tiddlers, GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
     let floorRecords: readonly Readonly<Record<string, LarTiddlerRecord>>[] = [];
     // One house canon bag's own snapshot off that floor (`IslandContext.floorCanon`): a read door's floor answer.
     let floorCanon: ((bag: string) => Readonly<Record<string, LarTiddlerRecord>> | null) | undefined;
-    if (typeof floorCidField === "string" && floorCidField.length > 0) {
-      const floor = await resolveFloor(floorCidField, resolveByCid);
+    const floor = await resolveIslandFloor({ named: msg.floorCid, founding: typeof foundingCid === "string" ? foundingCid : null, resolveByCid });
+    if (floor !== null) {
       if ("refusal" in floor) {
         _post(mkFault(msg.wikiUri, `${PLANE_LABELS.oracle} mount refused (${floor.refusal}): ${floor.reason}`));
         return;
       }
+      if ("prior" in floor) console.info(`[floor] ${FLOOR_PREDATES_LINE}`);
       floorRecords = floorRecordsInOrder(floor);
       floorCanon = floorCanonReader(floor);
     } else {

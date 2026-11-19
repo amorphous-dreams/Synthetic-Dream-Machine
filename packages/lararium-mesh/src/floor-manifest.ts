@@ -422,6 +422,22 @@ export function predatingFloorBlobCids(manifestCid: string, m: PredatingFloorMan
 }
 
 /**
+ * THE FLOOR AN ISLAND MOUNTS, resolved: the floor its manifest names, else the one its founding record's witness names; null
+ * where neither names one. The founding record's own floor (none named, or the very CID the witness names, which a session's
+ * recipe hands on) reads through `resolveFoundingFloor`; any other floor reads the current shape alone (`resolveFloor`).
+ */
+export async function resolveIslandFloor(args: {
+  readonly named:        string | null | undefined;
+  readonly founding:     string | null | undefined;
+  readonly resolveByCid: (cid: string) => Promise<Uint8Array | null>;
+}): Promise<Awaited<ReturnType<typeof resolveFoundingFloor>> | null> {
+  const cid = args.named ?? args.founding;
+  if (typeof cid !== "string" || cid.length === 0) return null;
+  const foundingFloor = args.named === undefined || args.named === null || args.named === args.founding;
+  return foundingFloor ? resolveFoundingFloor(cid, args.resolveByCid) : resolveFloor(cid, args.resolveByCid);
+}
+
+/**
  * The CIDs a floor names: the manifest's own, each snapshot's (slugs sorted) and the plugins offering record's; handed the
  * offering that record holds, each blob it carries too (sorted by id, each CID once). A caller holding no offering bytes
  * still names the record, and a reader that resolves it widens to the blobs.

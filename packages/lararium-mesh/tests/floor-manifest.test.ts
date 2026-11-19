@@ -4,7 +4,7 @@ import { sha256HexBytesSync } from "../src/crypto.js";
 import {
   cutFloorSnapshot, openFloorSnapshot, floorManifestBytes, floorManifestCid,
   readFloorManifest, resolveFloor, type FloorManifest,
-  floorCanonReader, floorRecordsInOrder, predatingFloorBlobCids, readFoundingFloorManifest, resolveFoundingFloor,
+  floorCanonReader, floorRecordsInOrder, predatingFloorBlobCids, readFoundingFloorManifest, resolveFoundingFloor, resolveIslandFloor,
   type PredatingFloorManifest, type ResolvedPredatingFloor,
 } from "../src/floor-manifest.js";
 
@@ -124,5 +124,19 @@ describe("a founding floor that predates the floor format", () => {
     const flipped = priorBytes.slice(); flipped[10] ^= 1;
     expect(await resolveFoundingFloor(priorCid, async (cid) => (cid === priorCid ? flipped : fetch(cid)))).toMatchObject({ refusal: "floor-manifest-malformed", reason: expect.stringMatching(/differ from their CID/) });
     expect(await resolveFoundingFloor(priorCid, async (cid) => (cid === lares.cid ? null : fetch(cid)))).toMatchObject({ refusal: "floor-absent" });
+  });
+
+  test("the island mounts the founding record's prior floor (named none, or named the witness's own CID); a pin naming another prior floor refuses; a current floor reads", async () => {
+    expect(await resolveIslandFloor({ named: undefined, founding: priorCid, resolveByCid: fetch })).toMatchObject({ prior });
+    expect(await resolveIslandFloor({ named: null, founding: priorCid, resolveByCid: fetch })).toMatchObject({ prior });
+    expect(await resolveIslandFloor({ named: priorCid, founding: priorCid, resolveByCid: fetch })).toMatchObject({ prior });
+    expect(await resolveIslandFloor({ named: undefined, founding: null, resolveByCid: fetch })).toBeNull();
+    // A pin names a floor the founding witness does not: the strict reader answers, and the prior shape refuses.
+    expect(await resolveIslandFloor({ named: priorCid, founding: "e".repeat(64), resolveByCid: fetch })).toMatchObject({ refusal: "floor-manifest-malformed" });
+    const current: FloorManifest = { ...manifest, snapshots: { lararium: lararium.cid, lares: lares.cid } };
+    const currentCid = floorManifestCid(current);
+    cas.set(currentCid, floorManifestBytes(current));
+    expect(await resolveIslandFloor({ named: currentCid, founding: priorCid, resolveByCid: fetch })).toMatchObject({ manifest: current });
+    expect(await resolveIslandFloor({ named: undefined, founding: currentCid, resolveByCid: fetch })).toMatchObject({ manifest: current });
   });
 });
