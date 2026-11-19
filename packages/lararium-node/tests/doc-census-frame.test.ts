@@ -30,6 +30,7 @@ const reading: DocCensusReading = {
   rows: [{ id: "doc-a", store: "(root)", bytes: 10, clearChunks: 1, sealedChunks: 0, syncStates: 0, temps: 0, class: "orphan", read: "clear", names: [], why: "unnamed" }],
   counts: { current: 0, duplicate: 0, orphan: 1, "last-version": 0, "sealed-unread": 0 },
   unreadSealed: 0,
+  unreadSealedCopies: {},
 };
 
 describe("the doc-census frame", () => {

@@ -80,8 +80,18 @@ export interface DocCensusReading {
   readonly stores: ReadonlyArray<{ readonly name: string; readonly documents: number; readonly bytes: number }>;
   readonly rows: readonly DocCensusRow[];
   readonly counts: Readonly<Record<DocClass, number>>;
-  /** Sealed documents left unread: an orphan may be named inside one, so no orphan reads proven while any stands. */
+  /**
+   * Sealed DOCUMENTS left unread, one per id however many stores rest it: an orphan may be named inside one, so no
+   * orphan reads proven while any stands. A live name may reach one (it reads `current`), so this count runs at least
+   * the `sealed-unread` class.
+   */
   readonly unreadSealed: number;
+  /**
+   * The COPIES of those documents (one per store that rests one), by the class each copy reads: its `sealed-unread`
+   * share equals `counts["sealed-unread"]`, the rest name the copies a live name reaches, the island copies the root
+   * also holds, and the shapes the house marks last-version.
+   */
+  readonly unreadSealedCopies: Readonly<Partial<Record<DocClass, number>>>;
 }
 
 /** What the census reads of a document's content: a decoded document, or the reason none decodes. */
@@ -168,7 +178,9 @@ export async function censusDocuments(input: DocCensusInput): Promise<DocCensusR
     return { name, documents: of.length, bytes: of.reduce((s, r) => s + r.bytes, 0) };
   });
   const unreadSealed = [...readOf.values()].filter((r) => r === "sealed-unread").length;
-  return { stores, rows: out, counts, unreadSealed };
+  const unreadSealedCopies: Partial<Record<DocClass, number>> = {};
+  for (const r of out) if (r.read === "sealed-unread") unreadSealedCopies[r.class] = (unreadSealedCopies[r.class] ?? 0) + 1;
+  return { stores, rows: out, counts, unreadSealed, unreadSealedCopies };
 }
 
 /** A token that may spell a document id (base58). */

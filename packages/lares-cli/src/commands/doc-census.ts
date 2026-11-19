@@ -55,7 +55,13 @@ export function docCensusLines(c: DocCensusReading): string[] {
     out.push(`unnamed (${unnamed.length}): no live name reaches these`);
     for (const r of unnamed) out.push(`  ${r.id}  ${r.store}  ${sizeOf(r.bytes)}  ${r.why ?? "unnamed"}`);
   }
-  if (c.unreadSealed > 0) out.push(`${c.unreadSealed} sealed document(s) stand unread: an orphan may be named inside one, so no orphan reads proven until each opens`);
+  if (c.unreadSealed > 0) {
+    // Documents (one per id) and copies (one per store) apart; the `sealed-unread` share reads the class line's count.
+    const byClass = CLASS_ORDER.filter((cls) => (c.unreadSealedCopies[cls] ?? 0) > 0);
+    const copies = byClass.reduce((s, cls) => s + c.unreadSealedCopies[cls]!, 0);
+    const split = [...byClass].sort((a, b) => (a === "sealed-unread" ? -1 : b === "sealed-unread" ? 1 : 0)).map((cls) => `${c.unreadSealedCopies[cls]} ${cls}`).join(" · ");
+    out.push(`${c.unreadSealed} sealed document(s) stand unread in ${copies} cop(ies) across the stores: ${split}; an orphan may be named inside one, so no orphan reads proven until each opens`);
+  }
   return out;
 }
 
