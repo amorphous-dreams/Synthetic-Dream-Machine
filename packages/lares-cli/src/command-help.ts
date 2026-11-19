@@ -545,14 +545,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares realm add <pet> <slug>"],
   },
   surface: {
-    usage: "usage: lares surface init|check|open|commit|face [--face N | --realm <slug>] [--launch] [-m <seam>]",
+    usage: "usage: lares surface init|check|open|commit|face [--face N | --realm <realm pet name>] [--launch] [-m <seam>]",
     synopsis:
       "THE FACE POOL — each face's private planes rest under projections/faces/<pet name>/ (wiki, canon, stage, margins, recovery), " +
       "and that root holds the face's one git working tree. Git runs here with an empty global config and no system config. " +
       "It runs on this machine: with no LAR_ROOT, the container house's pools rest under LARES_HOUSE/projections, its paths print " +
       "as the host spells them, and the vessel answers only a face no label under projections/face-labels/ settles. A wiki several faces " +
-      "share rests once, in its REALM pool (projections/wikis/<slug>/, or the workspace its share row names), under the realm's own " +
-      "identity, never a face's; --realm <slug> names it.",
+      "share rests once, in its REALM's folder (projections/realms/<realm pet name>/wikis/<slug>/, or the workspace its share row names), " +
+      "each wiki folder its own git tree under the wiki's identity, never a face's; --realm <realm pet name> names the realm.",
     details: [
       "  lares surface init     make the worn (or named) face's root a pool: .git (0700), the house's ignore list, a local author, the roster hook",
       "  lares surface check    the roster witness over the repo standing here; exit 1 names each breach (the pre-commit hook runs it)",
@@ -561,52 +561,54 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  lares surface face     the face the house resolves and its pet name (the host asks the vessel this alone)",
     ],
     examples: ["lares surface init", "lares surface open --launch", "lares surface commit -m sitting-close", "lares surface check --face 1"],
-    flags: ["--face N   face index (the worn face where absent)", "--realm <slug>   (init, check, commit) the shared wiki's realm pool, not a face's", "--launch   (open) run the window line on this machine", "-m <seam>   (commit) the seam the subject names (by-hand where absent)"],
-    next: ["lares surface open --launch", "lares surface init --realm notes   # a shared wiki's one pool", "lares shore   # a path that reads apart stands off the house"],
+    flags: ["--face N   face index (the worn face where absent)", "--realm <realm pet name>   (init, check, commit) each wiki pool the realm holds, not a face's", "--launch   (open) run the window line on this machine", "-m <seam>   (commit) the seam the subject names (by-hand where absent)"],
+    next: ["lares surface open --launch", "lares surface init --realm notes   # each wiki of the realm its own git tree", "lares shore   # a path that reads apart stands off the house"],
     meme: "lar:///ha.ka.ba/kahua/memory/project/face-pools",
   },
   "surface init": {
-    usage: "usage: lares surface init [--face N | --realm <slug>]",
+    usage: "usage: lares surface init [--face N | --realm <realm pet name>]",
     synopsis:
       "Make the worn (or named) face's root, projections/faces/<pet name>/, a git working tree: .git inside it at 0700; .git/info/exclude carries the " +
       "house's one ignore list (HOUSE_IGNORED: .vscode/, .shore/, temp/, *.orphans/, the atomic writer's temps) while .meta, .kapae, .mem and .tid stay " +
       "committable; local config sets user.name to the pet name, user.email to <slug>@face.invalid and commit.gpgsign=false, never a global config; " +
       "a pre-commit hook runs `lares surface check`. A second init changes nothing and says already; a hook of another hand stands, named. " +
-      "--realm <slug> makes a shared wiki's realm pool instead, the folder standing at the workspace its share row names, else projections/wikis/<slug>/: " +
-      "the same block plus its top's recovery/ and temp/, author <slug> <slug>@realm.invalid (the realm's identity, never a face's), the same hook. " +
-      "A workbench that stands nowhere yet, or the daemon wiki, refuses by name.",
+      "--realm <realm pet name> makes EACH wiki folder the realm holds its own pool instead (.git at the folder's top, never one tree over the " +
+      "realm), each at the workspace its share row names, else projections/realms/<realm pet name>/wikis/<slug>/: the same block plus its top's " +
+      "recovery/ and temp/, author <slug> <slug>@realm.invalid (the wiki's identity, never a face's), the same hook. A wiki folder standing nowhere " +
+      "yet is named and left; a realm no label names, or whose wikis all stand nowhere, refuses by name.",
     examples: ["lares surface init", "lares surface init --face 1", "lares surface init --realm notes"],
-    flags: ["--face N   face index (the worn face where absent)", "--realm <slug>   the shared wiki's realm pool (not beside --face)"],
+    flags: ["--face N   face index (the worn face where absent)", "--realm <realm pet name>   each wiki pool the realm holds (not beside --face)"],
     next: ["lares surface open --launch"],
   },
   "surface check": {
-    usage: "usage: lares surface check [--face N | --realm <slug>]",
+    usage: "usage: lares surface check [--face N | --realm <realm pet name>]",
     synopsis:
       "The roster witness over the repo standing at this directory (or the named face's pool). It refuses a repo top holding face-labels/, " +
-      "kahua-index.toml, share.tid, kahua-pending.json or another face's root; any repo holding projections/ or config/; and an author email or " +
+      "realm-labels/, kahua-index.toml, share.tid, kahua-pending.json or another face's root; any repo holding projections/ or config/, or spanning a " +
+      "realm's wikis (a repo at realms/<realm pet name>/); and an author email or " +
       "signing key another face pool in the house carries. It reads local config alone and exits 1 naming each breach. From a realm pool " +
-      "(or --realm <slug>) it also refuses a faces/ folder, an author naming a face's pet name or @face.invalid, and any remote while the share " +
+      "(or --realm <realm pet name>, over each of its wiki pools) it also refuses a faces/ folder, an author naming a face's pet name or @face.invalid, and any remote while the share " +
       "row names only this house's own faces (or no row stands): a cabal of one's realm stays local. A row naming a member no face here wears warns instead.",
     examples: ["lares surface check", "lares surface check --face 1 --json", "lares surface check --realm notes"],
-    flags: ["--face N   check that face's pool wherever this runs", "--realm <slug>   check that realm pool wherever this runs"],
+    flags: ["--face N   check that face's pool wherever this runs", "--realm <realm pet name>   check each wiki pool of that realm wherever this runs"],
   },
   "surface open": {
     usage: "usage: lares surface open [--face N] [--launch]",
     synopsis:
       "Print the one window line: `code -n` over the worn face's root and the realm pools it belongs to (each wiki it keeps a margin or a " +
-      "recovery folder for, where that wiki's workbench mirror stands). --launch runs it. It writes no workspace file.",
+      "recovery folder for, where that wiki's workbench folder stands in its realm). --launch runs it. It writes no workspace file.",
     examples: ["lares surface open", "lares surface open --launch"],
     flags: ["--face N   face index", "--launch   run the line on this machine"],
   },
   "surface commit": {
-    usage: "usage: lares surface commit [--face N | --realm <slug>] [-m <seam>]",
+    usage: "usage: lares surface commit [--face N | --realm <realm pet name>] [-m <seam>]",
     synopsis:
       "Keep the sitting: stage only the pool paths whose disk bytes equal the synced base (the house already agrees with them; a .meta rides " +
       "with its carrier, a removal stages where no base stands), and commit them under `lar:///surface.keeps.the-sitting/<seam> — N carriers`, " +
       "naming no face, the carrier URIs in the body, the author from the pool's local config. A path standing off reads apart by name and stays " +
-      "unstaged. It never pushes. --realm <slug> keeps the realm pool's sitting the same way, under the realm's author.",
+      "unstaged. It never pushes. --realm <realm pet name> keeps each wiki pool's sitting the same way, one commit per wiki tree, under each wiki's author.",
     examples: ["lares surface commit", "lares surface commit -m sitting-close", "lares surface commit --realm notes"],
-    flags: ["--face N   face index", "--realm <slug>   the shared wiki's realm pool", "-m <seam>   the seam the subject names, one slug (by-hand where absent)"],
+    flags: ["--face N   face index", "--realm <realm pet name>   each wiki pool the realm holds", "-m <seam>   the seam the subject names, one slug (by-hand where absent)"],
     next: ["lares shore   # each path that read apart"],
   },
   "surface face": {

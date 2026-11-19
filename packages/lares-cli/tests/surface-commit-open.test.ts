@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { carrierHash } from "@lararium/mesh";
-import { faceRoot, syncedTreeKey } from "@lararium/node";
+import { ensureRealmLabel, faceRoot, syncedTreeKey } from "@lararium/node";
 import { cmdSurface } from "../src/commands/surface.js";
 import { git, openSurfaceRig, plant, stubLaresOnPath, surfaceArgs, type SurfaceRig } from "./support/surface-rig.js";
 
@@ -150,15 +150,16 @@ describe("lares surface commit", () => {
 describe("lares surface open", () => {
   test("★ prints `code -n` over the worn face's root and the realm pools it belongs to, and writes no workspace file ★", async () => {
     plant(join(heron, "margins", "garden", "Mine.tid"), "title: Mine\n\nm\n");
-    plant(join(rig.projections, "wikis", "garden", "Shared.tid"), "title: Shared\n\ns\n");
+    ensureRealmLabel(rig.projections, "garden", null);   // the realm's default pet name: its slug
+    plant(join(rig.projections, "realms", "garden", "wikis", "garden", "Shared.tid"), "title: Shared\n\ns\n");
     plant(join(heron, "margins", "unwoven", "x.tid"), "x\n");    // a margin whose realm pool stands nowhere names no root
     const before = readdirSync(heron).sort();
     expect(await cmdSurface(surfaceArgs(["open"]), rig.doors)).toBe(0);
     const said = rig.said();
     expect(said).toContain("code -n");
     expect(said).toContain(heron);
-    expect(said).toContain(join(rig.projections, "wikis", "garden"));
-    expect(said).not.toContain(join(rig.projections, "wikis", "unwoven"));
+    expect(said).toContain(join(rig.projections, "realms", "garden", "wikis", "garden"));
+    expect(said).not.toContain("unwoven");
     expect(rig.launched).toEqual([]);
     expect(readdirSync(heron).sort()).toEqual(before);
     expect(readdirSync(rig.projections).some((n) => n.endsWith(".code-workspace"))).toBe(false);
