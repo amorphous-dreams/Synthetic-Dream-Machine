@@ -455,7 +455,7 @@ are flavors of one container mechanism, not separate types. Character Item slot
 count stays fixed at ''7+Strength''.
 
 ''D3 — Site (structure) capacity = XP+resource upgrade economy, not a fixed count.''
-Per OGA "Golden Age Item Upgrading" (`Our_Golden_Age.md:1079-1111`):
+Per OGA "Golden Age Item Upgrading" (`sdm/Our_Golden_Age/Our_Golden_Age.md:1079-1111`):
 a Hallmark / vehicle / domicile / Site carries ''base attributes like a''
 ''character'' and upgrades each attribute ''independently'' (XP + referee resources,
 doubling cost `n+1 = 2(n)`), ''decoupled from a single Level'' (the legacy UVG
@@ -774,6 +774,6 @@ history if ever needed.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rKYyD9rAZvW1luPVg08fsnYF7GZXPSwbbck0vCr3xbE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yorPnI8KFCmV-4JgIKxNK-sQKrkJqdZe5cTsFMG-2ew`>>
 
 <<^ code=`&#x0004;` to=`?`>>
