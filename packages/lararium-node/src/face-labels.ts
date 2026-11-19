@@ -123,8 +123,7 @@ export function readFaceBases(relation: string, projections: string): Record<str
 export function writeFaceBases(relation: string, bases: Readonly<Record<string, string>>, projections: string): boolean {
   if (!isFaceLabelRelation(relation)) return false;
   const sorted = Object.fromEntries(Object.entries(bases).filter(([, b]) => BASE.test(b)).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
-  // THE BYTES DECIDE, never the bases alone: a sidecar under any other tag reads as holding none, so the bases of a face holding
-  // none compare equal to it; the whole file compares, and a sidecar whose bytes differ takes this write under the named tag.
+  // THE BYTES DECIDE: the whole file compares, and a sidecar whose bytes differ takes this write.
   const body = `${JSON.stringify({ schema: FACE_BASES_SCHEMA, relation, bases: sorted }, null, 2)}\n`;
   let standing: string | null = null;
   try { standing = readFileSync(faceBasesPath(relation, projections), "utf8"); } catch { standing = null; }

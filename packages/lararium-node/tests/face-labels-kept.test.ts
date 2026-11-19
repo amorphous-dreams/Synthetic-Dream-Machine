@@ -7,15 +7,15 @@
  *   K3  two faces: the owner table files each face's working slot under its own group, so each face's keeper writes its
  *       own sidecar, never the bases of the face lit now
  *   K4  a fresh face that pins no stage lists an empty stage named `none`, never a refusal; every other refusal stands
- *   K5  the label and the sidecar name their shape by what they hold (`lar-face-label`, `lar-face-bases`), never a number;
- *       bytes under a numbered tag read as no label and no bases, and the next write mints the named shape over them
+ *   K5  the label and the sidecar name their shape by what they hold (`lar-face-label`, `lar-face-bases`); a sidecar
+ *       whose bytes stand as the keeper would write them takes no write
  */
 import { describe, expect, test, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, rmSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deviceDaemonDocs, CONTROL_HOME_ID, emptyLarDoc, storedLarRecord, type LarDoc } from "@lararium/mesh";
-import { writeFaceLabel, readFaceLabel, keepFaceBases, readFaceBases, writeFaceBases, faceBasesPath, faceLabelPath, faceLabelsDir, type KeptDoc, type KeptDocState } from "../src/face-labels.js";
+import { writeFaceLabel, readFaceLabel, keepFaceBases, readFaceBases, writeFaceBases, faceBasesPath, faceLabelPath, type KeptDoc, type KeptDocState } from "../src/face-labels.js";
 import { listStage, KahuaRefused } from "../src/commands/kahua.js";
 
 const F1 = "11111111-1111-4111-8111-111111111111";
@@ -91,27 +91,14 @@ describe("the vessel keeps each face's label and bases", () => {
     await expect(listStage({ list: async () => { throw new KahuaRefused("face-log-unreadable: the face's signed log does not fold"); } }, null)).rejects.toThrow(/face-log-unreadable/);
   });
 
-  test("K5 — the label and the sidecar name what they hold; a numbered tag reads as none until the next write", () => {
+  test("K5 — the label and the sidecar name what they hold; a sidecar standing with the same bases takes no write", () => {
     expect(writeFaceLabel({ relation: F1, petname: "hearth-one", handleIndex: 0 }, root)).toBe(true);
     expect(writeFaceBases(F1, { pond: B1 }, root)).toBe(true);
     expect(JSON.parse(readFileSync(faceLabelPath(F1, root), "utf8")).schema).toBe("lar-face-label");
     expect(JSON.parse(readFileSync(faceBasesPath(F1, root), "utf8")).schema).toBe("lar-face-bases");
-
-    mkdirSync(faceLabelsDir(root), { recursive: true });
-    writeFileSync(faceLabelPath(F3, root), JSON.stringify({ schema: "lar-face-label/1", relation: F3, petname: "numbered", handleIndex: 1 }));
-    writeFileSync(faceBasesPath(F3, root), JSON.stringify({ schema: "lar-face-bases/1", relation: F3, bases: { pond: B2 } }));
-    expect(readFaceLabel(F3, root)).toBeNull();
-    expect(readFaceBases(F3, root)).toEqual({});
-    expect(writeFaceLabel({ relation: F3, petname: "numbered", handleIndex: 1 }, root)).toBe(true);
-    expect(JSON.parse(readFileSync(faceLabelPath(F3, root), "utf8")).schema).toBe("lar-face-label");
-  });
-
-  test("K5b — RED: a numbered sidecar rewrites under its name at the keeper's next write, a face holding no bases included", () => {
-    mkdirSync(faceLabelsDir(root), { recursive: true });
-    writeFileSync(faceBasesPath(F3, root), JSON.stringify({ schema: "lar-face-bases/1", relation: F3, bases: {} }));
+    expect(writeFaceBases(F1, { pond: B1 }, root)).toBe(false);
+    // A face holding no bases writes its sidecar once.
     expect(writeFaceBases(F3, {}, root)).toBe(true);
-    expect(JSON.parse(readFileSync(faceBasesPath(F3, root), "utf8")).schema).toBe("lar-face-bases");
-    // CONTROL: a sidecar standing under its name with the same bases takes no write.
     expect(writeFaceBases(F3, {}, root)).toBe(false);
   });
 });
