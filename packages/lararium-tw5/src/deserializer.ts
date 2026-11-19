@@ -835,7 +835,11 @@ function fmtTomlValue(v: string | string[]): string {
     ).join(", ") + "]";
   }
   const s = String(v);
-  if (/^-?\d+$/.test(s) || s === "true" || s === "false") return s;
+  // BARE ONLY WHEN IT READS BACK. A string writes bare only where TOML reads the bare lexeme back to
+  // the same string: a TOML integer (no leading zero, no `-0`) inside the safe-integer range. `0310`
+  // written bare breaks the whole block on the next read; `-0` and a run past 2^53 read back respelled.
+  if (/^(?:0|-?[1-9]\d*)$/.test(s) && Number.isSafeInteger(Number(s))) return s;
+  if (s === "true" || s === "false") return s;
   return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\r/g, "\\r") + '"';
 }
 
