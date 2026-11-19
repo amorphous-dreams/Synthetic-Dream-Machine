@@ -212,6 +212,8 @@ services:
       LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json
       # THE PŪLAMA (road L47e). Set by the host shim when LARES_PULAMA=1, empty otherwise: empty, the vessel holds custody
       # itself; set, it keeps no key and asks the standing pūlama for row operations over the socket below.
+      # The wire probe (open-node-vessel.ts): `LAR_WIRE_LOG=1` on the shim's call logs each share verdict, for one diagnostic compose.
+      LAR_WIRE_LOG: ${LAR_WIRE_LOG:-}
       LAR_PULAMA_SOCKET: ${LAR_PULAMA_SOCKET:-}
       LAR_KUKULU_OFFER: ${LAR_KUKULU_OFFER:-}
       # THE KEEP WORKSPACE (packages/lares-cli/src/keep-config.ts). `vault unlock` runs in here and offers the keep lei where
