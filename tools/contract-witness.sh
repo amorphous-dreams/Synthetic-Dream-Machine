@@ -258,14 +258,22 @@ else bad "B's material reachable from A's root"; fi
 # ruling 2026-11-18, verbatim: `"one pool per face keyed by pet name"`), so a record that names a path inside that
 # root (a checkpoint row, a journal line, a watch's log line) carries the name as that folder's segment. That segment
 # reads as the folder; the pet-name standing anywhere else in a file (a field's value, a bare word) still reads red.
+# THE REALM ROOT: a realm's wikis rest under the local pet name the operator gives it, `projections/realms/<realm pet name>/`
+# (operator ruling 2026-11-19, verbatim: `"The filepath for realms should include their 'pet-name' to match faces."`), named in
+# `projections/realm-labels/<pet>.json` beside the face labels: a realm pet name reads local the same way, so its folder segment
+# and its label file stand aside, and the name anywhere else still reads red.
 cleartext_outside_label() {
-  grep -rlsP "(?<!projections/faces/)$1" "$2" 2>/dev/null | grep -vE "^$2/projections/face-labels/[0-9a-f-]+\.json\$"
+  grep -rlsP "(?<!projections/faces/|projections/realms/)$1" "$2" 2>/dev/null \
+    | grep -vE "^$2/projections/face-labels/[0-9a-f-]+\.json\$" | grep -vE "^$2/projections/realm-labels/[^/]+\.json\$"
 }
-step "CONTROL: the face-root exclusion reads the folder segment alone; the name as a value still reads"
-PLANT="$XFER/face-root-plant"; mkdir -p "$PLANT/projections/face-labels"
+step "CONTROL: the face-root and realm-root exclusions read the folder segment and the label alone; the name as a value still reads"
+PLANT="$XFER/face-root-plant"; mkdir -p "$PLANT/projections/face-labels" "$PLANT/projections/realm-labels"
 printf '{"path":"%s/projections/faces/%s/margins/lares"}\n' "$PLANT" "$B_PROBE" > "$PLANT/segment.json"
 printf '{"label":"%s"}\n' "$B_PROBE" > "$PLANT/value.json"
 printf '{"label":"%s"}\n' "$B_PROBE" > "$PLANT/projections/face-labels/0a1b2c3d-0000-4000-8000-000000000000.json"
+# THE REALM PLANT: a realm pet name as a folder segment and in its own label file stands aside, as a face's does.
+printf '{"path":"%s/projections/realms/%s/wikis/notes"}\n' "$PLANT" "$B_PROBE" > "$PLANT/realm-segment.json"
+printf '{"petName":"%s"}\n' "$B_PROBE" > "$PLANT/projections/realm-labels/$B_PROBE.json"
 if [ "$(cleartext_outside_label "$B_PROBE" "$PLANT")" = "$PLANT/value.json" ]; then ok
 else bad "the planted reads named: $(cleartext_outside_label "$B_PROBE" "$PLANT" | tr '\n' ' ')"; fi
 rm -rf "$PLANT"
