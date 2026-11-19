@@ -303,7 +303,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // founding, refuse to admit.
   const personaKelPrefix = face === 0 ? tiddlerText(tiddlerMap[PERSONA_KEL_PREFIX_TIDDLER]) : faceAnchors?.personaKelPrefix;
   if (!personaKelPrefix && face !== 0) {
-    throw new Error(`[lares fleet join answer] face ${face}'s anchors name no persona-KEL prefix — anchors written before that slot stood, so this face admits no device here.`);
+    throw new Error(`[lares fleet join answer] face ${face}'s anchors name no persona-KEL prefix, so this face admits no device here.`);
   }
   if (!personaKelPrefix) {
     throw new Error(`[lares fleet join answer] persona-KEL prefix missing from daemon doc — run \`lares vessel found --force\`.`);

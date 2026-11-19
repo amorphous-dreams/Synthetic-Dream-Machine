@@ -1158,7 +1158,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               requestId: context.invocation.requestId, facts: args["facts"], ask: args["ask"], vesselVerifyingKey: faceAtom().key,
             });
             if (unlicensed) throw new Error(`[daemon] seat-duties: ${unlicensed}`);
-            if (!kh) return { verb: "seat-duties", ran: false, reason: "no veil identity stands — this doc predates the veil-born founding; re-found the face." };
+            if (!kh) return { verb: "seat-duties", ran: false, reason: "no veil identity stands at the waking floor; light a face." };
             const ownEdge = daemonAuth.deviceEdge;
             if (!ownEdge) throw new Error("[daemon] seat-duties: this vessel carries no device edge of its own, so it names no fleet.");
             const facts = args["facts"] as FleetSeatFacts | undefined;
@@ -1222,7 +1222,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             }
 
             // The veil seats the joinee and carries the face's grant events.
-            if (!kh) return { verb: "face-join", admitted: false, reason: "no veil identity stands — this doc predates the veil-born founding; re-found the face." };
             const veil = kh;
             const joinProvider = {
               receiveContactCard: (bytes: Uint8Array) => veil.receiveContactCard(bytes),

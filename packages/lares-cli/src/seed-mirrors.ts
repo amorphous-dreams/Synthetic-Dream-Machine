@@ -63,7 +63,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:f
 import { dirname, join, resolve } from "node:path";
 import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
 import {
-  larProjectionsHome, larConfigHome, isPrivateProjectionSlug, staleFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir,
+  larProjectionsHome, larConfigHome, isPrivateProjectionSlug, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir,
   FACES_PROJECTION_DIR, FACE_PLANES, faceSegmentRefusal, labelledRelations, readFaceLabel, readFaceBases,
   mirrorFiles, siteWaveFile, liveLay as layWave, type MirrorWave, type MirrorLaid, realmFoldersOnDisk } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh";
@@ -179,11 +179,6 @@ export interface MirrorSeedResult {
   /** Each face root the lay refused by name (unmatched, doubly named, colliding, unread), by its folder: it landed nothing, and the rest went on. */
   readonly refusals: ReadonlyArray<{ readonly face: string; readonly code: string; readonly message: string }>;
   readonly minted: readonly string[];
-  /**
-   * Each pre-face-root folder the projections root still holds (`bags/daemon-<F>`, `bags/kahua-<F>`): it laid nothing and minted
-   * nothing, since its face's planes rest under the face root (`root`, where a face carries that relation and a pet name).
-   */
-  readonly setAside: ReadonlyArray<{ readonly folder: string; readonly face: string | null; readonly root?: string }>;
   /** Whether the projections root held any mirror the leg reads. */
   readonly any: boolean;
 }
@@ -268,11 +263,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   const onDisk = realmFoldersOnDisk(projections);
   const wikiBase = new Map(onDisk.filter((f) => f.plane === "wikis").map((f) => [f.slug, f.base] as [string, string]));
   const bagBase = new Map<string, string>([...folders(bagsDir).map((n) => [n, bagsDir] as [string, string]), ...onDisk.filter((f) => f.plane === "bags").map((f) => [f.slug, f.base] as [string, string])]);
-  // A PRE-FACE-ROOT FOLDER (`bags/daemon-<F>`, `bags/kahua-<F>`) names one face's memory, which rests under its face root now:
-  // it lays nothing and mints no bag named for a relation; the lay names it, for the operator to set aside.
-  const staleBags = [...bagBase].filter(([n]) => staleFaceFolder(n) !== null).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-  for (const [n] of staleBags) bagBase.delete(n);
-  const wikiFolders = [...wikiBase.keys()].filter((n) => staleFaceFolder(n) === null), bagFolders = [...bagBase.keys()].sort();
+  const wikiFolders = [...wikiBase.keys()], bagFolders = [...bagBase.keys()].sort();
   // EACH FACE'S ONE ROOT (`faces/<pet name>/`): its daemon working layer, its daemon canon, its kahua stage and its margins.
   // Its `recovery/` and `temp/` hold drafts and temp files that place back as files, never through a layer: the lay reads neither.
   const faceFolders = folders(facesDir).filter((seg) => mirrorFiles(join(facesDir, seg), [FACE_PLANES.recovery, FACE_PLANES.temp]).length > 0);
@@ -282,8 +273,8 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     : folders(canonWikis).filter((n) => doors.sourced(n) && mirrorFiles(join(canonWikis, n), ["recovery", TEMP_LAYER_DIR]).length > 0);
   const houseBags = bagFolders.filter((n) => !isPrivateProjectionSlug(n) && !doors.sourced(n));
   const houseWikis = wikiFolders.filter((n) => !isPrivateProjectionSlug(n) && !doors.sourced(n));
-  const empty: MirrorSeedResult = { applied: apply, layers: [], kahua: { preview: [], lifted: [], pending: [], waiting: [], refused: [] }, waiting: [], refusals: [], minted: [], setAside: [], any: false, benchWaiting: [] };
-  if (faceFolders.length === 0 && staleBags.length === 0 && (opts.kahuaOnly || houseBags.length + houseWikis.length + sourcedBenches.length === 0)) return empty;
+  const empty: MirrorSeedResult = { applied: apply, layers: [], kahua: { preview: [], lifted: [], pending: [], waiting: [], refused: [] }, waiting: [], refusals: [], minted: [], any: false, benchWaiting: [] };
+  if (faceFolders.length === 0 && (opts.kahuaOnly || houseBags.length + houseWikis.length + sourcedBenches.length === 0)) return empty;
 
   // ── THE FACE MAP: each face root lands on the ONE face whose pet name makes that folder. ──
   let faces: BundleVesselFace[] = [];
@@ -291,11 +282,6 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   catch (e) { throw new MirrorRefused("seed-faces-unread", `the projections root holds mirrors and the faces this vessel wears would not read (${e instanceof Error ? e.message : String(e)}): stand the vessel and unlock its key (\`lares vessel stand\`, then \`lares vault unlock\`), and lay again`); }
   /** The folder each face's pet name makes, or the segment rule's refusal (another face's case-twin among them). */
   const named = faces.filter((f) => f.petname !== null && f.petname !== "");
-  const setAside = staleBags.map(([n, base]) => {
-    const owner = named.find((f) => f.relation === staleFaceFolder(n)!.relation);
-    const face = owner === undefined ? null : owner.petname!.normalize("NFC");
-    return { folder: join(base, n), face, ...(face !== null ? { root: join(facesDir, face) } : {}) };
-  });
   const segmentOf = new Map<number, { segment: string } | { code: string; why: string }>();
   for (const f of named) {
     const others = named.filter((o) => o.handleIndex !== f.handleIndex).map((o) => o.petname!.normalize("NFC")).filter((o) => faceSegmentRefusal(o) === null);
@@ -567,7 +553,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   } else if (apply && kahuaPreview.length === 0) writeKahuaPending([]);
   const stillWaiting = apply ? pending : kahuaLiftable;
 
-  return { applied: apply, layers, kahua: { preview: kahuaPreview, lifted, pending: stillWaiting, waiting: kahuaElsewhere, refused: kahuaRefused }, waiting: waitingNow(), refusals, minted, setAside, any: true, benchWaiting, ...(shares !== undefined ? { shares } : {}) };
+  return { applied: apply, layers, kahua: { preview: kahuaPreview, lifted, pending: stillWaiting, waiting: kahuaElsewhere, refused: kahuaRefused }, waiting: waitingNow(), refusals, minted, any: true, benchWaiting, ...(shares !== undefined ? { shares } : {}) };
 }
 
 /** The lines a person reads for a mirror leg's result. */
@@ -592,9 +578,6 @@ export function mirrorLines(r: MirrorSeedResult): { out: string[]; err: string[]
   if (r.shares !== undefined && (r.shares.moved + r.shares.pending > 0 || r.shares.workbenches.some(benchMoved))) {
     const benches = r.shares.workbenches.filter(benchMoved);
     out.push(`  shares: landed ${r.shares.moved} grant(s)${r.shares.moved > 0 && r.shares.carried > 0 ? ` (${r.shares.carried} reach their grantee at that face's next wear)` : ""}${r.shares.pending > 0 ? `; ${r.shares.pending} wait for a shut face` : ""}${benches.length > 0 ? `; workbench seats: ${benches.map((w) => `${w.slug} (${w.members} member face(s)${w.founded ? ", founded now" : ""}${w.seated > 0 ? `, ${w.seated} seated now` : ""}${w.removed > 0 ? `, ${w.removed} unseated` : ""})`).join(", ")}` : ""}`);
-  }
-  for (const x of r.setAside) {
-    out.push(`mirrors: set aside ${x.folder}: a folder from before the face roots, keyed by a face's relation; it lays nothing and mints no bag, since ${x.root !== undefined ? `the face "${x.face}" keeps those planes in ${x.root}` : "a face's planes rest under projections/faces/<pet name>/ now"}: once that root reads true, burn the folder`);
   }
   for (const b of r.minted) out.push(`  ${r.applied ? "minted" : "would mint"} ${b} (this vessel held no such wiki)`);
   for (const t of r.layers) {

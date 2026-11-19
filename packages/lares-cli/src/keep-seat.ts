@@ -18,15 +18,15 @@
  * THE CUT SIGNS ITS ROSTER. Whoever writes the remote reads the public half and could seal a roster of their own to it, so the
  * mint derives a signing seed from the same key the slot tree wraps: the seed rests here beside the seat (0600, local alone,
  * never in a bundle), each cut signs its bundle id and sealed roster, and a restore derives the verify key from the slot it
- * opened and refuses a roster the house never signed (`keep-roster-unsigned`). A house that lost its seed (a seat from before
- * the signature, an adopted seat) takes it back at the next proved unlock, which opens the seat anyway.
+ * opened and refuses a roster the house never signed (`keep-roster-unsigned`). A house that holds no seed (an adopted seat)
+ * takes it at the next proved unlock, which opens the seat anyway.
  *
  * AN UNMOVED HOUSE CUTS THE SAME BUNDLE. A seal to a public half draws fresh randomness, so the seat keeps its last seal beside a
  * digest of the roster it covers and a vouch over both, each keyed by the house's signing seed (ciphertext and keyed digests,
  * never the roster): a re-cut of the same roster hands back the same bytes only where the vouch answers, and an unmoved keep
  * spends nothing. THE VOUCH GUARDS ACCIDENTAL AND WRITE-ONLY SWAPS: a corrupted cache, or a hand that writes the config home but
  * cannot read it. A vouch that fails refuses the cut by name (`keep-roster-cache-unvouched`), so a swap leaves a trace; a cache
- * with no vouch (a cut from before it) re-seals. A hand that READS the config home holds the signing seed itself, and no vouch
+ * with no vouch re-seals. A hand that READS the config home holds the signing seed itself, and no vouch
  * stands against it.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
@@ -85,9 +85,6 @@ function readResting(): RestingSeat | null {
   let text: string;
   try { text = fromPulamaLine(readFileSync(keepSeatPath(), "utf8")); } catch (e) { if (e instanceof KeepSeatRefused) throw e; return null; }
   const read = decodeKeepSeat(text);
-  // A SEAT FROM BEFORE THE REMOTE STRETCH guards its secret at custody's cost alone and signs nothing: it reads as none, so the
-  // next proved unlock seats a fresh pair over it.
-  if (read.reading === "unstretched") return null;
   if (read.reading !== "readable") throw new KeepSeatRefused("keep-seat-unreadable", `${keepSeatPath()} reads no keep pair (${read.why}); the bundle a keep cut before carries the seat whole: restore it from there`);
   let lastRoster: LastRosterSeal | null = null;
   let signingSeed: Uint8Array | null = null;

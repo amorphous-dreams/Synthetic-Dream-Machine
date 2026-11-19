@@ -400,7 +400,7 @@ lares rite keep --workspace house-backup --face 0               # on the host, a
 lares rite receipts --face 0                                     # conferre reads the keep's tessera par
 ```
 
-''Where an answer departs from the road.'' The parity's compare exits 0 on `par` and 1 naming each difference; both houses stand at one revision, so a row the import stood off reads red there too, and the operator settles it by hand (`lares meme get`, then `lares meme put` with its `--base`) before the swap. An import whose route opens no slot of the bundle's keep seat refuses `keep-route-refused` before anything moves: present the passphrase or paper sheet the old house's keep sealed under. An import with no terminal to ask refuses `keep-route-absent`. A bundle a keep cut before the keep pair carries no `keep-seat.json` and refuses `bundle-keep-key-burned`: keep again on the standing house, pull the clone, and import that keep. Every line up to the swap's `down` leaves `~/.lares` as it stood, so a rollback there runs `down`, `unset LARES_HOUSE` and `up` on the standing house. After the swap the rollback runs `down` (and `pulama down` once the pūlama stands), `mv ~/.lares ~/.lares-next`, `mv ~/.lares-prior ~/.lares`, then `up`; `~/.lares-prior` stands whole until the operator burns it.
+''Where an answer departs from the road.'' The parity's compare exits 0 on `par` and 1 naming each difference; both houses stand at one revision, so a row the import stood off reads red there too, and the operator settles it by hand (`lares meme get`, then `lares meme put` with its `--base`) before the swap. An import whose route opens no slot of the bundle's keep seat refuses `keep-route-refused` before anything moves: present the passphrase or paper sheet the old house's keep sealed under. An import with no terminal to ask refuses `keep-route-absent`. A bundle that carries no `keep-seat.json`, or one whose seat reads no keep pair, refuses `bundle-keep-seat-shape`: keep again on the standing house, pull the clone, and import that keep. Every line up to the swap's `down` leaves `~/.lares` as it stood, so a rollback there runs `down`, `unset LARES_HOUSE` and `up` on the standing house. After the swap the rollback runs `down` (and `pulama down` once the pūlama stands), `mv ~/.lares ~/.lares-next`, `mv ~/.lares-prior ~/.lares`, then `up`; `~/.lares-prior` stands whole until the operator burns it.
 
 ''The drill proves the restore.'' `tools/house-keep.test.mjs` walks the same road on two scratch houses: the keep pushes to a scratch remote, a brand-new house imports a fresh clone, a clone with one flipped byte refuses `bundle-hash-mismatch` before anything moves, and the parity reads par.
 
@@ -591,6 +591,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;z6j9iErZronIp4-PcBp79aAVqMBzaGAMQvIDznxQk4Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WRs3EMjgJ5NtLo20H6G3zy5-L1mJa1LdePasp7DMPdg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

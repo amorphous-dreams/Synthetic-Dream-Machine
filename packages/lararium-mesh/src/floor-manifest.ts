@@ -97,7 +97,7 @@ export class FloorWriteRefusal extends Error {
 }
 
 /** The manifest's slugs, sorted: the order its bytes encode and every reader walks. */
-export function floorSlugs(m: Pick<FloorManifest, "snapshots">): string[] {
+export function floorSlugs(m: FloorManifest): string[] {
   return Object.keys(m.snapshots).sort();
 }
 
@@ -146,8 +146,7 @@ export function readFloorManifest(bytes: Uint8Array):
       return { refusal: "floor-manifest-format", reason: formatLack(raw.format) };
     }
     if (Object.hasOwn(raw, "grammar")) {
-      if ("prior" in readPredatingFloorManifest(bytes)) throw new Error(`Manifest predates the floor format (it names a grammar field and a plugins digest): ${FLOOR_PREDATES_REFUSAL}`);
-      throw new Error("Manifest names a grammar field the floor no longer carries: the parser's bytes ride in the plugins offering");
+      throw new Error("Manifest names a grammar field: a floor carries none, and the parser's bytes ride in the plugins offering");
     }
     if (Object.keys(raw).length !== MANIFEST_KEYS.length || MANIFEST_KEYS.some((key) => !Object.hasOwn(raw, key))) {
       throw new Error("Manifest fields differ from the fixed format");
@@ -160,85 +159,6 @@ export function readFloorManifest(bytes: Uint8Array):
   } catch (error) {
     return { refusal: "floor-manifest-malformed", reason: String(error) };
   }
-}
-
-/**
- * KEEP — THE FOUNDING FLOOR THAT PREDATES THE FLOOR FORMAT. A standing house keeps its founding record, and a house founded
- * before the floor named a plugins offering names a floor of the prior shape: `grammar` beside `engine`, and `plugins` naming a
- * folded digest, never an offering record's address. Such a floor serves its snapshots alone; the island's own blobs carry the
- * plugins. Only the founding-record path reads it (`readFoundingFloorManifest`, `resolveFoundingFloor`): a pin, an accept, a
- * release and a cut refuse it through `readFloorManifest`. It verifies against its own canonical bytes (the prior key order,
- * snapshot slugs sorted), so a forged or malformed manifest still refuses.
- * BURNS once a local adopt has moved every standing house's pin onto a current floor, or the house re-founds.
- */
-export interface PredatingFloorManifest {
-  readonly format: typeof FLOOR_MANIFEST_FORMAT;
-  readonly engine: string;
-  readonly grammar: string;
-  readonly plugins: string;
-  readonly snapshots: Readonly<Record<string, string>>;
-}
-
-/** What the shadow read, the status line and the island log say of a founding floor in the prior shape. */
-export const FLOOR_PREDATES_LINE = "the founding floor predates the floor format; it serves snapshots alone until this house adopts a current floor";
-const FLOOR_PREDATES_REFUSAL = "a founding record's floor of the prior shape serves its snapshots alone, and no pin, accept, release or cut takes it";
-
-const PREDATING_KEYS = ["format", "engine", "grammar", "plugins", "snapshots"] as const;
-const PREDATING_SCALAR_KEYS = ["format", "engine", "grammar", "plugins"] as const;
-
-/** The prior shape's canonical bytes: its fixed fields in their fixed order, the snapshot slugs sorted. THROWS on a malformed field. */
-function predatingFloorManifestBytes(m: PredatingFloorManifest): Uint8Array {
-  for (const key of PREDATING_SCALAR_KEYS) {
-    const value = m?.[key];
-    if (typeof value !== "string" || value.length === 0 || CONTROL.test(value)) throw new Error(`Invalid floor manifest field: ${key}`);
-  }
-  if (m.format !== FLOOR_MANIFEST_FORMAT) throw new Error(formatLack(m.format));
-  const snaps = m.snapshots;
-  if (snaps === null || typeof snaps !== "object" || Array.isArray(snaps)) throw new Error("Invalid floor manifest field: snapshots");
-  const snapshots: Record<string, string> = {};
-  for (const slug of Object.keys(snaps).sort()) {
-    const cid = (snaps as Record<string, unknown>)[slug];
-    if (!SLUG.test(slug) || typeof cid !== "string" || cid.length === 0 || CONTROL.test(cid)) throw new Error(`Invalid floor manifest snapshot: ${slug}`);
-    snapshots[slug] = cid;
-  }
-  for (const slug of FLOOR_REQUIRED_SLUGS) if (!Object.hasOwn(snapshots, slug)) throw new Error(`Floor manifest names no ${slug} snapshot`);
-  return encoder.encode(JSON.stringify({ format: m.format, engine: m.engine, grammar: m.grammar, plugins: m.plugins, snapshots }));
-}
-
-/** Read a manifest of the prior shape at its exact canonical bytes. Never throws. */
-function readPredatingFloorManifest(bytes: Uint8Array):
-  | { readonly prior: PredatingFloorManifest }
-  | { readonly refusal: "floor-manifest-malformed"; readonly reason: string } {
-  try {
-    const value: unknown = JSON.parse(decoder.decode(bytes));
-    if (value === null || typeof value !== "object" || Array.isArray(value)) throw new Error("Manifest must hold one object");
-    const raw = value as Record<string, unknown>;
-    if (Object.keys(raw).length !== PREDATING_KEYS.length || PREDATING_KEYS.some((key) => !Object.hasOwn(raw, key))) {
-      throw new Error("Manifest fields differ from the prior fixed format");
-    }
-    const canonical = predatingFloorManifestBytes(raw as unknown as PredatingFloorManifest);
-    if (canonical.length !== bytes.length || canonical.some((byte, i) => byte !== bytes[i])) {
-      throw new Error("Manifest bytes differ from the prior canonical encoding");
-    }
-    return { prior: raw as unknown as PredatingFloorManifest };
-  } catch (error) {
-    return { refusal: "floor-manifest-malformed", reason: String(error) };
-  }
-}
-
-/**
- * The founding record's floor manifest: the current shape as `readFloorManifest` reads it, or, where that refuses as malformed,
- * the prior shape at its own canonical bytes (`prior`). Every other refusal stands. Only a reader of the floor the founding
- * record names calls this; a pin, an accept, a release and a cut read `readFloorManifest`.
- */
-export function readFoundingFloorManifest(bytes: Uint8Array):
-  | { readonly manifest: FloorManifest }
-  | { readonly prior: PredatingFloorManifest }
-  | { readonly refusal: "floor-manifest-format" | "floor-manifest-malformed"; readonly reason: string } {
-  const current = readFloorManifest(bytes);
-  if (!("refusal" in current) || current.refusal !== "floor-manifest-malformed") return current;
-  const prior = readPredatingFloorManifest(bytes);
-  return "prior" in prior ? prior : current;
 }
 
 export interface FloorSnapshot { readonly cid: string; readonly bytes: Uint8Array }
@@ -351,90 +271,31 @@ export interface ResolvedFloor {
   readonly snapshots: Readonly<Record<string, Readonly<Record<string, LarTiddlerRecord>>>>;
 }
 
-type FloorResolveRefusal = "floor-absent" | "floor-manifest-format" | "floor-manifest-malformed" | "floor-snapshot-cid-mismatch" | "floor-snapshot-malformed";
-
-/** A founding floor of the prior shape, resolved: its manifest and each slug's snapshot rows. It names no offering to read. */
-export interface ResolvedPredatingFloor {
-  readonly prior: PredatingFloorManifest;
-  readonly snapshots: Readonly<Record<string, Readonly<Record<string, LarTiddlerRecord>>>>;
-}
-
-/** The manifest's bytes at their CID, opened by `open`, then each snapshot it keys, re-hashed. Never throws. */
-async function resolveFloorBy<R>(
-  manifestCid: string,
-  resolveByCid: (cid: string) => Promise<Uint8Array | null>,
-  open: (bytes: Uint8Array) =>
-    | { readonly keyed: Readonly<Record<string, string>>; readonly as: (snapshots: ResolvedFloor["snapshots"]) => R }
-    | { readonly refusal: FloorResolveRefusal; readonly reason: string },
-): Promise<R | { readonly refusal: FloorResolveRefusal; readonly reason: string }> {
+export async function resolveFloor(manifestCid: string, resolveByCid: (cid: string) => Promise<Uint8Array | null>): Promise<
+  | ResolvedFloor
+  | { readonly refusal: "floor-absent" | "floor-manifest-format" | "floor-manifest-malformed" | "floor-snapshot-cid-mismatch" | "floor-snapshot-malformed"; readonly reason: string }> {
   try {
     const manifestBytes = await resolveByCid(manifestCid);
     if (!manifestBytes) return { refusal: "floor-absent", reason: `Floor manifest absent: ${manifestCid}` };
     if (!HEX64.test(manifestCid) || sha256HexBytesSync(manifestBytes) !== manifestCid) {
       return { refusal: "floor-manifest-malformed", reason: "Floor manifest bytes differ from their CID" };
     }
-    const read = open(manifestBytes);
-    if ("refusal" in read) return read;
+    const opened = readFloorManifest(manifestBytes);
+    if ("refusal" in opened) return opened;
+    const { manifest } = opened;
     const snapshots: Record<string, Readonly<Record<string, LarTiddlerRecord>>> = {};
-    for (const slug of Object.keys(read.keyed).sort()) {
-      const cid = read.keyed[slug]!;
+    for (const slug of floorSlugs(manifest)) {
+      const cid = manifest.snapshots[slug]!;
       const bytes = await resolveByCid(cid);
       if (!bytes) return { refusal: "floor-absent", reason: `Floor snapshot ${slug} absent: ${cid}` };
       const snap = openFloorSnapshot(bytes, cid);
       if ("refusal" in snap) return { refusal: snap.refusal, reason: `${slug}: ${snap.reason}` };
       snapshots[slug] = snap.rows;
     }
-    return read.as(snapshots);
+    return { manifest, snapshots };
   } catch (error) {
     return { refusal: "floor-absent", reason: String(error) };
   }
-}
-
-export async function resolveFloor(manifestCid: string, resolveByCid: (cid: string) => Promise<Uint8Array | null>): Promise<
-  | ResolvedFloor
-  | { readonly refusal: FloorResolveRefusal; readonly reason: string }> {
-  return resolveFloorBy<ResolvedFloor>(manifestCid, resolveByCid, (bytes) => {
-    const opened = readFloorManifest(bytes);
-    if ("refusal" in opened) return opened;
-    return { keyed: opened.manifest.snapshots, as: (snapshots) => ({ manifest: opened.manifest, snapshots }) };
-  });
-}
-
-/**
- * The floor the founding record names, resolved: a current floor as `resolveFloor` reads it, or a floor of the prior shape
- * (`readFoundingFloorManifest`) with its snapshots alone. Only a reader of the founding record's own floor calls this.
- */
-export async function resolveFoundingFloor(manifestCid: string, resolveByCid: (cid: string) => Promise<Uint8Array | null>): Promise<
-  | ResolvedFloor
-  | ResolvedPredatingFloor
-  | { readonly refusal: FloorResolveRefusal; readonly reason: string }> {
-  return resolveFloorBy<ResolvedFloor | ResolvedPredatingFloor>(manifestCid, resolveByCid, (bytes) => {
-    const opened = readFoundingFloorManifest(bytes);
-    if ("refusal" in opened) return opened;
-    if ("prior" in opened) return { keyed: opened.prior.snapshots, as: (snapshots) => ({ prior: opened.prior, snapshots }) };
-    return { keyed: opened.manifest.snapshots, as: (snapshots) => ({ manifest: opened.manifest, snapshots }) };
-  });
-}
-
-/** The CIDs a founding floor of the prior shape names: the manifest's own and each snapshot's, slugs sorted. Its `plugins` names a digest, never bytes. */
-export function predatingFloorBlobCids(manifestCid: string, m: PredatingFloorManifest): string[] {
-  return [manifestCid, ...floorSlugs(m).map((slug) => m.snapshots[slug]!)];
-}
-
-/**
- * THE FLOOR AN ISLAND MOUNTS, resolved: the floor its manifest names, else the one its founding record's witness names; null
- * where neither names one. The founding record's own floor (none named, or the very CID the witness names, which a session's
- * recipe hands on) reads through `resolveFoundingFloor`; any other floor reads the current shape alone (`resolveFloor`).
- */
-export async function resolveIslandFloor(args: {
-  readonly named:        string | null | undefined;
-  readonly founding:     string | null | undefined;
-  readonly resolveByCid: (cid: string) => Promise<Uint8Array | null>;
-}): Promise<Awaited<ReturnType<typeof resolveFoundingFloor>> | null> {
-  const cid = args.named ?? args.founding;
-  if (typeof cid !== "string" || cid.length === 0) return null;
-  const foundingFloor = args.named === undefined || args.named === null || args.named === args.founding;
-  return foundingFloor ? resolveFoundingFloor(cid, args.resolveByCid) : resolveFloor(cid, args.resolveByCid);
 }
 
 /**
@@ -451,8 +312,8 @@ export function floorBlobCids(manifestCid: string, m: FloorManifest, offering?: 
 }
 
 /** Each snapshot's rows in the manifest's slug order: the read-only layers the oracle floor stacks. */
-export function floorRecordsInOrder(floor: Pick<ResolvedFloor, "snapshots">): Readonly<Record<string, LarTiddlerRecord>>[] {
-  return Object.keys(floor.snapshots).sort().map((slug) => floor.snapshots[slug]!);
+export function floorRecordsInOrder(floor: ResolvedFloor): Readonly<Record<string, LarTiddlerRecord>>[] {
+  return floorSlugs(floor.manifest).map((slug) => floor.snapshots[slug]!);
 }
 
 /**
@@ -460,7 +321,7 @@ export function floorRecordsInOrder(floor: Pick<ResolvedFloor, "snapshots">): Re
  * names, or null where the floor carries no snapshot of it. The oracle's read face stacks every snapshot into one layer; a door
  * that reads ONE house canon bag from the floor (a face that holds no read on the live document) asks here.
  */
-export function floorCanonReader(floor: Pick<ResolvedFloor, "snapshots">): (bag: string) => Readonly<Record<string, LarTiddlerRecord>> | null {
+export function floorCanonReader(floor: ResolvedFloor): (bag: string) => Readonly<Record<string, LarTiddlerRecord>> | null {
   const prefix = bagUri("");
   return (bag) => {
     const slug = bag.startsWith(prefix) ? bag.slice(prefix.length) : "";

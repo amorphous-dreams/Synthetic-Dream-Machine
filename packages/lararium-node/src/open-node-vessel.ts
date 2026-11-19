@@ -2985,15 +2985,10 @@ async function prepareNodeBootOn(
     if (activeAtom) await shadowRing.refold();
     // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ──────────────
     // `vesselDyads` reads the ceremony-minted slots, the ONLY source — a bare delegation edge
-    // presents no dyad. The read only observes — but a FACE
-    // standing beside ZERO slots names a doc minted before the ruling, and that drift gets SAID at
-    // boot rather than discovered the day a fleet tries to gather it. Warn, never throw: the dyad
-    // read carries no caps, and the cure is a re-found, not a softened gate.
+    // presents no dyad. The read only observes: it carries no caps.
     // THE DYADS REST IN THE SECRET HOME (placement over patterns), never in the daemon document.
     const dyads = vesselDyads(secretHome?.handle.doc());
-    if (deviceEdge && dyads.length === 0) {
-      console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
-    } else if (dyads.length > 0) {
+    if (dyads.length > 0) {
       const bound = dyads.filter((d) => d.binding !== null).length;
       // THE DYAD SCOPE READS HERE (gap 4): a binding counts as this hearth's only where it verifies under the fleet
       // root the worn edge names AND roots on the hearth that edge binds (its seed charter's AID).

@@ -736,7 +736,7 @@ export class VesselIslandPoolCore {
     this._shadowRead.add(key);
     this._shadowChain = this._shadowChain.then(async () => {
       try {
-        const reading = await readFloorShadow({ manifestCid, readBytes: this._readContent ?? null, islandBlobs: record?.blobs, coreSha256: coreHash, foundingCid: genesisFloorCidOf(record) });
+        const reading = await readFloorShadow({ manifestCid, readBytes: this._readContent ?? null, islandBlobs: record?.blobs, coreSha256: coreHash });
         const prior = this._floorShadow ? readFloorShadowTally(await this._floorShadow.load()) : this._shadowTally;
         const tally = foldFloorShadowTally(prior, reading);
         this._shadowTally = tally;

@@ -11,7 +11,7 @@
  *   KC1  RED: a cache whose sealed bytes were swapped beside the standing digest and vouch refuses the cut by name
  *        (`keep-roster-cache-unvouched`), and nothing ships. CONTROL: an untouched cache re-cuts the very same bundle.
  *   KC2  RED: a cache whose forged bytes carry a vouch made under the wrong key refuses the cut the same way.
- *   KC3  CONTROL: a cache with no vouch at all (a cut from before the vouch) re-seals the house's own roster and ships that.
+ *   KC3  CONTROL: a cache with no vouch at all re-seals the house's own roster and ships that.
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { createHmac } from "node:crypto";

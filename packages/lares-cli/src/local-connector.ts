@@ -39,8 +39,7 @@ export function udsSocketPath(dataDir?: string | null): string {
   }
   // ONE DERIVATION, BOTH SIDES. The daemon binds `rendezvousPath` over its resolved substrate dir; this
   // reads the same function over the same default. A `--storage`/`LAR_STORAGE` override moves the
-  // daemon's dir and not this one — that divergence predates the relocation and is inherited here
-  // rather than widened; `lares vessel read` prints the resolved path when the two must be compared.
+  // daemon's dir and not this one; `lares vessel read` prints the resolved path when the two must be compared.
   return rendezvousPath({ root: dataDir ?? larDataDir(), uid: process.getuid?.() ?? 0 });
 }
 

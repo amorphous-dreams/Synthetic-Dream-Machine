@@ -217,8 +217,6 @@ export function encodeKeepSeat(seat: KeepSeat): string {
 
 export type KeepSeatReading =
   | { readonly reading: "readable"; readonly seat: KeepSeat }
-  /** A seat minted before the remote stretch: its passphrase slot derives at custody's cost alone, so a house re-seats it. */
-  | { readonly reading: "unstretched" }
   | { readonly reading: "unreadable"; readonly why: string };
 
 /** Read a seat back; every shape fault reads `unreadable` with its reason. */
@@ -228,7 +226,6 @@ export function decodeKeepSeat(text: string): KeepSeatReading {
   if (typeof raw !== "object" || raw === null) return { reading: "unreadable", why: "the seat holds no object" };
   const { publicKey, stretchSalt, slots } = raw as { publicKey?: unknown; stretchSalt?: unknown; slots?: unknown };
   if (typeof publicKey !== "string" || !/^[0-9a-f]{64}$/.test(publicKey)) return { reading: "unreadable", why: "the seat names no 32-byte public half" };
-  if (stretchSalt === undefined) return { reading: "unstretched" };
   if (typeof stretchSalt !== "string" || !/^[0-9a-f]{32}$/.test(stretchSalt)) return { reading: "unreadable", why: "the seat names no 16-byte stretch salt" };
   const tree = decodeSlotTree(new TextEncoder().encode(JSON.stringify(slots ?? null)));
   if (tree.reading !== "readable") return { reading: "unreadable", why: tree.reading === "unreadable" ? tree.why : "the seat holds no slot tree" };

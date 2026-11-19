@@ -94,10 +94,6 @@ async function seatAct<T>(act: () => Promise<T>): Promise<T> {
  *  face its key maps to. */
 const FACE_CANON_ROW_BAG = wikiBagUri("daemon");
 
-/** A mirror folder named for a face relation (`daemon-<F>`, `kahua-<F>`, the layout before face roots): the name itself ties a
- *  face to the house, so its slug rides no bundle path; a face's memory travels from its face root alone. */
-const namesFaceRelation = (slug: string): boolean => /^(daemon|kahua)-[0-9a-f]{8}-[0-9a-f]{4}-/.test(slug);
-
 /** One document a keep left to another holder (`BundleManifest.elsewhere`). */
 type BundleElsewhere = NonNullable<BundleManifest["elsewhere"]>[number];
 
@@ -613,7 +609,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   }
   for (const { slug: name, base } of onDisk.filter((f) => f.plane === "wikis")) {
     const src = join(base, name);
-    if (isPrivateProjectionSlug(name) || namesFaceRelation(name)) continue;
+    if (isPrivateProjectionSlug(name)) continue;
     const wikiBases = await baseFor(wikiSlotUri(name, "working"));
     addTree(src, `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: carriedFileTitle(base, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
   }
@@ -623,7 +619,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   const elsewhere: BundleElsewhere[] = [];
   if (canonWikis !== null && resolve(canonWikis) !== resolve(wikisDir)) {
     for (const name of folders(canonWikis)) {
-      if (doors.sourced?.(name) !== true || isPrivateProjectionSlug(name) || namesFaceRelation(name)) continue;
+      if (doors.sourced?.(name) !== true || isPrivateProjectionSlug(name)) continue;
       const bench = join(canonWikis, name);
       if (opts.houseOnly === true && inside(repoRoot, bench)) {
         elsewhere.push({ slug: name, layer: "wiki-working", bag: wikiSlotUri(name, "working"), holder: "checkout", path: relative(realish(repoRoot), realish(bench)).split(sep).join("/") });
@@ -639,17 +635,17 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
       // This directory has no disk mirror grant, so its files stay out of the house bundle.
       continue;
     }
-    if (isPrivateProjectionSlug(name) || namesFaceRelation(name)) continue;
+    if (isPrivateProjectionSlug(name)) continue;
     addTree(src, `bags/${name}`, (_rel, abs) => ({ face: null, bag: wikiBagUri(name), layer: "bag", title: carriedFileTitle(base, abs), rowKey: null }));
   }
   // A COLD WIKI'S PUTS RIDE NO MIRROR (cabal-realm#/the-workbench, OWED): the copy reads disk, so it names what disk cannot show.
   const woken = new Set(opts.woken ?? []);
-  const cold = (doors.coldWikis ? await doors.coldWikis().catch(() => [] as readonly string[]) : []).filter((slug) => !woken.has(slug) && !namesFaceRelation(slug));
+  const cold = (doors.coldWikis ? await doors.coldWikis().catch(() => [] as readonly string[]) : []).filter((slug) => !woken.has(slug));
   if (cold.length > 0) omissions.push({ kind: "cold-wikis", detail: `${[...cold].sort().join(", ")} stand${cold.length === 1 ? "s" : ""} cold (no island mounts ${cold.length === 1 ? "it" : "them"} now): a page a face put into a cold wiki since its last wake rests in its layer and projected nowhere, so no such page travels. Wearing each face that wrote there, wake the wiki (\`lares wiki hold <slug>\`), then export again`, items: [...cold].sort(), count: cold.length });
   // A WIKI THAT HOLDS NO PAGE carries by its catalog row alone; a sourced wiki rides git with its canon, and the daemon wiki is each face's own.
   let userWikis: string[] = [];
   if (doors.userWikis) {
-    try { userWikis = [...(await doors.userWikis())].filter((slug) => slug !== "daemon" && doors.sourced?.(slug) !== true && !isPrivateProjectionSlug(slug) && !namesFaceRelation(slug)).sort(); }
+    try { userWikis = [...(await doors.userWikis())].filter((slug) => slug !== "daemon" && doors.sourced?.(slug) !== true && !isPrivateProjectionSlug(slug)).sort(); }
     catch (e) { throw new BundleRefused("carry-wikis-unread", `the catalog's wiki list would not read (${e instanceof Error ? e.message : String(e)}), so a wiki that holds no page would stay behind unnamed: stand the vessel and export again`); }
   }
   if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });

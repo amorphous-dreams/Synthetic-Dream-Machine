@@ -248,8 +248,8 @@ export { generateOrLoadKeypair };
  * FAIL-CLOSED, AND SILENT ONLY WHERE SILENCE IS HONEST. `null` carries two unlike meanings and the reader
  * keeps them apart. NO SWITCH IS OWED — nothing worn, or the FOUNDING face worn (the pins already name it)
  * — is honest silence: the boot proceeds correctly and there is nothing to say. A SWITCH IS OWED AND
- * REFUSED — a non-founding face is worn but its anchors carry no mount material (written before the slot
- * existed, or held by a joinee that minted no edge of its own) — is not. A half-anchor never re-pins,
+ * REFUSED — a non-founding face is worn but its anchors carry no mount material (held by a joinee that
+ * minted no edge of its own) — is not. A half-anchor never re-pins,
  * because a partial switch would mount one face's planes under another face's authority, the one outcome
  * worse than not switching at all; but the vessel then comes up wearing the FOUNDING face's pins while the
  * operator expects the face they wore, and the cure (re-found that face) is invisible from the symptom. So

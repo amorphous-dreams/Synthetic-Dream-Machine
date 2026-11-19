@@ -435,10 +435,6 @@ const personaRosterCodec: RecordCodec = {
       const { tree, verifyingKey } = (l ?? {}) as { tree?: unknown; verifyingKey?: unknown };
       return typeof tree === "string" && /^[0-9a-f]{32}$/.test(tree) && typeof verifyingKey === "string" && /^[0-9a-f]{64}$/.test(verifyingKey);
     };
-    // A ROSTER OF BARE INDICES (`{ roots: [0] }`) predates the ward: refuse by name with its cure.
-    if (Array.isArray(roots) && roots.length > 0 && roots.every((r) => typeof r === "number")) {
-      throw new BrowserWardRefused("ward-face-predates", "this face predates the ward; found it again");
-    }
     if (!Array.isArray(roots) || !roots.every(line)) {
       throw new Error("[browser-custody] the persona-root roster holds no { roots: [{ tree, verifyingKey }] } record");
     }

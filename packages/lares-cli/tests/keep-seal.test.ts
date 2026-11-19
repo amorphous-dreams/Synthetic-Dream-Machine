@@ -12,9 +12,8 @@
  *        moves; the bundle carries no loose key, so nothing else opens its roster.
  *   KS3  a re-cut of an unmoved house names the same bundle (the seat keeps its last seal, so an unmoved keep spends nothing).
  *   KS4  RED: no face RELATION and no handle index rides the bundle in clear: a face's canon plane, its kahua heads, a census
- *        that names held saves and carriers by bag and document, a face whose stage would not read, and a legacy `daemon-<F>`
- *        folder in the wikis and bags mirrors all stand in the house, and no byte or path of the bundle names F, and no
- *        omission names `h<N>`. CONTROL: each omission still names its kind and count, and the canon row travels under its key.
+ *        that names held saves and carriers by bag and document and a face whose stage would not read all stand in the
+ *        house, and no byte or path of the bundle names F, and no omission names `h<N>`. CONTROL: each omission still names its kind and count, and the canon row travels under its key.
  */
 import { plantKeptSeat } from "./support/kept-seat.js";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -120,8 +119,6 @@ describe("the keep bundle seals its roster", () => {
   test("KS4 RED: no face relation and no handle index rides the bundle in clear", async () => {
     const RELATIONS = [F1, F2];
     put("projections/faces/otter-face/canon/ha.ka.ba/notes/canon-note.tid", tid("lar:///ha.ka.ba/notes/canon-note", "a canon note"));
-    put(`projections/realms/daemon-/wikis/daemon-${F1}/ha.ka.ba/notes/old.tid`, tid("lar:///ha.ka.ba/notes/old", "a legacy mirror"));
-    put(`projections/bags/daemon-${F2}/ha.ka.ba/notes/old.tid`, tid("lar:///ha.ka.ba/notes/old", "a legacy bag mirror"));
     const faces: BundleVesselFace[] = [
       { handleIndex: 0, petname: "otter-face", relation: F1, handle: "Otterhandle", seat: true, chair: "north-chair",
         kahua: [{ title: "lar:///ha.ka.ba/kahua/memory/heron", cid: "a".repeat(64), text: "remember the heron", fields: {}, taint: [], sources: [] }] },

@@ -308,7 +308,7 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
  * words stand in clear. Several faces share the copy, so the seam's subject names no face.
  */
 
-/** The top folders a workbench holds that ride no wave and no commit: an older layout's drafts, the temp layer. */
+/** The top folders a workbench holds that ride no wave and no commit: its recovery drafts, the temp layer. */
 export const WORKSPACE_SKIP: readonly string[] = ["recovery", TEMP_LAYER_DIR];
 
 /** The subject a workbench's sitting closes under: a `lar:` subject that names the close and never a face. */

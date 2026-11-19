@@ -48,7 +48,7 @@ export interface CarryBundle {
   readonly lineage:   readonly CarriageEntry[];
   readonly floorPins: readonly unknown[];
   readonly placeKel: readonly unknown[];
-  /** The carry/uncarry acts of every other place the board holds; absent on a bundle minted before they rode. */
+  /** The carry/uncarry acts of every other place the board holds; absent reads as none. */
   readonly peers?:    readonly CarriageEntry[];
   /** The board's roll anchors carry peers minted under a closed charter epoch. */
   readonly rollAnchors?: readonly RollAnchor[];

@@ -3,8 +3,7 @@
  *
  * THE SLOT IS THE ONLY READ SOURCE (Stage 0 ruling + the alpha collapse, 2026-09-06). A ceremony
  * mints a dyad slot wherever a face meets a device, so a doc holding a bare delegation edge and no
- * slot presents NO relationship — the edge carries the Binding Gate's authority, never a dyad. The
- * pre-ruling (device × root) fallback died with the back-compass: alpha owes none.
+ * slot presents NO relationship — the edge carries the Binding Gate's authority, never a dyad.
  *
  * The BINDING stays null until a group root signs one, and a dyad carrying `binding: null` joins no
  * fleet — `fleetOfGroup` enforces that rather than merely documenting it.
