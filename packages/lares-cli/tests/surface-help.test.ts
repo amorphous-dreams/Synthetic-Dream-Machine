@@ -15,10 +15,16 @@ async function run(argv: string[]): Promise<{ code: number; out: string }> {
 afterEach(() => vi.restoreAllMocks());
 
 describe("lares surface help", () => {
-  test("the command table holds `surface`, reading --face, --launch and --message", () => {
+  test("the command table holds `surface`, reading --face, --launch, --message and --realm", () => {
     const row = COMMANDS.find((c) => c.name === "surface");
     expect(row).toBeDefined();
-    for (const f of ["face", "launch", "message"]) expect(row!.accepts).toContain(f);
+    for (const f of ["face", "launch", "message", "realm"]) expect(row!.accepts).toContain(f);
+  });
+
+  test.each(["surface", "surface init", "surface check", "surface commit"])("%s names --realm <slug> in its usage and flags", (door) => {
+    const entry = COMMAND_HELP[door]!;
+    expect(entry.usage, door).toContain("--realm <slug>");
+    expect((entry.flags ?? []).some((f) => f.startsWith("--realm")), door).toBe(true);
   });
 
   test.each(["surface", "surface init", "surface check", "surface open", "surface commit", "surface face"])("%s keeps a help entry with examples", (door) => {

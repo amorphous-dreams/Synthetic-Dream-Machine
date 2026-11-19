@@ -1,9 +1,10 @@
 /**
  * surface-rig — the `lares surface` suites' one scratch house: a scratch LAR_ROOT (the shared fixture), its projections
  * and config homes, the doors the command reads (a named face, an in-memory or scratch Synced tree, a recorded launch),
- * a git runner under an empty global config, and a captured console.
+ * a git runner under an empty global config, and a captured console. A workspace a share row names rests at
+ * `<scratch root>/workspaces/<name>`, as the house binds it.
  */
-import { mkdirSync, writeFileSync, chmodSync, mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, writeFileSync, chmodSync, mkdtempSync, rmSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join, resolve } from "node:path";
 import { vi } from "vitest";
@@ -53,6 +54,7 @@ export function openSurfaceRig(): SurfaceRig {
     cwd: () => cwd,
     launch: (argv) => { launched.push([...argv]); return 0; },
     basePath: (file) => resolve(file),
+    workspace: (name) => { const dir = join(scratch.root, "workspaces", name); try { return statSync(dir).isDirectory() ? dir : null; } catch { return null; } },
   };
   return {
     scratch, projections, config, tree, launched, doors,
