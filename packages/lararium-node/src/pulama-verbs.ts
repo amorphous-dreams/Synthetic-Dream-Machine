@@ -8,8 +8,9 @@
  *            terms (one JSON object: `face`, `rite`, `branch`, and `returns` · `reach` · `head` · `after` · `confirm` · `lei`
  *            as the act needs): the face root signs one record there, and the answer carries it for the vessel to land
  *   keep-seat  read the route on a real terminal, hand it to the hand door: the route proves against the lit holder and a fresh
- *            keep pair mints under it; the verb writes the house's keep seat file (`keepSeat`, mode 0600) and prints the public
- *            half and the path alone, never the signing seed and never the slot tree
+ *            keep pair mints under it. The pūlama's container stands read-only with no config home, so the verb writes NOTHING:
+ *            it prints exactly ONE stdout line (`keepSeatLine`) the host's shim writes to the house's `keep-seat.json` at 0600, or
+ *            one refusal line and a nonzero exit
  *   lock · status · tessera · image <digest> | image '{"digest","seed"}'   one frame each, no route
  *
  * ── A ROUTE RIDES A REAL TERMINAL AND NOTHING ELSE ──────────────────────────────────────────────
@@ -22,6 +23,7 @@
  * prompt: a route typed then would prove nothing and admit nothing.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
+import { keepVerifyKeyOf } from "@lararium/mesh";
 import type { PulamaHandAnswer } from "./pulama-hand.js";
 
 /** The slice of a terminal a route reads through. */
@@ -87,8 +89,6 @@ export class PulamaVerbUsage extends Error { override readonly name = "PulamaVer
 export async function runHandVerb(verb: string, arg: string | readonly string[] | undefined, ports: {
   readonly ask: (frame: Readonly<Record<string, unknown>>) => Promise<PulamaHandAnswer>;
   readonly route: (label: string, what: string) => Promise<string>;
-  /** Write the house's keep seat file from a seated answer (the seat and its signing seed), and answer the path written. */
-  readonly keepSeat?: (answer: PulamaHandAnswer) => string;
 }): Promise<PulamaHandAnswer> {
   if (verb === "light") {
     const passphrase = await ports.route("pūlama route: ", "the pūlama's light");
@@ -130,18 +130,6 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     const passphrase = await ports.route(`pūlama route, to ${what} at "${String(t["branch"])}" for h${String(t["face"])}: `, "a lei");
     return ports.ask({ op: "lei", act, ...t, credentials: [{ kind: "passphrase", passphrase }] });
   }
-  if (verb === "keep-seat" && arg === undefined) {
-    if (!ports.keepSeat) throw new PulamaVerbUsage();
-    // THE DOOR READS FIRST: an unlit pūlama refuses here, before anybody types a route.
-    const standing = await ports.ask({ op: "status" });
-    if (standing["lit"] !== true) return { op: "keep-seat", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then seat the keep" };
-    const passphrase = await ports.route("pūlama route, to seat the house's keep pair: ", "a keep seat");
-    const answer = await ports.ask({ op: "keep-seat", credentials: [{ kind: "passphrase", passphrase }] });
-    if (answer["reading"] !== "seated") return answer;
-    // THE LINE CARRIES NO SECRET: the seed and the tree go to the file alone.
-    const path = ports.keepSeat(answer);
-    return { op: "keep-seat", reading: "seated", path, publicKey: answer["publicKey"] ?? JSON.parse(String(answer["seat"]))["publicKey"] };
-  }
   if ((verb === "lock" || verb === "status" || verb === "tessera") && arg === undefined) return ports.ask({ op: verb });
   if (verb === "image" && typeof arg === "string") {
     // `image '{"digest":…,"seed":…}'`: the host's structured frame, the seed line beside the digest; `image <digest>` carries none.
@@ -153,4 +141,42 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     return ports.ask({ op: "image", digest: f["digest"], ...(typeof f["seed"] === "string" ? { seed: f["seed"] } : {}) });
   }
   throw new PulamaVerbUsage();
+}
+
+/** One `keep-seat` line and the exit it leaves. */
+export interface KeepSeatLine { readonly line: string; readonly code: number }
+
+/**
+ * `pulama-main.js keep-seat`: the door first (an unlit pūlama asks no route), then the route on the pūlama's real terminal, then
+ * one keep-seat frame. Answers exactly ONE line and its exit: seated,
+ * `{"op":"keep-seat","reading":"seated","seat":{"publicKey","stretchSalt","tree","verifyKey"},"signer"}` (the tree as the house's
+ * keep-seat.json holds it, the signer the signing seed in hex) with exit 0; else
+ * `{"op":"keep-seat","reading":"refused","code","message"}` with exit 1. The shim writes the seated line verbatim to
+ * `keep-seat.json` (0600), which the house's CLI reads as its seat; nothing else of this verb reaches stdout.
+ */
+export async function keepSeatLine(ports: {
+  readonly ask: (frame: Readonly<Record<string, unknown>>) => Promise<PulamaHandAnswer>;
+  readonly route: (label: string, what: string) => Promise<string>;
+}): Promise<KeepSeatLine> {
+  const refused = (code: string, message: string): KeepSeatLine => ({ line: JSON.stringify({ op: "keep-seat", reading: "refused", code, message }), code: 1 });
+  try {
+    const standing = await ports.ask({ op: "status" });
+    if (standing["lit"] !== true) return refused("pulama-locked", "the pūlama stands unlit: light it first (`light`), then seat the keep");
+    let passphrase: string;
+    try { passphrase = await ports.route("pūlama route, to seat the house's keep pair: ", "a keep seat"); }
+    catch (e) {
+      const err = e as { reading?: unknown; name?: unknown; message?: unknown };
+      return refused(typeof err.reading === "string" ? err.reading : typeof err.name === "string" ? err.name : "route-unread", typeof err.message === "string" ? err.message : String(e));
+    }
+    const answer = await ports.ask({ op: "keep-seat", credentials: [{ kind: "passphrase", passphrase }] });
+    if (answer["reading"] !== "seated" || typeof answer["seat"] !== "string" || typeof answer["signingSeed"] !== "string") {
+      const code = typeof answer["reading"] === "string" ? answer["reading"] : "keep-seat-refused";
+      return refused(code, typeof answer["detail"] === "string" ? answer["detail"] : code === "no-slot-opens" ? "the route proves nothing against the pūlama's custody; nothing seated" : `the hand door seated nothing (${code})`);
+    }
+    const seat = JSON.parse(answer["seat"]) as { publicKey: string; stretchSalt: string; slots: unknown };
+    const verifyKey = Buffer.from(keepVerifyKeyOf(Uint8Array.from(Buffer.from(answer["signingSeed"], "hex")))).toString("hex");
+    return { line: JSON.stringify({ op: "keep-seat", reading: "seated", seat: { publicKey: seat.publicKey, stretchSalt: seat.stretchSalt, tree: seat.slots, verifyKey }, signer: answer["signingSeed"] }), code: 0 };
+  } catch (e) {
+    return refused("hand-door-unread", e instanceof Error ? e.message : String(e));
+  }
 }

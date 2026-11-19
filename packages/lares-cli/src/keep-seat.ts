@@ -41,6 +41,7 @@ import { KEEP_SEAT_FILE, REDECLARE_FILE, redeclareBytes, sealRedeclare, type Bun
 import { gatherCredentials } from "./custody-prompt.js";
 import { TEST_ROUTE_PASSPHRASE, testScratchRoot } from "./offline-custody.js";
 import { canPromptSecret } from "./prompt-secret.js";
+import { pulamaStands } from "./house-config.js";
 
 /** A keep seat act that refused, under its name. */
 export class KeepSeatRefused extends Error {
@@ -59,9 +60,27 @@ export function keepSeatPath(): string {
 /** The seat as it rests here: the pair, the last roster seal, and the signing seed its cuts sign under (null where none rests). */
 interface RestingSeat { readonly seat: KeepSeat; readonly lastRoster: LastRosterSeal | null; readonly signingSeed: Uint8Array | null; readonly testRoute: boolean }
 
+/**
+ * THE PŪLAMA'S LINE, as the host's shim writes it verbatim (`pulama-main.js keep-seat`): the seat (public half, stretch salt,
+ * tree, verify key) and its signer. It reads as the house's seat in the local form, and a verify key that answers no signer
+ * reads as no seat at all. Any other text passes as it stands.
+ */
+function fromPulamaLine(text: string): string {
+  let raw: { op?: unknown; reading?: unknown; seat?: { publicKey?: unknown; stretchSalt?: unknown; tree?: unknown; verifyKey?: unknown }; signer?: unknown };
+  try { raw = JSON.parse(text) as typeof raw; } catch { return text; }
+  if (raw.op !== "keep-seat") return text;
+  const seat = raw.seat;
+  if (raw.reading !== "seated" || typeof seat !== "object" || seat === null || typeof raw.signer !== "string" || !/^[0-9a-f]{64}$/.test(raw.signer)) {
+    throw new KeepSeatRefused("keep-seat-unreadable", `${keepSeatPath()} holds a pūlama keep-seat line that seated nothing; run \`pulama-main.js keep-seat\` through the shim again`);
+  }
+  const verifyKey = Buffer.from(keepVerifyKeyOf(Uint8Array.from(Buffer.from(raw.signer, "hex")))).toString("hex");
+  if (seat.verifyKey !== verifyKey) throw new KeepSeatRefused("keep-seat-unreadable", `${keepSeatPath()} holds a pūlama keep-seat line whose verify key answers no signer it carries`);
+  return JSON.stringify({ publicKey: seat.publicKey, stretchSalt: seat.stretchSalt, slots: seat.tree, signingSeed: raw.signer });
+}
+
 function readResting(): RestingSeat | null {
   let text: string;
-  try { text = readFileSync(keepSeatPath(), "utf8"); } catch { return null; }
+  try { text = fromPulamaLine(readFileSync(keepSeatPath(), "utf8")); } catch (e) { if (e instanceof KeepSeatRefused) throw e; return null; }
   const read = decodeKeepSeat(text);
   // A SEAT FROM BEFORE THE REMOTE STRETCH guards its secret at custody's cost alone and signs nothing: it reads as none, so the
   // next proved unlock seats a fresh pair over it.
@@ -262,6 +281,30 @@ async function custodyTakesTestRoute(): Promise<boolean> {
   return true;
 }
 
+/** What decides a house's road to a seat: whether a pūlama keeps its custody, and whether a vessel stands holding its key. */
+export interface HouseSeatFacts { readonly pulama: boolean; readonly vesselUnlocked: boolean }
+
+/**
+ * THE ROAD THIS HOUSE TAKES to seat its keep pair: a pūlama house seats at the pūlama's hand door (`pulama-main.js keep-seat`,
+ * through its shim, which writes the line); beside a vessel already holding its key an unlock asks nothing, so `lares vault reseat`
+ * proves the route; else `lares vault unlock`, whose proved route seats it.
+ */
+export function keepSeatRoad(facts: HouseSeatFacts): string {
+  if (facts.pulama) return "a pūlama keeps this house's custody, so its route rides the pūlama: run `pulama-main.js keep-seat` through the house's shim, which writes keep-seat.json from the line it prints";
+  if (facts.vesselUnlocked) return "the vessel already holds its key, so an unlock asks no route: run `lares vault reseat` with the steward's route, which proves it and seats the pair";
+  return "run `lares vault unlock` with the steward's route, whose proof seats the pair";
+}
+
+/** This house's facts, read without asking anything: the house's own pūlama signal, and the custody door's standing. */
+async function houseFacts(): Promise<HouseSeatFacts> {
+  if (pulamaStands()) return { pulama: true, vesselUnlocked: false };
+  try {
+    const { vesselStanding } = await import("./custody-door.js");
+    const s = await vesselStanding(null, 1_000);
+    return { pulama: false, vesselUnlocked: s.reading === "vessel" && s.unlocked };
+  } catch { return { pulama: false, vesselUnlocked: false }; }
+}
+
 /** What a cut seals to and signs under. */
 export interface CutSeat { readonly seat: KeepSeat; readonly signingSeed: Uint8Array }
 
@@ -277,10 +320,10 @@ export async function keepSeatForCut(): Promise<CutSeat> {
     resting = readResting();
   }
   if (resting !== null) {
-    if (resting.signingSeed === null) throw new KeepSeatRefused("keep-seat-unsigned", `the keep pair at ${keepSeatPath()} rests with no signing seed, so a cut would carry a roster no restore accepts: run \`lares vault unlock\` with the steward's route, which opens the seat and restores it, then cut again`);
+    if (resting.signingSeed === null) throw new KeepSeatRefused("keep-seat-unsigned", `the keep pair at ${keepSeatPath()} rests with no signing seed, so a cut would carry a roster no restore accepts: ${keepSeatRoad(await houseFacts())}, then cut again`);
     return { seat: resting.seat, signingSeed: resting.signingSeed };
   }
-  throw new KeepSeatRefused("keep-seat-absent", `this house rests no keep pair at ${keepSeatPath()}, and a cut seals the roster to one: run \`lares vault unlock\` with the steward's passphrase, which seats it, then cut again`);
+  throw new KeepSeatRefused("keep-seat-absent", `this house rests no keep pair at ${keepSeatPath()}, and a cut seals the roster to one: ${keepSeatRoad(await houseFacts())}, then cut again`);
 }
 
 /**

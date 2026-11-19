@@ -9,9 +9,9 @@
  *   node dist/src/pulama-main.js unadmit <digest>   the operator ends an image's admission: reads the route on a real terminal,
  *                                                   proves it, and rests a signed tombstone naming the admission's tessera
  *   node dist/src/pulama-main.js keep-seat          the operator seats the house's keep pair: reads the route on a real terminal,
- *                                                   proves it against the lit holder, and writes `<LAR_ROOT>/config/keep-seat.json`
- *                                                   (0600: the public half, the wrapped slot tree, the signing seed); prints the
- *                                                   public half and the path alone
+ *                                                   proves it against the lit holder, and prints exactly ONE stdout line (the seat
+ *                                                   and its signer) the host's shim writes to the house's keep-seat.json at 0600, or
+ *                                                   one refusal line and exit 1; it writes no file (the container stands read-only)
  *   node dist/src/pulama-main.js lock               drop every session, zero-fill every key
  *   node dist/src/pulama-main.js status             lit or not, faces open, sessions, attempts left, the reported image
  *   node dist/src/pulama-main.js image <digest>     the host shim reports the image digest it raises; as
@@ -38,9 +38,7 @@
  */
 import { chmodSync, mkdirSync, rmSync } from "node:fs";
 import { connect, createServer } from "node:net";
-import { dirname, join } from "node:path";
-import { atomicWriteFileSync } from "./fs-atomic.js";
-import { larConfigHome } from "./vessel-paths.js";
+import { dirname } from "node:path";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { FsCustodyIo } from "./custody-io.js";
 import { PULAMA_SESSION_DERIVES, kukuluGate } from "./kukulu-gate.js";
@@ -50,7 +48,7 @@ import { loadIdentityAnchors } from "./identity-anchors.js";
 import { loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { pulamaAdmissions } from "./pulama-admit.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "./pulama-hand.js";
-import { PulamaVerbUsage, readRoute, runHandVerb } from "./pulama-verbs.js";
+import { PulamaVerbUsage, keepSeatLine, readRoute, runHandVerb } from "./pulama-verbs.js";
 import { servePulama } from "./pulama-server.js";
 import { listenPulama, socketPathFits } from "./pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "./pulama-state.js";
@@ -132,19 +130,6 @@ async function serve(): Promise<void> {
   process.on("SIGINT", () => leave("SIGINT"));
 }
 
-/**
- * Write the house's keep seat from a seated answer: the seat as the bundle carries it, with the signing seed beside it, at the
- * config home the house's CLI reads (`<LAR_ROOT>/config/keep-seat.json`, mode 0600). Answers the path.
- */
-function writeKeepSeat(answer: PulamaHandAnswer): string {
-  named("LAR_ROOT");
-  const seat = JSON.parse(String(answer["seat"])) as Record<string, unknown>;
-  const path = join(larConfigHome(), "keep-seat.json");
-  mkdirSync(dirname(path), { recursive: true });
-  atomicWriteFileSync(path, `${JSON.stringify({ ...seat, signingSeed: String(answer["signingSeed"]) }, null, 2)}\n`, undefined, { mode: 0o600 });
-  return path;
-}
-
 /** Send one frame to the hand door and read its one answer. */
 function askHand(frame: Readonly<Record<string, unknown>>): Promise<PulamaHandAnswer> {
   const hand = socketPathFits(named("LAR_PULAMA_HAND"));
@@ -162,8 +147,14 @@ function askHand(frame: Readonly<Record<string, unknown>>): Promise<PulamaHandAn
 async function main(): Promise<void> {
   const [verb = "serve", ...args] = process.argv.slice(2);
   if (verb === "serve") return serve();
+  if (verb === "keep-seat" && args.length === 0) {
+    // ONE LINE ON STDOUT, NOTHING ELSE: the shim writes it to keep-seat.json; the route prompt rides stderr.
+    const { line, code } = await keepSeatLine({ ask: askHand, route: (label, what) => readRoute(label, what) });
+    process.stdout.write(`${line}\n`);
+    process.exit(code);
+  }
   try {
-    console.log(JSON.stringify(await runHandVerb(verb, verb === "admit" || verb === "lei" ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what), keepSeat: writeKeepSeat }), null, 2));
+    console.log(JSON.stringify(await runHandVerb(verb, verb === "admit" || verb === "lei" ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what)}), null, 2));
   } catch (err) {
     if (!(err instanceof PulamaVerbUsage)) throw err;
     console.error(err.message);

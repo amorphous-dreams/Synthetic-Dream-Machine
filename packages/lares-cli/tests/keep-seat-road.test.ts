@@ -18,7 +18,7 @@ import { MANIFEST_FILE } from "../src/bundle-manifest.js";
 vi.setConfig({ testTimeout: 120_000 });
 
 const F1 = "11111111-1111-4111-8111-111111111111";
-let root: string, scratch: string;
+let root: string, scratch: string, priorHome: string | undefined;
 
 function doors(): BundleDoors {
   return {
@@ -36,12 +36,14 @@ function doors(): BundleDoors {
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), "lar-keep-road-"));
   process.env["LAR_ROOT"] = root;
+  // THE OPERATOR'S OWN SURFACE never leaks in: its pūlama signal rides a file under HOME.
+  priorHome = process.env["HOME"]; process.env["HOME"] = join(root, "operator"); delete process.env["LARES_PULAMA"];
   scratch = mkdtempSync(join(tmpdir(), "lar-keep-road-out-"));
   const p = join(root, "projections", "faces", "otter-face", "wiki", "ha.ka.ba", "notes", "pond.tid");
   mkdirSync(dirname(p), { recursive: true });
   writeFileSync(p, "title: lar:///ha.ka.ba/notes/pond\ntype: text/vnd.tiddlywiki\n\nthe pond\n");
 });
-afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(scratch, { recursive: true, force: true }); delete process.env["LAR_ROOT"]; delete process.env["LAR_PULAMA_SOCKET"]; });
+afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(scratch, { recursive: true, force: true }); delete process.env["LAR_ROOT"]; delete process.env["LAR_PULAMA_SOCKET"]; if (priorHome === undefined) delete process.env["HOME"]; else process.env["HOME"] = priorHome; });
 
 describe("the seat a pūlama minted, and the road a seatless house names", () => {
   test("KR1 RED: the pūlama's line, written verbatim, reads as the house's seat and the cut lands signed", async () => {
