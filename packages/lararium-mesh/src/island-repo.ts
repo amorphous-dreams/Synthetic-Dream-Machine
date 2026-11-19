@@ -10,6 +10,7 @@
  * CRDT sync over that port is the sole delta channel (Island Sovereignty Law).
  */
 
+import type { WikiIslandMount } from "./wiki-island-reach.js";
 import { Repo } from "@automerge/automerge-repo";
 import { getHeads } from "@automerge/automerge";
 import type { PeerId, StorageAdapterInterface } from "@automerge/automerge-repo";
@@ -132,17 +133,20 @@ export function islandPeersOf(repo: Repo): { has(peerId: string): boolean } {
  * precedes every share decision), and a vessel-only share verdict refuses such a peer while it still serves it every page
  * document a house island reads. The mark keys on the peer id the island's own leg proved; a fresh island mints a fresh id.
  */
-const WIKI_ISLANDS = new WeakMap<Repo, Set<string>>();
-/** Mark `peerId` as a wiki island of `repo`'s house; answers its unmark. */
-export function markWikiIslandPeer(repo: Repo, peerId: string): () => void {
+const WIKI_ISLANDS = new WeakMap<Repo, Map<string, WikiIslandMount | null>>();
+/** Mark `peerId` as a wiki island of `repo`'s house, serving `mount` (`wiki-island-reach`); answers its unmark. */
+export function markWikiIslandPeer(repo: Repo, peerId: string, mount: WikiIslandMount | null = null): () => void {
   let peers = WIKI_ISLANDS.get(repo);
-  if (!peers) { peers = new Set(); WIKI_ISLANDS.set(repo, peers); }
-  peers.add(peerId);
+  if (!peers) { peers = new Map(); WIKI_ISLANDS.set(repo, peers); }
+  peers.set(peerId, mount);
   return () => { WIKI_ISLANDS.get(repo)?.delete(peerId); };
 }
-/** The peers the pool marked as wiki islands of `repo`'s house. */
-export function wikiIslandPeersOf(repo: Repo): { has(peerId: string): boolean } {
-  return { has: (peerId) => WIKI_ISLANDS.get(repo)?.has(peerId) === true };
+/** The peers the pool marked as wiki islands of `repo`'s house, and the mount each serves (null: none named). */
+export function wikiIslandPeersOf(repo: Repo): { has(peerId: string): boolean; mountOf(peerId: string): WikiIslandMount | null } {
+  return {
+    has: (peerId) => WIKI_ISLANDS.get(repo)?.has(peerId) === true,
+    mountOf: (peerId) => WIKI_ISLANDS.get(repo)?.get(peerId) ?? null,
+  };
 }
 
 /**

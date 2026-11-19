@@ -26,7 +26,7 @@
 
 import { attachMessageChannelSync, markWikiIslandPeer } from "./island-repo.js";
 import { awaitIslandMsg } from "./vessel-host.js";
-import { SYSTEM_BAGS, wikiBagUri, wikiSlotUri, type WikiSlotKind } from "./wiki-recipe.js";
+import { SYSTEM_BAGS, expandRecipe, wikiBagUri, wikiSlotUri, type WikiSlotKind } from "./wiki-recipe.js";
 import { isFaceScopedBag } from "./persona-scope.js";
 import type { VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
 import {
@@ -832,10 +832,13 @@ export class VesselIslandPoolCore {
     if (this._mainRepo) {
       // EVERY POOL ISLAND IS A WIKI ISLAND: it renders pages and syncs no custody document (`markWikiIslandPeer`).
       const repo = this._mainRepo;
-      if (view) { markWikiIslandPeer(repo, view.peerId); view.attach(this._mainRepo, mainPort); }
+      // Each island's mark names the mount it serves, so the vessel's verdict withholds what that mount never names
+      // (`wiki-island-reach`): another wiki's layers, the daemon document, a face's planes.
+      const mount = { slug: plan.recipe.wikiSlug, bags: expandRecipe(plan.recipe) };
+      if (view) { markWikiIslandPeer(repo, view.peerId, mount); view.attach(this._mainRepo, mainPort); }
       else {
         openGrantedDocuments(repo, plan.grants);
-        attachMessageChannelSync(repo, mainPort, (peerId) => { markWikiIslandPeer(repo, peerId); this._islandPeerOf.set(wikiId, peerId); });
+        attachMessageChannelSync(repo, mainPort, (peerId) => { markWikiIslandPeer(repo, peerId, mount); this._islandPeerOf.set(wikiId, peerId); });
       }
     }
 

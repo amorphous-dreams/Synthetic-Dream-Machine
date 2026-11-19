@@ -18,6 +18,7 @@
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
+import { wikiIslandWithholds, vesselDocBags, type WikiIslandMount } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -1420,7 +1421,10 @@ async function prepareNodeBootOn(
   // then no peer reads as the house's own.
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
   // The wiki islands among them (the pool marks each): they render pages and receive no custody document.
-  let wikiIslands: { has(peerId: string): boolean } = new Set<string>();
+  let wikiIslands: { has(peerId: string): boolean; mountOf(peerId: string): WikiIslandMount | null } = { has: () => false, mountOf: () => null };
+  // A WIKI ISLAND RECEIVES WHAT ITS OWN MOUNT NAMES (`wiki-island-reach`): the bag the vessel files each document under, by the
+  // resolver's names, the daemon document's own layer and the catalog's rows.
+  const vesselDocBagOf = vesselDocBags({ slotDocs: slotDocsNamed, catalog: () => sealedCells.catalog(), named: () => [[DAEMON_BAG_ID, sealedCells.mounted(DAEMON_BAG_ID)]] });
   // The deny set GROWS as the control document names device documents: each growth re-asks every cached verdict.
   const vesselOnly = vesselOnlyBook(() => repo);
   const repo = new Repo({
@@ -1459,6 +1463,10 @@ async function prepareNodeBootOn(
       const ownFaceWorking = peerFace !== null && documentId !== undefined && deviceDocs.workingGroupOf(String(documentId))?.toLowerCase() === peerFace.toLowerCase();
       const vesselVerdict = vesselOnlyShareVerdict(vesselOnlyClass({ named: vesselOnly, held: secretHomes, device: deviceDocs, catalog: () => sealedCells.catalog() }), { has: (p) => houseIslands.has(p) && (!wikiIslands.has(p) || (documentId !== undefined && deviceDocs.floorWiki(documentId))) }, peerId, documentId, !!wsSocket, Boolean(siblings?.provenKeyOf(peerId as PeerId)), ownFaceWorking);
       if (vesselVerdict !== undefined) return vesselVerdict;
+      // A WIKI ISLAND NEVER RECEIVES ANOTHER WIKI'S LAYER, THE DAEMON DOCUMENT OR A FACE'S PLANES: its own store rests what it
+      // receives, so the vessel withholds every document its mount does not name.
+      const islandMount = wsSocket ? null : wikiIslands.mountOf(peerId);
+      if (islandMount !== null && documentId !== undefined && wikiIslandWithholds(islandMount, vesselDocBagOf(String(documentId)))) return false;
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
       if (wsSocket && !peerIdentifierMap.has(peerId)) return false;
