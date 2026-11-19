@@ -487,8 +487,9 @@ export interface IngestSettlement {
   /** Every carrier address the gesture submitted, and every vanished address it sent as a deletion. */
   readonly asked:    readonly string[];
   readonly askedDeletions: readonly string[];
-  /** The carriers the answer proves landed or already matching: a row that says so, a tally that proves
-   *  every unnamed carrier landed, or a rename the island confirmed. */
+  /** The carriers the answer accounts for as taken: a row that says it landed, already matched, or stands
+   *  `derived` (a render the renderer writes, rendered-derives.ts), a tally that proves every unnamed carrier
+   *  landed, or a rename the island confirmed. */
   readonly landed:   ReadonlySet<string>;
   /** The carriers no answer accounts for: neither landed, refused, nor standing in a conflict. A wave the
    *  island answered without their rows, or a later wave that failed before reaching them. */
@@ -499,6 +500,9 @@ export interface IngestSettlement {
   readonly refused:  readonly AskingCarrier[];
   /** Every carrier that stood off in a conflict, each named. Complete. */
   readonly conflicts: readonly AskingCarrier[];
+  /** Every `derived` carrier whose rung warns (a hand edit to a render, a render awaiting its source), each with
+   *  its warning. It fails nothing: the island landed nothing for it and the renderer owns its words. */
+  readonly derived:  readonly AskingCarrier[];
   /** Carriers per decision over the whole gesture. */
   readonly tallies:  Readonly<Record<string, number>>;
   /** The first wave's deletion summary: the re-links, the absent sources, the declined addresses. */
@@ -591,7 +595,8 @@ export function standingAfterFault(
  * carrier landed, or that very deletion applied: a later wave over other files clears nothing.
  *
  *   · a carrier the wave refused, or that drew no answer, stands owed with the reason;
- *   · a carrier the answer proves landed (a row, a proving tally, a confirmed rename) leaves the set;
+ *   · a carrier the answer accounts for as taken (a row that landed, matched or stands `derived`, a proving tally,
+ *     a confirmed rename) leaves the set;
  *   · a wave the island answered with an error leaves everything it carried owed, its deletions too;
  *   · a vanished address the summary names settled (a rename's source, or one whose records hold
  *     nothing) leaves the set; one the island declined stays owed, and the vessel's shore hears of it.
@@ -658,7 +663,7 @@ export async function settleIngest(
   if (first.status === "error") {
     return {
       first, pages: [], submitted: asked.length, asked, askedDeletions, landed: new Set(), unanswered: asked,
-      named: new Map(), refused: [], conflicts: [], tallies: {}, deletions: undefined, recorded: 0, rendered: [],
+      named: new Map(), refused: [], conflicts: [], derived: [], tallies: {}, deletions: undefined, recorded: 0, rendered: [],
     };
   }
 
@@ -733,6 +738,7 @@ export async function settleIngest(
     });
   const refused = asking("refuse");
   const conflicts = asking("conflict");
+  const derived = asking("derived").filter((row) => Array.isArray(named.get(row.uri)?.["warnings"]));
   // The tally over the whole gesture: the rows where every carrier got named, else the first wave's own
   // count with the asking decisions corrected to what the later waves named.
   const tallies: Record<string, number> = {};
@@ -750,7 +756,7 @@ export async function settleIngest(
   const landed = new Set<string>([...provenLanded, ...rehomed].filter((uri) => byUri.has(uri)));
   for (const [uri, row] of named) {
     const decision = String(row["decision"]);
-    if (decision === "ingest" || decision === "noop" || decision === "rename-target" || decision === "rename") landed.add(uri);
+    if (decision === "ingest" || decision === "noop" || decision === "derived" || decision === "rename-target" || decision === "rename") landed.add(uri);
     else landed.delete(uri);
   }
   const askingUris = new Set([...refused, ...conflicts].map((r) => r.uri));
@@ -769,7 +775,7 @@ export async function settleIngest(
   }
   return {
     first, pages, submitted: asked.length, asked, askedDeletions, landed, unanswered,
-    named, refused, conflicts, tallies, deletions, recorded, rendered,
+    named, refused, conflicts, derived, tallies, deletions, recorded, rendered,
     ...(pageError !== undefined ? { pageError } : {}),
   };
 }
@@ -1248,6 +1254,7 @@ async function folderWave(
   // A CARRIER THAT STOOD OFF GOES TO THE SHORE: the gate landed nothing for it, and the projector raises its keyed alert.
   for (const c of settled.conflicts) { sense.push(c.uri); log(`stands off: ${c.uri} (${c.why}); \`lares shore\` names it with its key`); }
   for (const r of settled.refused) log(`refuses: ${r.uri} (${r.why})`);
+  for (const r of settled.derived) log(`derived: ${r.uri} (${r.why})`);
   for (const uri of settled.unanswered) { sense.push(uri); log(`unanswered: ${uri}; the shore weighs it`); }
   if (settled.pageError !== undefined) log(`a later wave failed (${settled.pageError.message}); ${settled.pageError.unread} carrier(s) stay unread until the next settle`);
   const landed = [...settled.landed];

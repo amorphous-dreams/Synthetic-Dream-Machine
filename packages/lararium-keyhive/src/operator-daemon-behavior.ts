@@ -23,7 +23,7 @@ import {
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
-  makeWardAlertReactor, fileWardRefusal,
+  makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
   makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
   makeSwitcherStateReactor, makePromoteStateReactor,
   makePersonaStateReactor,
@@ -953,6 +953,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           ...(kahuReach ? { kahuReach } : {}),
           // THE LIT SET: a face-named INGEST lands in THAT face's own document, the owner read off the control document.
           faceTarget: litFaceTargetOf(ctx),
+          // A wave's render warnings ride the wiki-alert rail into the operator's pinned VM.
+          alert: makeIngestAlertRail(ctx.composite, ctx.post),
         });
         // THE OFFERING DOOR (offering#/the-canon-offer): a face offers working records toward house canon on the Nexus's offer
         // table, and the steward promotes under the Kahu reach. The same four reactors stand on node and browser; the Nexus

@@ -21,8 +21,8 @@
  * prototype's action and message doors (`invokeActions`, `invokeActionString`, `invokeActionsByTag`, `dispatchEvent`)
  * answer nothing, and the tree hangs under no parent, so no `tm-*` message reaches a handler.
  *
- * ONLY THE RENDERER WRITES A RENDERED TIDDLER: every other door refuses `rendered-derives` (`@lararium/mesh`
- * `rendered-derives.ts`). A source that drops its mark, or leaves, takes its render with it; a render whose source no
+ * ONLY THE RENDERER WRITES A RENDERED TIDDLER: a hand's door refuses `rendered-derives`, and a wave lands none and
+ * answers each render carrier `derived` on its rung (`@lararium/mesh` `rendered-derives.ts`). A source that drops its mark, or leaves, takes its render with it; a render whose source no
  * longer marks it leaves at arm.
  *
  * Runs daemon-side and island-side alike (a plain module, never a plugin tiddler).

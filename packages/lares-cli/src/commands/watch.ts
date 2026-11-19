@@ -212,7 +212,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       applyConfirmedRenames(tree, toBag, candidates, del);
       console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit ${OUTCOME_URI_PREFIX}${result.requestId}`);
       for (const c of carriers) console.log(`    ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}`);
-      for (const r of [...settled.refused, ...settled.conflicts]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);
+      for (const r of [...settled.refused, ...settled.conflicts, ...settled.derived]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);
       if (settled.conflicts.length > 0) console.error(`    ${settled.conflicts.length} carrier(s) stand off: nothing landed for them; \`lares shore\` names each with its key`);
       if (settled.pageError !== undefined) console.error(`    ⚠ a later wave failed (${settled.pageError.message}); ${settled.pageError.unread} carrier(s) stay unread until the next settle`);
       // A file at an address whose records never project refuses by name; the hand removes the file.

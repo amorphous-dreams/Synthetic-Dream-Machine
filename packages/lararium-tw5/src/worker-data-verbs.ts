@@ -20,6 +20,7 @@ import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
+import type { IngestAlert } from "./action-handler.js";
 
 /** True for a draft floor's registry key (`wikis/<slug>/drafts/<did>`) — a doc the slot walk names. */
 function isDraftFloorKey(key: string): boolean {
@@ -352,4 +353,19 @@ export async function fileWardRefusal(
     }
     return { audited: auditTitle, alerted: slug ?? "none", bagId, uri };
   }
+}
+
+// ── ingest-alert — a wave's render warnings surface in the operator's pinned VM ────────────
+//
+// An INGEST wave the daemon island runs answers a render carrier on its rung (rendered-derives.ts); the rungs that warn
+// raise one alert per (rung, render title) over the same wiki-alert rail the ward rides, and a render that reads settled
+// clears it. The pinned VM stands it at `$:/temp/lares/alert/<kind>/<key>`, tagged `$:/tags/Alert`.
+
+/** The `alert` rail for the daemon island's action verbs: each alert rides to the active wiki, none where none stands. */
+export function makeIngestAlertRail(composite: CompositeStore, post: (msg: DaemonMsg_WikiAlert) => void): (alert: IngestAlert) => Promise<void> {
+  return async (alert) => {
+    const slug = tiddlerText(await composite.get(ACTIVE_WIKI_URI)) ?? null;
+    if (!slug) return;
+    post(mkDaemonWikiAlert({ wikiSlug: slug, message: alert.message, cause: "ingest", kind: alert.kind, key: alert.key, ...(alert.clear ? { clear: true } : {}) }));
+  };
 }

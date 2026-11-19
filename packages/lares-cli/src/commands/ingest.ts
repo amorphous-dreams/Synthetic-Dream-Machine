@@ -244,7 +244,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
   const conflictMessage = `INGEST landed nothing for ${conflicts.length} of ${candidates.length} carrier(s) that stand in a conflict: ${conflicts.map((r) => r.uri).join(", ")}. \`lares shore\` names each standoff's key; settle one with \`lares shore take-disk <uri> --key <key>\` (the file's words) or \`lares shore take-records <uri> --key <key>\` (the records')`;
   const data = {
     verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary,
-    tallies: settled.tallies, refused, conflicts,
+    tallies: settled.tallies, refused, conflicts, derived: settled.derived,
     ...(settled.pages.length > 0 ? { pages: settled.pages.map((p) => p.requestId) } : {}),
     ...(settle !== undefined ? { settle } : {}),
     audit: auditUri,
@@ -270,12 +270,17 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
       for (const t of Array.isArray(kapaeAnswer?.standing) ? (kapaeAnswer.standing as unknown[]) : []) console.log(`  ${"KAPAE".padEnd(10)} ${String(t)}  (already set aside)`);
       if (kapaeFault !== null) console.error(`  ⚠ ${kapaeFault}`);
       // Under the row cap every row prints. Past it the landed rows ride the tally above, and each row
-      // that asks for a hand prints below with its reason.
-      const asking = new Set([...refused, ...conflicts].map((r) => r.uri));
+      // that asks for a hand, or a render whose rung warns, prints below with its reason.
+      const asking = new Set([...refused, ...conflicts, ...settled.derived].map((r) => r.uri));
       for (const c of settled.named.values()) {
         if (asking.has(String(c["uri"]))) continue;
         const extra = c["reason"] ?? (Array.isArray(c["tombstoned"]) && (c["tombstoned"] as unknown[]).length ? `tombstoned ${(c["tombstoned"] as unknown[]).length}` : "");
         console.log(`  ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}${extra ? `  (${extra})` : ""}`);
+      }
+      // A render on a warning rung lands nothing and fails nothing: its line names the cure.
+      for (const r of settled.derived) {
+        console.log(`  ${r.decision.toUpperCase().padEnd(10)} ${r.uri}${r.file !== undefined ? `  (${r.file})` : ""}`);
+        console.error(`    ⚠ ${r.why}`);
       }
       for (const r of [...refused, ...conflicts]) {
         console.error(`  ${r.decision.toUpperCase().padEnd(10)} ${r.uri}${r.file !== undefined ? `  (${r.file})` : ""}`);
