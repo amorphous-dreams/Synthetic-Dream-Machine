@@ -182,8 +182,8 @@ async function mintUnder(routes: readonly ProvedRoute[], say: (line: string) => 
 
 /**
  * RE-SEAT: a fresh pair under the PROVED route, over whatever rests (`lares vault reseat`, and every custody unbind, where the
- * route that opens the house moved). A bundle a keep cut before carries its own seat and still opens under the old route; every
- * later keep seals to the new pair. A paper slot the old seat held joins again at the next `vault bind --paper`.
+ * route that opens the house changes). A bundle carries the seat it sealed under and opens under that seat's route; every keep
+ * cut after the re-seat seals to the fresh pair. A paper slot the replaced seat held joins again at the next `vault bind --paper`.
  */
 export async function reseatKeepPair(routes: ReadonlyArray<readonly Credential[]>, say: (line: string) => void, shapes?: readonly ProvedRoute[]): Promise<boolean> {
   const before = readResting();
@@ -235,7 +235,7 @@ export function provedRoutes(answer: CustodyOpenAnswer, route: readonly Credenti
  * nothing. From an opening, EVERY route the act proved counts (a passphrase and a paper sheet, each a slot of its own): where no
  * seat rests they all seat; where one rests, a proved route that opens it lets each other proved route JOIN it as a slot of its
  * own, so two custody routes stop flip-flopping the keep; where none opens it, the house warns by name (`keep-seat-unopened`): the
- * custody route moved and the keep still seals to the old one, so run `lares vault reseat`. A passkey seats nothing.
+ * resting seat seals to a route this unlock never proved, so run `lares vault reseat`. A passkey seats nothing.
  */
 export async function seatKeepAtUnlock(answer: CustodyOpenAnswer, route: readonly Credential[], say: (line: string) => void): Promise<"seated" | "joined" | "resting" | "resting-unopened" | "unproved" | "unseatable" | "unseated"> {
   if (answer.reading !== "opens") return "unproved";
@@ -392,7 +392,7 @@ export async function keepSeatForCut(): Promise<CutSeat> {
     resting = readResting();
   }
   if (resting !== null) {
-    // A TEST-ROUTE SEAT on a root whose custody the test route no longer takes (a person founded it) seals to a pair the world's
+    // A TEST-ROUTE SEAT on a root whose custody takes no test route (a person founded it) seals to a pair the world's
     // test passphrase opens: refuse it by name, and name this house's road to a real seat.
     if (resting.testRoute && !(testScratchRoot() && await custodyTakesTestRoute())) {
       throw new KeepSeatRefused("keep-seat-test-route", `the keep pair at ${keepSeatPath()} rests under the published test route, and this house's custody takes no test route: ${keepSeatRoad(await houseFacts())}, which replaces it, then cut again`);

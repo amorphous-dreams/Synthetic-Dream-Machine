@@ -39,6 +39,20 @@ const NEXUS = `export async function nexus(args) {
   }
 }
 `;
+// The CLI's own table: each row's handler names the module it imports from, and the witness reads a sub-door there.
+// `seal` answers through `commands/seal-door.ts`, a module its verb does not spell.
+const TABLE = `import { cmdNexus } from "../commands/nexus.js";
+import { cmdSeal, cmdUnseal } from "../commands/seal-door.js";
+const COMMANDS = [
+  { name: "nexus", brief: "a thing", handler: cmdNexus },
+  { name: "seal", brief: "a thing", handler: cmdSeal },
+];
+`;
+const SEAL_DOOR = `export async function cmdSeal(args) {
+  const verb = args.positional[0];
+  if (verb === "open") return 0;
+}
+`;
 const SOURCE = 'export function sealKeySetHash(keys: string[]): string { return keys.join(""); }\n';
 // The witness refuses when any rite it reads stands absent, so the fixture stands every rite the witness's own
 // RITES list names: the founding runbook carries the planted commands, each other rite a quiet page.
@@ -49,7 +63,7 @@ assert.ok(RITE_PATHS.includes(FOUNDING), `the witness's RITES list names the fou
 const RITE = '# rite\n\n```sh\nlares nexus admit\nlares seal\n```\n\nThe chain reads `sealKeySetHash`.\n';
 
 // The witness `cd`s to its own parent's parent, so a copy under a scratch root reads that root's rites and modules.
-function run({ rite = RITE, nexus = NEXUS, source = SOURCE, env = {} } = {}) {
+function run({ rite = RITE, nexus = NEXUS, sealDoor = SEAL_DOOR, table = TABLE, source = SOURCE, env = {} } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'rite-commands-'));
   const put = (rel, text) => { mkdirSync(dirname(join(root, rel)), { recursive: true }); writeFileSync(join(root, rel), text); };
   mkdirSync(join(root, 'tools'));
@@ -58,7 +72,9 @@ function run({ rite = RITE, nexus = NEXUS, source = SOURCE, env = {} } = {}) {
   for (const rel of RITE_PATHS) put(rel, rel === FOUNDING ? rite : '# a rite that instructs nothing\n');
   put('packages/lares-cli/dist/src/bin/lares.js', BIN);
   put('packages/lares-cli/src/host-bridge.ts', BRIDGE);
+  put('packages/lares-cli/src/bin/lares.ts', table);
   put('packages/lares-cli/src/commands/nexus.ts', nexus);
+  put('packages/lares-cli/src/commands/seal-door.ts', sealDoor);
   put('packages/lares-cli/src/seal.ts', source);
   put('tools/lares-container.sh', SHIM);
   mkdirSync(join(root, 'mempalace', 'mempalace'), { recursive: true });
@@ -90,6 +106,24 @@ test('a sub-door whose mapped module vanished fails by name', () => {
   const r = run({ rite: RITE.replace('lares seal\n', 'lares seal\nlares ghost walk\n') });
   assert.equal(r.status, 1, r.stdout + r.stderr);
   assert.match(r.stdout, /'ghost walk' — commands\/ghost\.ts is absent; `walk` has no mapped module/);
+});
+
+test('a sub-door reads in the module its verb row imports, never one the verb spells', () => {
+  const r = run({ rite: RITE.replace('lares seal\n', 'lares seal open\n') });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /2 commands instructed, 2 sub-doors checked/);
+});
+
+test('CONTROL: a sub-door the row-mapped module never dispatches fails by that module name', () => {
+  const r = run({ rite: RITE.replace('lares seal\n', 'lares seal close\n') });
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /'seal close' — `close` names no dispatch branch in commands\/seal-door\.ts/);
+});
+
+test('a CLI table that parses to no command row refuses rather than mapping nothing', () => {
+  const r = run({ table: 'export const COMMANDS = [];\n' });
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /PARSED TO NO COMMAND ROW/);
 });
 
 test('a cited symbol that only prefixes a longer name reads as a ghost', () => {

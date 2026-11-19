@@ -254,7 +254,21 @@ else bad "B's material reachable from A's root"; fi
 # reads fine for now.`); every other cleartext occurrence reads red: hearth/, config/, every other projection.
 # RE-ENTRY: "for now" holds the door open; a ruling that seals the label retires this exclusion, and the control
 # then reads the whole root again.
-cleartext_outside_label() { grep -rls "$1" "$2" 2>/dev/null | grep -vE "^$2/projections/face-labels/[0-9a-f-]+\.json\$"; }
+# THE FACE ROOT: the face's pools rest in one folder named by its pet name, `projections/faces/<pet name>/` (operator
+# ruling 2026-11-18, verbatim: `"one pool per face keyed by pet name"`), so a record that names a path inside that
+# root (a checkpoint row, a journal line, a watch's log line) carries the name as that folder's segment. That segment
+# reads as the folder; the pet-name standing anywhere else in a file (a field's value, a bare word) still reads red.
+cleartext_outside_label() {
+  grep -rlsP "(?<!projections/faces/)$1" "$2" 2>/dev/null | grep -vE "^$2/projections/face-labels/[0-9a-f-]+\.json\$"
+}
+step "CONTROL: the face-root exclusion reads the folder segment alone; the name as a value still reads"
+PLANT="$XFER/face-root-plant"; mkdir -p "$PLANT/projections/face-labels"
+printf '{"path":"%s/projections/faces/%s/margins/lares"}\n' "$PLANT" "$B_PROBE" > "$PLANT/segment.json"
+printf '{"label":"%s"}\n' "$B_PROBE" > "$PLANT/value.json"
+printf '{"label":"%s"}\n' "$B_PROBE" > "$PLANT/projections/face-labels/0a1b2c3d-0000-4000-8000-000000000000.json"
+if [ "$(cleartext_outside_label "$B_PROBE" "$PLANT")" = "$PLANT/value.json" ]; then ok
+else bad "the planted reads named: $(cleartext_outside_label "$B_PROBE" "$PLANT" | tr '\n' ' ')"; fi
+rm -rf "$PLANT"
 step "CONTROL: B's sealed pet-name rests in no cleartext file of B's own root, the face label aside"
 if [ -n "$(cleartext_outside_label "$B_PROBE" "$B_ROOT")" ]; then
   bad "B's pet-name reads in the clear at rest: $(cleartext_outside_label "$B_PROBE" "$B_ROOT" | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
