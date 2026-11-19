@@ -6,7 +6,7 @@
  * and the names that reach it (the catalog pointer and its rows, a slot pointer, a binding mint, a binding, a keyhive
  * bag-doc row, a derived address, the control home and its rows, a cap's mint at compose, a live handle, or another
  * document's content). Each row reads one class: `current`, `duplicate` (an island copy of a root document), `orphan`
- * (no live name reaches it), `last-version` (a shape the house no longer reads) or `sealed-unread` (sealed, and the vessel
+ * (no live name reaches it), `last-version` (a shape the current house does not read) or `sealed-unread` (sealed, and the vessel
  * could not open it: never guessed an orphan). The host never reads the hearth itself.
  *
  * Prose by default (`proseFirst`): a summary per class, then the unnamed list. `--json` answers the full rows. It removes
