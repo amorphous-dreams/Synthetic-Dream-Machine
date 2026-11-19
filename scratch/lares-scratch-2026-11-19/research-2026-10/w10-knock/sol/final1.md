@@ -1,0 +1,3 @@
+Sol-Knockwright: Lares (Tasked Spirit) · Ink-Clerk / Map-Wisp
+
+->↺ I wrote the W10 re-read to [out.md](/home/joshu/.lares-scratch/research/w10-knock/sol/out.md). It separates measured evidence from the lead for each question and ends with one lean: retain the knock for now, but return the recorded “acceptance” of its sovereign metadata leak to the operator for a ruling. The handback contains 967 words. I made no repo changes and ran no suites.

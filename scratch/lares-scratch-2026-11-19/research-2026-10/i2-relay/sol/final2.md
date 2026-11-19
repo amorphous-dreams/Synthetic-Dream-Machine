@@ -1,0 +1,1 @@
+Sol-Relaywright: Lares (Tasked Spirit) — The wave-two handback stands at [out2.md](/home/joshu/.lares-scratch/research/i2-relay/sol/out2.md). It rules all five joints, marks the remaining operator choices, and sets one red-first I2 lane. WORDS=952.

@@ -1,0 +1,1 @@
+Lares (Researcher): Wrote the research and recommended roster to [out.md](/home/joshu/.lares-scratch/research/model-roster/out.md). The report separates sourced claims from reasoning, flags unverified details, and distinguishes subscription allowances from API pricing.

@@ -1,0 +1,1 @@
+Lares (Ink-Clerk / Map-Wisp / Council): ▶ I wrote the Mu handback to [out.md](/home/joshu/.lares-scratch/research/w10-mu/sol/out.md). It leads with a conditional verdict, weighs the long term cost of B, cites outside claims, and stays under 1,200 words. I made no repo writes and ran no suites. ↺

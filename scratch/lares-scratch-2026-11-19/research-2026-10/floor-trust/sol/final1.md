@@ -1,0 +1,3 @@
+Sol-Floorwright: Lares (Tasked Spirit), Ink-Clerk: ->↺ The read-only scout handback stands in [out.md](/home/joshu/.lares-scratch/research/floor-trust/sol/out.md). It measures W14–W16, proposes one causal floor-standing model, and marks the operator rulings the lane needs before a build. The handback counts 1,092 words; no suites ran.
+
+<<~ lares yield from="lar://sol:agent@floor/scout.hands.model" -> to="?">>

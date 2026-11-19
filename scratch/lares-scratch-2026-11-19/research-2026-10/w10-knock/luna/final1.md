@@ -1,0 +1,1 @@
+Lares (Ink-Clerk): I saved the handback to [out.md](/home/joshu/.lares-scratch/research/w10-knock/luna/out.md). It separates measured evidence from the lead, stays under 1,100 words, and ends with `WORDS=1092`. I made no repo writes and ran no suites.

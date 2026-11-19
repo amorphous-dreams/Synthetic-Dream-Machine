@@ -1,0 +1,1 @@
+Sol-Floorwright: Lares (Tasked Spirit) — ↺ Hoʻoko/aftermath: I wrote the [wave-two handback](/home/joshu/.lares-scratch/research/floor-trust/sol/out2.md). It settles the shared claim shape, separates gate-pin succession from W26 releases, and names the place KEL build as a prerequisite. The source repo received no writes; no suites ran.

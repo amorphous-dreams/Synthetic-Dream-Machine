@@ -1,0 +1,1 @@
+Lares (Artificer): The handback stands in [out.md](/home/joshu/.lares-scratch/research/hands-room/luna/out.md). It orders five lanes, places I2 from its scout handback, and marks measured findings separately from the proposed model and lane decisions. The file contains 1,428 words.
