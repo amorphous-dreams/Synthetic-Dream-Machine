@@ -1,8 +1,8 @@
 # lares-container — the HOST shim for the surface vessel (docker-compose.surface.yml), PowerShell form.
 # Same contract as tools/lares-container.sh: up [--capture <dir>]... [--workspace <name>=<dir>]...  down [compose-down args]  found [vessel-found args]  logs
-# build [compose-build args]  vessel stand  <lares verb…>. `build` rebuilds the vessel image (every package the
-# vessel runs) from the committed checkout, through the env file, stamping HEAD as its revision label; a dirty checkout,
-# or none, refuses by name. The CLI runs by exec while a vessel stands and through the offline door while none
+# build [--at <rev>] [compose-build args]  vessel stand  <lares verb…>. `build` builds the vessel image (every package the
+# vessel runs) from one commit (HEAD unless --at names another), unpacked from its archive under the house's cache,
+# stamping that revision as its label; a dirty tree builds from HEAD and names what it left out; no checkout refuses. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
 # LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
@@ -199,9 +199,9 @@ function KeyHeld {
   return (($out -join "`n") -match '"unlocked"\s*:\s*true')
 }
 
-# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD: warns and stands. Every stand and restart this shim performs reads it
+# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD: warns and stands. A build reads the commit, so uncommitted changes never ride an image and the label reads against HEAD alone. Every stand and restart this shim performs reads it
 # (`up`, the bare `vessel stand`, a re-stand); `up` resolves the rev BEFORE compose runs so a build it triggers bakes the label; no git, or no checkout, skips the check with a note and never dies. A dirty tree
-# (tracked files only) labels `<sha>-dirty`.
+# (tracked files only) reads as dirty, and the warning names the changes no image carries.
 $script:GitRev = ''; $script:GitDirty = $false
 function ResolveGitRev {
   try {
@@ -226,9 +226,10 @@ function WarnImageRevision {
   if ([string]::IsNullOrWhiteSpace($cid)) { return }
   $label = ((& docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $cid 2>$null) -join '') -replace '[\x00-\x1f\x7f-\x9f]', ''
   $named = if ($label) { $label } else { 'none' }
-  if ($label -eq $rev) { return }
+  $head = $rev -replace '-dirty$', ''
+  if ($label -eq $head) { return }
   if ($script:GitDirty) {
-    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout holds uncommitted changes; commit first, then rebuild with ``tools/lares-container.ps1 build`` and ``up`` again")
+    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout stands at $head, beside uncommitted changes no image carries; rebuild from the commit with ``tools/lares-container.ps1 build``, then ``up`` again")
   } else {
     [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout stands at $rev; rebuild with ``tools/lares-container.ps1 build``, then ``up`` again")
   }
@@ -495,6 +496,74 @@ function WarnPulamaSkew {
   [Console]::Error.WriteLine("lares-container: the pūlama runs image $ran, and $image stands at $stands; it keeps the older code until ``tools/lares-container.ps1 down`` and ``tools/lares-container.ps1 pulama restand`` (then light it by hand, ``up``, and ``pulama admit``)")
 }
 
+# THE IMAGE BUILDS FROM A COMMIT (road rank 4l, RD2), never from the live tree. `git archive <rev>`, and each submodule's
+# own archive at the commit the revision pins, unpack in a scratch folder under the house's cache (outside the checkout
+# and outside every bind), and compose builds from there through the env file, an override naming that folder as the
+# context and the revision as the label. So an untracked or uncommitted file never rides an image; a dirty tree builds
+# from HEAD and names what it left out. A submodule whose checkout lacks the pinned commit is named and left out.
+$ImageRef = ValueOf 'LARES_IMAGE'; if (-not $ImageRef) { $ImageRef = 'lares-surface:local' }
+$script:BuiltRev = ''
+function BuildImage([string]$at, [string[]]$more) {
+  ResolveGitRev
+  if (-not $script:GitRev) { Die "build refuses: no git checkout answers at $PSScriptRoot, so the image's revision label would name no commit; build from a checkout" }
+  $top = ((& git -C $PSScriptRoot rev-parse --show-toplevel 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $top) { Die "build refuses: no git checkout answers at $PSScriptRoot" }
+  $rev = ((& git -C $top rev-parse --verify --quiet "$at^{commit}" 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $rev) { Die "build refuses: $at names no commit in $top; nothing built" }
+  $short = $rev.Substring(0, 12)
+  $left = @(& git -C $top status --porcelain 2>$null | Where-Object { $_ })
+  if ($left.Count -gt 0) {
+    [Console]::Error.WriteLine("lares-container: the checkout holds $($left.Count) uncommitted or untracked path(s); the image builds from $short and leaves them out:")
+    foreach ($l in ($left | Select-Object -First 20)) { [Console]::Error.WriteLine("  $l") }
+  }
+  $cache = Join-Path $House 'cache'
+  New-Item -ItemType Directory -Force -Path $cache | Out-Null
+  $suffix = -join ((1..6) | ForEach-Object { '{0:x}' -f (Get-Random -Maximum 16) })
+  $ctx = Join-Path $cache "build.$suffix"
+  $ov = Join-Path $cache "build-override.$suffix"
+  $tar = "$ctx.tar"
+  New-Item -ItemType Directory -Force -Path $ctx | Out-Null
+  $topFull = [System.IO.Path]::GetFullPath($top)
+  if (Test-Within ([System.IO.Path]::GetFullPath($ctx)) $topFull) { Remove-Item -Recurse -Force $ctx; Die "build refuses: the house's cache ($cache) rests inside the checkout; name a LARES_HOUSE outside it" }
+  if ($ctx.Contains("'") -or $ctx.Contains("`n")) { Remove-Item -Recurse -Force $ctx; Die 'build refuses a house path that holds a quote or a newline' }
+  try {
+    & git -C $top archive --format=tar -o $tar $rev
+    if ($LASTEXITCODE -eq 0) { & tar -xf $tar -C $ctx }
+    if ($LASTEXITCODE -ne 0) { Die "the archive of $short did not unpack; nothing built" }
+    Remove-Item -Force $tar -ErrorAction SilentlyContinue
+    # Each submodule at the commit this revision pins (a gitlink: mode 160000), from its own checkout.
+    foreach ($row in @(& git -C $top ls-tree -r $rev)) {
+      $tab = $row.IndexOf("`t"); if ($tab -lt 0) { continue }
+      $meta = $row.Substring(0, $tab) -split ' '; $path = $row.Substring($tab + 1)
+      if ($meta.Count -lt 3 -or $meta[1] -ne 'commit') { continue }
+      $sha = $meta[2]
+      $sub = Join-Path $top $path
+      $have = $false
+      if (Test-Path (Join-Path $sub '.git')) { & git -C $sub cat-file -e "$sha^{commit}" 2>$null; $have = ($LASTEXITCODE -eq 0) }
+      if ($have) {
+        $dest = Join-Path $ctx $path
+        New-Item -ItemType Directory -Force -Path $dest | Out-Null
+        & git -C $sub archive --format=tar -o $tar $sha
+        if ($LASTEXITCODE -eq 0) { & tar -xf $tar -C $dest }
+        if ($LASTEXITCODE -ne 0) { Die "the submodule $path at $($sha.Substring(0, 12)) did not unpack; nothing built" }
+        Remove-Item -Force $tar -ErrorAction SilentlyContinue
+      } else {
+        [Console]::Error.WriteLine("lares-container: the submodule $path stands unchecked-out or lacks its pinned commit $($sha.Substring(0, 12)) here, so the image builds without it")
+      }
+    }
+    Set-Content -Path $ov -Value "services:`n  lares:`n    build:`n      context: '$ctx'`n      args:`n        GIT_REV: '$rev'" -Encoding utf8
+    $env:GIT_REV = $rev; $script:GitRev = $rev
+    [Console]::Error.WriteLine("lares-container: building the vessel image (every package) from commit $short")
+    & docker compose @Base -f $ov build @more lares
+    $rc = $LASTEXITCODE
+  } finally {
+    Remove-Item -Recurse -Force $ctx, $ov, $tar -ErrorAction SilentlyContinue
+  }
+  if ($rc -ne 0) { Die "the build failed (above); $ImageRef stands as it stood" }
+  $script:BuiltRev = $rev
+  [Console]::Error.WriteLine("lares-container: the vessel image stands rebuilt from $short (revision $rev); ``up`` stands it")
+}
+
 switch ($verb) {
   'up' {
     EnsureHouse
@@ -633,14 +702,12 @@ switch ($verb) {
     Write-Output (ImageDigest)
   }
   'build' {
-    # THE IMAGE BUILDS THROUGH THE SHIM: compose reads the env file, and the revision label names the commit the
-    # checkout stands at. A dirty checkout refuses (commit first), and so does a shim outside any checkout.
-    ResolveGitRev
-    if (-not $script:GitRev) { Die "build refuses: no git checkout answers at $PSScriptRoot, so the image's revision label would name no commit; build from a checkout" }
-    if ($script:GitDirty) { Die "build refuses: the checkout holds uncommitted tracked changes, so the image's revision label ($($script:GitRev)) would name no real commit; commit first, then run build again" }
-    [Console]::Error.WriteLine("lares-container: rebuilding the vessel image (every package) from the committed checkout at $($script:GitRev)")
-    Compose (@('build') + $rest + @('lares'))
-    [Console]::Error.WriteLine("lares-container: the vessel image stands rebuilt, stamped revision $($script:GitRev); ``up`` stands it")
+    $at = 'HEAD'; $more = $rest
+    if ($rest.Count -gt 0 -and $rest[0] -eq '--at') {
+      if ($rest.Count -lt 2) { Die 'build --at wants a revision' }
+      $at = [string]$rest[1]; $more = @($rest | Select-Object -Skip 2)
+    }
+    BuildImage $at $more
   }
   'found' {
     EnsureHouse

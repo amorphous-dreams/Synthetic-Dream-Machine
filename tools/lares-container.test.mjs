@@ -32,19 +32,31 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
+      `last=''; for a in "$@"; do last=$a; done\n` +
+      // THE OUTGOING IMAGE (L4): its id and its revision label, one line, before a build moves the tag.
+      `case " $* " in *"image inspect --format {{.Id}}|"*) [ -n "\${FAKE_NO_OUTGOING:-}" ] && exit 1; printf '%s|%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}" "\${FAKE_OUTGOING_REV:-}"; exit 0;; esac\n` +
+      `case " $* " in *"image inspect --format {{.Created}} {{.Id}} "*) printf '%s\\n' "\${FAKE_TAG_INFO:-}" | awk -v t="\${last#*:}" '$1==t{print $2" "$3}'; exit 0;; esac\n` +
+      `case " $* " in *" image ls --format {{.Tag}} "*) printf '%s\\n' "\${FAKE_IMAGE_TAGS:-}"; exit 0;; esac\n` +
+      `case " $* " in *" ps -q --filter ancestor="*) id=\${last#ancestor=}; case " \${FAKE_RUNNING_IMAGES:-} " in *" $id "*) printf 'c1\\n';; esac; exit 0;; esac\n` +
+      // THE PŪLAMA'S CODE CLOSURE: the image's label, and the label the running pūlama's container carries.
+      `case " $* " in *"lares.pulama.closure"*) case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_CLOSURE:-}";; *) printf '%s\\n' "\${FAKE_PULAMA_CLOSURE:-}";; esac; exit 0;; esac\n` +
+      `case " $* " in *"image inspect"*"org.opencontainers.image.revision"*) printf '%s\\n' "\${FAKE_IMAGE_REV_LABEL:-}"; exit 0;; esac\n` +
       `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
-      `case " $* " in *"inspect --format {{.Image}} "*) printf '%s\\n' "\${FAKE_PULAMA_IMAGE:-}"; exit "\${FAKE_PULAMA_INSPECT_RC:-0}";; esac\n` +
+      // A container's image: the pūlama's (FAKE_PULAMA_ID) or the vessel's.
+      `case " $* " in *"inspect --format {{.Image}} "*) if [ -n "\${FAKE_PULAMA_ID:-}" ] && [ "$last" = "\${FAKE_PULAMA_ID}" ]; then printf '%s\\n' "\${FAKE_PULAMA_IMAGE:-}"; exit "\${FAKE_PULAMA_INSPECT_RC:-0}"; fi; printf '%s\\n' "\${FAKE_VESSEL_IMAGE:-}"; exit 0;; esac\n` +
       `case " $* " in *"pulama-main.js keep-seat"*) printf '%s\\r\\n' 'pūlama: route proved'; [ -z "\${FAKE_KEEP_SEAT_LINE:-}" ] || printf '%s\\r\\n' "\${FAKE_KEEP_SEAT_LINE}"; exit "\${FAKE_KEEP_SEAT_RC:-0}";; esac\n` +
       `case " $* " in *" pulama node -e "*) code=''; take=''; for a in "$@"; do if [ -n "$take" ]; then code=$a; take=''; elif [ "$a" = -e ]; then take=1; fi; done; exec node -e "$code";; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js lei "*) printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\r\\n' "\${FAKE_LEI_ANSWER}"; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
       `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
+      `case " $* " in *" vessel census --json "*) printf '%s\\n' "\${FAKE_CENSUS_JSON:-}"; exit 0;; esac\n` +
       `case " $* " in *" vessel census "*) [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
       `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
       `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_STOOD_ID:-\${FAKE_RUNNING_ID:-}}"; exit 0;; esac\n` +
       `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
-      `case " $* " in *" build "*) printf 'GIT_REV=%s\\n' "\${GIT_REV:-}" >> "$CALL_LOG"; exit 0;; esac\n` +
+      // A build lists its context (the folder the override names), so a test reads what rode into the image.
+      `case " $* " in *" build "*) printf 'GIT_REV=%s\\n' "\${GIT_REV:-}" >> "$CALL_LOG"; for a in "$@"; do if [ -f "$a" ] && grep -q 'context:' "$a"; then ctx=$(sed -n "s/^ *context: '\\\\(.*\\\\)'$/\\\\1/p" "$a"); (cd "$ctx" && find . -type f | LC_ALL=C sort | sed 's/^/CTX /') >> "$CALL_LOG"; for f in "$ctx"/tools/lares-container.*; do [ ! -f "$f" ] || grep -c 'edited' "$f" | sed 's/^/EDITED /' >> "$CALL_LOG"; done; fi; done; exit "\${FAKE_BUILD_RC:-0}";; esac\n` +
       `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
@@ -72,7 +84,17 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       if (checkout !== "none") {
         const git = (...a) => spawnSync("git", ["-C", repo, "-c", "user.name=t", "-c", "user.email=t@t", ...a], { encoding: "utf8" });
         git("init", "-q"); git("add", "."); git("commit", "-qm", "seed");
-        if (checkout === "dirty") await writeFile(script, (await readFile(script, "utf8")) + "\n# edited\n");
+        // "dirty": a tracked edit uncommitted and an untracked file beside it, neither of which may ride a build.
+        if (checkout === "dirty") { await writeFile(script, (await readFile(script, "utf8")) + "\n# edited\n"); await writeFile(join(repo, "stray-untracked.txt"), "never built\n"); }
+        // "submodule": a submodule pinned at one commit, whose own checkout has since moved past the pin.
+        if (checkout === "submodule") {
+          const sub = join(dir, "subsrc");
+          await mkdir(sub, { recursive: true });
+          const sgit = (cwd, ...a) => spawnSync("git", ["-C", cwd, "-c", "user.name=t", "-c", "user.email=t@t", "-c", "protocol.file.allow=always", ...a], { encoding: "utf8" });
+          sgit(sub, "init", "-q"); await writeFile(join(sub, "pinned.txt"), "pinned\n"); sgit(sub, "add", "."); sgit(sub, "commit", "-qm", "pin");
+          sgit(repo, "submodule", "add", "-q", sub, "vendor/sub"); sgit(repo, "commit", "-qm", "sub");
+          await writeFile(join(repo, "vendor/sub/moved.txt"), "past the pin\n"); sgit(join(repo, "vendor/sub"), "add", "."); sgit(join(repo, "vendor/sub"), "commit", "-qm", "moved");
+        }
       }
     }
     // `@HOUSE@` in an argument names the run's scratch house too.
@@ -91,7 +113,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     let seat = null; let seatMode = null; try { seat = JSON.parse(await readFile(join(house, "config", "keep-seat.json"), "utf8")); seatMode = (await stat(join(house, "config", "keep-seat.json"))).mode & 0o777; } catch {}
     const made = {};
     for (const c of ["hearth", "sensoriums", "projections", "library", "config", "pulama/socket"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
-    return { ...r, calls, dir, made, worn, seat, seatMode };
+    let cacheLeft = null; try { cacheLeft = await readdir(join(house, "cache")); } catch {}
+    return { ...r, calls, dir, made, worn, seat, seatMode, cacheLeft };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
@@ -331,23 +354,21 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(r.stderr, /holding no vessel key/);
   });
 
-  /** The revision the shim computes: HEAD, marked `-dirty` while the tree holds changes. */
-  const checkoutRev = () => {
-    const head = spawnSync("git", ["-C", ROOT, "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim();
-    const dirty = spawnSync("git", ["-C", ROOT, "status", "--porcelain", "--untracked-files=no"], { encoding: "utf8" }).stdout.trim() !== "";
-    return dirty ? `${head}-dirty` : head;
-  };
+  /** The commit the image's label reads against: HEAD alone (a build reads the commit, so changes never ride it). */
+  const checkoutRev = () => spawnSync("git", ["-C", ROOT, "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim();
+  const checkoutDirty = () => spawnSync("git", ["-C", ROOT, "status", "--porcelain", "--untracked-files=no"], { encoding: "utf8" }).stdout.trim() !== "";
 
   test(`${name}: up warns when the image's revision label differs from HEAD, naming both`, async () => {
     const head = checkoutRev();
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: "0123456789abcdef0123456789abcdef01234567", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.stderr, /image names revision 0123456789abcdef0123456789abcdef01234567 and the checkout /);
-    if (!head.endsWith("-dirty")) {
+    if (!checkoutDirty()) {
       assert.ok(r.stderr.includes(head), "the warning names the checkout's head");
       assert.ok(r.stderr.includes(`rebuild with \`tools/lares-container.${name} build\``), "the hint names the shim's build verb, never a bare compose build");
     } else {
-      assert.match(r.stderr, /commit first/);
+      assert.ok(r.stderr.includes(head), "the warning names the checkout's head");
+      assert.match(r.stderr, /uncommitted changes no image carries/);
     }
     assert.doesNotMatch(r.stderr, /docker compose -f \S+ build|GIT_REV=/, "no hint names a bare compose build that skips the env file");
     assert.doesNotMatch(r.stderr, /rebuild the image \(`docker compose build`\)/);
@@ -772,21 +793,56 @@ for (const [name, shim] of shims) {
   });
 
   // THE IMAGE BUILDS THROUGH THE SHIM: a bare `docker compose build` reads no env file and fails on LARES_HOUSE.
-  test(`${name}: build runs compose build through the env file, baking the checkout's HEAD`, async () => {
+  // L3 (RD2): IT BUILDS FROM THE COMMIT, unpacked from `git archive` in a scratch folder under the house's cache.
+  test(`${name}: build runs compose build through the env file, from the commit's archive in the house's cache, baking that revision`, async () => {
     const r = await run(shim, ["build", "--no-cache"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=/w\n", checkout: "clean" });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /compose --env-file \S*\/home\/\.lares\/lares-surface\.env -f \S+ build --no-cache lares/);
+    assert.match(r.calls, /compose --env-file \S*\/home\/\.lares\/lares-surface\.env -f \S+ -f \S*\/house\/cache\/build-override\.\S+ build --no-cache lares/);
     assert.match(r.calls, /^GIT_REV=[0-9a-f]{40}$/m, r.calls);
-    assert.match(r.stderr, /rebuilding the vessel image \(every package\) from the committed checkout at [0-9a-f]{40}/);
     const stamped = r.calls.match(/^GIT_REV=([0-9a-f]{40})$/m)[1];
-    assert.ok(r.stderr.includes(`stands rebuilt, stamped revision ${stamped}`), "the done line names the revision it stamped");
+    // The override names the scratch context under the house's cache and carries the revision as a build arg.
+    assert.match(r.calls, /context: '\S*\/house\/cache\/build\.[^']+'/);
+    assert.ok(r.calls.includes(`GIT_REV: '${stamped}'`), r.calls);
+    assert.match(r.calls, /^CTX \.\/tools\/lares-container\.(sh|ps1)$/m, "the archive unpacked into the context");
+    assert.match(r.stderr, new RegExp(`building the vessel image \\(every package\\) from commit ${stamped.slice(0, 12)}`));
+    assert.ok(r.stderr.includes(`stands rebuilt from ${stamped.slice(0, 12)} (revision ${stamped})`), "the done line names the revision it stamped");
+    assert.doesNotMatch(r.stderr, /leaves them out/);
+    assert.deepEqual(r.cacheLeft, [], "the scratch context and its override leave the cache");
   });
 
-  test(`${name}: build over a dirty checkout refuses by name, before docker builds`, async () => {
+  test(`${name}: build over a dirty checkout builds from HEAD, names what it left out, and no uncommitted or untracked byte rides the image`, async () => {
     const r = await run(shim, ["build"], { env: MOUNTS, checkout: "dirty" });
-    assert.equal(r.status, 2, r.stderr);
-    assert.match(r.stderr, /build refuses: the checkout holds uncommitted tracked changes[\s\S]*commit first/);
-    assert.doesNotMatch(r.calls, / build /);
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /^GIT_REV=[0-9a-f]{40}$/m, "the label names the commit, never -dirty");
+    assert.match(r.stderr, /the checkout holds 2 uncommitted or untracked path\(s\); the image builds from [0-9a-f]{12} and leaves them out/);
+    assert.match(r.stderr, /stray-untracked\.txt/);
+    assert.match(r.stderr, /lares-container\.(sh|ps1)/);
+    assert.doesNotMatch(r.calls, /^CTX \.\/stray-untracked\.txt$/m);
+    assert.match(r.calls, /^EDITED 0$/m, "the context carries the committed shim, not the edit");
+  });
+
+  test(`${name}: build --at <rev> builds that commit; a name that reads no commit refuses before docker builds`, async () => {
+    const r = await run(shim, ["build", "--at", "HEAD"], { env: MOUNTS, checkout: "clean" });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /^GIT_REV=[0-9a-f]{40}$/m);
+    const bad = await run(shim, ["build", "--at", "no-such-rev"], { env: MOUNTS, checkout: "clean" });
+    assert.equal(bad.status, 2, bad.stderr);
+    assert.match(bad.stderr, /build refuses: no-such-rev names no commit/);
+    assert.doesNotMatch(bad.calls, / build /);
+  });
+
+  test(`${name}: build archives each submodule at its pinned commit, never where its checkout has moved`, async () => {
+    const r = await run(shim, ["build"], { env: MOUNTS, checkout: "submodule" });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /^CTX \.\/vendor\/sub\/pinned\.txt$/m, r.calls);
+    assert.doesNotMatch(r.calls, /^CTX \.\/vendor\/sub\/moved\.txt$/m);
+  });
+
+  test(`${name}: a build that fails names it, and the scratch context leaves the house's cache`, async () => {
+    const r = await run(shim, ["build"], { env: { ...MOUNTS, FAKE_BUILD_RC: "1" }, checkout: "clean" });
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /the build failed/);
+    assert.deepEqual(r.cacheLeft, []);
   });
 
   test(`${name}: build with no checkout refuses by name, before docker builds`, async () => {

@@ -11,9 +11,12 @@
 #                                                and/or a paper pin, and `--hearth` prints the seed card and reads it
 #                                                back; with no TTY the CLI refuses CredentialTtyRefusal)
 #   lares-container.sh logs [compose-logs args]  follow the vessel's log
-#   lares-container.sh build [compose-build args] rebuild the vessel image (every package the vessel runs) from the
-#                                                committed checkout, through the env file, stamping HEAD as its
-#                                                revision label; a dirty checkout, or none, refuses
+#   lares-container.sh build [--at <rev>] [compose-build args]
+#                                                build the vessel image (every package the vessel runs) from one commit
+#                                                (HEAD unless --at names another), unpacked from its archive under the
+#                                                house's cache, through the env file, stamping that revision as its
+#                                                label; an uncommitted or untracked file never rides it, and a dirty
+#                                                tree builds from HEAD and names what it left out; no checkout refuses
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing.
 #                                                Every stand and restart this shim performs (`up` too) warns when the
@@ -227,9 +230,10 @@ unlock_or_name() {
   fi
 }
 
-# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD. A rebuild bakes `GIT_REV` into the image; an image that names
-# another revision, or none, runs older code than the checkout holds. A dirty tree labels `<sha>-dirty`, which no clean
-# build matches. It warns and stands: the operator decides whether the rebuild is owed. No git, or no checkout: it skips.
+# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD. A build bakes the commit it built from into the image; an image
+# that names another revision, or none, runs older code than the checkout holds. Uncommitted changes never ride an image
+# (a build reads the commit), so the label reads against HEAD alone. It warns and stands: the operator decides whether
+# the rebuild is owed. No git, or no checkout: it skips.
 SHIM_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 GIT_REV=""; GIT_DIRTY=""
 if GIT_REV=$(git -C "$SHIM_DIR" rev-parse HEAD 2>/dev/null) && [ -n "$GIT_REV" ]; then
@@ -246,9 +250,9 @@ warn_image_revision() {
   cid=$(compose ps -q lares 2>/dev/null) || return 0
   [ -n "$cid" ] || return 0
   label=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$cid" 2>/dev/null | LC_ALL=C sed -e 's/[[:cntrl:]]//g' -e 's/\xc2[\x80-\x9f]//g') || return 0
-  [ "$label" != "$GIT_REV" ] || return 0
+  [ "$label" != "${GIT_REV%-dirty}" ] || return 0
   if [ -n "$GIT_DIRTY" ]; then
-    printf 'lares-container: the image names revision %s and the checkout holds uncommitted changes; commit first, then rebuild with `tools/lares-container.sh build` and `up` again\n' "${label:-none}" >&2
+    printf 'lares-container: the image names revision %s and the checkout stands at %s, beside uncommitted changes no image carries; rebuild from the commit with `tools/lares-container.sh build`, then `up` again\n' "${label:-none}" "${GIT_REV%-dirty}" >&2
   else
     printf 'lares-container: the image names revision %s and the checkout stands at %s; rebuild with `tools/lares-container.sh build`, then `up` again\n' "${label:-none}" "$GIT_REV" >&2
   fi
@@ -529,6 +533,60 @@ warn_pulama_skew() {
   printf 'lares-container: the pūlama runs image %s, and %s stands at %s; it keeps the older code until `tools/lares-container.sh down` and `tools/lares-container.sh pulama restand` (then light it by hand, `up`, and `pulama admit`)\n' "$skew_ran" "$skew_image" "$skew_stands" >&2
 }
 
+# THE IMAGE BUILDS FROM A COMMIT (road rank 4l, RD2), never from the live tree. `git archive <rev>`, and each submodule's
+# own archive at the commit the revision pins, unpack in a scratch folder under the house's cache (outside the checkout
+# and outside every bind), and compose builds from there through the env file, an override naming that folder as the
+# context and the revision as the label. So an untracked or uncommitted file never rides an image; a dirty tree builds
+# from HEAD and names what it left out. A submodule whose checkout lacks the pinned commit is named and left out.
+IMAGE_REF=$(value_of LARES_IMAGE); [ -n "$IMAGE_REF" ] || IMAGE_REF=lares-surface:local
+BUILT_REV=""
+build_image() { # $1 = the revision; the rest = compose-build args
+  b_at=$1; shift
+  [ -n "$GIT_REV" ] || die "build refuses: no git checkout answers at $SHIM_DIR, so the image's revision label would name no commit; build from a checkout"
+  b_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel) || die "build refuses: no git checkout answers at $SHIM_DIR"
+  b_rev=$(git -C "$b_top" rev-parse --verify --quiet "$b_at^{commit}") || die "build refuses: $b_at names no commit in $b_top; nothing built"
+  b_short=$(printf '%s' "$b_rev" | cut -c1-12)
+  b_left=$(git -C "$b_top" status --porcelain 2>/dev/null) || b_left=""
+  if [ -n "$b_left" ]; then
+    printf 'lares-container: the checkout holds %s uncommitted or untracked path(s); the image builds from %s and leaves them out:\n' "$(printf '%s\n' "$b_left" | wc -l | tr -d ' ')" "$b_short" >&2
+    printf '%s\n' "$b_left" | head -n 20 | sed 's/^/  /' >&2
+  fi
+  mkdir -p -- "$HOUSE/cache" || die "cannot make $HOUSE/cache; nothing built"
+  b_ctx=$(mktemp -d "$HOUSE/cache/build.XXXXXX") || die "cannot make a scratch folder under $HOUSE/cache; nothing built"
+  b_ov="$HOUSE/cache/build-override.${b_ctx##*.}"
+  case "$(realpath -m -- "$b_ctx")/" in "$(realpath -m -- "$b_top")/"*) rm -rf -- "$b_ctx"; die "build refuses: the house's cache ($HOUSE/cache) rests inside the checkout; name a LARES_HOUSE outside it" ;; esac
+  case "$b_ctx" in *"'"*|*"
+"*) rm -rf -- "$b_ctx"; die "build refuses a house path that holds a quote or a newline" ;; esac
+  b_fail() { rm -rf -- "$b_ctx" "$b_ctx.tar" "$b_ov"; die "$1"; }
+  git -C "$b_top" archive --format=tar -o "$b_ctx.tar" "$b_rev" && tar -xf "$b_ctx.tar" -C "$b_ctx" || b_fail "the archive of $b_short did not unpack; nothing built"
+  rm -f -- "$b_ctx.tar"
+  # Each submodule at the commit this revision pins (a gitlink: mode 160000), from its own checkout.
+  b_mods=$(git -C "$b_top" ls-tree -r "$b_rev" | awk -F '\t' '$1 ~ / commit / { split($1, m, " "); print m[3] " " $2 }')
+  if [ -n "$b_mods" ]; then
+    while IFS=' ' read -r b_sha b_path; do
+      [ -n "$b_sha" ] || continue
+      if [ -e "$b_top/$b_path/.git" ] && git -C "$b_top/$b_path" cat-file -e "$b_sha^{commit}" 2>/dev/null; then
+        mkdir -p -- "$b_ctx/$b_path"
+        git -C "$b_top/$b_path" archive --format=tar -o "$b_ctx.tar" "$b_sha" && tar -xf "$b_ctx.tar" -C "$b_ctx/$b_path" || b_fail "the submodule $b_path at $(printf '%s' "$b_sha" | cut -c1-12) did not unpack; nothing built"
+        rm -f -- "$b_ctx.tar"
+      else
+        printf 'lares-container: the submodule %s stands unchecked-out or lacks its pinned commit %s here, so the image builds without it\n' "$b_path" "$(printf '%s' "$b_sha" | cut -c1-12)" >&2
+      fi
+    done <<EOF
+$b_mods
+EOF
+  fi
+  printf "services:\n  lares:\n    build:\n      context: '%s'\n      args:\n        GIT_REV: '%s'\n" "$b_ctx" "$b_rev" > "$b_ov"
+  GIT_REV=$b_rev; export GIT_REV
+  printf 'lares-container: building the vessel image (every package) from commit %s\n' "$b_short" >&2
+  if [ -n "$ENV_ARGS" ]; then b_envf=$ENV_FILE; else b_envf=/dev/null; fi
+  if docker compose --env-file "$b_envf" -f "$COMPOSE_FILE_PATH" -f "$b_ov" build "$@" lares; then b_rc=0; else b_rc=$?; fi
+  rm -rf -- "$b_ctx" "$b_ov"
+  [ "$b_rc" -eq 0 ] || die "the build failed (above); $IMAGE_REF stands as it stood"
+  BUILT_REV=$b_rev
+  printf 'lares-container: the vessel image stands rebuilt from %s (revision %s); `up` stands it\n' "$b_short" "$b_rev" >&2
+}
+
 case "$verb" in
   up)
     ensure_house
@@ -719,14 +777,9 @@ case "$verb" in
     image_digest
     printf '%s\n' "$digest" ;;
   build)
-    # THE IMAGE BUILDS THROUGH THE SHIM: compose reads the env file (LARES_HOUSE, LARES_WORKSPACE interpolate), and the
-    # revision label names the commit the checkout stands at. A label must name a real commit, so a dirty checkout
-    # refuses (commit first), and so does a shim outside any checkout (the label would read empty).
-    [ -n "$GIT_REV" ] || die "build refuses: no git checkout answers at $SHIM_DIR, so the image's revision label would name no commit; build from a checkout"
-    [ -z "$GIT_DIRTY" ] || die "build refuses: the checkout holds uncommitted tracked changes, so the image's revision label ($GIT_REV) would name no real commit; commit first, then run build again"
-    printf 'lares-container: rebuilding the vessel image (every package) from the committed checkout at %s\n' "$GIT_REV" >&2
-    compose build "$@" lares
-    printf 'lares-container: the vessel image stands rebuilt, stamped revision %s; `up` stands it\n' "$GIT_REV" >&2 ;;
+    at=HEAD
+    if [ "${1:-}" = --at ]; then [ "$#" -ge 2 ] || die "build --at wants a revision"; at=$2; shift 2; fi
+    build_image "$at" "$@" ;;
   found)
     ensure_house
     # shellcheck disable=SC2046
