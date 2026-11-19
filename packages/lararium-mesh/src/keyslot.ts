@@ -455,6 +455,25 @@ export async function openTreeKey(tree: SlotTree, credentials: readonly Credenti
   return { reading: "no-slot-opens", notes };
 }
 
+/** One slot the presented credentials open: its id, threshold and pin count, and the credentials (by index) that opened it. */
+export interface ProvedSlot { readonly slot: string; readonly t: number; readonly pins: number; readonly opener: readonly number[] }
+
+/**
+ * EVERY slot the presented credentials open, each tried alone, in tree order: an act that proves several routes (a passphrase
+ * and a paper sheet, each a slot of its own) learns each, where `openTreeKey` stops at the first. Holds no tree key: each one
+ * opened zero-fills before the next slot reads. A slot that opens to a key the tree does not commit to proves nothing.
+ */
+export async function slotsOpenedBy(tree: SlotTree, credentials: readonly Credential[], kdf: KdfPort): Promise<ProvedSlot[]> {
+  const out: ProvedSlot[] = [];
+  for (const slot of tree.slots) {
+    const u = await openTreeKey({ keyCheck: tree.keyCheck, slots: [slot] }, credentials, kdf);
+    if (u.reading !== "opens") continue;
+    u.treeKey.fill(0);
+    out.push({ slot: slot.id, t: slot.t, pins: slot.pins.length, opener: u.opener });
+  }
+  return out;
+}
+
 // ── the tree at rest ─────────────────────────────────────────────────────────────────────────────
 
 /** Encode the tree as JSON bytes. */

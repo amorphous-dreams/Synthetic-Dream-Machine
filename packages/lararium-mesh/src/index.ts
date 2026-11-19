@@ -656,8 +656,8 @@ export type {
   CustodyIo, SealedCarrier, SealedCarrierUpdate, StandingCarrier, TreeKeyReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateTreeKeyArgs, SettleRotationArgs,
   WriteFaceCarrierArgs, RotateFckArgs, CommitFaceTreeArgs, WriteWardCarrierArgs,
 } from "./sealed-writer.js";
-export { bindSlot, unbindSlot, openTreeKey, nobleKdf, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper, mintPasskeySalt, openPasskeyPin, PIN_KINDS } from "./keyslot.js";
-export type { KdfPort, ScryptCost, PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, PinKind, PinRecord, PasskeyPinRecord, Credential, TreeKeyUnlock, SlotTreeReading } from "./keyslot.js";
+export { bindSlot, unbindSlot, openTreeKey, slotsOpenedBy, nobleKdf, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper, mintPasskeySalt, openPasskeyPin, PIN_KINDS } from "./keyslot.js";
+export type { ProvedSlot, KdfPort, ScryptCost, PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, PinKind, PinRecord, PasskeyPinRecord, Credential, TreeKeyUnlock, SlotTreeReading } from "./keyslot.js";
 export { mintTreeKey, treeKeyEquals } from "./tree-key.js";
 // The keep pair: a keep bundle's roster seals to its public half; its secret rests wrapped under the human's routes — see `keep-seat`.
 export { mintKeepSeat, mintKeepSeatUnder, openKeepSecret, bindKeepSlot, sealToKeep, openFromKeep, encodeKeepSeat, decodeKeepSeat, signKeepCut, verifyKeepCut, keepVerifyKeyOf } from "./keep-seat.js";

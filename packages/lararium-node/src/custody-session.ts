@@ -29,10 +29,11 @@
  * bare under; a hot or cold row that reads anything but `sealed` reads as a fault.
  */
 
+import type { ProvedSlot } from "@lararium/mesh";
 import { mkdirSync } from "node:fs";
 import {
   assertStoreUnoccupied, bindSlot, commitSlotTree, decodeSlotTree, mintServingKey, mintTreeKey,
-  openTreeKey, readFckCarrier, readWardCarrier, readSCarrier, settleRotation, unbindSlot,
+  openTreeKey, slotsOpenedBy, readFckCarrier, readWardCarrier, readSCarrier, settleRotation, unbindSlot,
   type Credential, type CustodyIo, type KdfPort, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type SCarrierReading,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
@@ -164,14 +165,14 @@ export async function openServingTree(args: {
 }
 
 export type CustodyUnlock =
-  | { readonly reading: "opens"; readonly treeKey: TreeKey; readonly sk: ServingKey | null; readonly slot: string; readonly opener: readonly number[] }
+  | { readonly reading: "opens"; readonly treeKey: TreeKey; readonly sk: ServingKey | null; readonly slot: string; readonly opener: readonly number[]; readonly proved: readonly ProvedSlot[] }
   | { readonly reading: "no-slot-opens"; readonly notes: readonly string[] }
   | { readonly reading: "tree-absent" }
   | { readonly reading: "tree-unreadable"; readonly why: string };
 
 /** What a route opens at the slot tree alone: the node key, or the reading that names why not. */
 export type CustodyNodeKeyOpening = Exclude<CustodyUnlock, { reading: "opens" }>
-  | { readonly reading: "opens"; readonly treeKey: TreeKey; readonly slot: string; readonly opener: readonly number[] };
+  | { readonly reading: "opens"; readonly treeKey: TreeKey; readonly slot: string; readonly opener: readonly number[]; readonly proved: readonly ProvedSlot[] };
 
 /**
  * Open the node key (S) alone with the presented credentials, settling a left-behind rotation first; never throws on a
@@ -190,7 +191,13 @@ export async function openCustodyNodeKey(args: {
   if (reading.reading === "unreadable") return { reading: "tree-unreadable", why: reading.why };
   const o = await openTreeKey(reading.tree, args.credentials, nativeKdf);
   if (o.reading !== "opens") return { reading: "no-slot-opens", notes: o.notes };
-  return { reading: "opens", treeKey: o.treeKey, slot: o.slot, opener: o.opener };
+  // EVERY ROUTE THE ACT PROVED: the slot that opened, and each other slot the same credentials open (tried alone, holding no key).
+  const opened = reading.tree.slots.find((s) => s.id === o.slot)!;
+  const rest = reading.tree.slots.filter((s) => s.id !== o.slot);
+  let others: ProvedSlot[] = [];
+  try { others = rest.length > 0 ? await slotsOpenedBy({ keyCheck: reading.tree.keyCheck, slots: rest }, args.credentials, nativeKdf) : []; }
+  catch (err) { o.treeKey.fill(0); throw err; }
+  return { reading: "opens", treeKey: o.treeKey, slot: o.slot, opener: o.opener, proved: [{ slot: o.slot, t: opened.t, pins: opened.pins.length, opener: o.opener }, ...others] };
 }
 
 /** The two opens an unlock runs. The vessel passes none and gets the real pair; a suite wraps them to watch a key. */
@@ -216,7 +223,7 @@ export async function unlockCustody(args: {
   let s: Awaited<ReturnType<typeof openServingTree>>;
   try { s = await open.serving({ io, homes, credentials: args.credentials }); }
   catch (err) { o.treeKey.fill(0); throw err; }
-  return { reading: "opens", treeKey: o.treeKey, sk: s.reading === "opens" ? s.sk : null, slot: o.slot, opener: o.opener };
+  return { reading: "opens", treeKey: o.treeKey, sk: s.reading === "opens" ? s.sk : null, slot: o.slot, opener: o.opener, proved: o.proved };
 }
 
 /** Bind one more slot over the standing tree's own S key. Returns the new tree and the new slot's id. */

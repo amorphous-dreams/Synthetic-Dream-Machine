@@ -136,20 +136,44 @@ function weakPassphrase(p: string): boolean {
 
 const WEAK_LINE = "keep: keep-passphrase-weak: the keep's wrapped secret rides its remote, where anyone who copies it may guess offline; this passphrase reads short. The keep seats anyway; a longer custody passphrase (`lares vault bind --passphrase`, then `lares vault unbind` the old slot) re-seats it stronger";
 
-/** Mint a fresh pair under `opener` and prove it opens before it rests; `replace` writes over a seat that rests. */
-async function mintUnder(opener: readonly Credential[], say: (line: string) => void, testRoute = false): Promise<KeepSeat | null> {
-  const pins = opener.map(pinOf);
-  if (pins.length === 0 || pins.some((p) => p === null)) return null;
-  const { seat, signingSeed } = await mintKeepSeat({ t: pins.length, pins: pins as PinSpec[] }, nativeKdf);
-  // THE SELF-CHECK: the seat opens under the very route it seated under before it rests, so no mint locks a restore out, and the
+/** One route an act proved: the credentials of one custody slot, and that slot's threshold and pin count. */
+export interface ProvedRoute { readonly creds: readonly Credential[]; readonly t: number; readonly pins: number }
+
+const kindsOf = (creds: readonly Credential[]): string => creds.map((c) => c.kind).join(" + ");
+const routeOf = (creds: readonly Credential[]): ProvedRoute => ({ creds, t: creds.length, pins: creds.length });
+
+/**
+ * Mint a fresh pair under EVERY route the act proved, one keep slot per route at the pins the act typed, and prove each opens
+ * before anything rests. A custody slot of t-of-n whose act typed only its t pins seats t-of-t over them, and says so: the act
+ * holds no other pin to bind. `replace` writes over a seat that rests.
+ */
+async function mintUnder(routes: readonly ProvedRoute[], say: (line: string) => void, testRoute = false): Promise<KeepSeat | null> {
+  const specs: SlotSpec[] = [];
+  for (const r of routes) {
+    const pins = r.creds.map(pinOf);
+    if (pins.length === 0 || pins.some((p) => p === null)) continue;
+    specs.push({ t: pins.length, pins: pins as PinSpec[] });
+  }
+  const bound = routes.filter((r) => r.creds.map(pinOf).every((p) => p !== null) && r.creds.length > 0);
+  if (specs.length === 0) return null;
+  let { seat, signingSeed } = await mintKeepSeat(specs[0]!, nativeKdf);
+  for (const spec of specs.slice(1)) {
+    const b = await bindKeepSlot(seat, bound[0]!.creds, spec, nativeKdf);
+    if (b.reading !== "bound") throw new KeepSeatRefused("keep-seat-unchecked", `a second proved route would not join the fresh pair (${b.reading}); nothing rests`);
+    seat = b.seat;
+  }
+  // THE SELF-CHECK: the seat opens under every route it seated under before it rests, so no mint locks a restore out, and the
   // verify key it opens to answers the seed the house keeps.
-  const check = await openKeepSecret(seat, opener, nativeKdf);
-  if (check.reading !== "opens") throw new KeepSeatRefused("keep-seat-unchecked", `the keep pair minted under this route did not open under it (${check.reading}); nothing rests`);
-  const answers = Buffer.from(check.verifyKey).equals(Buffer.from(keepVerifyKeyOf(signingSeed)));
-  check.secret.fill(0); check.signingSeed.fill(0);
-  if (!answers) throw new KeepSeatRefused("keep-seat-unchecked", "the keep pair minted under this route opened to another signing key; nothing rests");
+  for (const r of bound) {
+    const check = await openKeepSecret(seat, r.creds, nativeKdf);
+    if (check.reading !== "opens") throw new KeepSeatRefused("keep-seat-unchecked", `the keep pair minted under this route did not open under it (${check.reading}); nothing rests`);
+    const answers = Buffer.from(check.verifyKey).equals(Buffer.from(keepVerifyKeyOf(signingSeed)));
+    check.secret.fill(0); check.signingSeed.fill(0);
+    if (!answers) throw new KeepSeatRefused("keep-seat-unchecked", "the keep pair minted under this route opened to another signing key; nothing rests");
+  }
   writeResting(seat, null, signingSeed, testRoute);
-  if (opener.some((c) => c.kind === "passphrase" && weakPassphrase(c.passphrase))) say(WEAK_LINE);
+  for (const r of bound) if (r.pins > r.t) say(`keep: a custody slot of ${r.t}-of-${r.pins} opened under the ${r.t} pin(s) this act typed (${kindsOf(r.creds)}); the keep binds those ${r.t} as ${r.t}-of-${r.t}, since the act holds no other pin of that slot to bind`);
+  if (bound.some((r) => r.creds.some((c) => c.kind === "passphrase" && weakPassphrase(c.passphrase)))) say(WEAK_LINE);
   return seat;
 }
 
@@ -158,10 +182,16 @@ async function mintUnder(opener: readonly Credential[], say: (line: string) => v
  * route that opens the house moved). A bundle a keep cut before carries its own seat and still opens under the old route; every
  * later keep seals to the new pair. A paper slot the old seat held joins again at the next `vault bind --paper`.
  */
-export async function reseatKeepPair(opener: readonly Credential[], say: (line: string) => void): Promise<boolean> {
-  const seat = await mintUnder(opener, say);
+export async function reseatKeepPair(routes: ReadonlyArray<readonly Credential[]>, say: (line: string) => void, shapes?: readonly ProvedRoute[]): Promise<boolean> {
+  const before = readResting();
+  const proved = shapes ?? routes.map(routeOf);
+  const seat = await mintUnder(proved, say);
   if (seat === null) return false;
-  say(`keep: a fresh keep pair seats under the route just proved (${keepSeatPath()}); every later keep seals to it, and a keep cut before still opens under the route it sealed under`);
+  say(`keep: a fresh keep pair seats under ${proved.length === 1 ? "the route" : `the ${proved.length} routes`} just proved (${proved.map((r) => kindsOf(r.creds)).join("; ")}) at ${keepSeatPath()}; every later keep seals to it`);
+  if (before !== null) {
+    const left = before.seat.slots.slots.map((sl) => sl.pins.map((p) => p.kind).join(" + "));
+    say(`keep: the old keep's routes leave every later keep: ${left.length} slot(s) (${left.join("; ")}); a keep cut before still opens under them`);
+  }
   return true;
 }
 
@@ -173,46 +203,80 @@ export async function reseatKeepPair(opener: readonly Credential[], say: (line: 
 export async function seatKeepPair(opener: readonly Credential[], say: (line: string) => void = () => {}, testRoute = false): Promise<{ readonly seated: boolean; readonly seat: KeepSeat | null }> {
   const resting = readResting();
   if (resting !== null) return { seated: false, seat: resting.seat };
-  const seat = await mintUnder(opener, say, testRoute);
+  const seat = await mintUnder([routeOf(opener)], say, testRoute);
   return { seated: seat !== null, seat };
 }
 
-/** What the custody open answered an unlock: `opens` with its opener, or a reading that proved nothing. */
-export interface CustodyOpenAnswer { readonly reading: string; readonly opener?: readonly number[] }
+/** What the custody open answered an unlock: `opens` with its opener and every slot the act proved, or a reading that proved nothing. */
+export interface CustodyOpenAnswer {
+  readonly reading: string;
+  readonly opener?: readonly number[];
+  readonly proved?: ReadonlyArray<{ readonly t: number; readonly pins: number; readonly opener: readonly number[] }>;
+}
+
+/** The routes an answer proved, as credentials; null where an index names no credential presented. */
+export function provedRoutes(answer: CustodyOpenAnswer, route: readonly Credential[]): ProvedRoute[] | null {
+  type Group = { readonly t: number; readonly pins: number; readonly opener: readonly number[] };
+  const groups: readonly Group[] = Array.isArray(answer.proved) && answer.proved.length > 0 ? answer.proved : Array.isArray(answer.opener) && answer.opener.length > 0 ? [{ t: answer.opener.length, pins: answer.opener.length, opener: answer.opener }] : [];
+  const out: ProvedRoute[] = [];
+  for (const g of groups) {
+    const creds = g.opener.map((i: number) => route[i]);
+    if (creds.length === 0 || creds.some((c: Credential | undefined) => c === undefined)) return null;
+    out.push({ creds: creds as Credential[], t: g.t, pins: g.pins });
+  }
+  return out.length > 0 ? out : null;
+}
 
 /**
  * THE UNLOCK'S MOMENT. Only an answer that OPENED proves a route: `already-unlocked` tested nothing, so it seats nothing and checks
- * nothing. From an opening, the credentials it names as its opener seat the keep pair where none rests (a passkey among them seats
- * nothing: the keep binds human routes alone); where a seat rests, the opener must open it, and a seat it does not open warns by
- * name (`keep-seat-unopened`): the house's custody route moved and the keep still seals to the old one, so run `lares vault reseat`.
+ * nothing. From an opening, EVERY route the act proved counts (a passphrase and a paper sheet, each a slot of its own): where no
+ * seat rests they all seat; where one rests, a proved route that opens it lets each other proved route JOIN it as a slot of its
+ * own, so two custody routes stop flip-flopping the keep; where none opens it, the house warns by name (`keep-seat-unopened`): the
+ * custody route moved and the keep still seals to the old one, so run `lares vault reseat`. A passkey seats nothing.
  */
-export async function seatKeepAtUnlock(answer: CustodyOpenAnswer, route: readonly Credential[], say: (line: string) => void): Promise<"seated" | "resting" | "resting-unopened" | "unproved" | "unseatable" | "unseated"> {
-  if (answer.reading !== "opens" || !Array.isArray(answer.opener) || answer.opener.length === 0) return "unproved";
-  const opener = answer.opener.map((i) => route[i]).filter((c): c is Credential => c !== undefined);
-  if (opener.length !== answer.opener.length) return "unproved";
+export async function seatKeepAtUnlock(answer: CustodyOpenAnswer, route: readonly Credential[], say: (line: string) => void): Promise<"seated" | "joined" | "resting" | "resting-unopened" | "unproved" | "unseatable" | "unseated"> {
+  if (answer.reading !== "opens") return "unproved";
+  const proved = provedRoutes(answer, route);
+  if (proved === null) return "unproved";
   try {
     const resting = readResting();
     // A SEAT THE TEST ROUTE MADE gives way to the first real proved route: the world reads the test passphrase.
-    const real = opener.some((c) => !(c.kind === "passphrase" && c.passphrase === TEST_ROUTE_PASSPHRASE));
+    const real = proved.some((r) => r.creds.some((c) => !(c.kind === "passphrase" && c.passphrase === TEST_ROUTE_PASSPHRASE)));
     if (resting !== null && resting.testRoute && real) {
-      if (await mintUnder(opener, say) === null) return "unseatable";
+      if (await mintUnder(proved, say) === null) return "unseatable";
       say(`keep: the keep pair the test route seated gives way to one under the route this unlock proved (${keepSeatPath()})`);
       return "seated";
     }
     if (resting !== null) {
-      const o = await openKeepSecret(resting.seat, opener, nativeKdf);
-      if (o.reading === "opens") {
-        // A SEAT THAT LOST ITS SIGNING SEED takes it back here: the proved route opened the very key it derives from.
-        if (resting.signingSeed === null) writeResting(resting.seat, resting.lastRoster, o.signingSeed, resting.testRoute);
-        o.secret.fill(0); o.signingSeed.fill(0);
-        return "resting";
+      const opens: ProvedRoute[] = [], lacks: ProvedRoute[] = [];
+      let seed: Uint8Array | null = null;
+      for (const r of proved) {
+        const o = await openKeepSecret(resting.seat, r.creds, nativeKdf);
+        if (o.reading === "opens") { opens.push(r); o.secret.fill(0); if (seed === null) seed = o.signingSeed; else o.signingSeed.fill(0); }
+        else lacks.push(r);
       }
-      say(`keep: keep-seat-unopened: the route this unlock proved opens no slot of the keep pair at ${keepSeatPath()}, so a restore would ask for a route the steward may no longer hold; run \`lares vault reseat\` to seat a fresh pair under this route`);
-      return "resting-unopened";
+      if (opens.length === 0) {
+        say(`keep: keep-seat-unopened: the route this unlock proved opens no slot of the keep pair at ${keepSeatPath()}, so a restore would ask for a route the steward may no longer hold; run \`lares vault reseat\` to seat a fresh pair under this route`);
+        return "resting-unopened";
+      }
+      // A SEAT THAT LOST ITS SIGNING SEED takes it back here: the proved route opened the very key it derives from.
+      let seat = resting.seat;
+      const joined: string[] = [];
+      for (const r of lacks) {
+        const pins = r.creds.map(pinOf);
+        if (pins.some((p) => p === null)) continue;
+        const b = await bindKeepSlot(seat, opens[0]!.creds, { t: pins.length, pins: pins as PinSpec[] }, nativeKdf);
+        if (b.reading === "bound") { seat = b.seat; joined.push(kindsOf(r.creds)); }
+      }
+      if (joined.length > 0 || resting.signingSeed === null) writeResting(seat, resting.lastRoster, resting.signingSeed ?? seed, resting.testRoute);
+      seed?.fill(0);
+      if (joined.length === 0) return "resting";
+      say(`keep: ${joined.length === 1 ? "a route" : `${joined.length} routes`} this unlock proved (${joined.join("; ")}) join the keep pair at ${keepSeatPath()}: a restore opens it under any proved route`);
+      return "joined";
     }
-    const { seated } = await seatKeepPair(opener, say);
-    if (!seated) return "unseatable";
-    say(`keep: the keep pair seats under the route this unlock proved (${keepSeatPath()}); a keep's roster seals to it, and a restore opens it with that same route`);
+    const seat = await mintUnder(proved, say);
+    if (seat === null) return "unseatable";
+    say(`keep: the keep pair seats under the route${proved.length === 1 ? "" : "s"} this unlock proved (${proved.map((r) => kindsOf(r.creds)).join("; ")}) at ${keepSeatPath()}; a keep's roster seals to it, and a restore opens it with any of them`);
     return "seated";
   } catch (e) {
     say(`keep: the keep pair did not seat (${e instanceof Error ? e.message : String(e)}); the next proved unlock seats it`);
