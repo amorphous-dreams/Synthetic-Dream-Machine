@@ -18,6 +18,7 @@
  */
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
+import { wikiIslandWithholds, vesselDocBags, type WikiIslandMount } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -59,7 +60,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -1043,6 +1044,9 @@ async function prepareNodeBootOn(
       sealNowMapped(documentId);
       return;
     }
+    // A SIBLING'S RESOLVER NAMES ITS DAEMON DEVICE SLOTS ALONE (above): a face's own layer of a user wiki it named would file
+    // under the WORN face here, so it files nowhere and the log names it.
+    if (sibling && isFaceSlotBag(bagId)) { console.warn(`[sealed-rest] a lit sibling named ${bagId} (${documentId.slice(0, 8)}…): a face's own layer of a wiki files under its own face's mount, never the worn face's map`); return; }
     const named = slotDocsNamed.get(bagId) ?? new Set<string>();
     if (named.has(documentId)) return;
     named.add(documentId);
@@ -1417,7 +1421,10 @@ async function prepareNodeBootOn(
   // then no peer reads as the house's own.
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
   // The wiki islands among them (the pool marks each): they render pages and receive no custody document.
-  let wikiIslands: { has(peerId: string): boolean } = new Set<string>();
+  let wikiIslands: { has(peerId: string): boolean; mountOf(peerId: string): WikiIslandMount | null } = { has: () => false, mountOf: () => null };
+  // A WIKI ISLAND RECEIVES WHAT ITS OWN MOUNT NAMES (`wiki-island-reach`): the bag the vessel files each document under, by the
+  // resolver's names, the daemon document's own layer and the catalog's rows.
+  const vesselDocBagOf = vesselDocBags({ slotDocs: slotDocsNamed, catalog: () => sealedCells.catalog(), named: () => [[DAEMON_BAG_ID, sealedCells.mounted(DAEMON_BAG_ID)]] });
   // The deny set GROWS as the control document names device documents: each growth re-asks every cached verdict.
   const vesselOnly = vesselOnlyBook(() => repo);
   const repo = new Repo({
@@ -1456,6 +1463,10 @@ async function prepareNodeBootOn(
       const ownFaceWorking = peerFace !== null && documentId !== undefined && deviceDocs.workingGroupOf(String(documentId))?.toLowerCase() === peerFace.toLowerCase();
       const vesselVerdict = vesselOnlyShareVerdict(vesselOnlyClass({ named: vesselOnly, held: secretHomes, device: deviceDocs, catalog: () => sealedCells.catalog() }), { has: (p) => houseIslands.has(p) && (!wikiIslands.has(p) || (documentId !== undefined && deviceDocs.floorWiki(documentId))) }, peerId, documentId, !!wsSocket, Boolean(siblings?.provenKeyOf(peerId as PeerId)), ownFaceWorking);
       if (vesselVerdict !== undefined) return vesselVerdict;
+      // A WIKI ISLAND NEVER RECEIVES ANOTHER WIKI'S LAYER, THE DAEMON DOCUMENT OR A FACE'S PLANES: its own store rests what it
+      // receives, so the vessel withholds every document its mount does not name.
+      const islandMount = wsSocket ? null : wikiIslands.mountOf(peerId);
+      if (islandMount !== null && documentId !== undefined && wikiIslandWithholds(islandMount, vesselDocBagOf(String(documentId)))) return false;
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
       if (wsSocket && !peerIdentifierMap.has(peerId)) return false;
@@ -3515,7 +3526,9 @@ async function prepareNodeBootOn(
     wornFaceCanonBag = canonBagId && wornRelation ? canonBagId : null;
     const faceWikiBags = wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}) });
     // A house canon bag in this set never seals under the face: the map skips it (`sealedBagMap`, cap-tier.mem house canon).
-    sealedCells.bags = () => faceWikiBags.sealed;
+    // EVERY MARGIN AND DRAFT THE WORN FACE'S RESOLVER NAMED seals under the lit face beside them (`isFaceSlotBag`): the
+    // island registered each on the face's hive before it named it, so the map reads them live off the names it heard.
+    sealedCells.bags = () => wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}), announced: slotDocsNamed.keys() }).sealed;
     // THE LIT FACE'S DEVICE DAEMON DOCUMENTS (the control document names them): they seal under that face from here on.
     wornDeviceGroup = faceLit && wornFaceProved && personaGroupId ? personaGroupId : null;
     wornDeviceRelation = wornDeviceGroup !== null ? wornRelation : null;

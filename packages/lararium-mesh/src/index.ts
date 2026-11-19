@@ -311,6 +311,7 @@ export type { EffectiveRecipe, RecipePlane } from "./recipe-planes.js";
 export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surface-recipe.js";
 export type { WikiRecipeDerivation } from "./surface-recipe.js";
 export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival, markWikiIslandPeer, wikiIslandPeersOf } from "./island-repo.js";
+export { wikiIslandWithholds, vesselDocBags, wikiSlotOf, type WikiIslandMount } from "./wiki-island-reach.js";
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
 export { wireIdentityOf, seatDialLeg } from "./wire-identity.js";
 export type { WireIdentity, WireAlias, WireLegAt, WireLegSeat, WireLegRefusal, WornFace } from "./wire-identity.js";
@@ -617,7 +618,7 @@ export { waitHandle, LOCAL_READY_MS } from "./wait-handle.js";
 
 // The registered bag set, derived from the persona BINDING — founded stays private, admitted carries the fleet's.
 export type { FleetMembership, RegisterBagsInput } from "./register-bags.js";
-export { deriveRegisterBags, catalogNamedBags, isVesselGround, wornFaceWikiBags, standingDaemonCanonBag, litFaceOwnBags, DAEMON_WIKI_SLOT_BAGS, type WikiSlotBags } from "./register-bags.js";
+export { deriveRegisterBags, catalogNamedBags, isVesselGround, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, litFaceOwnBags, DAEMON_WIKI_SLOT_BAGS, type WikiSlotBags } from "./register-bags.js";
 export * from "./persona-scope.js";
 export * from "./persona-planes.js";
 export * from "./holdings-witness.js";
