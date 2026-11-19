@@ -277,7 +277,7 @@ export interface LarDiskProjectorOptions {
    * HEAD'S WORDS WHERE NO SYNCED BASE STANDS (`facePoolHeads`, face-pools A5). A re-found clears the Synced tree; a face
    * pool keeps its git history. For a carrier these records render and no base covers, HEAD's blob names the base: its
    * bytes the disk side, its canonical render the records side. Read only for records this projector renders, so a
-   * record the house no longer holds never gains a base. Absent → no history stands in for a base.
+   * record the house does not hold never gains a base. Absent → no history stands in for a base.
    */
   readonly baseFromGit?: BaseFromGit;
   /**
