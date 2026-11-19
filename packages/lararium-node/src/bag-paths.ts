@@ -154,7 +154,7 @@ export function namedBagMirror(
  *     wiki/              the face's daemon working layer
  *     canon/             the face's daemon canon (`bags/daemon-<F>`: the BAG keeps its relation, the folder never does)
  *     stage/             the kahua memory stage
- *     margins/<slug>/    the face's private margin over a shared wiki (its overlay layer, never a copy of the workbench)
+ *     personal/<slug>/    the face's personal layer over a shared wiki (its overlay layer, never a copy of the workbench)
  *     recovery/<slug>/   the face's unsaved drafts in a shared wiki
  *     temp/<slug>/       a shared wiki's consented temp layer, beside recovery
  *
@@ -165,7 +165,7 @@ export function namedBagMirror(
  */
 export const FACES_PROJECTION_DIR = "faces";
 /** The planes inside a face root. */
-export const FACE_PLANES = { wiki: "wiki", canon: "canon", stage: "stage", margins: "margins", recovery: "recovery", temp: TEMP_LAYER_DIR } as const;
+export const FACE_PLANES = { wiki: "wiki", canon: "canon", stage: "stage", personal: "personal", recovery: "recovery", temp: TEMP_LAYER_DIR } as const;
 
 /** Why a pet name makes no face segment, by name. */
 export type FaceSegmentCode =
@@ -235,9 +235,9 @@ export function realmRoot(projectionRoot: string, petName: string): string {
   return joinPath(projectionRoot, REALMS_PROJECTION_DIR, faceSegment(petName));
 }
 
-/** `<projections>/faces/<segment>/margins`: the plane a face's margins rest under, one folder per wiki slug. */
-export function faceMarginsRoot(projectionRoot: string, segment: string): string {
-  return joinPath(faceRoot(projectionRoot, segment), FACE_PLANES.margins);
+/** `<projections>/faces/<segment>/personal`: the plane a face's personal layers rest under, one folder per wiki slug. */
+export function facePersonalRoot(projectionRoot: string, segment: string): string {
+  return joinPath(faceRoot(projectionRoot, segment), FACE_PLANES.personal);
 }
 
 /**
@@ -464,7 +464,7 @@ export function houseIgnored(rel: string): string | null {
 /** One mirror plane a file reads back against. */
 export interface SiteMirror {
   /** The plane dir whose first segment names the holding slot (`<projections>/realms/<realm pet name>/wikis`, a face root `<projections>/faces/<pet name>`
-   *  over its `wiki`, `canon` and `stage`, or its `margins`): that segment never enters a title. */
+   *  over its `wiki`, `canon` and `stage`, or its `personal`): that segment never enters a title. */
   readonly planeDir: string;
   /** The holding mirror sites a foreign title at its own `/` path (`BagMirrorConfig.titlePaths`, the kahua stage). */
   readonly titlePaths?: boolean;

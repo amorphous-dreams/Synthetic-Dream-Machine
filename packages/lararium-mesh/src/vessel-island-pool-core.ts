@@ -208,7 +208,7 @@ export type DiskMirrorGrant = readonly {
   sourcedRoots?: Readonly<Record<string, string>>; consentSlugs?: readonly string[]; tempLayer?: boolean;
   /** A wiki's WORKING grant: the operator's workspace dir per slug (`/lar/workspaces/<name>`), where its share row names one. */
   workspaceRoots?: Readonly<Record<string, string>>;
-  /** A FACE-ROOTED grant (a wiki's personal margin, its drafts, its temp layer): the face root's folder of the face the composition
+  /** A FACE-ROOTED grant (a wiki's personal layer, its drafts, its temp layer): the face root's folder of the face the composition
    *  wears (its pet-name segment, `faces/<pet name>`), read at each mount, under the grant's `mirrorRoot` (`<projections>/faces`);
    *  none: no mirror. */
   faceFolder?: () => string | null;
@@ -247,10 +247,10 @@ export type DiskMirrorGrant = readonly {
  *  `realms/<pet name>/wikis/{slug}` (every realm carries a pet name: its default, the slug, minted on first read); a grant with
  *  no realm base keeps `{slug}` under its own root. No face relation enters that path. A mount
  *  whose face holds no writer's seat in the workbench designates no working mirror at all (`buildWikiMountSpec`), so it writes
- *  nothing there. A wiki's PERSONAL slot carries the wearing face's private margin (operator ruling 2026-11-11), so its
+ *  nothing there. A wiki's PERSONAL slot holds what the wearing face keeps for itself (operator ruling 2026-11-11), so its
  *  grant roots in the wearing face's root under the grant's OWN root and never beside a canon source:
- *  `faces/<pet name>/margins/{slug}`, read off the grant's `faceFolder` at each mount; with no face worn it yields no mirror.
- *  A margin mirrors the face's overlay layer alone, never a copy of the workbench (face-pools #/one-copy).
+ *  `faces/<pet name>/personal/{slug}`, read off the grant's `faceFolder` at each mount; with no face worn it yields no mirror.
+ *  A personal layer mirrors the face's overlay layer alone, never a copy of the workbench (face-pools #/one-copy).
  *
  *  OCAP-clean: authority stays in the static grant, designation in the synced
  *  recipe, the per-instance bag + subdir resolved here. */
@@ -287,7 +287,7 @@ export function resolveDiskMirrors(
         : g.mirrorRoot;
       const { sourcedRoots: _sourced, consentSlugs: _consent, workspaceRoots: _workspaces, faceFolder: _face, realmBase: _realm, ...held } = g;
       if (g.faceFolder !== undefined) {
-        const plane = g.wikiSlot === "personal" ? "margins" : g.wikiSlot === "temp" ? "temp" : "recovery";
+        const plane = g.wikiSlot === "personal" || g.wikiSlot === "temp" ? g.wikiSlot : "recovery";
         return { ...held, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${g.faceFolder()}/${plane}/${wikiSlug}`, ...(g.wikiSlot === "temp" ? { tempLayer: true } : {}) };
       }
       if (g.wikiSlot === "working" && Object.hasOwn(g.workspaceRoots ?? {}, wikiSlug)) return { ...held, bagId: perWikiBag(g), mirrorRoot: g.workspaceRoots![wikiSlug]! };

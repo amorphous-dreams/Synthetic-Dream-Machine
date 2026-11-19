@@ -947,7 +947,7 @@ async function prepareNodeBootOn(
   // --face N` removes N, and its waiting saves stay in memory, never written to disk.
   let wornDeviceGroup: string | null = null;
   let wornDeviceRelation: string | null = null;
-  /** THE WORN FACE'S FOLDER under `faces/` (its pet-name segment, `faceSiteOf`): the face-rooted grants (margins, drafts, temp)
+  /** THE WORN FACE'S FOLDER under `faces/` (its pet-name segment, `faceSiteOf`): the face-rooted grants (personal layers, drafts, temp)
    *  read it at each mount; null while no face stands lit or its pet name makes no folder. */
   let wornFaceSegment: string | null = null;
   /** THE WORN FACE'S DAEMON CANON BAG (`bags/daemon-<F>`), where it stands registered: the pool's `canon/` waves land there. */
@@ -3532,13 +3532,13 @@ async function prepareNodeBootOn(
     const faceStandsLit = faceLit && !!personaGroupId && wornFaceProved;
     const canonBagId = standingDaemonCanonBag({ lit: faceStandsLit, faceRelation: wornRelation });
     wornFaceCanonBag = canonBagId && wornRelation ? canonBagId : null;
-    // THE REGISTER SET CARRIES EVERY LAYER THE WORN FACE'S CATALOG ANNOUNCES (`catalogFaceSlotBags`): the mount's own margin,
-    // and the margin and draft of each wiki the catalog names, read off the catalog as it stands at each asking (the floor's
+    // THE REGISTER SET CARRIES EVERY LAYER THE WORN FACE'S CATALOG ANNOUNCES (`catalogFaceSlotBags`): the mount's own personal layer,
+    // and the personal layer and draft of each wiki the catalog names, read off the catalog as it stands at each asking (the floor's
     // rows at the island's open, the face's own once its catalog stands). The island registers them ahead of any slot
-    // document's open, so the holder founds each margin the resolver names. Only the worn face's catalog binds to this view.
+    // document's open, so the holder founds each personal layer the resolver names. Only the worn face's catalog binds to this view.
     const faceWikiBags = (): string[] => wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}), announced: catalogFaceSlotBags(assembly.catalogHandle.doc()) }).registered;
     // A house canon bag in this set never seals under the face: the map skips it (`sealedBagMap`, cap-tier.mem house canon).
-    // EVERY MARGIN AND DRAFT THE WORN FACE'S RESOLVER NAMED seals under the lit face beside them (`isFaceSlotBag`): the
+    // EVERY PERSONAL LAYER AND DRAFT THE WORN FACE'S RESOLVER NAMED seals under the lit face beside them (`isFaceSlotBag`): the
     // island registered each on the face's hive before it named it, so the map reads them live off the names it heard.
     sealedCells.bags = () => wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}), announced: slotDocsNamed.keys() }).sealed;
     // THE LIT FACE'S DEVICE DAEMON DOCUMENTS (the control document names them): they seal under that face from here on.
@@ -4617,7 +4617,7 @@ async function prepareNodeBootOn(
       // THE FACE-ROOTED GRANTS (face-pools #/shape): each holds one face's hand, so each rests in the wearing face's root
       // (`<projections>/faces/<pet name>/`), never under the shared `wikis/<slug>/` and never beside a canon source: nothing
       // face-private lands in a checkout or a realm pool. No face worn (or one whose pet name makes no folder): none stands.
-      // A wiki's personal slot carries the daemon mount's private margin, its overlay over the workbench: `margins/<slug>`.
+      // A wiki's personal slot holds the daemon mount's own overlay over the workbench: `personal/<slug>`.
       { bagId: "personal",       mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "personal", wikiSlot: "personal", faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
       // Recovery remains an explicit, recipe-designated grant: a draft holds one face's unsaved hand, `recovery/<slug>`.
       { bagId: "draft",          mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "draft", wikiSlot: "draft", mirrorClass: "recovery", faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
@@ -4709,7 +4709,7 @@ async function prepareNodeBootOn(
     // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and lands each settled wave by itself
     // (`poolIngestPorts`): an UNATTENDED INGEST wave per plane on the daemon island (`islandIngestSubmit`), the working layer
     // under `wiki/`, the face's daemon canon under `canon/`, the kahua stage under `stage/`, each where the island grants
-    // its mirror. A stand-off (both moved, or no base over records that say something else), a vanish and a margin go to the
+    // its mirror. A stand-off (both moved, or no base over records that say something else), a vanish and a personal-layer file go to the
     // island's disk shore (`shore` op `sense`). A teardown (a lock, or a wear that moves the mount) sets the face down: the
     // final wave, then the pool's commit seam; the stand-down runs the same as a down (`facePoolStandDown`).
     // Where no synced base stands (a re-found cleared the tree), the pool's HEAD names the base (`poolHeads`, face-pools A5).

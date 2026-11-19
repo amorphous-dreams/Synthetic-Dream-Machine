@@ -77,10 +77,10 @@ export interface LiftArgs {
     readonly workbench: (slug: string) => Promise<string>;
   };
   /**
-   * THE FLOOR'S DRAFT AND PERSONAL MARGIN (`floor/slot/<slug>/draft`, `…/personal`): the floor registry that names them, and
+   * THE FLOOR'S DRAFT AND PERSONAL LAYER (`floor/slot/<slug>/draft`, `…/personal`): the floor registry that names them, and
    * the face's own binding document of that kind for the wiki (stood on ask; null where the wiki registers no canon).
    */
-  readonly margins?: {
+  readonly faceLayers?: {
     readonly floor: FloorRegistry;
     readonly faceSlot: (slug: string, kind: "draft" | "personal") => Promise<string | null>;
   };
@@ -352,19 +352,19 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
       catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
     }
   }
-  // THE FLOOR'S DRAFT AND PERSONAL MARGIN: each row this vessel minted carries into the face's own binding document of that
+  // THE FLOOR'S DRAFT AND PERSONAL LAYER: each row this vessel minted carries into the face's own binding document of that
   // kind, additively, as the working rows carry into the workbench. A row another face's pinned label minted stays.
-  const margins = args.margins;
-  if (margins) {
-    for (const { title, record } of await floorEntries(margins.floor)) {
+  const faceLayers = args.faceLayers;
+  if (faceLayers) {
+    for (const { title, record } of await floorEntries(faceLayers.floor)) {
       const named = title.startsWith(FLOOR_SLOT_ROOT) ? floorSlotOf(title) : null;
       const fields = fieldsOf(record);
       const floorUrl = tiddlerText(record);
       if (!named || (named.kind !== "draft" && named.kind !== "personal") || !fields || !floorUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
       try {
-        const into = await margins.faceSlot(named.slug, named.kind);
+        const into = await faceLayers.faceSlot(named.slug, named.kind);
         if (into === null || into === floorUrl) continue;
-        await carryFloor(margins.floor, title, floorUrl, into, `${named.slug}/${named.kind}`);
+        await carryFloor(faceLayers.floor, title, floorUrl, into, `${named.slug}/${named.kind}`);
       } catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
     }
   }

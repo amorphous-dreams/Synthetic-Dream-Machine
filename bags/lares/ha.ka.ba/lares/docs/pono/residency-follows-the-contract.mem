@@ -33,7 +33,7 @@ A moʻolelo of the talk-story between the operator and the house on 2026-11-14, 
 
 |! document |! held by |! folder |! seeded and carried |
 | a daemon wiki, a kahua stage | one face | the face's root, named by its pet name (`faces/<pet name>/wiki`, `.../stage`) | per face, where the root stands |
-| a face's `personal` layer of a wiki | one face | `faces/<pet name>/margins/<slug>` | per face |
+| a face's `personal` layer of a wiki | one face | `faces/<pet name>/personal/<slug>` | per face |
 | a wiki's workbench (`wikis/<slug>/working`) | the realm: its owner and every seated face (OWED on one vessel: the rest gate, below) | one folder for the wiki | once per document, at any seated writer's wear |
 | house canon | the Kahu seat | `bags/<slug>` | at the steward |
 
@@ -47,7 +47,7 @@ A moʻolelo of the talk-story between the operator and the house on 2026-11-14, 
 
 <<~ ahu slot=`#/the-unseated-face`>>
 
-!! The unseated face writes its margin
+!! The unseated face writes its personal layer
 
 A face that holds no writer's seat in a wiki's workbench reads canon (from the floor where it stands outside the cabal) and writes into its own `personal` layer of that wiki. It offers from there. It founds no second working realm of a wiki another face on the vessel already stands; where no face of the vessel stands the wiki, its first put founds the workbench and lands in `working` (`workbenchFoundsOnWrite`). The recipe order already carried the place: canon -> working -> personal -> draft -> temp, with the operator's 2026-11-11 ruling //"Personal can absorb the new caps."//
 
@@ -177,6 +177,6 @@ On the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TU2_TmnHf_nD3g24YElimyvJjXygT5hy5edv0yATeCE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o3NBPsfLPOZVthQbKwQa6jwgLRiTqLB2jYns83AhHcA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

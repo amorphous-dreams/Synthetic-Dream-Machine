@@ -72,7 +72,7 @@ test("a wiki designates its draft for a held recovery grant alongside its workin
   );
   expect(spec.recipe.mirrorBags).toContain(wikiSlotUri("notes", "working"));
   expect(spec.recipe.mirrorBags).toContain(wikiBagUri("notes"));
-  // The personal slot carries the face's private margin over the workbench and projects per face (cabal-realm#/the-workbench).
+  // The personal slot holds the face's own overlay over the workbench and projects per face (cabal-realm#/the-workbench).
   expect(spec.recipe.mirrorBags).toContain(wikiSlotUri("notes", "personal"));
   expect(spec.recipe.mirrorBags).toContain(wikiSlotUri("notes", "draft"));
 });

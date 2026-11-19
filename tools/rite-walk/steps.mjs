@@ -425,7 +425,7 @@ export const STEPS = Object.freeze([
   { id: "lay-referee", fence: LAY, nth: 3, needs: ["lay-wear-referee"], run: lay },
 
   // The read-backs.
-  { id: "read-back", prose: "Read back per face", via: SC, needs: ["lay-referee", "two-face-put"], expect: "each face reads its own margin of the shared wiki",
+  { id: "read-back", prose: "Read back per face", via: SC, needs: ["lay-referee", "two-face-put"], expect: "each face reads its own personal layer of the shared wiki",
     run: async (ctx) => {
       const said = [];
       for (const [face, name] of [[1, "engineer"], [2, "referee"]]) {

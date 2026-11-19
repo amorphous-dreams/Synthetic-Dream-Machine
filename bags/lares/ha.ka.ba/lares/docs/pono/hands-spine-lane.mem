@@ -63,7 +63,7 @@ The face supplier and the signer stand behind `UdsSessionDoor.open({ faceRef, ha
 * A copied socket, a wrong face and a stale generation each refuse by name and reach no worker; the same-face session and a sibling session keep acting (`uds-session-socket.test.ts`, `session-contract-bound.test.ts`).
 * Pipelined frames answer in order, a close queues behind the call in flight, and a vanished socket ends its own session (`uds-session-pipeline.test.ts`).
 * A cross-face receipt read and cancel reveal nothing; a forged `requestedBy` attributes to the verified face; one id under two faces collides nowhere; a later same-face session recovers its receipt after the caller exits and across a restart; a terminal answer waits on the flush (`uds-session-receipts.test.ts`).
-* A face outside a workbench's realm reaches none of it; the same face reopens its slot on every device; two faces keep separate personal margins over one shared workbench; two offline vessels of one face merge (`workbench.test.ts`, `workbench-realm.test.ts`).
+* A face outside a workbench's realm reaches none of it; the same face reopens its slot on every device; two faces keep separate personal layers over one shared workbench; two offline vessels of one face merge (`workbench.test.ts`, `workbench-realm.test.ts`).
 * A switch changes its own session alone, and a sibling of the same face keeps its generation, face and signer; the old generation signs nothing after the switch; re-wearing the same face answers unchanged and writes no act (the control); a session closed mid-preflight or mid-fence answers `session-closed` (`session-switch.test.ts`, `uds-session-switch.test.ts`).
 * A switch act lands in no document, proven against a watcher that hears a known write (`uds-session-switch.test.ts`); the sealed record's ring and a malformed record (`switch-act-log.test.ts`).
 * The door: a locked face's anchors refuse `face-locked`, a torn record `door-failed` with no fault text on the wire and the requestId kept, another group's proof `face-group-mismatch`, another anchor's proof `anchor-moved` (`uds-session-door.test.ts`, `uds-session-switch.test.ts`); a face with no Nexus opens at the place anchor and a command rides it, a place session ends `anchor-moved` once a pin moves the vessel, a failed re-dial ends a Nexus session the same way, and the same face opens again at the anchor the vessel stands at (`uds-session-switch.test.ts`, `place-session.test.ts`); a face verb never rides the maintenance frame (`uds-session-switch.test.ts`, `store-door-session.test.ts`); a founder's session target mints no certificate (`node-face-presentation.test.ts`).
@@ -105,6 +105,6 @@ The face supplier and the signer stand behind `UdsSessionDoor.open({ faceRef, ha
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;A6AXUGlP6a_m9NScHwrfaJiI0y8xQ4rX20hh-vebqno`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wdll3lOX0A1n5JnT7bClcrkU-KYUEeBP1jMMPdUNxlo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

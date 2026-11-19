@@ -7,7 +7,7 @@
  * stands: a wiki's first stand under a face founds a private cabal of one (a glamour-less, announce-less cabal realm under the
  * seed charter whose Keyhive Document, minted per vessel, seats the owning face's hive (its Keyhive individual on that vessel) alone), and the wiki's working slot
  * (`wikis/<slug>/working`) resolves to that realm's workbench. A share row seats more faces in the same Document; it never
- * moves the address or the layer. A face's private margin over the shared layer rests in `personal`.
+ * moves the address or the layer. A face's own overlay over the shared layer rests in `personal`.
  *
  * WHAT THIS MODULE HOLDS (platform-blind, no key, no Keyhive):
  *   · the workbench's ADDRESS (`realmWorkbenchDocUrl`, deterministic-doc): a sibling of the realm's vouch board, derived

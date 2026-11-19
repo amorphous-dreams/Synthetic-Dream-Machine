@@ -213,7 +213,7 @@ export interface MirrorDirs { readonly bags: string; readonly wikis: string; rea
  * A REALM ROOT (`<projections>/realms/<realm pet name>/`) reads as its `wikis` and `bags` planes, one folder per slug each.
  *
  * A FACE ROOT (`<projections>/faces/<pet name>/`) reads as its own planes: the root holds the `wiki`, `canon` and `stage`
- * folders (the stage sited by title), and its `margins` hold one folder per wiki slug, a personal plane. A face's `recovery`
+ * folders (the stage sited by title), and its `personal` plane holds one folder per wiki slug. A face's `recovery`
  * and `temp` hold drafts and temp files that place back as files, never through a layer, so they read as no plane. Every plane
  * reads through the projector's siting run backward (`siteMirrorFile`), so a plain-title file derives its title as a loci
  * carrier derives its address; `tree` lends rule 0, the base at the path.
@@ -253,12 +253,12 @@ export function fileToUriForSource(
 }
 
 /**
- * THE TITLE A FACE ROOT'S FILE READS BACK UNDER, by its plane: a margin as a personal plane (one folder per wiki slug), the
+ * THE TITLE A FACE ROOT'S FILE READS BACK UNDER, by its plane: the personal plane (one folder per wiki slug), the
  * stage sited by title, `wiki` and `canon` by the projector's siting run backward over the root; `recovery` and `temp` place
  * back as files, never through a layer. `tree` lends rule 0, the base at the path.
  */
 export function siteFaceFile(root: string, plane: string, file: string, tree?: SyncedTree): FileSiting {
-  if (plane === FACE_PLANES.margins) return siteMirrorFile(join(root, plane), file, tree, true);
+  if (plane === FACE_PLANES.personal) return siteMirrorFile(join(root, plane), file, tree, true);
   if (plane === FACE_PLANES.recovery || plane === FACE_PLANES.temp) return { why: `a face's ${plane} folder places back as files, never through a layer` };
   if (plane === FACE_PLANES.stage) return siteFileToTitle({ planeDir: root, titlePaths: true, ...(tree !== undefined ? { uriAt: (path: string) => tree.uriAt(path) } : {}) }, file);
   return siteMirrorFile(root, file, tree, false);
@@ -1168,7 +1168,7 @@ export interface PoolIngestOptions {
   readonly bags: PoolPlaneBags;
   /** The submit port (`islandIngestSubmit` in the vessel). */
   readonly submit: IngestSubmit;
-  /** The disk shore's look (`shore` op `sense`): a stand-off, a vanish, a margin, a pointer body and a refused wave go there. */
+  /** The disk shore's look (`shore` op `sense`): a stand-off, a vanish, a personal-layer file, a pointer body and a refused wave go there. */
   readonly sense: (uris?: readonly string[]) => Promise<unknown>;
   readonly did: string;
   /** The Synced tree each wave reads afresh; absent, the projection checkpoint's (`openSyncedTree`). */
@@ -1188,7 +1188,7 @@ type PoolWavePlane = typeof POOL_WAVE_PLANES[number];
  * whose records moved too, stand off, and those go to the disk shore's look (`sense`), where the keyed alert rises and a person
  * settles each (`lares shore`; W4 merges a both-moved stand-off per slot). A vanished file tombstones nothing: it stays in the
  * vanished set (a later arrival of its bytes re-links it, paired by content), and the shore's whole look sees it pending. A
- * margin (a wiki island's overlay), a recovery draft, a plane no mirror grants and a body that rides a pointer (the vessel
+ * personal-layer file (a wiki island's overlay), a recovery draft, a plane no mirror grants and a body that rides a pointer (the vessel
  * stages no CAS blob) take the shore's look too.
  *
  * The catch-up reads every file of each granted plane through the same wave (the `liveLay` read of the whole pool), then asks
@@ -1290,7 +1290,7 @@ export function poolIngestPorts(o: PoolIngestOptions): Pick<FacePoolPorts, "catc
       if (bag !== undefined) { const list = byPlane.get(plane as PoolWavePlane) ?? []; list.push(file); byPlane.set(plane as PoolWavePlane, list); continue; }
       // No daemon layer takes this plane: the shore's look, as a title, or whole where the file left (it states no title).
       if (!existsSync(file)) { look = true; continue; }
-      const sited = plane === FACE_PLANES.margins ? siteFileToTitle({ planeDir: join(o.pool, plane) }, file)
+      const sited = plane === FACE_PLANES.personal ? siteFileToTitle({ planeDir: join(o.pool, plane) }, file)
         : siteFileToTitle({ planeDir: o.pool, ...(plane === FACE_PLANES.stage ? { titlePaths: true } : {}) }, file);
       if ("title" in sited) shoreTitles.add(sited.title);
       else log(`a wave reads no carrier from ${rel.join("/")}: ${sited.why}`);

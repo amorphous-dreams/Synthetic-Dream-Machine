@@ -6,7 +6,7 @@
  *        the floor row lands; no control document stands or gets asked
  *   V2b — a floor whose key stays shut (a locked floor) stands none: the mount answers no working url
  *   V3 — a seat that lands lifts the floor's rows into the face's realm workbench at its derived address; the floor document
- *        and its control row leave; the personal margin lifts under the face beside it
+ *        and its control row leave; the personal layer lifts under the face beside it
  *   V4 — a replayed lift moves nothing
  *   V5 — a title the workbench already holds otherwise stays at the floor and gets named; a replay still moves nothing
  */
@@ -130,7 +130,7 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     expect((await faced.slotDoc("garden", "working"))?.url).toBe(bench);
     expect(await h.read(bench, "Tabs")).toBe("C F G7");
     expect(await h.daemon.get(floorSlotTitle("garden", "working")), "the floor's row leaves the registry").toBeNull();
-    // The private margin lifted under the face beside it.
+    // The personal layer lifted under the face beside it.
     const personal = await h.daemon.get(slotBindingKey(PERSONAL_BINDINGS_PREFIX, h.fingerprint, h.group.groupId));
     expect(personal?.tiddler["face-reach"]).toBe("face");
     expect(await h.read(tiddlerText(personal)!, "$:/StoryList")).toBe("Tabs");

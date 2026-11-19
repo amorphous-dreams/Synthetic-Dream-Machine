@@ -5,7 +5,7 @@
  *   W1a the drain seat: hints inside one settle window ride ONE wave; a hint mid-wave queues exactly one rerun; `flush`
  *       drains what stands buffered now, never on a timer alone
  *   W1b the host arms OFF the boot path: `armFacePoolWatch` returns before its catch-up resolves, so a boot never waits
- *   W1c the host watches the pool's planes alone: `wiki/ canon/ stage/ margins/ recovery/`; the pool's `.git/`, its `temp/`,
+ *   W1c the host watches the pool's planes alone: `wiki/ canon/ stage/ personal/ recovery/`; the pool's `.git/`, its `temp/`,
  *       a file at the pool's root and editor litter wake no wave
  *   W2a the wear catch-up: the arm runs the catch-up (the `liveLay` read of the whole pool) once, before the watch reads live
  *   W2b lock and down: the final wave drains what stands buffered, THEN the commit seam runs, naming the close
@@ -127,17 +127,17 @@ describe("W1c — the host watches the pool's planes alone", () => {
       ports: { catchUp: async () => {}, wave: async (files) => { waves.push(...files); }, commit: async () => ({ committed: false, why: "nothing-moved" }) },
     });
     await host.armed;
-    for (const rel of ["wiki/daemon/My Notes.tid", "canon/ha.ka.ba/notes/pond.mem", "stage/memory/heron.tid", "margins/elyncia/Aside.tid", "recovery/elyncia/Draft.tid"]) fire(rel);
+    for (const rel of ["wiki/daemon/My Notes.tid", "canon/ha.ka.ba/notes/pond.mem", "stage/memory/heron.tid", "personal/elyncia/Aside.tid", "recovery/elyncia/Draft.tid"]) fire(rel);
     for (const rel of [".git/index", "temp/elyncia/x.tid", "loose.tid", "stage/memory/.heron.tid.swp", "wiki/daemon/x.tid~", "wiki/daemon/x.tid.123.tmp"]) fire(rel);
     await settle(40);
     expect(waves.map((f) => f.slice(pool.length + 1)).sort()).toEqual([
-      "canon/ha.ka.ba/notes/pond.mem", "margins/elyncia/Aside.tid", "recovery/elyncia/Draft.tid", "stage/memory/heron.tid", "wiki/daemon/My Notes.tid",
+      "canon/ha.ka.ba/notes/pond.mem", "personal/elyncia/Aside.tid", "recovery/elyncia/Draft.tid", "stage/memory/heron.tid", "wiki/daemon/My Notes.tid",
     ]);
     await host.down("down");
   });
 
-  test("WATCHED_PLANES holds stage beside wiki, canon, margins and recovery, and never temp", () => {
-    expect([...wc.WATCHED_PLANES].sort()).toEqual(["canon", "margins", "recovery", "stage", "wiki"]);
+  test("WATCHED_PLANES holds stage beside wiki, canon, personal and recovery, and never temp", () => {
+    expect([...wc.WATCHED_PLANES].sort()).toEqual(["canon", "personal", "recovery", "stage", "wiki"]);
   });
 
   test("a real backend: a hand edit under stage/ reaches the wave", async () => {

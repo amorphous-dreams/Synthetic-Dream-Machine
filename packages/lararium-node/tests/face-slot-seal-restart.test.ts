@@ -1,13 +1,13 @@
 /**
- * face-slot-seal-restart — A FACE'S PERSONAL MARGIN, SEALED FROM ITS FIRST BYTE, REOPENS AFTER THE VESSEL RESTARTS, UNDER THE
+ * face-slot-seal-restart — A FACE'S PERSONAL LAYER, SEALED FROM ITS FIRST BYTE, REOPENS AFTER THE VESSEL RESTARTS, UNDER THE
  * PRODUCTION STANDING.
  *
  * `face-slot-docs-sealed` (mesh) proves the restart under a standing that reads every writer capable (`holdsWrite: () =>
  * true`). The island stands its holder on `ownChainStanding(() => ownChain, () => daemonAuth.registerBags)`
  * (operator-daemon-behavior), and its boot's register set comes from `wornFaceWikiBags` (open-node-vessel): the mount's
- * own margin and each layer the face's catalog announces ride it, and any other face slot bag (`wikis/<slug>/personal`)
+ * own personal layer and each layer the face's catalog announces ride it, and any other face slot bag (`wikis/<slug>/personal`)
  * joins when the resolver names it (`registerLateFaceBags`). The holder's reading gives way when that set grows
- * (`WriterStanding.registeredOf`), so a margin named after another sealed document opened founds at its own open. These
+ * (`WriterStanding.registeredOf`), so a personal layer named after another sealed document opened founds at its own open. These
  * vectors stand the same map and rest as the mesh vectors, over that standing, with the register set the boot hands and
  * the late registration the naming makes.
  *
@@ -24,14 +24,14 @@ import type { SessionOwnChain } from "../../lararium-mesh/src/index.js";
 import { vessel, world, type Vessel } from "../../lararium-mesh/tests/content-key-fixture.js";
 import { ownChainStanding } from "../../lararium-keyhive/src/island-session-proof.js";
 
-const SECRET = "the-margin-holds-the-heron-count";
+const SECRET = "the-personal-layer-holds-the-heron-count";
 const SLOT: WikiSlotBags = { wikiBagId: wikiBagUri("lares"), workingBagId: wikiSlotUri("lares", "working"), draftBagId: wikiSlotUri("lares", "draft") };
-/** The mount's own margin: the boot's register set carries it (`wornFaceWikiBags`). */
-const MOUNT_MARGIN = wikiSlotUri("lares", "personal");
-/** Another wiki's margin no catalog row announced: it joins the register set at the resolver's naming. */
-const LATE_MARGIN = wikiSlotUri("notes", "personal");
+/** The mount's own personal layer: the boot's register set carries it (`wornFaceWikiBags`). */
+const MOUNT_PERSONAL = wikiSlotUri("lares", "personal");
+/** Another wiki's personal layer no catalog row announced: it joins the register set at the resolver's naming. */
+const LATE_PERSONAL = wikiSlotUri("notes", "personal");
 const DAEMON_WORKING = wikiSlotUri("daemon", "working");
-/** The register set the boot hands the island: the mount slot with its margin, and the lit face's own (open-node-vessel). */
+/** The register set the boot hands the island: the mount slot with its personal layer, and the lit face's own (open-node-vessel). */
 const BOOT_REGISTERED = (): string[] => wornFaceWikiBags({ slot: SLOT, lit: true }).registered;
 
 function memoryAdapter(): StorageAdapterInterface {
@@ -112,7 +112,7 @@ const announce = (island: Island, named: Map<string, Set<string>>, bagId: string
   named.set(bagId, set);
 };
 
-/** A daemon slot doc (registered at boot) and the personal margin, both sealed from the first byte in one boot. */
+/** A daemon slot doc (registered at boot) and the personal layer, both sealed from the first byte in one boot. */
 async function firstBoot(h: Awaited<ReturnType<typeof house>>, PERSONAL: string) {
   const v = standVessel(h.a, h.inner, h.named);
   const repo = new Repo({ storage: v.rest.store, network: [] });
@@ -121,15 +121,15 @@ async function firstBoot(h: Awaited<ReturnType<typeof house>>, PERSONAL: string)
   announce(h.island, h.named, DAEMON_WORKING, daemon.documentId);
   v.rest.wrote(daemon.documentId, v.session);
   daemon.change((d) => { d.note = "daemon-ledger"; });
-  const margin = repo.create<{ note?: string }>();
-  announce(h.island, h.named, PERSONAL, margin.documentId);
-  v.rest.wrote(margin.documentId, v.session);
-  margin.change((d) => { d.note = SECRET; });
+  const personalLayer = repo.create<{ note?: string }>();
+  announce(h.island, h.named, PERSONAL, personalLayer.documentId);
+  v.rest.wrote(personalLayer.documentId, v.session);
+  personalLayer.change((d) => { d.note = SECRET; });
   await repo.flush();
   await v.rest.store.flush();
-  expect(await v.rest.restsSealed(margin.documentId)).toBe(true);
+  expect(await v.rest.restsSealed(personalLayer.documentId)).toBe(true);
   await repo.shutdown();
-  return { daemonId: daemon.documentId, marginId: margin.documentId };
+  return { daemonId: daemon.documentId, personalId: personalLayer.documentId };
 }
 
 /** A new process over the same rest: a fresh holder, the boot's register set, the vessel's names re-filed by the island. */
@@ -145,47 +145,47 @@ const read = async (repo: Repo, id: string): Promise<string> => {
   catch (error) { return `REFUSED: ${error instanceof Error ? error.message : String(error)}`; }
 };
 
-describe("a face's personal margin reopens sealed after a restart, under the production standing", () => {
-  it("BOOT SET: the register set the boot hands carries the mount's own margin, and a margin no catalog row announced joins at its naming", () => {
-    expect(BOOT_REGISTERED()).toContain(MOUNT_MARGIN);
+describe("a face's personal layer reopens sealed after a restart, under the production standing", () => {
+  it("BOOT SET: the register set the boot hands carries the mount's own personal layer, and a personal layer no catalog row announced joins at its naming", () => {
+    expect(BOOT_REGISTERED()).toContain(MOUNT_PERSONAL);
     expect(BOOT_REGISTERED()).toContain(DAEMON_WORKING);
-    expect(BOOT_REGISTERED()).not.toContain(LATE_MARGIN);
+    expect(BOOT_REGISTERED()).not.toContain(LATE_PERSONAL);
   });
 
-  it("THE MOUNT'S MARGIN opens on the boot's register set alone, after another sealed document opened", async () => {
+  it("THE MOUNT'S PERSONAL LAYER opens on the boot's register set alone, after another sealed document opened", async () => {
     const h = await house();
-    const { daemonId, marginId } = await firstBoot(h, MOUNT_MARGIN);
+    const { daemonId, personalId } = await firstBoot(h, MOUNT_PERSONAL);
     const { repo } = restart(h);
     expect(await read(repo, daemonId)).toBe("daemon-ledger");
-    expect(await read(repo, marginId)).toBe(SECRET);
+    expect(await read(repo, personalId)).toBe(SECRET);
     await repo.shutdown();
   });
 
-  it("A LATE-NAMED MARGIN: the naming re-registers before the holder's first reading, and the margin opens", async () => {
+  it("A LATE-NAMED PERSONAL LAYER: the naming re-registers before the holder's first reading, and the personal layer opens", async () => {
     const h = await house();
-    const { marginId } = await firstBoot(h, LATE_MARGIN);
+    const { personalId } = await firstBoot(h, LATE_PERSONAL);
     const { repo } = restart(h);
-    // The island names the margin again before any sealed document of this boot opens.
-    h.island.registered = [...h.island.registered, LATE_MARGIN];
-    expect(await read(repo, marginId)).toBe(SECRET);
+    // The island names the personal layer again before any sealed document of this boot opens.
+    h.island.registered = [...h.island.registered, LATE_PERSONAL];
+    expect(await read(repo, personalId)).toBe(SECRET);
     await repo.shutdown();
   });
 
-  it("A LATE-NAMED MARGIN: another sealed document opens first (the holder takes its reading), then the naming re-registers, and the margin opens", async () => {
+  it("A LATE-NAMED PERSONAL LAYER: another sealed document opens first (the holder takes its reading), then the naming re-registers, and the personal layer opens", async () => {
     const h = await house();
-    const { daemonId, marginId } = await firstBoot(h, LATE_MARGIN);
+    const { daemonId, personalId } = await firstBoot(h, LATE_PERSONAL);
     const { repo } = restart(h);
-    // THE BOOT'S ORDER: the daemon's own slot (registered at boot) hydrates before the resolver names any margin.
+    // THE BOOT'S ORDER: the daemon's own slot (registered at boot) hydrates before the resolver names any personal layer.
     expect(await read(repo, daemonId)).toBe("daemon-ledger");
-    // The resolver names the margin: `registerLateFaceBags` adds it to the register set the standing reads.
-    h.island.registered = [...h.island.registered, LATE_MARGIN];
-    expect(await read(repo, marginId)).toBe(SECRET);
+    // The resolver names the personal layer: `registerLateFaceBags` adds it to the register set the standing reads.
+    h.island.registered = [...h.island.registered, LATE_PERSONAL];
+    expect(await read(repo, personalId)).toBe(SECRET);
     await repo.shutdown();
   });
 
-  it("BOOKINGS HOLD: a document booked and open before the register set grows keeps sealing after it, and the margin opens beside it", async () => {
+  it("BOOKINGS HOLD: a document booked and open before the register set grows keeps sealing after it, and the personal layer opens beside it", async () => {
     const h = await house();
-    const { daemonId, marginId } = await firstBoot(h, LATE_MARGIN);
+    const { daemonId, personalId } = await firstBoot(h, LATE_PERSONAL);
     const { v, repo } = restart(h);
     v.seat(repo);
     const daemon = await repo.find<{ note?: string; later?: string }>(daemonId as unknown as AutomergeUrl);
@@ -195,8 +195,8 @@ describe("a face's personal margin reopens sealed after a restart, under the pro
     await v.rest.store.flush();
     expect(v.rest.store.waiting(daemonId), "the booked save rested sealed before the growth").toBe(0);
     // THE GROWTH, mid-boot: the holder's reading gives way, and the book the rest holds stands as it stood.
-    h.island.registered = [...h.island.registered, LATE_MARGIN];
-    expect(await read(repo, marginId)).toBe(SECRET);
+    h.island.registered = [...h.island.registered, LATE_PERSONAL];
+    expect(await read(repo, personalId)).toBe(SECRET);
     daemon.change((d) => { d.later = "written-after-the-growth"; });
     await repo.flush();
     await v.rest.store.flush();

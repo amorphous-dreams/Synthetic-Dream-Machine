@@ -4,7 +4,7 @@
  * CLI's `lares watch` fills the wave with its INGEST settle; the vessel fills it over the WORN face's pool.
  *
  * THE VESSEL'S HOST (`armFacePoolWatch`) watches one face root, `projections/faces/<pet name>/`, and its planes alone:
- * `wiki/`, `canon/`, `stage/` (the kahua stage flows back from disk too: RULED floor 4 (b)), `margins/`, `recovery/`. It
+ * `wiki/`, `canon/`, `stage/` (the kahua stage flows back from disk too: RULED floor 4 (b)), `personal/`, `recovery/`. It
  * lives the life of the composition that wears the face:
  *
  *   arm    OFF THE BOOT PATH: the arm hands back at once, and its work runs beside the boot. It names the wake first (every
@@ -134,7 +134,7 @@ export function cookieSelfTest(dir: string, watcher: FSWatcher, windowMs: number
 // ── the pool's git history ─────────────────────────────────────────────────────────────────────────────────────
 
 /** The planes of a face root the host watches, commits and reads the wake from. `temp/` places back as files, never here. */
-export const WATCHED_PLANES: readonly string[] = [FACE_PLANES.wiki, FACE_PLANES.canon, FACE_PLANES.stage, FACE_PLANES.margins, FACE_PLANES.recovery];
+export const WATCHED_PLANES: readonly string[] = [FACE_PLANES.wiki, FACE_PLANES.canon, FACE_PLANES.stage, FACE_PLANES.personal, FACE_PLANES.recovery];
 
 /** The subject every sitting's close commits under: a `lar:` subject that names the close and never a face. */
 export const SITTING_CLOSE_PREFIX = "lar:///pool.closes.the-sitting/";
@@ -469,4 +469,4 @@ function armSeat(o: SeatOptions): FacePoolWatch {
 }
 
 // The vessel's ports over the worn face's pool stand beside the ingest machinery (`poolIngestPorts`, `ingest-scan`): each wave
-// lands as an unattended INGEST wave, and a stand-off, a vanish and a margin go to the disk shore's look.
+// lands as an unattended INGEST wave, and a stand-off, a vanish and a personal-layer file go to the disk shore's look.

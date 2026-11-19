@@ -8,7 +8,7 @@
  *   S1  the mirror lay reads plain-title files back under their in-band titles (`Time: dusk`, not `Time_ dusk`)
  *   S2  every skip carries its file and its reason, and `skipped + rows == files` holds over a scan
  *   S3  the lay's lines print each skip, file and reason
- *   S4  a personal-margin file under `lares watch` (`fileToUriForSource`) derives its title: a loci `.mem` and a plain one
+ *   S4  a personal-layer file under `lares watch` (`fileToUriForSource`) derives its title: a loci `.mem` and a plain one
  *   S5  `lares watch` prints its skips even when no candidate rides the wave
  *   S6  the mirror walk honours HOUSE_IGNORED: no `.git/`, `.vscode/`, `.shore/`, atomic temp or `.orphans/` file rides
  */
@@ -84,13 +84,13 @@ describe("no silent skips", () => {
     expect(err).toContain("    skips: /m/README (carries no filetype extension)");
   });
 
-  test("S4 — a personal-margin file under `lares watch` derives its title", () => {
-    const margin = P("faces/hearth-one/margins/notes");
-    const loci = put("faces/hearth-one/margins/notes/ha.ka.ba/notes/heron.mem", "```toml meta\ntitle = \"lar:///ha.ka.ba/notes/heron\"\n```\n");
-    const plain = put("faces/hearth-one/margins/notes/Margin Note.tid", tid("Margin: a note"));
-    const site = fileToUriForSource(root, margin, { bags: join(root, "bags"), wikis: join(root, "wikis"), projections: P("") });
+  test("S4 — a personal-layer file under `lares watch` derives its title", () => {
+    const personalLayer = P("faces/hearth-one/personal/notes");
+    const loci = put("faces/hearth-one/personal/notes/ha.ka.ba/notes/heron.mem", "```toml meta\ntitle = \"lar:///ha.ka.ba/notes/heron\"\n```\n");
+    const plain = put("faces/hearth-one/personal/notes/Personal Note.tid", tid("Personal: a note"));
+    const site = fileToUriForSource(root, personalLayer, { bags: join(root, "bags"), wikis: join(root, "wikis"), projections: P("") });
     expect(site(root, loci)).toBe("lar:///ha.ka.ba/notes/heron");
-    expect(site(root, plain)).toBe("Margin: a note");
+    expect(site(root, plain)).toBe("Personal: a note");
   });
 
   test("S5 — `lares watch` prints its skips before the drain returns on a wave no candidate rides", () => {

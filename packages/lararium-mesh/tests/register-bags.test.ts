@@ -234,7 +234,7 @@ describe("the boot's register set carries every layer the worn face's catalog an
   const SLOT = { wikiBagId: wikiBagUri("lares"), workingBagId: wikiSlotUri("lares", "working"), draftBagId: wikiSlotUri("lares", "draft") };
   const layers = (slug: string) => [wikiSlotUri(slug, "personal"), wikiSlotUri(slug, "draft")];
 
-  test("each wiki the catalog names by its recipe row announces its margin and its draft; a working layer, the daemon wiki and a tombstoned row announce none", () => {
+  test("each wiki the catalog names by its recipe row announces its personal layer and its draft; a working layer, the daemon wiki and a tombstoned row announce none", () => {
     const catalog = { tiddlers: {
       [recipeUri("catalog", "notes")]: row(recipeUri("catalog", "notes")),
       [recipeUri("catalog", "daemon")]: row(recipeUri("catalog", "daemon")),
@@ -246,7 +246,7 @@ describe("the boot's register set carries every layer the worn face's catalog an
     expect(catalogFaceSlotBags(null)).toEqual([]);
   });
 
-  test("the mount's own margin rides the lit face's set with no catalog row and no naming; the floor registers none", () => {
+  test("the mount's own personal layer rides the lit face's set with no catalog row and no naming; the floor registers none", () => {
     expect(wornFaceWikiBags({ slot: SLOT, lit: true }).registered).toContain(wikiSlotUri("lares", "personal"));
     expect(wornFaceWikiBags({ slot: SLOT, lit: true }).sealed).toContain(wikiSlotUri("lares", "personal"));
     expect(wornFaceWikiBags({ slot: SLOT, lit: false }).registered).not.toContain(wikiSlotUri("lares", "personal"));
@@ -258,7 +258,7 @@ describe("the boot's register set carries every layer the worn face's catalog an
     const worn = deriveRegisterBags({ fleets: [{ personaGroupId: "ab".repeat(16) }], wikiBags: wornFaceWikiBags({ slot: SLOT, lit: true, announced: catalogFaceSlotBags(wornCatalog) }).registered });
     for (const bag of [...layers("lares"), ...layers("notes")]) expect(worn, bag).toContain(bag);
     for (const bag of catalogFaceSlotBags(siblingCatalog)) expect(worn, bag).not.toContain(bag);
-    // The sibling registers what a lit face owns beside the worn one (`joined-face-auth`): no user wiki's margin or draft.
+    // The sibling registers what a lit face owns beside the worn one (`joined-face-auth`): no user wiki's personal layer or draft.
     const sibling = deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags("0a1b2c3d-0a1b-4a1b-8a1b-0a1b2c3d4e5f") });
     expect(sibling.filter(isFaceSlotBag)).toEqual([]);
     for (const bag of [...layers("lares"), ...layers("notes"), ...layers("ledger")]) expect(sibling, bag).not.toContain(bag);

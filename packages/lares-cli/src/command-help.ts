@@ -549,7 +549,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   surface: {
     usage: "usage: lares surface init|check|open|commit|face [--face N | --realm <realm pet name>] [--launch] [-m <seam>]",
     synopsis:
-      "THE FACE POOL — each face's private planes rest under projections/faces/<pet name>/ (wiki, canon, stage, margins, recovery), " +
+      "THE FACE POOL — each face's private planes rest under projections/faces/<pet name>/ (wiki, canon, stage, personal, recovery), " +
       "and that root holds the face's one git working tree. Git runs here with an empty global config and no system config. " +
       "It runs on this machine: with no LAR_ROOT, the container house's pools rest under LARES_HOUSE/projections, its paths print " +
       "as the host spells them, and the vessel answers only a face no label under projections/face-labels/ settles. A wiki several faces " +
@@ -597,7 +597,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   "surface open": {
     usage: "usage: lares surface open [--face N] [--launch]",
     synopsis:
-      "Print the one window line: `<editor> -n` over the worn face's root and the realm pools it belongs to (each wiki it keeps a margin or a " +
+      "Print the one window line: `<editor> -n` over the worn face's root and the realm pools it belongs to (each wiki it keeps a personal layer or a " +
       "recovery folder for, where that wiki's workbench folder stands in its realm). --launch runs it. It writes no workspace file. The editor " +
       "reads from the house config tiddler $:/config/lares/surface/Editor (<config>/surface-editor.tid: its text names the command, as " +
       "code-insiders), else `code`.",

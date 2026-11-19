@@ -10,7 +10,7 @@ l-space     = "stable"
 merged-on   = "2026-06-04"
 namespace   = "&#x0950; &#x0901;"
 proposed-on = "2026-05-30"
-role        = "the personal-slot recipe slot (one face's view-state and private margin over the wiki's shared workbench, PersonaGroup × recipe-fingerprint scoped, crossing that face's own devices alone) and its admin-doc-stored binding map — one ledger"
+role        = "the personal-slot recipe slot (one face's view-state and what it keeps for itself over the wiki's shared workbench, PersonaGroup × recipe-fingerprint scoped, crossing that face's own devices alone) and its admin-doc-stored binding map — one ledger"
 status-why  = "the personal-slot slot stands; S7.7 cross-device remains"
 tags        = ["lar:///ha.ka.ba/lares/api/lararium/wiki-recipe", "lifecycle/standing"]
 title       = "lar:///ha.ka.ba/lararium/api/personal-slot"
@@ -62,7 +62,7 @@ Keyhive already names a `PersonaGroup`.
 ```
 1. wikis/{slug}/temp      volatile per-island, no CRDT
 2. wikis/{slug}/draft     drafts, CRDT, recipe-scoped
-3. wikis/{slug}/personal  one face's view-state and private margin, CRDT, PersonaGroup-scoped + recipe-scoped
+3. wikis/{slug}/personal  one face's view-state and what it keeps for itself, CRDT, PersonaGroup-scoped + recipe-scoped
 4. wikis/{slug}/working   the wiki's realm workbench, CRDT, realm-scoped
 5. bags/{slug}            the wiki's canon, CRDT, mesh-shared (read-only)
 6. libraryBags[]           optional content libraries, CRDT, mesh-shared
@@ -74,7 +74,7 @@ Slot URI: `lar:///ha.ka.ba/wikis/{slug}/personal` — a per-wiki live layer root
 at the wiki's identity (`wikis/{slug}`), one per wiki. The `BagResolver` binds the
 DOC per `(PersonaGroup × recipe-fingerprint)`; the URI carries the address.
 
-''Personal holds a face's private margin'' (operator ruling 2026-11-11: //"Personal can absorb the new caps."//). The recipe reads canon → workbench → personal → draft → temp. Every wiki but the daemon's rests its `working` layer in the wiki's realm workbench, shared by every face the realm seats (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>); `personal` carries what one face keeps for itself over that shared layer: its view-state (`$:/StoryList`, `$:/state/folded/*`, `$:/palette`) and the content it shadows privately. It crosses that face's own devices alone and projects in the face's root to `faces/<pet name>/margins/{slug}/` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>).
+''Personal holds what a face keeps for itself'' (operator ruling 2026-11-11: //"Personal can absorb the new caps."//). The recipe reads canon → workbench → personal → draft → temp. Every wiki but the daemon's rests its `working` layer in the wiki's realm workbench, shared by every face the realm seats (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>); `personal` carries what one face keeps for itself over that shared layer: its view-state (`$:/StoryList`, `$:/state/folded/*`, `$:/palette`) and the content it shadows privately. It crosses that face's own devices alone and projects in the face's root to `faces/<pet name>/personal/{slug}/` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>).
 
 <<~/ahu>>
 
@@ -230,7 +230,7 @@ One fingerprint produces TWO bindings (one for `@personal`, one for `@draft`) un
 
 !!! Tiddler vs Automerge document
 
-The bindings TIDDLERS live inside the admin doc. The `@personal` and `@draft` AUTOMERGE DOCUMENTS the bindings point to live as separate Automerge docs in the same Repo. The admin doc carries names; the named docs carry the face's actual view state and private margin.
+The bindings TIDDLERS live inside the admin doc. The `@personal` and `@draft` AUTOMERGE DOCUMENTS the bindings point to live as separate Automerge docs in the same Repo. The admin doc carries names; the named docs carry the face's actual view state and what it keeps for itself.
 
 <<~/ahu>>
 
@@ -496,6 +496,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;k20lWzEwtfFRNWKSxWpQGD0y-V09tXFkDonAf5JIBP0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BenvpEu-zJq1UPDztE9LOEuTayaPZAxam44F9rXRgGs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -12,7 +12,7 @@
  *   projections/realms/<realm pet name>/wikis/<slug> -> that wiki's ONE workbench (`wikis/<slug>/working`), once for its
  *                                     document, at the wear of a face that holds a writer's seat there (or of the face that stands it first)
  *   <canon source>/../wikis/<slug> -> a sourced wiki's one workbench, beside its canon source, by the same law
- *   projections/faces/<pet name>/margins/<slug> -> that face's own personal layer of that wiki (`wikis/<slug>/personal`): its
+ *   projections/faces/<pet name>/personal/<slug> -> that face's own personal layer of that wiki (`wikis/<slug>/personal`): its
  *                                     overlay, the layer a face that holds no writer's seat in the wiki's workbench writes
  *   faces/<pet name>/recovery, temp -> nothing: drafts and temp files rest as files (an import places them back)
  *   projections/ashes/**           -> nothing: never read back, never projected into
@@ -45,7 +45,7 @@
  * lists a wiki it stood or one a share row carried to it), and the lay exits 0. AFTER A RE-FOUNDING the share rows
  * (`config/share.tid`, vessel-private) name each shared wiki's owner by pet-name: the wiki mints again and its folders lay at
  * that owner's wear alone, and every other face waits by name; then the lay lands the shares again, seating each named face
- * by pet-name. A face's margin lays at that face's own wear.
+ * by pet-name. A face's personal layer lays at that face's own wear.
  *
  * KAHUA LIFTS BY THE OPERATOR'S HAND, WITH EYES. The lay previews every kahua item it would lift per face (title, body
  * digest, face; a file that differs from a standing head reads `differs`), then lifts them under the target face's grant,
@@ -157,7 +157,7 @@ export interface MirrorSeedResult {
   /**
    * THE FACES THAT WAIT THEIR TURN: each face whose root stands on disk while that face stands SHUT, or (`why: "unresolved"`)
    * stands open where the island resolves no layer of its own for a wave naming it (`face-unresolved`), or (`why: "unworn"`)
-   * stands open and unworn while its margins wait for its own wear. `folders` names the folders that wait. Nothing of theirs
+   * stands open and unworn while its personal layers wait for its own wear. `folders` names the folders that wait. Nothing of theirs
    * laid into any layer; their folders stay until their own lay lands them.
    */
   readonly waiting: ReadonlyArray<{ readonly handleIndex: number; readonly petname: string | null; readonly folders: readonly string[]; readonly why?: "unresolved" | "unworn" }>;
@@ -264,7 +264,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   const wikiBase = new Map(onDisk.filter((f) => f.plane === "wikis").map((f) => [f.slug, f.base] as [string, string]));
   const bagBase = new Map<string, string>([...folders(bagsDir).map((n) => [n, bagsDir] as [string, string]), ...onDisk.filter((f) => f.plane === "bags").map((f) => [f.slug, f.base] as [string, string])]);
   const wikiFolders = [...wikiBase.keys()], bagFolders = [...bagBase.keys()].sort();
-  // EACH FACE'S ONE ROOT (`faces/<pet name>/`): its daemon working layer, its daemon canon, its kahua stage and its margins.
+  // EACH FACE'S ONE ROOT (`faces/<pet name>/`): its daemon working layer, its daemon canon, its kahua stage and its personal layers.
   // Its `recovery/` and `temp/` hold drafts and temp files that place back as files, never through a layer: the lay reads neither.
   const faceFolders = folders(facesDir).filter((seg) => mirrorFiles(join(facesDir, seg), [FACE_PLANES.recovery, FACE_PLANES.temp]).length > 0);
   // A SOURCED WIKI'S ONE WORKBENCH FOLDER rests beside the canon source (`<source>/../wikis/<slug>`).
@@ -329,7 +329,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   const faceArgOf = (face: BundleVesselFace): { face?: number } => face.relation === litRelation ? {} : { face: face.handleIndex };
   // An open face whose named wave the island resolves no layer for (`face-unresolved`) waits by name, as a shut face does.
   const unresolved = new Map<number, { handleIndex: number; petname: string | null; folders: string[]; why: "unresolved" }>();
-  // An open face that stands unworn waits for its own wear with its margins: a wiki's island stands over the daemon mount's personal document alone.
+  // An open face that stands unworn waits for its own wear with its personal layers: a wiki's island stands over the daemon mount's personal document alone.
   const unworn = new Map<number, { handleIndex: number; petname: string | null; folders: string[]; why: "unworn" }>();
   const waitingNow = () => [...shutWaiting.values(), ...unresolved.values(), ...unworn.values()].sort((a, b) => a.handleIndex - b.handleIndex);
 
@@ -489,24 +489,24 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
       if (!w.folders.includes(folder)) w.folders.push(folder);
       unworn.set(face.handleIndex, w);
     };
-    // EACH FACE'S MARGINS (cabal-realm#/the-workbench; operator ruling 2026-11-11 "Personal can absorb the new caps."):
-    // `faces/<pet name>/margins/<slug>` lays back into that face's own personal layer of the wiki, the daemon mount's through the
+    // EACH FACE'S PERSONAL LAYERS (cabal-realm#/the-workbench; operator ruling 2026-11-11 "Personal can absorb the new caps."):
+    // `faces/<pet name>/personal/<slug>` lays back into that face's own personal layer of the wiki, the daemon mount's through the
     // ordinary wave. It never lays into a shared workbench. IT LAYS AT ITS OWN FACE'S WEAR: a wiki's island stands over the
-    // daemon mount's personal document and the vessel grants the margin mirror to the daemon mount's root alone, so an open face
-    // that stands unworn waits by name where its margin holds a carrier new or moved against its base.
+    // daemon mount's personal document and the vessel grants the personal mirror to the daemon mount's root alone, so an open face
+    // that stands unworn waits by name where its personal layer holds a carrier new or moved against its base.
     const viewState = (rel: string): boolean => (rel.split("/").pop() ?? "").startsWith("$__");
     for (const seg of placed) {
       const face = target.get(seg)!;
-      const marginsDir = join(facesDir, seg, FACE_PLANES.margins);
-      for (const slug of folders(marginsDir)) {
-        const folder = join(marginsDir, slug);
+      const personalDir = join(facesDir, seg, FACE_PLANES.personal);
+      for (const slug of folders(personalDir)) {
+        const folder = join(personalDir, slug);
         if (face.relation !== litRelation) {
-          const read = await doors.lay({ source: folder, uriDir: marginsDir, toBag: wikiSlotUri(slug, "personal"), wiki: slug, skipTop: [] }, false);
+          const read = await doors.lay({ source: folder, uriDir: personalDir, toBag: wikiSlotUri(slug, "personal"), wiki: slug, skipTop: [] }, false);
           if (read.planned.length + read.kapae.length === 0) continue;
           waitUnworn(face, folder);
           continue;
         }
-        // A MARGIN OF A WIKI THAT STANDS UNMINTED WAITS FOR THE WIKI: a share row names its owner, and the wiki re-stands at
+        // A PERSONAL LAYER OF A WIKI THAT STANDS UNMINTED WAITS FOR THE WIKI: a share row names its owner, and the wiki re-stands at
         // that owner's wear; until then this face's page of it lays nowhere, and the folder stays as it stands.
         const owner = ownerOf(slug);
         if (owner !== null && mountFace?.petname !== owner && !doors.sourced(slug) && !mintedSlugs.has(slug) && !(held.has(slug) || (await doors.heldSlugs()).has(slug))) {
@@ -514,7 +514,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
           waitBench(slug, folder, { why: "owner", owner });
           continue;
         }
-        await runWave({ source: folder, uriDir: marginsDir, toBag: wikiSlotUri(slug, "personal"), wiki: slug, skipTop: [] }, `margin ${slug} of ${seg}`);
+        await runWave({ source: folder, uriDir: personalDir, toBag: wikiSlotUri(slug, "personal"), wiki: slug, skipTop: [] }, `personal layer ${slug} of ${seg}`);
       }
     }
   }

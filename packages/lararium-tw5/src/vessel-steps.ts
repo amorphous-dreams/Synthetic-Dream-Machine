@@ -195,7 +195,7 @@ export async function buildWikiMountSpec(
     ...(inputs.libraryBags?.length ? { libraryBags: inputs.libraryBags } : {}),
     ...(inputs.pluginOfferings?.length ? { pluginOfferings: inputs.pluginOfferings } : {}),
     ...(inputs.pluginOfferingsFault !== undefined ? { pluginOfferingsFault: inputs.pluginOfferingsFault } : {}),
-    // The personal slot rides the designation too: it carries the face's private margin over the workbench, and its grant roots
+    // The personal slot rides the designation too: it holds the face's own overlay over the workbench, and its grant roots
     // per face (`faceFolder`); plaintext survives for it as for every other layer that holds content.
     // ONE FOLDER ANSWERS A WORKBENCH, and a seated writer's wear writes it: a face that holds no writer's seat (seated `read`,
     // or seated nowhere) designates no working mirror, so its mount writes nothing into the workbench's folder.
