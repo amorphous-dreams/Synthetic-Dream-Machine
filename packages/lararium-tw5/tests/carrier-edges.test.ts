@@ -9,7 +9,6 @@
  */
 
 import { describe, expect, test } from "vitest";
-import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -34,7 +33,7 @@ describe("carrier-edges — every address a carrier points at", () => {
       "[[lar:///ha.ka.ba/a/five]]",
     ].join("\n\n");
     const got = readCarrierEdges(src);
-    expect(got.map((e) => e.address!).sort())
+    expect(got.map((e) => e.address).sort())
       .toEqual(["ha.ka.ba/a/five", "ha.ka.ba/a/four", "ha.ka.ba/a/one", "ha.ka.ba/a/three", "ha.ka.ba/a/two"]);
     expect(new Set(got.map((e) => e.form))).toEqual(new Set(["loulou", "pranala", "kahea", "wikilink"]));
   });
@@ -47,6 +46,16 @@ describe("carrier-edges — every address a carrier points at", () => {
   test("an edge quoted inside a fence is a lesson, never a link", () => {
     const taught = "````\nShow one:\n\n<<~ loulou uri=`lar:///ha.ka.ba/not/real`>>\n````\n\n<<~ loulou uri=`lar:///ha.ka.ba/is/real`>>";
     expect(readCarrierEdges(taught).map((e) => e.address)).toEqual(["ha.ka.ba/is/real"]);
+  });
+
+  /**
+   * AN EDGE NAMES AN ADDRESS, NEVER A FILE. A link whose target names a file (`…|x.md`) points at no
+   * carrier, so the graph reads no edge from it: every edge this reader returns carries a `lar:` address.
+   */
+  test("a link to a file is no edge", () => {
+    const src = "[[a name|neighbour.md]] · [[up|../arc/index.md]] · [[a name|lar:///ha.ka.ba/a/one]]";
+    const got = readCarrierEdges(src);
+    expect(got.map((e) => [e.form, e.address])).toEqual([["wikilink", "ha.ka.ba/a/one"]]);
   });
 
   /** A fragment rides the written form and never the address a resolver looks up. */
@@ -90,10 +99,7 @@ describe("carrier-edges — every address a carrier points at", () => {
       const u = /^uri-path\s*=\s*"([^"]+)"/m.exec(t)?.[1];
       if (u) held.add(u);
     }
-    // An `md-target` edge names a FILE and carries no address, so it can neither resolve nor dangle.
-    // Counting it here would fold a known, separately-gated class into this one and hide a real break.
-    const dangling = texts.flatMap(readCarrierEdges)
-      .filter((e) => e.address !== null && !held.has(e.address));
+    const dangling = texts.flatMap(readCarrierEdges).filter((e) => !held.has(e.address));
     expect(files.length).toBeGreaterThan(500);
     // A CEILING ONLY EVER LOWERS, and it lowers by the same measurement either side of a change:
     // `lares meme check --edges` before and after. A broken edge gets repaired, never absorbed.
