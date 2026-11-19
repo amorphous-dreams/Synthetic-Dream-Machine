@@ -28,10 +28,11 @@
  * `wsl.exe lares …` with an argv array (no .cmd shim), and the house root stays on WSL ext4.
  */
 
+import { locateShim, SHIM_ABSENT_EXIT } from "./shim-locate.js";
+export { locateShim, SHIM_ABSENT_EXIT };
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { parseArgs, ArgsError, BOOLEAN_FLAGS, type ParsedArgs } from "./parse-args.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "./surface-env.js";
 
@@ -40,7 +41,6 @@ export { envValue, IN_CONTAINER_ENV, surfaceEnvPath };
 /** No house root here, and no container house stands to answer (sysexits EX_CONFIG). */
 export const HOUSE_ABSENT_EXIT = 78;
 /** The container house stands and the checkout's shim does not (sysexits EX_UNAVAILABLE). */
-export const SHIM_ABSENT_EXIT = 69;
 /** A credential verb with no terminal on both ends: the usage code the CLI's CredentialTtyRefusal reads. */
 export const CREDENTIAL_TTY_EXIT = 2;
 
@@ -348,17 +348,6 @@ export function translatePaths(input: TranslateInput): { argv: string[] } | { er
   return refusal !== null ? { error: refusal } : { argv: out };
 }
 
-/** The checkout's shim, found by walking up from this module (a symlinked bin resolves to its real path). */
-export function locateShim(from: string = fileURLToPath(import.meta.url)): string | null {
-  let dir = dirname(from);
-  for (;;) {
-    const candidate = join(dir, "tools", "lares-container.sh");
-    if (existsSync(candidate)) return candidate;
-    const up = dirname(dir);
-    if (up === dir) return null;
-    dir = up;
-  }
-}
 
 /**
  * Run the shim with the same argv, stdio inherited, and answer its exit code.
