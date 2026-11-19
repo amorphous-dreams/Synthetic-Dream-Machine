@@ -84,7 +84,11 @@ const controlWriters = [
   ["packages/lararium-tw5/src/verb-summons.ts", /opts\.control\.tombstoneInBag/, /opts\.daemon\./],
   ["packages/lararium-node/src/vessel-mailbox.ts", /\{ bag: CONTROL_HOME_ID \}/, /DAEMON_BAG_ID/],
   ["packages/lararium-node/src/uds-channel.ts", /storeForBag\(CONTROL_HOME_ID\)/, /wikiSlotUri\("daemon", "working"\)/],
-  ["packages/lararium-node/src/swarm-wiki.ts", /export function controlSwarmWiki/, /daemonSwarmWiki/],
+  // The swarm wiki writes into the control document it is handed (`docSwarmWiki`, one composition in the mesh), the node
+  // re-exports it as `controlSwarmWiki`, and every node composition hands it the control document, never another.
+  ["packages/lararium-mesh/src/doc-swarm-wiki.ts", /export function docSwarmWiki\(controlDoc: /, /daemonSwarmWiki|DAEMON_BAG_ID/],
+  ["packages/lararium-node/src/swarm-wiki.ts", /export \{ docSwarmWiki as controlSwarmWiki \} from "@lararium\/mesh"/, /daemonSwarmWiki/],
+  ["packages/lararium-node/src/open-node-vessel.ts", /controlSwarmWiki\(readControlDoc\)/, /controlSwarmWiki\((?!readControlDoc\))/],
   ["packages/lararium-keyhive/src/lease-frontier.ts", /storeForBag\(CONTROL_HOME_ID\)/, /DAEMON_BAG_ID/],
 ];
 for (const [path, must, mustNot] of controlWriters) {
