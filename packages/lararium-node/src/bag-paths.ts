@@ -212,6 +212,28 @@ export function faceRoot(projectionRoot: string, segment: string): string {
   return joinPath(projectionRoot, FACES_PROJECTION_DIR, faceSegment(segment));
 }
 
+/**
+ * THE REALM ROOT (operator ruling 2026-11-19, "The filepath for realms should include their 'pet-name' to match faces"): a realm
+ * holds its shared wikis' workbenches and its domain bags in one folder under the projections root, named by the PET NAME the
+ * operator gives the realm (a local label, `realm-labels.ts`), never by a realm id:
+ *
+ *   <projections>/realms/<realm pet name>/
+ *     wikis/<slug>/      each wiki's one workbench (its own git tree: `lares surface init --realm <pet name>`)
+ *     bags/<slug>/       each domain bag's canon mirror
+ *
+ * The realm pet name follows the face segment rule (`realmPetNameRefusal`), so it names exactly one folder. No index file that
+ * links realms or faces (`realm-labels/`, `face-labels/`) ever rests under `realms/`.
+ */
+export const REALMS_PROJECTION_DIR = "realms";
+/** The planes inside a realm root. */
+export const REALM_PLANES = { wikis: "wikis", bags: "bags" } as const;
+
+/** `<projections>/realms/<pet name>`: the one root of a realm's wikis and bags. Throws {@link FaceSegmentRefused} on a pet name
+ *  that names no single folder. */
+export function realmRoot(projectionRoot: string, petName: string): string {
+  return joinPath(projectionRoot, REALMS_PROJECTION_DIR, faceSegment(petName));
+}
+
 /** `<projections>/faces/<segment>/margins`: the plane a face's margins rest under, one folder per wiki slug. */
 export function faceMarginsRoot(projectionRoot: string, segment: string): string {
   return joinPath(faceRoot(projectionRoot, segment), FACE_PLANES.margins);

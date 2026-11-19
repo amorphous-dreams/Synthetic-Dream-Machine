@@ -198,7 +198,7 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
-export { workspaceRootsOf, workbenchFolders, type WorkbenchFolder, FACES_PROJECTION_DIR, FACE_PLANES, faceSegment, faceSegmentRefusal, FaceSegmentRefused, faceRoot, faceMarginsRoot, type FaceSite, type FaceSegmentCode } from "./bag-paths.js";
+export { workspaceRootsOf, workbenchFolders, type WorkbenchFolder, REALMS_PROJECTION_DIR, REALM_PLANES, realmRoot, FACES_PROJECTION_DIR, FACE_PLANES, faceSegment, faceSegmentRefusal, FaceSegmentRefused, faceRoot, faceMarginsRoot, type FaceSite, type FaceSegmentCode } from "./bag-paths.js";
 export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, isTempLayerInternalTitle, TEMP_LAYER_DIR,
   isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
 // The drain, one seat (face-pools W1, W2): the CLI's `lares watch` and the vessel's host over the worn face's pool.
@@ -231,6 +231,10 @@ export { runFoundHearth, foundSeedCharter, HearthFoundingRefused } from "./comma
 export type { FoundHearthOptions, FoundHearthResult, HearthCard } from "./commands/found-hearth.js";
 // THE ROOT-CARD READER: the split-root cards build a face's body in the person's own process — see `face-card-restore`.
 export { buildCardBody, CardRestoreRefused, CARD_REFUSALS } from "./face-card-restore.js";
+// THE REALM LABELS: each realm's local pet name and the canon realms and bags its folder holds (`realm-labels`).
+export { REALM_LABELS_DIR, REALM_LABEL_SCHEMA, realmLabelsDir, realmLabelPath, readRealmLabels, findRealmLabel, realmPetNameRefusal,
+  nameRealm, placeInRealm, realmPlacement, realmWaitingLine, RealmRefused, type RealmLabel, type RealmLabelRealm, type RealmRefusalCode,
+  type RealmNaming, type RealmPlacement } from "./realm-labels.js";
 // THE FACE LABELS: each face's pet-name and its copies' override bases, in plaintext outside every mirror (`face-labels`).
 export { FACE_LABELS_DIR, FACE_LABEL_SCHEMA, FACE_BASES_SCHEMA, faceLabelsDir, faceLabelPath, faceBasesPath, readFaceLabel, writeFaceLabel, labelledRelations,
   moveFaceLabelFile, faceSiteOf, readFaceBases, writeFaceBases, basesOfDoc, keepFaceBases, type FaceLabel, type KeptDoc, type KeptDocState } from "./face-labels.js";
