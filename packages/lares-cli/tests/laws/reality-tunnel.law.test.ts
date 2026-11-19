@@ -84,6 +84,37 @@ describe("L5 · every kind converges: a second application changes nothing", () 
   });
 });
 
+describe("L5 · the fixed point holds what the kind owes: a kind that converges on nothing reads red", () => {
+  // The oracle spells the pointer lines itself, so a kind whose own pointer reader goes blind still reads red.
+  const POINTERS = ["-> [noosphere-boot.mem](x)", "@bags/x/noosphere-boot.mem", "bags/x/noosphere-boot.mem"];
+  const pointerless = (out: string, from: number): boolean => !out.split("\n").slice(from).some((l) => POINTERS.includes(l));
+  const SEEDS_TEXT: Array<[string | null]> = POINTERS.map((p) => [`prose\n${p}\nmore prose\n`]);
+  const [, head] = TEXT_KINDS[0]!;
+  const [, seedFree] = TEXT_KINDS[1]!;
+  test.prop([fc.option(textDoc, { nil: null })], { examples: SEEDS_TEXT })("headLine heads the file and lifts every other pointer line", (doc) => {
+    const out = head(doc)!;
+    expect(out.split("\n")[0]).toBe("@.claude/noosphere-boot");
+    expect(pointerless(out, 1)).toBe(true);
+  });
+  test.prop([fc.option(textDoc, { nil: null })], { examples: SEEDS_TEXT })("seedless lifts every pointer line", (doc) => {
+    const out = seedFree(doc);
+    if (out !== null) expect(pointerless(out, 0)).toBe(true);
+  });
+  const [, hook] = JSON_KINDS[3]!;
+  const want = JSON.stringify({ type: "command", command: 'bash "/new/hook.sh"', timeout: 30 });
+  test.prop([fc.option(jsonDoc, { nil: null })], { examples: SEEDS_JSON })("claudeHook lands the owed command exactly once", (doc) => {
+    const out = hook(doc)!;
+    const groups = (JSON.parse(out) as { hooks: { Stop: Array<{ hooks?: unknown[] }> } }).hooks.Stop;
+    expect(groups.flatMap((g) => g.hooks ?? []).filter((c) => JSON.stringify(c) === want)).toHaveLength(1);
+  });
+  plain("CONTROL: a kind that returns its input converges, and the fixed-point oracle reads it red", () => {
+    const idle: Kind = (c) => c;
+    const doc = `prose\n${POINTERS[0]}\n`;
+    expect(idle(idle(doc))).toBe(idle(doc));
+    expect(pointerless(idle(doc)!, 0)).toBe(false);
+  });
+});
+
 describe("L6 · a kind never turns bytes that parse into bytes that do not", () => {
   for (const [name, f] of JSON_KINDS) {
     test.prop([fc.option(jsonDoc, { nil: null })], { examples: SEEDS_JSON })(name, (doc) => {

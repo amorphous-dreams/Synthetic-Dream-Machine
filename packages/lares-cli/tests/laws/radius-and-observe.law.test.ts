@@ -21,6 +21,8 @@ import { CARRIER, declared, homeItems, repoItems } from "../../src/reality-tunne
 import { loadLogPath, readLoads, verifyLoads } from "../../src/reality-tunnel/verify.js";
 import { VESSEL_SUBS } from "../../src/commands/vessel.js";
 import { TUNNEL_VERBS } from "../../src/commands/tunnel-door.js";
+import { freshBuildGate, type FreshBuildDeps } from "../../src/build-freshness.js";
+import type { ParsedArgs } from "../../src/parse-args.js";
 import { door } from "./harness.js";
 
 const REPO = join(import.meta.dirname, "..", "..", "..", "..");
@@ -170,6 +172,26 @@ describe("L4 · an observing verb leaves every tree it can reach unchanged", () 
     } finally {
       if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
     }
+  });
+
+  plain("an observing wake over a stale tree passes the fresh-build gate: no build, no re-exec", async () => {
+    const reached: string[] = [];
+    // A wake the gate let through stops at the first reach it asks: the socket answers, so even a broken
+    // gate never takes the build lock or writes a stamp here.
+    const deps = (alive: boolean, stale: boolean): FreshBuildDeps => ({
+      alive: async () => { reached.push("alive"); return alive; },
+      stale: () => { reached.push("stale"); return stale; },
+      build: () => { reached.push("build"); return 0; },
+      reexec: () => { reached.push("reexec"); return 0; },
+    });
+    const wake = (flags: Record<string, boolean>) =>
+      ({ command: "vessel", positional: ["stand"], flags, options: {} } as unknown as ParsedArgs);
+    expect(await freshBuildGate(["vessel", "stand", "--observe"], wake({ observe: true }), deps(true, true))).toBeNull();
+    expect(reached).toEqual([]);
+    // CONTROL: the same wake without the cap asks the socket and the tree, so the zero above reads the cap
+    // alone. The tree answers current here, so the control never takes the build lock or writes a stamp.
+    expect(await freshBuildGate(["vessel", "stand"], wake({}), deps(false, false))).toBeNull();
+    expect(reached).toEqual(["alive", "stale"]);
   });
 
   plain("CONTROL: a verb that writes reads red against the snapshot", async () => {

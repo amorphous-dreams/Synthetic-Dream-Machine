@@ -109,6 +109,15 @@ describe("lares shore take-disk — an answer that cannot prove its state takes 
     expect(s.waves).toHaveLength(1);
   });
 
+  test("★ a file that moved since the key was read refuses standoff-key-moved, and no wave leaves the door ★", async () => {
+    const uri = "lar:///ha.ka.ba/x/moved";
+    const s = standing("moved.md", "the words a hand typed after the key\n", uri, (one) => [{ ...one, disk: carrierHash("the words the key folded\n") }]);
+    const taken = await takeDisk({ uri, key: KEY }, s.deps(async () => { throw new Error("no wave may ride for a file the key never read"); }));
+    expect(taken).toMatchObject({ ok: false, refusal: "standoff-key-moved" });
+    expect((taken as { why: string }).why).toContain("lares shore");
+    expect(s.waves).toEqual([]);
+  });
+
   test("CONTROL: a plain text carrier under the same key rides one wave whose base names the records the key folded", async () => {
     const uri = "lar:///ha.ka.ba/x/note";
     const s = standing("note.md", "a hand's words\n", uri);
