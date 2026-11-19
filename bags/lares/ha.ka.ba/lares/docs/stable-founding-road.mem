@@ -50,7 +50,7 @@ its own carrier, and this carrier points there.
 
 ''The rank law'' (the house's reading, overrulable): first what blocks the operator's re-founding and dogfooding; then what breaks a rule the operator stated; then what unlocks the most later items; then cost. Each rank carries one sentence of reason. The keeper rite keeps every qualification its rulings name (#/rulings, 2026-11-07, the dogfood/keeper split): its gates rank in AFTER, and no dogfood re-founding waives one.
 
-<$let nl={{{ [charcode[10]] }}} rows={{{ [tag[road/rank]sort[order]get[text]join<nl>] }}} table={{{ [[|! Rank |! Band |! Items |! Reason |]] [<rows>] +[join<nl>] }}}>
+<$let nl={{{ [charcode[10]] }}} rows={{{ [tag[road/rank]!tag[road/ashes]sort[order]get[text]join<nl>] }}} table={{{ [[|! Rank |! Band |! Items |! Reason |]] [<rows>] +[join<nl>] }}}>
 
 <$transclude $variable="table" $mode="block"/>
 
@@ -1402,6 +1402,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UhXvodnhtQDartrwgWz_1V72SH9uwx_NSYeN5wF9dRo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nlq94vh9zjUlsqY2eWWL54gB85ZPj4f9XUPErWuvrGQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

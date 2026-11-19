@@ -28,12 +28,15 @@ export const ROAD_DIR = "bags/lares/ha.ka.ba/lares/docs/road";
 export const ROAD_URI_BASE = "lar:///ha.ka.ba/lares/docs/road/";
 export const RANK_TAG = "road/rank";
 export const RULING_TAG = "road/ruling";
+/** The ashes mark (operator, 2026-11-19: "querying the Roadmap will only show pending work"): a road child whose work stands
+ *  fully built, burned or superseded takes it, and the road's gather leaves it out. A ruling stays law and never takes it. */
+export const ASHES_TAG = "road/ashes";
 /** The table head the rank gather renders under. */
 export const RANK_HEAD = "|! Rank |! Band |! Items |! Reason |";
 // A GATHER STANDS IN BLOCK MODE: its opening tag and its body each sit between blank lines, so the transcluded table or
 // list renders as a block and never inside a paragraph (an inline widget wraps a table or a list in `<p>`).
 /** The one rank gather: the rows join under the head and render as ONE table (a list widget would cut one table per row). */
-export const RANK_GATHER = ['<$let nl={{{ [charcode[10]] }}} rows={{{ [tag[road/rank]sort[order]get[text]join<nl>] }}} table={{{ [[' + RANK_HEAD + ']] [<rows>] +[join<nl>] }}}>', "", '<$transclude $variable="table" $mode="block"/>', "", "</$let>"].join("\n");
+export const RANK_GATHER = ['<$let nl={{{ [charcode[10]] }}} rows={{{ [tag[road/rank]!tag[road/ashes]sort[order]get[text]join<nl>] }}} table={{{ [[' + RANK_HEAD + ']] [<rows>] +[join<nl>] }}}>', "", '<$transclude $variable="table" $mode="block"/>', "", "</$let>"].join("\n");
 const RULING_GATHER_BODY = ["", '<$transclude mode="block"/>', "", "</$list>"];
 /** A ruling gather for one group: each ruling renders as its own block, in order. */
 export const rulingGather = (group) => [`<$list filter="[tag[road/ruling]field:group[${group}]sort[order]]">`, ...RULING_GATHER_BODY].join("\n");
@@ -108,9 +111,10 @@ export function readChildren(root) {
 
 const byOrder = (a, b) => (a.fields.order < b.fields.order ? -1 : a.fields.order > b.fields.order ? 1 : 0);
 const tagged = (children, tag) => children.filter((c) => (c.fields.tags ?? []).includes(tag)).sort(byOrder);
+const burned = (c) => (c.fields.tags ?? []).includes(ASHES_TAG);
 
 /**
- * The ranks and rulings a road yields as its gathers would: the rank gather's rows in order, then each ruling gather of
+ * The ranks and rulings a road yields as its gathers would: the rank gather's rows in order (a rank in the ashes left out), then each ruling gather of
  * `#/rulings` in the road's order, each group's children in order, beside any item still inline. A ruling carries the
  * heading its gather sits under.
  */
@@ -118,7 +122,7 @@ export function gatheredItems(text, children) {
   const inline = inlineItems(text);
   const order = (slotLines(text, "#/the-order") ?? []).join("\n");
   const ranks = order.includes(RANK_GATHER)
-    ? tagged(children, RANK_TAG).map((c) => ({ id: rankId(c.body), text: c.body, file: c.file }))
+    ? tagged(children, RANK_TAG).filter((c) => !burned(c)).map((c) => ({ id: rankId(c.body), text: c.body, file: c.file }))
     : [];
   const rulings = [];
   for (const g of rulingGathers(slotLines(text, "#/rulings") ?? []).filter((g) => g.whole)) {
@@ -157,6 +161,7 @@ export function structureFaults(text, children) {
     if (c.fields["uri-path"] !== (ROAD_URI_BASE + stem).slice("lar:///".length)) faults.push(`${c.file} names uri-path ${c.fields["uri-path"]}`);
     if (tags[0] === RANK_TAG && (!stem.startsWith("rank-") || c.body.split("\n").length !== 1 || !isRankRow(c.body) || `rank-${rankId(c.body)}` !== stem)) faults.push(`${c.file} holds no single row of its own rank`);
     if (tags[0] === RULING_TAG && (!stem.startsWith("ruling-") || !isRulingHead(c.body) || c.body.split("\n").slice(1).some((l) => !isRulingTail(l)))) faults.push(`${c.file} holds no single ruling`);
+    if (tags[0] === RULING_TAG && burned(c)) faults.push(`${c.file} carries ${ASHES_TAG}; a ruling stays law and never takes it`);
     if (tags[0] === RULING_TAG && !groups.has(c.fields.group)) faults.push(`${c.file} names group ${c.fields.group}, which no gather in #/rulings seats`);
   }
   return faults;
