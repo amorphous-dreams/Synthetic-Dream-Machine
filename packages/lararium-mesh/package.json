@@ -44,6 +44,10 @@
       "import": "./dist/carrier-type.js",
       "types": "./dist/carrier-type.d.ts"
     },
+    "./carrier-form": {
+      "import": "./dist/carrier-form.js",
+      "types": "./dist/carrier-form.d.ts"
+    },
     "./meme-merge": {
       "import": "./dist/meme-merge.js",
       "types": "./dist/meme-merge.d.ts"
