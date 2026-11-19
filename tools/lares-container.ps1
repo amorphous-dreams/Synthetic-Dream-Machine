@@ -733,50 +733,158 @@ function BuildImage([string]$at, [string[]]$more) {
   [Console]::Error.WriteLine("lares-container: the vessel image stands rebuilt from $short (revision $rev); ``up`` stands it")
 }
 
-switch ($verb) {
-  'up' {
-    EnsureHouse
-    ResolveGitRev
-    $n = 0; $binds = @(); $i = 0
-    while ($i -lt $rest.Count) {
-      if ($rest[$i] -eq '--workspace') {
-        if ($i + 1 -ge $rest.Count) { Die '--workspace wants <name>=<dir>' }
-        $binds += WorkspaceBind ([string]$rest[$i + 1])
-        $i += 2; continue
-      }
-      if ($rest[$i] -ne '--capture') { Die "unknown option $($rest[$i]) for up" }
-      if ($i + 1 -ge $rest.Count) { Die '--capture wants a directory' }
-      $d = $rest[$i + 1]
-      if (-not (Test-Path -PathType Container $d)) { Die "--capture: $d is no directory" }
-      $dir = (Resolve-Path $d).Path.TrimEnd('/', '\')
-      $home_ = [Environment]::GetFolderPath('UserProfile').TrimEnd('/', '\')
-      if ($dir -eq '' -or $dir -eq $home_ -or $dir -eq '/home') { Die "--capture refuses $dir — name a session root inside it, never a home directory whole" }
-      # The path rides the override as a single-quoted YAML scalar (a quote doubles, nothing else escapes), with
-      # each dollar sign doubled so compose reads it as a literal and interpolates nothing.
-      if ($dir.Contains("`n")) { Die '--capture refuses a path that holds a newline' }
-      $yamlDir = $dir.Replace("'", "''").Replace('$', '$$')
-      $n++
-      $binds += "      - type: bind`n        source: '$yamlDir'`n        target: /capture/$n`n        read_only: true"
-      $i += 2
+# THE STAND (`up`, and the rebuild's stand): the moved-image down path, the pūlama, the vessel healthy, the revision and
+# image lines, then the unlock or the hint. Inside a rebuild under a pūlama the unlock waits for the admit.
+$script:Rebuilding = $false
+function UpVerb([string[]]$upArgs) {
+  if ($null -eq $upArgs) { $upArgs = @() }
+  EnsureHouse
+  ResolveGitRev
+  $n = 0; $binds = @(); $i = 0
+  while ($i -lt $upArgs.Count) {
+    if ($upArgs[$i] -eq '--workspace') {
+      if ($i + 1 -ge $upArgs.Count) { Die '--workspace wants <name>=<dir>' }
+      $binds += WorkspaceBind ([string]$upArgs[$i + 1])
+      $i += 2; continue
     }
-    foreach ($pair in ((ValueOf 'LARES_WORKSPACES') -split ';')) { if ($pair) { $binds += WorkspaceBind $pair } }
-    DownIfMoved
-    StandPulama
-    if ($binds.Count -gt 0) {
-      $override = [IO.Path]::GetTempFileName()
-      try {
-        Set-Content -Path $override -Value ("services:`n  lares:`n    volumes:`n" + ($binds -join "`n")) -Encoding utf8
-        & docker compose @Base -f $override up -d --wait lares
-        if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
-      } finally { Remove-Item -Force $override -ErrorAction SilentlyContinue }
-    } else {
-      & docker compose @Base up -d --wait lares
-      if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
-    }
-    WarnImageRevision
-    WarnPulamaSkew
-    UnlockOrName
+    if ($upArgs[$i] -ne '--capture') { Die "unknown option $($upArgs[$i]) for up" }
+    if ($i + 1 -ge $upArgs.Count) { Die '--capture wants a directory' }
+    $d = $upArgs[$i + 1]
+    if (-not (Test-Path -PathType Container $d)) { Die "--capture: $d is no directory" }
+    $dir = (Resolve-Path $d).Path.TrimEnd('/', '\')
+    $home_ = [Environment]::GetFolderPath('UserProfile').TrimEnd('/', '\')
+    if ($dir -eq '' -or $dir -eq $home_ -or $dir -eq '/home') { Die "--capture refuses $dir — name a session root inside it, never a home directory whole" }
+    # The path rides the override as a single-quoted YAML scalar (a quote doubles, nothing else escapes), with
+    # each dollar sign doubled so compose reads it as a literal and interpolates nothing.
+    if ($dir.Contains("`n")) { Die '--capture refuses a path that holds a newline' }
+    $yamlDir = $dir.Replace("'", "''").Replace('$', '$$')
+    $n++
+    $binds += "      - type: bind`n        source: '$yamlDir'`n        target: /capture/$n`n        read_only: true"
+    $i += 2
   }
+  foreach ($pair in ((ValueOf 'LARES_WORKSPACES') -split ';')) { if ($pair) { $binds += WorkspaceBind $pair } }
+  DownIfMoved
+  StandPulama
+  if ($binds.Count -gt 0) {
+    $override = [IO.Path]::GetTempFileName()
+    try {
+      Set-Content -Path $override -Value ("services:`n  lares:`n    volumes:`n" + ($binds -join "`n")) -Encoding utf8
+      & docker compose @Base -f $override up -d --wait lares
+      if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
+    } finally { Remove-Item -Force $override -ErrorAction SilentlyContinue }
+  } else {
+    & docker compose @Base up -d --wait lares
+    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
+  }
+  WarnImageRevision
+  WarnPulamaSkew
+  if ($script:Rebuilding -and $PulamaMode) { return }
+  UnlockOrName
+}
+
+function PulamaRestand {
+  # THE PŪLAMA RE-STANDS ON THE IMAGE THAT STANDS. `up` never recreates a lit pūlama, so after a `build` this verb
+  # does: with no vessel standing (down first), it locks a running pūlama (every session drops, every key zero-fills),
+  # then recreates it on the current image. It stands unlit: the operator lights it by hand, then `up` and
+  # `pulama admit`. It reads no route and types none.
+  $vessel = & docker compose @Base ps -q --status running lares
+  if ($LASTEXITCODE -ne 0) { Die 'pulama restand refuses: docker compose ps failed, so whether a vessel stands reads unknown; nothing recreated' }
+  if (-not [string]::IsNullOrWhiteSpace(($vessel -join ''))) { Die 'pulama restand refuses while the lares vessel stands; run `tools/lares-container.ps1 down` first (nothing recreated)' }
+  $state = PulamaState
+  if ($state -eq 'unknown') { Die 'pulama restand refuses: docker compose ps failed for the pūlama, so whether it stands reads unknown; nothing recreated' }
+  EnsureHouse
+  if ($state -eq 'running') {
+    & docker compose @Base --profile pulama exec -T pulama node $PulamaMain lock
+    if ($LASTEXITCODE -ne 0) { Die 'the pūlama refused the lock; nothing recreated' }
+  }
+  & docker compose @Base --profile pulama up -d --force-recreate pulama
+  if ($LASTEXITCODE -ne 0) { Die 'the pūlama did not stand on the current image' }
+  $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
+  $digest = ((& docker image inspect --format '{{.Id}}' $image 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $digest) { $digest = $image }
+  [Console]::Error.WriteLine("lares-container: the pūlama stands unlit on $digest; light it by hand (``tools/lares-container.ps1 pulama light``), then ``tools/lares-container.ps1 up`` and ``tools/lares-container.ps1 pulama admit``")
+}
+
+# THE REBUILD RITE (road rank 4l, L7): one verb re-stands the house onto a new image, internally re-standable.
+#   1  the down path: the keep (`rite keep --if-due`, while the vessel stands), the census, the refusal of a silent stop
+#   2  the build from the commit (HEAD unless --at names another): the outgoing image keeps its revision tag, old ones prune
+#   3  under a pūlama whose code closure moved (or that stands absent): `pulama restand`, then it STOPS with one line,
+#      since the light reads the operator's route by their own hand; `rebuild --resume` picks up after the light
+#   4  `up` on the new image; under a pūlama, `pulama admit` on this terminal (the one route a rebuild reads, and the
+#      pūlama reads it, never this shim), then the vessel's unlock (detached) and the face last worn
+#   5  one closing line: the image's revision, the worn face, the keep
+# It never switches a branch, never reads or types a route, and never lights the pūlama.
+$RebuildPending = Join-Path (Join-Path $House 'cache') 'rebuild-pending'
+function WornNow {
+  $m = [regex]::Match((RunCensus '--json').Out, '"worn"\s*:\s*([0-9]+)')
+  if ($m.Success) { return $m.Groups[1].Value } else { return '' }
+}
+function RebuildVerb([string[]]$rargs) {
+  if ($null -eq $rargs) { $rargs = @() }
+  $resume = $false; $at = 'HEAD'; $atGiven = $false; $i = 0
+  while ($i -lt $rargs.Count) {
+    switch ($rargs[$i]) {
+      '--resume' { $resume = $true; $i++ }
+      '--at' { if ($i + 1 -ge $rargs.Count) { Die 'rebuild --at wants a revision' }; $at = [string]$rargs[$i + 1]; $atGiven = $true; $i += 2 }
+      default { Die "rebuild takes --at <rev> or --resume, and `"$($rargs[$i])`" names neither" }
+    }
+  }
+  if ($resume -and $atGiven) { Die 'rebuild --resume takes no --at: the image stands built; run rebuild --at <rev> for another' }
+  if ($PulamaMode -and -not $script:Tty) { Die "rebuild under a pūlama ends on the pūlama's admit, which reads your route on a terminal; run it on one (nothing touched)" }
+  if (-not $resume) {
+    [Console]::Error.WriteLine('lares-container: rebuild: the down path (keep, census)')
+    DownVessel @()
+    [Console]::Error.WriteLine("lares-container: rebuild: the build from $at")
+    BuildImage $at @()
+    if ($PulamaMode) {
+      PulamaReading
+      switch ($script:Pr.State) {
+        'unread' { Die 'rebuild stops: whether the pūlama stands, or what it runs, reads unknown; the image stands built (read it with `tools/lares-container.ps1 pulama status`)' }
+        { $_ -in @('absent', 'moved') } {
+          PulamaRestand
+          try { New-Item -ItemType Directory -Force -Path (Join-Path $House 'cache') | Out-Null; Set-Content -Path $RebuildPending -Value $script:KeepSaid -Encoding utf8 } catch {}
+          [Console]::Error.WriteLine('lares-container: rebuild stops for your hand: the pūlama stands unlit on the new image; light it (`tools/lares-container.ps1 pulama light`), then `tools/lares-container.ps1 rebuild --resume`')
+          exit 0
+        }
+        default { [Console]::Error.WriteLine("lares-container: rebuild: the pūlama's code closure stands unmoved, so it stays lit (no restand, no light)") }
+      }
+    }
+  } else {
+    if ($PulamaMode) {
+      PulamaReading
+      switch ($script:Pr.State) {
+        'unread' { Die 'rebuild --resume refuses: whether the pūlama stands, or what it runs, reads unknown; read it with `tools/lares-container.ps1 pulama status`' }
+        'absent' { Die 'rebuild --resume refuses: no pūlama runs; `tools/lares-container.ps1 pulama restand`, light it, then rebuild --resume' }
+        'moved' { Die 'rebuild --resume refuses: the pūlama still runs an older code closure; `tools/lares-container.ps1 pulama restand`, light it, then rebuild --resume' }
+      }
+    }
+    $script:KeepSaid = ''
+    try { $script:KeepSaid = (Get-Content -Raw -LiteralPath $RebuildPending -ErrorAction Stop).Trim() } catch {}
+    if (-not $script:KeepSaid) { $script:KeepSaid = "ran before the light, in the rebuild's first half" }
+  }
+  Remove-Item -Force -LiteralPath $RebuildPending -ErrorAction SilentlyContinue
+  $script:Rebuilding = $true
+  UpVerb @()
+  if ($PulamaMode) {
+    [Console]::Error.WriteLine('lares-container: rebuild: the pūlama admits the new image; it reads your route on this terminal')
+    & docker compose @Base --profile pulama exec pulama node $PulamaMain admit
+    if ($LASTEXITCODE -ne 0) { Die 'the pūlama admitted nothing (above); the vessel stands at the floor: `tools/lares-container.ps1 pulama admit`, then `tools/lares-container.ps1 vault unlock --all`' }
+    if ((DetachedUnlock @('--all')) -ne 0) { Die 'the vessel did not open after the admit (above); read it with `tools/lares-container.ps1 pulama status`, then `tools/lares-container.ps1 vault unlock --all`' }
+    if (NoneWorn) { WearLastFace }
+  }
+  $worn = $script:Wore -replace '^h', ''
+  if (-not $worn) { $worn = WornNow }
+  $rev = ((& docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $ImageRef 2>$null) -join '').Trim()
+  if ($rev.Length -gt 12) { $rev = $rev.Substring(0, 12) }
+  if (-not $rev) { $rev = 'unlabeled' }
+  $wearing = if ($worn) { "wearing h$worn" } else { 'no face worn (wear one: `tools/lares-container.ps1 wear N`)' }
+  $keep = if ($script:KeepSaid) { $script:KeepSaid } else { 'none ran' }
+  [Console]::Error.WriteLine("lares-container: rebuilt: the vessel stands on revision $rev, $wearing; keep: $keep")
+}
+
+switch ($verb) {
+  'up' { UpVerb $rest }
+  'rebuild' { RebuildVerb $rest }
   'down'  { DownVessel $rest }
   'pulama' {
     if (-not $PulamaMode) { Die "pulama needs LARES_PULAMA=1 in the environment or $EnvFile" }
@@ -785,27 +893,8 @@ switch ($verb) {
       'up' { EnsureHouse; Compose @('--profile', 'pulama', 'up', '-d', '--no-recreate', 'pulama') }
       'down' { Compose @('--profile', 'pulama', 'stop', 'pulama') }
       'restand' {
-        # THE PŪLAMA RE-STANDS ON THE IMAGE THAT STANDS. `up` never recreates a lit pūlama, so after a `build` this verb
-        # does: with no vessel standing (down first), it locks a running pūlama (every session drops, every key zero-fills),
-        # then recreates it on the current image. It stands unlit: the operator lights it by hand, then `up` and
-        # `pulama admit`. It reads no route and types none.
         if ($rest.Count -ne 1) { Die 'pulama restand takes no arguments' }
-        $vessel = & docker compose @Base ps -q --status running lares
-        if ($LASTEXITCODE -ne 0) { Die 'pulama restand refuses: docker compose ps failed, so whether a vessel stands reads unknown; nothing recreated' }
-        if (-not [string]::IsNullOrWhiteSpace(($vessel -join ''))) { Die 'pulama restand refuses while the lares vessel stands; run `tools/lares-container.ps1 down` first (nothing recreated)' }
-        $state = PulamaState
-        if ($state -eq 'unknown') { Die 'pulama restand refuses: docker compose ps failed for the pūlama, so whether it stands reads unknown; nothing recreated' }
-        EnsureHouse
-        if ($state -eq 'running') {
-          & docker compose @Base --profile pulama exec -T pulama node $PulamaMain lock
-          if ($LASTEXITCODE -ne 0) { Die 'the pūlama refused the lock; nothing recreated' }
-        }
-        & docker compose @Base --profile pulama up -d --force-recreate pulama
-        if ($LASTEXITCODE -ne 0) { Die 'the pūlama did not stand on the current image' }
-        $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
-        $digest = ((& docker image inspect --format '{{.Id}}' $image 2>$null) -join '').Trim()
-        if ($LASTEXITCODE -ne 0 -or -not $digest) { $digest = $image }
-        [Console]::Error.WriteLine("lares-container: the pūlama stands unlit on $digest; light it by hand (``tools/lares-container.ps1 pulama light``), then ``tools/lares-container.ps1 up`` and ``tools/lares-container.ps1 pulama admit``")
+        PulamaRestand
       }
       { $_ -in @('light', 'lock', 'status', 'tessera') } { if ($sub -eq 'status') { WarnPulamaSkew }; Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, $sub)) }
       'admit' {

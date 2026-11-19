@@ -761,63 +761,162 @@ EOF
   printf 'lares-container: the vessel image stands rebuilt from %s (revision %s); `up` stands it\n' "$b_short" "$b_rev" >&2
 }
 
-case "$verb" in
-  up)
-    ensure_house
-    override=""; n=0; files=""
-    trap '[ -z "$override" ] || rm -f "$override"' EXIT
-    while [ "$#" -gt 0 ]; do
-      case "$1" in
-        --capture)
-          [ "$#" -ge 2 ] || die "--capture wants a directory"
-          dir=$(CDPATH= cd -- "$2" 2>/dev/null && pwd -P) || die "--capture: $2 is no directory"
-          case "$dir" in
-            /|/home|"$(CDPATH= cd -- "${HOME:-/nonexistent}" 2>/dev/null && pwd -P)") die "--capture refuses $dir — name a session root inside it, never a home directory whole" ;;
-          esac
-          [ ! -S "$dir" ] || die "--capture refuses $dir — it is a socket, not a session root"
-          # The path rides the override as a single-quoted YAML scalar (a quote doubles, nothing else escapes), with
-          # each dollar sign doubled so compose reads it as a literal and interpolates nothing.
-          case "$dir" in *"
+# THE STAND (`up`, and the rebuild's stand): the moved-image down path, the pūlama, the vessel healthy, the revision and
+# image lines, then the unlock or the hint. Inside a rebuild under a pūlama the unlock waits for the admit.
+REBUILDING=""
+up_verb() {
+  ensure_house
+  override=""; n=0; files=""
+  trap '[ -z "$override" ] || rm -f "$override"' EXIT
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --capture)
+        [ "$#" -ge 2 ] || die "--capture wants a directory"
+        dir=$(CDPATH= cd -- "$2" 2>/dev/null && pwd -P) || die "--capture: $2 is no directory"
+        case "$dir" in
+          /|/home|"$(CDPATH= cd -- "${HOME:-/nonexistent}" 2>/dev/null && pwd -P)") die "--capture refuses $dir — name a session root inside it, never a home directory whole" ;;
+        esac
+        [ ! -S "$dir" ] || die "--capture refuses $dir — it is a socket, not a session root"
+        # The path rides the override as a single-quoted YAML scalar (a quote doubles, nothing else escapes), with
+        # each dollar sign doubled so compose reads it as a literal and interpolates nothing.
+        case "$dir" in *"
 "*) die "--capture refuses a path that holds a newline" ;; esac
-          yaml_dir=$(printf '%s' "$dir" | sed -e "s/'/''/g" -e 's/\$/$$/g')
-          n=$((n + 1))
-          files="$files
+        yaml_dir=$(printf '%s' "$dir" | sed -e "s/'/''/g" -e 's/\$/$$/g')
+        n=$((n + 1))
+        files="$files
       - type: bind
         source: '$yaml_dir'
         target: /capture/$n
         read_only: true"
-          shift 2 ;;
-        --workspace)
-          [ "$#" -ge 2 ] || die "--workspace wants <name>=<dir>"
-          workspace_bind "$2"
-          shift 2 ;;
-        *) die "unknown option $1 for up" ;;
-      esac
-    done
-    configured=$(value_of LARES_WORKSPACES)
-    if [ -n "$configured" ]; then
-      old_ifs=$IFS; IFS=';'
-      for pair in $configured; do IFS=$old_ifs; [ -z "$pair" ] || workspace_bind "$pair"; IFS=';'; done
-      IFS=$old_ifs
-    fi
-    down_if_moved
-    stand_pulama
-    if [ -n "$files" ]; then
-      override=$(mktemp)
-      printf 'services:\n  lares:\n    volumes:%s\n' "$files" > "$override"
-      if [ -n "$ENV_ARGS" ]; then
-        docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
-      else
-        docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
-      fi
-      up_rc=$?
+        shift 2 ;;
+      --workspace)
+        [ "$#" -ge 2 ] || die "--workspace wants <name>=<dir>"
+        workspace_bind "$2"
+        shift 2 ;;
+      *) die "unknown option $1 for up" ;;
+    esac
+  done
+  configured=$(value_of LARES_WORKSPACES)
+  if [ -n "$configured" ]; then
+    old_ifs=$IFS; IFS=';'
+    for pair in $configured; do IFS=$old_ifs; [ -z "$pair" ] || workspace_bind "$pair"; IFS=';'; done
+    IFS=$old_ifs
+  fi
+  down_if_moved
+  stand_pulama
+  if [ -n "$files" ]; then
+    override=$(mktemp)
+    printf 'services:\n  lares:\n    volumes:%s\n' "$files" > "$override"
+    if [ -n "$ENV_ARGS" ]; then
+      docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
     else
-      if compose up -d --wait lares; then up_rc=0; else up_rc=$?; fi
+      docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" -f "$override" up -d --wait lares
     fi
-    if [ "$up_rc" -ne 0 ]; then printf '%s\n' 'lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again' >&2; exit "$up_rc"; fi
-    warn_image_revision
-    warn_pulama_skew
-    unlock_or_name ;;
+    up_rc=$?
+  else
+    if compose up -d --wait lares; then up_rc=0; else up_rc=$?; fi
+  fi
+  if [ "$up_rc" -ne 0 ]; then printf '%s\n' 'lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again' >&2; exit "$up_rc"; fi
+  warn_image_revision
+  warn_pulama_skew
+  if [ -n "$REBUILDING" ] && [ -n "$PULAMA_MODE" ]; then return 0; fi
+  unlock_or_name
+}
+
+pulama_restand() {
+  # THE PŪLAMA RE-STANDS ON THE IMAGE THAT STANDS. `up` never recreates a lit pūlama, so after a `build` this verb
+  # does: with no vessel standing (down first), it locks a running pūlama (every session drops, every key zero-fills),
+  # then recreates it on the current image. It stands unlit: the operator lights it by hand, then `up` and
+  # `pulama admit`. It reads no route and types none.
+  restand_vessel=$(compose ps -q --status running lares) || die "pulama restand refuses: docker compose ps failed, so whether a vessel stands reads unknown; nothing recreated"
+  [ -z "$restand_vessel" ] || die "pulama restand refuses while the lares vessel stands; run \`tools/lares-container.sh down\` first (nothing recreated)"
+  restand_state=$(pulama_state)
+  [ "$restand_state" != unknown ] || die "pulama restand refuses: docker compose ps failed for the pūlama, so whether it stands reads unknown; nothing recreated"
+  ensure_house
+  if [ "$restand_state" = running ]; then
+    compose --profile pulama exec -T pulama node "$PULAMA_MAIN" lock </dev/null || die "the pūlama refused the lock; nothing recreated"
+  fi
+  compose --profile pulama up -d --force-recreate pulama || die "the pūlama did not stand on the current image"
+  restand_image=$(value_of LARES_IMAGE); [ -n "$restand_image" ] || restand_image=lares-surface:local
+  restand_digest=$(docker image inspect --format '{{.Id}}' "$restand_image" 2>/dev/null) || restand_digest=""
+  restand_digest=$(printf '%s' "$restand_digest" | tr -d '\r')
+  printf 'lares-container: the pūlama stands unlit on %s; light it by hand (`tools/lares-container.sh pulama light`), then `tools/lares-container.sh up` and `tools/lares-container.sh pulama admit`\n' "${restand_digest:-$restand_image}" >&2
+}
+
+# THE REBUILD RITE (road rank 4l, L7): one verb re-stands the house onto a new image, internally re-standable.
+#   1  the down path: the keep (`rite keep --if-due`, while the vessel stands), the census, the refusal of a silent stop
+#   2  the build from the commit (HEAD unless --at names another): the outgoing image keeps its revision tag, old ones prune
+#   3  under a pūlama whose code closure moved (or that stands absent): `pulama restand`, then it STOPS with one line,
+#      since the light reads the operator's route by their own hand; `rebuild --resume` picks up after the light
+#   4  `up` on the new image; under a pūlama, `pulama admit` on this terminal (the one route a rebuild reads, and the
+#      pūlama reads it, never this shim), then the vessel's unlock (detached) and the face last worn
+#   5  one closing line: the image's revision, the worn face, the keep
+# It never switches a branch, never reads or types a route, and never lights the pūlama.
+REBUILD_PENDING="$HOUSE/cache/rebuild-pending"
+worn_now() { # the face the census frame names worn, or nothing
+  run_census --json >/dev/null 2>&1 || true
+  printf '%s\n' "$census_out" | sed -n 's/.*"worn"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' | head -n 1
+}
+rebuild_verb() {
+  r_resume=""; r_at=HEAD; r_at_given=""
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --resume) r_resume=yes; shift ;;
+      --at) [ "$#" -ge 2 ] || die "rebuild --at wants a revision"; r_at=$2; r_at_given=yes; shift 2 ;;
+      *) die "rebuild takes --at <rev> or --resume, and \"$1\" names neither" ;;
+    esac
+  done
+  [ -z "$r_resume" ] || [ -z "$r_at_given" ] || die "rebuild --resume takes no --at: the image stands built; run rebuild --at <rev> for another"
+  if [ -n "$PULAMA_MODE" ] && [ -z "$HAVE_TTY" ]; then die "rebuild under a pūlama ends on the pūlama's admit, which reads your route on a terminal; run it on one (nothing touched)"; fi
+  if [ -z "$r_resume" ]; then
+    printf '%s\n' 'lares-container: rebuild: the down path (keep, census)' >&2
+    down_vessel
+    printf 'lares-container: rebuild: the build from %s\n' "$r_at" >&2
+    build_image "$r_at"
+    if [ -n "$PULAMA_MODE" ]; then
+      pulama_reading
+      case "$pr_state" in
+        unread) die "rebuild stops: whether the pūlama stands, or what it runs, reads unknown; the image stands built (read it with \`tools/lares-container.sh pulama status\`)" ;;
+        absent|moved)
+          pulama_restand
+          mkdir -p -- "$HOUSE/cache" && printf '%s\n' "$KEEP_SAID" > "$REBUILD_PENDING" || true
+          printf '%s\n' 'lares-container: rebuild stops for your hand: the pūlama stands unlit on the new image; light it (`tools/lares-container.sh pulama light`), then `tools/lares-container.sh rebuild --resume`' >&2
+          exit 0 ;;
+        *) printf '%s\n' "lares-container: rebuild: the pūlama's code closure stands unmoved, so it stays lit (no restand, no light)" >&2 ;;
+      esac
+    fi
+  else
+    if [ -n "$PULAMA_MODE" ]; then
+      pulama_reading
+      case "$pr_state" in
+        unread) die "rebuild --resume refuses: whether the pūlama stands, or what it runs, reads unknown; read it with \`tools/lares-container.sh pulama status\`" ;;
+        absent) die "rebuild --resume refuses: no pūlama runs; \`tools/lares-container.sh pulama restand\`, light it, then rebuild --resume" ;;
+        moved) die "rebuild --resume refuses: the pūlama still runs an older code closure; \`tools/lares-container.sh pulama restand\`, light it, then rebuild --resume" ;;
+      esac
+    fi
+    KEEP_SAID=$(cat -- "$REBUILD_PENDING" 2>/dev/null) || KEEP_SAID=""
+    [ -n "$KEEP_SAID" ] || KEEP_SAID="ran before the light, in the rebuild's first half"
+  fi
+  rm -f -- "$REBUILD_PENDING"
+  REBUILDING=yes
+  up_verb
+  if [ -n "$PULAMA_MODE" ]; then
+    printf '%s\n' 'lares-container: rebuild: the pūlama admits the new image; it reads your route on this terminal' >&2
+    compose --profile pulama exec pulama node "$PULAMA_MAIN" admit || die "the pūlama admitted nothing (above); the vessel stands at the floor: \`tools/lares-container.sh pulama admit\`, then \`tools/lares-container.sh vault unlock --all\`"
+    # shellcheck disable=SC2046
+    waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all </dev/null || die "the vessel did not open after the admit (above); read it with \`tools/lares-container.sh pulama status\`, then \`tools/lares-container.sh vault unlock --all\`"
+    if none_worn; then wear_last_face; fi
+  fi
+  r_worn=${WORE#h}; [ -n "$r_worn" ] || r_worn=$(worn_now)
+  r_rev=$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$IMAGE_REF" 2>/dev/null) || r_rev=""
+  r_rev=$(printf '%s' "$r_rev" | tr -d '\r' | cut -c1-12)
+  if [ -n "$r_worn" ]; then r_wearing="wearing h$r_worn"; else r_wearing="no face worn (wear one: \`tools/lares-container.sh wear N\`)"; fi
+  printf 'lares-container: rebuilt: the vessel stands on revision %s, %s; keep: %s\n' "${r_rev:-unlabeled}" "$r_wearing" "${KEEP_SAID:-none ran}" >&2
+}
+
+case "$verb" in
+  up) up_verb "$@" ;;
+  rebuild) rebuild_verb "$@" ;;
   down) down_vessel "$@" ;;
   pulama)
     [ -n "$PULAMA_MODE" ] || die "pulama needs LARES_PULAMA=1 in the environment or $ENV_FILE"
@@ -825,24 +924,8 @@ case "$verb" in
       up) ensure_house; compose --profile pulama up -d --no-recreate pulama ;;
       down) compose --profile pulama stop pulama ;;
       restand)
-        # THE PŪLAMA RE-STANDS ON THE IMAGE THAT STANDS. `up` never recreates a lit pūlama, so after a `build` this verb
-        # does: with no vessel standing (down first), it locks a running pūlama (every session drops, every key zero-fills),
-        # then recreates it on the current image. It stands unlit: the operator lights it by hand, then `up` and
-        # `pulama admit`. It reads no route and types none.
         [ "$#" -eq 1 ] || die "pulama restand takes no arguments"
-        restand_vessel=$(compose ps -q --status running lares) || die "pulama restand refuses: docker compose ps failed, so whether a vessel stands reads unknown; nothing recreated"
-        [ -z "$restand_vessel" ] || die "pulama restand refuses while the lares vessel stands; run \`tools/lares-container.sh down\` first (nothing recreated)"
-        restand_state=$(pulama_state)
-        [ "$restand_state" != unknown ] || die "pulama restand refuses: docker compose ps failed for the pūlama, so whether it stands reads unknown; nothing recreated"
-        ensure_house
-        if [ "$restand_state" = running ]; then
-          compose --profile pulama exec -T pulama node "$PULAMA_MAIN" lock </dev/null || die "the pūlama refused the lock; nothing recreated"
-        fi
-        compose --profile pulama up -d --force-recreate pulama || die "the pūlama did not stand on the current image"
-        restand_image=$(value_of LARES_IMAGE); [ -n "$restand_image" ] || restand_image=lares-surface:local
-        restand_digest=$(docker image inspect --format '{{.Id}}' "$restand_image" 2>/dev/null) || restand_digest=""
-        restand_digest=$(printf '%s' "$restand_digest" | tr -d '\r')
-        printf 'lares-container: the pūlama stands unlit on %s; light it by hand (`tools/lares-container.sh pulama light`), then `tools/lares-container.sh up` and `tools/lares-container.sh pulama admit`\n' "${restand_digest:-$restand_image}" >&2 ;;
+        pulama_restand ;;
       light|lock|status|tessera)
         [ "$1" != status ] || warn_pulama_skew
         # light reads the operator's route on a real terminal inside the pūlama, never through a pipe.
