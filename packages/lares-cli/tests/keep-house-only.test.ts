@@ -56,8 +56,8 @@ beforeEach(async () => {
   // House-only classes: the face's daemon working layer, its kahua stage, a user wiki's workbench, a minted bag.
   put("projections/faces/steward/wiki/ha.ka.ba/kahua/memory/heron.tid", tid("lar:///ha.ka.ba/kahua/memory/heron", "remember the heron"));
   put("projections/faces/steward/stage/ha.ka.ba/kahua/memory/heron.tid", tid("lar:///ha.ka.ba/kahua/memory/heron", "remember the heron"));
-  put("projections/wikis/notes/ha.ka.ba/notes/pond.tid", tid("lar:///ha.ka.ba/notes/pond", "the pond at dusk"));
-  put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid("lar:///ha.ka.ba/garden/rose", "a rose"));
+  put("projections/realms/notes/wikis/notes/ha.ka.ba/notes/pond.tid", tid("lar:///ha.ka.ba/notes/pond", "the pond at dusk"));
+  put("projections/realms/garden/bags/garden/ha.ka.ba/garden/rose.tid", tid("lar:///ha.ka.ba/garden/rose", "a rose"));
 });
 afterEach(() => { closeScratch(house); });
 

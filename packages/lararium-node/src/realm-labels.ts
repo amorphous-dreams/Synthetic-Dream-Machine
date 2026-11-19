@@ -313,3 +313,29 @@ export function settleRealmMoves(projections: string): RealmSettle {
   }
   return { moved, held };
 }
+
+/** One wiki or bag folder standing under a realm on disk: the realm's folder name, the plane, the slug, and the plane's base (the
+ *  dir whose first segment names the slug). */
+export interface RealmFolder { readonly petName: string; readonly plane: "wikis" | "bags"; readonly slug: string; readonly base: string }
+
+/**
+ * EVERY WIKI AND BAG FOLDER STANDING UNDER `<projections>/realms/`, read off the disk alone (a lay, an export and a keep walk what
+ * stands, labelled or not), sorted by slug; a slug standing under two realms reads once, at its first realm by name.
+ */
+export function realmFoldersOnDisk(projections: string): RealmFolder[] {
+  const out: RealmFolder[] = [];
+  const seen = new Set<string>();
+  for (const petName of standingRealmFolders(projections)) {
+    for (const plane of [REALM_PLANES.wikis, REALM_PLANES.bags] as const) {
+      const base = join(projections, REALMS_PROJECTION_DIR, petName, plane);
+      let slugs: string[] = [];
+      try { slugs = readdirSync(base, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".")).map((e) => e.name); } catch { /* none */ }
+      for (const slug of slugs) {
+        if (seen.has(`${plane}\0${slug}`)) continue;
+        seen.add(`${plane}\0${slug}`);
+        out.push({ petName, plane, slug, base });
+      }
+    }
+  }
+  return out.sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : a.plane < b.plane ? -1 : 1));
+}
