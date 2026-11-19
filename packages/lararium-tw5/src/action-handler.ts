@@ -44,7 +44,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, admitSeatExecutable, renderedWriteFault, requireKahuReach, resolveHouseCanon, ownEntry, isExecutableRecord, RENDERED_DERIVES_REASON } from "@lararium/mesh";
+import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, admitSeatExecutable, requireKahuReach, resolveHouseCanon, ownEntry, isExecutableRecord, renderedFromOf, renderedRungOf, renderedRungWarning, RENDERED_ALERT_KIND, type RenderedRung } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -295,6 +295,24 @@ export interface ActionHandlerOptions {
    * sentinel, so it trusts that gate and asks nothing; any other composition leaves this unset and asks itself.
    */
   readonly kahuReachClearedAtGate?: boolean;
+  /**
+   * The island's alert rail: an INGEST render carrier that warns (`hand-edit`, `awaits-source`, rendered-derives.ts)
+   * raises one alert per (rung, render title) here, and a later wave that reads the render settled clears it. Absent: the
+   * warning rides the wave's row alone. A rail that faults never fails the wave.
+   */
+  readonly alert?: (alert: IngestAlert) => void | Promise<void>;
+}
+
+/**
+ * One alert an INGEST wave raises or clears: `kind` names the rung (`RENDERED_ALERT_KIND`), `key` (hex) the render title
+ * under it, so a re-run lands on the same alert. The rail stands it at `$:/temp/lares/alert/<kind>/<key>`, tagged
+ * `$:/tags/Alert`, with its `alert-kind` field.
+ */
+export interface IngestAlert {
+  readonly kind:    string;
+  readonly key:     string;
+  readonly message: string;
+  readonly clear?:  true;
 }
 
 export class DiskWavePlacementRefusal extends Error {
@@ -678,7 +696,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     if (ctx.asker === "seat" && (action.verb === "INGEST" || action.verb === "LOAD")) {
       const startup: LarTiddlerRecord[] = [];
       const vet = makeCapturingBagAccess(access, (record) => { if (isExecutableRecord(record.tiddler)) startup.push(record); });
-      await executeAction(action, vet.access, opts.tw5, opts.resolveByCid, opts.yieldHostTask);
+      await executeAction(action, vet.access, opts);
       for (const record of startup) await admitSeatExecutable(String(record.tiddler.title), record.tiddler, action.verb, ctx.asker, { wiki: destBag, port: ctx.execLei });
     }
 
@@ -686,7 +704,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // AND the effect-record ledger are captured, nothing commits.
     if (dryRun) {
       const cap = makeCapturingBagAccess(access);
-      const summary = await withEffectRecord(action, (bag) => cap.access.write(bag), () => executeAction(action, cap.access, opts.tw5, opts.resolveByCid, opts.yieldHostTask),
+      const summary = await withEffectRecord(action, (bag) => cap.access.write(bag), () => executeAction(action, cap.access, opts),
         action.verb === "DROP" ? { newId: () => RETIRED_EVENT_ID } : undefined);
       return { verb, dryRun: true, ...summary, ...projectedEffect(cap.captured) };
     }
@@ -696,9 +714,9 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     if (action.verb === "DROP") {
       const dropStore = await access.write(action.bag);
       const marked = !!dropStore && await storeIsRetired(dropStore, action.bag);
-      if (marked) return { verb, ...(await executeAction(action, access, opts.tw5, opts.resolveByCid, opts.yieldHostTask)) };
+      if (marked) return { verb, ...(await executeAction(action, access, opts)) };
     }
-    const summary = await withEffectRecord(action, (bag) => access.write(bag), () => executeAction(action, access, opts.tw5, opts.resolveByCid, opts.yieldHostTask),
+    const summary = await withEffectRecord(action, (bag) => access.write(bag), () => executeAction(action, access, opts),
       action.verb === "DROP" ? { newId: () => RETIRED_EVENT_ID } : undefined);
     return { verb, ...summary };
   };
@@ -786,15 +804,15 @@ function destinationBag(action: ResidencyAction): string {
 
 // ── Per-verb executors ─────────────────────────────────────────────────────
 
-async function executeAction(action: ResidencyAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver, yieldHostTask: HostTaskYield = yieldToHost): Promise<Record<string, unknown>> {
+async function executeAction(action: ResidencyAction, access: BagAccess, opts: ActionHandlerOptions): Promise<Record<string, unknown>> {
   switch (action.verb) {
     case "ADD":   return executeAdd(action, access);
     case "COPY":  return executeCopy(action, access);
     case "MOVE":  return executeMove(action, access);
     case "CLEAR": return executeClear(action, access);
     case "DROP":  return executeDrop(action, access);
-    case "LOAD":  return executeLoad(action, access, tw5, resolveByCid, yieldHostTask);
-    case "INGEST": return executeIngest(action, access, tw5, resolveByCid);
+    case "LOAD":  return executeLoad(action, access, opts.tw5, opts.resolveByCid, opts.yieldHostTask ?? yieldToHost);
+    case "INGEST": return executeIngest(action, access, opts);
     case "CREATE": throw new Error("action-handler: CREATE is handled in the reactor (plane-aware gate + mint), not executeAction");
   }
 }
@@ -1241,7 +1259,8 @@ async function landedHeads(access: BagAccess, bag: string): Promise<{ heads?: st
   return heads !== null && heads !== undefined && heads.length > 0 ? { heads: [...heads] } : {};
 }
 
-async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver): Promise<Record<string, unknown>> {
+async function executeIngest(action: IngestAction, access: BagAccess, opts: ActionHandlerOptions): Promise<Record<string, unknown>> {
+  const { tw5, resolveByCid } = opts;
   const o = origin(action);
   // A carry's working rows name the override base each copy forked from: every record this wave lands under such a title
   // carries it, so the composite keeps it rather than forking a fresh one off the canon standing now.
@@ -1328,6 +1347,29 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
 
   const results: Array<Record<string, unknown>> = [];
   const unattended = action.unattended === true;
+
+  // ── the render carriers (rendered-derives.ts, `RenderedRung`) ──
+  // THE WAVE'S NAMES: every carrier's address and the title its sidecar names, read whole before any carrier decides, so
+  // a render whose source rides this same wave stands on one rung whatever the order.
+  const waveNames = new Set<string>();
+  for (const c of action.carriers) {
+    waveNames.add(c.uri);
+    const named = c.meta && tw5 ? tw5.parseFields(c.meta)["title"] : undefined;
+    if (typeof named === "string" && named !== "") waveNames.add(named);
+  }
+  const sourceStands = async (source: string): Promise<boolean> =>
+    waveNames.has(source) || await holdsRecord(access, action.toBag, source) || (await opts.composite.getLive(source)) !== null;
+  // One alert per (rung, render title): the rung that warns raises its own and clears the other, and a render that reads
+  // settled clears both. The row carries the warning whatever the rail does.
+  const renderAlerts = async (title: string, rung: RenderedRung | null, warning: string | null): Promise<void> => {
+    if (!opts.alert) return;
+    const key = sha256HexBytesSync(new TextEncoder().encode(title)).slice(0, 32);
+    for (const [kindRung, kind] of Object.entries(RENDERED_ALERT_KIND)) {
+      const raise = kindRung === rung && warning !== null;
+      try { await opts.alert(raise ? { kind, key, message: warning } : { kind, key, message: `${title}: settled`, clear: true }); }
+      catch { /* the row carries the warning; a rail that faults fails no wave */ }
+    }
+  };
 
   for (const sent of action.carriers) {
     // NO RECORD, NO BASE (face-pools A5): a base the gesture read off the pool's HEAD vouches only for a record the house
@@ -1644,8 +1686,25 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         recordsAbsent:     currentRec === null,
       }, nativeOps);
       if (decision.kind === "noop") {
-        // The records already say what the disk says: their standing render names the base's records side.
+        // The records already say what the disk says: their standing render names the base's records side. A render's
+        // echo reads here, ahead of every rung, and settles the alerts its title raised.
+        if (currentRec && renderedFromOf(currentRec.tiddler) !== null) await renderAlerts(String(currentRec.tiddler["title"] ?? uri), null, null);
         results.push({ uri, decision: "noop", reason: decision.reason, ...(currentRec ? recordsSide(currentRenderHash) : {}) });
+        continue;
+      }
+      // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a file over a standing render, or one whose records carry
+      // `rendered-from`, lands nothing and answers `derived` on its rung, and the wave goes on.
+      const standingRender = currentRec !== null && renderedFromOf(currentRec.tiddler) !== null;
+      const renderRecord = standingRender
+        ? currentRec!.tiddler as unknown as Record<string, unknown>
+        : freshRecords.find((record) => renderedFromOf(record) !== null);
+      if (renderRecord !== undefined) {
+        const source = renderedFromOf(renderRecord)!;
+        const title = String(renderRecord["title"] ?? uri);
+        const rung = renderedRungOf(standingRender, await sourceStands(source));
+        const warning = renderedRungWarning(rung, title, source);
+        await renderAlerts(title, rung, warning);
+        results.push(withWarnings({ uri, decision: "derived", rung, source, reason: `${rung}: the render of "${source}"` }, warning === null ? [] : [warning]));
         continue;
       }
       if (decision.kind === "refuse") {
@@ -1656,16 +1715,6 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       }
       if (decision.kind === "conflict") {
         results.push({ uri, decision: "conflict", reason: decision.reason, filetype: carrier.ext || "text/plain", warnings: [conflictWhy(uri, decision.reason)] });
-        continue;
-      }
-      // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a file that would land over a standing render, or land a record
-      // carrying `rendered-from` (a hand's edit to a projected render, the watcher's read-back), refuses its carrier by
-      // name. The projector's own echo never reaches here: it reads `noop` above.
-      const rendered = renderedWriteFault(uri, currentRec?.tiddler, null, "INGEST")
-        ?? (decision.records as Array<Record<string, unknown>>).map((record) => renderedWriteFault(String(record["title"] ?? uri), null, record, "INGEST")).find((fault) => fault !== null)
-        ?? null;
-      if (rendered !== null) {
-        results.push({ uri, decision: "refuse", code: RENDERED_DERIVES_REASON, reason: rendered, warnings: [rendered] });
         continue;
       }
       freshRecords = decision.records as Array<Record<string, unknown>>;

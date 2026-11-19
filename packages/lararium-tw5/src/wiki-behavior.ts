@@ -128,6 +128,11 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
         ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
         // The keyholder island's gate asked the Kahu predicate for every system bag the routed verb names.
         kahuReachClearedAtGate: true,
+        // A wave's render warnings stand as alerts in this wiki's OWN temp; a clear touches only an alert that stands.
+        alert: async (alert) => {
+          if (alert.clear && (await ctx.composite.getLive(systemAlertTitle(alert.kind, alert.key))) === null) return;
+          await placeSystemAlert(ctx.composite, ctx.recipe.wikiSlug, { message: alert.message, cause: "ingest", kind: alert.kind, key: alert.key, ...(alert.clear ? { clear: true } : {}) });
+        },
       });
       // system-alert — the daemon worker (via main → pool.placeWikiVerb) delivers a
       // reboot-pending notice; the island writes it into its OWN temp (volatile,

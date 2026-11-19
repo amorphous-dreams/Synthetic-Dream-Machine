@@ -118,7 +118,7 @@ export { MemoryTiddlerStore } from "./memory-store.js";
 export { getOriginBag } from "./residency-surface.js";
 export { registerActionReactors, makeActionReactorFor, isFaceOwnedLayer, makeTw5Deserializer, makeFresherCanonReactor, makeOverrideBasesReactor } from "./action-handler.js";
 export { CANON_OFFER_VERBS, registerCanonOfferVerbs, makeOfferMakeReactor, makeOfferListReactor, makeOfferShowReactor, makeOfferPromoteReactor, type CanonOfferVerbOptions } from "./canon-offer-verbs.js";
-export type { FaceTargetResolver } from "./action-handler.js";
+export type { FaceTargetResolver, IngestAlert } from "./action-handler.js";
 export { fresherThanBase, fresherAfterChange, listFresherCanon, listBaseUnknown, type FresherCanon, type BaseUnknownCopy } from "./override-bases.js";
 export type { Tw5Deserializer } from "./action-handler.js";
 export { canonicalizeNativeCarrierText } from "./native-canonical.js";
@@ -192,7 +192,7 @@ export {
   makeWhereReactor, makeResolveReactor, makeListWikisReactor,
   makePinReactor, makeUnpinReactor, makeRegisterColdReactor,
   makeWikiPinReactor, makeWikiUnpinReactor,
-  makeWardAlertReactor, fileWardRefusal,
+  makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
 } from "./worker-data-verbs.js";
 export type { ResidencyOpPost } from "./worker-data-verbs.js";
 // The FOLLOW-GRAPH verbs over the sovereign circles-plane doc (source of truth; PRIVATE, fleet-synced

@@ -14,6 +14,8 @@
  *   I6 the island submit maps the daemon island's answer onto the settle's result: done carries the summary, a refusal errors
  *   I7 the port's INGEST args: source under the plane, the bag, unattended, each carrier inline with its hashes
  *   I8 no cycle: the node never imports the CLI, and the vessel's after-live arms the watch with the ingest ports
+ *   I9 a `derived` row (a render the island answered on its gradient) fails no wave: it reads accounted for, pins no base, and
+ *      a row that warns gets named with its words
  */
 import { describe, test, expect, beforeAll, beforeEach, afterEach } from "vitest";
 import { EventEmitter } from "node:events";
@@ -185,6 +187,32 @@ describe("I6 — the island submit answers the settle's result shape", () => {
     const err = await refused({ source: join(pool, "wiki"), toBag: WORKING, candidates: [row], did: "did:vessel" });
     expect(err.status).toBe("error");
     expect(err.errorMessage).toMatch(/disk-wave-placement/);
+  });
+});
+
+describe("I9 — a derived render fails no wave", () => {
+  test("a `derived` row reads accounted for: the verdict holds, nothing stays owed, no base pins, and a row that warns gets named with its words", async () => {
+    const render = put("wiki/road.html", "<p>hand edit</p>");
+    const quiet = put("wiki/echo.html", "<p>noted</p>");
+    const warning = "\"road.html\" stands as the render of \"Road\"; this file's edit lands nothing: edit \"Road\"; this render follows";
+    const rows = [render, quiet].map((file) => ({ file, uri: file.endsWith("road.html") ? "road.html" : "echo.html", text: readFileSync(file, "utf8"), diskHash: carrierHash(readFileSync(file, "utf8")), syncedHash: null, status: "new" as const, ext: ".html" }));
+    const submit = async () => ({
+      status: "done" as const, requestId: "r1",
+      results: { [VERB_RESULT_KEY]: { ok: true, output: { carriers: [
+        { uri: "road.html", decision: "derived", rung: "hand-edit", source: "Road", warnings: [warning] },
+        { uri: "echo.html", decision: "derived", rung: "source-stands", source: "Road" },
+      ] } } },
+    });
+    const settled = await is.settleIngest({ source: join(pool, "wiki"), toBag: WORKING, candidates: rows, did: "did:vessel" }, tree, submit);
+    expect(is.ingestVerdict(settled)).toEqual({ failed: false, message: null });
+    expect(settled.unanswered).toEqual([]);
+    expect([...settled.landed].sort()).toEqual(["echo.html", "road.html"]);
+    expect(settled.refused).toEqual([]);
+    expect(settled.derived).toEqual([{ uri: "road.html", file: render, decision: "derived", why: warning }]);
+    expect(settled.tallies).toEqual({ derived: 2 });
+    expect(settled.recorded).toBe(0);
+    expect(tree.baseAt(syncedTreeKey(WORKING, "road.html"), render)).toBeNull();
+    expect(is.standingAfterWave(is.NO_STANDING_ASKS, settled).owed.size).toBe(0);
   });
 });
 

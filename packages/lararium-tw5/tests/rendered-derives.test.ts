@@ -1,16 +1,21 @@
 /**
  * rendered-derives — only the renderer writes a rendered tiddler (backlog-awakens, "The rendered tiddler"). The tiddler
- * door (put and delete), `meme put`, and INGEST (which the watcher's read-back rides) refuse a write to a `rendered-from`
- * tiddler by name, `rendered-derives`, and the refusal names the cure: edit the source tiddlers.
+ * door (put and delete) and `meme put` refuse a write to a `rendered-from` tiddler by name, `rendered-derives`, and the
+ * refusal names the cure: edit the source tiddlers.
  *
- * CONTROLS: the same doors land a write over the source; INGEST of a file the records already say reads `noop`, never a
- * refusal (the projector's own echo); a native file carrying no `rendered-from` lands.
+ * INGEST (which the watcher's read-back and the lay ride) lands no render either, and answers each render carrier on a
+ * gradient, one answer per disk state whatever the wave's order: `derived` where its source stands in the house or the
+ * same wave (`source-stands`, quiet), where it differs from the standing render (`hand-edit`, naming the cure), or where
+ * its source stands nowhere (`awaits-source`); the last two raise one alert per (rung, render title).
+ *
+ * CONTROLS: the same doors land a write over the source; INGEST of a file the records already say reads `noop` (the
+ * projector's own echo); a native file carrying no `rendered-from` lands.
  */
 import { describe, test, expect } from "vitest";
 import { CompositeStore, bagUri, isVerbRefusal, type Verb } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
-import { makeActionReactorFor, makeTw5Deserializer } from "../src/action-handler.js";
+import { makeActionReactorFor, makeTw5Deserializer, type IngestAlert } from "../src/action-handler.js";
 import { makeTiddlerPutReactor, makeTiddlerDeleteReactor } from "../src/tiddler-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
@@ -89,34 +94,87 @@ describe.skipIf(wikiSkip)(`rendered-derives — only the renderer writes a rende
     expect((await r.put("lar:///t/plain", memeText("lar:///t/plain")))["decision"]).toBe("ingest");
   });
 
-  test("RED: INGEST of a hand-edited render (the watcher's read-back) refuses its carrier rendered-derives and lands nothing; CONTROL: the echo reads noop, and a file with no rendered-from lands", async () => {
+  /** The INGEST rig: one working bag under a disk mirror, and the alerts the wave raises. */
+  async function ingestRig() {
     const engine = await bootTestWiki();
     const composite = new CompositeStore();
     const working = new MemoryTiddlerStore(WORKING);
     composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
-    const ingest = (carriers: Array<Record<string, unknown>>) => makeActionReactorFor("INGEST", {
+    const alerts: IngestAlert[] = [];
+    const reactor = makeActionReactorFor("INGEST", {
       composite, diskMirrors: [{ bagId: WORKING, mirrorRoot: SOURCE, scope: "garden" }], tw5: makeTw5Deserializer(engine),
-    })({ "source-uri": SOURCE, "to-bag": WORKING, "change-id": `chg-${Math.random()}`, carriers }, ctxOf(composite, "INGEST")) as Promise<Record<string, unknown>>;
-    const rowsOf = (out: Record<string, unknown>) => out["carriers"] as Array<Record<string, unknown>>;
-    const meta = "rendered-from: Road\ntitle: road.html\ntype: text/html\n";
-    const carrier = (uri: string, text: string, metaBody: string, synced: string | null = null) =>
-      ({ uri, text, meta: metaBody, ext: ".html", diskHash: `sha256:${"a".repeat(64)}`, syncedHash: synced, file: `${SOURCE}/${uri}.html` });
+      alert: (alert) => { alerts.push(alert); },
+    });
+    const ingest = async (carriers: Array<Record<string, unknown>>) => (await reactor({ "source-uri": SOURCE, "to-bag": WORKING, "change-id": `chg-${Math.random()}`, carriers }, ctxOf(composite, "INGEST")) as Record<string, unknown>)["carriers"] as Array<Record<string, unknown>>;
+    const stand = (tiddler: Record<string, unknown>) => working.put({ tiddler: tiddler as never, meta: {} }, { kind: "lares-verb", requestId: "stand" });
+    return { working, alerts, ingest, stand };
+  }
+  const RENDER_META = "rendered-from: Road\ntitle: road.html\ntype: text/html\n";
+  const carrier = (uri: string, text: string, metaBody: string, ext = ".html", synced: string | null = null) =>
+    ({ uri, text, meta: metaBody, ext, diskHash: `sha256:${"a".repeat(64)}`, syncedHash: synced, file: `${SOURCE}/${uri}${ext}` });
+  const sourceCarrier = () => carrier("Road", "title: Road\nprojection: rendered\ntype: text/vnd.tiddlywiki\n\n{{Note}}\n", "", ".tid");
 
-    const forged = rowsOf(await ingest([carrier("road.html", "<p>hand edit</p>", meta)]))[0]!;
-    expect(forged).toMatchObject({ uri: "road.html", decision: "refuse", code: "rendered-derives" });
-    expect(String(forged["reason"])).toMatch(/edit the source tiddlers/);
-    expect(await working.get("road.html")).toBeNull();
+  test("RED: a render whose source stands nowhere reads derived (awaits-source), lands nothing, warns and raises its alert; the wave goes on", async () => {
+    const r = await ingestRig();
+    const rows = await r.ingest([carrier("road.html", "<p>noted</p>", RENDER_META), carrier("page.html", "<p>mine</p>", "title: page.html\ntype: text/html\n")]);
+    expect(rows[0]).toMatchObject({ uri: "road.html", decision: "derived", rung: "awaits-source", source: "Road" });
+    expect(String((rows[0]!["warnings"] as string[])[0])).toMatch(/awaits its source "Road"/);
+    expect(await r.working.get("road.html")).toBeNull();
+    expect(rows[1]).toMatchObject({ uri: "page.html", decision: "ingest" });
+    const raised = r.alerts.filter((a) => a.clear !== true);
+    expect(raised).toHaveLength(1);
+    expect(raised[0]).toMatchObject({ kind: "rendered-awaits-source" });
+    expect(raised[0]!.key).toMatch(/^[0-9a-f]{8,64}$/);
+    expect(raised[0]!.message).toMatch(/road\.html/);
+    // The other rung's alert for the same render clears under the same key.
+    expect(r.alerts.filter((a) => a.clear === true)).toEqual([expect.objectContaining({ kind: "rendered-hand-edit", key: raised[0]!.key })]);
+  }, 60_000);
 
-    // The render stands; a hand edit to its file refuses, and the projector's own echo reads noop.
-    await working.put({ tiddler: { title: "road.html", type: "text/html", text: "<p>noted</p>", "rendered-from": "Road" }, meta: {} }, { kind: "lares-verb", requestId: "render" });
-    const edited = rowsOf(await ingest([carrier("road.html", "<p>hand edit</p>", "title: road.html\ntype: text/html\n")]))[0]!;
-    expect(edited).toMatchObject({ decision: "refuse", code: "rendered-derives" });
-    expect((await working.get("road.html"))!.tiddler["text"]).toBe("<p>noted</p>");
-    const echo = rowsOf(await ingest([carrier("road.html", "<p>noted</p>", meta, `sha256:${"a".repeat(64)}`)]))[0]!;
+  test("RED: a render whose source arrives in the same wave reads derived (source-stands) and quiet, in either order; the source lands", async () => {
+    for (const order of ["render-first", "source-first"] as const) {
+      const r = await ingestRig();
+      const render = carrier("road.html", "<p>noted</p>", RENDER_META);
+      const rows = await r.ingest(order === "render-first" ? [render, sourceCarrier()] : [sourceCarrier(), render]);
+      const row = rows.find((x) => x["uri"] === "road.html")!;
+      expect(row).toMatchObject({ decision: "derived", rung: "source-stands", source: "Road" });
+      expect(row["warnings"]).toBeUndefined();
+      expect(await r.working.get("road.html")).toBeNull();
+      expect(rows.find((x) => x["uri"] === "Road")).toMatchObject({ decision: "ingest" });
+      expect(r.alerts.filter((a) => a.clear !== true)).toEqual([]);
+    }
+  }, 60_000);
+
+  test("RED: a render whose source already stands in the house reads derived (source-stands) and quiet", async () => {
+    const r = await ingestRig();
+    await r.stand({ title: "Road", type: "text/vnd.tiddlywiki", projection: "rendered", text: "{{Note}}" });
+    const rows = await r.ingest([carrier("road.html", "<p>noted</p>", RENDER_META)]);
+    expect(rows[0]).toMatchObject({ decision: "derived", rung: "source-stands", source: "Road" });
+    expect(rows[0]!["warnings"]).toBeUndefined();
+    expect(await r.working.get("road.html")).toBeNull();
+  }, 60_000);
+
+  test("RED: a hand edit to a standing render reads derived (hand-edit), lands nothing, names the cure, and its alert coalesces across re-runs; CONTROL: the projector's echo reads noop", async () => {
+    const r = await ingestRig();
+    await r.stand({ title: "Road", type: "text/vnd.tiddlywiki", projection: "rendered", text: "{{Note}}" });
+    await r.stand({ title: "road.html", type: "text/html", text: "<p>noted</p>", "rendered-from": "Road" });
+    for (const metaBody of [RENDER_META, "title: road.html\ntype: text/html\n"]) {
+      const row = (await r.ingest([carrier("road.html", "<p>hand edit</p>", metaBody)]))[0]!;
+      expect(row).toMatchObject({ decision: "derived", rung: "hand-edit", source: "Road" });
+      expect(String((row["warnings"] as string[])[0])).toMatch(/edit "Road"; this render follows/);
+      expect((await r.working.get("road.html"))!.tiddler["text"]).toBe("<p>noted</p>");
+    }
+    const raised = r.alerts.filter((a) => a.clear !== true);
+    expect(raised).toHaveLength(2);
+    expect(raised.every((a) => a.kind === "rendered-hand-edit" && a.key === raised[0]!.key)).toBe(true);
+    const echo = (await r.ingest([carrier("road.html", "<p>noted</p>", RENDER_META, ".html", `sha256:${"a".repeat(64)}`)]))[0]!;
     expect(echo["decision"]).toBe("noop");
+  }, 60_000);
 
-    const plain = rowsOf(await ingest([carrier("page.html", "<p>mine</p>", "title: page.html\ntype: text/html\n")]))[0]!;
+  test("CONTROL: a native file with no rendered-from lands", async () => {
+    const r = await ingestRig();
+    const plain = (await r.ingest([carrier("page.html", "<p>mine</p>", "title: page.html\ntype: text/html\n")]))[0]!;
     expect(plain["decision"]).toBe("ingest");
-    expect((await working.get("page.html"))!.tiddler["text"]).toBe("<p>mine</p>");
+    expect((await r.working.get("page.html"))!.tiddler["text"]).toBe("<p>mine</p>");
+    expect(r.alerts).toEqual([]);
   }, 60_000);
 });
