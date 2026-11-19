@@ -144,6 +144,26 @@ describe("lares shore take-disk — the records' slot edit survives the disk's",
     expect(readFileSync(r.path, "utf8")).toContain("b turns on the disk.");
   });
 
+  test("★ after a re-found the tree names no base: the standoff folded HEAD's blob, and the merge runs over it (A5) ★", async () => {
+    const records = carrier("a turns in the records.", "b holds.");
+    const disk = carrier("a holds.", "b turns on the disk.");
+    const r = rig(disk, records, BASE);
+    // THE RE-FOUND: the synced tree comes back empty; the pool's HEAD still holds BASE.
+    r.deps.tree.deleteAt(syncedTreeKey(BAG, URI), r.path);
+    const taken = await takeDisk({ uri: URI, key: KEY }, r.deps);
+    expect(taken).toMatchObject({ ok: true, merge: { kind: "slots" } });
+    expect(readFileSync(r.path, "utf8")).toContain("a turns in the records.");
+    expect(readFileSync(r.path, "utf8")).toContain("b turns on the disk.");
+  });
+
+  test("CONTROL: after a re-found, a key that folded bytes other than HEAD's refuses as moved", async () => {
+    const r = rig(carrier("a holds.", "b turns on the disk."), carrier("a turns in the records.", "b holds."), BASE, { history: "commits", later: [carrier("a elsewhere.", "b holds.")] });
+    r.deps.tree.deleteAt(syncedTreeKey(BAG, URI), r.path);
+    const taken = await takeDisk({ uri: URI, key: KEY }, r.deps);
+    expect(taken).toMatchObject({ ok: false, refusal: "standoff-key-moved" });
+    expect(r.waves).toEqual([]);
+  });
+
   test("★ no text rests beside the synced tree: the base's words never leave the pool ★", async () => {
     const r = rig(carrier("a holds.", "b turns on the disk."), carrier("a turns in the records.", "b holds."), BASE);
     await takeDisk({ uri: URI, key: KEY }, r.deps);
