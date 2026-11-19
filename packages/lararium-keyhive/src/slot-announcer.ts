@@ -8,9 +8,14 @@
  * worn face's own slot alone, never another face's document (a face's daemon layer belongs to that face, opened at its
  * own wear).
  *
+ * A FACE'S OWN LAYER REGISTERS BEFORE IT IS NAMED: a wiki's `personal` margin and `draft` binding (`isFaceSlotBag`) seal under
+ * the face that resolved them, and a seal the face's hive cannot read as capable refuses. So the worn announcer registers
+ * such a bag on the face's hive (`registers`) before the vessel hears its name, and the vessel maps it sealed from the first
+ * byte the resolver's caller writes.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { announceSiblingSlotDoc, announceSlotDoc, DAEMON_WIKI_SLUG, documentIdOfUrl, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh";
+import { announceSiblingSlotDoc, announceSlotDoc, DAEMON_WIKI_SLUG, documentIdOfUrl, isFaceSlotBag, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh";
 import type { SlotDocResolver } from "./slot-doc-resolver.js";
 
 /** The vessel's door the island posts across (the daemon island's `docStoreDoor`). */
@@ -25,8 +30,13 @@ export interface SlotAnnouncer {
   readonly announcing: (resolver: SlotDocResolver) => SlotDocResolver;
 }
 
+/** What an announcer does before it names a face's own layer: `registers` stands the bag on the face's hive. */
+export interface SlotAnnouncerOpts {
+  readonly registers?: (bagId: string) => Promise<void>;
+}
+
 /** The announcer for one resolver: `worn` names the worn face's own slots, `sibling` a lit sibling's. */
-export function slotAnnouncer(door: SlotNoticeDoor | null | undefined, whose: "worn" | "sibling"): SlotAnnouncer {
+export function slotAnnouncer(door: SlotNoticeDoor | null | undefined, whose: "worn" | "sibling", opts: SlotAnnouncerOpts = {}): SlotAnnouncer {
   const post = (bagId: string, documentId: string): void => {
     if (!door) return;
     if (whose === "sibling") announceSiblingSlotDoc(door, bagId, documentId);
@@ -36,6 +46,19 @@ export function slotAnnouncer(door: SlotNoticeDoor | null | undefined, whose: "w
     const documentId = documentIdOfUrl(url);
     if (documentId) post(wikiSlotUri(slug, kind), documentId);
   };
+  // A face's own layer stands registered before its name leaves; a registration that faults still names it, so the vessel
+  // holds its saves sealed or waiting, never clear, and its log names the refusal.
+  const registeredThenAnnounced = async (slug: string, kind: WikiSlotKind, url: string | null | undefined): Promise<void> => {
+    const documentId = documentIdOfUrl(url);
+    if (!documentId) return;
+    const bagId = wikiSlotUri(slug, kind);
+    if (opts.registers && isFaceSlotBag(bagId)) {
+      await opts.registers(bagId).catch((error: unknown) => {
+        console.warn(`[slot] ${bagId} did not register on the face's hive before its naming (${error instanceof Error ? error.message : String(error)}): its saves wait sealed until it does`);
+      });
+    }
+    post(bagId, documentId);
+  };
   return {
     announced,
     device: (kind, documentId) => post(wikiSlotUri(DAEMON_WIKI_SLUG, kind), documentId),
@@ -43,19 +66,21 @@ export function slotAnnouncer(door: SlotNoticeDoor | null | undefined, whose: "w
       ...resolver,
       bindings: async (fingerprint, recipeTrace, slug) => {
         const out = await resolver.bindings(fingerprint, recipeTrace, slug);
-        announced(slug, "working", out.workingUrl); announced(slug, "draft", out.draftUrl); announced(slug, "personal", out.personalUrl);
+        announced(slug, "working", out.workingUrl);
+        await registeredThenAnnounced(slug, "draft", out.draftUrl);
+        await registeredThenAnnounced(slug, "personal", out.personalUrl);
         return out;
       },
       writeSlot: (slug) => resolver.writeSlot(slug),
       // The call forwards as made: an absent option stays absent, never an explicit undefined.
       slotDoc: async (...call) => {
         const out = await resolver.slotDoc(...call);
-        announced(call[0], call[1], out?.url);
+        await registeredThenAnnounced(call[0], call[1], out?.url);
         return out;
       },
       draft: async (slug) => {
         const out = await resolver.draft(slug);
-        announced(slug, "draft", out.url);
+        await registeredThenAnnounced(slug, "draft", out.url);
         return out;
       },
     }),

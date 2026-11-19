@@ -79,7 +79,7 @@ function standVessel(a: Vessel, inner: StorageAdapterInterface, slotDocsNamed: M
   });
   const map = sealedBagMap({
     face: () => own,
-    bags: () => wornFaceWikiBags({ slot: SLOT, lit: true, announced: [...slotDocsNamed.keys()] } as never).sealed,
+    bags: () => wornFaceWikiBags({ slot: SLOT, lit: true, announced: slotDocsNamed.keys() }).sealed,
     docsOf: (bagId) => [...(slotDocsNamed.get(bagId) ?? [])],
   });
   let repo: Repo | null = null;

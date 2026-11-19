@@ -416,7 +416,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // (`announceSlotDoc`): the face's derived working address and a draft binding stand under no catalog row.
   // A sibling's resolver names its documents as the SIBLING's (`slot-announcer`): the vessel maps them, and the host's
   // working layer follows the worn face's own slot alone.
-  const wornSlots = slotAnnouncer(docStoreDoor, "worn");
+  // A FACE'S OWN LAYER OF A WIKI (its `personal` margin, its `draft` binding) registers on the mounted face's hive before the
+  // vessel hears its name (`registerLateFaceBags`), so the vessel seals it under that face from its first byte. The floor
+  // wears no face: its layers file as the vessel's own (`announceFloor`) and register nothing here.
+  let announceCtx: IslandContext | null = null;
+  const wornSlots = slotAnnouncer(docStoreDoor, "worn", {
+    registers: async (bagId) => {
+      if (!daemonAuth?.atom || announceCtx === null) return;
+      await registerLateFaceBags(daemonAuth.atom.key, [bagId], announceCtx);
+    },
+  });
   const siblingNotices = slotAnnouncer(docStoreDoor, "sibling");
   const announced = wornSlots.announced;
   const announcing = wornSlots.announcing;
@@ -507,6 +516,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const floorOf = (ctx: IslandContext): FloorRegistry =>
     (floorRegistry ??= floorRegistryOf(ctx.composite, () => ctx.floorKey === "stands" ? null : ctx.floorKey ?? "floor-unkeyed"));
   const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
+    announceCtx = ctx;
     if (slotDocs) return slotDocs;
     slotDocs = announcing(makeSlotDocResolver({
       repo: askReceipt ? restingMinter(ctx.repo, (ids) => askReceipt(ids,

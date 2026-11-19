@@ -59,7 +59,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -1043,6 +1043,9 @@ async function prepareNodeBootOn(
       sealNowMapped(documentId);
       return;
     }
+    // A SIBLING'S RESOLVER NAMES ITS DAEMON DEVICE SLOTS ALONE (above): a face's own layer of a user wiki it named would file
+    // under the WORN face here, so it files nowhere and the log names it.
+    if (sibling && isFaceSlotBag(bagId)) { console.warn(`[sealed-rest] a lit sibling named ${bagId} (${documentId.slice(0, 8)}…): a face's own layer of a wiki files under its own face's mount, never the worn face's map`); return; }
     const named = slotDocsNamed.get(bagId) ?? new Set<string>();
     if (named.has(documentId)) return;
     named.add(documentId);
@@ -3515,7 +3518,9 @@ async function prepareNodeBootOn(
     wornFaceCanonBag = canonBagId && wornRelation ? canonBagId : null;
     const faceWikiBags = wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}) });
     // A house canon bag in this set never seals under the face: the map skips it (`sealedBagMap`, cap-tier.mem house canon).
-    sealedCells.bags = () => faceWikiBags.sealed;
+    // EVERY MARGIN AND DRAFT THE WORN FACE'S RESOLVER NAMED seals under the lit face beside them (`isFaceSlotBag`): the
+    // island registered each on the face's hive before it named it, so the map reads them live off the names it heard.
+    sealedCells.bags = () => wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}), announced: slotDocsNamed.keys() }).sealed;
     // THE LIT FACE'S DEVICE DAEMON DOCUMENTS (the control document names them): they seal under that face from here on.
     wornDeviceGroup = faceLit && wornFaceProved && personaGroupId ? personaGroupId : null;
     wornDeviceRelation = wornDeviceGroup !== null ? wornRelation : null;
