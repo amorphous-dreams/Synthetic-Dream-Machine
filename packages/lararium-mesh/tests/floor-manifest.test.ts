@@ -121,7 +121,7 @@ describe("a founding floor that predates the floor format", () => {
     expect(floorRecordsInOrder(founding as ResolvedPredatingFloor)).toEqual([{}, rows]);
     expect(floorCanonReader(founding as ResolvedPredatingFloor)("lar:///ha.ka.ba/bags/lares")).toEqual(rows);
     expect(await resolveFloor(priorCid, fetch)).toMatchObject({ refusal: "floor-manifest-malformed", reason: expect.stringMatching(/predates/) });
-    const flipped = priorBytes.slice(); flipped[10] ^= 1;
+    const flipped = priorBytes.slice(); flipped[10]! ^= 1;
     expect(await resolveFoundingFloor(priorCid, async (cid) => (cid === priorCid ? flipped : fetch(cid)))).toMatchObject({ refusal: "floor-manifest-malformed", reason: expect.stringMatching(/differ from their CID/) });
     expect(await resolveFoundingFloor(priorCid, async (cid) => (cid === lares.cid ? null : fetch(cid)))).toMatchObject({ refusal: "floor-absent" });
   });

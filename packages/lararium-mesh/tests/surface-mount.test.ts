@@ -1132,7 +1132,7 @@ describe("a founding floor in the prior shape mounts its snapshots alone", () =>
 
   test("a tampered byte under the founding CID refuses", async () => {
     const v = vessel();
-    const flipped = priorBytes.slice(); flipped[priorBytes.length - 3] ^= 1;
+    const flipped = priorBytes.slice(); flipped[priorBytes.length - 3]! ^= 1;
     expect(await resolveSurfaceRecipe(founded(v, priorCid, flipped))).toMatchObject({ ok: false, refusal: "floor-unresolved" });
   });
 });
