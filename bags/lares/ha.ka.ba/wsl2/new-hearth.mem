@@ -223,7 +223,7 @@ tools/lares-container.sh vault unlock              # gathers no route: the vesse
 tools/lares-container.sh pulama status
 ```
 
-The founding runbook's "lit house" paragraph (step 5) carries what each line does. After a rebuild, `pulama admit` admits the new image.
+The founding runbook's "lit house" paragraph (step 5) carries what each line does. After a rebuild, `pulama restand` moves the pūlama onto the new image and `pulama admit` admits it (step 12).
 
 <<~/ahu>>
 
@@ -247,7 +247,7 @@ In the session, `/mcp` lists `lares` connected, and the session opens on the boo
 
 !! 12 · Later: updates, restores, faults
 
-''A code update:'' `git pull`, `git submodule update` (no `--remote`), `pnpm install --frozen-lockfile && pnpm build`, a clean `git status`, `tools/lares-container.sh build`, `up`, then `pulama admit` for the new image.
+''A code update:'' `git pull`, `git submodule update` (no `--remote`), `pnpm install --frozen-lockfile && pnpm build`, a clean `git status`, `tools/lares-container.sh build`, `up`, then `pulama admit` for the new image. A standing pūlama keeps running the image it stood from, since `up` never recreates it, and `up` and `pulama status` name that skew. So under a pūlama, after `build`: `down`, then `pulama restand` (it locks the pūlama and recreates it on the new image, unlit), then `pulama light` by your own hand, then `up` and `pulama admit`.
 
 ''A restore'' from the keep onto a new machine or a fresh root walks the founding runbook 11a.
 
@@ -263,6 +263,6 @@ In the session, `/mcp` lists `lares` connected, and the session opens on the boo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Thuc-8GedFBakwg8Ea9PmRVDEwkwi0hojmOjcqNTOEI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;o5QyNR1IVyYFlpPzkS7UUh15G-hZHX9wTVypo8rt0A4`>>
 
 <<^ code=`&#x0004;` to=`?`>>
