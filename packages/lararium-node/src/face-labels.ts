@@ -123,11 +123,15 @@ export function readFaceBases(relation: string, projections: string): Record<str
 export function writeFaceBases(relation: string, bases: Readonly<Record<string, string>>, projections: string): boolean {
   if (!isFaceLabelRelation(relation)) return false;
   const sorted = Object.fromEntries(Object.entries(bases).filter(([, b]) => BASE.test(b)).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
-  const standing = readFaceBases(relation, projections);
-  if (JSON.stringify(standing) === JSON.stringify(sorted) && existsSync(faceBasesPath(relation, projections))) return false;
+  // THE BYTES DECIDE, never the bases alone: a sidecar under any other tag reads as holding none, so the bases of a face holding
+  // none compare equal to it; the whole file compares, and a sidecar whose bytes differ takes this write under the named tag.
+  const body = `${JSON.stringify({ schema: FACE_BASES_SCHEMA, relation, bases: sorted }, null, 2)}\n`;
+  let standing: string | null = null;
+  try { standing = readFileSync(faceBasesPath(relation, projections), "utf8"); } catch { standing = null; }
+  if (standing === body) return false;
   try {
     mkdirSync(faceLabelsDir(projections), { recursive: true });
-    atomicWriteFileSync(faceBasesPath(relation, projections), `${JSON.stringify({ schema: FACE_BASES_SCHEMA, relation, bases: sorted }, null, 2)}\n`, undefined, { mode: 0o600 });
+    atomicWriteFileSync(faceBasesPath(relation, projections), body, undefined, { mode: 0o600 });
     return true;
   } catch { return false; }
 }
