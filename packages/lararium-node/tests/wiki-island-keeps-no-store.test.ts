@@ -42,7 +42,8 @@ function stand() {
   const wiki = repo.create<LarDoc>(emptyLarDoc());
   wiki.change((doc) => { doc.tiddlers["Held By The Vessel"] = storedLarRecord("Held By The Vessel", { text: "only the vessel rests me" }, "test"); });
   const working = repo.create<LarDoc>(emptyLarDoc());
-  const pool = new VesselIslandPool({ caps: {},
+  // The receipt capability stands as the vessel composes it: the pool answers each receipt ask from its main Repo.
+  const pool = new VesselIslandPool({ caps: { receipt: async () => {} },
     workerScriptUrl: ISLAND_JS, mainRepo: repo, storageRoot: cas.storageDir, cidDir: cas.cidDir,
     resolvePluginCids: async () => ({ ok: true as const, pluginCids: cas.pluginCids }),
   });
@@ -80,10 +81,11 @@ describe("a wiki island keeps no store of its own", () => {
       await s.pool.mountWiki(wikiId, s.spec);
       // A copy from the wiki's bag into its working layer runs inside the island; the teardown follows in the same breath,
       // with no wait between: the island holds no store, so the vessel's Repo holds the write once the teardown returns.
-      await s.pool.placeWikiVerb(wikiId, {
+      const copied = await s.pool.placeWikiVerb(wikiId, {
         verb: "COPY", requestedBy: "test",
         args: { title: "Held By The Vessel", "from-bag": wikiBagUri(SLUG), "to-bag": wikiSlotUri(SLUG, "working"), "change-id": "keeps-no-store" },
       });
+      expect(copied).toMatchObject({ verb: "COPY", toBag: wikiSlotUri(SLUG, "working") });
       await s.pool.disposeAll();
       expect(s.working.doc()?.tiddlers?.["Held By The Vessel"]).toBeDefined();
       expect(existsSync(islandStorePath(s.cas.storageDir, wikiId))).toBe(false);

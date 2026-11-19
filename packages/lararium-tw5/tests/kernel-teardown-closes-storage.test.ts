@@ -59,9 +59,11 @@ describe("the island's storage closes before its teardown ack", () => {
     const behavior: IslandBehavior = { onEa: async () => {}, onSignal: () => false, onHooAnu: async () => {} };
     runSovereignKernel(host, behavior, { breathEveryMs: 1_000 });
 
-    // A manifest whose island slot never resolves: the mount faults, and its Repo stands over the held storage.
+    // A manifest that names a store (the daemon island's shape) and whose island slot never resolves: the mount faults, and its
+    // Repo stands over the held storage.
     const { port1, port2 } = new MessageChannel();
-    deliver!(mkManifest(WIKI, port2 as unknown as IslandMsg_Manifest["syncPort"], { wikiSlug: "test" }, { islandUrl: "automerge:bogus-slot-url" }, null));
+    deliver!(mkManifest(WIKI, port2 as unknown as IslandMsg_Manifest["syncPort"], { wikiSlug: "test" }, { islandUrl: "automerge:bogus-slot-url" }, null,
+      { storage: { type: "nodefs", dir: "/nowhere/daemon" } }));
     await faulted;
 
     deliver!(mkTeardown());

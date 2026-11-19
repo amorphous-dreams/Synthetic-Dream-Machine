@@ -124,7 +124,7 @@ export interface IslandHostShore {
   post(msg: IslandToVesselMsg): void;
   /** Transport in: register the inbound message listener. */
   listen(onMessage: (raw: unknown) => void): void;
-  /** Build the Repo storage adapter for this manifest (undefined = in-memory). */
+  /** Build the Repo storage adapter for a manifest that names a store (the daemon island's); undefined = in-memory. */
   storage(msg: IslandMsg_Manifest): StorageAdapterInterface | undefined;
   /** Ask the vessel's rest whether it holds a document sealed (`vesselRestAsker`); the daemon's secret home asks it before
    *  each secret act. Absent: the island reaches no secret home. */
@@ -182,6 +182,8 @@ export function runSovereignKernel(
   let _activeWikiUri                    = "";
   // A session island's two asked gates (catalog names, content addresses) ride this channel; null outside a session.
   let _view: ViewChannel | null         = null;
+  /** Whether this island's Repo stands over a store of its own (the daemon island's); every other island relays. */
+  let _keepsStore = false;
   // THE SECRET HOME rides the daemon manifest alone (`daemonAuth.secretUrl`), and only where the host can ask the vessel's
   // rest; a wiki island's manifest carries no daemonAuth and reaches none.
   const secretHomeOf = (msg: IslandMsg_Manifest): Pick<IslandContext, "secretStore" | "secretRest"> => {
@@ -288,8 +290,8 @@ export function runSovereignKernel(
   let _lastSyncHeardAt = mono();
   const _syncWakes = new Set<() => void>();
   const _markSyncHeard = (): void => { _lastSyncHeardAt = mono(); for (const wake of _syncWakes) wake(); };
-  // THE ISLAND'S OWN STORE, read for each Repo (`store-liveness`): a slot its own store holds resolves with no port traffic,
-  // and a read there may wait on the vessel's rest answer, so the slot wait reads it beside the port.
+  // THE DAEMON ISLAND'S OWN STORE, read for each of its Repos (`store-liveness`), the one island store that stands: a read
+  // there may wait on the vessel's rest answer, so a slot wait that ends at the hard cap names a read still in flight.
   const _storeOf = new WeakMap<object, StoreLiveness>();
   const _counted = <S extends object>(repoStorage: S | undefined): { storage: S | undefined; liveness: StoreLiveness | null } => {
     if (!repoStorage) return { storage: undefined, liveness: null };
@@ -373,12 +375,14 @@ export function runSovereignKernel(
     const closeReceipts = (): void => { _receiptDoorClosed = true; _receipt?.close(); };
     if (typeof tapPort.addEventListener === "function") tapPort.addEventListener("close", closeReceipts);
     else tapPort.on?.("close", closeReceipts);
-    // A SESSION ISLAND (`msg.view`) holds an EPHEMERAL replica on every platform: no storage adapter stands
-    // behind its Repo whatever the host would offer, and its Repo announces the one peer ID its scoped view
-    // admits. The vessel's owner alone persists.
+    // AN ISLAND WHOSE MANIFEST NAMES NO STORE holds an EPHEMERAL replica on every platform: no storage adapter stands
+    // behind its Repo whatever the host would offer, and the vessel's Repo, its one peer, rests what it holds. Every
+    // wiki island stands so; the daemon island alone names a store. A SESSION ISLAND (`msg.view`) never takes one,
+    // and its Repo announces the one peer ID its scoped view admits.
     _view = msg.view ? makeViewChannel(_post) : null;
-    const own = _counted(msg.view ? undefined : host.storage(msg));
+    const own = _counted(msg.view || !msg.storage ? undefined : host.storage(msg));
     const storageAdapter = own.storage;
+    _keepsStore = storageAdapter !== undefined;
     _repo = makeIslandRepo({
       ...(storageAdapter ? { storage: storageAdapter } : {}),
       syncPort: msg.syncPort,
@@ -723,6 +727,17 @@ export function runSovereignKernel(
     const receipt = _receipt;
     let unsaved: readonly string[] = [];
     let asksDone = false;
+    // AN ISLAND WITH NO STORE OF ITS OWN SETTLES ITS LAST HEADS. What it wrote rests only once the vessel's Repo holds it, and a
+    // change that rode no owed write (a verb's direct edit) reaches the vessel by sync alone. So once its owed asks have left, the
+    // island asks one more receipt over every document it laid, naming the heads it holds; the vessel answers once its own copy
+    // holds them and has flushed. The ask leaves before `receipt:asks-done`, so the round's close answers it.
+    let settling: Promise<void> | null = null;
+    const settleLastHeads = (): void => {
+      if (settling || !receipt || _keepsStore || _handles.size === 0) return;
+      settling = receipt.ack([..._handles.keys()]).catch((err: unknown) => {
+        console.warn(`[sovereign-kernel] teardown settle: the vessel holds no receipt for this island's last heads (${String(err)})`);
+      });
+    };
     const announce = async (): Promise<void> => {
       if (!receipt) return;
       await receipt.asked();
@@ -732,8 +747,10 @@ export function runSovereignKernel(
       try { host.post({ type: "receipt:asks-done" }); } catch { /* the vessel went away: its close ends the waits */ }
     };
     try {
-      if (_adaptor) unsaved = (await _adaptor.stop(() => { void announce(); })) ?? [];
+      if (_adaptor) unsaved = (await _adaptor.stop(() => { settleLastHeads(); void announce(); })) ?? [];
+      settleLastHeads();
       await announce();
+      await settling;
       await receipt?.idle();
       // A port write or act whose receipt refused or closed never reached durable storage either: it joins the drain's titles by name.
       if (receipt) unsaved = [...new Set([...unsaved, ...receipt.unrested()])];
@@ -746,14 +763,11 @@ export function runSovereignKernel(
     if (_ctx && behavior) await behavior.onHooAnu(_ctx);
     handler.teardown();
 
-    // DURABLE FLUSH before ack — persist this island's in-flight Automerge docs
-    // (e.g. working) to its own storage so a graceful shutdown NEVER desyncs an
-    // actively-written doc. Automerge-repo persists on a debounced timer; a bare
-    // worker.terminate() (or SIGKILL) before that timer fires loses the write — the
-    // "working never arrived over syncPort" gap. flush() resolves once the bytes
-    // are durable. We await it BEFORE posting teardown:ack, so the vessel's
-    // disposeAll() handshake only completes after every island's write is on disk
-    // (flush-then-ack; answerTeardown acks once this body returns, or names a fault when a step throws).
+    // DURABLE FLUSH before ack, for an island that keeps a store of its own (the daemon island): automerge-repo persists
+    // on a debounced timer, and a bare terminate before it fires loses the write. flush() resolves once the bytes are
+    // durable, so the vessel's disposeAll() handshake completes only after the write rests (flush-then-ack;
+    // answerTeardown acks once this body returns, or names a fault when a step throws). An island with no store rests
+    // nothing here: its writes reach rest through the vessel's receipts above.
     if (_repo) {
       try { await _repo.flush(); }
       catch (err) { console.warn(`[sovereign-kernel] teardown flush failed: ${String(err)}`); }

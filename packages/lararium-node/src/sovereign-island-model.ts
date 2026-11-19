@@ -4,8 +4,8 @@
  * The lifecycle itself lives in @lararium/tw5 `runSovereignKernel` — ONE flow
  * both vessels compose. This file supplies only the node platform pieces:
  *   - transport : worker_threads parentPort (.postMessage / .on("message"))
- *   - storage   : DurableNodeFSStorageAdapter (crash-atomic; driven by manifest IslandStorageConfig)
- *                 or in-memory when no storage config is present
+ *   - storage   : DurableNodeFSStorageAdapter (crash-atomic) for the daemon island's own store, the one
+ *                 island whose manifest names a store; every other island relays in memory
  *   - ready     : omitted — the node worker has no WASM-load handshake
  *
  * Divergence is COMPOSITION (which pieces the shore resolves), not an OO
@@ -190,8 +190,9 @@ export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(
   });
 }
 
-/** An island's own store, behind the rest guard (sealed-store#/owed, V2): a document the vessel's rest seals rests in
- *  the island's memory alone and reaches rest by sync, sealed in the vessel's store. */
+/** The daemon island's own store, behind the rest guard (sealed-store#/owed, V2): a document the vessel's rest seals rests
+ *  in the island's memory alone and reaches rest by sync, sealed in the vessel's store. A wiki island's manifest names no
+ *  store, so the kernel never asks for one. */
 function _buildStorage(cfg: IslandStorageConfig | undefined, restsAtVessel: (documentId: string) => Promise<boolean>): StorageAdapterInterface | undefined {
   if (!cfg || cfg.type === "memory") return undefined;
   if (cfg.type === "nodefs") return islandRestGuard(new DurableNodeFSStorageAdapter(cfg.dir), restsAtVessel);

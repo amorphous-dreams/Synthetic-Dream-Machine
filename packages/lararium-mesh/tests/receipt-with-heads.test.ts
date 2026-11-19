@@ -129,7 +129,6 @@ function poolRig(mainRepo: Repo, grantsOf: (wikiId: string) => (() => { readonly
       };
     },
     newSyncChannel() { const c = new MessageChannel(); return { mainPort: c.port1, syncPort: c.port2 }; },
-    storage: () => undefined,
   };
   const pool = new VesselIslandPoolCore({ host, mainRepo, resolvePluginCids: async () => ({ ok: true, pluginCids: [] }) });
   return {

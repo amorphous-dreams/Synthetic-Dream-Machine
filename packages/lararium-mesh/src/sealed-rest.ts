@@ -625,8 +625,8 @@ export function documentIdOfUrl(url: string | null | undefined): string | null {
 // ── An island's own rest (V2) ─────────────────────────────────────────────────────────────────────
 /**
  * AN ISLAND'S OWN STORE RESTS NO DOCUMENT THE VESSEL'S REST SEALS. The vessel's Repo holds one sealed rest per document,
- * under the session that booked each change; an island Repo (the wiki island, the daemon island's owned store) syncs with
- * it. So an island asks the vessel before it rests a byte of a document, and a document the vessel holds sealed rests in
+ * under the session that booked each change; the daemon island's own store (its owned document's, or its Repo's where no
+ * owned document stands) syncs with it, and every other island keeps no store at all. So the daemon island asks the vessel before it rests a byte of a document, and a document the vessel holds sealed rests in
  * the island's memory alone: its change reaches the vessel by sync and seals there, and a restarted island finds it by
  * sync. The first answer that names a document sealed sweeps every clear chunk the island's store held of it (a copy
  * written before the document mapped sealed). A sealed answer holds for the island's life. An ask that refuses (the

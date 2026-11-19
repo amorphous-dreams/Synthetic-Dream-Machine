@@ -49,7 +49,6 @@ function rig(opts: { pin: string | null; record: LarDoc; held: Array<{ cid: stri
       }, listen(fn) { listeners.add(fn); return () => { listeners.delete(fn); }; }, onError: () => () => {}, terminate() {} };
     },
     newSyncChannel() { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
-    storage: () => undefined,
   };
   const tally = opts.tally ?? { value: null };
   const pool = new VesselIslandPoolCore({

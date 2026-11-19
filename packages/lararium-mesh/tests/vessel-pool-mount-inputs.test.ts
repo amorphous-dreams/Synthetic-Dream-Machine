@@ -18,7 +18,6 @@ function rig(resolve: () => Promise<{ ok: true; pluginCids: readonly string[] } 
       }, listen(fn) { listeners.add(fn); return () => { listeners.delete(fn); }; }, onError: () => () => {}, terminate() {} };
     },
     newSyncChannel() { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
-    storage: () => undefined,
   };
   return new VesselIslandPoolCore({ host, resolvePluginCids: resolve });
 }

@@ -299,6 +299,7 @@ export function resolveDiskMirrors(
     });
 }
 
+
 /** What the vessel itself read of its receipt requests: asked, answered issued (`rested`: its Repo held the heads and flushed), answered stalled. */
 export interface VesselRestState { readonly asked: number; readonly rested: number; readonly stalled: number }
 
@@ -830,15 +831,14 @@ export class VesselIslandPoolCore {
     // Authority ∩ designation, with per-wiki-slug leaves filled from the recipe
     // (e.g. working → wikis/{slug}). See resolveDiskMirrors.
     //
-    // A SESSION ISLAND HOLDS AN EPHEMERAL REPLICA: no storage rides its manifest, on any platform, and no
-    // disk mirror either. The vessel's owner alone persists.
+    // EVERY ISLAND THIS POOL SPAWNS HOLDS AN EPHEMERAL REPLICA: no storage rides its manifest, on any platform. The
+    // vessel's Repo rests every document once (single-owner law), and the island relays through it. A session island
+    // carries no disk mirror either.
     const diskMirrors = plan.surface ? [] : resolveDiskMirrors(this._diskMirrorGrant, plan.recipe.mirrorBags, plan.recipe.wikiSlug);
-    const storage = plan.surface ? undefined : this._host.storage(wikiId);
 
     const manifestMsg = mkManifest(
       plan.wikiUri, syncPort, plan.recipe, plan.grants, plan.coreHash,
       {
-        ...(storage            ? { storage }     : {}),
         ...(diskMirrors.length ? { diskMirrors } : {}),
         ...(pluginCids.length ? { pluginCids } : {}),
         ...(floorCid ? { floorCid } : {}),

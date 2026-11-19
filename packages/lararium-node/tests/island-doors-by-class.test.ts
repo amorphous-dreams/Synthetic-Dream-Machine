@@ -132,7 +132,6 @@ describe("the vessel's doors answer by island class", () => {
           return nodeWorkerHandle(stand.worker, { island: "wiki", caps });
         },
         newSyncChannel() { const c = new MessageChannel(); return { mainPort: c.port1, syncPort: c.port2 }; },
-        storage: () => undefined,
       };
       const pool = new VesselIslandPoolCore({ host, mainRepo: repo, resolvePluginCids: async () => ({ ok: true, pluginCids: [] }) });
       return { pool, async mount(id: string) { next = id; await pool.mountWiki(id, { coreHash: null, recipe: { wikiSlug: id }, grants: { islandUrl: "automerge:fixture", wikiUrl: null } }); return emitters.get(id)!; } };

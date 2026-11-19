@@ -243,9 +243,9 @@ export interface IslandMsg_Manifest {
   /** Typed structural capabilities (see IslandGrants). Libraries resolve via the catalog registry. */
   grants: IslandGrants;
   /**
-   * Storage adapter configuration for the island-side Automerge Repo.
-   * When present, the island creates a persistent Repo (NodeFS or IDB).
-   * Absent or `{ type: "memory" }` = ephemeral relay-only Repo (test / cold-boot path).
+   * Storage adapter configuration for the island-side Automerge Repo: the daemon island's own store alone.
+   * Absent or `{ type: "memory" }` = an ephemeral relay-only Repo, on every platform: every wiki and session island
+   * stands so, and the vessel's Repo rests what it holds.
    */
   storage?: IslandStorageConfig;
   /** Optional bounded worker-owned document crossing (D-VR-C). */
@@ -1006,7 +1006,7 @@ export interface IslandMsg_ReceiptRequest {
 }
 
 /**
- * Island → vessel: THE REST ASK (sealed-store#/owed, V2). Before an island's own store rests a byte of a document it asks
+ * Island → vessel: THE REST ASK (sealed-store#/owed, V2). Before the daemon island's own store rests a byte of a document it asks
  * whether the vessel's rest holds that document sealed; a sealed one rests in the island's memory alone and reaches rest
  * by sync, sealed in the vessel's store (`islandRestGuard`).
  */

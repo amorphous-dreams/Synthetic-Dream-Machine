@@ -22,6 +22,7 @@ import {
   daemonFaceCanonBag,
   standControlHome,
   floorCidToMount,
+  DAEMON_BAG_ID,
   type Repo, type AutomergeUrl, type LarDoc,
   type WikiRecipe,
   type IslandMsg_Manifest,
@@ -160,6 +161,9 @@ export async function openBrowserDaemonVm(
     ...(personaBagId  ? { personaBagId }  : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),
     ...(daemonAuth ? { daemonAuth } : {}),
+    // THE DAEMON ISLAND'S OWN STORE, the one island store the browser keeps: its owned document's partition, or, where no
+    // owned document stands, its Repo's partition under the daemon bag's name. Every wiki island relays in memory.
+    ...(ownedDocument ? {} : { storage: { type: "idb" as const, dbName: DAEMON_BAG_ID } }),
     ...(ownedDocument ? { ownedDocument: {
       documentUrl: daemonUrl,
       storage: { type: "idb" as const, dbName: ownedDaemonDbName(daemonUrl) },
