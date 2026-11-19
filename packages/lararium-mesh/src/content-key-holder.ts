@@ -352,6 +352,8 @@ export class ContentKeyHolder {
   #bags: Map<string, Bag> | null = null;
   /** The chain the cached reading was taken under (`WriterStanding.chainOf`). */
   #bagsChain: string | null | undefined = undefined;
+  /** The register set the cached reading was taken under (`WriterStanding.registeredOf`). */
+  #bagsRegistered: string | undefined = undefined;
   #locked = false;
   #turn: Promise<unknown> = Promise.resolve();
 
@@ -395,9 +397,12 @@ export class ContentKeyHolder {
     // NO CHAIN, NO READING. Under a standing whose chain does not stand yet, every record reads as no writer's, so a
     // reading taken then would found rivals and settle rolls as unfounded. The holder refuses to read, and a reading
     // taken under one chain gives way when another stands.
+    // THE REGISTER SET DECIDES WHO WRITES TOO: a founding record reads `writer-not-capable` over a bag the face has not
+    // registered, so a reading taken under one register set gives way when the set reads otherwise, and a bag the face
+    // registers after the reading founds at the next ask. A reload reads rest alone: nothing a caller booked rides on it.
     const chain = this.#ports.standing.chainOf?.();
     if (chain === null) throw new ChainAbsent();
-    if (this.#bags !== null && this.#bagsChain === chain) return this.#bags;
+    if (this.#bags !== null && this.#bagsChain === chain && this.#bagsRegistered === this.#ports.standing.registeredOf?.()) return this.#bags;
     return this.#reload();
   }
 
@@ -421,6 +426,7 @@ export class ContentKeyHolder {
     // The chain this reading is taken under: a reading taken under none (a vessel ask before any session) gives way
     // at the first `#loaded` once a chain stands.
     const chain = this.#ports.standing.chainOf?.();
+    const registered = this.#ports.standing.registeredOf?.();
     const bags = new Map<string, Bag>();
     const forget = (): void => { for (const bag of bags.values()) for (const line of bag.lines.values()) for (const key of line.keys.values()) key.fill(0); };
     try {
@@ -445,6 +451,7 @@ export class ContentKeyHolder {
     for (const bag of this.#bags?.values() ?? []) for (const line of bag.lines.values()) for (const key of line.keys.values()) key.fill(0);
     this.#bags = bags;
     this.#bagsChain = chain;
+    this.#bagsRegistered = registered;
     return bags;
   }
 
