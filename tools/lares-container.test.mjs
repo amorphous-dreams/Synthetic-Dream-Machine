@@ -1150,14 +1150,25 @@ test(`${name}: rewear-after-up: under a pūlama, a held key with faces lent and 
   assert.equal(worn.status, 0, worn.stderr);
   assert.doesNotMatch(worn.calls, / wear 2$/m);
 });
-test(`${name}: rewear-after-vault-unlock: under a pūlama, an unlock that names no face and leaves none worn wears the face last worn; one naming --face wears nothing more`, { skip }, async () => {
+test(`${name}: rewear-after-vault-unlock: under a pūlama, an unlock that names no face and leaves none worn wears the face last worn`, { skip }, async () => {
   const r = await run(shim, ["vault", "unlock", "--all"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CENSUS_JSON: NONE_WORN_JSON } });
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.calls, /vault unlock --all[\s\S]*vessel census --json[\s\S]*-T lares node \S+ wear 1$/m);
-  const named = await run(shim, ["vault", "unlock", "--face", "2"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CENSUS_JSON: NONE_WORN_JSON } });
-  assert.equal(named.status, 0, named.stderr);
-  assert.doesNotMatch(named.calls, / wear \d+$/m);
-  assert.equal(named.worn, "2");
+});
+// THE UNLOCK'S FACE REACHES THE PŪLAMA. The pūlama keeps the face worn in its memory (`standing.worn`) and re-wears it
+// after a restart, and only `wear` writes it, never the unlock: an unlock naming --face N that landed draws `wear N`,
+// so the pūlama's memory and `config/last-worn-face` name one face. A refused unlock wears nothing.
+test(`${name}: unlock-face-tells-the-pulama: under a pūlama, a vault unlock --face N that lands follows with wear N; a refused one wears nothing`, { skip }, async () => {
+  for (const argv of [["vault", "unlock", "--face", "2"], ["vault", "unlock", "--face=2"]]) {
+    const named = await run(shim, argv, { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CENSUS_JSON: WORN_JSON } });
+    assert.equal(named.status, 0, named.stderr);
+    assert.match(named.calls, /vault unlock --face(?: |=)2[\s\S]*-T lares node \S+ wear 2$/m, argv.join(" "));
+    assert.equal(named.worn, "2");
+  }
+  const refused = await run(shim, ["vault", "unlock", "--face", "2"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "1" } });
+  assert.notEqual(refused.status, 0);
+  assert.doesNotMatch(refused.calls, / wear \d+$/m);
+  assert.equal(refused.worn, "1");
 });
 test(`${name}: CONTROL a house without LARES_PULAMA stands the vessel alone, and names no pūlama`, { skip }, async () => {
   const r = await run(shim, ["up"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\n" });
