@@ -62,8 +62,7 @@ import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, projectedFileTitle, SyncedTree, TEMP_LAYER_DIR,
   KAPAE_EXT, readKapaeShadow, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, daemonBagsDir, FACES_PROJECTION_DIR, FACE_PLANES, faceRoot, faceSegmentRefusal,
   listCollections, libraryCollectionDir, atomicWriteFileSync, parseTidCarrier, houseIgnored,
-  foldWaveRefusal,
-} from "@lararium/node";
+  foldWaveRefusal, realmFoldersOnDisk, ensureRealmLabel, realmPlacement } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
 import { readCensus, censusLine, type CensusReading } from "./census.js";
@@ -479,6 +478,8 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   const faces = await doors.faces();
   const projections = larProjectionsHome();
   const wikisDir = join(projections, "wikis"), bagsDir = join(projections, "bags"), facesDir = join(projections, FACES_PROJECTION_DIR);
+  // A REALM'S FOLDERS (`realms/<realm pet name>/wikis/<slug>`, `/bags/<slug>`), read off the disk: each carries under its slug alone.
+  const onDisk = realmFoldersOnDisk(projections);
   const folders = (dir: string): string[] => { try { return readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(); } catch { return []; } };
   /** The face whose pet name makes a face root's folder (`faces/<pet name>`), or null where none does. */
   const faceOfRoot = (seg: string): BundleVesselFace | null => faces.find((f) => f.petname !== null && f.relation !== null && f.petname.normalize("NFC") === seg.normalize("NFC")) ?? null;
@@ -610,11 +611,11 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
       });
     }
   }
-  for (const name of folders(wikisDir)) {
-    const src = join(wikisDir, name);
+  for (const { slug: name, base } of onDisk.filter((f) => f.plane === "wikis")) {
+    const src = join(base, name);
     if (isPrivateProjectionSlug(name) || namesFaceRelation(name)) continue;
     const wikiBases = await baseFor(wikiSlotUri(name, "working"));
-    addTree(src, `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: carriedFileTitle(wikisDir, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
+    addTree(src, `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: carriedFileTitle(base, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
   }
   // A SOURCED WIKI'S ONE WORKBENCH FOLDER rests beside its canon source: the same one row set, from that folder. A KEEP reads
   // where the folder rests: inside the checkout git holds it, so the keep names it under `elsewhere` and carries none of it.
@@ -632,14 +633,14 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
       addTree(join(canonWikis, name), `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: carriedFileTitle(canonWikis, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
     }
   }
-  for (const name of folders(bagsDir)) {
-    const src = join(bagsDir, name);
+  for (const [name, base] of [...folders(bagsDir).map((n) => [n, bagsDir] as const), ...onDisk.filter((f) => f.plane === "bags").map((f) => [f.slug, f.base] as const)]) {
+    const src = join(base, name);
     if (name === "daemon") {
       // This directory has no disk mirror grant, so its files stay out of the house bundle.
       continue;
     }
     if (isPrivateProjectionSlug(name) || namesFaceRelation(name)) continue;
-    addTree(src, `bags/${name}`, (_rel, abs) => ({ face: null, bag: wikiBagUri(name), layer: "bag", title: carriedFileTitle(bagsDir, abs), rowKey: null }));
+    addTree(src, `bags/${name}`, (_rel, abs) => ({ face: null, bag: wikiBagUri(name), layer: "bag", title: carriedFileTitle(base, abs), rowKey: null }));
   }
   // A COLD WIKI'S PUTS RIDE NO MIRROR (cabal-realm#/the-workbench, OWED): the copy reads disk, so it names what disk cannot show.
   const woken = new Set(opts.woken ?? []);
@@ -1221,10 +1222,17 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
       catch (e) { tallies.bag.refused.push(`${wikiBagUri(slug)} (mint refused: ${e instanceof Error ? e.message : String(e)})`); }
     }
   }
+  /** The base a slug's folder lays under in the realm that holds it, its default label minted where none stands. */
+  const realmBase = (plane: "wikis" | "bags", slug: string): string => {
+    ensureRealmLabel(projections, slug, null);
+    const at = realmPlacement(projections);
+    return (plane === "wikis" ? at.wikisBase(slug) : at.bagsBase(slug)) ?? join(projections, "realms", slug, plane);
+  };
   for (const slug of bagSlugs) {
     if (unminted.has(slug)) continue;
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`bags/${slug}/`));
-    await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), join(projections, "bags", slug), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null, null, freshSlugs.has(slug));
+    // A bag rests in the realm that holds it (every realm carries a pet name: one with no label takes its slug, written once).
+    await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), join(realmBase("bags", slug), slug), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null, null, freshSlugs.has(slug));
   }
   // A WORKBENCH LANDS ONCE, FOR ITS DOCUMENT: through the daemon mount's island where that face holds a writer's seat (or stands the
   // wiki first), into its one folder (a sourced wiki's rests beside its canon source). Under any other face its rows wait by name.
@@ -1234,7 +1242,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
     const gate = await gateOf(slug);
     if (gate !== null) { waitBench(slug, gate); continue; }
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`wikis/${slug}/working/`));
-    const mirror = canonWikis !== null && doors.sourced?.(slug) === true ? join(canonWikis, slug) : join(projections, "wikis", slug);
+    const mirror = canonWikis !== null && doors.sourced?.(slug) === true ? join(canonWikis, slug) : join(realmBase("wikis", slug), slug);
     await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), mirror, wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug, freshSlugs.has(slug));
   }
   let heldNow: ReadonlySet<string> | undefined;

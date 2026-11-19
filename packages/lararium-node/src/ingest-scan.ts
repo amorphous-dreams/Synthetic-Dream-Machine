@@ -24,7 +24,7 @@ import {
 } from "@lararium/mesh";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { SyncedTree, syncedTreeKey, syncedTreeDir } from "./synced-tree.js";
-import { bagsFileToUri, houseIgnored, siteFileToTitle, FACES_PROJECTION_DIR, FACE_PLANES, TEMP_LAYER_DIR, type FileSiting } from "./bag-paths.js";
+import { bagsFileToUri, houseIgnored, siteFileToTitle, FACES_PROJECTION_DIR, FACE_PLANES, REALMS_PROJECTION_DIR, REALM_PLANES, TEMP_LAYER_DIR, type FileSiting } from "./bag-paths.js";
 import { larProjectionCheckpointDir } from "./vessel-paths.js";
 import { KAPAE_EXT, readKapaeShadow } from "./kapae-shadow.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
@@ -210,6 +210,8 @@ export interface MirrorDirs { readonly bags: string; readonly wikis: string; rea
  * `dirs` defaults to `<root>/bags` and `<root>/wikis`; the returned function derives against `dirs`
  * and ignores the root its caller hands it.
  *
+ * A REALM ROOT (`<projections>/realms/<realm pet name>/`) reads as its `wikis` and `bags` planes, one folder per slug each.
+ *
  * A FACE ROOT (`<projections>/faces/<pet name>/`) reads as its own planes: the root holds the `wiki`, `canon` and `stage`
  * folders (the stage sited by title), and its `margins` hold one folder per wiki slug, a personal plane. A face's `recovery`
  * and `temp` hold drafts and temp files that place back as files, never through a layer, so they read as no plane. Every plane
@@ -232,8 +234,18 @@ export function fileToUriForSource(
       return titleOf(siteFaceFile(join(faces, face), plane, file, tree));
     };
   }
+  // A REALM ROOT (`<projections>/realms/<realm pet name>/`) reads as its two planes: `wikis` (one workbench folder per slug) and
+  // `bags` (one canon folder per slug), each by the projector's siting run backward over that plane.
+  const realms = dirs.projections === undefined ? null : resolve(dirs.projections, REALMS_PROJECTION_DIR);
+  if (realms !== null && under(realms)) {
+    return (_root, file) => {
+      const abs = resolve(file);
+      const [realm = "", plane = ""] = abs.startsWith(realms + sep) ? abs.slice(realms.length + 1).split(sep) : [];
+      if (realm === "" || (plane !== REALM_PLANES.wikis && plane !== REALM_PLANES.bags)) return { why: `stands outside any realm's wikis or bags under ${realms}` };
+      return titleOf(siteMirrorFile(join(realms, realm, plane), file, tree, false));
+    };
+  }
   const projected = dirs.projections === undefined ? null
-    : under(join(dirs.projections, "wikis")) ? join(dirs.projections, "wikis")
     : under(join(dirs.projections, "bags")) ? join(dirs.projections, "bags")
     : null;
   const dir = projected ?? (under(dirs.wikis) ? dirs.wikis : dirs.bags);
@@ -1021,7 +1033,7 @@ export function pairedDeletions(
 export interface MirrorWave {
   /** The folder the wave reads. */
   readonly source: string;
-  /** The plane dir the uri derives against (`<projections>/wikis` or `<projections>/bags`): the first segment under it
+  /** The plane dir the uri derives against (`<projections>/realms/<realm pet name>/wikis` or `/bags`): the first segment under it
    *  names the holding slot and never enters the name. */
   readonly uriDir: string;
   readonly toBag: string;

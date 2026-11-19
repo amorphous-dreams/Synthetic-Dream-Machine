@@ -8,7 +8,7 @@
  */
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, extname, isAbsolute, sep } from "path";
-import { existsSync, readFileSync, readdirSync, realpathSync } from "fs";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "fs";
 import { stripMemeExt, wikiSlotUri, projectionWithheld, daemonFaceCanonBag, KAHUA_BAG, CROSSROADS_DOC_URI, type ProjectionClass } from "@lararium/mesh";
 import { ORPHAN_FOLDER_SUFFIX } from "@lararium/mesh/family";
 
@@ -159,7 +159,8 @@ export function namedBagMirror(
  *     temp/<slug>/       a shared wiki's consented temp layer, beside recovery
  *
  * A face root holds ONLY the face's private planes: a shared wiki's workbench and every domain bag rest in their realm pool
- * (`wikis/<slug>/`, or the workspace a share row names), one disk copy whichever face wears. No index file that links faces
+ * (`realms/<realm pet name>/wikis/<slug>/` and `/bags/<slug>/`, or the workspace a share row names), one disk copy whichever
+ * face wears. No index file that links faces
  * (`face-labels/`, `kahua-index.toml`, `share.tid`, `kahua-pending.json`) ever rests under `faces/`.
  */
 export const FACES_PROJECTION_DIR = "faces";
@@ -210,6 +211,28 @@ export interface FaceSite { readonly relation: string; readonly segment: string 
 /** `<projections>/faces/<segment>`: the one root of a face's private planes. */
 export function faceRoot(projectionRoot: string, segment: string): string {
   return joinPath(projectionRoot, FACES_PROJECTION_DIR, faceSegment(segment));
+}
+
+/**
+ * THE REALM ROOT (operator ruling 2026-11-19, "The filepath for realms should include their 'pet-name' to match faces"): a realm
+ * holds its shared wikis' workbenches and its domain bags in one folder under the projections root, named by the PET NAME the
+ * operator gives the realm (a local label, `realm-labels.ts`), never by a realm id:
+ *
+ *   <projections>/realms/<realm pet name>/
+ *     wikis/<slug>/      each wiki's one workbench (its own git tree: `lares surface init --realm <pet name>`)
+ *     bags/<slug>/       each domain bag's canon mirror
+ *
+ * The realm pet name follows the face segment rule (`realmPetNameRefusal`), so it names exactly one folder. No index file that
+ * links realms or faces (`realm-labels/`, `face-labels/`) ever rests under `realms/`.
+ */
+export const REALMS_PROJECTION_DIR = "realms";
+/** The planes inside a realm root. */
+export const REALM_PLANES = { wikis: "wikis", bags: "bags" } as const;
+
+/** `<projections>/realms/<pet name>`: the one root of a realm's wikis and bags. Throws {@link FaceSegmentRefused} on a pet name
+ *  that names no single folder. */
+export function realmRoot(projectionRoot: string, petName: string): string {
+  return joinPath(projectionRoot, REALMS_PROJECTION_DIR, faceSegment(petName));
 }
 
 /** `<projections>/faces/<segment>/margins`: the plane a face's margins rest under, one folder per wiki slug. */
@@ -316,8 +339,6 @@ export interface ProjectionRoots {
   sourcedSlugs(): readonly string[];
   /** The mirror dir of bag `slug`: `<canon>/<slug>` for a sourced bag, else `<projections>/bags/<slug>`. */
   bagRoot(slug: string): string;
-  /** The wikis base the wiki `slug` projects under: `<canon parent>/wikis` for a sourced slug, else `<projections>/wikis`. */
-  wikisRootFor(slug: string): string;
   /** The canon-side bases a per-wiki grant carries by slug (`DiskMirrorGrant` `sourcedRoots`). */
   sourcedRoots(kind: "bags" | "wikis"): Readonly<Record<string, string>>;
 }
@@ -330,7 +351,8 @@ export interface ProjectionRoots {
  * A bag whose source dir stands under the canon source (`canonBags`, the vessel's `LAR_BAGS`) projects back there, and the
  * wiki it composes projects to `wikis/` beside that source. Every other bag and wiki (house-minted, a person's own) and every
  * private plane projects under the house's projections root (`<root>/projections`, outside the hearth a re-founding
- * clears). Membership reads the source tree once, here: no bag is listed.
+ * clears): a shared wiki and its canon bag in the realm that holds them (`realms/<pet name>/`, `realm-labels.ts`), a face's
+ * private planes in its face root. Membership reads the source tree once, here: no bag is listed.
  */
 export function projectionRoots(opts: { readonly projectionRoot: string; readonly canonBags: string }): ProjectionRoots {
   let held: string[] = [];
@@ -344,7 +366,6 @@ export function projectionRoots(opts: { readonly projectionRoot: string; readonl
   return {
     sourcedSlugs: () => held,
     bagRoot: (slug) => sourced.has(slug) ? joinPath(opts.canonBags, slug) : joinPath(opts.projectionRoot, "bags", slug),
-    wikisRootFor: (slug) => sourced.has(slug) ? canonWikis : joinPath(opts.projectionRoot, "wikis"),
     sourcedRoots: (kind) => Object.fromEntries(held.map((slug) => [slug, kind === "bags" ? resolvePath(opts.canonBags) : canonWikis])),
   };
 }
@@ -442,7 +463,7 @@ export function houseIgnored(rel: string): string | null {
 
 /** One mirror plane a file reads back against. */
 export interface SiteMirror {
-  /** The plane dir whose first segment names the holding slot (`<projections>/wikis`, a face root `<projections>/faces/<pet name>`
+  /** The plane dir whose first segment names the holding slot (`<projections>/realms/<realm pet name>/wikis`, a face root `<projections>/faces/<pet name>`
    *  over its `wiki`, `canon` and `stage`, or its `margins`): that segment never enters a title. */
   readonly planeDir: string;
   /** The holding mirror sites a foreign title at its own `/` path (`BagMirrorConfig.titlePaths`, the kahua stage). */
@@ -567,7 +588,7 @@ export interface WorkspaceEntry { readonly slug: string; readonly kind: "bag" | 
  * surface (founding road rank 4j). A workspace that resolves inside the hearth refuses by name, and so does a slug whose source
  * stands in the canon source: its one workbench folder already rests beside that source, in the working surface, so a second
  * workspace would split one workbench across two folders. A
- * workspace with no directory standing (no bind) waits by name, and its workbench projects under the projections root.
+ * workspace with no directory standing (no bind) waits by name, and its workbench lays in the realm that holds the slug.
  */
 export function workspaceRootsOf(opts: {
   readonly rows: readonly WorkspaceEntry[];
@@ -597,25 +618,27 @@ export function workspaceRootsOf(opts: {
 export interface WorkbenchFolder { readonly slug: string; readonly dir: string; readonly name: string }
 
 /**
- * THE WORKBENCH FOLDERS a vessel watches as pools: each workspace a share row binds (`workspaceRootsOf`), then each default
- * workbench standing under `<projections>/wikis/<slug>/` that no workspace takes. ONE FOLDER PER WORKBENCH, so a bound slug's
- * default folder takes no second seat. The daemon wiki's working layer rests in the face's own pool (`faces/<pet name>/wiki`), so
- * no `wikis/daemon` folder takes a seat; a SOURCED slug's workbench rests beside its canon source in the checkout, which the
- * checkout's own history keeps and the vessel never commits into, so none of those takes one either. A slug whose folder stands
- * nowhere on disk yet takes none: the next sitting's arm reads it.
+ * THE WORKBENCH FOLDERS a vessel watches as pools: each workspace a share row binds (`workspaceRootsOf`), then each wiki a named
+ * realm holds, at `<projections>/realms/<realm pet name>/wikis/<slug>/` (`realms`: the realm labels' placement,
+ * `realmPlacement(...).realms()`), that no workspace takes. ONE FOLDER PER WORKBENCH, so a bound slug's realm folder takes no
+ * second seat. Every realm carries a pet name (its default, the slug, minted on first read), so no wiki waits for one, and no
+ * plain `wikis/` folder takes a seat. The daemon wiki's working layer rests in the face's own pool (`faces/<pet name>/wiki`), and a SOURCED
+ * slug's workbench rests beside its canon source in the checkout, which the checkout's own history keeps and the vessel never
+ * commits into, so none of those takes one either. A slug whose folder stands nowhere on disk yet takes none: the next sitting's
+ * arm reads it.
  */
 export function workbenchFolders(opts: {
   readonly projectionRoot: string;
   readonly workspaces: { readonly roots: Readonly<Record<string, string>>; readonly names: Readonly<Record<string, string>> };
   readonly sourcedSlugs: readonly string[];
+  readonly realms: ReadonlyArray<{ readonly petName: string; readonly wikis: ReadonlyArray<{ readonly slug: string; readonly dir: string }> }>;
 }): WorkbenchFolder[] {
   const out: WorkbenchFolder[] = Object.entries(opts.workspaces.roots).map(([slug, dir]) => ({ slug, dir, name: opts.workspaces.names[slug] ?? slug }));
-  const wikis = joinPath(opts.projectionRoot, "wikis");
-  let slugs: string[] = [];
-  try { slugs = readdirSync(wikis, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort(); } catch { /* no wikis plane yet */ }
-  for (const slug of slugs) {
-    if (slug === "daemon" || slug.startsWith(".") || Object.hasOwn(opts.workspaces.roots, slug) || opts.sourcedSlugs.includes(slug)) continue;
-    out.push({ slug, dir: joinPath(wikis, slug), name: slug });
+  const placed = opts.realms.flatMap((r) => r.wikis).sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
+  for (const { slug, dir } of placed) {
+    if (isPrivateProjectionSlug(slug) || Object.hasOwn(opts.workspaces.roots, slug) || opts.sourcedSlugs.includes(slug) || out.some((f) => f.slug === slug)) continue;
+    try { if (!statSync(dir).isDirectory()) continue; } catch { continue; }
+    out.push({ slug, dir, name: slug });
   }
   return out;
 }

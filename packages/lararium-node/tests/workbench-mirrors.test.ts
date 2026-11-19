@@ -2,7 +2,8 @@
  * workbench-mirrors — where a wiki's realm workbench and a face's personal margin rest on disk (cabal-realm#/the-workbench).
  *
  * Projection follows placement: a record reaches plaintext only through a resting layer with a mirror. A wiki's working slot
- * rests in its realm workbench and projects to `<projections>/wikis/<slug>`, or to the operator workspace its share row names
+ * rests in its realm workbench and projects to `<projections>/realms/<realm pet name>/wikis/<slug>` (the realm label that holds
+ * it), or to the operator workspace its share row names
  * (`<root>/workspaces/<name>`, the host shim's `/lar/workspaces/<name>` bind); a face's personal layer carries its private
  * margin over the workbench and projects in the face's root to `<projections>/faces/<pet name>/margins/<slug>` (operator rulings
  * 2026-11-11, 2026-11-18).
@@ -77,7 +78,7 @@ describe("M1 — a workspace binds in the working surface and never rests inside
 
 describe("M2 — one shared resolution, two host grants", () => {
   const grant = (roots: Record<string, string>, face: string | null): DiskMirrorGrant => [
-    { bagId: "working", mirrorRoot: "/lar/projections/wikis", scope: "working", wikiSlot: "working", workspaceRoots: roots },
+    { bagId: "working", mirrorRoot: "/lar/projections/realms", scope: "working", wikiSlot: "working", workspaceRoots: roots, realmBase: (slug) => slug === "notes" ? "/lar/projections/realms/Garden/wikis" : null },
     { bagId: "personal", mirrorRoot: `/lar/projections/${FACES_PROJECTION_DIR}`, scope: "personal", wikiSlot: "personal", faceFolder: () => face },
   ];
   const designation = [wikiSlotUri("notes", "working"), wikiSlotUri("notes", "personal")];
@@ -87,8 +88,8 @@ describe("M2 — one shared resolution, two host grants", () => {
       { bagId: wikiSlotUri("notes", "working"), mirrorRoot: "/lar/workspaces/field-notes", scope: "working", wikiSlot: "working" },
       { bagId: wikiSlotUri("notes", "personal"), mirrorRoot: "/lar/projections/faces/Heron/margins/notes", scope: "personal", wikiSlot: "personal" },
     ]);
-    // No workspace named: the workbench projects where the wiki's working layer always did.
-    expect(resolveDiskMirrors(grant({}, "Heron"), designation, "notes")[0]!.mirrorRoot).toBe("/lar/projections/wikis/notes");
+    // No workspace named: the workbench projects in the realm whose label holds the wiki.
+    expect(resolveDiskMirrors(grant({}, "Heron"), designation, "notes")[0]!.mirrorRoot).toBe("/lar/projections/realms/Garden/wikis/notes");
   });
   test("no face worn: no personal mirror; a host with no disk grant mirrors nothing and reads the same recipe", () => {
     expect(resolveDiskMirrors(grant({}, null), designation, "notes").map((m) => m.bagId)).toEqual([wikiSlotUri("notes", "working")]);

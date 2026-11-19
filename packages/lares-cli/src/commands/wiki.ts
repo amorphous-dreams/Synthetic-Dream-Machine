@@ -24,6 +24,8 @@ import { emit } from "../render.js";
 import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-result.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { cmdShare } from "./share-cmd.js";
+import { ensureWikiRealm, LIVE_REALM_DOORS, placeWikiInRealm, type RealmDoors } from "./realm-doors.js";
+import { RealmRefused } from "@lararium/node";
 import { containerArgs } from "../container-target.js";
 import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
 import { stdout } from "node:process";
@@ -117,11 +119,23 @@ async function holdTheMint(slug: string, did: string): Promise<{ held: boolean; 
   return { held, note: held ? `held (rotatable pin)` : `not held: ${r.errorMessage ?? "the wiki would not activate"}; \`lares wiki hold ${slug}\` retries` };
 }
 
-export async function cmdWikiInit(args: ParsedArgs): Promise<number> {
+export async function cmdWikiInit(args: ParsedArgs, realmDoors: RealmDoors = LIVE_REALM_DOORS): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
-    console.error("usage: lares wiki init <slug>");
+    console.error("usage: lares wiki init <slug> [--realm <pet>]");
     return 2;
+  }
+  // `--realm <pet>` PLACES THE WIKI IN AN EXISTING NAMED REALM BEFORE IT MINTS, so its first mount lays its workbench there; an
+  // unnamed realm refuses before anything mints.
+  const realm = args.options["realm"];
+  if (realm !== undefined) {
+    if (typeof realm !== "string" || realm === "") { console.error("usage: lares wiki init <slug> [--realm <pet>]"); return 2; }
+    try { await placeWikiInRealm(realmDoors, slug, realm); }
+    catch (err) {
+      if (!(err instanceof RealmRefused)) throw err;
+      emit(args, { ok: false, error: { code: err.code, message: err.message }, human: () => console.error(`init refused: ${err.message}`) });
+      return 1;
+    }
   }
   const did    = await vesselDid();
   const r = await call("init-wiki", { slug }, did);
@@ -133,8 +147,13 @@ export async function cmdWikiInit(args: ParsedArgs): Promise<number> {
   const result = summaryOutput(r) ?? {};
   // The mint holds the wiki it mints (a cold grain reads `document-unavailable` until held); a wiki that already stood is left as it was.
   const hold = result["status"] === "minted" || result["status"] === "completed-partial" ? await holdTheMint(slug, did) : null;
+  // The mint bound (or found) the wiki's workbench realm: the label records its canon realm id beside the pet name. EVERY REALM
+  // CARRIES A PET NAME: with no `--realm`, the wiki takes its own realm label under its slug (`realms/<slug>/wikis/<slug>/`).
+  let placed: { readonly petName: string } | null = null;
+  try { placed = typeof realm === "string" ? await placeWikiInRealm(realmDoors, slug, realm) : (await ensureWikiRealm(realmDoors, slug)).label; }
+  catch (err) { if (!(err instanceof RealmRefused)) throw err; }
   emit(args, {
-    ok: true, requestId: r.requestId, data: { slug, ...result, ...(hold ? { held: hold.held, holdNote: hold.note } : {}) },
+    ok: true, requestId: r.requestId, data: { slug, ...result, ...(hold ? { held: hold.held, holdNote: hold.note } : {}), ...(placed ? { realm: placed.petName } : {}) },
     human: () => {
       console.log("");
       console.log(`wiki: ${slug}`);
@@ -145,6 +164,7 @@ export async function cmdWikiInit(args: ParsedArgs): Promise<number> {
       console.log(`  draft doc: ${result["draftDocUrl"]}`);
       console.log(`  recipe:    ${result["recipeUri"]}`);
       if (hold) console.log(`  hold:      ${hold.note}`);
+      if (placed) console.log(`  realm:     ${placed.petName} (its workbench lays under projections/realms/${placed.petName}/wikis/${slug}/)`);
       console.log("");
     },
   });
@@ -723,7 +743,7 @@ async function cmdWikiStatus(args: ParsedArgs): Promise<number> {
 }
 
 const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
-  "init":  { handler: cmdWikiInit,  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent." },
+  "init":  { handler: (a) => cmdWikiInit(a),  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent. Its workbench lays at projections/realms/<slug>/wikis/<slug>/ (the realm's default pet name, the slug); `--realm <pet>` places it in an existing realm instead (`lares realm list`)." },
   "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>); --list shows the resolved answer; --remove unshares it. A bag row standing for the slug refuses (share-kind-standing). The daemon wiki never shares." },
   "open":  { handler: cmdWikiOpen,  summary: "Set which wiki the next `lares vessel stand --foreground` boot mounts as active. Does not live-remount the current vessel." },
   "switch": { handler: cmdWikiSwitch, summary: "LIVE-activate a wiki (no reboot — the true swap; wakes it cold from its recipe). Browser flips the projection surface." },

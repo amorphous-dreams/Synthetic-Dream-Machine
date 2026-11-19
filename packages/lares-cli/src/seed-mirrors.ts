@@ -8,9 +8,9 @@
  *   projections/faces/<pet name>/wiki   -> that face's daemon WORKING (`wikis/daemon/working`); a kāpae shadow raises as a kāpae
  *   projections/faces/<pet name>/canon  -> that face's daemon canon (`bags/daemon-<F>`)
  *   projections/faces/<pet name>/stage  -> that face's kahua stage, by the operator's hand alone (below)
- *   projections/bags/<house-bag>   -> that bag's canon
- *   projections/wikis/<slug>       -> that wiki's ONE workbench (`wikis/<slug>/working`), once for its document, at the wear
- *                                     of a face that holds a writer's seat there (or of the face that stands it first)
+ *   projections/realms/<realm pet name>/bags/<slug> -> that bag's canon (a plain projections/bags/<bag> too)
+ *   projections/realms/<realm pet name>/wikis/<slug> -> that wiki's ONE workbench (`wikis/<slug>/working`), once for its
+ *                                     document, at the wear of a face that holds a writer's seat there (or of the face that stands it first)
  *   <canon source>/../wikis/<slug> -> a sourced wiki's one workbench, beside its canon source, by the same law
  *   projections/faces/<pet name>/margins/<slug> -> that face's own personal layer of that wiki (`wikis/<slug>/personal`): its
  *                                     overlay, the layer a face that holds no writer's seat in the wiki's workbench writes
@@ -65,8 +65,7 @@ import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
 import {
   larProjectionsHome, larConfigHome, isPrivateProjectionSlug, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir,
   FACES_PROJECTION_DIR, FACE_PLANES, faceSegmentRefusal, labelledRelations, readFaceLabel, readFaceBases,
-  mirrorFiles, siteWaveFile, liveLay as layWave, type MirrorWave, type MirrorLaid,
-} from "@lararium/node";
+  mirrorFiles, siteWaveFile, liveLay as layWave, type MirrorWave, type MirrorLaid, realmFoldersOnDisk } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh";
 import { LIVE_BUNDLE_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, type BundleDoors, type BundleVesselFace } from "./commands/house-bundle.js";
 import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
@@ -258,14 +257,19 @@ export interface SeedMirrorsOpts {
 export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResult> {
   const { apply, doors } = opts;
   const projections = larProjectionsHome();
-  const wikisDir = join(projections, "wikis"), bagsDir = join(projections, "bags"), facesDir = join(projections, FACES_PROJECTION_DIR);
-  const wikiFolders = folders(wikisDir), bagFolders = folders(bagsDir);
+  const bagsDir = join(projections, "bags"), facesDir = join(projections, FACES_PROJECTION_DIR);
+  // A REALM'S FOLDERS (`realms/<realm pet name>/wikis/<slug>`, `/bags/<slug>`): each workbench and each canon bag the disk holds,
+  // read off the disk alone, each slug with the plane base its address derives against.
+  const onDisk = realmFoldersOnDisk(projections);
+  const wikiBase = new Map(onDisk.filter((f) => f.plane === "wikis").map((f) => [f.slug, f.base] as [string, string]));
+  const bagBase = new Map<string, string>([...folders(bagsDir).map((n) => [n, bagsDir] as [string, string]), ...onDisk.filter((f) => f.plane === "bags").map((f) => [f.slug, f.base] as [string, string])]);
+  const wikiFolders = [...wikiBase.keys()], bagFolders = [...bagBase.keys()].sort();
   // EACH FACE'S ONE ROOT (`faces/<pet name>/`): its daemon working layer, its daemon canon, its kahua stage and its margins.
   // Its `recovery/` and `temp/` hold drafts and temp files that place back as files, never through a layer: the lay reads neither.
   const faceFolders = folders(facesDir).filter((seg) => mirrorFiles(join(facesDir, seg), [FACE_PLANES.recovery, FACE_PLANES.temp]).length > 0);
   // A SOURCED WIKI'S ONE WORKBENCH FOLDER rests beside the canon source (`<source>/../wikis/<slug>`).
   const canonWikis = opts.kahuaOnly ? null : doors.canonWikis?.() ?? null;
-  const sourcedBenches = canonWikis === null || resolve(canonWikis) === resolve(wikisDir) ? []
+  const sourcedBenches = canonWikis === null || resolve(canonWikis) === resolve(join(projections, "wikis")) ? []
     : folders(canonWikis).filter((n) => doors.sourced(n) && mirrorFiles(join(canonWikis, n), ["recovery", TEMP_LAYER_DIR]).length > 0);
   const houseBags = bagFolders.filter((n) => !isPrivateProjectionSlug(n) && !doors.sourced(n));
   const houseWikis = wikiFolders.filter((n) => !isPrivateProjectionSlug(n) && !doors.sourced(n));
@@ -456,15 +460,16 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     }
     for (const slug of houseBags) {
       const gate = held.has(slug) ? null : await gateOf(slug);
-      if (gate?.why === "owner") { waitBench(slug, join(bagsDir, slug), gate); continue; }
-      await runWave({ source: join(bagsDir, slug), uriDir: bagsDir, toBag: wikiBagUri(slug), skipTop: [] }, `bag ${slug}`);
+      const base = bagBase.get(slug)!;
+      if (gate?.why === "owner") { waitBench(slug, join(base, slug), gate); continue; }
+      await runWave({ source: join(base, slug), uriDir: base, toBag: wikiBagUri(slug), skipTop: [] }, `bag ${slug}`);
     }
-    // ONE FOLDER FOR A WORKBENCH, LAID ONCE FOR ITS DOCUMENT: `<projections>/wikis/<slug>`, and a sourced wiki's beside its canon
+    // ONE FOLDER FOR A WORKBENCH, LAID ONCE FOR ITS DOCUMENT: `<projections>/realms/<realm pet name>/wikis/<slug>`, and a sourced wiki's beside its canon
     // source. The daemon mount's island lays it where that face holds a writer's seat (or stands the wiki first); under any other
     // face the folder waits by name where it holds a carrier new or moved against its base, and nothing of it lands.
     const skipBench = ["recovery", TEMP_LAYER_DIR];
     const benchFolders = [
-      ...houseWikis.map((slug) => ({ slug, source: join(wikisDir, slug), uriDir: wikisDir, label: `workbench ${slug}` })),
+      ...houseWikis.map((slug) => ({ slug, source: join(wikiBase.get(slug)!, slug), uriDir: wikiBase.get(slug)!, label: `workbench ${slug}` })),
       ...(canonWikis === null ? [] : sourcedBenches.map((slug) => ({ slug, source: join(canonWikis, slug), uriDir: canonWikis, label: `workbench ${slug} (beside the canon source)` }))),
     ];
     for (const b of benchFolders) {

@@ -13,7 +13,7 @@ import { spawnSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { carrierHash } from "@lararium/mesh";
-import { faceRoot, syncedTreeDir, syncedTreeKey, SyncedTree, writeFaceLabel } from "@lararium/node";
+import { ensureRealmLabel, faceRoot, syncedTreeDir, syncedTreeKey, SyncedTree, writeFaceLabel } from "@lararium/node";
 import { cmdSurface, liveSurfaceDoors, surfaceHouse, vesselSpelling, type SurfaceDoors } from "../src/commands/surface.js";
 import { commandScope, decideRoute } from "../src/host-bridge.js";
 import { git, openSurfaceRig, plant, surfaceArgs, type SurfaceRig } from "./support/surface-rig.js";
@@ -109,12 +109,13 @@ describe("lares surface open, on the host", () => {
   test("★ prints the host paths under LARES_HOUSE, and --launch runs `code` here ★", async () => {
     const root = faceRoot(join(house, "projections"), "Heron Lantern");
     mkdirSync(join(root, "margins", "lore"), { recursive: true });
-    mkdirSync(join(house, "projections", "wikis", "lore"), { recursive: true });
+    ensureRealmLabel(join(house, "projections"), "lore", null);
+    mkdirSync(join(house, "projections", "realms", "lore", "wikis", "lore"), { recursive: true });
     expect(await cmdSurface(surfaceArgs(["open"]), hostDoors())).toBe(0);
-    expect(rig.said()).toContain(`code -n '${root}' ${join(house, "projections", "wikis", "lore")}`);
+    expect(rig.said()).toContain(`code -n '${root}' ${join(house, "projections", "realms", "lore", "wikis", "lore")}`);
     expect(rig.said()).not.toContain("/lar/");
     expect(await cmdSurface(surfaceArgs(["open"], {}, { launch: true }), hostDoors())).toBe(0);
-    expect(rig.launched).toEqual([["code", "-n", root, join(house, "projections", "wikis", "lore")]]);
+    expect(rig.launched).toEqual([["code", "-n", root, join(house, "projections", "realms", "lore", "wikis", "lore")]]);
   });
 });
 

@@ -1,6 +1,6 @@
 /**
  * workspace-pool — A SHARED WIKI'S WORKBENCH SERVES AS A POOL (face-pools; cabal-realm#/the-workbench). A wiki's workbench
- * mirror rests in ONE folder whichever face wears: `<projections>/wikis/<slug>/`, or the workspace its share row names
+ * mirror rests in ONE folder whichever face wears: `<projections>/realms/<realm pet name>/wikis/<slug>/`, or the workspace its share row names
  * (`lares wiki share <wiki> --workspace <name>`, bound at `<root>/workspaces/<name>`). The watch core, the unattended flow-back
  * and the commit seam serve that copy as they serve the worn face's own pool.
  *
@@ -15,8 +15,8 @@
  *       the worn face's actor; a stand-off goes to that wiki's shore
  *   WP4 the witness on a scratch house: a user wiki bound to a workspace (as `notes` would be) flows a disk edit back by itself
  *       and commits at lock
- *   WP5 the workbench folders: each bound workspace, then each default `wikis/<slug>/` no workspace takes; control: `daemon`, a
- *       sourced slug, and a slug with no folder on disk take no seat
+ *   WP5 the workbench folders: each bound workspace, then each `realms/<pet>/wikis/<slug>/` a realm label holds that no workspace
+ *       takes; control: a plain `wikis/<slug>/` takes no seat, and a realm's slug with no folder on disk takes none
  *   WP6 the vessel arms one seat per workbench folder in its after-live step, unawaited, under the worn face's actor, and downs
  *       each at lock, wear and shutdown
  */
@@ -28,7 +28,8 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { carrierHash, VERB_RESULT_KEY, wikiSlotUri } from "@lararium/mesh";
 import { SyncedTree, syncedTreeKey } from "../src/synced-tree.js";
-import { workspaceRootsOf, workbenchFolders } from "../src/bag-paths.js";
+import { workspaceRootsOf, workbenchFolders, realmRoot } from "../src/bag-paths.js";
+import { nameRealm, placeInRealm, realmPlacement } from "../src/realm-labels.js";
 
 type WatchCore = typeof import("../src/watch-core.js");
 type IngestScan = typeof import("../src/ingest-scan.js");
@@ -232,25 +233,30 @@ describe("WP4 — the witness on a scratch house: a user wiki bound to a workspa
   });
 });
 
-describe("WP5 — the workbench folders: each bound workspace, then each default wikis/<slug>/", () => {
-  test("a bound workspace and a default workbench each take one seat; the bound slug's default folder takes none", () => {
+describe("WP5 — the workbench folders: each bound workspace, then each wiki a realm label holds", () => {
+  test("a bound workspace and a realm's workbench each take one seat; the bound slug's realm folder takes none", () => {
     const projections = join(house, "projections");
-    for (const slug of ["notes", "works", "daemon", "lares", "elyncia"]) mkdirSync(join(projections, "wikis", slug), { recursive: true });
+    nameRealm(projections, "Garden");
+    for (const slug of ["notes", "works", "elyncia"]) placeInRealm(projections, "Garden", { slug, id: null });
+    for (const slug of ["notes", "works", "elyncia"]) mkdirSync(join(realmRoot(projections, "Garden"), "wikis", slug), { recursive: true });
     const bound = workspaceRootsOf({ rows: [{ slug: "notes", kind: "wiki", workspace: "notes" }, { slug: "works", kind: "wiki" }], workspacesHome: join(house, "workspaces"), hearth: join(house, "hearth"), sourcedSlugs: [] });
-    const folders = workbenchFolders({ projectionRoot: projections, workspaces: bound, sourcedSlugs: ["lares"] });
+    const folders = workbenchFolders({ projectionRoot: projections, workspaces: bound, sourcedSlugs: ["lares"], realms: realmPlacement(projections).realms() });
     expect(folders).toEqual([
       { slug: "notes", dir: bound.roots["notes"], name: "notes" },
-      { slug: "elyncia", dir: join(projections, "wikis", "elyncia"), name: "elyncia" },
-      { slug: "works", dir: join(projections, "wikis", "works"), name: "works" },
+      { slug: "elyncia", dir: join(projections, "realms", "Garden", "wikis", "elyncia"), name: "elyncia" },
+      { slug: "works", dir: join(projections, "realms", "Garden", "wikis", "works"), name: "works" },
     ]);
   });
 
-  test("control: daemon, a sourced slug and a slug with no folder take no seat; no wikis plane reads none", () => {
+  test("control: a plain wikis/<slug> folder takes no seat (only a realm's folder does), and a realm's slug with no folder takes none", () => {
     const projections = join(house, "projections");
-    expect(workbenchFolders({ projectionRoot: projections, workspaces: { roots: {}, names: {} }, sourcedSlugs: [] })).toEqual([]);
-    mkdirSync(join(projections, "wikis", "daemon"), { recursive: true });
+    expect(workbenchFolders({ projectionRoot: projections, workspaces: { roots: {}, names: {} }, sourcedSlugs: [], realms: [] })).toEqual([]);
+    mkdirSync(join(projections, "wikis", "notes"), { recursive: true });
     mkdirSync(join(projections, "wikis", "lares"), { recursive: true });
-    expect(workbenchFolders({ projectionRoot: projections, workspaces: { roots: {}, names: {} }, sourcedSlugs: ["lares"] })).toEqual([]);
+    expect(workbenchFolders({ projectionRoot: projections, workspaces: { roots: {}, names: {} }, sourcedSlugs: ["lares"], realms: realmPlacement(projections).realms() })).toEqual([]);
+    nameRealm(projections, "Garden");
+    placeInRealm(projections, "Garden", { slug: "notes", id: null });
+    expect(workbenchFolders({ projectionRoot: projections, workspaces: { roots: {}, names: {} }, sourcedSlugs: [], realms: realmPlacement(projections).realms() })).toEqual([]);
   });
 });
 

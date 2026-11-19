@@ -98,7 +98,7 @@ beforeEach(() => {
   out = join(mkdtempSync(join(tmpdir(), "lar-keep-seat-out-")), "bundle");
   put("projections/faces/otter-face/wiki/ha.ka.ba/notes/pond.tid", tid("lar:///ha.ka.ba/notes/pond", "the pond at dusk"));
   put("projections/faces/kestrel-face/wiki/ha.ka.ba/notes/reed.tid", tid("lar:///ha.ka.ba/notes/reed", "a reed bends"));
-  put("projections/wikis/notes/ha.ka.ba/notes/shared.tid", tid("lar:///ha.ka.ba/notes/shared", "a shared page"));
+  put("projections/realms/notes/wikis/notes/ha.ka.ba/notes/shared.tid", tid("lar:///ha.ka.ba/notes/shared", "a shared page"));
 });
 afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); delete process.env["LAR_ROOT"]; });
 

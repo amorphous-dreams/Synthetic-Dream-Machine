@@ -271,12 +271,12 @@ function oldDisk(): void {
   put(FR("hearth-one", "wiki/ha.ka.ba/kahua/memory/heron.tid"), tid(HERON, "remember the heron"));
   put(FR("hearth-one", "wiki/ha.ka.ba/notes/gone.kapae"), kapaeShadowBody(GONE));
   put(FR("hearth-one", "recovery/garden/draft-one.tid"), tid("draft one", "half a thought"));
-  put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid(ROSE, "a rose"));
+  put("projections/realms/garden/bags/garden/ha.ka.ba/garden/rose.tid", tid(ROSE, "a rose"));
   // A stage carrier's body rides as it stands: the projector adds no newline after it, and the lay's lift reads it byte for byte.
   put(FR("hearth-one", "stage/ha.ka.ba/kahua/memory/heron.tid"), tid(HERON, "remember the heron", `kahua-taint: []\nkahua-sources: [{"title":"${POND}","revision":"r1"}]\n`).replace(/\n$/, ""));
 }
 /** Clear the old founding's face root (and, with `garden`, its house bag), as a hand does. */
-const clearFace = (garden = false): void => { rmSync(P("faces/hearth-one"), { recursive: true, force: true }); if (garden) rmSync(P("bags/garden"), { recursive: true, force: true }); };
+const clearFace = (garden = false): void => { rmSync(P("faces/hearth-one"), { recursive: true, force: true }); if (garden) rmSync(P("realms/garden/bags/garden"), { recursive: true, force: true }); };
 
 /** The old vessel, its records laid from its own disk (it wears F1 under "hearth-one"), its stage holding the heron. */
 async function oldVessel(): Promise<FakeHouse> {
@@ -470,12 +470,12 @@ describe("the lay lays every mirror back into its one layer", () => {
     after.held.add("garden");
     // The lay laid another canon text for the title (the checkout's), and the house mirror left the disk.
     after.layer(GARDEN).set(ROSE, { text: tid(ROSE, "the checkout's rose") });
-    rmSync(P("bags/garden"), { recursive: true });
+    rmSync(P("realms/garden/bags/garden"), { recursive: true });
     const r = await houseImport(out, { apply: true, doors: after.bundleDoors() });
     expect(r.tallies.bag.stoodOff.join("\n")).toContain(ROSE);
     expect(after.live(GARDEN, ROSE)?.text).toBe(tid(ROSE, "the checkout's rose"));
     // And the other way: a lay over the bundle's landed row stands off on a disk file that moved too.
-    put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid(ROSE, "a third rose"));
+    put("projections/realms/garden/bags/garden/ha.ka.ba/garden/rose.tid", tid(ROSE, "a third rose"));
     const seeded = await seedMirrors({ apply: true, doors: after.mirrorDoors() });
     expect(seeded.layers.find((t) => t.toBag === GARDEN)?.stoodOff.join("\n")).toContain(ROSE);
     expect(after.live(GARDEN, ROSE)?.text).toBe(tid(ROSE, "the checkout's rose"));
@@ -721,14 +721,14 @@ describe("the lay lays every mirror back into its one layer", () => {
     const RFC = "lar:///ha.ka.ba/lares/ref/RFC-4151";
     clearFace(true);
     const pets = ["steward", "engineer", "referee"];
-    put("projections/wikis/notes/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the one working copy the seated faces share"));
+    put("projections/realms/notes/wikis/notes/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the one working copy the seated faces share"));
     const v = new FakeHouse([R0, R1, R2].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "grant", R2);
     v.held.add("notes");
     // The steward owns the workbench and the engineer holds a writer's seat; the referee reads.
     v.seats.set("notes", new Set([R0, R1]));
     // THE REFEREE WORN: the folder waits by name, exits clean, and nothing of it reaches the workbench or the referee's own layers.
     const first = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-    expect(first.benchWaiting).toEqual([{ slug: "notes", folder: P("wikis/notes"), why: "writer" }]);
+    expect(first.benchWaiting).toEqual([{ slug: "notes", folder: P("realms/notes/wikis/notes"), why: "writer" }]);
     expect(v.bench("notes").size + v.personalOf(R2, "notes").size).toBe(0);
     expect(mirrorLines(first).out.join("\n")).toMatch(/the workbench of notes lays once, at the wear of a face that holds a writer's seat there: this face holds none/);
     expect(mirrorsLeftWork(first), "a folder that waits for a writer leaves no work for a hand").toBe(false);
@@ -746,10 +746,10 @@ describe("the lay lays every mirror back into its one layer", () => {
     // Settled against its base, the folder draws no line under the referee; a hand's edit there waits for a writer again.
     v.wear(R2);
     expect((await seedMirrors({ apply: true, doors: v.mirrorDoors() })).benchWaiting).toEqual([]);
-    put("projections/wikis/notes/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the copy, edited by hand"));
+    put("projections/realms/notes/wikis/notes/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the copy, edited by hand"));
     expect((await seedMirrors({ apply: true, doors: v.mirrorDoors() })).benchWaiting.map((w) => w.why)).toEqual(["writer"]);
     expect(v.bench("notes").get(RFC)?.text).toBe(tid(RFC, "the one working copy the seated faces share"));
-    expect(existsSync(P(`wikis/notes-${R1}`)), "no folder names a face").toBe(false);
+    expect(existsSync(P(`realms/notes/wikis/notes-${R1}`)), "no folder names a face").toBe(false);
     expect(mirrorFiles(P("faces")), "a workbench never rests under a face root").toEqual([]);
   });
 
@@ -758,18 +758,18 @@ describe("the lay lays every mirror back into its one layer", () => {
     const RFC = "lar:///ha.ka.ba/lares/ref/RFC-4151";
     clearFace(true);
     const pets = ["steward", "engineer", "referee"];
-    put("projections/wikis/cold-shelf/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the steward's page in a wiki no share names for the referee"));
+    put("projections/realms/cold-shelf/wikis/cold-shelf/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the steward's page in a wiki no share names for the referee"));
     // THE REFEREE WORN: the steward stood cold-shelf (its realm binds the slug); the referee's catalog names no such wiki.
     const v = new FakeHouse([R0, R1, R2].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "grant", R2);
     v.seats.set("cold-shelf", new Set([R0]));
     const r = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     expect(v.wikiMints, "the referee's lay mints no wiki of its own over the steward's").toEqual([]);
     expect(r.minted).toEqual([]);
-    expect(r.benchWaiting).toEqual([{ slug: "cold-shelf", folder: P("wikis/cold-shelf"), why: "writer" }]);
+    expect(r.benchWaiting).toEqual([{ slug: "cold-shelf", folder: P("realms/cold-shelf/wikis/cold-shelf"), why: "writer" }]);
     expect(v.bench("cold-shelf").size + v.personalOf(R2, "cold-shelf").size).toBe(0);
     // CONTROL: an unbound house wiki (no face stood it on this founding) still mints at the worn face's lay, which stands it.
-    rmSync(P("wikis/cold-shelf"), { recursive: true });
-    put("projections/wikis/lending-shelf/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "a page in a wiki no face stood yet"));
+    rmSync(P("realms/cold-shelf/wikis/cold-shelf"), { recursive: true });
+    put("projections/realms/lending-shelf/wikis/lending-shelf/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "a page in a wiki no face stood yet"));
     const fresh = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     expect(fresh.minted).toEqual(["lar:///ha.ka.ba/bags/lending-shelf"]);
   });
@@ -802,8 +802,8 @@ describe("the lay lays every mirror back into its one layer", () => {
     const PAGE = "lar:///ha.ka.ba/notes/page", DRAFTED = "lar:///ha.ka.ba/notes/working-only";
     clearFace(true);
     // What the former founding left: the wiki's canon mirror, its one workbench folder, and the vessel-private share row.
-    put("projections/bags/notes/ha.ka.ba/notes/page.tid", tid(PAGE, "a promoted page"));
-    put("projections/wikis/notes/ha.ka.ba/notes/working-only.tid", tid(DRAFTED, "a working-only page"));
+    put("projections/realms/notes/bags/notes/ha.ka.ba/notes/page.tid", tid(PAGE, "a promoted page"));
+    put("projections/realms/notes/wikis/notes/ha.ka.ba/notes/working-only.tid", tid(DRAFTED, "a working-only page"));
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R1);
     v.shareRows = [{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }];
     // THE ENGINEER SEEDS FIRST: the wiki belongs to the steward, so nothing mints and nothing lays under the engineer.
@@ -871,8 +871,8 @@ describe("the lay lays every mirror back into its one layer", () => {
     clearFace(true);
     // THE STANDING VESSEL: a shared wiki's canon and its ONE workbench folder, a sourced wiki's workbench beside its canon
     // source, the engineer's personal layer of `lares`, and the vessel-private share row that names owner and seats.
-    put("projections/bags/notes/ha.ka.ba/notes/page.tid", tid(PAGE, "a promoted page"));
-    put("projections/wikis/notes/ha.ka.ba/notes/working-only.tid", tid(DRAFTED, "a working-only page"));
+    put("projections/realms/notes/bags/notes/ha.ka.ba/notes/page.tid", tid(PAGE, "a promoted page"));
+    put("projections/realms/notes/wikis/notes/ha.ka.ba/notes/working-only.tid", tid(DRAFTED, "a working-only page"));
     put("wikis/lares/ha.ka.ba/lares/ref/RFC-4151.tid", tid(SOURCED, "a working copy beside the source"));
     put(FR("engineer", "margins/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid"), tid(MARGIN, "what the engineer kept for itself"));
     put(FR("engineer", "margins/lares/$__StoryList.tid"), tid("$:/StoryList", "a view"));
@@ -893,7 +893,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     expect(redeclare.shares, "the share row travels beside the workbench it seats, owner and seats by pet-name").toEqual([{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }]);
 
     // A RE-FOUNDING, with the mirrors gone (the bundle alone carries them): the engineer imports first.
-    rmSync(P("wikis/notes"), { recursive: true }); rmSync(P("bags/notes"), { recursive: true }); rmSync(P("faces/engineer"), { recursive: true }); rmSync(join(root, "wikis"), { recursive: true });
+    rmSync(P("realms/notes/wikis/notes"), { recursive: true }); rmSync(P("realms/notes/bags/notes"), { recursive: true }); rmSync(P("faces/engineer"), { recursive: true }); rmSync(join(root, "wikis"), { recursive: true });
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R1);
     v.canonWikis = join(root, "wikis"); v.sourcedSlugs.add("lares"); v.held.add("lares");
     v.seats.set("lares", new Set([R0]));           // the steward's first mount stood the house wiki's workbench
@@ -1050,7 +1050,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
 
   test("W4 — RED: a lay whose share landing moved nothing says nothing of shares; CONTROL: a landing that moved a grant, seated a face or left one pending says so", async () => {
     clearOld();
-    put("projections/wikis/notes/ha.ka.ba/notes/page.tid", tid("lar:///ha.ka.ba/notes/page", "a page"));
+    put("projections/realms/notes/wikis/notes/ha.ka.ba/notes/page.tid", tid("lar:///ha.ka.ba/notes/page", "a page"));
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }], "grant", R0);
     v.held.add("notes"); v.seats.set("notes", new Set([R0]));
     v.shareRows = [{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }];
@@ -1348,7 +1348,7 @@ describe("P1 — the face root, keyed by pet name", () => {
     expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
     expect(readFileSync(P(`faces/${FACE}/wiki/ha.ka.ba/notes/pond.tid`), "utf8")).toBe(POND_WORKING);
     expect(readFileSync(P(`faces/${FACE}/recovery/notes/draft-one.tid`), "utf8")).toBe(tid("draft one", "half a thought"));
-    expect(existsSync(P("wikis/notes/recovery"))).toBe(false);
+    expect(existsSync(P("realms/notes/wikis/notes/recovery"))).toBe(false);
   });
 
   test("FR5 — RED: no index file rests under faces/, and two faces never share a root", async () => {

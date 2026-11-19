@@ -63,7 +63,7 @@ describe("the projection pre-check — what the founding rite reads before it tr
     const roots = projectionRoots({ projectionRoot: "/state", canonBags });
     expect(roots.sourcedSlugs()).toContain("lares");
     expect(roots.bagRoot("lares")).toBe(join(canonBags, "lares"));
-    expect(roots.wikisRootFor("lares")).toBe(join(dirname(canonBags), "wikis"));
-    expect(roots.wikisRootFor("daemon")).toBe("/state/wikis");
+    expect(roots.sourcedRoots("wikis")["lares"]).toBe(join(dirname(canonBags), "wikis"));
+    expect(roots.sourcedRoots("wikis")["daemon"]).toBeUndefined();
   });
 });

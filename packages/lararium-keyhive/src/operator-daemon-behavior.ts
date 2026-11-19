@@ -1683,8 +1683,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // `restsUnderOwner`: the vessel seals this workbench's document under one face's key (the wiki it mounts), so a seat
         // another face holds there writes `personal` on this vessel (the rest gate).
         const restsUnderOwner = face !== undefined && realms.some((realmId) => restsUnderAnotherFace(slug, realmId, face));
-        return { ok: true, slug, writeSlot: await slotDocsOf(ctx).writeSlot(slug), bound: realms.length > 0, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
-      }, { summary: "Read the worn face's write layer for a wiki (`working` where it holds a writer's seat in the wiki's workbench or its own write would found one, `personal` otherwise) and whether this vessel's ledger binds the wiki's workbench.", surfaces: [VERB_SURFACE.cli] });
+        // `realms`: the canon realm ids the ledger binds for the slug, which a local realm label records beside its pet name
+        // (`lares realm move`); the ids name realms, never a face, and the label stays on this house.
+        return { ok: true, slug, writeSlot: await slotDocsOf(ctx).writeSlot(slug), bound: realms.length > 0, realms, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
+      }, { summary: "Read the worn face's write layer for a wiki (`working` where it holds a writer's seat in the wiki's workbench or its own write would found one, `personal` otherwise), whether this vessel's ledger binds the wiki's workbench, and the realm ids it binds.", surfaces: [VERB_SURFACE.cli] });
       // THE CONTENT FENCE DENIES BY DEFAULT. A verb runs on the MOUNTED face's resources (its content keys, its provider,
       // mint and ledger, its slot documents and catalog) whichever face's provider cleared the verify, so a presenter that
       // is another face refuses by name before any handler reads. The fence stands before EVERY verb on this table,

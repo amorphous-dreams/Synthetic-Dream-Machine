@@ -113,7 +113,7 @@ function seedHouse(): void {
   put(`${FACE}/recovery/daemon/draft-one.tid`, tid("draft one", "half a thought"));
   put(`${FACE}/wiki/temp/scratch.tid`, tid("scratch", "a passing note"));
   put(`${FACE}/stage/ha.ka.ba/kahua/memory/heron.tid`, tid(MEMORY, "remember the heron"));
-  put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid("lar:///ha.ka.ba/garden/rose", "a rose"));
+  put("projections/realms/garden/bags/garden/ha.ka.ba/garden/rose.tid", tid("lar:///ha.ka.ba/garden/rose", "a rose"));
   put("sensoriums/memory/persistence/testimony.ndjson", "{\"witness\":1}\n");
   put("hearth/vessel/store.bin", "old keys");
 }
@@ -154,17 +154,17 @@ describe("the house bundle verbs", () => {
   });
 
   test("apply restores wave files to their mirror before ingest, including shadows", async () => {
-    put("projections/wikis/pond/ha.ka.ba/notes/gone.kapae", kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
+    put("projections/realms/pond/wikis/pond/ha.ka.ba/notes/gone.kapae", kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
     await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
-    rmSync(join(root, "projections/bags/garden"), { recursive: true });
-    rmSync(join(root, "projections/wikis/pond"), { recursive: true });
+    rmSync(join(root, "projections/realms/garden/bags/garden"), { recursive: true });
+    rmSync(join(root, "projections/realms/pond/wikis/pond"), { recursive: true });
     await houseImport(out, { apply: true, doors: after.doors() });
-    const mirror = join(root, "projections/bags/garden");
+    const mirror = join(root, "projections/realms/garden/bags/garden");
     const wave = after.waves.find((w) => w.toBag === "lar:///ha.ka.ba/bags/garden")!;
     expect(wave.source).toBe(mirror);
     expect(readFileSync(join(mirror, "ha.ka.ba/garden/rose.tid"), "utf8")).toBe(tid("lar:///ha.ka.ba/garden/rose", "a rose"));
-    expect(readFileSync(join(root, "projections/wikis/pond/ha.ka.ba/notes/gone.kapae"), "utf8")).toBe(kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
+    expect(readFileSync(join(root, "projections/realms/pond/wikis/pond/ha.ka.ba/notes/gone.kapae"), "utf8")).toBe(kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
     expect(after.waves.find((w) => w.wiki === "pond")?.kapae).toContain("lar:///ha.ka.ba/notes/gone");
   });
 
@@ -189,7 +189,7 @@ describe("the house bundle verbs", () => {
   test("a mirror file holding a different record is left as it stands, and the row rides on to INGEST's three-way gate — no byte-drift stand-off", async () => {
     await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
-    const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
+    const path = join(root, "projections/realms/garden/bags/garden/ha.ka.ba/garden/rose.tid");
     writeFileSync(path, tid("lar:///ha.ka.ba/garden/rose", "another rose"));
     after.bagRecords.set("lar:///ha.ka.ba/bags/garden", new Map([["lar:///ha.ka.ba/garden/rose", tid("lar:///ha.ka.ba/garden/rose", "another rose")]]));
     const result = await houseImport(out, { apply: true, doors: after.doors() });
@@ -202,7 +202,7 @@ describe("the house bundle verbs", () => {
   test("G2 — a mirror file holding the SAME record in another framing reads already landed: no stand-off, no wave", async () => {
     await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
-    const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
+    const path = join(root, "projections/realms/garden/bags/garden/ha.ka.ba/garden/rose.tid");
     // The same fields in another order and without the projector's trailing newline: one record, other bytes.
     writeFileSync(path, "type: text/vnd.tiddlywiki\ntitle: lar:///ha.ka.ba/garden/rose\n\na rose");
     const preview = await houseImport(out, { apply: false, doors: after.doors() });
@@ -233,7 +233,7 @@ describe("the house bundle verbs", () => {
     expect(existsSync(bundleJournalPath(manifest.bundleId, [F2]))).toBe(true);
     // reset -> found again: config (and its journal) stays; the face stands on a fresh relation with an empty mirror.
     const F3 = "33333333-3333-4333-8333-333333333333";
-    rmSync(join(root, "projections/bags/garden"), { recursive: true, force: true });
+    rmSync(join(root, "projections/realms/garden/bags/garden"), { recursive: true, force: true });
     const second = refound({ relation: F3 });
     const again = await houseImport(out, { apply: true, doors: second.doors() });
     expect(second.records.has(NOTE)).toBe(true);
@@ -246,7 +246,7 @@ describe("the house bundle verbs", () => {
     await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound();
     await houseImport(out, { apply: true, doors: after.doors() });
-    const path = join(root, "projections/bags/garden/ha.ka.ba/garden/rose.tid");
+    const path = join(root, "projections/realms/garden/bags/garden/ha.ka.ba/garden/rose.tid");
     const before = readFileSync(path);
     const calls = after.waves.length;
     const { mtimeMs } = (await import("node:fs")).statSync(path);
@@ -419,7 +419,7 @@ describe("the house bundle verbs", () => {
 
   test("C11 — every other wiki's working rows travel; a slug the fresh vessel lacks mints first, named in the preview", async () => {
     const PAGE = "lar:///ha.ka.ba/notes/field-page";
-    put("projections/wikis/field-notes/ha.ka.ba/notes/field-page.tid", tid(PAGE, "a field note"));
+    put("projections/realms/field-notes/wikis/field-notes/ha.ka.ba/notes/field-page.tid", tid(PAGE, "a field note"));
     put(`${FACE}/recovery/field-notes/half.tid`, tid("half", "a draft"));
     const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     expect(manifest.rows.filter((r) => r.layer === "wiki-working").map((r) => [r.bag, r.title])).toEqual([["lar:///ha.ka.ba/wikis/field-notes/working", PAGE]]);
@@ -433,7 +433,7 @@ describe("the house bundle verbs", () => {
     expect(after.bagRecords.get("lar:///ha.ka.ba/wikis/field-notes/working")?.get(PAGE)).toBe(tid(PAGE, "a field note"));
     expect(after.inWikiBags).toEqual(["lar:///ha.ka.ba/wikis/field-notes/working in field-notes"]);
     expect(readFileSync(join(root, `${FACE}/recovery/field-notes/half.tid`), "utf8")).toBe(tid("half", "a draft"));
-    expect(existsSync(join(root, "projections/wikis/field-notes/recovery")), "a draft never rests under the shared workbench").toBe(false);
+    expect(existsSync(join(root, "projections/realms/field-notes/wikis/field-notes/recovery")), "a draft never rests under the shared workbench").toBe(false);
   });
 
   test("carry-keeps-a-free-titled-record — a record whose title owns no lar: address carries under the title its own file states", async () => {

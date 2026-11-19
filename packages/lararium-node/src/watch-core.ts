@@ -20,7 +20,7 @@
  * reads the whole pool once (the catch-up), since no event ever named what moved.
  *
  * A SHARED WIKI'S WORKBENCH TAKES THE SAME SEAT (`armWorkspaceWatch`): its one disk copy whichever face wears
- * (`<projections>/wikis/<slug>`, or the workspace its share row names), watched whole and committed at each close
+ * (`<projections>/realms/<realm pet name>/wikis/<slug>`, or the workspace its share row names), watched whole and committed at each close
  * (`workspaceCommitSeam`, naming no face) where its git tree stands (`lares surface init`); with none, a plain mirror.
  *
  * Meme: lar:///ha.ka.ba/kahua/memory/project/face-pools
@@ -298,7 +298,7 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
 
 /**
  * A SHARED WIKI'S WORKBENCH SERVES AS A POOL (cabal-realm#/the-workbench). A wiki's workbench mirror rests in ONE folder whichever
- * face wears: `<projections>/wikis/<slug>/` by default, or the workspace its share row names (`<root>/workspaces/<name>`, bound by
+ * face wears: `<projections>/realms/<realm pet name>/wikis/<slug>/` in the realm that holds it, or the workspace its share row names (`<root>/workspaces/<name>`, bound by
  * the host shim: `--workspace <name>=<dir>`, `LARES_WORKSPACES`). The vessel holds the face pool's seat over that folder: the whole
  * folder watched, each settle an unattended INGEST wave in the wiki's own working layer, the commit seam at each sitting's close.
  *
@@ -338,7 +338,7 @@ export async function workspaceCommitSeam(dir: string, close: SittingClose, git:
 }
 
 export interface WorkspaceWatchOptions {
-  /** The workbench folder: `<projections>/wikis/<slug>`, or `<root>/workspaces/<name>` where a share row names one. */
+  /** The workbench folder: `<projections>/realms/<realm pet name>/wikis/<slug>`, or `<root>/workspaces/<name>` where a share row names one. */
   readonly workspace: string;
   /** How the log names the folder: the workspace's name, or the wiki's slug for a default workbench. */
   readonly name: string;

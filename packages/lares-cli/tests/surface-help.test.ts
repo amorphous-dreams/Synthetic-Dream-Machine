@@ -21,9 +21,9 @@ describe("lares surface help", () => {
     for (const f of ["face", "launch", "message", "realm"]) expect(row!.accepts).toContain(f);
   });
 
-  test.each(["surface", "surface init", "surface check", "surface commit"])("%s names --realm <slug> in its usage and flags", (door) => {
+  test.each(["surface", "surface init", "surface check", "surface commit"])("%s names --realm <realm pet name> in its usage and flags", (door) => {
     const entry = COMMAND_HELP[door]!;
-    expect(entry.usage, door).toContain("--realm <slug>");
+    expect(entry.usage, door).toContain("--realm <realm pet name>");
     expect((entry.flags ?? []).some((f) => f.startsWith("--realm")), door).toBe(true);
   });
 
