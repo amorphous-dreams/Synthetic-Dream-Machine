@@ -303,6 +303,7 @@ const LIFT = "lares vessel lay --apply --lift-kahua <N>";
 const P1 = "lares persona new 1 --name 'joshua-fontany-engineer'";
 const P2 = "lares persona new 2 --name 'joshua-fontany-referee'";
 const SC = "staged-custody";
+const MEMORY_LINE = "the rite walk wrote this stage meme through the seat";
 
 export const STEPS = Object.freeze([
   { id: "image", prose: "stamps the image at that head", unreached: "image" },
@@ -323,14 +324,14 @@ export const STEPS = Object.freeze([
   // Memory, the lift, another face.
   { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "meme_put lands a stage meme; meme_get reads it back",
     run: async (ctx) => {
-      const text = memeText(MEMORY, "the rite walk wrote this stage meme through the seat");
+      const text = memeText(MEMORY, MEMORY_LINE);
       const seat = await ctx.seat([
         { name: "meme_put", arguments: { uri: MEMORY, text, recipe: "default" } },
         { name: "meme_get", arguments: { uri: MEMORY, recipe: "default" } },
       ]);
       if (seat.unreached) return seat;
       const back = JSON.stringify(seat.results[1] ?? null);
-      return { ok: back.includes("the rite walk wrote this row through the seat"), answer: `meme_put → ${JSON.stringify(seat.results[0])}` };
+      return { ok: back.includes(MEMORY_LINE), answer: `meme_put → ${JSON.stringify(seat.results[0])}` };
     } },
   { id: "lift", prose: "''The lift.''", via: SC, needs: ["unlock-all"], expect: "the stage answers the row digest; the lift signs under the face's root",
     run: async (ctx) => {
