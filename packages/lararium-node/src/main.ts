@@ -881,6 +881,10 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
 
   // Signals and recomposition close the same composition: producers, sealed flush, signers, islands,
   // Repo, then the process floor's claim. A second signal cuts the pending stop with a distinct exit.
+  // A signal flushes the main replica FIRST, before any producer drains: a stop right after a LOAD meets islands busy
+  // with the load's after-waves, and a supervisor's kill past its own grace must still find every record that reached
+  // the main replica on disk. Its own line prints the instant that flush resolves; the composition's flush and Repo
+  // phases flush it again for whatever lands during the drain.
   const SHUTDOWN_BUDGET_MS = Number(process.env["LAR_SHUTDOWN_BUDGET_MS"] ?? 6_000);
   let shuttingDown  = false;
   let cutRequested  = false;
@@ -922,6 +926,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       dispatcher.dispose();
       lanSocket()?.close();
       httpServer.close();
+      await step("main-flush", () => result.repo.flush(), (ms) =>
+        console.log(`[lararium] main replica flushed durably (main-flush ${ms}ms)`));
       await step("composition", () => result.teardown(() => front.close()));
       await floor.release();
       clearTimeout(pastBudget);
