@@ -22,7 +22,7 @@ uri-path           = "ha.ka.ba/lares/api/pono/meme/SKILL"
 
 ! Meme Skill
 
-[[meme.md|../meme.md]] holds the law.
+[[meme|lar:///ha.ka.ba/lares/api/pono/meme]] holds the law.
 This skill carries the working procedure.
 
 
@@ -255,6 +255,6 @@ Aftermath — close by naming:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;seWu-9qFWXMjFZ7r04wi1EEDjMfa8LNVRCU8dovpU50`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sBv7t0FjEMwDZnj4DdyZe8NMORpBddgJtL5HKcBc-ww`>>
 
 <<^ code=`&#x0004;` to=`?`>>

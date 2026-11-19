@@ -25,16 +25,11 @@
 import { fencedSpans, inMask } from "@lararium/memetic-frame";
 
 /** How a carrier spelled the reference. */
-export type EdgeForm = "loulou" | "pranala" | "kahea" | "wikilink" | "md-target";
+export type EdgeForm = "loulou" | "pranala" | "kahea" | "wikilink";
 
 export interface CarrierEdge {
-  /**
-   * The address named, fragment stripped — what a resolver would look up.
-   *
-   * An `md-target` edge names a FILE rather than an address, so it has none: a reader cannot resolve
-   * it without guessing which carrier holds that file, and a guess is what the resolver must not do.
-   */
-  readonly address: string | null;
+  /** The address named, fragment stripped — what a resolver would look up. */
+  readonly address: string;
   /** The address as written, fragment included. */
   readonly written: string;
   readonly form: EdgeForm;
@@ -58,13 +53,6 @@ const PATTERNS: ReadonlyArray<readonly [EdgeForm, RegExp]> = [
   ["kahea",    /<<~\s*kahea(?:[^>]|>(?!>))*?\suri=`lar:\/\/\/([^`\s]+?)`/g],
   ["wikilink", /\[\[[^\]|]*\|lar:\/\/\/([^\]]+)\]\]/g],
   ["wikilink", /\[\[lar:\/\/\/([^\]|]+)\]\]/g],
-  // THE FORM THAT NAMES A FILE. A carrier may link a neighbour by FILE (`…|x.md`), and a reader counting
-  // only `lar:///` targets does not see such a link while it reports the graph whole.
-  //
-  // They carry no address, so they never count as dangling and never count as resolving. They are
-  // named so a sweep can find them, and left unresolved because matching a file to a carrier means
-  // guessing which carrier holds it.
-  ["md-target", /\[\[[^\]|]*\|((?:\.\.?\/)*[^\]:]*\.md)\]\]/g],
 ];
 
 /**
@@ -83,7 +71,7 @@ export function readCarrierEdges(text: string): CarrierEdge[] {
       if (inMask(spans, m.index)) continue;
       // A trailing period or comma belongs to the prose, never to the name.
       const written = m[1]!.replace(/[.,;]+$/, "");
-      out.push({ written, address: form === "md-target" ? null : written.split("#")[0]!, form });
+      out.push({ written, address: written.split("#")[0]!, form });
     }
   }
   return out;

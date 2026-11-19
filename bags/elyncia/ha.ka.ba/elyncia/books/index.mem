@@ -34,9 +34,9 @@ uplift to live wikitext last.
 //(The ToC walks the spines by their `books/index` tag. Until the live wiki renders it, the
 shelf reads plainly:)//
 
-# [[Elyncia 01 ~ A Broken World|a-broken-world/spine.md]]
-# [[Elyncia 02 ~ The Lares DreamNet|the-lares-dreamnet/spine.md]] //(the pilot)//
-# [[Elyncia 03 ~ Daemons and the Metaphysics of Play|daemons-and-metaphysics/spine.md]]
+# [[Elyncia 01 ~ A Broken World|lar:///ha.ka.ba/elyncia/books/a-broken-world/spine]]
+# [[Elyncia 02 ~ The Lares DreamNet|lar:///ha.ka.ba/elyncia/books/the-lares-dreamnet/spine]] //(the pilot)//
+# [[Elyncia 03 ~ Daemons and the Metaphysics of Play|lar:///ha.ka.ba/elyncia/books/daemons-and-metaphysics/spine]]
 # Elyncia 04 ~ The Referee Noosphere Guide — ''referee tier'': the spine rides `elyncia-referee`
   and renders only in referee recipes
 # The Style Base Layer — migrates as a ''single meme'' (already chunk-sized), referee-side,
@@ -44,6 +44,6 @@ shelf reads plainly:)//
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;S-WY3JfYe7ntLrwv415gOFQNh8emrEH49PnMiy3Uyow`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sCLInSk1kZNp8rCD6baX510DEq6ykjf105X9N0c0SJw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -23,7 +23,7 @@ uri-path           = "ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL"
 
 ! Memetic-Wikitext Skill
 
-[[memetic-wikitext.md|../memetic-wikitext.md]] holds the root law.
+[[memetic-wikitext|lar:///ha.ka.ba/lares/api/pono/memetic-wikitext]] holds the root law.
 This skill carries the working procedure.
 
 <<~ ahu slot=`#/load-contract`>>
@@ -217,6 +217,6 @@ If parser or render-pipeline law still lacks its own stable carrier, leave the b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OsV9FxnFnKLxa_QOP3nozs_emIJQSpD547u2PJF0Xrs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8gUst3sxh4fszXyuz17v1ldF3r6U848ZvFKjbnCa6g0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

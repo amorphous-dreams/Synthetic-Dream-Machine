@@ -83,7 +83,7 @@ Appview, their shared rotation keys each re-grew the monopoly they meant to esca
 malicious actor can hold cryptographically valid capabilities. Alignment answers
 //"do I WANT to peer with this actor?"// — non-monotonic, subjective, reputation-rooted, and
 capability structurally cannot express it. Lives in its own invariant
-([[alignment-layer.md|lar:///ha.ka.ba/lares/api/pono/alignment-layer]]); enforced by ''withholding voluntary sync at the''
+([[alignment-layer|lar:///ha.ka.ba/lares/api/pono/alignment-layer]]); enforced by ''withholding voluntary sync at the''
 ''Beelay boundary'', never by reaching into another island's data. The "lemures" plane.
 
 <<~/ahu>>
@@ -114,7 +114,7 @@ dreamnet-architecture#two-axis-topology).
 ''Alignment law'' (Plane 0): trust assertions take the form of ordinary signed content, evaluated LOCALLY
 against a per-island root. No global consensus, no central registry, no global trust score.
 Peers refuse a valid-capability-holding lemure by leaving it ''starved of voluntary peering'', never
-through a central ban. See [[alignment-layer.md|lar:///ha.ka.ba/lares/api/pono/alignment-layer]].
+through a central ban. See [[alignment-layer|lar:///ha.ka.ba/lares/api/pono/alignment-layer]].
 
 ''Exchange-island law'': the operator↔node exchange runs as a causal island of its own ---
 two logs, no global now across the turn boundary. The turn-frame syncs it: `yield … -> ?`
@@ -363,6 +363,6 @@ meant to escape):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ro8pL7VZ-KnmYGH6adPGUN4nkYWC8r65U5SACJaP1Gw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YytlMyeInKGuuhdeRCqHry5osaPQbk1lcnDbyKkBBCE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

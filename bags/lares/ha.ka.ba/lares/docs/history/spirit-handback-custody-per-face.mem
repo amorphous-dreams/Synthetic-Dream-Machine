@@ -374,7 +374,7 @@ K15.4 removal/content-key lifecycle → K15.5 one-face restore → K15.6 atomic 
 !! YANG · Wave two ratchet: per-face custody keys
 
 
-Research date: 2026-10-19. Repository source is read-only; no suites, builds, or git writes were run. Paths are relative to `/home/joshu/Synthetic-Dream-Machine`. ''MEASURED'' = directly shown in source or cited vendor/spec page; ''LEAD'' = inference or recommendation. Each finding also identifies provenance: ''confirmed-by-both'', ''yours-alone'' (YANG code lens), or ''twin-alone'' (YIN platform lens). Round-one baseline: [[PRIOR-YANG.md|../PRIOR-YANG.md]], [[PRIOR-YIN.md|../PRIOR-YIN.md]]; ratchet handbacks: [[MINE.md|MINE.md]], [[TWIN.md|TWIN.md]].
+Research date: 2026-10-19. Repository source is read-only; no suites, builds, or git writes were run. Paths are relative to `/home/joshu/Synthetic-Dream-Machine`. ''MEASURED'' = directly shown in source or cited vendor/spec page; ''LEAD'' = inference or recommendation. Each finding also identifies provenance: ''confirmed-by-both'', ''yours-alone'' (YANG code lens), or ''twin-alone'' (YIN platform lens). Round-one baseline: `PRIOR-YANG.md`, `PRIOR-YIN.md`; ratchet handbacks: `MINE.md`, `TWIN.md`.
 
 <<~/ahu>>
 
@@ -1470,6 +1470,6 @@ Current seed's direct and derived uses exceed the candidate's “place acts only
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;B7t5jGX7nipgyCxLHWM58JGRprKKTAfbORpWFKHqZtM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j4K5nDTvDTCBsXY3wVIJdctlX7ZkaMWsfJdthI6EbqI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

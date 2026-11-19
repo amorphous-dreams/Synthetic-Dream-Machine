@@ -835,14 +835,10 @@ function surveyEdges(files: string[]): number {
   }
 
   const dangling = new Map<string, { form: string; from: string[] }>();
-  let total = 0, unaddressed = 0;
+  let total = 0;
   for (const [f, src] of texts) {
     for (const e of readCarrierEdges(src)) {
       total++;
-      // AN EDGE WITH NO ADDRESS NAMES A FILE, not a carrier. It cannot dangle, because it never
-      // pointed at an address to begin with — it is counted apart so a sweep can find the class
-      // without a resolver guessing which carrier a file became.
-      if (e.address === null) { unaddressed++; continue; }
       if (held.has(e.address)) continue;
       const seen = dangling.get(e.address) ?? { form: e.form, from: [] };
       seen.from.push(f);
@@ -857,8 +853,7 @@ function surveyEdges(files: string[]): number {
     if (from.length > 3) console.log(`     … and ${from.length - 3} more`);
   }
   const n = [...dangling.values()].reduce((a, d) => a + d.from.length, 0);
-  const tail = unaddressed > 0 ? ` · ${unaddressed} naming a FILE rather than an address` : "";
-  console.log(`edges: ${files.length} carrier(s) read · ${held.size} address(es) held · ${total} edge(s) · ${n} naming nothing${tail}`);
+  console.log(`edges: ${files.length} carrier(s) read · ${held.size} address(es) held · ${total} edge(s) · ${n} naming nothing`);
   return n === 0 ? 0 : 1;
 }
 
@@ -896,7 +891,6 @@ function surveySitting(files: string[]): number {
   const inbound = new Map<string, string[]>();
   for (const [f, src] of texts) {
     for (const e of readCarrierEdges(src)) {
-      if (e.address === null) continue;
       // A carrier naming ITSELF is not a reader holding it.
       if (addressOf.get(f) === e.address) continue;
       (inbound.get(e.address) ?? inbound.set(e.address, []).get(e.address)!).push(f);

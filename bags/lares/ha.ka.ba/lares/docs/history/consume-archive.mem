@@ -63,10 +63,10 @@ Each row: a research file the pass consumed, and the doctrine that carries its c
 | `auth-research.md` | S7.1 Keyhive sprint | — |
 | `w3c-spec-research-v01.md` | `bags/lares/docs/pono/memetic-wikitext.md` | (#w3c-lineage-verdicts added) |
 | `AGENTS.md`, `memetic-wikitext-v3.md`, `memetic-wikitext.md`, `memetic-wikitext-full.md` | ''not recovered'' — deleted without read | gap noted in history/README.md |
-| [[mu-boot-research|mu-boot-research.md]] | `lares_research/memetic-wikitext/mu-boot.md` + `mu-meme.md` | `bags/lares/api/mu.md` | none |
-| [[loci-wild-magic|loci-wild-magic.md]] | `lares_research/memetic-wikitext/LOCI.md` | `bags/lares/AGENTS.md` (partial) | transclusion wild-magic grammar |
-| [[auth-research|auth-research.md]] | `lares_research/memetic-wikitext/auth-research.md` | S7.1 Keyhive sprint | none |
-| [[w3c-spec-research|w3c-spec-research.md]] | `lares_research/memetic-wikitext/w3c-spec-research-v01.md` | `memetic-wikitext.tid` (SGML header claim) | formal SGML alignment open |
+| `mu-boot-research.md` | `lares_research/memetic-wikitext/mu-boot.md` + `mu-meme.md` | `bags/lares/api/mu.md` | none |
+| `loci-wild-magic.md` | `lares_research/memetic-wikitext/LOCI.md` | `bags/lares/AGENTS.md` (partial) | transclusion wild-magic grammar |
+| `auth-research.md` | `lares_research/memetic-wikitext/auth-research.md` | S7.1 Keyhive sprint | none |
+| `w3c-spec-research.md` | `lares_research/memetic-wikitext/w3c-spec-research-v01.md` | `memetic-wikitext.tid` (SGML header claim) | formal SGML alignment open |
 
 <<~/ahu>>
 
@@ -158,6 +158,6 @@ Every file below was read before it burned. Where a row names living carriers, t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zYZKAM0KOE0p8TwVtw3-5_M5rWI9Gi0uhaPjaT_KmNs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-4s97aghUYGPkhye_mWvyMSyFnayXT3i4WqjFkz1pZM`>>
 
 <<^ code=`&#x0004;` to=`?`>>
