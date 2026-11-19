@@ -45,6 +45,8 @@ export const RITE_KEEP = "keep";
 export const KEEP_CHECK = "carry-verify";
 /** Where a keep rests inside its workspace where the line names no other place. */
 export const KEEP_INTO = "house";
+/** The schema names the keep's own bundle carried before it took BUNDLE_SCHEMA: a place holding one holds an earlier keep. */
+export const RETIRED_BUNDLE_SCHEMAS: readonly string[] = ["lar-carry/1"];
 
 /**
  * A refusal's message, led by its code ONCE: a message handed on from a row or a nested line already leads with the code it
@@ -201,6 +203,8 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     // A KEEP REPLACES A KEEP ALONE: a directory that holds no bundle manifest belongs to the operator, and so does a file.
     let schema: unknown = null;
     try { schema = lstatSync(target).isDirectory() ? (JSON.parse(readFileSync(join(target, MANIFEST_FILE), "utf8")) as { schema?: unknown }).schema : null; } catch { schema = null; }
+    // An earlier keep under a retired schema name: the keep repo's own history keeps it, so the remedy retires it there.
+    if (typeof schema === "string" && RETIRED_BUNDLE_SCHEMAS.includes(schema)) throw new KeepRefused("keep-dest-retired", `${target} holds an earlier keep's bundle under the retired schema ${schema}; a keep replaces only a ${BUNDLE_SCHEMA} bundle. Retire it in the keep repo's git, whose history keeps it: \`git -C ${wsDir} rm -r ${into} && git -C ${wsDir} commit -m "retire the ${schema} keep"\`, then keep again`);
     if (schema !== BUNDLE_SCHEMA) throw new KeepRefused("keep-dest-foreign", `${target} stands and holds no ${BUNDLE_SCHEMA} bundle; a keep replaces only the bundle an earlier keep left, so name another place with --into`);
   }
   // THE FACE THE KEEP ACTS AS: the one the line names, else the keep's face, one per house (the face whose keep lei stands,
