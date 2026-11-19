@@ -27,7 +27,7 @@
 //   --keep   leave the containers and the base standing after a walk that stops before `teardown`
 //   rc 0  no step failed · rc 1  a step failed · rc 2  the walk refused before any act
 import { execFileSync, spawn } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve, sep } from "node:path";
 import { createInterface } from "node:readline";
@@ -354,7 +354,7 @@ export function imageHands(scope, state) {
     stage() {
       const real = execFileSync("sh", ["-c", "command -v docker"], { encoding: "utf8" }).trim();
       if (within(scope.base, real)) throw new RiteWalkRefusal(`docker already resolves inside the base (${real})`);
-      for (const dir of [scope.bin, join(scope.home, ".lares"), ...["hearth", "sensoriums", "projections", "library", "config", "pulama/socket", "pulama/state"].map((c) => join(scope.house, c))]) mkdirSync(dir, { recursive: true });
+      for (const dir of [scope.bin, join(scope.home, ".lares"), ...["hearth", "sensoriums", "projections", "library", "config", "pulama/state"].map((c) => join(scope.house, c))]) mkdirSync(dir, { recursive: true });
       writeFileSync(scope.envFile, surfaceEnvText(scope, { uid, gid, pulama: state.vars.pulama === true }));
       writeFileSync(join(scope.bin, "docker"), dockerWrapperText({ real, project: scope.project, image: scope.image, log: scope.dockerLog }));
       chmodSync(join(scope.bin, "docker"), 0o755);
@@ -402,10 +402,10 @@ export function imageHands(scope, state) {
     async close() { if (aho !== null) await aho.close(); },
     /** Every Docker call the wrapper saw, in order. */
     dockerLog: () => (existsSync(scope.dockerLog) ? readFileSync(scope.dockerLog, "utf8").split("\n").filter(Boolean) : []),
-    /** Take down this project's containers and clear the base (`keepBase` leaves it standing). Answers what it left. */
+    /** Take down this project's containers and its named volumes (the pūlama's socket volume), and clear the base (`keepBase` leaves it standing). Answers what it left. */
     async teardown({ keepBase = false } = {}) {
       await hands.close();
-      const down = await compose(["--profile", "pulama", "--profile", "offline", "down", "--remove-orphans", "--timeout", "20"], { timeout: 180_000 });
+      const down = await compose(["--profile", "pulama", "--profile", "offline", "down", "--volumes", "--remove-orphans", "--timeout", "20"], { timeout: 180_000 });
       const left = await compose(["--profile", "pulama", "--profile", "offline", "ps", "-a", "-q"]);
       const log = hands.dockerLog();
       if (!keepBase) rmSync(scope.base, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
@@ -472,22 +472,24 @@ const pulamaMeasure = async (h) => {
   const id = await h.cid("pulama");
   const seen = await h.docker(["inspect", "--format", "{{.HostConfig.ReadonlyRootfs}} {{.Config.User}} {{.HostConfig.NetworkMode}} {{.State.Status}} {{.RestartCount}}", id]);
   const [readOnly, user, network, status, restarts] = seen.stdout.trim().split(" ");
+  // THE SOCKET'S MOUNT: a named volume, never a bind of a host path (docker-compose.surface.yml, `lares-pulama-socket`).
+  const mounts = await h.docker(["inspect", "--format", '{{range .Mounts}}{{if eq .Destination "/pulama/socket"}}{{.Type}} {{.Name}}{{end}}{{end}}', id]);
+  const [socketMountType, socketVolume] = mounts.stdout.trim().split(" ");
   const inside = await h.compose(["--profile", "pulama", "exec", "-T", "pulama", "sh", "-c",
-    'id -u; id -g; stat -c "%u:%g %a" /pulama/socket/pulama.sock; stat -c "%u:%g %a" /lar/run/pulama-hand.sock; if touch /app/rite-walk-probe 2>/dev/null; then echo root-writable; else echo root-read-only; fi']);
-  const [inUid, inGid, vesselSock, handSock, rootProbe] = inside.stdout.trim().split("\n");
-  const hostSock = join(h.scope.house, "pulama", "socket", "pulama.sock");
-  const st = existsSync(hostSock) ? statSync(hostSock) : null;
-  const dir = statSync(join(h.scope.house, "pulama", "socket"));
+    'id -u; id -g; stat -c "%u:%g %a" /pulama/socket/pulama.sock; stat -c "%u:%g %a" /pulama/socket; stat -c "%u:%g %a" /lar/run/pulama-hand.sock; if touch /app/rite-walk-probe 2>/dev/null; then echo root-writable; else echo root-read-only; fi']);
+  const [inUid, inGid, vesselSock, socketDir, handSock, rootProbe] = inside.stdout.trim().split("\n");
+  const hostSocketDir = join(h.scope.house, "pulama", "socket");
+  const [sockOwner, sockMode] = (vesselSock ?? "").split(" ");
   const measures = {
     readOnlyRootfs: readOnly === "true", rootProbe, user, network, status, restarts: Number(restarts),
-    processUid: Number(inUid), processGid: Number(inGid), vesselSocketInside: vesselSock, handSocketInside: handSock,
-    hostSocket: st ? { uid: st.uid, gid: st.gid, mode: (st.mode & 0o777).toString(8), isSocket: st.isSocket() } : null,
-    hostSocketDir: { uid: dir.uid, gid: dir.gid, mode: (dir.mode & 0o777).toString(8) },
-    socketPathBytes: { inContainer: Buffer.byteLength("/pulama/socket/pulama.sock"), hand: Buffer.byteLength("/lar/run/pulama-hand.sock"), onHost: Buffer.byteLength(hostSock), max: 107 },
+    processUid: Number(inUid), processGid: Number(inGid), vesselSocketInside: vesselSock, socketDirInside: socketDir, handSocketInside: handSock,
+    socketMount: { type: socketMountType ?? "", volume: socketVolume ?? "" }, hostSocketDirStands: existsSync(hostSocketDir),
+    socketPathBytes: { inContainer: Buffer.byteLength("/pulama/socket/pulama.sock"), hand: Buffer.byteLength("/lar/run/pulama-hand.sock"), max: 107 },
   };
   const ok = measures.readOnlyRootfs && rootProbe === "root-read-only" && status === "running" && measures.restarts === 0
-    && st !== null && st.isSocket() && st.uid === h.uid && measures.processUid === h.uid && measures.socketPathBytes.onHost <= 107;
-  return { ok, answer: `read-only root ${readOnly} (${rootProbe}); runs as ${inUid}:${inGid}, network ${network}; vessel socket ${vesselSock} inside, host owner ${st?.uid}:${st?.gid} mode ${measures.hostSocket?.mode}; path ${measures.socketPathBytes.inContainer} bytes inside, ${measures.socketPathBytes.onHost} on the host, of ${measures.socketPathBytes.max}`, measures };
+    && measures.processUid === h.uid && sockOwner === `${h.uid}:${h.gid}` && sockMode === "600"
+    && measures.socketMount.type === "volume" && !measures.hostSocketDirStands && measures.socketPathBytes.inContainer <= 107;
+  return { ok, answer: `read-only root ${readOnly} (${rootProbe}); runs as ${inUid}:${inGid}, network ${network}; vessel socket ${vesselSock} inside (dir ${socketDir}); /pulama/socket mounts as ${socketMountType} ${socketVolume ?? ""}, the host house holds ${measures.hostSocketDirStands ? "a socket directory" : "no socket directory"}; path ${measures.socketPathBytes.inContainer} bytes inside, of ${measures.socketPathBytes.max}`, measures };
 };
 
 export const pulamaStatus = (wantLit) => async (h) => {
@@ -779,7 +781,7 @@ export const IMAGE_STEPS = Object.freeze([
   // The pūlama stands beside the vessel (LARES_PULAMA=1 from here on).
   { id: "pulama-up", command: "lares-container.sh pulama up", needs: ["found"], expect: "standing unlit", run: pulamaUp },
   { id: "pulama-status", command: "lares-container.sh pulama status", needs: ["pulama-up"], expect: "lit: false", run: pulamaStatus(false) },
-  { id: "pulama-measure", command: "docker inspect · stat (the read-only root, the uid, the socket)", needs: ["pulama-up"], expect: "read-only root; the operator's uid owns the socket; the path fits", run: pulamaMeasure },
+  { id: "pulama-measure", command: "docker inspect · stat (the read-only root, the uid, the socket)", needs: ["pulama-up"], expect: "read-only root; the operator's uid owns the socket, 0600, inside a named volume no host path reaches; the path fits", run: pulamaMeasure },
   { id: "pulama-light", command: "lares-container.sh pulama light", via: "pty", needs: ["pulama-up"], expect: "lit: true", run: pulamaLight },
   { id: "rite-kukulu", command: "lares rite kukulu", needs: ["lei-kui", "pulama-light"], expect: "a new vessel rises served by the pūlama with no unlock", run: riteKukulu },
   { id: "up-by-pulama", command: "lares-container.sh up", via: "pty", needs: ["pulama-light"], expect: "the vessel seats its holder over the pūlama's socket", run: upPulama },

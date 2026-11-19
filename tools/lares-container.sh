@@ -100,13 +100,13 @@ value_of() { # $1 = name
 }
 HOUSE=$(value_of LARES_HOUSE)
 case "$HOUSE" in /*) ;; *) die "LARES_HOUSE ($HOUSE) reads relative — name the host house root by an absolute path" ;; esac
-# The pūlama's socket directory binds into the vessel in every mode, so the shim makes it as the operator whether or not
-# a pūlama stands; the engine never makes it owned by root.
-HOUSE_CLASSES="hearth sensoriums projections library config pulama/socket"
+HOUSE_CLASSES="hearth sensoriums projections library config"
 # THE PŪLAMA (road L47e): with LARES_PULAMA=1 the house's custody holder stands in its own container beside the vessel,
-# lit once by the operator's own hand (`pulama light`), and outlives every vessel restart. Its socket and its private
-# state rest under LARES_HOUSE/pulama on the host, so they keep the operator's ownership; the socket directory mounts in
-# the pūlama and the vessel alone, the state directory in the pūlama alone. Unset, the vessel holds custody itself.
+# lit once by the operator's own hand (`pulama light`), and outlives every vessel restart. Its private state rests under
+# LARES_HOUSE/pulama/state on the host, so it keeps the operator's ownership, and mounts in the pūlama alone. Its socket
+# rests in a named Docker volume the pūlama and the vessel share and no host path reaches: the shim never makes, reads or
+# clears a socket on the host, and every pūlama verb enters through `compose exec pulama`. Unset, the vessel holds custody
+# itself.
 PULAMA_MODE=""
 if [ "$(value_of LARES_PULAMA)" = 1 ]; then
   PULAMA_MODE=yes
@@ -144,6 +144,10 @@ ensure_house() {
   for class in $HOUSE_CLASSES; do
     mkdir -p -- "$HOUSE/$class" || die "cannot make $HOUSE/$class — make it as the operator, then run again"
   done
+  # A host directory at pulama/socket mounts nowhere (the socket rides a named volume); the shim names it and never removes it.
+  if [ -e "$HOUSE/pulama/socket" ]; then
+    printf 'lares-container: %s mounts nowhere (the pūlama'"'"'s socket rides a named volume); remove it by hand: rm -r -- %s\n' "$HOUSE/pulama/socket" "$HOUSE/pulama/socket" >&2
+  fi
 }
 
 ENV_ARGS=""
