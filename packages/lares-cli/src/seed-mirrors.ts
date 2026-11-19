@@ -484,6 +484,20 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
       }
       await runWave(wave, b.label);
     }
+    // THE SHARES LAND AGAIN, before any face's personal layer lays: each shared wiki's seats come back by pet-name once its
+    // owner's wear stood it, and the landing lifts each row carried for the worn face into its own catalog half, so a reader's
+    // own wear mounts the wiki its page lays into.
+    if (apply && doors.landShares !== undefined && shareRows.length > 0) {
+      const applied = await doors.landShares().catch(() => null);
+      if (applied !== null) {
+        const benches = Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : [];
+        const granted = Number(applied["granted"] ?? 0);
+        shares = {
+          granted, moved: Number(applied["moved"] ?? granted), carried: Number(applied["carried"] ?? 0), pending: Number(applied["pending"] ?? 0),
+          workbenches: benches.map((w) => ({ slug: String(w["slug"]), members: Number(w["members"] ?? 0), founded: w["founded"] === true, seated: Number(w["seated"] ?? 0), removed: Array.isArray(w["removed"]) ? w["removed"].length : 0 })),
+        };
+      }
+    }
     const waitUnworn = (face: { handleIndex: number; petname: string | null }, folder: string): void => {
       const w = unworn.get(face.handleIndex) ?? { handleIndex: face.handleIndex, petname: face.petname, folders: [], why: "unworn" as const };
       if (!w.folders.includes(folder)) w.folders.push(folder);
@@ -507,28 +521,18 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
           continue;
         }
         // A PERSONAL LAYER OF A WIKI THAT STANDS UNMINTED WAITS FOR THE WIKI: a share row names its owner, and the wiki re-stands at
-        // that owner's wear; until then this face's page of it lays nowhere, and the folder stays as it stands.
+        // that owner's wear; until then this face's page of it lays nowhere, and the folder stays as it stands. The wiki STANDS
+        // where this lay minted it, the worn face's catalog names it, or the vessel's ledger binds its workbench (its owner's
+        // earlier wear stood it on this founding), whichever face's catalog the share landing reached so far.
         const owner = ownerOf(slug);
-        if (owner !== null && mountFace?.petname !== owner && !doors.sourced(slug) && !mintedSlugs.has(slug) && !(held.has(slug) || (await doors.heldSlugs()).has(slug))) {
+        const stands = async (): Promise<boolean> => mintedSlugs.has(slug) || held.has(slug) || (await doors.heldSlugs()).has(slug) || (await seatOf(slug)).bound;
+        if (owner !== null && mountFace?.petname !== owner && !doors.sourced(slug) && !(await stands())) {
           if (mirrorFiles(folder).filter((rel) => !viewState(rel)).length === 0) continue;
           waitBench(slug, folder, { why: "owner", owner });
           continue;
         }
         await runWave({ source: folder, uriDir: personalDir, toBag: wikiSlotUri(slug, "personal"), wiki: slug, skipTop: [] }, `personal layer ${slug} of ${seg}`);
       }
-    }
-  }
-
-  // ── THE SHARES LAND AGAIN: each shared wiki's seats come back by pet-name, once its owner's wear stood it. ──
-  if (!opts.kahuaOnly && apply && doors.landShares !== undefined && (doors.shareRows?.() ?? []).length > 0) {
-    const applied = await doors.landShares().catch(() => null);
-    if (applied !== null) {
-      const benches = Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : [];
-      const granted = Number(applied["granted"] ?? 0);
-      shares = {
-        granted, moved: Number(applied["moved"] ?? granted), carried: Number(applied["carried"] ?? 0), pending: Number(applied["pending"] ?? 0),
-        workbenches: benches.map((w) => ({ slug: String(w["slug"]), members: Number(w["members"] ?? 0), founded: w["founded"] === true, seated: Number(w["seated"] ?? 0), removed: Array.isArray(w["removed"]) ? w["removed"].length : 0 })),
-      };
     }
   }
 
