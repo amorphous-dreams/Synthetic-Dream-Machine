@@ -428,20 +428,6 @@ export const HOUSE_IGNORED = {
   tempFile: /\.\d+(?:\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?\.tmp$/,
 } as const;
 
-/**
- * THE HOUSE'S IGNORE LIST AS GIT EXCLUDE LINES, from `HOUSE_IGNORED` alone: each top folder but `.git` (git keeps its own), each
- * orphan folder suffix, and the atomic writer's temp (`<path>.<pid>[.<uuid>].tmp`). The patterns float (no leading `/`), so one
- * list serves a face pool (its mirrors rest one folder down) and a workspace (its mirror rests at the top). The pointer carriers
- * (`.meta`, `.kapae`, `.mem`, `.tid`) never appear here: a pool commits them.
- */
-export function houseExcludeLines(): string[] {
-  return [
-    ...HOUSE_IGNORED.topDirs.filter((d) => d !== ".git").map((d) => `${d}/`),
-    ...HOUSE_IGNORED.dirSuffixes.map((s) => `*${s}/`),
-    "*.[0-9]*.tmp",
-  ];
-}
-
 /** Why the house ignores the file at `rel` (posix, relative to its mirror's holding folder), or null where it reads. */
 export function houseIgnored(rel: string): string | null {
   const segments = rel.split(/[\\/]/).filter((s) => s !== "" && s !== ".");
@@ -605,4 +591,31 @@ export function workspaceRootsOf(opts: {
     names[row.slug] = name;
   }
   return { roots, names, refused, unbound };
+}
+
+/** One shared wiki's workbench folder the vessel watches as a pool: the slug, the folder, and the name the log gives it. */
+export interface WorkbenchFolder { readonly slug: string; readonly dir: string; readonly name: string }
+
+/**
+ * THE WORKBENCH FOLDERS a vessel watches as pools: each workspace a share row binds (`workspaceRootsOf`), then each default
+ * workbench standing under `<projections>/wikis/<slug>/` that no workspace takes. ONE FOLDER PER WORKBENCH, so a bound slug's
+ * default folder takes no second seat. The daemon wiki's working layer rests in the face's own pool (`faces/<pet name>/wiki`), so
+ * no `wikis/daemon` folder takes a seat; a SOURCED slug's workbench rests beside its canon source in the checkout, which the
+ * checkout's own history keeps and the vessel never commits into, so none of those takes one either. A slug whose folder stands
+ * nowhere on disk yet takes none: the next sitting's arm reads it.
+ */
+export function workbenchFolders(opts: {
+  readonly projectionRoot: string;
+  readonly workspaces: { readonly roots: Readonly<Record<string, string>>; readonly names: Readonly<Record<string, string>> };
+  readonly sourcedSlugs: readonly string[];
+}): WorkbenchFolder[] {
+  const out: WorkbenchFolder[] = Object.entries(opts.workspaces.roots).map(([slug, dir]) => ({ slug, dir, name: opts.workspaces.names[slug] ?? slug }));
+  const wikis = joinPath(opts.projectionRoot, "wikis");
+  let slugs: string[] = [];
+  try { slugs = readdirSync(wikis, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort(); } catch { /* no wikis plane yet */ }
+  for (const slug of slugs) {
+    if (slug === "daemon" || slug.startsWith(".") || Object.hasOwn(opts.workspaces.roots, slug) || opts.sourcedSlugs.includes(slug)) continue;
+    out.push({ slug, dir: joinPath(wikis, slug), name: slug });
+  }
+  return out;
 }

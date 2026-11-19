@@ -19,17 +19,17 @@
  * `inotify-dead`, and holds no poll loop: no interval ever arms, no timer reads the disk again. The final wave at the seam
  * reads the whole pool once (the catch-up), since no event ever named what moved.
  *
- * A NAMED WORKSPACE TAKES THE SAME SEAT (`armWorkspaceWatch`): a shared wiki whose share row names a workspace projects its
- * workbench there, one disk copy whichever face wears, and the vessel watches that folder whole, founds it as a git working
- * tree off the boot path (`standWorkspaceTree`), and commits it at each close (`workspaceCommitSeam`), naming no face.
+ * A SHARED WIKI'S WORKBENCH TAKES THE SAME SEAT (`armWorkspaceWatch`): its one disk copy whichever face wears
+ * (`<projections>/wikis/<slug>`, or the workspace its share row names), watched whole and committed at each close
+ * (`workspaceCommitSeam`, naming no face) where its git tree stands (`lares surface init`); with none, a plain mirror.
  *
  * Meme: lar:///ha.ka.ba/kahua/memory/project/face-pools
  */
 
-import { watch as fsWatch, chmodSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync, type FSWatcher, type WatchListener } from "node:fs";
+import { watch as fsWatch, existsSync, mkdirSync, rmSync, writeFileSync, type FSWatcher, type WatchListener } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { isAbsolute, join, sep } from "node:path";
-import { FACE_PLANES, HOUSE_IGNORED, TEMP_LAYER_DIR, houseExcludeLines, houseIgnored, siteFileToTitle } from "./bag-paths.js";
+import { FACE_PLANES, TEMP_LAYER_DIR, houseIgnored, siteFileToTitle } from "./bag-paths.js";
 
 // ── the drain seat ─────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -294,97 +294,53 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
   });
 }
 
-// ── a named workspace as a pool ────────────────────────────────────────────────────────────────────────────────
+// ── a shared wiki's workbench as a pool ────────────────────────────────────────────────────────────────────────
 
 /**
- * A NAMED WORKSPACE SERVES AS A POOL (cabal-realm#/the-workbench). A shared wiki whose share row names a workspace projects its
- * workbench into `<root>/workspaces/<name>` (the host shim binds it there: `--workspace <name>=<dir>`, `LARES_WORKSPACES`), ONE
- * disk copy whichever face wears. That folder stands as a git working tree as a face pool does, and the vessel holds the same
- * seat over it: the whole folder watched, each settle an unattended INGEST wave in the wiki's own working layer, the commit seam
- * at each sitting's close. Several faces share the copy, so nothing here names a face: not the author, not the subject.
+ * A SHARED WIKI'S WORKBENCH SERVES AS A POOL (cabal-realm#/the-workbench). A wiki's workbench mirror rests in ONE folder whichever
+ * face wears: `<projections>/wikis/<slug>/` by default, or the workspace its share row names (`<root>/workspaces/<name>`, bound by
+ * the host shim: `--workspace <name>=<dir>`, `LARES_WORKSPACES`). The vessel holds the face pool's seat over that folder: the whole
+ * folder watched, each settle an unattended INGEST wave in the wiki's own working layer, the commit seam at each sitting's close.
+ *
+ * THE SEAT FOUNDS NO HISTORY. The folder's git working tree comes from `lares surface init` (its `.git` at the folder's top, the
+ * house's ignore list, a local author); the seat reads that tree where it stands. Where none stands the folder serves as a plain
+ * mirror: the waves still land, the seam reads `no-pool-history` by name, and a both-moved stand-off's take-disk names that no base's
+ * words stand in clear. Several faces share the copy, so the seam's subject names no face.
  */
 
-/** The top folders a workspace holds that ride no wave and no commit: an older layout's drafts, the temp layer. */
+/** The top folders a workbench holds that ride no wave and no commit: an older layout's drafts, the temp layer. */
 export const WORKSPACE_SKIP: readonly string[] = ["recovery", TEMP_LAYER_DIR];
 
-/** The subject a workspace's sitting closes under: a `lar:` subject that names the close and never a face. */
+/** The subject a workbench's sitting closes under: a `lar:` subject that names the close and never a face. */
 export const WORKSPACE_CLOSE_PREFIX = "lar:///workspace.closes.the-sitting/";
 
-const WORKSPACE_EXCLUDE_OPEN = "# >>> lares workspace: the house's one ignore list (HOUSE_IGNORED); the vessel keeps this block";
-const WORKSPACE_EXCLUDE_CLOSE = "# <<< lares workspace";
-
-/** What one stand did: founded the tree, found it standing, or found the folder inside another history it leaves alone. */
-export interface WorkspaceTreeReading {
-  readonly stood: "founded" | "already" | "inside-another-history";
-  /** Each thing the stand changed; empty where everything stood as the house writes it. */
-  readonly changed: readonly string[];
-}
+/** The pathspecs a workbench's seam stages: the whole folder but its skipped tops. A top the tree's own excludes already ignore
+ *  takes no pathspec: git refuses an `add` that names an ignored path, even to exclude it. */
+const workspacePaths = (dir: string, git: GitRun): string[] =>
+  [".", ...WORKSPACE_SKIP.filter((d) => git(["check-ignore", "-q", "--no-index", `${d}/x`], dir).code !== 0).map((d) => `:(exclude)${d}`)];
 
 /**
- * STAND A WORKSPACE AS A GIT WORKING TREE, changing only what does not already stand: `.git` at its top (0700), the house's one
- * ignore list in `.git/info/exclude` (the operator's own lines kept), a local author `workspace <name>` <`<name>@workspace.invalid`>
- * that names no face, signing off. A folder that already rests inside another history (a workspace bound inside the checkout)
- * founds no nested repository: that history holds its base, and the seam commits nothing there. Throws where git refuses.
- */
-export function standWorkspaceTree(dir: string, name: string, git: GitRun = runGit): WorkspaceTreeReading {
-  const changed: string[] = [];
-  mkdirSync(dir, { recursive: true });
-  const dotGit = join(dir, ".git");
-  let founded = false;
-  if (!existsSync(join(dotGit, "HEAD"))) {
-    if (git(["rev-parse", "--show-toplevel"], dir).code === 0) return { stood: "inside-another-history", changed };
-    const r = git(["init", "-q", "-b", "main"], dir);
-    if (r.code !== 0) throw new Error(`git init in ${dir} answered ${r.code}: ${firstLine(r.stderr)}`);
-    founded = true;
-    changed.push("git repository");
-  }
-  if ((statSync(dotGit).mode & 0o777) !== 0o700) { chmodSync(dotGit, 0o700); changed.push(".git mode 0700"); }
-  const exclude = join(dotGit, "info", "exclude");
-  const was = existsSync(exclude) ? readFileSync(exclude, "utf8") : "";
-  const block = [WORKSPACE_EXCLUDE_OPEN, ...houseExcludeLines(), WORKSPACE_EXCLUDE_CLOSE].join("\n") + "\n";
-  const start = was.indexOf(WORKSPACE_EXCLUDE_OPEN);
-  const end = start === -1 ? -1 : was.indexOf(WORKSPACE_EXCLUDE_CLOSE, start);
-  const now = start !== -1 && end !== -1
-    ? was.slice(0, start) + block + was.slice(end + WORKSPACE_EXCLUDE_CLOSE.length).replace(/^\n/, "")
-    : (was === "" || was.endsWith("\n") ? was : `${was}\n`) + block;
-  if (now !== was) { mkdirSync(join(dotGit, "info"), { recursive: true }); writeFileSync(exclude, now); changed.push("info/exclude"); }
-  const want: ReadonlyArray<readonly [string, string]> = [["user.name", `workspace ${name}`], ["user.email", `${name}@workspace.invalid`], ["commit.gpgsign", "false"]];
-  for (const [key, value] of want) {
-    const held = git(["config", "--local", "--get", key], dir);
-    if (held.code === 0 && held.stdout.trim() === value) continue;
-    const r = git(["config", "--local", key, value], dir);
-    if (r.code !== 0) throw new Error(`git config --local ${key} in ${dir} answered ${r.code}: ${firstLine(r.stderr)}`);
-    changed.push(key);
-  }
-  return { stood: founded ? "founded" : "already", changed };
-}
-
-/** The pathspecs a workspace's seam stages: the whole folder but its skipped tops. A top the exclude block already ignores takes no
- *  pathspec of its own: git refuses an `add` that names an ignored path, even to exclude it. */
-const workspacePaths = (): string[] => [".", ...WORKSPACE_SKIP.filter((d) => !HOUSE_IGNORED.topDirs.includes(d)).map((d) => `:(exclude)${d}`)];
-
-/**
- * THE WORKSPACE'S COMMIT SEAM: its own git history takes the folder as it stands (but its skipped tops), under
- * `lar:///workspace.closes.the-sitting/<close>`, authored by the workspace's local author. Nothing staged commits nothing; a
- * folder with no history of its own at its top (none founded, or one resting inside another history) commits nothing, by name.
- * The workspace's own hooks run: a seam never passes `--no-verify`.
+ * THE WORKBENCH'S COMMIT SEAM: the folder's own git history (its `.git` at the top) takes the folder as it stands (but its skipped
+ * tops), under `lar:///workspace.closes.the-sitting/<close>`, authored by the tree's local author. Nothing staged commits nothing.
+ * A folder with no history at its own top commits nothing, by name: no tree stands there yet, or the folder rests inside another
+ * history (a workspace bound in the checkout), which the vessel never commits into. The tree's own hooks run: never `--no-verify`.
  */
 export async function workspaceCommitSeam(dir: string, close: SittingClose, git: GitRun = runGit): Promise<SeamReading> {
   if (!poolHistoryStands(dir)) return { committed: false, why: "no-pool-history" };
-  const paths = workspacePaths();
+  const paths = workspacePaths(dir, git);
   const added = git(["add", "-A", "--", ...paths], dir);
   if (added.code !== 0) return { committed: false, why: "commit-refused", detail: firstLine(added.stderr) };
   if (git(["diff", "--cached", "--quiet", "--", ...paths], dir).code === 0) return { committed: false, why: "nothing-moved" };
-  const subject = `${WORKSPACE_CLOSE_PREFIX}${close} — the sitting closes at ${close}; the workspace commits as it stands`;
+  const subject = `${WORKSPACE_CLOSE_PREFIX}${close} — the sitting closes at ${close}; the workbench commits as it stands`;
   const done = git(["commit", "-q", "-m", subject, "--", ...paths], dir);
   if (done.code !== 0) return { committed: false, why: "commit-refused", detail: firstLine(done.stderr || done.stdout) };
   return { committed: true, sha: git(["rev-parse", "HEAD"], dir).stdout.trim() };
 }
 
 export interface WorkspaceWatchOptions {
-  /** The workspace folder: `<root>/workspaces/<name>`, where the wiki's workbench mirror rests. */
+  /** The workbench folder: `<projections>/wikis/<slug>`, or `<root>/workspaces/<name>` where a share row names one. */
   readonly workspace: string;
-  /** The workspace's name, as the share row names it: the local author's name carries it. */
+  /** How the log names the folder: the workspace's name, or the wiki's slug for a default workbench. */
   readonly name: string;
   readonly ports: FacePoolPorts;
   readonly settleMs?: number;
@@ -395,10 +351,10 @@ export interface WorkspaceWatchOptions {
 }
 
 /**
- * ARM THE WATCH over a named workspace, the same seat a face pool takes. Hands back at once; off the boot path it stands the
- * folder as a git working tree (`standWorkspaceTree`), then the watch, the cookie and the catch-up. Every file of the folder
- * wakes a wave but the house's ignore list, its skipped tops and editor litter. The down runs the final wave, then the
- * workspace's commit seam. The wake names nothing: a workspace holds no stage.
+ * ARM THE WATCH over a shared wiki's workbench folder, the same seat a face pool takes. Hands back at once; off the boot path it
+ * reads whether the folder's tree stands (naming a plain mirror where none does), then the watch, the cookie and the catch-up.
+ * Every file of the folder wakes a wave but the house's ignore list, its skipped tops and editor litter. The down runs the final
+ * wave, then the workbench's commit seam. The wake names nothing: a workbench holds no stage.
  */
 export function armWorkspaceWatch(o: WorkspaceWatchOptions): FacePoolWatch {
   const git = o.git ?? runGit;
@@ -408,12 +364,10 @@ export function armWorkspaceWatch(o: WorkspaceWatchOptions): FacePoolWatch {
     ...(o.watch ? { watch: o.watch } : {}), ...(o.cookie ? { cookie: o.cookie } : {}),
     accepts: (rel) => !(rel.includes("/") && WORKSPACE_SKIP.includes(rel.split("/")[0] ?? "")),
     prepare: () => {
-      const stood = standWorkspaceTree(o.workspace, o.name, git);
-      if (stood.stood === "founded") log(`the workspace ${o.name} stands as a git working tree at ${o.workspace}`);
-      else if (stood.stood === "inside-another-history") log(`the workspace ${o.name} rests inside another history (${o.workspace}); that history holds its base, and no seam commits there`);
+      if (!poolHistoryStands(o.workspace)) log(`${o.name}: no git tree stands at ${o.workspace} (\`lares surface init\` founds one); it serves as a plain mirror, and its seam commits nothing`);
     },
     commit: o.ports.commit ?? ((c: SittingClose) => workspaceCommitSeam(o.workspace, c, git)),
-    covers: `the workspace ${o.name}`,
+    covers: `the workbench ${o.name}`,
   });
 }
 
