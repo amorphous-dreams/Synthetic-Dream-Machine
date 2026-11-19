@@ -13,8 +13,8 @@ const manifest = (patch: Partial<IslandMsg_Manifest> = {}): IslandMsg_Manifest =
 });
 
 describe("browser island storage composition", () => {
-  test("ordinary omitted-storage islands retain their per-wiki IndexedDB partition", () => {
-    expect(browserIslandStorage(manifest())).toBeDefined();
+  test("a manifest that names no store stands none: a wiki island rests nothing of its own", () => {
+    expect(browserIslandStorage(manifest())).toBeUndefined();
   });
 
   test("D-VR daemon primary omits storage while owned IDB remains explicit", () => {
