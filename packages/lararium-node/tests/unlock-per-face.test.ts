@@ -157,16 +157,53 @@ describe("the unlock answers honestly, and a failed switch wears the face it lef
     expect(mountedFaceOrdinal()).toBe(0);
   });
 
-  test("RED: `--all --face N` (the shim's re-wear) wears N where the route opened it, else face 0 — never a face that stayed shut", async () => {
+  test("CONTROL: `--all --face N` wears N where the route opened it; `--all` alone wears the lowest face it opened", async () => {
     const v = await vessel([FIXTURE_PASSPHRASE, "the-second-face-route", FIXTURE_PASSPHRASE]);
     const a = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true, face: 2 });
     expect(a).toMatchObject({ reading: "opens", held: true, wears: 2 });
     expect(mountedFaceOrdinal()).toBe(2);
     await v.send({ op: "lock" });
     setMountedFace(undefined);
-    const b = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true, face: 1 });
+    const b = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true });
     expect(b).toMatchObject({ reading: "opens", held: true, wears: 0 });
     expect(mountedFaceOrdinal()).toBe(0);
+    expect(sovereignStands()).toBe(true);
+  });
+
+  test("RED: `--all --face N` refuses by name where N stayed shut under the route, and wears no other face", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, "the-second-face-route", FIXTURE_PASSPHRASE]);
+    const r = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true, face: 1 });
+    expect(r).toMatchObject({ op: "unlock", reading: "face-refused", face: 1, faceReading: "no-slot-opens" });
+    expect(r).not.toHaveProperty("wears");
+    expect(r).not.toHaveProperty("held");
+    expect(mountedFaceOrdinal()).toBeUndefined();
+    expect(v.holder.isUnlocked()).toBe(false);                                // a key never rests over a floor
+    expect(v.holder.unlockedFaces()).toEqual([]);
+    expect(sovereignStands()).toBe(false);
+    expect(v.composed).toEqual([]);                                           // nothing composed on a face the operator never named
+  });
+
+  test("RED: `--all --face N` refuses by name where no face N stands", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, FIXTURE_PASSPHRASE]);
+    const r = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true, face: 7 });
+    expect(r).toMatchObject({ op: "unlock", reading: "face-refused", face: 7, faceReading: "not-standing" });
+    expect(r).not.toHaveProperty("wears");
+    expect(mountedFaceOrdinal()).toBeUndefined();
+    expect(v.holder.isUnlocked()).toBe(false);
+  });
+
+  test("RED: over a held key, `--all --face N` with N shut refuses, keeps the face worn, and leaves open only what stood open before", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, "the-second-face-route", FIXTURE_PASSPHRASE]);
+    expect(await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), face: 0 })).toMatchObject({ reading: "opens", held: true });
+    const openBefore = [...v.holder.unlockedFaces()];
+    const composedBefore = v.composed.length;
+    const r = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true, face: 1 });
+    expect(r).toMatchObject({ op: "unlock", reading: "face-refused", face: 1, faceReading: "no-slot-opens" });
+    expect(r).not.toHaveProperty("wears");
+    expect(mountedFaceOrdinal()).toBe(0);                                     // the worn face stands worn
+    expect(v.holder.isUnlocked()).toBe(true);                                 // the node key stays held
+    expect(v.holder.unlockedFaces()).toEqual(openBefore);                     // h2 opened under the route, and closed again
+    expect(v.composed.length).toBe(composedBefore);
     expect(sovereignStands()).toBe(true);
   });
 
