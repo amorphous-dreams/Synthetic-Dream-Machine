@@ -257,6 +257,8 @@ export interface OpenedValue {
 /** The writer a manifest names where the signing session made the change itself. */
 const sessionWriter = (signer: RecordSigner): string => `session:${signer.certificate.sessionKey}`;
 const HEX64 = /^[0-9a-f]{64}$/;
+/** The longest peer name a seal takes: `peer:` and this many characters sit within the manifest writer's own bound. */
+export const PEER_WRITER_BOUND = 500;
 const sortedText = (values: readonly string[]): string[] => [...new Set(values)].sort(ascending);
 /** A batch reads whole, or names nothing: every value a change or a checkpoint, its reference hex, its parents addresses. */
 function readDocumentValues(values: unknown): DocumentValue[] | null {
@@ -782,7 +784,7 @@ export class ContentKeyHolder {
       if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
       const values = readDocumentValues(args.values);
       if (values === null) return refuse("values-malformed");
-      if (args.peer !== undefined && !(isWellFormedText(args.peer) && args.peer.length > 0 && args.peer.length <= 500)) return refuse("values-malformed");
+      if (args.peer !== undefined && !(isWellFormedText(args.peer) && args.peer.length > 0 && args.peer.length <= PEER_WRITER_BOUND)) return refuse("values-malformed");
       if (args.signer === null) return refuse("signer-unavailable");
       const signer = args.signer;
       const { store, random } = this.#ports;

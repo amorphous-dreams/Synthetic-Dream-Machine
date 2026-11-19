@@ -60,7 +60,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, catalogRowHalf, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -170,7 +170,7 @@ import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-stor
 import { raiseAnchorFromSlots } from "./lease-observation.js";
 import { readFacePersonaRecords } from "./persona-act-store.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
-import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals } from "./custody-seat.js";
+import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
 import { joinedFaceAuth, unlitServedFaces, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
@@ -1093,10 +1093,6 @@ async function prepareNodeBootOn(
     // THE ISLAND'S DOOR STANDS (`docstore:answering`): the map re-reads and the standing session's waiting saves seal, once.
     onReady: () => rebookWaiting(standingSaveSession(), "the island's door stood"),
   });
-  // THE CUSTODY KEY OPENED: a save the island refused `wrap-failed` while this vessel's key rested unopened (its wrap
-  // rests the face's Archive through custody) waits in memory, and seals again on the open, never on a timer.
-  const stopCustodyOpened = standingCustody()?.onOpened?.(() => rebookWaiting(standingSaveSession(), "the custody key opened")) ?? null;
-  stood.push({ what: "the custody open watch", down: () => { stopCustodyOpened?.(); } });
   const docStoreDoor: NonNullable<CapabilityRecord["docStore"]> = (port) => docStorePort.attach(port);
   // V2: each island's own store rests no document this rest seals (`islandRestGuard`).
   const restsSealedDoor: NonNullable<CapabilityRecord["restsSealed"]> = (documentId) => sealedRest.restsSealed(documentId);
@@ -1593,6 +1589,12 @@ async function prepareNodeBootOn(
   // and rests as received under that session.
   // P2-4: with no call in flight, a change books a session of the daemon mount that stands seated (open, its signer standing).
   sealedRest.watch(repo, standingSaveSessionFor);
+  // THE CUSTODY KEY OPENED: a save the island refused `wrap-failed` while this vessel's key rested unopened (its wrap
+  // rests the face's Archive through custody) waits in memory, and seals again on the open, never on a timer. The watch
+  // follows the seat (`watchCustodyOpened`): a custody a pūlama dial opened before this composition rebooks once here
+  // (it stands after the rest it rebooks composes and watches its Repo), and a holder a restand seats is heard at its own open.
+  const stopCustodyOpened = watchCustodyOpened(() => rebookWaiting(standingSaveSession(), "the custody key opened"));
+  stood.push({ what: "the custody open watch", down: () => { stopCustodyOpened(); } });
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
@@ -2953,8 +2955,19 @@ async function prepareNodeBootOn(
       let face: DocHandle<LarDoc>;
       try { face = await openFaceCatalog(repo, faceCatalogExpected, secret); } finally { secret.fill(0); }
       view.bindFace(face);
-      const moved = liftFaceCatalogRows(view.floorHandle, face);
+      // THE FLOOR LETS GO ONLY OF WHAT RESTS SEALED: the face's change flushes through the sealed rest first, and a seal
+      // that waits in memory (refused, unbooked) leaves the floor's rows standing for the next lift.
+      const faceId = face.documentId;
+      const restsSealed = async (): Promise<boolean> => {
+        await repo.flush([faceId]);
+        await sealedRest.store.flush();
+        return sealedRest.store.waiting(faceId) === 0;
+      };
+      const moved = await liftFaceCatalogRows(view.floorHandle, face, { restsSealed });
       if (moved.length) console.log(`[catalog] ${moved.length} face row(s) left the floor for the face's own catalog`);
+      else if (Object.keys(view.floorHandle.doc()?.tiddlers ?? {}).some((title) => catalogRowHalf(title, ownEntry(view.floorHandle.doc()?.tiddlers, title) as never) === "face")) {
+        console.log("[catalog] the face's own catalog holds its rows in memory until its seal rests; the floor keeps them for the next lift");
+      }
       const unstand = standLitFaceCatalog(assembly.catalogHandle.url, face.url);
       stood.push({ what: "the face's catalog", down: () => { unstand(); view.bindFace(null); } });
       console.log(`[catalog] the face's own catalog stands: ${face.url}`);

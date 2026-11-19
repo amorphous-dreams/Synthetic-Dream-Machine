@@ -32,7 +32,8 @@ import {
   catalogRowHalf, faceCatalogDocUrl, openFaceCatalog, FaceCatalogRefusal, FloorWikiRefusal, facelessWikiWaits, makeCatalogView, liftFaceCatalogRows, faceViewBook,
 } from "../src/catalog-view.js";
 import { seatHouseCanon } from "../src/kahu-canon-reach.js";
-import { sealedBagMap } from "../src/sealed-rest.js";
+import { composeSealedRest, sealedBagMap } from "../src/sealed-rest.js";
+import type { Chunk, StorageAdapterInterface, StorageKey } from "@automerge/automerge-repo";
 
 const secretA = new Uint8Array(32).fill(0xa1);
 const secretB = new Uint8Array(32).fill(0xb2);
@@ -118,6 +119,63 @@ describe("the catalog splits by face (U1)", () => {
     liftFaceCatalogRows(floor, face);
     expect(tiddlerText(ownEntry(face.doc()?.tiddlers, priv))).toBe(`automerge:${priv.length}`);
     expect(titlesOf(floor.doc())).not.toContain(priv);
+  });
+
+  test("V4b — a lift whose face catalog seal refuses leaves the floor's rows standing: a stand-down drops the face's held change, and the floor still names every row; CONTROL: a seal that rests lifts them", async () => {
+    const memory = (): StorageAdapterInterface => {
+      const bytes = new Map<string, Uint8Array>();
+      const name = (key: StorageKey): string => key.join("\u0000");
+      const starts = (key: string, prefix: StorageKey): boolean => key.split("\u0000").slice(0, prefix.length).join("\u0000") === name(prefix);
+      return {
+        async load(key) { return bytes.get(name(key)); },
+        async save(key, data) { bytes.set(name(key), Uint8Array.from(data)); },
+        async remove(key) { bytes.delete(name(key)); },
+        async loadRange(prefix): Promise<Chunk[]> { return [...bytes].filter(([k]) => starts(k, prefix)).map(([k, data]) => ({ key: k.split("\u0000"), data })); },
+        async removeRange(prefix) { for (const k of [...bytes.keys()]) if (starts(k, prefix)) bytes.delete(k); },
+      };
+    };
+    const floorRest = memory();
+    const floorRepo = new Repo({ storage: floorRest, network: [] });
+    const floor = floorRepo.create<LarDoc>(emptyLarDoc());
+    const priv = bagUri("diary"), slot = wikiSlotUri("notes", "working");
+    floor.change((doc) => { for (const t of [CATALOG_DOC_URI, priv, slot]) doc.tiddlers[t] = row(t, `automerge:${t.length}`); });
+    await floorRepo.flush();
+    // The face's catalog rests sealed, and its holder refuses every seal (the boot's refused seal).
+    const face = "face-subject";
+    const session = { id: "s-face", subject: face };
+    const faceDocId = faceCatalogDocUrl(secretA).slice("automerge:".length);
+    let faceRepo: Repo | null = null;
+    const rest = composeSealedRest<typeof session>({
+      inner: memory(),
+      bagOf: (documentId) => (documentId === faceDocId ? { bagId: "lar:///ha.ka.ba/bags/catalog/face", face } : null),
+      sessionFace: () => face,
+      door: { seal: async () => ({ refusal: "values-malformed" }) as never, open: async () => ({ refusal: "holder-locked" }) as never },
+      flushRepo: async () => { await faceRepo?.flush(); },
+    });
+    faceRepo = new Repo({ storage: rest.store, network: [] });
+    rest.wrote(faceDocId, session);
+    const faceCatalog = await openFaceCatalog(faceRepo, faceCatalogDocUrl(secretA), secretA);
+    const restsSealed = async (): Promise<boolean> => { await faceRepo!.flush(); await rest.store.flush(); return rest.store.waiting(faceDocId) === 0; };
+    const moved = await liftFaceCatalogRows(floor, faceCatalog, { restsSealed });
+    // The setup took: the face's change waits unsealed in memory, never at rest.
+    await faceRepo.flush();
+    await rest.store.flush();
+    expect(rest.store.waiting(faceDocId)).toBeGreaterThan(0);
+    expect(moved).toEqual([]);
+    // THE STAND-DOWN: the face's held change drops with the process; the floor's rest still names every row.
+    await rest.standDown([]);
+    await faceRepo.shutdown();
+    await floorRepo.flush();
+    await floorRepo.shutdown();
+    const again = new Repo({ storage: floorRest, network: [] });
+    const back = await again.find<LarDoc>(floor.url);
+    expect(titlesOf(back.doc())).toEqual([CATALOG_DOC_URI, priv, slot].sort());
+    // CONTROL: a seal that rests lifts the rows off the floor.
+    const { floor: floor2, faceA } = stand();
+    floor2.change((doc) => { for (const t of [CATALOG_DOC_URI, priv]) doc.tiddlers[t] = row(t, "automerge:x"); });
+    expect(await liftFaceCatalogRows(floor2, await faceA, { restsSealed: async () => true })).toEqual([priv]);
+    expect(titlesOf(floor2.doc())).toEqual([CATALOG_DOC_URI]);
+    await again.shutdown();
   });
 
   test("CONTROL — no face lit: the view reads and writes the floor as it always did", async () => {
