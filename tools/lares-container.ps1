@@ -546,8 +546,8 @@ switch ($verb) {
       }
       'keep-seat' {
         # The keep seat on a pūlama house: the pūlama proves the steward's route on this terminal and answers the wrapped seat
-        # plus the local signing seed on one stdout line; the shim writes { ...seat, signer } as config/keep-seat.json (owner
-        # read-write, temp file then move). The signer never reaches the screen or a log.
+        # plus the local signing seed on one stdout line; the shim writes that line verbatim as config/keep-seat.json (owner
+        # read-write, temp file then move), since the house CLI reads it whole. The signer never reaches the screen or a log.
         $reseat = ($rest.Count -ge 2 -and $rest[1] -eq '--reseat')
         if ($rest.Count -gt 2 -or ($rest.Count -eq 2 -and -not $reseat)) { Die 'pulama keep-seat takes only --reseat' }
         if (-not $script:Tty) { Die 'pulama keep-seat reads its route on a terminal; run it on one (nothing seated)' }
@@ -563,9 +563,7 @@ switch ($verb) {
         $answer = $line | ConvertFrom-Json
         if ($answer.reading -eq 'refused') { Die "the pūlama seated nothing: $($answer.code) ($($answer.message))" }
         if ($answer.reading -ne 'seated' -or -not $answer.seat -or -not ($answer.signer -is [string]) -or -not ($answer.seat.publicKey -is [string])) { Die "the pūlama's seat line read malformed; nothing written" }
-        $file = $answer.seat | Select-Object *
-        $file | Add-Member -NotePropertyName signer -NotePropertyValue $answer.signer -Force
-        $json = $file | ConvertTo-Json -Depth 32 -Compress
+        $json = $line
         New-Item -ItemType Directory -Force -Path (Join-Path $House 'config') | Out-Null
         $tmp = "$seatFile.$PID.tmp"
         [System.IO.File]::WriteAllText($tmp, $json + "`n")

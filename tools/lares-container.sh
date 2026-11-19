@@ -603,9 +603,9 @@ case "$verb" in
         compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" unadmit "$2" ;;
       keep-seat)
         # THE KEEP SEAT ON A PŪLAMA HOUSE: the pūlama proves the steward's route on this terminal and answers the WRAPPED
-        # seat plus the local signing seed on one stdout line; the shim writes `{ ...seat, signer }` as config/keep-seat.json
-        # (0600, temp file then rename). The pūlama gains no config mount. The signer is secret: it never reaches the
-        # screen, a log or argv, and rides only stdin into the merge and the file.
+        # seat plus the local signing seed on one stdout line; the shim writes that line VERBATIM as config/keep-seat.json
+        # (0600, temp file then rename), since the house CLI reads it whole. The pūlama gains no config mount. The signer is
+        # secret: it never reaches the screen, a log or argv, only the file.
         reseat=""; [ "${2:-}" = --reseat ] && reseat=yes
         [ "$#" -le 2 ] || die "pulama keep-seat takes only --reseat"
         [ -n "$HAVE_TTY" ] || die "pulama keep-seat reads its route on a terminal; run it on one (nothing seated)"
@@ -619,8 +619,8 @@ case "$verb" in
           *'"reading":"refused"'*) die "the pūlama seated nothing: $(printf '%s' "$line" | sed -e 's/.*"code":"\([^"]*\)".*"message":"\([^"]*\)".*/\1 (\2)/')" ;;
           *) die "the pūlama answered no seat; nothing written" ;;
         esac
-        # shellcheck disable=SC2016
-        file=$(printf '%s' "$line" | compose --profile pulama exec -T pulama node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>{const a=JSON.parse(s);if(a.reading!=="seated"||!a.seat||typeof a.signer!=="string"||typeof a.seat.publicKey!=="string")process.exit(3);process.stdout.write(JSON.stringify({...a.seat,signer:a.signer})+"\n")})') || die "the pūlama's seat line read malformed; nothing written"
+        case "$line" in *'"signer":"'*'"seat":{'*|*'"seat":{'*'"signer":"'*) ;; *) die "the pūlama's seat line read malformed; nothing written" ;; esac
+        file=$line
         mkdir -p -- "$HOUSE/config" || die "cannot make $HOUSE/config; nothing written"
         tmp="$seat_file.$$.tmp"
         ( umask 077; printf '%s\n' "$file" > "$tmp" ) && chmod 600 "$tmp" && mv -f -- "$tmp" "$seat_file" || { rm -f -- "$tmp"; die "the seat could not be written to $seat_file"; }
