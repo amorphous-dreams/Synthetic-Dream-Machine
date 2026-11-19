@@ -1,0 +1,673 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/test-architecture`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+description = "The test-architecture total-refactor plan (2026-11-19): the operator's ask, the five decisions Lares-Alpha landed on the operator's word, and both Fable research handbacks whole: Estate-Seer's measured map and Design-Seer's design. A design first, so a cut never trades coverage for wall-clock time."
+title       = "lar:///ha.ka.ba/lararium/docs/test-architecture"
+type        = "text/memetic-wikitext+tiddlywiki"
+```
+
+<<~ ahu slot=`#/entry`>>
+
+! The test architecture, planned before it moves
+
+The operator (2026-11-19, verbatim): "Send 2 Fable scout for the test-architecture total-refactor planning … That's crud we need to clean up, but we need a design plan first so we don't sacrifice coverage for less-test-wall-clock-time." Earlier the same night: "Too much wall time burnt on testing.... ugh. Anything we can do to move this along and let CI handle testing?" (now lane law: spirits run their red/green tests and the tests beside touched files; CI's full run carries the verdict).
+
+Both handbacks rest below whole. Neither seer could read `lar:///ha.ka.ba/kahua/memory/research/test-estate-astra` (the house stood at its floor that night), so reconciling against it opens every test lane.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decisions`>>
+
+!! The five decisions (landed by Lares-Alpha on the operator's word: "Talk through the questions and land decisions yourselves"; each open to overturn)
+
+# ''Affected-test selection on the lane doorstep'': yes, as an addition, never a replacement; develop and the merge queue keep running everything, and the nightly selection audit compares selected against full.
+# ''The scrypt cost'': custody-law tests keep the real cost (never cut); every other fixture loads keys derived once per run and cached as test fixtures; no test knob in product code, no new environment variable.
+# ''Mutation from advisory to gate'': by evidence, not a date: a package's mutation floor gates once it reads the same score across three consecutive nightly runs; until then it reports in the lane receipt; from then, every cut passes kill-set containment.
+# ''The nightly budget'': at most twice one full develop run; incremental mutation over packages changed since the last nightly, a full re-run only when a floor moves or a package's tests change shape; a nightly past budget names what it skipped.
+# ''The pilot'': the mutation pilot on `lares-cli` (lowest tooling risk; it answers whether Stryker carries this repo's TypeScript and vitest, `tools/law-mutants.mjs` the fallback), while node's run-wide kept houses (the largest sink) start beside it, proven by unchanged test and assertion counts and the law mutants still killed.
+
+Found the same night and cured at once: 81 of develop's last 100 CI runs died cancelled because the called `e2e-shards.yml` cancelled on every push (PR #328).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/measure`>>
+
+!! Estate-Seer's measured map (Fable, read-only, 2026-11-19)
+
+````text
+# Test estate, measured (2026-11-19)
+
+Estate-Seer: Lares (Tasked Spirit). Read-only survey of `origin/develop` at `452cb7acb`. No suite ran; every
+duration below comes off GitHub's own records or off the vitest JSON reports CI uploads.
+
+## Sources and limits
+
+| Source | What it gave |
+|---|---|
+| `git ls-files` at `452cb7acb` | file counts by package and kind |
+| CI run `44497221032` (sha `a4dd6787`, all four test cells and all e2e shards green) | job and step seconds; artifacts `test-cell-*` and `e2e-shard-*` (vitest JSON, per-file and per-test durations); the `Witness cell rest` job log |
+| CI runs `44508850912`, `44493309321` | job-seconds spread across three full runs |
+| Held-out run `44508850648` | 24 held-out cells' seconds |
+| `gh run list --branch develop --limit 100` (CI and Held-out) | conclusions and wall over a 15 h span, 2026-11-18T20:35Z to 2026-11-19T11:33Z |
+| regex scans over tracked `*.test.ts` | setup-pattern, sleep, clock, port and timeout site counts |
+
+Limits a reader should hold:
+
+- **Prior research unread.** `lares meme get lar:///ha.ka.ba/kahua/memory/research/test-estate-astra` answered
+  `control-home-unavailable: vessel-locked`; no copy stands on disk. The #/subsumption list never entered this survey, so
+  the redundancy clusters below rest on names, titles and timings alone.
+- **One run feeds the per-file numbers.** Per-file seconds come from run `44497221032` on idle 4-vCPU hosted runners.
+  The desk (10 cores, load 6 to 25 tonight) runs slower by an unmeasured factor.
+- **Vitest JSON hides hook time.** A file's reported span covers its test bodies; `beforeAll` stands and module import
+  fall outside it. Where shard wall exceeds summed test seconds, the gap reads as hook and stand cost (inferred).
+- **Pattern scans count regex sites**, never executed code paths. They undercount helpers that wrap a founding under
+  another name.
+- Redundancy clusters name candidates by shape. No cluster here stands verified as safely removable.
+
+## Headline numbers
+
+| Measure | Value |
+|---|---|
+| Tracked test-like files | 2,507 (2,219 `.test.ts`, 111 `.test.mjs`, 118 `.py`, 57 witness `.sh`) |
+| Vitest unit results in one CI run | 2,241 file-runs, 18,775 tests, 8,279 test-seconds |
+| Tests under 50 ms | 14,288 of 18,775 (76%) |
+| Tests over 5 s | 344 (1.8%) |
+| Files under 1 s | 1,700 files hold 169 s (2.0% of test-seconds) |
+| Files at 15 s or more | 140 files hold 6,044 s (73%) |
+| Top 10 / 50 / 100 / 200 files | 24.4% / 48.8% / 64.7% / 81.5% of unit test-seconds |
+| E2E (two sets) | 58 files, 283 tests, 2,998 test-seconds; `tests` set shard wall 5,512 s |
+| Tool self-tests (`node --test tools/*.test.mjs`) | 105 files, 1,329 tests, 606 s wall, 1,608 test-seconds |
+| Shell witness fleet (`witness-all --except-apart`) | 50 witnesses, 486 s |
+| One full CI run | 14 jobs, 12,307 to 13,549 job-seconds (3.4 to 3.8 runner-hours), 34 to 48 min wall |
+| Last 100 develop CI runs | 81 cancelled, 12 failure, 5 success, 2 in flight |
+| Coverage tooling | none configured (no c8, istanbul, stryker, or vitest `coverage` block) |
+
+## The map: files by package and kind
+
+| Location | `.test.ts` | Other | CI tests | CI test-seconds | s/test | Test LOC | Source `.ts` files |
+|---|---|---|---|---|---|---|---|
+| `packages/lararium-node/tests` (unit) | 618 | | 3,915 | 3,813 | 0.97 | 93,665 | 300 |
+| `packages/lararium-node/tests/e2e` | 11 | | 41 | 571 | 13.9 | 2,176 | |
+| `packages/lararium-mesh/tests` | 597 | | 5,604 | 276 | 0.05 | 86,277 | 437 |
+| `packages/lararium-tw5/tests` (+ `offerings`) | 405 | | 3,488 | 399 | 0.11 | 55,929 | 199 |
+| `packages/lares-cli/tests` (18 `*.law.test.ts` inside) | 226 | 2 snapshots | 2,525 | 678 | 0.27 | 32,528 | 176 |
+| `packages/lararium-web/tests` (browser projects) | 53 | | 1,099 results | 760 | | 8,571 | 54 |
+| `packages/lararium-web/tests/e2e` | 13 | | 28 | 1,479 | 52.8 | 2,747 | |
+| `packages/lararium-browser/tests` | 109 | | 600 | 801 | 1.34 | 14,110 | 75 |
+| `packages/lararium-keyhive/tests` | 110 | | 617 | 64 | 0.10 | 13,070 | 50 |
+| `packages/lararium-memetic-frame/tests` | 9 | | 740 | under 1 | | 1,103 | |
+| `packages/lararium-mempalace/tests` | 13 | | 80 | 2 | | 1,108 | |
+| `packages/lararium-sensorium` | 3 | 114 `.py` (1,036 `def test_`) | 21 | 4 | | 397 | |
+| `packages/tree-sitter-memetic-wikitext` | | 4 `.test.mjs`, 4 `.py` | | | | | |
+| `tests/e2e` (harness, staged vessels) | 47 | | 242 | 2,428 | 10.0 | 10,081 | |
+| `tests/harness` | 5 | | 58 | 1 | | | |
+| `tools/` | | 105 `.test.mjs`, 57 witness `.sh` (74 `.sh` in all) | 1,329 | 1,608 | 1.21 | | |
+
+Web runs each non-e2e file under three engines (46 files x 3) and each `vessel-host-*` file under two (7 x 2), so its
+53 files yield 163 file-runs.
+
+Package share of the 8,279 unit test-seconds: node 46%, web 27%, browser 9.7%, cli 8.2%, tw5 4.8%, mesh 3.3%,
+keyhive 0.8%. Mesh and tw5 together hold 48% of the tests and 8% of the seconds.
+
+## The CI shard map
+
+`ci.yml` (706 lines) fans into the tables in `tools/ci-cells.mjs` and `tools/e2e-shards.mjs`.
+
+| Job | Carries | Seconds across three runs |
+|---|---|---|
+| Scope | canon-only read | 5 to 9 |
+| Quick gates | floor crossing (429 s) and hosted `contract-witness` (363 s) | 793 to 1,061 |
+| Test cell `node-a` | half of node unit, dealt by weight | 684 to 816 |
+| Test cell `node-b` | other half, plus all 77 `heavy` files (serial project) | 664 to 857 |
+| Test cell `web-tw5` | web (1,571 s wall) and tw5 (249 s wall) | 1,522 to 2,040 |
+| Test cell `cli-mesh` | cli 324, browser 345, mesh 162, keyhive 45, harness, frame, mempalace, sensorium, TiddlyWiki5 | 997 to 1,556 |
+| Witness cell `rest` | witness fleet (486 s) then tool self-tests (606 s) | 1,204 to 1,310 |
+| E2E shard tests 1/4 | 11 files | 1,223 to 1,424 |
+| E2E shard tests 2/4 | 12 files, holds `vessel-reboot` | 1,448 to 2,136 |
+| E2E shard tests 3/4 | 12 files, plus the node e2e companion set (245 s) | 1,171 to 1,594 |
+| E2E shard tests 4/4 | 12 files, plus dogfood surface controls (308 s) | 1,323 to 1,723 |
+| Test, Witnesses, Merge shard reports | gates over artifacts | 10 to 49 each |
+
+Critical path: E2E shard 2/4 or `web-tw5`, whichever runs longer that day (both reach 34 to 36 min).
+
+Step-level read of run `44497221032`: checkout, install and build take about 25 s each per job; the suite step holds
+the rest (node-a 607 of 685 s, web-tw5 1,826 of 1,913 s). Per-job setup overhead stays small beside suite time.
+
+Held-out workflow (`held-out.yml`, every code push to develop and main): 24 cells, 5,640 job-seconds, about 19 to 20 min
+wall; 15 `mesh-scenarios-*` cells run 119 to 428 s each.
+
+### Run outcomes on develop
+
+Over the last 100 CI runs (15 hours):
+
+| Conclusion | Runs | Summed run wall | Median |
+|---|---|---|---|
+| cancelled | 81 | 522 min | 212 s |
+| failure | 12 | 502 min | 2,255 s |
+| success | 5 | 212 min | 2,261 s |
+
+- Nine cancelled runs died after 10 minutes or more, two after 25 or more. Run `44499398019` stopped at 10:17:22Z after
+  1,889 s, one second after the next push raised run `44504255940` at 10:17:21Z.
+- `ci.yml` sets `cancel-in-progress` false for develop and says the run in flight must finish. The called
+  `e2e-shards.yml` carries its own group `e2e-shards-${{ github.ref }}` with `cancel-in-progress: true`, keyed on the
+  caller's ref. That group stands as the only cancel rule matching develop, so it reads as the probable cause
+  (inferred from the two files and the timestamps; I never read a cancellation event's own attribution).
+- Held-out over the same span: 84 cancelled, 14 success, 1 failure.
+- `Witness cell rest` failed in all three completed full runs sampled. In run `44497221032` the log shows
+  `evergreen-boundary-witness RED exit 1` (narration 1 over ceiling 0, version 1 over 0) and the self-tests at
+  `pass 1327, fail 1`. A standing red in the witness gate caps the success count regardless of test wall time.
+
+## Bottleneck shape: setup cost against assertion count
+
+- **Cheap majority, costly tail.** 76% of tests finish under 50 ms. The 20 files at 60 s or more hold 2,682 s; the
+  1,700 files under 1 s hold 169 s. Deleting or merging fast tests buys almost nothing in wall time.
+- **Node pays per test, inside the test body.** Node averages 0.97 s per test against mesh at 0.05 s. 203 node tests
+  exceed 5 s and 36 exceed 10 s. Files with `beforeEach` hold 1,454 of node's 3,813 s; files with `beforeAll` hold 249 s.
+  Setup repeats per test far more often than it stands once per file.
+- **Founding and stand helpers concentrate the cost.** 62 node files call a founding rite (`foundVessel`, `foundFace`,
+  `foundCustody`, `foundDirect`; 253 sites) and hold 1,317 s. `withLarRoot` appears at 296 sites in 52 files.
+  `keepHouse` reaches 18 node files (37 sites, 424 s), so the pattern that cut one suite 965 s to 531 s still has most
+  founding files ahead of it.
+- **E2E pays in hooks.** The `tests` set's four shards span 5,512 s of wall while their test bodies sum to 2,427 s.
+  About 3,085 s (56%) falls outside test bodies, which matches 46 of 47 files carrying a `beforeAll` (the staged-vessel stand)
+  with `fileParallelism: false`.
+- **Web multiplies by engine.** 760 s of non-e2e web time comes from running the same files under two or three engines.
+- **Mesh and tw5 stay cheap.** 1,002 files and 9,092 tests cost 675 s. `bootTestWiki` appears in 91 tw5 files (224
+  sites) that together hold 103 s, so a TW5 boot per file costs little.
+
+Projection, not measurement: summing CI's per-package walls gives about 68 min for a serial `pnpm test`, about 92 min
+for the `tests` e2e set, and about 18 min for witnesses and self-tests on an idle 4-vCPU box.
+
+## Top 10 wall-time sinks
+
+| # | Sink | Measured | Shape |
+|---|---|---|---|
+| 1 | `tests/e2e` staged-vessel set | 5,512 s shard wall; 2,427 test-s over 47 files; `vessel-reboot` 541 s in one test, `promote-probe` 307 s, `nexus-two-root` 242 s | one real daemon per file, serial, hooks hold 56% |
+| 2 | Node founding families | `face-*` 578 s (35 files), `nexus-*` 522 s (20), `edge-*` 237 s (7), `pulama-*` 186 s (16), `custody-*` 148 s (15); `face-bundle-restore` 253 s, `nexus-contract` 244 s | a founding per test; 77 files forced serial |
+| 3 | Web e2e browser walks | 1,479 s over 13 files and 28 tests; `ceremony.e2e` 576 s for 7 tests, `rest-before-reload` 220 s, `shore-writes` 202 s, `second-boot` 139 s | Chromium launch and a founding per test, 52.8 s per test |
+| 4 | Web engine multiplication | 760 s; `vessel-host-*` 424 s for 49 tests | same files under 2 to 3 engines |
+| 5 | Browser package | 801 s; `browser-*` 512 s over 51 files; 46 tests over 5 s | `openBrowserVessel` 29 sites, `openVesselIdb` 34 |
+| 6 | Tool self-tests | 606 s wall; five tests hold 882 of 1,608 test-s (271, 206, 147, 130, 126 s) | 17 tool test files stand real vessels; `ci-cells.mjs` still records 258 s |
+| 7 | Quick gates | 793 to 1,061 s: floor crossing 429 s, `contract-witness` 363 s | two long walks on the gate every push waits on |
+| 8 | CLI keep, vault and founding | 678 s; `keep-*` 131 s (11 files), `founding-three-personas` 65 s, `vault-door` 50 s; `beforeEach` files hold 580 s | real KDF and vessel stands per test |
+| 9 | Shell witness fleet | 486 s; `household-https` 146 s, `custody-census` 67 s, `law-mutants` 60 s | 47 of 50 witnesses finish under 25 s |
+| 10 | Cancelled and held-out runs | 522 run-wall-min cancelled in 15 h; held-out 5,640 job-s per code push | runner time spent without a verdict |
+
+## Top 10 coverage-redundancy clusters (candidates)
+
+| # | Cluster | Evidence | Cost |
+|---|---|---|---|
+| 1 | `ward-cosign-gate` in three files (mesh, node, browser) | about 12 identical test titles in each of the three | browser copy alone 83 s |
+| 2 | Web files under three engines | 46 files x 3, 7 files x 2 | 760 s, about two thirds of it repeat runs |
+| 3 | Founding walked at six tiers | `founding-witness.sh` 23 s, cli `founding-three-personas` 65 s, node `found-*` 90 s, `tests/e2e` smoke and `kahua-founding-stage`, web `ceremony.e2e`, held-out `civic` 169 s | each tier pays a full founding |
+| 4 | Bundle and restore | node `face-bundle-restore` 253 s, `face-card-restore` 69 s, `found-hearth-restore` 60 s, `carry-bundle-carries-peers` 44 s; cli `house-bundle-verbs` 48 s; tool self-tests 271 + 206 + 147 s | about 1,100 s across three runners |
+| 5 | Nexus at four tiers | node `nexus-*` 20 files 522 s; cli `nexus-*` 15 files 85 s; `tests/e2e` `nexus-*` 264 s; held-out `mesh-scenarios-nexus` 284 s | about 1,150 s |
+| 6 | Reboot and reopen across web e2e and `tests/e2e` | `daemon-island-reopen` exists in both (82 s and 38 s); `second-boot.e2e` 139 s beside `vessel-reboot` 541 s and `sealed-wiki-restart` 33 s | about 830 s |
+| 7 | Node `face-*` instance files | 35 files, 201 tests, 2.87 s per test; keyhive holds 20 `face-*` files and mesh 18 at 0.1 s per test | 578 s in node |
+| 8 | Browser `browser-*` instance files | 51 files, 248 tests, 2.06 s per test | 512 s |
+| 9 | Keep-seat | cli `keep-*` 11 files 131 s; mesh `keep-seat-kdf` runs the real KDF at 4.5 to 7.2 s per test | about 150 s |
+| 10 | tw5 `wiki-*` and `meme-*` | 58 files, 541 tests | 76 s, so pruning here returns little |
+
+Only 52 test titles repeat across files (138 file-title pairs of 19,058), so literal duplication stays rare. The
+redundancy that costs wall time sits in the same behavior re-proved at a costlier tier, never in copied tests.
+
+## Flake classes
+
+| Class | Measured | Named instances |
+|---|---|---|
+| A. 5 s default timeout under load | mesh, tw5, cli, memetic-frame, mempalace and sensorium configs set no `testTimeout`. On an idle runner, tests at 2.5 s or more: cli 100, tw5 20, mesh 12 | `filter-cts` 3.7 s (74% of budget idle), `surface-host` 2.8 s; neither file carries an explicit timeout |
+| B. Statistical and cost assertions | `toBeLessThan` over seeded statistics and cost flatness | `coupling-nulls` (6 tests), `seal-cost-flat` (2 tests) |
+| C. Fixed sleeps | 427 sites in 220 files; files holding them carry 4,326 test-s | `tests/e2e` 80 sites, node 107, tw5 55; `tools/*.sh` 28 `sleep N` |
+| D. Wall clocks | 332 sites in 120 test files; evergreen witness reads `clock 52/52`, 23 excepted | `tests/e2e` 95 sites in 26 files |
+| E. Ports and child processes | 173 listener sites in 69 files; 143 spawn sites in 76 files | node 121 listener sites; "already in use" named in `TEST-ARCHITECTURE.md` |
+| F. Contention between suites | node `heavy` roster of 77 serial files; `pnpm test` runs `--workspace-concurrency=1` because packages share python holders | several spirits on one desk break the single-owner assumption the serialization encodes |
+| G. Silent skip on stale dist | 303 skip-family sites in 219 files; 53 tests pending in the sampled run | `vitest-dist-guard` global setup; tw5 holds 181 of the sites |
+| H. Hand-tuned timeouts | 1,528 explicit timeout sites in 513 files | node 489, tw5 422, `tests/e2e` 178 |
+| I. CI plumbing | 81 of 100 runs cancelled; witness gate red in 3 of 3 sampled runs | `e2e-shards.yml` concurrency group; `evergreen-boundary-witness` |
+
+Fake timers appear at 41 sites in 26 files, against 427 sleep sites.
+
+## What coverage exists
+
+- **No line, branch or mutation-score tooling.** No vitest `coverage` block, c8, istanbul, nyc or stryker anywhere in
+  the workspace configs or workflows.
+- **Law tests.** `packages/lares-cli/tests/laws/` holds 18 `*.law.test.ts` files with a fixed seed. 39 files across the
+  estate carry "law" in their name (cli 19, mesh 7, tw5 7, keyhive 1, tools 5).
+- **Hand-written mutants.** `tests/laws/mutants.json` names 14 mutants; `law-mutants-witness.sh` runs each against the
+  laws that guard it (60 s in CI) through `vitest.law-mutants.config.ts`.
+- **Partition laws on the runner itself.** The Test and E2E gates fail closed when a tracked file ran in no cell, ran
+  twice, reported empty, or reported unparseable. This proves every file ran, never what the files cover.
+- **Property tests.** `fast-check` appears in 7 files (12 sites). Snapshots appear at 5 sites.
+- **Type coverage of tests.** `typecheck-tests-witness` (15 s) compiles every package's tests.
+- **Ratio of tests to source.** 2,142 test files stand over 1,291 source `.ts` files in the seven main packages; mesh
+  runs 597 test files over 437 sources, node 629 over 300.
+
+A design that trades tests for wall time has no instrument today that reports what a removed test covered. The 14
+mutants cover the CLI law tables alone.
+
+````
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/design`>>
+
+!! Design-Seer's design (Fable, read-only, 2026-11-19)
+
+````text
+# Test architecture: the target design
+
+Design-Seer: Lares (Tasked Spirit) · 2026-11-19 · read-only research, no suite ran, no repo file changed.
+
+The operator's constraint, verbatim: "we need a design plan first so we don't sacrifice coverage for less-test-wall-clock-time."
+
+**The design in five lines**
+
+1. Three tiers by who waits: a spirit's loop under 2 minutes, the lane doorstep, the merge-queue battery; a nightly tier carries what proves the other three honest.
+2. Wall time falls through four mechanisms, in order of yield: stand a house once and copy it; run port contracts against a fake and the real engine; fold instance clusters into laws; end waits on events.
+3. Coverage holds by proof: a per-package mutation ratchet (`tools/mutation-baseline.json`, the same shape as `tools/typecheck-tests-baseline.json`) plus a per-cut rule, *kill-set containment*: every mutant the old suites killed, the new suites kill.
+4. Selection (which tests run for a change) carries its own audit: nightly, every red of the full run gets checked against what the selector would have picked.
+5. The security/custody laws, the corpus round-trips and the canon witnesses stay on real engines at real cost, named in a do-not-cut register.
+
+Evidence grades used below: **[measured]** read off a repo file in this session · **[fetched]** a source page opened and read in this session · **[recalled]** cited from prior knowledge, not re-opened · **[estimate]** my arithmetic over measured numbers.
+
+---
+
+## 1. What stands today
+
+The sibling seer measures the estate in full; these numbers only ground the design.
+
+| Fact | Value | Source |
+|---|---|---|
+| vitest suites, tracked | 2,221 files, ~322k test lines against ~273k source lines | [measured] `git ls-files`, `*.test.ts` |
+| Largest suites | node 629 files / 96k lines · mesh 597 / 86k · tw5 405 / 56k · cli 228 / 33k | [measured] |
+| Instrument self-tests, witnesses | 105 `tools/*.test.mjs`, 56 `tools/*witness*.sh` | [measured] |
+| Node unit cell | 484 weighed files, 3,913 file-seconds; the top 20% of files hold 84%; the top 10 hold 28% | [measured] `tools/e2e-shard-weights.json#node-unit` |
+| e2e set | 35 weighed files, 3,070 seconds; the top 10 hold 52% | [measured] same file, `tests` |
+| Witness cells | contract 373 s · the rest ~460 s · self-tests 258 s | [measured] comment in `tools/ci-cells.mjs` |
+| Passphrase derivation | scrypt N=2^17, r=8: ~0.3 s native, 128 MiB working set, per derivation | [measured] `packages/lararium-mesh/src/keyslot.ts:53-55` |
+| Scratch directories | 1,101 `mkdtempSync` sites in package tests | [measured] grep |
+| Clock sites | 901 `TEST-WAIT REVIEW`, 1,188 `HARNESS REVIEW`, 73 `LIVENESS`, 28 `PACING` | [measured] `node tools/clock-census.mjs` |
+| Property tests | fast-check in `lares-cli` (6 files) and `tw5` (1 file); none in node, mesh, keyhive, browser, web | [measured] grep |
+| Mutation | 14 named mutants over `lares-cli` laws only | [measured] `packages/lares-cli/tests/laws/mutants.json`, `tools/law-mutants.mjs` |
+| Isolation | every config states `isolate: true`; the root runs `pnpm -r --workspace-concurrency=1 test` | [measured] vitest configs, root `package.json` |
+| Timeouts | node holds 30 s per test; mesh, tw5, cli run vitest's 5 s default | [measured] configs |
+
+**Instruments the design reuses rather than replaces** [measured]:
+
+- `tools/ci-cells.mjs`: test cells dealt by measured file weight; the `Test` gate fails closed on a missing cell.
+- `ci.yml`: "DOORSTEP QUICK, FORD FULL": lane pushes run Quick gates alone; `merge_group`, `develop` and `main` run the battery; a canon-only push runs the doorstep.
+- `packages/lararium-node/vitest.config.ts`: the `heavy` (serial) and `main` (4 workers) projects, with `THRASHERS` naming the three heavy classes and `heavy-roster-is-complete.test.ts` holding the roster.
+- `packages/lararium-node/tests/support/kept-house.ts`: stands a house once per file and copies it per case.
+- `tools/law-mutants.mjs`: applies each named mutant, runs the naming law files, restores the source, reads `SURVIVED` or `STALE` as red.
+- `tools/clock-census.mjs` with `tools/evergreen-boundary.mjs`: the clockless inventory.
+- `tools/vitest-scratch-house.mjs`, `tools/vitest-dist-guard.mjs`, `tools/tree-clean-witness.sh`.
+
+**Where the wall time goes, by mechanism** (the first two rows rest on measurement; the rest need the sibling's numbers before any lane sizes against them):
+
+1. *Founding per case.* A founding runs several scrypt derivations; `kept-house.ts` exists because per-case founding ran past a 10 s hook under load. The node top-10 list reads as custody, bundle, contract and cosign suites [measured].
+2. *A daemon boot per e2e file.* `tests/TEST-ARCHITECTURE.md` gives ~20 s per staged boot, the e2e config ~30 s with genesis; 48 e2e files each start from genesis [measured for the figures, estimate for the product: 16-24 minutes of the 51 summed].
+3. *Module registry per file.* `isolate: true` re-imports the mesh/tw5 graph for each of ~2,200 files. Hypothesis, unmeasured.
+4. *Live resources per file.* Listeners, nested `worker_threads` TW5 islands, python holders: 60-odd node suites in the serial project [measured roster].
+5. *Sleeps and polls.* 901 test-wait sites; each burns its interval and turns load into a red.
+6. *Serial workspace.* One package at a time locally, because packages contend for one python holder.
+
+---
+
+## 2. The shape: seams carry the weight
+
+Neither the pyramid nor the trophy fits whole.
+
+- The pyramid's two rules hold here: "If a higher-level test spots an error and there's no lower-level test failing, you need to write a lower-level test" and "Push your tests as far down the test pyramid as you can"; Fowler also writes "I delete high-level tests that are already covered on a lower level (given they don't provide extra value)" ([Fowler, *The Practical Test Pyramid*](https://martinfowler.com/articles/practical-test-pyramid.html)) [fetched].
+- The trophy argues that integration tests buy the most confidence per cost ([Dodds, *The Testing Trophy and Testing Classifications*](https://kentcdodds.com/blog/the-testing-trophy-and-testing-classifications)) [recalled]. This house already leans that way: the harness doc says "Exercise the live model, not fixtures."
+- The trap sits between them: a unit test against a hand-written fake proves the fake. The house has paid for that lesson in its instrument laws.
+
+The target shape keeps real engines at the seams and makes every fake earn its trust:
+
+| Layer | Holds | Engine | Share of files (target) |
+|---|---|---|---|
+| **Law** | properties over pure cores: folds, parsers, canonical bytes, refusal tables, verb dispatch | none; in-process, no I/O | most |
+| **Contract** | one suite per port, run twice: against the fake and against the real engine | fake in the loop, real in the battery | one per port |
+| **Composition** | a real vessel, island, Repo or holder, stood once per worker and copied or forked per case | real | tens per package |
+| **Journey** | the CLI against a staged daemon; multi-vessel walks | real, staged | under 50 files |
+| **Witness** | canon, parity, contract and custody witnesses in `tools/` | real | as today |
+
+---
+
+## 3. The techniques, fitted
+
+### 3.1 Contract suites at the house's ports
+
+Fowler's contract-test point, as fetched: running contract tests against the fake and the real server keeps test doubles faithful. One suite, two engines; the fake may stand in the loop only while the same suite stays green against the real one in the battery.
+
+Ports this repo already names or nearly names:
+
+| Port | Real | Fake for the loop | Contract suite proves |
+|---|---|---|---|
+| `KdfPort` (`keyslot.ts`) | scrypt at `SCRYPT` / `REMOTE_SCRYPT` | see 3.2: prefer a kept house over a cheap KDF | same derivation interface, cost handed by the module |
+| Custody I/O (`FsCustodyIo`) | filesystem under a scratch root | in-memory tree | same refusals by name, same atomic-write order |
+| Automerge storage | `NodeFSStorageAdapter` | in-memory adapter | save/load round-trip, chunk listing, removal |
+| Automerge network | `WebSocketServer` + client adapter | in-process paired adapter | peer announce, sync to quiescence, disconnect |
+| Palace holder (python + chroma) | spawned holder over RPC | recorded-answer fake | request/response shapes, refusal codes, deadline behaviour |
+| TW5 engine | nested-island kernel boot off `dist` | one booted engine per worker | parse/render/filter answers for a fixed corpus |
+| Clock | timers, `Date.now` | virtual clock | 3.6 |
+
+Rules:
+
+- A fake lives beside its port under `tests/support/`, never in `src/`.
+- A new witness (`fake-holds-its-contract`) fails when a fake exists with no dual-run contract suite. It follows the pattern of `heavy-roster-is-complete.test.ts`: one list, read by the checker.
+- Consumer-driven direction: the package that *calls* a port writes the expectations; the package that *implements* it runs them ([Fowler](https://martinfowler.com/articles/practical-test-pyramid.html), CDC section) [fetched]. Mesh implements, node and cli consume: node's expectations of mesh ports move into a suite mesh runs.
+
+### 3.2 Fixture economy: stand once, copy per case
+
+The largest measured sink, and the cut needing no product change.
+
+**(a) The kept house goes run-wide.** `keepHouse` stands a house once per file. Promote it to once per run:
+
+- A vitest `globalSetup` stands the named fixture houses (a founded vessel; a vessel with one lit face; a vessel with a charter and members) under a scratch root and hands their paths to workers through `provide`/`inject` ([vitest `globalSetup`](https://vitest.dev/config/globalsetup)) [fetched via search summary].
+- A key names each fixture: the build stamp digest (`tools/stamp-build.mjs`) plus the fixture recipe's own hash. A changed founding path changes the key, so a stale house cannot answer.
+- Each case copies the house into its own scratch root (`cpSync`, as `kept-house.ts` does today, sockets skipped). Cases never share a root, so the scratch-`LAR_ROOT`-per-worker law holds.
+- A fixture house holds fixture keys under the published test route only (`SCRATCH_PASSPHRASE`), under the OS temp directory, as `scratch-custody-setup.ts` already requires.
+
+**(b) A cheap test KDF: hold for an operator ruling.** A `KdfPort` with a tiny cost would remove the derivation cost outright. The source comment on `SCRYPT` begins "A change of cost…", which reads as a law about that constant. The kept house removes most derivations without touching it. Recommendation: do (a), measure what derivation time remains, and bring (b) to the operator only if the remainder still dominates. If ruled in, a witness must prove no product entry point resolves the cheap port.
+
+**(c) Automerge documents as byte fixtures.** `Automerge.save()` yields bytes; `Automerge.load()` and `clone()` give each case its own document without replaying its history [recalled, Automerge API]. A suite that builds a board through twenty acts in `beforeEach` loads twenty acts' worth of bytes instead. The fixture generator runs in `globalSetup` from the same build, so no stale binary gets committed (the house's "goldens are regenerable" principle).
+
+**(d) One TW5 engine per worker.** A suite that needs parser, filter or render answers takes a booted `$tw` from a worker-scoped holder and a fresh `Wiki` store per case. This requires `isolate: false` for that project alone: see 3.7.
+
+**(e) e2e from a founded snapshot.** One genesis per shard, copied per file; each file still boots its own daemon on its own root and port. A named minority keeps true genesis: `smoke`, `vessel-reboot`, `boot-holds-the-store`, the founding walk, the two-root nexus walk.
+
+### 3.3 Laws instead of instance clusters
+
+The house law: "a law test pins a shape across every case." Property-based testing supplies the engine.
+
+- *Plain properties* for pure functions: canonical-bytes round-trips, URI parsing, fold order-independence, refusal totality (every input lands in exactly one named outcome).
+- *Model-based testing* for stateful doors: fast-check drives random command sequences against the system and a simplified model; "The model should not be a carbon copy of the system but a simplified representation of it" ([fast-check, model-based testing](https://fast-check.dev/docs/advanced/model-based-testing/)) [fetched]. Fit: the residency verbs `ADD COPY MOVE CLEAR DROP LOAD` against a `Map` model; admit/revoke against a set model; custody open/lock/seat against a three-state model.
+- *Scheduled runs* for ordering laws: `fc.scheduler` wraps promises and releases them in generated orders, and `scheduledModelRun` does it for command sequences ([fast-check, race conditions](https://fast-check.dev/docs/advanced/race-conditions/)) [fetched]. This replaces sleep-ordered interleaving tests with every interleaving the generator reaches.
+
+Candidate clusters in mesh, by filename prefix [measured]: `face` 21, `persona` 18, `realm` 15, `promote` 15, `vessel` 13, `sealed` 13, `gate` 13, `place` 12, `nexus` 12, `floor` 12 files.
+
+Rules that keep a law from costing coverage:
+
+- A cluster folds into a law only through the cut protocol in section 5.
+- Every instance that once caught a real defect survives as a named example inside the law (fast-check's `examples`), so the regression case still runs first.
+- Seeds: fixed in the loop and the battery (`tests/laws/fixed-seed.ts` already does this for cli); fresh seeds with high run counts nightly, the seed and path printed on a red so the counterexample replays.
+- Generators carry their own test: a law whose generator never reaches the interesting region proves nothing. Each law asserts generator reach with `fc.statistics` or a coverage assertion on the model's states.
+
+### 3.4 Mutation testing as the coverage proof
+
+**Why mutation and not line coverage.** Coverage correlates only weakly with a suite's fault detection once suite size gets controlled for, and the authors advise against coverage as a quality target ([Inozemtseva & Holmes, ICSE 2014](https://www.cs.ubc.ca/~rtholmes/papers/icse_2014_inozemtseva.pdf)) [recalled; confirmed in search summary]. Mutant detection correlates with real-fault detection more strongly than statement coverage does, over 357 real faults ([Just et al., FSE 2014](https://homes.cs.washington.edu/~mernst/pubs/mutation-effectiveness-fse2014.pdf)) [search summary]. A deleted test that executed a line without asserting on it lowers coverage and loses nothing; a deleted test that alone killed a mutant loses a guard and may leave coverage untouched. The operator's fear names the second case.
+
+**The tool.** StrykerJS with the vitest runner. Facts that shape the fit ([Stryker vitest runner](https://stryker-mutator.io/docs/stryker-js/vitest-runner/), [incremental mode](https://stryker-mutator.io/docs/stryker-js/incremental/)) [fetched]:
+
+- The runner always uses per-test coverage analysis and ignores a configured `coverageAnalysis`.
+- It runs vitest single-threaded with `maxWorkers: 1` and bails on first failure; Stryker supplies its own parallel workers.
+- "Currently, Browser Mode is not supported." The page also lists a `vitest.pool` option defaulting to `threads`.
+- `vitest.related` defaults to true: only tests statically related to a mutated file run. The docs advise turning it off when tests do not import the source directly.
+- Incremental mode stores results in `reports/stryker-incremental.json` and reuses a killed result while the killing test stands unchanged. It sees changes in mutated and test files only: a dependency bump, an environment change or a snapshot change passes unnoticed. `--force` reruns the mutants in scope.
+
+**Fit to this repo:**
+
+| Concern | Decision |
+|---|---|
+| Which tests count | Law, contract and composition suites that import source in-process. Journeys and witnesses reach code through `dist`, a spawned CLI or a worker thread; Stryker cannot attribute them. They keep their own proof (section 5.4). |
+| `related` | On, with a per-package list of suites that reach source through a nested worker or `dist`; those run with `related` off or stay outside the mutation run. |
+| Browser and web | Mutation covers their node-environment suites only; browser-mode suites sit outside the score, stated in the baseline. |
+| Timeouts | A mutant that makes a test hang counts as detected in Stryker's score. Record `timeout` apart from `killed` in the baseline; a rising timeout share reads as a clock-bound suite, not as strength. |
+| Scope per run | Nightly: one package per night, sharded, incremental file cached and keyed on lockfile hash plus build stamp (covering the blind spot the docs name). Weekly: `--force` whole. Lane and merge queue: diff-scoped mutants only. |
+| Named mutants | `tools/law-mutants.mjs` stays. A surviving Stryker mutant in custody or security code that deserves a permanent guard gets promoted into the package's `mutants.json` with its `why`. The catalog spreads from cli to node, mesh and keyhive. |
+
+Diff-scoped mutation at review time follows Google's practice: mutants only on changed lines, with uninteresting ("arid") lines skipped, over 70,000 diffs and 1.1 million mutants ([Petrović & Ivanković, ICSE-SEIP 2018](https://research.google/pubs/state-of-mutation-testing-at-google/)) [search summary]. In this house, refusal names and outcome codes do **not** count as arid: they form contract surface. Log text does.
+
+**Unverified, and it gates the plan:** this repo pins `typescript` 7.0.2 and `vitest` 5.0.5. I did not confirm that the current Stryker release supports either. Step 0 of the migration tests that on `lares-cli`. Fallback if it fails: grow `tools/law-mutants.mjs` into a generator over a small operator set (flip a comparison, negate a condition, drop a statement, swap a refusal name) using `acorn`, already a root dev dependency, scoped to the files a cut touches. The cut protocol in section 5 needs only "the same mutants, before and after", not Stryker specifically.
+
+### 3.5 Test selection, with its own audit
+
+Three rings, widest wins when unsure:
+
+1. **Beside the touched file.** Already law for spirits.
+2. **Static import graph.** `vitest related <files>` and `vitest --changed <ref>` run the tests that import a changed file; `related` "works with static imports but not dynamic ones" ([vitest CLI](https://vitest.dev/guide/cli)) [search summary].
+3. **Package graph.** pnpm's own filter selects changed packages and their dependents (`--filter "...[origin/develop]"`) [recalled, pnpm filtering docs]. No nx or turbo needed; the workspace graph already exists.
+
+The import graph misses real edges here. Each gets declared, not guessed, in one table (`tools/test-impact-map.json`, with a self-test, in the style of `tools/ci-ignored-paths.json`):
+
+| Blind edge | Declared as |
+|---|---|
+| a suite reads `dist/` or the built CLI | source package → suite |
+| a nested `worker_threads` island loads the kernel | `lararium-tw5/src/**` → the island suites |
+| canon `.mem` or `.tid` files read at run time | bag path → suites and witnesses |
+| JSON tables (`mutants.json`, weights, inventories) | table → its reader's test |
+| python holder sources | `mempalace/**`, sensorium → holder contract suites |
+| workflow and tool files | `tools/x.mjs` → `tools/x.test.mjs` (by name) |
+
+Rule: a changed path matching no ring and no table row selects its whole package. A changed `vitest.config.ts`, lockfile or `tools/vitest-*.mjs` selects everything.
+
+**The audit.** Selection saves time by betting; the bet gets scored. Nightly, for every red in the full run, the audit computes whether the selector would have picked that test for the change that introduced it, and publishes the miss rate. Meta's predictive selection reported catching over 95% of individual test failures and over 99.9% of faulty changes ([Machalica et al., *Predictive Test Selection*](https://arxiv.org/abs/1810.05286)) [search summary]; this house's rule-based selector should beat that or widen its table. Each miss becomes a new row in the impact map. The merge queue runs everything regardless, so a miss costs a late red, never a landed fault.
+
+### 3.6 Deterministic time: the clockless law reaches the tests
+
+The repo's own instrument law already says it: "A fixed sleep is not a wait." Evidence from outside: async-wait leads the root causes of flaky tests in the classic study, and waiting on the condition fixes most of them ([Luo et al., FSE 2014](https://mir.cs.illinois.edu/marinov/publications/LuoETAL14FlakyTestsAnalysis.pdf)) [search summary: 54% of async-wait fixes use a `waitFor`].
+
+- **Law and contract layers take a virtual clock.** `vi.useFakeTimers` with explicit advances; `vi.waitFor` and `expect.poll` advance fake time themselves ([vitest timers](https://vitest.dev/guide/mocking/timers)) [fetched]. Where the product takes a clock port, the suite hands it one; no test at these layers reads wall time.
+- **Composition and journey layers end waits on events.** A receipt file, a `phase → live` line, a settle word, a freed port. `tools/wait-receipt.mjs` and `tests/harness/settle-word.ts` already model this.
+- **A timeout bounds liveness; it never decides.** Set mesh, tw5 and cli test timeouts to the 30 s node already holds. A 5 s default measures the box. Since events end the waits, a generous bound costs nothing on green.
+- **The ratchet.** `tools/clock-census.mjs` already classifies each site. Add `tools/clock-census-baseline.json`: per-package ceilings for `TEST-WAIT REVIEW` (901 today) and `HARNESS REVIEW` (1,188). A ceiling only lowers. A new sleep reads red at the Quick gates.
+
+### 3.7 Isolation as a per-project property
+
+Vitest's guidance: disabling isolation speeds suites that hold no shared state; `threads` with `isolate: false` runs fastest; isolation can vary per project ([vitest, improving performance](https://vitest.dev/guide/improving-performance)) [fetched]. Every config here states `isolate: true` on purpose, because modules hold process-global registries.
+
+So each package gains a third project beside `heavy` and `main`:
+
+- `pure`: `isolate: false`, `pool: "threads"`. Admission by a checker in the style of `heavy-roster-is-complete`: a suite enters only if its transitive imports touch no module on a declared list of global-registry holders, no `fs`, no `net`, no `child_process`, no `worker_threads`. Law suites land here.
+- The checker reads one list. A suite that wrongly sits in `pure` gets caught by a nightly run that shuffles file order (`sequence.shuffle`) with a printed seed: order dependence surfaces as a red with a replay seed.
+
+### 3.8 Sharding by measured duration
+
+Node already deals by weight; vitest's own `--shard` splits by file count, not time, which the repo measured as worse.
+
+- Extend the weight table to mesh, tw5, cli, keyhive, browser and web. The cells already upload a JSON report per package; a `tools/ci-weights-refresh.mjs` reads the last three `develop` runs and rewrites the table. A person or spirit runs it; no watcher.
+- A weight feeds tier admission: a file above a per-file budget (suggest 2 s) cannot enter a spirit's loop set; it defers to CI by name.
+- Split cells when the slowest cell exceeds the target (section 4), keeping the ten-job ceiling that `tools/ci-graph.test.mjs` holds.
+
+### 3.9 Flake quarantine, with evidence
+
+Google's published practice reruns only tests already marked flaky, and reported roughly 1.5% of runs flaky, about 16% of tests showing some flakiness and most pass-to-fail transitions involving a flaky test ([Micco, *Flaky Tests at Google and How We Mitigate Them*](https://testing.googleblog.com/2016/05/flaky-tests-at-google-and-how-we.html)) [recalled for the numbers: the page body did not load this session; the rerun policy came from a Google reply on the page].
+
+Design:
+
+- `tools/flake-ledger.json`, one entry per quarantined test: the test id; **evidence** (at least two run ids on one sha with opposite verdicts); the suspected class (async wait, concurrency, order, resource, as in Luo et al.); the cure's owner lane; a release condition counted in green nightly runs, never in days.
+- A ledgered test leaves the gating path and keeps running nightly, reporting.
+- No retry on the gating path for an unledgered test. A retry hides the signal the ledger needs.
+- The ledger's length carries a ceiling that only lowers.
+- No entry for a test in the do-not-cut register (section 6): those get fixed, never parked.
+- Detection: nightly, the full set runs three times on one sha, once under deliberate load; `tools/burst-bisect.mjs` already exists for the hunt.
+
+### 3.10 Hermetic e2e
+
+Mostly standing: scratch root per vessel, own port with retry, image by digest, staged versus live modes, shards with a fail-closed merge gate. Additions: the founded snapshot (3.2e); several laws per standing vessel where a file founds only to read; and no network egress from a staged vessel beyond its own compose network, asserted once by a witness.
+
+---
+
+## 4. The tiers
+
+| Tier | Who waits | Budget | Runs | Never runs |
+|---|---|---|---|---|
+| **T0 loop** | a spirit or the operator, locally | under 2 min | the red/green file · tests beside touched files · `vitest related` over the touched sources, restricted to the `pure` and fake-backed contract projects · typecheck of the touched package | a founding, a listener, an island, a python holder, a daemon |
+| **T1 doorstep** | a lane push | 5-8 min | today's Quick gates · package-graph affected selection over law and contract projects · the two ratchets that cost no build (clock census, fake-holds-its-contract) · a diff-scoped mutation report, advisory at first | e2e shards, the heavy projects |
+| **T2 ford** | the merge queue, `develop`, `main` | slowest cell at or under 12 min | every suite, dealt by weight · contracts against **real** engines · e2e shards · the witness fleet and self-tests · diff-scoped mutation as a gate once its noise settles | whole-package mutation |
+| **T3 night** | nobody | hours | one package's incremental mutation run per night; weekly `--force` · fresh-seed law runs at high counts · shuffled-order run · three-times flake detection · the selection audit · held-out cells (already weekly) | — |
+
+Notes:
+
+- T0 arrives through one command, `tools/test-loop.mjs <paths…>`: it prints the selected set and its predicted seconds from the weight table, runs it, and prints what it deferred to CI by name. A spirit never has to judge what "beside" means.
+- T0 selects by weight as well as by graph: a related suite heavier than the per-file budget defers.
+- T1 keeps the doorstep ruling of 2026-11-18. If the operator prefers the doorstep exactly as it stands, the affected selection moves to an opt-in `workflow_dispatch` input and nothing else changes.
+- T2 stays whole. The design shrinks T2's wall time by making its suites cheaper, never by letting the queue skip.
+
+---
+
+## 5. The coverage proof
+
+### 5.1 The baseline file
+
+`tools/mutation-baseline.json`, read by `tools/mutation-witness.sh`:
+
+```json
+{
+  "//": "Per-package mutation floors. A floor only rises; killed-set digests name the mutants a cut must keep killing.",
+  "packages": {
+    "lares-cli": {
+      "scope": ["src/**/*.ts"], "outside": ["src/bin/**"],
+      "mutants": 0, "killed": 0, "timeout": 0, "survived": 0, "noCoverage": 0,
+      "floor": 0.0,
+      "measured": { "sha": "", "tool": "", "run": "" }
+    }
+  }
+}
+```
+
+- `floor` = killed ÷ (killed + survived + noCoverage), with `timeout` held apart. It only rises: the witness reads red when a nightly score falls below it, and a spirit may raise it after a green night.
+- The file records the tool and version: a tool upgrade changes the mutant set, so the upgrade re-baselines in its own commit, never beside a cut.
+
+### 5.2 The cut protocol: kill-set containment
+
+A score can hold while different mutants die. So a cut proves more than the score:
+
+1. **Name the cut**: the suites to remove or fold, and the source files they import (the mutation scope).
+2. **Before**: run mutation over that scope with the old suites. Save the killed set as `{file, line, mutator, replacement}` tuples.
+3. **Make the cut** (a law replaces a cluster; a fixture replaces a founding; a contract fake replaces an engine).
+4. **After**: run the same mutants with the new suites. No source edit rides the same commit, so the mutant set stays identical.
+5. **Verdict**: every mutant killed before dies after. A mutant that now survives either gets a new assertion or gets named in the cut's receipt as accepted, with the reason (an equivalent mutant; a guard that moved to a named tier).
+6. **Receipt**: the commit body carries the counts (`killed before N, after M, lost 0`) and the wall-time delta from the weight table. The baseline floor rises if M exceeds N.
+
+Why this satisfies the operator's constraint: a cut that drops a guard cannot pass step 5 silently, whatever happens to the score or the line coverage.
+
+### 5.3 The cheap companion gate
+
+V8 coverage per package as a second ratchet: per-file line and branch coverage of a touched source file may not fall across a cut. It runs in seconds and catches the crude loss (a whole path no longer executed) before the mutation run starts. Necessary, never sufficient, for the reason in 3.4.
+
+### 5.4 Proof for what mutation cannot see
+
+Journeys and witnesses reach code through a spawned binary. Their proof takes another form:
+
+- **A journey register**: one table row per e2e file naming the doors it crosses (CLI verbs, refusal names, journal words). `tests/harness/scenario-action-graph.ts` already models scenario actions. A journey cut must show each of its doors still crossed by a surviving journey, or covered by a contract suite against the real engine.
+- **Spawn coverage as a lead**: `NODE_V8_COVERAGE` collects coverage from child processes [recalled, Node docs]; a nightly run can show which `dist` paths only journeys reach. Those paths mark where a journey must stay.
+- **Named mutants at the door**: for a custody or security door, a `mutants.json` entry whose `tests` name the journey itself. `tools/law-mutants.mjs` runs any named file, so the mechanism already fits; such entries need a build per mutant, so they stay few and run nightly.
+
+---
+
+## 6. What never gets cut
+
+A register (`tools/do-not-cut.json`, read by the cut protocol and by the flake ledger) names suites that keep real engines at real cost, whatever they weigh:
+
+1. **Custody and security laws.** Every suite proving a refusal at a key, seal, veil, ward, cap or admission gate; the keyslot suites at the real `SCRYPT` cost; `custody-stays-behind-the-door`, `identity-rides-verified-bytes`, the sealed-archive and locked-floor suites; tamper probes over decoded bytes. A fake may never stand in for the thing a security law tests.
+2. **Corpus and carrier round-trips.** The meme round-trip laws, `carrier-roundtrip`, `recipe-parity`, `nonmeme-parity`, the plugin-artifact parity gates, the pristine-upstream contact against published TiddlyWiki. These read real bytes through real doors; a property generator complements them and never replaces the corpus itself.
+3. **Canon witnesses.** The `tools/*witness*.sh` fleet, the contract witness, `tree-clean-witness`, the evergreen boundary, seed presence, generated-artifact freshness, grammar parity. They may get faster (run independent witnesses side by side inside the cell); none leaves the battery.
+4. **True-genesis journeys.** `smoke`, `vessel-reboot`, `boot-holds-the-store`, the founding walk, `nexus-two-root`: the snapshot shortcut must never apply to the suites that prove founding and re-standing.
+5. **Standing red vectors.** A plain failing test whose header names a defect stays until its cure lands.
+6. **Each fake's real-engine contract run.** Cutting it turns every test on that fake into a test of the fake.
+7. **The instruments' own tests.** `tools/*.test.mjs`: every ratchet in this plan depends on them.
+
+---
+
+## 7. Migration order
+
+Biggest measured sinks first; each cut passes section 5.2. Sizes: S = one lane, about a day of spirit work · M = two to four lanes · L = a campaign of many small lanes. Savings marked [estimate] until the sibling's measurements confirm them.
+
+| # | Step | Size | Target | Expected yield | Proof |
+|---|---|---|---|---|---|
+| 0 | **Stand the instruments.** Try Stryker on `lares-cli` (TS 7 / vitest 5 compatibility); else extend `law-mutants.mjs` with a generator. Write `mutation-baseline.json` for cli. Extend the weight table to every package from existing cell reports. Write `tools/test-loop.mjs` and the impact map. | M | proof and selection exist before any cut | no wall time yet; T0 lands, which answers "let CI handle testing" at once | the tools' own `*.test.mjs` |
+| 1 | **Run-wide kept houses in node.** Lift `keepHouse` into `globalSetup`; convert the top 97 node files (the 20% holding 84% of 3,913 file-seconds). | M | node cells | a third to a half of node cell time [estimate; depends on founding's share inside those files] | kill-set over the `lararium-node/src` files those suites import; no assertion changes, so containment should hold trivially: a good first exercise of the protocol |
+| 2 | **Timeout and clock ratchet.** Liveness bound 30 s for mesh, tw5, cli; `clock-census-baseline.json` with today's counts. | S | the 5 s flake class | fewer reruns; no direct wall time | census ceilings |
+| 3 | **e2e founded snapshot.** One genesis per shard, copied per file; true-genesis register kept. | M | 3,070 e2e seconds | 20-35% of e2e shard time [estimate from ~20-30 s boot × 48 files, of which genesis forms a part] | journey register (5.4); no assertions change |
+| 4 | **Port fakes with dual-run contracts**, one port per lane: Automerge storage and network first (131 node suites touch Automerge or a Repo), then the python holder, then custody I/O. | L | the `heavy` serial project; lifts `--workspace-concurrency=1` once no two packages contend for one holder | the serial project shrinks toward the do-not-cut core | kill-set per converted suite; the contract suite green on both engines |
+| 5 | **Mesh clusters into laws**, one prefix cluster per lane, starting with `promote` and `realm` (15 files each), then `face`, `persona`. Introduce the `pure` project. | L | 597 files, the isolate cost | unknown until mesh gets weights; file count for converted clusters falls several-fold | kill-set containment per cluster: this step leans hardest on the proof |
+| 6 | **One TW5 engine per worker** for tw5 parser/filter/render suites. | M | 405 files | unknown until measured | kill-set over `lararium-tw5/src` |
+| 7 | **Flake ledger and nightly tier.** Three-times detection, shuffled order, fresh seeds, the selection audit, per-package nightly mutation. | M | trust in tiers T0-T2 | converts hidden reruns into named entries | ledger ceiling, miss-rate report |
+| 8 | **Burn down the clock census**, package by package, as lanes touch suites. | L | 901 test-wait sites | each removed sleep returns its interval | census ceilings lower |
+| 9 | **Witness cell parallelism.** Run independent witnesses side by side within the `rest` cell. | S | ~460 s + 258 s | up to half that cell [estimate; needs a read of which witnesses share state] | the cell's `must` patterns already fail closed |
+
+Sequencing rules:
+
+- Step 0 precedes every cut. A cut with no before-measurement cannot prove anything afterwards.
+- Steps 1-3 change fixtures and waits, not assertions. They carry the least coverage risk and the most measured yield, so they go first.
+- Steps 4-6 change what a test touches. Each lane stays small enough that one kill-set run covers it.
+- One package's baseline exists before that package's first cut.
+
+---
+
+## 8. Risks
+
+| Risk | Reads as | Guard |
+|---|---|---|
+| Stryker does not support TypeScript 7 or vitest 5 | step 0 fails | the generator fallback over `law-mutants.mjs`; the protocol needs identical mutants before and after, nothing more |
+| Mutation runs cost too much (mesh holds 95k source lines) | nightly overruns | per-test coverage, incremental file, one package per night, diff-scoped on lanes; scope cuts to the files a lane touches |
+| A fake drifts from its engine | loop green, battery red, or both green and production wrong | the dual-run contract suite in T2; the `fake-holds-its-contract` witness; no fake in security laws |
+| A shared fixture house leaks state between cases | order-dependent reds | copy per case, never share; the nightly shuffled run with a printed seed |
+| A stale fixture house answers | green against an old founding | fixture key = build stamp digest + recipe hash; the house lives in scratch, never in the tree |
+| `isolate: false` exposes a module-global registry | cross-file bleed in `pure` | admission by import-graph checker; shuffled nightly |
+| Selection misses a dependency | a red arrives at the merge queue instead of the lane | the queue runs everything; the nightly audit turns each miss into an impact-map row |
+| A law replaces instances but its generator never reaches the hard case | kill-set containment fails (caught), or holds while an untested region stays unreached (missed) | old defect-catching instances kept as named examples; generator-reach assertions; nightly fresh seeds |
+| Equivalent mutants and timeouts inflate or blur the score | a floor that means little | timeouts recorded apart; accepted survivors named in receipts; containment, not score, decides a cut |
+| The mutation tool mutates the tracked tree | a write the tree-clean witness reads red; a crashed run leaves a mutant | Stryker works in a sandbox copy by default [recalled]; the home-grown runner already restores on interrupt; mutation never runs in the main checkout during a lane, only in CI or a worktree |
+| A cheap KDF reaches a product path | a security fault | not adopted without an operator ruling; if ruled in, a boundary witness proves no product entry resolves it |
+| Quarantine becomes a graveyard | a ledger that only grows | evidence required to enter; ceiling only lowers; release counted in green runs; do-not-cut suites barred |
+| The plan's yield estimates miss | lanes spent for little | steps 1 and 3 come first because their yield follows from measured tables; steps 5 and 6 wait for the sibling's weights |
+| More CI jobs break the ten-job ceiling | queue waits return | T3 runs on a schedule, outside the push graph; T1 additions ride the existing Quick job |
+
+---
+
+## 9. Open questions for the operator
+
+1. **The doorstep.** May T1 add affected-selection suites to lane pushes, or does the 2026-11-18 ruling (Quick gates alone) stand as written?
+2. **The KDF.** Does the `SCRYPT` cost bind test fixtures too? The design assumes yes and routes around it with kept houses.
+3. **Mutation as a gate.** Advisory on lanes first, a gate on the queue later: at what survivor noise level does it turn into a gate?
+4. **Nightly budget.** How many runner-hours per night may T3 spend?
+5. **The first package.** The design proposes `lares-cli` for the pilot (smallest law-rich package, already holding a mutant catalog and fast-check). Node holds the largest measured sink. Pilot where the tooling risk sits lowest, or where the yield sits highest?
+
+---
+
+## Sources
+
+Opened and read this session:
+
+- Fowler / Vocke, *The Practical Test Pyramid*: https://martinfowler.com/articles/practical-test-pyramid.html
+- StrykerJS, vitest runner: https://stryker-mutator.io/docs/stryker-js/vitest-runner/
+- StrykerJS, incremental mode: https://stryker-mutator.io/docs/stryker-js/incremental/
+- Vitest, improving performance: https://vitest.dev/guide/improving-performance
+- Vitest, timers: https://vitest.dev/guide/mocking/timers
+- fast-check, model-based testing: https://fast-check.dev/docs/advanced/model-based-testing/
+- fast-check, race conditions: https://fast-check.dev/docs/advanced/race-conditions/
+
+Read through search summaries only (title and headline findings confirmed, body not opened):
+
+- Petrović & Ivanković, *State of Mutation Testing at Google*, ICSE-SEIP 2018: https://research.google/pubs/state-of-mutation-testing-at-google/
+- Just et al., *Are Mutants a Valid Substitute for Real Faults in Software Testing?*, FSE 2014: https://homes.cs.washington.edu/~mernst/pubs/mutation-effectiveness-fse2014.pdf
+- Inozemtseva & Holmes, *Coverage Is Not Strongly Correlated with Test Suite Effectiveness*, ICSE 2014 (URL recalled): https://www.cs.ubc.ca/~rtholmes/papers/icse_2014_inozemtseva.pdf
+- Machalica et al., *Predictive Test Selection*, 2018: https://arxiv.org/abs/1810.05286
+- Luo, Hariri, Eloussi, Marinov, *An Empirical Analysis of Flaky Tests*, FSE 2014 (URL recalled): https://mir.cs.illinois.edu/marinov/publications/LuoETAL14FlakyTestsAnalysis.pdf
+- Memon et al., *Taming Google-Scale Continuous Testing*, ICSE-SEIP 2017: https://research.google/pubs/pub45861/
+- Vitest CLI (`related`, `--changed`, `--shard`): https://vitest.dev/guide/cli
+- Vitest `globalSetup` (`provide` / `inject`): https://vitest.dev/config/globalsetup
+- Playwright sharding: https://playwright.dev/docs/test-sharding
+
+Recalled, not re-opened (verify before quoting onward):
+
+- Dodds, *The Testing Trophy and Testing Classifications*: https://kentcdodds.com/blog/the-testing-trophy-and-testing-classifications
+- Micco, *Flaky Tests at Google and How We Mitigate Them* (the three percentages): https://testing.googleblog.com/2016/05/flaky-tests-at-google-and-how-we.html
+- Automerge `save` / `load` / `clone`; pnpm `--filter "...[ref]"`; Node `NODE_V8_COVERAGE`; Stryker's sandbox copy.
+
+Not reached: `lar:///ha.ka.ba/kahua/memory/research/test-estate-astra`. `lares meme get` refused with `control-home-unavailable: vessel-locked`, and no copy stands in the tracked tree. This design may repeat or contradict that research; reconcile the two before a lane starts.
+
+Repo files read: `.github/workflows/ci.yml`, `e2e-shards.yml`, `held-out.yml` (headers); `tools/ci-cells.mjs`, `tools/e2e-shard-weights.json`, `tools/law-mutants.mjs`, `tools/law-mutants-witness.sh`, `tools/clock-census.mjs`, `tools/typecheck-tests-baseline.json`; `tests/TEST-ARCHITECTURE.md`, `tests/vitest.config.ts`; the vitest configs of node, cli, mesh, tw5; `packages/lararium-node/tests/support/kept-house.ts`, `scratch-custody-setup.ts`; `packages/lararium-mesh/src/keyslot.ts` (lines 53-64); `packages/lares-cli/tests/laws/mutants.json`.
+
+````
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZXREU7KfIipZ2s-QJvLELGECApP3yXexSBox03Jip_M`>>
+
+<<^ code=`&#x0004;` to=`?`>>
