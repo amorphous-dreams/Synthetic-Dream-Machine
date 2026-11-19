@@ -17,6 +17,8 @@
  *        a whole apply alone.
  *   KQ6  RED: whoever writes the remote seals a roster of their own to the published public half and re-hashes the manifest:
  *        the restore refuses by name (`keep-roster-unsigned`) before any door is touched. CONTROL: the house's own cut restores.
+ *   KQ7  RED: whoever writes the remote alters a row's override base in the manifest (a field outside every hashed file): the
+ *        restore refuses by name before any door is touched, since the cut signs the whole manifest.
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -193,5 +195,18 @@ describe("the keep seals its roster to a pair whose secret rests under the human
     await expect(houseImport(out, { apply: true, doors: watched(after, calls) })).rejects.toThrow(/keep-roster-unsigned/);
     expect(calls, "a forged roster touches no door").toEqual([]);
     expect(after.written).toEqual([]);
+  });
+
+  test("KQ7 RED: a manifest altered outside every hashed file refuses by name before any door", async () => {
+    await houseExport(out, { acceptOmissions: true, doors: doors(oldFaces(), SHARES) });
+    const manifest = JSON.parse(readFileSync(join(out, MANIFEST_FILE), "utf8")) as { rows: Array<{ layer: string; overrideBase?: string }> };
+    const row = manifest.rows.find((r) => r.layer === "working");
+    expect(row, "a working row stands to alter").toBeDefined();
+    row!.overrideBase = `sha256:${"0".repeat(64)}`;
+    writeFileSync(join(out, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`);
+    const calls: string[] = [];
+    const after = doors(newFaces(), [], RIGHT);
+    await expect(houseImport(out, { apply: true, doors: watched(after, calls) })).rejects.toThrow(/keep-roster-unsigned/);
+    expect(calls, "an altered manifest touches no door").toEqual([]);
   });
 });
