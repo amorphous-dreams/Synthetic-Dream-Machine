@@ -1,8 +1,11 @@
 # lares-container — the HOST shim for the surface vessel (docker-compose.surface.yml), PowerShell form.
 # Same contract as tools/lares-container.sh: up [--capture <dir>]... [--workspace <name>=<dir>]...  down [compose-down args]  found [vessel-found args]  logs
-# build [compose-build args]  vessel stand  <lares verb…>. `build` rebuilds the vessel image (every package the
-# vessel runs) from the committed checkout, through the env file, stamping HEAD as its revision label; a dirty checkout,
-# or none, refuses by name. The CLI runs by exec while a vessel stands and through the offline door while none
+# build [--at <rev>] [compose-build args]  vessel stand  <lares verb…>. `build` builds the vessel image (every package the
+# vessel runs) from one commit (HEAD unless --at names another), unpacked from its archive under the house's cache,
+# stamping that revision as its label; a dirty tree builds from HEAD and names what it left out; no checkout refuses.
+# `rebuild [--at <rev>]` re-stands the house onto a new image: down (keep, census), build from the commit (tag, prune),
+# then up, the pūlama's admit on this terminal and the last face worn; where the pūlama's code closure moved it restands
+# the pūlama and stops for the operator's light: `pulama light`, then `rebuild --resume`. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
 # LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
@@ -199,9 +202,9 @@ function KeyHeld {
   return (($out -join "`n") -match '"unlocked"\s*:\s*true')
 }
 
-# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD: warns and stands. Every stand and restart this shim performs reads it
+# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD: warns and stands. A build reads the commit, so uncommitted changes never ride an image and the label reads against HEAD alone. Every stand and restart this shim performs reads it
 # (`up`, the bare `vessel stand`, a re-stand); `up` resolves the rev BEFORE compose runs so a build it triggers bakes the label; no git, or no checkout, skips the check with a note and never dies. A dirty tree
-# (tracked files only) labels `<sha>-dirty`.
+# (tracked files only) reads as dirty, and the warning names the changes no image carries.
 $script:GitRev = ''; $script:GitDirty = $false
 function ResolveGitRev {
   try {
@@ -226,9 +229,10 @@ function WarnImageRevision {
   if ([string]::IsNullOrWhiteSpace($cid)) { return }
   $label = ((& docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $cid 2>$null) -join '') -replace '[\x00-\x1f\x7f-\x9f]', ''
   $named = if ($label) { $label } else { 'none' }
-  if ($label -eq $rev) { return }
+  $head = $rev -replace '-dirty$', ''
+  if ($label -eq $head) { return }
   if ($script:GitDirty) {
-    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout holds uncommitted changes; commit first, then rebuild with ``tools/lares-container.ps1 build`` and ``up`` again")
+    [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout stands at $head, beside uncommitted changes no image carries; rebuild from the commit with ``tools/lares-container.ps1 build``, then ``up`` again")
   } else {
     [Console]::Error.WriteLine("lares-container: the image names revision $named and the checkout stands at $rev; rebuild with ``tools/lares-container.ps1 build``, then ``up`` again")
   }
@@ -270,7 +274,13 @@ function DetachedWear([string]$face) {
   return $LASTEXITCODE
 }
 function UnlockOrName {
-  if (KeyHeld) { return }
+  if (KeyHeld) {
+    # A HELD KEY IS NOT A WORN FACE. Under a pūlama the vessel redials its key at boot, while the mount lives in process
+    # memory and leaves with every restart: the census frame names the worn face, and over faces lent and none worn the
+    # shim wears the face last worn.
+    if (NoneWorn) { WearLastFace }
+    return
+  }
   $wear = LastWornFace
   if ($PulamaMode) {
     if ((DetachedUnlock @('--all')) -eq 0) {
@@ -294,8 +304,12 @@ function LiftVessel([string[]]$output) {
   $reason = 'the standing requires a re-stand'
   try { $reason = (ConvertFrom-Json -InputObject ($output -join "`n")).data.standing.reason } catch {}
   [Console]::Error.WriteLine("lares-container: $reason; restarting the vessel")
-  & docker compose @Base restart lares
-  if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel restart failed'); exit $LASTEXITCODE }
+  # A lift over a moved image recreates the vessel, so the down path runs first; on the image that stands, a restart.
+  if (VesselMoved) { DownIfMoved }
+  else {
+    & docker compose @Base restart lares
+    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel restart failed'); exit $LASTEXITCODE }
+  }
   # THE RESTART KEEPS THE WORKSPACES: the restart's `up` carries every LARES_WORKSPACES bind, as the operator's `up` did.
   $script:WorkspaceNames = @()
   $wsBinds = @()
@@ -366,18 +380,22 @@ function Indent([string]$text) {
 # THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
 # still stands (it keeps only a house that moved); a keep that refuses never blocks the down. LARES_HOST_CLI names the
 # host's lares door, else the checkout's own bin under the host's node.
+$script:KeepSaid = ''
 function KeepBeforeDown {
+  $script:KeepSaid = 'no keep workspace named'
   if ([string]::IsNullOrEmpty((ValueOf 'LARES_KEEP_WORKSPACE') + (ValueOf 'LARES_WORKSPACES'))) { return }
   $hostCli = ValueOf 'LARES_HOST_CLI'
   if ($hostCli) { $cmd = $hostCli; $pre = @() }
   elseif (Get-Command node -ErrorAction SilentlyContinue) { $cmd = 'node'; $pre = @((Join-Path $Root 'packages/lares-cli/bin/lares.mjs')) }
-  else { [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
+  else { $script:KeepSaid = 'no host node answered, so nothing kept'; [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
   & $cmd @pre rite keep --if-due --no-json
-  if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand') }
+  if ($LASTEXITCODE -ne 0) { $script:KeepSaid = 'the keep did not complete'; [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand') }
+  else { $script:KeepSaid = 'kept (rite keep --if-due)' }
 }
-function CensusBeforeStop {
+# The census exec, bounded: `--no-json` gives the lines down prints, `--json` the frame a mount read greps.
+function RunCensus([string]$fmt = '--no-json') {
   $psi = [System.Diagnostics.ProcessStartInfo]::new('docker')
-  foreach ($a in (@('compose') + $Base + @('exec', '-T', 'lares', 'node', $Cli, 'vessel', 'census', '--no-json'))) { $psi.ArgumentList.Add([string]$a) }
+  foreach ($a in (@('compose') + $Base + @('exec', '-T', 'lares', 'node', $Cli, 'vessel', 'census', $fmt))) { $psi.ArgumentList.Add([string]$a) }
   $psi.UseShellExecute = $false
   $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true; $psi.RedirectStandardInput = $true
   $out = ''; $err = ''; $rc = -1; $timedOut = $false
@@ -390,6 +408,21 @@ function CensusBeforeStop {
     if ($outTask.Wait(5000)) { $out = $outTask.Result }
     if ($errTask.Wait(5000)) { $err = $errTask.Result }
   } catch { $err = $_.Exception.Message }
+  return [pscustomobject]@{ Out = $out; Err = $err; Rc = $rc; TimedOut = $timedOut }
+}
+# THE MOUNT, read: the census frame names `worn` beside the lit set, null where faces stand lent and none worn. Any
+# other answer, or none, reads as no need to wear.
+function NoneWorn { return ((RunCensus '--json').Out -match '"worn"\s*:\s*null') }
+$script:Wore = ''
+function WearLastFace {
+  $wear = LastWornFace
+  [Console]::Error.WriteLine("lares-container: faces stand lent and none worn; wearing h$wear, the face last worn")
+  if ((DetachedWear "$wear") -eq 0) { $script:Wore = "h$wear" }
+  else { $script:Wore = ''; [Console]::Error.WriteLine("lares-container: h$wear stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``") }
+}
+function CensusBeforeStop {
+  $c = RunCensus '--no-json'
+  $out = $c.Out; $err = $c.Err; $rc = $c.Rc; $timedOut = $c.TimedOut
   if ($rc -eq 0 -and ($out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) { return }
   # A LOCKED HEARTH: the census names the cure in one line (`census: vessel locked: ...`); say it plainly, not "could not answer".
   if (-not $timedOut -and ($err -split "`r?`n" | Where-Object { $_ -like 'census: vessel locked*' })) {
@@ -419,7 +452,7 @@ foreach ($name in @('NO_COLOR', 'TERM', 'COLORTERM', 'LARES_DEBUG', 'CLAUDECODE'
   if (Test-Path "env:$name") { $PassEnv += @('-e', $name) }
 }
 
-if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|build|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)' }
+if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|build|rebuild|image-digest|pulama|vessel stand|<lares verb…> (build builds the vessel image, every package, from a commit; rebuild walks down, build, up, admit and the worn face)' }
 $verb = [string]$args[0]
 $rest = @(); if ($args.Count -gt 1) { $rest = @($args[1..($args.Count - 1)]) }
 
@@ -479,82 +512,383 @@ function PulamaState {
   return 'running'
 }
 
-# THE PŪLAMA'S IMAGE AGAINST THE IMAGE THAT STANDS. `up` keeps a lit pūlama lit (--no-recreate), so after a `build` it
-# runs the code it stood from. A running pūlama whose container image differs from the vessel image names the skew and
-# the verb that cures it (`pulama restand`); it warns and stands. A read that fails names nothing and blocks nothing.
-function WarnPulamaSkew {
-  if (-not $PulamaMode) { return }
+# THE PŪLAMA'S CODE AGAINST THE IMAGE THAT STANDS. `up` keeps a lit pūlama lit (--no-recreate), so after a `build` it runs
+# the image it stood from. The pūlama runs the vessel's image, so the image id moves with every vessel build; what decides
+# a re-stand is the pūlama's own code closure, the `lares.pulama.closure` label a build stamps. One reading serves the
+# line `up` and `pulama status` print and the `rebuild` verb's choice: absent, level, closure-level (an older image, the
+# same closure: it stays lit), moved (the closure moved or reads unlabeled: restand, then a light by hand), unread.
+$PulamaClosureFormat = '{{ index .Config.Labels "lares.pulama.closure" }}'
+function ClosureLabel([string]$kind, [string]$ref) {
+  if ($kind -eq 'image') { $o = ((& docker image inspect --format $PulamaClosureFormat $ref 2>$null) -join '').Trim() }
+  else { $o = ((& docker inspect --format $PulamaClosureFormat $ref 2>$null) -join '').Trim() }
+  if ($LASTEXITCODE -eq 0 -and $o -cmatch '^sha256:[0-9a-f]{64}$') { return $o } else { return '' }
+}
+$script:Pr = [pscustomobject]@{ State = 'unread'; Ran = ''; Stands = ''; Closure = '' }
+function PulamaReading {
+  $script:Pr = [pscustomobject]@{ State = 'unread'; Ran = ''; Stands = ''; Closure = '' }
   $id = ((& docker compose @Base --profile pulama ps -q --status running pulama 2>$null) -join '').Trim()
-  if ($LASTEXITCODE -ne 0 -or -not $id) { return }
+  if ($LASTEXITCODE -ne 0) { return }
+  if (-not $id) { $script:Pr.State = 'absent'; return }
   $ran = ((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()
   if ($LASTEXITCODE -ne 0) { return }
-  $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
-  $stands = ((& docker image inspect --format '{{.Id}}' $image 2>$null) -join '').Trim()
+  $stands = ((& docker image inspect --format '{{.Id}}' $ImageRef 2>$null) -join '').Trim()
   if ($LASTEXITCODE -ne 0) { return }
-  if (-not $ran -or -not $stands -or $ran -eq $stands) { return }
-  [Console]::Error.WriteLine("lares-container: the pūlama runs image $ran, and $image stands at $stands; it keeps the older code until ``tools/lares-container.ps1 down`` and ``tools/lares-container.ps1 pulama restand`` (then light it by hand, ``up``, and ``pulama admit``)")
+  if (-not $ran -or -not $stands) { return }
+  $script:Pr.Ran = $ran; $script:Pr.Stands = $stands
+  if ($ran -eq $stands) { $script:Pr.State = 'level'; return }
+  $script:Pr.Closure = ClosureLabel 'container' $id
+  if ($script:Pr.Closure -and $script:Pr.Closure -eq (ClosureLabel 'image' $ImageRef)) { $script:Pr.State = 'closure-level' } else { $script:Pr.State = 'moved' }
+}
+# THE IMAGE LINE (road rank 4l, L6): wherever a pūlama runs, `up` and `pulama status` print one line naming its image
+# beside the image the tag names and, where a vessel stands, the vessel's own.
+function VesselClause {
+  $id = ((& docker compose @Base ps -q --status running lares 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $id) { return '' }
+  $img = ((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $img) { return '' }
+  return " (the vessel runs $img)"
+}
+function WarnPulamaSkew {
+  if (-not $PulamaMode) { return }
+  PulamaReading
+  $p = $script:Pr
+  if ($p.State -in @('absent', 'unread')) { return }
+  $v = VesselClause
+  switch ($p.State) {
+    'level' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Stands), the image $ImageRef stands at$v") }
+    'moved' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands)$v; its code closure moved (or reads unlabeled), so it keeps the older code until ``tools/lares-container.ps1 down`` and ``tools/lares-container.ps1 pulama restand`` (then light it by hand, ``up``, and ``pulama admit``)") }
+    'closure-level' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands)$v; its code closure reads the same ($($p.Closure.Substring(0, 19))), so it stands lit and owes no restand") }
+  }
+}
+
+# THE DOWN PATH (`down`, and every act that must stop the vessel first): the keep while the vessel stands, the census,
+# the refusal of a silent stop; then the vessel alone stops where a pūlama runs, or the whole project downs.
+function DownVessel([string[]]$opts) {
+  # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
+  $pulama = PulamaState
+  if ($pulama -eq 'unknown') { Die 'down refuses: docker compose ps failed for the pūlama, so whether the pūlama stands reads unknown; the vessel and the pūlama stand' }
+  # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
+  # acceptance guards the stop.
+  $ids = & docker compose @Base ps -q --status running lares
+  if ($LASTEXITCODE -ne 0) {
+    [Console]::Error.WriteLine('lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown')
+    [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
+    OfferAcceptLoss
+  } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { KeepBeforeDown; CensusBeforeStop }
+  else { $script:KeepSaid = 'no vessel stood, so no keep ran' }
+  if ($pulama -eq 'running') {
+    # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
+    Compose (@('stop') + $opts + @('lares')); Compose @('rm', '-f', 'lares')
+  } else { Compose (@('down', '--remove-orphans') + $opts) }
+}
+
+# A MOVED IMAGE NEVER RECREATES SILENTLY (road rank 4l, RD4). Compose recreates a vessel whose image moved, and a
+# recreate drops whatever the vessel holds in memory. So `up`, and a lift, over a running vessel whose image differs from
+# the image the tag names runs the down path first. A read that fails names no move (the act goes on as it did).
+$script:MovedRan = ''; $script:MovedStands = ''
+function VesselMoved {
+  $id = ((& docker compose @Base ps -q --status running lares 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $id) { return $false }
+  $script:MovedRan = ((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()
+  $script:MovedStands = ((& docker image inspect --format '{{.Id}}' $ImageRef 2>$null) -join '').Trim()
+  return ($script:MovedRan -and $script:MovedStands -and $script:MovedRan -ne $script:MovedStands)
+}
+function DownIfMoved {
+  if (-not (VesselMoved)) { return }
+  [Console]::Error.WriteLine("lares-container: the vessel runs image $($script:MovedRan), and $ImageRef stands at $($script:MovedStands); the down path runs first (keep, census), never a silent recreate")
+  DownVessel @()
+}
+
+# THE IMAGE BUILDS FROM A COMMIT (road rank 4l, RD2), never from the live tree. `git archive <rev>`, and each submodule's
+# own archive at the commit the revision pins, unpack in a scratch folder under the house's cache (outside the checkout
+# and outside every bind), and compose builds from there through the env file, an override naming that folder as the
+# context and the revision as the label. So an untracked or uncommitted file never rides an image; a dirty tree builds
+# from HEAD and names what it left out. A submodule whose checkout lacks the pinned commit is named and left out.
+$ImageRef = ValueOf 'LARES_IMAGE'; if (-not $ImageRef) { $ImageRef = 'lares-surface:local' }
+$ImageRepo = if (($ImageRef -split '/')[-1].Contains(':')) { $ImageRef.Substring(0, $ImageRef.LastIndexOf(':')) } else { $ImageRef }
+$script:BuiltRev = ''
+
+# THE OUTGOING IMAGE KEEPS A REVISION TAG (road rank 4l, RD3). Before a build moves the image tag, the image it held
+# takes `<repo>:rev-<12 hex of its revision label>` (`rev-unlabeled-<12 hex of its id>` where it names no revision).
+# After a build lands, the newest three revision tags stand and the rest untag, never a hand tag, an image a container
+# runs, or the image the pūlama admitted last or last raised. A prune only untags: the admission record stays.
+$RevTagsKept = 3
+function TagOutgoing {
+  $line = ((& docker image inspect --format '{{.Id}}|{{ index .Config.Labels "org.opencontainers.image.revision" }}' $ImageRef 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $line) { [Console]::Error.WriteLine("lares-container: no image stands at $ImageRef yet, so no outgoing image takes a revision tag"); return }
+  $bar = $line.IndexOf('|'); $id = $line.Substring(0, $bar); $rev = $line.Substring($bar + 1)
+  if ($rev -cmatch '^[0-9a-f]{12,40}(-dirty)?$') {
+    $tag = "rev-$($rev.Substring(0, 12))"; if ($rev.EndsWith('-dirty')) { $tag += '-dirty' }
+  } else {
+    $hex = $id -replace '^sha256:', ''; $tag = "rev-unlabeled-$($hex.Substring(0, [Math]::Min(12, $hex.Length)))"
+  }
+  & docker tag $ImageRef "${ImageRepo}:$tag"
+  if ($LASTEXITCODE -eq 0) { [Console]::Error.WriteLine("lares-container: the outgoing image keeps the tag ${ImageRepo}:$tag") }
+  else { [Console]::Error.WriteLine("lares-container: the outgoing image could not take the tag ${ImageRepo}:$tag; the build goes on") }
+}
+# The image the pūlama admitted last (its newest admission row, read from its state on the host). It may read empty.
+function PulamaAdmittedLast {
+  $dir = Join-Path (Join-Path (Join-Path $House 'pulama') 'state') 'records'
+  if (-not (Test-Path -PathType Container $dir)) { return '' }
+  $rows = @(Get-ChildItem -Path $dir -Filter '*.json' -File -ErrorAction SilentlyContinue | Where-Object { (Get-Content -Raw -LiteralPath $_.FullName -ErrorAction SilentlyContinue) -like '*lares/pulama/admitted/*' } | Sort-Object LastWriteTime -Descending)
+  if ($rows.Count -eq 0) { return '' }
+  $m = [regex]::Match((Get-Content -Raw -LiteralPath $rows[0].FullName), 'image\\*"\s*:\s*\\*"(sha256:[0-9a-f]{64})')
+  if ($m.Success) { return $m.Groups[1].Value } else { return '' }
+}
+function PruneRevTags {
+  $tags = @(& docker image ls --format '{{.Tag}}' $ImageRepo 2>$null)
+  if ($LASTEXITCODE -ne 0) { return }
+  $admitted = PulamaAdmittedLast
+  $raised = ''
+  try { $raised = (Get-Content -Raw -LiteralPath (Join-Path (Join-Path (Join-Path $House 'pulama') 'state') 'image') -ErrorAction Stop).Trim() } catch {}
+  $rows = @()
+  foreach ($t in $tags) {
+    $t = "$t".Trim()
+    if ($t -cnotmatch '^rev-([0-9a-f]{12}(-dirty)?|unlabeled-[0-9a-f]{1,12})$') { continue }
+    $info = ((& docker image inspect --format '{{.Created}} {{.Id}}' "${ImageRepo}:$t" 2>$null) -join '').Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $info) { continue }
+    $parts = $info -split ' '
+    $rows += [pscustomobject]@{ Created = $parts[0]; Id = $parts[1]; Tag = $t }
+  }
+  $n = 0
+  foreach ($row in ($rows | Sort-Object -Property Created -Descending)) {
+    $n++
+    if ($n -le $RevTagsKept) { continue }
+    $named = "${ImageRepo}:$($row.Tag)"
+    if ($admitted -and $row.Id -eq $admitted) { [Console]::Error.WriteLine("lares-container: keeps ${named}: the pūlama admitted it last"); continue }
+    if ($raised -and $row.Id -eq $raised) { [Console]::Error.WriteLine("lares-container: keeps ${named}: the image the pūlama last raised"); continue }
+    $runs = ((& docker ps -q --filter "ancestor=$($row.Id)" 2>$null) -join '').Trim()
+    if ($LASTEXITCODE -ne 0 -or $runs) { [Console]::Error.WriteLine("lares-container: keeps ${named}: a container runs it"); continue }
+    & docker rmi $named *> $null
+    if ($LASTEXITCODE -eq 0) { [Console]::Error.WriteLine("lares-container: pruned $named (created $($row.Created))") }
+    else { [Console]::Error.WriteLine("lares-container: $named could not prune; it stands") }
+  }
+}
+function BuildImage([string]$at, [string[]]$more) {
+  ResolveGitRev
+  if (-not $script:GitRev) { Die "build refuses: no git checkout answers at $PSScriptRoot, so the image's revision label would name no commit; build from a checkout" }
+  $top = ((& git -C $PSScriptRoot rev-parse --show-toplevel 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $top) { Die "build refuses: no git checkout answers at $PSScriptRoot" }
+  $rev = ((& git -C $top rev-parse --verify --quiet "$at^{commit}" 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $rev) { Die "build refuses: $at names no commit in $top; nothing built" }
+  $short = $rev.Substring(0, 12)
+  $left = @(& git -C $top status --porcelain 2>$null | Where-Object { $_ })
+  if ($left.Count -gt 0) {
+    [Console]::Error.WriteLine("lares-container: the checkout holds $($left.Count) uncommitted or untracked path(s); the image builds from $short and leaves them out:")
+    foreach ($l in ($left | Select-Object -First 20)) { [Console]::Error.WriteLine("  $l") }
+  }
+  $cache = Join-Path $House 'cache'
+  New-Item -ItemType Directory -Force -Path $cache | Out-Null
+  $suffix = -join ((1..6) | ForEach-Object { '{0:x}' -f (Get-Random -Maximum 16) })
+  $ctx = Join-Path $cache "build.$suffix"
+  $ov = Join-Path $cache "build-override.$suffix"
+  $tar = "$ctx.tar"
+  New-Item -ItemType Directory -Force -Path $ctx | Out-Null
+  $topFull = [System.IO.Path]::GetFullPath($top)
+  if (Test-Within ([System.IO.Path]::GetFullPath($ctx)) $topFull) { Remove-Item -Recurse -Force $ctx; Die "build refuses: the house's cache ($cache) rests inside the checkout; name a LARES_HOUSE outside it" }
+  if ($ctx.Contains("'") -or $ctx.Contains("`n")) { Remove-Item -Recurse -Force $ctx; Die 'build refuses a house path that holds a quote or a newline' }
+  try {
+    & git -C $top archive --format=tar -o $tar $rev
+    if ($LASTEXITCODE -eq 0) { & tar -xf $tar -C $ctx }
+    if ($LASTEXITCODE -ne 0) { Die "the archive of $short did not unpack; nothing built" }
+    Remove-Item -Force $tar -ErrorAction SilentlyContinue
+    # Each submodule at the commit this revision pins (a gitlink: mode 160000), from its own checkout.
+    foreach ($row in @(& git -C $top ls-tree -r $rev)) {
+      $tab = $row.IndexOf("`t"); if ($tab -lt 0) { continue }
+      $meta = $row.Substring(0, $tab) -split ' '; $path = $row.Substring($tab + 1)
+      if ($meta.Count -lt 3 -or $meta[1] -ne 'commit') { continue }
+      $sha = $meta[2]
+      $sub = Join-Path $top $path
+      $have = $false
+      if (Test-Path (Join-Path $sub '.git')) { & git -C $sub cat-file -e "$sha^{commit}" 2>$null; $have = ($LASTEXITCODE -eq 0) }
+      if ($have) {
+        $dest = Join-Path $ctx $path
+        New-Item -ItemType Directory -Force -Path $dest | Out-Null
+        & git -C $sub archive --format=tar -o $tar $sha
+        if ($LASTEXITCODE -eq 0) { & tar -xf $tar -C $dest }
+        if ($LASTEXITCODE -ne 0) { Die "the submodule $path at $($sha.Substring(0, 12)) did not unpack; nothing built" }
+        Remove-Item -Force $tar -ErrorAction SilentlyContinue
+      } else {
+        [Console]::Error.WriteLine("lares-container: the submodule $path stands unchecked-out or lacks its pinned commit $($sha.Substring(0, 12)) here, so the image builds without it")
+      }
+    }
+    # THE PŪLAMA'S CODE CLOSURE rides the image as a label (`lares.pulama.closure`): the pūlama runs the vessel's image,
+    # so a build compares this digest, never the image id, to decide whether the standing pūlama must re-stand and re-light.
+    $closure = ''
+    if (Get-Command node -ErrorAction SilentlyContinue) {
+      $closure = ((& node (Join-Path $PSScriptRoot 'pulama-closure.mjs') $ctx 2>$null) -join '').Trim()
+      if ($LASTEXITCODE -ne 0) { $closure = '' }
+    }
+    if ($closure -cmatch '^sha256:[0-9a-f]{64}$') { [Console]::Error.WriteLine("lares-container: the pūlama's code closure reads $($closure.Substring(0, 19))") }
+    else { $closure = ''; [Console]::Error.WriteLine('lares-container: no pūlama code closure reads from this tree (no host node, or no pūlama entry), so the image carries none and a pūlama beside it reads as moved') }
+    Set-Content -Path $ov -Value "services:`n  lares:`n    build:`n      context: '$ctx'`n      args:`n        GIT_REV: '$rev'`n        PULAMA_CLOSURE: '$closure'" -Encoding utf8
+    $env:GIT_REV = $rev; $script:GitRev = $rev
+    TagOutgoing
+    [Console]::Error.WriteLine("lares-container: building the vessel image (every package) from commit $short")
+    & docker compose @Base -f $ov build @more lares
+    $rc = $LASTEXITCODE
+  } finally {
+    Remove-Item -Recurse -Force $ctx, $ov, $tar -ErrorAction SilentlyContinue
+  }
+  if ($rc -ne 0) { Die "the build failed (above); $ImageRef stands as it stood" }
+  $script:BuiltRev = $rev
+  PruneRevTags
+  [Console]::Error.WriteLine("lares-container: the vessel image stands rebuilt from $short (revision $rev); ``up`` stands it")
+}
+
+# THE STAND (`up`, and the rebuild's stand): the moved-image down path, the pūlama, the vessel healthy, the revision and
+# image lines, then the unlock or the hint. Inside a rebuild under a pūlama the unlock waits for the admit.
+$script:Rebuilding = $false
+function UpVerb([string[]]$upArgs) {
+  if ($null -eq $upArgs) { $upArgs = @() }
+  EnsureHouse
+  ResolveGitRev
+  $n = 0; $binds = @(); $i = 0
+  while ($i -lt $upArgs.Count) {
+    if ($upArgs[$i] -eq '--workspace') {
+      if ($i + 1 -ge $upArgs.Count) { Die '--workspace wants <name>=<dir>' }
+      $binds += WorkspaceBind ([string]$upArgs[$i + 1])
+      $i += 2; continue
+    }
+    if ($upArgs[$i] -ne '--capture') { Die "unknown option $($upArgs[$i]) for up" }
+    if ($i + 1 -ge $upArgs.Count) { Die '--capture wants a directory' }
+    $d = $upArgs[$i + 1]
+    if (-not (Test-Path -PathType Container $d)) { Die "--capture: $d is no directory" }
+    $dir = (Resolve-Path $d).Path.TrimEnd('/', '\')
+    $home_ = [Environment]::GetFolderPath('UserProfile').TrimEnd('/', '\')
+    if ($dir -eq '' -or $dir -eq $home_ -or $dir -eq '/home') { Die "--capture refuses $dir — name a session root inside it, never a home directory whole" }
+    # The path rides the override as a single-quoted YAML scalar (a quote doubles, nothing else escapes), with
+    # each dollar sign doubled so compose reads it as a literal and interpolates nothing.
+    if ($dir.Contains("`n")) { Die '--capture refuses a path that holds a newline' }
+    $yamlDir = $dir.Replace("'", "''").Replace('$', '$$')
+    $n++
+    $binds += "      - type: bind`n        source: '$yamlDir'`n        target: /capture/$n`n        read_only: true"
+    $i += 2
+  }
+  foreach ($pair in ((ValueOf 'LARES_WORKSPACES') -split ';')) { if ($pair) { $binds += WorkspaceBind $pair } }
+  DownIfMoved
+  StandPulama
+  if ($binds.Count -gt 0) {
+    $override = [IO.Path]::GetTempFileName()
+    try {
+      Set-Content -Path $override -Value ("services:`n  lares:`n    volumes:`n" + ($binds -join "`n")) -Encoding utf8
+      & docker compose @Base -f $override up -d --wait lares
+      if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
+    } finally { Remove-Item -Force $override -ErrorAction SilentlyContinue }
+  } else {
+    & docker compose @Base up -d --wait lares
+    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
+  }
+  WarnImageRevision
+  WarnPulamaSkew
+  if ($script:Rebuilding -and $PulamaMode) { return }
+  UnlockOrName
+}
+
+function PulamaRestand {
+  # THE PŪLAMA RE-STANDS ON THE IMAGE THAT STANDS. `up` never recreates a lit pūlama, so after a `build` this verb
+  # does: with no vessel standing (down first), it locks a running pūlama (every session drops, every key zero-fills),
+  # then recreates it on the current image. It stands unlit: the operator lights it by hand, then `up` and
+  # `pulama admit`. It reads no route and types none.
+  $vessel = & docker compose @Base ps -q --status running lares
+  if ($LASTEXITCODE -ne 0) { Die 'pulama restand refuses: docker compose ps failed, so whether a vessel stands reads unknown; nothing recreated' }
+  if (-not [string]::IsNullOrWhiteSpace(($vessel -join ''))) { Die 'pulama restand refuses while the lares vessel stands; run `tools/lares-container.ps1 down` first (nothing recreated)' }
+  $state = PulamaState
+  if ($state -eq 'unknown') { Die 'pulama restand refuses: docker compose ps failed for the pūlama, so whether it stands reads unknown; nothing recreated' }
+  EnsureHouse
+  if ($state -eq 'running') {
+    & docker compose @Base --profile pulama exec -T pulama node $PulamaMain lock
+    if ($LASTEXITCODE -ne 0) { Die 'the pūlama refused the lock; nothing recreated' }
+  }
+  & docker compose @Base --profile pulama up -d --force-recreate pulama
+  if ($LASTEXITCODE -ne 0) { Die 'the pūlama did not stand on the current image' }
+  $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
+  $digest = ((& docker image inspect --format '{{.Id}}' $image 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $digest) { $digest = $image }
+  [Console]::Error.WriteLine("lares-container: the pūlama stands unlit on $digest; light it by hand (``tools/lares-container.ps1 pulama light``), then ``tools/lares-container.ps1 up`` and ``tools/lares-container.ps1 pulama admit``")
+}
+
+# THE REBUILD RITE (road rank 4l, L7): one verb re-stands the house onto a new image, internally re-standable.
+#   1  the down path: the keep (`rite keep --if-due`, while the vessel stands), the census, the refusal of a silent stop
+#   2  the build from the commit (HEAD unless --at names another): the outgoing image keeps its revision tag, old ones prune
+#   3  under a pūlama whose code closure moved (or that stands absent): `pulama restand`, then it STOPS with one line,
+#      since the light reads the operator's route by their own hand; `rebuild --resume` picks up after the light
+#   4  `up` on the new image; under a pūlama, `pulama admit` on this terminal (the one route a rebuild reads, and the
+#      pūlama reads it, never this shim), then the vessel's unlock (detached) and the face last worn
+#   5  one closing line: the image's revision, the worn face, the keep
+# It never switches a branch, never reads or types a route, and never lights the pūlama.
+$RebuildPending = Join-Path (Join-Path $House 'cache') 'rebuild-pending'
+function WornNow {
+  $m = [regex]::Match((RunCensus '--json').Out, '"worn"\s*:\s*([0-9]+)')
+  if ($m.Success) { return $m.Groups[1].Value } else { return '' }
+}
+function RebuildVerb([string[]]$rargs) {
+  if ($null -eq $rargs) { $rargs = @() }
+  $resume = $false; $at = 'HEAD'; $atGiven = $false; $i = 0
+  while ($i -lt $rargs.Count) {
+    switch ($rargs[$i]) {
+      '--resume' { $resume = $true; $i++ }
+      '--at' { if ($i + 1 -ge $rargs.Count) { Die 'rebuild --at wants a revision' }; $at = [string]$rargs[$i + 1]; $atGiven = $true; $i += 2 }
+      default { Die "rebuild takes --at <rev> or --resume, and `"$($rargs[$i])`" names neither" }
+    }
+  }
+  if ($resume -and $atGiven) { Die 'rebuild --resume takes no --at: the image stands built; run rebuild --at <rev> for another' }
+  if ($PulamaMode -and -not $script:Tty) { Die "rebuild under a pūlama ends on the pūlama's admit, which reads your route on a terminal; run it on one (nothing touched)" }
+  if (-not $resume) {
+    [Console]::Error.WriteLine('lares-container: rebuild: the down path (keep, census)')
+    DownVessel @()
+    [Console]::Error.WriteLine("lares-container: rebuild: the build from $at")
+    BuildImage $at @()
+    if ($PulamaMode) {
+      PulamaReading
+      switch ($script:Pr.State) {
+        'unread' { Die 'rebuild stops: whether the pūlama stands, or what it runs, reads unknown; the image stands built (read it with `tools/lares-container.ps1 pulama status`)' }
+        { $_ -in @('absent', 'moved') } {
+          PulamaRestand
+          try { New-Item -ItemType Directory -Force -Path (Join-Path $House 'cache') | Out-Null; Set-Content -Path $RebuildPending -Value $script:KeepSaid -Encoding utf8 } catch {}
+          [Console]::Error.WriteLine('lares-container: rebuild stops for your hand: the pūlama stands unlit on the new image; light it (`tools/lares-container.ps1 pulama light`), then `tools/lares-container.ps1 rebuild --resume`')
+          exit 0
+        }
+        default { [Console]::Error.WriteLine("lares-container: rebuild: the pūlama's code closure stands unmoved, so it stays lit (no restand, no light)") }
+      }
+    }
+  } else {
+    if ($PulamaMode) {
+      PulamaReading
+      switch ($script:Pr.State) {
+        'unread' { Die 'rebuild --resume refuses: whether the pūlama stands, or what it runs, reads unknown; read it with `tools/lares-container.ps1 pulama status`' }
+        'absent' { Die 'rebuild --resume refuses: no pūlama runs; `tools/lares-container.ps1 pulama restand`, light it, then rebuild --resume' }
+        'moved' { Die 'rebuild --resume refuses: the pūlama still runs an older code closure; `tools/lares-container.ps1 pulama restand`, light it, then rebuild --resume' }
+      }
+    }
+    $script:KeepSaid = ''
+    try { $script:KeepSaid = (Get-Content -Raw -LiteralPath $RebuildPending -ErrorAction Stop).Trim() } catch {}
+    if (-not $script:KeepSaid) { $script:KeepSaid = "ran before the light, in the rebuild's first half" }
+  }
+  Remove-Item -Force -LiteralPath $RebuildPending -ErrorAction SilentlyContinue
+  $script:Rebuilding = $true
+  UpVerb @()
+  if ($PulamaMode) {
+    [Console]::Error.WriteLine('lares-container: rebuild: the pūlama admits the new image; it reads your route on this terminal')
+    & docker compose @Base --profile pulama exec pulama node $PulamaMain admit
+    if ($LASTEXITCODE -ne 0) { Die 'the pūlama admitted nothing (above); the vessel stands at the floor: `tools/lares-container.ps1 pulama admit`, then `tools/lares-container.ps1 vault unlock --all`' }
+    if ((DetachedUnlock @('--all')) -ne 0) { Die 'the vessel did not open after the admit (above); read it with `tools/lares-container.ps1 pulama status`, then `tools/lares-container.ps1 vault unlock --all`' }
+    if (NoneWorn) { WearLastFace }
+  }
+  $worn = $script:Wore -replace '^h', ''
+  if (-not $worn) { $worn = WornNow }
+  $rev = ((& docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $ImageRef 2>$null) -join '').Trim()
+  if ($rev.Length -gt 12) { $rev = $rev.Substring(0, 12) }
+  if (-not $rev) { $rev = 'unlabeled' }
+  $wearing = if ($worn) { "wearing h$worn" } else { 'no face worn (wear one: `tools/lares-container.ps1 wear N`)' }
+  $keep = if ($script:KeepSaid) { $script:KeepSaid } else { 'none ran' }
+  [Console]::Error.WriteLine("lares-container: rebuilt: the vessel stands on revision $rev, $wearing; keep: $keep")
 }
 
 switch ($verb) {
-  'up' {
-    EnsureHouse
-    ResolveGitRev
-    $n = 0; $binds = @(); $i = 0
-    while ($i -lt $rest.Count) {
-      if ($rest[$i] -eq '--workspace') {
-        if ($i + 1 -ge $rest.Count) { Die '--workspace wants <name>=<dir>' }
-        $binds += WorkspaceBind ([string]$rest[$i + 1])
-        $i += 2; continue
-      }
-      if ($rest[$i] -ne '--capture') { Die "unknown option $($rest[$i]) for up" }
-      if ($i + 1 -ge $rest.Count) { Die '--capture wants a directory' }
-      $d = $rest[$i + 1]
-      if (-not (Test-Path -PathType Container $d)) { Die "--capture: $d is no directory" }
-      $dir = (Resolve-Path $d).Path.TrimEnd('/', '\')
-      $home_ = [Environment]::GetFolderPath('UserProfile').TrimEnd('/', '\')
-      if ($dir -eq '' -or $dir -eq $home_ -or $dir -eq '/home') { Die "--capture refuses $dir — name a session root inside it, never a home directory whole" }
-      # The path rides the override as a single-quoted YAML scalar (a quote doubles, nothing else escapes), with
-      # each dollar sign doubled so compose reads it as a literal and interpolates nothing.
-      if ($dir.Contains("`n")) { Die '--capture refuses a path that holds a newline' }
-      $yamlDir = $dir.Replace("'", "''").Replace('$', '$$')
-      $n++
-      $binds += "      - type: bind`n        source: '$yamlDir'`n        target: /capture/$n`n        read_only: true"
-      $i += 2
-    }
-    foreach ($pair in ((ValueOf 'LARES_WORKSPACES') -split ';')) { if ($pair) { $binds += WorkspaceBind $pair } }
-    StandPulama
-    WarnPulamaSkew
-    if ($binds.Count -gt 0) {
-      $override = [IO.Path]::GetTempFileName()
-      try {
-        Set-Content -Path $override -Value ("services:`n  lares:`n    volumes:`n" + ($binds -join "`n")) -Encoding utf8
-        & docker compose @Base -f $override up -d --wait lares
-        if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
-      } finally { Remove-Item -Force $override -ErrorAction SilentlyContinue }
-    } else {
-      & docker compose @Base up -d --wait lares
-      if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
-    }
-    WarnImageRevision
-    UnlockOrName
-  }
-  'down'  {
-    # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
-    $pulama = PulamaState
-    if ($pulama -eq 'unknown') { Die 'down refuses: docker compose ps failed for the pūlama, so whether the pūlama stands reads unknown; the vessel and the pūlama stand' }
-    # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
-    # acceptance guards the stop.
-    $ids = & docker compose @Base ps -q --status running lares
-    if ($LASTEXITCODE -ne 0) {
-      [Console]::Error.WriteLine('lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown')
-      [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
-      OfferAcceptLoss
-    } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { KeepBeforeDown; CensusBeforeStop }
-    if ($pulama -eq 'running') {
-      # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
-      Compose (@('stop') + $rest + @('lares')); Compose @('rm', '-f', 'lares')
-    } else { Compose (@('down', '--remove-orphans') + $rest) }
-  }
+  'up' { UpVerb $rest }
+  'rebuild' { RebuildVerb $rest }
+  'down'  { DownVessel $rest }
   'pulama' {
     if (-not $PulamaMode) { Die "pulama needs LARES_PULAMA=1 in the environment or $EnvFile" }
     $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
@@ -562,27 +896,8 @@ switch ($verb) {
       'up' { EnsureHouse; Compose @('--profile', 'pulama', 'up', '-d', '--no-recreate', 'pulama') }
       'down' { Compose @('--profile', 'pulama', 'stop', 'pulama') }
       'restand' {
-        # THE PŪLAMA RE-STANDS ON THE IMAGE THAT STANDS. `up` never recreates a lit pūlama, so after a `build` this verb
-        # does: with no vessel standing (down first), it locks a running pūlama (every session drops, every key zero-fills),
-        # then recreates it on the current image. It stands unlit: the operator lights it by hand, then `up` and
-        # `pulama admit`. It reads no route and types none.
         if ($rest.Count -ne 1) { Die 'pulama restand takes no arguments' }
-        $vessel = & docker compose @Base ps -q --status running lares
-        if ($LASTEXITCODE -ne 0) { Die 'pulama restand refuses: docker compose ps failed, so whether a vessel stands reads unknown; nothing recreated' }
-        if (-not [string]::IsNullOrWhiteSpace(($vessel -join ''))) { Die 'pulama restand refuses while the lares vessel stands; run `tools/lares-container.ps1 down` first (nothing recreated)' }
-        $state = PulamaState
-        if ($state -eq 'unknown') { Die 'pulama restand refuses: docker compose ps failed for the pūlama, so whether it stands reads unknown; nothing recreated' }
-        EnsureHouse
-        if ($state -eq 'running') {
-          & docker compose @Base --profile pulama exec -T pulama node $PulamaMain lock
-          if ($LASTEXITCODE -ne 0) { Die 'the pūlama refused the lock; nothing recreated' }
-        }
-        & docker compose @Base --profile pulama up -d --force-recreate pulama
-        if ($LASTEXITCODE -ne 0) { Die 'the pūlama did not stand on the current image' }
-        $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
-        $digest = ((& docker image inspect --format '{{.Id}}' $image 2>$null) -join '').Trim()
-        if ($LASTEXITCODE -ne 0 -or -not $digest) { $digest = $image }
-        [Console]::Error.WriteLine("lares-container: the pūlama stands unlit on $digest; light it by hand (``tools/lares-container.ps1 pulama light``), then ``tools/lares-container.ps1 up`` and ``tools/lares-container.ps1 pulama admit``")
+        PulamaRestand
       }
       { $_ -in @('light', 'lock', 'status', 'tessera') } { if ($sub -eq 'status') { WarnPulamaSkew }; Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, $sub)) }
       'admit' {
@@ -637,14 +952,12 @@ switch ($verb) {
     Write-Output (ImageDigest)
   }
   'build' {
-    # THE IMAGE BUILDS THROUGH THE SHIM: compose reads the env file, and the revision label names the commit the
-    # checkout stands at. A dirty checkout refuses (commit first), and so does a shim outside any checkout.
-    ResolveGitRev
-    if (-not $script:GitRev) { Die "build refuses: no git checkout answers at $PSScriptRoot, so the image's revision label would name no commit; build from a checkout" }
-    if ($script:GitDirty) { Die "build refuses: the checkout holds uncommitted tracked changes, so the image's revision label ($($script:GitRev)) would name no real commit; commit first, then run build again" }
-    [Console]::Error.WriteLine("lares-container: rebuilding the vessel image (every package) from the committed checkout at $($script:GitRev)")
-    Compose (@('build') + $rest + @('lares'))
-    [Console]::Error.WriteLine("lares-container: the vessel image stands rebuilt, stamped revision $($script:GitRev); ``up`` stands it")
+    $at = 'HEAD'; $more = $rest
+    if ($rest.Count -gt 0 -and $rest[0] -eq '--at') {
+      if ($rest.Count -lt 2) { Die 'build --at wants a revision' }
+      $at = [string]$rest[1]; $more = @($rest | Select-Object -Skip 2)
+    }
+    BuildImage $at $more
   }
   'found' {
     EnsureHouse
@@ -703,6 +1016,9 @@ switch ($verb) {
       $rc = DetachedUnlock @($rest | Select-Object -Skip 1)
       if ($rc -ne 0) { exit $rc }
       RememberWornFace $rest
+      # An unlock under a pūlama that named no face can leave faces lent and none worn: the shim wears the last one.
+      $namedFace = @($rest | Where-Object { $_ -eq '--face' -or $_ -like '--face=*' }).Count -gt 0
+      if (-not $namedFace -and (NoneWorn)) { WearLastFace }
       return
     }
     RouteCli (@($verb) + $rest) $true
