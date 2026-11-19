@@ -63,7 +63,7 @@ async function signerOf(name: string): Promise<RecordSigner> {
 }
 
 /** One vessel's sealed rest over a MessageChannel door: the vessel's book of asks, and the island's holder behind it. */
-function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (documentId: string) => boolean; hydrates?: boolean } = {}) {
+function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (documentId: string) => boolean; hydrates?: boolean; held?: string[] } = {}) {
   const own = faceProofSubjectRef(a.chain.scope);
   const channel = new MessageChannel();
   const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
@@ -90,6 +90,7 @@ function standRest(a: Vessel, inner: StorageAdapterInterface, over: { sealed?: (
     }),
     flushRepo: async () => { await repo?.flush(); },
     ...(over.hydrates === true ? { hydrates: true } : {}),
+    ...(over.held ? { onHeld: (h: { refusal: string; error?: string }) => { over.held!.push(h.error !== undefined ? `${h.refusal}:${h.error}` : h.refusal); } } : {}),
   });
   return { rest, own, sealedUnder, asks, seat: (r: Repo) => { repo = r; } };
 }
@@ -308,6 +309,40 @@ describe("T4: a change books its own writer", () => {
     expect(r.rest.book.writerOf(mine.documentId)).toBe("session:s-a");
     await repo.shutdown();
     await peer.shutdown();
+  });
+
+  it("a document many replicas wrote (a catalog each boot writes under a fresh actor) seals its import as received: the writer names the whole set within the manifest's bound, never `values-malformed`", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const held: string[] = [];
+    const r = standRest(a, inner, { held });
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const repo = new Repo({ storage: r.rest.store, network: [] });
+    r.seat(repo);
+    r.rest.watch(repo, () => session);
+    // Twenty boots, each its own actor: the history every later save of the whole document carries.
+    let whole = A.init<{ rows?: Record<string, string> }>({ actor: "00".repeat(16) });
+    whole = A.change(whole, { time: 0 }, (d) => { d.rows = {}; });
+    for (let boot = 1; boot <= 20; boot++) {
+      let one = A.clone(whole, { actor: boot.toString(16).padStart(32, "a") });
+      one = A.change(one, (d) => { d.rows![`boot-${boot}`] = SECRET; });
+      whole = A.merge(whole, one);
+    }
+    const actors = new Set(A.getChangesMetaSince(whole, []).map((m) => m.actor));
+    expect(actors.size).toBe(21);   // the setup took: the history names more writers than any one name holds
+    const handle = repo.import<{ rows?: Record<string, string> }>(A.save(whole));
+    await handle.whenReady();
+    await repo.flush();
+    await r.rest.store.flush();
+    expect(held.filter((h) => h.includes("values-malformed"))).toEqual([]);
+    expect(r.rest.store.waiting(handle.documentId)).toBe(0);
+    expect(restsAny(inner, handle.documentId)).toBe(true);
+    expect(restsClear(inner, handle.documentId, SECRET)).toBe(false);
+    const writer = r.rest.book.writerOf(handle.documentId)!;
+    expect(writer.startsWith("peer:")).toBe(true);
+    expect(writer.length).toBeLessThanOrEqual(505);
+    await repo.shutdown();
   });
 });
 
