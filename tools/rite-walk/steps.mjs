@@ -284,7 +284,10 @@ const lay = async (ctx) => {
   // The count the WORN face's lay previewed; an item waiting on another face's wear names no count here.
   const preview = /kahua: (\d+) item\(s\) stand pending/.exec(text);
   ctx.vars.liftKahua = preview ? Number(preview[1]) : 0;
-  return r.code === 0 ? { ok: true, answer: [lineOf(text, "lay:"), preview ? lineOf(text, "stand pending") : ""].filter(Boolean).join(" · ") } : { ok: false, answer: refusalOf(r) };
+  // Every wait the mirror leg names and every row it refused rides the answer beside the holdings line, so a folder that laid
+  // nowhere reads in the receipt by name.
+  const waits = text.split("\n").filter((l) => /^mirrors: |^\s+refused: /.test(l)).map((l) => l.trim());
+  return r.code === 0 ? { ok: true, answer: [lineOf(text, "lay:"), preview ? lineOf(text, "stand pending") : "", ...waits].filter(Boolean).join(" · ") } : { ok: false, answer: refusalOf(r) };
 };
 const liftKahua = async (ctx) => {
   const n = ctx.vars.liftKahua ?? 0;

@@ -1126,6 +1126,61 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(third.benchWaiting).toEqual([]);
   });
 
+  test("W11 — RED: after a re-found, a read-seated face's own page in the personal layer of a wiki its owner re-stood at an earlier lay lands at that face's own first lay, though the face's catalog half names the wiki only once a share landing lifts the carried row; CONTROL: where no face stood the wiki yet, the page waits by name and its line prints", async () => {
+    clearOld();
+    const PAGE = "lar:///ha.ka.ba/rite-walk/notes/referee";
+    const body = tid(PAGE, "the referee's page in the steward's wiki");
+    put(FR("referee", "personal/notes/ha.ka.ba/rite-walk/notes/referee.tid"), body);
+    writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }, { relation: G1, petname: "referee", handleIndex: 1 }], join(root, "projections"));
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "referee", relation: R1 }], "grant", R0);
+    v.shareRows = [{ slug: "notes", kind: "wiki", read: "referee", write: "", owner: "steward" }];
+    // The vessel's own law, as the walked re-found answers it: `list-wikis` reads the WORN face's catalog half; the owner's mint
+    // names the wiki in its own half; a share landing under the owner's wear stands the workbench and carries the row for each
+    // reader, and every landing lifts the rows carried for the worn face into its half; the reader's stand lifts nothing before
+    // its lay asks (the stand's lift runs detached, and here the lay reads first); a personal layer's in-wiki mount reads the
+    // worn face's half alone, refusing `no-such-bag` where it names none.
+    const halves = new Map<string, Set<string>>(), carried = new Map<string, Set<string>>();
+    const half = (rel: string, of = halves): Set<string> => of.get(rel) ?? of.set(rel, new Set()).get(rel)!;
+    const relOf = (pet: string): string | null => v.faces.find((f) => f.petname === pet)?.relation ?? null;
+    const doors = (): MirrorDoors => {
+      const base = v.mirrorDoors();
+      return {
+        ...base,
+        heldSlugs: async () => new Set(half(v.worn)),
+        mintWiki: async (slug) => { await base.mintWiki!(slug); half(v.worn).add(slug); },
+        lay: async (wave, apply) => /\/personal$/.test(wave.toBag) && wave.wiki !== undefined && !half(v.worn).has(wave.wiki)
+          ? { planned: [], kapae: [], landed: [], kapaeRaised: [], conflicts: [], refused: [{ uri: wave.source, why: `wiki-mount-refused: no-such-bag lar:///ha.ka.ba/bags/${wave.wiki}` }], unanswered: [], skipped: [] }
+          : base.lay(wave, apply),
+        landShares: async () => {
+          for (const slug of half(v.worn, carried)) half(v.worn).add(slug);
+          carried.delete(v.worn);
+          for (const r of v.shareRows) {
+            if (r.kind !== "wiki" || relOf(r.owner ?? "") !== v.worn || !half(v.worn).has(r.slug)) continue;
+            if (!v.seats.has(r.slug)) v.seats.set(r.slug, new Set([v.worn]));
+            for (const pet of `${r.read} ${r.write}`.split(/\s+/).filter((x) => x && x !== r.owner)) { const rel = relOf(pet); if (rel !== null) half(rel, carried).add(r.slug); }
+          }
+          return { granted: 1, moved: 1, carried: 1, pending: 0, workbenches: [] };
+        },
+      };
+    };
+    // CONTROL: the referee worn before any face stood the wiki: its page waits by name, and the lay prints the wait.
+    v.wear(R1);
+    const early = await seedMirrors({ apply: true, doors: doors() });
+    expect(early.benchWaiting.map((w) => [w.slug, w.why, w.owner])).toEqual([["notes", "owner", "steward"]]);
+    expect(mirrorLines(early).out.join("\n")).toMatch(/the wiki notes re-stands at its owner's wear: wear steward/);
+    expect(v.personalOf(R1, "notes").size).toBe(0);
+    // The steward's wear re-stands the wiki and lands the shares.
+    v.wear(R0);
+    await seedMirrors({ apply: true, doors: doors() });
+    expect(v.wikiMints).toEqual(["notes"]);
+    // THE REFEREE'S OWN FIRST LAY AFTER: its page lands in its own personal layer, nothing waits, nothing refuses.
+    v.wear(R1);
+    const own = await seedMirrors({ apply: true, doors: doors() });
+    expect(own.benchWaiting, "the wiki stands in the house: the referee's page waits for nothing").toEqual([]);
+    expect(own.layers.flatMap((t) => t.refused)).toEqual([]);
+    expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(body);
+  });
+
   /** The island's whole-wave answers, as a live vessel gives them: a face-named wave for an open face the vessel does not wear
    *  draws `document-unavailable` (a lit sibling's daemon layer opens at its own wear), or `refusal` where one is named, and an
    *  in-wiki wave for a wiki the vessel holds no bag of draws `wiki-mount-refused: no-such-bag`. The live door FOLDS the answer
