@@ -112,8 +112,8 @@ import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type D
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
 import { projectionRoots, workspaceRootsOf, FACES_PROJECTION_DIR, faceRoot } from "./bag-paths.js";
-import { armFacePoolWatch, type FacePoolWatch } from "./watch-core.js";
-import { islandIngestSubmit, poolIngestPorts } from "./ingest-scan.js";
+import { armFacePoolWatch, armWorkspaceWatch, type FacePoolWatch } from "./watch-core.js";
+import { islandIngestSubmit, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
 import { newRequestId, KAHUA_BAG } from "@lararium/mesh";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
@@ -943,6 +943,10 @@ async function prepareNodeBootOn(
   let wornFaceCanonBag: string | null = null;
   /** THE WATCH over the worn face's pool (`watch-core`, face-pools W1, W2): armed at after-live, downed at teardown and stand-down. */
   let facePoolWatch: FacePoolWatch | null = null;
+  /** THE WORKSPACES the share rows bind (`workspaceRootsOf`, read in makePool): each wiki slug's folder and the name its row gives it. */
+  let boundWorkspaces: { readonly roots: Readonly<Record<string, string>>; readonly names: Readonly<Record<string, string>> } = { roots: {}, names: {} };
+  /** THE WATCHES over the bound workspaces (`armWorkspaceWatch`): armed at after-live beside the face pool's, downed with it. */
+  const workspaceWatches = new Set<FacePoolWatch>();
   /** The folder a face's pet name makes under `faces/`, or null (named in the log) where it makes none. The label names the pet
    *  name where the sealed row reads none (a locked key); the segment rule reads the other faces' names off the label shelf. */
   const faceSegmentOf = async (relation: string, handleIndex: number): Promise<string | null> => {
@@ -4508,6 +4512,7 @@ async function prepareNodeBootOn(
       for (const line of read.unbound) console.warn(`[workspaces] ${line}`);
       return read;
     })();
+    boundWorkspaces = workspaces;
     const diskMirrorGrant: DiskMirrorGrant = [
       // `bags/` PROJECTS ON THE KAHU'S VESSEL ALONE: a vessel the cabal did not admit holds neither live document, so it
       // grants neither mirror and writes nothing under `bags/lares` or `bags/lararium`.
@@ -4645,6 +4650,28 @@ async function prepareNodeBootOn(
       const watch = armFacePoolWatch({ pool, ports: poolIngestPorts({ pool, bags, submit, sense, did: requestedBy, log }), log });
       facePoolWatch = watch;
       stood.push({ what: "the face pool's watch", down: async () => { await watch.down("lock"); if (facePoolWatch === watch) facePoolWatch = null; } });
+      // THE WATCH OVER EACH BOUND WORKSPACE (a named workspace serves as a pool): a shared wiki whose share row names a workspace
+      // projects its workbench there, one disk copy whichever face wears. The same seat stands over it, off the boot path (the arm
+      // founds the folder's git tree there): each settle lands as ONE unattended INGEST wave in that wiki's working layer, run in
+      // the wiki's own island (activated on reference, as `wiki-act` does) under the WORN face's actor, and a stand-off goes to
+      // that wiki's shore. A lock or a wear downs it with the final wave and the workspace's commit seam (naming no face), and the
+      // stand-down runs the same as a down. A face that holds no writer's seat in the workbench lands nothing: the island refuses
+      // the wave by name and the shore weighs its carriers.
+      const inWiki = async (slug: string, verb: string, args: Record<string, unknown>): Promise<Record<string, unknown>> => {
+        const activation = await wikiActivation.ensureActive(slug);
+        if (!activation.ok) throw new Error(`wiki-act: ${activation.cause}: ${activation.detail}`);
+        return vmManager.placeWikiVerb(slug, { verb, args, requestedBy });
+      };
+      for (const [slug, dir] of Object.entries(boundWorkspaces.roots)) {
+        const name = boundWorkspaces.names[slug] ?? slug;
+        const wsLog = (line: string): void => console.log(`[workspaces] ${line}`);
+        // The submit port's `wiki-act` carries the INGEST and names this wiki: it places in that wiki's island alone.
+        const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, String(args["verb"]), (args["args"] as Record<string, unknown>) ?? {}));
+        const wsSense = (uris?: readonly string[]): Promise<unknown> => inWiki(slug, "shore", { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) });
+        const wsWatch = armWorkspaceWatch({ workspace: dir, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, did: requestedBy, log: wsLog }), log: wsLog });
+        workspaceWatches.add(wsWatch);
+        stood.push({ what: `the workspace ${name}'s watch`, down: async () => { await wsWatch.down("lock"); workspaceWatches.delete(wsWatch); } });
+      }
     }
     if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");
   };
@@ -4707,7 +4734,7 @@ async function prepareNodeBootOn(
       if (waiting > 0) nameHeldSaves(waiting);
       return waiting;
     },
-    facePoolStandDown: async () => { await facePoolWatch?.down("down"); },
+    facePoolStandDown: async () => { await facePoolWatch?.down("down"); await Promise.all([...workspaceWatches].map((w) => w.down("down"))); },
     heldSaves: () => sealedRest.store.held(),
     get floorKey() { return floorKeyGrant; },
     backupDoor: {

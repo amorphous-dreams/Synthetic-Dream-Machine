@@ -588,8 +588,8 @@ export function workspaceRootsOf(opts: {
   readonly workspacesHome: string;
   readonly hearth: string;
   readonly sourcedSlugs: readonly string[];
-}): { readonly roots: Readonly<Record<string, string>>; readonly refused: readonly string[]; readonly unbound: readonly string[] } {
-  const roots: Record<string, string> = {};
+}): { readonly roots: Readonly<Record<string, string>>; readonly names: Readonly<Record<string, string>>; readonly refused: readonly string[]; readonly unbound: readonly string[] } {
+  const roots: Record<string, string> = {}, names: Record<string, string> = {};
   const refused: string[] = [], unbound: string[] = [];
   const real = (p: string): string | null => { try { return realpathSync(p); } catch { return null; } };
   const hearth = real(opts.hearth) ?? resolvePath(opts.hearth);
@@ -602,6 +602,7 @@ export function workspaceRootsOf(opts: {
     if (dir === null) { unbound.push(`${row.slug}: workspace "${name}" stands unbound (no ${joinPath(opts.workspacesHome, name)})`); continue; }
     if (within(dir, hearth)) { refused.push(`${row.slug}: workspace "${name}" resolves inside the hearth (${dir})`); continue; }
     roots[row.slug] = dir;
+    names[row.slug] = name;
   }
-  return { roots, refused, unbound };
+  return { roots, names, refused, unbound };
 }
