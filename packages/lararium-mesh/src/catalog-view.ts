@@ -325,15 +325,24 @@ function routedDraft(fd: LarDoc, dd: LarDoc, onFace?: () => void): LarDoc {
   });
 }
 
+/** What a sealed face catalog's lift waits on: the face's change rests sealed (false: it still waits in memory). */
+export interface LiftSealGate { readonly restsSealed: () => Promise<boolean> }
+
 /**
  * THE LIFT: every face row a floor wrote before the face stood (the anon floor's bags and wikis, a plane registered
  * before the seat) moves into the face's catalog and leaves the floor, so the floor names public rows alone. A row the
- * face already holds keeps the face's value. Idempotent: a second run moves nothing. Returns the titles moved.
+ * face already holds keeps the face's value. Idempotent: a second run moves nothing. Returns the titles that left the floor.
+ *
+ * THE FLOOR LETS GO ONLY OF WHAT RESTS SEALED. A sealed face catalog (`gate`) takes the rows first, and the floor drops
+ * them only once the face's change rests sealed: a seal its holder refuses leaves that change in memory alone, and a
+ * stand-down then would drop the rows from both documents. So a refused seal leaves the floor whole, and the next lift
+ * (a later boot's, idempotent over the rows the face already holds) releases them.
  */
-export function liftFaceCatalogRows(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc>): string[] {
+export function liftFaceCatalogRows(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc>): string[];
+export function liftFaceCatalogRows(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc>, gate: LiftSealGate): Promise<string[]>;
+export function liftFaceCatalogRows(floor: DocHandle<LarDoc>, face: DocHandle<LarDoc>, gate?: LiftSealGate): string[] | Promise<string[]> {
   const titles = Object.keys(floor.doc()?.tiddlers ?? {}).filter((title) => catalogRowHalf(title, ownEntry(floor.doc()?.tiddlers, title) as StoredLarRecord) === "face");
-  if (titles.length === 0) return [];
-  const carried: string[] = [];
+  if (titles.length === 0) return gate ? Promise.resolve([]) : [];
   face.change((dd) => {
     const fd = floor.doc();
     for (const title of titles) {
@@ -343,11 +352,11 @@ export function liftFaceCatalogRows(floor: DocHandle<LarDoc>, face: DocHandle<La
       const plain = plainRecordOrNull(row as never);
       if (plain === null) continue;
       dd.tiddlers[title] = storedRecord(plain);
-      carried.push(title);
     }
   });
-  floor.change((fd) => { for (const title of titles) delete fd.tiddlers[title]; });
-  return titles;
+  const release = (): string[] => { floor.change((fd) => { for (const title of titles) delete fd.tiddlers[title]; }); return titles; };
+  if (!gate) return release();
+  return gate.restsSealed().then((sealed) => (sealed ? release() : []), () => []);
 }
 
 /** Every lit face's own view over one floor, by PersonaGroup (`faceViewBook`). */

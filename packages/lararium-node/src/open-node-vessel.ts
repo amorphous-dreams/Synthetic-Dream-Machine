@@ -60,7 +60,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, catalogRowHalf, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -2955,8 +2955,19 @@ async function prepareNodeBootOn(
       let face: DocHandle<LarDoc>;
       try { face = await openFaceCatalog(repo, faceCatalogExpected, secret); } finally { secret.fill(0); }
       view.bindFace(face);
-      const moved = liftFaceCatalogRows(view.floorHandle, face);
+      // THE FLOOR LETS GO ONLY OF WHAT RESTS SEALED: the face's change flushes through the sealed rest first, and a seal
+      // that waits in memory (refused, unbooked) leaves the floor's rows standing for the next lift.
+      const faceId = face.documentId;
+      const restsSealed = async (): Promise<boolean> => {
+        await repo.flush([faceId]);
+        await sealedRest.store.flush();
+        return sealedRest.store.waiting(faceId) === 0;
+      };
+      const moved = await liftFaceCatalogRows(view.floorHandle, face, { restsSealed });
       if (moved.length) console.log(`[catalog] ${moved.length} face row(s) left the floor for the face's own catalog`);
+      else if (Object.keys(view.floorHandle.doc()?.tiddlers ?? {}).some((title) => catalogRowHalf(title, ownEntry(view.floorHandle.doc()?.tiddlers, title) as never) === "face")) {
+        console.log("[catalog] the face's own catalog holds its rows in memory until its seal rests; the floor keeps them for the next lift");
+      }
       const unstand = standLitFaceCatalog(assembly.catalogHandle.url, face.url);
       stood.push({ what: "the face's catalog", down: () => { unstand(); view.bindFace(null); } });
       console.log(`[catalog] the face's own catalog stands: ${face.url}`);
