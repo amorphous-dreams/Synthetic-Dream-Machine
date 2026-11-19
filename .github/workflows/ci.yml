@@ -189,7 +189,7 @@ jobs:
       - name: Every trailer key names a known key
         if: ${{ !cancelled() }}
         run: |
-          git fetch --no-tags --filter=blob:none --unshallow origin "${{ github.base_ref || 'develop' }}"
+          git fetch --no-tags --no-recurse-submodules --filter=blob:none --unshallow origin "${{ github.base_ref || 'develop' }}"
           node tools/trailer-keys.mjs "$(git merge-base FETCH_HEAD HEAD)..HEAD"
       - name: Generated artifacts must be fresh (build emits no tracked diff)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
