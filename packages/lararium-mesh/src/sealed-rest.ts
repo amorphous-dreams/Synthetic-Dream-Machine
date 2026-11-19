@@ -26,7 +26,7 @@ import { isValidDocumentId, type Chunk, type Repo, type StorageAdapterInterface 
 import type { DocumentValue, HolderRefusal, OpenedValue } from "./content-key-holder.js";
 import { DOCUMENT_HANG_BOUND_MS } from "./find-or-throw.js";
 import { readSealedAddress } from "./sealed-chunk.js";
-import { SealedDocumentStore, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
+import { SealedDocumentStore, type HeldNotice, type SaveSession, type SealedValueAddresses } from "./sealed-doc-store.js";
 import type { HeldRestKey } from "./held-rest-key.js";
 import type { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
@@ -392,6 +392,8 @@ export interface SealedBag {
   readonly bagId: string; readonly face: string | null;
   /** The vessel's secret home: it rests sealed under this held key, with no session and no face (`held-rest-key`). */
   readonly held?: HeldRestKey;
+  /** A vessel-held home whose key has not opened: a load refuses `holder-locked`, a save waits in memory. */
+  readonly locked?: true;
 }
 
 export interface SealedRest<S extends SaveSession = SaveSession> {
@@ -443,7 +445,9 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly wornAt?: (face: string, subject: string) => boolean;
   readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock?(): void };
   readonly flushRepo: () => Promise<void>;
-  readonly onHeld?: (held: { readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed"; readonly documentId: string }) => void;
+  readonly onHeld?: (held: HeldNotice) => void;
+  /** A hydrating load waits (`SealedDocumentPorts.onHydrationWait`): once per document and refusal, with the bag the map names. */
+  readonly onHydrationWait?: (wait: { readonly documentId: string; readonly refusal: string; readonly bagId: string | null }) => void;
   /** A restart's hydration: a sealed document's load waits for its map (`SealedDocumentStore.mapMoved`) until the rest
    *  stands down (`standDown`, or the store's own `endHydration`). */
   readonly hydrates?: boolean;
@@ -488,6 +492,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     waitOverSealed: true,
     seal: input.door.seal, open: input.door.open,
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
+    ...(input.onHydrationWait ? { onHydrationWait: input.onHydrationWait } : {}),
     ...(input.hydrates === true ? { hydrates: true } : {}),
     ...(input.vesselKey ? { vesselKey: input.vesselKey } : {}),
   });

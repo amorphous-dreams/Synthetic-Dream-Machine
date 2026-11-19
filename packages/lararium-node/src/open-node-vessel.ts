@@ -1101,7 +1101,10 @@ async function prepareNodeBootOn(
       idPrefix: `docstore-${process.pid}`,
     }),
     flushRepo: async () => { await repo.flush(); },
-    onHeld: ({ refusal, documentId }) => console.log(`[sealed-rest] ${refusal}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
+    // A SAVE HELD BACK NAMES WHY: the store's refusal, and for a seal the holder refused, the holder's own refusal and cause.
+    onHeld: ({ refusal, documentId, error, cause }) => console.log(`[sealed-rest] ${refusal}${error ? ` (${error}${cause ? `: ${cause}` : ""})` : ""}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
+    // A HYDRATING LOAD THAT WAITS NAMES WHAT IT WAITS ON, once per document and refusal: the refusal and the bag holding it.
+    onHydrationWait: ({ documentId, refusal, bagId }) => console.log(`[sealed-rest] ${documentId.slice(0, 12)}… waits to hydrate on ${refusal}${bagId ? ` in ${bagId}` : " (no bag names it yet)"}; it reads again at the next map move`),
     // A restart's hydration: a sealed document the engine asks for ahead of the dial waits for its map, never strands;
     // the Repo's stand-down ends the wait by name.
     hydrates: true,
