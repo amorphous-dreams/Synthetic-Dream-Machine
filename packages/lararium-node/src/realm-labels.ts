@@ -241,9 +241,11 @@ export function ensureRealmLabel(projections: string, slug: string, id: string |
   const realmId = id !== null && REALM_ID.test(id) ? id : null;
   let petName = slug;
   if (taken.has(fold(slug))) {
-    const candidates = realmId !== null ? Array.from({ length: realmId.length }, (_, i) => `${slug}-${realmId.slice(0, i + 1)}`)
-      : Array.from({ length: 1000 }, (_, i) => `${slug}-${i + 2}`);
-    petName = candidates.find((c) => !taken.has(fold(c))) ?? `${slug}-${Date.now()}`;
+    // The shortest id prefix that names it apart; past the whole id (or with none read), the shortest counter does.
+    const byId = realmId === null ? undefined : Array.from({ length: realmId.length }, (_, i) => `${slug}-${realmId.slice(0, i + 1)}`).find((c) => !taken.has(fold(c)));
+    let n = 2;
+    while (byId === undefined && taken.has(fold(`${slug}-${n}`))) n++;
+    petName = byId ?? `${slug}-${n}`;
   }
   const label: RealmLabel = { schema: REALM_LABEL_SCHEMA, petName, realms: [{ slug, id: realmId }], bags: [slug] };
   writeRealmLabel(projections, label);
