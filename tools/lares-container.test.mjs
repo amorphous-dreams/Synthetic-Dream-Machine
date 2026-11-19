@@ -873,14 +873,26 @@ for (const [name, shim] of shims) {
     assert.equal(beside.status, 0, beside.stderr);
   });
 
-  test(`${name}: up, found and the offline door make the house's bound classes before a container stands, the pūlama's socket directory among them in every mode (the vessel binds it whether or not a pūlama stands)`, async () => {
+  test(`${name}: up, found and the offline door make the house's bound classes before a container stands, and never the pūlama's socket directory (a named volume holds it, out of the host's reach)`, async () => {
     for (const argv of [["up"], ["found"]]) {
       const r = await run(shim, argv, { env: MOUNTS });
       assert.equal(r.status, 0, r.stderr);
-      assert.deepEqual(r.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true, "pulama/socket": true });
+      assert.deepEqual(r.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true, "pulama/socket": false });
+      assert.doesNotMatch(r.stderr, /pulama\/socket/);
     }
     const offline = await run(shim, ["vessel", "read"], { env: MOUNTS });
-    assert.deepEqual(offline.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true, "pulama/socket": true });
+    assert.deepEqual(offline.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true, "pulama/socket": false });
+    // UNDER A PŪLAMA too: the shim makes its state directory and still no socket directory.
+    const pulama = await run(shim, ["pulama", "up"], { env: { ...MOUNTS, LARES_PULAMA: "1" } });
+    assert.equal(pulama.status, 0, pulama.stderr);
+    assert.equal(pulama.made["pulama/socket"], false);
+  });
+
+  test(`${name}: a pūlama socket directory standing on the host gets named for the operator to remove, and the shim never removes it`, async () => {
+    const r = await run(shim, ["up"], { env: MOUNTS, houseFiles: { "pulama/socket/pulama.sock": "" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stderr, /pulama\/socket mounts nowhere.*remove it by hand/);
+    assert.equal(r.made["pulama/socket"], true, "the shim leaves the stale directory standing");
   });
 
   // THE IMAGE BUILDS THROUGH THE SHIM: a bare `docker compose build` reads no env file and fails on LARES_HOUSE.
