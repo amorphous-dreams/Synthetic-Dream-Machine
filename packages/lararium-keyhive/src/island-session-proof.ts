@@ -107,6 +107,8 @@ export function ownChainStanding(chain: () => SessionOwnChain | null, bags: () =
       const place = c.place ? `${bare(c.place.atomKey)}@${c.place.place}` : "";
       return `${nexus}|${place}`;
     },
+    // The register set by its content, in one order: a bag the face registers after a reading moves it.
+    registeredOf: () => JSON.stringify([...new Set(bags())].sort()),
   };
 }
 

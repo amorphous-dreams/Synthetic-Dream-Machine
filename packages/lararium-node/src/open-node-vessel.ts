@@ -60,7 +60,7 @@ import {
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, catalogRowHalf, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, catalogFaceSlotBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, catalogRowHalf, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
@@ -3537,7 +3537,11 @@ async function prepareNodeBootOn(
     const faceStandsLit = faceLit && !!personaGroupId && wornFaceProved;
     const canonBagId = standingDaemonCanonBag({ lit: faceStandsLit, faceRelation: wornRelation });
     wornFaceCanonBag = canonBagId && wornRelation ? canonBagId : null;
-    const faceWikiBags = wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}) });
+    // THE REGISTER SET CARRIES EVERY LAYER THE WORN FACE'S CATALOG ANNOUNCES (`catalogFaceSlotBags`): the mount's own margin,
+    // and the margin and draft of each wiki the catalog names, read off the catalog as it stands at each asking (the floor's
+    // rows at the island's open, the face's own once its catalog stands). The island registers them ahead of any slot
+    // document's open, so the holder founds each margin the resolver names. Only the worn face's catalog binds to this view.
+    const faceWikiBags = (): string[] => wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}), announced: catalogFaceSlotBags(assembly.catalogHandle.doc()) }).registered;
     // A house canon bag in this set never seals under the face: the map skips it (`sealedBagMap`, cap-tier.mem house canon).
     // EVERY MARGIN AND DRAFT THE WORN FACE'S RESOLVER NAMED seals under the lit face beside them (`isFaceSlotBag`): the
     // island registered each on the face's hive before it named it, so the map reads them live off the names it heard.
@@ -3701,7 +3705,7 @@ async function prepareNodeBootOn(
           catalogNamed: catalogNamedBags(assembly.catalogHandle.doc()),
         }] : [],
         // The user wiki's slots ride as a wiki stands; the daemon wiki's slots ride with the lit face, which seals them.
-        wikiBags: faceWikiBags.registered,
+        wikiBags: faceWikiBags(),
         ...(kahuCanon.lares || kahuCanon.lararium ? { systemCanon: true } : {}),
       }),
       ...(faceLit && signerDid ? { signerDid } : {}),
@@ -3792,7 +3796,7 @@ async function prepareNodeBootOn(
       const sent = new Set(sentRegisterBags);
       const late = deriveRegisterBags({
         fleets: personaGroupId && wornFaceProved ? [{ personaGroupId, catalogNamed: catalogNamedBags(assembly.catalogHandle.doc()) }] : [],
-        wikiBags: faceWikiBags.registered,
+        wikiBags: faceWikiBags(),
         ...(kahuCanon.lares || kahuCanon.lararium ? { systemCanon: true } : {}),
       }).filter((bag) => !sent.has(bag));
       if (late.length) {

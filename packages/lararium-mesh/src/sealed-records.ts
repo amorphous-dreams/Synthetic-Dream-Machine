@@ -486,6 +486,10 @@ export interface WriterStanding {
   /** The chain this standing reads writers under, named, or null where none stands yet: a reading taken then counts
    *  no writer, so a holder takes no reading and settles no roll on it. Absent: the standing reads alike always. */
   readonly chainOf?: () => string | null;
+  /** The bags this standing reads a writer capable over, named by their content: `holdsWrite` answers by that set, so a
+   *  reading a holder took under one set gives way when the set reads otherwise (a bag the face registers after the
+   *  reading founds there). Absent: the standing reads by no register set. */
+  readonly registeredOf?: () => string;
 }
 export const READ_RECORD_REFUSALS = [
   "record-malformed",       // the carried record, or its clear part, reads as no record of this kind
