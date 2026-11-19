@@ -1027,8 +1027,8 @@ switch ($verb) {
   }
   'lei' {
     # The lei hand door under a pūlama (#269): the vessel reads the act's terms, the pūlama reads the route on this terminal
-    # and signs one record, the vessel lands it. The signing's terminal output shows as it runs; the answer is its last JSON
-    # line. A signing that answers no record lands nothing. Without a pūlama, every lei act routes as before.
+    # and signs one record, the vessel lands it. The signing's terminal output shows as it runs; the answer is the last object
+    # it prints, from its opening brace at the line's start to the end, joined onto one line. A signing that answers no record lands nothing. Without a pūlama, every lei act routes as before.
     $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
     if ($PulamaMode -and $sub -in @('kui', 'restring', 'unstring')) {
       if (-not $script:Tty) { Die 'lei under a pūlama reads its route on a terminal; run it on one (nothing signed)' }
@@ -1040,9 +1040,10 @@ switch ($verb) {
       & docker compose @Base --profile pulama exec --no-TTY=false pulama node $PulamaMain lei $sub $terms | ForEach-Object {
         [Console]::Error.WriteLine($_)
         $line = "$_".Trim("`r")
-        if ($line.StartsWith('{')) { $answer = $line }
+        if ($line.StartsWith('{')) { $answer = '' }
+        $answer += $line
       }
-      if (-not $answer) { Die 'the pūlama signed nothing; nothing lands' }
+      if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
       $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli lei land $answer
       exit $LASTEXITCODE
     }
