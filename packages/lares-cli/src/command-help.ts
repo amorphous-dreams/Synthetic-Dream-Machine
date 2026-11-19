@@ -452,6 +452,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "stand --observe      REPORT ONLY — withholds the standing half; outranks every acting flag",
       "stand --init         found a vessel where the root holds none — writes LAR_ROOT alone; the operator's homes ride `lares home`, the mempalace sidecar `mempalace install`",
       "read --palaces       the palace-organ health table (mempalace · structure · form · mesh)",
+      "read --json          the reading as one JSON object (every lens; `read vessel` names each document); a pipe reads the terminal's prose",
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
       "lay --lift-kahua <N>  lift the kahua items the lay previewed when N equals their count (a bare --yes lifts none)",
       "floor seed --genesis <dir>  the genesis dir whose seed reads (else LAR_GENESIS through the one resolver; an image carries /app/genesis); --json carries `seed`, the line the pūlama takes",
@@ -900,14 +901,16 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "under a new route of its own; it carries no veil key and no seat, and the sealed bytes must survive elsewhere. " +
       "`restore` brings a face back from its bundle as a recovery act: the vessel derives its own veil and takes a NEW seat " +
       "under the face's fixed prefix, and `--memory` lands the bundle's content keys on that seat. " +
-      "`status` gives ONE reading of every standing file the carrier table names: a row under the vessel key reads " +
-      "sealed or reads as a fault, a row outside it names the law it rests bare under, and a private file no row " +
-      "names prints by name. `unbind --rotate` runs as one act: the rotation's census passes before any byte moves, " +
+      "`status` prints the slot tree, each face as one counted line, the carrier counts, every fault by name and every " +
+      "private file no row names, the same few lines on a terminal and through a pipe; `--verbose` adds ONE reading of " +
+      "every standing file the carrier table names (a row under the vessel key reads sealed or reads as a fault, a row " +
+      "outside it names the law it rests bare under), and `--json` answers the whole custody object. `unbind --rotate` runs as one act: the rotation's census passes before any byte moves, " +
       "so a carrier that refuses it leaves the slot bound. A credential rides a TTY alone, typed with no echo: no " +
       "flag, no environment variable and no pipe carries one. `rewrap --face N` moves a face founded before the ward " +
       "under one: its ward tree binds over the typed route, then each root row moves under the ward key.",
     examples: [
-      "lares vault status                     # the slot tree, one reading of each standing file, and any private file outside the carrier table",
+      "lares vault status                     # the slot tree, each face, the carrier counts, every fault, and any private file outside the carrier table",
+      "lares vault status --verbose           # the same, plus one reading of each standing file",
       "lares vault unlock                     # hand the standing vessel a TTY credential: it opens its key and composes with what the key opens",
       "                                       # where LARES_KEEP_WORKSPACE (or the one LARES_WORKSPACES pair) names a keep workspace and no keep lei stands, it asks once to string one under the same passphrase, as the face --face names, else the daemon mount",
       "lares vault lock [--face N]            # the standing vessel drops its key and stands at the floor; --face N drops that face alone",
@@ -928,6 +931,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--as <N>           (restore) the handle-index the face lands at here; absent, the index its bundle named",
       "--memory           (restore) import the bundle's memory section instead of its lineage",
       "--cards            (restore) read a root split's cards on the terminal instead of a bundle; needs --face and --as",
+      "--verbose          (status) one reading of each standing file the carrier table names, beside the summary",
+      "--json             (status) the whole custody object (the slot tree, every row, the files outside the table, the door); (unlock) the door's answer as one object; the form a caller parses, since a pipe reads prose",
       "--face <key|pfx>   (restore --cards) the face the cards should rebuild: its root's public key or its prefix",
       "unlock | bind | unbind | reseat | backup | restore read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
     ],
@@ -945,7 +950,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares wear 1                           # move the mount to face h1, a face already standing open",
       "lares wear --face 0                    # the same move, the face named by flag",
     ],
-    flags: ["--face <N>         the face to wear, read where no positional names one"],
+    flags: [
+      "--face <N>         the face to wear, read where no positional names one",
+      "--json             the door's answer as one object, the form a caller parses; a pipe reads the one prose line",
+    ],
     next: ["lares vault status", "lares vault unlock   # a vessel holding no key opens here first"],
     meme: "lar:///ha.ka.ba/lares/docs/pono/the-worn-house",
   },

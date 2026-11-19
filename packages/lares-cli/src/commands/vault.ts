@@ -27,7 +27,7 @@ import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js
 import { udsAlive } from "../local-connector.js";
 import { houseFaces, sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { pulamaStands } from "../house-config.js";
-import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
+import { emit, exitFor, proseFirst, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -58,8 +58,13 @@ const RELATION_LINE =
   "rotation never repairs the loss of a relation carrier: a relation secret derives from no house key, so only the " +
   "other party can re-issue it. Back the carrier itself up.";
 
-export async function cmdVault(args: ParsedArgs): Promise<number> {
-  const sub = args.positional[0];
+/** The vault reads that answer a pipe in prose (render.ts `proseFirst`): the custody reading and the unlock the shim chains. */
+const PROSE_FIRST_SUBS: ReadonlySet<string> = new Set(["status", "unlock"]);
+
+export async function cmdVault(given: ParsedArgs): Promise<number> {
+  const sub = given.positional[0];
+  // The refusals below render through the same args, so a piped unlock refuses in prose too.
+  const args = PROSE_FIRST_SUBS.has(sub ?? "") ? proseFirst(given) : given;
   if (!sub) { usage(args); return 2; }
   const daemonUp = await udsAlive();
 
@@ -111,7 +116,7 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
         console.log("vessel key     no vessel stands on this store, so no process holds it.");
       }
       if (typeof door?.["wikiAwaits"] === "string") console.log(`wiki           ${door["wikiAwaits"]}`);
-      printCustody(custody);
+      printCustody(custody, args.flags["verbose"] === true);
     },
   });
   return 0;
@@ -133,11 +138,13 @@ function rowLine(r: CustodyStatusRow): string {
 }
 
 /**
- * The "custody (S key)" section: the slot tree, then ONE reading of every standing file the carrier table names, then
- * every private file it does not name. A row outside the vessel key prints the law it rests bare under; a hot or
- * cold row that reads anything but `sealed` prints as a fault.
+ * The "custody (S key)" section: the slot tree, each face as one counted line, the carrier counts, every fault by name, then
+ * every private file the carrier table does not name. `--verbose` adds ONE reading of every standing file the table names
+ * (a row outside the vessel key prints the law it rests bare under); the summary never lists a sound row by name, so a
+ * store of many sealed rows still reads in a dozen lines. A hot or cold row that reads anything but `sealed` prints as a
+ * fault, in the summary too.
  */
-function printCustody(c: CustodyStatus): void {
+function printCustody(c: CustodyStatus, verbose: boolean): void {
   console.log("custody (S key):");
   if (c.tree.reading === "absent") console.log("  slot tree      absent — no s-slots.bin stands (a founding seals custody from birth)");
   else if (c.tree.reading === "unreadable") console.log(`  slot tree      UNREADABLE — ${c.tree.why}`);
@@ -170,7 +177,9 @@ function printCustody(c: CustodyStatus): void {
     groups.set(key, [...(groups.get(key) ?? []), r]);
   }
   for (const rows of groups.values()) {
-    if (rows.length <= ROW_FOLD || rows[0]!.fault) { for (const r of rows) console.log(rowLine(r)); continue; }
+    if (rows[0]!.fault) { for (const r of rows) console.log(rowLine(r)); continue; }
+    if (!verbose) continue;
+    if (rows.length <= ROW_FOLD) { for (const r of rows) console.log(rowLine(r)); continue; }
     const r = rows[0]!;
     console.log(`    ${`${r.row} ×${rows.length}`.padEnd(30)} ${r.home.padEnd(9)} ${r.custody.padEnd(11)} ${String(r.keyClass ?? "-").padEnd(14)} ${r.reading.padEnd(10)}${r.bare !== null ? `   by law: ${r.bare}` : ""}`);
   }

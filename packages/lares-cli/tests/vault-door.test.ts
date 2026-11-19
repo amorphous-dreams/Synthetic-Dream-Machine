@@ -225,12 +225,12 @@ describe("vault door — status, unlock, bind, unbind", () => {
     expect(() => parseArgs(["vault", "unbind", "abc", "--rotate=abc"])).toThrow(/--rotate is a flag and takes no value/);
   }, 60_000);
 
-  it("★ status gives ONE reading of each standing file: a floor row beside its law, a bare hot row as a fault, a private file outside the table by name ★", async () => {
+  it("★ status --verbose gives ONE reading of each standing file: a floor row beside its law, a bare hot row as a fault, a private file outside the table by name ★", async () => {
     const homes = vesselCustodyHomes();
     writeFileSync(join(homes.identity, ".vessel-key.json"), "{}", { mode: 0o600 });
     writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{}", { mode: 0o600 });
     writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });
-    expect(await cmdVault(parseArgs(["vault", "status", "--no-json"]))).toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "status", "--verbose"]))).toBe(0);
     const lines = out.join("\n").split("\n");
     // each standing file reads on exactly one line
     for (const file of ["gate-root.bin", ".vessel-key.json", ".persona-enroll-pending.json", "s-slots.bin"]) {
@@ -365,5 +365,57 @@ describe("the vault door answers eight verbs", () => {
     expect(tree(root)).toBe(before);
     // CONTROL: a verb of the eight answers.
     expect(await run("status")).toBe(0);
+  });
+});
+
+describe("vault status answers a pipe in prose (quiet-pipe)", () => {
+  /** Stdout as a pipe reads it: no terminal, so the house-wide policy alone would answer JSON. */
+  function piped(): void { Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true }); }
+  afterEach(() => { delete (process.stdout as { isTTY?: boolean }).isTTY; });
+
+  it("★ a piped `vault status` prints the short summary a terminal reads: no JSON, no sealed row by name ★", async () => {
+    piped();
+    expect(await cmdVault(parseArgs(["vault", "status"]))).toBe(0);
+    const lines = out.join("\n").split("\n").filter((l) => l.trim() !== "");
+    expect(lines.some((l) => l.trimStart().startsWith("{")), lines.join("\n")).toBe(false);
+    expect(lines.join("\n")).toMatch(/slot tree\s+1 slot\(s\)/);
+    expect(lines.join("\n")).toMatch(/carriers\s+\d+ standing: \d+ sealed under the vessel key, \d+ outside it by law, 0 at fault/);
+    expect(lines.join("\n")).toMatch(/outside the table\s+nothing/);
+    expect(lines.join("\n")).not.toContain("gate-root.bin");                       // a sealed row rests in the count, never by name
+    expect(lines.length, lines.join("\n")).toBeLessThanOrEqual(12);
+  });
+
+  it("★ a fault and a file outside the table still print by name in the summary ★", async () => {
+    piped();
+    const homes = vesselCustodyHomes();
+    writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{}", { mode: 0o600 });
+    writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });
+    expect(await cmdVault(parseArgs(["vault", "status"]))).toBe(0);
+    const text = out.join("\n");
+    expect(text).toMatch(/\.persona-enroll-pending\.json\s+FAULT/);
+    expect(text).toMatch(/OUTSIDE THE TABLE.*side-key\.json/);
+    expect(text).not.toContain("gate-root.bin");
+  });
+
+  it("★ `--verbose` prints one reading of every standing file; `--json` still answers the whole custody object ★", async () => {
+    piped();
+    expect(await cmdVault(parseArgs(["vault", "status", "--verbose"]))).toBe(0);
+    expect(out.join("\n")).toMatch(/gate-root\.bin/);
+    out.length = 0;
+    expect(await cmdVault(parseArgs(["vault", "status", "--json"]))).toBe(0);
+    const j = JSON.parse(out.join("").trim().split("\n").pop()!);
+    expect(j.ok).toBe(true);
+    expect(j.data.custody.rows.some((r: { row: string }) => r.row === "gate-root")).toBe(true);
+  });
+
+  it("★ a piped `vault unlock` answers in prose: its refusal names itself on stderr and stdout carries no JSON; `--json` keeps the envelope ★", async () => {
+    piped();
+    tty = false;
+    expect(await cmdVault(parseArgs(["vault", "unlock", "--all"]))).toBe(1);
+    expect(out.join("")).toBe("");
+    expect(err.join("\n")).toMatch(/lares vault unlock: CredentialTtyRefusal/);
+    err.length = 0;
+    expect(await cmdVault(parseArgs(["vault", "unlock", "--all", "--json"]))).toBe(1);
+    expect(JSON.parse(out.join("").trim()).error.code).toBe("CredentialTtyRefusal");
   });
 });

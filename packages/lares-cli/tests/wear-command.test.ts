@@ -72,6 +72,17 @@ describe("RED lares wear N", () => {
     expect(answer()).toMatchObject({ ok: true, data: { op: "wear", face: 1 } });
   });
 
+  it("★ a piped wear (the shim's `exec -T … wear N </dev/null`) prints its one prose line, never the frame ★", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
+    Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true });
+    try {
+      expect(await cmdWear(parseArgs(["wear", "1"]))).toBe(0);
+    } finally {
+      delete (process.stdout as { isTTY?: boolean }).isTTY;
+    }
+    expect(out).toEqual(["wearing h1: the vessel stands as hearth. No route was asked."]);
+  });
+
   it("`--face N` names the face as well as the positional", async () => {
     door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 2, held: true, standing: "hearth" };
     expect(await wear("--face", "2")).toBe(0);

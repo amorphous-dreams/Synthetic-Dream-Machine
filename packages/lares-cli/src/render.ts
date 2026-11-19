@@ -34,6 +34,23 @@ export function wantsJson(args: ParsedArgs): boolean {
 }
 
 /**
+ * A STATUS READ ANSWERS A PIPE IN PROSE (the operator, 2026-11-19: the re-stand's output read "spammy"). A read whose whole
+ * reading runs long (every sealed row, every document the store holds) prints the same summary on a terminal and through a
+ * pipe, so `| head` cuts it and a shim that pipes the CLI floods nothing; only an explicit `--json` asks for the envelope,
+ * and `--no-json` stays a working alias of the default. `meme get`'s carrier-first ruling (commands/meme.ts) runs the same
+ * law. A caller that parses one of these reads names `--json`.
+ */
+export function proseFirst(args: ParsedArgs): ParsedArgs {
+  return { ...args, flags: { ...args.flags, json: args.flags["json"] === true } };
+}
+
+/**
+ * The reads that answer a pipe in prose (`proseFirst`), as `<command> <sub>` the way an operator types them. A caller that
+ * parses one of them names `--json`; `tests/quiet-pipe-parse-sites.test.ts` holds every parse site in the tree to it.
+ */
+export const PROSE_FIRST_READS: readonly string[] = ["vault status", "vault unlock", "vessel read", "wear"];
+
+/**
  * A failure an agent can branch on: a STABLE class `code`, a human `message`,
  * and an optional actionable `hint`. The `code` pairs with the process exit
  * (see `exitFor`), so the machine reads the same verdict two ways. Errors travel

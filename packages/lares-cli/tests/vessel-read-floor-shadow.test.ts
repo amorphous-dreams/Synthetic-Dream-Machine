@@ -59,3 +59,28 @@ describe("vessel read names the floor shadow count", () => {
     expect((await readJson(root)).data["floorShadow"]).toBeNull();
   });
 });
+
+describe("vessel read answers a pipe in prose (quiet-pipe)", () => {
+  afterEach(() => { delete (process.stdout as { isTTY?: boolean }).isTTY; });
+
+  test("★ a piped `vessel read` prints the terminal's few lines, never the JSON envelope ★", async () => {
+    const { root } = house();
+    Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true });
+    process.env["LAR_ROOT"] = root;
+    const lines: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((...a) => { lines.push(a.join(" ")); });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const stdoutWrite = process.stdout.write;
+    let raw = "";
+    process.stdout.write = ((chunk: unknown) => { raw += String(chunk); return true; }) as typeof process.stdout.write;
+    try {
+      expect(await dispatch(["vessel", "read", "--root", root, "--skip-build"])).toBe(0);
+    } finally {
+      process.stdout.write = stdoutWrite;
+    }
+    expect(raw).toBe("");
+    expect(lines[0]).toBe("lares vessel read (local node)");
+    expect(lines.join("\n")).toMatch(/bootstrap:\s+absent/);
+    expect(lines.length).toBeLessThanOrEqual(10);
+  });
+});

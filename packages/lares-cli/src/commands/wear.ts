@@ -9,7 +9,7 @@
  */
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { helpLines } from "../command-help.js";
-import { emit, refuseUsage } from "../render.js";
+import { emit, proseFirst, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /**
@@ -42,7 +42,10 @@ function wearLine(a: CustodyDoorAnswer): string {
   return `wearing h${String(a["face"])}: the vessel stands as ${standing}. No route was asked.`;
 }
 
-export async function cmdWear(args: ParsedArgs): Promise<number> {
+export async function cmdWear(given: ParsedArgs): Promise<number> {
+  // A WEAR ANSWERS A PIPE IN PROSE (render.ts `proseFirst`): the shim's `up` chain runs it detached, and one sentence reads
+  // where the frame read; `--json` answers the envelope.
+  const args = proseFirst(given);
   const face = faceNamed(args);
   if (face === null) {
     return refuseUsage(args, "wear", helpLines("wear"), "name the face to wear");
