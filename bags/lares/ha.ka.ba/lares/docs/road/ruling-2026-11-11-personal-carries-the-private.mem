@@ -12,8 +12,8 @@ type     = "text/memetic-wikitext+tiddlywiki"
 uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-11-personal-carries-the-private"
 ```
 
-* ''Personal carries the private margin'' (operator, 2026-11-11: //"Personal can absorb the new caps."//). `personal` holds one face's private margin over the shared workbench as well as its view state, crosses that face's own devices alone, and projects per face to `personal/<F>/<slug>`, seeding back. Landed (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>).
+* ''Personal carries what a face keeps for itself'' (operator, 2026-11-11: //"Personal can absorb the new caps."//). `personal` holds what one face keeps for itself over the shared workbench as well as its view state, crosses that face's own devices alone, and projects per face to `personal/<F>/<slug>`, seeding back. Landed (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>).
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Tkm841vT4Yhwiw8Cwm7GLEikXGGtgAOsr39DEeFVbrc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NZaq5nKoxp3jt9UuH-Ll210vbIHiy1uOb3g3W2qkEN4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

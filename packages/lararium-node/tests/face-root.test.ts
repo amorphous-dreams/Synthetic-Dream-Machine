@@ -5,7 +5,7 @@
  *     wiki/              the face's daemon working layer
  *     canon/             the face's daemon canon
  *     stage/             the kahua memory stage
- *     margins/<slug>/    private margins over shared wikis (the face's overlay, never a copy of the workbench)
+ *     personal/<slug>/    personal layers over shared wikis (the face's overlay, never a copy of the workbench)
  *     recovery/<slug>/   unsaved drafts in shared wikis
  *     temp/<slug>/       a shared wiki's consented temp layer, beside recovery
  *
@@ -13,13 +13,13 @@
  *
  *   R1 every per-face mirror sites under `faces/<pet name>/` (daemon working, canon, stage, temp; the daemon VM's one list)
  *   R2 a shared workbench's `recovery/` and `temp/` move to the writing face's root, never under the shared `wikis/<slug>/`;
- *      the personal grant roots at `faces/<pet name>/margins/<slug>`; no face worn: none of the three
+ *      the personal grant roots at `faces/<pet name>/personal/<slug>`; no face worn: none of the three
  *   R3 the pet-name segment rule: each refusal by name; otherwise the pet name as written (spaces, Unicode, NFC)
  *   R4 a re-minted face under the same pet name sites the SAME folder (the relation never enters a face path)
  *   R5 no index file rests under `faces/`; no two faces share a root
  *   R6 ONE COPY (face-pools #/one-copy): a wiki shared between two faces lands exactly one disk copy, outside every face
- *      root, and each face's margin mirrors only that face's own overlay layer
- *   R7 the reverse siting reads each face plane back (`siteFileToTitle` over the face root and its margins)
+ *      root, and each face's personal layer mirrors only that face's own overlay layer
+ *   R7 the reverse siting reads each face plane back (`siteFileToTitle` over the face root and its personal layers)
  */
 import { describe, test, expect, afterEach } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -58,7 +58,7 @@ describe("R1 — every per-face mirror sites under faces/<pet name>/", () => {
   });
 });
 
-describe("R2 — margins, drafts and temp of a shared wiki rest in the writing face's root", () => {
+describe("R2 — personal layers, drafts and temp of a shared wiki rest in the writing face's root", () => {
   const grant = (segment: string | null): DiskMirrorGrant => [
     { bagId: "working",  mirrorRoot: `${P}/wikis`, scope: "working",  wikiSlot: "working" },
     { bagId: "personal", mirrorRoot: `${P}/${FACES_PROJECTION_DIR}`, scope: "personal", wikiSlot: "personal", faceFolder: () => segment },
@@ -67,17 +67,17 @@ describe("R2 — margins, drafts and temp of a shared wiki rest in the writing f
   ];
   const designation = ["working", "personal", "draft", "temp"].map((k) => wikiSlotUri("notes", k as "working"));
 
-  test("worn face: margins/<slug>, recovery/<slug>, temp/<slug>; the workbench stays at wikis/<slug>", () => {
+  test("worn face: personal/<slug>, recovery/<slug>, temp/<slug>; the workbench stays at wikis/<slug>", () => {
     const resolved = resolveDiskMirrors(grant("Heron"), designation, "notes");
     const root = (scope: string): string | undefined => resolved.find((m) => m.scope === scope)?.mirrorRoot;
     expect(root("working")).toBe(`${P}/wikis/notes`);
-    expect(root("personal")).toBe(`${P}/faces/Heron/margins/notes`);
+    expect(root("personal")).toBe(`${P}/faces/Heron/personal/notes`);
     expect(root("draft")).toBe(`${P}/faces/Heron/recovery/notes`);
     expect(root("temp")).toBe(`${P}/faces/Heron/temp/notes`);
     for (const m of resolved) expect(m.mirrorRoot.startsWith(`${P}/wikis/notes/`), `${m.scope} never under the shared workbench`).toBe(false);
   });
 
-  test("no face worn: no margin, no draft, no temp mirror; the workbench still stands", () => {
+  test("no face worn: no personal layer, no draft, no temp mirror; the workbench still stands", () => {
     expect(resolveDiskMirrors(grant(null), designation, "notes").map((m) => m.scope)).toEqual(["working"]);
   });
 });
@@ -147,7 +147,7 @@ describe("R5b — the vessel reads its face's segment off the label shelf", () =
 });
 
 describe("R6 — one copy: a shared wiki lands one disk copy, outside every face root", () => {
-  test("two faces wear in turn: the workbench resolves to one folder; each margin to its own face's overlay layer", () => {
+  test("two faces wear in turn: the workbench resolves to one folder; each personal layer to its own face's overlay layer", () => {
     let worn: string | null = "Heron";
     const grant: DiskMirrorGrant = [
       { bagId: "working",  mirrorRoot: `${P}/wikis`, scope: "working",  wikiSlot: "working" },
@@ -160,10 +160,10 @@ describe("R6 — one copy: a shared wiki lands one disk copy, outside every face
     const benches = new Set([...asHeron, ...asEgret].filter((m) => m.bagId === wikiSlotUri("notes", "working")).map((m) => m.mirrorRoot));
     expect([...benches]).toEqual([`${P}/wikis/notes`]);
     for (const bench of benches) expect(bench.startsWith(`${P}/${FACES_PROJECTION_DIR}/`)).toBe(false);
-    const margin = (r: DiskMirrorGrant) => r.find((m) => m.scope === "personal")!;
-    expect(margin(asHeron)).toMatchObject({ bagId: wikiSlotUri("notes", "personal"), mirrorRoot: `${P}/faces/Heron/margins/notes` });
-    expect(margin(asEgret)).toMatchObject({ bagId: wikiSlotUri("notes", "personal"), mirrorRoot: `${P}/faces/Egret/margins/notes` });
-    // A margin mirrors the overlay layer alone: never the workbench's bag.
+    const personalLayer = (r: DiskMirrorGrant) => r.find((m) => m.scope === "personal")!;
+    expect(personalLayer(asHeron)).toMatchObject({ bagId: wikiSlotUri("notes", "personal"), mirrorRoot: `${P}/faces/Heron/personal/notes` });
+    expect(personalLayer(asEgret)).toMatchObject({ bagId: wikiSlotUri("notes", "personal"), mirrorRoot: `${P}/faces/Egret/personal/notes` });
+    // A personal layer mirrors the overlay layer alone: never the workbench's bag.
     for (const r of [asHeron, asEgret]) expect(r.filter((m) => m.mirrorRoot.startsWith(`${P}/faces/`)).every((m) => m.bagId !== wikiSlotUri("notes", "working"))).toBe(true);
   });
 });
@@ -171,7 +171,7 @@ describe("R6 — one copy: a shared wiki lands one disk copy, outside every face
 describe("R7 — the reverse siting reads each face plane back", () => {
   const made: string[] = [];
   afterEach(() => { for (const d of made.splice(0)) rmSync(d, { recursive: true, force: true }); });
-  test("wiki, canon and stage read against the face root; a margin against margins/", () => {
+  test("wiki, canon and stage read against the face root; a personal layer against personal/", () => {
     const projections = mkdtempSync(join(tmpdir(), "face-root-"));
     made.push(projections);
     const root = faceRoot(projections, "Night Heron");
@@ -179,10 +179,10 @@ describe("R7 — the reverse siting reads each face plane back", () => {
     const working = put("wiki/My Notes.tid", "title: My Notes\n\nbody");
     const canon = put("canon/ha.ka.ba/notes/pond.tid", "title: lar:///ha.ka.ba/notes/pond\n\nbody");
     const stage = put("stage/memory/heron.tid", "title: memory/heron\n\nbody");
-    const margin = put("margins/notes/Aside.tid", "title: Aside\n\nbody");
+    const personalLayer = put("personal/notes/Aside.tid", "title: Aside\n\nbody");
     expect(siteFileToTitle({ planeDir: root }, working)).toEqual({ title: "My Notes", by: "in-band" });
     expect(siteFileToTitle({ planeDir: root }, canon)).toEqual({ title: "lar:///ha.ka.ba/notes/pond", by: "loci" });
     expect(siteFileToTitle({ planeDir: root, titlePaths: true }, stage)).toEqual({ title: "memory/heron", by: "title-path" });
-    expect(siteFileToTitle({ planeDir: join(root, "margins") }, margin)).toEqual({ title: "Aside", by: "in-band" });
+    expect(siteFileToTitle({ planeDir: join(root, "personal") }, personalLayer)).toEqual({ title: "Aside", by: "in-band" });
   });
 });

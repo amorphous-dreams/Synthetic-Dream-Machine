@@ -108,7 +108,7 @@ describe("the face, as the host reads it", () => {
 describe("lares surface open, on the host", () => {
   test("★ prints the host paths under LARES_HOUSE, and --launch runs `code` here ★", async () => {
     const root = faceRoot(join(house, "projections"), "Heron Lantern");
-    mkdirSync(join(root, "margins", "lore"), { recursive: true });
+    mkdirSync(join(root, "personal", "lore"), { recursive: true });
     ensureRealmLabel(join(house, "projections"), "lore", null);
     mkdirSync(join(house, "projections", "realms", "lore", "wikis", "lore"), { recursive: true });
     expect(await cmdSurface(surfaceArgs(["open"]), hostDoors())).toBe(0);

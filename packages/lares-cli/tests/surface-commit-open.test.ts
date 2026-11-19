@@ -149,10 +149,10 @@ describe("lares surface commit", () => {
 
 describe("lares surface open", () => {
   test("★ prints `code -n` over the worn face's root and the realm pools it belongs to, and writes no workspace file ★", async () => {
-    plant(join(heron, "margins", "garden", "Mine.tid"), "title: Mine\n\nm\n");
+    plant(join(heron, "personal", "garden", "Mine.tid"), "title: Mine\n\nm\n");
     ensureRealmLabel(rig.projections, "garden", null);   // the realm's default pet name: its slug
     plant(join(rig.projections, "realms", "garden", "wikis", "garden", "Shared.tid"), "title: Shared\n\ns\n");
-    plant(join(heron, "margins", "unwoven", "x.tid"), "x\n");    // a margin whose realm pool stands nowhere names no root
+    plant(join(heron, "personal", "unwoven", "x.tid"), "x\n");    // a personal layer whose realm pool stands nowhere names no root
     const before = readdirSync(heron).sort();
     expect(await cmdSurface(surfaceArgs(["open"]), rig.doors)).toBe(0);
     const said = rig.said();

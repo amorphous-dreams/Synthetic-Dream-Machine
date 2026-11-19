@@ -831,32 +831,32 @@ describe("the lay lays every mirror back into its one layer", () => {
     expect(v.mints).toHaveLength(1);
   });
 
-  test("M20 — a face's margin of a wiki comes back across a re-founding: the root its pet name makes lays into that face's own layer alone", async () => {
+  test("M20 — a face's personal layer of a wiki comes back across a re-founding: the root its pet name makes lays into that face's own layer alone", async () => {
     const [G0, G1] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1"];
     const [R0, R1] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1"];
     const NOTE = "lar:///ha.ka.ba/lares/ref/RW-REHEARSAL";
     clearFace(true);
     // The former engineer held no writer's seat in the `lares` workbench, so its put rested in its own personal layer.
-    put(FR("engineer", "margins/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid"), tid(NOTE, "what the engineer kept for itself"));
+    put(FR("engineer", "personal/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid"), tid(NOTE, "what the engineer kept for itself"));
     writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }, { relation: G1, petname: "engineer", handleIndex: 1 }], join(root, "projections"));
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R0);
     v.held.add("lares");
     // A view-state carrier the face left: with no base standing at its path it reads back as nothing, and nothing stands off.
-    put(FR("engineer", "margins/lares/$__StoryList.tid"), tid("$:/StoryList", "the story here"));
+    put(FR("engineer", "personal/lares/$__StoryList.tid"), tid("$:/StoryList", "the story here"));
     const first = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     expect(first.refusals).toEqual([]);
-    // The steward stands worn: the engineer's margin waits for the engineer's own wear, and lands in no other face's layer.
-    expect(first.waiting.map((w) => [w.handleIndex, w.why, w.folders])).toEqual([[1, "unworn", [P("faces/engineer/margins/lares")]]]);
+    // The steward stands worn: the engineer's personal layer waits for the engineer's own wear, and lands in no other face's layer.
+    expect(first.waiting.map((w) => [w.handleIndex, w.why, w.folders])).toEqual([[1, "unworn", [P("faces/engineer/personal/lares")]]]);
     expect(v.personalOf(R0, "lares").size + v.personalOf(R1, "lares").size).toBe(0);
     expect(mirrorLines(first).out.join("\n")).toMatch(/engineer stands unworn, and a face's own layer of a wiki lays at that face's wear: wear it \(`lares vault unlock --face 1`\)/);
     expect(mirrorsLeftWork(first), "a waiting face leaves no work for a hand beyond its wear").toBe(false);
     v.wear(R1);
     const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-    expect(v.personalOf(R1, "lares").get(NOTE)?.text, "the engineer's margin lands in the engineer's own personal layer").toBe(tid(NOTE, "what the engineer kept for itself"));
+    expect(v.personalOf(R1, "lares").get(NOTE)?.text, "the engineer's folder lands in the engineer's own personal layer").toBe(tid(NOTE, "what the engineer kept for itself"));
     expect(v.personalOf(R0, "lares").size, "and never in the steward's").toBe(0);
-    expect(v.waveFaces.filter((w) => w.source.includes("margins")).every((w) => w.face === undefined), "a margin wave rides the worn face's own island").toBe(true);
-    expect(existsSync(P("faces/engineer/margins/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid"))).toBe(true);
-    expect(readFileSync(P("faces/engineer/margins/lares/$__StoryList.tid"), "utf8")).toContain("the story here");
+    expect(v.waveFaces.filter((w) => w.source.includes("/personal/")).every((w) => w.face === undefined), "a personal layer wave rides the worn face's own island").toBe(true);
+    expect(existsSync(P("faces/engineer/personal/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid"))).toBe(true);
+    expect(readFileSync(P("faces/engineer/personal/lares/$__StoryList.tid"), "utf8")).toContain("the story here");
     expect(second.layers.flatMap((t) => t.stoodOff)).toEqual([]);
     expect(existsSync(P("ashes"))).toBe(false);
     expect(second.waiting).toEqual([]);
@@ -867,15 +867,15 @@ describe("the lay lays every mirror back into its one layer", () => {
   test("M22 — export and import carry by document: a workbench travels as ONE row set with its share row, a personal layer for its one face; each lands once", async () => {
     const [G0, G1] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1"];
     const [R0, R1] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1"];
-    const PAGE = "lar:///ha.ka.ba/notes/page", DRAFTED = "lar:///ha.ka.ba/notes/working-only", MARGIN = "lar:///ha.ka.ba/lares/ref/RW-REHEARSAL", SOURCED = "lar:///ha.ka.ba/lares/ref/RFC-4151";
+    const PAGE = "lar:///ha.ka.ba/notes/page", DRAFTED = "lar:///ha.ka.ba/notes/working-only", OWN_PAGE = "lar:///ha.ka.ba/lares/ref/RW-REHEARSAL", SOURCED = "lar:///ha.ka.ba/lares/ref/RFC-4151";
     clearFace(true);
     // THE STANDING VESSEL: a shared wiki's canon and its ONE workbench folder, a sourced wiki's workbench beside its canon
     // source, the engineer's personal layer of `lares`, and the vessel-private share row that names owner and seats.
     put("projections/realms/notes/bags/notes/ha.ka.ba/notes/page.tid", tid(PAGE, "a promoted page"));
     put("projections/realms/notes/wikis/notes/ha.ka.ba/notes/working-only.tid", tid(DRAFTED, "a working-only page"));
     put("wikis/lares/ha.ka.ba/lares/ref/RFC-4151.tid", tid(SOURCED, "a working copy beside the source"));
-    put(FR("engineer", "margins/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid"), tid(MARGIN, "what the engineer kept for itself"));
-    put(FR("engineer", "margins/lares/$__StoryList.tid"), tid("$:/StoryList", "a view"));
+    put(FR("engineer", "personal/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid"), tid(OWN_PAGE, "what the engineer kept for itself"));
+    put(FR("engineer", "personal/lares/$__StoryList.tid"), tid("$:/StoryList", "a view"));
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G0);
     old.held.add("notes"); old.held.add("lares");
     old.canonWikis = join(root, "wikis"); old.sourcedSlugs.add("lares");
@@ -883,7 +883,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     const { manifest } = await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     expect(manifest.counts["wiki-working"], "each workbench travels as its one row set: notes, and the sourced lares").toBe(2);
     expect(manifest.rows.filter((r) => r.layer === "wiki-working").map((r) => [r.title, r.face]).sort()).toEqual([[SOURCED, null], [DRAFTED, null]].sort());
-    expect(manifest.rows.filter((r) => r.layer === "personal").map((r) => [r.title, r.face, r.bag])).toEqual([[MARGIN, "engineer", "lar:///ha.ka.ba/wikis/lares/personal"]]);
+    expect(manifest.rows.filter((r) => r.layer === "personal").map((r) => [r.title, r.face, r.bag])).toEqual([[OWN_PAGE, "engineer", "lar:///ha.ka.ba/wikis/lares/personal"]]);
     expect(manifest.files.some((f) => f.path.includes("$__")), "a view-state carrier never travels").toBe(false);
     // The re-declare list rests sealed to the keep pair; the steward's route opens the seat the bundle carries, then the roster.
     const verified = verifyBundle(out);
@@ -903,9 +903,9 @@ describe("the lay lays every mirror back into its one layer", () => {
     expect(first.benchWaiting.map((w) => [w.slug, w.why, w.owner]).sort(), "notes waits for its owner, lares for a seated writer").toEqual([["lares", "writer", undefined], ["notes", "owner", "steward"]]);
     expect(v.mints, "a wiki another face owns mints at that face's wear").toEqual([]);
     expect(v.bench("notes").size + v.bench("lares").size + v.layer("lar:///ha.ka.ba/bags/notes").size).toBe(0);
-    expect(v.personalOf(R1, "lares").get(MARGIN)?.text, "the worn engineer's own margin lands").toBe(tid(MARGIN, "what the engineer kept for itself"));
+    expect(v.personalOf(R1, "lares").get(OWN_PAGE)?.text, "the worn engineer's own personal layer lands").toBe(tid(OWN_PAGE, "what the engineer kept for itself"));
     expect(first.tallies.personal.landed).toBe(1);
-    // THE STEWARD WEARS: the wiki mints, its canon and both workbenches land once, and the engineer's margin stays the engineer's.
+    // THE STEWARD WEARS: the wiki mints, its canon and both workbenches land once, and the engineer's personal layer stays the engineer's.
     v.wear(R0);
     const second = await houseImport(out, { apply: true, doors: v.bundleDoors() });
     expect(v.mints).toEqual(["lar:///ha.ka.ba/bags/notes"]);
@@ -916,7 +916,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     expect(existsSync(join(root, "wikis", "lares", "ha.ka.ba", "lares", "ref", "RFC-4151.tid")), "a sourced wiki's rows restore beside the canon source").toBe(true);
     expect(second.benchWaiting).toEqual([]);
     expect(second.tallies.wikiWorking.landed).toBe(2);
-    expect(v.personalOf(R0, "lares").size, "no face's margin lands on another face").toBe(0);
+    expect(v.personalOf(R0, "lares").size, "no face's personal layer lands on another face").toBe(0);
     expect(v.shareLandings).toBeGreaterThan(0);
     // A SECOND IMPORT LANDS NOTHING, under either face.
     const third = await houseImport(out, { apply: true, doors: v.bundleDoors() });
@@ -979,7 +979,7 @@ describe("no plain-title working tiddler drops at a re-found (tideline-surface#/
 describe("a carry act waits by name for a face that stands open and unworn, and accounts for every row (the carry block, walked)", () => {
   const [G0, G1] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1"];
   const [R0, R1] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1"];
-  const WREN = "lar:///ha.ka.ba/kahua/memory/wren", NOTE = "lar:///ha.ka.ba/notes/engineer-own", MARGIN = "lar:///ha.ka.ba/lares/ref/RW-REHEARSAL";
+  const WREN = "lar:///ha.ka.ba/kahua/memory/wren", NOTE = "lar:///ha.ka.ba/notes/engineer-own", OWN_PAGE = "lar:///ha.ka.ba/lares/ref/RW-REHEARSAL";
   /** A kahua carrier as the projector writes it: the block, a blank line, the body verbatim (no newline added). */
   const kahuaTid = (title: string, body: string): string => `kahua-sources: []\nkahua-taint: []\ntitle: ${title}\ntype: text/vnd.tiddlywiki\n\n${body}`;
   const clearOld = (): void => clearFace(true);
@@ -1068,7 +1068,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
 
   test("W5 — RED: an import accounts for every bundle row: a personal row and a kahua head of an open, unworn face count as waiting and name their face, and no lift reaches the vessel for them; CONTROL: at that face's own wear both land, and a second import lands and waits on nothing", async () => {
     clearOld();
-    put(FR("engineer", "margins/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid"), tid(MARGIN, "what the engineer kept for itself"));
+    put(FR("engineer", "personal/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid"), tid(OWN_PAGE, "what the engineer kept for itself"));
     put(FR("engineer", "stage/ha.ka.ba/kahua/memory/wren.tid"), kahuaTid(WREN, "remember the wren\n"));
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G0);
     old.held.add("lares");
@@ -1105,10 +1105,10 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(awake.manifest.omissions.map((o) => o.kind)).not.toContain("cold-wikis");
   });
 
-  test("W7 — a shared wiki mints from its share row at its owner's wear though no page of it reached a mirror, and a face's margin of it waits by name for that mint; CONTROL: once the owner's wear stood the wiki, the margin lays at its own face's wear", async () => {
+  test("W7 — a shared wiki mints from its share row at its owner's wear though no page of it reached a mirror, and a face's personal layer of it waits by name for that mint; CONTROL: once the owner's wear stood the wiki, the personal layer lays at its own face's wear", async () => {
     clearOld();
-    const PAGE = "lar:///ha.ka.ba/notes/margin";
-    put(FR("engineer", "margins/notes/ha.ka.ba/notes/margin.tid"), tid(PAGE, "the engineer's page in a wiki it woke late"));
+    const PAGE = "lar:///ha.ka.ba/notes/own-page";
+    put(FR("engineer", "personal/notes/ha.ka.ba/notes/own-page.tid"), tid(PAGE, "the engineer's page in a wiki it woke late"));
     writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }, { relation: G1, petname: "engineer", handleIndex: 1 }], join(root, "projections"));
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R1);
     v.shareRows = [{ slug: "notes", kind: "wiki", read: "engineer", write: "", owner: "steward" }];
@@ -1169,10 +1169,10 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(existsSync(restored), "a landed row's file stands in its mirror").toBe(true);
   });
 
-  test("W9 — RED: an import's margin of a wiki no face minted (its share row names another face as owner) waits by name at its own face's wear, and never mounts the unminted wiki; CONTROL: once the owner's wear minted the wiki, the margin lands at its own face's wear", async () => {
+  test("W9 — RED: an import's personal layer of a wiki no face minted (its share row names another face as owner) waits by name at its own face's wear, and never mounts the unminted wiki; CONTROL: once the owner's wear minted the wiki, the personal layer lands at its own face's wear", async () => {
     clearOld();
-    const PAGE = "lar:///ha.ka.ba/notes/margin";
-    put(FR("engineer", "margins/notes/ha.ka.ba/notes/margin.tid"), tid(PAGE, "the engineer's margin of the steward's wiki"));
+    const PAGE = "lar:///ha.ka.ba/notes/own-page";
+    put(FR("engineer", "personal/notes/ha.ka.ba/notes/own-page.tid"), tid(PAGE, "the engineer's personal layer of the steward's wiki"));
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G1);
     old.held.add("notes");
     old.shareRows = [{ slug: "notes", kind: "wiki", read: "engineer", write: "", owner: "steward" }];
@@ -1186,7 +1186,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(v.mints, "the steward's wiki mints at the steward's wear").toEqual([]);
     expect(first.personalWaiting).toEqual([{ petname: "engineer", handleIndex: 1, wiki: "notes", owner: "steward" }]);
     expect(first.tallies.personal).toMatchObject({ landed: 0, waiting: 1, refused: [] });
-    expect(existsSync(P("faces/engineer/margins/notes")), "a waiting margin restores nothing into the mirror").toBe(false);
+    expect(existsSync(P("faces/engineer/personal/notes")), "a waiting personal layer restores nothing into the mirror").toBe(false);
     v.wear(R0);
     await houseImport(out, { apply: true, doors: doors() });
     expect(v.wikiMints).toEqual(["notes"]);
@@ -1194,14 +1194,14 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     const third = await houseImport(out, { apply: true, doors: doors() });
     expect(third.personalWaiting).toEqual([]);
     expect(third.tallies.personal).toMatchObject({ landed: 1, waiting: 0 });
-    expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's margin of the steward's wiki"));
+    expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's personal layer of the steward's wiki"));
   });
 
-  test("W10 — RED: the share rows an import carries reach the standing vessel's control document, owner by pet-name, before the owner's wear lands the shares (the vessel reconciles config/share.tid only at its boot), so that landing carries the wiki's catalog row to the reader's half and the reader's margin lands at its own wear; CONTROL: a second import finds the rows in the file and sets none again", async () => {
+  test("W10 — RED: the share rows an import carries reach the standing vessel's control document, owner by pet-name, before the owner's wear lands the shares (the vessel reconciles config/share.tid only at its boot), so that landing carries the wiki's catalog row to the reader's half and the reader's personal layer lands at its own wear; CONTROL: a second import finds the rows in the file and sets none again", async () => {
     clearOld();
-    const PAGE = "lar:///ha.ka.ba/notes/margin";
+    const PAGE = "lar:///ha.ka.ba/notes/own-page";
     const ROW: ShareEntry = { slug: "notes", kind: "wiki", read: "engineer", write: "", owner: "steward" };
-    put(FR("engineer", "margins/notes/ha.ka.ba/notes/margin.tid"), tid(PAGE, "the engineer's margin of the steward's wiki"));
+    put(FR("engineer", "personal/notes/ha.ka.ba/notes/own-page.tid"), tid(PAGE, "the engineer's personal layer of the steward's wiki"));
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G1);
     old.held.add("notes");
     old.shareRows = [{ ...ROW }];
@@ -1210,7 +1210,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R0);
     // The vessel's own law, as a walked hearth answers it: share-apply reads the CONTROL document (never the file), a face's
     // catalog half names a wiki its own wear minted or a landing under its owner's wear carried to it (lifted at that face's
-    // next wear), and a margin's in-wiki mount reads the worn face's half alone, refusing `no-such-bag` where it names none.
+    // next wear), and a personal layer's in-wiki mount reads the worn face's half alone, refusing `no-such-bag` where it names none.
     const control: ShareEntry[] = [];
     const halves = new Map<string, Set<string>>(), carried = new Map<string, Set<string>>();
     const half = (rel: string, of = halves): Set<string> => of.get(rel) ?? of.set(rel, new Set()).get(rel)!;
@@ -1249,8 +1249,8 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     wear(R1);
     const second = await houseImport(out, { apply: true, doors: doors() });
     expect(sets, "CONTROL: a row the file already held sets again").toBe(1);
-    expect(second.tallies.personal, "the reader's margin mounts the wiki its half now names").toMatchObject({ landed: 1, waiting: 0, refused: [] });
-    expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's margin of the steward's wiki"));
+    expect(second.tallies.personal, "the reader's personal layer mounts the wiki its half now names").toMatchObject({ landed: 1, waiting: 0, refused: [] });
+    expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's personal layer of the steward's wiki"));
   });
 });
 
@@ -1263,7 +1263,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
 //   FR4 export reads every face plane off `faces/<pet name>/` (drafts from `recovery/<slug>`), and import lands them back there
 //   FR5 no index file ever rests under `faces/`, and no two faces share a root
 //   FR6 a face rename moves its folder
-//   FR7 the ingest's reverse siting reads a face plane and a margin under `faces/`
+//   FR7 the ingest's reverse siting reads a face plane and a personal layer under `faces/`
 describe("P1 — the face root, keyed by pet name", () => {
   const FACE = "hearth-one";
   /** The face's pool as the projector lays it now: every plane under `faces/<pet name>/`. */
@@ -1273,7 +1273,7 @@ describe("P1 — the face root, keyed by pet name", () => {
     put(`projections/faces/${FACE}/wiki/ha.ka.ba/notes/pond.tid`, POND_WORKING);
     put(`projections/faces/${FACE}/wiki/ha.ka.ba/kahua/memory/heron.tid`, tid(HERON, "remember the heron"));
     put(`projections/faces/${FACE}/wiki/My Notes.tid`, tid("My Notes", "a plain-title working tiddler"));
-    put(`projections/faces/${FACE}/margins/notes/Aside.tid`, tid("Aside", "a margin over the notes wiki"));
+    put(`projections/faces/${FACE}/personal/notes/Aside.tid`, tid("Aside", "a personal layer over the notes wiki"));
     put(`projections/faces/${FACE}/recovery/notes/draft-one.tid`, tid("draft one", "half a thought"));
   };
   const snapshot = (dir: string): string[] => mirrorFiles(dir).sort();
@@ -1295,7 +1295,7 @@ describe("P1 — the face root, keyed by pet name", () => {
     expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
     expect(after.live(WORKING, "My Notes")?.text).toBe(tid("My Notes", "a plain-title working tiddler"));
     expect(after.live(daemonFaceCanonBag(F2), POND)?.text).toBe(POND_CANON);
-    expect(after.personalOf(F2, "notes").get("Aside")?.text).toBe(tid("Aside", "a margin over the notes wiki"));
+    expect(after.personalOf(F2, "notes").get("Aside")?.text).toBe(tid("Aside", "a personal layer over the notes wiki"));
     // Every wave read the face's one root; nothing copied, nothing moved, no relation-keyed folder stands.
     for (const s of after.laid) if (s.includes(`${sep}faces${sep}`)) expect(s.startsWith(P(`faces/${FACE}`))).toBe(true);
     expect(snapshot(P(`faces/${FACE}`))).toEqual(before);
@@ -1379,7 +1379,7 @@ describe("P1 — the face root, keyed by pet name", () => {
     expect(readFaceLabel(F1, projections)?.petname).toBe("Night Heron");
   });
 
-  test("FR7 — RED: the ingest's reverse siting reads a face plane and a margin under faces/", () => {
+  test("FR7 — RED: the ingest's reverse siting reads a face plane and a personal layer under faces/", () => {
     poolDisk();
     const projections = join(root, "projections");
     const dirs = { bags: join(root, "bags"), wikis: join(root, "wikis"), projections };
@@ -1387,6 +1387,6 @@ describe("P1 — the face root, keyed by pet name", () => {
     expect(read(P(`faces/${FACE}/wiki`), P(`faces/${FACE}/wiki/My Notes.tid`))).toBe("My Notes");
     expect(read(P(`faces/${FACE}/wiki`), P(`faces/${FACE}/wiki/ha.ka.ba/notes/pond.tid`))).toBe(POND);
     expect(read(P(`faces/${FACE}/canon`), P(`faces/${FACE}/canon/ha.ka.ba/notes/pond.tid`))).toBe(POND);
-    expect(read(P(`faces/${FACE}/margins/notes`), P(`faces/${FACE}/margins/notes/Aside.tid`))).toBe("Aside");
+    expect(read(P(`faces/${FACE}/personal/notes`), P(`faces/${FACE}/personal/notes/Aside.tid`))).toBe("Aside");
   });
 });

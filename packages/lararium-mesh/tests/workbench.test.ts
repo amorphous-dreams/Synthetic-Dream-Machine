@@ -230,7 +230,7 @@ describe("W8 — personal content never syncs to another member face", () => {
       },
     });
     expect(await guard.withholds("device-of-b", bench), "the workbench reaches a member face").toBe(false);
-    expect(await guard.withholds("device-of-b", personalOfA), "A's personal margin never reaches face B").toBe(true);
+    expect(await guard.withholds("device-of-b", personalOfA), "A's personal layer never reaches face B").toBe(true);
     expect(await guard.withholds("device-of-a", personalOfA), "A's own device carries A's personal").toBe(false);
     // The workbench's id map names the workbench alone: no personal document rides the realm's class.
     expect([...workbenchDocIds(ledger).keys()]).toEqual([bench]);

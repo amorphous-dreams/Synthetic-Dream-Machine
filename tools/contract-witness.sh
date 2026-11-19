@@ -268,7 +268,7 @@ cleartext_outside_label() {
 }
 step "CONTROL: the face-root and realm-root exclusions read the folder segment and the label alone; the name as a value still reads"
 PLANT="$XFER/face-root-plant"; mkdir -p "$PLANT/projections/face-labels" "$PLANT/projections/realm-labels"
-printf '{"path":"%s/projections/faces/%s/margins/lares"}\n' "$PLANT" "$B_PROBE" > "$PLANT/segment.json"
+printf '{"path":"%s/projections/faces/%s/personal/lares"}\n' "$PLANT" "$B_PROBE" > "$PLANT/segment.json"
 printf '{"label":"%s"}\n' "$B_PROBE" > "$PLANT/value.json"
 printf '{"label":"%s"}\n' "$B_PROBE" > "$PLANT/projections/face-labels/0a1b2c3d-0000-4000-8000-000000000000.json"
 # THE REALM PLANT: a realm pet name as a folder segment and in its own label file stands aside, as a face's does.

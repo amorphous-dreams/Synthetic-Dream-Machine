@@ -74,11 +74,11 @@ export function catalogNamedBags(doc: LarDoc | undefined | null): string[] {
 }
 
 /**
- * THE FACE'S OWN LAYERS A CATALOG ANNOUNCES: the `personal` margin and the `draft` binding (`isFaceSlotBag`) of every wiki
+ * THE FACE'S OWN LAYERS A CATALOG ANNOUNCES: the `personal` layer and the `draft` binding (`isFaceSlotBag`) of every wiki
  * the catalog names by its recipe row (`catalog/recipes/<slug>`, the row `wiki init` writes). The catalog a vessel reads
  * merges the WORN face's own rows over the floor's (`catalog-view`), and no other face's catalog binds there, so the
  * answer names the worn face's layers alone. The boot registers each before any slot document opens, so the holder's
- * reading founds every margin the resolver names afterwards.
+ * reading founds every personal layer the resolver names afterwards.
  */
 export function catalogFaceSlotBags(doc: LarDoc | undefined | null): string[] {
   const tiddlers = doc?.tiddlers ?? {};
@@ -209,13 +209,13 @@ export function litFaceOwnBags(faceRelation: string | null | undefined): string[
  */
 export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefined; readonly lit: boolean; readonly daemonCanon?: string; readonly announced?: Iterable<string> }): { readonly registered: string[]; readonly sealed: string[] } {
   const user = input.slot ? [input.slot.wikiBagId, input.slot.workingBagId, input.slot.draftBagId] : [];
-  // EVERY MARGIN AND DRAFT THE WORN FACE'S RESOLVER NAMED (`isFaceSlotBag`): the face's own layers of each wiki, the mount
+  // EVERY PERSONAL LAYER AND DRAFT THE WORN FACE'S RESOLVER NAMED (`isFaceSlotBag`): the face's own layers of each wiki, the mount
   // slot's and every other wiki's alike, seal under the lit face. The island registers each on the face's hive before it
   // names it (`announceSlotDoc`), so the seal finds the writer capable.
-  // THE MOUNT'S OWN MARGIN rides with them from the boot: the slot names the wiki, so the face's `personal` layer of it
+  // THE MOUNT'S OWN PERSONAL LAYER rides with them from the boot: the slot names the wiki, so the face's `personal` layer of it
   // derives off the slot's draft, and no naming has to come first.
-  const margin = input.slot ? faceMarginBeside(input.slot.draftBagId) : null;
-  const named = input.lit ? [...new Set([...(margin ? [margin] : []), ...(input.announced ?? [])].filter(isFaceSlotBag))] : [];
+  const personal = input.slot ? facePersonalBeside(input.slot.draftBagId) : null;
+  const named = input.lit ? [...new Set([...(personal ? [personal] : []), ...(input.announced ?? [])].filter(isFaceSlotBag))] : [];
   // The face's own catalog (U1's D half of the catalog) rides with the daemon wiki's slots: the island registers it at
   // boot, so its holder holds the catalog's key before the lift opens the sealed document. The vessel's control document
   // seals beside the secret home under the vessel's own key (`secret-home`), never under one face.
@@ -227,8 +227,8 @@ export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefin
   };
 }
 
-/** The `personal` margin of the wiki whose `draft` binding `draftBagId` names, or null where it names no face's layer. */
-function faceMarginBeside(draftBagId: string): string | null {
+/** The `personal` layer of the wiki whose `draft` binding `draftBagId` names, or null where it names no face's layer. */
+function facePersonalBeside(draftBagId: string): string | null {
   const suffix = "/draft";
   return isFaceSlotBag(draftBagId) && draftBagId.endsWith(suffix) ? `${draftBagId.slice(0, -suffix.length)}/personal` : null;
 }

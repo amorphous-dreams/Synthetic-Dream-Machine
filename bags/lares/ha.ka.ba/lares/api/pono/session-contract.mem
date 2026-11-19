@@ -77,7 +77,7 @@ written           = "2026-10-11"
 * ''A standing grant names the face a seat wears.'' The grant rests at the MCP mount. The owner verifies it afresh at every open, and it opens nothing while the vessel rests at the floor: no spirit works on a locked vessel.
 * ''The Mask travels as authorship.'' A write into a shared realm carries the hand that made it as a field of the record, beside the face that signs: the kind of hand, and a spirit's Mask. The field names and authorizes nothing; no gate reads it. A Mask pins to no key and no identifier, so it counts as no pet-name (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>).
 * ''An agent's dissent drafts; a person's ask edits'' (operator ruling, 2026-10-16). An agent that disagrees with a person's edit files its own version as a draft beside it, and the person's edit stands until the person chooses: an agent never overrides. A person who asks an agent to edit a tiddler directly makes that edit the person's own act (the ''attended'' position above), and the agent writes it, reaching only the tiddlers the ask names and only under the asker's own write authority.
-* ''A projected wiki stands as a surface.'' One tree on disk serves the person. A wiki's workbench projects to `wikis/<slug>` or to the workspace its share entry names (`/lar/workspaces/<name>`), and each face's private margin projects to `personal/<F>/<slug>`, so the path says whose margin it holds (#/the-working-layer; <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>). No file and no `.meta` chooses the signer: an edit returns under the face of the session that leases the surface. A switch advances the generation, and an edit sensed under an earlier generation surfaces as a draft.
+* ''A projected wiki stands as a surface.'' One tree on disk serves the person. A wiki's workbench projects to `wikis/<slug>` or to the workspace its share entry names (`/lar/workspaces/<name>`), and each face's personal layer projects to `faces/<pet name>/personal/<slug>`, so the path says whose personal layer it holds (#/the-working-layer; <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>). No file and no `.meta` chooses the signer: an edit returns under the face of the session that leases the surface. A switch advances the generation, and an edit sensed under an earlier generation surfaces as a draft.
 * ''Files that changed while no session held the lease'' ingest at the next mount, under the mounting face, as surfaced drafts.
 
 ''The door carries; the hand authorizes'' (operator ruling, 2026-10-12, approved as presented). MCP and the CLI stand as two doors onto one contract: the same session messages over the one socket, one verb table, the same named refusals, the same receipts. Parity belongs to the doors. A profile belongs to the hand, and no door widens or narrows it.
@@ -335,6 +335,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CTQAFloYGA6PG_FzqGwOgVag6Jksu7AFPcFA9zwZYMI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YlZdSq0KzwGhTksNCqwMYhOew3xryv7mcnNtb8V-bzs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

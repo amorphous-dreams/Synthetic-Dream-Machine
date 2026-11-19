@@ -9,7 +9,7 @@
  *      in the face's canon bag; each landed carrier pins its base, so the next wave over the same bytes submits nothing
  *   I2 a carrier that stands off (both moved) submits once and then goes to the shore's sense by name: it stays a stand-off
  *   I3 a vanished file tombstones nothing: no deletion rides, and the shore's whole look runs (it stands pending there)
- *   I4 a margin file rides no daemon wave: the shore senses its title, as before
+ *   I4 a personal-layer file rides no daemon wave: the shore senses its title, as before
  *   I5 the watch core's wave, armed with the pool's ingest ports, lands a pool edit by itself
  *   I6 the island submit maps the daemon island's answer onto the settle's result: done carries the summary, a refusal errors
  *   I7 the port's INGEST args: source under the plane, the bag, unattended, each carrier inline with its hashes
@@ -130,9 +130,9 @@ describe("I3 — a vanished file tombstones nothing", () => {
   });
 });
 
-describe("I4 — a margin rides no daemon wave", () => {
-  test("a margin file's title goes to the shore's sense", async () => {
-    const aside = put("margins/elyncia/Aside.tid", tid("Aside"));
+describe("I4 — a personal layer rides no daemon wave", () => {
+  test("a personal-layer file's title goes to the shore's sense", async () => {
+    const aside = put("personal/elyncia/Aside.tid", tid("Aside"));
     const { waves, submit } = island();
     const { looks, sense } = shore();
     await is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit, sense, did: "did:vessel", tree: () => tree, log: () => {} }).wave([aside]);

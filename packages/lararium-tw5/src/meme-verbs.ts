@@ -343,8 +343,8 @@ async function reachRecipeBag(
   }
   if (mode === "put" && wikiSlotKindOf(slug, designated) === "working" && (await opts.writeSlot?.(slug)) === "personal") {
     const personal = wikiSlotUri(slug, "personal");
-    const margin = await storeOfBag(opts, slug, personal, "put");
-    if (margin) return { bag: personal, store: margin };
+    const own = await storeOfBag(opts, slug, personal, "put");
+    if (own) return { bag: personal, store: own };
     throw new Error(`meme: this face holds no writer's seat in the workbench of "${slug}", and its personal layer "${personal}" stands unreached`);
   }
   const store = await storeOfBag(opts, slug, designated, mode);

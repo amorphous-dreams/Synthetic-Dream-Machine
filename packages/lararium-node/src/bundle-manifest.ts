@@ -28,7 +28,7 @@
  *   faces/<fk>/canon/<interior>    the face's daemon canon carriers (`bags/daemon-<F>`)
  *   faces/<fk>/drafts/<slug>/<path> the face's draft recovery files in each wiki (`faces/<pet name>/recovery/<slug>`)
  *   faces/<fk>/temp/<slug>/<path>  the face's consented temp carriers in each wiki (`daemon`: its daemon wiki's)
- *   faces/<fk>/personal/<slug>/<interior> the face's margin over a wiki (`faces/<pet name>/margins/<slug>`)
+ *   faces/<fk>/personal/<slug>/<interior> the face's personal layer over a wiki (`faces/<pet name>/personal/<slug>`)
  *   faces/<fk>/kahua/<path>        the face's kahua stage carriers (the plaintext a person reads)
  *   faces/<fk>/kahua-heads.json    the stage's standing heads as the fold read them: what the import re-lifts
  *   bags/<slug>/<path>             a house-minted bag's carriers (a user wiki's own canon, `self`, among them)

@@ -4,7 +4,7 @@
  * The vessel's in-process islands sync as house members, and each island's own store rests what it receives. A wiki island
  * renders one wiki: its slots, its canon, the libraries its recipe names and the floor beneath. So the vessel withholds from
  * it every document it files under a bag that mount does not name and that belongs to someone else's reach: another wiki's
- * slot layers (its margin, draft or working layer), the daemon document (its binding rows name every face's margins), and a
+ * slot layers (its personal layer, draft or working layer), the daemon document (its binding rows name every face's personal layers), and a
  * face's planes (its registrations, circles, sessions, intents, selves). A document the vessel files under no bag (the
  * engine, the catalog, the oracle, what a recipe resolves by address) reaches it as before.
  *

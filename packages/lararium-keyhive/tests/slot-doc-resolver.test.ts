@@ -150,7 +150,7 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     await r.kh.dispose(); await r.repo.shutdown();
   });
 
-  test("RED (two faces, one wiki): each seated face of one vessel binds its OWN draft and personal margin over the one daemon store", async () => {
+  test("RED (two faces, one wiki): each seated face of one vessel binds its OWN draft and personal layer over the one daemon store", async () => {
     const a = await rig({ seated: true });
     const khB = new KeyhiveProvider();
     await khB.init({ seed: new Uint8Array(32).fill(5), eventStore: noopStore });

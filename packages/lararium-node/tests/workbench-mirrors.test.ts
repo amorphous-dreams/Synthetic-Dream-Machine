@@ -1,11 +1,11 @@
 /**
- * workbench-mirrors — where a wiki's realm workbench and a face's personal margin rest on disk (cabal-realm#/the-workbench).
+ * workbench-mirrors — where a wiki's realm workbench and a face's personal layer rest on disk (cabal-realm#/the-workbench).
  *
  * Projection follows placement: a record reaches plaintext only through a resting layer with a mirror. A wiki's working slot
  * rests in its realm workbench and projects to `<projections>/realms/<realm pet name>/wikis/<slug>` (the realm label that holds
  * it), or to the operator workspace its share row names
  * (`<root>/workspaces/<name>`, the host shim's `/lar/workspaces/<name>` bind); a face's personal layer carries its private
- * margin over the workbench and projects in the face's root to `<projections>/faces/<pet name>/margins/<slug>` (operator rulings
+ * personal layer over the workbench and projects in the face's root to `<projections>/faces/<pet name>/personal/<slug>` (operator rulings
  * 2026-11-11, 2026-11-18).
  *
  * M1 a workspace resolves under `<root>/workspaces`, and one that resolves inside the repository checkout binds (founding road
@@ -13,10 +13,10 @@
  *    refuses by name, a checkout-sourced slug refuses (its one workbench folder already rests beside its canon source, in that
  *    working surface), and a workspace with no directory waits unbound.
  * M2 one shared resolution, two host grants: the disk-holding host (a node pool's grant) roots the workbench in its workspace
- *    and the personal margin per face; a host that holds no disk grant (a browser leaf's empty grant) mirrors nothing and
+ *    and the personal layer per face; a host that holds no disk grant (a browser leaf's empty grant) mirrors nothing and
  *    reads the same recipe. No face worn: no personal mirror.
  * M3 (personal survives export -> reset -> seed, the disk half) a reset clears the hearth alone, and the personal folder the
- *    projector wrote stands where the seed reads it back (`<projections>/faces/<pet name>/margins/<slug>`). The seed's landing into the
+ *    projector wrote stands where the seed reads it back (`<projections>/faces/<pet name>/personal/<slug>`). The seed's landing into the
  *    face's own personal layer rides the CLI seed wave (`seed-mirrors.ts`), CI-proved.
  */
 import { describe, test, expect, afterEach } from "vitest";
@@ -25,7 +25,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { resolveDiskMirrors, type DiskMirrorGrant } from "../../lararium-mesh/src/vessel-island-pool-core.js";
 import { expandRecipe, wikiSlotUri } from "../../lararium-mesh/src/wiki-recipe.js";
-import { workspaceRootsOf, faceMarginsRoot, FACES_PROJECTION_DIR } from "../src/bag-paths.js";
+import { workspaceRootsOf, facePersonalRoot, FACES_PROJECTION_DIR } from "../src/bag-paths.js";
 
 const dirs: string[] = [];
 afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });
@@ -83,10 +83,10 @@ describe("M2 — one shared resolution, two host grants", () => {
   ];
   const designation = [wikiSlotUri("notes", "working"), wikiSlotUri("notes", "personal")];
 
-  test("the disk-holding host roots the workbench in its workspace and the personal margin per face", () => {
+  test("the disk-holding host roots the workbench in its workspace and the personal layer per face", () => {
     expect(resolveDiskMirrors(grant({ notes: "/lar/workspaces/field-notes" }, "Heron"), designation, "notes")).toEqual([
       { bagId: wikiSlotUri("notes", "working"), mirrorRoot: "/lar/workspaces/field-notes", scope: "working", wikiSlot: "working" },
-      { bagId: wikiSlotUri("notes", "personal"), mirrorRoot: "/lar/projections/faces/Heron/margins/notes", scope: "personal", wikiSlot: "personal" },
+      { bagId: wikiSlotUri("notes", "personal"), mirrorRoot: "/lar/projections/faces/Heron/personal/notes", scope: "personal", wikiSlot: "personal" },
     ]);
     // No workspace named: the workbench projects in the realm whose label holds the wiki.
     expect(resolveDiskMirrors(grant({}, "Heron"), designation, "notes")[0]!.mirrorRoot).toBe("/lar/projections/realms/Garden/wikis/notes");
@@ -102,15 +102,15 @@ describe("M2 — one shared resolution, two host grants", () => {
 describe("M3 — personal survives a reset", () => {
   test("a reset clears the hearth alone; the face's personal folder stands where the seed reads it back", () => {
     const h = house();
-    const folder = join(faceMarginsRoot(h.projections, "Heron"), "notes");
+    const folder = join(facePersonalRoot(h.projections, "Heron"), "notes");
     mkdirSync(folder, { recursive: true });
-    writeFileSync(join(folder, "Private margin.tid"), "title: Private margin\n\nmine alone\n");
+    writeFileSync(join(folder, "Private page.tid"), "title: Private page\n\nmine alone\n");
     writeFileSync(join(h.hearth, "vessel.key"), "secret");
     // THE RESET (`lares-container.sh reset`): every entry inside the hearth leaves; nothing beside it moves.
     rmSync(h.hearth, { recursive: true, force: true });
     mkdirSync(h.hearth);
     expect(existsSync(join(h.hearth, "vessel.key"))).toBe(false);
-    expect(readFileSync(join(h.projections, FACES_PROJECTION_DIR, "Heron", "margins", "notes", "Private margin.tid"), "utf8")).toContain("mine alone");
-    expect(() => faceMarginsRoot(h.projections, "../escape")).toThrow(/face-segment-separator/);
+    expect(readFileSync(join(h.projections, FACES_PROJECTION_DIR, "Heron", "personal", "notes", "Private page.tid"), "utf8")).toContain("mine alone");
+    expect(() => facePersonalRoot(h.projections, "../escape")).toThrow(/face-segment-separator/);
   });
 });

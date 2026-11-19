@@ -2,8 +2,8 @@
  * wiki-island-reach — A WIKI ISLAND RECEIVES THE DOCUMENTS ITS OWN MOUNT NAMES, NEVER ANOTHER WIKI'S OR A FACE'S PRIVATE ONES.
  *
  * The vessel's in-process islands share as house members. A wiki island renders one wiki, and its own store rests what it
- * receives, so a document it never mounts (another wiki's personal margin or draft, the daemon document whose binding rows
- * name every face's margins, a face plane carrying that face's registrations) has no business reaching it. The pool marks
+ * receives, so a document it never mounts (another wiki's personal layer or draft, the daemon document whose binding rows
+ * name every face's personal layers, a face plane carrying that face's registrations) has no business reaching it. The pool marks
  * each wiki island's peer with the mount it serves (`markWikiIslandPeer`), and the vessel's verdict withholds every
  * document the vessel files under a bag that mount does not name (`wikiIslandWithholds`). A document the vessel files under
  * no bag (the engine, the catalog, the oracle) still reaches it as before.
@@ -36,7 +36,7 @@ const reaches = async (repo: Repo, url: string): Promise<boolean> => {
 };
 
 describe("a wiki island receives what its own mount names", () => {
-  it("the island serving `lares` reaches its own margin and its library, and never notes' margin, the daemon document or a face plane", async () => {
+  it("the island serving `lares` reaches its own personal layer and its library, and never notes' personal layer, the daemon document or a face plane", async () => {
     const vesselSide = new MessageChannel();
     ports.push(vesselSide.port1, vesselSide.port2);
     const recipe = { wikiSlug: "lares", libraryBags: [wikiBagUri("library-garden")] } as never;
@@ -61,11 +61,11 @@ describe("a wiki island receives what its own mount names", () => {
     repos.push(island);
 
     const doc = (note: string) => { const h = repo.create<{ note: string }>({ note }); return h; };
-    const ownMargin = doc("lares margin"), notesMargin = doc("notes margin"), notesDraft = doc("notes draft");
+    const ownPersonal = doc("lares personal layer"), notesPersonal = doc("notes personal layer"), notesDraft = doc("notes draft");
     const daemon = doc("binding rows"), plane = doc("face registrations"), library = doc("garden library"), engine = doc("engine bytes");
     const file = (bagId: string, documentId: string) => { const s = slotDocs.get(bagId) ?? new Set<string>(); s.add(documentId); slotDocs.set(bagId, s); };
-    file(wikiSlotUri("lares", "personal"), ownMargin.documentId);
-    file(wikiSlotUri("notes", "personal"), notesMargin.documentId);
+    file(wikiSlotUri("lares", "personal"), ownPersonal.documentId);
+    file(wikiSlotUri("notes", "personal"), notesPersonal.documentId);
     file(wikiSlotUri("notes", "draft"), notesDraft.documentId);
     const planeBag = personaScopedBagIds("a".repeat(64)).persona;
     const rows = emptyLarDoc();
@@ -74,10 +74,10 @@ describe("a wiki island receives what its own mount names", () => {
     rows.tiddlers[wikiBagUri("library-garden")] = storedLarRecord(wikiBagUri("library-garden"), { text: library.url }, "test");
     catalog = rows;
 
-    expect(await reaches(island, ownMargin.url), "its own margin").toBe(true);
+    expect(await reaches(island, ownPersonal.url), "its own personal layer").toBe(true);
     expect(await reaches(island, library.url), "a library its recipe names").toBe(true);
     expect(await reaches(island, engine.url), "a document the vessel files under no bag").toBe(true);
-    expect(await reaches(island, notesMargin.url), "another wiki's margin").toBe(false);
+    expect(await reaches(island, notesPersonal.url), "another wiki's personal layer").toBe(false);
     expect(await reaches(island, notesDraft.url), "another wiki's draft").toBe(false);
     expect(await reaches(island, daemon.url), "the daemon document").toBe(false);
     expect(await reaches(island, plane.url), "a face plane").toBe(false);

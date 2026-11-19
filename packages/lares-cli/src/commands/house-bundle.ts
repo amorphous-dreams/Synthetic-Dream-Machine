@@ -557,8 +557,8 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
       plan.push({ from: abs, to: `${toDir}/${rel}`, row: rowOf(rel, abs) });
     }
   };
-  // EACH FACE ROOT (`faces/<pet name>/`), for its one face: the daemon working layer, its canon, its stage, its margins, and the
-  // drafts and consented temp its hand left in each wiki. A view-state carrier of a margin (a `$:/` title: the story list, a fold
+  // EACH FACE ROOT (`faces/<pet name>/`), for its one face: the daemon working layer, its canon, its stage, its personal layers, and the
+  // drafts and consented temp its hand left in each wiki. A view-state carrier of a personal layer (a `$:/` title: the story list, a fold
   // state) stays behind: the face that lands the bundle keeps its own.
   for (const f of named) {
     if (f.relation === null || faceSegmentRefusal(f.petname) !== null) continue;
@@ -585,16 +585,16 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     // import resolves the landing face's relation (`daemonFaceCanonBag` of the face it maps to).
     addTree(join(root, FACE_PLANES.canon), `faces/${fk}/canon`, (_rel, abs) => ({ face: fk, bag: FACE_CANON_ROW_BAG, layer: "daemon-canon", title: carriedFileTitle(root, abs), rowKey: null }));
     addTree(join(root, FACE_PLANES.stage), `faces/${fk}/kahua`, () => ({ face: fk, bag: KAHUA_BAG, layer: "kahua-carrier", title: null, rowKey: null }));
-    const margins = join(root, FACE_PLANES.margins);
-    for (const slug of folders(margins)) {
-      const listed = plainFiles(join(margins, slug));
+    const personalRoot = join(root, FACE_PLANES.personal);
+    for (const slug of folders(personalRoot)) {
+      const listed = plainFiles(join(personalRoot, slug));
       odd += listed.odd.length;
       repos.push(...listed.repos.map((r) => `faces/${fk}/personal/${slug}/${r}`));
       for (const rel of listed.files) {
         if (isStray(rel)) { strays++; continue; }
         if (isViewState(rel) || houseIgnored(rel) !== null) continue;
-        const abs = join(margins, slug, ...rel.split("/"));
-        plan.push({ from: abs, to: `faces/${fk}/personal/${slug}/${rel}`, row: { face: fk, bag: wikiSlotUri(slug, "personal"), layer: "personal", title: carriedFileTitle(margins, abs), rowKey: null } });
+        const abs = join(personalRoot, slug, ...rel.split("/"));
+        plan.push({ from: abs, to: `faces/${fk}/personal/${slug}/${rel}`, row: { face: fk, bag: wikiSlotUri(slug, "personal"), layer: "personal", title: carriedFileTitle(personalRoot, abs), rowKey: null } });
       }
     }
     for (const slug of folders(join(root, FACE_PLANES.recovery))) addTree(join(root, FACE_PLANES.recovery, slug), `faces/${fk}/drafts/${slug}`, () => ({ face: fk, bag: wikiSlotUri(slug, "draft"), layer: "draft", title: null, rowKey: null }));
@@ -824,7 +824,7 @@ export interface HouseImportResult {
   /** Each workbench (or the canon of a wiki another face owns) whose rows wait: `writer` (the daemon mount holds no writer's seat
    *  there) or `owner` (a share row names another face as the wiki's owner, and no face stood it here yet). Nothing of it landed. */
   readonly benchWaiting: ReadonlyArray<{ readonly slug: string; readonly why: "writer" | "owner"; readonly owner?: string }>;
-  /** Each bundle face whose `personal` rows wait for that face's own wear; or, naming `wiki` and its `owner`, whose margin of a
+  /** Each bundle face whose `personal` rows wait for that face's own wear; or, naming `wiki` and its `owner`, whose personal layer of a
    *  wiki no face stood here yet waits for that owner's wear to mint it. */
   readonly personalWaiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number; readonly wiki?: string; readonly owner?: string }>;
   /** Each bundle face whose kahua heads wait for that face's own wear (a lift signs under its own grant), with how many. */
@@ -975,7 +975,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   const allShares: ShareEntry[] = [...standingShares, ...carriedShares.map((r): ShareEntry => ({ ...r }))];
   if (apply && carriedShares.length > 0 && doors.shareRows) doors.shareRows.write(allShares);
   // THE CARRIED ROWS REACH THE CONTROL DOCUMENT NOW, beside the file: this wear's landing reads them, so the owner's own wear
-  // owes each grant and carries each reader's catalog row to that reader's next wear, before its margin mounts the wiki.
+  // owes each grant and carries each reader's catalog row to that reader's next wear, before its personal layer mounts the wiki.
   if (apply && doors.shareSet !== undefined) {
     for (const r of carriedShares) {
       try { await doors.shareSet(r); }
@@ -1243,7 +1243,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   }
   let heldNow: ReadonlySet<string> | undefined;
   // EACH FACE'S PERSONAL LAYER lands at that face's own wear: the vessel grants the personal mirror to the daemon mount's folder
-  // alone, so an open face that stands unworn waits by name, and nothing of its margin lands under another face.
+  // alone, so an open face that stands unworn waits by name, and nothing of its personal layer lands under another face.
   for (const bf of manifest.faces) {
     const personalFiles = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`faces/${bf.key}/personal/`));
     if (personalFiles.length === 0 || unworn.has(bf.key)) continue;
@@ -1256,8 +1256,8 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
     const slugs = [...new Set(personalFiles.map((p) => p.split("/")[3]!))].sort();
     for (const slug of slugs) {
       const files = personalFiles.filter((p) => p.startsWith(`faces/${bf.key}/personal/${slug}/`));
-      // A MARGIN OF A WIKI NO FACE STOOD HERE WAITS FOR THE WIKI, as the lay's does: a share row names another face its owner,
-      // and the wiki mints at that owner's wear; until then this face's margin mounts no wiki and lands nowhere.
+      // A PERSONAL LAYER OF A WIKI NO FACE STOOD HERE WAITS FOR THE WIKI, as the lay's does: a share row names another face its owner,
+      // and the wiki mints at that owner's wear; until then this face's personal layer mounts no wiki and lands nowhere.
       const stands = !unminted.has(slug) && (doors.sourced?.(slug) === true || (heldNow ??= await doors.heldSlugs()).has(slug)
         || (freshSlugs.has(slug) && (!apply || journal.done.has(`mint:${slug}`))));
       const gate = stands ? null : await gateOf(slug);
@@ -1267,7 +1267,7 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
         tallies.personal.waiting += manifest.rows.filter((r) => r.layer === "personal" && r.face === bf.petname && r.bag === wikiSlotUri(slug, "personal")).length;
         continue;
       }
-      await wave(join(bundle.root, "faces", bf.key, "personal", slug), join(bundle.root, "faces", bf.key, "personal"), join(faceRootOf(bf), FACE_PLANES.margins, slug), wikiSlotUri(slug, "personal"), files, `personal:${bf.key}:${slug}`, tallies.personal, null, slug, false);
+      await wave(join(bundle.root, "faces", bf.key, "personal", slug), join(bundle.root, "faces", bf.key, "personal"), join(faceRootOf(bf), FACE_PLANES.personal, slug), wikiSlotUri(slug, "personal"), files, `personal:${bf.key}:${slug}`, tallies.personal, null, slug, false);
     }
   }
   // THE SHARES LAND AGAIN: each shared wiki's seats come back by pet-name, once its owner's wear stood it.

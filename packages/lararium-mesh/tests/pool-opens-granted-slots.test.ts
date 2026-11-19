@@ -36,7 +36,7 @@ describe("the pool opens every slot document it grants", () => {
   test("G1 — a slot document held only at rest stands a handle on the vessel's Repo once the manifest leaves", async () => {
     const storage = memoryAdapter();
     const first = new Repo({ storage, network: [] });
-    const personal = first.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { margin: {} } });
+    const personal = first.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { note: {} } });
     const working = first.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: {} });
     await first.flush();
     await first.shutdown();

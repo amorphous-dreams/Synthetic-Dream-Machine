@@ -8,7 +8,7 @@
  * worn face's own slot alone, never another face's document (a face's daemon layer belongs to that face, opened at its
  * own wear).
  *
- * A FACE'S OWN LAYER REGISTERS BEFORE IT IS NAMED: a wiki's `personal` margin and `draft` binding (`isFaceSlotBag`) seal under
+ * A FACE'S OWN LAYER REGISTERS BEFORE IT IS NAMED: a wiki's `personal` layer and `draft` binding (`isFaceSlotBag`) seal under
  * the face that resolved them, and a seal the face's hive cannot read as capable refuses. So the worn announcer registers
  * such a bag on the face's hive (`registers`) before the vessel hears its name, and the vessel maps it sealed from the first
  * byte the resolver's caller writes.

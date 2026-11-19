@@ -416,7 +416,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // (`announceSlotDoc`): the face's derived working address and a draft binding stand under no catalog row.
   // A sibling's resolver names its documents as the SIBLING's (`slot-announcer`): the vessel maps them, and the host's
   // working layer follows the worn face's own slot alone.
-  // A FACE'S OWN LAYER OF A WIKI (its `personal` margin, its `draft` binding) registers on the mounted face's hive before the
+  // A FACE'S OWN LAYER OF A WIKI (its `personal` layer, its `draft` binding) registers on the mounted face's hive before the
   // vessel hears its name (`registerLateFaceBags`), so the vessel seals it under that face from its first byte. The floor
   // wears no face: its layers file as the vessel's own (`announceFloor`) and register nothing here.
   let announceCtx: IslandContext | null = null;

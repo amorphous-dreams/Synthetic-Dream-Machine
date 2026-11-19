@@ -1,7 +1,7 @@
 /**
  * face-slot-docs-sealed — EVERY SLOT DOCUMENT THE WORN FACE'S RESOLVER NAMES RESTS SEALED UNDER THAT FACE.
  *
- * The daemon island's resolver names each wiki's `personal` margin and `draft` binding to the vessel's map before its first
+ * The daemon island's resolver names each wiki's `personal` layer and `draft` binding to the vessel's map before its first
  * byte (`announceSlotDoc`), as `wikis/<slug>/<kind>`. The vessel composes its map from the bags the worn face seals
  * (`wornFaceWikiBags`) and the documents each bag carries (the announced ones among them). A named document whose bag the
  * map does not seal passes clear to the inner rest, and every island's guard reads it unsealed, so its copy rests clear
@@ -20,7 +20,7 @@ import { wornFaceWikiBags, type WikiSlotBags } from "../src/register-bags.js";
 import { wikiBagUri, wikiSlotUri } from "../src/wiki-recipe.js";
 import { vessel, world, type Vessel } from "./content-key-fixture.js";
 
-const SECRET = "the-margin-holds-the-heron-count";
+const SECRET = "the-personal-layer-holds-the-heron-count";
 const MAGIC = [0x85, 0x6f, 0x4a, 0x83];   // the Automerge chunk magic
 const SLOT: WikiSlotBags = { wikiBagId: wikiBagUri("lares"), workingBagId: wikiSlotUri("lares", "working"), draftBagId: wikiSlotUri("lares", "draft") };
 
@@ -121,13 +121,13 @@ async function restsSealedUnder(bagId: string) {
 }
 
 describe("the worn face's resolver names a slot document: it rests sealed under that face", () => {
-  it("the mounted wiki's personal margin (wikis/lares/personal): the rest answers sealed, and a save rests a sealed pointer, never clear", async () => {
+  it("the mounted wiki's personal layer (wikis/lares/personal): the rest answers sealed, and a save rests a sealed pointer, never clear", async () => {
     const bagId = wikiSlotUri("lares", "personal");
     const { a, inner, named, v, repo, doc } = await restsSealedUnder(bagId);
-    expect(v.map.bagOf(doc.documentId), "the map names the personal margin under the worn face").toEqual({ bagId, face: v.own });
+    expect(v.map.bagOf(doc.documentId), "the map names the personal layer under the worn face").toEqual({ bagId, face: v.own });
     expect(await v.rest.restsSealed(doc.documentId)).toBe(true);
     expect(restsAny(inner, doc.documentId), "the save rested").toBe(true);
-    expect(restsClear(inner, doc.documentId, SECRET), "no clear chunk of the margin rests").toBe(false);
+    expect(restsClear(inner, doc.documentId, SECRET), "no clear chunk of the personal layer rests").toBe(false);
     await repo.shutdown();
     // A restart opens it under the same face.
     a.restart();
@@ -147,7 +147,7 @@ describe("the worn face's resolver names a slot document: it rests sealed under 
     await repo.shutdown();
   });
 
-  it("another wiki's personal margin (wikis/notes/personal): sealed as the mount slot's is", async () => {
+  it("another wiki's personal layer (wikis/notes/personal): sealed as the mount slot's is", async () => {
     const bagId = wikiSlotUri("notes", "personal");
     const { inner, v, repo, doc } = await restsSealedUnder(bagId);
     expect(await v.rest.restsSealed(doc.documentId)).toBe(true);

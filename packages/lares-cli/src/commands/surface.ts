@@ -273,7 +273,7 @@ const EXCLUDE_CLOSE = "# <<< lares surface";
 /**
  * THE EXCLUDE RULES, from `HOUSE_IGNORED` alone: each top folder but `.git` (git keeps its own), each orphan folder
  * suffix, and the atomic writer's temp (`<path>.<pid>[.<uuid>].tmp`). The patterns float (no leading `/`), since the
- * mirrors rest one folder down (`wiki/`, `canon/`, `margins/<slug>/`). The pointer carriers (`.meta`, `.kapae`, `.mem`,
+ * mirrors rest one folder down (`wiki/`, `canon/`, `personal/<slug>/`). The pointer carriers (`.meta`, `.kapae`, `.mem`,
  * `.tid`) never appear here: the pool commits them.
  */
 export function surfaceExcludeLines(): string[] {
@@ -535,13 +535,13 @@ export function surfaceCheckRealm(top: string, slug: string, projections: string
 // ── open ───────────────────────────────────────────────────────────────────────────────────────────────────
 
 /**
- * THE REALM POOLS A FACE BELONGS TO, as its own root reads them: each wiki slug it keeps a margin or a recovery folder for
- * (`margins/<slug>/`, `recovery/<slug>/`), mapped to that wiki's workbench folder in the realm that holds it
+ * THE REALM POOLS A FACE BELONGS TO, as its own root reads them: each wiki slug it keeps a personal layer or a recovery folder for
+ * (`personal/<slug>/`, `recovery/<slug>/`), mapped to that wiki's workbench folder in the realm that holds it
  * (`projections/realms/<realm pet name>/wikis/<slug>/`) where it stands. A slug whose workbench stands nowhere names no root.
  */
 export function realmPools(projections: string, root: string): string[] {
   const slugs = new Set<string>();
-  for (const plane of [FACE_PLANES.margins, FACE_PLANES.recovery]) {
+  for (const plane of [FACE_PLANES.personal, FACE_PLANES.recovery]) {
     let names: string[] = [];
     try { names = readdirSync(join(root, plane)); } catch { /* no such plane yet */ }
     for (const n of names) { try { if (statSync(join(root, plane, n)).isDirectory()) slugs.add(n); } catch { /* left since the listing */ } }

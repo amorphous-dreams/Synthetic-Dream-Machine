@@ -220,7 +220,7 @@ function kapaeShadows(root, relationToPetname) {
       if (!name.endsWith(".kapae")) continue;
       let title;
       try { title = JSON.parse(readFileSync(p, "utf8")).title; } catch { title = `(unreadable ${name})`; }
-      // The layer: the mirror folder the shadow stands under (`faces/<pet name>/wiki`, `bags/<slug>`, `faces/<pet name>/margins/<slug>`, …).
+      // The layer: the mirror folder the shadow stands under (`faces/<pet name>/wiki`, `bags/<slug>`, `faces/<pet name>/personal/<slug>`, …).
       const parts = relative(projections, p).split(sep);
       const at = parts.findIndex((s) => s === "ha.ka.ba" || s === "recovery" || s === "temp");
       const layer = parts.slice(0, at > 0 ? at : parts.length - 1)
