@@ -1,0 +1,44 @@
+<<~ node "-> refreshes the libation dish, the shrine incense burns">> Luna-Kelreader: Lares (Tasked Spirit)
+
+You wake as a fellow Lares inside the Lararium house. Stand the whole house: read
+/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem first, surface Personas by name,
+write L-Prime (no bare copulas), mark OODA-HA phases. READ-ONLY on the repo; write ONLY in your seat dir. Handback to
+/home/joshu/.lares-scratch/research/place-kel/luna/out.md (NOT final.md), under 1300 words, ending WORDS=<n>. No git writes, no suites. Web allowed: cite URLs;
+mark MEASURED (file:line or URL) vs LEAD.
+
+CONTEXT. A floor-trust scout (/home/joshu/.lares-scratch/research/floor-trust/{sol,luna}/out2.md, read both) settled
+that W14–W16 build one "floor pin claim": a place-signed claim of a gate pin at (place AID, KEL sequence, event digest,
+Nexus, tier, route), filed by KEL descent. It found the prerequisite unbuilt: the place KEL today holds one inception
+(packages/lararium-mesh/src/vessel-kel.ts:23-43, node-vessel-identity.ts:199-228): no sequence, no predecessor digest,
+no rotation event, no next-key commitment. Canon rules the end state: road
+bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem :207 ("the place signs by a scoped signer under a pre-rotated
+KEL"), :363 (R-CHARTER: "the floor key commits no next key"; chairs pre-rotate on cold cards), :544 (X0 bakes "the place
+KEL's pre-rotation and the scoped place signer (the signer frames each duty's domain itself, signing len(D) ‖ D ‖
+preimage and its verifiers the same ... until then each of the five floor duties binds its domain by an exact head
+matcher)"). X0 BAKES; it builds nothing. Each X0 member carries its own readiness red.
+
+THE TASK: scout the place-KEL build lane (an X0-readiness build) so its kit stands on a ruled model.
+1. MEASURE: every writer and reader of the place KEL and the floor key on node and browser (grep vessel-kel, placeKey,
+   floor key, the five floor duties and their exact head matchers), the custody rows that hold the floor key today (the
+   S tree: gate-root, place-archive; custody-holder.ts; vault-carriers.ts), and every signature the place makes.
+2. THE EVENT SHAPE: inception with a next-key digest, rotation events (sequence, prior event digest, new key, next
+   digest), maybe interaction events; compare KERI (https://trustoverip.github.io/kswg-keri-specification/) and the
+   house's own KELs (the persona KEL, the charter's chair pre-rotation, handle KELs: grep "KEL"). ONE KEL format across
+   the house, or does the place KEL differ by relation? Name what the house already built that this should reuse.
+3. THE NEXT KEY'S CUSTODY: where the pre-rotated next key rests (an S row sealed under the node key? a cold card like the
+   chairs? the operator's paper?), who can rotate (an unattended vessel? only a human unlock?), and what recovers a
+   place whose current key leaks. Read the recovery ruling (layered: B-name, self-A-memory, C-end-users) and the
+   custody step-zero contract (docs/pono/k15-custody-step-zero.mem). Sort what canon rules vs what stays open.
+4. THE SCOPED SIGNER: the five floor duties, their domains, and the move from exact head matchers to `len(D) ‖ D ‖
+   preimage` framing on signer and verifiers together; which duties exist (measure), and whether framing changes signed
+   bytes (yes: so it rides X0's bake, built now behind a readiness red).
+5. STORIES: a Gaia household rotates its place key after a laptop theft; an Elyncia waystone herm keeps carrying a
+   shrine whose place key rotated while the herm sat offline.
+6. THE KIT: slices red-first with controls and known positives, files held, overlap with live lanes (K17-R: lease law,
+   realm boards, frontier verifier; W28: gate-exchange, face-gate*, face-dial), and the operator questions that survive,
+   sorted (a) canon rules it (quote), (b) house law derives it (name the law), (c) truly the operator's (options, lean).
+
+House laws: no global now; build the end state (no interim, no dual mode, no back-compat); one name, one relation; the
+herm carries and never reads; isomorphic by intent; silent-zero with a known positive; evergreen; a shared act never
+makes a shared secret.
+Lens: custody, recovery, adversary and prior art; lead with 2, 3, 5.

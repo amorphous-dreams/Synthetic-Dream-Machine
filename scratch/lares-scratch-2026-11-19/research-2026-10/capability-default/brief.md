@@ -1,0 +1,19 @@
+# Research: how a browser app knows and passes its own capability, so a full-capability browser defaults to the full experience (Terra, with web search)
+
+You research for the Lararium project's DreamDOM (a TiddlyWiki-5-based local-first wiki that renders through "cameras" of different widths). Write your findings to `out.md` in this directory, and nothing anywhere else. Cite every source by URL.
+
+## The question (the operator's words)
+"Unapprove `glass=` — that's design time language leaking into implementation, and I'd like to find a different way to know/pass that capability. That seems very fragile; a full-cap browser should default to a full capability DreamDOM." Today the build opens its full main-thread engine "mirror" only when the page URL carries `?glass=full|skinny|story`, and any in-page caller can pass `{glass: true}` to the engine boot. The operator wants the capability KNOWN, not requested by a string, and the default to be the full experience wherever the browser can carry it, degrading only by measured absence.
+
+## Context to hold
+- The project's law: capability is read by what a vessel CAN do, never by which host it is ("isomorphic by intent"); an unprivileged rendering engine (the "mirror") may run on the main thread, while every truth and key stays in a worker island; the widths are full (a TW5 engine mirror over the real DOM), skinny (bodies fetched on open), story, and none (worker-rendered frames into main-thread sinks).
+- The full mirror needs, at least: a real DOM, Web Workers, a port (MessageChannel) to the worker island, Web Locks and BroadcastChannel (multi-tab leader), OPFS for the CAS, and enough memory headroom (a 2,000-tiddler mirror measured ~106 MiB heap).
+
+## Find, with sources
+1. Pattern integrities for capability detection versus capability request in web apps: feature detection (and its known failure modes), progressive enhancement and graceful degradation, `navigator.deviceMemory`/`hardwareConcurrency`, User-Agent Client Hints, the Compute Pressure API, `crossOriginIsolated`, Permissions Policy, storage estimate/persistence, and how mature local-first and offline-first apps (and editors like Excalidraw, Figma's web client, Linear, Obsidian Publish, tldraw, Automerge/Ink & Switch work) choose a rendering tier.
+2. How to keep a capability from being forgeable by an in-page caller: object-capability patterns in JS (a capability object minted once at boot and passed, never a boolean or string any caller can pass), and how the browser's own platform does it.
+3. Measured-absence degradation: patterns that start at the full tier and step down on a measured signal (a probe that fails, a memory-pressure event, a budget overrun on first paint), and how they avoid flapping.
+4. Anti-patterns to avoid, with real incidents where URL flags, UA sniffing or feature flags leaked into user-facing behaviour.
+5. A recommended design for this project, 1 page: what the boot measures, what object carries the capability, how the default resolves to full, how a vessel steps down, and the red tests that would prove it (each red: what it plants, what it must read).
+
+Keep out.md under 900 lines; mark each claim as SOURCED (with URL) or REASONED.

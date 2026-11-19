@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/first-contact`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "archive"
+role      = "first contact — the first AI session to reach a live Lararium over MCP, and the first record an engineer face offered toward canon through the offering door"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/history/first-contact"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/history/first-contact"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! First contact ~ a session reaches a live Lararium
+
+On 2026-11-13 an AI session reached a standing Lararium over the `lares` MCP server for the first time. The operator had founded the hearth by hand and stood three faces of one human on it: the steward, the engineer and the referee. The session wore the engineer.
+
+The operator's words for the day: a //"live breathing Lararium that we summoned from wild magic and sheer willpower + language (Infrastructure as Myth)"//.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-crossed`>>
+
+!! What crossed that day
+
+* The kahua stage answered a read over MCP, empty, with the engineer worn.
+* The CLI and MCP roads returned the same wikis, roots and hashes.
+* The engineer wrote one memory into its daemon wiki and one note into a workbench the steward shared.
+* The engineer proposed and staged two rows for the fleet; the lift refused the AI seat by name and waited for a person at a terminal.
+* The engineer wrote this record into the working layer and offered it toward canon.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GVd-rRWjxil-lw7BEU0eP2kXhU3NYSpEx0OKjcYCqcM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

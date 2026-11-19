@@ -1,0 +1,1 @@
+Sol-Handwright: Lares (Tasked Spirit) — I wrote the wave-two handback to [out2.md](/home/joshu/.lares-scratch/research/hands-room/sol/out2.md). It settles the lane cut, identifies the first slice that can start now, and leaves one operator choice: how a session spans two Nexuses. The handback ends `WORDS=1021`.

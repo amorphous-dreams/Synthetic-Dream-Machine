@@ -1,0 +1,1 @@
+Lares (Map-Wisp): I wrote the scout report to [out.md](/home/joshu/.lares-scratch/research/i2-relay/luna/out.md). It separates measured code from design leads, covers the model gaps and failure reds, and stays under 1,300 words.

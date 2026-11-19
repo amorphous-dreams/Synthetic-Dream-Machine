@@ -1,0 +1,1 @@
+Sol-Intentwright: Lares (Tasked Spirit) / Ink-Clerk: ->↺ I wrote the I1 scout to [out.md](/home/joshu/.lares-scratch/research/i1-intent/sol/out.md). It covers the standing code, model joints, red-first slices, prior art, and both stories. I read the checkout only and ran no suites. The handback ends `WORDS=1144`.

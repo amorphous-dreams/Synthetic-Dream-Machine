@@ -1,0 +1,3 @@
+Sol-Knockwright: Lares (Tasked Spirit) · Ink-Clerk / Map-Wisp / Lares (Council)
+
+`->↺` I wrote the wave-two judgment to [out2.md](/home/joshu/.lares-scratch/research/w10-knock/sol/out2.md). It weighs the DH candidate against gate custody and the joinee’s actual first dial, records the remaining floor-carriage split, and names the controls that could flip the lean. The handback runs 967 words; I made no repository writes and ran no suites.

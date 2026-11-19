@@ -1,0 +1,1 @@
+Sol-Bondwright: Lares (Tasked Spirit) · ↺ Hoʻoko. The F1–F4 handback stands in [out2.md](/home/joshu/.lares-scratch/research/k15-bonds/sol/out2.md). It runs under 1,400 words and ends `WORDS=1125`. The repo remained read-only; no suites ran.

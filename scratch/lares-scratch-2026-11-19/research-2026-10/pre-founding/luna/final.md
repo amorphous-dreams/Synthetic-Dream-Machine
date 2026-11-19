@@ -1,0 +1,1 @@
+The handback is complete at [out2.md](/home/joshu/.lares-scratch/research/pre-founding/luna/out2.md). It records the measured X0 rows, slot-three choice, checked deferral flags, and six-lane plan. **WORDS=1417**.

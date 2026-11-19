@@ -1,0 +1,1 @@
+[**out.md**]( /home/joshu/.lares-scratch/research/dreamdom-width/terra/out.md ) contains the research and recommendations. It runs 109 lines.
