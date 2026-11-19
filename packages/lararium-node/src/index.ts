@@ -198,11 +198,12 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
-export { workspaceRootsOf, FACES_PROJECTION_DIR, FACE_PLANES, faceSegment, faceSegmentRefusal, FaceSegmentRefused, faceRoot, faceMarginsRoot, type FaceSite, type FaceSegmentCode } from "./bag-paths.js";
+export { workspaceRootsOf, workbenchFolders, type WorkbenchFolder, FACES_PROJECTION_DIR, FACE_PLANES, faceSegment, faceSegmentRefusal, FaceSegmentRefused, faceRoot, faceMarginsRoot, type FaceSite, type FaceSegmentCode } from "./bag-paths.js";
 export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, isTempLayerInternalTitle, TEMP_LAYER_DIR,
   isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
 // The drain, one seat (face-pools W1, W2): the CLI's `lares watch` and the vessel's host over the worn face's pool.
 export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolWatch, poolCommitSeam, stageEditsSinceSitting, wakeStageLine, runGit,
+  armWorkspaceWatch, workspaceCommitSeam, WORKSPACE_SKIP, WORKSPACE_CLOSE_PREFIX, type WorkspaceWatchOptions,
   WATCHED_PLANES, SITTING_CLOSE_PREFIX, POOL_SETTLE_MS, type DrainSeat, type FacePoolWatch, type FacePoolPorts, type FacePoolWatchOptions, type SeamReading,
   type SittingClose, type StageEdit, type WatchState, type GitRun } from "./watch-core.js";
 // HEAD's words for a file with no synced base (face-pools A5): both gates read the pool's last sitting as the base a re-found cleared.
@@ -213,12 +214,12 @@ export {
   carriedBasesOf, skipLines, openSyncedTree, readCarrierText, listCarriers, listSourceFiles, fileToUriForSource, siteFaceFile, siteMirrorFile,
   scanFiles, recordLandedCarriers, readCarrierAnswer, INGEST_PAGE, ingestVerdict, renamesOf, renamedSources, absentSources, NO_STANDING_ASKS,
   standsClean, standingAfterFault, standingAfterWave, settleIngest, candidatesOf, applyConfirmedRenames, deletionsOf, pairedDeletions,
-  carrierCasFlagged, declaredType, inlineStage, ridesInline, ingestWaveArgs, ingestWaveVerb, islandIngestSubmit, poolIngestPorts,
+  carrierCasFlagged, declaredType, inlineStage, ridesInline, ingestWaveArgs, ingestWaveVerb, islandIngestSubmit, poolIngestPorts, workspaceIngestPorts,
   foldWaveRefusal, mirrorFiles, siteWaveFile, liveLay,
   type ScanStatus, type PendingDeletion, type ArmedDeletion, type ScanRow, type ScanSkip, type ScanResult, type FileToUriFn, type MirrorDirs,
   type CarrierAnswer, type AskingCarrier, type IngestSettlement, type IngestVerdict, type StandingAsks, type SubmitIngestOpts,
   type IngestSubmitResult, type IngestSubmit, type StagedCarrier, type CarrierStage, type IslandVerbAsk, type MirrorWave, type MirrorLaid,
-  type LayPorts, type PoolPlaneBags, type PoolIngestOptions,
+  type LayPorts, type PoolPlaneBags, type PoolIngestOptions, type WorkspaceIngestOptions,
 } from "./ingest-scan.js";
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";

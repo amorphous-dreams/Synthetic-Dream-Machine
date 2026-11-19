@@ -111,9 +111,9 @@ import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtect
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
-import { projectionRoots, workspaceRootsOf, FACES_PROJECTION_DIR, faceRoot } from "./bag-paths.js";
-import { armFacePoolWatch, type FacePoolWatch } from "./watch-core.js";
-import { islandIngestSubmit, poolIngestPorts } from "./ingest-scan.js";
+import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
+import { armFacePoolWatch, armWorkspaceWatch, type FacePoolWatch } from "./watch-core.js";
+import { islandIngestSubmit, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
 import { poolHeads } from "./pool-head.js";
 import { newRequestId, KAHUA_BAG } from "@lararium/mesh";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
@@ -944,6 +944,11 @@ async function prepareNodeBootOn(
   let wornFaceCanonBag: string | null = null;
   /** THE WATCH over the worn face's pool (`watch-core`, face-pools W1, W2): armed at after-live, downed at teardown and stand-down. */
   let facePoolWatch: FacePoolWatch | null = null;
+  /** THE WORKBENCH FOLDERS a shared wiki's one disk copy rests in (`workbenchFolders`, its reader set in makePool): each bound
+   *  workspace, then each default `<projections>/wikis/<slug>` no workspace takes, read afresh at each after-live. */
+  let readWorkbenches: () => WorkbenchFolder[] = () => [];
+  /** THE WATCHES over the workbench folders (`armWorkspaceWatch`): armed at after-live beside the face pool's, downed with it. */
+  const workspaceWatches = new Set<FacePoolWatch>();
   /** The folder a face's pet name makes under `faces/`, or null (named in the log) where it makes none. The label names the pet
    *  name where the sealed row reads none (a locked key); the segment rule reads the other faces' names off the label shelf. */
   const faceSegmentOf = async (relation: string, handleIndex: number): Promise<string | null> => {
@@ -4509,6 +4514,7 @@ async function prepareNodeBootOn(
       for (const line of read.unbound) console.warn(`[workspaces] ${line}`);
       return read;
     })();
+    readWorkbenches = () => workbenchFolders({ projectionRoot, workspaces, sourcedSlugs: projection.sourcedSlugs() });
     const diskMirrorGrant: DiskMirrorGrant = [
       // `bags/` PROJECTS ON THE KAHU'S VESSEL ALONE: a vessel the cabal did not admit holds neither live document, so it
       // grants neither mirror and writes nothing under `bags/lares` or `bags/lararium`.
@@ -4647,6 +4653,28 @@ async function prepareNodeBootOn(
       const watch = armFacePoolWatch({ pool, ports: poolIngestPorts({ pool, bags, submit, sense, did: requestedBy, heads: poolHeads(pool), log }), log });
       facePoolWatch = watch;
       stood.push({ what: "the face pool's watch", down: async () => { await watch.down("lock"); if (facePoolWatch === watch) facePoolWatch = null; } });
+      // THE WATCH OVER EACH SHARED WIKI'S WORKBENCH (a workbench serves as a pool): a wiki's one disk copy whichever face wears,
+      // `<projections>/wikis/<slug>` or the workspace its share row names (`workbenchFolders`, read afresh here). The same seat
+      // stands over it, off the boot path: each settle lands as ONE unattended INGEST wave in that wiki's working layer, run in the
+      // wiki's own island (activated on reference, as `wiki-act` does) under the WORN face's actor, and a stand-off goes to that
+      // wiki's shore. A lock or a wear downs it with the final wave and the commit seam (naming no face) where the folder's git
+      // tree stands (`lares surface init` founds it; the seat founds none, and a folder with none serves as a plain mirror); the
+      // stand-down runs the same as a down. A face that holds no writer's seat in the workbench lands nothing: the island refuses
+      // the wave by name and the shore weighs its carriers.
+      const inWiki = async (slug: string, verb: string, args: Record<string, unknown>): Promise<Record<string, unknown>> => {
+        const activation = await wikiActivation.ensureActive(slug);
+        if (!activation.ok) throw new Error(`wiki-act: ${activation.cause}: ${activation.detail}`);
+        return vmManager.placeWikiVerb(slug, { verb, args, requestedBy });
+      };
+      for (const { slug, dir, name } of readWorkbenches()) {
+        const wsLog = (line: string): void => console.log(`[workspaces] ${line}`);
+        // The submit port's `wiki-act` carries the INGEST and names this wiki: it places in that wiki's island alone.
+        const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, String(args["verb"]), (args["args"] as Record<string, unknown>) ?? {}));
+        const wsSense = (uris?: readonly string[]): Promise<unknown> => inWiki(slug, "shore", { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) });
+        const wsWatch = armWorkspaceWatch({ workspace: dir, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, did: requestedBy, heads: poolHeads(dir), log: wsLog }), log: wsLog });
+        workspaceWatches.add(wsWatch);
+        stood.push({ what: `the workbench ${name}'s watch`, down: async () => { await wsWatch.down("lock"); workspaceWatches.delete(wsWatch); } });
+      }
     }
     if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");
   };
@@ -4709,7 +4737,7 @@ async function prepareNodeBootOn(
       if (waiting > 0) nameHeldSaves(waiting);
       return waiting;
     },
-    facePoolStandDown: async () => { await facePoolWatch?.down("down"); },
+    facePoolStandDown: async () => { await facePoolWatch?.down("down"); await Promise.all([...workspaceWatches].map((w) => w.down("down"))); },
     heldSaves: () => sealedRest.store.held(),
     get floorKey() { return floorKeyGrant; },
     backupDoor: {

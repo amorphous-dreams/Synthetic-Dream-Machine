@@ -113,6 +113,27 @@ for m in re.finditer(
 cmds = sorted(cmds)
 
 CMDS_DIR = pathlib.Path("packages/lares-cli/src/commands")
+
+# THE VERB'S MODULE DERIVES FROM THE CLI'S OWN TABLE. The binary dispatches each verb to its row's `handler`, and the
+# handler names the module it imports from (`home` and `repo` both answer through `commands/tunnel-door.ts`). So the
+# module a sub-door must dispatch in reads off the row and the import, never off the verb's spelling; a verb whose row
+# names no imported handler falls to `commands/<verb>.ts`, and a module absent there still reads red by name.
+_BIN_SRC = pathlib.Path("packages/lares-cli/src/bin/lares.ts").read_text()
+if not re.search(r'(?m)^\s*\{\s*name:\s*"[a-z][a-z0-9-]*",.*\bhandler:', _BIN_SRC):
+    print("[rite-commands] packages/lares-cli/src/bin/lares.ts PARSED TO NO COMMAND ROW — the probe binds `{ name: \"<verb>\", … handler:` rows.")
+    sys.exit(1)
+_IMPORTED = {}
+for _m in re.finditer(r'import\s*\{([^}]*)\}\s*from\s*["\']\.\./commands/([A-Za-z0-9_-]+)\.js["\']', _BIN_SRC):
+    for _name in _m.group(1).split(","):
+        _name = _name.strip().split(" as ")[-1].strip()
+        if _name:
+            _IMPORTED[_name] = _m.group(2)
+
+def module_of(verb: str) -> pathlib.Path:
+    row = re.search(rf'(?m)^\s*\{{\s*name:\s*"{re.escape(verb)}",.*?\bhandler:\s*[^,]*?\b(cmd[A-Z][A-Za-z0-9_]*)', _BIN_SRC)
+    if row and row.group(1) in _IMPORTED:
+        return CMDS_DIR / f"{_IMPORTED[row.group(1)]}.ts"
+    return CMDS_DIR / f"{verb}.ts"
 fail, subs_checked = list(shim_fail), 0
 
 # ── A SUB-DOOR READS AT A DISPATCH POSITION, NEVER AS A LOOSE STRING ────────────────────────────
@@ -182,15 +203,15 @@ for c in cmds:
     if len(parts) < 2:
         continue
     sub = parts[1]
-    module = CMDS_DIR / f"{verb}.ts"
+    module = module_of(verb)
     if not module.exists():
         # A SUB-DOOR WITH NO MODULE READS RED BY NAME. The skip that stood here waved through every sub-word of a verb
         # whose module moved or vanished, so the rite's `lares ghost walk` read green while nothing read `walk`.
-        fail.append(f"{c!r} — commands/{verb}.ts is absent; `{sub}` has no mapped module")
+        fail.append(f"{c!r} — commands/{module.name} is absent; `{sub}` has no mapped module")
         continue
     subs_checked += 1
     if not dispatches(module.read_text(), sub):
-        fail.append(f"{c!r} — `{sub}` names no dispatch branch in commands/{verb}.ts")
+        fail.append(f"{c!r} — `{sub}` names no dispatch branch in commands/{module.name}")
 
 # ── AND EVERY CODE SYMBOL THE RITE CITES MUST EXIST ─────────────────────────────────────────────
 # The rite explains itself by pointing at functions — `provisionThresholdRecoveryAtFounding`,
@@ -249,7 +270,7 @@ if not doors:
     sys.exit(1)
 addressable = 0
 for d in doors:
-    module = CMDS_DIR / f"{d['name']}.ts"
+    module = module_of(d['name'])
     addressable += 1 + (len(dispatch_keys(module.read_text())) if module.exists() else 0)
 
 print(f"[rite-commands] {len(cmds)} commands instructed, {subs_checked} sub-doors checked, "

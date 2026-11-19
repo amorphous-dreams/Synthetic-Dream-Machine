@@ -17,10 +17,10 @@
  */
 
 import { readFileSync, readdirSync, statSync, existsSync, lstatSync } from "node:fs";
-import { join, resolve, sep, extname, relative } from "node:path";
+import { dirname, join, resolve, sep, extname, relative } from "node:path";
 import {
   newChangeId, newRequestId, carrierHash, digestsEqual, BAG_MANIFEST_FILE, VERB_RESULT_KEY,
-  ridesAsPointer, mediaTypeFromExt, isOversizedBody,
+  ridesAsPointer, mediaTypeFromExt, isOversizedBody, wikiSlotUri,
 } from "@lararium/mesh";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { SyncedTree, syncedTreeKey, syncedTreeDir } from "./synced-tree.js";
@@ -28,7 +28,7 @@ import { bagsFileToUri, houseIgnored, siteFileToTitle, FACES_PROJECTION_DIR, FAC
 import { larProjectionCheckpointDir } from "./vessel-paths.js";
 import { KAPAE_EXT, readKapaeShadow } from "./kapae-shadow.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
-import type { FacePoolPorts } from "./watch-core.js";
+import { WORKSPACE_SKIP, type FacePoolPorts } from "./watch-core.js";
 import type { BaseFromGit } from "./pool-head.js";
 
 export type ScanStatus = "new" | "unchanged" | "changed" | "non-nfc" | "deleted" | "renamed";
@@ -1176,55 +1176,89 @@ type PoolWavePlane = typeof POOL_WAVE_PLANES[number];
  * The catch-up reads every file of each granted plane through the same wave (the `liveLay` read of the whole pool), then asks
  * the shore's whole look. Waves and catch-ups run one at a time.
  */
+/** One folder a pool's wave lands from: the bag it lands in, how a file there reads its title, and the wiki the wave runs in. */
+interface WaveFolder {
+  readonly dir: string;
+  readonly bag: string;
+  readonly site: (file: string, tree: SyncedTree) => FileSiting;
+  /** The wiki whose island takes the wave (`wiki-act`); absent: the daemon island. */
+  readonly wiki?: string;
+  /** How the log names the folder. */
+  readonly label: string;
+}
+
+/** What one folder's wave owes the shore, and whether a carrier newly vanished. */
+type FolderWaveReading = { readonly sense: string[]; readonly vanishedNow: boolean };
+
+/**
+ * ONE FOLDER'S UNATTENDED WAVE (a face pool's plane, a workspace): the touched files and every vanished one re-statted, scanned
+ * against the synced base, the clean carriers landed through the submit port, each stand-off, refusal, pointer body and vanish
+ * owed to the shore. A vanished file tombstones nothing: it waits in `gone` until its bytes arrive elsewhere (paired by content).
+ */
+async function folderWave(
+  folder: WaveFolder, gone: Map<string, { syncedHash: string; file: string }>, touched: readonly string[],
+  o: { readonly submit: IngestSubmit; readonly did: string; readonly tree?: () => SyncedTree; readonly heads?: BaseFromGit; readonly log: (line: string) => void },
+): Promise<FolderWaveReading> {
+  const log = o.log;
+  // Every wave re-stats each vanished file too: a lost event never leaves a returned file reading as gone.
+  const files = new Set(touched);
+  for (const v of gone.values()) files.add(v.file);
+  const tree = o.tree?.() ?? openSyncedTree();
+  const scan = scanFiles(folder.dir, [...files], folder.bag, tree, (_r, file) => titleOf(folder.site(file, tree)), o.heads);
+  for (const line of skipLines(scan.skipped)) log(line);
+  const sense: string[] = [];
+  let vanishedNow = false;
+  for (const r of scan.rows) if (r.status === "non-nfc") log(`refuses: ${r.file} holds text outside NFC; nothing lands`);
+  for (const r of scan.rows) if (r.status !== "deleted" && gone.delete(r.uri)) sense.push(r.uri);
+  for (const d of deletionsOf(scan.rows)) if (!gone.has(d.uri)) { gone.set(d.uri, { syncedHash: d.syncedHash, file: d.file }); vanishedNow = true; }
+  const all = candidatesOf(scan.rows);
+  const candidates = all.filter(ridesInline);
+  for (const c of all) if (!ridesInline(c)) { log(`${c.file} rides a pointer to its bytes, which the vessel's wave stages none of: the shore weighs it`); sense.push(c.uri); }
+  const ride = pairedDeletions(gone, candidates);
+  if (candidates.length === 0 && ride.length === 0) return { sense, vanishedNow };
+  const settled = await settleIngest({
+    source: folder.dir, toBag: folder.bag, candidates, did: o.did, deletions: ride, unattended: true,
+    ...(folder.wiki !== undefined ? { inWiki: true, wiki: folder.wiki } : {}),
+  }, tree, o.submit);
+  if (settled.first.status === "error") {
+    log(`a wave over ${folder.label} refused (${settled.first.errorMessage ?? "the island named no reason"}): the shore weighs its ${candidates.length} carrier(s)`);
+    sense.push(...candidates.map((c) => c.uri));
+    return { sense, vanishedNow };
+  }
+  const relinked = renamedSources(settled.deletions);
+  const absent = absentSources(settled.deletions);
+  for (const d of ride) {
+    if (relinked.has(d.uri)) gone.delete(d.uri);
+    else if (absent.has(d.uri)) { gone.delete(d.uri); sense.push(d.uri); }
+    else sense.push(d.uri);
+  }
+  applyConfirmedRenames(tree, folder.bag, candidates, settled.deletions);
+  // A CARRIER THAT STOOD OFF GOES TO THE SHORE: the gate landed nothing for it, and the projector raises its keyed alert.
+  for (const c of settled.conflicts) { sense.push(c.uri); log(`stands off: ${c.uri} (${c.why}); \`lares shore\` names it with its key`); }
+  for (const r of settled.refused) log(`refuses: ${r.uri} (${r.why})`);
+  for (const uri of settled.unanswered) { sense.push(uri); log(`unanswered: ${uri}; the shore weighs it`); }
+  if (settled.pageError !== undefined) log(`a later wave failed (${settled.pageError.message}); ${settled.pageError.unread} carrier(s) stay unread until the next settle`);
+  const landed = [...settled.landed];
+  if (landed.length > 0) log(`lands ${landed.length} carrier(s) from ${folder.label} into ${folder.bag}: ${landed.join(", ")}`);
+  return { sense, vanishedNow };
+}
+
+/** One wave or catch-up at a time over one pool. */
+function serialChain(): <T>(work: () => Promise<T>) => Promise<T> {
+  let chain: Promise<unknown> = Promise.resolve();
+  return <T>(work: () => Promise<T>): Promise<T> => { const next = chain.then(work, work); chain = next.catch(() => {}); return next; };
+}
+
 export function poolIngestPorts(o: PoolIngestOptions): Pick<FacePoolPorts, "catchUp" | "wave"> {
   const log = o.log ?? (() => {});
   const vanished = new Map<PoolWavePlane, Map<string, { syncedHash: string; file: string }>>(POOL_WAVE_PLANES.map((p) => [p, new Map()]));
-  let chain: Promise<unknown> = Promise.resolve();
-  const serial = <T>(work: () => Promise<T>): Promise<T> => { const next = chain.then(work, work); chain = next.catch(() => {}); return next; };
+  const serial = serialChain();
 
   /** One plane's wave: what it owes the shore, and whether a carrier newly vanished. */
-  const planeWave = async (plane: PoolWavePlane, bag: string, touched: readonly string[]): Promise<{ sense: string[]; vanishedNow: boolean }> => {
-    const planeDir = join(o.pool, plane);
-    const gone = vanished.get(plane)!;
-    // Every wave re-stats each vanished file too: a lost event never leaves a returned file reading as gone.
-    const files = new Set(touched);
-    for (const v of gone.values()) files.add(v.file);
-    const tree = o.tree?.() ?? openSyncedTree();
-    const scan = scanFiles(o.pool, [...files], bag, tree, (_r, file) => titleOf(siteFaceFile(o.pool, plane, file, tree)), o.heads);
-    for (const line of skipLines(scan.skipped)) log(line);
-    const sense: string[] = [];
-    let vanishedNow = false;
-    for (const r of scan.rows) if (r.status === "non-nfc") log(`refuses: ${r.file} holds text outside NFC; nothing lands`);
-    for (const r of scan.rows) if (r.status !== "deleted" && gone.delete(r.uri)) sense.push(r.uri);
-    for (const d of deletionsOf(scan.rows)) if (!gone.has(d.uri)) { gone.set(d.uri, { syncedHash: d.syncedHash, file: d.file }); vanishedNow = true; }
-    const all = candidatesOf(scan.rows);
-    const candidates = all.filter(ridesInline);
-    for (const c of all) if (!ridesInline(c)) { log(`${c.file} rides a pointer to its bytes, which the vessel's wave stages none of: the shore weighs it`); sense.push(c.uri); }
-    const ride = pairedDeletions(gone, candidates);
-    if (candidates.length === 0 && ride.length === 0) return { sense, vanishedNow };
-    const settled = await settleIngest({ source: planeDir, toBag: bag, candidates, did: o.did, deletions: ride, unattended: true }, tree, o.submit);
-    if (settled.first.status === "error") {
-      log(`a wave over ${plane}/ refused (${settled.first.errorMessage ?? "the island named no reason"}): the shore weighs its ${candidates.length} carrier(s)`);
-      sense.push(...candidates.map((c) => c.uri));
-      return { sense, vanishedNow };
-    }
-    const relinked = renamedSources(settled.deletions);
-    const absent = absentSources(settled.deletions);
-    for (const d of ride) {
-      if (relinked.has(d.uri)) gone.delete(d.uri);
-      else if (absent.has(d.uri)) { gone.delete(d.uri); sense.push(d.uri); }
-      else sense.push(d.uri);
-    }
-    applyConfirmedRenames(tree, bag, candidates, settled.deletions);
-    // A CARRIER THAT STOOD OFF GOES TO THE SHORE: the gate landed nothing for it, and the projector raises its keyed alert.
-    for (const c of settled.conflicts) { sense.push(c.uri); log(`stands off: ${c.uri} (${c.why}); \`lares shore\` names it with its key`); }
-    for (const r of settled.refused) log(`refuses: ${r.uri} (${r.why})`);
-    for (const uri of settled.unanswered) { sense.push(uri); log(`unanswered: ${uri}; the shore weighs it`); }
-    if (settled.pageError !== undefined) log(`a later wave failed (${settled.pageError.message}); ${settled.pageError.unread} carrier(s) stay unread until the next settle`);
-    const landed = [...settled.landed];
-    if (landed.length > 0) log(`lands ${landed.length} carrier(s) from ${plane}/ into ${bag}: ${landed.join(", ")}`);
-    return { sense, vanishedNow };
-  };
+  const planeWave = (plane: PoolWavePlane, bag: string, touched: readonly string[]): Promise<FolderWaveReading> => folderWave(
+    { dir: join(o.pool, plane), bag, site: (file, tree) => siteFaceFile(o.pool, plane, file, tree), label: `${plane}/` },
+    vanished.get(plane)!, touched, { submit: o.submit, did: o.did, ...(o.tree ? { tree: o.tree } : {}), ...(o.heads ? { heads: o.heads } : {}), log },
+  );
 
   const waveOver = async (files: readonly string[], whole: boolean): Promise<void> => {
     const byPlane = new Map<PoolWavePlane, string[]>();
@@ -1263,6 +1297,58 @@ export function poolIngestPorts(o: PoolIngestOptions): Pick<FacePoolPorts, "catc
       }
       return waveOver(files, true);
     }),
+    wave: (files) => serial(() => waveOver(files, false)),
+  };
+}
+
+// ── the vessel's ports over a named workspace ──────────────────────────────────────────────────────────────────
+
+export interface WorkspaceIngestOptions {
+  /** The workspace folder (`<root>/workspaces/<name>`): the shared wiki's workbench mirror rests at its top. */
+  readonly workspace: string;
+  /** The wiki whose workbench the workspace holds: its waves land in `wikis/<slug>/working`, run in that wiki's island. */
+  readonly slug: string;
+  /** The submit port: in the vessel, the wiki's own island (`wiki-act` carrying the INGEST). */
+  readonly submit: IngestSubmit;
+  /** A5: where the synced tree holds no base (after a re-found), the base read from the workspace's git HEAD (`poolHeads`). */
+  readonly heads?: BaseFromGit;
+  /** The wiki island's disk shore look (`shore` op `sense`): a stand-off, a vanish, a pointer body and a refused wave go there. */
+  readonly sense: (uris?: readonly string[]) => Promise<unknown>;
+  /** The worn face's actor: every wave lands under it, whichever face last wrote the shared copy. */
+  readonly did: string;
+  readonly tree?: () => SyncedTree;
+  readonly log?: (line: string) => void;
+}
+
+/**
+ * THE VESSEL'S WAVE OVER A NAMED WORKSPACE: a shared wiki's workbench mirror, one disk copy whichever face wears. Each settle's
+ * touched files land as ONE unattended INGEST wave in the wiki's working layer (`wikis/<slug>/working`), run in that wiki's own
+ * island (`inWiki`), under the worn face's actor; the island's gate decides each carrier as it does over a face pool's plane, and
+ * a stand-off goes to that wiki's shore, where `lares shore take-disk` merges it per slot against the workspace's own git base.
+ * A file reads its title by the projector's siting run backward over the workspace's parent (the workspace stands as the
+ * holding folder, as `wikis/<slug>` does). The workspace's `recovery/` and `temp/` ride no wave.
+ */
+export function workspaceIngestPorts(o: WorkspaceIngestOptions): Pick<FacePoolPorts, "catchUp" | "wave"> {
+  const log = o.log ?? (() => {});
+  const gone = new Map<string, { syncedHash: string; file: string }>();
+  const serial = serialChain();
+  const folder: WaveFolder = {
+    dir: o.workspace, bag: wikiSlotUri(o.slug, "working"), wiki: o.slug,
+    site: (file, tree) => siteMirrorFile(dirname(o.workspace), file, tree, false), label: `the workspace of ${o.slug}`,
+  };
+  const skipped = (file: string): boolean => {
+    const rel = relative(o.workspace, file).split(sep);
+    return rel.length > 1 && WORKSPACE_SKIP.includes(rel[0]!);
+  };
+  const waveOver = async (files: readonly string[], whole: boolean): Promise<void> => {
+    const touched = files.filter((f) => !skipped(f));
+    if (touched.length === 0 && gone.size === 0 && !whole) return;
+    const r = await folderWave(folder, gone, touched, { submit: o.submit, did: o.did, ...(o.tree ? { tree: o.tree } : {}), ...(o.heads ? { heads: o.heads } : {}), log });
+    if (whole || r.vanishedNow) await o.sense();
+    else if (r.sense.length > 0) await o.sense([...new Set(r.sense)]);
+  };
+  return {
+    catchUp: () => serial(() => waveOver(mirrorFiles(o.workspace, WORKSPACE_SKIP).filter((rel) => !rel.endsWith(".meta")).map((rel) => join(o.workspace, ...rel.split("/"))), true)),
     wave: (files) => serial(() => waveOver(files, false)),
   };
 }
