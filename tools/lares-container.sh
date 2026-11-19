@@ -572,12 +572,24 @@ pulama_reading() {
   pr_closure=$(closure_label container "$pr_id")
   if [ -n "$pr_closure" ] && [ "$pr_closure" = "$(closure_label image "$IMAGE_REF")" ]; then pr_state=closure-level; else pr_state=moved; fi
 }
+# THE IMAGE LINE (road rank 4l, L6): wherever a pūlama runs, `up` and `pulama status` print one line naming its image
+# beside the image the tag names and, where a vessel stands, the vessel's own.
+vessel_clause() {
+  v_id=$(compose ps -q --status running lares 2>/dev/null) || return 0
+  [ -n "$v_id" ] || return 0
+  v_img=$(docker inspect --format '{{.Image}}' "$v_id" 2>/dev/null) || return 0
+  v_img=$(printf '%s' "$v_img" | tr -d '\r')
+  [ -z "$v_img" ] || printf ' (the vessel runs %s)' "$v_img"
+}
 warn_pulama_skew() {
   [ -n "$PULAMA_MODE" ] || return 0
   pulama_reading
+  case "$pr_state" in absent|unread) return 0 ;; esac
+  pr_vessel=$(vessel_clause)
   case "$pr_state" in
-    moved) printf 'lares-container: the pūlama runs image %s, and %s stands at %s; its code closure moved (or reads unlabeled), so it keeps the older code until `tools/lares-container.sh down` and `tools/lares-container.sh pulama restand` (then light it by hand, `up`, and `pulama admit`)\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" >&2 ;;
-    closure-level) printf 'lares-container: the pūlama runs image %s, and %s stands at %s; its code closure reads the same (%s), so it stands lit and owes no restand\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" "$(printf '%s' "$pr_closure" | cut -c1-19)" >&2 ;;
+    level) printf 'lares-container: the pūlama runs image %s, the image %s stands at%s\n' "$pr_stands" "$IMAGE_REF" "$pr_vessel" >&2 ;;
+    moved) printf 'lares-container: the pūlama runs image %s, and %s stands at %s%s; its code closure moved (or reads unlabeled), so it keeps the older code until `tools/lares-container.sh down` and `tools/lares-container.sh pulama restand` (then light it by hand, `up`, and `pulama admit`)\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" "$pr_vessel" >&2 ;;
+    closure-level) printf 'lares-container: the pūlama runs image %s, and %s stands at %s%s; its code closure reads the same (%s), so it stands lit and owes no restand\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" "$pr_vessel" "$(printf '%s' "$pr_closure" | cut -c1-19)" >&2 ;;
   esac
 }
 
@@ -790,7 +802,6 @@ case "$verb" in
     fi
     down_if_moved
     stand_pulama
-    warn_pulama_skew
     if [ -n "$files" ]; then
       override=$(mktemp)
       printf 'services:\n  lares:\n    volumes:%s\n' "$files" > "$override"
@@ -805,6 +816,7 @@ case "$verb" in
     fi
     if [ "$up_rc" -ne 0 ]; then printf '%s\n' 'lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again' >&2; exit "$up_rc"; fi
     warn_image_revision
+    warn_pulama_skew
     unlock_or_name ;;
   down) down_vessel "$@" ;;
   pulama)

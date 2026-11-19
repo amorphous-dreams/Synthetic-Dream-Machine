@@ -536,13 +536,25 @@ function PulamaReading {
   $script:Pr.Closure = ClosureLabel 'container' $id
   if ($script:Pr.Closure -and $script:Pr.Closure -eq (ClosureLabel 'image' $ImageRef)) { $script:Pr.State = 'closure-level' } else { $script:Pr.State = 'moved' }
 }
+# THE IMAGE LINE (road rank 4l, L6): wherever a pūlama runs, `up` and `pulama status` print one line naming its image
+# beside the image the tag names and, where a vessel stands, the vessel's own.
+function VesselClause {
+  $id = ((& docker compose @Base ps -q --status running lares 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $id) { return '' }
+  $img = ((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $img) { return '' }
+  return " (the vessel runs $img)"
+}
 function WarnPulamaSkew {
   if (-not $PulamaMode) { return }
   PulamaReading
   $p = $script:Pr
+  if ($p.State -in @('absent', 'unread')) { return }
+  $v = VesselClause
   switch ($p.State) {
-    'moved' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands); its code closure moved (or reads unlabeled), so it keeps the older code until ``tools/lares-container.ps1 down`` and ``tools/lares-container.ps1 pulama restand`` (then light it by hand, ``up``, and ``pulama admit``)") }
-    'closure-level' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands); its code closure reads the same ($($p.Closure.Substring(0, 19))), so it stands lit and owes no restand") }
+    'level' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Stands), the image $ImageRef stands at$v") }
+    'moved' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands)$v; its code closure moved (or reads unlabeled), so it keeps the older code until ``tools/lares-container.ps1 down`` and ``tools/lares-container.ps1 pulama restand`` (then light it by hand, ``up``, and ``pulama admit``)") }
+    'closure-level' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands)$v; its code closure reads the same ($($p.Closure.Substring(0, 19))), so it stands lit and owes no restand") }
   }
 }
 
@@ -750,7 +762,6 @@ switch ($verb) {
     foreach ($pair in ((ValueOf 'LARES_WORKSPACES') -split ';')) { if ($pair) { $binds += WorkspaceBind $pair } }
     DownIfMoved
     StandPulama
-    WarnPulamaSkew
     if ($binds.Count -gt 0) {
       $override = [IO.Path]::GetTempFileName()
       try {
@@ -763,6 +774,7 @@ switch ($verb) {
       if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not become ready — check tools/lares-container.sh logs; if it already runs, run up again'); exit $LASTEXITCODE }
     }
     WarnImageRevision
+    WarnPulamaSkew
     UnlockOrName
   }
   'down'  { DownVessel $rest }
