@@ -47,6 +47,13 @@ describe("vessel read names the floor shadow count", () => {
     expect((await readJson(root)).data["floorShadow"]).toEqual(tally);
   });
 
+  test("a tally kept before the count named its floor reads as a prior floor's history", async () => {
+    const { root, store } = house();
+    const unkeyed = { cleanBoots: 2, mismatchBoots: 1, unreadBoots: 4, firstMismatch: null };
+    writeFileSync(join(store, "floor-shadow.json"), JSON.stringify(unkeyed));
+    expect((await readJson(root)).data["floorShadow"]).toEqual({ current: null, prior: [{ floor: null, ...unkeyed }] });
+  });
+
   test("CONTROL: a house with no tally answers null, never a guess", async () => {
     const { root } = house();
     expect((await readJson(root)).data["floorShadow"]).toBeNull();
