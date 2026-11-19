@@ -50,6 +50,18 @@ import { parseArgs } from "../src/parse-args.js";
 
 let scratch: string, gitConfig: string;
 
+/**
+ * The four samples the operator's session mirror held where the keep refused (2026-11-19), verbatim as the JSONL bytes read:
+ * a grep line, a transcript path, prose after a doubly escaped newline, and the header in discussion with no body. The header
+ * splits (`${"-----"}`) so this file names no header itself.
+ */
+const MIRROR_SAMPLES: readonly string[] = [
+  `${"-----"}BEGIN OPENSSH PRIVATE KEY-----\\npackages/lares-cli/src/rite-keep-host.ts:14: *                    A dir another device o`,
+  `${"-----"}BEGIN OPENSSH PRIVATE KEY-----\\n-Dream-Machine/51e9b3fb-b3f5-4d7f-85a6-6102d371292f/subagents/agent-a027c23eb9d9a9f13.js`,
+  `${"-----"}BEGIN OPENSSH PRIVATE KEY-----\\\\npackages/lares-cli/src/rite-keep-\\nthe key. It's \`~/.claude/projects/…/51e9b3fb…/subage`,
+  Array.from({ length: 14 }, () => `${"-----"}BEGIN OPENSSH PRIVATE KEY-----\\\` in discussion with no key body after it`).join(" "),
+];
+
 function runGit(dir: string, argv: readonly string[]): GitAnswer {
   const env: NodeJS.ProcessEnv = { ...process.env, GIT_CONFIG_GLOBAL: gitConfig, GIT_CONFIG_SYSTEM: "/dev/null" };
   for (const k of ["GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE"]) delete env[k];
@@ -409,14 +421,47 @@ describe("the keep rite, host half", () => {
     expect(secretShapes(`token ${"ghp_"}${"x".repeat(30)}`)).toEqual([`${"ghp_"}${"x".repeat(30)}`]);
   });
 
+  test("KH19 a body line reads whole: the operator's four mirror samples pass (a path, prose or a short token after an escaped newline is no key), as do short identifiers and hex digests after a header; real-shaped keys wrapped at 70 and 64 still refuse", () => {
+    const BEGIN = `${"-----"}BEGIN OPENSSH PRIVATE KEY-----`, END = `${"-----"}END OPENSSH PRIVATE KEY-----`;
+    const header = `${"-----"}BEGIN OPENSSH PRIVATE KEY`;
+    // THE FOUR SAMPLES, verbatim as the session mirror held them (JSONL, escaped once or twice).
+    for (const sample of MIRROR_SAMPLES) {
+      expect(secretShapes(sample), sample).toEqual([]);
+      expect(secretShapes(`{"type":"assistant","text":"${sample}"}`), sample).toEqual([]);
+      expect(secretShapes(JSON.stringify({ text: sample })), sample).toEqual([]);
+      expect(secretShapes(JSON.stringify({ text: JSON.stringify({ text: sample }) })), sample).toEqual([]);
+    }
+    expect(secretShapes(MIRROR_SAMPLES.join("\n"))).toEqual([]);
+    // SHORT TOKENS after a header, each line base64-charactered yet no key line: identifiers, words, a field-shaped prose line.
+    expect(secretShapes(`${BEGIN}\\npackages\\nsrc\\nriteKeepHost\\nsecretShapes\\nkeyBodyFollows\\nmirrorSessions\\nsessionSources\\nworkspaceFromPairs`)).toEqual([]);
+    expect(secretShapes(`${BEGIN}\\nNote: the header\\nkeyBodyFollowsAgainAndAgainAndAgain\\nsecretShapesOverAndOverAndOver`)).toEqual([]);
+    // HEX DIGESTS after a header (commit ids, sha256): long, base64-charactered, and no key.
+    expect(secretShapes(`${BEGIN}\n${"e844e0d8b".padEnd(40, "0")}\n${"ab12".repeat(16)}\n${"cd34".repeat(16)}\n`)).toEqual([]);
+    // REAL-SHAPED KEYS still refuse: an OpenSSH body wrapped at 70 with a short tail, a PEM body wrapped at 64, in every carriage.
+    const b64 = Buffer.from(Array.from({ length: 400 }, (_, i) => (i * 37 + 11) & 255)).toString("base64");
+    const wrap = (w: number): string[] => b64.match(new RegExp(`.{1,${w}}`, "g"))!;
+    const ssh = wrap(70), pem = wrap(64);
+    expect(ssh.at(-1)!.length).toBeLessThan(70);
+    expect(secretShapes(`${BEGIN}\n${ssh.join("\n")}\n${END}\n`)).toEqual([header]);
+    expect(secretShapes(`{"text":"${BEGIN}\\n${ssh.join("\\n")}\\n${END}\\n"}`)).toEqual([header]);
+    expect(secretShapes(`{"text":"{\\"text\\":\\"${BEGIN}\\\\n${ssh.join("\\\\n")}\\\\n${END}\\"}"}`)).toEqual([header]);
+    expect(secretShapes(`${"-----"}BEGIN PRIVATE KEY-----\r\n${pem.join("\r\n")}\r\n${"-----"}END PRIVATE KEY-----\r\n`)).toEqual([`${"-----"}BEGIN PRIVATE KEY`]);
+    // Two full lines alone carry the minimum; one full line and a tail do too, while a lone short line never starts a run.
+    expect(secretShapes(`${BEGIN}\n${ssh[0]}\n${ssh[1]}\n${END}`)).toEqual([header]);
+    expect(secretShapes(`${BEGIN}\n${ssh[0]}\nAAAA\n${END}`)).toEqual([header]);
+    expect(secretShapes(`${BEGIN}\nAAAA\n${ssh[0]}\n${END}`)).toEqual([]);
+  });
+
   test("KH18 the session guard and the bundle guard each pass a header named in prose and refuse a planted header with its body", async () => {
     const BEGIN = `${"-----"}BEGIN OPENSSH PRIVATE KEY-----`, END = `${"-----"}END OPENSSH PRIVATE KEY-----`;
     const body = Array.from({ length: 5 }, (_, i) => `b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQ${i}`);
     const prose = Array.from({ length: 14 }, (_, i) => `{"type":"assistant","text":"turn ${i}: \`${BEGIN}\` names a header\\nno key follows"}`).join("\n") + "\n";
     // SESSIONS, prose: the transcript discussing the header keeps.
     const r = rig();
-    r.sessions.put("projects/-home-me-proj/cccc.jsonl", prose);
-    r.state.notes = { heron: `the guard reads ${BEGIN} in discussion\nno key follows\n` };
+    // The operator's four mirror samples ride the transcript and the record too: both guards keep them.
+    const samples = MIRROR_SAMPLES.map((s) => `{"type":"user","text":"${s}"}`).join("\n") + "\n";
+    r.sessions.put("projects/-home-me-proj/cccc.jsonl", prose + samples);
+    r.state.notes = { heron: `the guard reads ${BEGIN} in discussion\nno key follows\n${MIRROR_SAMPLES.join("\n")}\n` };
     const kept = await riteKeepHost(r.ports, { workspace: "backup" });
     expect(kept.data, JSON.stringify(kept.data)).toMatchObject({ committed: true, pushed: true, par: true });
     // SESSIONS, planted: a transcript carrying the header and its body, escaped inside JSONL, refuses before any return spends.
