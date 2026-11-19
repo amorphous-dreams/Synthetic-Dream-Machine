@@ -347,12 +347,11 @@ export function keepManifestDigest(manifest: Readonly<Record<string, unknown>>):
 }
 
 /**
- * The keep pair a bundle carries. A bundle cut before the pair (its roster sealed under the burned `config/keep-key`) carries none
- * and refuses by name: keep again, and restore from that keep.
+ * The keep pair a bundle carries. A bundle that carries none, or one that reads no pair, refuses `bundle-keep-seat-shape`.
  */
 export function readBundleSeat(bundle: SealedBundle): KeepSeat {
   if (!bundle.manifest.files.some((f) => f.path === KEEP_SEAT_FILE)) {
-    throw new BundleVerifyRefused(`bundle-keep-key-burned: the bundle carries no ${KEEP_SEAT_FILE}; its roster rests sealed under the loose keep key a house no longer holds: keep again on the house that cut it, and restore from that keep`);
+    throw new BundleVerifyRefused(`bundle-keep-seat-shape: the bundle carries no ${KEEP_SEAT_FILE}, so nothing opens its roster`);
   }
   const read = decodeKeepSeat(bundleBytes(bundle.root, KEEP_SEAT_FILE).toString("utf8"));
   if (read.reading !== "readable") throw new BundleVerifyRefused(`bundle-keep-seat-shape: ${KEEP_SEAT_FILE} reads no keep pair (${read.why})`);
