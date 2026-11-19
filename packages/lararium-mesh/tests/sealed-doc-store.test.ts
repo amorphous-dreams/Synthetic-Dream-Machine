@@ -277,9 +277,10 @@ describe("the browser vessel names its face by one subject", () => {
   it("B1 — the sealed rest carries no wornAt, the map face and the session subject are one value, and nothing reassigns the face from a dial", () => {
     expect(src).toMatch(/composeSealedRest</);
     // The face map, beneath the vessel's held bags: device documents by owner, then the held homes (the secret home rests under
-    // the vessel's key, never a face's), in the one order the node reads (`vesselHeldBagOf`).
-    // The vessel files through `browserDeviceFiling`, whose one reading is `vesselHeldBagOf`.
-    expect(src).toMatch(/const sealedBagOf = \(documentId: string\): SealedBag \| null => filing\.bagOf\(documentId\) \?\? sealedMap\.bagOf\(documentId\);/);
+    // the vessel's key, never a face's), in the one order the node reads (`vesselHeldBagOf`), then each carried face's selves
+    // record, then the map. The vessel files through `browserDeviceFiling`, whose one reading is `vesselHeldBagOf`. The pin reads
+    // the order of the readings, whatever the line wrap.
+    expect(src).toMatch(/const sealedBagOf = \(documentId: string\): SealedBag \| null =>\s*filing\.bagOf\(documentId\)\s*\?\?\s*selvesRecordBagOf\(documentId,\s*carriedSelves\(\),\s*litDevices\(\)\)\s*\?\?\s*sealedMap\.bagOf\(documentId\);/);
     const filing = readFileSync(new URL("../../lararium-browser/src/browser-device-filing.ts", import.meta.url), "utf8");
     expect(filing).toMatch(/bagOf: \(documentId\) => vesselHeldBagOf\(deviceDocs, secretHomes, opts\.litDevices\(\), documentId\) \?\? null/);
     expect(src).toMatch(/composeSealedRest<BrowserSaveSession>\(\{[\s\S]*?bagOf: sealedBagOf,[\s\S]*?sessionFace: \(\) => sealedCells\.face\(\),/);
