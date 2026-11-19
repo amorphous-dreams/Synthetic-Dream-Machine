@@ -130,6 +130,9 @@ export interface CustodyFrameDeps {
     readonly dial: () => Promise<{ readonly session: boolean; readonly waits: string | null; readonly refused?: string }>;
     /** The faces the pūlama lends this vessel (`PulamaHolder.lends`): a wear chooses among them alone. */
     readonly lent: () => readonly number[];
+    /** Tell the pūlama the face a wear just wore (`PulamaHolder.tellWorn`), so a vessel that restarts wears it again. The
+     *  wear door alone calls it, with the ordinal alone. */
+    readonly tellWorn: (ordinal: number) => Promise<void>;
   };
   /**
    * Run one act of the sealed-act table against the seated holder (`runSealedAct`, bound to what the standing
@@ -348,8 +351,16 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * moves first, so the sovereign gate reads it, and the composition stands again with NO ward credential: a wear is no ward
    * act, so a face that would need a fresh certificate at a new scope waits for an act that carries its own route. A wear whose
    * composition refuses wears the face it left, and the node key stays held either way: wear never opened it.
+   *
+   * Under a pūlama, a wear that stands (or finds the face worn already) tells the pūlama the ordinal, which it keeps in
+   * memory and hands back to this vessel's next session. The wear answers without waiting on the tell, so a pūlama that
+   * never answers holds no custody act behind it; a tell the pūlama refuses names itself and leaves the wear standing.
    */
   const wear = composing(async (face: number): Promise<CustodyAnswer> => {
+    const tellWorn = (): void => {
+      if (!deps.pulama) return;
+      deps.pulama.tellWorn(face).catch((e: unknown) => deps.onLog(`wear h${face}: the pūlama did not keep the worn face (${(e as { reading?: unknown }).reading ?? (e instanceof Error ? e.name : "refused")}); a restart wears the lowest face served`));
+    };
     const refuse = (reason: string, errorMessage: string, extra: object = {}): CustodyAnswer => {
       deps.onLog(`wear h${face}: refused (${reason})`);
       return { op: "wear", status: "error", errorMessage, refusal: { reason, ...extra } };
@@ -366,7 +377,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         : `face h${face} stands shut: open it under its own route (\`lares vault unlock --all\`), then wear it`);
     }
     const before = mountedFaceOrdinal();
-    if (before === face) return { op: "wear", face, held: true, already: true, standing: deps.standing() };
+    // A wear that names the face already worn names it by choice: the mount no longer slides as an opening's would.
+    if (before === face) { mountByOpening = false; tellWorn(); return { op: "wear", face, held: true, already: true, standing: deps.standing() }; }
     const byOpeningBefore = mountByOpening;
     setMountedFace(face);
     mountByOpening = false;
@@ -375,7 +387,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // A RECOMPOSE THAT THROWS puts the mount back on the face it left before the fault names itself to the caller.
     try { stood = await deps.recompose(true); }
     catch (e) { setMountedFace(before); mountByOpening = byOpeningBefore; throw e; }
-    if (stood.refused === undefined) return { op: "wear", face, held: true, ...stood };
+    if (stood.refused === undefined) { tellWorn(); return { op: "wear", face, held: true, ...stood }; }
     setMountedFace(before);
     mountByOpening = byOpeningBefore;
     const back = await deps.recompose(true);

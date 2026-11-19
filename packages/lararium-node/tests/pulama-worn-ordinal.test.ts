@@ -45,13 +45,14 @@ async function standThree(lent: { now: number[] }, dark: number[] = []) {
 }
 
 /** One vessel boot: a fresh process (no mount named), a holder seated over a new channel, the stand-by's one boot dial. */
-async function boot() {
+async function boot(refuseOn?: number) {
   setMountedFace(undefined);
   const vessel = fx!.vessel();
   seatCustody(vessel);
   seated = vessel;
   const lines: string[] = [];
-  const recompose = async (sovereign: boolean) => ({ standing: sovereign ? "hearth" : "herm" });
+  const recompose = async (sovereign: boolean) => (sovereign && refuseOn !== undefined && mountedFaceOrdinal() === refuseOn
+    ? { standing: "herm", refused: `h${refuseOn} would not stand` } : { standing: sovereign ? "hearth" : "herm" });
   const by = pulamaStandBy({ holder: vessel, recompose, onLog: (l) => lines.push(l) });
   expect(await by.dial()).toEqual({ session: true, waits: null });
   const door = custodyFrameHandler({
@@ -66,9 +67,9 @@ async function boot() {
 }
 
 /** Docker restarts the vessel: its process ends (the channel closes), and a new one boots. */
-async function restart() {
+async function restart(refuseOn?: number) {
   if (seated) { unseatCustody(seated); await seated.lock(); seated = null; }
-  return boot();
+  return boot(refuseOn);
 }
 
 /** Every line the vessels sent that names the worn op. */
@@ -89,7 +90,7 @@ describe("RED pulama-remembers-the-worn-face: a Docker-driven restart wears the 
   test("CONTROL: a pūlama that never heard a wear leaves the mount unnamed, and the daemon mount reads the lowest face served", async () => {
     await standThree({ now: [0, 1, 2] });
     await boot();
-    const again = await restart();
+    await restart();
     expect(mountedFaceOrdinal()).toBeUndefined();
     expect(await daemonMountOrdinal()).toBe(0);
     expect(wornLines()).toEqual([]);
@@ -127,6 +128,35 @@ describe("RED pulama-remembers-the-worn-face: a Docker-driven restart wears the 
     expect(await daemonMountOrdinal()).toBe(0);
   });
 
+  test("a remembered face whose composition refuses never refuses the boot: the vessel composes once more on the lowest face served", async () => {
+    await standThree({ now: [0, 1, 2] });
+    const first = await boot();
+    expect(await first.send({ op: "wear", face: 1 })).toMatchObject({ op: "wear", face: 1, held: true });
+    const again = await restart(1);
+    expect(again.vessel.isUnlocked()).toBe(true);
+    expect(mountedFaceOrdinal()).toBeUndefined();
+    expect(await daemonMountOrdinal()).toBe(0);
+    expect(again.lines.join("\n")).toMatch(/remembered face did not stand/);
+  });
+
+  test("a pūlama that never answers the tell holds no custody act: the wear answers, and the next frame answers too", async () => {
+    setMountedFace(0);
+    const holder = {
+      isUnlocked: () => true, attemptsLeft: () => 0, openedSlot: () => "pulama", unlockedFaces: () => ["fcid-0", "fcid-1"],
+      faceStanding: async ({ ordinal }: { ordinal: number }) => ({ ordinal, fcid: `fcid-${ordinal}`, unlocked: true }),
+    } as unknown as PulamaHolder;
+    const door = custodyFrameHandler({
+      holder, testScratch: false, standing: () => "hearth", onLog: () => {}, recompose: async () => ({ standing: "hearth" }),
+      pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => [0, 1], tellWorn: () => new Promise<void>(() => {}) },
+    });
+    const send = (frame: unknown): Promise<Record<string, unknown>> => new Promise((resolve) => {
+      const sock = Object.assign(new EventEmitter(), { end: (line: string) => resolve(JSON.parse(line) as Record<string, unknown>) }) as unknown as Socket;
+      expect(door(frame, sock)).toBe(true);
+    });
+    expect(await send({ op: "wear", face: 1 })).toMatchObject({ op: "wear", face: 1, held: true });
+    expect(await send({ op: "wear", face: 0 })).toMatchObject({ op: "wear", face: 0, held: true });
+  });
+
   test("the worn op carries the ordinal and nothing else; the pūlama refuses an ordinal outside the session's lend, and a lock forgets", async () => {
     await standThree({ now: [0, 1] });
     const first = await boot();
@@ -142,7 +172,7 @@ describe("RED pulama-remembers-the-worn-face: a Docker-driven restart wears the 
     await fx!.kept.adopt(fx!.treeKey);
     const after = await boot();
     expect(after.vessel.worn()).toBeUndefined();
-    expect(await daemonMountOrdinal()).toBe(0);
+    expect(mountedFaceOrdinal()).toBeUndefined();
   });
 
   test("an unlock that names a face writes no worn op: only the wear door tells the pūlama", async () => {
@@ -163,6 +193,7 @@ describe("RED pulama-remembers-the-worn-face: a Docker-driven restart wears the 
     expect(frames.split(".tellWorn(").length - 1).toBe(wear.split(".tellWorn(").length - 1);
     expect(wear.includes(".tellWorn(")).toBe(true);
     const main = readFileSync(join(SRC, "main.ts"), "utf8");
-    expect(main.match(/\.tellWorn\([^)]*\)/g)).toEqual(["pulama.tellWorn(o)"]);
+    expect(main.match(/\.tellWorn\(/g)).toHaveLength(1);
+    expect(main.includes("tellWorn: (o) => pulama.tellWorn(o)")).toBe(true);
   });
 });

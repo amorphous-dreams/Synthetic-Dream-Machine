@@ -23,6 +23,10 @@
  *   derivations    the children under the domains `derives` names, carried in the session frame; no other domain derives
  *   `rite.land`    the vessel says it composed over its session; the pūlama rests the host half of the tessera the gate
  *                  began, once (the scope's `land`), and answers whether the pair reads par
+ *   `face.worn`    the vessel's wear door names the face it now wears, by ordinal and nothing beside it: the pūlama keeps
+ *                  that one ordinal in its own memory (never on disk) and hands it back in the standing of every session
+ *                  it serves after, so a vessel that restarts wears the face again. An ordinal outside the session's lend
+ *                  refuses `outside-the-lei`. The lock forgets it, as a restart does: a fresh light remembers no wear.
  *   everything else (an unlock, a proof for a backup, an adoption, a founding, a ward act, a rewrap, a lock) holds no
  *                  operation here and refuses `needs-the-human`
  *
@@ -105,6 +109,8 @@ export function servePulama(a: {
   const log = a.onLog ?? (() => {});
   const live = new Set<Session>();
   let nextClaim = 1;
+  /** The face a vessel's wear door last wore, by ordinal: memory alone, forgotten at the lock. */
+  let worn: number | undefined;
 
   /** Whether the session's lend names this face: its ordinal in the set, and its custody id where the set names one. */
   const lends = (s: { readonly scope: PulamaScope }, face: { readonly ordinal: number; readonly fcid: string }): boolean =>
@@ -117,7 +123,7 @@ export function servePulama(a: {
     const fcidAt = (ordinal: number): string | null => { const f = index[ordinal]; return f !== undefined && "fcid" in f ? f.fcid : null; };
     const lit = s.scope.faces.flatMap((f) => { const fcid = fcidAt(f.ordinal); return fcid !== null && open.has(fcid) && lends(s, { ordinal: f.ordinal, fcid }) ? [f.ordinal] : []; });
     const { served, waiting } = servedOf(s.scope.faces, lit);
-    return { slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), faces: served.map((f) => fcidAt(f.ordinal)!), waiting: waiting.map((f) => f.ordinal) };
+    return { slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), faces: served.map((f) => fcidAt(f.ordinal)!), waiting: waiting.map((f) => f.ordinal), ...(worn !== undefined ? { worn } : {}) };
   };
   /** The session's children, fresh; `send` encodes them before the copies zero-fill. */
   const withDerived = (send: (derived: Record<string, Uint8Array>) => void): void => {
@@ -272,6 +278,16 @@ export function servePulama(a: {
         });
         return out;
       }
+      case "face.worn": {
+        const ordinal = args["ordinal"];
+        if (Object.keys(args).some((k) => k !== "ordinal") || !Number.isSafeInteger(ordinal) || (ordinal as number) < 0) {
+          throw new PulamaRefused("pulama-frame-malformed", "a worn face rides by its ordinal, a whole number from 0, and nothing beside it");
+        }
+        if (!isLent(s.scope.faces, ordinal as number)) throw new PulamaRefused("outside-the-lei", `the pūlama lends this vessel ${renderLentFaces(s.scope.faces)}; h${String(ordinal)} stands outside it`);
+        worn = ordinal as number;
+        log(`worn: h${worn}`);
+        return null;
+      }
       case "rite.land": {
         if (!s.scope.land) throw new PulamaRefused("rite-not-begun", "this session began under no rite, so no tessera waits on a host half");
         return s.scope.land();
@@ -335,6 +351,7 @@ export function servePulama(a: {
     },
     async lock() {
       for (const s of [...live]) end(s);
+      worn = undefined;
       await holder.lock();
       log("locked: every key zero-filled");
     },

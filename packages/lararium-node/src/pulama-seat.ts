@@ -20,6 +20,12 @@
  * unlock` asks the custody door, which runs this same dial. That unlock gathers no credential and sends none: the door
  * names a pūlama in its `custody` reading, so the command asks nobody anything and answers what the pūlama waits on.
  *
+ * ── THE FACE LAST WORN COMES BACK WITH THE SESSION ──────────────────────────────────────────────
+ * The pūlama remembers, in memory alone, the face this vessel's wear door last wore, and the session's standing carries it.
+ * A dial over a vessel that names no mount of its own (a fresh process: Docker restarted it, or it rose new) wears that face
+ * again where the lend holds it standing lit; otherwise the line names why and the composition names its own daemon mount
+ * as a pūlama that heard no wear leaves it. A remembered face never refuses the boot.
+ *
  * When the session drops (the pūlama locked, its process ended, the socket went), the vessel composes at the floor.
  *
  * The stand-by keeps why its last dial stood no session (`waits()`): a composition the vessel refused over a session reads
@@ -27,6 +33,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import { readFileSync } from "node:fs";
+import { mountedFaceOrdinal, setMountedFace } from "./node-vessel-identity.js";
 import { makePulamaHolder, type PulamaHolder } from "./pulama-holder.js";
 import { dialPulama } from "./pulama-socket.js";
 import type { CustodyHomes } from "./vault-carriers.js";
@@ -77,6 +84,19 @@ export function pulamaStandBy(a: {
     a.onLog("the pūlama session dropped; composing at the floor");
     a.recompose(false).catch((err: unknown) => a.onLog(`the floor did not compose after the session dropped: ${err instanceof Error ? err.message : String(err)}`));
   });
+  /** Wear the face the pūlama remembers, where this vessel names no mount and the lend holds that face lit; answers whether it did. */
+  const rewearRemembered = (): boolean => {
+    const remembered = a.holder.worn();
+    if (remembered === undefined || mountedFaceOrdinal() !== undefined) return false;
+    const lends = a.holder.lends(), waiting = a.holder.waiting();
+    if (!lends.includes(remembered) || waiting.includes(remembered)) {
+      a.onLog(`the pūlama remembers h${remembered} worn, but ${lends.includes(remembered) ? "it waits dark in the lend" : `it stands outside the lent set (${lends.map((o) => `h${o}`).join(", ")})`}; the daemon mount falls to the lowest face served`);
+      return false;
+    }
+    setMountedFace(remembered);
+    a.onLog(`the pūlama remembers h${remembered} worn; wearing it again`);
+    return true;
+  };
   // ONE DIAL AT A TIME: a second caller waits on the dial in flight, so nobody reads a session the composition has yet to stand on.
   let inflight: Promise<PulamaStandingBy> | null = null;
   const dial = (): Promise<PulamaStandingBy> => inflight ??= dialOnce().then((by) => { lastWaits = by.waits; return by; }).finally(() => { inflight = null; });
@@ -89,9 +109,19 @@ export function pulamaStandBy(a: {
     a.onLog(`the pūlama serves no session: ${typeof reading === "string" ? reading : err instanceof Error ? err.message : String(err)}; this vessel keeps the floor`);
     return { session: false, waits: a.holder.waits() ?? "pulama-unreachable" };
   }
-  let stood: { readonly standing: string; readonly refused?: string };
-  try { stood = await a.recompose(true); }
-  catch (err) { stood = { standing: "unknown", refused: err instanceof Error ? err.message : String(err) }; }
+  const compose = async (): Promise<{ readonly standing: string; readonly refused?: string }> => {
+    try { return await a.recompose(true); }
+    catch (err) { return { standing: "unknown", refused: err instanceof Error ? err.message : String(err) }; }
+  };
+  const rewore = rewearRemembered();
+  let stood = await compose();
+  if (stood.refused !== undefined && rewore) {
+    // A REMEMBERED FACE NEVER REFUSES THE BOOT: the composition that would not stand on it composes once more on the
+    // daemon mount a pūlama that heard no wear leaves.
+    setMountedFace(undefined);
+    a.onLog(`the composition wearing the remembered face did not stand (${stood.refused}); composing on the lowest face served`);
+    stood = await compose();
+  }
   if (stood.refused !== undefined) {
     // A SESSION NEVER RESTS OVER A FLOOR: held and standing never disagree.
     // The refused composition already left the floor standing, so this leaving asks for no second one.
