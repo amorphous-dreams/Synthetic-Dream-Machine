@@ -51,8 +51,9 @@
 # A STOP NEVER DROPS CONTENT SILENTLY. A stopped container holds no memory to count, so `down` asks the standing vessel
 # first (`vessel census`, by compose exec): the saves its sealed rest holds in memory and the carriers its disk
 # projector has not settled. A clean answer stops as before. Any item, or a census that cannot answer (a wedged vessel,
-# a failed exec, the bound passing), prints what it learned and refuses, naming two ways on: unlock and let it settle
-# (`vault unlock`, then `down` again), or type `accept-loss` on this terminal to stop anyway. With no terminal it
+# a failed exec, the bound passing), prints what it learned and refuses, naming two ways on: let it settle, by the way the
+# vessel's state names (`wear N` where faces stand open and none worn, `vault unlock` where the key stands shut, a wait
+# where a worn face holds it), then `down` again; or type `accept-loss` on this terminal to stop anyway. With no terminal it
 # refuses. With no vessel standing, `down` runs as it always has.
 #
 # LARES_HOUSE and LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (KEY=VALUE
@@ -321,10 +322,22 @@ run_census() {
   return "$census_rc"
 }
 
+# THE WAY TO SETTLE READS THE VESSEL'S STATE: faces open and none worn (the census says so) wear one; a key the vessel holds
+# under a worn face waits alone; a key it does not hold, or a census that never answered, unlocks.
+settle_way() {
+  if printf '%s\n' "$census_err" | grep -q '^census: no face worn'; then
+    printf '%s' '  - wear a face and let it settle: tools/lares-container.sh wear N (faces stand open and none worn), then tools/lares-container.sh down again'
+  elif [ -z "$census_timed_out" ] && ! printf '%s\n' "$census_err" | grep -q '^census: vessel locked' && key_held; then
+    printf '%s' '  - let it settle: give the vessel a moment, then tools/lares-container.sh down again'
+  else
+    printf '%s' '  - unlock it and let it settle: tools/lares-container.sh vault unlock, then tools/lares-container.sh down again'
+  fi
+}
+
 # The two ways on, then the typed acceptance: only the word `accept-loss`, typed on this terminal, stops anyway.
 offer_accept_loss() {
   printf '%s\n' 'lares-container: the vessel stands. Two ways on:' \
-    '  - unlock it and let it settle: tools/lares-container.sh vault unlock, then tools/lares-container.sh down again' \
+    "$(settle_way)" \
     '  - stop anyway, dropping what the list names: type accept-loss below' >&2
   [ -n "$HAVE_TTY" ] || die "down refuses: no terminal stands here to type accept-loss on; the vessel stands"
   printf 'Type accept-loss to stop anyway: '

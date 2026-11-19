@@ -39,7 +39,7 @@
  */
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
-import { describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { custodyFrameHandler, CUSTODY_LINE } from "../src/custody-frames.js";
 import { CustodyRecordUnavailable, type CustodyHolder, type HolderProof, type HolderUnlock } from "../src/custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "../src/face-bundle-cut.js";
@@ -522,6 +522,9 @@ describe("the custody state query answers beside the chain (L7)", () => {
  *   N2  while no composition sits it answers `held: null`, never an empty list.     control: no census wired reads null too
  */
 describe("the census frame", () => {
+  // The mount lives for the process: an earlier suite's unlock may leave one, and the census names it (`worn`), so each
+  // census here starts with none worn.
+  beforeEach(() => { setMountedFace(undefined); });
   // A held key opens every standing face unless the row names otherwise (`allFacesOpen: false`): the census reads the
   // standing faces off this house's identity store, so the fake's open set follows that store.
   const door = (heldSaves?: () => readonly import("@lararium/mesh").HeldSaves[] | null, unlocked = false, allFacesOpen = true) => custodyFrameHandler({
