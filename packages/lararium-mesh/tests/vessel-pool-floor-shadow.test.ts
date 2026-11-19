@@ -74,8 +74,8 @@ describe("the floor shadow read rides each wiki mount and never moves serving", 
     expect(manifests[0]?.["floorCid"]).toBe(moved.cid);
     await vi.waitFor(() => expect(tally.value).not.toBeNull());
     const t = tally.value as FloorShadowTally;
-    expect(t.mismatchBoots).toBe(1);
-    expect(t.firstMismatch?.moved.map((m) => m.field)).toEqual(["engine"]);
+    expect(t.current?.mismatchBoots).toBe(1);
+    expect(t.current?.firstMismatch?.moved.map((m) => m.field)).toEqual(["engine"]);
     await vi.waitFor(() => expect(warn.mock.calls.flat().join(" ")).toContain("engine"));
     await pool.disposeAll();
   });
@@ -84,9 +84,9 @@ describe("the floor shadow read rides each wiki mount and never moves serving", 
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(console, "info").mockImplementation(() => {});
     const same = manifest();
-    const { pool, tally } = rig({ pin: same.cid, record: founding(null), held: [same], tally: { value: { cleanBoots: 4, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null } } });
+    const { pool, tally } = rig({ pin: same.cid, record: founding(null), held: [same], tally: { value: { current: { floor: same.cid, cleanBoots: 4, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null }, prior: [] } } });
     await pool.mountWiki("wiki", spec);
-    await vi.waitFor(() => expect((tally.value as FloorShadowTally).cleanBoots).toBe(5));
+    await vi.waitFor(() => expect((tally.value as FloorShadowTally).current?.cleanBoots).toBe(5));
     expect(warn).not.toHaveBeenCalled();
     await pool.disposeAll();
   });
@@ -99,7 +99,7 @@ describe("the floor shadow read rides each wiki mount and never moves serving", 
     expect(manifests[0]?.["floorCid"]).toBeUndefined();
     await vi.waitFor(() => expect(tally.value).not.toBeNull());
     const t = tally.value as FloorShadowTally;
-    expect(t.firstMismatch?.manifest).toBe(genesis.cid);
+    expect(t.current?.firstMismatch?.manifest).toBe(genesis.cid);
     await pool.disposeAll();
   });
 
@@ -112,7 +112,7 @@ describe("the floor shadow read rides each wiki mount and never moves serving", 
     await pool.unmountWiki("wiki");
     await pool.mountWiki("wiki", spec);
     await new Promise((r) => setTimeout(r, 20));
-    expect((tally.value as FloorShadowTally).cleanBoots).toBe(1);
+    expect((tally.value as FloorShadowTally).current?.cleanBoots).toBe(1);
     await pool.disposeAll();
   });
 
@@ -124,8 +124,8 @@ describe("the floor shadow read rides each wiki mount and never moves serving", 
     expect(pool.has("wiki")).toBe(true);
     await vi.waitFor(() => expect(tally.value).not.toBeNull());
     const t = tally.value as FloorShadowTally;
-    expect(t.unreadBoots).toBe(1);
-    expect(t.mismatchBoots).toBe(0);
+    expect(t.current?.unreadBoots).toBe(1);
+    expect(t.current?.mismatchBoots).toBe(0);
     await pool.disposeAll();
   });
 });
@@ -162,8 +162,8 @@ describe("the floor shadow read never sits on the boot path", () => {
     const same = manifest();
     const { pool, tally } = rig({ pin: same.cid, record: founding(null), held: [same] });
     expect(await mountsWithin(pool)).toBe("mounted");
-    await vi.waitFor(() => expect((tally.value as FloorShadowTally | null)?.cleanBoots).toBe(1));
-    expect(pool.floorShadowTally()?.cleanBoots).toBe(1);
+    await vi.waitFor(() => expect((tally.value as FloorShadowTally | null)?.current?.cleanBoots).toBe(1));
+    expect(pool.floorShadowTally()?.current?.cleanBoots).toBe(1);
     await pool.disposeAll();
   });
 });

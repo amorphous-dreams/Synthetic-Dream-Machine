@@ -206,7 +206,8 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
     memoryGuardsHeld: guardsHeld,
   };
   // THE FLOOR SHADOW COUNT (backlog-awakens 3a): the tally each boot's mounts keep beside the vessel store, read from the
-  // file whether or not the vessel stands. The operator flips mounts onto the floor once this reads clean.
+  // file whether or not the vessel stands, keyed by floor: the line names the current floor's count and sets older floors
+  // aside. The operator flips mounts onto the floor once the current floor reads clean.
   const shadow = readFloorShadowFile(storage);
   data["floorShadow"] = shadow;
   const shadowLine = floorShadowLine(shadow);

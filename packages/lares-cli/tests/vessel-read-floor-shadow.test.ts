@@ -42,7 +42,7 @@ function house(): { root: string; store: string } {
 describe("vessel read names the floor shadow count", () => {
   test("a kept tally reads back on the read's answer", async () => {
     const { root, store } = house();
-    const tally = { cleanBoots: 7, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null };
+    const tally = { current: { floor: "a".repeat(64), cleanBoots: 7, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null }, prior: [] };
     writeFileSync(join(store, "floor-shadow.json"), JSON.stringify(tally));
     expect((await readJson(root)).data["floorShadow"]).toEqual(tally);
   });

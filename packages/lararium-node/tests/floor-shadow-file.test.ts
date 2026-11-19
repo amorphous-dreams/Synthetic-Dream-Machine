@@ -14,7 +14,7 @@ const dirs: string[] = [];
 const scratch = (): string => { const d = mkdtempSync(join(tmpdir(), "floor-shadow-")); dirs.push(d); return d; };
 afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });
 
-const tally = { cleanBoots: 3, mismatchBoots: 0, unreadBoots: 1, firstMismatch: null };
+const tally = { current: { floor: "a".repeat(64), cleanBoots: 3, mismatchBoots: 0, unreadBoots: 1, firstMismatch: null }, prior: [] };
 
 describe("the floor shadow tally rests in one file beside the vessel store", () => {
   test("a saved tally reads back through the store and the plain reader", async () => {
