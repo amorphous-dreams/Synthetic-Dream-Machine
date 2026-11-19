@@ -896,7 +896,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   vault: {
-    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>] | rewrap --face <N>> [--passphrase | --paper] [--rotate]",
+    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>]> [--passphrase | --paper] [--rotate]",
     synopsis:
       "The VESSEL KEY custody door (status, unlock, lock, bind, unbind): the key seals the vessel's private rows, the " +
       "keyhive and veil archives among them, and every boot rests at the floor until a person unlocks it. " +
@@ -909,8 +909,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "every standing file the carrier table names (a row under the vessel key reads sealed or reads as a fault, a row " +
       "outside it names the law it rests bare under), and `--json` answers the whole custody object. `unbind --rotate` runs as one act: the rotation's census passes before any byte moves, " +
       "so a carrier that refuses it leaves the slot bound. A credential rides a TTY alone, typed with no echo: no " +
-      "flag, no environment variable and no pipe carries one. `rewrap --face N` moves a face founded before the ward " +
-      "under one: its ward tree binds over the typed route, then each root row moves under the ward key.",
+      "flag, no environment variable and no pipe carries one.",
     examples: [
       "lares vault status                     # the slot tree, each face, the carrier counts, every fault, and any private file outside the carrier table",
       "lares vault status --verbose           # the same, plus one reading of each standing file",

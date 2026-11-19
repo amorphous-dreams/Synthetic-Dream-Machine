@@ -10,8 +10,6 @@
  * nothing here echoes one. It drops the instant the act returns.
  */
 
-import { gatherWardRoute } from "../ward-door.js";
-import { sealedAct } from "../sealed-act-door.js";
 import {
   FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus, bindFaceSlot, unbindFaceSlot, openFaceTree, readFaceIndexSync,
   type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
@@ -77,7 +75,6 @@ export async function cmdVault(given: ParsedArgs): Promise<number> {
       case "unbind":     return await vaultUnbind(args);
       case "backup":     return await vaultBackup(args, daemonUp);
       case "restore":    return await vaultRestore(args, daemonUp);
-      case "rewrap":     return await vaultRewrap(args);
       case "reseat":     return await vaultReseat(args, daemonUp);
       default:
         console.error(`lares vault: unknown sub-verb "${sub}"`);
@@ -424,21 +421,6 @@ async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
 }
 
 /** `--face N` as a handle index, or undefined when the flag stands absent. */
-/**
- * `vault rewrap --face N` (seat-harness#/the-ward): a face founded before the ward holds its root under its face key and no ward
- * tree, so every root act refuses `ward-absent`. The rewrap binds the face's ward over the route typed here (a passphrase that
- * opens the face's own tree), then moves each root row under the ward. The tree lands first, so a rewrap that stopped resumes.
- */
-async function vaultRewrap(args: ParsedArgs): Promise<number> {
-  const face = faceOption(args) ?? 0;
-  const ward = await gatherWardRoute(`lares vault rewrap --face ${face}`, face);
-  const done = await sealedAct<{ rewrapped: number }>("ward.rewrap", { handleIndex: face, ward });
-  emit(args, { ok: true, data: done, human: () => console.log(done.rewrapped === 0
-    ? `face h${face} stands warded: no root row needed moving.`
-    : `face h${face}: ${done.rewrapped} root row(s) moved under the ward; each root act now opens the ward fresh from this route.`) });
-  return 0;
-}
-
 function faceOption(args: ParsedArgs): number | undefined {
   const raw = args.options["face"];
   if (typeof raw !== "string") return undefined;

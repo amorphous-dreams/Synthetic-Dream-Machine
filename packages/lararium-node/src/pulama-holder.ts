@@ -14,7 +14,7 @@
  *
  * ── ONLY THE OPERATOR'S HAND LIGHTS THE PŪLAMA ──────────────────────────────────────────────────
  * No door here opens a key. A face's unlock answers what already stands open at the pūlama; a proof, an adoption, a
- * founding, a ward act and a rewrap refuse `needs-the-human`: each asks a human route, and that route belongs at the
+ * founding and a ward act refuse `needs-the-human`: each asks a human route, and that route belongs at the
  * pūlama's own hand door. `lock` leaves the session and never dims the pūlama.
  *
  * ── A DECISION RUNS HERE, THE WRITE LANDS THERE ─────────────────────────────────────────────────
@@ -323,7 +323,6 @@ export function makePulamaHolder(a: {
     unlockedFaces: () => session?.standing.faces ?? [],
     withWardKey: () => needsHuman("a ward act"),
     async wardPublicKey(face) { return await call("face.ward-key", { face }) as string | null; },
-    rewrapWard: () => needsHuman("a ward rewrap"),
     watchWardKeys() { /* this side opens no ward key */ },
     async isFaceUnlocked(face) {
       if (session === null) return false;

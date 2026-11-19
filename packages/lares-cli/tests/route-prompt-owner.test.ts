@@ -56,7 +56,7 @@ describe("RED the ward prompt names the face", () => {
     const { readWardPassphrase } = await vi.importActual<typeof import("../src/prompt-secret.js")>("../src/prompt-secret.js");
     const written: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((c) => { written.push(String(c)); return true; });
-    const route = await (readWardPassphrase as (verb: string, opts: object) => Promise<string>)("lares vault rewrap --face 2", { stream: new FakeTty(), env: {}, face: 2 });
+    const route = await (readWardPassphrase as (verb: string, opts: object) => Promise<string>)("lares vault backup --face 2", { stream: new FakeTty(), env: {}, face: 2 });
     expect(route).toBe("the-ward-route");
     expect(written.join("")).toMatch(/face h2's passphrase for this one act/);
   });
@@ -73,7 +73,7 @@ describe("RED the ward prompt names the face", () => {
     const { readWardPassphrase } = await vi.importActual<typeof import("../src/prompt-secret.js")>("../src/prompt-secret.js");
     const written: string[] = [];
     vi.spyOn(process.stdout, "write").mockImplementation((c) => { written.push(String(c)); return true; });
-    expect(await readWardPassphrase("lares vault rewrap --face 2", { stream: new FakeTty() as never, env: {} })).toBe("the-ward-route");
-    expect(written.join("")).toMatch(/^lares vault rewrap --face 2: /);
+    expect(await readWardPassphrase("lares vault backup --face 2", { stream: new FakeTty() as never, env: {} })).toBe("the-ward-route");
+    expect(written.join("")).toMatch(/^lares vault backup --face 2: /);
   });
 });

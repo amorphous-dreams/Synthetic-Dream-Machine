@@ -346,11 +346,10 @@ describe("vault door — restore reads the bundle's route on a terminal", () => 
   });
 });
 
-describe("the vault door answers eight verbs", () => {
-  // `rewrap` moves a face founded before the ward under one (seat-harness#/the-ward).
-  const SEVEN = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore", "rewrap"];
+describe("the vault door answers seven verbs", () => {
+  const SEVEN = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore"];
 
-  it("★ the help names the eight live verbs ★", () => {
+  it("★ the help names the seven live verbs ★", () => {
     const text = helpLines("vault").join("\n");
     const usage = /usage: lares vault <([^>]*(?:<[^>]*>[^>]*)*)> /.exec(text.replace(/<(slot-id|N|file)>/g, "$1"));
     expect(usage, text).not.toBeNull();
@@ -363,7 +362,7 @@ describe("the vault door answers eight verbs", () => {
     expect(await run(verb)).toBe(2);
     expect([...out, ...err].join("\n")).toContain(`unknown sub-verb "${verb}"`);
     expect(tree(root)).toBe(before);
-    // CONTROL: a verb of the eight answers.
+    // CONTROL: a verb of the seven answers.
     expect(await run("status")).toBe(0);
   });
 });

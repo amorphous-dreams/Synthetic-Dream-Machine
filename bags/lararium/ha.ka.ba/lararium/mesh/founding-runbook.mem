@@ -179,7 +179,7 @@ tools/lares-container.sh vault unlock          # gathers no route: the vessel di
 tools/lares-container.sh pulama status
 ```
 
-The pūlama lends the lit faces the admission names and names any admitted face still waiting on its light; each session (the MCP seat, a CLI run) wears one face inside the lend, and the vessel wears none. A route typed at the vessel opens nothing. A founding, a ward act, a backup's proof and a rewrap each ask a human route, so a vessel standing by a pūlama refuses them `needs-the-human`. A kūkulu (`lares rite kukulu`) re-stands a rebuilt vessel under one kūkulu lei per lent face, each strung by that face's own hand, and its landing admits the new image.
+The pūlama lends the lit faces the admission names and names any admitted face still waiting on its light; each session (the MCP seat, a CLI run) wears one face inside the lend, and the vessel wears none. A route typed at the vessel opens nothing. A founding, a ward act and a backup's proof each ask a human route, so a vessel standing by a pūlama refuses them `needs-the-human`. A kūkulu (`lares rite kukulu`) re-stands a rebuilt vessel under one kūkulu lei per lent face, each strung by that face's own hand, and its landing admits the new image.
 
 ''A place that stands already lifts the same way.'' Stop the vessel (`tools/lares-container.sh vessel stop`), run `found --hearth` over the standing place, then `up`. A face on a place with no seed charter refuses by name and names the act. Bare `found` still founds a place with no face (a herm's rite). `lares fleet join` carries a joiner through offer, request, answer and land.
 
@@ -591,6 +591,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WRs3EMjgJ5NtLo20H6G3zy5-L1mJa1LdePasp7DMPdg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TeTHBF9ycDPWN9K1csVxKfwdjf8sUXP4ZQjyHUApfMc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

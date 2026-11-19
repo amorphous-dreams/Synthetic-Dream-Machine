@@ -233,13 +233,12 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     const human = { name: "PulamaRefused", reading: "needs-the-human" };
     await expect(vessel.withWardKey({ ordinal: 0 }, fixtureRoute, async () => "ran")).rejects.toMatchObject(human);
     await expect(vessel.proves(fixtureRoute)).rejects.toMatchObject(human);
-    await expect(vessel.rewrapWard({ ordinal: 0 }, fixtureRoute)).rejects.toMatchObject(human);
     await expect(vessel.adopt(fx.treeKey)).rejects.toMatchObject(human);
     await expect(vessel.foundFace({ ordinal: 1, slots: fixtureSlots })).rejects.toMatchObject(human);
     // A vessel that spoke the codec by hand meets the same refusal: the server holds no such operation.
     const channel = fx.channel()!;
     let id = 9000;
-    for (const op of ["unlock", "proves", "backup", "adopt", "ward", "withWardKey", "rewrapWard", "foundFace", "lock", "lockFace", "derive"]) {
+    for (const op of ["unlock", "proves", "backup", "adopt", "ward", "withWardKey", "foundFace", "lock", "lockFace", "derive"]) {
       const res = await ask(channel, ++id, op, { credentials: fixtureRoute, domain: FLOOR_REST_KEY_INFO });
       expect(res["ok"], op).toBe(false);
       expect(res["err"], op).toMatchObject(human);
