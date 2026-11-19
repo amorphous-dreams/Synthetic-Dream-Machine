@@ -8,12 +8,14 @@
  *   W1  a wiki island mounts and tears down, and no store directory stands for it under the pool's storage root.
  *   W2  a slot document the vessel alone holds arrives with no island-local read: the island's old store path holds a
  *       file no store could read, and the mount still declares `ea`.
+ *   W4  an island store an older composition left beside the vessel's names itself once, at the wiki's first mount, with what
+ *       it holds (its files, its bytes, its stranded temps), and nothing reads or removes it.
  *   W3  a write made in the wiki island (a COPY verb) reaches the vessel's Repo before the island acks its teardown.
  *
  * Uses the real compiled node-wiki-island.js entry. Meme: lar:///ha.ka.ba/lararium/node/vessel-island-pool
  */
-import { describe, expect, test } from "vitest";
-import { existsSync, writeFileSync } from "node:fs";
+import { describe, expect, test, vi } from "vitest";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Repo, type PeerId } from "@automerge/automerge-repo";
@@ -90,5 +92,25 @@ describe("a wiki island keeps no store of its own", () => {
       expect(s.working.doc()?.tiddlers?.["Held By The Vessel"]).toBeDefined();
       expect(existsSync(islandStorePath(s.cas.storageDir, wikiId))).toBe(false);
     } finally { await s.close(); }
+  }, 60_000);
+
+  test("W4 — an island store left from an older composition names itself once, and stays untouched", async () => {
+    const s = stand();
+    const wikiId = wikiUri(SLUG);
+    const left = islandStorePath(s.cas.storageDir, wikiId);
+    const chunk = join(left, "3Y", "8D9NrR", "snapshot", "a1b2");
+    mkdirSync(join(chunk, ".."), { recursive: true });
+    writeFileSync(chunk, new Uint8Array(1_000));
+    writeFileSync(`${chunk}.4242.tmp`, new Uint8Array(10));
+    const warned: string[] = [];
+    const spy = vi.spyOn(console, "warn").mockImplementation((...args: unknown[]) => { warned.push(args.map(String).join(" ")); });
+    try {
+      await s.pool.mountWiki(wikiId, s.spec);
+      await s.pool.unmountWiki(wikiId);
+      await s.pool.mountWiki(wikiId, s.spec);
+      const named = warned.filter((line) => line.includes("an island store stands unused at"));
+      expect(named).toEqual([`[vessel-pool] an island store stands unused at ${left}: the vessel holds every doc (2 files, 1010 bytes, 1 stranded temp); the census and the re-found sweep clear it`]);
+      expect(readFileSync(chunk).byteLength).toBe(1_000);
+    } finally { spy.mockRestore(); await s.close(); }
   }, 60_000);
 });
