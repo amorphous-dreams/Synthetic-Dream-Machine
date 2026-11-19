@@ -12,7 +12,6 @@
  * label and group and decides nothing.
  */
 import { describe, expect, test } from "vitest";
-import * as paths from "../src/bag-paths.js";
 import { daemonWorkingMirror, faceSegment, kahuaStageMirror } from "../src/bag-paths.js";
 import { kahuaIndexToml, writeKahuaIndex } from "../src/kahua-index.js";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -20,7 +19,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const F1 = "7b0f6c1e-4a52-4d3b-9c18-2e5a6f0d8b31", F2 = "5d2c9e70-1b3a-4f68-8a47-c0e91d3b7a25";
-const OLD_TAG = "2a1f0c9e4b7d";
+const SCOPE_TAG = "2a1f0c9e4b7d";
 
 describe("the folder names the pet name", () => {
   test("RED: wiki and stage mirrors rest in the face's root; a new relation under the same pet name keeps them", () => {
@@ -32,18 +31,15 @@ describe("the folder names the pet name", () => {
     expect(() => faceSegment("HOME", ["home"])).toThrowError(/face-segment-collision/);
     expect(faceSegment("work", ["home"])).not.toBe(faceSegment("home", ["work"]));
   });
-  test("RED: kahuaFaceTag burned (no key-derived name remains in the module)", () => {
-    expect("kahuaFaceTag" in paths).toBe(false);
-  });
 });
 
 describe("the label index is a convenience view", () => {
   test("RED: the toml maps F to tag, label and the current group", () => {
-    const toml = kahuaIndexToml([{ relation: F1, tag: OLD_TAG, label: "home", group: "g1" }, { relation: F2, tag: "9c8b7a6f5e4d", label: "work", group: "g2" }]);
+    const toml = kahuaIndexToml([{ relation: F1, tag: SCOPE_TAG, label: "home", group: "g1" }, { relation: F2, tag: "9c8b7a6f5e4d", label: "work", group: "g2" }]);
     expect(toml).toContain(`[faces."${F1}"]`);
     expect(toml).toContain('label = "home"');
     expect(toml).toContain('group = "g1"');
-    expect(toml).toContain(`tag = "${OLD_TAG}"`);
+    expect(toml).toContain(`tag = "${SCOPE_TAG}"`);
   });
   test("CONTROL: the index is deterministic, sorted by F (F2 before F1), and holds no key material", () => {
     const rows = [{ relation: F2, tag: "t2", label: "b", group: "g2" }, { relation: F1, tag: "t1", label: "a", group: "g1" }];

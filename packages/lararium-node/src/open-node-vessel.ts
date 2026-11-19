@@ -1009,7 +1009,7 @@ async function prepareNodeBootOn(
     const bag = sealedBagOf(documentId);
     return bag === null || bag.held !== undefined ? standingSaveSession() : sessionOfFace(bag.face);
   };
-  // A document the map names sealed only now may hold clear chunks from before: they seal under the standing session.
+  // A document the map names sealed after it rested holds clear chunks: they seal under the standing session.
   const sealNowMapped = (documentId: string): void => {
     const session = standingSaveSession();
     if (session === null || sealedBagOf(documentId) === null) return;

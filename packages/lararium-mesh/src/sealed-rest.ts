@@ -677,7 +677,7 @@ export function documentIdOfUrl(url: string | null | undefined): string | null {
  * owned document stands) syncs with it, and every other island keeps no store at all. So the daemon island asks the vessel before it rests a byte of a document, and a document the vessel holds sealed rests in
  * the island's memory alone: its change reaches the vessel by sync and seals there, and a restarted island finds it by
  * sync. The first answer that names a document sealed sweeps every clear chunk the island's store held of it (a copy
- * written before the document mapped sealed). A sealed answer holds for the island's life. An ask that refuses (the
+ * that rested while the document's bag stood unmapped). A sealed answer holds for the island's life. An ask that refuses (the
  * vessel's rest faulted, the post failed) refuses the store's act by name: the save rests no byte and the load reads
  * none, and the next act asks again. Only a vessel's unsealed answer lets a byte rest. Acts on one document that overlap (a
  * load reads several ranges at once) share one ask, so a load costs the vessel's thread one round trip, never one per range.
