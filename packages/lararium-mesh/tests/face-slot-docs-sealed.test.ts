@@ -16,7 +16,7 @@ import * as A from "@automerge/automerge";
 import { utf8Bytes } from "../src/crypto.js";
 import { faceProofSubjectRef } from "../src/face-proof-subjects.js";
 import type { RecordSigner } from "../src/sealed-records.js";
-import { answerDocStoreAsks, composeSealedRest, islandRestGuard, sealedBagMap, vesselDocStoreDoor, type SealedRest } from "../src/sealed-rest.js";
+import { announceSlotDocFiled, answerDocStoreAsks, composeSealedRest, docStorePortCell, islandRestGuard, sealedBagMap, vesselDocStoreDoor, type SealedRest } from "../src/sealed-rest.js";
 import { wornFaceWikiBags, type WikiSlotBags } from "../src/register-bags.js";
 import { wikiBagUri, wikiSlotUri } from "../src/wiki-recipe.js";
 import { vessel, world, type Vessel } from "./content-key-fixture.js";
@@ -212,5 +212,18 @@ describe("a slot document that already rests clear seals and leaves once the map
     const repo2 = new Repo({ storage: again.rest.store, network: [] });
     expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc()).toMatchObject({ note: SECRET });
     await repo2.shutdown();
+  });
+});
+
+describe("the naming lands before the first write", () => {
+  it("an island's acked notice settles only after the vessel's map filed it (`announceSlotDocFiled`)", async () => {
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    const filed: string[] = [];
+    const cell = docStorePortCell(async () => null, { onSlot: (bagId, documentId) => { filed.push(`${bagId} ${documentId}`); } });
+    cell.attach(vesselSide);
+    const bagId = wikiSlotUri("lares", "personal");
+    await announceSlotDocFiled(islandSide, bagId, "2MZ5fCHpbqBkTqmhQ8Gm4hTJ5cDS");
+    expect(filed, "the vessel filed the name before the island's caller may write").toEqual([`${bagId} 2MZ5fCHpbqBkTqmhQ8Gm4hTJ5cDS`]);
   });
 });

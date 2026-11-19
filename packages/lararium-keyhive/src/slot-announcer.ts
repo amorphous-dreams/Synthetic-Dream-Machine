@@ -15,11 +15,11 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { announceSiblingSlotDoc, announceSlotDoc, DAEMON_WIKI_SLUG, documentIdOfUrl, isFaceSlotBag, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh";
+import { announceSiblingSlotDoc, announceSlotDoc, announceSlotDocFiled, DAEMON_WIKI_SLUG, documentIdOfUrl, isFaceSlotBag, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh";
 import type { SlotDocResolver } from "./slot-doc-resolver.js";
 
 /** The vessel's door the island posts across (the daemon island's `docStoreDoor`). */
-export interface SlotNoticeDoor { post(msg: unknown): void }
+export interface SlotNoticeDoor { post(msg: unknown): void; listen?(cb: (msg: unknown) => void): () => void }
 
 export interface SlotAnnouncer {
   /** Name `url` as `slug`'s `kind` document (a null or absent url names nothing). */
@@ -56,6 +56,8 @@ export function slotAnnouncer(door: SlotNoticeDoor | null | undefined, whose: "w
       await opts.registers(bagId).catch((error: unknown) => {
         console.warn(`[slot] ${bagId} did not register on the face's hive before its naming (${error instanceof Error ? error.message : String(error)}): its saves wait sealed until it does`);
       });
+      // The worn face's own layer waits for the vessel's filing, so the caller's first write lands sealed.
+      if (door?.listen && whose === "worn") { await announceSlotDocFiled({ post: (m) => door.post(m), listen: (cb) => door.listen!(cb) }, bagId, documentId); return; }
     }
     post(bagId, documentId);
   };

@@ -353,7 +353,35 @@ export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array |
  *  class, files under the face's bag, and its seal re-files from the vessel's key to the face's. */
 /** `sibling`: the document answers for a SIBLING face of the lit set (open, not worn), never the worn face's own slot; the
  *  vessel maps it for its seal as any slot, and the host's own layers never follow it (a face's daemon layer stays its own). */
-export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bagId: string; readonly documentId: string; readonly floor?: true; readonly lifted?: true; readonly sibling?: true }
+/** `requestId`: the island waits for the vessel's `docstore:slot-filed` before its caller writes (`announceSlotDocFiled`). */
+export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bagId: string; readonly documentId: string; readonly floor?: true; readonly lifted?: true; readonly sibling?: true; readonly requestId?: string }
+/** Vessel → island: the slot notice `requestId` named stands filed in the vessel's map. */
+export interface DocStoreMsg_SlotFiled { readonly type: "docstore:slot-filed"; readonly requestId: string }
+
+let slotNoticeSeq = 0;
+/** How long an island waits on the vessel's filing before its caller writes anyway (the vessel's heal seals what rested). */
+const SLOT_FILED_BOUND_MS = 10_000;
+
+/**
+ * THE NAMING LANDS BEFORE THE FIRST WRITE: the notice and the document's bytes ride two channels (the door, the Repo's
+ * sync), so the island waits for the vessel to answer that the notice stands filed in its map before its caller writes.
+ * A vessel that never answers (its door gone) releases the wait at the bound, named in the log; the vessel's own naming then
+ * seals what rested clear in the interval (`sealNowMapped`).
+ */
+export function announceSlotDocFiled(port: Pick<Port, "post" | "listen">, bagId: string, documentId: string): Promise<void> {
+  const requestId = `slot-${++slotNoticeSeq}-${documentId.slice(0, 8)}`;
+  return new Promise<void>((settle) => {
+    let stop: () => void = () => {};
+    const timer = setTimeout(() => { stop(); console.warn(`[slot] the vessel did not answer the naming of ${bagId} within its bound; the caller writes, and the vessel's naming seals what rested`); settle(); }, SLOT_FILED_BOUND_MS);
+    (timer as { unref?: () => void }).unref?.();
+    stop = port.listen((raw) => {
+      const m = raw as Partial<DocStoreMsg_SlotFiled> | null;
+      if (m?.type === "docstore:slot-filed" && m.requestId === requestId) { clearTimeout(timer); stop(); settle(); }
+    });
+    try { port.post({ type: "docstore:slot", bagId, documentId, requestId } satisfies DocStoreMsg_Slot); }
+    catch { clearTimeout(timer); stop(); settle(); }
+  });
+}
 
 /**
  * THE SLOT RESOLVER NAMES EACH DOCUMENT IT ANSWERS (V3). A wiki's working and draft documents resolve in the daemon
@@ -382,6 +410,7 @@ export function answerSlotNotices(port: Port, onSlot: (bagId: string, documentId
     const m = raw as Partial<DocStoreMsg_Slot> | null;
     if (!m || m.type !== "docstore:slot" || typeof m.bagId !== "string" || typeof m.documentId !== "string") return;
     try { onSlot(m.bagId, m.documentId, m.floor === true, m.lifted === true, m.sibling === true); } catch { /* a listener's fault never reaches the island */ }
+    if (typeof m.requestId === "string") { try { port.post({ type: "docstore:slot-filed", requestId: m.requestId } satisfies DocStoreMsg_SlotFiled); } catch { /* the island went away */ } }
   });
 }
 
