@@ -49,8 +49,17 @@ export const SEALED_DOCUMENT_REFUSALS = [
   "save-unmapped",           // the document rests sealed and the map names no bag for it now: the save waits in memory, never clear
   "save-unsealed",           // the holder refused or never answered the seal: the save waits in memory, and the next reseal tries again
   "held-clear-at-rest",      // a held bag (the vessel's secret home) found a clear chunk at rest: a fault, never read as the document
+  "holder-locked",           // a vessel-held home whose key has not opened (custody locked, no floor key): no byte opens until it does
 ] as const;
 export type SealedDocumentRefusalName = (typeof SEALED_DOCUMENT_REFUSALS)[number];
+
+/** What `onHeld` hears: the refusal that kept a save in memory, its document, and for a holder's refusal its name and cause. */
+export interface HeldNotice {
+  readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed";
+  readonly documentId: string;
+  readonly error?: string;
+  readonly cause?: string;
+}
 
 /** The three refusals that keep a save in memory rather than at rest. */
 export type HeldRefusal = "save-unbooked" | "save-unmapped" | "save-unsealed";
@@ -137,8 +146,12 @@ export interface SealedDocumentPorts {
    * `pointer-malformed`, as any byte run this store never wrote.
    */
   vesselKey?(): HeldRestKey | null;
-  /** Told once per save the store holds back unsealed (`save-unbooked`), naming its document alone. */
-  onHeld?(held: { readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed"; readonly documentId: string }): void;
+  /** Told once per save the store holds back unsealed, naming its document; a `save-unsealed` names the holder's own
+   *  refusal (`error`) and its cause beside it. */
+  onHeld?(held: HeldNotice): void;
+  /** Told once per document and refusal when a hydrating load waits (`hydrates`): which refusal it waits on, and the bag
+   *  the map names for that document now (null: none). */
+  onHydrationWait?(wait: { readonly documentId: string; readonly refusal: string; readonly bagId: string | null }): void;
   /** A vessel's store (P1): a document that rests sealed, or mapped sealed once this process, keeps its rest class
    *  while the map names no bag for it (a dial that dropped, the floor): its save waits in memory (`save-unmapped`),
    *  never lands clear, and no removal reaches a sealed pointer, until the map stands again and the save seals. */
@@ -162,7 +175,7 @@ const AUTOMERGE_MAGIC = [0x85, 0x6f, 0x4a, 0x83] as const;
 const readsClear = (bytes: Uint8Array): boolean => AUTOMERGE_MAGIC.every((b, i) => bytes[i] === b);
 const readsSealed = (bytes: Uint8Array): boolean => SEALED_CHUNK_MARK.every((b, i) => bytes[i] === b);
 /** What the bag map names for one document: its bag, that bag's face, and the key a keyed bag rests under. */
-export interface SealedBagRow { readonly bagId: string; readonly face: string | null; readonly published?: PublishedLookup; readonly held?: HeldRestKey }
+export interface SealedBagRow { readonly bagId: string; readonly face: string | null; readonly published?: PublishedLookup; readonly held?: HeldRestKey; readonly locked?: true }
 type PublicBag = { readonly bagId: string; readonly published: PublishedLookup };
 type HeldBag = { readonly bagId: string; readonly held: HeldRestKey };
 const isPublic = (bag: { readonly published?: PublishedLookup } | null): bag is PublicBag & { readonly face: string | null } => bag?.published !== undefined;
@@ -225,13 +238,20 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   endHydration(): void { this.#hydrationEnded = true; this.mapMoved(); }
   #hydrationEnded = false;
 
-  async #hydrating<T>(read: () => Promise<T>): Promise<T> {
+  /** The waits already named, by document and refusal: each names itself once. */
+  readonly #waitsNamed = new Set<string>();
+
+  async #hydrating<T>(documentId: unknown, read: () => Promise<T>): Promise<T> {
     for (;;) {
       const moved = this.#moved.promise;
       try { return await read(); }
       catch (error) {
         if (!(error instanceof SealedDocumentRefusal) || !HYDRATION_WAITS.has(error.refusal)) throw error;
         if (this.#ports.hydrates !== true || this.#hydrationEnded) throw error;
+        if (typeof documentId === "string" && !this.#waitsNamed.has(`${documentId}\u0000${error.refusal}`)) {
+          this.#waitsNamed.add(`${documentId}\u0000${error.refusal}`);
+          try { this.#ports.onHydrationWait?.({ documentId, refusal: error.refusal, bagId: this.#ports.bagOf(documentId)?.bagId ?? null }); } catch { /* a listener's fault never holds the load */ }
+        }
         await moved;
         if (this.#hydrationEnded) throw error;
       }
@@ -376,7 +396,9 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     return held;
   }
   /** The face gate, before any byte or name moves. A sealed bag no lit face wears yet opens for no one. */
-  #face(bag: { readonly face: string | null }): string {
+  #face(bag: { readonly face: string | null; readonly locked?: true }): string {
+    // A VESSEL-HELD HOME WHOSE KEY HAS NOT OPENED refuses by its own name: no session opens it, only the vessel's key.
+    if (bag.locked === true) throw new SealedDocumentRefusal("holder-locked", "the vessel's held key for this home has not opened");
     const worn = this.#ports.sessionFace();
     const open = this.#ports.openFaces?.() ?? [];
     if ((worn === null && open.length === 0) || bag.face === null) throw new SealedDocumentRefusal("session-absent");
@@ -434,7 +456,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     catch (error) {
       if (!(error instanceof SealedDocumentRefusal)) throw error;
       this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data), refusal: "save-unsealed" });
-      this.#ports.onHeld?.({ refusal: "save-unsealed", documentId: key[0]! });
+      this.#ports.onHeld?.({ refusal: "save-unsealed", documentId: key[0]!, error: error.refusal, ...(error.why !== undefined ? { cause: error.why } : {}) });
       return;
     }
     this.#waiting.delete(nameOf(key));
@@ -474,7 +496,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     held.set(nameOf(key), address);
   }
 
-  load(key: StorageKey): Promise<Uint8Array | undefined> { return this.#hydrating(() => this.#load(key)); }
+  load(key: StorageKey): Promise<Uint8Array | undefined> { return this.#hydrating(key[0], () => this.#load(key)); }
 
   async #load(key: StorageKey): Promise<Uint8Array | undefined> {
     const bag = this.#bagOf(key);
@@ -563,7 +585,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     return opened.plaintext;
   }
 
-  loadRange(prefix: StorageKey): Promise<Chunk[]> { return this.#hydrating(() => this.#loadRange(prefix)); }
+  loadRange(prefix: StorageKey): Promise<Chunk[]> { return this.#hydrating(prefix[0], () => this.#loadRange(prefix)); }
 
   async #loadRange(prefix: StorageKey): Promise<Chunk[]> {
     const whole = this.#bagOf(prefix);
