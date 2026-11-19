@@ -147,9 +147,13 @@ COPY --from=build /app/packages/lares-cli/package.json      ./packages/lares-cli
 # from the image, so an unmounted run reads node:node here, never root-owned. The cache and run classes stand sticky
 # and world-writable for whatever uid the compose `user:` names. The harness composes root their scratch vessels at
 # /state (`LAR_ROOT=/state`), so that mount point stands node-owned for their named volumes too.
-RUN mkdir -p /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /lar/cache /lar/run /state /workspace \
- && chown node:node /lar /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /state /workspace \
- && chmod 1777 /lar/cache /lar/run
+# THE PŪLAMA'S SOCKET DIRECTORY (/pulama/socket) rides a named volume the vessel and the pūlama share, bound to no host
+# path (docker-compose.surface.yml). A fresh named volume copies its mount point's owner and mode from the image at its
+# first mount, so the image stands it node-owned and sticky, world-writable: the runtime uid compose names (LARES_UID)
+# makes its socket there whichever uid that is, and the socket file's own 0600 under that uid gates every dial.
+RUN mkdir -p /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /lar/cache /lar/run /state /workspace /pulama/socket \
+ && chown node:node /lar /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /state /workspace /pulama/socket \
+ && chmod 1777 /lar/cache /lar/run /pulama/socket
 VOLUME /lar/hearth
 VOLUME /lar/sensoriums
 VOLUME /lar/projections

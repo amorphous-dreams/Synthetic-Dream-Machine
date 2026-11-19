@@ -169,7 +169,7 @@ The operator, 2026-11-15: //"I even want a 're-stand to an unlocked house' cap t
 The vessel's code rides baked into its image, so a deep change rebuilds the image and recreates the container, and the opened key dies with the container's memory. The vessel already speaks to its key through a custody holder (`custody-frames.ts`, `custody-seat.ts`); every sealed-record caller passes through one port, `CustodyHolder`. The pūlama lifts that holder into its own small, long-lived container beside the vessel:
 
 * The operator lights the faces at the pūlama once, by their own hand on a real terminal (//wanaʻao//). The passphrase rides nothing; the key rides nothing.
-* A vessel rebuilds and restarts freely (each a //kūkulu//). Each new vessel reaches the standing pūlama over a socket mounted in those two services alone and asks for record operations and derivations; no key crosses the socket. `lock` and the pūlama's exit zero its keys.
+* A vessel rebuilds and restarts freely (each a //kūkulu//). Each new vessel reaches the standing pūlama over a socket mounted in those two services alone, in a named Docker volume that binds no host path, and asks for record operations and derivations; no key crosses the socket. `lock` and the pūlama's exit zero its keys.
 * The pūlama serves only a vessel that wears a re-stand lei bound to a vouch: the old vessel walked the candidate image and signed its digest, and the host shim, never the vessel, reports the digest it raises. The pūlama claims each lent face's lei return before it serves, writes its tessera half, and lends the vessel the named set of faces (the lend); the lend refuses cold records, ward acts, backup and unlock, and drops with the socket. It serves `wear`: the vessel moves its daemon mount to a lent face already open, asking the pūlama for nothing and the person for no route.
 * The operator watches the tessera halves, unstrings the lei, or locks the pūlama, at any hour.
 
@@ -196,7 +196,7 @@ The vessel's code rides baked into its image, so a deep change rebuilds the imag
 
 ''Plutarch's law.'' Vesta's lost fire could be renewed only from the sun, never from another flame (Plutarch, //Numa// 9). The house holds the same law: only the operator's own hand lights faces at the pūlama, and no delegated token ever carries that light.
 
-''The honest hole.'' On a one-user box, a session holding the operator's shell and Docker reaches the pūlama's memory and socket; its checks work as protocol until a wall stands. The walls sit in the operator's machine, never in a file a session edits: Docker taken from the session's user, the pūlama under its own user, and a confirm on the operator's phone keyed off the box (the one wall that survives a whole box's compromise). The house stays local-first, so the phone stands in the design as an attractor and arrives later; until a wall stands the pūlama runs on the operator's acceptance of the hole they already carry, since a session with Docker reaches the vessel's memory today.
+''The honest hole.'' On a one-user box, a session holding the operator's shell and Docker reaches the pūlama's memory and socket; its checks work as protocol until a wall stands. The socket itself rests in a named Docker volume (`lares-pulama-socket`) that binds no host path, so a host process running as the operator's uid and holding no Docker reaches no socket file. The walls sit in the operator's machine, never in a file a session edits: Docker taken from the session's user, the pūlama under its own user, and a confirm on the operator's phone keyed off the box (the one wall that survives a whole box's compromise). The house stays local-first, so the phone stands in the design as an attractor and arrives later; until a wall stands the pūlama runs on the operator's acceptance of the hole they already carry, since a session with Docker reaches the vessel's memory today.
 
 ''Prior art.'' Vault's seal and auto-unseal, Clevis/Tang, TPM-sealed secrets, ssh-agent's confirm-on-use, keys used and never exported (Secure Enclave, Keystore); research at `lar:///ha.ka.ba/kahua/memory/research/restand-holder-code`, `…/restand-holder-priorart`, `…/holder-names-pacific`, `…/holder-names-world`.
 
@@ -240,6 +240,6 @@ Three different things answer to the word "row" in the design's talk-out; this c
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iEe0gFkg5FSz83BbHaiixuDZEQegirZwf3YLaiB1nYA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;snzCDl3Fepq3-PTL8KcwfOFC5sZingqH8jQe5RmI45U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

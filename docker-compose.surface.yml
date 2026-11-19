@@ -240,13 +240,12 @@ services:
       - type: bind
         source: ${LARES_WORKSPACE:?set LARES_WORKSPACE to the workspace on the host}
         target: /workspace
-      # The pūlama's socket directory: mounted in the vessel and the pūlama alone. `bind.create_host_path` makes it on a
-      # house that never enabled the pūlama, where it stands empty and the vessel never dials it.
-      - type: bind
-        source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/pulama/socket
+      # The pūlama's socket directory: one named volume, mounted in the vessel and the pūlama alone and bound to no host
+      # path, so no host process reaches the socket without Docker. On a house that never enabled the pūlama it stands
+      # empty and the vessel never dials it.
+      - type: volume
+        source: lares-pulama-socket
         target: /pulama/socket
-        bind:
-          create_host_path: true
     command: ["--root", "/lar", "--genesis", "/app/genesis"]
     init: true
     restart: unless-stopped
@@ -262,9 +261,12 @@ services:
 
   # THE PŪLAMA (road L47e; lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama): the house's custody holder in
   # its own container. It opens custody from the hearth, answers vessels over a socket mounted in it and the vessel alone,
-  # and never sends a key across. The operator lights it once by hand (`tools/lares-container.sh pulama light`, a real
-  # terminal); a restart of the pūlama comes up unlit. It keeps no network and no writable root; its private state rests
-  # in LARES_HOUSE/pulama/state, which no vessel mounts. Profiled: it stands only when the shim's LARES_PULAMA=1 asks.
+  # and never sends a key across. That socket rests in the named volume `lares-pulama-socket`, never a host path: a host
+  # process running as the operator's uid reaches it only through Docker. The image pre-creates /pulama/socket for its
+  # runtime user, so the volume's first mount takes that owner and mode. The operator lights it once by hand
+  # (`tools/lares-container.sh pulama light`, a real terminal); a restart of the pūlama comes up unlit. It keeps no network
+  # and no writable root; its private state rests in LARES_HOUSE/pulama/state, which no vessel mounts. Profiled: it stands
+  # only when the shim's LARES_PULAMA=1 asks.
   pulama:
     image: ${LARES_IMAGE:-lares-surface:local}
     profiles: [pulama]
@@ -280,8 +282,8 @@ services:
       - type: bind
         source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/hearth
         target: /lar/hearth
-      - type: bind
-        source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/pulama/socket
+      - type: volume
+        source: lares-pulama-socket
         target: /pulama/socket
       - type: bind
         source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/pulama/state
@@ -625,9 +627,11 @@ services:
         target: /certs
     restart: "no"
 
-# The zone the records check renders and the resolver serves: derived, rewritten whole by every check.
 volumes:
+  # The zone the records check renders and the resolver serves: derived, rewritten whole by every check.
   household-zone:
+  # The pūlama's socket directory, shared by the vessel and the pūlama and by no host path (the pūlama's block above).
+  lares-pulama-socket:
 
 configs:
   household-terminator-nginx-main:

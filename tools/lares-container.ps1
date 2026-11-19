@@ -50,12 +50,11 @@ function ValueOf([string]$name) {
 }
 $House = ValueOf 'LARES_HOUSE'
 if (-not [System.IO.Path]::IsPathRooted($House)) { Die "LARES_HOUSE ($House) reads relative — name the host house root by an absolute path" }
-# The pūlama's socket directory binds into the vessel in every mode, so the shim makes it as the operator whether or not
-# a pūlama stands; the engine never makes it owned by root.
-$HouseClasses = @('hearth', 'sensoriums', 'projections', 'library', 'config', 'pulama/socket')
+$HouseClasses = @('hearth', 'sensoriums', 'projections', 'library', 'config')
 # THE PŪLAMA (road L47e): with LARES_PULAMA=1 the house's custody holder stands in its own container beside the vessel,
-# lit once by the operator's own hand (`pulama light`), outliving every vessel restart. Its socket and private state rest
-# under LARES_HOUSE/pulama, so they keep the operator's ownership.
+# lit once by the operator's own hand (`pulama light`), outliving every vessel restart. Its private state rests under
+# LARES_HOUSE/pulama/state, so it keeps the operator's ownership. Its socket rests in a named Docker volume the pūlama and
+# the vessel share and no host path reaches: the shim never makes, reads or clears a socket on the host.
 $PulamaMode = (ValueOf 'LARES_PULAMA') -eq '1'
 if ($PulamaMode) {
   $HouseClasses += @('pulama/state')
@@ -71,7 +70,12 @@ foreach ($class in $HouseClasses) {
   if ($envFull -eq $bind -or $envFull.StartsWith($bind + [System.IO.Path]::DirectorySeparatorChar)) { Die "the env file $EnvFile sits inside LARES_HOUSE's $class bind — keep it outside every bind" }
 }
 # Make the five bound classes as the operator, so the engine never makes one owned by root.
-function EnsureHouse { foreach ($class in $HouseClasses) { New-Item -ItemType Directory -Force -Path (Join-Path $House $class) | Out-Null } }
+function EnsureHouse {
+  foreach ($class in $HouseClasses) { New-Item -ItemType Directory -Force -Path (Join-Path $House $class) | Out-Null }
+  # A host directory at pulama/socket mounts nowhere (the socket rides a named volume); the shim names it and never removes it.
+  $staleSocket = Join-Path $House 'pulama/socket'
+  if (Test-Path -LiteralPath $staleSocket) { [Console]::Error.WriteLine("lares-container: $staleSocket mounts nowhere (the pūlama's socket rides a named volume); remove it by hand: Remove-Item -Recurse -LiteralPath $staleSocket") }
+}
 
 $Base = @()
 if (Test-Path $EnvFile) { $Base += @('--env-file', $EnvFile) }
