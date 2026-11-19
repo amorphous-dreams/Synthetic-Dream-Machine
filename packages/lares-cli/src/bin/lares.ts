@@ -359,7 +359,7 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   }
   const cmd = COMMANDS.find((c) => c.name === args.command);
   if (!cmd) {
-    // A SHIM VERB'S HELP: the host shim answers `up|down|reset|found|logs|build`, and a help ask stays on this machine,
+    // A SHIM VERB'S HELP: the host shim answers `up|down|reset|found|logs|build|rebuild`, and a help ask stays on this machine,
     // so the row reads here (`shimHelpLines`) instead of refusing a name the shim owns.
     const shim = args.flags["help"] ? shimHelpLines(args.command) : null;
     if (shim !== null) { for (const line of shim) console.log(line); return 0; }

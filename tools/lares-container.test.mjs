@@ -1328,14 +1328,15 @@ test(`${name}: pulama-skew-names-the-old-image: up and pulama status name a pūl
   for (const argv of [["up"], ["pulama", "status"]]) {
     const r = await run(shim, argv, { envFile: PULAMA_ENV, env: level });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.stderr, /the pūlama runs image sha256:new, the image lares-surface:local stands at/);
+    assert.match(r.stderr, /the pūlama runs image sha256:new, and lares-surface:local stands at the same sha256:new$/m);
+    assert.doesNotMatch(r.stderr, /stands at( \(|$)/m, "the level line names the id the tag stands at, never an empty one");
     assert.doesNotMatch(r.stderr, /pulama restand/);
   }
   // A vessel standing joins the line by its own image.
   const beside = await run(shim, ["pulama", "status"], { envFile: PULAMA_ENV, env: { ...skewed, FAKE_RUNNING_ID: "cid", FAKE_VESSEL_IMAGE: "sha256:mid" } });
   assert.match(beside.stderr, /the pūlama runs image sha256:old, and lares-surface:local stands at sha256:new \(the vessel runs sha256:mid\)/);
   const levelUp = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { ...level, FAKE_RUNNING_ID: "cid", FAKE_VESSEL_IMAGE: "sha256:new", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
-  assert.match(levelUp.stderr, /the pūlama runs image sha256:new, the image lares-surface:local stands at \(the vessel runs sha256:new\)/);
+  assert.match(levelUp.stderr, /the pūlama runs image sha256:new, and lares-surface:local stands at the same sha256:new \(the vessel runs sha256:new\)/);
   assert.ok(levelUp.calls.indexOf("up -d --wait lares") < levelUp.calls.lastIndexOf("inspect --format {{.Image}} p1"), "up names the images once the vessel stands");
   // No pūlama running, or a pūlama inspect that fails, names nothing and never blocks the act.
   const none = await run(shim, ["pulama", "status"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:new" } });

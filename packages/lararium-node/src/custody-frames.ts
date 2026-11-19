@@ -384,7 +384,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         : `face h${face} stands shut: open it under its own route (\`lares vault unlock --all\`), then wear it`);
     }
     const before = mountedFaceOrdinal();
-    // A wear that names the face already worn names it by choice: the mount no longer slides as an opening's would.
+    // A wear that names the face already worn names it by choice: the mount reads as named, and a lock of that face never slides it on as an opening's mount slides.
     if (before === face) { mountByOpening = false; tellWorn(); return { op: "wear", face, held: true, already: true, standing: deps.standing() }; }
     const byOpeningBefore = mountByOpening;
     setMountedFace(face);
