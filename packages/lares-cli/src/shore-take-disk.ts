@@ -13,7 +13,8 @@
  *      equal the disk state the key folded. A file that moved since refuses by name.
  *   2b. THE MERGE. Where the records moved too, their edit must not drown under the file's. The door reads
  *      the base's words from the file's own git history (the face pool's commit whose blob hashes to the base
- *      the key folded, `basePoolText`; the synced tree holds hashes alone) and the render the
+ *      the key folded, `basePoolText`; the synced tree holds hashes alone, and where a re-found cleared it, the
+ *      base the key folded stands at the pool's HEAD) and the render the
  *      island weighed under the key (`render`), and merges the three through the one seal merge
  *      (`shore-merge.ts` over `@lararium/mesh/meme-merge`, the module git's `.mem` driver reads too): a slot only one side moved
  *      takes that side, a slot both moved line-merges alone, and a `.mem` re-seals. A clean merge writes the
@@ -33,8 +34,8 @@
  */
 
 import { statSync } from "node:fs";
-import { atomicWriteFileSync, contentHash, syncedTreeKey, type GitRun, type SyncedTree } from "@lararium/node";
-import { digestsEqual, mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh";
+import { atomicWriteFileSync, contentHash, poolHeadOf, syncedTreeKey, type GitRun, type SyncedTree } from "@lararium/node";
+import { carrierHash, digestsEqual, mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh";
 import { basePoolText, mergeStandoffSides } from "./shore-merge.js";
 import { carrierCasFlagged, declaredType } from "./cas-stage.js";
 import { scanFiles, settleIngest, submitIngest, type ScanRow, type SubmitIngestOpts } from "./ingest-core.js";
@@ -95,8 +96,12 @@ async function mergeSides(
   const folded = named["base"] as { disk?: unknown } | undefined;
   const foldedDisk = text(folded?.disk);
   if (foldedDisk === null) return whole("no base names a last agreement, so nothing tells which side moved a line");
+  // The base the key folded stands in the tree, or, where a re-found cleared the tree, at the pool's HEAD (face-pools A5:
+  // the projector read HEAD as the base where none stood).
   const treeBase = deps.tree.baseAt(syncedTreeKey(bag, uri), path);
-  if (treeBase === null || !digestsEqual(treeBase.disk, foldedDisk)) {
+  const head = treeBase === null ? poolHeadOf(path, deps.git) : null;
+  const standing = treeBase?.disk ?? (head !== null ? carrierHash(head.body, head.meta) : null);
+  if (standing === null || !digestsEqual(standing, foldedDisk)) {
     return { ok: false, refusal: "standoff-key-moved", why: `the base at ${path} moved since the key was read; \`lares shore\` names the standoff's present key` };
   }
   const pooled = basePoolText(path, foldedDisk, deps.git);

@@ -7,7 +7,8 @@
  * operator's projected files alone (lar:///ha.ka.ba/lararium/mesh/sealed-store, R1); the synced tree holds hashes. So
  * the base reads from the git history the projected file itself rests in: a face pool (`projections/faces/<pet name>/`,
  * whose watch core commits the planes at each sitting's close), or any repository a mirror stands inside. The blob at the
- * newest commit of that path whose bytes hash to the base the key folded answers (`basePoolText`); no history, no
+ * newest commit of that path whose bytes hash to the base the key folded answers (`basePoolText`, through the node's one
+ * place and blob read, `pool-head`); no history, no
  * commit of the path, or no blob at that hash answers none, and the caller lands the file whole, saying why. The merge runs through the one seal merge (`@lararium/mesh/meme-merge`, the
  * module git's `.mem` driver reads too): a slot only one side moved takes that side, a slot both moved line-merges
  * alone, and a `.mem` re-seals through the normalize law. A slot both sides moved into overlap answers a conflict
@@ -19,8 +20,7 @@
  * this merge through the same door, never around it.
  */
 
-import { basename, dirname } from "node:path";
-import { contentHash, runGit, type GitRun } from "@lararium/node";
+import { blobAt, contentHash, poolPlaceOf, runGit, type GitRun } from "@lararium/node";
 import { digestsEqual } from "@lararium/mesh";
 import { mergeCarrier, type MemeSealer } from "@lararium/mesh/meme-merge";
 import { mergeTexts } from "@lararium/mesh/meme-merge-git";
@@ -63,19 +63,15 @@ export type PoolBase = { readonly text: string; readonly commit: string } | { re
  * whose bytes hash to `baseDisk`, the base's disk side the key folded. The git run carries no hook env (`runGit`).
  */
 export function basePoolText(file: string, baseDisk: string, git: GitRun = runGit): PoolBase {
-  const dir = dirname(file);
-  const top = git(["rev-parse", "--show-toplevel"], dir);
-  if (top.code !== 0) return { text: null, why: `the file rests in no git history (no pool .git above ${dir}), so no base's words stand in clear` };
-  const prefix = git(["rev-parse", "--show-prefix"], dir);
-  if (prefix.code !== 0) return { text: null, why: `git could not name the file's place in its history (${prefix.stderr.trim() || "no answer"})` };
-  const rel = `${prefix.stdout.trim()}${basename(file)}`;
-  const cwd = top.stdout.trim();
-  const revs = git(["rev-list", "-n", String(POOL_BASE_DEPTH), "HEAD", "--", rel], cwd);
+  const place = poolPlaceOf(file, git);
+  if ("why" in place) return { text: null, why: place.why };
+  const { top, rel } = place;
+  const revs = git(["rev-list", "-n", String(POOL_BASE_DEPTH), "HEAD", "--", rel], top);
   const commits = revs.code === 0 ? revs.stdout.split("\n").map((l) => l.trim()).filter(Boolean) : [];
   if (commits.length === 0) return { text: null, why: `the pool's git holds no commit of ${rel}, so no base's words stand in clear` };
   for (const commit of commits) {
-    const blob = git(["show", `${commit}:${rel}`], cwd);
-    if (blob.code === 0 && digestsEqual(contentHash(blob.stdout), baseDisk)) return { text: blob.stdout, commit };
+    const blob = blobAt(top, commit, rel, git);
+    if (blob !== null && digestsEqual(contentHash(blob), baseDisk)) return { text: blob, commit };
   }
   return { text: null, why: `no commit of ${rel} in the pool's git (the newest ${commits.length}) holds the base's bytes` };
 }

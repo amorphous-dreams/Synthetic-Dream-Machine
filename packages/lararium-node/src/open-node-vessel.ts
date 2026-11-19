@@ -114,6 +114,7 @@ import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } 
 import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
 import { armFacePoolWatch, armWorkspaceWatch, type FacePoolWatch } from "./watch-core.js";
 import { islandIngestSubmit, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
+import { poolHeads } from "./pool-head.js";
 import { newRequestId, KAHUA_BAG } from "@lararium/mesh";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
@@ -4638,6 +4639,7 @@ async function prepareNodeBootOn(
     // its mirror. A stand-off (both moved, or no base over records that say something else), a vanish and a margin go to the
     // island's disk shore (`shore` op `sense`). A teardown (a lock, or a wear that moves the mount) sets the face down: the
     // final wave, then the pool's commit seam; the stand-down runs the same as a down (`facePoolStandDown`).
+    // Where no synced base stands (a re-found cleared the tree), the pool's HEAD names the base (`poolHeads`, face-pools A5).
     if (wornFaceSegment !== null) {
       const pool = faceRoot(larProjectionsHome(), wornFaceSegment);
       const requestedBy = `0x${activeAtom?.key ?? ""}`;
@@ -4648,7 +4650,7 @@ async function prepareNodeBootOn(
       const submit = islandIngestSubmit((verb, args, requestId) => islandAsk(daemonHolder)((ports) => askIslandVerb({ ...ports, verb, args, requestedBy, requestId })).answer);
       const log = (line: string): void => console.log(`[faces] ${line}`);
       const bags = { wiki: DAEMON_WORKING_SLOT, stage: KAHUA_BAG, ...(wornFaceCanonBag !== null ? { canon: wornFaceCanonBag } : {}) };
-      const watch = armFacePoolWatch({ pool, ports: poolIngestPorts({ pool, bags, submit, sense, did: requestedBy, log }), log });
+      const watch = armFacePoolWatch({ pool, ports: poolIngestPorts({ pool, bags, submit, sense, did: requestedBy, heads: poolHeads(pool), log }), log });
       facePoolWatch = watch;
       stood.push({ what: "the face pool's watch", down: async () => { await watch.down("lock"); if (facePoolWatch === watch) facePoolWatch = null; } });
       // THE WATCH OVER EACH SHARED WIKI'S WORKBENCH (a workbench serves as a pool): a wiki's one disk copy whichever face wears,
@@ -4669,7 +4671,7 @@ async function prepareNodeBootOn(
         // The submit port's `wiki-act` carries the INGEST and names this wiki: it places in that wiki's island alone.
         const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, String(args["verb"]), (args["args"] as Record<string, unknown>) ?? {}));
         const wsSense = (uris?: readonly string[]): Promise<unknown> => inWiki(slug, "shore", { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) });
-        const wsWatch = armWorkspaceWatch({ workspace: dir, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, did: requestedBy, log: wsLog }), log: wsLog });
+        const wsWatch = armWorkspaceWatch({ workspace: dir, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, did: requestedBy, heads: poolHeads(dir), log: wsLog }), log: wsLog });
         workspaceWatches.add(wsWatch);
         stood.push({ what: `the workbench ${name}'s watch`, down: async () => { await wsWatch.down("lock"); workspaceWatches.delete(wsWatch); } });
       }

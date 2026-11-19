@@ -23,6 +23,7 @@ import { LarDiskProjector } from "./disk-projector.js";
 import { namedBagMirror } from "./bag-paths.js";
 import { SyncedTree, syncedTreeDir, syncedTreeKey } from "./synced-tree.js";
 import { larProjectionCheckpointDir, larProjectionsHome } from "./vessel-paths.js";
+import { facePoolHeads } from "./pool-head.js";
 import { readBackTempCarriers, TempLayerHousekeeper } from "./temp-layer.js";
 import { loadLaresConfig, tempExpiryDays, tempProjectionConsented } from "./lares-config.js";
 import { SHORE_VERB, answerShore } from "./shore-verb.js";
@@ -243,6 +244,9 @@ export function mountDiskProjection(
   canonicalizeNativeFn: (uri, ext, diskBody, diskMeta) =>
     canonicalizeNativeCarrierText(makeTw5Deserializer(ctx.tw5), uri, ext, diskBody, diskMeta),
   syncedTree,
+  // HEAD'S WORDS WHERE NO BASE STANDS (face-pools A5): a re-found clears the tree, and a face pool's last sitting names the
+  // agreement in its stead. A file outside every face pool, or a pool with no `.git`, reads none and spawns no git.
+  baseFromGit: facePoolHeads(() => { try { return larProjectionsHome(); } catch { return null; } }),
   ...(opts.journal ? { journal: opts.journal } : {}),
   ...(!opts.journal ? {
     onBagProjected: (info: { bagId: string; path: string }) => ctx.post(bagProjectedEvent(ctx.wikiUri, info)),
