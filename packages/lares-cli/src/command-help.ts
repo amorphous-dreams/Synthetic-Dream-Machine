@@ -497,6 +497,53 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares sense status --lens content", "lares mempalace status   # the guest comparator door"],
   },
 
+  realm: {
+    usage: "usage: lares realm name|add|list [<pet> [<slug>]] [--realm <current pet | realm id>]",
+    synopsis:
+      "THE REALM'S PET NAME — a realm holds its wikis at projections/realms/<realm pet name>/wikis/<slug>/ (each its own git tree) " +
+      "and its domain bags at projections/realms/<realm pet name>/bags/<slug>/, as a face holds its planes under projections/faces/<pet name>/. " +
+      "Every realm carries a pet name: one minted with none takes its wiki's slug, and the vessel mints that label on first read, so nothing " +
+      "waits. The label rests local at projections/realm-labels/<pet>.json (0600), never in a share row or a replicated document. A rename or " +
+      "regroup moves the folder at once while no vessel answers, else at the vessel's next lock or re-stand.",
+    details: [
+      "  lares realm name <pet>                 name a realm (path-safe, unique without case, never a face's pet name)",
+      "  lares realm name <new> --realm <cur>   rename one; its folder follows at a quiet point",
+      "  lares realm add <pet> <slug>           place or regroup a wiki and its canon bag in a named realm",
+      "  lares realm list                       each realm, its wikis' folders and the canon realm ids it holds",
+    ],
+    examples: ["lares realm name Garden", "lares realm add Garden notes", "lares realm list", "lares realm name Orchard --realm Garden"],
+    flags: ["--realm <current pet | realm id>   (name) the realm to rename"],
+    next: ["lares wiki init <slug> --realm <pet>   # mint a wiki into a realm", "lares surface init --realm <pet>   # each wiki of the realm its own git tree"],
+    meme: "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench",
+  },
+  "realm name": {
+    usage: "usage: lares realm name <pet> [--realm <current pet | realm id>]",
+    synopsis:
+      "Name a realm: the pet name follows the face segment rule (no '/', '\\', ':', NUL or leading dot, never empty), stays unique on the house " +
+      "without case, and never repeats a face's pet name (a realm's pools commit under the realm's own identity). A second naming says already. " +
+      "--realm renames the realm that wears <current pet> or holds <realm id>: the label moves at once, and each of its folders follows to " +
+      "projections/realms/<new>/ (its .git with it) at a quiet point: at once while no vessel answers, else at the vessel's next lock or re-stand, " +
+      "the wiki reading where it stands until then, never half-moved.",
+    examples: ["lares realm name Garden", "lares realm name Orchard --realm Garden"],
+    flags: ["--realm <current pet | realm id>   the realm to rename"],
+    next: ["lares realm add <pet> <slug>"],
+  },
+  "realm add": {
+    usage: "usage: lares realm add <pet> <slug>",
+    synopsis:
+      "Place a wiki and its canon bag in a named realm, or regroup it there from the realm that holds it: its workbench rests at " +
+      "projections/realms/<pet>/wikis/<slug>/ and its bag at projections/realms/<pet>/bags/<slug>/, the folders moving at a quiet point (at once " +
+      "while no vessel answers, else at its next lock or re-stand). Where a vessel answers, the label records the canon realm id its workbench " +
+      "ledger binds for the slug. One wiki rests in one realm; the daemon wiki joins none.",
+    examples: ["lares realm add Garden notes", "lares realm add Garden works"],
+    next: ["lares realm list", "lares surface init --realm Garden"],
+  },
+  "realm list": {
+    usage: "usage: lares realm list",
+    synopsis: "Each realm the house names: its pet name, each wiki's folder, its loose bags, and the canon realm ids it holds. Reads the local labels alone.",
+    examples: ["lares realm list", "lares realm list --json"],
+    next: ["lares realm add <pet> <slug>"],
+  },
   surface: {
     usage: "usage: lares surface init|check|open|commit|face [--face N | --realm <slug>] [--launch] [-m <seam>]",
     synopsis:
