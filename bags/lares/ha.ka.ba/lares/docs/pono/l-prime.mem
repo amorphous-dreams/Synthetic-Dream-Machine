@@ -15,7 +15,7 @@ uri-path  = "ha.ka.ba/lares/docs/pono/l-prime"
 ! L-Prime — Docs
 
 This file does not bind invariant law.
-Law lives at [[l-prime.md|../../api/mu/l-prime.md]].
+Law lives at [[l-prime|lar:///ha.ka.ba/lares/api/mu/l-prime]].
 
 This file holds research provenance and extended Level guidance.
 
@@ -90,6 +90,6 @@ The ward governs grammar alone. Every `${copula}` that passes under the lit ward
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;tC_QQPcu0qfMnz0LdhwdntxQcPpx65UT5--_A8tfJHQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Lq-lVChPMi5M_Aj4hgVD2oemxcwfx9Qi0fJD5fOc8-k`>>
 
 <<^ code=`&#x0004;` to=`?`>>
