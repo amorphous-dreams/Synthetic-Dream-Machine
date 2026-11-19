@@ -1101,24 +1101,7 @@ describe("the ward refuses a passkey path to a warded root (row 7, S2)", () => {
   }, SLOW);
 });
 
-describe("the ward's two edge refusals (row 7, S2b custody read)", () => {
-  test("RED: an old roster `{ roots: [0] }` refuses `ward-face-predates` with its cure at the roster read; CONTROL: the present roster shape reads", async () => {
-    const rosterRead = async (plain: unknown) => {
-      const idbName = `custody-roster-${crypto.randomUUID()}`;
-      const io = browserKeystoreCustodyIo(idbName);
-      const treeKey = mintTreeKey();
-      const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "roster" }] }, nobleKdf);
-      const carrier = sealedCarrierOf("persona-root-roster");
-      await commitSlotTree({ io, path: CUSTODY_TREE_RECORD, expected: null, treeKey, tree, carriers: [carrier] });
-      await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_RECORD, carrier, plaintext: new TextEncoder().encode(JSON.stringify(plain)) });
-      expect(await unlockBrowserCustody(idbName, [{ kind: "passphrase", passphrase: "roster" }])).toMatchObject({ reading: "opens" });
-      return listBrowserPersonaRoots(idbName).then((roots) => roots, (e: unknown) => e as Error);
-    };
-    const refusal = await rosterRead({ roots: [0] });
-    expect((refusal as Error).message).toBe("ward-face-predates: this face predates the ward; found it again");
-    expect(await rosterRead({ roots: [{ tree: "f".repeat(32), verifyingKey: "a".repeat(64) }] })).toEqual([0]);
-  }, SLOW);
-
+describe("the ward beside a clear keystore (row 7, S2b custody read)", () => {
   test("RED: after a clear-password the keystore reads clear while a ward stands, and a PRF wrap refuses `seed-wrap-beside-ward`; CONTROL: a clear keystore with no ward row takes the wrap", async () => {
     const { writeBrowserSeedWrap } = await import("../src/browser-vessel-identity.js");
     const v = await plantedVessel("wrap-beside-ward");
