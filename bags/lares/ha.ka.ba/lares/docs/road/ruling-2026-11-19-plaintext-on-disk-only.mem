@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-19-plaintext-on-disk-only`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-19"
+order    = "2332"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-19-plaintext-on-disk-only"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-19-plaintext-on-disk-only"
+```
+
+* ''Plaintext on disk only'' (operator, 2026-11-19: //"I'm ok with these layers of wikis getting projected in the clear (the human can get eyes on that content more readily in early alpha)"//, then //"I only meant the plaintext on disk, you found a real bug then"//; lar:///ha.ka.ba/kahua/memory/state/decisions #/open). The disk projection of a face's personal layers may rest in clear through early alpha, where the human's own eyes reach it. A personal slot document resting CLEAR in a hearth store (found in four: root, notes, lararium, works) counts as a security bug, never as the ruling's reach: Lares-Awakens' Personal-Ward (PR #315) seals every margin and draft the worn face names, and road (b) removes the island copies (ranks 18a and 34).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YJ0X4cYbaeOc-yVSQrzL1s6Zv_waafGTrxSMngyQmuY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

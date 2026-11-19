@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-19-realm-pools-carry-the-pet-name`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-19"
+order    = "2335"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-19-realm-pools-carry-the-pet-name"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-19-realm-pools-carry-the-pet-name"
+```
+
+* ''Realm pools carry the realm's pet name'' (operator, 2026-11-19: //"The filepath for realms should include their 'pet-name' to match faces."//, both recommended options chosen; talked out the same night, where a waiting realm //"doesn't read pono"//; then //"Pono, this works."//; lar:///ha.ka.ba/kahua/memory/state/decisions #/open). A realm holds its wikis at `projections/realms/<realm pet name>/wikis/<slug>/` and its domain bags at `projections/realms/<realm pet name>/bags/<slug>/`, mirroring `projections/faces/<pet name>/`, one git tree per wiki folder; its pet name rests in a local label beside the face labels, never published. One realm per wiki mints with the wiki's slug as its default pet name, so nothing waits and no plaintext mirror goes dark, and a realm standing with no label takes that default at first boot; each wiki may seed a shared cluster of resources. Naming stays the operator's act and gates no flow: `lares realm rename` and `lares realm move` (read as `mv`) move a folder whole with its git history at a quiet point, and `lares realm list` reads the labels. The operator means to gather `notes` and `works` into one realm named `operator`. Built in PR #300 (rank 4j).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AFSHJZNzQP-C_ofqzXIOKD1PJCPDm99UqkgzKQKIkQw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

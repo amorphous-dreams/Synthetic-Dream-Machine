@@ -455,6 +455,14 @@ The operator approved the house's defaults (operator, 2026-11-06: //"Approve you
 
 </$list>
 
+!!! Operator rulings, 2026-11-19 ~ road A for the prior founding floor, plaintext on disk only, the goal and its three tiers, the road to a stable house, and realm pools by pet name
+
+<$list filter="[tag[road/ruling]field:group[2026-11-19]sort[order]]">
+
+<$transclude mode="block"/>
+
+</$list>
+
 !!! House rulings under the operator's delegation ~ the questions the operator delegated, each with what flips it
 
 The operator delegated these to the house: each stands as a house ruling the operator may overturn, its law lives in the carrier it names, and its build rides the stride items #/the-loops indexes.
@@ -1394,6 +1402,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FFRkV4AMOckq5FiEGKsKOG1a-icq90MDeJMowWccuHk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UhXvodnhtQDartrwgWz_1V72SH9uwx_NSYeN5wF9dRo`>>
 
 <<^ code=`&#x0004;` to=`?`>>
