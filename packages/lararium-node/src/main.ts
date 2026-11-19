@@ -45,7 +45,7 @@ import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, floorCarriageBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
-import type { HeldSaves, MountManifest } from "@lararium/mesh";
+import type { DocCensusReading, HeldSaves, MountManifest } from "@lararium/mesh";
 import { bootFaultReport }                 from "./boot-fault.js";
 import { standAs, FLOW_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, floorCardCarriageText } from "@lararium/mesh";
 import { hearthFloorProof } from "./hearth-floor-claims.js";
@@ -493,6 +493,8 @@ async function main(): Promise<void> {
     wikiAwaits: () => composition?.wikiAwaits ?? null,
     // THE CENSUS of saves held in memory: null while no composition sits, so a stop never reads "none held" from a gap.
     heldSaves: () => composition?.heldSaves?.() ?? null,
+    // THE DOCUMENT CENSUS of the standing composition's stores: null while none sits, so a read never names an empty house.
+    docCensus: () => composition?.docCensus?.() ?? null,
     onLog: (line) => console.log(`[custody] ${line}`),
   });
 
@@ -569,6 +571,8 @@ interface StandingComposition {
   readonly backup?: BackupDoor;
   /** The saves this composition's sealed rest holds in memory, by document and never by body (the custody door's census). */
   readonly heldSaves?: () => readonly HeldSaves[];
+  /** The document census of this composition's stores, read-only (the custody door's `doc-census`). */
+  readonly docCensus?: () => Promise<DocCensusReading>;
   /** The wiki this composition stands in for on its floor wiki, waiting on a face (its `wiki-awaits-face` line); absent or null where none waits. */
   readonly wikiAwaits?: string | null;
 }
@@ -736,6 +740,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     hosting: herm.hostingDoor,
     backup: herm.backupDoor,
     heldSaves: herm.heldSaves,
+    docCensus: herm.docCensus,
   };
 }
 
@@ -1025,6 +1030,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     hosting: result.hostingDoor,
     backup: result.backupDoor,
     heldSaves: result.heldSaves,
+    docCensus: result.docCensus,
     wikiAwaits: result.wikiAwaitsFace?.message ?? null,
   };
 }

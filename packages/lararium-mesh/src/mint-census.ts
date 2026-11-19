@@ -58,3 +58,8 @@ export function pointMint(url: string): void {
 export function capMintsUnpointed(repo: object): CapMint[] {
   return (ledgers.get(repo) ?? []).filter((m) => !pointed.has(m.url));
 }
+
+/** Every document caps created on `repo` while they built, pointed or not, oldest first (the document census reads them). */
+export function capMintsAll(repo: object): CapMint[] {
+  return [...(ledgers.get(repo) ?? [])];
+}
