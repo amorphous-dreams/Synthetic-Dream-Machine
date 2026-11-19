@@ -246,13 +246,18 @@ function LastWornFace {
   try { $w = (Get-Content -Raw -Path $WornFaceFile -ErrorAction Stop).Trim() } catch { $w = '' }
   if ($w -match '^[0-9]+$') { return $w } else { return '0' }
 }
-function RememberWornFace([string[]]$argv) {
+# The face an unlock's argv names (`--face N` or `--face=N`), '' where it names none or no ordinal.
+function NamedFace([string[]]$argv) {
   $face = ''
   for ($i = 0; $i -lt $argv.Count; $i++) {
     if ($argv[$i] -eq '--face' -and $i + 1 -lt $argv.Count) { $face = $argv[$i + 1]; $i++ }
     elseif ($argv[$i] -like '--face=*') { $face = $argv[$i].Substring(7) }
   }
-  if ($face -notmatch '^[0-9]+$') { return }
+  if ($face -match '^[0-9]+$') { return $face } else { return '' }
+}
+function RememberWornFace([string[]]$argv) {
+  $face = NamedFace $argv
+  if (-not $face) { return }
   try {
     New-Item -ItemType Directory -Force -Path (Join-Path $House 'config') | Out-Null
     Set-Content -Path $WornFaceFile -Value $face -Encoding ascii
@@ -1019,6 +1024,11 @@ switch ($verb) {
       # An unlock under a pūlama that named no face can leave faces lent and none worn: the shim wears the last one.
       $namedFace = @($rest | Where-Object { $_ -eq '--face' -or $_ -like '--face=*' }).Count -gt 0
       if (-not $namedFace -and (NoneWorn)) { WearLastFace }
+      # THE UNLOCK'S FACE REACHES THE PŪLAMA. The pūlama keeps the face worn in memory and wears it again after a restart,
+      # and only `wear` writes that memory, never the unlock: the shim follows a named face with `wear N`, the chain `up`
+      # walks, so the pūlama's memory and the face this shim keeps name one face.
+      $face = NamedFace $rest
+      if ($face -and (DetachedWear $face) -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel opened h$face, but the wear that tells the pūlama refused; a restart re-wears the face last worn: run ``lares-container.ps1 wear $face``") }
       return
     }
     RouteCli (@($verb) + $rest) $true

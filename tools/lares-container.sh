@@ -1095,6 +1095,16 @@ case "$verb" in
       remember_worn_face "$@"
       # An unlock under a pūlama that named no face can leave faces lent and none worn: the shim wears the last one.
       if [ -n "$PULAMA_MODE" ] && [ -z "$face" ] && none_worn; then wear_last_face; fi
+      # THE UNLOCK'S FACE REACHES THE PŪLAMA. The pūlama keeps the face worn in memory and wears it again after a restart,
+      # and only `wear` writes that memory, never the unlock: the shim follows a named face with `wear N`, the chain `up`
+      # walks, so the pūlama's memory and the face this shim keeps name one face.
+      case "$face" in
+        ''|*[!0-9]*) ;;
+        *) if [ -n "$PULAMA_MODE" ]; then
+             # shellcheck disable=SC2046
+             waited_exec $(pass_env) -T lares node "$CLI" wear "$face" </dev/null || printf 'lares-container: the vessel opened h%s, but the wear that tells the pūlama refused; a restart re-wears the face last worn: run `lares-container.sh wear %s`\n' "$face" "$face" >&2
+           fi ;;
+      esac
     fi
     exit "$rc" ;;
   *) route_cli "$verb" "$@" ;;
