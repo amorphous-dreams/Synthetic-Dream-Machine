@@ -1094,8 +1094,9 @@ case "$verb" in
   lei)
     # THE LEI HAND DOOR UNDER A PŪLAMA (#269): the pūlama opens no document, so the vessel reads the act's terms (the
     # face, and for a restring the line's tip), the pūlama reads the route on THIS terminal and signs one record, and the
-    # vessel lands it. The signing's terminal output shows here as it runs (its prompt among it); the answer is its last
-    # JSON line. A signing that answers no record lands nothing. Without a pūlama, every lei act routes as before.
+    # vessel lands it. The signing's terminal output shows here as it runs (its prompt among it); the answer is the last
+    # object it prints, from its opening brace at the line's start to the end, joined onto one line. A signing that answers
+    # no record lands nothing. Without a pūlama, every lei act routes as before.
     case "${1:-}" in
       kui|restring|unstring)
         if [ -n "$PULAMA_MODE" ]; then
@@ -1103,9 +1104,9 @@ case "$verb" in
           [ -n "$HAVE_TTY" ] || die "lei under a pūlama reads its route on a terminal; run it on one (nothing signed)"
           # shellcheck disable=SC2046
           terms=$(compose exec $(pass_env) -T lares node "$CLI" lei terms "$@" </dev/null) || exit $?
-          # The answer rides a pipe (tee, then the last JSON line), and a captured stdout makes compose drop the pty, so the
+          # The answer rides a pipe (tee, then the last printed object), and a captured stdout makes compose drop the pty, so the
           # exec forces one (`--no-TTY=false`): the pūlama reads the route on the operator's terminal.
-          answer=$(compose --profile pulama exec --no-TTY=false pulama node "$PULAMA_MAIN" lei "$act" "$terms" | tee /dev/stderr | tr -d '\r' | grep '^{' | tail -n 1)
+          answer=$(compose --profile pulama exec --no-TTY=false pulama node "$PULAMA_MAIN" lei "$act" "$terms" | tee /dev/stderr | tr -d '\r' | awk '/^\{/ { seen = 1; answer = "" } seen { answer = answer $0 } END { if (seen) print answer }')
           [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
           # shellcheck disable=SC2046
           waited_exec $(pass_env) -T lares node "$CLI" lei land "$answer" </dev/null
