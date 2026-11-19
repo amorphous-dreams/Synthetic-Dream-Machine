@@ -1337,8 +1337,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   let oracleAtBoot: DocHandle<LarDoc> | null = null;
   // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ────────────────
   // The SAME observation node's `openDaemon` makes, through the same platform-blind door
-  // (`vesselDyads`, mesh): the ceremony-minted slots are the only source, and a face standing
-  // beside zero slots is a doc minted before the ruling — said aloud here, warned never thrown.
+  // (`vesselDyads`, mesh): the ceremony-minted slots are the only source.
   // Every vessel class inherits this read verbatim; the pattern integrity is the ONE door.
   // The vessel's secret home, opened from its keystore row once a face stands; null where none opens.
   let secretHome: SecretHome | null = null;
@@ -1350,9 +1349,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       catch (e) { if (!(e instanceof SecretHomeUnavailable)) throw e; console.warn(`[secret-home] ${e.message}`); }
     }
     const dyads = vesselDyads(secretHome?.handle.doc());
-    if (social.deviceEdge && dyads.length === 0) {
-      console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
-    } else if (dyads.length > 0) {
+    if (dyads.length > 0) {
       const boundCount = dyads.filter((d) => d.binding !== null).length;
       // THE DYAD SCOPE READS HERE: a binding counts as this hearth's only where it verifies under the fleet root the
       // leaf's edge names AND roots on the hearth that edge binds.
