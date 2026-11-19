@@ -247,13 +247,13 @@ In the session, `/mcp` lists `lares` connected, and the session opens on the boo
 
 !! 12 · Later: updates, restores, faults
 
-''A code update:'' `git pull`, `git submodule update` (no `--remote`), `pnpm install --frozen-lockfile && pnpm build`, a clean `git status`, `tools/lares-container.sh build`, `up`, then `pulama admit` for the new image. A standing pūlama keeps running the image it stood from, since `up` never recreates it, and `up` and `pulama status` name that skew. So under a pūlama, after `build`: `down`, then `pulama restand` (it locks the pūlama and recreates it on the new image, unlit), then `pulama light` by your own hand, then `up` and `pulama admit`.
+''A code update:'' `git pull` and `git submodule update` (no `--remote`), then `tools/lares-container.sh rebuild` on a terminal. It walks the re-stand itself: `down` (the keep, the census), the build from the commit (an uncommitted or untracked file never rides the image; the outgoing image keeps a `rev-<short>` tag and the newest three stand), then `up`, `pulama admit` (the pūlama reads your route on that terminal) and the face you last wore, closing on one line that names the revision, the worn face and the keep. Where the pūlama's own code moved, it restands the pūlama and stops: `tools/lares-container.sh pulama light` by your own hand, then `tools/lares-container.sh rebuild --resume`. A vessel-only change keeps the lit pūlama and asks no light. `rebuild --at <rev>` builds another commit; no branch moves.
 
 ''A restore'' from the keep onto a new machine or a fresh root walks the founding runbook 11a.
 
 ''What a walk meets:''
 
-* ''`build` refuses, or `up` warns of uncommitted changes:'' a live canon edit wrote into the checkout's `bags/` or `wikis/`, or a stray file changed. `git status` names it; commit it or move it onto a branch. `up` warns for any dirty file, even one the image never reads.
+* ''`build` names what it left out, or `up` warns of uncommitted changes:'' a live canon edit wrote into the checkout's `bags/` or `wikis/`, or a stray file changed. The image builds from the commit and carries none of it; `git status` names it, so commit it or move it onto a branch before the next `rebuild`.
 * ''Never rename or remove a house folder while the vessel stands:'' `down` first. `up` over a container whose mounts point at a moved folder can answer healthy and then read `no face stands`; `down`, then `up`, mends it.
 * ''A paper sheet for a new face'' binds only with the vessel stopped; a standing vessel offers the passphrase alone.
 * ''A mistyped pūlama route'' can read `no route was given`; type it again.
@@ -263,6 +263,6 @@ In the session, `/mcp` lists `lares` connected, and the session opens on the boo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;o5QyNR1IVyYFlpPzkS7UUh15G-hZHX9wTVypo8rt0A4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;25ZE53CvHx_ai69ZoWS7u5cahH9c1vb-BjxvBd3j9Lw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

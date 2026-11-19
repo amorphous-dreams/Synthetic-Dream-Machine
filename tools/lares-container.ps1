@@ -2,7 +2,10 @@
 # Same contract as tools/lares-container.sh: up [--capture <dir>]... [--workspace <name>=<dir>]...  down [compose-down args]  found [vessel-found args]  logs
 # build [--at <rev>] [compose-build args]  vessel stand  <lares verb…>. `build` builds the vessel image (every package the
 # vessel runs) from one commit (HEAD unless --at names another), unpacked from its archive under the house's cache,
-# stamping that revision as its label; a dirty tree builds from HEAD and names what it left out; no checkout refuses. The CLI runs by exec while a vessel stands and through the offline door while none
+# stamping that revision as its label; a dirty tree builds from HEAD and names what it left out; no checkout refuses.
+# `rebuild [--at <rev>]` re-stands the house onto a new image: down (keep, census), build from the commit (tag, prune),
+# then up, the pūlama's admit on this terminal and the last face worn; where the pūlama's code closure moved it restands
+# the pūlama and stops for the operator's light: `pulama light`, then `rebuild --resume`. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
 # LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
@@ -449,7 +452,7 @@ foreach ($name in @('NO_COLOR', 'TERM', 'COLORTERM', 'LARES_DEBUG', 'CLAUDECODE'
   if (Test-Path "env:$name") { $PassEnv += @('-e', $name) }
 }
 
-if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|build|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)' }
+if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|build|rebuild|image-digest|pulama|vessel stand|<lares verb…> (build builds the vessel image, every package, from a commit; rebuild walks down, build, up, admit and the worn face)' }
 $verb = [string]$args[0]
 $rest = @(); if ($args.Count -gt 1) { $rest = @($args[1..($args.Count - 1)]) }
 

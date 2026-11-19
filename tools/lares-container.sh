@@ -17,6 +17,10 @@
 #                                                house's cache, through the env file, stamping that revision as its
 #                                                label; an uncommitted or untracked file never rides it, and a dirty
 #                                                tree builds from HEAD and names what it left out; no checkout refuses
+#   lares-container.sh rebuild [--at <rev>]      re-stand the house onto a new image: down (keep, census), build from the
+#                                                commit (tag, prune), then up, the pūlama's admit on this terminal and the
+#                                                last face worn; where the pūlama's code closure moved it restands the
+#                                                pūlama and stops for your light: `pulama light`, then `rebuild --resume`
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing.
 #                                                Every stand and restart this shim performs (`up` too) warns when the
@@ -469,7 +473,7 @@ run_waited() { # $1 = exec|run; the rest = the compose argv
 waited_exec() { run_waited exec exec -e LARES_EXEC_TAG "$@"; }
 waited_run() { run_waited run --profile offline run --rm --name "$RUN_NAME" "$@"; }
 
-[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|build|image-digest|pulama|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)"
+[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|build|rebuild|image-digest|pulama|vessel stand|<lares verb…> (build builds the vessel image, every package, from a commit; rebuild walks down, build, up, admit and the worn face)"
 verb=$1; shift
 
 # A WORKSPACE (cabal-realm#/the-workbench): an operator-configured directory a private wiki's workbench mirror rests in,

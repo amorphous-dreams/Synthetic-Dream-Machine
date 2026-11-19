@@ -987,11 +987,14 @@ for (const [name, shim] of shims) {
     }
   });
 
-  test(`${name}: the usage line names build`, async () => {
+  test(`${name}: the usage line names build and rebuild`, async () => {
     const r = await run(shim, [], { env: MOUNTS });
     assert.equal(r.status, 2);
-    assert.match(r.stderr, /usage: lares-container\.(sh|ps1) [^\n]*\|build\|/);
-    assert.match(r.stderr, /build rebuilds the vessel image, every package, from the committed checkout/);
+    assert.match(r.stderr, /usage: lares-container\.(sh|ps1) [^\n]*\|build\|rebuild\|/);
+    assert.match(r.stderr, /build builds the vessel image, every package, from a commit; rebuild walks down, build, up, admit and the worn face/);
+    const head = await readFile(shim, "utf8");
+    assert.match(head, /rebuild \[--at <rev>\]/, "the shim's head names the rebuild verb");
+    assert.match(head, /rebuild --resume/);
   });
 
   test(`${name}: no argv carries the docker socket`, async () => {
