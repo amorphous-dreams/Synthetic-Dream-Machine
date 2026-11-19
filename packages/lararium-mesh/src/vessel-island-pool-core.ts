@@ -46,6 +46,7 @@ import type {
   Repo,
 } from "@automerge/automerge-repo";
 import { hasHeads } from "@automerge/automerge";
+import { isValidAutomergeUrl, parseAutomergeUrl, type Repo as AutomergeRepo } from "@automerge/automerge-repo";
 import type {
   IslandMsg_Event,
   IslandMsg_Ea,
@@ -299,6 +300,21 @@ export function resolveDiskMirrors(
     });
 }
 
+
+/**
+ * THE VESSEL OPENS EVERY DOCUMENT IT GRANTS A WIKI ISLAND before the island binds. The island keeps no store, so each slot
+ * document reaches it from the vessel's Repo: a document the Repo holds a handle for rides the vessel's push the moment the
+ * island's peer stands, and one it holds only at rest would ride the island's own pull alone. Opening each granted document
+ * here puts every slot on the push. The find runs unawaited: the island's slot wait ends on the document's arrival or the
+ * vessel's named answer, and a find that refuses here says nothing the island's own ask will not hear.
+ */
+function openGrantedDocuments(repo: AutomergeRepo, grants: IslandGrants): void {
+  for (const value of Object.values(grants)) {
+    if (typeof value !== "string" || !isValidAutomergeUrl(value)) continue;
+    if (repo.handles[parseAutomergeUrl(value).documentId]) continue;
+    repo.find(value).catch(() => { /* the island's own ask hears the vessel's answer */ });
+  }
+}
 /** What the vessel itself read of its receipt requests: asked, answered issued (`rested`: its Repo held the heads and flushed), answered stalled. */
 export interface VesselRestState { readonly asked: number; readonly rested: number; readonly stalled: number }
 
@@ -817,7 +833,10 @@ export class VesselIslandPoolCore {
       // EVERY POOL ISLAND IS A WIKI ISLAND: it renders pages and syncs no custody document (`markWikiIslandPeer`).
       const repo = this._mainRepo;
       if (view) { markWikiIslandPeer(repo, view.peerId); view.attach(this._mainRepo, mainPort); }
-      else attachMessageChannelSync(repo, mainPort, (peerId) => { markWikiIslandPeer(repo, peerId); this._islandPeerOf.set(wikiId, peerId); });
+      else {
+        openGrantedDocuments(repo, plan.grants);
+        attachMessageChannelSync(repo, mainPort, (peerId) => { markWikiIslandPeer(repo, peerId); this._islandPeerOf.set(wikiId, peerId); });
+      }
     }
 
     // A session's island spawns without the vessel's own doors: its view answers what it may ask.
@@ -830,15 +849,14 @@ export class VesselIslandPoolCore {
     // Authority ∩ designation, with per-wiki-slug leaves filled from the recipe
     // (e.g. working → wikis/{slug}). See resolveDiskMirrors.
     //
-    // A SESSION ISLAND HOLDS AN EPHEMERAL REPLICA: no storage rides its manifest, on any platform, and no
-    // disk mirror either. The vessel's owner alone persists.
+    // EVERY ISLAND THIS POOL SPAWNS HOLDS AN EPHEMERAL REPLICA: no storage rides its manifest, on any platform. The
+    // vessel's Repo rests every document once (single-owner law), and the island relays through it. A session island
+    // carries no disk mirror either.
     const diskMirrors = plan.surface ? [] : resolveDiskMirrors(this._diskMirrorGrant, plan.recipe.mirrorBags, plan.recipe.wikiSlug);
-    const storage = plan.surface ? undefined : this._host.storage(wikiId);
 
     const manifestMsg = mkManifest(
       plan.wikiUri, syncPort, plan.recipe, plan.grants, plan.coreHash,
       {
-        ...(storage            ? { storage }     : {}),
         ...(diskMirrors.length ? { diskMirrors } : {}),
         ...(pluginCids.length ? { pluginCids } : {}),
         ...(floorCid ? { floorCid } : {}),

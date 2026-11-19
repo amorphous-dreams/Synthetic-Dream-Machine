@@ -24,7 +24,6 @@ function rig(options: { policy?: () => PortGrant | null } = {}) {
       }, listen(fn) { listeners.add(fn); return () => { listeners.delete(fn); }; }, onError: () => () => {}, terminate() {} };
     },
     newSyncChannel() { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
-    storage: () => undefined,
   };
   const delivered: Array<{ binding: string; msg: unknown }> = [];
   const dropped: Array<{ key: string; type: string; reason: string }> = [];

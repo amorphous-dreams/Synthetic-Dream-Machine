@@ -14,7 +14,7 @@
  */
 
 import { isIslandToVesselMsg } from "./island-protocol.js";
-import type { IslandToVesselMsg, IslandMsg_Breath, IslandStorageConfig } from "./island-protocol.js";
+import type { IslandToVesselMsg, IslandMsg_Breath } from "./island-protocol.js";
 
 // ── VesselWorkerHandle — platform-blind handle over a spawned island worker ───
 //
@@ -46,7 +46,8 @@ export interface VesselWorkerHandle {
 // ── VesselIslandHost — the pool's platform shore ──────────────────────────────
 //
 // Everything platform-specific the pool needs, as composition: worker spawn,
-// sync-channel creation, per-wiki storage. `awaitReady` flags the browser ES-
+// sync-channel creation. No island the pool spawns keeps a store: the vessel's Repo
+// rests every document once. `awaitReady` flags the browser ES-
 // module worker's WASM-load handshake (node omits it). Held capabilities
 // (mainRepo, diskMirrorGrant, hotCap) ride pool config, not this shore.
 
@@ -59,8 +60,6 @@ export interface VesselIslandHost {
   spawnWorker(opts?: { readonly session?: boolean }): VesselWorkerHandle;
   /** Create a sync channel; the pool keeps mainPort, transfers syncPort. */
   newSyncChannel(): { mainPort: MessagePort; syncPort: MessagePort };
-  /** Per-wiki island storage (node nodefs; browser undefined → island owns IDB). */
-  storage(wikiId: string): IslandStorageConfig | undefined;
   /** Browser ES-module workers signal "ready" before manifest; node omits. */
   awaitReady?: boolean;
 }

@@ -385,8 +385,6 @@ function islandHost(opts: HostOptions = {}): { host: VesselIslandHost; islands: 
       };
     },
     newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
-    // The host WOULD hand every island a durable store and the pool holds a disk grant: a surface takes neither.
-    storage: (wikiId) => ({ type: "nodefs", dir: `/nonexistent/${wikiId.length}` }),
   };
   return { host, islands };
 }
@@ -509,9 +507,10 @@ describe("the island pool keys by the whole session key", () => {
     await pool.mountSurface({ sessionId: "session-2", generation: 0, surfaceId: "surface-a", recipe: { ...recipe, recipe: { ...recipe.recipe, mirrorBags: [SHARED_BAG] } } });
     expect(islands[1]!.manifest.recipe.mirrorBags).toEqual([SHARED_BAG]);                // the setup took
     expect(islands[1]!.manifest.diskMirrors).toBeUndefined();
-    // CONTROL: the wiki door, over the same host, hands its island the store and the mirror the surface went without.
+    // CONTROL: the wiki door, over the same pool, hands its island the mirror the surface went without, and no store either:
+    // the vessel's Repo rests every document once.
     await pool.mountWiki("lar:///ha.ka.ba/wikis/outside", { coreHash: null, recipe: { wikiSlug: "outside", mirrorBags: [SHARED_BAG] }, grants: { islandUrl: v.oracle.url, catalogUrl: v.catalog.url } });
-    expect(islands[2]!.manifest.storage).toBeDefined();
+    expect(islands[2]!.manifest.storage).toBeUndefined();
     expect(islands[2]!.manifest.diskMirrors?.length).toBe(1);
     expect(islands[2]!.manifest.view).toBeUndefined();
   });

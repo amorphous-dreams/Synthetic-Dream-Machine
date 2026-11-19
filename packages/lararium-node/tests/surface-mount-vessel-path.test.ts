@@ -157,7 +157,7 @@ describe("a session surface through the node vessel's own parts", () => {
     expect(seen["pluginCids"]).toEqual([v.grammarCid, v.offeredCid]);
     expect(seen["coreHash"]).toBe(v.coreCid);
     expect(seen["resolved"]).toMatchObject({ [SHARED_BAG]: v.shared.url, [wikiBagUri(SLUG)]: v.canon.url });
-    // A session island holds an ephemeral replica: the node host would grant a store, and the surface took none.
+    // A session island holds an ephemeral replica: no store rides its manifest.
     expect(seen["storage"]).toBeNull();
     expect(seen["catalogUrl"]).toBeNull();
     expect(seen["view"]).toEqual({ peerId: expect.stringMatching(/^session-island-/) });
@@ -206,7 +206,8 @@ describe("a session surface through the node vessel's own parts", () => {
     await pool.mountWiki(WIKI, { coreHash: null, recipe: { wikiSlug: SLUG }, grants: { islandUrl: v.oracle.url } });
     expect(await v.probe(WIKI, "find", { url: v.faces.referee.working.url })).toEqual({ found: true, titles: ["referee-working"] });
     expect((await v.probe(WIKI, "find", { url: v.catalog.url }))["found"]).toBe(true);
-    expect((await v.probe(WIKI, "manifest"))["storage"]).not.toBeNull();
+    // A wiki island keeps no store either: the vessel's Repo rests every document once.
+    expect((await v.probe(WIKI, "manifest"))["storage"]).toBeNull();
   });
 
   test("a session island takes none of the vessel's own capabilities", async () => {

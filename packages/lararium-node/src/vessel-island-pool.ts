@@ -3,26 +3,27 @@
  *
  * The pool logic (residency wela/anu + pin, LRU, placeWikiVerb, diskMirror,
  * handshakes) lives once in @lararium/mesh `VesselIslandPoolCore`. This file
- * supplies only the node platform host: worker_threads worker spawn, a
- * worker_threads MessageChannel, and per-wiki NodeFS storage. The TW5Engine
+ * supplies only the node platform host: worker_threads worker spawn and a
+ * worker_threads MessageChannel. No island it spawns keeps a store: the vessel's
+ * Repo rests every document once, and each island relays through it. The TW5Engine
  * lives inside the Worker thread; the vessel holds no engine reference
  * (no-VM-on-main-thread).
  *
  * Meme: lar:///ha.ka.ba/lararium/node/vessel-island-pool
  */
 
-import { join } from "path";
 import {
   VesselIslandPoolCore, houseCanonSlugsSeated,
   type Repo,
   type IslandMsg_Event,
   type LarIslandToVesselMsg,
-  type IslandStorageConfig,
   type WikiRecipe,
   type PortIslandToVesselMsg,
   type CapabilityRecord,
   type LarDoc,
+  type WikiMountSpec,
 } from "@lararium/mesh";
+import { islandStoreDir, islandStoreLeftLine } from "./island-store-left.js";
 import { floorShadowFileStore } from "./floor-shadow-file.js";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
@@ -64,7 +65,7 @@ export interface VesselIslandPoolOptions {
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
-  /** Root dir for island-owned NodeFS storage partitions; absent = memory-only. */
+  /** The vessel's store dir: the floor shadow tally rests beside it. No island this pool spawns keeps a store there. */
   storageRoot?: string;
   /** The vessel's ONE runtime `cid/` dir, handed at construction: the pool's content reader and every island it spawns read it. */
   cidDir?: string;
@@ -96,6 +97,10 @@ export interface VesselIslandPoolOptions {
 
 /** Node island pool: VesselIslandPoolCore configured with a worker_threads host. */
 export class VesselIslandPool extends VesselIslandPoolCore {
+  readonly #storageRoot: string | null;
+  /** Each left island store this pool has named, so a remount names nothing twice. */
+  readonly #named = new Set<string>();
+
   constructor(options: VesselIslandPoolOptions) {
     const workerUrl   = options.workerScriptUrl ?? DEFAULT_WORKER_URL;
     const storageRoot = options.storageRoot ?? null;
@@ -104,8 +109,6 @@ export class VesselIslandPool extends VesselIslandPoolCore {
       host: {
         spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps, casData)),
         newSyncChannel: nodeNewSyncChannel,
-        storage: (wikiId): IslandStorageConfig | undefined =>
-          storageRoot ? { type: "nodefs", dir: join(storageRoot, _sanitizeWikiId(wikiId)) } : undefined,
       },
       mainRepo: options.mainRepo ?? null,
       readContent: nodeContentReader(options.cidDir ?? null, options.caps),
@@ -124,10 +127,20 @@ export class VesselIslandPool extends VesselIslandPoolCore {
       ...(options.mountStallMs         !== undefined ? { mountStallMs:         options.mountStallMs }         : {}),
       ...(options.maxMountFailures     !== undefined ? { maxMountFailures:     options.maxMountFailures }     : {}),
     });
+    this.#storageRoot = storageRoot;
+  }
+
+  /** A wiki's first mount names the island store an older composition left for it (`island-store-left`), once. */
+  override mountWiki(wikiId: string, spec: WikiMountSpec, opts: { pinned?: boolean } = {}): Promise<void> {
+    if (this.#storageRoot) {
+      const dir = islandStoreDir(this.#storageRoot, wikiId);
+      if (!this.#named.has(dir)) {
+        this.#named.add(dir);
+        const line = islandStoreLeftLine(dir);
+        if (line) console.warn(line);
+      }
+    }
+    return super.mountWiki(wikiId, spec, opts);
   }
 }
 
-/** Convert a lar: URI to a safe filesystem path component. */
-function _sanitizeWikiId(wikiId: string): string {
-  return wikiId.replace(/^lar:\/\/\//, "").replace(/[^a-zA-Z0-9@._-]/g, "_");
-}

@@ -10,7 +10,7 @@ function deps(find: () => Promise<string>): SlotWaitDeps<string> {
     lastHeard: () => 0,
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     defer: async () => {},
-    budgets: { silenceMs: 8_000, hardCapMs: 60_000, pollMs: 250 },
+    budgets: { verdictGraceMs: 8_000, hardCapMs: 60_000, pollMs: 250 },
   };
 }
 
@@ -42,12 +42,16 @@ describe("slot wait wakes on document readiness", () => {
     expect(result).not.toHaveBeenCalled();
   });
 
-  test("silence and refusal retain their named outcomes", async () => {
+  test("silence ends nothing before the hard cap, which names itself; a refusal keeps its name", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(0);
+    const result = vi.fn();
     const silent = waitForSlotDocument(deps(() => new Promise<string>(() => {})));
+    void silent.then(result);
     await vi.advanceTimersByTimeAsync(8_000);
-    expect(await silent).toEqual({ outcome: "never-arrived", silentMs: 8_000, elapsedMs: 8_000, storeReads: 0 });
+    expect(result).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(52_000);
+    expect(await silent).toEqual({ outcome: "hard-cap", phase: "asked", elapsedMs: 60_000, storeReads: 0 });
 
     const refused = waitForSlotDocument(deps(() => Promise.reject(new Error("invalid address"))));
     await vi.advanceTimersByTimeAsync(250);

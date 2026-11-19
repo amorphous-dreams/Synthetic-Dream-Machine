@@ -2541,8 +2541,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // shared with the daemon VM's own resolution above) and is read fresh per mount.
       vmManager = new BrowserVesselIslandPool({
         mainRepo: repo,
-        // V2: a wiki island's store asks the vessel's sealed rest before it rests a byte (secret home, face-sealed documents).
-        restsSealed: (documentId) => sealedRest.restsSealed(documentId),
         // D4 lends the actor grant; this vessel opens a read-only port until then.
         portPolicy: opts.portPolicy ?? ((binding, islandKey) => pagePortGrant({ binding, islandKey, faceId: portFaceId, daemonKey: DAEMON_SURFACE_ID })),
         ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),

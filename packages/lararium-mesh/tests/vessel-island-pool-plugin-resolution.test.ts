@@ -98,7 +98,6 @@ function recordingHost(): { host: VesselIslandHost; manifests: Map<string, Islan
       };
     },
     newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
-    storage: () => undefined,
   };
   return { host, manifests };
 }
