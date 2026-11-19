@@ -8,7 +8,7 @@
  * and host-neutral (node and browser import it alike), and it ports the pure half of `$tw.Tiddler` and the filesystem
  * adaptor's type selection, the way the fork's `makeTw5FileInfo` (`@lararium/tw5`) reads them:
  *   - a `Tiddler` constructor skips an undefined or null field and parses the four boot field modules (`created` and
- *     `modified` through `parseDate`, `tags` and `list` through `parseStringArray`); a field whose parse answers null
+ *     `modified` through `parseDate`, `tags` and `list` through `parseTitleList`); a field whose parse answers null
  *     stores null and stringifies empty;
  *   - `getFieldString` stringifies a date as UTC `YYYYMMDDHHMMSSmmm`, a list through `stringifyList` (an entry holding
  *     whitespace other than U+00A0 in `[[…]]`), anything else through `toString`;
@@ -55,8 +55,15 @@ function stringifyDate(d: Date): string {
   return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}${pad(d.getUTCMilliseconds(), 3)}`;
 }
 
-/** `$tw.utils.parseStringArray` (duplicates dropped): a bracketed list string to an array; an array stays; anything else null. */
-function parseStringArray(value: unknown): readonly string[] | null {
+/** The title-list fields the boot field modules parse (`tags`, `list`): a string in the store, an array in the engine. */
+export const TITLE_LIST_FIELDS: readonly string[] = ["tags", "list"];
+
+/**
+ * `$tw.utils.parseStringArray` (duplicates dropped): a bracketed list string to an array; an array stays; anything else
+ * null. The carrier's meta render (`@lararium/tw5` deserializer) reads a title-list field through it too, so a record's
+ * `tags` writes one TOML array whether it arrives as the store's string or the engine's array.
+ */
+export function parseTitleList(value: unknown): readonly string[] | null {
   if (typeof value === "string") {
     const memberRegExp = /(?:^|[^\S\xA0])(?:\[\[(.*?)\]\])(?=[^\S\xA0]|$)|([\S\xA0]+)/mg;
     const results: string[] = [];
@@ -81,7 +88,7 @@ function tiddlerFields(fields: CarrierFields): Array<[string, unknown]> {
   for (const k of Object.keys(fields)) {
     const v = fields[k];
     if (v === undefined || v === null) continue;
-    out.push([k, k === "created" || k === "modified" ? parseDate(v) : k === "tags" || k === "list" ? parseStringArray(v) : v]);
+    out.push([k, k === "created" || k === "modified" ? parseDate(v) : TITLE_LIST_FIELDS.includes(k) ? parseTitleList(v) : v]);
   }
   return out;
 }
@@ -90,7 +97,7 @@ function tiddlerFields(fields: CarrierFields): Array<[string, unknown]> {
 function fieldString(name: string, value: unknown): string {
   if (value === undefined || value === null) return "";
   if (name === "created" || name === "modified") return stringifyDate(value as Date);
-  if (name === "tags" || name === "list") return stringifyList(value as readonly unknown[]);
+  if (TITLE_LIST_FIELDS.includes(name)) return stringifyList(value as readonly unknown[]);
   return String(value);
 }
 
