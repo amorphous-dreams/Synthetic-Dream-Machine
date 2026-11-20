@@ -4,7 +4,7 @@
  * CLI's `lares watch` fills the wave with its INGEST settle; the vessel fills it over the WORN face's pool.
  *
  * THE VESSEL'S HOST (`armFacePoolWatch`) watches one face root, `projections/faces/<pet name>/`, and its planes alone:
- * `wiki/`, `canon/`, `stage/` (the kahua stage flows back from disk too: RULED floor 4 (b)), `personal/`, `recovery/`. It
+ * `wikis/daemon/`, `bags/daemon/`, `bags/kahua/` (the kahua stage flows back from disk too: RULED floor 4 (b)), `personal/`, `recovery/`. It
  * lives the life of the composition that wears the face:
  *
  *   arm    OFF THE BOOT PATH: the arm hands back at once, and its work runs beside the boot. It names the wake first (every
@@ -30,7 +30,7 @@
 import { watch as fsWatch, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, type FSWatcher, type WatchListener } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { isAbsolute, join, sep } from "node:path";
-import { FACE_PLANES, POOL_EXCLUDE_OPEN, REALM_EXCLUDE_LINES, WORKSPACE_EXCLUDE_LINES, TEMP_LAYER_DIR, houseExcludeLines, houseIgnored, siteFileToTitle, withExcludeBlock } from "./bag-paths.js";
+import { FACE_PLANES, facePlaneOf, facePlaneSiteDir, POOL_EXCLUDE_OPEN, REALM_EXCLUDE_LINES, WORKSPACE_EXCLUDE_LINES, TEMP_LAYER_DIR, houseExcludeLines, houseIgnored, siteFileToTitle, withExcludeBlock } from "./bag-paths.js";
 import { ensurePoolTree, poolTreeLine } from "./pool-tree.js";
 
 // ── the drain seat ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -135,7 +135,9 @@ export function cookieSelfTest(dir: string, watcher: FSWatcher, windowMs: number
 
 // ── the pool's git history ─────────────────────────────────────────────────────────────────────────────────────
 
-/** The planes of a face root the host watches, commits and reads the wake from. `temp/` places back as files, never here. */
+/** The planes of a face root the host watches, commits and reads the wake from, each a posix path under the root (`FACE_PLANES`):
+ *  the daemon wiki `wikis/daemon`, its canon `bags/daemon`, the kahua stage `bags/kahua`, `personal` and `recovery`. `temp/`
+ *  places back as files, never here. */
 export const WATCHED_PLANES: readonly string[] = [FACE_PLANES.wiki, FACE_PLANES.canon, FACE_PLANES.stage, FACE_PLANES.personal, FACE_PLANES.recovery];
 
 /** The subject every sitting's close commits under: a `lar:` subject that names the close and never a face. */
@@ -267,7 +269,7 @@ export function stageEditsSinceSitting(pool: string, git: GitRun = runGit): Stag
 function stageTitle(pool: string, file: string): string {
   const abs = join(pool, ...file.split("/"));
   try {
-    const sited = siteFileToTitle({ planeDir: pool, titlePaths: true }, abs);
+    const sited = siteFileToTitle({ planeDir: facePlaneSiteDir(pool, "stage"), titlePaths: true }, abs);
     if ("title" in sited) return sited.title;
   } catch { /* a removed file reads by its path */ }
   return file.slice(FACE_PLANES.stage.length + 1).replace(/\.[^./]+$/, "");
@@ -333,7 +335,7 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
     root: o.pool, ports: o.ports, ...(o.settleMs !== undefined ? { settleMs: o.settleMs } : {}),
     log: o.log ?? ((line: string) => console.log(`[faces] ${line}`)),
     ...(o.watch ? { watch: o.watch } : {}), ...(o.cookie ? { cookie: o.cookie } : {}),
-    accepts: (rel) => WATCHED_PLANES.includes(rel.split("/")[0] ?? "") && rel.includes("/"),
+    accepts: (rel) => { const plane = facePlaneOf(rel); return plane !== null && WATCHED_PLANES.includes(FACE_PLANES[plane]) && rel.length > FACE_PLANES[plane].length; },
     prepare: (log) => {
       if (o.owner !== undefined) { const founded = poolTreeLine(ensurePoolTree(o.pool, { face: o.owner })); if (founded !== null) log(founded); }
       const line = tendingLine("the face pool", tendPoolExclude(o.pool, [], git)); if (line !== null) log(line);

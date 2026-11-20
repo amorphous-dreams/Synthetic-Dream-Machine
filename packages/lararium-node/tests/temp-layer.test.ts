@@ -127,7 +127,7 @@ describe("the consent grant", () => {
     const base = { projectionRoot: "/p", canonBags: "/canon", face: { relation: face, segment: "Heron" } };
     expect(daemonDiskMirrors(base).some((m) => m.bagId === wikiSlotUri("daemon", "temp"))).toBe(false);
     const temp = daemonDiskMirrors({ ...base, temp: true }).find((m) => m.bagId === wikiSlotUri("daemon", "temp"));
-    expect(temp).toMatchObject({ mirrorRoot: "/p/faces/Heron/wiki/temp", mirrorClass: "recovery", tempLayer: true });
+    expect(temp).toMatchObject({ mirrorRoot: "/p/faces/Heron/wikis/daemon/temp", mirrorClass: "recovery", tempLayer: true });
   });
 });
 

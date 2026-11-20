@@ -76,7 +76,7 @@ runSovereignWorker((manifest) => {
   // ONE cap-gated seedDaemonProtocol (onEa) then seeds this vessel's FULL enactable flow-set (all three)
   // plus the Ui/Persona/Circle seeds, from the single site, into the daemon wiki's shadow layer. This entry seeds nothing of its own.
   const base = makeOperatorDaemonBehavior(manifest, {
-    // The daemon wiki projects to `<projections>/faces/<pet name>/wiki/` through the same projector a wiki island mounts: its working
+    // The daemon wiki projects to `<projections>/faces/<pet name>/wikis/daemon/` through the same projector a wiki island mounts: its working
     // layer's records reach disk, and the control document, which no recipe composes and no mirror names, never does; the
     // option also lights the daemon's projection cap.
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal }),

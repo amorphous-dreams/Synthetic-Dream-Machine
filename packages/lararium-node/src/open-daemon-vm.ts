@@ -105,7 +105,7 @@ export interface DaemonVmOptions {
   casData?:          IslandCasData;
   /** D-VR-C: persist only the explicit daemon document in its owned scope. */
   ownedDocument?:    boolean;
-  /** The house's projections root (`<root>/projections`): `faces/<pet name>/wiki/` receives the daemon wiki's working layer. */
+  /** The house's projections root (`<root>/projections`): `faces/<pet name>/wikis/daemon/` receives the daemon wiki's working layer. */
   projectionRoot?:   string;
   /** Override the daemon island script URL (tests). */
   workerScriptUrl?:  URL;
@@ -209,7 +209,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
       storage: { type: "nodefs" as const, dir: join(storageDir!, "daemon-owned") },
     } } : {}),
     // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the worn face's root `<projections>/faces/<pet name>/` (its daemon
-    // working top under `wiki/`, its daemon canon under `canon/`, its kahua stage under `stage/`), crossroads back to its canon
+    // working top under `wikis/daemon/`, its daemon canon under `bags/daemon/`, its kahua stage under `bags/kahua/`), crossroads back to its canon
     // source where one stands; the control document and the daemon document hold none. The pet name names the folder (it carries
     // across a re-found), the verified founding relation the bags; no daemon mount projects no private layer.
     ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), face: faceRelation && faceSegment ? { relation: faceRelation, segment: faceSegment } : null, canon: canonBag !== undefined, temp: tempMirror }) } : {}),

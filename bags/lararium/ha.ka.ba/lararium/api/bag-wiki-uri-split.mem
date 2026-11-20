@@ -35,7 +35,7 @@ A meme moves between bags freely, or lives in several at once. Bag identity NEVE
 
 The two disk planes carry the two STATES of a meme:
 
-* ''`wikis/{slug}`'' — the LIVE wiki. The operator edits here; a live edit projects to the wiki's workbench folder under its realm root, `realms/<realm pet name>/wikis/{slug}/…` (`wikisFileToUri`), or the workspace its share row names; the daemon wiki's rests in its face's root, `faces/<pet name>/wiki/`. `wiki init` stamps no projection field on the canon row: the realm placement names the folder.
+* ''`wikis/{slug}`'' — the LIVE wiki. The operator edits here; a live edit projects to the wiki's workbench folder under its realm root, `realms/<realm pet name>/wikis/{slug}/…` (`wikisFileToUri`), or the workspace its share row names; the daemon wiki's rests in its face's root, `faces/<pet name>/wikis/daemon/`. `wiki init` stamps no projection field on the canon row: the realm placement names the folder.
 * ''`bags/{slug}`'' — the CANONICAL bag. Published content, projecting to the `/bags/{slug}/…` tree (`bagsFileToUri`).
 * ''The MOVE makes the shore.'' The operator promotes a tiddler from the live wiki to the canonical bag of the same name; the projector re-projects it `/wikis/ → /bags/` (tiddler-store canon-promotion, `wiki-layer-ontology#shore-law`). Which state holds a meme reads from its URI alone.
 
@@ -90,6 +90,6 @@ Two maps, cleanly separated — each the operator's own, never a registry of oth
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — separates floor records from vessel pointers
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model`>> — places system floor beneath writable recipe layers
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;G4fCv3pvgQstUCACwLVpvlvCbBUv4y4_NsM81zuUaJg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UygrXR9tXjVSq9FPSIlan4vCjhNWya7_gIfR1EMLkLA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

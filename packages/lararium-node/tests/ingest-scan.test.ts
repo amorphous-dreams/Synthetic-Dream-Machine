@@ -5,7 +5,7 @@
  * So the vessel's watch over the worn face's pool lands an edit as an UNATTENDED INGEST wave by itself, with no `take-disk`.
  *
  *   I1 a vessel-side caller scans a face pool, builds candidates, and submits one unattended INGEST wave per granted plane
- *      through the port: a plain-title edit under `wiki/` lands in the daemon working bag, a loci `.mem` edit under `canon/`
+ *      through the port: a plain-title edit under `wikis/daemon/` lands in the daemon working bag, a loci `.mem` edit under `bags/daemon/`
  *      in the face's canon bag; each landed carrier pins its base, so the next wave over the same bytes submits nothing
  *   I2 a carrier that stands off (both moved) submits once and then goes to the shore's sense by name: it stays a stand-off
  *   I3 a vanished file tombstones nothing: no deletion rides, and the shore's whole look runs (it stands pending there)
@@ -75,9 +75,9 @@ function shore() {
 
 describe("I1 — a vessel-side caller lands pool edits through the submit port", () => {
   test("a plain-title wiki edit and a loci canon .mem edit each ride one unattended wave to their plane's bag, then pin", async () => {
-    const plain = put("wiki/My Notes.tid", tid("My Notes", "the new words"));
+    const plain = put("wikis/daemon/My Notes.tid", tid("My Notes", "the new words"));
     agreed(WORKING, "My Notes", plain, tid("My Notes", "the old words"));
-    const pond = put("canon/ha.ka.ba/notes/pond.mem", mem("lar:///ha.ka.ba/notes/pond", "a heron stands"));
+    const pond = put("bags/daemon/ha.ka.ba/notes/pond.mem", mem("lar:///ha.ka.ba/notes/pond", "a heron stands"));
     agreed(CANON, "lar:///ha.ka.ba/notes/pond", pond, mem("lar:///ha.ka.ba/notes/pond", "the pond stood empty"));
     const { waves, submit } = island();
     const { looks, sense } = shore();
@@ -89,8 +89,8 @@ describe("I1 — a vessel-side caller lands pool edits through the submit port",
     const canon = waves.find((w) => w.toBag === CANON)!;
     expect(wiki.unattended).toBe(true);
     expect(canon.unattended).toBe(true);
-    expect(wiki.source).toBe(join(pool, "wiki"));
-    expect(canon.source).toBe(join(pool, "canon"));
+    expect(wiki.source).toBe(join(pool, "wikis", "daemon"));
+    expect(canon.source).toBe(join(pool, "bags", "daemon"));
     expect(wiki.candidates.map((c) => [c.uri, c.status])).toEqual([["My Notes", "changed"]]);
     expect(canon.candidates.map((c) => [c.uri, c.status])).toEqual([["lar:///ha.ka.ba/notes/pond", "changed"]]);
     expect(wiki.deletions ?? []).toEqual([]);
@@ -107,7 +107,7 @@ describe("I1 — a vessel-side caller lands pool edits through the submit port",
 
 describe("I2 — a stand-off stays at the shore", () => {
   test("a carrier the island answers `conflict` goes to the shore's sense by name and pins no base", async () => {
-    const plain = put("wiki/My Notes.tid", tid("My Notes", "the disk's words"));
+    const plain = put("wikis/daemon/My Notes.tid", tid("My Notes", "the disk's words"));
     agreed(WORKING, "My Notes", plain, tid("My Notes", "the old words"));
     const { waves, submit } = island(() => "conflict");
     const { looks, sense } = shore();
@@ -120,7 +120,7 @@ describe("I2 — a stand-off stays at the shore", () => {
 
 describe("I3 — a vanished file tombstones nothing", () => {
   test("no deletion rides; the shore's whole look runs", async () => {
-    const gone = join(pool, "wiki", "Gone Note.tid");
+    const gone = join(pool, "wikis", "daemon", "Gone Note.tid");
     agreed(WORKING, "Gone Note", gone, tid("Gone Note"));
     const { waves, submit } = island();
     const { looks, sense } = shore();
@@ -154,7 +154,7 @@ function fakeWatch() {
 }
 
 describe("I5 — the watch core's wave lands a pool edit by itself", () => {
-  test("an edit under wiki/ reaches the island as an unattended INGEST wave, no take-disk", async () => {
+  test("an edit under wikis/daemon/ reaches the island as an unattended INGEST wave, no take-disk", async () => {
     const { waves, submit } = island();
     const { sense } = shore();
     const { watch, fire } = fakeWatch();
@@ -163,8 +163,8 @@ describe("I5 — the watch core's wave lands a pool edit by itself", () => {
       ports: { ...is.poolIngestPorts({ pool, bags: { wiki: WORKING }, submit, sense, did: "did:vessel", tree: () => tree, log: () => {} }), commit: async () => ({ committed: false, why: "nothing-moved" }) },
     });
     expect(await host.armed).toBe("live");
-    const plain = put("wiki/Fresh Note.tid", tid("Fresh Note", "typed in an editor"));
-    fire("wiki/Fresh Note.tid");
+    const plain = put("wikis/daemon/Fresh Note.tid", tid("Fresh Note", "typed in an editor"));
+    fire("wikis/daemon/Fresh Note.tid");
     for (let i = 0; i < 50 && !waves.some((w) => w.candidates.some((c) => c.uri === "Fresh Note")); i++) await new Promise((r) => setTimeout(r, 10));
     const landed = waves.find((w) => w.candidates.some((c) => c.uri === "Fresh Note"));
     expect(landed?.unattended).toBe(true);
@@ -178,13 +178,13 @@ describe("I6 — the island submit answers the settle's result shape", () => {
   test("a done answer carries the summary; a refusal reads as an error with the island's words", async () => {
     const asked: Array<{ verb: string; args: Record<string, unknown> }> = [];
     const ok = is.islandIngestSubmit(async (verb, args) => { asked.push({ verb, args }); return { carriers: [] }; });
-    const row = { file: join(pool, "wiki", "A.tid"), uri: "A", text: tid("A"), diskHash: carrierHash(tid("A")), syncedHash: null, status: "new" as const, ext: ".tid" };
-    const done = await ok({ source: join(pool, "wiki"), toBag: WORKING, candidates: [row], did: "did:vessel", unattended: true });
+    const row = { file: join(pool, "wikis", "daemon", "A.tid"), uri: "A", text: tid("A"), diskHash: carrierHash(tid("A")), syncedHash: null, status: "new" as const, ext: ".tid" };
+    const done = await ok({ source: join(pool, "wikis", "daemon"), toBag: WORKING, candidates: [row], did: "did:vessel", unattended: true });
     expect(done.status).toBe("done");
     expect(done.results?.[VERB_RESULT_KEY]?.output).toEqual({ carriers: [] });
     expect(asked[0]!.verb).toBe("INGEST");
     const refused = is.islandIngestSubmit(async () => { throw new IslandVerbRefused("INGEST", "disk-wave-placement: no mirror"); });
-    const err = await refused({ source: join(pool, "wiki"), toBag: WORKING, candidates: [row], did: "did:vessel" });
+    const err = await refused({ source: join(pool, "wikis", "daemon"), toBag: WORKING, candidates: [row], did: "did:vessel" });
     expect(err.status).toBe("error");
     expect(err.errorMessage).toMatch(/disk-wave-placement/);
   });
@@ -192,8 +192,8 @@ describe("I6 — the island submit answers the settle's result shape", () => {
 
 describe("I9 — a derived render fails no wave", () => {
   test("a `derived` row reads accounted for: the verdict holds, nothing stays owed, no base pins, and a row that warns gets named with its words", async () => {
-    const render = put("wiki/road.html", "<p>hand edit</p>");
-    const quiet = put("wiki/echo.html", "<p>noted</p>");
+    const render = put("wikis/daemon/road.html", "<p>hand edit</p>");
+    const quiet = put("wikis/daemon/echo.html", "<p>noted</p>");
     const warning = "\"road.html\" stands as the render of \"Road\"; this file's edit lands nothing: edit \"Road\"; this render follows";
     const rows = [render, quiet].map((file) => ({ file, uri: file.endsWith("road.html") ? "road.html" : "echo.html", text: readFileSync(file, "utf8"), diskHash: carrierHash(readFileSync(file, "utf8")), syncedHash: null, status: "new" as const, ext: ".html" }));
     const submit = async () => ({
@@ -203,7 +203,7 @@ describe("I9 — a derived render fails no wave", () => {
         { uri: "echo.html", decision: "derived", rung: "source-stands", source: "Road" },
       ] } } },
     });
-    const settled = await is.settleIngest({ source: join(pool, "wiki"), toBag: WORKING, candidates: rows, did: "did:vessel" }, tree, submit);
+    const settled = await is.settleIngest({ source: join(pool, "wikis", "daemon"), toBag: WORKING, candidates: rows, did: "did:vessel" }, tree, submit);
     expect(is.ingestVerdict(settled)).toEqual({ failed: false, message: null });
     expect(settled.unanswered).toEqual([]);
     expect([...settled.landed].sort()).toEqual(["echo.html", "road.html"]);
@@ -218,9 +218,9 @@ describe("I9 — a derived render fails no wave", () => {
 
 describe("I7 — the INGEST args the port sends", () => {
   test("source, bag, change id, unattended, and each carrier inline with its hashes", () => {
-    const row = { file: join(pool, "wiki", "A.tid"), uri: "A", text: tid("A"), diskHash: carrierHash(tid("A")), syncedHash: null, status: "new" as const, ext: ".tid" };
-    const args = is.ingestWaveArgs({ source: join(pool, "wiki"), toBag: WORKING, candidates: [row], did: "did:vessel", unattended: true, changeId: "c1" });
-    expect(args["source-uri"]).toBe(join(pool, "wiki"));
+    const row = { file: join(pool, "wikis", "daemon", "A.tid"), uri: "A", text: tid("A"), diskHash: carrierHash(tid("A")), syncedHash: null, status: "new" as const, ext: ".tid" };
+    const args = is.ingestWaveArgs({ source: join(pool, "wikis", "daemon"), toBag: WORKING, candidates: [row], did: "did:vessel", unattended: true, changeId: "c1" });
+    expect(args["source-uri"]).toBe(join(pool, "wikis", "daemon"));
     expect(args["to-bag"]).toBe(WORKING);
     expect(args["change-id"]).toBe("c1");
     expect(args["unattended"]).toBe(true);

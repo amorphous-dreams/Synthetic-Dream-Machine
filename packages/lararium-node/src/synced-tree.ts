@@ -21,7 +21,7 @@
  * scan + re-diff against this tree; no journal replay.
  *
  * ONE FILE PER ROW, MANY WRITERS. Every projector in the vessel shares this tree: the
- * daemon island mirrors faces/<pet name>/{wiki,canon,stage} + bags/crossroads, each wiki island mirrors
+ * daemon island mirrors faces/<pet name>/{wikis/daemon,bags/daemon,bags/kahua} + bags/crossroads, each wiki island mirrors
  * its recipe's bags, and the CLI's ingest gesture records what it landed. They live in
  * separate workers and separate processes. The tree rests as a DIRECTORY, one file per
  * row, each named by its carrier and its path and written whole (a temp file in the same
@@ -55,7 +55,7 @@
  */
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, readdirSync, unlinkSync, statSync } from "fs";
-import { join, resolve } from "path";
+import { join, resolve, sep } from "path";
 import { randomBytes } from "crypto";
 import { tagDigest, formatDigest, sha256HexSync } from "@lararium/mesh";
 
@@ -365,6 +365,28 @@ export class SyncedTree {
   }
 
   private shadowTree: SyncedTree | null = null;
+
+  /**
+   * A FOLDER MOVED WHOLE, ITS AGREEMENTS WITH IT: every base standing at or below `from` (this tree's rows and its shadows')
+   * re-stands at the same place below `to`, its two hashes and its document kept, and leaves its old path. A heal that moves a
+   * face's folders onto their shelves (`shelveFaceRoot`) calls it, so no file reads as vanished from where it stood and none as
+   * never agreed where it now stands. Answers how many rows moved.
+   */
+  movePaths(from: string, to: string): number {
+    return this.moveOwnPaths(from, to) + this.shadows().moveOwnPaths(from, to);
+  }
+
+  private moveOwnPaths(from: string, to: string): number {
+    const src = syncedPath(from), dst = syncedPath(to);
+    let moved = 0;
+    for (const { key, base } of [...this.map.values()]) {
+      if (base.path !== src && !base.path.startsWith(src + sep)) continue;
+      this.set(key, dst + base.path.slice(src.length), base.disk, base.records, base.doc);
+      this.deleteAt(key, base.path);
+      moved++;
+    }
+    return moved;
+  }
 
   /** Every row the tree holds: the carrier's bag and address beside its base. */
   rows(): Array<{ readonly bagId: string; readonly uri: string; readonly base: SyncedBase }> {

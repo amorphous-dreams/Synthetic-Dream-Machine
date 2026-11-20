@@ -395,7 +395,7 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     assert.ok(said.includes(`memes changed default ${KITE}`), said.join("\n"));
     assert.ok(said.includes("shares missing wiki notes"), said.join("\n"));
     // The delete raises a kāpae over the meme in the steward's working layer, and its shadow reads as the delete's own mark.
-    assert.ok(said.includes(`kapae extra faces/steward/wiki ${POND}`), said.join("\n"));
+    assert.ok(said.includes(`kapae extra faces/steward/wikis/daemon ${POND}`), said.join("\n"));
     assert.equal(said.length, 4, `the three planted faults and the delete's kāpae read red, and nothing else:\n${said.join("\n")}`);
   } finally {
     for (const h of houses) await h.stop();
