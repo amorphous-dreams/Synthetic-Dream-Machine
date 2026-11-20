@@ -73,6 +73,12 @@ export interface UdsChannelOptions {
   readonly mountOrdinal?: () => number | null;
   /** THE LENT SET: the faces the holder names open (under a pūlama, the set it lends). An AI seat names a face inside it (`seat-hand`). */
   readonly lentOrdinals?: () => Promise<readonly number[]>;
+  /** EACH HAT REACHED BY NAME: the sibling faces lit beside the mount (their ordinals). A session wearing one carries its own
+   *  lane's chores (`FACE_LANE_CHORES`) as itself; every other chore still refuses `chore-face-not-mounted`. Absent: none lit. */
+  readonly litOrdinals?: () => readonly number[];
+  /** The bare atom key of the lit SIBLING a session's verified presenter names, or undefined (the mount, or a face not lit):
+   *  the session's signer books under that key, so the island reads that face's own chain and seals through its own holder. */
+  readonly siblingFaceOf?: (presenter: string) => string | undefined;
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
   readonly switchActs?: SwitchActLog;
   /**
@@ -1102,7 +1108,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       state.supply = supplied.supply;
       state.signer = minted.signer;
       // P2-4: the session stands seated while its signer stands, so a change written with no call in flight books it.
-      opts.signers?.seat({ signer: minted.signer, anchor: supplied.supply.anchor, subject: opened.session.face.proofSubject });
+      const seatFace = opts.siblingFaceOf?.(supplied.supply.presenter);
+      opts.signers?.seat({ signer: minted.signer, anchor: supplied.supply.anchor, subject: opened.session.face.proofSubject, ...(seatFace !== undefined ? { face: seatFace } : {}) });
       sessionReply(sock, { kind: "session:opened", requestId, ownerEpoch: opened.session.ownerEpoch,
         sessionId: opened.session.sessionId, generation: opened.session.generation,
         faceRef: opened.session.face.proofSubject, caps: opened.session.caps });
@@ -1147,6 +1154,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     // `actingFaceOf` before any signer books or anything places; one wearing another lent face refuses by name, naming both.
     const mount = mountOf();
     const chore = choreAtDoor({ verb: frame["verb"], face: state.supply.ordinal, mount, lent: mount !== null && isChore(frame["verb"]) ? await lentOf() : null,
+      lit: opts.litOrdinals?.() ?? [],
       hand: state.hand ?? "cli", session: checked.session.sessionId, generation: checked.session.generation });
     if (chore !== null && !chore.ok) return sessionRefuse(sock, chore.refusal, requestId, chore.message);
     const args = frame["args"] as Record<string, unknown>;
@@ -1154,7 +1162,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     // THE SIGN DOOR'S BOOKING: the daemon island signs a sealed record through the session that placed this call, for
     // the call's life and under its verb alone; the booking drops when the call concludes or its socket goes.
     const release = opts.signers && state.signer && state.supply
-      ? opts.signers.hold(faceScopedId(face, requestId), frame["verb"], { signer: state.signer, anchor: state.supply.anchor, subject: face })
+      ? opts.signers.hold(faceScopedId(face, requestId), frame["verb"], { signer: state.signer, anchor: state.supply.anchor, subject: face,
+        ...((): { face?: string } => { const key = opts.siblingFaceOf?.(state.supply!.presenter); return key !== undefined ? { face: key } : {}; })() })
       : () => {};
     await new Promise<void>((resolve) => {
       const closed = () => resolve();

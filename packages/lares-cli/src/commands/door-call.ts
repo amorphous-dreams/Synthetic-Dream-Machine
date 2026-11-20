@@ -7,7 +7,8 @@
  */
 
 import { vesselDid } from "../env.js";
-import { runVerb, verbFailure } from "../verb-call.js";
+import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
+import { faceOption, FaceOptionMalformed } from "../face-option.js";
 import { readVerbOutcome } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -43,12 +44,17 @@ export function namesOf(raw: string | undefined): string[] | null {
  * the code leads the message, so a script branches on it.
  */
 export async function runDoor(args: ParsedArgs, label: string, plan: DoorPlan): Promise<{ ok: true; requestId: string; output: Record<string, unknown> } | { ok: false; exit: number }> {
-  const result = await runVerb(plan.verb, plan.args, await vesselDid());
+  // EACH HAT REACHED BY NAME: `--face N` rides a session of face N (the island answers the mount's engine alone for now, so a
+  // lit sibling refuses by name there); with none, the one-shot acts for the worn face.
+  let face: { face?: number };
+  try { face = faceOption(args); }
+  catch (error) { if (error instanceof FaceOptionMalformed) throw new DoorUsage(error.message); throw error; }
+  const result = face.face === undefined ? await runVerb(plan.verb, plan.args, await vesselDid()) : await runVerbAsFace(plan.verb, plan.args, face.face);
   const outcome = readVerbOutcome(result);
-  if (outcome.ok) return { ok: true, requestId: result.requestId, output: outcome.output };
+  if (outcome.ok) return { ok: true, requestId: result.requestId, output: face.face === undefined ? outcome.output : { ...outcome.output, face: face.face } };
   const message = outcome.error ?? "the verb refused";
   const named = /^([a-z][a-z0-9]*(?:-[a-z0-9]+)+):/.exec(message)?.[1];
-  const code = named === "cap-denied" ? "cap-denied" : "verb-error";
+  const code = named === "cap-denied" ? "cap-denied" : named === "face-not-open" ? "face-not-open" : "verb-error";
   emit(args, {
     ok: false, requestId: result.requestId,
     error: { code, message, ...(named && named !== "cap-denied" ? { hint: `refusal: ${named}` } : {}) },

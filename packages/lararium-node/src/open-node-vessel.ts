@@ -599,6 +599,10 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   dropFace: (ordinal: number) => Promise<void>;
   /** THE WORN FACE's ordinal (the mounted face, lit), or null at the floor: the AI seat acts as it alone (`seat-hand`). */
   mountOrdinal: () => number | null;
+  /** EACH HAT REACHED BY NAME: the ordinals of the sibling faces lit beside the mount, each with its own place session. */
+  litOrdinals: () => readonly number[];
+  /** The bare atom key of the lit sibling a verified presenter names (its place session stands), or undefined. */
+  siblingFaceOf: (presenter: string) => string | undefined;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
   /** Started event bus — ingress rings registered; tick loop running at 20 Hz (node substrate). */
   eventBus:  LarEventBusImpl;
@@ -794,6 +798,8 @@ interface NodeBootPrep {
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
   mountOrdinal: () => number | null;
+  litOrdinals: () => readonly number[];
+  siblingFaceOf: (presenter: string) => string | undefined;
   daemonVm:         () => DaemonVmCore;
   /** The host working layer's mount (slice 5b, red 3): the composition awaits it before it returns, so no caller mounts. */
   hostWorkingMounted: () => Promise<void>;
@@ -4981,6 +4987,9 @@ async function prepareNodeBootOn(
     openDaemon, wireVerbs, afterDaemon,
     realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
     lightFace: (ordinal) => lightFace(ordinal), dropFace, mountOrdinal: () => mountFace,
+    // A lit sibling counts once its own place session stands: its lane books under its own chain, or not at all.
+    litOrdinals: () => [...siblingFaces].filter(([group]) => siblingSessions.get(group)?.cell.session() != null).map(([, f]) => f.ordinal),
+    siblingFaceOf: (presenter) => { const key = bareFaceKey(presenter); return siblingOfFace(key) !== null ? key : undefined; },
     daemonVm:         () => daemonVm,
     hostWorkingMounted: () => mountHostWorking(),
     restartDaemonIsland: (reason) => daemonHolder.restart(reason),
@@ -5115,7 +5124,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
+    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),

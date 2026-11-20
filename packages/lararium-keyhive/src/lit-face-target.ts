@@ -3,12 +3,15 @@
  *
  * One seed lays every open face's memory, each in its own layer. A wave naming face h<N> resolves h<N>'s OWN document for the
  * target bag: its daemon canon by h<N>'s relation (`daemon-canon/<relation>`), and the daemon wiki's device slots at h<N>'s own
- * wear alone, the worn face's mounted layer. A SIBLING'S DAEMON SLOT OPENS NOTHING HERE: the island seals under the worn face's
- * session alone, so a document it stood for a sibling would refuse its seal (`session-face-foreign`), leave unsealed at the next
- * composition, and leave the control row naming a document no store holds; that face's own wear would then refuse to attach its
- * working layer. The wave refuses `face-unresolved`, and the seed names the face as waiting for its own wear. The answer carries
- * the document's OWNER as the control document names it, so the action handler lands the wave only where that owner is h<N>,
- * and never on the worn face. A face outside the lit set resolves nothing.
+ * wear alone, the worn face's mounted layer. EACH FACE SEALS UNDER ITS OWN CHAIN (face-seat-table): a lit sibling's session
+ * books its own face key, and its saves seal through its own content-key holder. A SIBLING'S DAEMON SLOT STILL OPENS NOTHING
+ * HERE: its working layer attaches at that face's own wear, and a slot document this island minted ahead of that wear would
+ * have to stand in the vessel's map and in that wear's attach as the same document; until a vector proves that crossing,
+ * the slot waits for the face's own wear. The wave refuses `face-unresolved`,
+ * and the seed names the face as waiting for its own wear. The answer carries the document's OWNER as the control document
+ * names it, so the action handler lands the wave only where that owner is h<N>, and never on the worn face. A face outside the
+ * lit set resolves nothing. The store door's per-face lane (`face-lane`) reaches a lit sibling's daemon canon through this
+ * same resolution.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */

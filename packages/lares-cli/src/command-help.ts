@@ -658,6 +658,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     flags: [
       "--recipe <slug>      the wiki read or written (this phase: default, the daemon mount's wiki)",
+      "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling's tiddler acts wait for its own engine and refuse by name)",
       "--slot <#/name>      (get) one slot of the meme the title names",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
       "--skinny             (get) every field, the text left home",
@@ -693,6 +694,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares meme patch lar:///ha.ka.ba/... --recipe lares --slot '#/x' --append note.txt --base <hash>  # one slot's body through the put's gate, resealed",
       "lares meme get road.html --recipe lares       # a rendered record (`projection: rendered` on its source): one read; its writes refuse rendered-derives, so edit the sources",
       "lares meme put lar:///ha.ka.ba/... --recipe lares --file note.mem     # land a framed meme through the gate",
+      "lares meme put lar:///ha.ka.ba/... --bag lar:///ha.ka.ba/bags/daemon-<relation> --face 1 --file note.mem   # a lit face writes its own lane, sealed by its own chain",
       "lares meme list --recipe lares --tree                                  # every root the wiki resolves, each slot tree nested",
       "lares meme list --bag lares                                            # every root that one bag holds",
       "lares meme delete lar:///ha.ka.ba/... --recipe lares --if-match <hash> # a stale base moves nothing",

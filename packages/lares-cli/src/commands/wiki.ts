@@ -20,9 +20,10 @@
  */
 
 import { vesselDid } from "../env.js";
-import { emit } from "../render.js";
+import { emit, exitFor } from "../render.js";
 import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-result.js";
-import { runVerb, verbFailure } from "../verb-call.js";
+import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
+import { faceOption, FaceOptionMalformed } from "../face-option.js";
 import { cmdShare } from "./share-cmd.js";
 import { ensureWikiRealm, LIVE_REALM_DOORS, placeWikiInRealm, type RealmDoors } from "./realm-doors.js";
 import { RealmRefused } from "@lararium/node";
@@ -55,21 +56,27 @@ async function call(
 }
 
 export async function cmdWikiList(args: ParsedArgs): Promise<number> {
-  // THE LIST RIDES THE MAINTENANCE FRAME, WHICH CARRIES NO FACE: a `--face` would read the mounted face's catalog under
-  // another face's name, so it refuses by name.
-  if (args.options["face"] !== undefined || args.flags["face"] !== undefined) {
-    const msg = "face-not-routed: `lares wiki list` rides the maintenance frame, which carries no face; it lists the wikis the vessel's daemon mount holds, so drop `--face`";
-    emit(args, { ok: false, error: { code: "face-not-routed", message: msg }, human: () => console.error(msg) });
+  // EACH HAT REACHED BY NAME: `--face N` lists through a session of face N (the island answers the mount's catalog alone for
+  // now, so a lit sibling refuses there by name); with none, the one-shot lists the worn face's. A shut face: `face-not-open`.
+  let named: { face?: number };
+  try { named = args.options["face"] === undefined && args.flags["face"] === undefined ? {} : faceOption(args); }
+  catch (error) {
+    if (!(error instanceof FaceOptionMalformed)) throw error;
+    emit(args, { ok: false, error: { code: "face-malformed", message: error.message }, human: () => console.error(error.message) });
     return 2;
   }
-  const did    = await vesselDid();
-  const r = await call("list-wikis", {}, did);
+  const r = named.face === undefined ? await call("list-wikis", {}, await vesselDid())
+    : await runVerbAsFace("list-wikis", {}, named.face).catch((err: unknown) => { const f = verbFailure(err); return { status: "error" as const, requestId: f.requestId ?? "", errorMessage: f.message }; });
   if (r.status === "error") {
     const msg = r.errorMessage ?? "unknown";
+    if (/^face-not-open:/.test(msg)) {
+      emit(args, { ok: false, requestId: r.requestId, error: { code: "face-not-open", message: msg }, human: () => console.error(msg) });
+      return exitFor("face-not-open");
+    }
     emit(args, { ok: false, requestId: r.requestId, error: msg, human: () => console.error(`list failed: ${msg}`) });
     return 4;
   }
-  const result = summaryOutput(r) ?? {};
+  const result = named.face === undefined ? summaryOutput(r) ?? {} : { ...(summaryOutput(r) ?? {}), face: named.face };
   const wikis = (result["wikis"] ?? []) as Array<{
     slug: string;
     uri: string;

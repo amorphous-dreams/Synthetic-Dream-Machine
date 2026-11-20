@@ -100,7 +100,8 @@ import { newChangeId } from "@lararium/mesh";
 import { faceSigningSeat, listFaceOrdinals, runPromoteCheckBytes } from "@lararium/node";
 import { vesselDid, larSealHome } from "../env.js";
 import { containerArgs } from "../container-target.js";
-import { runVerb, verbFailure } from "../verb-call.js";
+import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
+import { faceOption, FaceOptionMalformed } from "../face-option.js";
 import { storeVerb } from "../store-door.js";
 import { LocalWaitExpired } from "../local-connector.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
@@ -118,6 +119,8 @@ export interface MemePlan {
   readonly verb: "meme-put" | "meme-get" | "meme-list" | "meme-delete";
   /** The verb args as the daemon receives them — `text` joins on put once the body is read. */
   readonly args: Record<string, string>;
+  /** The face `--face N` names: the verb acts as that face, on a session of it. Absent: the worn face (the one-shot). */
+  readonly face?: number;
 }
 
 /** The targets `project --to` renders. `md` over a file seats local; every other pairing rides the daemon. */
@@ -141,40 +144,57 @@ type Sub = typeof SUBS[number];
 function usage(): void { for (const line of helpLines("meme")) console.error(line); }
 
 /**
- * THE STORE DOOR'S ONE-SHOT CARRIES NO FACE: a store verb reads and writes the daemon mount's seat, so a line naming `--face`
- * refuses `face-not-routed` rather than stand the mount in for the face it names.
+ * EACH HAT REACHED BY NAME (worn = the default reach · lit = reachable by name · shut = silent): `--face N` names the face a
+ * store verb acts as, and the verb rides a session of that face (`runVerbAsFace`), sealed by that face's own chain; with no
+ * `--face` the one-shot acts for the worn face. A malformed `--face` refuses `face-malformed` before any door opens.
  */
-function refuseFace(args: ParsedArgs, line: string): void {
-  if (args.options["face"] === undefined) return;
-  throw new UsageError(`face-not-routed: \`lares ${line}\` rides the store door's one-shot, which carries no face; it reads and writes the vessel's daemon mount, never the face --face names, so drop \`--face\``);
+function faceNamed(args: ParsedArgs): { face?: number } {
+  try { return faceOption(args); }
+  catch (error) { if (error instanceof FaceOptionMalformed) throw new UsageError(error.message); throw error; }
+}
+
+/** Dispatch a plan: the worn face's one-shot, or a session of the face `--face` named. */
+function dispatch(plan: { readonly verb: string; readonly face?: number }, verbArgs: Record<string, unknown>, did: string): ReturnType<typeof runVerb> {
+  return plan.face === undefined ? runVerb(plan.verb, verbArgs, did) : runVerbAsFace(plan.verb, verbArgs, plan.face);
+}
+
+/** A refusal's code: the shut face's by name, a cap's, else the verb's. */
+function refusalCodeOf(error: string | null | undefined): string {
+  if (/^face-not-open:/.test(error ?? "")) return "face-not-open";
+  return /cap-denied/.test(error ?? "") ? "cap-denied" : "verb-error";
+}
+
+/** Where a write landed, as its answer names it: the bag, and the face where `--face` named one. */
+function landedFace(receipt: Record<string, unknown>): string {
+  return typeof receipt["face"] === "number" ? ` (face h${receipt["face"]})` : "";
 }
 
 /** The verb and its args for a sub-verb — the argument law, with no daemon in reach. */
 export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemePlan {
-  refuseFace(args, `meme ${sub}`);
+  const face = faceNamed(args);
   const uri = args.positional[1];
   if (!uri) throw new UsageError(`a uri is required (e.g. \`lares meme ${sub} lar:///ha.ka.ba/... --recipe <slug>\`)`);
   const out: Record<string, string> = { uri, ...containerArgs(args, `meme ${sub}`, sub === "put" || sub === "delete" ? "write" : "read") };
   if (sub === "put") {
     const base = typeof args.options["base"] === "string" ? args.options["base"].trim() : "";
     if (base) out["base"] = base;
-    return { verb: "meme-put", args: out };
+    return { verb: "meme-put", args: out, ...face };
   }
   if (sub === "delete") {
     // The route spells the base as `If-Match`; the verb reads it as `base` — one hash, two spellings.
     const base = typeof args.options["if-match"] === "string" ? args.options["if-match"].trim() : "";
     if (base) out["base"] = base;
-    return { verb: "meme-delete", args: out };
+    return { verb: "meme-delete", args: out, ...face };
   }
-  return { verb: "meme-get", args: out };
+  return { verb: "meme-get", args: out, ...face };
 }
 
 /** The listing addresses the SEAT, never one meme: the container alone, `tree` on request. */
-export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readonly args: Record<string, string | boolean> } {
-  refuseFace(args, "meme list");
+export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readonly args: Record<string, string | boolean>; readonly face?: number } {
+  const face = faceNamed(args);
   const out: Record<string, string | boolean> = { ...containerArgs(args, "meme list") };
   if (args.flags["tree"]) out["tree"] = true;
-  return { verb: "meme-list", args: out };
+  return { verb: "meme-list", args: out, ...face };
 }
 
 /** The meme body: `--file`, else the whole of stdin. */
@@ -253,7 +273,7 @@ export async function cmdMeme(given: ParsedArgs): Promise<number> {
     }
     if (err instanceof UsageError) {
       const msg = err.message;
-      const code = msg.startsWith("face-not-routed:") ? "face-not-routed" : "usage";
+      const code = msg.startsWith("face-malformed:") ? "face-malformed" : "usage";
       emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
       return exitFor("usage");
     }
@@ -285,10 +305,10 @@ export async function cmdMeme(given: ParsedArgs): Promise<number> {
 async function memePut(args: ParsedArgs): Promise<number> {
   const plan = memePlan("put", args);
   const text = await readBody(args);
-  const result = await runVerb(plan.verb, { ...plan.args, text }, await vesselDid());
+  const result = await dispatch(plan, { ...plan.args, text }, await vesselDid());
   const outcome = readVerbOutcome(result);
   if (!outcome.ok) {
-    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
+    const code = refusalCodeOf(outcome.error);
     emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme put: ${outcome.error}`) });
     return exitFor(code);
   }
@@ -309,8 +329,8 @@ async function memePut(args: ParsedArgs): Promise<number> {
       if (decision === "ingest") console.log(`  landed ${landed.length} · tombstoned ${tombstoned.length}`);
       // THE ANSWER NAMES THE LAYER: a face that holds no writer's seat in the wiki's workbench lands in its own personal layer.
       if (typeof receipt["bag"] === "string") console.log(receipt["layer"] === "personal"
-        ? `  in ${receipt["bag"]} (your personal layer: this face holds no writer's seat in the wiki's workbench; \`lares meme offer\` carries a record from here)`
-        : `  in ${receipt["bag"]}`);
+        ? `  in ${receipt["bag"]}${landedFace(receipt)} (your personal layer: this face holds no writer's seat in the wiki's workbench; \`lares meme offer\` carries a record from here)`
+        : `  in ${receipt["bag"]}${landedFace(receipt)}`);
       if (decision === "noop" && receipt["reason"]) console.log(`  ${receipt["reason"]}`);
       for (const w of warnings) console.log(`  ! ${w}`);
       if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
@@ -321,10 +341,10 @@ async function memePut(args: ParsedArgs): Promise<number> {
 
 async function memeGet(args: ParsedArgs): Promise<number> {
   const plan = memePlan("get", args);
-  const result = await runVerb(plan.verb, plan.args, await vesselDid());
+  const result = await dispatch(plan, plan.args, await vesselDid());
   const outcome = readVerbOutcome(result);
   if (!outcome.ok) {
-    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
+    const code = refusalCodeOf(outcome.error);
     emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme get: ${outcome.error}`) });
     return exitFor(code);
   }
@@ -350,8 +370,8 @@ async function memeGet(args: ParsedArgs): Promise<number> {
  * THE PATCH'S ARGUMENT LAW, with no daemon in reach: a uri, a container, `--slot '#/name'`, exactly one of `--append <file>` or
  * `--replace <file>`, and `--base <hash>` (a patch edits bytes the writer read, so a blind one refuses before the wire).
  */
-export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; readonly args: Record<string, string>; readonly file: string; readonly mode: "append" | "replace" } {
-  refuseFace(args, "meme patch");
+export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; readonly args: Record<string, string>; readonly file: string; readonly mode: "append" | "replace"; readonly face?: number } {
+  const face = faceNamed(args);
   const uri = args.positional[1];
   if (!uri) throw new UsageError("a uri is required (e.g. `lares meme patch lar:///ha.ka.ba/... --slot '#/x' --append note.txt --base <hash> --recipe <slug>`)");
   const out: Record<string, string> = { uri, ...containerArgs(args, "meme patch", "write") };
@@ -366,14 +386,14 @@ export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; read
   if (!base) throw new UsageError("--base <hash> is required: the canonical hash `lares meme get` prints on stderr (`base: sha256:…`)");
   out["slot"] = slot;
   out["base"] = base;
-  return { verb: "meme-patch", args: out, file: append || replace, mode: append ? "append" : "replace" };
+  return { verb: "meme-patch", args: out, file: append || replace, mode: append ? "append" : "replace", ...face };
 }
 
 async function memePatch(args: ParsedArgs): Promise<number> {
   const plan = patchPlan(args);
   let body: string;
   try { body = readFileSync(plan.file, "utf8"); } catch { throw new UsageError(`cannot read --${plan.mode} ${plan.file}`); }
-  const result = await runVerb(plan.verb, { ...plan.args, [plan.mode]: body }, await vesselDid());
+  const result = await dispatch(plan, { ...plan.args, [plan.mode]: body }, await vesselDid());
   const outcome = readVerbOutcome(result);
   if (!outcome.ok) {
     const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
@@ -427,7 +447,7 @@ async function memeList(args: ParsedArgs): Promise<number> {
     return exitFor(code);
   };
   for (let after: string | null = null; ;) {
-    const result = await runVerb(plan.verb, after === null ? plan.args : { ...plan.args, after }, did);
+    const result = await dispatch(plan, after === null ? plan.args : { ...plan.args, after }, did);
     requestId = result.requestId;
     const outcome = readVerbOutcome(result);
     if (!outcome.ok) return refuse(/cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error", outcome.error ?? "the verb refused");
@@ -468,10 +488,10 @@ async function memeList(args: ParsedArgs): Promise<number> {
 
 async function memeDelete(args: ParsedArgs): Promise<number> {
   const plan = memePlan("delete", args);
-  const result = await runVerb(plan.verb, plan.args, await vesselDid());
+  const result = await dispatch(plan, plan.args, await vesselDid());
   const outcome = readVerbOutcome(result);
   if (!outcome.ok) {
-    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
+    const code = refusalCodeOf(outcome.error);
     emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme delete: ${outcome.error}`) });
     return exitFor(code);
   }
