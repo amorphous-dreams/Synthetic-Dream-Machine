@@ -3,7 +3,7 @@
 // turn every local proof of the held-out workflow into a silent zero.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, existsSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -420,14 +420,20 @@ test("RED: an exact pnpm pin stands only on that exact release; a major pin stan
   assert.equal(versionStands("24", "26.1.0"), false);
 });
 
-test("every workflow pins ONE exact pnpm, the same release package.json `packageManager` names", () => {
+test("every workflow pins ONE exact pnpm: package.json `packageManager` names it, and no workflow restates a version", () => {
   const pm = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")).packageManager;
   assert.match(pm ?? "", /^pnpm@\d+\.\d+\.\d+$/, "package.json names no exact pnpm");
   const exact = pm.slice("pnpm@".length);
-  for (const name of ["ci.yml", "held-out.yml"]) {
-    const pins = [...readFileSync(join(ROOT, ".github/workflows", name), "utf8").matchAll(/PNPM_VERSION:\s*"([^"]*)"/g)].map((m) => m[1]);
-    assert.ok(pins.length > 0, `${name} declares no PNPM_VERSION`);
-    for (const pin of pins) assert.equal(pin, exact, `${name} pins pnpm ${pin}, package.json names ${exact}`);
+  const dir = join(ROOT, ".github/workflows");
+  for (const name of readdirSync(dir).filter((f) => /\.ya?ml$/.test(f))) {
+    const text = readFileSync(join(dir, name), "utf8").split("\n").filter((l) => !l.trim().startsWith("#")).join("\n");
+    // THE RECORDS SPEAK, THE WORKFLOWS DO NOT RESTATE: a workflow-level env key naming a version or an image is a second copy.
+    assert.doesNotMatch(text, /^\s*(NODE_VERSION|PNPM_VERSION|TW5_PRISTINE|PLAYWRIGHT_IMAGE):/m, `${name} restates a pin an existing record holds`);
+    assert.doesNotMatch(text, /env\.(NODE_VERSION|PNPM_VERSION|PLAYWRIGHT_IMAGE)/, `${name} reads a pin env`);
+    // pnpm/action-setup reads package.json `packageManager` when `version` is omitted.
+    for (const m of text.matchAll(/pnpm\/action-setup@[^\n]*\n(?:\s+(?:if|name|id):[^\n]*\n)*(\s+with:\n(?:\s+[a-z-]+:[^\n]*\n)+)?/g)) {
+      assert.doesNotMatch(m[1] ?? "", /version:/, `${name} gives pnpm/action-setup a version beside package.json`);
+    }
   }
   assert.match(readFileSync(join(ROOT, "Dockerfile"), "utf8"), new RegExp(`npm install -g pnpm@${exact.replaceAll(".", "\\.")}\\b`), "the Dockerfile installs another pnpm");
 });
