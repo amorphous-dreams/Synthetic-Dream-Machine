@@ -321,6 +321,28 @@ export function keepWorkspaceOf(env, envFileText) {
   return pairs.length === 1 ? ok(pairs[0].slice(0, pairs[0].indexOf("=")).trim()) : null;
 }
 
+/**
+ * The workspaces the house config binds, as the shim reads them: LARES_WORKSPACES (the environment, else the env file), `;`-separated
+ * `<name>=<dir>` pairs; a pair whose name breaks the shim's rule or whose dir names no absolute path reads none.
+ */
+export function workspaceBindsOf(env, envFileText) {
+  const out = [];
+  for (const pair of envValue("LARES_WORKSPACES", env, envFileText).split(";")) {
+    const at = pair.indexOf("=");
+    if (at <= 0) continue;
+    const name = pair.slice(0, at).trim(), dir = pair.slice(at + 1).trim();
+    if (WORKSPACE_NAME.test(name) && name !== "." && name !== ".." && dir.startsWith("/")) out.push({ name, dir });
+  }
+  return out;
+}
+
+/** The offer lines: one per bound workspace whose directory sits in no work tree. A notice and an offer, never an act. */
+export function workspaceOfferLines(workspaces, treeStands) {
+  return (Array.isArray(workspaces) ? workspaces : [])
+    .filter((w) => !treeStands(w.dir))
+    .map((w) => `workspace ${w.name} holds no git tree; lares surface init --workspace ${w.name}`);
+}
+
 /** The keep line: the keep lei standing at the configured workspace, or none with how one strings; a locked vessel says nothing here. */
 export function keepLines(workspace, result) {
   if (result === BUDGET) return `Lares keep unread: ${CLOSED}`;
@@ -394,7 +416,7 @@ function underBudget(budgetMs) {
  * reads, and the wake says once that it skipped them.
  */
 // `source` (startup, resume, clear, compact) changes nothing the wake reads: every wake leads with the rows in play.
-export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "", keepWorkspace = null }) {
+export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "", keepWorkspace = null, workspaces = [], treeStands = () => true }) {
   const reads = { observe: run("observe", observeArgv()), index: run("index", indexArgv()), homes: run("homes", homesArgv()) };
   // The optional reads: a runner that answers none leaves their lines out.
   const optional = (name, argv) => run(name, argv) ?? null;
@@ -433,6 +455,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   if (checkout && Object.keys(leiAnswers).length > 0) lines.push(...leiLines(checkout, leiAnswers));
   if (keep !== null) { const line = keepLines(keepWorkspace, keep); if (line) lines.push(line); }
   if (halves !== null) { const line = halvesLines(halves); if (line) lines.push(line); }
+  lines.push(...workspaceOfferLines(workspaces, treeStands));
   return lines.join("\n");
 }
 

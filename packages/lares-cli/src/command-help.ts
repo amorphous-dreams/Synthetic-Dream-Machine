@@ -575,7 +575,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/kahua/memory/project/face-pools",
   },
   "surface init": {
-    usage: "usage: lares surface init [--face N | --realm <realm pet name>]",
+    usage: "usage: lares surface init [--face N | --realm <realm pet name> | --workspace <name>]",
     synopsis:
       "Make the worn (or named) face's root, projections/faces/<pet name>/, a git working tree: .git inside it at 0700; .git/info/exclude carries the " +
       "house's one ignore list (HOUSE_IGNORED: .vscode/, .shore/, temp/, *.orphans/, the atomic writer's temps, a personal layer's view state such as $__StoryList.tid; the vessel's watch keeps that block current at each arm) while .meta, .kapae, .mem and .tid stay " +
@@ -586,9 +586,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "<pet name> <folded>@realm.invalid (the realm's identity, never a face's), the same hook; a tree nested below the root lifts into it with " +
       "its history kept (its git dir rests in .git/lifted/). A workspace a share row names for one of its wikis takes its own pool, author " +
       "<slug> <slug>@realm.invalid. A wiki folder standing nowhere yet is named and left; a realm no label names, or whose root and " +
-      "workspaces all stand nowhere, refuses by name.",
-    examples: ["lares surface init", "lares surface init --face 1", "lares surface init --realm notes"],
-    flags: ["--face N   face index (the worn face where absent)", "--realm <realm pet name>   the realm's root and its wikis' workspaces (not beside --face)"],
+      "workspaces all stand nowhere, refuses by name. " +
+      "--workspace <name> makes the operator's bound workspace (seen at /lar/workspaces/<name>) one pool by the same init, on the operator's ask: " +
+      "the house never founds a workspace's tree by itself (the wake offers this where a bound workspace holds no tree); a workspace binding no " +
+      "directory, or resting inside another git work tree, refuses by name.",
+    examples: ["lares surface init", "lares surface init --face 1", "lares surface init --realm notes", "lares surface init --workspace backup"],
+    flags: ["--face N   face index (the worn face where absent)", "--realm <realm pet name>   the realm's root and its wikis' workspaces (not beside --face)", "--workspace <name>   one bound workspace as a pool (not beside --face or --realm)"],
     next: ["lares surface open --launch"],
   },
   "surface check": {

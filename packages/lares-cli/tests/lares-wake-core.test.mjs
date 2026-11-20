@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const core = await import(resolve("packages/lares-cli/.claude-plugin/hooks/lares-wake-core.mjs"));
-const { wake, compactCarry, renderIndex, indexArgv, stateArgv, INDEX_BYTES, WAKE_BUDGET_MS, STATE_PREFIX, STATE_FILTER, STATE_ROWS } = core;
+const { wake, workspaceBindsOf, compactCarry, renderIndex, indexArgv, stateArgv, INDEX_BYTES, WAKE_BUDGET_MS, STATE_PREFIX, STATE_FILTER, STATE_ROWS } = core;
 
 const UP = JSON.stringify({ data: { node: { up: true, port: 4321 } } });
 const row = (key, description) => ({ title: `lar:///ha.ka.ba/kahua/memory/${key}`, fields: { title: `lar:///ha.ka.ba/kahua/memory/${key}`, description } });
@@ -331,4 +331,19 @@ test("wake-names-the-memory-library: a red library reading names itself apart fr
     assert.equal(libraryLine({ data: { mempalace } }), null);
   }
   assert.equal(observation({ stdout: UP, code: 0, signal: null }).library ?? null, null);
+});
+
+test("wake-offers-the-workspace-tree: a bound workspace in no git tree draws one offer line, a held one none", async () => {
+  const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])) };
+  const binds = [{ name: "backup", dir: "/srv/backup" }, { name: "notes", dir: "/srv/notes" }];
+  const context = await wake({ run: runner(base), workspaces: binds, treeStands: (dir) => dir === "/srv/notes" });
+  assert.match(context, /^workspace backup holds no git tree; lares surface init --workspace backup$/m);
+  assert.doesNotMatch(context, /workspace notes holds no git tree/);
+  // CONTROL: every workspace in a tree, and no workspace bound, each leave the wake without an offer.
+  assert.doesNotMatch(await wake({ run: runner(base), workspaces: binds, treeStands: () => true }), /holds no git tree/);
+  assert.doesNotMatch(await wake({ run: runner(base) }), /holds no git tree/);
+  // The binds read as the shim reads them: the environment first, else the env file; a pair naming no absolute dir reads none.
+  assert.deepEqual(workspaceBindsOf({ LARES_WORKSPACES: "a=/x;b=rel;c=/z" }, null), [{ name: "a", dir: "/x" }, { name: "c", dir: "/z" }]);
+  assert.deepEqual(workspaceBindsOf({}, "LARES_WORKSPACES=backup=/srv/b\n"), [{ name: "backup", dir: "/srv/b" }]);
+  assert.deepEqual(workspaceBindsOf({}, null), []);
 });

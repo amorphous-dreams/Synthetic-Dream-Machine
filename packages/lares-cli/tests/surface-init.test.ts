@@ -110,6 +110,34 @@ describe("lares surface init", () => {
   });
 });
 
+describe("lares surface init --workspace", () => {
+  test("★ makes a bound workspace a pool under the wiki-slug author, and a second run says already ★", async () => {
+    const ws = join(rig.scratch.root, "workspaces", "backup");
+    mkdirSync(ws, { recursive: true });
+    expect(await cmdSurface(surfaceArgs(["init"], { workspace: "backup" }), rig.doors)).toBe(0);
+    expect(statSync(join(ws, ".git")).mode & 0o777).toBe(0o700);
+    expect(git(ws, "config", "--local", "--get", "user.email").out.trim()).toBe("backup@realm.invalid");
+    expect(git(ws, "config", "--local", "--get", "commit.gpgsign").out.trim()).toBe("false");
+    expect(readFileSync(join(ws, ".git", "hooks", "pre-commit"), "utf8")).toBe(POOL_PRE_COMMIT);
+    expect(existsSync(join(rig.projections, "faces"))).toBe(false);
+    const said = rig.said().length;
+    expect(await cmdSurface(surfaceArgs(["init"], { workspace: "backup" }), rig.doors)).toBe(0);
+    expect(rig.said().slice(said)).toMatch(/already a workspace pool/);
+  });
+
+  test("a workspace that binds nothing, one inside another work tree, and --workspace beside --face each refuse by name", async () => {
+    expect(await cmdSurface(surfaceArgs(["init"], { workspace: "ghost" }), rig.doors)).toBe(1);
+    expect(rig.said()).toMatch(/surface-workspace-unbound/);
+    const ws = join(rig.scratch.root, "workspaces", "inner");
+    mkdirSync(ws, { recursive: true });
+    git(join(rig.scratch.root, "workspaces"), "init", "-q");
+    expect(await cmdSurface(surfaceArgs(["init"], { workspace: "inner" }), rig.doors)).toBe(1);
+    expect(rig.said()).toMatch(/surface-workspace-in-tree/);
+    expect(existsSync(join(ws, ".git"))).toBe(false);
+    expect(await cmdSurface(surfaceArgs(["init"], { workspace: "inner", face: "1" }), rig.doors)).toBe(2);
+  });
+});
+
 describe("the face's author email slug", () => {
   test("folds case, spaces and marks; a name with no Latin letters takes a stable digest", () => {
     expect(faceEmailSlug("Heron Lantern")).toBe("heron-lantern");

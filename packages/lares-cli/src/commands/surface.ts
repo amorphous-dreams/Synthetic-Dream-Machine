@@ -773,9 +773,41 @@ async function cmdInitRealm(args: ParsedArgs, doors: SurfaceDoors, petName: stri
   return 0;
 }
 
+const WORKSPACE_NAME = /^[a-z0-9][a-z0-9._-]{0,63}$/;
+
+/**
+ * INIT A WORKSPACE (the operator's ask; the house never founds a workspace's tree by itself): the bound folder at
+ * `/lar/workspaces/<name>` (the host's own directory for it) becomes a pool under a workspace author, through the pools' one init.
+ */
+function cmdInitWorkspace(args: ParsedArgs, doors: SurfaceDoors, name: string): number {
+  const root = doors.workspace(name);
+  if (root === null) throw new SurfaceRefused("surface-workspace-unbound", `the workspace "${name}" binds no directory here: bind it (\`--workspace ${name}=<dir>\` at \`up\`, or LARES_WORKSPACES)`);
+  if (!existsSync(join(root, ".git"))) {
+    const above = surfaceGit(root, ["rev-parse", "--is-inside-work-tree"]);
+    if (above.code === 0 && above.out.trim() === "true") throw new SurfaceRefused("surface-workspace-in-tree", `${root} rests inside another git work tree; a nested repo would split that history`);
+  }
+  const result = byHand(() => initWorkspacePool(root, name));
+  emit(args, {
+    ok: true,
+    data: { workspace: name, root, changed: result.changed, left: result.left, already: result.changed.length === 0 },
+    human: () => {
+      console.log(result.changed.length === 0 ? `lares surface init: already a workspace pool at ${root}` : `lares surface init: ${root} (the workspace "${name}")`);
+      for (const c of result.changed) console.log(`  set  ${c}`);
+      for (const l of result.left) console.log(`  left ${l}`);
+    },
+  });
+  return 0;
+}
+
 async function cmdInit(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
   const named = realmOption(args, true);
   if ("stray" in named) return refuseUsage(args, "surface init", helpLines("surface init"), named.stray);
+  const workspace = args.options["workspace"];
+  if (workspace !== undefined) {
+    if (typeof workspace !== "string" || !WORKSPACE_NAME.test(workspace)) return refuseUsage(args, "surface init", helpLines("surface init"), `--workspace names a bound workspace (lower-case letters, digits, '.', '_' and '-'), never ${JSON.stringify(workspace)}`);
+    if (named.realm !== null || args.options["face"] !== undefined) return refuseUsage(args, "surface init", helpLines("surface init"), "--workspace names one pool: not beside --face or --realm");
+    return cmdInitWorkspace(args, doors, workspace);
+  }
   if (named.realm !== null) return cmdInitRealm(args, doors, named.realm);
   const face = await doors.face(args);
   const root = faceRoot(doors.projections(), face.petname);
