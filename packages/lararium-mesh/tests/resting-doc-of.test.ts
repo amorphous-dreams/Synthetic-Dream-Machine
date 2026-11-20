@@ -250,7 +250,7 @@ describe("readRestingDoc: a sibling's plane reads from this replica's own store 
     } finally { vi.useRealTimers(); }
   });
 
-  test("R8 PARTIAL: a chunk that did not read, an empty chunk, a change whose parent no chunk carries, too many chunks and too many bytes each refuse by name, never stale-present", async () => {
+  test("R8 PARTIAL: a chunk that did not read, an empty chunk, a change whose parent no chunk carries, a truncated trailing chunk, too many chunks and too many bytes each refuse by name, never stale-present", async () => {
     const real = memoryAdapter();
     const url = await restPlane(real, { "lar:///founding": { text: "rests" } });
     // The plane's resting chunks, then one incremental beside them, as the engine writes a later change.
@@ -270,6 +270,9 @@ describe("readRestingDoc: a sibling's plane reads from this replica's own store 
     const gapped: Chunk[] = [...rested, { key: [id, "incremental", "after-the-gap"], data: later }];
     expect(A.getMissingDeps(A.loadIncremental(A.init<LarDoc>(), new Uint8Array([...rested[0]!.data!, ...later])), []).length).toBeGreaterThan(0);
     expect(await readRestingDoc({ loadRange: async () => gapped }, url)).toEqual({ absent: "torn" });
+    // A valid snapshot beside a nonempty incremental cut short: the snapshot never reads complete on its own.
+    const truncated: Chunk[] = [...rested, { key: [id, "incremental", "cut-short"], data: A.saveSince(next, heads).slice(0, -5) }];
+    expect(await readRestingDoc({ loadRange: async () => truncated }, url)).toEqual({ absent: "torn" });
     expect(textOf(docOf(await readRestingDoc({ loadRange: async () => [...chunks, { key: [id, "incremental", "after-the-gap"], data: later }] }, url)), "lar:///third")).toBe("a later act");
     const empty: Chunk[] = chunks.map((c) => (c.key[1] === "incremental" ? { key: c.key, data: new Uint8Array(0) } : c));
     expect(await readRestingDoc({ loadRange: async () => empty }, url)).toEqual({ absent: "chunk-empty" });

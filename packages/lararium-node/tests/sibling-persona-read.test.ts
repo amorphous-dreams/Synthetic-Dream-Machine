@@ -13,7 +13,9 @@
  *   SP9  two proofs of one opening at once share its read and both prove
  *   SP10 RED restart: a restarted holder's opening carries the same count under a new boot, and a read begun before it refuses
  *   SP11 THE NAMED WINDOW: a read accepted before an unheard lock proves exactly what a read before the lock proves
- *   SP8  an over-cap plane names itself (`over-cap`), never reading as nothing at rest; the carried acts still answer
+ *   SP8  an over-cap plane names itself (`over-cap`) and refuses, never reading as nothing at rest
+ *   SP12 RED: a torn plane beside a valid carried founding refuses; carried acts never stand in for a known-incomplete history
+ *   SP13 THE TABLE: every plane reading proves or refuses with a valid carried founding beside it, as `SIBLING_PLANE_USE` names
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
@@ -24,7 +26,7 @@ import {
   ed25519SignerFromSeed, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, writePersonaKelEvent,
   personaKelChainForPrefix, proveFaceFromLog, writePersonaAct, RESTING_DOC_MAX_BYTES, type LarDoc, type SignedAct,
 } from "@lararium/mesh";
-import { proveSiblingFromRest, type SiblingFaceGate } from "../src/persona-act-store.js";
+import { proveSiblingFromRest, SIBLING_PLANE_USE, type SiblingFaceGate, type SiblingPlaneReading } from "../src/persona-act-store.js";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 const group = "cd".repeat(16);
@@ -199,13 +201,45 @@ describe("proveSiblingFromRest: a lit sibling proves from its own rest while the
     expect(await proveSiblingFromRest({ storage: s.storage, personaUrl: s.planes.persona, group, face: gate({ opening: null }), prove: s.prove })).toEqual({ proved: null, plane: "face-shut" });
   });
 
-  test("SP8: an over-cap plane names itself: alone it loses its proof as over-cap, never as nothing at rest; the carried acts still answer", async () => {
+  test("SP8: an over-cap plane names itself and refuses: never read as nothing at rest, and the carried acts never stand in", async () => {
     const s = await sibling();
     const id = s.planes.persona.replace(/^automerge:/, "");
     const heavy = { loadRange: async () => [{ key: [id, "snapshot", "big"], data: new Uint8Array(RESTING_DOC_MAX_BYTES + 1) }] };
     expect(await proveSiblingFromRest({ storage: heavy, personaUrl: s.planes.persona, group, face: gate({ opening: 1 }), prove: s.prove })).toEqual({ proved: null, plane: "over-cap" });
-    const carried = await proveSiblingFromRest({ storage: heavy, personaUrl: s.planes.persona, group, face: gate({ opening: 1 }), carried: [carriedOf(s.log)], prove: s.prove });
-    expect(carried.proved).not.toBeNull();
-    expect(carried.plane).toBe("over-cap");
+    expect(await proveSiblingFromRest({ storage: heavy, personaUrl: s.planes.persona, group, face: gate({ opening: 1 }), carried: [carriedOf(s.log)], prove: s.prove })).toEqual({ proved: null, plane: "over-cap" });
+  });
+
+  test("SP12 RED: a torn plane beside an otherwise valid carried founding refuses; the carried acts never stand in for a history known to be incomplete", async () => {
+    const s = await sibling();
+    const id = s.planes.persona.replace(/^automerge:/, "");
+    const rested = await s.storage.loadRange([id]);
+    const torn = { loadRange: async () => [...rested, { key: [id, "incremental", "torn"], data: new Uint8Array([0x85, 0x6f, 0x4a, 0x83, 1, 2, 3]) }] };
+    const carried = carriedOf(s.log);
+    expect((await proveSiblingFromRest({ storage: memoryAdapter(), personaUrl: s.planes.persona, group, face: gate({ opening: 1 }), carried: [carried], prove: s.prove })).proved).not.toBeNull();
+    expect(await proveSiblingFromRest({ storage: torn, personaUrl: s.planes.persona, group, face: gate({ opening: 1 }), carried: [carried], prove: s.prove })).toEqual({ proved: null, plane: "torn" });
+  });
+
+  test("SP13 THE TABLE: each plane reading with a valid carried founding beside it proves or refuses as SIBLING_PLANE_USE names it", async () => {
+    const s = await sibling();
+    const id = s.planes.persona.replace(/^automerge:/, "");
+    const rested = await s.storage.loadRange([id]);
+    const carried = [carriedOf(s.log)];
+    const cases: Array<{ reading: SiblingPlaneReading; storage: Pick<StorageAdapterInterface, "loadRange">; url?: string; face?: SiblingFaceGate; boundMs?: number }> = [
+      { reading: "read", storage: s.storage },
+      { reading: "nothing-rests", storage: memoryAdapter() },
+      { reading: "face-shut", storage: s.storage, face: gate({ opening: null }) },
+      { reading: "bound-spent", storage: { loadRange: () => new Promise<Chunk[]>(() => {}) }, boundMs: 20 },
+      { reading: "refused", storage: { loadRange: () => { throw new Error("store fault"); } } },
+      { reading: "torn", storage: { loadRange: async () => [{ key: [id, "snapshot", "x"], data: new Uint8Array([1, 2, 3, 4]) }] } },
+      { reading: "chunk-unread", storage: { loadRange: async () => [...rested, { key: [id, "incremental", "u"], data: undefined }] } },
+      { reading: "chunk-empty", storage: { loadRange: async () => [...rested, { key: [id, "incremental", "e"], data: new Uint8Array(0) }] } },
+      { reading: "over-cap", storage: { loadRange: async () => [{ key: [id, "snapshot", "big"], data: new Uint8Array(RESTING_DOC_MAX_BYTES + 1) }] } },
+      { reading: "url-malformed", storage: s.storage, url: "not-a-url" },
+    ];
+    for (const c of cases) {
+      const r = await proveSiblingFromRest({ storage: c.storage, personaUrl: c.url ?? s.planes.persona, group, face: c.face ?? gate({ opening: 1 }), carried, prove: s.prove, ...(c.boundMs ? { boundMs: c.boundMs } : {}) });
+      expect(r.plane, c.reading).toBe(c.reading);
+      expect(r.proved === null, c.reading).toBe(SIBLING_PLANE_USE[c.reading] === "refuse");
+    }
   });
 });

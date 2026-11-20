@@ -170,7 +170,7 @@ import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-store.js";
 import { raiseAnchorFromSlots } from "./lease-observation.js";
-import { readFacePersonaRecords, proveSiblingFromRest } from "./persona-act-store.js";
+import { readFacePersonaRecords, proveSiblingFromRest, SIBLING_PLANE_USE } from "./persona-act-store.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
@@ -3497,8 +3497,8 @@ async function prepareNodeBootOn(
               relation: faceRelationOf(proof.projection),
             };
           } });
-        // AN OVER-CAP PLANE NAMES ITSELF: its proof leans on the carried acts alone, and where those found nothing it fails by this name.
-        if (sibling.plane === "over-cap") console.warn(`[lit-set] the persona plane of ${plane.personaGroupId.slice(0, 8)}… rests past the read's caps (over-cap); its proof read the carried acts alone${sibling.proved ? "" : " and refused"}`);
+        // A PLANE KNOWN TO REST THAT DID NOT READ WHOLE NAMES ITSELF: its proof refuses by the plane's own reading (`SIBLING_PLANE_USE`).
+        if (SIBLING_PLANE_USE[sibling.plane] === "refuse") console.warn(`[lit-set] the persona plane of ${plane.personaGroupId.slice(0, 8)}… rests and did not read whole (${sibling.plane}); its proof refuses, and the carried acts do not stand in`);
         return sibling.proved;
       } catch (e) { if (!(e instanceof CustodyLocked)) throw e; return null; }
     }

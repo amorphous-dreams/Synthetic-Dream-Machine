@@ -42,6 +42,20 @@ export interface SiblingFaceGate {
 export type SiblingPlaneReading = "read" | "face-shut" | "lock-mid-read" | RestingAbsence;
 
 /**
+ * WHAT EACH READING LETS THE PROOF DO. `plane`: the plane's records join the carried acts. `carried`: nothing is known of the
+ * plane (none rests, the face stood shut or locked mid-read, the store did not answer in time or refused), so the carried
+ * acts answer alone, as they did before this read (a fleet-joined face's admit bundle before its plane syncs). `refuse`: a
+ * plane is KNOWN to rest and its history did not read whole (a gap or corruption, a chunk unread or empty, past the caps, or
+ * a url that names no document), so the proof refuses outright: restoring the missing part could expose a signed fork that
+ * makes the same proof refuse, and the carried acts never stand in for a history known to be incomplete.
+ */
+export const SIBLING_PLANE_USE: Readonly<Record<SiblingPlaneReading, "plane" | "carried" | "refuse">> = {
+  "read": "plane",
+  "nothing-rests": "carried", "face-shut": "carried", "lock-mid-read": "carried", "bound-spent": "carried", "refused": "carried",
+  "torn": "refuse", "chunk-unread": "refuse", "chunk-empty": "refuse", "over-cap": "refuse", "url-malformed": "refuse",
+};
+
+/**
  * A LIT SIBLING PROVES FROM ITS OWN REST: the composition mounts the worn face's plane alone, so a sibling's founding act
  * rests unread on disk. The plane reads from this vessel's own store (`readRestingDoc`: the adapter's bytes into a scratch
  * document, never a Repo handle and never a peer), so a plane whose log fails its proof never reaches the live Repo.
@@ -52,9 +66,9 @@ export type SiblingPlaneReading = "read" | "face-shut" | "lock-mid-read" | Resti
  * a plane read under an opening that closed (a lock, or a lock and re-open) never proves; the answer reads null, fail closed.
  *
  * `carried` names the documents that carry admit acts beside the plane (the vessel's secret home: a joined face's admit
- * bundle rests there until its plane syncs). They answer whether or not the plane rests, as they did for every sibling
- * before this read: each record still proves only through the same anchor, KEL chain and signed-log fold. `plane` names
- * what became of the plane, so a caller tells an `over-cap` plane from one that rests nowhere.
+ * bundle rests there until its plane syncs). Where nothing is known of the plane they answer alone, and where a plane is known
+ * to rest but did not read whole the proof refuses instead (`SIBLING_PLANE_USE`); each record still proves only through the
+ * same anchor, KEL chain and signed-log fold. `plane` names what became of the plane, so a caller tells each case apart.
  */
 export async function proveSiblingFromRest<T>(input: {
   readonly storage: Pick<StorageAdapterInterface, "loadRange">;
@@ -75,6 +89,8 @@ export async function proveSiblingFromRest<T>(input: {
       if (input.face.stillOpen()) { plane = read.doc; reading = "read"; } else reading = "lock-mid-read";
     } else reading = read.absent;
   }
+  // A PLANE KNOWN TO REST THAT DID NOT READ WHOLE REFUSES: the carried acts never stand in for an incomplete history.
+  if (SIBLING_PLANE_USE[reading] === "refuse") return { proved: null, plane: reading };
   const records = [plane, ...(input.carried ?? [])].flatMap((doc) => personaActRecordsOfGroup(doc, input.group));
   const proved = input.prove(records);
   // ACCEPTANCE: a proof that leaned on the plane stands only while the opening it was read under still stands.

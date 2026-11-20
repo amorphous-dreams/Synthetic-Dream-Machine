@@ -169,7 +169,8 @@ function joinRead(storage: Pick<StorageAdapterInterface, "loadRange">, documentI
  *
  * ABSENT NEVER MEANS PARTIAL: a reported chunk that did not read (`chunk-unread`) or carries no bytes (`chunk-empty`) refuses
  * the whole plane, so an older snapshot never stands in for a missing incremental; a change whose parent no chunk carries
- * leaves a dependency unresolved and refuses `torn`, even with every reported chunk read; more than `RESTING_DOC_MAX_CHUNKS` chunks or
+ * leaves a dependency unresolved and refuses `torn`, even with every reported chunk read, and so does a chunk that does not
+ * decode whole (a truncated trailing incremental never leaves the snapshot before it reading complete); more than `RESTING_DOC_MAX_CHUNKS` chunks or
  * `RESTING_DOC_MAX_BYTES` bytes refuses `over-cap` before the concatenation allocates (the adapter has already loaded those
  * chunks by then: its interface lists no sizes before it loads them, so the cap bounds the decode, not the adapter's own load).
  */
@@ -214,7 +215,9 @@ export async function readRestingDoc(
       const bytes = new Uint8Array(total);
       let at = 0;
       for (const c of ordered) { bytes.set(c.data!, at); at += c.data!.length; }
-      const doc = A.loadIncremental(A.init<LarDoc>(), bytes);
+      // EVERY CHUNK DECODES WHOLE: the engine's strict load refuses a chunk that ends short (`not enough data`), where an
+      // incremental load keeps the prefix it could parse and drops a truncated trailing chunk silently.
+      const doc = A.load<LarDoc>(bytes);
       // A CHANGE WHOSE PARENT NEVER READ QUEUES, IT DOES NOT APPLY: the engine keeps the heads it could reach and holds the rest
       // aside, so a snapshot beside a later incremental whose parent chunk is missing would read as the snapshot alone. Any
       // dependency left unresolved refuses the whole plane, never a stale prefix standing in for it.
