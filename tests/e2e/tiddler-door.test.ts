@@ -320,12 +320,12 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     say("MCP tiddler_get fields=[status]", seatGet);
     expect(seatPut!.ok && seatPut!.data["decision"]).toBe("put");
     expect(seatGet!.ok && (seatGet!.data["tiddler"] as { fields: Record<string, string> }).fields).toEqual({ title: uriOf(6), status: "done" });
-    // CONTROL: a meme root refuses the tiddler door's delete toward the meme door; a plain tiddler leaves.
+    // CONTROL: a meme root refuses the tiddler door's delete toward the meme door; a plain tiddler leaves plainly, no tombstone raised.
     say("MCP tiddler_delete of a meme root", seatFamily);
     expect(seatFamily!.ok === false && seatFamily!.said).toContain("tiddler-delete-in-a-family");
     say("MCP tiddler_put create (a plain note)", seatPlain);
     say("MCP tiddler_delete of the plain note", seatGone);
-    expect(seatGone!.ok && seatGone!.data).toMatchObject({ decision: "removed", tombstoned: ["Walk scratch note"], consequence: { position: "plain" } });
+    expect(seatGone!.ok && seatGone!.data).toMatchObject({ decision: "removed", mode: "plain", tombstoned: [], retracted: ["Walk scratch note"], consequence: { position: "plain" } });
     expect((await lar.cli(["tiddler", "get", "Walk scratch note", ...D])).code).toBe(3);
     expect((await lar.cli(["tiddler", "get", uriOf(6), ...D])).code).toBe(0);
   }, 300_000);
@@ -352,7 +352,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(refused.code).toBe(4);
     expect(dataOf(refused)).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", tombstoned: [], consequence: { position: "root", family: uriOf(extra), refusals: [] } });
     const acts = (dataOf(refused)["consequence"] as { acts: Array<{ title: string; act: string }> }).acts;
-    expect(acts.filter((row) => row.act === "tombstone").map((row) => row.title)).toEqual(family);
+    expect(acts.filter((row) => row.act === "retract").map((row) => row.title)).toEqual(family);
     const slotRefused = await lar.cli(["tiddler", "delete", `${uriOf(extra)}#/why`, "--family", ...D]);
     say("CLI tiddler delete of a called slot, --family", slotRefused.json);
     expect(dataOf(slotRefused)).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family" });
@@ -367,7 +367,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(seatRefused!.ok === false && seatRefused!.said).toContain(`${uriOf(extra)}#/why`);
     expect(seatStill!.ok && seatStill!.data["tiddler"]).not.toBeNull();
     say("MCP tiddler_delete family=true", seatRemoved);
-    expect(seatRemoved!.ok && seatRemoved!.data).toMatchObject({ decision: "removed", tombstoned: family, consequence: { position: "root", family: uriOf(extra) } });
+    expect(seatRemoved!.ok && seatRemoved!.data).toMatchObject({ decision: "removed", mode: "plain", tombstoned: [], retracted: family, consequence: { position: "root", family: uriOf(extra) } });
     // LIVENESS: the shore lands the store's one change in the wiki; the walk COUNTS looks and never compares a clock.
     let left: unknown = null;
     for (let look = 0; look < 30; look++) {

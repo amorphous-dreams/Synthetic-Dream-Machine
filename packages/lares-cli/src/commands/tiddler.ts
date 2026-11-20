@@ -11,8 +11,10 @@
  * check); this door reads any record and patches fields and tags without touching text. A delete reads the one family
  * law: a plain tiddler leaves; a meme root or slot answers the consequence the delete would land and refuses
  * (`tiddler-delete-in-a-family`) unless the line names the family act (`--family`), which lands it as one change.
- * Over layers a delete names its meaning: `--mode kapae` (the default) shadows the title from a writable layer and the
- * layers beneath keep their records; `--mode reveal` retracts the topmost record and the one beneath surfaces.
+ * A delete deletes plainly: the record leaves its layer and no tombstone rises. Only a lower layer makes it a choice: where
+ * one holds the title too, no mode refuses `delete-mode-needed`, and the line names one: `--mode kapae` shadows the title
+ * from a writable layer and the layers beneath keep their records; `--mode reveal` retracts the topmost record and the
+ * one beneath surfaces. A title the wiki reads absent answers too: a plain delete retracts a kāpae that hides nothing.
  *
  * The container law holds: name `--recipe <slug>` or `--bag <slug>`. This phase answers `--recipe default`, the worn
  * face's daemon wiki; a named wiki refuses `wiki-not-anchored` by name.
@@ -53,7 +55,7 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
     if (args.flags["family"] === true) out["family"] = true;
     const mode = wordOf(args.options["mode"]);
     if (mode !== null) {
-      if (mode !== "kapae" && mode !== "reveal") throw new DoorUsage(`--mode takes kapae (shadow the layers beneath; the default) or reveal (retract the top record, the one beneath surfaces); got "${mode}"`);
+      if (mode !== "kapae" && mode !== "reveal") throw new DoorUsage(`--mode takes kapae (a tombstone keeps the layers beneath hidden) or reveal (retract the top record, the one beneath surfaces); name none for a plain delete; got "${mode}"`);
       out["mode"] = mode;
     }
     return { verb: "tiddler-delete", args: out };
@@ -160,7 +162,7 @@ async function tiddlerDelete(args: ParsedArgs): Promise<number> {
   const read = receipt["consequence"] as { acts?: Array<{ title: string; act: string; bag?: string | null; shadowed?: string[]; reveals?: string | null }>; leaves?: Array<{ title: string; why: string }> } | undefined;
   /** One act as a line: the layer it writes and what the wiki reads afterward. */
   const actLine = (row: NonNullable<NonNullable<typeof read>["acts"]>[number]): string =>
-    row.act === "retract" ? `retract ${row.title} from ${row.bag ?? "?"} → ${row.reveals ? `reveals ${row.reveals}` : "reads absent"}`
+    row.act === "retract" ? `${row.reveals ? "retract" : "delete"} ${row.title} from ${row.bag ?? "?"} → ${row.reveals ? `reveals ${row.reveals}` : "reads absent"}`
     : row.act === "tombstone" ? `kapae ${row.title} in ${row.bag ?? "?"}${row.shadowed?.length ? ` (shadows ${row.shadowed.join(", ")})` : ""}`
     : `${row.act} ${row.title}`;
   emit(args, {
