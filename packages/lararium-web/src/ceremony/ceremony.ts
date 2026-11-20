@@ -155,7 +155,9 @@ function standReset(askId: string): void {
     void passCriticalGate(RESET_PROCEDURE, gate, pass, demand).then(
       (gatePass) => {
         form.hidden = true;
-        return burnPlace(ambientResetEnv(signal, say), askId, gatePass).then(
+        // A database another tab holds open names itself on the document (`data-reset-waits`) until its delete lands.
+        const waits = (database: string | null): void => { if (database === null) delete document.body.dataset["resetWaits"]; else document.body.dataset["resetWaits"] = database; };
+        return burnPlace({ ...ambientResetEnv(signal, say), waits }, askId, gatePass).then(
           (report) => done(`This browser's vessel stands at its anon floor again (${String(report.databases.length)} store(s) burned). Every tab of this site boots afresh. This window closes.`),
           (err: unknown) => {
             // The ask left the record while this window stood (the page withdrew it, or another window settled it): nothing burned.

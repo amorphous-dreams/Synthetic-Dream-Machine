@@ -13,7 +13,8 @@
  *            with no secure context and no broker (no ward and no missing worker blocks the return), and refuses a frame and
  *            a policy out of force by name.
  *   R3 RED   over the engine's own IndexedDB, caches and storage: a database another context holds open blocks, the
- *            ceremony names the store it waits on and gives up on no clock, and the burn lands when that context lets go.
+ *            ceremony names the store it waits on (in words, and as the named `waits` state) and gives up on no clock, and the
+ *            burn lands when that context lets go.
  *            Afterwards the origin names no such database, cache or key.
  *   R4 RED   A SECOND TAB: every tab hears the ceremony on the origin's reset channel. On `reset:stand-down` a tab stands
  *            its vessel down once and does not reload; on `reset:burned` it clears its own session keys and boots afresh;
@@ -23,11 +24,14 @@
  *            the vessel's own storage prefix (`lares:reset-ask:<id>`); the ceremony refuses `reset-unasked` for an id the
  *            record does not name, at its stand and again at the burn, before the census reads, any tab stands down or any
  *            byte burns. The burn keeps the ask's record until every other surface burned (a burn that stops midway confirms
- *            again) and removes it before it says `reset:burned`. A storage that withholds itself records nothing, so it
- *            reads unasked. CONTROL: the recorded id burns; a forgotten id (declined, withdrawn) refuses again.
+ *            again) and turns it to its burned receipt before it says `reset:burned`. A storage that withholds itself records
+ *            nothing, so it reads unasked. CONTROL: the recorded id burns; a burned id and a forgotten id (declined,
+ *            withdrawn) refuse again.
  *   R7 RED   A TAB HONOURS THE CHANNEL ONLY FOR A STANDING ASK. `reset:stand-down` for an id the origin's record does not
  *            name moves nothing; `reset:burned` moves nothing unless this tab stood down for that very id; `reset:declined`
  *            takes down only a reset ask this tab's page shows. CONTROL: R4 walks the standing id through all three.
+ *   R7b RED  A LATE TAB: the channel keeps no order with the record. A tab whose words arrive only after the burn settled the
+ *            record still stands down and reloads on the burned receipt, in either delivery order. CONTROL: another id moves nothing.
  *   R8 RED   EVERY STORAGE KEY THE PAGE WRITES RIDES THE VESSEL'S PREFIX, the mirror's two per-tab records among them, so
  *            the burn and each tab's own clearing reach them. A census of every `*_KEY` constant under `src/` reads the
  *            prefix. CONTROL: a tab's clearing removes the mirror's records and leaves another hand's key.
@@ -39,7 +43,7 @@ import { RESET_CHANNEL, type ResetSignal } from "../src/ceremony-protocol.js";
 import { askIdOf, resetAskOf } from "../src/ceremony/ceremony-core.js";
 import { passCriticalGate, typedConfirms as phraseConfirms, type GatePass } from "../src/ceremony/critical-gate.js";
 import {
-  ambientResetEnv, burnPlace, clearOwnedKeys, forgetResetAsk, OWNED_STORAGE_PREFIX, recordResetAsk, RESET_PHRASE, RESET_PROCEDURE, resetAskKey, resetAskStands,
+  ambientResetEnv, burnPlace, clearOwnedKeys, forgetResetAsk, OWNED_STORAGE_PREFIX, recordResetAsk, RESET_PHRASE, RESET_PROCEDURE, resetAskBurned, resetAskKey, resetAskStands,
   ResetRefused, resetRefusal, type AskRecord, type ResetEnv,
 } from "../src/ceremony/reset-core.js";
 import { mirrorEvidenceKey, mirrorStandingKey } from "../src/glass/stand.js";
@@ -78,10 +82,10 @@ test("R1 RED the burn reads its census, stands every tab down, burns each surfac
   };
   const report = await burnPlace(env, ASK, await passed());
   expect(log).toEqual(["census", "reset:stand-down", "db automerge-daemon", "db lares:continuity", "db lares:vessel", "file cas", "file labels", "cache genesis", "worker", "reset:burned"]);
-  expect(report).toEqual({ databases: ["automerge-daemon", "lares:continuity", "lares:vessel"], files: 2, caches: 1, storageKeys: 4, workers: 1 });
+  expect(report).toEqual({ databases: ["automerge-daemon", "lares:continuity", "lares:vessel"], files: 2, caches: 1, storageKeys: 3, workers: 1 });
   expect([...session.map.keys()]).toEqual([]);
-  // CONTROL: the reset removes the vessel's own keys and no other hand's.
-  expect([...local.map.keys()]).toEqual(["tiddlywiki-theme"]);
+  // CONTROL: the reset removes the vessel's own keys and no other hand's; the ask's record stays as its burned receipt.
+  expect(Object.fromEntries(local.map)).toEqual({ "tiddlywiki-theme": "dark", [resetAskKey(ASK)]: "burned" });
 });
 
 test("R2 RED the typed words decide; #reset names a reset ask; the reset ceremony stands with no secure context and no broker", () => {
@@ -116,7 +120,8 @@ test("R3 RED over the engine's own stores: a database another context holds bloc
   localStorage.setItem("lares:reset-witness", "kept"); localStorage.setItem("another-hand", "stays");
   expect(recordResetAsk(localStorage, ASK), "the page's record lands in the origin's own storage").toBe(true);
   const said: string[] = [], signals: ResetSignal[] = [];
-  const env = ambientResetEnv((msg) => { signals.push(msg); }, (words) => { said.push(words); });
+  const waited: (string | null)[] = [];
+  const env = { ...ambientResetEnv((msg) => { signals.push(msg); }, (words) => { said.push(words); }), waits: (db: string | null) => { waited.push(db); } };
   // This witness burns its own database alone, so a test file beside it keeps its stores.
   const scoped: ResetEnv = { ...env, databases: async () => [mine], workers: null, opfs: null, caches: env.caches ? { keys: async () => [cacheName], delete: (n) => env.caches!.delete(n) } : null };
   let landed = false;
@@ -124,6 +129,7 @@ test("R3 RED over the engine's own stores: a database another context holds bloc
   for (let i = 0; i < 200 && !said.some((w) => w.includes("still holds")); i++) await new Promise((r) => setTimeout(r, 25));
   expect(said.find((w) => w.includes("still holds")), "the ceremony names the store it waits on").toContain(mine);
   expect(landed, "the burn waits on the tab and gives up on no clock").toBe(false);
+  expect(waited, "the blocked delete stands as a named state, never a silent stall").toEqual([mine]);
   expect(signals.map((s) => s.t)).toEqual(["reset:stand-down"]);
   held.close();                                             // the other tab closes
   const report = await burn;
@@ -131,7 +137,10 @@ test("R3 RED over the engine's own stores: a database another context holds bloc
   expect((await indexedDB.databases()).map((db) => db.name)).not.toContain(mine);
   if (typeof caches !== "undefined") expect(await caches.has(cacheName)).toBe(false);
   expect(localStorage.getItem("lares:reset-witness")).toBeNull();
+  expect(waited, "the named wait clears once the delete lands").toEqual([mine, null]);
   expect(resetAskStands(localStorage, ASK), "the burned ask stands no longer").toBe(false);
+  expect(resetAskBurned(localStorage, ASK), "its record holds the burned receipt").toBe(true);
+  forgetResetAsk(localStorage, ASK);
   expect(localStorage.getItem("another-hand")).toBe("stays");
   expect(signals.map((s) => s.t)).toEqual(["reset:stand-down", "reset:burned"]);
   localStorage.removeItem("another-hand");
@@ -227,7 +236,12 @@ test("R6 RED the ceremony burns only for an ask a page of this origin raised: an
   // and it leaves before the tabs hear `reset:burned`.
   await burnPlace(env(origin.storage), ASK, await passed());
   expect(log).toEqual(["census", "reset:stand-down (ask recorded: true)", "db lares:vessel", "worker (ask recorded: true)", "reset:burned (ask recorded: false)"]);
-  expect([...origin.map.keys()], "the burn leaves no record").toEqual([]);
+  expect(Object.fromEntries(origin.map), "the burn leaves the ask's burned receipt and no other record").toEqual({ [resetAskKey(ASK)]: "burned" });
+  expect(resetAskStands(origin.storage, ASK), "a receipt stands no ceremony").toBe(false);
+  // A burned id stands no second ceremony: its receipt reads unasked.
+  log.length = 0;
+  expect(((await burnPlace(env(origin.storage), ASK, await passed()).catch((e: unknown) => e)) as ResetRefused).refusal).toBe("reset-unasked");
+  expect(log, "a settled id reads, signals and burns nothing").toEqual([]);
   // A forgotten id (the person declined, or withdrew the ask on the page) refuses again.
   log.length = 0;
   recordResetAsk(origin.storage, ASK); forgetResetAsk(origin.storage, ASK);
@@ -264,6 +278,44 @@ test("R7 RED a tab honours the reset channel only for a standing ask: an unrecor
   hear({ t: "reset:burned", askId: ASK } satisfies ResetSignal);
   expect(acts).toEqual(["stand-down", "reload"]);
   expect([...session.map.keys()]).toEqual(["wiki-scroll"]);
+});
+
+test("R7b RED A LATE TAB: the channel keeps no order with the record, so a tab that hears the ceremony only after the burn settled the record still stands down and boots afresh, in either delivery order; CONTROL: a prompt tab walks as before", async () => {
+  const origin = raised(ASK);
+  /** A tab whose channel words wait in a queue until the test hands them over, beside one that hears each word at once. */
+  const standTab = (name: string) => {
+    const acts: string[] = [];
+    const queue: unknown[] = [];
+    let hear: (msg: unknown) => void = () => {};
+    const tab = standResetTab({
+      listen: (listener) => { hear = listener; },
+      standDown: () => { acts.push("stand-down"); }, reload: () => { acts.push("reload"); },
+      session: storageOf({ "lares:tab-face": `pg-${name}` }).storage, settle: () => {}, say: () => {},
+      record: origin.storage, shows: () => false,
+    });
+    return { acts, tab, queue, hear: (msg: unknown) => hear(msg) };
+  };
+  const prompt = standTab("prompt"), late = standTab("late"), reversed = standTab("reversed");
+  const env: ResetEnv = {
+    databases: async () => ["lares:vessel"], deleteDatabase: async () => {}, opfs: null, caches: null,
+    storages: [origin.storage], record: origin.storage, workers: null, say: () => {},
+    signal: (msg) => { prompt.hear(msg); late.queue.push(msg); reversed.queue.unshift(msg); },
+  };
+  await burnPlace(env, ASK, await passed());
+  expect(prompt.acts, "CONTROL: a tab that hears each word at once stands down, then reloads").toEqual(["stand-down", "reload"]);
+  expect(resetAskStands(origin.storage, ASK), "the burn settled the record before either late tab heard a word").toBe(false);
+  expect(late.acts.length + reversed.acts.length, "nothing reached the late tabs yet").toBe(0);
+  // The queued words land now, against the settled record: stand-down then burned, and burned before stand-down.
+  for (const msg of late.queue) late.hear(msg);
+  for (const msg of reversed.queue) reversed.hear(msg);
+  expect(late.acts, "a late stand-down for a burned id stands down, and its burned reloads").toEqual(["stand-down", "reload"]);
+  expect(reversed.acts[0], "a burned word that arrives first still boots the tab afresh").toBe("reload");
+  expect(late.tab.stoodDown() && reversed.tab.stoodDown()).toBe(true);
+  // CONTROL: the receipt names one id; another id's words still move nothing.
+  const other = standTab("other");
+  other.hear({ t: "reset:stand-down", askId: OTHER } satisfies ResetSignal);
+  other.hear({ t: "reset:burned", askId: OTHER } satisfies ResetSignal);
+  expect(other.acts).toEqual([]);
 });
 
 test("R8 RED every storage key the page writes rides the vessel's prefix, the mirror's per-tab records among them; CONTROL: another hand's key stays", () => {
