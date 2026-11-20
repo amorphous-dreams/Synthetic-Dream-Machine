@@ -8,7 +8,7 @@
  *      producers phase (its final wave and commit seam, as a down) ahead of the flush, the signers and the islands
  *   H3 every pool a tree: the re-stand heals each pool root on disk (`healPoolTrees`) after the realm folders settle, the worn
  *      face's arm names its owner (so it founds its pool), a lit face founds its pool before its tend, and the mount's realm
- *      placement founds each realm wiki folder's tree where it lays it (`ensurePoolTree`)
+ *      placement founds the realm root's one tree where it lays a wiki or bag folder in it (`ensurePoolTree`)
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -43,6 +43,6 @@ describe("the vessel hosts the watch over the worn face's pool", () => {
     const lit = vessel.slice(vessel.indexOf("writeFaceLabel({ relation, petname"), vessel.indexOf("tendLitFacePool(faceRoot("));
     expect(lit).toMatch(/ensurePoolTree\(faceRoot\(projections, petname\), \{ face: petname \}/);
     const lay = vessel.slice(vessel.indexOf("const realmBaseOf ="), vessel.indexOf("const diskMirrorGrant"));
-    expect(lay).toMatch(/ensurePoolTree\(join\(base, slug\), \{ realm: slug \}/);
+    expect(lay).toMatch(/ensurePoolTree\(realm, \{ realm: basename\(realm\) \}/);
   });
 });

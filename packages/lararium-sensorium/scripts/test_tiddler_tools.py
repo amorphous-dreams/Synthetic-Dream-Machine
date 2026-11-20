@@ -216,7 +216,7 @@ def test_house_refusals_cross_the_seat_in_their_own_words(daemon):
         ("tiddler-put-in-a-family: use the meme door. \"lar:///t/x\" stands as a meme root and this put moves `text`", "tiddler_put", {"title": "lar:///t/x", "recipe": "default", "text": "x"}),
         ("filter-malformed: Missing ] in filter expression (in \"[tag[x\")", "wiki_filter", {"filter": "[tag[x", "recipe": "default"}),
         ("cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required (no-grant)", "wiki_status", {"recipe": "default"}),
-        ("wiki-not-anchored: wiki-filter answers recipe \"default\" alone in this phase", "wiki_filter", {"filter": "[tag[x]]", "recipe": "lares"}),
+        ("wiki-unreached: wiki-filter — no wiki \"elsewhere\" this face reaches", "wiki_filter", {"filter": "[tag[x]]", "recipe": "elsewhere"}),
     ):
         daemon.error = {"errorMessage": refusal, "refusal": {"reason": refusal.split(":", 1)[0]}}
         is_error, said = _call(mcp, name, args)

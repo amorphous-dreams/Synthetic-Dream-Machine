@@ -75,17 +75,17 @@ describe("the daemon VM's mirrors under distinct state, canon and projection roo
     const { state, projections, canon } = tree("crossroads");
     const mirrors = daemonDiskMirrors({ projectionRoot: projections, canonBags: canon, face: { relation: TAG, segment: "Heron" } });
     const byBag = new Map(mirrors.map((m) => [m.bagId, m.mirrorRoot]));
-    expect(byBag.get(wikiSlotUri("daemon", "working"))).toBe(join(projections, "faces", "Heron", "wiki"));
+    expect(byBag.get(wikiSlotUri("daemon", "working"))).toBe(join(projections, "faces", "Heron", "wikis", "daemon"));
     expect(byBag.has(CONTROL_HOME_ID)).toBe(false);
-    expect(byBag.get(KAHUA_BAG)).toBe(join(projections, "faces", "Heron", "stage"));
+    expect(byBag.get(KAHUA_BAG)).toBe(join(projections, "faces", "Heron", "bags", "kahua"));
     expect(byBag.get(CROSSROADS_DOC_URI)).toBe(join(canon, "crossroads"));
     expect(mirrors.some((m) => m.bagId === DAEMON_BAG_ID)).toBe(false);
     for (const root of byBag.values()) expect(root.startsWith(join(state, "bags")) || root.startsWith(join(state, "wikis"))).toBe(false);
     expect(mirrors.some((m) => m.mirrorRoot.startsWith(join(canon, "daemon")))).toBe(false);
   });
   test("the daemon wiki's folder and the kahua stage rest in the face's root, named by its pet name", () => {
-    expect(daemonWorkingMirror("/p", { relation: TAG, segment: "Heron" }).mirrorRoot).toBe(join("/p", "faces", "Heron", "wiki"));
-    expect(kahuaStageMirror("/p", { relation: TAG, segment: "Heron" }).mirrorRoot).toBe(join("/p", "faces", "Heron", "stage"));
+    expect(daemonWorkingMirror("/p", { relation: TAG, segment: "Heron" }).mirrorRoot).toBe(join("/p", "faces", "Heron", "wikis", "daemon"));
+    expect(kahuaStageMirror("/p", { relation: TAG, segment: "Heron" }).mirrorRoot).toBe(join("/p", "faces", "Heron", "bags", "kahua"));
     expect(() => daemonWorkingMirror("/p", { relation: TAG, segment: "../escape" })).toThrow(/face-segment-separator/);
   });
 });
@@ -120,7 +120,7 @@ describe("the projector's write lands durably", () => {
     try {
       await (projector as unknown as { flush(b: string, t: string): Promise<void> }).flush(wikiSlotUri("daemon", "working"), "lar:///ha.ka.ba/t/x");
     } finally { durableSyncIo.fsyncSync = fsyncSync; }
-    const file = join(dir, "faces", "Heron", "wiki", "ha.ka.ba/t/x.mem");
+    const file = join(dir, "faces", "Heron", "wikis", "daemon", "ha.ka.ba/t/x.mem");
     expect(existsSync(file)).toBe(true);
     expect(statSync(file).mode & 0o777).toBe(PROJECTION_FILE_MODE);
     expect(calls.length).toBeGreaterThanOrEqual(2);

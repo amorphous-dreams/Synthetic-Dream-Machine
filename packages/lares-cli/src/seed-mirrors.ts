@@ -5,9 +5,9 @@
  * THE LAW. A lay lays every disk mirror back into the one layer it mirrors (disk equal to the base: nothing; the disk
  * moved: it lands; both moved: a stand-off at the shore, within that one layer), and a second lay lands nothing:
  *
- *   projections/faces/<pet name>/wiki   -> that face's daemon WORKING (`wikis/daemon/working`); a kāpae shadow raises as a kāpae
- *   projections/faces/<pet name>/canon  -> that face's daemon canon (`bags/daemon-<F>`)
- *   projections/faces/<pet name>/stage  -> that face's kahua stage, by the operator's hand alone (below)
+ *   projections/faces/<pet name>/wikis/daemon -> that face's daemon WORKING (`wikis/daemon/working`); a kāpae shadow raises as a kāpae
+ *   projections/faces/<pet name>/bags/daemon  -> that face's daemon canon (`bags/daemon-<F>`)
+ *   projections/faces/<pet name>/bags/kahua   -> that face's kahua stage, by the operator's hand alone (below)
  *   projections/realms/<realm pet name>/bags/<slug> -> that bag's canon (a plain projections/bags/<bag> too)
  *   projections/realms/<realm pet name>/wikis/<slug> -> that wiki's ONE workbench (`wikis/<slug>/working`), once for its
  *                                     document, at the wear of a face that holds a writer's seat there (or of the face that stands it first)
@@ -411,7 +411,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
           const former = labelledRelations(projections).filter((r) => r !== face.relation && readFaceLabel(r, projections)?.petname.normalize("NFC") === seg);
           for (const r of [...former, face.relation!]) Object.assign(bases, readFaceBases(r, projections));
         }
-        await runWave({ source, uriDir: root, toBag, skipTop, ...(Object.keys(bases).length > 0 ? { bases } : {}), ...faceArg }, `${kind} ${seg}`);
+        await runWave({ source, uriDir: dirname(source), toBag, skipTop, ...(Object.keys(bases).length > 0 ? { bases } : {}), ...faceArg }, `${kind} ${seg}`);
       }
     }
 

@@ -173,6 +173,19 @@ test("RED: canon beside code on a lane runs the code's cells and the witness cel
   assert.deepEqual([canon.packages, canon.cells, canon.witnesses], ["none", [], false]);
 });
 
+test("RED: a lane that moves a source genesis carries (the engine's inputs, a packed plugin file) runs the witness cells, so genesis-parity reads it before the merge", () => {
+  for (const p of ["packages/lararium-tw5/plugins/lares-memetic-wikitext.json", "packages/lararium-tw5/plugins/lararium-boot-shadows.json",
+    "packages/lararium-tw5/src/generated-tw5-version.ts", "packages/lararium-tw5/scripts/build-tw5-vendor.ts", "TiddlyWiki5"]) {
+    const s = lanePush([p]);
+    assert.equal(s.witnesses, true, `${p}: ${s.why}`);
+    assert.match(s.why, /genesis/, `${p}: the scope names why the witnesses run`);
+  }
+  // A nested plugin file never packs (`genesisPackedPluginFiles`), and any other tw5 source keeps the narrow lane.
+  for (const p of ["packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid", "packages/lararium-tw5/src/carrier-edges.ts"]) {
+    assert.equal(lanePush([p]).witnesses, false, p);
+  }
+});
+
 test("RED: develop, main, a feature span and every other event run the full battery whatever the diff; a git fault fails open", () => {
   for (const ref of ["refs/heads/develop", "refs/heads/main", "refs/heads/feature/span"]) {
     const s = laneScope({ event: "push", ref, before: BEFORE, sha: SHA }, plantedGit({ fetch: "", "merge-base": BASE, diff: diff("packages/lares-cli/src/x.ts") }).git);

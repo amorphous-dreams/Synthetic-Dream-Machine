@@ -8,7 +8,7 @@
  * config, so nothing this door writes or reads reaches past the pool.
  *
  *   - `init [--face N]`: make the worn (or named) face's root a pool; a second run changes nothing and says "already". The
- *     vessel founds the same tree by itself, through the same init (`initFacePool`, `initRealmPool`), wherever it lays a pool
+ *     vessel founds the same tree by itself, through the same init (`initFacePool`, `initRealmPool`), wherever it lays an entity
  *     root with none standing (`ensurePoolTree`); `init` re-tends a standing pool's author, exclude block and hook by hand.
  *   - `check [--face N]`: the pool check over the repo standing here (or the named face's pool); exit 1 names each breach.
  *   - `open [--face N] [--launch]`: print (and run) `<editor> -n <face root> <realm pools>`; writes no workspace file. The
@@ -17,15 +17,17 @@
  *     `lar:` subject naming no face; a path standing off reads apart by name and stays unstaged. Never pushes.
  *   - `face [--face N]`: the face the house resolves and the pet name it wears (the host asks the vessel this alone).
  *
- * AND ONE POOL PER SHARED DOCUMENT (face-pools #/one-copy). A wiki several of the operator's own faces share (a cabal of one)
- * rests once, in its REALM's folder, named by the realm's local pet name (operator ruling 2026-11-19): the workbench mirror
- * `projections/realms/<realm pet name>/wikis/<slug>/`, or the workspace its share row names. Each wiki folder holds its OWN git
- * tree, `.git` at the folder's top, never one tree over the realm. `init --realm <realm pet name>` makes each wiki folder the
- * realm holds a pool under the wiki's identity (`<slug> <slug>@realm.invalid`), never a face's; `check` from one refuses a face root
- * inside it. A pet name binds nothing here: it is the human-scale grip on the crypto identities beneath it, so the check names no
- * pet-name row (an index file, an author, a remote); it guards crypto identity (a signing key two pools share) and structure
- * (one pool per face, no repo over the house's homes); `commit --realm <realm pet name>` stages each by
- * the synced base as the face commit does.
+ * ONE TREE PER ENTITY (operator ruling 2026-11-20: "Approve the new git entity root model."). A nameless entity (a face, a realm,
+ * a bound workspace) owns ONE disk root, and that root holds ONE git tree. A wiki several of the operator's own faces share (a
+ * cabal of one) rests once, in its REALM's root, named by the realm's local pet name (operator ruling 2026-11-19): the workbench
+ * mirror `projections/realms/<realm pet name>/wikis/<slug>/`, a capability of the realm's one tree (`.git` at
+ * `realms/<realm pet name>/`), or the workspace its share row names, which holds its own. `init --realm <realm pet name>` makes the
+ * realm's root a pool under the realm's identity (`<pet name> <folded>@realm.invalid`), never a face's, lifting any tree nested
+ * below it with its history kept, and each workspace the realm's wikis bind a pool under the wiki's identity; `check` from one
+ * refuses a face root inside it. A pet name binds nothing here: it is the human-scale grip on the crypto identities beneath it, so
+ * the check names no pet-name row (an index file, an author, a remote); it guards crypto identity (a signing key two pools share)
+ * and structure (one tree per entity root: none nested below a face or realm root, none over several; no repo over the house's
+ * homes); `commit --realm <realm pet name>` stages by the synced base as the face commit does, one commit per tree.
  *
  * A HOST VERB. The pools rest on the disk the house's projections rest on, so the door runs where that disk stands and git
  * never runs inside a container for a host pool ({@link surfaceHouse}). Where LAR_ROOT names the root (a dev or scratch
@@ -40,12 +42,12 @@
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
-import { join, posix, relative, resolve, sep } from "node:path";
+import { dirname, join, posix, relative, resolve, sep } from "node:path";
 import {
-  poolGit, POOL_PRE_COMMIT, faceEmailSlug, REALM_EMAIL_DOMAIN, initFacePool, initRealmPool, PoolTreeRefused, type PoolInitResult,
+  poolGit, POOL_PRE_COMMIT, faceEmailSlug, REALM_EMAIL_DOMAIN, initFacePool, initRealmPool, initWorkspacePool, liftNestedTrees, PoolTreeRefused, type PoolInitResult, type LiftedTree,
   faceRoot, faceSegmentRefusal, KAPAE_EXT, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
   larProjectionsHome, larConfigHome, larWorkspacesHome, syncedTreeDir, labelledRelations, readFaceLabel, REALMS_PROJECTION_DIR,
-  REALM_PLANES, findRealmLabel, realmPlacement,
+  REALM_PLANES, findRealmLabel, realmPlacement, realmRoot,
 } from "@lararium/node";
 import {
   ownPersonaPetname, carrierHash, digestsEqual, parseShareFile, SHARE_CONFIG_FILE,
@@ -269,7 +271,7 @@ export { faceEmailSlug, REALM_EMAIL_DOMAIN };
 export type SurfaceInitResult = PoolInitResult;
 
 /** The pools' one init, its refusal named in this door's grammar. */
-function byHand(init: () => PoolInitResult): SurfaceInitResult {
+function byHand<T extends PoolInitResult>(init: () => T): T {
   try { return init(); } catch (e) { if (e instanceof PoolTreeRefused) throw new SurfaceRefused(e.code, e.detail); throw e; }
 }
 
@@ -279,11 +281,17 @@ export function surfaceInit(root: string, petname: string): SurfaceInitResult {
 }
 
 /**
- * Make the realm pool at `root` (a shared wiki's workbench, standing) a pool under the REALM's identity: author
- * `<slug> <slug>@realm.invalid`, never a face's, since its history interleaves the operator's faces' commits (`initRealmPool`).
+ * Make the realm root at `root` (`projections/realms/<pet name>/`, standing) a pool under the REALM's identity, never a face's,
+ * since its history interleaves the operator's faces' commits (`initRealmPool`), and lift each tree nested below it into that one
+ * tree, its history kept (`liftNestedTrees`).
  */
-export function surfaceInitRealm(root: string, slug: string): SurfaceInitResult {
-  return byHand(() => initRealmPool(root, slug));
+export function surfaceInitRealm(root: string, petName: string): SurfaceInitResult & { readonly lifted: readonly LiftedTree[] } {
+  return byHand(() => ({ ...initRealmPool(root, petName), lifted: liftNestedTrees(root, petName) }));
+}
+
+/** Make a workspace a share row binds for one wiki (standing) a pool under the WIKI's identity (`initWorkspacePool`). */
+export function surfaceInitWorkspace(root: string, slug: string): SurfaceInitResult {
+  return byHand(() => initWorkspacePool(root, slug));
 }
 
 // ── check ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -295,12 +303,37 @@ const real = (p: string): string => { try { return realpathSync(p); } catch { re
 /** `inner` stands at or below `outer`. */
 const within = (inner: string, outer: string): boolean => { const r = relative(outer, inner); return r === "" || (!r.startsWith("..") && !r.startsWith(sep) && r !== ".."); };
 
-/** The face roots standing in this house: each folder under `projections/faces/`. */
-function houseFaceRoots(projections: string): string[] {
-  const faces = join(projections, FACES_PROJECTION_DIR);
+/** The entity roots of one kind standing in this house: each folder under `projections/<dir>/`. */
+function houseRoots(projections: string, dir: string): string[] {
+  const at = join(projections, dir);
   let names: string[];
-  try { names = readdirSync(faces); } catch { return []; }
-  return names.filter((n) => faceSegmentRefusal(n) === null).map((n) => join(faces, n)).filter((p) => { try { return statSync(p).isDirectory(); } catch { return false; } });
+  try { names = readdirSync(at); } catch { return []; }
+  return names.filter((n) => faceSegmentRefusal(n) === null).map((n) => join(at, n)).filter((p) => { try { return statSync(p).isDirectory(); } catch { return false; } });
+}
+/** The face roots standing in this house: each folder under `projections/faces/`. */
+const houseFaceRoots = (projections: string): string[] => houseRoots(projections, FACES_PROJECTION_DIR);
+/** The realm roots standing in this house: each folder under `projections/realms/`. */
+const houseRealmRoots = (projections: string): string[] => houseRoots(projections, REALMS_PROJECTION_DIR);
+
+/** How deep below an entity root the check looks for a nested tree: a plane, a slug folder in it, and one more. */
+const NESTED_DEPTH = 3;
+
+/** Each folder below `root` (to `NESTED_DEPTH`, dot folders unread) holding its own `.git`. */
+function nestedTrees(root: string): string[] {
+  const out: string[] = [];
+  const walk = (dir: string, depth: number): void => {
+    if (depth > NESTED_DEPTH) return;
+    let entries: import("node:fs").Dirent[];
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (!e.isDirectory() || e.name.startsWith(".")) continue;
+      const d = join(dir, e.name);
+      if (existsSync(join(d, ".git"))) { out.push(d); continue; }
+      walk(d, depth + 1);
+    }
+  };
+  walk(root, 1);
+  return out.sort();
 }
 
 /** THE POOL CHECK over the repo whose top stands at `top`, in a house whose homes are `projections` and `config`. */
@@ -310,10 +343,17 @@ export function surfaceCheck(top: string, projections: string, config: string): 
   for (const home of [projections, config]) {
     if (within(real(home), at)) breaches.push({ code: "surface-house-root", message: `the repo at ${at} holds the house's ${home}: no repo roots at projections/ or config/ (one pool per face, under faces/<pet name>/)` });
   }
-  // ONE TREE PER WIKI FOLDER: a repo at `realms/`, a realm's root or its `wikis/` would hold several wikis' histories in one.
-  const realms = real(join(projections, REALMS_PROJECTION_DIR));
-  const overRealm = relative(realms, at);
-  if (within(at, realms) && (overRealm === "" || overRealm.split(sep).length < 3)) breaches.push({ code: "surface-realm-tree", message: `the repo at ${at} spans a realm's wikis: each wiki folder (projections/realms/<realm pet name>/wikis/<slug>/) holds its own .git, never one tree over the realm` });
+  // ONE TREE PER ENTITY: a face root or a realm root holds the one tree; a tree nested below it splits that root's history.
+  const entityRoots = [...houseFaceRoots(projections), ...houseRealmRoots(projections)].map(real);
+  for (const root of entityRoots) {
+    if (root !== at && within(at, root)) breaches.push({ code: "surface-nested-tree", message: `the repo at ${at} nests inside the entity root ${root}: that root holds the one tree (its .git at ${root}), never a tree below it` });
+  }
+  if (entityRoots.includes(at)) {
+    for (const nested of nestedTrees(at)) breaches.push({ code: "surface-nested-tree", message: `a tree stands nested at ${nested} inside the entity root ${at}: the root's one tree holds it (a realm root lifts it at the next re-stand, or by \`lares surface init --realm\`)` });
+  }
+  for (const other of houseRealmRoots(projections).map(real)) {
+    if (other !== at && within(other, at)) breaches.push({ code: "surface-other-realm", message: `the repo at ${at} holds the realm root ${other}: one tree per realm, at its own root` });
+  }
   const roots = houseFaceRoots(projections).map((p) => ({ path: real(p), petname: p.slice(p.lastIndexOf(sep) + 1) }));
   for (const other of roots) {
     if (other.path !== at && within(other.path, at)) breaches.push({ code: "surface-other-face", message: `the repo at ${at} holds the face "${other.petname}"'s root ${other.path}: one pool per face` });
@@ -334,39 +374,45 @@ export function houseShareRows(config: string): ShareEntry[] {
   try { return parseShareFile(readFileSync(join(config, SHARE_CONFIG_FILE), "utf8")); } catch { return []; }
 }
 
-/** One wiki pool a realm holds: the wiki's slug and the folder its tree roots at. */
-export interface RealmPool { readonly slug: string; readonly root: string }
+/** One tree a realm's wikis rest in: the realm's own root (`kind: "realm"`, holding every wiki no workspace takes) or a workspace a
+ *  share row binds for one wiki (`kind: "workspace"`), with the wiki slugs it holds. */
+export interface RealmPool { readonly kind: "realm" | "workspace"; readonly root: string; readonly slugs: readonly string[] }
 
 /**
- * THE WIKI POOLS A NAMED REALM HOLDS: for each wiki its label names, the workspace its share row names (where that workspace binds
- * here), else its workbench folder `<projections>/realms/<realm pet name>/wikis/<slug>` (where it stands, `realmPlacement`). A
- * pet name no label carries refuses by name; a row naming a workspace that binds nowhere refuses by name.
+ * THE TREES A NAMED REALM'S WIKIS REST IN: the realm's root `<projections>/realms/<realm pet name>/` for every wiki its label names
+ * that no workspace takes, and the workspace each share row names for its wiki (where that workspace binds here); `unlaid` names
+ * each wiki of the realm's root whose folder stands nowhere yet. A pet name no label carries refuses by name; a row naming a
+ * workspace that binds nowhere refuses by name.
  */
-export function realmPoolsOf(doors: SurfaceDoors, petName: string): { readonly petName: string; readonly pools: readonly RealmPool[] } {
+export function realmPoolsOf(doors: SurfaceDoors, petName: string): { readonly petName: string; readonly pools: readonly RealmPool[]; readonly unlaid: readonly string[] } {
   const projections = doors.projections();
   const label = findRealmLabel(projections, petName);
   if (label === null) throw new SurfaceRefused("surface-realm-unnamed", `no realm on this house wears the pet name ${JSON.stringify(petName)}: \`lares realm list\` names them`);
   const rows = houseShareRows(doors.config());
   const at = realmPlacement(projections);
-  const pools = label.realms.map(({ slug }) => {
+  const inRoot: string[] = [], unlaid: string[] = [];
+  const workspaces: RealmPool[] = [];
+  for (const { slug } of label.realms) {
     const name = rows.find((r) => r.kind === "wiki" && r.slug === slug)?.workspace?.trim();
     if (name) {
       const dir = doors.workspace(name);
       if (dir === null) throw new SurfaceRefused("surface-realm-workspace-unbound", `the share row for "${slug}" names the workspace "${name}", and it binds no directory here: bind it (\`--workspace ${name}=<dir>\` at \`up\`, or LARES_WORKSPACES)`);
-      return { slug, root: dir };
+      workspaces.push({ kind: "workspace", root: dir, slugs: [slug] });
+      continue;
     }
-    return { slug, root: join(at.wikisBase(slug) ?? join(projections, REALMS_PROJECTION_DIR, label.petName, REALM_PLANES.wikis), slug) };
-  });
-  return { petName: label.petName, pools };
+    inRoot.push(slug);
+    if (dirOrNull(join(at.wikisBase(slug) ?? join(realmRoot(projections, label.petName), REALM_PLANES.wikis), slug)) === null) unlaid.push(slug);
+  }
+  return { petName: label.petName, pools: [{ kind: "realm", root: realmRoot(projections, label.petName), slugs: inRoot }, ...workspaces], unlaid };
 }
 
-/** The wiki a repo top stands as: the slug whose pool roots exactly there (a realm's wiki folder, or a share row's workspace),
+/** The pool a repo top stands as: a realm root's pet name, or the wiki slug of a share row's workspace whose top stands there;
  *  else null (a face pool, or no pool). */
 export function realmAt(top: string, doors: SurfaceDoors): string | null {
   const at = real(top);
   const realms = real(join(doors.projections(), REALMS_PROJECTION_DIR));
   const parts = relative(realms, at).split(sep);
-  if (within(at, realms) && parts.length === 3 && parts[1] === REALM_PLANES.wikis) return parts[2]!;
+  if (within(at, realms) && parts.length === 1 && parts[0] !== "") return parts[0]!;
   for (const row of houseShareRows(doors.config())) {
     const name = row.workspace?.trim();
     if (row.kind !== "wiki" || !name) continue;
@@ -381,25 +427,31 @@ export function realmAt(top: string, doors: SurfaceDoors): string | null {
 export interface RealmCheck { readonly breaches: readonly SurfaceBreach[]; readonly warnings: readonly string[] }
 
 /**
- * THE REALM CHECK over the realm pool for `slug` whose top stands at `top`. Beside the pool check's house-wide rows (no repo at
- * projections/ or config/, no house face root inside, no repo spanning a realm's wikis), it refuses a `faces/` folder at
- * the pool's top: a face root rests in its own pool, never inside a realm's. A pet name binds nothing: an author naming a face, an
- * index file and a remote on a cabal of one's realm all pass, since a realm pool commits unsigned under the wiki's identity and
- * carries no crypto identity a remote could join.
+ * THE REALM CHECK over the realm pool `name` (a realm root, or a workspace) whose top stands at `top`. Beside the pool check's
+ * house-wide rows (no repo at projections/ or config/, no house face root inside, no tree nested below an entity root), it refuses a
+ * `faces/` folder at the pool's top or at the top of a wiki or bag folder it holds: a face root rests in its own pool, never inside a
+ * realm's. A pet name binds nothing: an author naming a face, an index file and a remote on a cabal of one's realm all pass, since a
+ * realm pool commits unsigned under the realm's identity and carries no crypto identity a remote could join.
  */
-export function surfaceCheckRealm(top: string, slug: string, projections: string, config: string): RealmCheck {
+export function surfaceCheckRealm(top: string, name: string, projections: string, config: string): RealmCheck {
   const at = real(top);
   const breaches: SurfaceBreach[] = surfaceCheck(top, projections, config).filter((b) => b.code !== "surface-signing-key-shared");
-  if (existsSync(join(at, FACES_PROJECTION_DIR))) breaches.push({ code: "surface-realm-face-root", message: `${join(at, FACES_PROJECTION_DIR)} stands inside the realm pool "${slug}": a face root rests in its own pool (projections/faces/<pet name>/), never in a realm's` });
+  const tops = [at, ...[REALM_PLANES.wikis, REALM_PLANES.bags].flatMap((plane) => {
+    try { return readdirSync(join(at, plane), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => join(at, plane, e.name)); } catch { return []; }
+  })];
+  for (const t of tops) {
+    if (existsSync(join(t, FACES_PROJECTION_DIR))) breaches.push({ code: "surface-realm-face-root", message: `${join(t, FACES_PROJECTION_DIR)} stands inside the realm pool "${name}": a face root rests in its own pool (projections/faces/<pet name>/), never in a realm's` });
+  }
   return { breaches, warnings: [] };
 }
 
 // ── open ───────────────────────────────────────────────────────────────────────────────────────────────────
 
 /**
- * THE REALM POOLS A FACE BELONGS TO, as its own root reads them: each wiki slug it keeps a personal layer or a recovery folder for
- * (`personal/<slug>/`, `recovery/<slug>/`), mapped to that wiki's workbench folder in the realm that holds it
- * (`projections/realms/<realm pet name>/wikis/<slug>/`) where it stands. A slug whose workbench stands nowhere names no root.
+ * THE REALM ROOTS A FACE BELONGS TO, as its own root reads them: each wiki slug it keeps a personal layer or a recovery folder for
+ * (`personal/<slug>/`, `recovery/<slug>/`), mapped to the realm root that holds that wiki's workbench
+ * (`projections/realms/<realm pet name>/`, the realm's one git tree) where the workbench stands. A realm holding several of the
+ * face's wikis names its root once; a slug whose workbench stands nowhere names no root.
  */
 export function realmPools(projections: string, root: string): string[] {
   const slugs = new Set<string>();
@@ -409,8 +461,13 @@ export function realmPools(projections: string, root: string): string[] {
     for (const n of names) { try { if (statSync(join(root, plane, n)).isDirectory()) slugs.add(n); } catch { /* left since the listing */ } }
   }
   const at = realmPlacement(projections);
-  return [...slugs].sort().map((s) => { const base = at.wikisBase(s); return base === null ? null : join(base, s); })
-    .filter((p): p is string => { try { return p !== null && statSync(p).isDirectory(); } catch { return false; } });
+  const roots = new Set<string>();
+  for (const s of [...slugs].sort()) {
+    const base = at.wikisBase(s);
+    if (base === null || dirOrNull(join(base, s)) === null) continue;
+    roots.add(dirname(base));
+  }
+  return [...roots];
 }
 
 /**
@@ -659,7 +716,8 @@ async function cmdCommit(args: ParsedArgs, doors: SurfaceDoors): Promise<number>
   const { seam } = read;
   const named = realmOption(args);
   if ("stray" in named) return refuseUsage(args, "surface commit", helpLines("surface commit"), named.stray);
-  // A realm commits EACH of its wiki pools standing on disk, one commit per wiki tree; a standing folder with no tree refuses.
+  // A realm commits each tree its wikis rest in that stands on disk (its root, and any workspace a share row binds), ONE commit
+  // per tree; a standing root with no tree refuses.
   const roots = named.realm !== null
     ? realmPoolsOf(doors, named.realm).pools.filter((p) => dirOrNull(p.root) !== null).map((p) => p.root)
     : [faceRoot(doors.projections(), (await doors.face(args)).petname)];
@@ -680,16 +738,16 @@ async function cmdCommit(args: ParsedArgs, doors: SurfaceDoors): Promise<number>
 }
 
 /**
- * INIT A REALM: each wiki folder the realm holds becomes its own pool (`.git` at the folder's top, never one tree over the realm),
- * under the wiki's identity, never a face's. A wiki whose folder stands nowhere yet is named and left: the house lays it at the
- * wiki's next mount. A realm whose wikis all stand nowhere refuses by name.
+ * INIT A REALM: the realm's root becomes its one pool (`.git` at `realms/<pet name>/`, every wiki folder inside a capability of that
+ * tree) under the realm's identity, never a face's, lifting any tree nested below it with its history kept; each workspace a share
+ * row binds for one of its wikis becomes its own pool under that wiki's identity. A wiki whose folder stands nowhere yet is named
+ * and left: the house lays it at the wiki's next mount. A realm whose root and workspaces all stand nowhere refuses by name.
  */
 async function cmdInitRealm(args: ParsedArgs, doors: SurfaceDoors, petName: string): Promise<number> {
-  const { petName: realm, pools } = realmPoolsOf(doors, petName);
+  const { petName: realm, pools, unlaid } = realmPoolsOf(doors, petName);
   const projections = doors.projections();
   const standing = pools.filter((p) => dirOrNull(p.root) !== null);
-  const unlaid = pools.filter((p) => dirOrNull(p.root) === null);
-  if (standing.length === 0) throw new SurfaceRefused("surface-realm-unlaid", `no wiki folder of the realm "${realm}" stands yet${pools.length === 0 ? " (it holds no wiki: `lares realm move <slug> --to " + realm + "`)" : ` (${unlaid.map((p) => p.root).join(", ")})`}: the house lays each at the wiki's next mount`);
+  if (standing.length === 0) throw new SurfaceRefused("surface-realm-unlaid", `no folder of the realm "${realm}" stands yet${pools.every((p) => p.slugs.length === 0) ? " (it holds no wiki: `lares realm move <slug> --to " + realm + "`)" : ` (${pools.map((p) => p.root).join(", ")})`}: the house lays each at the wiki's next mount`);
   for (const { root } of standing) {
     for (const face of houseFaceRoots(projections)) {
       if (within(real(root), real(face))) throw new SurfaceRefused("surface-realm-in-face", `${root} rests inside the face root ${face}: a realm pool belongs to no face`);
@@ -698,17 +756,50 @@ async function cmdInitRealm(args: ParsedArgs, doors: SurfaceDoors, petName: stri
       if (within(real(home), real(root))) throw new SurfaceRefused("surface-house-root", `${root} holds the house's ${home}: no repo roots at projections/ or config/`);
     }
   }
-  const results = standing.map(({ slug, root }) => ({ slug, ...surfaceInitRealm(root, slug) }));
+  const results = standing.map((p) => {
+    const r = p.kind === "realm" ? surfaceInitRealm(p.root, realm) : { ...surfaceInitWorkspace(p.root, p.slugs[0]!), lifted: [] as readonly LiftedTree[] };
+    return { ...p, ...r, already: r.changed.length === 0 && r.lifted.length === 0 };
+  });
   emit(args, {
     ok: true,
-    data: { realm, pools: results.map((r) => ({ slug: r.slug, root: r.root, changed: r.changed, left: r.left, already: r.changed.length === 0 })), unlaid: unlaid.map((p) => p.slug), already: results.every((r) => r.changed.length === 0) },
+    data: {
+      realm, unlaid, already: results.every((r) => r.already),
+      pools: results.map((r) => ({ kind: r.kind, root: r.root, slugs: r.slugs, changed: r.changed, left: r.left, lifted: r.lifted, already: r.already })),
+    },
     human: () => {
       for (const r of results) {
-        console.log(r.changed.length === 0 ? `lares surface init: already a realm pool at ${r.root}` : `lares surface init: ${r.root} (the wiki "${r.slug}" of the realm "${realm}")`);
+        console.log(r.already ? `lares surface init: already a realm pool at ${r.root}` : `lares surface init: ${r.root} (${r.kind === "realm" ? `the realm "${realm}"'s one tree` : `the workspace of the wiki "${r.slugs[0]}"`})`);
         for (const c of r.changed) console.log(`  set  ${c}`);
+        for (const l of r.lifted) console.log(`  lift ${l.from}${l.head !== null ? ` (head ${l.head.slice(0, 12)} kept)` : " (no commit)"}; its git dir rests at ${l.keptAt}`);
         for (const l of r.left) console.log(`  left ${l}`);
       }
-      for (const p of unlaid) console.log(`  unlaid ${p.slug}: no folder stands at ${p.root} yet (the house lays it at the wiki's next mount)`);
+      for (const slug of unlaid) console.log(`  unlaid ${slug}: no folder stands for it yet (the house lays it at the wiki's next mount)`);
+    },
+  });
+  return 0;
+}
+
+const WORKSPACE_NAME = /^[a-z0-9][a-z0-9._-]{0,63}$/;
+
+/**
+ * INIT A WORKSPACE (the operator's ask; the house never founds a workspace's tree by itself): the bound folder at
+ * `/lar/workspaces/<name>` (the host's own directory for it) becomes a pool under a workspace author, through the pools' one init.
+ */
+function cmdInitWorkspace(args: ParsedArgs, doors: SurfaceDoors, name: string): number {
+  const root = doors.workspace(name);
+  if (root === null) throw new SurfaceRefused("surface-workspace-unbound", `the workspace "${name}" binds no directory here: bind it (\`--workspace ${name}=<dir>\` at \`up\`, or LARES_WORKSPACES)`);
+  if (!existsSync(join(root, ".git"))) {
+    const above = surfaceGit(root, ["rev-parse", "--is-inside-work-tree"]);
+    if (above.code === 0 && above.out.trim() === "true") throw new SurfaceRefused("surface-workspace-in-tree", `${root} rests inside another git work tree; a nested repo would split that history`);
+  }
+  const result = byHand(() => initWorkspacePool(root, name));
+  emit(args, {
+    ok: true,
+    data: { workspace: name, root, changed: result.changed, left: result.left, already: result.changed.length === 0 },
+    human: () => {
+      console.log(result.changed.length === 0 ? `lares surface init: already a workspace pool at ${root}` : `lares surface init: ${root} (the workspace "${name}")`);
+      for (const c of result.changed) console.log(`  set  ${c}`);
+      for (const l of result.left) console.log(`  left ${l}`);
     },
   });
   return 0;
@@ -717,6 +808,12 @@ async function cmdInitRealm(args: ParsedArgs, doors: SurfaceDoors, petName: stri
 async function cmdInit(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
   const named = realmOption(args, true);
   if ("stray" in named) return refuseUsage(args, "surface init", helpLines("surface init"), named.stray);
+  const workspace = args.options["workspace"];
+  if (workspace !== undefined) {
+    if (typeof workspace !== "string" || !WORKSPACE_NAME.test(workspace)) return refuseUsage(args, "surface init", helpLines("surface init"), `--workspace names a bound workspace (lower-case letters, digits, '.', '_' and '-'), never ${JSON.stringify(workspace)}`);
+    if (named.realm !== null || args.options["face"] !== undefined) return refuseUsage(args, "surface init", helpLines("surface init"), "--workspace names one pool: not beside --face or --realm");
+    return cmdInitWorkspace(args, doors, workspace);
+  }
   if (named.realm !== null) return cmdInitRealm(args, doors, named.realm);
   const face = await doors.face(args);
   const root = faceRoot(doors.projections(), face.petname);
@@ -775,12 +872,12 @@ async function cmdCheck(args: ParsedArgs, doors: SurfaceDoors): Promise<number> 
   return 1;
 }
 
-/** CHECK A REALM: the realm check over each of its wiki pools standing on disk; exit 1 names each breach with its pool. */
+/** CHECK A REALM: the realm check over each tree its wikis rest in that stands on disk; exit 1 names each breach with its pool. */
 async function cmdCheckRealm(args: ParsedArgs, doors: SurfaceDoors, petName: string): Promise<number> {
   const { petName: realm, pools } = realmPoolsOf(doors, petName);
   const standing = pools.filter((p) => existsSync(join(p.root, ".git")));
-  if (standing.length === 0) throw new SurfaceRefused("surface-no-pool", `no wiki pool of the realm "${realm}" stands yet: run \`lares surface init --realm ${realm}\``);
-  const read = standing.map((p) => ({ ...p, ...surfaceCheckRealm(p.root, p.slug, doors.projections(), doors.config()) }));
+  if (standing.length === 0) throw new SurfaceRefused("surface-no-pool", `no pool of the realm "${realm}" stands yet: run \`lares surface init --realm ${realm}\``);
+  const read = standing.map((p) => ({ ...p, ...surfaceCheckRealm(p.root, p.kind === "realm" ? realm : p.slugs[0]!, doors.projections(), doors.config()) }));
   const breaches = read.flatMap((r) => r.breaches.map((b) => ({ ...b, pool: r.root })));
   const warnings = read.flatMap((r) => r.warnings);
   emit(args, {
@@ -788,7 +885,7 @@ async function cmdCheckRealm(args: ParsedArgs, doors: SurfaceDoors, petName: str
     ...(breaches.length === 0 ? {} : { error: { code: "surface-check-breach", message: breaches.map((b) => b.message).join("; ") } }),
     data: { realm, pools: read.map((r) => r.root), breaches, warnings },
     human: () => {
-      if (breaches.length === 0) console.log(`lares surface check: the realm "${realm}" holds ${read.length} wiki pool(s), each under its own identity`);
+      if (breaches.length === 0) console.log(`lares surface check: the realm "${realm}" holds ${read.length} pool(s), each under its own identity`);
       else { console.error(`lares surface check: ${breaches.length} breach(es) in the realm "${realm}"`); for (const b of breaches) console.error(`  ${b.code}: ${b.message}`); }
       for (const w of warnings) console.warn(`  warn ${w}`);
     },

@@ -3,8 +3,8 @@
  * very mirror list the daemon VM hands its island (`daemonDiskMirrors`).
  *
  * THE LAYOUT (operator ruling, 2026-11-01, revised): the kahua wiki's working top (`wikis/daemon/working`) writes flat
- * files to `<projections>/faces/<pet name>/wiki`, as every wiki writes its working layer; a lift lands in `bags/kahua`, projected at
- * `<projections>/faces/<pet name>/stage/<title path>`; the daemon bag (`bags/daemon`) projects its AUTHORED records alone as the
+ * files to `<projections>/faces/<pet name>/wikis/daemon`, as every wiki writes its working layer; a lift lands in `bags/kahua`, projected at
+ * `<projections>/faces/<pet name>/bags/kahua/<title path>`; the daemon bag (`bags/daemon`) projects its AUTHORED records alone as the
  * daemon wiki's canon (`<projections>/bags/daemon`, operator 2026-11-08), so no control or house record (checkpoint,
  * persona act, cap event, group-secret seal, binding) ever reaches disk, and no `bags/daemon` dir stands while the bag
  * holds nothing authored, under the projections root or the workspace, even with the canon source (`LAR_BAGS`) at a
@@ -83,8 +83,8 @@ describe("the daemon VM's mirror list names the ruled layout", () => {
     const state = "/house/state";
     const mirrors = daemonDiskMirrors({ projectionRoot: state, canonBags: "/house/workspace/bags-absent", face: SITE });
     expect(mirrors.map((m) => [m.bagId, m.mirrorRoot])).toEqual([
-      [WORKING, join(state, "faces", "Heron", "wiki")],
-      [KAHUA_BAG, join(state, "faces", "Heron", "stage")],
+      [WORKING, join(state, "faces", "Heron", "wikis", "daemon")],
+      [KAHUA_BAG, join(state, "faces", "Heron", "bags", "kahua")],
       [CROSSROADS_DOC_URI, join(state, "bags", "crossroads")],
     ]);
     expect(mirrors.some((m) => m.bagId === DAEMON_BAG_ID), "the legacy daemon bag carries no canon mirror").toBe(false);
@@ -93,25 +93,25 @@ describe("the daemon VM's mirror list names the ruled layout", () => {
   });
 
   test("CONTROL: the working top and the stage mirror by their own minters", () => {
-    expect(daemonWorkingMirror("/s", SITE)).toEqual({ bagId: WORKING, mirrorRoot: join("/s", "faces", "Heron", "wiki") });
-    expect(kahuaStageMirror("/s", SITE)).toEqual({ bagId: KAHUA_BAG, mirrorRoot: join("/s", "faces", "Heron", "stage"), titlePaths: true });
+    expect(daemonWorkingMirror("/s", SITE)).toEqual({ bagId: WORKING, mirrorRoot: join("/s", "faces", "Heron", "wikis", "daemon") });
+    expect(kahuaStageMirror("/s", SITE)).toEqual({ bagId: KAHUA_BAG, mirrorRoot: join("/s", "faces", "Heron", "bags", "kahua"), titlePaths: true });
   });
 });
 
 describe("the kahua disk witnesses", () => {
-  test("(a) a write in the kahua wiki lands as a flat file under <projections>/faces/<pet name>/wiki", async () => {
+  test("(a) a write in the kahua wiki lands as a flat file under <projections>/faces/<pet name>/wikis/daemon", async () => {
     const { projector, state, workspace } = rig();
     await projector.flush(WORKING, "Plain Note");
     await projector.flush(WORKING, "lar:///ha.ka.ba/t/kahua/note");
-    expect(readFileSync(join(state, "faces", "Heron", "wiki", "Plain Note.tid"), "utf8")).toContain("title: Plain Note");
-    expect(existsSync(join(state, "faces", "Heron", "wiki", "ha.ka.ba", "t", "kahua", "note.mem"))).toBe(true);
+    expect(readFileSync(join(state, "faces", "Heron", "wikis", "daemon", "Plain Note.tid"), "utf8")).toContain("title: Plain Note");
+    expect(existsSync(join(state, "faces", "Heron", "wikis", "daemon", "ha.ka.ba", "t", "kahua", "note.mem"))).toBe(true);
     expect(walk(join(workspace, "wikis")), "the private working top reached the workspace wikis/").toEqual([]);
   });
 
-  test("(b) a lift lands under <projections>/faces/<pet name>/stage/<title path>", async () => {
+  test("(b) a lift lands under <projections>/faces/<pet name>/bags/kahua/<title path>", async () => {
     const { projector, state, workspace } = rig();
     await projector.flush(KAHUA_BAG, "lares-dev/notes/stage");
-    expect(readFileSync(join(state, "faces", "Heron", "stage", "lares-dev", "notes", "stage.tid"), "utf8")).toContain("title: lares-dev/notes/stage");
+    expect(readFileSync(join(state, "faces", "Heron", "bags", "kahua", "lares-dev", "notes", "stage.tid"), "utf8")).toContain("title: lares-dev/notes/stage");
     expect(existsSync(join(workspace, "faces")), "the stage reached the workspace bags/").toBe(false);
     expect(existsSync(join(state, "bags", "kahua")), "an untagged stage folder").toBe(false);
   });
@@ -136,7 +136,7 @@ describe("the kahua disk witnesses", () => {
     await projector.flush(WORKING, `${OUTCOME_URI_PREFIX}req-0001`);
     await projector.flush(WORKING, `${DAEMON_BAG_ID}/flows/couple`);
     await projector.flush(WORKING, "Plain Note");
-    const kahua = walk(join(state, "faces", "Heron", "wiki"));
+    const kahua = walk(join(state, "faces", "Heron", "wikis", "daemon"));
     expect(kahua).toContain("Plain Note.tid");
     expect(kahua).toContain("ha.ka.ba/bags/control/outcomes/req-0001.mem");
     expect(kahua).toContain("ha.ka.ba/bags/daemon/flows/couple.mem");
@@ -150,6 +150,6 @@ describe("the kahua disk witnesses", () => {
     expect(readdirSync(join(workspace, "bags", "daemon"))).toEqual([]);
     expect(readdirSync(join(workspace, "bags", "kahua"))).toEqual([]);
     expect(daemonBagDirs(state)).toEqual([]);
-    expect(existsSync(join(state, "faces", "Heron", "stage", "lares-dev", "notes", "stage.tid"))).toBe(true);
+    expect(existsSync(join(state, "faces", "Heron", "bags", "kahua", "lares-dev", "notes", "stage.tid"))).toBe(true);
   });
 });

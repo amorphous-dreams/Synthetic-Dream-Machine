@@ -34,6 +34,7 @@ import {
   makeShareSetReactor, makeShareListReactor, readShareEntries,
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
   faceEngines, type FaceEngines,
+  composeWikiEngineSource, wikiEngines, type WikiEngines, type MemeVerbOptions,
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
@@ -171,7 +172,7 @@ import { readFace, answerDocStoreAsks, announceSlotDoc, announceLiftedDoc, floor
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { slotAnnouncer } from "./slot-announcer.js";
 import { makeLitFaceDocs, makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
-import { composeSiblingEngineSource } from "./face-engine-source.js";
+import { bootFromSet, composeSiblingEngineSource } from "./face-engine-source.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
@@ -240,6 +241,9 @@ export function kelWalkNote(walk: { readonly unreadable?: string; readonly fork?
 // answer). The closure reaches for no face, so standing it costs the boot nothing.
 // The refusal is the house's named `VerbRefusal` (reason `waking-floor`), so a caller routes on the
 // reason and never on the prose.
+/** A named wiki's engine no ask touched for this long closes (owed saves drain first); the next ask composes afresh. */
+const NAMED_WIKI_ENGINE_COLD_MS = 10 * 60_000;
+
 const lightAFace = (verb: string): VerbReactor => async () => {
   throw new VerbRefusal("waking-floor",
     `[daemon] ${verb}: this vessel stands at the WAKING FLOOR and holds no face — ` +
@@ -452,6 +456,27 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       ...(wear ? { wear } : {}),
     });
   }));
+  /**
+   * EVERY WIKI ITS ENGINE: each registered wiki the worn face reaches answers the tiddler door in its OWN engine (`wiki-engine`),
+   * composed on its first ask over that wiki's recipe as the worn face sees it (canon by reference, the shared working layer,
+   * its own personal and draft layers) through the meme door's own reaches, booted from the island's own boot set, and closed
+   * when cold. The mount never changes on this island, so the engines answer its face alone.
+   */
+  let namedWikiEngines: WikiEngines | null = null;
+  const namedWikiEnginesOf = (ctx: IslandContext, reaches: Pick<MemeVerbOptions, "recipeOf" | "slotStore" | "writeSlot" | "reach" | "floorCanon">): WikiEngines =>
+    (namedWikiEngines ??= wikiEngines((slug, need) => {
+      const wear = wearOf(ctx.repo).wear;
+      return composeWikiEngineSource({
+        recipeOf: reaches.recipeOf ?? (async () => null),
+        slotStore: reaches.slotStore ?? (async () => null),
+        ...(reaches.writeSlot ? { writeSlot: reaches.writeSlot } : {}),
+        ...(reaches.reach ? { reach: (key: string, bag: string) => reaches.reach!(key, bag) } : {}),
+        ...(reaches.floorCanon ? { floorCanon: reaches.floorCanon } : {}),
+        held: (slot) => ctx.handles.get(slot) ?? null,
+        boot: bootFromSet(ctx.bootSet, ctx.resolveByCid),
+        ...(wear ? { wear } : {}),
+      }, slug, need);
+    }, { idleMs: NAMED_WIKI_ENGINE_COLD_MS }));
   const litFaceTargetOf = (ctx: IslandContext) => {
     return makeLitFaceTarget({
       worn: () => asLit(daemonAuth),
@@ -1016,15 +1041,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // and a write lands through the live wiki so the cascade routes it to the working layer. No action string rides here.
       // EACH HAT REACHED BY NAME: each engine verb answers in the engine of the face whose session placed it, the mount's for the
       // mounted face and a lit sibling's OWN engine (its own daemon documents) for that sibling; every answer names the face.
+      // EVERY WIKI ITS ENGINE: the mounted face's `recipe: <slug>` answers in that wiki's own engine (`namedWikiEnginesOf`).
       const enginePorts: FaceEnginePorts = { ...lanePorts, engine: (face) => siblingEnginesOf(ctx).of(face) };
-      const engineVerb = (verb: string, make: (opts: typeof memeOpts) => VerbReactor): VerbReactor =>
-        faceEngineReactor(verb, make(memeOpts), (engine) => make({ ...memeOpts, tw5: engine.tw5, composite: engine.composite }), enginePorts);
-      registry.register("wiki-filter", engineVerb("wiki-filter", makeWikiFilterReactor), { summary: "Run a TiddlyWiki filter in the daemon wiki's own engine; answers a bounded page of titles (or rows with named fields), `total`, and a `next` cursor to hand back as `after`. A malformed filter refuses `filter-malformed`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      const engineOpts = { ...memeOpts, wikis: namedWikiEnginesOf(ctx, memeOpts) };
+      const engineVerb = (verb: string, make: (opts: typeof memeOpts & { readonly wikis?: WikiEngines }) => VerbReactor): VerbReactor =>
+        faceEngineReactor(verb, make(engineOpts), (engine) => make({ ...memeOpts, tw5: engine.tw5, composite: engine.composite }), enginePorts);
+      registry.register("wiki-filter", engineVerb("wiki-filter", makeWikiFilterReactor), { summary: "Run a TiddlyWiki filter in the wiki's own engine (`recipe: default` the daemon wiki, `recipe: <slug>` any wiki this face reaches); answers a bounded page of titles (or rows with named fields), `total`, and a `next` cursor to hand back as `after`. A malformed filter refuses `filter-malformed`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-get", engineVerb("tiddler-get", makeTiddlerGetReactor), { summary: "Read one tiddler with its fields, its `hash` (a writer's base) and its `textHash`; `fields` names a subset, `text: false` leaves the text home, `slot` reads one slot of a meme.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("wiki-render", engineVerb("wiki-render", makeWikiRenderReactor), { summary: "Wikify a title or a wikitext span through the daemon wiki's own engine to `text` or `html`, under a byte cap with a `next` cursor.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("wiki-render", engineVerb("wiki-render", makeWikiRenderReactor), { summary: "Wikify a title or a wikitext span through the wiki's own engine (the daemon wiki or any wiki this face reaches) to `text` or `html`, under a byte cap with a `next` cursor.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-put", engineVerb("tiddler-put", makeTiddlerPutReactor), { summary: "Patch one tiddler: set fields, unset fields, add and remove tags, and move the text only where named; `base` = the hash last read (stale answers `conflict`), `create` lands only where no tiddler stands. Lands in the wiki's working layer.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-delete", engineVerb("tiddler-delete", makeTiddlerDeleteReactor), { summary: "Remove one tiddler by the family law: with no `mode` a delete deletes plainly (each record leaves its own layer, no tombstone; `mode: plain` in the answer) and retracts a kāpae that hides nothing; a meme root or slot answers its `consequence` and `decision: refused` (`tiddler-delete-in-a-family`) unless `family: true` names the family act, which lands every member as one change; where a lower layer holds the title too, no mode refuses `delete-mode-needed` and the caller names one: `kapae` tombstones in a writable layer and shadows the records beneath, `reveal` retracts the topmost record so the one beneath surfaces; each act names `holds` and `shadowed` or `reveals`; `base` = the hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("wiki-status", engineVerb("wiki-status", makeWikiStatusReactor), { summary: "Name each layer the daemon wiki composes and whether the session's face reads and writes it; `working` names the layer a write lands in.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("wiki-status", engineVerb("wiki-status", makeWikiStatusReactor), { summary: "Name each layer the wiki composes (the daemon wiki, or any wiki this face reaches) and whether the session's face reads and writes it; `working` names the layer a write lands in.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live
       // activation state and this writes the LOCAL, volatile $:/temp/lares/switcher

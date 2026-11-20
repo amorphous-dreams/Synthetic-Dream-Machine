@@ -634,14 +634,49 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect((asReader["layers"] as Array<{ read: boolean }>).every((l) => l.read === true)).toBe(true);
   });
 
-  test("the caller's face decides reach: a face with no read on the anchor refuses every read; a named wiki waits on the relay by name", async () => {
+  test("RED: wiki-status reads a mounted canon layer promotion-only: a write reaches canon by action verb alone, so no lane write lands there; the working layer stays writable", async () => {
+    const r = await rig();
+    // A named wiki's engine mounts its canon bag writable (the routing, which `defaultWritable: false` keeps off canon); status must not call that a write door.
+    const GARDEN = bagUri("garden");
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: GARDEN, store: new MemoryTiddlerStore(GARDEN), writable: true });
+    composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true, defaultWritable: true });
+    const opts: TiddlerVerbOptions = { ...r.opts, composite, wiki: { slug: "lares", gate: GARDEN } };
+    const asWriter = await makeWikiStatusReactor(opts)({ recipe: "lares" }, ctx(writer));
+    expect(asWriter["layers"]).toEqual([
+      { bag: GARDEN, mounted: "promotion-only", read: true, write: false },
+      { bag: DAEMON, mounted: "writable", read: true, write: true, working: true },
+    ]);
+  });
+
+  test("the caller's face decides reach: a face with no read on the anchor refuses every read; a wiki this island reaches no engine for refuses by name", async () => {
     const r = await rig();
     await expect(makeWikiFilterReactor(r.opts)({ ...A, filter: "[tag[memory]]" }, ctx(stranger))).rejects.toThrow(/cap-denied: read/);
     await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: "Note 01" }, ctx(stranger))).rejects.toThrow(/cap-denied: read/);
     await expect(makeWikiRenderReactor(r.opts)({ ...A, title: "Note 01" }, ctx(stranger))).rejects.toThrow(/cap-denied: read/);
     await expect(makeWikiFilterReactor(r.opts)({ filter: "[tag[memory]]" }, ctx())).rejects.toMatchObject({ reason: "no-container" });
-    await expect(makeWikiFilterReactor(r.opts)({ recipe: "lares", filter: "[tag[memory]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
+    await expect(makeWikiFilterReactor(r.opts)({ recipe: "lares", filter: "[tag[memory]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-unreached" });
+    await expect(makeWikiStatusReactor(r.opts)({ recipe: "lares" }, ctx())).rejects.toMatchObject({ reason: "wiki-unreached" });
     await expect(makeTiddlerPutReactor(r.opts)({ bag: "lares", title: "x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
+  });
+
+  test("RED: a named wiki answers in its own engine, never the anchor's: every verb asks the named wiki's door, and every answer names the wiki", async () => {
+    const anchor = await rig();
+    const named = await rig();
+    named.engine.wiki.addTiddler({ title: "Only in lares", tags: "memory", text: "the named wiki's own" });
+    const asked: Array<{ slug: string; write: boolean }> = [];
+    const opts: TiddlerVerbOptions = { ...anchor.opts, wikis: { of: async (slug, need) => { asked.push({ slug, ...need }); return slug === "lares" ? { tw5: named.engine, composite: named.composite } : null; } } };
+    const seen = await makeWikiFilterReactor(opts)({ recipe: "lares", filter: "[[Only in lares]] [[Other]]" }, ctx());
+    expect(seen).toMatchObject({ recipe: "lares", titles: ["Only in lares", "Other"] });
+    expect(await makeWikiFilterReactor(opts)({ ...A, filter: "[[Only in lares]is[tiddler]]" }, ctx()), "the anchor reads none of it").toMatchObject({ recipe: "default", titles: [] });
+    const put = await makeTiddlerPutReactor(opts)({ recipe: "lares", title: "Landed in lares", text: "x" }, ctx());
+    expect(put).toMatchObject({ recipe: "lares", decision: "put", bag: DAEMON });
+    expect(named.engine.wiki.tiddlerExists("Landed in lares")).toBe(true);
+    expect(anchor.engine.wiki.tiddlerExists("Landed in lares")).toBe(false);
+    expect(await makeWikiStatusReactor(opts)({ recipe: "lares" }, ctx())).toMatchObject({ recipe: "lares", working: DAEMON });
+    expect(asked).toEqual([{ slug: "lares", write: false }, { slug: "lares", write: true }, { slug: "lares", write: false }]);
+    await expect(makeWikiFilterReactor(opts)({ recipe: "elsewhere", filter: "[all[]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-unreached" });
+    await expect(makeWikiFilterReactor(opts)({ recipe: "daemon", filter: "[all[]]" }, ctx()), "the daemon wiki answers to default alone").rejects.toMatchObject({ reason: "wiki-unreached" });
   });
 
   test("a record another bag answers stays out of a face that holds no read on that bag", async () => {

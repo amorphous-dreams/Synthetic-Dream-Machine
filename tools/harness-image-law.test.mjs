@@ -50,6 +50,17 @@ test("the QA runner builds the pinned harness and never binds the repository", (
   assert.match(target, /COPY --from=build .*browser-test-custody\.js/);
 });
 
+test("the vessel image stands `lares` on PATH, one link to the CLI the image carries, laid while root", () => {
+  const dockerfile = readFileSync(join(ROOT, "Dockerfile"), "utf8");
+  const serve = dockerfile.slice(dockerfile.search(/AS serve\b/), dockerfile.search(/AS mcp-runtime\b/));
+  const link = serve.match(/^\s*RUN\s+ln\s+-s\S*\s+(\S+)\s+(\S+)\s*$/m);
+  assert.ok(link, "the serve stage links `lares` into a PATH directory");
+  assert.equal(link[1], "/app/packages/lares-cli/bin/lares.mjs", "the link names the CLI the image copies in");
+  assert.equal(link[2], "/usr/local/bin/lares");
+  assert.ok(serve.indexOf(link[0]) < serve.search(/^USER node$/m), "the link lays before the stage drops to the node user");
+  assert.ok(serve.indexOf(link[0]) > serve.indexOf("packages/lares-cli/bin"), "the link follows the copy of the CLI");
+});
+
 function fileList() {
   if (!process.env.HARNESS_LAW_FILE_LIST) return FILES.map((f) => join(ROOT, f));
   return JSON.parse(readFileSync(process.env.HARNESS_LAW_FILE_LIST, "utf8")).map((f) => resolve(ROOT, f));

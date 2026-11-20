@@ -565,28 +565,33 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     details: [
       "  lares surface init     make the worn (or named) face's root a pool: .git (0700), the house's ignore list, a local author, the pool-check hook",
       "  lares surface check    the pool check over the repo standing here; exit 1 names each breach (the pre-commit hook runs it)",
-      "  lares surface open     print `<editor> -n <face root> <realm pools>`; --launch runs it; writes no workspace file",
+      "  lares surface open     print `<editor> -n <face root> <realm roots>`; --launch runs it; writes no workspace file",
       "  lares surface commit   commit only what the house already agrees with, under a lar: subject naming no face; never pushes",
       "  lares surface face     the face the house resolves and its pet name (the host asks the vessel this alone)",
     ],
     examples: ["lares surface init", "lares surface open --launch", "lares surface commit -m sitting-close", "lares surface check --face 1"],
-    flags: ["--face N   face index (the worn face where absent)", "--realm <realm pet name>   (init, check, commit) each wiki pool the realm holds, not a face's", "--launch   (open) run the window line on this machine", "-m <seam>   (commit) the seam the subject names (by-hand where absent)"],
-    next: ["lares surface open --launch", "lares surface init --realm notes   # each wiki of the realm its own git tree", "lares shore   # a path that reads apart stands off the house"],
+    flags: ["--face N   face index (the worn face where absent)", "--realm <realm pet name>   (init, check, commit) the realm's one tree (and any workspace its wikis bind), not a face's", "--launch   (open) run the window line on this machine", "-m <seam>   (commit) the seam the subject names (by-hand where absent)"],
+    next: ["lares surface open --launch", "lares surface init --realm notes   # the realm's root its one git tree", "lares shore   # a path that reads apart stands off the house"],
     meme: "lar:///ha.ka.ba/kahua/memory/project/face-pools",
   },
   "surface init": {
-    usage: "usage: lares surface init [--face N | --realm <realm pet name>]",
+    usage: "usage: lares surface init [--face N | --realm <realm pet name> | --workspace <name>]",
     synopsis:
       "Make the worn (or named) face's root, projections/faces/<pet name>/, a git working tree: .git inside it at 0700; .git/info/exclude carries the " +
       "house's one ignore list (HOUSE_IGNORED: .vscode/, .shore/, temp/, *.orphans/, the atomic writer's temps, a personal layer's view state such as $__StoryList.tid; the vessel's watch keeps that block current at each arm) while .meta, .kapae, .mem and .tid stay " +
       "committable; local config sets user.name to the pet name, user.email to <slug>@face.invalid and commit.gpgsign=false, never a global config; " +
       "a pre-commit hook runs `lares surface check`. A second init changes nothing and says already; a hook of another hand stands, named. " +
-      "--realm <realm pet name> makes EACH wiki folder the realm holds its own pool instead (.git at the folder's top, never one tree over the " +
-      "realm), each at the workspace its share row names, else projections/realms/<realm pet name>/wikis/<slug>/: the same block plus its top's " +
-      "recovery/ and temp/, author <slug> <slug>@realm.invalid (the wiki's identity, never a face's), the same hook. A wiki folder standing nowhere " +
-      "yet is named and left; a realm no label names, or whose wikis all stand nowhere, refuses by name.",
-    examples: ["lares surface init", "lares surface init --face 1", "lares surface init --realm notes"],
-    flags: ["--face N   face index (the worn face where absent)", "--realm <realm pet name>   each wiki pool the realm holds (not beside --face)"],
+      "--realm <realm pet name> makes the realm's ROOT, projections/realms/<realm pet name>/, its one pool instead (one tree per entity: every " +
+      "wiki folder inside rides that tree, never a tree of its own): the same block plus each wiki folder's recovery/ and temp/, author " +
+      "<pet name> <folded>@realm.invalid (the realm's identity, never a face's), the same hook; a tree nested below the root lifts into it with " +
+      "its history kept (its git dir rests in .git/lifted/). A workspace a share row names for one of its wikis takes its own pool, author " +
+      "<slug> <slug>@realm.invalid. A wiki folder standing nowhere yet is named and left; a realm no label names, or whose root and " +
+      "workspaces all stand nowhere, refuses by name. " +
+      "--workspace <name> makes the operator's bound workspace (seen at /lar/workspaces/<name>) one pool by the same init, on the operator's ask: " +
+      "the house never founds a workspace's tree by itself (the wake offers this where a bound workspace holds no tree); a workspace binding no " +
+      "directory, or resting inside another git work tree, refuses by name.",
+    examples: ["lares surface init", "lares surface init --face 1", "lares surface init --realm notes", "lares surface init --workspace backup"],
+    flags: ["--face N   face index (the worn face where absent)", "--realm <realm pet name>   the realm's root and its wikis' workspaces (not beside --face)", "--workspace <name>   one bound workspace as a pool (not beside --face or --realm)"],
     next: ["lares surface open --launch"],
   },
   "surface check": {
@@ -594,17 +599,17 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     synopsis:
       "The pool check over the repo standing at this directory (or the named face's pool). A pet name binds nothing here: it names no " +
       "refusal, so an index file, an author or a remote carrying pet names passes. It refuses what guards a crypto identity or the pool's " +
-      "structure: another face's root; any repo holding projections/ or config/, or spanning a realm's wikis (a repo at " +
-      "realms/<realm pet name>/); and a signing key another face pool in the house carries. It reads local config alone and exits 1 " +
-      "naming each breach. From a realm pool (or --realm <realm pet name>, over each of its wiki pools) it also refuses a faces/ folder.",
+      "structure: another face's root or realm's root; any repo holding projections/ or config/; a tree nested below a face or realm " +
+      "root (that root holds the one tree); and a signing key another face pool in the house carries. It reads local config alone and exits 1 " +
+      "naming each breach. From a realm pool (or --realm <realm pet name>, over each of its pools) it also refuses a faces/ folder.",
     examples: ["lares surface check", "lares surface check --face 1 --json", "lares surface check --realm notes"],
-    flags: ["--face N   check that face's pool wherever this runs", "--realm <realm pet name>   check each wiki pool of that realm wherever this runs"],
+    flags: ["--face N   check that face's pool wherever this runs", "--realm <realm pet name>   check each pool of that realm wherever this runs"],
   },
   "surface open": {
     usage: "usage: lares surface open [--face N] [--launch]",
     synopsis:
-      "Print the one window line: `<editor> -n` over the worn face's root and the realm pools it belongs to (each wiki it keeps a personal layer or a " +
-      "recovery folder for, where that wiki's workbench folder stands in its realm). --launch runs it. It writes no workspace file. The editor " +
+      "Print the one window line: `<editor> -n` over the worn face's root and the realm roots it belongs to (the entity roots: each realm whose workbench holds a wiki " +
+      "the face keeps a personal layer or a recovery folder for, once per realm). --launch runs it. It writes no workspace file. The editor " +
       "reads from the house config tiddler $:/config/lares/surface/Editor (<config>/surface-editor.tid: its text names the command, as " +
       "code-insiders), else `code`.",
     examples: ["lares surface open", "lares surface open --launch"],
@@ -617,9 +622,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "with its carrier, a removal stages where no base stands; a .kapae shadow stages where its bytes equal the house's own write of it, " +
       "its removal where the house lowered it), and commit them under `lar:///surface.keeps.the-sitting/<seam> — N carriers`, " +
       "naming no face, the carrier URIs in the body, the author from the pool's local config. A path standing off reads apart by name and stays " +
-      "unstaged. It never pushes. --realm <realm pet name> keeps each wiki pool's sitting the same way, one commit per wiki tree, under each wiki's author.",
+      "unstaged. It never pushes. --realm <realm pet name> keeps the realm's sitting the same way, ONE commit over its root's tree under the realm's author (and one per workspace its wikis bind).",
     examples: ["lares surface commit", "lares surface commit -m sitting-close", "lares surface commit --realm notes"],
-    flags: ["--face N   face index", "--realm <realm pet name>   each wiki pool the realm holds", "-m <seam>   the seam the subject names, one slug (by-hand where absent)"],
+    flags: ["--face N   face index", "--realm <realm pet name>   the realm's tree and its wikis' workspaces", "-m <seam>   the seam the subject names, one slug (by-hand where absent)"],
     next: ["lares shore   # each path that read apart"],
   },
   "surface face": {
@@ -632,13 +637,16 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   tiddler: {
-    usage: "usage: lares tiddler <get | put | delete> <title> (--recipe <slug> | --bag <slug>)   (this phase answers --recipe default)",
+    usage: "usage: lares tiddler <get | put | delete> <title> --recipe <slug>   (default: the daemon wiki; any slug: a wiki this face reaches)",
     synopsis:
       "THE TIDDLER DOOR — one record with its fields, whatever its type: a plain note, a data tiddler, a meme's root " +
-      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon. `get` reads the " +
+      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon: `--recipe default` " +
+      "names the worn face's daemon wiki, and `--recipe <slug>` any wiki this face reaches (one it hosts, or one shared " +
+      "to it), composed over that wiki's canon, its shared working layer and this face's own layers; a wiki the face " +
+      "reaches none of refuses `wiki-unreached`. `get` reads the " +
       "record (fields, then the text) and the `base` hash a writer hands back; `put` PATCHES: it sets and unsets " +
       "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it, landing in the " +
-      "wiki's working layer; `delete` removes a plain tiddler plainly: the record leaves its layer and no tombstone " +
+      "wiki's working layer (this face's own personal layer of a wiki where it holds no writer's seat); `delete` removes a plain tiddler plainly: the record leaves its layer and no tombstone " +
       "rises; a meme root or slot answers the consequence the delete would land and refuses by name " +
       "(`tiddler-delete-in-a-family`) unless `--family` names the family act, which lands the root and its slots as " +
       "one change. Only a lower layer makes a delete a choice: where one holds the title too, a delete with no mode " +
@@ -663,10 +671,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares wiki filter '[[Room 4]backlinks[]]' --recipe default               # the link graph rides filters",
       "lares wiki render Handover --recipe default --form html                  # transclusions resolved by the engine",
       "lares wiki status --recipe default                                       # which layer takes a write for this face",
+      "lares wiki filter '[tag[road]sort[title]]' --recipe kahu                 # a shared wiki, in its own engine",
+      "lares tiddler put \"Road note\" --recipe kahu --create --text \"first words\"   # lands in that wiki's working layer",
     ],
     flags: [
-      "--recipe <slug>      the wiki read or written (this phase: default, the daemon mount's wiki)",
-      "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling's tiddler acts wait for its own engine and refuse by name)",
+      "--recipe <slug>      the wiki read or written: default (the worn face's daemon wiki) or any wiki this face reaches",
+      "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling answers from its own daemon wiki, --recipe default)",
       "--slot <#/name>      (get) one slot of the meme the title names",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
       "--skinny             (get) every field, the text left home",

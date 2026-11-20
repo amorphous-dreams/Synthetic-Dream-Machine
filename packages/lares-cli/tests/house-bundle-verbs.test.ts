@@ -107,12 +107,12 @@ const FACE = "projections/faces/hearth-one";
 
 /** The house as the old founding left it: a worn face's working folder, stage, drafts, temp, a minted bag, and what never travels. */
 function seedHouse(): void {
-  put(`${FACE}/wiki/ha.ka.ba/kahua/memory/heron.tid`, tid(MEMORY, "remember the heron"));
-  put(`${FACE}/wiki/ha.ka.ba/notes/pond.tid`, tid(NOTE, "the pond at dusk"));
-  put(`${FACE}/wiki/ha.ka.ba/notes/gone.kapae`, kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
+  put(`${FACE}/wikis/daemon/ha.ka.ba/kahua/memory/heron.tid`, tid(MEMORY, "remember the heron"));
+  put(`${FACE}/wikis/daemon/ha.ka.ba/notes/pond.tid`, tid(NOTE, "the pond at dusk"));
+  put(`${FACE}/wikis/daemon/ha.ka.ba/notes/gone.kapae`, kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
   put(`${FACE}/recovery/daemon/draft-one.tid`, tid("draft one", "half a thought"));
-  put(`${FACE}/wiki/temp/scratch.tid`, tid("scratch", "a passing note"));
-  put(`${FACE}/stage/ha.ka.ba/kahua/memory/heron.tid`, tid(MEMORY, "remember the heron"));
+  put(`${FACE}/wikis/daemon/temp/scratch.tid`, tid("scratch", "a passing note"));
+  put(`${FACE}/bags/kahua/ha.ka.ba/kahua/memory/heron.tid`, tid(MEMORY, "remember the heron"));
   put("projections/realms/garden/bags/garden/ha.ka.ba/garden/rose.tid", tid("lar:///ha.ka.ba/garden/rose", "a rose"));
   put("sensoriums/memory/persistence/testimony.ndjson", "{\"witness\":1}\n");
   put("hearth/vessel/store.bin", "old keys");
@@ -170,8 +170,8 @@ describe("the house bundle verbs", () => {
 
   test("face working shadows and canon land in target face mirrors", async () => {
     const gone = "lar:///ha.ka.ba/memory/gone", canon = "lar:///ha.ka.ba/memory/canon";
-    put(`${FACE}/wiki/ha.ka.ba/memory/gone.kapae`, kapaeShadowBody(gone));
-    put(`${FACE}/canon/ha.ka.ba/memory/canon.tid`, tid(canon, "canon memory"));
+    put(`${FACE}/wikis/daemon/ha.ka.ba/memory/gone.kapae`, kapaeShadowBody(gone));
+    put(`${FACE}/bags/daemon/ha.ka.ba/memory/canon.tid`, tid(canon, "canon memory"));
     const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     expect(manifest.rows.some((r) => r.layer === "kapae" && r.title === gone)).toBe(true);
     expect(manifest.rows.some((r) => r.layer === "daemon-canon" && r.title === canon)).toBe(true);
@@ -181,9 +181,9 @@ describe("the house bundle verbs", () => {
     expect(result.tallies.kapae.landed).toBe(2);
     expect(after.bagRecords.get(daemonFaceCanonBag(F2))?.get(canon)).toBe(tid(canon, "canon memory"));
     expect(result.tallies.faceCanon.landed).toBe(1);
-    expect(after.waves.find((w) => w.toBag === daemonFaceCanonBag(F2))?.source).toBe(join(root, `${FACE}/canon`));
-    expect(after.waves.find((w) => w.toBag === "lar:///ha.ka.ba/wikis/daemon/working")?.source).toBe(join(root, `${FACE}/wiki`));
-    expect(readFileSync(join(root, `${FACE}/wiki/ha.ka.ba/memory/gone.kapae`), "utf8")).toBe(kapaeShadowBody(gone));
+    expect(after.waves.find((w) => w.toBag === daemonFaceCanonBag(F2))?.source).toBe(join(root, `${FACE}/bags/daemon`));
+    expect(after.waves.find((w) => w.toBag === "lar:///ha.ka.ba/wikis/daemon/working")?.source).toBe(join(root, `${FACE}/wikis/daemon`));
+    expect(readFileSync(join(root, `${FACE}/wikis/daemon/ha.ka.ba/memory/gone.kapae`), "utf8")).toBe(kapaeShadowBody(gone));
   });
 
   test("a mirror file holding a different record is left as it stands, and the row rides on to INGEST's three-way gate — no byte-drift stand-off", async () => {
@@ -272,7 +272,7 @@ describe("the house bundle verbs", () => {
     expect(after.waves.flatMap((w) => w.candidates).some((c) => c.uri === "lar:///ha.ka.ba/garden/rose")).toBe(false);
     expect(after.lifts).toEqual([{ face: 0, title: MEMORY, text: "remember the heron", signer: "new-grant", parent: null }]);
     expect(readFileSync(join(root, `${FACE}/recovery/daemon/draft-one.tid`), "utf8")).toBe(tid("draft one", "half a thought"));
-    expect(readFileSync(join(root, `${FACE}/wiki/temp/scratch.tid`), "utf8")).toBe(tid("scratch", "a passing note"));
+    expect(readFileSync(join(root, `${FACE}/wikis/daemon/temp/scratch.tid`), "utf8")).toBe(tid("scratch", "a passing note"));
     // The re-declare list replayed what the fresh face did not hold yet: the Handle and the chair.
     expect(after.acts).toEqual(["handle h0 Heron", "seat h0 east"]);
     expect(Object.values(result.tallies).every((t) => t.refused.length === 0 && t.stoodOff.length === 0)).toBe(true);
@@ -437,9 +437,9 @@ describe("the house bundle verbs", () => {
   });
 
   test("carry-keeps-a-free-titled-record — a record whose title owns no lar: address carries under the title its own file states", async () => {
-    put(`${FACE}/wiki/plain note.tid`, tid("plain note", "a free note"));
+    put(`${FACE}/wikis/daemon/plain note.tid`, tid("plain note", "a free note"));
     // CONTROL: a file whose own title names a lar: address its siting does not derive stays skipped, never re-addressed.
-    put(`${FACE}/wiki/stray.tid`, tid("lar:///ha.ka.ba/notes/elsewhere", "misplaced"));
+    put(`${FACE}/wikis/daemon/stray.tid`, tid("lar:///ha.ka.ba/notes/elsewhere", "misplaced"));
     const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     expect(manifest.rows.find((r) => r.path === "faces/f0/working/plain note.tid")?.title).toBe("plain note");
     expect(manifest.rows.find((r) => r.path === "faces/f0/working/stray.tid")?.title).toBeNull();
@@ -515,7 +515,7 @@ describe("the house bundle verbs", () => {
     // reset -> found: projections stay (survive-refound), and the new face wears another pet name, so nothing claims hearth-one's root.
     rmSync(join(root, "hearth"), { recursive: true, force: true });
     const after = new FakeVessel([{ handleIndex: 0, petname: "someone-else", relation: F2 }], "new-grant");
-    put("projections/faces/someone-else/wiki/ha.ka.ba/notes/new.tid", tid("lar:///ha.ka.ba/notes/new", "after"));
+    put("projections/faces/someone-else/wikis/daemon/ha.ka.ba/notes/new.tid", tid("lar:///ha.ka.ba/notes/new", "after"));
     const refused = await houseExport(out, { acceptOmissions: false, doors: after.doors() }).then(() => null, (e: Error) => e);
     expect(refused).toBeInstanceOf(BundleRefused);
     expect((refused as BundleRefused).code).toBe("carry-unclaimed-face-folder");

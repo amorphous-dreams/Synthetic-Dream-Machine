@@ -14,8 +14,9 @@
  *   - `move <wiki slug> --to <realm pet>`: the wiki (and its canon bag) moves to that realm, minted where no label wears the pet
  *     name; it keeps its canon realm id (the label only gathers it), and a label the move empties leaves, named.
  *
- * A rename or a move relabels at once, and the folder moves at a QUIET POINT (`settleRealmMoves`), its `.git` with it: at once
- * where no vessel answers; else at the vessel's next lock or re-stand, which the line says. Until then the wiki reads where it
+ * A rename or a move relabels at once, and the folders move at a QUIET POINT (`settleRealmMoves`): a rename moves the realm's whole
+ * root, its one tree with it; a move carries the wiki's folder from one realm tree to the other, each side committing under a
+ * message naming both ends. At once where no vessel answers; else at the vessel's next lock or re-stand, which the line says. Until then the wiki reads where it
  * stands, never half-moved.
  *   - `list`: each realm, its pet name, its wikis' folders and the canon realm ids it holds. Local alone.
  *

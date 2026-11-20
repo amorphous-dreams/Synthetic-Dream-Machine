@@ -242,14 +242,35 @@ export async function syncCheckout(dir: string): Promise<SyncAnswer> {
   if (plan.act !== "fast-forward") {
     if (plan.act !== "stand") return { ok: false, line: fetched + plan.line };
     const kept = await keepPins(dir);
-    return { ok: kept.ok, line: fetched + plan.line + kept.line };
+    return { ok: kept.ok, line: fetched + plan.line + kept.line + (kept.ok ? await heldWork(dir) : "") };
   }
   const from = (await out(["rev-parse", "HEAD"])) ?? "";
   const merged = await gitIn(dir, ["merge", "--ff-only", "--quiet", "@{upstream}"]);
   if (merged.code !== 0) return { ok: false, line: `${fetched}the fast-forward of ${branch} to ${upstream} refused (${merged.stderr.trim().split("\n").at(-1) || `exit ${merged.code}`}); nothing moved` };
   const to = (await out(["rev-parse", "HEAD"])) ?? "";
   const kept = await keepPins(dir);
-  return { ok: kept.ok, line: `${fetched}${branch} fast-forwarded ${behind} commit(s) from ${upstream}: ${from.slice(0, 12)}..${to.slice(0, 12)}${kept.line}` };
+  return { ok: kept.ok, line: `${fetched}${branch} fast-forwarded ${behind} commit(s) from ${upstream}: ${from.slice(0, 12)}..${to.slice(0, 12)}${kept.line}${kept.ok ? await heldWork(dir) : ""}` };
+}
+
+/**
+ * WORK HELD AT A PIN. The superproject's clean reading (`--ignore-submodules=all`) passes a submodule whose pin did not move yet
+ * holds local or untracked work, so the answer names each such submodule: it never blocks, and nothing it holds is touched. The
+ * returned line (empty where none holds work) leads with `; `. A submodule the pins step stopped on never reaches here.
+ */
+async function heldWork(dir: string): Promise<string> {
+  const listed = await gitIn(dir, ["submodule", "status", "--recursive"]);
+  if (listed.code !== 0) return "";
+  const held: string[] = [];
+  for (const l of listed.stdout.split("\n")) {
+    const m = /^([ +\-U])([0-9a-f]{40}) (\S+)/.exec(l);
+    if (!m || m[1] === "-") continue;
+    const status = await gitIn(join(dir, m[3]!), ["status", "--porcelain"]);
+    if (status.code === 0 && status.stdout.trim() !== "") held.push(m[3]!);
+  }
+  if (held.length === 0) return "";
+  return held.length === 1
+    ? `; submodule ${held[0]} holds local or untracked changes at its pin, left as it stands`
+    : `; submodules ${held.join(", ")} hold local or untracked changes at their pins, left as they stand`;
 }
 
 /**

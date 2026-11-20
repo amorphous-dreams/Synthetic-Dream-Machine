@@ -25,6 +25,8 @@
  *     red), and `plugins` names the sha256 of the `floor-plugin-offering` seed row's bytes, a row of kind
  *     floor and the plugin-offering mime; a manifest naming another offering, or a seed lacking the row,
  *     reads red.
+ *   · FLOOR RIDES RELEASES: a canon carrier beside a coherent floor reads green (the witness reads no canon);
+ *     a plugin edit beside the same floor still reads DRIFT.
  */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -167,6 +169,19 @@ await test("FLOOR: a coherent manifest, snapshot rows and release witness read g
     assert.equal(run.status, 0, out);
     assert.match(out, /3 source artifact\(s\) compared against 8 genesis blob\(s\)/);
     assert.doesNotMatch(out, /NO SOURCE|FLOOR\s+|RED:/);
+  });
+});
+
+await test("FLOOR RIDES RELEASES: a canon carrier the floor never cut reads green; a plugin edit beside the same floor still reads DRIFT", async () => {
+  const carrier = { "bags/lares/ha.ka.ba/lares/ref/edited-on-develop.mem": "a canon edit the last release never cut\n" };
+  await withTree({ ...floorPlant(), ...carrier }, (run, out) => {
+    assert.equal(run.status, 0, out);
+    assert.doesNotMatch(out, /DRIFT|FLOOR\s+|RED:/);
+  });
+  await withTree({ ...floorPlant(), ...carrier, [GRAMMAR_PATH]: MOVED_GRAMMAR }, (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, new RegExp(`DRIFT\\s+${GRAMMAR_ID}`));
+    assert.doesNotMatch(out, /FLOOR\s+/);
   });
 });
 

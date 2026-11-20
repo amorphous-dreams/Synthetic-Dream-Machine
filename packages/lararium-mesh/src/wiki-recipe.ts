@@ -374,7 +374,7 @@ const FACE_RELATION = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[
 
 /**
  * THE DAEMON WIKI'S CANON FOR ONE FACE: `bags/daemon-<F>`, F the relation the face's verified founding record pins (a BAG
- * identity: its disk folder takes the face's pet name, `faces/<pet name>/canon`). Minted at the face's first worn stand and named in
+ * identity: its disk folder takes the face's pet name, `faces/<pet name>/bags/daemon`). Minted at the face's first worn stand and named in
  * that face's own catalog; the daemon document (`bags/daemon`) keeps no canon role.
  */
 export const DAEMON_WIKI_SLUG = "daemon";

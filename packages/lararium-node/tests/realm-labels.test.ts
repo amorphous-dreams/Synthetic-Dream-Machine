@@ -10,12 +10,16 @@
  *       realm, and a face's pet name
  *   RL3 one slug rests in one realm: placing it in another regroups it; it reads where it stands until the quiet point's
  *       settle moves its folder (its `.git` with it), and an emptied realm folder leaves
- *   RL4 a rename relabels at once; the settle moves the folder, and a folder standing in both places moves nothing, named
+ *   RL3c a wiki moving between two realm trees: its files leave one tree and land in the other, each side commits, and each
+ *       commit names both ends
+ *   RL4 a rename relabels at once; the settle moves the realm's whole root (its one tree with it), and a folder standing in
+ *       both places moves nothing, named
  *   RL5 the default pet name: a realm with no label takes its slug, written once (`realms/<slug>/wikis`, `/bags`); a default that
  *       meets another realm's pet name takes the slug plus the shortest prefix of its canon realm id, or the shortest counter
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -81,6 +85,44 @@ describe("the realm label", () => {
     expect(code(() => placeInRealm(p, "Forge", { slug: "daemon", id: null }))).toBe("realm-slug-private");
   });
 
+  test("★ RL3c a wiki moving between two realm trees: the files leave one tree and land in the other, each side commits, each commit names both ends ★", () => {
+    const g = (cwd: string, ...args: string[]): string => {
+      const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
+      const r = spawnSync("git", ["-c", "core.quotepath=off", ...args], { cwd, env, encoding: "utf8" });
+      if (r.status !== 0) throw new Error(`git ${args.join(" ")}: ${r.stderr}`);
+      return (r.stdout ?? "").trim();
+    };
+    const tree = (dir: string, who: string): void => {
+      mkdirSync(dir, { recursive: true });
+      g(dir, "init", "-q", "-b", "main"); g(dir, "config", "user.name", who); g(dir, "config", "user.email", `${who.toLowerCase()}@realm.invalid`); g(dir, "config", "commit.gpgsign", "false");
+    };
+    nameRealm(p, "Garden"); nameRealm(p, "Forge");
+    placeInRealm(p, "Garden", { slug: "notes", id: null });
+    placeInRealm(p, "Garden", { slug: "lore", id: null });
+    placeInRealm(p, "Forge", { slug: "works", id: null });
+    const garden = realmRoot(p, "Garden"), forge = realmRoot(p, "Forge");
+    tree(garden, "Garden"); tree(forge, "Forge");
+    for (const [root, slug] of [[garden, "notes"], [garden, "lore"], [forge, "works"]] as const) {
+      mkdirSync(join(root, "wikis", slug), { recursive: true });
+      writeFileSync(join(root, "wikis", slug, "a.tid"), `title: a\n\n${slug}\n`);
+      g(root, "add", "-A"); g(root, "commit", "-q", "--no-verify", "-m", `lays ${slug}`);
+    }
+    placeInRealm(p, "Forge", { slug: "notes", id: null });
+    const r = settleRealmMoves(p);
+    expect(r.moved).toEqual([{ from: join(garden, "wikis", "notes"), to: join(forge, "wikis", "notes") }]);
+    expect(g(garden, "ls-tree", "-r", "--name-only", "HEAD").split("\n")).toEqual(["wikis/lore/a.tid"]);
+    expect(g(forge, "ls-tree", "-r", "--name-only", "HEAD").split("\n")).toEqual(["wikis/notes/a.tid", "wikis/works/a.tid"]);
+    for (const root of [garden, forge]) {
+      const msg = g(root, "log", "-1", "--format=%B");
+      expect(msg).toContain("lar:///wiki.moves.between-realms/notes");
+      expect(msg).toContain('the realm "Garden"');
+      expect(msg).toContain('the realm "Forge"');
+      expect(g(root, "status", "--porcelain")).toBe("");
+    }
+    expect(g(forge, "log", "-1", "--format=%an")).toBe("Forge");
+    expect(g(garden, "log", "-1", "--format=%an")).toBe("Garden");
+  });
+
   test("RL3b a move mints the target realm where none wears it, keeps the canon realm id, and drops the label it empties", () => {
     ensureRealmLabel(p, "notes", "ab".repeat(32));
     const r = moveWikiToRealm(p, "notes", "Garden");
@@ -100,7 +142,8 @@ describe("the realm label", () => {
     expect(existsSync(realmLabelPath("Garden", p))).toBe(false);
     expect(readRealmLabels(p).map((l) => [l.petName, l.realms.map((x) => x.slug)])).toEqual([["Orchard", ["notes"]]]);
     expect(realmPlacement(p).wikisBase("notes"), "read where it stands until the quiet point").toBe(join(p, "realms", "Garden", "wikis"));
-    settleRealmMoves(p);
+    // The realm's whole root moves in one rename (its one tree with it), since every folder it holds goes to one realm none holds yet.
+    expect(settleRealmMoves(p).moved).toEqual([{ from: join(p, "realms", "Garden"), to: join(p, "realms", "Orchard") }]);
     expect(existsSync(join(p, REALMS_PROJECTION_DIR, "Garden"))).toBe(false);
     expect(readFileSync(join(realmRoot(p, "Orchard"), "wikis", "notes", "a.tid"), "utf8")).toContain("x");
     // Both places standing: nothing moves, and the settle names it.

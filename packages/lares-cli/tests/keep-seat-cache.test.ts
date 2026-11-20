@@ -46,7 +46,7 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = root;
   scratch = mkdtempSync(join(tmpdir(), "lar-keep-cache-out-"));
   await plantKeptSeat(root);
-  const p = join(root, "projections", "faces", "otter-face", "wiki", "ha.ka.ba", "notes", "pond.tid");
+  const p = join(root, "projections", "faces", "otter-face", "wikis", "daemon", "ha.ka.ba", "notes", "pond.tid");
   mkdirSync(dirname(p), { recursive: true });
   writeFileSync(p, "title: lar:///ha.ka.ba/notes/pond\ntype: text/vnd.tiddlywiki\n\nthe pond\n");
 });

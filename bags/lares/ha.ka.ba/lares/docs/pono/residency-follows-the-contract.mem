@@ -32,7 +32,7 @@ A moʻolelo of the talk-story between the operator and the house on 2026-11-14, 
 ''A document follows its cap contract, and every carry act follows the document.'' A carry act names any of: a disk mirror, a seed, an export, an import, a sync to a fleet device. None of them asks which face stands worn first; each asks which document it carries and who holds that document.
 
 |! document |! held by |! folder |! seeded and carried |
-| a daemon wiki, a kahua stage | one face | the face's root, named by its pet name (`faces/<pet name>/wiki`, `.../stage`) | per face, where the root stands |
+| a daemon wiki, a kahua stage | one face | the face's root, named by its pet name (`faces/<pet name>/wikis/daemon`, `.../bags/kahua`) | per face, where the root stands |
 | a face's `personal` layer of a wiki | one face | `faces/<pet name>/personal/<slug>` | per face |
 | a wiki's workbench (`wikis/<slug>/working`) | the realm: its owner and every seated face (OWED on one vessel: the rest gate, below) | one folder for the wiki | once per document, at any seated writer's wear |
 | house canon | the Kahu seat | `bags/<slug>` | at the steward |
@@ -177,6 +177,6 @@ On the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Oy3Xj2IOqmymOsuIWLZQurx9bNlGUKJJhNRvSNBfVjc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jf6R6jbI9mPsYINq7uT0gszUDfGe_nX4MYvfik6V_A0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

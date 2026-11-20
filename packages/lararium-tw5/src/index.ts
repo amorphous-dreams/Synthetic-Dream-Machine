@@ -112,8 +112,10 @@ export type {
 export { IslandAdaptor } from "./island-adaptor.js";
 export { buildIslandRecipe, wikiLandedCovers, bindRecoveryAtRest } from "./island-recipe.js";
 export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe.js";
-export { composeFaceEngine, faceEngines } from "./face-engine.js";
-export type { FaceEngine, FaceEngines, FaceEngineSource } from "./face-engine.js";
+export { composeFaceEngine, enginePool, faceEngines } from "./face-engine.js";
+export { composeWikiEngine, composeWikiEngineSource, wikiEngines } from "./wiki-engine.js";
+export type { WikiEngine, WikiEngineDeps, WikiEngineSource, WikiEngines } from "./wiki-engine.js";
+export type { EnginePool, FaceEngine, FaceEngines, FaceEngineSource } from "./face-engine.js";
 export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
 export type { VerbPlacement } from "./verb-vm.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
@@ -220,7 +222,7 @@ export type { MemeVerbOptions } from "./meme-verbs.js";
 export {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
 } from "./tiddler-verbs.js";
-export type { TiddlerVerbOptions } from "./tiddler-verbs.js";
+export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
 // The projection law behind `--render`, the Export dropdown, `$tw.lares.meme.project` and `meme-project`.
 export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, wikiResolver, PROJECT_TARGETS, MEME_TEMPLATE } from "./meme-project.js";
 export type { ProjectTarget, ProjectRoute, MemeProjection } from "./meme-project.js";
@@ -305,7 +307,7 @@ export {
 } from "./sigil-attrs.js";
 export type { SigilAttr, SigilValueKind, LostPositional } from "./sigil-attrs.js";
 export type { CarrierShape, CarrierMarks } from "./carrier-shape.js";
-export { readCarrierEdges } from "./carrier-edges.js";
+export { homedInTheKahuWorkbench, readCarrierEdges } from "./carrier-edges.js";
 export type { CarrierEdge, EdgeForm } from "./carrier-edges.js";
 // THE STAGE A GOVERNED CARRIER STANDS IN — read off `tags`, so a filter answers it in the wiki.
 export {

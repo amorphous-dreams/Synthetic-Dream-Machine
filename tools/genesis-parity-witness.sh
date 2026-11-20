@@ -47,6 +47,12 @@
 # row. The seed's floor witness names the manifest row. A carrier edit cannot move this floor; only a
 # release cuts and names another snapshot. CAS and git checks cover its files as every blob.
 #
+# THE FLOOR RIDES RELEASES. The develop bake (`build:genesis`) carries the snapshots the last release
+# cut forward byte for byte and re-cuts code alone; only the release bake (`build:genesis-release`, a
+# `main` release's cut) re-cuts them from canon. So a canon edit on develop reads green here and moves
+# no genesis byte, while a plugin or engine edit still reads DRIFT: its bake moves the code blob, the
+# offering and the manifest's code fields, and leaves every snapshot where the release left it.
+#
 # ── ONE SERVED SEED ─────────────────────────────────────────────────────────────────────────────
 # The hearth's Pronaos serves `/genesis/seed.json` and `/genesis/cas/<cid>` off the genesis root it boots, and the page
 # reads the seed there. So the web dist carries no genesis: a `packages/lararium-web/dist/genesis` directory, or any dist

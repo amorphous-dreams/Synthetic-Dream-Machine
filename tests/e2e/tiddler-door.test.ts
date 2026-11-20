@@ -16,6 +16,10 @@
  *   a malformed filter and a family delete refuse by name    (CONTROLS)
  *   a family delete under the family flag lands whole         (THE JOIN)
  *
+ * Then EVERY WIKI ITS ENGINE: the face founds a wiki of its own, and the same door (both skins) puts, filters, gets, renders,
+ * reads the status of and deletes a record in THAT wiki's own engine, while the daemon wiki reads none of it; a wiki no
+ * recipe names refuses `wiki-unreached`.
+ *
  * Then THE CALLER'S FACE DECIDES REACH: the vessel wears a second face, and the same filter reaches none of the
  * first face's daemon wiki.
  *
@@ -112,6 +116,8 @@ function payload(result: unknown): { ok: true; data: Record<string, unknown> } |
 
 const dataOf = (r: CliResult): Record<string, unknown> => ((r.json?.["data"] ?? {}) as Record<string, unknown>);
 const D = ["--recipe", "default", "--json"] as const;
+/** The wiki the walk founds to reach a named wiki's own engine. */
+const WALK_WIKI = "walkwiki";
 
 let lar: LarInstance;
 let entry: Entry;
@@ -380,6 +386,51 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(left).toEqual([]);
     expect((await lar.cli(["tiddler", "get", uriOf(extra), ...D])).code).toBe(3);
     expect((await lar.cli(["meme", "get", uriOf(extra), "--recipe", "default", "--json"])).code).not.toBe(0);
+  }, 300_000);
+
+  test("EVERY WIKI ITS ENGINE: a wiki the face founds answers the tiddler door in its own engine, on both skins; the daemon wiki reads none of it", async () => {
+    const init = await lar.cli(["wiki", "init", WALK_WIKI, "--json"]);
+    say(`CLI wiki init ${WALK_WIKI}`, dataOf(init));
+    expect(init.code, `${init.stdout}\n${init.stderr}`).toBe(0);
+    const W = ["--recipe", WALK_WIKI, "--json"] as const;
+    const put = await lar.cli(["tiddler", "put", "Walk wiki note", ...W, "--create", "--text", "a note in the named wiki", "--fields", "{\"tags\":\"walk\"}"]);
+    say(`CLI tiddler put --recipe ${WALK_WIKI}`, dataOf(put));
+    expect(put.code, `${put.stdout}\n${put.stderr}`).toBe(0);
+    expect(dataOf(put)).toMatchObject({ recipe: WALK_WIKI, decision: "put", bag: `lar:///ha.ka.ba/wikis/${WALK_WIKI}/working` });
+    const filter = "[tag[walk]]";
+    // LIVENESS: the put lands through the wiki's own engine and its working document; the walk COUNTS looks.
+    let seen: CliResult | null = null;
+    for (let look = 0; look < 30; look++) {
+      seen = await lar.cli(["wiki", "filter", filter, ...W]);
+      if (seen.code === 0 && (dataOf(seen)["titles"] as string[] | undefined)?.includes("Walk wiki note")) break;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    say(`CLI wiki filter --recipe ${WALK_WIKI}`, dataOf(seen!));
+    expect(dataOf(seen!)).toMatchObject({ recipe: WALK_WIKI, titles: ["Walk wiki note"] });
+    const got = await lar.cli(["tiddler", "get", "Walk wiki note", ...W]);
+    expect(got.code, got.stderr).toBe(0);
+    expect((dataOf(got)["tiddler"] as { bag: string }).bag).toBe(`lar:///ha.ka.ba/wikis/${WALK_WIKI}/working`);
+    const status = await lar.cli(["wiki", "status", ...W]);
+    say(`CLI wiki status --recipe ${WALK_WIKI}`, dataOf(status));
+    expect(dataOf(status)).toMatchObject({ recipe: WALK_WIKI, working: `lar:///ha.ka.ba/wikis/${WALK_WIKI}/working` });
+    const rendered = await lar.cli(["wiki", "render", "--text", "{{Walk wiki note}}", ...W]);
+    expect(dataOf(rendered)).toMatchObject({ recipe: WALK_WIKI, text: "a note in the named wiki" });
+    const seat = await speak(entry, [
+      { name: "wiki_filter", arguments: { filter, recipe: WALK_WIKI } },
+      { name: "tiddler_get", arguments: { title: "Walk wiki note", recipe: WALK_WIKI, fields: ["tags"] } },
+      { name: "wiki_filter", arguments: { filter: "[all[]]", recipe: "nowhere-at-all" } },
+    ]);
+    say(`MCP wiki_filter recipe=${WALK_WIKI}`, payload(seat.results[0]));
+    expect(payload(seat.results[0])).toEqual({ ok: true, data: dataOf(seen!) });
+    expect(payload(seat.results[1])).toMatchObject({ ok: true, data: { recipe: WALK_WIKI, tiddler: { fields: { title: "Walk wiki note", tags: "walk" } } } });
+    const unreached = payload(seat.results[2]);
+    say("MCP wiki_filter on a wiki no recipe names", unreached);
+    expect(unreached.ok === false && unreached.said.includes("wiki-unreached")).toBe(true);
+    // CONTROL: the daemon wiki answers none of the named wiki's records.
+    expect(dataOf(await lar.cli(["wiki", "filter", filter, ...D]))).toMatchObject({ titles: [], total: 0 });
+    const removed = await lar.cli(["tiddler", "delete", "Walk wiki note", ...W]);
+    say(`CLI tiddler delete --recipe ${WALK_WIKI}`, dataOf(removed));
+    expect(dataOf(removed)).toMatchObject({ recipe: WALK_WIKI, decision: "removed" });
   }, 300_000);
 
   test("THE CALLER'S FACE DECIDES REACH: a second face, worn, reaches none of the first face's daemon wiki", async () => {

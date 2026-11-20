@@ -4,7 +4,7 @@
  * CLI's `lares watch` fills the wave with its INGEST settle; the vessel fills it over the WORN face's pool.
  *
  * THE VESSEL'S HOST (`armFacePoolWatch`) watches one face root, `projections/faces/<pet name>/`, and its planes alone:
- * `wiki/`, `canon/`, `stage/` (the kahua stage flows back from disk too: RULED floor 4 (b)), `personal/`, `recovery/`. It
+ * `wikis/daemon/`, `bags/daemon/`, `bags/kahua/` (the kahua stage flows back from disk too: RULED floor 4 (b)), `personal/`, `recovery/`. It
  * lives the life of the composition that wears the face:
  *
  *   arm    OFF THE BOOT PATH: the arm hands back at once, and its work runs beside the boot. It names the wake first (every
@@ -21,7 +21,8 @@
  *
  * A SHARED WIKI'S WORKBENCH TAKES THE SAME SEAT (`armWorkspaceWatch`): its one disk copy whichever face wears
  * (`<projections>/realms/<realm pet name>/wikis/<slug>`, or the workspace its share row names), watched whole and committed at each close
- * (`workspaceCommitSeam`, naming no face) where its git tree stands (`lares surface init`); with none, a plain mirror.
+ * (`workspaceCommitSeam`, naming no face) into the one tree of the entity root that holds it (the realm root, or the workspace's own
+ * top); with none standing, a plain mirror.
  *
  * Meme: lar:///ha.ka.ba/kahua/memory/project/face-pools
  */
@@ -29,7 +30,7 @@
 import { watch as fsWatch, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, type FSWatcher, type WatchListener } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { isAbsolute, join, sep } from "node:path";
-import { FACE_PLANES, POOL_EXCLUDE_OPEN, REALM_EXCLUDE_LINES, TEMP_LAYER_DIR, houseExcludeLines, houseIgnored, siteFileToTitle, withExcludeBlock } from "./bag-paths.js";
+import { FACE_PLANES, facePlaneOf, facePlaneSiteDir, POOL_EXCLUDE_OPEN, REALM_EXCLUDE_LINES, WORKSPACE_EXCLUDE_LINES, TEMP_LAYER_DIR, houseExcludeLines, houseIgnored, siteFileToTitle, withExcludeBlock } from "./bag-paths.js";
 import { ensurePoolTree, poolTreeLine } from "./pool-tree.js";
 
 // ── the drain seat ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -134,7 +135,9 @@ export function cookieSelfTest(dir: string, watcher: FSWatcher, windowMs: number
 
 // ── the pool's git history ─────────────────────────────────────────────────────────────────────────────────────
 
-/** The planes of a face root the host watches, commits and reads the wake from. `temp/` places back as files, never here. */
+/** The planes of a face root the host watches, commits and reads the wake from, each a posix path under the root (`FACE_PLANES`):
+ *  the daemon wiki `wikis/daemon`, its canon `bags/daemon`, the kahua stage `bags/kahua`, `personal` and `recovery`. `temp/`
+ *  places back as files, never here. */
 export const WATCHED_PLANES: readonly string[] = [FACE_PLANES.wiki, FACE_PLANES.canon, FACE_PLANES.stage, FACE_PLANES.personal, FACE_PLANES.recovery];
 
 /** The subject every sitting's close commits under: a `lar:` subject that names the close and never a face. */
@@ -266,7 +269,7 @@ export function stageEditsSinceSitting(pool: string, git: GitRun = runGit): Stag
 function stageTitle(pool: string, file: string): string {
   const abs = join(pool, ...file.split("/"));
   try {
-    const sited = siteFileToTitle({ planeDir: pool, titlePaths: true }, abs);
+    const sited = siteFileToTitle({ planeDir: facePlaneSiteDir(pool, "stage"), titlePaths: true }, abs);
     if ("title" in sited) return sited.title;
   } catch { /* a removed file reads by its path */ }
   return file.slice(FACE_PLANES.stage.length + 1).replace(/\.[^./]+$/, "");
@@ -332,7 +335,7 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
     root: o.pool, ports: o.ports, ...(o.settleMs !== undefined ? { settleMs: o.settleMs } : {}),
     log: o.log ?? ((line: string) => console.log(`[faces] ${line}`)),
     ...(o.watch ? { watch: o.watch } : {}), ...(o.cookie ? { cookie: o.cookie } : {}),
-    accepts: (rel) => WATCHED_PLANES.includes(rel.split("/")[0] ?? "") && rel.includes("/"),
+    accepts: (rel) => { const plane = facePlaneOf(rel); return plane !== null && WATCHED_PLANES.includes(FACE_PLANES[plane]) && rel.length > FACE_PLANES[plane].length; },
     prepare: (log) => {
       if (o.owner !== undefined) { const founded = poolTreeLine(ensurePoolTree(o.pool, { face: o.owner })); if (founded !== null) log(founded); }
       const line = tendingLine("the face pool", tendPoolExclude(o.pool, [], git)); if (line !== null) log(line);
@@ -351,9 +354,10 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
  * the host shim: `--workspace <name>=<dir>`, `LARES_WORKSPACES`). The vessel holds the face pool's seat over that folder: the whole
  * folder watched, each settle an unattended INGEST wave in the wiki's own working layer, the commit seam at each sitting's close.
  *
- * THE SEAT FOUNDS NO HISTORY. The folder's git working tree comes from the house's lay (a realm's wiki folder takes its tree as the
- * mount lays it and at each re-stand's heal: `ensurePoolTree`, `healPoolTrees`) or from `lares surface init` (a workspace the
- * operator binds); the seat reads that tree where it stands. Where none stands the folder serves as a plain
+ * THE SEAT FOUNDS NO HISTORY. The folder's history rests in the ONE tree of the entity root holding it: a realm wiki folder's realm
+ * root (`realms/<realm pet name>/`, founded as the mount lays a folder in it and at each re-stand's heal: `ensurePoolTree`,
+ * `healPoolTrees`), or a bound workspace's own top (`lares surface init`); the seat reads that tree where it stands, and commits
+ * the folder's own paths alone. Where none stands the folder serves as a plain
  * mirror: the waves still land, the seam reads `no-pool-history` by name, and a both-moved stand-off's take-disk names that no base's
  * words stand in clear. Several faces share the copy, so the seam's subject names no face.
  */
@@ -370,13 +374,14 @@ const workspacePaths = (dir: string, git: GitRun): string[] =>
   [".", ...WORKSPACE_SKIP.filter((d) => git(["check-ignore", "-q", "--no-index", `${d}/x`], dir).code !== 0).map((d) => `:(exclude)${d}`)];
 
 /**
- * THE WORKBENCH'S COMMIT SEAM: the folder's own git history (its `.git` at the top) takes the folder as it stands (but its skipped
- * tops), under `lar:///workspace.closes.the-sitting/<close>`, authored by the tree's local author. Nothing staged commits nothing.
- * A folder with no history at its own top commits nothing, by name: no tree stands there yet, or the folder rests inside another
- * history (a workspace bound in the checkout), which the vessel never commits into. The tree's own hooks run: never `--no-verify`.
+ * THE WORKBENCH'S COMMIT SEAM: the tree at `tree` (the entity root holding the folder: the realm root, or the folder's own top)
+ * takes the folder as it stands (but its skipped tops), its own paths alone, under `lar:///workspace.closes.the-sitting/<close>`,
+ * authored by the tree's local author. Nothing staged commits nothing. Where no history stands at `tree` it commits nothing, by
+ * name: no tree stands there yet, or the folder rests inside another history (a workspace bound in the checkout), which the vessel
+ * never commits into. The tree's own hooks run: never `--no-verify`.
  */
-export async function workspaceCommitSeam(dir: string, close: SittingClose, git: GitRun = runGit): Promise<SeamReading> {
-  if (!poolHistoryStands(dir)) return { committed: false, why: "no-pool-history" };
+export async function workspaceCommitSeam(dir: string, close: SittingClose, git: GitRun = runGit, tree: string = dir): Promise<SeamReading> {
+  if (!poolHistoryStands(tree)) return { committed: false, why: "no-pool-history" };
   const paths = workspacePaths(dir, git);
   const added = git(["add", "-A", "--", ...paths], dir);
   if (added.code !== 0) return { committed: false, why: "commit-refused", detail: firstLine(added.stderr) };
@@ -392,6 +397,9 @@ export interface WorkspaceWatchOptions {
   readonly workspace: string;
   /** How the log names the folder: the workspace's name, or the wiki's slug for a default workbench. */
   readonly name: string;
+  /** The entity root whose one tree holds the folder's history: a realm wiki folder's realm root. Absent: the folder's own top
+   *  (a bound workspace). */
+  readonly tree?: string;
   readonly ports: FacePoolPorts;
   readonly settleMs?: number;
   readonly log?: (line: string) => void;
@@ -408,17 +416,18 @@ export interface WorkspaceWatchOptions {
  */
 export function armWorkspaceWatch(o: WorkspaceWatchOptions): FacePoolWatch {
   const git = o.git ?? runGit;
+  const tree = o.tree ?? o.workspace;
   const log = o.log ?? ((line: string) => console.log(`[workspaces] ${line}`));
   return armSeat({
     root: o.workspace, ports: o.ports, ...(o.settleMs !== undefined ? { settleMs: o.settleMs } : {}), log,
     ...(o.watch ? { watch: o.watch } : {}), ...(o.cookie ? { cookie: o.cookie } : {}),
     accepts: (rel) => !(rel.includes("/") && WORKSPACE_SKIP.includes(rel.split("/")[0] ?? "")),
     prepare: () => {
-      if (!poolHistoryStands(o.workspace)) { log(`${o.name}: no git tree stands at ${o.workspace} (\`lares surface init\` founds one); it serves as a plain mirror, and its seam commits nothing`); return; }
-      const line = tendingLine(o.name, tendPoolExclude(o.workspace, REALM_EXCLUDE_LINES, git));
+      if (!poolHistoryStands(tree)) { log(`${o.name}: no git tree stands at ${tree} (\`lares surface init\` founds one); it serves as a plain mirror, and its seam commits nothing`); return; }
+      const line = tendingLine(o.name, tendPoolExclude(tree, tree === o.workspace ? WORKSPACE_EXCLUDE_LINES : REALM_EXCLUDE_LINES, git));
       if (line !== null) log(line);
     },
-    commit: o.ports.commit ?? ((c: SittingClose) => workspaceCommitSeam(o.workspace, c, git)),
+    commit: o.ports.commit ?? ((c: SittingClose) => workspaceCommitSeam(o.workspace, c, git, tree)),
     covers: `the workbench ${o.name}`,
   });
 }

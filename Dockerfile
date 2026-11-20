@@ -138,6 +138,10 @@ COPY --from=build /app/packages/lares-cli/node_modules      ./packages/lares-cli
 COPY --from=build /app/packages/lares-cli/dist              ./packages/lares-cli/dist
 COPY --from=build /app/packages/lares-cli/bin               ./packages/lares-cli/bin
 COPY --from=build /app/packages/lares-cli/package.json      ./packages/lares-cli/package.json
+# `lares` STANDS ON PATH. Every caller inside (the pool pre-commit hook, an operator's exec shell, a sitting) types `lares`;
+# the link lays here, while root, to the one CLI the image carries. Node resolves the link to its real file, so the CLI
+# reads its own tree under this image's node; LAR_ROOT=/lar below keeps it acting directly, never through the host bridge.
+RUN ln -s /app/packages/lares-cli/bin/lares.mjs /usr/local/bin/lares
 
 # THE HOUSE ROOT AND THE CORPUS (the deployment contract; docker-compose.surface.yml wires them):
 #   /lar        the house root (LAR_ROOT). Its hearth (vessel homes AND custody keys), sensoriums, projections,
