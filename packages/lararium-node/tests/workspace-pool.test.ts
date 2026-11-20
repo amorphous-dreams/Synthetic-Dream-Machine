@@ -203,6 +203,67 @@ describe("WP3 — the workspace's ports: an unattended wave in the wiki's own is
     await ports.wave([plain]);
     expect(looks[1]).toEqual(["My Notes"]);
   });
+
+  test("CATCH-UP WAKES ON A DIFF: a folder that stands as the last sync left it takes no wave and no look (the wiki stays cold)", async () => {
+    const plain = put("My Notes.tid", tid("My Notes", "the words"));
+    agreed(NOTES_WORKING, "My Notes", plain, tid("My Notes", "the words"));
+    const { waves, submit } = island();
+    const { looks, sense } = shore();
+    const ports = is.workspaceIngestPorts({ workspace: ws, slug: "notes", submit, sense, did: "0xwornface", tree: () => tree, log: () => {} });
+    await ports.catchUp();
+    expect(waves).toHaveLength(0);
+    expect(looks).toEqual([]);
+  });
+
+  test("control: an edit made while the vessel was down wakes the wiki (its wave lands, the shore looks)", async () => {
+    const plain = put("My Notes.tid", tid("My Notes", "edited while down"));
+    agreed(NOTES_WORKING, "My Notes", plain, tid("My Notes", "the words"));
+    const { waves, submit } = island();
+    const { looks, sense } = shore();
+    const ports = is.workspaceIngestPorts({ workspace: ws, slug: "notes", submit, sense, did: "0xwornface", tree: () => tree, log: () => {} });
+    await ports.catchUp();
+    expect(waves).toHaveLength(1);
+    expect(waves[0]!.candidates.map((c) => c.uri)).toEqual(["My Notes"]);
+    expect(looks).toEqual([undefined]);
+  });
+
+  test("control: a file added while the vessel was down wakes the wiki", async () => {
+    const kept = put("Kept.tid", tid("Kept"));
+    agreed(NOTES_WORKING, "Kept", kept, tid("Kept"));
+    put("Added.tid", tid("Added"));
+    const { waves, submit } = island();
+    const { looks, sense } = shore();
+    const ports = is.workspaceIngestPorts({ workspace: ws, slug: "notes", submit, sense, did: "0xwornface", tree: () => tree, log: () => {} });
+    await ports.catchUp();
+    expect(waves).toHaveLength(1);
+    expect(waves[0]!.candidates.map((c) => c.uri)).toEqual(["Added"]);
+    expect(looks).toEqual([undefined]);
+  });
+
+  test("control: a file removed while the vessel was down wakes the wiki (the shore's whole look sees it pending)", async () => {
+    const kept = put("Kept.tid", tid("Kept"));
+    agreed(NOTES_WORKING, "Kept", kept, tid("Kept"));
+    const gone = join(ws, "Gone.tid");
+    agreed(NOTES_WORKING, "Gone", gone, tid("Gone"));
+    const { waves, submit } = island();
+    const { looks, sense } = shore();
+    const ports = is.workspaceIngestPorts({ workspace: ws, slug: "notes", submit, sense, did: "0xwornface", tree: () => tree, log: () => {} });
+    await ports.catchUp();
+    expect(waves).toHaveLength(0);
+    expect(looks).toEqual([undefined]);
+  });
+
+  test("a base another wiki's workspace holds never reads as a removal here", async () => {
+    const kept = put("Kept.tid", tid("Kept"));
+    agreed(NOTES_WORKING, "Kept", kept, tid("Kept"));
+    const other = join(house, "workspaces", "other", "Gone.tid");
+    agreed(wikiSlotUri("other", "working"), "Gone", other, tid("Gone"));
+    const { submit } = island();
+    const { looks, sense } = shore();
+    const ports = is.workspaceIngestPorts({ workspace: ws, slug: "notes", submit, sense, did: "0xwornface", tree: () => tree, log: () => {} });
+    await ports.catchUp();
+    expect(looks).toEqual([]);
+  });
 });
 
 describe("WP4 — the witness on a scratch house: a user wiki bound to a workspace flows back and commits at lock", () => {
