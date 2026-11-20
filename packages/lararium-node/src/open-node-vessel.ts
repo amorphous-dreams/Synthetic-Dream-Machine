@@ -118,6 +118,7 @@ import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_D
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
 import { ledgerWorkbenches, ledgerWorkbenchRealms } from "@lararium/mesh";
 import { armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
+import { ensurePoolTree, healPoolTrees, poolTreeLine } from "./pool-tree.js";
 import { islandIngestSubmit, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
 import { poolHeads } from "./pool-head.js";
 import { newRequestId, KAHUA_BAG } from "@lararium/mesh";
@@ -3659,8 +3660,11 @@ async function prepareNodeBootOn(
             const petname = await store.get(entry.handleIndex);
             if (!current()) return;
             writeFaceLabel({ relation, petname, handleIndex: entry.handleIndex }, projections);
-            // The sibling's pool tends its own ignore block here, whichever face the vessel wears: no watch arms over it.
+            // The sibling's pool takes its git tree where none stands (a face lit for the first time), then tends its own ignore
+            // block here, whichever face the vessel wears: no watch arms over it.
             if (current() && petname !== undefined) {
+              try { const founded = poolTreeLine(ensurePoolTree(faceRoot(projections, petname), { face: petname })); if (founded !== null) console.log(`[faces] face h${entry.handleIndex}: ${founded}`); }
+              catch (e) { console.warn(`[faces] the pool of h${entry.handleIndex} took no git tree: ${e instanceof Error ? e.message : String(e)}`); }
               try { tendLitFacePool(faceRoot(projections, petname), `face h${entry.handleIndex}`, (line) => console.log(`[faces] ${line}`)); }
               catch (e) { console.warn(`[faces] the pool of h${entry.handleIndex} stands untended: ${e instanceof Error ? e.message : String(e)}`); }
             }
@@ -4671,11 +4675,24 @@ async function prepareNodeBootOn(
     const sourced = projection.sourcedSlugs();
     const standingRealms = new Set([...ledgerWorkbenches(workbenchLedger?.doc()).map((b) => b.slug), ...shareRows.filter((r) => r.kind === "wiki").map((r) => r.slug)]);
     for (const slug of [...standingRealms].sort()) if (!sourced.includes(slug) && slug !== "daemon" && slug !== "kahua") ensureRealm(slug);
+    // EVERY POOL A TREE, HEALED AT THE RE-STAND: each face root and each realm wiki folder standing on disk takes its git tree where
+    // none stands (the pools' one init, no remote), so a pool laid before this step stood heals with no hand act; a standing tree
+    // stays exactly as it stands.
+    healPoolTrees(projectionRoot, (line) => console.log(`[pools] ${line}`));
     readWorkbenches = () => workbenchFolders({ projectionRoot, workspaces, sourcedSlugs: projection.sourcedSlugs(), realms: realmPlacement(projectionRoot).realms() });
+    // A realm wiki folder takes its tree where the mount lays it (a wiki minted, moved into a realm, or shared in since the
+    // re-stand); each folder is read once a boot.
+    const poolsLaid = new Set<string>();
     const realmBaseOf = (plane: "wikis" | "bags") => (slug: string): string | null => {
       if (!ensureRealm(slug)) return null;
       const placement = realmPlacement(projectionRoot);
-      return plane === "wikis" ? placement.wikisBase(slug) : placement.bagsBase(slug);
+      const base = plane === "wikis" ? placement.wikisBase(slug) : placement.bagsBase(slug);
+      if (plane === "wikis" && base !== null && !poolsLaid.has(join(base, slug))) {
+        poolsLaid.add(join(base, slug));
+        try { const founded = poolTreeLine(ensurePoolTree(join(base, slug), { realm: slug })); if (founded !== null) console.log(`[pools] ${founded}`); }
+        catch (e) { console.warn(`[pools] the realm wiki folder ${join(base, slug)} took no git tree: ${e instanceof Error ? e.message : String(e)}`); }
+      }
+      return base;
     };
     const diskMirrorGrant: DiskMirrorGrant = [
       // `bags/` PROJECTS ON THE KAHU'S VESSEL ALONE: a vessel the cabal did not admit holds neither live document, so it
@@ -4813,7 +4830,7 @@ async function prepareNodeBootOn(
       const submit = islandIngestSubmit((verb, args, requestId) => islandAsk(daemonHolder)((ports) => askIslandVerb({ ...ports, verb, args, requestedBy, requestId })).answer);
       const log = (line: string): void => console.log(`[faces] ${line}`);
       const bags = { wiki: DAEMON_WORKING_SLOT, stage: KAHUA_BAG, ...(wornFaceCanonBag !== null ? { canon: wornFaceCanonBag } : {}) };
-      const watch = armFacePoolWatch({ pool, ports: poolIngestPorts({ pool, bags, submit, sense, did: requestedBy, heads: poolHeads(pool), log }), log });
+      const watch = armFacePoolWatch({ pool, owner: wornFaceSegment, ports: poolIngestPorts({ pool, bags, submit, sense, did: requestedBy, heads: poolHeads(pool), log }), log });
       facePoolWatch = watch;
       stood.push({ what: "the face pool's watch", phase: "producers", down: async () => { await watch.down("lock"); if (facePoolWatch === watch) facePoolWatch = null; } });
       // THE WATCH OVER EACH SHARED WIKI'S WORKBENCH (a workbench serves as a pool): a wiki's one disk copy whichever face wears,
@@ -4821,7 +4838,8 @@ async function prepareNodeBootOn(
       // stands over it, off the boot path: each settle lands as ONE unattended INGEST wave in that wiki's working layer, run in the
       // wiki's own island (activated on reference, as `wiki-act` does) under the WORN face's actor, and a stand-off goes to that
       // wiki's shore. A lock or a wear downs it with the final wave and the commit seam (naming no face) where the folder's git
-      // tree stands (`lares surface init` founds it; the seat founds none, and a folder with none serves as a plain mirror); the
+      // tree stands (a realm's wiki folder takes its tree at the lay and the re-stand's heal, a bound workspace by `lares surface
+      // init`; the seat founds none, and a folder with none serves as a plain mirror); the
       // stand-down runs the same as a down. A face that holds no writer's seat in the workbench lands nothing: the island refuses
       // the wave by name and the shore weighs its carriers.
       const inWiki = async (slug: string, verb: string, args: Record<string, unknown>): Promise<Record<string, unknown>> => {

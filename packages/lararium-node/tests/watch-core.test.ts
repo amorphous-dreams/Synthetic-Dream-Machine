@@ -15,6 +15,10 @@
  *       face; nothing moved commits nothing; a pool with no history commits nothing, by name
  *   W2e the arm tends the pool's ignore block: a block `lares surface init` wrote before a rule joined re-reads HOUSE_IGNORED,
  *       the operator's lines kept; a tracked file the house now ignores reads by name; a pool init never made stays as it stands
+ *   W2f EVERY POOL A TREE: where no history stands at or above a pool root, the house founds one (`ensurePoolTree`) with the
+ *       face pool's init (`git init -b main`, the house's exclude block, the local author, signing off, the pool-check hook) and
+ *       no remote; a standing repo stays exactly as it stands; a folder resting inside another history founds nothing. The
+ *       worn face's arm founds its pool, and the boot's heal (`healPoolTrees`) founds each face root and realm wiki folder on disk
  *   S1  stage/ joins the watched planes (RULED floor 4 (b)), and the wake names every stage edit made on disk since the last
  *       sitting, each title with its pool commit or "uncommitted"
  *   C   control: the house's ignore list already keeps a pool's `.git/` out of every scan
@@ -330,5 +334,91 @@ describe("S1 — the wake names every stage edit made on disk since the last sit
     expect(wake).toBeGreaterThanOrEqual(0);
     expect(wake).toBeLessThan(lines.indexOf("catch-up"));
     await host.down("down");
+  });
+});
+
+describe("W2f — every pool a tree: the house founds a pool's history where none stands, idempotently", () => {
+  const pt = (): Promise<typeof import("../src/pool-tree.js")> => import(/* @vite-ignore */ "../src/pool-tree.js");
+  const bare = (root: string, ...args: string[]): string => {
+    const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
+    return (spawnSync("git", args, { cwd: root, env, encoding: "utf8" }).stdout ?? "").trim();
+  };
+  const cfg = (root: string, key: string): string => bare(root, "config", "--local", "--get", key);
+
+  test("the worn face's arm founds its pool where none stands, with the face pool's init and no remote", async () => {
+    const lines: string[] = [];
+    const host = wc.armFacePoolWatch({
+      pool, owner: "Heron", watch: fakeWatch().watch, cookie: async () => true, settleMs: 5, log: (l) => lines.push(l),
+      ports: { catchUp: async () => {}, wave: async () => {}, commit: async () => ({ committed: false, why: "nothing-moved" }) },
+    });
+    await host.armed;
+    await host.down("down");
+    expect(existsSync(join(pool, ".git", "HEAD"))).toBe(true);
+    expect(git("symbolic-ref", "HEAD")).toBe("refs/heads/main");
+    expect(cfg(pool, "user.name")).toBe("Heron");
+    expect(cfg(pool, "user.email")).toBe("heron@face.invalid");
+    expect(cfg(pool, "commit.gpgsign")).toBe("false");
+    const exclude = readFileSync(join(pool, ".git", "info", "exclude"), "utf8");
+    expect(exclude).toContain(POOL_EXCLUDE_OPEN);
+    expect(withExcludeBlock(exclude), "the house's block stands current").toBe(exclude);
+    expect(readFileSync(join(pool, ".git", "hooks", "pre-commit"), "utf8")).toBe((await pt()).POOL_PRE_COMMIT);
+    expect(bare(pool, "remote")).toBe("");
+    expect(lines.join("\n")).toMatch(/founds a git tree at/);
+  });
+
+  test("a standing repo stays exactly as it stands: no config, hook or history rewritten", async () => {
+    initPool();
+    git("config", "user.name", "Someone Else");
+    put("wiki/daemon/A.tid", tid("A")); git("add", "-A"); git("commit", "-q", "-m", "the operator's own");
+    const head = git("rev-parse", "HEAD");
+    const r = (await pt()).ensurePoolTree(pool, { face: "Heron" });
+    expect(r.reading).toBe("standing");
+    expect(cfg(pool, "user.name")).toBe("Someone Else");
+    expect(existsSync(join(pool, ".git", "hooks", "pre-commit"))).toBe(false);
+    expect(git("rev-parse", "HEAD")).toBe(head);
+  });
+
+  test("a second ensure changes nothing; a folder inside another history founds nothing", async () => {
+    const { ensurePoolTree } = await pt();
+    expect(ensurePoolTree(pool, { face: "Heron" }).reading).toBe("founded");
+    expect(ensurePoolTree(pool, { face: "Heron" }).reading).toBe("standing");
+    const inner = join(pool, "wiki", "nested");
+    mkdirSync(inner, { recursive: true });
+    expect(ensurePoolTree(inner, { realm: "nested" }).reading).toBe("inside-another-tree");
+    expect(existsSync(join(inner, ".git"))).toBe(false);
+  });
+
+  test("a realm wiki folder founds under the wiki's identity with the realm's exclude lines, never one tree over the realm", async () => {
+    const { ensurePoolTree } = await pt();
+    const { REALM_EXCLUDE_LINES } = await import("../src/bag-paths.js");
+    const wiki = join(dirname(pool), "realms", "kahu", "wikis", "kahu");
+    expect(ensurePoolTree(wiki, { realm: "kahu" }).reading).toBe("founded");
+    expect(cfg(wiki, "user.name")).toBe("kahu");
+    expect(cfg(wiki, "user.email")).toBe("kahu@realm.invalid");
+    const exclude = readFileSync(join(wiki, ".git", "info", "exclude"), "utf8");
+    for (const line of REALM_EXCLUDE_LINES) expect(exclude).toContain(line);
+    expect(withExcludeBlock(exclude, REALM_EXCLUDE_LINES), "the house's block with the realm's lines stands current").toBe(exclude);
+    expect(existsSync(join(dirname(pool), "realms", "kahu", ".git"))).toBe(false);
+  });
+
+  test("the boot's heal founds each face root and each realm wiki folder standing on disk, and leaves the standing ones", async () => {
+    const { healPoolTrees } = await pt();
+    const projections = join(dirname(pool), "projections");
+    const heron = join(projections, "faces", "Heron"), egret = join(projections, "faces", "Egret");
+    const kahu = join(projections, "realms", "kahu", "wikis", "kahu");
+    for (const d of [heron, egret, kahu]) mkdirSync(d, { recursive: true });
+    bare(egret, "init", "-q");
+    bare(egret, "config", "user.name", "Egret's Own");
+    const lines: string[] = [];
+    const healed = healPoolTrees(projections, (l) => lines.push(l));
+    expect(healed.map((h) => `${h.root} ${h.reading}`).sort()).toEqual([`${egret} standing`, `${heron} founded`, `${kahu} founded`].sort());
+    expect(cfg(heron, "user.email")).toBe("heron@face.invalid");
+    expect(cfg(kahu, "user.email")).toBe("kahu@realm.invalid");
+    expect(cfg(egret, "user.name")).toBe("Egret's Own");
+    expect(existsSync(join(projections, "realms", "kahu", ".git"))).toBe(false);
+    expect(lines.filter((l) => /founds a git tree/.test(l)).length).toBe(2);
+    const again: string[] = [];
+    expect(healPoolTrees(projections, (l) => again.push(l)).every((h) => h.reading === "standing")).toBe(true);
+    expect(again).toEqual([]);
   });
 });

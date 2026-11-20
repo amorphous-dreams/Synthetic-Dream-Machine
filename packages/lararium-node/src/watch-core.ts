@@ -30,6 +30,7 @@ import { watch as fsWatch, existsSync, mkdirSync, readFileSync, rmSync, writeFil
 import { spawnSync } from "node:child_process";
 import { isAbsolute, join, sep } from "node:path";
 import { FACE_PLANES, POOL_EXCLUDE_OPEN, REALM_EXCLUDE_LINES, TEMP_LAYER_DIR, houseExcludeLines, houseIgnored, siteFileToTitle, withExcludeBlock } from "./bag-paths.js";
+import { ensurePoolTree, poolTreeLine } from "./pool-tree.js";
 
 // ── the drain seat ─────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -293,6 +294,9 @@ export interface FacePoolPorts {
 export interface FacePoolWatchOptions {
   /** The worn face's root: `projections/faces/<pet name>/`. */
   readonly pool: string;
+  /** The pet name the pool's folder carries. Named, the arm's first step founds the pool's git tree where none stands
+   *  (`ensurePoolTree`, the face pool's init); a standing tree stays as it stands. Absent, the arm founds nothing. */
+  readonly owner?: string;
   readonly ports: FacePoolPorts;
   readonly settleMs?: number;
   readonly log?: (line: string) => void;
@@ -318,7 +322,8 @@ export const POOL_SETTLE_MS = 400;
 
 /**
  * ARM THE WATCH over the worn face's pool. Hands back at once: nothing here blocks the composition that arms it. Its first step
- * off the boot path tends the pool's ignore block (`tendPoolExclude`), so no wave and no sitting's close reads a rule the house
+ * off the boot path founds the pool's git tree where none stands (with `owner` named: `ensurePoolTree`), then tends the pool's
+ * ignore block (`tendPoolExclude`), so no wave and no sitting's close reads a rule the house
  * added since the pool stood. A fault of the catch-up or a wave names itself in the log and the watch stands.
  */
 export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
@@ -328,7 +333,10 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
     log: o.log ?? ((line: string) => console.log(`[faces] ${line}`)),
     ...(o.watch ? { watch: o.watch } : {}), ...(o.cookie ? { cookie: o.cookie } : {}),
     accepts: (rel) => WATCHED_PLANES.includes(rel.split("/")[0] ?? "") && rel.includes("/"),
-    prepare: (log) => { const line = tendingLine("the face pool", tendPoolExclude(o.pool, [], git)); if (line !== null) log(line); },
+    prepare: (log) => {
+      if (o.owner !== undefined) { const founded = poolTreeLine(ensurePoolTree(o.pool, { face: o.owner })); if (founded !== null) log(founded); }
+      const line = tendingLine("the face pool", tendPoolExclude(o.pool, [], git)); if (line !== null) log(line);
+    },
     wake: () => stageEditsSinceSitting(o.pool, git),
     commit: o.ports.commit ?? ((c: SittingClose) => poolCommitSeam(o.pool, c, git)),
     covers: WATCHED_PLANES.join(", "),
@@ -343,8 +351,9 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
  * the host shim: `--workspace <name>=<dir>`, `LARES_WORKSPACES`). The vessel holds the face pool's seat over that folder: the whole
  * folder watched, each settle an unattended INGEST wave in the wiki's own working layer, the commit seam at each sitting's close.
  *
- * THE SEAT FOUNDS NO HISTORY. The folder's git working tree comes from `lares surface init` (its `.git` at the folder's top, the
- * house's ignore list, a local author); the seat reads that tree where it stands. Where none stands the folder serves as a plain
+ * THE SEAT FOUNDS NO HISTORY. The folder's git working tree comes from the house's lay (a realm's wiki folder takes its tree as the
+ * mount lays it and at each re-stand's heal: `ensurePoolTree`, `healPoolTrees`) or from `lares surface init` (a workspace the
+ * operator binds); the seat reads that tree where it stands. Where none stands the folder serves as a plain
  * mirror: the waves still land, the seam reads `no-pool-history` by name, and a both-moved stand-off's take-disk names that no base's
  * words stand in clear. Several faces share the copy, so the seam's subject names no face.
  */
