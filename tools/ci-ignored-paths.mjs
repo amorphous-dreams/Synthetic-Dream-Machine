@@ -79,6 +79,14 @@ const PACKAGE_DIR = /^(packages\/[^/]+|tests|TiddlyWiki5)(?:\/|$)/;
 const SAFE_NAME = /^[@a-z0-9][\w.\/-]*$/i;
 const ALL_CELLS = TEST_CELLS.map((c) => c.cell);
 const full = (r, why) => ({ ...r, packages: "all", cells: ALL_CELLS, witnesses: true, why });
+/**
+ * THE SOURCES GENESIS CARRIES (`tools/genesis-parity-witness.sh`, its own source set): the engine's inputs (the TiddlyWiki5
+ * gitlink, the vendor render, the tracked file name) and each packed plugin file at the top of the tw5 plugins dir
+ * (`genesisPackedPluginFiles`: a nested file never packs). A lane that moves one runs the witness cells, so genesis-parity
+ * reads the drift on the lane, never first on develop after the merge.
+ */
+const GENESIS_SOURCE = /^(?:TiddlyWiki5|packages\/lararium-tw5\/src\/generated-tw5-version\.ts|packages\/lararium-tw5\/scripts\/build-tw5-vendor\.ts|packages\/lararium-tw5\/plugins\/[^/]+\.json)$/;
+export const isGenesisSource = (path) => GENESIS_SOURCE.test(path);
 
 /** The workspace graph at `sha`: `{ dir: { name, deps } }`, read through git (the scope's sparse checkout holds tools/ alone). */
 function readWorkspace(sha, git) {
@@ -104,7 +112,8 @@ function readWorkspace(sha, git) {
  * narrows: its diff's packages, closed over every in-repo package that depends on them. A path outside a package dir
  * (tools/, the workflows, the root manifest or lockfile, a non-meme file under bags/), a package no test cell runs, an
  * unread graph and every other event select the full battery: the selection fails open to more cells, never fewer.
- * Canon moved beside code runs the witness cells too; canon alone keeps the doorstep.
+ * Canon moved beside code runs the witness cells too, and so does a source genesis carries (`isGenesisSource`); canon alone
+ * keeps the doorstep.
  */
 export function laneScope(ctx, git) {
   const r = pushScope(ctx, git);
@@ -132,8 +141,11 @@ export function laneScope(ctx, git) {
   if (untested) return full(r, `${r.why}; the full battery (${untested} rides no test cell)`);
   if (!packages.every((n) => SAFE_NAME.test(n))) return full(r, `${r.why}; the full battery (a package name the run line cannot carry)`);
   const cells = TEST_CELLS.filter((c) => c.packages.some((p) => touched.has(p.name))).map((c) => c.cell);
-  const witnesses = code.length < r.paths.length;
-  return { ...r, packages, cells, witnesses, why: `${r.why}; the lane runs ${packages.join(" ")} in ${cells.join(" ")}${witnesses ? " and the witness cells (canon moved)" : ""}` };
+  const canonMoved = code.length < r.paths.length;
+  const genesisSource = code.find(isGenesisSource);
+  const witnesses = canonMoved || genesisSource !== undefined;
+  const reasons = [...(canonMoved ? ["canon moved"] : []), ...(genesisSource ? [`${genesisSource} feeds genesis`] : [])];
+  return { ...r, packages, cells, witnesses, why: `${r.why}; the lane runs ${packages.join(" ")} in ${cells.join(" ")}${witnesses ? ` and the witness cells (${reasons.join("; ")})` : ""}` };
 }
 
 /** The GITHUB_OUTPUT lines: `packages` comma-joined (or `all`/`none`), `cells` space-joined. */
