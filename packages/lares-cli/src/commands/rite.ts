@@ -17,8 +17,9 @@
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
  *   offer      `rite-offer` in the STANDING vessel, between the build and the lowering: gather every lent face's line, sign one
  *              vouch per face over the image the host built, and rest the offer the next vessel carries to the pūlama
- *   receipt    `rite-receipt`: the host battery hands the vessel its verdict over a tree, and the vessel signs `receipt/<tree>`.
- *              It notarises testimony: the vessel re-runs no check
+ *   receipt    `rite-receipt`: the host battery hands the vessel its verdict over a tree, and the place signs `receipt/<tree>`
+ *              once for every face it lends. It names no face: a receipt testifies about code. It notarises testimony: the
+ *              place re-runs no check
  *
  * The lei carries the grant: the hand strung it (`lares lei kui --rite kukulu …`, `--rite keep --branch <workspace> …`), and any
  * seat holding the line may spend it.
@@ -76,7 +77,9 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     const verdict = word(args.options["verdict"]), definitions = word(args.options["definitions"]);
     const checks = (word(args.options["checks"]) ?? "").split(",").map((c) => c.trim()).filter((c) => c !== "");
     if (tree === undefined || verdict === undefined || definitions === undefined || checks.length === 0) throw new RiteUsage("receipt names its tree, its checks, its verdict and its definitions: --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash>");
-    return { verb: "rite-receipt", args: { tree, checks, verdict, definitions, ...face } };
+    // THE PLACE SIGNS IT for every face it lends, so a receipt names no face.
+    if (faceWord !== undefined) throw new RiteUsage("receipt names no face: the place signs it once, for every face it lends");
+    return { verb: "rite-receipt", args: { tree, checks, verdict, definitions } };
   }
   if (act === "offer") {
     const branch = word(args.options["branch"]), image = word(args.options["image"]);

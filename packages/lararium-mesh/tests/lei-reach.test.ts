@@ -15,6 +15,7 @@ import {
   swarmReceiptTitle, type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import { soloCosign } from "./ward-cosign-table.js";
+import { PLACE, placeOf, placeTrust, restPlaceReceipt } from "./place-receipt.js";
 
 const GROUP = "face-group", BRANCH = "feature/x";
 const HEAD = "a".repeat(40), HEAD2 = "b".repeat(40), TREE = "1".repeat(40), TREE2 = "2".repeat(40);
@@ -29,7 +30,7 @@ function wikiPort(): SwarmWikiPort & { rows: Map<string, string> } {
 
 async function fixture() {
   const hand = await keyed(1), vessel = await keyed(2), outsider = await keyed(4);
-  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: () => false };
+  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, place: placeTrust(), lead: () => false };
   const wiki = wikiPort();
   const rest = async (parts: Record<string, unknown>): Promise<string> => {
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite: "push", branch: BRANCH, after: null, ...parts } as unknown as SwarmBodyParts, hand);
@@ -41,8 +42,7 @@ async function fixture() {
   /** A hand-signed head lei at its own row; hands back its cid. */
   const pinned = (head: string, over: Record<string, unknown> = {}) => rest({ reach: "head", head, ...over });
   /** A receipt over a tree, standing at its title (a later one replaces it). */
-  const receipt = async (tree: string, verdict: "pass" | "fail", signer = vessel) =>
-    putSwarmAct(wiki, swarmReceiptTitle(tree), await signSwarmAct({ act: "receipt", group: GROUP, tree, checks: ["typecheck"], verdict, definitions: "d".repeat(64) }, signer));
+  const receipt = (tree: string, verdict: "pass" | "fail", place = PLACE) => restPlaceReceipt(wiki, tree, verdict, place);
   const spend = (head: string, tree: string, rite: "push" | "kukulu" = "push", spender = vessel) => returnLei(wiki, { rite, branch: BRANCH, head, tree }, trust, GROUP, spender, ONE_DEVICE);
   const read = (head: string, rite: "push" | "kukulu" = "push") => readLei(wiki, { rite, branch: BRANCH, head }, trust, GROUP, ONE_DEVICE);
   const spendRows = (cid: string) => [...wiki.rows.keys()].filter((t) => t.startsWith(`${swarmLeiReturnedTitle(cid, 1).slice(0, -1)}`));
@@ -50,13 +50,13 @@ async function fixture() {
 }
 
 describe("lei-wide-needs-testimony", () => {
-  test("RED: a wide lei spends nothing with no receipt standing for the head's tree, one for another tree, or one the vessel never signed; CONTROL: a passing receipt lets it spend, at any head", async () => {
+  test("RED: a wide lei spends nothing with no receipt standing for the head's tree, one for another tree, or one the place never signed; CONTROL: a passing receipt lets it spend, at any head", async () => {
     const f = await fixture();
     const cid = await f.wide(3);
     await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
     await f.receipt(TREE2, "pass");
     await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
-    await f.receipt(TREE, "pass", f.outsider);
+    await f.receipt(TREE, "pass", placeOf(4));
     await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
     // A spend that lacked its testimony claimed no return and narrowed nothing.
     expect(f.spendRows(cid)).toEqual([]);
@@ -200,7 +200,7 @@ describe("the door issues a lei under its reach", () => {
   async function stand() {
     const root = await keyed(1);
     const doc = { tiddlers: {} } as LarDoc, wiki = wikiPort();
-    const trust = { hand: (k: string) => k === root.key, vessel: () => false, lead: () => false };
+    const trust = { hand: (k: string) => k === root.key, vessel: () => false, place: () => false, lead: () => false };
     const deps: SwarmDoorDeps = {
       group: GROUP, face: { group: GROUP, grant: (k) => k === root.key }, signer: root, trust, epoch: () => 0, wiki,
       board: { records: async () => swarmBoardRecords(doc, GROUP), land: async (act) => { writeSwarmBoardAct(doc, act); } },

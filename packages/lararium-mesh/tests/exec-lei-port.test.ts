@@ -26,7 +26,7 @@ function wikiPort(): SwarmWikiPort {
 describe("exec-lei-port — one composition for every vessel", () => {
   test("RED: the port spends the standing lei's returns over the vessel's own signer, and past them refuses by the lei's code; CONTROL: a data record refuses not-executable", async () => {
     const hand = await keyed(1), vessel = await keyed(2), wiki = wikiPort();
-    const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: () => false };
+    const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, place: () => false, lead: () => false };
     const deps: SwarmDoorDeps = { group: GROUP, face: { grant: (k: string) => k === hand.key, group: GROUP }, signer: hand, trust, epoch: () => 1,
       board: { records: async () => [], land: async () => {} }, wiki, who: { kind: "hand", id: "operator" }, cosign: () => soloCosign(GROUP, hand) };
     await swarmCommand({ action: "lei-kui", rite: "exec", branch: execLeiBranch(WIKI), after: null, reach: "wide", returns: 1, scope: { wiki: WIKI, writer: "seat" } }, deps);

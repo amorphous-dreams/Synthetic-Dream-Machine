@@ -12,10 +12,12 @@
  *       standing directory that holds no bundle each refuse by name before the line reads;
  *   K7  the command line names its workspace, and reads `--into`, `--accept-omissions` and `--face` beside it.
  *   K8  keep-reads-the-keep-face-whoever-wears: a keep that names no face acts as the keep's face, one per house (the face whose
- *       keep lei already stands, else h0), names it on every row and in its answer; a named `--face N` rides as named; the lei
+ *       keep lei already stands, else h0), names it on every row but the receipt (the place signs that one for every face) and
+ *       in its answer; a named `--face N` rides as named; the lei
  *       hint names the keep's face.
  *   K10 keep-acts-as-the-keep-face-with-none-worn: a pūlama lent h0, h1 and h2 and the vessel wears none of them: the keep
- *       acts as the face whose keep lei stands (else h0), rides it on every row and answers it, never asking a worn face.
+ *       acts as the face whose keep lei stands (else h0), rides it on every row but the receipt and answers it, never asking a
+ *       worn face.
  *   K11 keep-names-its-code-once: a row refused under a message that already leads with its code reads that code once.
  */
 import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
@@ -120,7 +122,7 @@ describe("the keep rite, vessel half", () => {
     expect(r.calls).toEqual([
       `swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 0 })}`,
       `cut ${workspace()} accept=false`,
-      `rite-receipt ${JSON.stringify({ tree: id, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(BUNDLE_SCHEMA), face: 0 })}`,
+      `rite-receipt ${JSON.stringify({ tree: id, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(BUNDLE_SCHEMA) })}`,
       expect.stringMatching(new RegExp(`^rite-begin \\{"rite":"keep","branch":"backup","head":"${id}","staged":"\\.house\\.keep-[0-9a-f]{12}","face":0\\}$`)),
     ]);
     // The begin names the staged tree by its place inside the workspace, and the tree stands whole there when the vessel reads it.
@@ -224,7 +226,8 @@ describe("the keep rite, vessel half", () => {
     const rows = r.calls.filter((c) => !c.startsWith("cut"));
     expect(rows[0]).toBe(`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 0 })}`);
     expect(rows.slice(1).map((c) => c.split(" ")[0])).toEqual(["swarm-show", "rite-receipt", "rite-begin"]);
-    expect(rows.slice(1).every((c) => c.includes('"face":1'))).toBe(true);
+    // The receipt names no face (the place signs it for every face); every other row names the keep's face.
+    expect(rows.slice(1).every((c) => c.startsWith("rite-receipt ") ? !c.includes('"face"') : c.includes('"face":1'))).toBe(true);
     // The lei stands on h0: the keep acts as h0 and reads no other face.
     const zero = rig({ leiOn: { 0: STANDING } });
     expect(await riteKeep({ ...zero.ports, houseFaces: async () => ({ open: [1, 0], shut: [] }) }, { workspace: "backup" })).toMatchObject({ face: 0, faceBy: "keep" });
@@ -246,7 +249,7 @@ describe("the keep rite, vessel half", () => {
     const rows = r.calls.filter((c) => !c.startsWith("cut"));
     expect(rows.slice(0, 3)).toEqual([0, 1, 2].map((f) => `swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: f })}`));
     expect(rows.slice(3).map((c) => c.split(" ")[0])).toEqual(["rite-receipt", "rite-begin"]);
-    expect(rows.slice(3).every((c) => c.includes('"face":2'))).toBe(true);
+    expect(rows.slice(3).every((c) => c.startsWith("rite-receipt ") ? !c.includes('"face"') : c.includes('"face":2'))).toBe(true);
     // The lei stands on h0: h0, and no other face read (the bundle the first keep laid stands, so this one spends nothing).
     const zero = rig({ leiOn: { 0: STANDING }, mount: null });
     expect(await riteKeep({ ...zero.ports, houseFaces: lent }, { workspace: "backup" })).toMatchObject({ face: 0, faceBy: "keep" });

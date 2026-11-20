@@ -1876,7 +1876,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           execLeiPortRef = execLeiPortOver({
             wiki: docSwarmWiki(async () => { if (!watchedControl) throw new Error("[lararium-browser] no control home stands for the exec lei"); return watchedControl; }),
             group: wornGroup, spender: { key: wornAtom.key, sign: (bytes: Uint8Array) => wornAtom.sign(bytes) },
-            trust: { hand: (key: string) => promoteFace.read()?.grant(key) ?? false, vessel: (key: string) => key === wornAtom.key.toLowerCase(), lead: () => false },
+            // An exec spend runs its scope check and rests on no receipt, so no place signs for it here.
+            trust: { hand: (key: string) => promoteFace.read()?.grant(key) ?? false, vessel: (key: string) => key === wornAtom.key.toLowerCase(), place: () => false, lead: () => false },
           });
           promoteWiringRef = provenPromoteUrl ? promoteWiring({
             repo, group: wornGroup, boardUrl: provenPromoteUrl, stageUrl: provenKahuaUrl,

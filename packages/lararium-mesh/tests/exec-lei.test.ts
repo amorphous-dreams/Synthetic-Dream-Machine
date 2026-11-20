@@ -16,6 +16,7 @@ import { readLei, returnLei, signSwarmAct, swarmLeiHead, type SwarmWikiPort } fr
 import { admitStartupRecords, execLeiBranch, execRecordCid, spendExecLei, type ExecLeiScope } from "../src/exec-lei.js";
 import { SwarmRefused } from "../src/swarm-tiddlers.js";
 import { soloCosign } from "./ward-cosign-table.js";
+import { placeTrust } from "./place-receipt.js";
 
 const GROUP = "face-group", WIKI = "lar:///ha.ka.ba/wikis/notes";
 const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -30,7 +31,7 @@ function wikiPort(): SwarmWikiPort & { rows: Map<string, string> } {
 
 async function fixture() {
   const hand = await keyed(1), vessel = await keyed(2);
-  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: () => false };
+  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, place: placeTrust(), lead: () => false };
   const wiki = wikiPort();
   const deps: SwarmDoorDeps = {
     group: GROUP, face: { grant: (k: string) => k === hand.key, group: GROUP }, signer: hand, trust, epoch: () => 1,

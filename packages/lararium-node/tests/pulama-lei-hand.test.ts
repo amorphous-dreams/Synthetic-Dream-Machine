@@ -51,7 +51,7 @@ async function stand(opts: { readonly lei?: boolean; readonly unanchored?: boole
   const lines: string[] = [];
   const door = pulamaHandDoor({ holder, server, image: pulamaImage(dir), records, onLog: (l) => lines.push(l), ...(opts.lei === false ? {} : { lei }) } as Parameters<typeof pulamaHandDoor>[0]);
   const light = () => door({ op: "light", credentials: route });
-  const verify = (record: unknown, title: string) => verifySwarmRecord(JSON.stringify(record), title, { hand: (k) => k === root.key, vessel: () => false, lead: () => false }, GROUP);
+  const verify = (record: unknown, title: string) => verifySwarmRecord(JSON.stringify(record), title, { hand: (k) => k === root.key, vessel: () => false, place: () => false, lead: () => false }, GROUP);
   return { door, light, records, root, opened, lines, verify };
 }
 

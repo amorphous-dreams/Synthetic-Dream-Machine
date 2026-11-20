@@ -20,7 +20,7 @@ test("RED: main spends the standing exec lei's return under the vessel's signer,
   const hand = await keyed(1), vessel = await keyed(2);
   const handle = new Repo().create<LarDoc>(emptyLarDoc());
   const wiki = controlSwarmWiki(async () => handle);
-  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: () => false };
+  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, place: () => false, lead: () => false };
   const deps: SwarmDoorDeps = { group: GROUP, face: { grant: (k: string) => k === hand.key, group: GROUP }, signer: hand, trust, epoch: () => 1,
     board: { records: async () => [], land: async () => {} }, wiki, who: { kind: "hand", id: "operator" }, cosign: () => ({}) as WardCosignPort };
   await swarmCommand({ action: "lei-kui", rite: "exec", branch: execLeiBranch("garden"), after: null, reach: "wide", returns: 1, scope: { wiki: "garden", writer: "seat" } }, deps);

@@ -17,7 +17,8 @@
  *                   the walk added release and the pins that stood before hold again, in their own order
  *   4. the cut      a bundle written beside the dest and read back whole (`verifyBundle`); its id names this keep's head
  *   5. the standing a dest that already holds this very bundle ends the rite: nothing spends and nothing moves
- *   6. rite-receipt IN THE VESSEL: the verify handed in as the receipt the return rests on (`receipt/<bundle id>`)
+ *   6. rite-receipt IN THE VESSEL: the verify handed in as the receipt the return rests on (`receipt/<bundle id>`), which the
+ *                   place signs and which names no face
  *   7. rite-begin   IN THE VESSEL: name the staged bundle by its place inside the workspace; the vessel reads it back itself,
  *                   derives the bundle id, refuses a head the tree never derived, returns the keep lei at that head and rests
  *                   the guest half of a tessera (`rite-begun`)
@@ -257,7 +258,7 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
       rmSync(staging, { recursive: true, force: true });
       return { kept: false, standing: true, workspace: name, into, dest: target, bundleId, ...acting };
     }
-    const receipt = await ports.row("rite-receipt", { tree: bundleId, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(BUNDLE_SCHEMA), ...face });
+    const receipt = await ports.row("rite-receipt", { tree: bundleId, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(BUNDLE_SCHEMA) });
     if (!receipt.ok) throw keepRowRefused(receipt, acting.face!);
     // THE VESSEL READS THE TREE ITSELF: the begin names where the cut stands, never only the id this seat heard.
     const staged = relative(wsDir, staging).split(sep).join("/");
