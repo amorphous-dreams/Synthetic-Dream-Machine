@@ -453,14 +453,14 @@ describe("lares meme check — the read-alone seat, local, no daemon", () => {
     const base = stampCarrier(readFileSync(PRISM, "utf8").replace(/^file-path[ \t]*=.*\n/m, ""));
     const withRoad = stampCarrier(base.replace(/(\n<<\^ code=`&#x0003;`)/, "\n<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/road/rank-4j`>>\n$1"));
     expect(withRoad).toContain("docs/road/rank-4j");
-    const read = async (src: string) => {
+    const read = async (src: string): Promise<[number, number, number]> => {
       const lines: string[] = [];
       vi.spyOn(console, "log").mockImplementation((m: unknown) => { lines.push(String(m)); });
       await cmdMeme(memeArgs(["check", tmpFile(src)], {}, { edges: true }));
       vi.restoreAllMocks();
       const m = /(\d+) edge\(s\) · (\d+) homed in the kahu workbench · (\d+) naming nothing/.exec(lines.join("\n"));
       expect(m, lines.join("\n")).not.toBeNull();
-      return m!.slice(1).map(Number);
+      return [Number(m![1]), Number(m![2]), Number(m![3])];
     };
     const [e0, w0, n0] = await read(base);
     const [e1, w1, n1] = await read(withRoad);
