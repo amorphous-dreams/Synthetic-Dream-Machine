@@ -496,10 +496,13 @@ export function houseExcludeLines(): string[] {
 }
 
 /**
- * A REALM POOL'S OWN RULES, beside the house's list: the shared workbench's `recovery/` and `temp/`, anchored at the pool's top,
- * where an older lay left them (each face's drafts now rest in its own root, `faces/<pet name>/recovery/<slug>/`).
+ * A WORKBENCH'S OWN RULES, beside the house's list: a shared wiki's `recovery/` and `temp/` at the top of its folder (each face's
+ * drafts rest in its own root, `faces/<pet name>/recovery/<slug>/`). A workspace the operator binds holds its tree at its own top,
+ * so the rules anchor there (`WORKSPACE_EXCLUDE_LINES`); a realm's one tree roots at `realms/<pet name>/`, so they anchor under each
+ * wiki folder it holds (`REALM_EXCLUDE_LINES`).
  */
-export const REALM_EXCLUDE_LINES: readonly string[] = [`/${FACE_PLANES.recovery}/`, `/${FACE_PLANES.temp}/`];
+export const WORKSPACE_EXCLUDE_LINES: readonly string[] = [`/${FACE_PLANES.recovery}/`, `/${FACE_PLANES.temp}/`];
+export const REALM_EXCLUDE_LINES: readonly string[] = WORKSPACE_EXCLUDE_LINES.map((line) => `/${REALM_PLANES.wikis}/*${line}`);
 
 /** The exclude file with the house's block written in place (or appended), with any extra lines the pool's scale adds; the
  *  operator's own lines stay as they stand. */
@@ -667,7 +670,9 @@ export function workspaceRootsOf(opts: {
 }
 
 /** One shared wiki's workbench folder the vessel watches as a pool: the slug, the folder, and the name the log gives it. */
-export interface WorkbenchFolder { readonly slug: string; readonly dir: string; readonly name: string }
+/** One workbench folder: the wiki's slug, its folder, the name the log gives it, and the entity root whose ONE tree holds its
+ *  history (a bound workspace's own top; a realm wiki folder's realm root). */
+export interface WorkbenchFolder { readonly slug: string; readonly dir: string; readonly name: string; readonly tree: string }
 
 /**
  * THE WORKBENCH FOLDERS a vessel watches as pools: each workspace a share row binds (`workspaceRootsOf`), then each wiki a named
@@ -685,12 +690,12 @@ export function workbenchFolders(opts: {
   readonly sourcedSlugs: readonly string[];
   readonly realms: ReadonlyArray<{ readonly petName: string; readonly wikis: ReadonlyArray<{ readonly slug: string; readonly dir: string }> }>;
 }): WorkbenchFolder[] {
-  const out: WorkbenchFolder[] = Object.entries(opts.workspaces.roots).map(([slug, dir]) => ({ slug, dir, name: opts.workspaces.names[slug] ?? slug }));
+  const out: WorkbenchFolder[] = Object.entries(opts.workspaces.roots).map(([slug, dir]) => ({ slug, dir, name: opts.workspaces.names[slug] ?? slug, tree: dir }));
   const placed = opts.realms.flatMap((r) => r.wikis).sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
   for (const { slug, dir } of placed) {
     if (isPrivateProjectionSlug(slug) || Object.hasOwn(opts.workspaces.roots, slug) || opts.sourcedSlugs.includes(slug) || out.some((f) => f.slug === slug)) continue;
     try { if (!statSync(dir).isDirectory()) continue; } catch { continue; }
-    out.push({ slug, dir, name: slug });
+    out.push({ slug, dir, name: slug, tree: dirname(dirname(dir)) });
   }
   return out;
 }

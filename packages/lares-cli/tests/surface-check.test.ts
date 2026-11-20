@@ -2,7 +2,8 @@
  * surface-check — `lares surface check`, the pool check the pre-commit hook runs, over planted breaches.
  *
  * A face pool holds that face's private planes alone (face-pools #/shape): it refuses a repo that holds another face's root, any repo
- * rooted at `projections/` or `config/`, and a signing key another face pool in the same house already carries (a crypto identity).
+ * rooted at `projections/` or `config/`, a tree nested below the face's root (one tree per entity: the face root names the one
+ * place), and a signing key another face pool in the same house already carries (a crypto identity).
  * A pet name binds nothing: index files mapping pet names, and an author another face carries, pass. It reads LOCAL config alone, and exits 1 naming each breach.
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
@@ -53,6 +54,18 @@ describe("lares surface check", () => {
     rig.at(faces);
     expect(await check()).toBe(1);
     expect(rig.said()).toMatch(/Moth/);
+  });
+
+  test("★ refuses a tree nested below the face's root, from the face root and from the nested tree, naming the face root ★", async () => {
+    const personal = join(heron, "personal", "notes");
+    mkdirSync(personal, { recursive: true });
+    git(personal, "init", "-q");
+    expect(await check()).toBe(1);
+    expect(rig.said()).toMatch(/surface-nested-tree/);
+    expect(rig.said()).toContain(heron);
+    rig.at(personal);
+    expect(await check()).toBe(1);
+    expect(rig.said()).toMatch(/surface-nested-tree/);
   });
 
   test.each(["projections", "config"])("★ refuses any repo rooted at %s/ ★", async (home) => {

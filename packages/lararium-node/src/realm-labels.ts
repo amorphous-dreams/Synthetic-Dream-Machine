@@ -32,6 +32,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmdirSync
 import { join } from "node:path";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { faceSegmentRefusal, isPrivateProjectionSlug, realmRoot, REALM_PLANES, REALMS_PROJECTION_DIR } from "./bag-paths.js";
+import { commitRealmMove, retagRealmAuthor } from "./pool-tree.js";
 
 /** The folder, under the projections root, the realm labels rest in. */
 export const REALM_LABELS_DIR = "realm-labels";
@@ -307,16 +308,32 @@ export function realmPlacement(projections: string): RealmPlacement {
 export interface RealmSettle { readonly moved: ReadonlyArray<{ readonly from: string; readonly to: string }>; readonly held: readonly string[] }
 
 /**
- * THE QUIET POINT'S MOVES: each wiki and bag folder standing under a realm other than the one its label names moves to the named
- * realm's folder in one rename (its `.git` at the folder's top moves with it, so its history follows), and a realm folder left
- * empty leaves. A slug whose folder stands in BOTH places moves nothing and names itself (never half-moved). Run it only where no
- * vessel holds the folders: the CLI at once while no vessel answers, the vessel at its re-stand (before any mount) and its lock
- * (after its watches stand down).
+ * THE QUIET POINT'S MOVES. A realm root no label names (a rename) whose every wiki and bag folder goes to ONE realm with no root
+ * standing yet moves whole in one rename, its one tree with it (the tree's house author takes the new pet name). Else each wiki and
+ * bag folder standing under a realm other than the one its label names moves to the named realm's root in one rename, and each
+ * realm tree on either side commits (`commitRealmMove`): the tree it leaves takes the removal, the tree it lands in takes the
+ * files, each message naming both ends. A realm root left empty leaves; one whose tree stands stays with its history. A slug
+ * whose folder stands in BOTH places moves nothing and names itself (never half-moved). Run it only where no vessel holds the
+ * folders: the CLI at once while no vessel answers, the vessel at its re-stand (before any mount) and its lock (after its watches
+ * stand down).
  */
 export function settleRealmMoves(projections: string): RealmSettle {
   const labels = readRealmLabels(projections).filter((l) => faceSegmentRefusal(l.petName) === null);
   const moved: Array<{ from: string; to: string }> = [], held: string[] = [];
   const realmsDir = join(projections, REALMS_PROJECTION_DIR);
+  const ownerOf = (plane: string, slug: string): string | undefined =>
+    labels.find((l) => (plane === REALM_PLANES.wikis ? l.realms.some((r) => r.slug === slug) : l.bags.includes(slug)))?.petName;
+  for (const f of standingRealmFolders(projections)) {
+    if (labels.some((l) => l.petName === f)) continue;
+    const owners = [REALM_PLANES.wikis, REALM_PLANES.bags].flatMap((plane) => {
+      try { return readdirSync(join(realmsDir, f, plane), { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".")).map((e) => ownerOf(plane, e.name)); } catch { return []; }
+    });
+    const to = owners[0];
+    if (to === undefined || owners.some((o) => o !== to) || existsSync(realmRoot(projections, to))) continue;
+    renameSync(join(realmsDir, f), realmRoot(projections, to));
+    moved.push({ from: join(realmsDir, f), to: realmRoot(projections, to) });
+    try { retagRealmAuthor(realmRoot(projections, to), f, to); } catch (e) { held.push(`${realmRoot(projections, to)}: its tree kept the former author (${e instanceof Error ? e.message : String(e)})`); }
+  }
   for (const l of labels) {
     const want: Array<[string, string]> = [...l.realms.map((r) => [REALM_PLANES.wikis, r.slug] as [string, string]), ...l.bags.map((b) => [REALM_PLANES.bags, b] as [string, string])];
     for (const [plane, slug] of want) {
@@ -329,6 +346,11 @@ export function settleRealmMoves(projections: string): RealmSettle {
         mkdirSync(join(realmRoot(projections, l.petName), plane), { recursive: true });
         renameSync(from, to);
         moved.push({ from, to });
+        const ends = { from, to, fromRealm: f, toRealm: l.petName };
+        for (const root of [join(realmsDir, f), realmRoot(projections, l.petName)]) {
+          try { commitRealmMove(root, plane, slug, ends); }
+          catch (e) { held.push(`${root}: the move stands on disk, and its tree took no commit (${e instanceof Error ? e.message : String(e)}); \`lares surface commit --realm\` keeps it by hand`); }
+        }
       }
     }
   }
