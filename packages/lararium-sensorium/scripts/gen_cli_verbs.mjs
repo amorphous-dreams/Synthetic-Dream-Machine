@@ -84,6 +84,9 @@ const CLI_FORMS = {
   wiki_filter:    "wiki filter",
   wiki_render:    "wiki render",
   wiki_status:    "wiki status",
+  // The DISCORDIAN CALENDAR — the MCP `ddate` tool mirrors the host verb `lares ddate`, a real top-level CLI command that runs
+  // with no vessel; the tool rides the daemon verb every vessel answers, so a seat reads the day through the same core.
+  ddate:          "ddate",
   // The OFFERING door (offering#/the-canon-offer) — an AI seat offers toward house canon and reads the offer table; each
   // mirrors `lares meme offer …` under the one `meme` host. `lares meme offer promote` stays the Kahu steward's hand and
   // holds no MCP tool, the way `kahua lift` holds none.

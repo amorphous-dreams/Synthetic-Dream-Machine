@@ -141,6 +141,12 @@ MEME_VERBS = ("meme_put", "meme_get", "meme_list", "meme_delete", "meme_project"
 # the switcher keeps its one `wiki` tool until that phase renames it.
 TIDDLER_VERBS = ("tiddler_get", "tiddler_put", "tiddler_delete", "wiki_filter", "wiki_render", "wiki_status")
 
+# THE DISCORDIAN CALENDAR — one tool, `ddate`, the MCP skin of the `ddate` verb every vessel answers (the house's own isomorphic
+# calendar core; no host `ddate` binary stands behind it). It mirrors `lares ddate [+FORMAT] [day month year]`, a host verb the CLI
+# runs with no vessel. THE CLOCK SEAM rides this seat: a call that names no date carries `today`, the seat's own local day, and the
+# verb reads no clock. Rides the @daemon wire like every routed read.
+DDATE_VERBS = ("ddate",)
+
 # The OFFERING door (offering#/the-canon-offer) — an AI seat offers its face's working records toward a house-canon bag
 # and reads the Nexus's offer table. `meme_offer` mirrors `lares meme offer <uri…> --bag <slug>`; `meme_offer_list` mirrors
 # `lares meme offer list`; `meme_offer_show` mirrors `lares meme offer show <cid>`. An offer GRANTS NOTHING: canon moves only
@@ -210,6 +216,7 @@ VERB_SEATS = {
     "tiddler_get": (True, False),       # one record with its fields and its base hash — a read → HOTL
     "wiki_render": (True, False),       # wikify a title or a span to text or html — a read → HOTL
     "wiki_status": (True, False),       # each layer's writeability for the session's face — a read → HOTL
+    "ddate": (True, False),             # the Discordian date from a date the caller names — pure compute, a read → HOTL
     "tiddler_put": (True, False),       # patch fields, tags, or named text in the working layer — reversible, trusted → HOTL
     "tiddler_delete": (True, False),    # remove one plain tiddler plainly, or a meme family where `family=True` names the act; a lower layer asks `mode` → HOTL
     # The offering door — an offer appends a signed row to the Nexus's offer table and moves no canon byte; the reads fold
@@ -1265,6 +1272,30 @@ def build_mcp(coordinator: LaresCoordinator):
         the face's own `read` and `write`, and `why` where a mounted-writable layer still refuses this face. Read it before a write to learn where the write lands. CONTAINER LAW: exactly one of
         `recipe` / `bag`; `recipe` names a wiki: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`."""
         return _meme_wire("wiki-status", _meme_container("wiki_status", recipe, bag))
+
+    @mcp.tool(annotations=_READS)
+    def ddate(format: "str | None" = None, day: "int | None" = None, month: "int | None" = None,
+              year: "int | None" = None) -> dict:
+        """READ THE DISCORDIAN DATE through the house's own calendar (no host `ddate` binary) — mirrors `lares ddate
+        [+FORMAT] [day month year]`. With no date it reads TODAY, the seat's own local day (the verb reads no clock). `day`,
+        `month` and `year` ride together or not at all (a BCE year rides negative). `format` takes the ddate(1) codes:
+        %A %a weekday · %B %b season · %d day of the season · %e its ordinal (11th, 21st) · %E the ordinal by its last digit
+        alone (the first ddate's 11st) · %H the holyday · %N stop unless it is a holyday · %n %t newline and tab · %Y the YOLD ·
+        %X days until X-Day (Confusion 40, 9827 YOLD, the Church of the SubGenius's date) · %. an exclamation drawn through the
+        platform's entropy door · %{ %} the span that reads "St. Tib's Day" on February 29. A bare call answers the default line
+        ("Today is Prickle-Prickle, the 32nd day of The Aftermath in the YOLD 3192"). Returns {text, entropy, gregorian,
+        yold, tibs, season, dayOfSeason, weekday, holyday}: `entropy` names the source a `%.` drew from, else null. A date out
+        of range raises. Rides the @daemon wire."""
+        import datetime
+        args: dict = {}
+        if format is not None:
+            args["format"] = format
+        for name, value in (("day", day), ("month", month), ("year", year)):
+            if value is not None:
+                args[name] = value
+        today = datetime.date.today()
+        args["today"] = {"year": today.year, "month": today.month, "day": today.day}
+        return _meme_wire("ddate", args)
 
     @mcp.tool(annotations=_PATCHES)
     def tiddler_put(title: str, recipe: "str | None" = None, bag: "str | None" = None, fields: "dict | None" = None,

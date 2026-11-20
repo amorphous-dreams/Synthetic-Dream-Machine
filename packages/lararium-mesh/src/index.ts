@@ -140,6 +140,8 @@ export * from "./stream-adapter.js";
 export * from "./text-stream-adapter.js";
 export * from "./sensorium-pc.js";
 export * from "./aperture-selector.js";
+export * from "./entropy-door.js";
+export * from "./ddate.js";
 export * from "./epoch-lease.js";
 export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
 export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";

@@ -32,6 +32,7 @@
     "home",
     "sense",
     "flow",
+    "ddate",
     "wing-of",
     "mempalace",
     "hooks",
@@ -79,6 +80,7 @@
     "wiki_filter",
     "wiki_render",
     "wiki_status",
+    "ddate",
     "meme_offer",
     "meme_offer_list",
     "meme_offer_show",
@@ -124,6 +126,7 @@
     "wiki_filter": "wiki filter",
     "wiki_render": "wiki render",
     "wiki_status": "wiki status",
+    "ddate": "ddate",
     "meme_offer": "meme offer",
     "meme_offer_list": "meme offer list",
     "meme_offer_show": "meme offer show",
@@ -141,6 +144,7 @@
     "purge": "sense purge"
   },
   "mirror_hosts": [
+    "ddate",
     "flow",
     "kahua",
     "meme",
