@@ -1098,6 +1098,7 @@ async function prepareNodeBootOn(
     door: vesselDocStoreDoor<NodeSaveSession>(() => docStorePort.port(), {
       book: (ask, verb, session) => sealedCells.book?.hold(ask, verb, session) ?? (() => {}),
       idPrefix: `docstore-${process.pid}`,
+      faceKeyOf: (subject) => faceKeyOfSubject(subject),
     }),
     flushRepo: async () => { await repo.flush(); },
     // A SAVE HELD BACK NAMES WHY: the store's refusal, and for a seal the holder refused, the holder's own refusal and cause.
@@ -2244,13 +2245,21 @@ async function prepareNodeBootOn(
   // THE LIT SET'S SESSIONS: each sibling face lit beside the worn one stands its OWN place session (its atom signs its
   // certificate at this vessel's place), seated in the same book, so a save of a document that sibling owns books its own
   // session and seals under its own key (`sessionOfFace`), never the daemon mount's. A sibling that leaves the set stands down.
-  const siblingSessions = new Map<string, { readonly cell: ReturnType<typeof placeSessionCell>; readonly seat: ReturnType<typeof standingSessionSeat> }>();
-  const standSiblingSession = async (worn: PlaceWorn, live: () => boolean): Promise<void> => {
+  const bareFaceKey = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
+  // EACH HAT ITS OWN CHAIN: a sibling's session names its face (its bare atom key), so the book answers that sibling's own
+  // chain and fold for it (`chainOfFace`, `foldOfFace`) and the island seals through that sibling's own holder.
+  const siblingSessions = new Map<string, { readonly cell: ReturnType<typeof placeSessionCell>; readonly seat: ReturnType<typeof standingSessionSeat>; readonly face: string; readonly fleetRoot: string | null }>();
+  const standSiblingSession = async (worn: PlaceWorn, live: () => boolean, fleetRoot: string | null = null): Promise<void> => {
     if (!live()) return;
     let held = siblingSessions.get(worn.group);
     if (!held) {
       const seat = standingSessionSeat();
-      const cell: ReturnType<typeof placeSessionCell> = placeSessionCell(mintPlaceSession, () => {
+      const face = bareFaceKey(worn.atomKey);
+      const mintSibling: Parameters<typeof placeSessionCell>[0] = async (w) => {
+        const out = await mintPlaceSession(w);
+        return "session" in out ? { ...out, session: { ...out.session, face } } : out;
+      };
+      const cell: ReturnType<typeof placeSessionCell> = placeSessionCell(mintSibling, () => {
         if (!live()) { cell.standDown(); return; }
         const session = cell.session();
         seat.stand(session);
@@ -2258,7 +2267,7 @@ async function prepareNodeBootOn(
         if (session !== null) rebookWaiting(session, `the sibling ${worn.group.slice(0, 8)}…'s place session stood`);
       });
       seat.book(sealedCells.book);
-      held = { cell, seat };
+      held = { cell, seat, face, fleetRoot };
       siblingSessions.set(worn.group, held);
     }
     const mine = held;
@@ -2286,6 +2295,23 @@ async function prepareNodeBootOn(
     const placeScope = placeCell.scope();
     if (nexus !== null) return placeScope ? { ...nexus, place: placeScope } : nexus;
     return placeScope ? { place: placeScope } : null;
+  };
+  /** The lit sibling whose session names `face` (its bare atom key), while its place session stands. */
+  const siblingOfFace = (face: string): { readonly group: string; readonly held: NonNullable<ReturnType<typeof siblingSessions.get>> } | null => {
+    for (const [group, held] of siblingSessions) if (held.face === bareFaceKey(face)) return { group, held };
+    return null;
+  };
+  /** EACH HAT ITS OWN CHAIN: the worn face's chain (null), or a lit sibling's own at its place; a shut face names none. */
+  const chainOfFace = (face: string | null): SessionOwnChain | null => {
+    if (face === null) return ownChain();
+    const scope = siblingOfFace(face)?.held.cell.scope() ?? null;
+    return scope ? { place: scope } : null;
+  };
+  /** The key the island seats a lit sibling's entry under, read off the face its bag wears; undefined for the worn face. */
+  const faceKeyOfSubject = (subject: string | null): string | undefined => {
+    if (subject === null) return undefined;
+    for (const [group, held] of siblingFaces) if (held.face === subject) return siblingSessions.get(group)?.face;
+    return undefined;
   };
   // THE SESSION SIGN DOOR (sealed-store#/the-store): the daemon island holds no session key. A session call books its
   // signer in a book, and the island's ask signs through it, under the vessel's own chain at the pin its dial composed at.
@@ -2325,9 +2351,13 @@ async function prepareNodeBootOn(
     sealedRest.store.mapMoved();
     return {
       book,
-      door: book.door(ownChain, async () => fleetRaisesOf({
-        repo, worn: custodyGroup ? { fleetRoot: wornFleetRoot, atomKey: activeAtom?.key ?? null } : null,
-      })),
+      // EACH HAT ITS OWN FOLD: a sibling's raises read off its own fleet board, under its own atom.
+      door: book.door(chainOfFace, async (face) => {
+        if (face === null) return fleetRaisesOf({ repo, worn: custodyGroup ? { fleetRoot: wornFleetRoot, atomKey: activeAtom?.key ?? null } : null });
+        const sibling = siblingOfFace(face);
+        if (sibling === null) throw new Error(`face-not-open: face ${face.slice(0, 12)}… stands shut`);
+        return fleetRaisesOf({ repo, worn: { fleetRoot: sibling.held.fleetRoot, atomKey: face } });
+      }),
       seated: () => {
         if (doorSeated) return;
         doorSeated = true;
@@ -2568,9 +2598,17 @@ async function prepareNodeBootOn(
   // holds, into the mounted face's own row (`openDaemon` names it). The lift alone seats it; at the floor none stands, so an
   // island's ask answers unwritten.
   let custodyWriteGroup: string | null = null;
+  // EACH HAT ITS OWN HOLDER: a lit sibling's seat rests its Archive in that sibling's own row, named by its PersonaGroup; a
+  // face that stands shut takes no write.
   const liftCustodyWrite: CustodyWriter | undefined = sovereign
-    ? (_carrier, bytes) => custodyWriteGroup
-      ? sovereign.writeVeilArchive(bytes, custodyWriteGroup) : Promise.reject(new Error("face-not-named: the mounted face names no PersonaGroup"))
+    ? (_carrier, bytes, face) => {
+      if (face !== undefined) {
+        return siblingFaces.has(face) && siblingSessions.has(face)
+          ? sovereign.writeVeilArchive(bytes, face) : Promise.reject(new Error(`face-not-open: face ${face.slice(0, 8)}… stands shut, so its Archive rests nowhere`));
+      }
+      return custodyWriteGroup
+        ? sovereign.writeVeilArchive(bytes, custodyWriteGroup) : Promise.reject(new Error("face-not-named: the mounted face names no PersonaGroup"));
+    }
     : undefined;
   stood.push({ what: "the daemon island", phase: "islands", down: async () => {
     const receipt = await (daemonVm as DaemonVmCore | undefined)?.shutdown();
@@ -3593,7 +3631,7 @@ async function prepareNodeBootOn(
       }
       const mine = held;
       const current = (): boolean => live() && siblingFaces.get(group) === mine;
-      try { await standSiblingSession({ group, atomKey: entry.atom.key }, current); }
+      try { await standSiblingSession({ group, atomKey: entry.atom.key }, current, entry.deviceEdge.personaRootDid); }
       catch (error) { if (current()) removeSibling(group, mine); throw error; }
       if (!current() || relation === null) return;
       // Canon, label, and keeper carry the very same generation as the provider and session.

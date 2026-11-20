@@ -133,6 +133,8 @@ export interface DocStoreMsg_Sealed {
 export interface DocStoreMsg_Open {
   readonly type: "docstore:open"; readonly requestId: string;
   readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string;
+  /** The lit face whose holder opens it, by the key the island seats it under; absent, the worn face's. */
+  readonly face?: string;
 }
 export interface DocStoreMsg_Opened {
   readonly type: "docstore:opened"; readonly requestId: string;
@@ -199,6 +201,9 @@ function asker<A extends { requestId: string }>(port: Port, answerType: string, 
 export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | null, opts: {
   readonly book: (ask: string, verb: string, session: S) => () => void;
   readonly idPrefix: string;
+  /** EACH HAT ITS OWN HOLDER: the key the island seats a lit face under, read off the face its bag wears (a proof
+   *  subject); undefined for the worn face. Absent: every open reads through the worn face's holder. */
+  readonly faceKeyOf?: (subject: string | null) => string | undefined;
   /** The LIVENESS bound an ask waits on an island that stands alive and says nothing (default DOCUMENT_HANG_BOUND_MS). */
   readonly livenessMs?: number;
 }): Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock(): void } {
@@ -234,9 +239,10 @@ export function vesselDocStoreDoor<S extends SaveSession>(port: () => Port | nul
         return { values: sealed as SealedValueAddresses["values"] };
       } finally { release(); }
     },
-    async open({ bagId, role, ref }): Promise<OpenedValue | HolderRefusal> {
+    async open({ bagId, role, ref, face }): Promise<OpenedValue | HolderRefusal> {
       if (!ready()) return { refusal: "holder-locked", cause: "no daemon island answers the document store's door" } as HolderRefusal;
-      const answer = await open!({ type: "docstore:open", bagId, role, ref });
+      const key = opts.faceKeyOf?.(face ?? null);
+      const answer = await open!({ type: "docstore:open", bagId, role, ref, ...(key !== undefined ? { face: key } : {}) });
       if (answer === null) return { refusal: "holder-locked", cause: "the daemon island went before it answered the open" } as HolderRefusal;
       if (answer === ISLAND_SILENT) return { refusal: "holder-locked", cause: `LIVENESS: the daemon island stood alive and answered no open within its ${livenessMs}ms liveness bound` } as HolderRefusal;
       if (typeof answer.refusal === "string") return { refusal: answer.refusal, ...(answer.cause ? { cause: answer.cause } : {}) } as HolderRefusal;
@@ -258,7 +264,7 @@ export interface DocStoreMsg_Silent { readonly type: "docstore:silent" }
  *  as it installs and that it stops at its unsubscribe. Returns the unsubscribe. */
 export function answerDocStoreAsks(port: Port, holder: {
   seal(args: { readonly bagId: string; readonly values: readonly DocumentValue[]; readonly ask: { readonly requestId: string; readonly verb: string }; readonly peer?: string }): Promise<SealedValueAddresses | HolderRefusal>;
-  open(args: { readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string }): Promise<OpenedValue | HolderRefusal>;
+  open(args: { readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string; readonly face?: string }): Promise<OpenedValue | HolderRefusal>;
   /** The vessel locked: overwrite every content key now. */
   lock?(): void;
 }): () => void {
@@ -269,7 +275,7 @@ export function answerDocStoreAsks(port: Port, holder: {
     return { refusal: name, ...(typeof r?.message === "string" ? { cause: r.message } : {}) };
   };
   const stop = port.listen((raw) => {
-    const m = raw as { type?: unknown; requestId?: unknown; bagId?: unknown; ask?: unknown; verb?: unknown; values?: unknown; role?: unknown; ref?: unknown; peer?: unknown } | null;
+    const m = raw as { type?: unknown; requestId?: unknown; bagId?: unknown; ask?: unknown; verb?: unknown; values?: unknown; role?: unknown; ref?: unknown; peer?: unknown; face?: unknown } | null;
     if (m?.type === "docstore:lock") { holder.lock?.(); return; }
     if (!m || typeof m.requestId !== "string" || typeof m.bagId !== "string") return;
     const requestId = m.requestId;
@@ -283,7 +289,8 @@ export function answerDocStoreAsks(port: Port, holder: {
       return;
     }
     if (m.type === "docstore:open") {
-      void holder.open({ bagId: m.bagId, role: m.role as DocumentValue["role"], ref: typeof m.ref === "string" ? m.ref : "" }).then(
+      if (m.face !== undefined && typeof m.face !== "string") { reply({ type: "docstore:opened", requestId, refusal: "values-malformed" }); return; }
+      void holder.open({ bagId: m.bagId, role: m.role as DocumentValue["role"], ref: typeof m.ref === "string" ? m.ref : "", ...(typeof m.face === "string" ? { face: m.face } : {}) }).then(
         (out) => reply("refusal" in out ? { type: "docstore:opened", requestId, refusal: out.refusal, ...(out.cause ? { cause: out.cause } : {}) }
           : { type: "docstore:opened", requestId, plaintext: out.plaintext, keyVersion: out.keyVersion, address: out.address, writer: out.writer, changeWriter: out.changeWriter } satisfies DocStoreMsg_Opened),
         (e) => reply({ type: "docstore:opened", requestId, ...refusal(e) }));

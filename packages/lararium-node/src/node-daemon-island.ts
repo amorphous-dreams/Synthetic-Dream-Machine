@@ -96,7 +96,7 @@ runSovereignWorker((manifest) => {
     ...(vesselPort ? { docStoreDoor: vesselPort } : {}),
     ...(liveOnVessel ? { freshBase: freshBasePort(liveOnVessel) } : {}),
     ...(sealOnVessel ? {
-      persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
+      persistVeilArchive: (bytes: Uint8Array, face?: string) => (face !== undefined ? sealOnVessel("veil", bytes, face) : sealOnVessel("veil", bytes)),
     } : {}),
     // A person's answers at this island's disk shore: the same door a wiki island stands (`claimShoreVerb`),
     // answered from the projector this island mounts. `lares shore` reaches it by this verb, beside the

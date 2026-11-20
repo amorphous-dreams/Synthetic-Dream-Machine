@@ -501,7 +501,9 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
     // A census, never a mention: one subscription in the seat, one seat in the island, one shore handed in.
     expect(seat.match(/subscribeSeatRolls\)\(sink\)/g)?.length).toBe(1);
     expect(seat.match(/contentKeyRollSink\(holder\.rollerPorts\(/g)?.length).toBe(1);
-    expect(island.match(/contentKeys = seatContentKeys\(\{/g)?.length).toBe(1);
+    // ONE SEAT BUILDER in the island (each hat its own holder): the mounted face and every lit sibling stand their seat through it.
+    expect(island.match(/seatContentKeys\(\{/g)?.length).toBe(1);
+    expect(island.match(/return seatContentKeys\(\{/g)?.length).toBe(1);
     expect(shore.match(/sealedStore: nodeSealedStoreShore\(/g)?.length).toBe(1);
     expect(Object.keys(mesh)).toContain("contentKeyRollSink");
     // CONTROL: the same census reads zero in a module that subscribes nothing.

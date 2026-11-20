@@ -157,6 +157,7 @@ describe("a self-founded browser face lifts at its own place", () => {
     minted.close();
     await expect(write("veil", utf8Bytes("after the lock"))).rejects.toThrow(/did not seal/);
     const island = (SOURCES["../src/daemon-island-start.ts"] ?? "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-    expect(island).toMatch(/persistVeilArchive: \(bytes: Uint8Array\) => custodyOnVessel\("veil", bytes\)/);
+    // The worn face's Archive rests through the custody door; a lit sibling's (face-named) refuses by name, never the worn row.
+    expect(island).toMatch(/persistVeilArchive: \(bytes: Uint8Array, face\?: string\) => face === undefined\s*\? custodyOnVessel\("veil", bytes\)\s*: Promise\.reject\(new Error\("face-archive-unrouted/);
   });
 });

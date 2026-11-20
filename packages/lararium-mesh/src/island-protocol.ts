@@ -1047,7 +1047,11 @@ export type CustodyWriteCarrier = "veil";
  * answers `custody:written` on the same `requestId`. The island names the CARRIER, never a path: the vessel decides
  * where the bytes rest.
  */
-export interface IslandMsg_CustodyWrite { type: "custody:write"; requestId: string; carrier: CustodyWriteCarrier; bytes: Uint8Array; }
+export interface IslandMsg_CustodyWrite {
+  type: "custody:write"; requestId: string; carrier: CustodyWriteCarrier; bytes: Uint8Array;
+  /** The lit face whose row the bytes rest in, by its PersonaGroup; absent, the worn face's. */
+  face?: string;
+}
 /**
  * Island → vessel: THE BINDING GATE'S VERDICT, posted by a persona-bound daemon island once its gate ran. `gate:clear`
  * names the edge (by digest) and the persona root the gate verified, so a holder admits a session only for the edge the
@@ -1082,6 +1086,8 @@ export interface IslandMsg_SessionSign {
   ask: string;
   verb: string;
   payload?: Uint8Array;
+  /** `own` only: the lit face whose chain and fold it reads, by its bare atom key; absent, the worn face's. */
+  face?: string;
 }
 
 /**
@@ -1109,7 +1115,7 @@ export function nexusOfChain(chain: SessionOwnChain | null): NexusOwnChain | nul
 
 /** Vessel → island: the session sign door's answer, or one refusal by name. */
 export type IslandMsg_SessionSigned =
-  | { type: "session:signed"; requestId: string; certificate: unknown; subject: string; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[] }
+  | { type: "session:signed"; requestId: string; certificate: unknown; subject: string; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[]; face?: string }
   | { type: "session:signed"; requestId: string; own: true; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[] }
   | { type: "session:signed"; requestId: string; signature: string }
   | { type: "session:signed"; requestId: string; refusal: string };

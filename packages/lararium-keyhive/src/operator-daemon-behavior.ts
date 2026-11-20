@@ -49,11 +49,12 @@ import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb, LarTidd
  *  Forwarded straight to makeDaemonBehavior — the daemon always carries the caps; this makes them live.
  *  Absent → the cap stays inert (sink not wired / no projection mount).
  *
- *  `persistVeilArchive` lets the node rest the selected face's archive without giving the island a path. */
+ *  `persistVeilArchive` lets the node rest a face's archive without giving the island a path: the mounted face's, or a lit
+ *  sibling's named by its PersonaGroup (each hat its own holder rests its own Archive). */
 type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTickMs" | "onBoot" | "runnableHulls"> & {
   /** The veil identity's archive persistence — the same inversion, its own file. Absent → the veil's
    *  prekeys regenerate per boot, and material keyed to an earlier card stops opening. */
-  persistVeilArchive?: (bytes: Uint8Array) => void | Promise<void>;
+  persistVeilArchive?: (bytes: Uint8Array, face?: string) => void | Promise<void>;
   /** `shore` — a person's answers at THIS island's disk shore (`lares shore`): the node entry injects the
    *  door that answers from the projector this island mounts (`@lararium/node` `shore-verb.ts`). keyhive
    *  stays fs-blind. Absent (a browser vessel) → the verb never registers. */
@@ -185,10 +186,11 @@ import { answerKahuaCap } from "./kahua-cap.js";
 import { proposeDraftsToKahua, pageTitleList } from "./kahua-page-propose.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat } from "./content-key-seat.js";
-import { chainSubjectAt, ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
+import { faceSeatTable, type FaceSeat } from "./face-seat-table.js";
+import { ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
 // The island side of the session sign door, for an island entry that composes this behaviour.
 export { islandSessionDoor } from "./island-session-proof.js";
-import type { RecordSigner, SessionOwnChain } from "@lararium/mesh";
+import type { RecordSigner } from "@lararium/mesh";
 import { SealedStore, readKeyParcel, readOutboxKey, readCarriedRecord, encodeKeyParcel, readKeyVersionId, utf8Bytes, type ContentKeyHolderPorts, type KeyParcel, type SealedRecord, type SealedStoreRest } from "@lararium/mesh";
 import { unboundMints, restingMinter } from "./resolve-binding.js";
 import { kahuReachSourceOf, withKahuReach } from "./kahu-reach-source.js";
@@ -324,6 +326,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       litInputs.set(key, faceInputsDigest(face));
       // THE LIT SET: the sibling joins the faces a face-named wave may name, under its own handle index and relation.
       litSiblings.set(key, face);
+      // EACH HAT ITS OWN HOLDER: the sibling seats its own content-key holder beside its own identity, once the mounted
+      // holder stood (a sibling lit earlier seats at that standing).
+      if (holderCtx !== null) standSiblingSeat(holderCtx, key, face, joined.keyhive);
       // A LIT SIBLING HANDS THE WORN FACE WHAT IT DELEGATED TO IT (sealed-store#/the-share-config): a share the sibling
       // landed while IT stood worn seated this face on a bag and on a wiki's realm, and those cap events rest in the
       // sibling's hive. The worn hive ingests them at the sibling's light, so its seat reads on its own replica.
@@ -366,15 +371,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   let faceLedger: BagDocLedger | null = null;
   // THE CONTENT-KEY HOLDER, seated beside the face identity (sealed-store#/the-store). Bare
   // content keys live in it, in this island's memory alone: no verb answers one, and none crosses the port.
-  let contentKeys: ContentKeySeat | null = null;
+  // THE FACE SEATS (face-seat-table): each face's content-key seat and the vessel's reading of that face, one entry per face.
+  const faces = faceSeatTable({ proof: () => sessionProof });
+  const mountedFace = faces.mounted;
   /** The document store's door, answered while this island stands (one subscription; a re-wire replaces it). */
   let stopDocStoreDoor: (() => void) | null = null;
-  /** The vessel's own verified face chain, as the last session reading carried it; null before any session asked. */
-  let ownChain: SessionOwnChain | null = null;
-  /** The vessel's counted raises and its unanswered ones on the face's fleet board, as the last session reading
-   *  carried them (the vessel's own fold): a removal version counts by the first, an owed roll stands by the second. */
-  let ownCounted: ReadonlySet<string> = new Set();
-  let ownUnanswered: readonly string[] = [];
   const faceDoor = () => kh && daemonAuth.personaGroupId
     ? makeFaceBagDoor({ face: kh, groupId: daemonAuth.personaGroupId, ...(faceLedger ? { ledger: faceLedger } : {}) }) : null;
   const faceAtom = () => {
@@ -651,40 +652,70 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // one; the vessel answers from that session alone, at whichever anchor it met its face (a Nexus, or the vessel's
   // own place). The session must wear this island's own face, the subject of the vessel's own chain at that anchor,
   // or nothing seals and nothing opens (`session-face-foreign`). The chain the reading carries is what the seat's standing reads.
-  // AN UNREAD FOLD REFUSES WHERE A ROLL STANDS. A vessel that read no fold of the face's fleet board hands no
-  // counted raise: a seat that once minted a removal version would count no evidence for it and ride the
-  // pre-removal head, so it refuses (`fold-unread`). A seat that never rolled has no removal to count, as a
-  // joinee's seat (its fold always reads empty), and goes on.
-  const foldOrRefuse = async (verb: string, foldRead: boolean): Promise<void> => {
-    if (foldRead || !contentKeys) return;
-    const rolled = await contentKeys.holder.holdsRemoval();
-    if (rolled === false) return;
-    throw new VerbRefusal("fold-unread", `[daemon] ${verb}: fold-unread — this vessel read no fold of the face's fleet board, and this seat once rolled; nothing sealed, nothing opened.`);
-  };
   const sessionOf = async (verb: string, context: { readonly invocation?: { readonly requestId?: string }; readonly local?: boolean }): Promise<RecordSigner> => {
     const requestId = context.invocation?.requestId;
     const ask = context.local === true && typeof requestId === "string" && requestId.length > 0 ? { requestId, verb } : null;
-    const reading = sessionProof && ask ? await sessionProof.signer(ask) : { refusal: "signer-unavailable" } as const;
-    if ("refusal" in reading) throw new VerbRefusal(reading.refusal, `[daemon] ${verb}: ${reading.refusal} — nothing sealed, nothing opened.`);
-    ownChain = reading.chain;
-    ownCounted = new Set(reading.counted);
-    ownUnanswered = [...reading.unanswered];
-    await foldOrRefuse(verb, reading.foldRead);
-    if (reading.subject !== chainSubjectAt(reading.signer.certificate, reading.chain)) {
-      throw new VerbRefusal("session-face-foreign", `[daemon] ${verb}: session-face-foreign — the session wears another face than this island holds; nothing sealed, nothing opened.`);
-    }
-    return reading.signer;
+    return (await faces.session(verb, ask)).signer;
   };
-  /** The vessel's own chain and fold for an act no session asked (the memory section's cut and import): the
-   *  holder reads records under them. A vessel that names none leaves the island as it stood, and the holder
-   *  refuses to read without a chain. */
-  const ownReading = async (verb: string): Promise<void> => {
-    const read = await sessionProof?.own?.();
-    if (!read || "refusal" in read) return;
-    ownChain = read.chain;
-    ownCounted = new Set(read.counted);
-    ownUnanswered = [...read.unanswered];
-    await foldOrRefuse(verb, read.foldRead);
+  /** The vessel's own chain and fold for an act no session asked (the memory section's cut and import). */
+  const ownReading = (verb: string): Promise<void> => faces.own(verb);
+  // THE CONTENT-KEY SEAT OF ONE FACE (each hat its own holder): its own Keyhive identity, its own key group and fleet scope,
+  // the bags it registers, its own dyad reading, the vessel's chain and fold of THAT face (its entry), and its Archive rested
+  // in its own row. The mounted face and every lit sibling stand one each; none borrows another's.
+  /** The context the mounted holder stood in; a sibling lit after it seats its own holder in the same. */
+  let holderCtx: IslandContext | null = null;
+  const seatOfFace = (keyhive: KeyhiveProvider, entry: FaceSeat, face: {
+    readonly groupId: string | null; readonly fleetRoot: string | null; readonly atomKey: () => string;
+    readonly bags: () => readonly string[]; readonly dyad: () => DyadReader | undefined;
+    /** The sibling's PersonaGroup, whose own row its Archive rests in; absent for the mounted face. */
+    readonly archiveFace?: string;
+  }): ContentKeySeat => {
+    const bareId = (id: string): string => id.trim().toLowerCase().replace(/^0x/, "");
+    const fleetRoot = face.fleetRoot;
+    return seatContentKeys({
+      providers: [keyhive],
+      rest: sealedStore!.rest,
+      values: sealedStore!.values,
+      // One subscription: its roll takes this island's seat rolls (kapae#/keys). A wrap rests the wrapping identity's
+      // Archive through the SAME door as the floor, in the face's own row, and only where the archive opens: a locked
+      // vessel rests nothing, so it wraps nothing.
+      restArchive: async (_provider) => {
+        if (daemonAuth.archiveOpens !== true) throw new Error("the archive holds shut: a locked vessel rests no Archive, so no lockbox wraps");
+        const write = persistVeilArchive;
+        if (!write) throw new Error("no Archive writer stands on this shore, so a wrap could not open again");
+        const archive = await keyhive.exportArchiveAfterTheCard();
+        await (face.archiveFace !== undefined ? write(archive, face.archiveFace) : write(archive));
+      },
+      group: face.groupId && fleetRoot ? { groupId: face.groupId, scope: fleetRoot } : null,
+      bags: face.bags,
+      // A face's seat reads every standing through the dyad's guard: with no reader composed each ask
+      // throws by name, so the seat wraps for nobody and performs no key act. It never reads the absence
+      // as `clear`.
+      ...(fleetRoot ? {
+        standingOf: async (member: string) => requireDyadReader(face.dyad(), "the content-key seat")(fleetRoot, bareId(member)),
+        ownEdgeShadowed: async () => (await requireDyadReader(face.dyad(), "the content-key seat")(fleetRoot, face.atomKey())) === "aside",
+      } : {}),
+      // THE VESSEL'S OWN FOLD OF THIS FACE: a shore that injects `countedRaises` names them; else the face's last reading.
+      countedRaises: countedRaises && fleetRoot ? () => countedRaises(fleetRoot) : () => entry.counted,
+      unansweredRaises: () => entry.unanswered,
+      ...(freshBase ? { freshBase } : {}),
+      // THE SEAT'S STANDING READS THE VESSEL'S CHAIN OF THIS FACE, as its last reading carried it: before any session of
+      // the face asked, no writer stands. A seat roll names no session, so it takes no signer and stays owed by name; a
+      // session's own act signs through the door its verb reads (`faces.session`).
+      session: { signer: () => null, standing: ownChainStanding(() => entry.chain, face.bags) },
+      // A report names a result, a founding's opaque locator and a key version: no key, and no bag's name.
+      report: (o) => console.log(`[daemon] content-key roll: ${o.result}${o.founding ? ` founding ${o.founding.slice(0, 12)}…` : ""}${o.keyVersion ? ` → version ${o.keyVersion.slice(0, 12)}…` : ""} (${o.raises.length} raise(s))`),
+    });
+  };
+  /** A lit sibling's own seat, in its own entry; its identity's dispose closes the entry whole. */
+  const standSiblingSeat = (ctx: IslandContext, key: string, face: JoinedFaceAuth, keyhive: KeyhiveProvider): void => {
+    if (!sealedStore || faces.lit(key)?.seat) return;
+    const entry = faces.light(key, null);
+    entry.seat = seatOfFace(keyhive, entry, {
+      groupId: face.personaGroupId, fleetRoot: face.deviceEdge.personaRootDid, atomKey: () => face.atom.key,
+      bags: () => face.registerBags, dyad: () => dyadReader(ctx, { ...daemonAuth, ...face }), archiveFace: face.personaGroupId,
+    });
+    keyhive.whenDisposed(() => { if (faces.lit(key) === entry) faces.drop(key); });
   };
   // THE HOLDER AND ITS DOOR STAND BEFORE ANY READ OF A SEALED DOCUMENT (the working-layer-first rule, red 3): the face's
   // catalog rests sealed, and the vessel opens its chunks only through this door, so a boot that read the catalog
@@ -697,62 +728,26 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     // vessel rests nothing, so it wraps nothing.
     if (sealedStore) {
       const fleetRoot = daemonAuth.deviceEdge?.personaRootDid;
-      const bareId = (id: string): string => id.trim().toLowerCase().replace(/^0x/, "");
-      contentKeys = seatContentKeys({
-        providers: [keyhive],
-        rest: sealedStore.rest,
-        values: sealedStore.values,
-        restArchive: async (_provider) => {
-          if (daemonAuth.archiveOpens !== true) throw new Error("the archive holds shut: a locked vessel rests no Archive, so no lockbox wraps");
-          const write = persistVeilArchive;
-          if (!write) throw new Error("no Archive writer stands on this shore, so a wrap could not open again");
-          await write(await keyhive.exportArchiveAfterTheCard());
-        },
-        group: daemonAuth.personaGroupId && fleetRoot ? { groupId: daemonAuth.personaGroupId, scope: fleetRoot } : null,
-        bags: () => daemonAuth.registerBags,
-        // A face's seat reads every standing through the dyad's guard: with no reader composed each ask
-        // throws by name, so the seat wraps for nobody and performs no key act. It never reads the absence
-        // as `clear`.
-        ...(fleetRoot ? {
-          standingOf: async (member: string) => requireDyadReader(dyadReader(ctx), "the content-key seat")(fleetRoot, bareId(member)),
-          ownEdgeShadowed: async () => (await requireDyadReader(dyadReader(ctx), "the content-key seat")(fleetRoot, faceAtom().key)) === "aside",
-        } : {}),
-        // THE VESSEL'S OWN FOLD: a shore that injects `countedRaises` names them; else the last session reading's.
-        countedRaises: countedRaises && fleetRoot ? () => countedRaises(fleetRoot) : () => ownCounted,
-        unansweredRaises: () => ownUnanswered,
-        ...(freshBase ? { freshBase } : {}),
-        // THE SEAT'S STANDING READS THE VESSEL'S OWN CHAIN, as the last session reading carried it: before any
-        // session asked, no writer stands. A seat roll names no session, so it takes no signer and stays owed by
-        // name; a session's own act signs through the door its verb reads (`sessionOf`, below).
-        session: { signer: () => null, standing: ownChainStanding(() => ownChain, () => daemonAuth.registerBags) },
-        // A report names a result, a founding's opaque locator and a key version: no key, and no bag's name.
-        report: (o) => console.log(`[daemon] content-key roll: ${o.result}${o.founding ? ` founding ${o.founding.slice(0, 12)}…` : ""}${o.keyVersion ? ` → version ${o.keyVersion.slice(0, 12)}…` : ""} (${o.raises.length} raise(s))`),
+      mountedFace.seat = seatOfFace(keyhive, mountedFace, {
+        groupId: daemonAuth.personaGroupId ?? null, fleetRoot: fleetRoot ?? null, atomKey: () => faceAtom().key,
+        bags: () => daemonAuth.registerBags, dyad: () => dyadReader(ctx),
       });
       // THE HOLDER LEAVES WITH ITS IDENTITY: a disposed provider opens no lockbox, so the seat unsubscribes
       // and overwrites every key in the same breath.
-      const seat = contentKeys;
-      keyhive.whenDisposed(() => { seat.lock(); if (contentKeys === seat) contentKeys = null; });
+      const seat = mountedFace.seat;
+      keyhive.whenDisposed(() => { seat.lock(); if (mountedFace.seat === seat) mountedFace.seat = null; });
+      holderCtx = ctx;
+      // EACH HAT ITS OWN HOLDER: a sibling lit before the holder stood seats its own now.
+      for (const [key, face] of litSiblings) {
+        const lit = providers.get(key);
+        if (lit) standSiblingSeat(ctx, key, face, lit.provider);
+      }
     }
     // THE DOCUMENT STORE'S DOOR (sealed-store#/owed): the vessel's Repo seals each save here under the session that
     // booked its change, through the ask the vessel's book holds for it, and opens each value for hydration. The
     // answers ride the port alone and carry addresses and bodies, never a key; no outcome rests in the daemon wiki.
     stopDocStoreDoor?.();
-    stopDocStoreDoor = docStoreDoor ? answerDocStoreAsks(docStoreDoor, {
-      seal: async ({ bagId, values, ask, peer }) => {
-        if (!contentKeys) return { refusal: "sealed-store-unavailable" } as never;
-        const signer = await sessionOf(ask.verb, { invocation: { requestId: ask.requestId }, local: true });
-        return contentKeys.sealValues({ bagId, values, signer, ...(peer !== undefined ? { peer } : {}) });
-      },
-      // A hydration's open may come before any session asked: the holder reads the vessel's own chain first.
-      open: async (args) => {
-        if (!contentKeys) return { refusal: "holder-locked" } as never;
-        if (ownChain === null) await ownReading("docstore-open");
-        return contentKeys.holder.openValue(args);
-      },
-      // THE VESSEL LOCKED (P2-2): the seat overwrites every content key now, not at the identity's dispose, so no seal
-      // and no open answers past the lock.
-      lock: () => { const seat = contentKeys; contentKeys = null; seat?.lock(); },
-    }) : null;
+    stopDocStoreDoor = docStoreDoor ? answerDocStoreAsks(docStoreDoor, faces.docStoreHolder()) : null;
   };
   const standWorkingOnce = (ctx: IslandContext): Promise<WorkingStand> => (async () => {
       // THE BINDING GATE'S OWN LEASE READ — the same fold, done once here (boot only re-runs the gate at
@@ -1149,10 +1144,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             // A ROLL THE ANSWER LEFT OWED SETTLES UNDER THE SESSION THAT BOOKED THIS ASK, inside the act: a seat roll names no
             // signer, and under placement the verb's own outcome rests in the control document, so no face-sealed save follows
             // to settle it. An ask no session booked settles nothing here, and the roll stays owed for the next session act.
-            if (contentKeys) {
+            if (mountedFace.seat) {
               let signer: RecordSigner | null = null;
               try { signer = await sessionOf("seat-duties", context); } catch { signer = null; }
-              if (signer) await contentKeys.settle(signer).catch(() => undefined);
+              if (signer) await mountedFace.seat.settle(signer).catch(() => undefined);
             }
             return { verb: "seat-duties", ran: true, ...answered };
           });
@@ -1259,8 +1254,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // whole under the outbox key an unlock handed this island, under a random name (custody#/the-table, the outbox).
       const holderFor = (verb: string): ContentKeySeat => {
         if (!kh) throw new VerbRefusal("waking-floor", `[daemon] ${verb}: lightAFace before opening a face's content key`);
-        if (!contentKeys) throw new SealedStoreUnavailable(verb);
-        return contentKeys;
+        if (!mountedFace.seat) throw new SealedStoreUnavailable(verb);
+        return mountedFace.seat;
       };
       /** The memory import's signer: the import judges its own door whole (`signer-unavailable` first), so a reading
        *  that refuses hands it none rather than refusing ahead of that door. The face gate holds all the same. */
@@ -1711,6 +1706,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             providers.delete(key);
             litInputs.delete(key);
             litSiblings.delete(key);
+            // CLOSING A FACE DROPS ITS ENTRY WHOLE: its seat locks, its chain and fold leave, before its identity goes.
+            faces.drop(key);
             await Promise.allSettled([...(inFlight.get(face.provider) ?? [])]);
             await face.provider.dispose();
           }

@@ -43,6 +43,8 @@ export type SessionReading =
     readonly counted: readonly string[];
     /** The counted raises no subscriber has taken yet (no mark in the vessel's ledger): owed, a restart included. */
     readonly unanswered: readonly string[];
+    /** The lit sibling face the session wears, by its bare atom key (each hat its own chain); absent, the worn face. */
+    readonly face?: string;
   }
   | { readonly refusal: string };
 
@@ -52,7 +54,7 @@ export interface IslandSessionProof {
   signer(ask: SessionAsk | null): Promise<SessionReading>;
   /** The vessel's own chain and fold with no session behind the ask (a backup's cut, a restore's import): the island
    *  counts records by them and signs nothing. Absent, or a refusal: the island reads as before. */
-  own?(): Promise<{ readonly chain: SessionOwnChain; readonly foldRead: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] } | { readonly refusal: string }>;
+  own?(face?: string): Promise<{ readonly chain: SessionOwnChain; readonly foldRead: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] } | { readonly refusal: string }>;
 }
 
 const bare = (s: string): string => s.trim().toLowerCase().replace(/^0x/, "");
@@ -134,16 +136,16 @@ export function islandSessionDoor(
     settle(m as IslandMsg_SessionSigned);
   });
   let seq = 0;
-  const askVessel = (op: "read" | "sign" | "own", ask: SessionAsk, payload?: Uint8Array): Promise<IslandMsg_SessionSigned | null> => new Promise((resolve) => {
+  const askVessel = (op: "read" | "sign" | "own", ask: SessionAsk, payload?: Uint8Array, face?: string): Promise<IslandMsg_SessionSigned | null> => new Promise((resolve) => {
     const requestId = `${opts.idPrefix}-${++seq}`;
     pending.set(requestId, resolve);
-    const msg: IslandMsg_SessionSign = { type: "session:sign", requestId, op, ask: ask.requestId, verb: ask.verb, ...(payload ? { payload } : {}) };
+    const msg: IslandMsg_SessionSign = { type: "session:sign", requestId, op, ask: ask.requestId, verb: ask.verb, ...(payload ? { payload } : {}), ...(face !== undefined ? { face } : {}) };
     try { port.post(msg); } catch { pending.delete(requestId); resolve(null); }
   });
   const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((c): c is string => typeof c === "string") : []);
   return {
-    async own() {
-      const read = await askVessel("own", { requestId: "", verb: "" });
+    async own(face) {
+      const read = await askVessel("own", { requestId: "", verb: "" }, undefined, face);
       if (read === null || !("own" in read)) return { refusal: read !== null && "refusal" in read ? read.refusal : "chain-absent" };
       return { chain: read.chain, foldRead: read.foldRead === true, counted: strings(read.counted), unanswered: strings(read.unanswered) };
     },
@@ -157,6 +159,7 @@ export function islandSessionDoor(
       return {
         subject: read.subject, chain: read.chain, foldRead: read.foldRead === true,
         counted: strings(read.counted), unanswered: strings(read.unanswered),
+        ...(typeof read.face === "string" ? { face: read.face } : {}),
         signer: {
           certificate,
           async sign(purpose, payload) {
