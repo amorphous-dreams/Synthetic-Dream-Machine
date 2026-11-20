@@ -1,6 +1,6 @@
 name: CI
 
-# The pinned Playwright image supplies Node 26 for the browser cells; the other jobs pin Node 24.
+# The pinned Playwright image supplies Node 26 for the browser cells (dim for now: tools/ci-cells.mjs BROWSER_LAMPS_DIM); the other jobs pin Node 24.
 # The browser import boundary must keep product code compatible with Node 24.
 
 # Golden-principle gates for the Lararium monorepo, mapped to the project's
@@ -13,8 +13,8 @@ name: CI
 #   quick           — build + generated-artifact freshness (the checked-in plugin artifacts — the lar:// canonical copy AND
 #                     the `$:/` standalone distribution — must match a fresh build), typecheck, the exact-deps witness, the
 #                     the seed presence check (the hooks load the boot seed whole), the grammar artifact gates, the
-#                     browser floor crossing, pristine upstream (the meme routes AND a stock single-file build meet a
-#                     PUBLISHED tiddlywiki, against the COMMITTED standalone artifact), then the contract witness cell
+#                     pristine upstream (the meme routes meet a PUBLISHED tiddlywiki, against the COMMITTED standalone
+#                     artifact; the browser floor crossing and the stock single-file build stand dim), then the contract witness cell
 #   test            — every package's suite as four cells (node dealt across two by file weight), incl. the meme
 #                     round-trip laws and the two plugin-artifact parity gates (lar:// + the standalone `$:/` distribution)
 #   witnesses       — the whole `tools/*witness*.sh` fleet through `witness-all`, under its own name so a red suite cannot
@@ -262,27 +262,10 @@ jobs:
         if: ${{ !cancelled() && steps.wasm.outcome == 'success' }}
         working-directory: packages/tree-sitter-memetic-wikitext
         run: pnpm run gate:fold-ts
-      # ── the browser engines: one Chromium for the floor crossing and the pristine suites ──
-      # The engines and their system libraries ride in the pinned official image (docker-compose.capability-probe.yml), so no apt step runs here. The
-      # two browser steps below run inside it through tools/pw-container.sh; everything else in this job stays on the runner.
-      - name: Pull the pinned Playwright image and find its Chromium
-        id: chromium
-        if: ${{ !cancelled() }}
-        timeout-minutes: 12
-        run: tools/pw-container.sh node -e 'const p = require("playwright"); const e = p.chromium.executablePath(); require("node:fs").accessSync(e); console.log("chromium:", e, "playwright", require("playwright/package.json").version)'
-      # ── the browser floor crossing (W23) ──
-      # A real Chromium on the page a staged hearth serves, crossing that hearth's gates
-      # (`packages/lararium-web/tests/e2e/floor-crossing.e2e.test.ts`). It rides its own config
-      # (`vitest.crossing.config.ts`) and no package suite collects it. A scratch HOME, LAR_ROOT and LAR_STAGE_DIR keep the
-      # staged vessels off any real home; the image's own engines answer (PLAYWRIGHT_BROWSERS_PATH is the image's).
-      - name: Run the floor crossing under a scratch home
-        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.chromium.outcome == 'success' }}
-        run: |
-          scratch="$RUNNER_TEMP/crossing"
-          mkdir -p "$scratch/home" "$scratch/root" "$scratch/stage"
-          cd packages/lararium-web
-          env PW_MOUNTS="$scratch" PW_ENV="LAR_ROOT LAR_STAGE_DIR" HOME_INSIDE="$scratch/home" LAR_ROOT="$scratch/root" LAR_STAGE_DIR="$scratch/stage" \
-            "$GITHUB_WORKSPACE/tools/pw-container.sh" npx vitest run --config vitest.crossing.config.ts
+      # ── the browser lamps stand dim (operator, 2026-11-20) ──
+      # "disable all browser tests for now, while we move quickly to settle the road": the Chromium pull and the browser floor
+      # crossing (W23: `packages/lararium-web/vitest.crossing.config.ts`, files kept in the tree) rode here and ride no more.
+      # The whole account stands in tools/ci-cells.mjs (BROWSER_LAMPS_DIM) with how to relight.
       # ── pristine upstream (the plugin drops into a PUBLISHED tiddlywiki) ──
       # THE INSTRUMENT AND ITS INVOKER. `meme-routes.e2e` takes `LARES_TW5_JS` and runs the whole contact against any
       # `tiddlywiki.js`; the package suites run it against the FORK. THE SUITE SKIPS LOUDLY WHEN ITS ENGINE IS MISSING, AND A
@@ -304,15 +287,14 @@ jobs:
           dir=$(node -p "require('path').dirname(require.resolve('tiddlywiki-pristine/tiddlywiki.js', { paths: ['packages/lararium-tw5'] }))")
           test -f "$dir/tiddlywiki.js"
           node -p "'pristine engine: tiddlywiki@' + require(process.argv[1] + '/package.json').version" "$dir"
-      - name: meme-routes + standalone single-file contact against the pristine engine
-        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.chromium.outcome == 'success' }}
+      - name: meme-routes contact against the pristine engine
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
           export LARES_TW5_JS=$(node -p "require.resolve('tiddlywiki-pristine/tiddlywiki.js', { paths: ['packages/lararium-tw5'] })")
           export LARES_E2E_TMP="$RUNNER_TEMP/pristine-e2e"
           mkdir -p "$LARES_E2E_TMP"
           cd packages/lararium-tw5
-          env PW_MOUNTS="$LARES_E2E_TMP" PW_ENV="LARES_TW5_JS LARES_E2E_TMP" \
-            "$GITHUB_WORKSPACE/tools/pw-container.sh" npx vitest run tests/meme-routes.e2e.test.ts tests/standalone-single-file.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
+          npx vitest run tests/meme-routes.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
           test "${PIPESTATUS[0]}" -eq 0
       - name: The log names the engine it met
         if: ${{ !cancelled() }}
@@ -373,12 +355,13 @@ jobs:
             engines: ''
           - cell: node-b
             engines: ''
+          # THE BROWSER LAMPS STAND DIM (operator, 2026-11-20; tools/ci-cells.mjs BROWSER_LAMPS_DIM): no cell names engines or the
+          # Playwright container now. To relight, restore `engines: chromium firefox webkit` on web-tw5 and `engines: chromium firefox`
+          # on cli-mesh, each with `container: { image: "${{ needs.scope.outputs.playwright }}", options: "--ipc=host --init --user 1001" }`.
           - cell: web-tw5
-            engines: chromium firefox webkit
-            container: { image: "${{ needs.scope.outputs.playwright }}", options: "--ipc=host --init --user 1001" }
+            engines: ''
           - cell: cli-mesh
-            engines: chromium firefox
-            container: { image: "${{ needs.scope.outputs.playwright }}", options: "--ipc=host --init --user 1001" }
+            engines: ''
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}

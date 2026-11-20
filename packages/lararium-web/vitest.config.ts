@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig, type TestProjectConfiguration } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
 import { webkit } from "playwright";
 import wasm from "vite-plugin-wasm";
@@ -33,10 +33,40 @@ async function engines(): Promise<Array<{ browser: "chromium" | "firefox" | "web
   }
 }
 
-export default defineConfig(async () => ({
+/**
+ * THE BROWSER LAMPS STAND DIM (operator, 2026-11-20: "disable all browser tests for now, while we move quickly to settle the
+ * road"; the browser side gets a deep Mu from scratch later, lar:///ha.ka.ba/kahua/memory/project/browser-mu-from-scratch).
+ * The default run is `web-node` alone: the files below stand pure of the DOM and run in Node. Every other test file here stays
+ * in the tree, untouched, and goes unrun until the browser Mu relights it. The account of what went dark and how to relight
+ * stands in tools/ci-cells.mjs (BROWSER_LAMPS_DIM).
+ *
+ * TO RELIGHT: `projects: [webNode, ...(await browserProjects())]` below.
+ */
+const webNode = {
+  plugins: [wasm()],
   test: {
-    globalSetup: ["../../tools/vitest-dist-guard.mjs"],
-    projects: [
+    name: "web-node",
+    environment: "node" as const,
+    include: [
+      "tests/arrival-relay.test.ts",
+      "tests/carriage-frames.test.ts",
+      "tests/ceremony.test.ts",
+      "tests/console-door.test.ts",
+      "tests/engine-refusal.test.ts",
+      "tests/floor-broker.test.ts",
+      "tests/floor-tab.test.ts",
+      "tests/genesis-anchor.test.ts",
+      "tests/keyhive-wasm-boot.test.ts",
+      "tests/loaf-buffer.test.ts",
+      "tests/page-life.test.ts",
+      "tests/port-transport.test.ts",
+      "tests/vessel-port.test.ts",
+    ],
+  },
+};
+
+/** The browser-run projects (real Chromium, Firefox, WebKit; the Playwright e2e walks), dark by default. */
+export const browserProjects = async (): Promise<TestProjectConfiguration[]> => [
       {
         test: {
           name: "web-browser",
@@ -112,6 +142,11 @@ export default defineConfig(async () => ({
           env: { LAR_SAME_ORIGIN: "true" },
         },
       },
-    ],
+];
+
+export default defineConfig({
+  test: {
+    globalSetup: ["../../tools/vitest-dist-guard.mjs"],
+    projects: [webNode],
   },
-}));
+});
