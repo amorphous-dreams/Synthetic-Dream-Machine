@@ -17,7 +17,7 @@ import { projectSubmission } from "@lararium/tw5/weave";
 import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 
 const h = vi.hoisted(() => ({
-  calls: [] as Array<{ verb: string; args: Record<string, unknown> }>,
+  calls: [] as Array<{ verb: string; args: Record<string, unknown>; face?: number }>,
   reply: {} as Record<string, unknown>,
   refuse: "" as string,
   /** A reply chosen per call, for a verb a door asks more than once; null reads `reply`. */
@@ -26,6 +26,11 @@ const h = vi.hoisted(() => ({
 vi.mock("../src/verb-call.js", () => ({
   DaemonUnreachable: class extends Error {},
   verbFailure: (err: unknown) => ({ code: "error", message: err instanceof Error ? err.message : String(err) }),
+  runVerbAsFace: async (verb: string, args: Record<string, unknown>, face: number) => {
+    h.calls.push({ verb, args, face });
+    if (h.refuse) return { status: "error", requestId: "r", errorMessage: h.refuse };
+    return { status: "done", requestId: "r", results: { summary: { ok: true, output: { ...(h.replyFor ? h.replyFor(args) : h.reply), face } } } };
+  },
   runVerb: async (verb: string, args: Record<string, unknown>) => {
     h.calls.push({ verb, args });
     if (h.refuse) return { status: "error", requestId: "r", errorMessage: h.refuse };
@@ -77,12 +82,16 @@ describe("memePlan — the argument law, no daemon", () => {
     expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "md", recipe: "r" })).container).toEqual({ recipe: "r" });
     expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "md", bag: "b" })).container).toEqual({ bag: "b" });
   });
-  test("RED: a store verb naming `--face` refuses `face-not-routed` rather than read or write the daemon mount's seat, and names the daemon mount it would stand in for; CONTROL: the same line with no `--face` plans", () => {
+  test("EACH HAT REACHED BY NAME: a store verb naming `--face N` plans to act as face N (its session carries it); with no `--face` it plans for the worn face; a malformed `--face` refuses `face-malformed`", () => {
     for (const sub of ["put", "get", "delete"] as const) {
-      expect(() => memePlan(sub, memeArgs([sub, "lar:///t/x"], { recipe: "default", face: "1" }))).toThrow(/^face-not-routed: .*daemon mount/);
+      const plan = memePlan(sub, memeArgs([sub, "lar:///t/x"], { recipe: "default", face: "1" }));
+      expect(plan.face).toBe(1);
+      expect(plan.args).not.toHaveProperty("face");
+      expect(memePlan(sub, memeArgs([sub, "lar:///t/x"], { recipe: "default" })).face).toBeUndefined();
+      expect(() => memePlan(sub, memeArgs([sub, "lar:///t/x"], { recipe: "default", face: "one" }))).toThrow(/^face-malformed:/);
     }
-    expect(() => listPlan(memeArgs(["list"], { recipe: "default", face: "1" }))).toThrow(/^face-not-routed: .*daemon mount/);
-    expect(listPlan(memeArgs(["list"], { recipe: "default" })).args).toEqual({ recipe: "default" });
+    expect(listPlan(memeArgs(["list"], { recipe: "default", face: "2" })).face).toBe(2);
+    expect(listPlan(memeArgs(["list"], { recipe: "default" }))).toEqual({ verb: "meme-list", args: { recipe: "default" } });
   });
   test("★ --recipe AND --bag together refuse ★", () => {
     expect(() => memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "sdm", bag: "sdm" }))).toThrow(/one of/);
@@ -102,6 +111,27 @@ describe("lares meme put", () => {
     const code = await cmdMeme(memeArgs(["put", "lar:///t/x"], { file, bag: "sdm", base: "sha256:0" }));
     expect(code).toBe(0);
     expect(h.calls).toEqual([{ verb: "meme-put", args: { uri: "lar:///t/x", text: "<<^ code=`&#x0001;`>> hello", bag: "sdm", base: "sha256:0" } }]);
+  });
+
+  test("EACH HAT REACHED BY NAME: `--face 1` rides a session of face h1 (never the one-shot), and the answer names the face it landed in", async () => {
+    h.reply = { uri: "lar:///t/x", decision: "ingest", grade: "clean", landed: ["lar:///t/x"], tombstoned: [], canonicalHash: "sha256:1", warnings: [], diagnostics: [] };
+    const lines: string[] = [];
+    const out = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { lines.push(String(m)); return true; });
+    const code = await cmdMeme(memeArgs(["put", "lar:///t/x"], { file: tmpFile("hello"), bag: "lar:///ha.ka.ba/bags/daemon-r1", face: "1" }));
+    out.mockRestore();
+    expect(code).toBe(0);
+    expect(h.calls).toEqual([{ verb: "meme-put", args: { uri: "lar:///t/x", text: "hello", bag: "lar:///ha.ka.ba/bags/daemon-r1" }, face: 1 }]);
+    expect(JSON.parse(lines.pop()!)).toMatchObject({ ok: true, data: { face: 1 } });
+  });
+
+  test("a SHUT face refuses `face-not-open` by name, and nothing writes", async () => {
+    h.refuse = "face-not-open: face h3 stands shut on this vessel (face-locked)";
+    const lines: string[] = [];
+    const out = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { lines.push(String(m)); return true; });
+    const code = await cmdMeme(memeArgs(["put", "lar:///t/x"], { file: tmpFile("x"), recipe: "default", face: "3" }));
+    out.mockRestore();
+    expect(code).not.toBe(0);
+    expect(JSON.parse(lines.pop()!)).toMatchObject({ ok: false, error: { code: "face-not-open" } });
   });
 
   test("a CONFLICT receipt exits as the conflict class", async () => {

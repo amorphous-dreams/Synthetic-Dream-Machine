@@ -846,6 +846,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     // THE AI SEAT ACTS INSIDE THE LENT SET (`seat-hand`): a call marked `seat: "ai"` naming a face outside it refuses.
     mountOrdinal:  () => result.mountOrdinal(),
     lentOrdinals: () => unlockedFaceOrdinals(),
+    // EACH HAT REACHED BY NAME: a lit sibling's session carries its own lane's chores as itself and books its own face key.
+    litOrdinals:  () => result.litOrdinals(),
+    siblingFaceOf: (presenter) => result.siblingFaceOf(presenter),
     signers:      result.sessionSigns,
     beforeSignerDrops: (signer) => result.sealedRestLock(signer),
     switchActs:   nodeSwitchActLog,

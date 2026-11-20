@@ -17,6 +17,7 @@ import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, conclude
 import type { SessionFace } from "@lararium/mesh/session-contract";
 import { makeUdsSeat, serveUdsFront, type UdsSessionDoor, type UdsSessionSigner } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
+import { SessionSignBook, type BookedSession } from "@lararium/mesh";
 
 const face = (name: string): SessionFace => ({
   personaGroup: `group-${name}`, proofSubject: `proof-${name}`, admitRef: `admit-${name}`, causalRevision: `revision-${name}`,
@@ -49,7 +50,7 @@ const cleanups: Array<() => Promise<void> | void> = [];
 afterEach(async () => { for (const c of cleanups.splice(0).reverse()) await c(); });
 
 /** A seat whose daemon mounts h0 and whose holder lends {h0, h1}; a session's `faceRef` (`h<N>`) names the face it wears. */
-async function stand() {
+async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -67,6 +68,8 @@ async function stand() {
     switchActs: { write: async () => {} },
     mountOrdinal: () => 0,
     lentOrdinals: async () => [0, 1],
+    ...(lane.lit ? { litOrdinals: () => lane.lit!, siblingFaceOf: (presenter: string) => presenter === "verified-h1" && lane.lit!.includes(1) ? "atom-h1" : undefined } : {}),
+    ...(lane.signers ? { signers: lane.signers } : {}),
     placeVerb: (o) => {
       placed.push(o);
       // The worker stamps the mark its placement carried, as the island's dispatcher does (`writeOutcome`).
@@ -82,13 +85,13 @@ async function stand() {
   };
   const peer = await connect();
   cleanups.push(async () => { front.close(); await claim.release(); await repo.shutdown(); rmSync(dir, { recursive: true, force: true }); });
-  const open = async (faceRef: string) => {
-    const opened = await peer.ask({ op: "session:open", requestId: `open-${faceRef}`, faceRef, hand: "cli" });
+  const open = async (faceRef: string, on: Peer = peer) => {
+    const opened = await on.ask({ op: "session:open", requestId: `open-${faceRef}`, faceRef, hand: "cli" });
     return { ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] };
   };
   /** One maintenance-frame line on its own socket, as the MCP seat sends it. */
   const oneShot = async (frame: Record<string, unknown>) => (await connect()).ask(frame);
-  return { peer, open, placed, oneShot };
+  return { peer, open, placed, oneShot, connect };
 }
 
 const MEME = { recipe: "default", uri: "lar:///ha.ka.ba/kahua/memory/project/steward", text: "x" };
@@ -189,3 +192,34 @@ test("RED: the seat's meme write places with its chore mark, and a later receipt
   expect((v.placed[1] as { chore?: unknown }).chore).toBeUndefined();
   expect(await v.oneShot({ op: "receipt", requestId: "get-mark" })).not.toHaveProperty("chore");
 });
+
+// ── EACH HAT REACHED BY NAME: a LIT sibling's own lane ───────────────────────────────────────────────────────────────
+test("EACH HAT REACHED BY NAME: a session wearing LIT h1 asking a meme write places AS h1 (its mark names h1 acting), and the call books h1's own face key, never the mount's chain", async () => {
+  const held: Array<{ verb: string; face?: string }> = [];
+  const signers = new SessionSignBook({ onHold: (session: BookedSession, verb: string) => { held.push({ verb, ...(session.face !== undefined ? { face: session.face } : {}) }); } });
+  const v = await stand({ lit: [1], signers });
+  const env = await v.open("h1");
+  for (const verb of ["meme-put", "meme-delete"]) {
+    const reply = await v.peer.ask({ op: "session:call", ...env, requestId: `lane-${verb}`, verb, args: MEME });
+    expect(reply, verb).toMatchObject({ kind: "session:result", status: "done", chore: { acting: 1, asker: "cli", session: env.sessionId } });
+  }
+  expect(v.placed.map((p) => [p.verb, p.ordinal])).toEqual([["meme-put", 1], ["meme-delete", 1]]);
+  expect(held.filter((h) => h.verb !== "session:seat")).toEqual([{ verb: "meme-put", face: "atom-h1" }, { verb: "meme-delete", face: "atom-h1" }]);
+  expect(held.find((h) => h.verb === "session:seat")).toEqual({ verb: "session:seat", face: "atom-h1" });
+});
+
+test("EACH HAT REACHED BY NAME, CONTROL: the lane carries the meme writes alone; a lit h1's tiddler write or sweep still refuses chore-face-not-mounted, and h0's session books no face key", async () => {
+  const held: Array<{ verb: string; face?: string }> = [];
+  const signers = new SessionSignBook({ onHold: (session: BookedSession, verb: string) => { held.push({ verb, ...(session.face !== undefined ? { face: session.face } : {}) }); } });
+  const v = await stand({ lit: [1], signers });
+  const env = await v.open("h1");
+  for (const verb of ["tiddler-put", "sweep"]) {
+    expect(await v.peer.ask({ op: "session:call", ...env, requestId: `fenced-${verb}`, verb, args: {} }), verb)
+      .toMatchObject({ kind: "session:refused", refusal: "chore-face-not-mounted" });
+  }
+  const other = await v.connect();
+  const mount = await v.open("h0", other);
+  expect(await other.ask({ op: "session:call", ...mount, requestId: "put-mount", verb: "meme-put", args: MEME })).toMatchObject({ status: "done", chore: { acting: 0 } });
+  expect(held.filter((h) => h.verb === "meme-put")).toEqual([{ verb: "meme-put" }]);
+});
+

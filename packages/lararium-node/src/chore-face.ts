@@ -37,6 +37,13 @@ export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze(
   ...Object.fromEntries(STORE_DOOR_VERBS.filter((verb) => !STORE_DOOR_FACE_VERBS.has(verb)).map((verb) => [verb, PLACE])),
 });
 
+/**
+ * EACH HAT REACHED BY NAME: the chores a LIT sibling's own session carries as ITSELF, on its own lane (the island's per-face
+ * lane writes that face's own document, sealed under its own chain): the meme writes. Every other chore still spends the
+ * mount's authority alone and refuses from a sibling's session.
+ */
+export const FACE_LANE_CHORES: ReadonlySet<string> = new Set(["meme-put", "meme-delete"]);
+
 /** True for a verb that writes or signs under the daemon mount's authority. */
 export function isChore(verb: string): boolean {
   return !Object.hasOwn(CHORE_FREE_VERBS, verb);
@@ -55,12 +62,17 @@ export type ChoreAtDoor = { readonly ok: true; readonly mark: ChoreReceiptMark }
  */
 export function choreAtDoor(input: {
   readonly verb: string; readonly face: number; readonly mount: number | null; readonly lent: readonly number[] | null;
+  /** The sibling faces lit beside the mount: a session wearing one carries its own lane's chores (`FACE_LANE_CHORES`). */
+  readonly lit?: readonly number[];
   readonly hand: Hand; readonly session: string | null; readonly generation: number | null;
 }): ChoreAtDoor | null {
   if (input.mount === null || !isChore(input.verb)) return null;
   const read = lentFacesOf(input.lent && input.lent.length > 0 ? input.lent : [...new Set([input.mount, input.face])]);
   if (!read.ok) return { ok: false, refusal: read.refusal, message: read.message };
   const ask: ChoreAsk = { chore: input.verb, face: input.face, asker: { hand: input.hand, session: input.session, generation: input.generation } };
-  const acting = actingFaceOf(ask, read.faces, [input.mount]);
+  // A lit sibling's session carries its own lane's chores as itself: the process carries that face for this act alone.
+  const carried = FACE_LANE_CHORES.has(input.verb) && input.face !== input.mount && (input.lit ?? []).includes(input.face)
+    ? [input.mount, input.face] : [input.mount];
+  const acting = actingFaceOf(ask, read.faces, carried);
   return acting.ok ? { ok: true, mark: choreReceiptMark(ask, acting.face) } : acting;
 }

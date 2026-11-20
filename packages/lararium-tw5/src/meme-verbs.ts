@@ -112,6 +112,22 @@ export interface MemeVerbOptions {
   /** A house canon bag's FLOOR SNAPSHOT as a read-only store, off the floor this island mounted (`IslandContext.floorCanon`);
    *  null where the floor carries none of it. A read door answers from it where the hand holds no read on the live document. */
   readonly floorCanon?: (bag: string) => LarTiddlerStore | null;
+  /**
+   * EACH HAT REACHED BY NAME: a LIT sibling face's own lane. Set, the verbs reach this one bag of that face's own (its
+   * document, as the island resolved it for that face) and nothing else: a container naming any other bag, any recipe or
+   * any realm refuses `face-lane-holds-its-own` before a cap ask, a read or a write. The cap, the Kahu predicate and the
+   * gate stand as on every door; the write seals under the face's own chain because its session booked it.
+   */
+  readonly faceLane?: { readonly bag: string; readonly store: LarTiddlerStore };
+}
+
+/** The lane's one bag, or a refusal by name: a lit sibling's verb reaches only that face's own document. */
+function laneResolved(lane: NonNullable<MemeVerbOptions["faceLane"]>, target: Omit<MemeArgs, "uri">, origin: ChangeOrigin): Resolved {
+  const named = target.bag && !target.realm && !target.recipe ? bagUriOf(target.bag) : null;
+  if (named !== lane.bag) {
+    throw new VerbRefusal("face-lane-holds-its-own", `face-lane-holds-its-own: a lit sibling face reaches its own lane alone (--bag ${lane.bag}); this container names another, and nothing moved.`);
+  }
+  return { bag: lane.bag, sink: storeMemeSink(lane.store, lane.bag, origin), anchor: false };
 }
 
 /** The daemon's options off its island context — reach across both registry planes (access ≠ load). */
@@ -387,6 +403,7 @@ export function anchorBagOf(opts: Pick<MemeVerbOptions, "tw5">): string {
 }
 
 async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> & { readonly uri?: string }, origin: ChangeOrigin, mode: "put" | "get"): Promise<Resolved> {
+  if (opts.faceLane) return laneResolved(opts.faceLane, target, origin);
   if (target.bag) {
     const bag = bagUriOf(target.bag);
     if (target.realm) {
@@ -452,6 +469,13 @@ async function resolveRead(
     return store ? { bag, sink: storeMemeSink(store, bag, origin), anchor: false, floor: true } : null;
   };
   let resolved: Resolved;
+  if (opts.faceLane) {
+    // A lane reads its own document alone: no floor snapshot stands in for it.
+    resolved = laneResolved(opts.faceLane, target, origin);
+    const proof = await cap("read", resolved.bag);
+    if (!proof.ok) throw new Error(`cap-denied: read on ${resolved.bag} required (${proof.reason ?? "no reason"})`);
+    return resolved;
+  }
   try { resolved = await resolveSink(opts, target, origin, "get"); }
   catch (err) {
     // No live layer and nothing reaches the bag by access: a house canon bag named outright still reads its floor.
@@ -484,7 +508,7 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
     // stands off and the receipt names the hash the wiki answers now.
     let baseHash = base;
     let shown: string | null = null;
-    if (base && target.recipe && (await sink.read(target.uri)) === undefined) {
+    if (base && target.recipe && !opts.faceLane && (await sink.read(target.uri)) === undefined) {
       const below = await resolveRead(opts, target, origin, ctx.cap).catch(() => null);
       if (below && below.bag !== bag) {
         const standing = (await readMeme(target.uri, below.sink))?.canonicalHash ?? null;
@@ -655,7 +679,7 @@ export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
     const tree = args["tree"] === true || args["tree"] === "1" || args["tree"] === "true";
     const page = { tree, after: optionalStringArg(args, "after") ?? null, limit: pageLimitOf(args["limit"]) };
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
-    if (target.recipe && target.recipe !== "default") return listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
+    if (target.recipe && target.recipe !== "default" && !opts.faceLane) return listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
     const { bag, sink, floor } = await resolveRead(opts, target, origin, ctx.cap);
     return { bag, ...(floor ? { floor: true } : {}), ...(await listMemePage(sink, page)) };
   };
@@ -790,7 +814,7 @@ export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
     const target = readTarget(args, "meme-delete");
     const base = optionalStringArg(args, "base");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
-    if (target.recipe && target.recipe !== "default") return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap, ctx.asker);
+    if (target.recipe && target.recipe !== "default" && !opts.faceLane) return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap, ctx.asker);
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
     await requireKahuReach(bag, opts.kahuReach, "meme delete", ctx.asker);
     const proof = await capOf(realmGrant, ctx.cap)("admin", bag);

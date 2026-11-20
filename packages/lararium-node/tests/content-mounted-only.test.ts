@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { FACE_NEUTRAL_VERBS, operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
+import { FACE_LANE_VERBS, FACE_NEUTRAL_VERBS, operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { VerbDispatcher, VerbTable } from "@lararium/tw5";
 import * as ed25519 from "@noble/ed25519";
 import { hex, hexToBytes, realmFeedAskImage, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
@@ -89,8 +89,10 @@ test("a content verb refuses a presenter that is not the mounted face, by name",
     expect(await call(verb, undefined, a2), `${verb} no presenter`).toMatchObject({ reason: "content-mounted-only" });
     // CONTROL: the mounted face's call passes the fence (it may refuse for another reason).
     expect(await call(verb, mounted, a2, true), `${verb} mounted`).not.toMatchObject({ reason: "content-mounted-only" });
-    // A sibling's DID on the vessel's own channel refuses too; the channel lends no face.
-    expect(await call(verb, sibling, a2, true), `${verb} local sibling`).toMatchObject({ reason: "content-mounted-only" });
+    // A sibling's DID on the vessel's own channel refuses too; the channel lends no face. EACH HAT REACHED BY NAME: a lane verb
+    // (`FACE_LANE_VERBS`) answers by face instead, and this sibling stands joined but never lit, so it refuses `face-not-open`
+    // (a lit sibling's own lane: keyhive `face-lane`).
+    expect(await call(verb, sibling, a2, true), `${verb} local sibling`).toMatchObject({ reason: FACE_LANE_VERBS.has(verb) ? "face-not-open" : "content-mounted-only" });
   }
 });
 

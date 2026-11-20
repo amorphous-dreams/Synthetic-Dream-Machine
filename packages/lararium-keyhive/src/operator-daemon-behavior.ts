@@ -187,6 +187,9 @@ import { proposeDraftsToKahua, pageTitleList } from "./kahua-page-propose.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat } from "./content-key-seat.js";
 import { faceSeatTable, type FaceSeat } from "./face-seat-table.js";
+import { faceLaneReactor, FACE_LANE_VERBS, type FaceLanePorts } from "./face-lane.js";
+/** The verbs a lit sibling reaches on its own lane (`face-lane`). */
+export { FACE_LANE_VERBS } from "./face-lane.js";
 import { ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
 // The island side of the session sign door, for an island entry that composes this behaviour.
 export { islandSessionDoor } from "./island-session-proof.js";
@@ -967,11 +970,24 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (url && kind === "personal") await personalCap(slug);
         return url;
       }, realmCanonUrlOf(ctx)), writeSlot: (slug: string) => slotDocsOf(ctx).writeSlot(slug), ...(kahuReach ? { kahuReach } : {}) };
-      registry.register("meme-put", makeMemePutReactor(memeOpts), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("meme-get", makeMemeGetReactor(memeOpts), { summary: "Read a meme back as text + the canonical hash a writer hands back as its base.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      // EACH HAT REACHED BY NAME: each meme verb runs as the face whose session placed it, the mount over its own wiki, a lit
+      // sibling on its own lane (its daemon canon, its own document, sealed by its own chain); every answer names the face.
+      const lanePorts: FaceLanePorts = {
+        mountedKey: () => daemonAuth.atom?.key ?? null,
+        mountedOrdinal: () => (typeof daemonAuth.handleIndex === "number" ? daemonAuth.handleIndex : null),
+        lit: (key) => { const face = litSiblings.get(key); return face && typeof face.handleIndex === "number" ? { handleIndex: face.handleIndex } : null; },
+        target: async (face, bag) => {
+          const resolved = await litFaceTargetOf(ctx)(face, bag);
+          return resolved ? { store: resolved.store, owner: resolved.owner } : null;
+        },
+      };
+      const lane = (verb: string, make: (opts: typeof memeOpts) => VerbReactor): VerbReactor =>
+        faceLaneReactor(verb, make(memeOpts), (faceLane) => make({ ...memeOpts, faceLane }), lanePorts);
+      registry.register("meme-put", lane("meme-put", makeMemePutReactor), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("meme-get", lane("meme-get", makeMemeGetReactor), { summary: "Read a meme back as text + the canonical hash a writer hands back as its base.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-patch", makeMemePatchReactor(memeOpts), { summary: "Edit one slot's body (`append` a paragraph at its end, or `replace` it whole) against `base`, the canonical hash last read; lands through meme-put's own gate and reseals. A stale base refuses `stale-base`, an absent slot `slot-missing`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("meme-list", makeMemeListReactor(memeOpts), { summary: "List every meme root a seat holds with its canonical hash; `tree` nests the slot tree.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("meme-delete", makeMemeDeleteReactor(memeOpts), { summary: "Remove a meme's whole group; `base` = the canonical hash last read, stale → conflict.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("meme-list", lane("meme-list", makeMemeListReactor), { summary: "List every meme root a seat holds with its canonical hash; `tree` nests the slot tree.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("meme-delete", lane("meme-delete", makeMemeDeleteReactor), { summary: "Remove a meme's whole group; `base` = the canonical hash last read, stale → conflict.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-project", makeMemeProjectReactor(memeOpts), { summary: "Project a meme root to a target — mem · md · html · tid · json — as { uri, to, text, contentType, meta? }; the anchor renders every target in-VM, a recipe or bag target projects mem · md.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // THE TIDDLER DOOR (wiki-surface-scout #/a-lean, lane 1): every TiddlyWiki act over one record or the wiki's engine,
@@ -1683,6 +1699,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // call passes the fence and meets every cap check as the stranger it reads as. Any claim naming a DID other than the
           // mounted face's, a label off the channel (a synced summons), and a call naming no presenter refuse.
           if (context.local === true && context.presenter !== undefined && !namesADid(context.presenter)) return;
+          // EACH HAT REACHED BY NAME: a lane verb from the vessel's own channel passes to its face lane (`face-lane`), which runs
+          // it as the mount, on a lit sibling's own lane, or refuses a shut face `face-not-open`. A synced claim still refuses.
+          if (context.local === true && context.presenter !== undefined && FACE_LANE_VERBS.has(verb)) return;
           // Only the vessel's own channel or a person's surface act wears the mounted face: an unsigned synced claim that
           // names the mounted atom stays a claim and refuses like any other.
           if (context.local !== true || context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
