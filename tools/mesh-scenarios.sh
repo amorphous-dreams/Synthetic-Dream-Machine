@@ -1207,9 +1207,6 @@ run_meme() {
   else bad "lararium-b never stood"; dump_boot_failure lararium-b; clear_all; return; fi
 
   if ! contract_ab "ws://lararium-a:8080/ws"; then clear_all; return; fi
-  step "B restarts holding A's admit, and dials A's gate from what she took"
-  if $COMPOSE restart lararium-b >/dev/null 2>&1 && up_and_answering lararium-b; then ok
-  else bad "lararium-b never stood again"; dump_boot_failure lararium-b; clear_all; return; fi
   step "a contract admits a carrier and leaves the founder at SEED"
   if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "the relation never stood"; clear_all; return; fi
@@ -1234,16 +1231,13 @@ run_meme() {
   if printf '%s' "$MV" | grep -q '"ok":true' && printf '%s' "$MV" | grep -qE '"moved":[1-9]'; then ok
   else bad "the promotion MOVE refused"; printf '%s\n' "$MV" | tail -3 | sed 's/^/      /'; clear_all; return; fi
 
-  # THE REALM BAG (realm-bag-brief). Both sides re-fold the relation they just stood — A's
-  # running node folds the admit its CLI wrote beside it, B stands the realm the imported charter names — and
-  # A registers her book on the realm's shared CRDT: steward-signed, read at CONTRACT, @crossroads naming
-  # only that it exists and who keeps it.
-  step "both sides re-fold the relation; the realm stands under ONE doc id"
+  # THE REALM BAG (realm-bag-brief). A's running node folds the admit its CLI wrote beside it before she registers her book
+  # on the realm's shared CRDT: steward-signed, read at CONTRACT, @crossroads naming only that it exists and who keeps it.
+  step "A re-folds the relation; her realm stands under a doc id"
   local RA RB
   RA=$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
-  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --realm "$AID_A" --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
-  if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
-  else bad "the two sides name different realm docs"; printf '      A: %s\n      B: %s\n' "$RA" "$RB"; fi
+  if [ -n "$RA" ]; then ok
+  else bad "A names no realm doc"; fi
 
   # EACH HAND SEALS WITH THE KEY THE FACE IT NAMES PRESENTS. A vessel wears no face between commands: each realm-bag act
   # below names face zero (`--face 0`), so face zero must stand open on both hearths before either one seals a record.
@@ -1258,9 +1252,10 @@ run_meme() {
   fi
 
   step "A registers her book on the realm — steward-signed, read at CONTRACT"
-  local REG
+  local REG DOC_A
   REG=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag "$BOOK" --face 0 --json 2>&1)
-  if printf '%s' "$REG" | grep -q '"readTier":"contract"'; then ok
+  DOC_A=$(printf '%s' "$REG" | grep -oE '"doc":"[^"]+"' | head -1 | cut -d'"' -f4)
+  if printf '%s' "$REG" | grep -q '"readTier":"contract"' && [ -n "$DOC_A" ]; then ok
   else bad "the registration refused"; printf '%s\n' "$REG" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
   # A CONTROL ON A'S OWN SIDE: the bag read carries the author's line, and its hash is the put's. A
@@ -1271,6 +1266,35 @@ run_meme() {
   if json_text "$GA" | grep -qE "$BAG_RE" && [ "$(json_hash "$GA")" = "$HASH_A" ] \
      && ! json_text "$GA" | grep -q '\$origin-bag'; then ok
   else bad "A's bag read disagrees with A's put"; printf '%s\n' "$GA" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
+
+  # A'S BOOK STANDS BEFORE B DIALS. A mints, fills, promotes and registers her book while B holds the admit but no dial,
+  # so B's dial meets a realm already carrying the registration and its document: this reading witnesses the initial
+  # carriage, in an order the script names, never a race between the dial and A's writes.
+  step "B restarts holding A's admit, and dials A's gate from what she took — A's book already registered"
+  if $COMPOSE restart lararium-b >/dev/null 2>&1 && up_and_answering lararium-b; then ok
+  else bad "lararium-b never stood again"; dump_boot_failure lararium-b; clear_all; return; fi
+  step "B re-folds the relation she carries; the realm stands under ONE doc id"
+  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --realm "$AID_A" --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
+  else bad "the two sides name different realm docs"; printf '      A: %s\n      B: %s\n' "$RA" "$RB"; fi
+
+  # B READS THE REGISTRATION BEFORE SHE READS THE BOOK. `meme get --bag <book>` reaches A's doc through the counted
+  # registration B's realm plane folds, and it answers "holds no layer" alike for a registration B has not folded and for a
+  # document her dial has not reached; so B first names A's registration, counted and naming A's exact document, and only
+  # then does a content read mean the carriage. The poll ends on that reading; its budget only bounds a silence.
+  step "B folds A's registration, counted and naming A's book document"
+  local SEEN="" until=$((SECONDS + 90))
+  while [ "$SECONDS" -lt "$until" ]; do
+    SEEN=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --realm "$AID_A" --json 2>&1)
+    if [ -n "$DOC_A" ] && printf '%s' "$SEEN" | grep -qF "\"doc\":\"$DOC_A\""; then break; fi
+    sleep 3
+  done
+  if [ -n "$DOC_A" ] && printf '%s' "$SEEN" | grep -qF "\"doc\":\"$DOC_A\""; then ok
+  else
+    bad "B never folded A's registration of her book document"
+    printf '      A registered: %s\n' "${DOC_A:-(no doc named)}"
+    printf '      B realm-bags: %s\n' "$(printf '%s' "$SEEN" | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
+  fi
 
   # THE READING THE SCENARIO EXISTS FOR. The realm carries A's registration; B's `meme get --bag <book>` walks
   # the realm plane first (reach-by-access) and reads A's doc across the dial — A's wire gate federates the
