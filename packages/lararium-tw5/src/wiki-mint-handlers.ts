@@ -12,6 +12,7 @@ import {
   SYSTEM_BAGS,
   wikiBagUri,
   wikiSlotUri,
+  wikiUri,
 } from "@lararium/mesh";
 import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
@@ -29,10 +30,13 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
       throw new Error(`invalid slug: "${slug}" (no slashes or spaces)`);
     }
 
-    const wikiKey = wikiBagUri(slug);            // canon (bags/{slug}); identity rides wikis/{slug}
+    // ONE NAME, ONE URI: the nameless stack carries the wiki's name (`wikis/{slug}`), and the canon bag (`bags/{slug}`) stands as one
+    // capability in it. The catalog row and the cap rest on the canon bag; the answer names the stack and the canon bag apart.
+    const canonBag = wikiBagUri(slug);
+    const stackUri = wikiUri(slug);
     // A system wiki's live canon doc rests in the Kahu realm (the vessel's `systemCanonUrl`); its default recipe stands in the oracle.
-    if (SYSTEM_BAGS.has(wikiKey)) {
-      const wikiDocUrl = houseCanonUrl(await resolveHouseCanon<string>(wikiKey, { realm: opts.systemCanonUrl, row: () => opts.catalog.urlOf(wikiKey) }));
+    if (SYSTEM_BAGS.has(canonBag)) {
+      const wikiDocUrl = houseCanonUrl(await resolveHouseCanon<string>(canonBag, { realm: opts.systemCanonUrl, row: () => opts.catalog.urlOf(canonBag) }));
       const defaultRec = opts.oracle ? await opts.oracle.recordOf(recipeUri("oracle", slug)).catch(() => null) : null;
       const effective = wikiDocUrl && defaultRec && defaultRec.meta?.deleted !== true
         ? await effectiveRecipeOf(slug, { catalog: opts.catalog, oracle: opts.oracle })
@@ -44,7 +48,8 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
         slug,
         status: "already-exists",
         system: true,
-        wikiUri: wikiKey,
+        wikiUri: stackUri,
+        canonBag,
         wikiDocUrl,
         recipeUri: effective.title,
         recipePlane: effective.plane,
@@ -60,7 +65,7 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     // own canon and chosen libraries, and `writable-bag` names working.
     const recipeTitle = recipeUri("catalog", slug);
 
-    const existingWikiUrl = await opts.catalog.urlOf(wikiKey);
+    const existingWikiUrl = await opts.catalog.urlOf(canonBag);
     const existingRecipeRec = await opts.catalog.recordOf(recipeTitle);
 
     const wikiHandle = existingWikiUrl
@@ -76,7 +81,7 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
       const updatedAt = new Date().toISOString();
       catalogHandle.change((doc) => {
         const tiddlers = doc.tiddlers;
-        tiddlers[wikiKey] = storedLarRecord(wikiKey, {
+        tiddlers[canonBag] = storedLarRecord(canonBag, {
           text: wikiHandle.url,
           kind: "oracle",
           "path-filter": "lar-bag-path[wiki-shadow]",
@@ -103,7 +108,7 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     // friction's sibling for wiki init). Key on the lar: bag URLs — the strings the
     // cap-gate verifies against; an automerge handle.url names a CONTENT doc, a different object.
     if (!existingWikiUrl) {
-      await opts.registerBag?.(wikiKey);
+      await opts.registerBag?.(canonBag);
       await opts.registerBag?.(workingBagId);
       await opts.registerBag?.(draftBagId);
     }
@@ -111,7 +116,8 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     return {
       slug,
       status: existingWikiUrl && existingRecipeRec ? "already-exists" : existingWikiUrl ? "completed-partial" : "minted",
-      wikiUri: wikiKey,
+      wikiUri: stackUri,
+      canonBag,
       wikiDocUrl: wikiHandle.url,
       writableBag: workingBagId,
       draftBagId,
@@ -127,11 +133,11 @@ export function makeOpenWikiReactor(opts: WikiHandlerOptions): VerbReactor {
     const slug = stringArg(args, "slug");
     if (!slug) throw new Error("args.slug is required");
 
-    const wikiKey = wikiBagUri(slug);
+    const canonBag = wikiBagUri(slug);
     // Wiki oracle lives in the catalog registry — read via the accessor, not the composite.
-    const wikiUrl = await opts.catalog.urlOf(wikiKey);
+    const wikiUrl = await opts.catalog.urlOf(canonBag);
     if (!wikiUrl) {
-      throw new Error(`no-such-bag: ${wikiKey}`);
+      throw new Error(`no-such-bag: ${canonBag}`);
     }
 
     const marker = await opts.composite.get(ACTIVE_WIKI_URI);
