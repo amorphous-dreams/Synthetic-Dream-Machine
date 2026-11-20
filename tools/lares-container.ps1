@@ -3,9 +3,12 @@
 # build [--at <rev>] [compose-build args]  vessel stand  <lares verb…>. `build` builds the vessel image (every package the
 # vessel runs) from one commit (HEAD unless --at names another), unpacked from its archive under the house's cache,
 # stamping that revision as its label; a dirty tree builds from HEAD and names what it left out; no checkout refuses.
-# `rebuild [--at <rev>]` re-stands the house onto a new image: down (keep, census), build from the commit (tag, prune),
-# then up, the pūlama's admit on this terminal and the last face worn; where the pūlama's code closure moved it restands
-# the pūlama and stops for the operator's light: `pulama light`, then `rebuild --resume`. The CLI runs by exec while a vessel stands and through the offline door while none
+# `rebuild [--at <rev> | --prior] [--image]` is the restand `lares rite kukulu` calls (the one human verb): the image of the
+# revision (the tag, a kept rev tag, or a build), then down (keep, census), the pūlama re-stood and lit on this terminal
+# where its code moved or it stands unlit, up, its admit where owed, the last face worn. It reads where the house stands each
+# run, so a stopped run picks up from there; with no terminal, a light or admit owed stops it before anything moves; `--image`
+# stops after the image and prints the reading as one JSON line. The pūlama reads every route; this shim never reads or
+# types one. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
 # LARES_HOUSE / LARES_WORKSPACE come from the environment or the operator's `~/.lares/lares-surface.env` (outside every
@@ -493,7 +496,7 @@ foreach ($name in @('NO_COLOR', 'TERM', 'COLORTERM', 'LARES_DEBUG', 'CLAUDECODE'
   if (Test-Path "env:$name") { $PassEnv += @('-e', $name) }
 }
 
-if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|build|rebuild|image-digest|pulama|vessel stand|<lares verb…> (build builds the vessel image, every package, from a commit; rebuild walks down, build, up, admit and the worn face)' }
+if ($args.Count -eq 0) { Die 'usage: lares-container.ps1 up|down|found|logs|build|rebuild|pulama|vessel stand|<lares verb…> (build builds the vessel image, every package, from a commit; rebuild is the restand `lares rite kukulu` walks)' }
 $verb = [string]$args[0]
 $rest = @(); if ($args.Count -gt 1) { $rest = @($args[1..($args.Count - 1)]) }
 
@@ -523,7 +526,7 @@ function WorkspaceBind([string]$pair) {
 
 # The pūlama stands before any vessel (--no-recreate leaves a lit one lit), then the host reports the image digest the
 # vessel will raise: a vessel never vouches for its own face.
-# The digest of the image a vessel stands from: what up reports to the pūlama and what the kūkulu rite's offer names.
+# The digest of the image a vessel stands from: what up reports to the pūlama.
 function ImageDigest {
   $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
   $d = (& docker image inspect --format '{{.Id}}' $image) -join ''
@@ -597,7 +600,7 @@ function WarnPulamaSkew {
   $v = VesselClause
   switch ($p.State) {
     'level' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at the same $($p.Stands)$v") }
-    'moved' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands)$v; its code closure moved (or reads unlabeled), so it keeps the older code until ``tools/lares-container.ps1 down`` and ``tools/lares-container.ps1 pulama restand`` (then light it by hand, ``up``, and ``pulama admit``)") }
+    'moved' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands)$v; its code closure moved (or reads unlabeled), so it keeps the older code until ``lares rite kukulu`` re-stands it (``pulama restand``) and lights it on a terminal") }
     'closure-level' { [Console]::Error.WriteLine("lares-container: the pūlama runs image $($p.Ran), and $ImageRef stands at $($p.Stands)$v; its code closure reads the same ($($p.Closure.Substring(0, 19))), so it stands lit and owes no restand") }
   }
 }
@@ -782,7 +785,8 @@ function BuildImage([string]$at, [string[]]$more) {
     $env:GIT_REV = $rev; $script:GitRev = $rev
     TagOutgoing
     [Console]::Error.WriteLine("lares-container: building the vessel image (every package) from commit $short")
-    & docker compose @Base -f $ov build @more lares
+    # The build's own lines ride stderr, so stdout carries a reading alone.
+    & docker compose @Base -f $ov build @more lares 2>&1 | ForEach-Object { [Console]::Error.WriteLine("$_") }
     $rc = $LASTEXITCODE
   } finally {
     Remove-Item -Recurse -Force $ctx, $ov, $tar -ErrorAction SilentlyContinue
@@ -879,84 +883,222 @@ function PulamaRestand {
   $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
   $digest = ((& docker image inspect --format '{{.Id}}' $image 2>$null) -join '').Trim()
   if ($LASTEXITCODE -ne 0 -or -not $digest) { $digest = $image }
-  [Console]::Error.WriteLine("lares-container: the pūlama stands unlit on $digest; light it by hand (``tools/lares-container.ps1 pulama light``), then ``tools/lares-container.ps1 up`` and ``tools/lares-container.ps1 pulama admit``")
+  if ($script:InRebuild) { [Console]::Error.WriteLine("lares-container: the pūlama stands unlit on $digest") }
+  else { [Console]::Error.WriteLine("lares-container: the pūlama stands unlit on $digest; light it by hand (``tools/lares-container.ps1 pulama light``), then ``tools/lares-container.ps1 up`` and ``tools/lares-container.ps1 pulama admit`` (``lares rite kukulu`` on a terminal walks all of it)") }
 }
 
-# THE REBUILD RITE (road rank 4l, L7): one verb re-stands the house onto a new image, internally re-standable.
-#   1  the down path: the keep (`rite keep --if-due`, while the vessel stands), the census, the refusal of a silent stop
-#   2  the build from the commit (HEAD unless --at names another): the outgoing image keeps its revision tag, old ones prune
-#   3  under a pūlama whose code closure moved (or that stands absent): `pulama restand`, then it STOPS with one line,
-#      since the light reads the operator's route by their own hand; `rebuild --resume` picks up after the light
-#   4  `up` on the new image; under a pūlama, `pulama admit` on this terminal (the one route a rebuild reads, and the
-#      pūlama reads it, never this shim), then the vessel's unlock (detached) and the face last worn
-#   5  one closing line: the image's revision, the worn face, the keep
-# It never switches a branch, never reads or types a route, and never lights the pūlama.
-$RebuildPending = Join-Path (Join-Path $House 'cache') 'rebuild-pending'
+# THE RESTAND (road rank 4l, L7, folded under `lares rite kukulu`, the one human verb that calls it): `rebuild` raises the
+# house onto the image of one revision. It reads where the house stands on every run and walks only what remains, so a run
+# that stopped (a refused census, a light not yet typed, no terminal) picks up from wherever the house stands; no file
+# remembers a half-done run.
+#   1  the image of the revision (HEAD, `--at <rev>`, or `--prior`: the newest kept image before the one the tag holds):
+#      the tag holds it already; else a kept `<repo>:rev-<12 hex>` tag does, and it takes the tag (no build); else a build
+#      from the commit. `--image` stops here and prints ONE JSON line on stdout naming where the house stands
+#   2  under a pūlama: a light is owed where none runs, where its code closure moved, or where it stands unlit; an admit
+#      where a new vessel rises on an image the pūlama has not admitted and no kūkulu offer carries. With no terminal, a
+#      light or an admit owed stops HERE, before anything moves, and names the hand act
+#   3  the down path (keep, census) where the vessel runs another image or the pūlama re-stands; a vessel already on the
+#      image stays standing
+#   4  the pūlama re-stands where its code moved, then lights ATTACHED on this terminal: the pūlama reads the route
+#   5  up on the image; under a pūlama its admit, attached, where owed, then the vessel's unlock (detached) and the face last worn
+#   6  one closing line: the revision, the worn face, the keep
+# It never switches a branch, never moves the checkout, and never reads or types a route.
+$script:InRebuild = $false
 function WornNow {
   $m = [regex]::Match((RunCensus '--json').Out, '"worn"\s*:\s*([0-9]+)')
   if ($m.Success) { return $m.Groups[1].Value } else { return '' }
 }
-function RebuildVerb([string[]]$rargs) {
-  if ($null -eq $rargs) { $rargs = @() }
-  $resume = $false; $at = 'HEAD'; $atGiven = $false; $i = 0
-  while ($i -lt $rargs.Count) {
-    switch ($rargs[$i]) {
-      '--resume' { $resume = $true; $i++ }
-      '--at' { if ($i + 1 -ge $rargs.Count) { Die 'rebuild --at wants a revision' }; $at = [string]$rargs[$i + 1]; $atGiven = $true; $i += 2 }
-      default { Die "rebuild takes --at <rev> or --resume, and `"$($rargs[$i])`" names neither" }
+function LabelOf([string]$ref) {
+  $o = ((& docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $ref 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0) { return '' }
+  return ($o -replace '[\x00-\x1f\x7f]', '')
+}
+function ImageId {
+  $o = ((& docker image inspect --format '{{.Id}}' $ImageRef 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0) { return '' }
+  return $o
+}
+# THE PRIOR IMAGE: the newest kept `rev-<12 hex>` tag whose image the tag does not hold now, read by its revision label.
+function PriorRevision {
+  $cur = ImageId
+  $tags = @(& docker image ls --format '{{.Tag}}' $ImageRepo 2>$null)
+  if ($LASTEXITCODE -ne 0) { return '' }
+  $rows = @()
+  foreach ($t in $tags) {
+    $t = "$t".Trim()
+    if ($t -cnotmatch '^rev-[0-9a-f]{12}$') { continue }
+    $info = ((& docker image inspect --format '{{.Created}} {{.Id}}' "${ImageRepo}:$t" 2>$null) -join '').Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $info) { continue }
+    $parts = $info -split ' '
+    if ($parts.Count -lt 2 -or $parts[1] -eq $cur) { continue }
+    $rows += [pscustomobject]@{ Created = $parts[0]; Tag = $t }
+  }
+  if ($rows.Count -eq 0) { return '' }
+  $best = $rows | Sort-Object -Property Created -Descending | Select-Object -First 1
+  return (LabelOf "${ImageRepo}:$($best.Tag)")
+}
+$script:RRev = ''; $script:RHow = ''
+function ResolveImage([string]$want) {
+  ResolveGitRev
+  if (-not $script:GitRev) { Die "rebuild refuses: no git checkout answers at $PSScriptRoot, so no revision names the image; run it from a checkout" }
+  $top = ((& git -C $PSScriptRoot rev-parse --show-toplevel 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $top) { Die "rebuild refuses: no git checkout answers at $PSScriptRoot" }
+  if (-not $want) {
+    $script:RRev = PriorRevision
+    if ($script:RRev -cnotmatch '^[0-9a-f]{40}$') { Die "rebuild --prior finds no kept image before the one $ImageRef holds (a kept image carries the tag ${ImageRepo}:rev-<12 hex> and its revision label); nothing moved" }
+  } else {
+    $r = ((& git -C $top rev-parse --verify --quiet "$want^{commit}" 2>$null) -join '').Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $r) { Die "rebuild refuses: $want names no commit in $top; nothing moved" }
+    $script:RRev = $r
+  }
+  $short = $script:RRev.Substring(0, 12)
+  if ((LabelOf $ImageRef) -ceq $script:RRev) {
+    $script:RHow = 'stood'
+    [Console]::Error.WriteLine("lares-container: $ImageRef holds the image of $short already; no build")
+    return
+  }
+  $kept = "${ImageRepo}:rev-$short"
+  if ((LabelOf $kept) -ceq $script:RRev) {
+    TagOutgoing
+    $null = & docker tag $kept $ImageRef
+    if ($LASTEXITCODE -ne 0) { Die "the kept image $kept could not take the tag $ImageRef; it stands as it stood" }
+    $script:RHow = 'kept'
+    [Console]::Error.WriteLine("lares-container: $ImageRef now holds the kept image $kept; no build")
+    return
+  }
+  if (-not $want) { Die "rebuild --prior: the kept tag $kept no longer holds revision $short; nothing moved" }
+  BuildImage $script:RRev @()
+  $script:RHow = 'built'
+}
+# THE PŪLAMA'S OWN STATUS (`pulama-main.js status`, read detached): whether it stands lit, and whether the admitted set it
+# reads under its key names the image and no tombstone ends it. An unlit pūlama lists no admission; a status that never
+# answers leaves both unread.
+$script:PsLit = ''; $script:PsAdmitted = ''
+function PulamaStatusRead([string]$digest) {
+  $script:PsLit = ''; $script:PsAdmitted = ''
+  $out = $null | & docker compose @Base --profile pulama exec -T pulama node $PulamaMain status 2>$null
+  if ($LASTEXITCODE -ne 0) { return }
+  $flat = (($out -join '') -replace '\s', '')
+  if ($flat.Contains('"lit":true')) { $script:PsLit = 'yes' }
+  elseif ($flat.Contains('"lit":false')) { $script:PsLit = 'no'; return }
+  else { return }
+  $list = ([regex]::Match($flat, '"admitted":\[([^\]]*)\]')).Groups[1].Value
+  $ended = ([regex]::Match($flat, '"ended":\[([^\]]*)\]')).Groups[1].Value
+  $q = '"' + $digest + '"'
+  $script:PsAdmitted = if ($list.Contains($q) -and -not $ended.Contains($q)) { 'yes' } else { 'no' }
+}
+# A kūkulu offer the standing vessel rested (config/kukulu-offer.json) whose vouch names the image: the next vessel offers
+# it once, and the pūlama lends on it with no admit.
+function OfferCarries([string]$digest) {
+  if (-not $digest) { return $false }
+  $f = Join-Path (Join-Path $House 'config') 'kukulu-offer.json'
+  if (-not (Test-Path -LiteralPath $f)) { return $false }
+  return (Get-Content -Raw -LiteralPath $f).Contains($digest)
+}
+# Does a vessel run the image the tag names? VoRunning reads true wherever a vessel runs at all.
+$script:VoRunning = $false
+function VesselOnImage {
+  $script:VoRunning = $false
+  $id = ((& docker compose @Base ps -q --status running lares 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $id) { return $false }
+  $script:VoRunning = $true
+  $ran = ((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $ran) { return $false }
+  return ($ran -eq (ImageId))
+}
+function PrintReading {
+  $img = ImageId
+  $current = if (VesselOnImage) { 'true' } else { 'false' }
+  $vessel = if ($script:VoRunning) { 'standing' } else { 'down' }
+  $pul = 'off'; $lit = 'null'; $adm = 'null'
+  if ($PulamaMode) {
+    PulamaReading; $pul = $script:Pr.State
+    if ($pul -notin @('absent', 'unread')) {
+      PulamaStatusRead $img
+      if ($script:PsLit -eq 'yes') { $lit = 'true' } elseif ($script:PsLit -eq 'no') { $lit = 'false' }
+      if ($script:PsAdmitted -eq 'yes') { $adm = 'true' } elseif ($script:PsAdmitted -eq 'no') { $adm = 'false' }
     }
   }
-  if ($resume -and $atGiven) { Die 'rebuild --resume takes no --at: the image stands built; run rebuild --at <rev> for another' }
-  if ($PulamaMode -and -not $script:Tty) { Die "rebuild under a pūlama ends on the pūlama's admit, which reads your route on a terminal; run it on one (nothing touched)" }
-  if (-not $resume) {
+  $offer = if (OfferCarries $img) { 'true' } else { 'false' }
+  [Console]::Out.WriteLine("{`"op`":`"rebuild-image`",`"revision`":`"$($script:RRev)`",`"image`":`"$img`",`"how`":`"$($script:RHow)`",`"vessel`":`"$vessel`",`"current`":$current,`"pulama`":`"$pul`",`"lit`":$lit,`"admitted`":$adm,`"offer`":$offer}")
+}
+$HandLine = 'your hand: lares rite kukulu on a terminal'
+function StandHouse {
+  $digest = ImageId
+  $restand = $false; $light = $false; $admit = $false; $why = ''
+  $stays = VesselOnImage
+  if ($PulamaMode) {
+    PulamaReading
+    switch ($script:Pr.State) {
+      'unread' { Die 'rebuild stops before anything moves: whether the pūlama stands, or what it runs, reads unknown (read it with `tools/lares-container.ps1 pulama status`)' }
+      'absent' { $restand = $true; $light = $true; $why = 'no pūlama runs' }
+      'moved' { $restand = $true; $light = $true; $why = "the pūlama's code closure moved" }
+      default {
+        PulamaStatusRead $digest
+        if ($script:PsLit -eq 'no') { $light = $true; $why = 'the pūlama stands unlit' }
+        elseif ($script:PsLit -ne 'yes') { Die 'rebuild stops before anything moves: the pūlama answers no status, so whether it stands lit reads unknown (read it with `tools/lares-container.ps1 pulama status`)' }
+      }
+    }
+    if ($restand) { $stays = $false }
+    if (-not $light -and -not $stays -and $script:PsAdmitted -ne 'yes' -and -not (OfferCarries $digest)) { $admit = $true }
+    if (-not $script:Tty) {
+      if ($light) { Die "rebuild stops before anything moves: $why, and its light reads your route on a terminal; $HandLine" }
+      if ($admit) { Die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HandLine (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)" }
+    }
+  }
+  if ($stays) {
+    $script:KeepSaid = 'the vessel stayed standing, so no keep ran'
+    [Console]::Error.WriteLine("lares-container: rebuild: the vessel runs $digest already and stays standing")
+  } else {
     [Console]::Error.WriteLine('lares-container: rebuild: the down path (keep, census)')
     DownVessel @()
-    [Console]::Error.WriteLine("lares-container: rebuild: the build from $at")
-    BuildImage $at @()
-    if ($PulamaMode) {
-      PulamaReading
-      switch ($script:Pr.State) {
-        'unread' { Die 'rebuild stops: whether the pūlama stands, or what it runs, reads unknown; the image stands built (read it with `tools/lares-container.ps1 pulama status`)' }
-        { $_ -in @('absent', 'moved') } {
-          PulamaRestand
-          try { New-Item -ItemType Directory -Force -Path (Join-Path $House 'cache') | Out-Null; Set-Content -Path $RebuildPending -Value $script:KeepSaid -Encoding utf8 } catch {}
-          [Console]::Error.WriteLine('lares-container: rebuild stops for your hand: the pūlama stands unlit on the new image; light it (`tools/lares-container.ps1 pulama light`), then `tools/lares-container.ps1 rebuild --resume`')
-          exit 0
-        }
-        default { [Console]::Error.WriteLine("lares-container: rebuild: the pūlama's code closure stands unmoved, so it stays lit (no restand, no light)") }
-      }
-    }
-  } else {
-    if ($PulamaMode) {
-      PulamaReading
-      switch ($script:Pr.State) {
-        'unread' { Die 'rebuild --resume refuses: whether the pūlama stands, or what it runs, reads unknown; read it with `tools/lares-container.ps1 pulama status`' }
-        'absent' { Die 'rebuild --resume refuses: no pūlama runs; `tools/lares-container.ps1 pulama restand`, light it, then rebuild --resume' }
-        'moved' { Die 'rebuild --resume refuses: the pūlama still runs an older code closure; `tools/lares-container.ps1 pulama restand`, light it, then rebuild --resume' }
-      }
-    }
-    $script:KeepSaid = ''
-    try { $script:KeepSaid = (Get-Content -Raw -LiteralPath $RebuildPending -ErrorAction Stop).Trim() } catch {}
-    if (-not $script:KeepSaid) { $script:KeepSaid = "ran before the light, in the rebuild's first half" }
   }
-  Remove-Item -Force -LiteralPath $RebuildPending -ErrorAction SilentlyContinue
-  $script:Rebuilding = $true
-  UpVerb @()
+  if ($restand) { PulamaRestand }
+  if ($light) {
+    [Console]::Error.WriteLine("lares-container: rebuild: $why; the pūlama lights on this terminal (it reads your route, this shim never does)")
+    & docker compose @Base --profile pulama exec pulama node $PulamaMain light
+    PulamaStatusRead $digest
+    if ($script:PsLit -ne 'yes') { Die 'the pūlama did not light (above); run `lares rite kukulu` again on a terminal, and it picks up from here' }
+    if (-not $stays -and $script:PsAdmitted -ne 'yes' -and -not (OfferCarries $digest)) { $admit = $true }
+  }
+  if (-not $stays) { $script:Rebuilding = $true; UpVerb @() }
   if ($PulamaMode) {
-    [Console]::Error.WriteLine('lares-container: rebuild: the pūlama admits the new image; it reads your route on this terminal')
-    & docker compose @Base --profile pulama exec pulama node $PulamaMain admit
-    if ($LASTEXITCODE -ne 0) { Die 'the pūlama admitted nothing (above); the vessel stands at the floor: `tools/lares-container.ps1 pulama admit`, then `tools/lares-container.ps1 vault unlock --all`' }
-    if ((DetachedUnlock @('--all')) -ne 0) { Die 'the vessel did not open after the admit (above); read it with `tools/lares-container.ps1 pulama status`, then `tools/lares-container.ps1 vault unlock --all`' }
-    if (NoneWorn) { WearLastFace }
-  }
+    if ($admit) {
+      [Console]::Error.WriteLine('lares-container: rebuild: the pūlama admits the image; it reads your route on this terminal')
+      & docker compose @Base --profile pulama exec pulama node $PulamaMain admit
+      if ($LASTEXITCODE -ne 0) { Die 'the pūlama admitted nothing (above); the vessel stands at the floor: `tools/lares-container.ps1 pulama admit`, then `tools/lares-container.ps1 vault unlock --all`' }
+    }
+    if ($stays) { UnlockOrName }
+    else {
+      if ((DetachedUnlock @('--all')) -ne 0) { Die 'the vessel did not open (above); read it with `tools/lares-container.ps1 pulama status`, then `tools/lares-container.ps1 vault unlock --all`' }
+      if (NoneWorn) { WearLastFace }
+    }
+  } elseif ($stays) { UnlockOrName }
   $worn = $script:Wore -replace '^h', ''
   if (-not $worn) { $worn = WornNow }
-  $rev = ((& docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $ImageRef 2>$null) -join '').Trim()
+  $rev = LabelOf $ImageRef
   if ($rev.Length -gt 12) { $rev = $rev.Substring(0, 12) }
   if (-not $rev) { $rev = 'unlabeled' }
   $wearing = if ($worn) { "wearing h$worn" } else { 'no face worn (wear one: `tools/lares-container.ps1 wear N`)' }
   $keep = if ($script:KeepSaid) { $script:KeepSaid } else { 'none ran' }
-  [Console]::Error.WriteLine("lares-container: rebuilt: the vessel stands on revision $rev, $wearing; keep: $keep")
+  [Console]::Error.WriteLine("lares-container: the house stands on revision $rev, $wearing; keep: $keep")
+}
+function RebuildVerb([string[]]$rargs) {
+  if ($null -eq $rargs) { $rargs = @() }
+  $at = 'HEAD'; $atGiven = $false; $prior = $false; $imageOnly = $false; $i = 0
+  while ($i -lt $rargs.Count) {
+    switch ($rargs[$i]) {
+      '--at' { if ($i + 1 -ge $rargs.Count) { Die 'rebuild --at wants a revision' }; $at = [string]$rargs[$i + 1]; $atGiven = $true; $i += 2 }
+      '--prior' { $prior = $true; $i++ }
+      '--image' { $imageOnly = $true; $i++ }
+      default { Die "rebuild takes --at <rev>, --prior and --image, and `"$($rargs[$i])`" names none of them" }
+    }
+  }
+  if ($prior -and $atGiven) { Die 'rebuild takes --at <rev> or --prior, never both' }
+  $script:InRebuild = $true
+  if ($prior) { ResolveImage '' } else { ResolveImage $at }
+  if ($imageOnly) { PrintReading; return }
+  StandHouse
 }
 
 switch ($verb) {
@@ -1021,10 +1163,6 @@ switch ($verb) {
     }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
-  'image-digest' {
-    if ($rest.Count -gt 0) { Die 'image-digest takes no arguments' }
-    Write-Output (ImageDigest)
-  }
   'build' {
     $at = 'HEAD'; $more = $rest
     if ($rest.Count -gt 0 -and $rest[0] -eq '--at') {

@@ -1,8 +1,11 @@
 /**
  * `lares rite kukulu | keep | begin | land | receipts` — the rite door.
  *
- *   kukulu     (kūkulu) on the HOST: raise the vessel again around its hearth. Begins the rite in the vessel, then calls the
- *              host shim to rebuild the image, take the vessel down and raise a new one, then lands the rite (`../rite-kukulu.ts`)
+ *   kukulu     (kūkulu) on the HOST: the one verb that raises the house again around its hearth. Fast-forwards the checkout
+ *              where it stands clean and behind, has the host shim make the image and read where the house stands, spends
+ *              each face's kukulu lei where one stands (no prompt), then the shim's restand (the pūlama's light and admit on
+ *              this terminal only where the day owes them), then lands the rite (`../rite-kukulu.ts`). `--rollback [<rev>]`
+ *              stands the image that ran before, or an older revision's, with no checkout move
  *   keep       on the HOST: keep the house in the operator's repo. Guards the bound workspace, runs `keep-cut` in the vessel,
  *              then commits `<into>`, rebases, pushes, and lands the tessera at the bundle id the pushed tree holds
  *              (`--workspace <name> [--into <path>]`, `../rite-keep-host.ts`); `--if-due` keeps only where the house moved since
@@ -31,7 +34,7 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emitAnswer, exitFor, refuseUsage } from "../render.js";
-import { priorImageRef, riteKukulu, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer } from "../rite-kukulu.js";
+import { priorImageRef, riteKukulu, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type StageTarget, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
 import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
@@ -198,20 +201,51 @@ const cliVerb = (line: readonly string[]): Promise<RiteVerbAnswer> => new Promis
 /** Row args as flags: `true` rides as a bare flag, every other value as the next word. */
 const flagsOf = (rowArgs: Record<string, unknown>): string[] => Object.entries(rowArgs).flatMap(([k, v]) => (v === true ? [`--${k}`] : [`--${k}`, String(v)]));
 
-/** One shim verb on this terminal; the answer carries its exit code (a spawn that never ran reads as a failure). */
-const runShim = (shim: string, verb: string): Promise<number> => new Promise((resolve) => {
-  const child = spawn(shim, [verb], { stdio: "inherit" });
+/** One shim line on this terminal; the answer carries its exit code (a spawn that never ran reads as a failure). */
+const runShim = (shim: string, argv: readonly string[]): Promise<number> => new Promise((resolve) => {
+  const child = spawn(shim, [...argv], { stdio: "inherit" });
   child.once("error", () => resolve(127));
   child.once("close", (code) => resolve(code ?? 1));
 });
 
-/** One shim verb whose answer the rite reads: its last line of stdout, or null where the shim names none. */
-const readShim = (shim: string, verb: string): Promise<string | null> => new Promise((resolve) => {
-  execFile(shim, [verb], { encoding: "utf8" }, (err, stdout) => resolve(err ? null : stdout.trim().split("\n").at(-1)?.trim() || null));
+/** The shim's image step (`rebuild --image`): its lines show on this terminal, and its last stdout line carries the reading. */
+const stageShim = (shim: string, target: StageTarget): Promise<{ code: number; reading: StandReading | null }> => new Promise((resolve) => {
+  const child = spawn(shim, ["rebuild", "--image", ...("prior" in target ? ["--prior"] : ["--at", target.at])], { stdio: ["inherit", "pipe", "inherit"] });
+  let text = "";
+  child.stdout.setEncoding("utf8").on("data", (chunk: string) => { text += chunk; });
+  child.once("error", () => resolve({ code: 127, reading: null }));
+  child.once("close", (code) => {
+    let reading: StandReading | null = null;
+    try { const r = JSON.parse(text.trim().split("\n").at(-1) ?? "") as StandReading & { op?: unknown }; reading = r.op === "rebuild-image" ? r : null; } catch { reading = null; }
+    resolve({ code: code ?? 1, reading });
+  });
 });
 
-/** The shim verb that names the digest of the image the build left (the same digest the shim reports to a pūlama at `up`). */
-export const SHIM_IMAGE_VERB = "image-digest";
+/**
+ * THE CHECKOUT'S FAST-FORWARD: fetch, then `git merge --ff-only` on the checkout's own branch only where the tree stands clean
+ * and behind its upstream (`syncPlan`). It never switches a branch, never stashes, and never merges anything but a
+ * fast-forward. A fetch that fails goes on at the last fetch and says so.
+ */
+export async function syncCheckout(dir: string): Promise<SyncAnswer> {
+  const out = async (argv: readonly string[]): Promise<string | null> => { const r = await gitIn(dir, argv); return r.code === 0 ? r.stdout.trim() : null; };
+  const branch = (await out(["rev-parse", "--abbrev-ref", "HEAD"])) ?? "HEAD";
+  const upstream = branch === "HEAD" ? null : await out(["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"]);
+  let fetched = "";
+  if (upstream !== null) {
+    const f = await gitIn(dir, ["fetch", "--quiet"]);
+    if (f.code !== 0) fetched = `the fetch failed (${f.stderr.trim().split("\n").at(-1) || `exit ${f.code}`}), so the checkout reads its last fetch; `;
+  }
+  const counts = upstream === null ? null : await out(["rev-list", "--left-right", "--count", "HEAD...@{upstream}"]);
+  const [ahead = 0, behind = 0] = (counts ?? "0 0").split(/\s+/).map(Number);
+  const dirty = ((await out(["status", "--porcelain", "--untracked-files=no"])) ?? "") !== "";
+  const plan = syncPlan({ branch, upstream, ahead, behind, dirty });
+  if (plan.act !== "fast-forward") return { ok: plan.act === "stand", line: fetched + plan.line };
+  const from = (await out(["rev-parse", "HEAD"])) ?? "";
+  const merged = await gitIn(dir, ["merge", "--ff-only", "--quiet", "@{upstream}"]);
+  if (merged.code !== 0) return { ok: false, line: `${fetched}the fast-forward of ${branch} to ${upstream} refused (${merged.stderr.trim().split("\n").at(-1) || `exit ${merged.code}`}); nothing moved` };
+  const to = (await out(["rev-parse", "HEAD"])) ?? "";
+  return { ok: true, line: `${fetched}${branch} fast-forwarded ${behind} commit(s) from ${upstream}: ${from.slice(0, 12)}..${to.slice(0, 12)}` };
+}
 
 /**
  * One vessel row as the host's CLI line. The begin and the offer gather every lent face in the vessel, so they name none;
@@ -283,15 +317,17 @@ const readPriorImage = (): Promise<PriorImage | null> => new Promise((resolve) =
 });
 
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
-function hostPorts(runShim: (verb: string) => Promise<number>, say: (line: string) => void, image: () => Promise<string | null>): RitePorts {
+function hostPorts(shim: string, say: (line: string) => void): RitePorts {
   return {
-    image,
     refill: liveRefill,
     prior: readPriorImage,
     seedOffer: (head) => hostSeedOffer(head).catch(() => null),   // a read-only line never stops the rite
+    sync: () => syncCheckout(CHECKOUT),
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
+    stage: (target) => stageShim(shim, target),
+    raise: (revision) => runShim(shim, ["rebuild", "--at", revision]),
+    tty: () => process.stdin.isTTY === true && process.stdout.isTTY === true,
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
-    shim: (verb) => runShim(verb),
     say,
   };
 }
@@ -357,6 +393,19 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
   return out.code === 0 ? 0 : exitFor(refusal);
 }
 
+/**
+ * `--rollback` alone stands the image that ran before; `--rollback <rev>` an older revision's image (its kept tag, or a build
+ * from that commit with no checkout move). Absent, the rite runs forward.
+ */
+export function rollbackOf(args: ParsedArgs): { readonly rollback?: true | string } {
+  const word = typeof args.options["rollback"] === "string" ? args.options["rollback"].trim() : undefined;
+  if (word !== undefined && word !== "") {
+    if (!/^[A-Za-z0-9._/@^~][A-Za-z0-9._/@^~-]*$/.test(word)) throw new RiteUsage("--rollback takes a revision (a commit, or a kept image's 12 hex), or nothing for the image that ran before");
+    return { rollback: word };
+  }
+  return args.flags["rollback"] === true || word === "" ? { rollback: true } : {};
+}
+
 export async function cmdRite(args: ParsedArgs): Promise<number> {
   if (isKukulu(args.positional[0])) {
     // THE RITE NEEDS THE CONTAINER HOUSE: the shim rebuilds an image and raises a container, and a native house holds neither.
@@ -370,12 +419,13 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
     const branch = typeof args.options["branch"] === "string" && args.options["branch"].trim() !== "" ? args.options["branch"].trim() : undefined;
     const faceWord = typeof args.options["face"] === "string" ? args.options["face"].trim() : undefined;
     if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
-    const out = await riteKukulu(hostPorts((verb) => runShim(shim, verb), (line) => console.error(line), async () => { const d = await readShim(shim, SHIM_IMAGE_VERB); return d !== null && /^[a-z0-9]+:[0-9a-f]{32,128}$/.test(d) ? d : null; }), { ...(branch === undefined ? {} : { branch }), ...(faceWord === undefined ? {} : { face: Number(faceWord) }) });
+    const out = await riteKukulu(hostPorts(shim, (line) => console.error(line)), { ...(branch === undefined ? {} : { branch }), ...(faceWord === undefined ? {} : { face: Number(faceWord) }), ...rollbackOf(args) });
     const kukuluMessage = "the kūkulu rite did not complete; the lines above name where it stopped";
+    const settled = out.data["awaits"] === "hand" ? `lares rite kukulu: the house waits on your hand: ${String(out.data["hand"])} on a terminal` : out.data["awaits"] === "unlock" ? "lares rite kukulu: the house stands; the landing waits on the unlock" : "lares rite kukulu: the house stands";
     emitAnswer(args, out.code === 0
       ? { ok: true, data: out.data, human: () => console.log(JSON.stringify(out.data)) }
       : { ok: false, data: out.data, error: { code: String(out.data["refusal"] ?? `rite-stopped-at-${String(out.data["stopped"] ?? "landing")}`), message: kukuluMessage }, human: () => console.log(JSON.stringify(out.data)) },
-    out.code === 0 ? "lares rite kukulu: the rite completed" : `lares rite kukulu: ${kukuluMessage}`);
+    out.code === 0 ? settled : `lares rite kukulu: ${kukuluMessage}`);
     return out.code;
   }
   const sub = args.positional[0];
