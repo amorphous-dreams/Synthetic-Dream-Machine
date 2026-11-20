@@ -107,8 +107,20 @@ HOUSE_CLASSES="hearth sensoriums projections library config"
 # rests in a named Docker volume the pūlama and the vessel share and no host path reaches: the shim never makes, reads or
 # clears a socket on the host, and every pūlama verb enters through `compose exec pulama`. Unset, the vessel holds custody
 # itself.
+#
+# THE PŪLAMA BELONGS TO ITS HOUSE. The env file's LARES_PULAMA=1 names the pūlama of the env file's own house; a
+# LARES_HOUSE in the environment naming another house (a new house founding beside the standing one) stands that vessel
+# holding its own custody, and the line says so. LARES_PULAMA in the environment speaks for whichever house stands.
 PULAMA_MODE=""
-if [ "$(value_of LARES_PULAMA)" = 1 ]; then
+pulama_word=$(value_of LARES_PULAMA)
+if [ -z "${LARES_PULAMA:-}" ] && [ "$pulama_word" = 1 ] && [ -f "$ENV_FILE" ]; then
+  file_house=$(sed -n "s/^[[:space:]]*LARES_HOUSE=//p" "$ENV_FILE" | tail -n 1)
+  if [ -n "$file_house" ] && [ "$file_house" != "$HOUSE" ]; then
+    printf 'lares-container: LARES_PULAMA=1 in %s names the pūlama of %s; this house (%s) holds its own custody\n' "$ENV_FILE" "$file_house" "$HOUSE" >&2
+    pulama_word=""
+  fi
+fi
+if [ "$pulama_word" = 1 ]; then
   PULAMA_MODE=yes
   HOUSE_CLASSES="$HOUSE_CLASSES pulama/state"
   export LAR_PULAMA_SOCKET=/pulama/socket/pulama.sock

@@ -55,7 +55,18 @@ $HouseClasses = @('hearth', 'sensoriums', 'projections', 'library', 'config')
 # lit once by the operator's own hand (`pulama light`), outliving every vessel restart. Its private state rests under
 # LARES_HOUSE/pulama/state, so it keeps the operator's ownership. Its socket rests in a named Docker volume the pūlama and
 # the vessel share and no host path reaches: the shim never makes, reads or clears a socket on the host.
+# THE PŪLAMA BELONGS TO ITS HOUSE. The env file's LARES_PULAMA=1 names the pūlama of the env file's own house; a
+# LARES_HOUSE in the environment naming another house (a new house founding beside the standing one) stands that vessel
+# holding its own custody, and the line says so. LARES_PULAMA in the environment speaks for whichever house stands.
 $PulamaMode = (ValueOf 'LARES_PULAMA') -eq '1'
+if ($PulamaMode -and -not [Environment]::GetEnvironmentVariable('LARES_PULAMA') -and (Test-Path $EnvFile)) {
+  $fileHouseLine = Select-String -Path $EnvFile -Pattern '^\s*LARES_HOUSE=(.*)$' | Select-Object -Last 1
+  $fileHouse = if ($fileHouseLine) { $fileHouseLine.Matches[0].Groups[1].Value } else { '' }
+  if ($fileHouse -and $fileHouse -ne $House) {
+    [Console]::Error.WriteLine("lares-container: LARES_PULAMA=1 in $EnvFile names the pūlama of $fileHouse; this house ($House) holds its own custody")
+    $PulamaMode = $false
+  }
+}
 if ($PulamaMode) {
   $HouseClasses += @('pulama/state')
   [Environment]::SetEnvironmentVariable('LAR_PULAMA_SOCKET', '/pulama/socket/pulama.sock')
