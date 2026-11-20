@@ -10,7 +10,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, readFileSync, statSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { faceRoot, houseExcludeLines, HOUSE_IGNORED } from "@lararium/node";
+import { faceRoot, houseExcludeLines, HOUSE_IGNORED, POOL_PRE_COMMIT, IN_IMAGE_CLI } from "@lararium/node";
 import { cmdSurface, faceEmailSlug } from "../src/commands/surface.js";
 import { git, openSurfaceRig, plant, surfaceArgs, type SurfaceRig } from "./support/surface-rig.js";
 
@@ -96,6 +96,17 @@ describe("lares surface init", () => {
     expect(await cmdSurface(surfaceArgs(["init"]), rig.doors)).toBe(0);
     expect(readFileSync(join(root, ".git", "hooks", "pre-commit"), "utf8")).toBe("#!/bin/sh\necho mine\n");
     expect(rig.said()).toMatch(/pre-commit/);
+  });
+
+  test("an older hook the house wrote (bare `exec lares surface check`) re-reads the pools' one hook at init", async () => {
+    const root = faceRoot(rig.projections, "Heron Lantern");
+    mkdirSync(join(root, ".git", "hooks"), { recursive: true });
+    git(root, "init", "-q");
+    const older = "#!/bin/sh\n# lares surface: the roster check runs before every commit (`lares surface init` wrote this hook)\nexec lares surface check\n";
+    writeFileSync(join(root, ".git", "hooks", "pre-commit"), older, { mode: 0o755 });
+    expect(await cmdSurface(surfaceArgs(["init"]), rig.doors)).toBe(0);
+    expect(readFileSync(join(root, ".git", "hooks", "pre-commit"), "utf8")).toBe(POOL_PRE_COMMIT);
+    expect(POOL_PRE_COMMIT).toContain(IN_IMAGE_CLI);
   });
 });
 

@@ -422,3 +422,59 @@ describe("W2f — every pool a tree: the house founds a pool's history where non
     expect(again).toEqual([]);
   });
 });
+
+describe("W2g — the pool-check hook answers on both sides, and refuses where no check stands", () => {
+  const pt = (): Promise<typeof import("../src/pool-tree.js")> => import(/* @vite-ignore */ "../src/pool-tree.js");
+  /** Run a hook body in the pool under a PATH that holds `node` (and a fake `lares` where asked), never the host's own. */
+  const runHook = (body: string, opts: { lares?: boolean } = {}): { code: number; err: string; said: string } => {
+    const bin = join(dirname(pool), "bin");
+    mkdirSync(bin, { recursive: true });
+    const said = join(dirname(pool), "said.txt");
+    writeFileSync(join(bin, "node"), `#!/bin/sh\nexec "${process.execPath}" "$@"\n`, { mode: 0o755 });
+    if (opts.lares) writeFileSync(join(bin, "lares"), `#!/bin/sh\necho "host lares $*" > "${said}"\n`, { mode: 0o755 });
+    const hook = join(dirname(pool), "pre-commit");
+    writeFileSync(hook, body, { mode: 0o755 });
+    const r = spawnSync("/bin/sh", [hook], { cwd: pool, env: { PATH: `${bin}:/usr/bin:/bin` }, encoding: "utf8" });
+    return { code: r.status ?? -1, err: r.stderr ?? "", said: existsSync(said) ? readFileSync(said, "utf8").trim() : "" };
+  };
+
+  test("no `lares` on PATH, the in-image CLI standing: the hook runs the check through it", async () => {
+    const { poolPreCommit } = await pt();
+    const cli = join(dirname(pool), "app", "lares.mjs");
+    mkdirSync(dirname(cli), { recursive: true });
+    writeFileSync(cli, `import { writeFileSync } from "node:fs";\nwriteFileSync(${JSON.stringify(join(dirname(pool), "said.txt"))}, "in-image " + process.argv.slice(2).join(" "));\n`);
+    const r = runHook(poolPreCommit(cli));
+    expect(r.code).toBe(0);
+    expect(r.said).toBe("in-image surface check");
+  });
+
+  test("`lares` on PATH (the host): the hook runs it", async () => {
+    const { POOL_PRE_COMMIT } = await pt();
+    const r = runHook(POOL_PRE_COMMIT, { lares: true });
+    expect(r.code).toBe(0);
+    expect(r.said).toBe("host lares surface check");
+  });
+
+  test("neither standing: the hook refuses with one line naming both, never passing silently", async () => {
+    const { poolPreCommit } = await pt();
+    const r = runHook(poolPreCommit(join(dirname(pool), "nowhere", "lares.mjs")));
+    expect(r.code).toBe(1);
+    expect(r.err.trim().split("\n")).toHaveLength(1);
+    expect(r.err).toMatch(/no `lares` on PATH/);
+    expect(r.err).toMatch(/nowhere\/lares\.mjs/);
+  });
+
+  test("the heal re-reads an older hook the house wrote in a standing pool; a hook of another hand stays", async () => {
+    const { ensurePoolTree, POOL_PRE_COMMIT } = await pt();
+    initPool();
+    const hook = join(pool, ".git", "hooks", "pre-commit");
+    mkdirSync(dirname(hook), { recursive: true });
+    writeFileSync(hook, "#!/bin/sh\n# lares surface: the roster check runs before every commit (`lares surface init` wrote this hook)\nexec lares surface check\n", { mode: 0o755 });
+    expect(ensurePoolTree(pool, { face: "Heron" })).toEqual({ root: pool, reading: "standing", hook: "refreshed" });
+    expect(readFileSync(hook, "utf8")).toBe(POOL_PRE_COMMIT);
+    expect(ensurePoolTree(pool, { face: "Heron" })).toEqual({ root: pool, reading: "standing" });
+    writeFileSync(hook, "#!/bin/sh\necho mine\n", { mode: 0o755 });
+    expect(ensurePoolTree(pool, { face: "Heron" })).toEqual({ root: pool, reading: "standing" });
+    expect(readFileSync(hook, "utf8")).toBe("#!/bin/sh\necho mine\n");
+  });
+});

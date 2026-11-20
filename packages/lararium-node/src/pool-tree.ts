@@ -12,7 +12,9 @@
  * THE HOUSE FOUNDS WHAT IS MISSING (`ensurePoolTree`), idempotently, wherever it lays a pool root: the worn face's arm, a face lit
  * beside it, the mount's realm placement as it lays a wiki folder, and the re-stand's heal over every pool root on disk
  * (`healPoolTrees`), so a pool laid before this step stood takes its tree at the next boot with no hand act. A root whose
- * `.git` stands stays EXACTLY as it stands (its author, hook and history are the operator's); a root resting inside another
+ * `.git` stands keeps its author, exclude and history as they stand (the operator's), and only a pre-commit hook the house
+ * itself wrote re-reads the current one (`refreshPoolHook`: the hook answers on the host and inside the vessel's container,
+ * and refuses where no check stands); a root resting inside another
  * history (a house laid inside a checkout) founds nothing, since a nested repo would split that history.
  *
  * Git always runs here with an empty global config and no system config, every `GIT_*` name stripped, so nothing written or
@@ -55,8 +57,43 @@ function localConfig(root: string, key: string): string | null {
 
 /** The marker the house's own pre-commit hook carries. */
 const HOOK_MARK = "# lares surface: the roster check runs before every commit";
+/** Where the vessel's image holds the CLI (`/app`, the image's WORKDIR; the host shim runs it as `node "$CLI"`). */
+export const IN_IMAGE_CLI = "/app/packages/lares-cli/bin/lares.mjs";
+
+/**
+ * THE POOL-CHECK HOOK, ANSWERING ON BOTH SIDES. A pool commits on the host (`lares surface commit`, a hand) and in the vessel's
+ * container (the sitting's seam), so the hook resolves the check by what stands: `lares` on PATH (the host), else the in-image
+ * CLI under `node` (the container). Where neither stands it refuses in one line naming both: a skipped check would pass a
+ * commit past the pool law unread.
+ */
+export function poolPreCommit(inImageCli: string = IN_IMAGE_CLI): string {
+  return [
+    "#!/bin/sh",
+    `${HOOK_MARK} (\`lares surface init\` wrote this hook)`,
+    "if command -v lares >/dev/null 2>&1; then exec lares surface check; fi",
+    `if [ -f '${inImageCli}' ] && command -v node >/dev/null 2>&1; then exec node '${inImageCli}' surface check; fi`,
+    `echo "lares surface: the pool check refuses this commit: no \\\`lares\\\` on PATH and no CLI at ${inImageCli} under node" >&2`,
+    "exit 1",
+    "",
+  ].join("\n");
+}
+
 /** The pre-commit hook a pool's init writes. */
-export const POOL_PRE_COMMIT = `#!/bin/sh\n${HOOK_MARK} (\`lares surface init\` wrote this hook)\nexec lares surface check\n`;
+export const POOL_PRE_COMMIT = poolPreCommit();
+
+/**
+ * Re-read the house's hook in a standing pool: a hook the house wrote (its marker) that differs from `POOL_PRE_COMMIT` takes the
+ * current one; a hook of another hand, and a pool with none, stay as they stand. Answers whether it rewrote.
+ */
+export function refreshPoolHook(root: string): boolean {
+  const hook = join(root, ".git", "hooks", "pre-commit");
+  let standing: string;
+  try { standing = readFileSync(hook, "utf8"); } catch { return false; }
+  if (!standing.includes(HOOK_MARK) || standing === POOL_PRE_COMMIT) return false;
+  writeFileSync(hook, POOL_PRE_COMMIT);
+  if ((statSync(hook).mode & 0o111) === 0) chmodSync(hook, 0o755);
+  return true;
+}
 
 /**
  * THE AUTHOR EMAIL'S LOCAL PART: the pet name folded to lower-case Latin letters and digits, runs of anything else to one
@@ -130,8 +167,13 @@ function initPool(root: string, author: { readonly name: string; readonly email:
 /** Whose pool a root holds: a face (by its pet name) or a realm's wiki (by its slug). */
 export type PoolOwner = { readonly face: string } | { readonly realm: string };
 
-/** What one ensure read: a tree founded now, one already standing (left as it stands), or a root inside another history. */
-export interface PoolTreeEnsured { readonly root: string; readonly reading: "founded" | "standing" | "inside-another-tree" }
+/** What one ensure read: a tree founded now, one already standing (left as it stands, but for an older house hook it re-read:
+ *  `hook: "refreshed"`), or a root inside another history. */
+export interface PoolTreeEnsured {
+  readonly root: string;
+  readonly reading: "founded" | "standing" | "inside-another-tree";
+  readonly hook?: "refreshed";
+}
 
 /** The nearest folder at or above `p` that stands on disk. */
 function nearestStanding(p: string): string {
@@ -141,11 +183,13 @@ function nearestStanding(p: string): string {
 }
 
 /**
- * ENSURE THE POOL AT `root` IS A GIT TREE. A `.git` standing there leaves the pool exactly as it stands (no config, hook or
- * history touched); a root inside another work tree founds nothing; else the root takes its owner's init, laid where missing.
+ * ENSURE THE POOL AT `root` IS A GIT TREE. A `.git` standing there leaves the pool as it stands (no config, exclude or history
+ * touched), but a pre-commit hook the HOUSE wrote re-reads the current one (`refreshPoolHook`), so a pool founded before the hook
+ * answered inside the container commits there too; a hook of another hand stays. A root inside another work tree founds
+ * nothing; else the root takes its owner's init, laid where missing.
  */
 export function ensurePoolTree(root: string, owner: PoolOwner): PoolTreeEnsured {
-  if (existsSync(join(root, ".git"))) return { root, reading: "standing" };
+  if (existsSync(join(root, ".git"))) return refreshPoolHook(root) ? { root, reading: "standing", hook: "refreshed" } : { root, reading: "standing" };
   const above = poolGit(nearestStanding(root), ["rev-parse", "--is-inside-work-tree"]);
   if (above.code === 0 && above.out.trim() === "true") return { root, reading: "inside-another-tree" };
   if ("face" in owner) initFacePool(root, owner.face); else initRealmPool(root, owner.realm);
@@ -155,6 +199,7 @@ export function ensurePoolTree(root: string, owner: PoolOwner): PoolTreeEnsured 
 /** The log's line for one ensure: silent where the tree already stood. */
 export function poolTreeLine(e: PoolTreeEnsured): string | null {
   if (e.reading === "founded") return `the house founds a git tree at ${e.root} (no remote)`;
+  if (e.hook === "refreshed") return `the pool at ${e.root} re-reads the house's pre-commit hook (it answers on the host and in the container)`;
   if (e.reading === "inside-another-tree") return `${e.root} rests inside another git history, so the house founds no tree there`;
   return null;
 }

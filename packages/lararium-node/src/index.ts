@@ -208,7 +208,7 @@ export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolW
   WATCHED_PLANES, SITTING_CLOSE_PREFIX, POOL_SETTLE_MS, type DrainSeat, type FacePoolWatch, type FacePoolPorts, type FacePoolWatchOptions, type SeamReading,
   type SittingClose, type StageEdit, type WatchState, type GitRun } from "./watch-core.js";
 // EVERY POOL A TREE: the face and realm pools' one init, the house's idempotent ensure, and the re-stand's heal (`pool-tree`).
-export { PoolTreeRefused, poolGit, POOL_PRE_COMMIT, faceEmailSlug, REALM_EMAIL_DOMAIN, initFacePool, initRealmPool, ensurePoolTree, poolTreeLine,
+export { PoolTreeRefused, poolGit, POOL_PRE_COMMIT, poolPreCommit, IN_IMAGE_CLI, refreshPoolHook, faceEmailSlug, REALM_EMAIL_DOMAIN, initFacePool, initRealmPool, ensurePoolTree, poolTreeLine,
   healPoolTrees, type PoolInitResult, type PoolOwner, type PoolTreeEnsured } from "./pool-tree.js";
 // HEAD's words for a file with no synced base (face-pools A5): both gates read the pool's last sitting as the base a re-found cleared.
 export { checkoutTracking, type CarrierTracking, type UntrackedReading } from "./checkout-carriers.js";
