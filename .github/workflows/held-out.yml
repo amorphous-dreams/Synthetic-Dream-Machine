@@ -1,6 +1,6 @@
 name: Held-out witnesses
 
-# The drivers that prove TRANSPORT across real containers and a real browser: the browser weld, the civic
+# The drivers that prove TRANSPORT across real containers (the browser weld stands dim: tools/ci-cells.mjs BROWSER_LAMPS_DIM): the civic
 # families, the crossing matrix, the Herm mesh across three hops, and every mesh scenario. The per-push CI
 # fleet names these witnesses but cannot raise their browser and Docker substrates, so they ride here.
 #
@@ -185,23 +185,11 @@ jobs:
         run: |
           echo "COMPOSE_PROJECT_NAME=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
           echo "MESH_PROJECT=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
-      # The browser weld's two drivers run inside the pinned official Playwright image (the driver step names it
-      # `WELD_PW_IMAGE`, for tools/browser-weld-witness.sh alone: its entry-contract test runs fakes and must see none), so the system libraries and Chromium are already there and no apt or download step runs. The pull
-      # is its own step, so a stall names itself.
-      - name: Pull the pinned Playwright image and find its Chromium
-        if: matrix.driver == 'browser-weld'
-        timeout-minutes: 12
-        run: |
-          tools/pw-container.sh node -e 'const p = require("playwright"); const e = p.chromium.executablePath(); require("node:fs").accessSync(e); console.log("chromium:", e, "playwright", require("playwright/package.json").version)'
-
       # Regression for the status bug that held this runner back. The fake Docker seam runs no
       # container and checks both a quiet failed compose result and a quiet successful one.
       - name: Crossing driver preserves a quiet compose verdict
         if: matrix.driver == 'crossing'
         run: node --test tools/crossing-witness.test.mjs
-      - name: Browser weld driver preserves its entry contract
-        if: matrix.driver == 'browser-weld'
-        run: node --test tools/browser-weld-witness.test.mjs
       # The mesh witnesses' readers hold to a known positive: a field the pointer builder stops minting
       # reds here, before a mesh run can read every act as one frozen default.
       - name: Herm mesh readers read a known positive
@@ -245,10 +233,6 @@ jobs:
           set +e
           SECONDS=0
           case "${{ matrix.driver }}" in
-            browser-weld)
-              WELD_PW_IMAGE="$(tools/pw-container.sh --pin)" run_logged 40m bash tools/browser-weld-witness.sh
-              status=$?
-              ;;
             civic)
               run_logged 85m bash tools/civic-witness.sh
               status=$?

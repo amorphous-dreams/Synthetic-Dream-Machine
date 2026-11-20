@@ -64,7 +64,8 @@ export function browserCells(workflowText) {
       if (cd) { quickDirs.add(cd[1]); break; }
     }
   });
-  return [...named, { cell: "quick", dirs: [...quickDirs] }];
+  // With the browser lamps dim (tools/ci-cells.mjs BROWSER_LAMPS_DIM) no quick step runs pw-container.sh and no row names a container: no cell stands to judge.
+  return quickDirs.size > 0 ? [...named, { cell: "quick", dirs: [...quickDirs] }] : named;
 }
 
 /** The snapshot key a lock `version` names for `dep`: an alias records `name@version` (or `npm:name@version`) itself, a plain edge only the version. */
