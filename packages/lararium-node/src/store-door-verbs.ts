@@ -229,7 +229,7 @@ export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
  * none, the command resolves the one face standing open. A row that reads a face acts as that face, wherever it sits
  * (the relay rows that enable, disable or read one face's relay). Every other row acts as the place: the Nexus
  * steward's seat acts, the place's key-side duties, a face's founding, the relay key's rotation, the refold, and reads
- * of what the place holds.
+ * of what the place holds, and a rite's receipt, which the place signs over a tree.
  */
 export const STORE_DOOR_FACE_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([
   "edge-kapae", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
@@ -240,7 +240,7 @@ export const STORE_DOOR_FACE_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDo
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
-  "rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer",
+  "rite-begin", "rite-land", "rite-receipts", "rite-offer",
 ]);
 
 /**
