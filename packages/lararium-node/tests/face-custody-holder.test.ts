@@ -100,14 +100,26 @@ describe("each opening of a face takes its own number", () => {
     await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
     await holder.unlockFace({ fcid: b.fcid }, cred("route-b"));
     const first = holder.faceOpening?.(a.fcid), other = holder.faceOpening?.(b.fcid);
-    expect(typeof first).toBe("number");
+    expect(typeof first).toBe("string");
     await holder.lockFace(a.fcid);
     expect(holder.faceOpening?.(a.fcid)).toBeNull();
     await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
     const second = holder.faceOpening?.(a.fcid);
-    expect(typeof second).toBe("number");
+    expect(typeof second).toBe("string");
     expect(second).not.toBe(first);
     expect(holder.faceOpening?.(b.fcid)).toBe(other);
+  });
+
+  test("RED restart: a fresh holder over the same home counts its opens from one again, and still never repeats an earlier boot's opening", async () => {
+    const { a } = await twoLockedFaces();
+    const booted = makeCustodyHolder({ io: new FsCustodyIo(seat!.homes), homes: seat!.homes });
+    await booted.unlockFace({ fcid: a.fcid }, cred("route-a"));
+    const before = booted.faceOpening?.(a.fcid)!;
+    const restarted = makeCustodyHolder({ io: new FsCustodyIo(seat!.homes), homes: seat!.homes });
+    await restarted.unlockFace({ fcid: a.fcid }, cred("route-a"));
+    const after = restarted.faceOpening?.(a.fcid)!;
+    expect(after.split(":")[1]).toBe(before.split(":")[1]);   // the count starts over at the same number
+    expect(after).not.toBe(before);                           // the boot nonce keeps the name its own
   });
 });
 

@@ -22,6 +22,16 @@ export async function readFacePersonaRecords(repo: Repo, input: {
  * found (a token naming that one opening, or null while the face stands shut); `stillOpen` answers synchronously whether that
  * SAME opening still stands. A lock that lands while the read runs, or before its proof is accepted, turns it false, and so
  * does a lock and re-open of the same face: the re-open is a new opening.
+ *
+ * THE RESIDUAL WINDOW, NAMED: under a pūlama, a lock there reaches this vessel as the pūlama's next standing, which it sends the
+ * moment the face shuts (`onClosed`); until that message lands the vessel holds the opening it read under, so a read that finishes
+ * within the message's own latency is accepted. Two processes over a socket share no instant, so no check here closes it. It
+ * proves nothing a read finished just before the lock would not: the lock moves no byte of the plane; the relation and every
+ * plane url take their first pin only, before the face's first admission, and no later act re-pins them (`projectPersonaLog`,
+ * act `plane`); this proof names no device, so admissions, edges and their revocations never enter it. A later fork or plane
+ * rewrite refuses the whole log (`fork`, `plane`), and a read that landed before it arrived proves the same pins it proved
+ * before: sync staleness, independent of any lock, which the next proof reads; the anchor's frontier keeps every read at or
+ * above the head this vessel accepted (`frontier-falls`).
  */
 export interface SiblingFaceGate {
   open(): Promise<string | null>;

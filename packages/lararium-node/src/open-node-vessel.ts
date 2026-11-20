@@ -3473,8 +3473,9 @@ async function prepareNodeBootOn(
         // bytes from this vessel's own face-gated store into a scratch document (`proveSiblingFromRest`): no Repo handle, no
         // peer. Custody binds by OPENING (`faceOpening`): the face stands open before the read, the read keys to that opening,
         // and the same opening still stands when the proof is accepted; a lock, or a lock and re-open, voids it. Nothing it
-        // reads reaches the live Repo, proved or not.
-        let opened: { readonly fcid: string; readonly opening: number } | null = null;
+        // reads reaches the live Repo, proved or not. Under a pūlama, a lock not yet heard stays a message's latency wide; the gate's
+        // contract (`SiblingFaceGate`) names that window and why a read inside it proves nothing a read before the lock would not.
+        let opened: { readonly fcid: string; readonly opening: string } | null = null;
         const sibling = await proveSiblingFromRest({ storage: sealedRest.store, personaUrl: plane.url, group: plane.personaGroupId,
           face: {
             open: async () => {

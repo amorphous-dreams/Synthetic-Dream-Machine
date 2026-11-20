@@ -332,18 +332,18 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     const vessel = fx.vessel();
     await vessel.unlock([]);
     const first = vessel.faceOpening?.(c.fcid), other = vessel.faceOpening?.(a.fcid);
-    expect(typeof first).toBe("number");
+    expect(typeof first).toBe("string");
+    // THE LOCK TELLS THE VESSEL ITSELF: no refresh, the pūlama's own standing lands the moment the face shuts.
     await fx.kept.lockFace(c.fcid);
-    fx.server.refresh();
     await vi.waitFor(() => expect(vessel.faceOpening?.(c.fcid)).toBeNull());
     await fx.kept.unlockFace({ fcid: c.fcid }, fixtureRoute);
     fx.server.refresh();
-    await vi.waitFor(() => expect(typeof vessel.faceOpening?.(c.fcid)).toBe("number"));
+    await vi.waitFor(() => expect(typeof vessel.faceOpening?.(c.fcid)).toBe("string"));
     expect(vessel.faceOpening?.(c.fcid)).not.toBe(first);
     expect(vessel.faceOpening?.(a.fcid)).toBe(other);
   });
 
-  test("RED unobserved re-lend: the pūlama locks and re-lends a face with no standing between, and the vessel still reads a new opening, from the pūlama's own number", async () => {
+  test("RED re-lend: the pūlama locks and re-lends a face back to back, and the vessel reads the new opening from the pūlama's own name, never one inferred from what it observed", async () => {
     fx = await standPulama("pulama-face-relend", () => openGate({ faces: lend(0), coldReads: [] }));
     const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
     const vessel = fx.vessel();
@@ -353,7 +353,6 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     // The lock and the re-lend land at the pūlama back to back: no standing reaches the vessel in between.
     await fx.kept.lockFace(a.fcid);
     await fx.kept.unlockFace({ fcid: a.fcid }, fixtureRoute);
-    expect(vessel.unlockedFaces()).toEqual([a.fcid]);   // the membership the vessel observes never changed
     fx.server.refresh();
     await vi.waitFor(() => expect(vessel.faceOpening?.(a.fcid)).toBe(fx!.kept.faceOpening?.(a.fcid)));
     expect(vessel.faceOpening?.(a.fcid)).not.toBe(first);

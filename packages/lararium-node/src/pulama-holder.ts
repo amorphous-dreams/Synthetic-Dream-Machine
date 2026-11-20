@@ -51,7 +51,7 @@ export interface PulamaStanding {
   /** The lent faces that stand lit, by custody id. */
   readonly faces: readonly string[];
   /** Each lit face's opening as the pūlama's own holder numbers it: a lock and re-lend there carries a new number. */
-  readonly openings: Readonly<Record<string, number>>;
+  readonly openings: Readonly<Record<string, string>>;
   /** The lent faces still dark at the pūlama, by ordinal. */
   readonly waiting: readonly number[];
   /** The face a wear door last wore, as the pūlama remembers it; absent where it heard no wear since it was lit. */
@@ -97,7 +97,7 @@ const standingOf = (raw: unknown): PulamaStanding => {
     attemptsLeft: typeof s.attemptsLeft === "number" ? s.attemptsLeft : 0,
     faces: Array.isArray(s.faces) ? s.faces.filter((f): f is string => typeof f === "string") : [],
     openings: typeof s.openings === "object" && s.openings !== null
-      ? Object.fromEntries(Object.entries(s.openings).filter((e): e is [string, number] => Number.isSafeInteger(e[1]) && (e[1] as number) > 0)) : {},
+      ? Object.fromEntries(Object.entries(s.openings).filter((e): e is [string, string] => typeof e[1] === "string" && e[1].length > 0)) : {},
     waiting: Array.isArray(s.waiting) ? s.waiting.filter((o): o is number => Number.isSafeInteger(o) && o >= 0) : [],
     ...(Number.isSafeInteger(s.worn) && (s.worn as number) >= 0 ? { worn: s.worn as number } : {}),
   };

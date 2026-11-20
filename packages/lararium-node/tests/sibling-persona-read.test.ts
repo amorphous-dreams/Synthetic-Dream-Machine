@@ -11,6 +11,8 @@
  *   SP6  CUSTODY: the face locks after the read and before acceptance: the proof that leaned on the plane reads null
  *   SP7  CUSTODY: lock and re-light mid-read (one custody id, two openings): the old caller refuses, the new one reads its own
  *   SP9  two proofs of one opening at once share its read and both prove
+ *   SP10 RED restart: a restarted holder's opening carries the same count under a new boot, and a read begun before it refuses
+ *   SP11 THE NAMED WINDOW: a read accepted before an unheard lock proves exactly what a read before the lock proves
  *   SP8  an over-cap plane names itself (`over-cap`), never reading as nothing at rest; the carried acts still answer
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
@@ -70,9 +72,9 @@ async function sibling(rootSeed = 21, signerSeed = rootSeed) {
 }
 const carriedOf = (log: readonly SignedAct[]): LarDoc => { const doc = emptyLarDoc(); for (const act of log) writePersonaAct(doc, act); return doc; };
 /** A face's custody as the gate reads it: `opening` names the opening that stands (null: shut); each re-light takes a new one. */
-type Custody = { opening: number | null };
+type Custody = { opening: string | number | null };
 const gate = (custody: Custody): SiblingFaceGate => {
-  let read: number | null = null;
+  let read: string | number | null = null;
   return {
     open: async () => { read = custody.opening; return read === null ? null : `fcid#${read}`; },
     stillOpen: () => read !== null && custody.opening === read,
@@ -171,6 +173,30 @@ describe("proveSiblingFromRest: a lit sibling proves from its own rest while the
     expect(asked).toBe(1);
     expect(a.plane).toBe("read"); expect(a.proved).not.toBeNull();
     expect(b.plane).toBe("read"); expect(b.proved).not.toBeNull();
+  });
+
+  test("SP10 RED restart: the holder restarts mid-read and its count lands on the same number under a new boot: the old read refuses", async () => {
+    const s = await sibling();
+    const custody: Custody = { opening: "boot-a:1" };
+    let release!: () => void;
+    const pending = new Promise<void>((done) => { release = done; });
+    const slow = { loadRange: async (prefix: StorageKey) => { await pending; return s.storage.loadRange(prefix); } };
+    const proving = proveSiblingFromRest({ storage: slow, personaUrl: s.planes.persona, group, face: gate(custody), prove: s.prove });
+    await Promise.resolve();
+    custody.opening = "boot-b:1";   // a restarted holder reopens the face: the same count, another boot
+    release();
+    expect(await proving).toEqual({ proved: null, plane: "lock-mid-read" });
+  });
+
+  test("SP11 THE NAMED WINDOW: a read accepted before an unheard lock proves exactly what a read finished before the lock proves; once the lock lands, the read refuses", async () => {
+    const s = await sibling();
+    const before = await proveSiblingFromRest({ storage: s.storage, personaUrl: s.planes.persona, group, face: gate({ opening: "boot:1" }), prove: s.prove });
+    // The source has locked, and its standing has not landed: the vessel's view still holds the old opening.
+    const unheard = await proveSiblingFromRest({ storage: s.storage, personaUrl: s.planes.persona, group, face: gate({ opening: "boot:1" }), prove: s.prove });
+    expect(unheard.proved).not.toBeNull();
+    expect((unheard.proved as { projection: unknown }).projection).toEqual((before.proved as { projection: unknown }).projection);
+    // The standing lands: the opening reads shut, and the same bytes prove nothing.
+    expect(await proveSiblingFromRest({ storage: s.storage, personaUrl: s.planes.persona, group, face: gate({ opening: null }), prove: s.prove })).toEqual({ proved: null, plane: "face-shut" });
   });
 
   test("SP8: an over-cap plane names itself: alone it loses its proof as over-cap, never as nothing at rest; the carried acts still answer", async () => {

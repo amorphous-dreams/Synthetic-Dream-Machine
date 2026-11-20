@@ -223,7 +223,7 @@ describe("readRestingDoc: a sibling's plane reads from this replica's own store 
     } finally { vi.useRealTimers(); }
   });
 
-  test("R7c NO POISON: a read that never lands holds its opening only until every listener's bound spends; the next caller reads fresh, and the stale read reaches no one", async () => {
+  test("R7c NO POISON: a read that never lands holds its opening only until every listener's bound spends; the next caller reads fresh, and the stale read, landing late, never takes the replacement's place", async () => {
     const real = memoryAdapter();
     const url = await restPlane(real, { "lar:///founding": { text: "rests" } });
     const chunks = await real.loadRange([url.replace(/^automerge:/, "")]);
@@ -235,17 +235,17 @@ describe("readRestingDoc: a sibling's plane reads from this replica's own store 
       const stuck = readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#1" });
       await vi.advanceTimersByTimeAsync(50);
       expect(await stuck).toEqual({ absent: "bound-spent" });
-      const fresh = readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#1" });
-      expect(asked).toBe(2);   // the key let the stuck read go: a fresh adapter read
-      answers[1]!(chunks);
-      expect(textOf(docOf(await fresh), "lar:///founding")).toBe("rests");
-      // The stale read lands late: it frees nothing of the newer read's and reaches no caller.
-      const after = readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#1" });
-      expect(asked).toBe(3);
+      const fresh = readRestingDoc(slow, url, { boundMs: 500, scope: "fcid#1" });
+      expect(asked).toBe(2);   // the key let the stuck read go: a fresh adapter read, still waiting
+      // The stale read lands while the replacement still waits. Were it to free the replacement's key, the next caller would
+      // start a third adapter read; it must join the replacement instead.
       answers[0]!(chunks);
       await vi.advanceTimersByTimeAsync(0);
-      answers[2]!(chunks);
-      expect(textOf(docOf(await after), "lar:///founding")).toBe("rests");
+      const joiner = readRestingDoc(slow, url, { boundMs: 500, scope: "fcid#1" });
+      expect(asked).toBe(2);
+      answers[1]!(chunks);
+      expect(textOf(docOf(await fresh), "lar:///founding")).toBe("rests");
+      expect(textOf(docOf(await joiner), "lar:///founding")).toBe("rests");
     } finally { vi.useRealTimers(); }
   });
 
