@@ -52,7 +52,7 @@ for (const name of flows) {
   });
 
   test("ci.yml test-cells: setup-python runs on the bare-runner cells alone", () => {
-    assert.match(setupPy, /\n\s+if: \$\{\{ !matrix\.container \}\}\n/, setupPy);
+    assert.match(setupPy, /\n\s+if: \$\{\{ !matrix\.container(?: && contains\(needs\.scope\.outputs\.cells, matrix\.cell\))? \}\}\n/, setupPy);
   });
 
   test("ci.yml test-cells: the interpreter that stands the venv must carry ssl, failing by name", () => {

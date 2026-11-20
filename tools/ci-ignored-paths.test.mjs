@@ -4,10 +4,11 @@
 // trigger filter cannot vary by branch and stops the run before any job (and so any required check) is read.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { IGNORED_PATHS, isIgnoredPath, onlyIgnoredPaths, pushScope } from "./ci-ignored-paths.mjs";
+import { IGNORED_PATHS, isIgnoredPath, laneScope, onlyIgnoredPaths, pushScope, scopeLines } from "./ci-ignored-paths.mjs";
+import { TEST_CELLS } from "./ci-cells.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const workflow = (name) => readFileSync(join(ROOT, ".github/workflows", name), "utf8");
@@ -64,7 +65,7 @@ function plantedGit(answers) {
     if (key === undefined) throw new Error(`planted git does not know: git ${args.join(" ")}`);
     const v = answers[key];
     if (v instanceof Error) throw v;
-    return v;
+    return typeof v === "function" ? v(args) : v;
   };
   return { git, calls };
 }
@@ -119,4 +120,73 @@ test("RED: the matcher reads GitHub globs; CONTROL: code paths stay un-ignored",
   assert.equal(onlyIgnoredPaths(["a.md", "bags/q.mem"]), true);
   assert.equal(onlyIgnoredPaths(["a.md", "tools/x.mjs"]), false);
   assert.equal(onlyIgnoredPaths([]), false, "an empty change reads nothing ignored");
+});
+
+// ── the lane's targeted cells: the packages a lane diff touches, closed over their in-repo dependents ──────────
+// The planted git serves the live tree's own package.json files, so each vector reads the workspace graph that stands.
+function liveGit(paths) {
+  return plantedGit({
+    fetch: "",
+    [`merge-base FETCH_HEAD ${SHA}`]: BASE,
+    [`diff --no-renames --name-only -z ${BASE} ${SHA}`]: diff(...paths),
+    [`ls-tree --name-only ${SHA} packages/`]: readdirSync(join(ROOT, "packages")).map((d) => `packages/${d}`).join("\n") + "\n",
+    [`show ${SHA}:`]: (args) => readFileSync(join(ROOT, args.at(-1).slice(SHA.length + 1)), "utf8"),
+  });
+}
+const lanePush = (paths, ref = "refs/heads/develop--x") => laneScope({ event: "push", ref, before: BEFORE, sha: SHA }, liveGit(paths).git);
+const ALL_CELLS = TEST_CELLS.map((c) => c.cell);
+
+test("RED: a lane diff inside packages/lares-cli selects @lares/cli alone (nothing in the repo depends on it), and its one cell", () => {
+  const s = lanePush(["packages/lares-cli/src/x.ts"]);
+  assert.equal(s.canon, false);
+  assert.deepEqual(s.packages, ["@lares/cli"], s.why);
+  assert.deepEqual(s.cells, ["cli-mesh"]);
+  assert.equal(s.witnesses, false, "a lane code diff that moved no canon runs no witness cell");
+  const harness = lanePush(["tests/e2e/x.test.ts"]);
+  assert.deepEqual([harness.packages, harness.cells], [["@lares/harness"], ["cli-mesh"]]);
+});
+
+test("RED: a mesh diff selects mesh and every in-repo package that depends on it, so every cell runs", () => {
+  const s = lanePush(["packages/lararium-mesh/src/x.ts"]);
+  for (const name of ["@lararium/mesh", "@lararium/mempalace", "@lararium/sensorium", "@lararium/tw5", "@lararium/keyhive", "@lararium/browser", "@lararium/node", "@lararium/web", "@lares/cli"]) {
+    assert.ok(s.packages.includes(name), `${name} depends on mesh and was not selected: ${s.packages}`);
+  }
+  assert.ok(!s.packages.includes("@lararium/memetic-frame"), "memetic-frame does not depend on mesh");
+  assert.deepEqual(s.cells, ALL_CELLS);
+});
+
+test("RED: a workflow edit, a tools/ edit, the root package.json or lockfile, and an unmapped path select the full battery", () => {
+  for (const p of [".github/workflows/ci.yml", "tools/ci-cells.mjs", "package.json", "pnpm-lock.yaml", "bags/lares/x.json", "mempalace", "packages/tree-sitter-memetic-wikitext/grammar.js"]) {
+    const s = lanePush(["packages/lares-cli/src/x.ts", p]);
+    assert.equal(s.packages, "all", `${p}: ${s.why}`);
+    assert.deepEqual(s.cells, ALL_CELLS, p);
+    assert.equal(s.witnesses, true, `${p}: the full battery runs the witness cells`);
+  }
+});
+
+test("RED: canon beside code on a lane runs the code's cells and the witness cells; canon alone keeps the doorstep", () => {
+  const mixed = lanePush(["packages/lares-cli/src/x.ts", "bags/lares/ha.ka.ba/x.mem"]);
+  assert.deepEqual(mixed.packages, ["@lares/cli"]);
+  assert.equal(mixed.witnesses, true, "canon moved: the witnesses that read it run");
+  const canon = lanePush(["bags/lares/ha.ka.ba/x.mem", "README.md"]);
+  assert.equal(canon.canon, true);
+  assert.deepEqual([canon.packages, canon.cells, canon.witnesses], ["none", [], false]);
+});
+
+test("RED: develop, main, a feature span and every other event run the full battery whatever the diff; a git fault fails open", () => {
+  for (const ref of ["refs/heads/develop", "refs/heads/main", "refs/heads/feature/span"]) {
+    const s = laneScope({ event: "push", ref, before: BEFORE, sha: SHA }, plantedGit({ fetch: "", "merge-base": BASE, diff: diff("packages/lares-cli/src/x.ts") }).git);
+    assert.deepEqual([s.packages, s.cells, s.witnesses], ["all", ALL_CELLS, true], ref);
+  }
+  for (const event of ["merge_group", "workflow_dispatch", "pull_request"]) {
+    const s = laneScope({ event, ref: "refs/heads/develop--x", before: BEFORE, sha: SHA }, plantedGit({}).git);
+    assert.deepEqual([s.packages, s.witnesses], ["all", true], event);
+  }
+  const broken = laneScope({ event: "push", ref: "refs/heads/develop--x", before: BEFORE, sha: SHA }, plantedGit({ fetch: "", "merge-base": BASE, diff: diff("packages/lares-cli/a.ts"), "ls-tree": new Error("fatal: no tree") }).git);
+  assert.equal(broken.packages, "all", "an unread workspace graph would select fewer cells than it owes");
+});
+
+test("RED: the scope prints the GITHUB_OUTPUT lines the cells read, and no cell id hides inside another (the steps match by contains())", () => {
+  assert.equal(scopeLines(lanePush(["packages/lares-cli/src/x.ts"])), "canon=false\npackages=@lares/cli\ncells=cli-mesh\nwitnesses=false");
+  for (const a of ALL_CELLS) for (const b of ALL_CELLS) if (a !== b) assert.ok(!b.includes(a), `${a} hides inside ${b}`);
 });

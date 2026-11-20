@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import {
-  TEST_CELLS, WITNESS_CELLS, expectedTestReports, evaluateTestCells, evaluateWitnessCells, testReportName, cellIds,
+  TEST_CELLS, WITNESS_CELLS, expectedTestReports, evaluateTestCells, evaluateWitnessCells, testReportName, cellIds, selectCells,
 } from "./ci-cells.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -62,6 +62,20 @@ test("C4 RED: a report no cell of the table owns refuses (a cell renamed or adde
   assert.match(verdictOf(reports).problems.join("\n"), /unexpected report: cell ghost/);
 });
 
+test("C4b RED: a lane's selection owes the selected packages' reports alone, refuses one it lacks or one it never selected, and `all` or blank owes the table", () => {
+  const cells = selectCells("@lares/cli");
+  assert.deepEqual(cells.map((c) => [c.cell, c.packages.map((p) => p.name)]), [["cli-mesh", ["@lares/cli"]]]);
+  const owed = expectedTestReports(cells);
+  const lane = new Map(owed.map((r) => [r.file, { cell: r.cell, report: lawful() }]));
+  assert.deepEqual(evaluateTestCells({ reports: lane, cells, tracked: TRACKED }).problems, [], "the selected report alone reads green");
+  assert.match(evaluateTestCells({ reports: new Map(), cells, tracked: TRACKED }).problems.join("\n"), /missing report: cell cli-mesh \(@lares\/cli\)/);
+  const stray = expectedTestReports().find((r) => r.pkg === "@lararium/mesh");
+  lane.set(stray.file, { cell: stray.cell, report: lawful() });
+  assert.match(evaluateTestCells({ reports: lane, cells, tracked: TRACKED }).problems.join("\n"), /unexpected report: cell cli-mesh/);
+  for (const whole of ["all", "", undefined]) assert.deepEqual(selectCells(whole), TEST_CELLS, String(whole));
+  assert.throws(() => selectCells("@lares/cli,$(rm)"), /names no package/);
+});
+
 test("C5 RED: a witness cell with no log, a red log, a rest log with no roll call or no self-test summary each refuse", () => {
   const logs = allLogs();
   logs.delete("contract-witness");
@@ -111,9 +125,9 @@ test("C7 RED: ci.yml carries one matrix row per cell, and a gate job named Test 
     const g = block(gate);
     assert.match(g, /^ {4}name: (Test|Witnesses)$/m, `the ${gate} gate job lost its name`);
     assert.match(g, new RegExp(`^ {4}needs: ${needsRx}$`, "m"));
-    // `always()` keeps the gate from skipping on a red cell; the fork guard keeps a same-repository pull_request from raising a second run, and the
-    // doorstep tail skips the gate on a lane push or a canon-only push alone, where no cell runs (ci-graph.test.mjs D1-D6 read the whole run law).
-    assert.match(g, /^ {4}if: \$\{\{ always\(\) && \(github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.fork\) && !\(github\.event_name == 'push' && \(startsWith\(github\.ref, 'refs\/heads\/develop--'\) \|\| startsWith\(github\.ref, 'refs\/heads\/lane\/'\) \|\| needs\.scope\.outputs\.canon == 'true'\)\) \}\}$/m, `the ${gate} gate skips when a cell fails, or runs on a doorstep push: a skipped required check reads as nothing to report`);
+    // `always()` keeps the gate from skipping on a red cell, and the fork guard keeps a same-repository pull_request from raising a second
+    // run; which pushes skip the gate (canon alone; the witnesses when the scope sends none) ci-graph.test.mjs D1-D6 read by evaluating it.
+    assert.match(g, /^ {4}if: \$\{\{ always\(\) && \(github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.fork\) && /m, `the ${gate} gate skips when a cell fails: a skipped required check reads as nothing to report`);
     assert.match(g, new RegExp(`ci-cells\\.mjs ${verb}`));
     assert.match(g, new RegExp(`needs\\.${cells}\\.result`), `the ${gate} gate never reads its cells' own result`);
     assert.match(block(cells), /fail-fast: false/, `${cells} cancels its siblings on one red`);

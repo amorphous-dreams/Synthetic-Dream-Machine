@@ -134,16 +134,21 @@ test("G5 CONTROL: a merge_group-only job joins the merge_group run's graph and n
   assert.equal(mergeGroupOnly("${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}"), false);
 });
 
-// ── DOORSTEP QUICK, FORD FULL (the operator's ruling, 2026-11-18) ────────────────────────────────
-// A push to a lane branch (`develop--*`, `lane/*`, the names held-out.yml and tools/disk-guard.mjs read) runs the Quick gates
-// alone. The full battery runs on `merge_group`, on a push to `develop` or `main`, on a fork's pull request and by hand.
-// Every required check still reports on a lane head, or no lane enters the queue.
+// ── A LANE RUNS WHAT IT TOUCHES; THE FORD RUNS FULL (the operator's rulings, 2026-11-18 and 2026-11-19) ─────────────
+// A code push to a lane branch (`develop--*`, `lane/*`, the names held-out.yml and tools/disk-guard.mjs read) runs the Quick
+// gates, the test cells (each walking the packages the scope job selected) and the Test gate; the witness cells run when the
+// scope answers `witnesses` (canon moved, or the full battery), and e2e answers on its doorstep. The full battery runs on
+// `merge_group`, on a push to `develop` or `main`, on a fork's pull request and by hand. Every required check still reports on
+// a lane head, or no lane enters the queue.
 
 const ran = (plan) => plan.filter((j) => j.state === "run").map((j) => j.key);
 /** The doorstep set: the scope read, the Quick gates, and the e2e gate on its one doorstep step. */
 const DOORSTEP = ["scope", "quick", "e2e/merge"];
-/** A push whose scope job read a canon-only change (`true`) or any other (`false`). */
-const scoped = (ctx, canon) => ({ ...ctx, outputs: { scope: { canon: canon ? "true" : "false" } } });
+/** A push whose scope job read a canon-only change (`true`) or any other (`false`), and whether it sends the witness cells. */
+const scoped = (ctx, canon, witnesses = !canon) => ({ ...ctx, outputs: { scope: { canon: canon ? "true" : "false", witnesses: String(witnesses) } } });
+/** A lane code push: the scope read, the Quick gates, the test cells and their gate, the e2e doorstep; the witnesses when sent. */
+const LANE_RUN = ["scope", "quick", "test-cells", "test", "e2e/merge"];
+const LANE_RUN_WITNESSED = ["scope", "quick", "test-cells", "test", "witness-cells", "witnesses", "e2e/merge"];
 const FULL = [
   ["merge_group", eventContext("merge_group")],
   ["a push to develop", eventContext("push", { branch: "develop" })],
@@ -173,11 +178,14 @@ test("D0b CONTROL: a skipped caller raises its own name alone, a running one rai
   assert.deepEqual(off.map((j) => j.name), ["E"], "the callee's check never appears under a skipped caller");
 });
 
-test("D1 RED: a lane push runs the Quick gates alone; the e2e gate answers on its doorstep step and walks no shard", () => {
+test("D1 RED: a lane code push runs its test cells and the Test gate, the witnesses only when the scope sends them (and when it answers nothing); e2e answers on its doorstep", () => {
   const files = liveFiles(ROOT);
   for (const branch of LANES) {
-    const plan = runPlan("ci.yml", files, eventContext("push", { branch }));
-    assert.deepEqual(ran(plan), DOORSTEP, `${branch}: ${ran(plan).join(", ")}`);
+    const ctx = eventContext("push", { branch });
+    assert.deepEqual(ran(runPlan("ci.yml", files, scoped(ctx, false, true))), LANE_RUN_WITNESSED, `${branch}: canon moved or the full battery`);
+    assert.deepEqual(ran(runPlan("ci.yml", files, ctx)), LANE_RUN_WITNESSED, `${branch}: a scope that answered nothing must fail open to the witnesses`);
+    const plan = runPlan("ci.yml", files, scoped(ctx, false, false));
+    assert.deepEqual(ran(plan), LANE_RUN, `${branch}: ${ran(plan).join(", ")}`);
     const merge = plan.find((j) => j.key === "e2e/merge");
     assert.equal(merge.steps.length, 1, `${branch}: the e2e gate walks ${merge.steps.join(" · ")} on a lane push`);
     assert.match(merge.steps[0], /^Doorstep/, "the one step the e2e gate walks on a lane push names the doorstep");
@@ -235,12 +243,12 @@ test("D4 RED: a canon-only push, on a lane or on develop/main, runs exactly the 
   }
 });
 
-test("D5 RED: a mixed or code push reads as code: develop and main run every job, a lane still runs the doorstep", () => {
+test("D5 RED: a mixed or code push reads as code: develop and main run every job, a lane runs its targeted cells", () => {
   const files = liveFiles(ROOT);
   for (const [what, ctx] of CANON_PUSHES) {
     const plan = runPlan("ci.yml", files, scoped(ctx, false));
     const lane = LANES.includes(what);
-    if (lane) assert.deepEqual(ran(plan), DOORSTEP, `${what}: a code lane push ran ${ran(plan).join(", ")}`);
+    if (lane) assert.deepEqual(ran(plan), LANE_RUN_WITNESSED, `${what}: a code lane push ran ${ran(plan).join(", ")}`);
     else assert.deepEqual(plan.filter((j) => j.state !== "run").map((j) => j.key), [], `${what}: a code push skips a job`);
   }
 });

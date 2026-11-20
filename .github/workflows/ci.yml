@@ -9,7 +9,7 @@ name: CI
 # A FULL RUN RAISES AT MOST TEN JOBS AT ONCE (tools/ci-graph.test.mjs reads this file and the called e2e workflow), so a
 # second full run starts beside it inside the account's twenty running jobs:
 #   scope           — one small read, beside quick and ahead of every cell: whether this push changes canon alone
-#                     (tools/ci-ignored-paths.json), the answer the cells, the gates and the e2e doorstep read
+#                     (tools/ci-ignored-paths.json), and on a lane which packages, test cells and witness cells it runs
 #   quick           — build + generated-artifact freshness (the checked-in plugin artifacts — the lar:// canonical copy AND
 #                     the `$:/` standalone distribution — must match a fresh build), typecheck, the exact-deps witness, the
 #                     the seed presence check (the hooks load the boot seed whole), the grammar artifact gates, the
@@ -28,15 +28,25 @@ name: CI
 # whole. The native merge queue on `develop` raises `merge_group` on each group's merge commit, and every job runs there
 # (the fork guard reads `pull_request` alone): the queue's run reads a lane on top of every lane queued ahead of it.
 #
-# DOORSTEP QUICK, FORD FULL (the operator's ruling, 2026-11-18). A push to a LANE branch (`develop--*`, `lane/*`) runs the
-# Quick gates alone: the test cells, the witness cells, the e2e shards and the Test and Witnesses gates stand guarded off
-# by their job-level `if:`, and the e2e merge gate answers on its doorstep step (e2e-shards.yml's `doorstep` input). The
-# full battery runs on `merge_group`, on a push to `develop` or `main` (and any other branch, a feature span's among them),
-# on a fork's pull request, and by `workflow_dispatch` for a lane that wants a whole reading before it queues. Each lane
-# push ran all ten jobs, and the queue's runs waited behind them for hours inside the account's twenty. The four checks
-# the `develop` ruleset requires still report on a lane head: `Quick gates` runs; `Test` and `Witnesses` report skipped
-# (GitHub reads a skipped required check as passing); `E2E / Merge shard reports` runs its one doorstep step and passes,
-# because a called job's check bears that name only while the caller runs. tools/ci-graph.test.mjs (D1-D3) holds all of it.
+# A LANE RUNS WHAT IT TOUCHES, THE FORD RUNS FULL (the operator's rulings, 2026-11-18 and 2026-11-19). A code push to a LANE
+# branch (`develop--*`, `lane/*`) runs the Quick gates, the test cells over the packages its diff touches, and the Test gate;
+# the e2e shards stand guarded off and the e2e merge gate answers on its doorstep step (e2e-shards.yml's `doorstep` input).
+# The scope job (tools/ci-ignored-paths.mjs `laneScope`) reads the lane's diff against its merge base with develop:
+#   packages  — each path under `packages/<dir>/`, `tests/` or `TiddlyWiki5` names its workspace package, closed over every
+#               in-repo package whose package.json depends on it (`workspace:`), so a mesh change reaches tw5, node, web, cli...
+#   cells     — the test cells (TEST_CELLS in tools/ci-cells.mjs) holding a selected package. Every matrix row still raises
+#               (a job-level `if:` cannot read the matrix), and a row the selection leaves out skips every step behind
+#               `contains(needs.scope.outputs.cells, matrix.cell)`; a running row walks its selected packages alone, and the
+#               Test gate owes their reports alone (`--select`).
+#   witnesses — the witness cells and their gate run on a lane when canon moved beside code, or when the full battery runs.
+# FAIL OPEN TO MORE, NEVER FEWER: a path outside every package dir (tools/, the workflows, the root package.json or lockfile, a
+# non-meme file under bags/), a package no test cell carries, an unread diff or graph selects the full battery (`packages=all`).
+# The full battery runs unchanged on `merge_group`, on a push to `develop` or `main` (and any other branch, a feature span's
+# among them), on a fork's pull request, and by `workflow_dispatch` for a lane that wants a whole reading before it queues.
+# The four checks the `develop` ruleset requires still report on a lane head: `Quick gates` and `Test` run; `Witnesses` runs
+# or reports skipped (GitHub reads a skipped required check as passing); `E2E / Merge shard reports` runs its one doorstep
+# step and passes, because a called job's check bears that name only while the caller runs. tools/ci-graph.test.mjs (D1-D3)
+# holds the run law and tools/ci-ignored-paths.test.mjs the selection.
 #
 # THE CANON DOORSTEP. A push that changes only the canon paths tools/ci-ignored-paths.json names (meme, docs, wikis) runs
 # the doorstep set alone, on a lane or on `develop`/`main` alike: the scope job reads the push's diff against that one list
@@ -106,7 +116,7 @@ env:
 jobs:
   # ─── scope (does this push change canon alone? ONE small runner, beside quick) ───────────────
   # It reads the push through tools/ci-ignored-paths.mjs, the one list's own module, off the runner's GITHUB_* variables and
-  # event file. Every job a canon-only push skips lists it in `needs` (Actions hands a job its direct needs' outputs alone;
+  # event file, and names a lane's selection (`packages`, `cells`, `witnesses`; A LANE RUNS WHAT IT TOUCHES, above). Every job a canon-only push skips lists it in `needs` (Actions hands a job its direct needs' outputs alone;
   # tools/workflow-law.test.mjs WL6 holds that); quick does not wait on it. On any event but a push it answers `false`.
   scope:
     name: Scope
@@ -115,6 +125,9 @@ jobs:
     timeout-minutes: 5
     outputs:
       canon: ${{ steps.read.outputs.canon }}
+      packages: ${{ steps.read.outputs.packages }}
+      cells: ${{ steps.read.outputs.cells }}
+      witnesses: ${{ steps.read.outputs.witnesses }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -351,7 +364,7 @@ jobs:
   test-cells:
     name: Test cell ${{ matrix.cell }}
     needs: scope
-    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) }}
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container: ${{ matrix.container }}
@@ -384,6 +397,7 @@ jobs:
             container: { image: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f", options: "--ipc=host --init --user 1001" }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         with:
           # No suite or witness reads git history, so the default shallow checkout stands.
           # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
@@ -391,23 +405,28 @@ jobs:
           # artifact the repo never had a chance to produce.
           submodules: recursive
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         with:
           version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
       # Eight suites guard on `existsSync` of tw5-core/ and dist/ — both gitignored build output.
       # Unbuilt, they SKIP and the job exits 0, so the run reads green while 35 tests never ran.
       # THE ENGINE BLOB IS A DELIBERATE RENDER, NEVER A BUILD SIDE EFFECT. tw5-core/ stays gitignored
       # because its sha256 IS the hearth's true name, so `build` refuses to render it and the bake reads
       # the blob that stands. A runner holds none until this step renders it from the submodule.
       - name: Render the TW5 core blob (suites guard on tw5-core/ and skip without it)
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         run: pnpm --filter @lararium/tw5 build:tw5-vendor
       # The root `build` stamps the source digest after `pnpm -r build`; an unstamped dist reads as
       # stale to every freshness gate and witness that compares against it.
       - name: Build (suites guard on built artifacts and silently skip without them)
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         run: pnpm build
       # THE HOLDER IS A DEPENDENCY, NOT AN OPTIONAL EXTRA. `content-palace` drives the python
       # mempalace holder live, and with no interpreter holding it the suite fails on an absent
@@ -428,27 +447,31 @@ jobs:
       # and pip cannot reach PyPI. The image's python3 carries ssl and no pip (Ubuntu splits ensurepip into python3-venv,
       # which uid 1001 cannot install), so the venv step bootstraps pip with get-pip.py.
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        if: ${{ !matrix.container }}
+        if: ${{ !matrix.container && contains(needs.scope.outputs.cells, matrix.cell) }}
         id: py
         with:
           python-version: '3.12'
       - name: Name the holder interpreter (it must carry ssl)
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         id: interp
         run: |
           python3 -c 'import ssl' || { echo "::error::$(command -v python3) carries no ssl module: the holder venv's pip cannot reach PyPI"; exit 1; }
           echo "python-version=$(python3 -c 'import platform; print(platform.python_version())')" >> "$GITHUB_OUTPUT"
       - id: mempalace-pin
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         run: echo "sha=$(git rev-parse HEAD:mempalace)" >> "$GITHUB_OUTPUT"
 
       # The key carries the exact interpreter PATCH: a restored venv's bin/python3 symlinks to the interpreter that built it
       # (the hostedtoolcache path of that patch, or the image's /usr/bin/python3), so under another patch it dangles (exit 127).
       - name: Cache the holder venv
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         id: venv-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.venv
           key: holder-venv-${{ runner.os }}-${{ matrix.container && 'pwimage' || 'host' }}-py${{ steps.interp.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
       - name: Stand the holder venv (~/.venv)
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         env:
           CACHE_HIT: ${{ steps.venv-cache.outputs.cache-hit }}
         run: |
@@ -465,6 +488,7 @@ jobs:
           fi
           ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
       - name: Witness the holder answers
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         id: holder
         run: ~/.venv/bin/python3 -c "import mempalace; print('holder ok')"
       # `pnpm test` reaches the sensorium's two TypeScript tests only. The holder
@@ -495,7 +519,7 @@ jobs:
       # one an operator measures locally. Parallelism lives between cells, each with a tree of its own.
       - name: Run this cell's package suites
         if: ${{ !cancelled() && steps.holder.outcome == 'success' && (matrix.engines == '' || steps.browser.outcome == 'success') }}
-        run: node tools/ci-cells.mjs run-test "${{ matrix.cell }}" --out "$RUNNER_TEMP/cell"
+        run: node tools/ci-cells.mjs run-test "${{ matrix.cell }}" --out "$RUNNER_TEMP/cell" --select "${{ needs.scope.outputs.packages }}"
       - name: Upload this cell's JSON reports (always, even on a red cell)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -510,7 +534,7 @@ jobs:
     name: Test
     needs: [scope, test-cells]
     # Runs whatever the cells answered: a gate skipped by one red cell would read as nothing to report.
-    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) }}
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -526,7 +550,7 @@ jobs:
         continue-on-error: true
       - name: Gate — fails closed on any missing, empty, red or unexpected cell
         if: always()
-        run: node tools/ci-cells.mjs verify-tests --artifacts-dir artifacts
+        run: node tools/ci-cells.mjs verify-tests --artifacts-dir artifacts --select "${{ needs.scope.outputs.packages }}"
       - name: Gate — every cell job itself succeeded
         if: always()
         env:
@@ -563,7 +587,7 @@ jobs:
   witness-cells:
     name: Witness cell ${{ matrix.cell }}
     needs: scope
-    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) }}
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true' || needs.scope.outputs.witnesses == 'false')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
@@ -642,7 +666,7 @@ jobs:
   witnesses:
     name: Witnesses
     needs: [scope, quick, witness-cells]
-    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) }}
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true' || needs.scope.outputs.witnesses == 'false')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

@@ -14,9 +14,9 @@
  * nothing, so it reads as missing. The evaluators are pure so the tests plant each refusal without a run.
  *
  * Usage:
- *   ci-cells.mjs run-test <cell> --out <dir>        run the cell's packages, a JSON report each (also the per-file timing)
+ *   ci-cells.mjs run-test <cell> --out <dir> [--select <packages>]   run the cell's packages (a lane's selected ones), a JSON report each
  *   ci-cells.mjs run-witness <cell> --out <dir>     run the cell's witnesses or self-tests, its log in <dir>
- *   ci-cells.mjs verify-tests --artifacts-dir <dir>
+ *   ci-cells.mjs verify-tests --artifacts-dir <dir> [--select <packages>]   (`--select` = the scope job's `packages`; `all` or blank owes all)
  *   ci-cells.mjs verify-witnesses --artifacts-dir <dir>
  */
 import { execFileSync, spawn } from "node:child_process";
@@ -83,6 +83,19 @@ export const WITNESS_CELLS = Object.freeze([
 ]);
 
 export const cellIds = (cells) => cells.map((c) => c.cell);
+
+/**
+ * The table narrowed to a lane's selection (the scope job's `packages` output, tools/ci-ignored-paths.mjs `laneScope`): `all`,
+ * blank or absent owes the whole table; a comma list keeps the selected packages and the cells holding one. A name the table
+ * does not carry throws, so a selection never reads as fewer cells than it named.
+ */
+export function selectCells(select, cells = TEST_CELLS) {
+  if (!select || select === "all") return cells;
+  const names = select.split(",").map((s) => s.trim()).filter(Boolean);
+  const known = new Set(cells.flatMap((c) => c.packages.map((p) => p.name)));
+  for (const n of names) if (!known.has(n)) throw new Error(`ci-cells: the selection names no package of the table: ${n}`);
+  return cells.map((c) => ({ ...c, packages: c.packages.filter((p) => names.includes(p.name)) })).filter((c) => c.packages.length > 0);
+}
 
 // ── the node deal: files to the two node cells by measured weight ────────────────────────────────
 
@@ -254,10 +267,11 @@ function runCommand(cmd, args, logFile) {
 }
 
 /** A cell never short-circuits: every package runs, and the worst exit wins. */
-async function runTestCell(id, out) {
-  const cell = TEST_CELLS.find((c) => c.cell === id);
-  if (!cell) throw new Error(`no test cell ${id}; the table names ${cellIds(TEST_CELLS).join(", ")}`);
+async function runTestCell(id, out, select) {
+  if (!TEST_CELLS.some((c) => c.cell === id)) throw new Error(`no test cell ${id}; the table names ${cellIds(TEST_CELLS).join(", ")}`);
   mkdirSync(out, { recursive: true });
+  const cell = selectCells(select).find((c) => c.cell === id);
+  if (!cell) { console.log(`── ${id}: the lane's selection names none of this cell's packages ──`); return 0; }
   let worst = 0;
   for (const p of cell.packages) {
     const args = ["--filter", p.name, "test"];
@@ -296,13 +310,14 @@ const flag = (args, name) => { const i = args.indexOf(name); return i === -1 ? u
 
 async function main() {
   const [sub, ...rest] = process.argv.slice(2);
-  if (sub === "run-test") { process.exitCode = await runTestCell(rest[0], flag(rest, "--out") ?? "test-cell-out"); return; }
+  if (sub === "run-test") { process.exitCode = await runTestCell(rest[0], flag(rest, "--out") ?? "test-cell-out", flag(rest, "--select")); return; }
   if (sub === "run-witness") { process.exitCode = await runWitnessCell(rest[0], flag(rest, "--out") ?? "witness-cell-out"); return; }
   if (sub === "verify-tests" || sub === "verify-witnesses") {
     const dir = resolve(flag(rest, "--artifacts-dir") ?? "artifacts");
     const tests = sub === "verify-tests";
-    const verdict = tests ? evaluateTestCells({ reports: readTestReports(dir), tracked: { [NODE_DIR]: { files: trackedNodeFiles(), heavy: readNodeHeavy() } } }) : evaluateWitnessCells({ logs: readWitnessLogs(dir) });
-    console.log(`${tests ? "TEST-CELLS" : "WITNESS-CELLS"}: ok=${verdict.ok} cells=${cellIds(tests ? TEST_CELLS : WITNESS_CELLS).length}${tests ? ` totalTests=${verdict.totalTests}` : ""}`);
+    const cells = tests ? selectCells(flag(rest, "--select")) : WITNESS_CELLS;
+    const verdict = tests ? evaluateTestCells({ reports: readTestReports(dir), cells, tracked: { [NODE_DIR]: { files: trackedNodeFiles(), heavy: readNodeHeavy() } } }) : evaluateWitnessCells({ logs: readWitnessLogs(dir) });
+    console.log(`${tests ? "TEST-CELLS" : "WITNESS-CELLS"}: ok=${verdict.ok} cells=${cellIds(cells).length}${tests ? ` totalTests=${verdict.totalTests}` : ""}`);
     for (const p of verdict.problems) console.error(`${tests ? "TEST-CELLS" : "WITNESS-CELLS"} problem: ${p}`);
     process.exitCode = verdict.ok ? 0 : 1;
     return;
