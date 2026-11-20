@@ -57,11 +57,11 @@ const dealt = (name, dir, part, parts) => pkg(name, dir, null, { deal: "node-uni
  * all stay in the tree, untouched, for the browser Mu to relight.
  *
  * What still runs from the browser packages is the node-environment slice (isomorphic-by-intent code needs no real browser):
- *   - `@lararium/browser`  `packages/lararium-browser/vitest.config.ts`: project `browser-node`, 45 of 109 files.
+ *   - `@lararium/browser`  `packages/lararium-browser/vitest.config.ts`: project `browser-node`, 44 of 109 files.
  *   - `@lararium/web`      `packages/lararium-web/vitest.config.ts`: project `web-node`, 13 of 53 files.
  *   - `@lararium/tw5`      `packages/lararium-tw5/vitest.config.ts`: every node suite; meme-routes.e2e keeps its node contact (its one
  *                          Chromium describe skips loudly without an engine).
- * What went dark: `@lararium/browser` projects chromium + firefox (the other 64 files); `@lararium/web` projects web-browser, vessel-host and the
+ * What went dark: `@lararium/browser` projects chromium + firefox (the other 65 files); `@lararium/web` projects web-browser, vessel-host and the
  * four Playwright e2e projects (40 files under tests/ and 13 e2e files, the floor-crossing config's three among them); tw5's
  * filter-cts-chromium, standalone-single-file and syncer-back-parity e2e files; the ci.yml floor-crossing and Chromium-pull steps;
  * and held-out's browser-weld driver (tools/held-out-cells.mjs).
