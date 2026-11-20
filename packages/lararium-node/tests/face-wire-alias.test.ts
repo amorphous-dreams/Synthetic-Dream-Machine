@@ -199,7 +199,13 @@ describe("the veil's second cut: one composition presents each (face, Nexus) its
     const seats = new Map<string, Seat>([["seated-peer", { face: FACE_B, nexus: NEXUS_2 }]]);
     const refusals: string[] = [];
     await c.identity.alias({ face: FACE_B, nexus: NEXUS_2 });
-    c.vessel.networkSubsystem.addNetworkAdapter(c.identity.leg(new NodeWSServerAdapter(wss as never, 60_000), (remote) => seats.get(remote) ?? null, (refusal, peer) => refusals.push(`${refusal}:${peer}`)));
+    const gate = c.identity.leg(new NodeWSServerAdapter(wss as never, 60_000), (remote) => seats.get(remote) ?? null, (refusal, peer) => refusals.push(`${refusal}:${peer}`));
+    // The Repo connects an adapter once its own peer metadata resolves (its store id read), and the server adapter hears
+    // sockets only from that connect on: a session that dials sooner finds no listener, its join drops, and its client
+    // redials only after its retry interval. So no peer dials before the gate stands: the test waits on that connect.
+    const gateStands = new Promise<void>((stood) => { const connect = gate.connect.bind(gate); gate.connect = (...args) => { const out = connect(...args); stood(); return out; }; });
+    c.vessel.networkSubsystem.addNetworkAdapter(gate);
+    await gateStands;
     const dial = (peerId: string) => {
       const recorder = new Repo({ peerId: peerId as PeerId, network: [new WebSocketClientAdapter(url, 60_000)] });
       const seen: Array<{ peerId: string; storageId: string | undefined }> = [];
