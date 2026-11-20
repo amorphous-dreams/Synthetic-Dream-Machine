@@ -16,6 +16,8 @@
  *   SP8  an over-cap plane names itself (`over-cap`) and refuses, never reading as nothing at rest
  *   SP12 RED: a torn plane beside a valid carried founding refuses; carried acts never stand in for a known-incomplete history
  *   SP13 THE TABLE: every plane reading proves or refuses with a valid carried founding beside it, as `SIBLING_PLANE_USE` names
+ *        (only `nothing-rests` lets the carried acts answer alone)
+ *   SP14 RED lock race: a lock, or a lock and re-open, that discards a decoded plane refuses; the carried founding never proves
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
@@ -117,7 +119,7 @@ describe("proveSiblingFromRest: a lit sibling proves from its own rest while the
     expect(read).toBeGreaterThan(0);
   });
 
-  test("SP5 CUSTODY: the face locks while the read is pending: the plane drops and the proof refuses", async () => {
+  test("SP5 CUSTODY: the face locks while the read is pending: the plane drops and the proof refuses before it runs", async () => {
     const s = await sibling();
     const custody: Custody = { opening: 1 };
     let release!: () => void;
@@ -129,7 +131,7 @@ describe("proveSiblingFromRest: a lit sibling proves from its own rest while the
     lock(custody);
     release();
     expect(await proving).toEqual({ proved: null, plane: "lock-mid-read" });
-    expect(seen).toBe(0);
+    expect(seen).toBe(-1);   // the proof never runs: a lock mid-read refuses outright
   });
 
   test("SP6 CUSTODY: the face locks after the read and before acceptance: the proof that leaned on the plane reads null", async () => {
@@ -201,6 +203,26 @@ describe("proveSiblingFromRest: a lit sibling proves from its own rest while the
     expect(await proveSiblingFromRest({ storage: s.storage, personaUrl: s.planes.persona, group, face: gate({ opening: null }), prove: s.prove })).toEqual({ proved: null, plane: "face-shut" });
   });
 
+  test("SP14 RED lock race: a lock that discards a decoded plane refuses, though the carried founding alone would prove; a lock and re-open does too", async () => {
+    const s = await sibling();
+    const carried = [carriedOf(s.log)];
+    // The carried founding proves alone where the read found nothing at rest: the regression's control.
+    expect((await proveSiblingFromRest({ storage: memoryAdapter(), personaUrl: s.planes.persona, group, face: gate({ opening: "boot:1" }), carried, prove: s.prove })).proved).not.toBeNull();
+    for (const after of [null, "boot:2"] as const) {
+      const custody: Custody = { opening: "boot:1" };
+      let release!: () => void;
+      const pending = new Promise<void>((done) => { release = done; });
+      const slow = { loadRange: async (prefix: StorageKey) => { await pending; return s.storage.loadRange(prefix); } };
+      let proveRan = false;
+      const proving = proveSiblingFromRest({ storage: slow, personaUrl: s.planes.persona, group, face: gate(custody), carried, prove: (r) => { proveRan = true; return s.prove(r); } });
+      await Promise.resolve();
+      custody.opening = after;   // a lock, or a lock and re-open, while the read waits
+      release();
+      expect(await proving).toEqual({ proved: null, plane: "lock-mid-read" });
+      expect(proveRan).toBe(false);
+    }
+  });
+
   test("SP8: an over-cap plane names itself and refuses: never read as nothing at rest, and the carried acts never stand in", async () => {
     const s = await sibling();
     const id = s.planes.persona.replace(/^automerge:/, "");
@@ -236,6 +258,20 @@ describe("proveSiblingFromRest: a lit sibling proves from its own rest while the
       { reading: "over-cap", storage: { loadRange: async () => [{ key: [id, "snapshot", "big"], data: new Uint8Array(RESTING_DOC_MAX_BYTES + 1) }] } },
       { reading: "url-malformed", storage: s.storage, url: "not-a-url" },
     ];
+    // A lock that lands while the read waits: the decoded plane is discarded (`lock-mid-read`).
+    {
+      const custody: Custody = { opening: "boot:1" };
+      let release!: () => void;
+      const pending = new Promise<void>((done) => { release = done; });
+      const slow = { loadRange: async (prefix: StorageKey) => { await pending; return s.storage.loadRange(prefix); } };
+      const proving = proveSiblingFromRest({ storage: slow, personaUrl: s.planes.persona, group, face: gate(custody), carried, prove: s.prove });
+      await Promise.resolve();
+      custody.opening = null;
+      release();
+      const r = await proving;
+      expect(r.plane).toBe("lock-mid-read");
+      expect(r.proved === null).toBe(SIBLING_PLANE_USE["lock-mid-read"] === "refuse");
+    }
     for (const c of cases) {
       const r = await proveSiblingFromRest({ storage: c.storage, personaUrl: c.url ?? s.planes.persona, group, face: c.face ?? gate({ opening: 1 }), carried, prove: s.prove, ...(c.boundMs ? { boundMs: c.boundMs } : {}) });
       expect(r.plane, c.reading).toBe(c.reading);

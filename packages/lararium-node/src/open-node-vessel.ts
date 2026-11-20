@@ -3497,9 +3497,10 @@ async function prepareNodeBootOn(
               relation: faceRelationOf(proof.projection),
             };
           } });
-        // A PLANE KNOWN TO REST THAT DID NOT READ WHOLE NAMES ITSELF: its proof refuses by the plane's own reading (`SIBLING_PLANE_USE`).
-        if (SIBLING_PLANE_USE[sibling.plane] === "refuse") console.warn(`[lit-set] the persona plane of ${plane.personaGroupId.slice(0, 8)}… rests and did not read whole (${sibling.plane}); its proof refuses, and the carried acts do not stand in`);
-        return sibling.proved;
+        // THE READING TRAVELS WITH THE RESULT: a proof carries the plane's reading, and a refusal names it (`SIBLING_PLANE_USE`);
+        // a refusal for a shut face, a lock mid-read or a slow store clears at the next ask, which reads the plane afresh.
+        if (SIBLING_PLANE_USE[sibling.plane] === "refuse") console.warn(`[lit-set] the sibling proof of ${plane.personaGroupId.slice(0, 8)}… refuses on its plane's reading (${sibling.plane}); the carried acts do not stand in`);
+        return sibling.proved ? { ...sibling.proved, reading: sibling.plane } : null;
       } catch (e) { if (!(e instanceof CustodyLocked)) throw e; return null; }
     }
     const proveRelayFace = async (group: string) => {
