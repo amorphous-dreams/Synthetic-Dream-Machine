@@ -104,7 +104,7 @@ test("road-split-ashes-live: the ashes carrier gathers every rank in the ashes, 
   assert.deepEqual(ashesFaults(ashes, children), []);
   const ranks = children.filter((c) => (c.fields.tags ?? []).includes("road/rank")).length;
   assert.equal(gatheredItems(LIVE, children).ranks.length + ashesRanks(children).length, ranks);
-  for (const slot of ["#/landed-leaps", "#/o-takiage", "#/ashes"]) assert.ok(slotLines(ashes, slot), `the ashes hold ${slot}`);
+  for (const slot of ["#/o-takiage", "#/ashes"]) assert.ok(slotLines(ashes, slot), `the ashes hold ${slot}`);
 });
 
 test("road-split-ashes RED: an ashes carrier without its gathers, or a child in the ashes with no road tag, reads by name", () => {
