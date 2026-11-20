@@ -12,7 +12,7 @@ import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { readCarrierEdges } from "../src/carrier-edges.js";
+import { homedInTheKahuWorkbench, readCarrierEdges } from "../src/carrier-edges.js";
 import { carrierFiles } from "../src/carrier-files.js";
 import { REPO } from "./test-wiki.js";
 
@@ -133,16 +133,3 @@ describe("carrier-edges — every address a carrier points at", () => {
     ]) expect(homedInTheKahuWorkbench(a), a).toBe(false);
   });
 });
-
-/**
- * HOMED IN THE KAHU WORKBENCH, OUTSIDE THE CORPUS — the one class of unheld edge that names a carrier
- * standing somewhere this reader cannot see. The operator's ruling of 2026-11-20 moved the founding
- * road (`docs/stable-founding-road`, `docs/road-ashes`, every `docs/road/*` rank and ruling) out of
- * canon and into the shared Kahu workbench wiki (slug `kahu`, `--recipe kahu`): an engineer's working
- * plan, not shared canon. A canon loulou to the road still names a live carrier; it answers in the
- * workbench, never in `bags/`. The class names that prefix exactly and nothing beside it, and it holds
- * its own ceiling, so no other broken edge hides inside it.
- */
-function homedInTheKahuWorkbench(address: string): boolean {
-  return /^ha\.ka\.ba\/lares\/docs\/(?:stable-founding-road|road-ashes|road\/[^/]+)$/.test(address);
-}

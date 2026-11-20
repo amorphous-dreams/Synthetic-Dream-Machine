@@ -94,7 +94,7 @@ import { basename, dirname, isAbsolute, join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission, PROFILES, profileOf, recordedTargetOf, resolveWeaveTarget, type WeaveProfile } from "@lararium/tw5/weave";
-import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle, memeticVerdict } from "@lararium/tw5";
+import { homedInTheKahuWorkbench, readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle, memeticVerdict } from "@lararium/tw5";
 import { verifyBcc, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
 import { newChangeId } from "@lararium/mesh";
 import { faceSigningSeat, listFaceOrdinals, runPromoteCheckBytes } from "@lararium/node";
@@ -856,10 +856,13 @@ function surveyEdges(files: string[]): number {
 
   const dangling = new Map<string, { form: string; from: string[] }>();
   let total = 0;
+  let workbench = 0;
   for (const [f, src] of texts) {
     for (const e of readCarrierEdges(src)) {
       total++;
       if (held.has(e.address)) continue;
+      // The founding road lives in the shared `kahu` workbench, outside the corpus: it answers there, never in `bags/`.
+      if (homedInTheKahuWorkbench(e.address)) { workbench++; continue; }
       const seen = dangling.get(e.address) ?? { form: e.form, from: [] };
       seen.from.push(f);
       dangling.set(e.address, seen);
@@ -873,7 +876,7 @@ function surveyEdges(files: string[]): number {
     if (from.length > 3) console.log(`     … and ${from.length - 3} more`);
   }
   const n = [...dangling.values()].reduce((a, d) => a + d.from.length, 0);
-  console.log(`edges: ${files.length} carrier(s) read · ${held.size} address(es) held · ${total} edge(s) · ${n} naming nothing`);
+  console.log(`edges: ${files.length} carrier(s) read · ${held.size} address(es) held · ${total} edge(s) · ${workbench} homed in the kahu workbench · ${n} naming nothing`);
   return n === 0 ? 0 : 1;
 }
 
