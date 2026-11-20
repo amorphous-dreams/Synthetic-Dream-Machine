@@ -183,5 +183,7 @@ describe.skipIf(!built)("the pre-commit hook on the host", () => {
     expect(refused.status).not.toBe(0);
     expect(refused.stderr).toMatch(/signing key/);
     expect(refused.stderr).not.toMatch(/LAR_ROOT names no house root|no house root/);
-  });
+    // Each `lares` spawn costs about a second of node start, and this test spawns it five times (a direct check, then each commit's hook),
+    // so under the parallel suite it outran vitest's default five seconds: it names its own bound.
+  }, 60_000);
 });
