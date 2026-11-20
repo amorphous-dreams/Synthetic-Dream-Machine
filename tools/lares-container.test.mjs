@@ -1529,3 +1529,35 @@ test("pulama-closure: a vessel-only change keeps the digest; a module the entry 
     assert.notEqual(none.status, 0);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
+
+// THE LABEL MOVES WHEN WHAT THE PŪLAMA RUNS MOVES: comments, the package modules it never imports, and the lock's other
+// dependencies leave it; code it runs and a dependency it loads move it.
+test("pulama-closure: comments, an unreached module of a reached package, an unreached package and an unloaded dependency keep the digest; code it runs and a loaded dependency move it", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "pulama-closure-"));
+  try {
+    await plantPulamaTree(dir);
+    const put = async (rel, text) => { await mkdir(join(dir, rel, ".."), { recursive: true }); await writeFile(join(dir, rel), text); };
+    await put("packages/lararium-mesh/package.json", '{"name":"@lararium/mesh","exports":{".":{"import":"./dist/index.js"}}}\n');
+    await put("packages/lararium-mesh/src/index.ts", 'import { l } from "left-pad";\n// the mesh barrel\nexport const m = l + 2; // two\nexport const re = /a\\/\\//.test("a//") ? `x ${1} // not a comment` : "// kept";\n');
+    await put("packages/lararium-mesh/src/unused.ts", "export const u = 1;\n");
+    await put("packages/lararium-node/package.json", '{"name":"@lararium/node","dependencies":{"@lararium/mesh":"workspace:*"}}\n');
+    const lock = (leftPad, other) => `lockfileVersion: '9.0'\n\nimporters:\n\n  .:\n    devDependencies:\n      other:\n        specifier: ${other}\n        version: ${other}\n\n  packages/lararium-mesh:\n    dependencies:\n      left-pad:\n        specifier: ${leftPad}\n        version: ${leftPad}\n\npackages:\n\n  left-pad@${leftPad}:\n    resolution: {integrity: sha512-a}\n\n  other@${other}:\n    resolution: {integrity: sha512-b}\n\nsnapshots:\n\n  left-pad@${leftPad}: {}\n\n  other@${other}: {}\n`;
+    await put("pnpm-lock.yaml", lock("1.0.0", "2.0.0"));
+    const digest = () => { const r = spawnSync("node", [join(ROOT, "tools/pulama-closure.mjs"), dir], { encoding: "utf8" }); assert.equal(r.status, 0, r.stderr); return r.stdout.trim(); };
+    const first = digest();
+    await put("packages/lararium-mesh/src/index.ts", 'import { l } from "left-pad";\n/* a longer note\n   over two lines */\nexport const m = l + 2;\nexport const re = /a\\/\\//.test("a//") ? `x ${1} // not a comment` : "// kept"; // trailing\n');
+    assert.equal(digest(), first, "a comment-only edit in a reached file keeps the label");
+    await put("packages/lararium-mesh/src/unused.ts", "export const u = 99;\n");
+    assert.equal(digest(), first, "an edit in a module of a reached package that nothing the pūlama imports reads keeps the label");
+    await put("packages/lararium-web/src/index.ts", "export const w = 99;\n");
+    await put("pnpm-lock.yaml", lock("1.0.0", "3.0.0"));
+    assert.equal(digest(), first, "an edit in a package the pūlama never imports, and a lock change in a dependency it never loads, keep the label");
+    await put("packages/lararium-mesh/src/index.ts", 'import { l } from "left-pad";\nexport const m = l + 3;\nexport const re = /a\\/\\//.test("a//") ? `x ${1} // not a comment` : "// kept";\n');
+    const ran = digest();
+    assert.notEqual(ran, first, "an edit to code the pūlama runs moves the label");
+    await put("packages/lararium-mesh/src/index.ts", 'import { l } from "left-pad";\nexport const m = l + 3;\nexport const re = /a\\/\\//.test("a//") ? `x ${1} // not a comment` : "// moved";\n');
+    assert.notEqual(digest(), ran, "a string that holds `//` is code, never a comment");
+    await put("pnpm-lock.yaml", lock("1.1.0", "3.0.0"));
+    assert.notEqual(digest(), ran, "a lock change to a dependency the pūlama loads moves the label");
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
