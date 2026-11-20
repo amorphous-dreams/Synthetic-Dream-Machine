@@ -212,6 +212,51 @@ describe("kukulu-fast-forwards-the-checkout", () => {
       git(det.clone, "checkout", "-q", "--detach");
       expect(await syncCheckout(det.clone)).toMatchObject({ ok: false, line: expect.stringMatching(/detached head/) });
     });
+
+    const fileAllowed = { GIT_CONFIG_COUNT: "1", GIT_CONFIG_KEY_0: "protocol.file.allow", GIT_CONFIG_VALUE_0: "always" };
+    const withFileAllowed = async (run: () => Promise<void>): Promise<void> => {
+      Object.assign(process.env, fileAllowed);
+      try { await run(); } finally { for (const k of Object.keys(fileAllowed)) delete process.env[k]; }
+    };
+    /** A superproject with one submodule, cloned; then upstream moves the submodule's pin one commit on. */
+    const pinned = (): { clone: string; was: string; now: string } => {
+      const root = mkdtempSync("/tmp/lares-kukulu-pin-"); scratch.push(root);
+      const sub = join(root, "sub"), up = join(root, "up"), clone = join(root, "clone");
+      mkdirSync(sub); git(sub, "init", "-q", "-b", "main"); writeFileSync(join(sub, "s.txt"), "1\n"); git(sub, "add", "."); git(sub, "commit", "-qm", "s1");
+      mkdirSync(up); git(up, "init", "-q", "-b", "main"); writeFileSync(join(up, "a.txt"), "1\n"); git(up, "add", "."); git(up, "commit", "-qm", "one");
+      git(up, "submodule", "add", "-q", sub, "vendor"); git(up, "commit", "-qm", "pin");
+      spawnSync("git", ["clone", "-q", "--recurse-submodules", up, clone], { env: process.env });
+      const was = head(join(clone, "vendor"));
+      writeFileSync(join(sub, "s.txt"), "2\n"); git(sub, "commit", "-qam", "s2");
+      git(join(up, "vendor"), "pull", "-q"); git(up, "commit", "-qam", "move the pin");
+      return { clone, was, now: head(join(up, "vendor")) };
+    };
+
+    it("RED: after the fast-forward each submodule sits at the commit the superproject records, and the line names it from..to; already current with a pin that differs, the same", () => withFileAllowed(async () => {
+      const p = pinned();
+      const out = await syncCheckout(p.clone);
+      expect(out.ok).toBe(true);
+      expect(head(join(p.clone, "vendor"))).toBe(p.now);
+      expect(out.line).toContain(`vendor ${p.was.slice(0, 12)}..${p.now.slice(0, 12)}`);
+      git(join(p.clone, "vendor"), "checkout", "-q", p.was);
+      const again = await syncCheckout(p.clone);
+      expect(again.ok).toBe(true);
+      expect(head(join(p.clone, "vendor"))).toBe(p.now);
+      expect(again.line).toContain(`vendor ${p.was.slice(0, 12)}..${p.now.slice(0, 12)}`);
+    }));
+
+    it("RED: a submodule with local or untracked changes stops the rite with one line naming it, and its work stays", () => withFileAllowed(async () => {
+      for (const touch of [(d: string) => writeFileSync(join(d, "s.txt"), "mine\n"), (d: string) => writeFileSync(join(d, "new.txt"), "mine\n")]) {
+        const p = pinned();
+        touch(join(p.clone, "vendor"));
+        const out = await syncCheckout(p.clone);
+        expect(out.ok).toBe(false);
+        expect(out.line).toMatch(/submodule vendor/);
+        expect(out.line).not.toContain("\n");
+        expect(head(join(p.clone, "vendor"))).toBe(p.was);
+        expect(git(join(p.clone, "vendor"), "status", "--porcelain").stdout).not.toBe("");
+      }
+    }));
   });
 });
 

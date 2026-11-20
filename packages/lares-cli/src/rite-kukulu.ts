@@ -7,7 +7,10 @@
  *
  *   1. sync         (forward only) fetch, then fast-forward the checkout's own branch where the tree stands clean and behind
  *                   its upstream; a dirty tree behind it, a branch diverged from it, or a detached head stops with one line.
- *                   It never switches a branch, never stashes, and never merges anything but a fast-forward
+ *                   It never switches a branch, never stashes, and never merges anything but a fast-forward. After a
+ *                   fast-forward (and where the checkout stands current yet a submodule's commit differs from its recorded
+ *                   pin) each submodule is set to the pin the superproject records, never a newer one; a submodule holding
+ *                   local or untracked changes stops the rite with one line naming it, and its work stays
  *   2. checkout     the checkout's head and branch
  *   3. stage        the host shim makes the image of the revision (the tag holds it, a kept rev tag takes the tag, or a
  *                   build from the commit; `--rollback` names the image that ran before, or an older revision, and never
