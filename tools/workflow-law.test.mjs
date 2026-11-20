@@ -207,7 +207,7 @@ test("WL7 RED: the canon doorstep reads ci.yml's scope job in every job a canon-
 const PIN = /mcr\.microsoft\.com\/playwright:v([0-9.]+)-noble@sha256:[0-9a-f]{64}/;
 // The values a field may carry instead of the literal: each one names a field this same law reads (the matrix row's `container`,
 // the workflow `env`, or a shell variable the step set from them).
-const BY_REFERENCE = /^(\$\{\{\s*(matrix\.container|env\.PLAYWRIGHT_IMAGE)\s*\}\}|\$\{?(PLAYWRIGHT_IMAGE|PW_IMAGE|WELD_PW_IMAGE)\}?|"\$\{?(PLAYWRIGHT_IMAGE|PW_IMAGE|WELD_PW_IMAGE|image)\}?")$/;
+const BY_REFERENCE = /^(\$\{\{\s*(matrix\.container|needs\.scope\.outputs\.playwright)\s*\}\}|\$\{?(PW_IMAGE|WELD_PW_IMAGE)\}?|"\$\{?(PW_IMAGE|WELD_PW_IMAGE|image)\}?"|\$\(tools\/pw-container\.sh --pin\)|"\$\(tools\/pw-container\.sh --pin\)")$/;
 const unquote = (v) => v.trim().replace(/^(["'])(.*)\1$/, "$2");
 
 /** Every image-bearing field of one workflow text, comments dropped: `{ line, field, value }`. */
@@ -220,7 +220,7 @@ export function imageFields(text) {
     for (const m of line.matchAll(/\bimage:\s*("[^"]*"|'[^']*'|[^\s,}]+)/g)) add("image", m[1]);
     const scalar = /^\s*container:\s*(?!\{)(\S.*)$/.exec(line);
     if (scalar) add("container", scalar[1]);
-    for (const m of line.matchAll(/\b(PLAYWRIGHT_IMAGE|PW_IMAGE|WELD_PW_IMAGE)[:=]\s*("[^"]*"|\$\{\{[^}]*\}\}|[^\s"']+)/g)) add(m[1], m[2]);
+    for (const m of line.matchAll(/\b(PW_IMAGE|WELD_PW_IMAGE)[:=]\s*("[^"]*"|\$\{\{[^}]*\}\}|"\$\([^)]*\)"|[^\s"']+)/g)) add(m[1], m[2]);
     for (const m of line.matchAll(/\bdocker\s+(?:run|pull|create)\b[^\n]*/g)) {
       const named = [...m[0].matchAll(/mcr\.microsoft\.com\/\S+|"\$\{?\w*IMAGE\w*\}?"|\$\{?\w*IMAGE\w*\}?|\$image\b/g)].map((x) => x[0]);
       if (named.length === 0) add("docker", m[0]); else for (const v of named) add("docker", v);
@@ -258,14 +258,17 @@ test("WL3 RED: no workflow installs Playwright, and every image field of every w
   assert.equal(pin[1], pkg.devDependencies?.playwright ?? pkg.dependencies?.playwright, "the image tag names the release the repo's playwright package pins");
   assert.match(readFileSync(join(root, "pnpm-lock.yaml"), "utf8"), new RegExp(`playwright@${pin[1].replaceAll(".", "\\.")}`), "CONTROL: the lockfile resolves that same release");
   let literal = 0;
+  let byRef = 0;
   const found = [];
   for (const file of readdirSync(WORKFLOWS).filter((f) => /\.ya?ml$/.test(f)).sort()) {
     const text = readFileSync(join(WORKFLOWS, file), "utf8");
     found.push(...imageBreaches(file, text, pin[0]));
     literal += imageFields(text).filter((f) => f.value === pin[0]).length;
+    byRef += imageFields(text).filter((f) => /needs\.scope\.outputs\.playwright|pw-container\.sh --pin/.test(f.value)).length;
   }
   assert.deepEqual(found, []);
-  assert.ok(literal >= 4, "CONTROL: the browser cells name the pin (ci.yml env and two matrix rows, held-out env)");
+  assert.equal(literal, 0, "no workflow restates the pin: the capability probe holds it alone");
+  assert.ok(byRef >= 3, "CONTROL: the browser cells read the pin by reference (ci.yml's two matrix rows, held-out's weld driver)");
 });
 
 test("WL4 CONTROL: an unpinned reference, a changed digest, a second image, a docker run and an install each fail; comments never count", () => {
@@ -288,6 +291,8 @@ test("WL5 RED: pw-container.sh refuses every image but the capability probe's pi
   const root = join(import.meta.dirname, "..");
   const pin = readPin(root)[0];
   const run = (image) => spawnSync("bash", [join(root, "tools", "pw-container.sh"), "true"], { cwd: root, env: { PATH: process.env.PATH, PW_IMAGE: image }, encoding: "utf8" });
+  const asked = spawnSync("bash", [join(root, "tools", "pw-container.sh"), "--pin"], { cwd: root, env: { PATH: process.env.PATH }, encoding: "utf8" });
+  assert.equal(asked.stdout.trim(), pin, "--pin answers the capability probe's pin and runs nothing");
   for (const bad of [pin.split("@")[0], pin.replace(/[0-9a-f]$/, (c) => (c === "0" ? "1" : "0")), "ubuntu:24.04"]) {
     const r = run(bad);
     assert.equal(r.status, 2, `${bad} refuses`);

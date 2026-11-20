@@ -148,15 +148,14 @@ describe("RED vault unlock gathers a route only while custody stays closed", () 
   });
 });
 
-describe("RED a seat never wears (the command)", () => {
+describe("RED a seat wears on word (the command)", () => {
   for (const [mark, value] of [["CLAUDECODE", "1"], ["CODEX_SANDBOX", "seatbelt"], ["CODEX_SANDBOX_NETWORK_DISABLED", "1"]] as const) {
-    it(`under the harness's mark ${mark}, the wear frame carries \`seat: "ai"\` and the door's refusal reads by name`, async () => {
+    it(`under the harness's mark ${mark}, the wear frame carries \`seat: "ai"\` and the door's answer moves the mount`, async () => {
       process.env[mark] = value;
       door = (frame) => frame["op"] === "custody" ? custody(true)
-        : { op: "wear", status: "error", errorMessage: "a seat wears no face: run `lares wear N` from the operator's own terminal", refusal: { reason: "seat-wears-no-face" } };
-      expect(await wear("1")).toBe(1);
+        : { op: "wear", face: 1, held: true, standing: "hearth" };
+      expect(await wear("1")).toBe(0);
       expect(frames.at(-1)).toEqual({ op: "wear", face: 1, seat: "ai" });
-      expect(answer().error?.code).toBe("seat-wears-no-face");
     });
   }
 

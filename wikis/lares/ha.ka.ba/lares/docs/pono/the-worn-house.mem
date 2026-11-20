@@ -70,7 +70,7 @@ The operator settled the set on 2026-11-15 (//"Pono, settle the lei set"//), the
 | the worn whole | //no new word// | the session wears the house; wearing the lei it holds names the effortless wearing |
 | the human's act | ''light'' | the human lights faces at the pūlama: these faces' keys stand ready, each by its own route or several under one passphrase |
 | the pūlama's act | ''lend'' | the pūlama lends one vessel a named set of faces: the faces whose records that vessel may read and sign for while it stands |
-| the operator's act | ''wear'' | the operator's own terminal chooses one face inside the lent set (`lares wear N`, which asks no route and acts as no ward act), and the vessel's daemon mount runs as that face until `C13`; a seat never wears (`seat-wears-no-face`) |
+| the operator's act | ''wear'' | the operator chooses one face inside the lent set, from their own terminal or by word to a seat (`lares wear N`, which asks no route and acts as no ward act, and reaches only a face already standing open), and the vessel's daemon mount runs as that face until `C13`; unlock and custody stay the operator's own acts |
 | the vouch | ''vouch'' | the old vessel walks a candidate image under a scratch root and signs its digest; a vouch certifies continuity, never goodness |
 | the holder | ''pūlama'' | Pukui–Elbert: "torch" and "to care for, cherish, treasure, save" in one entry, with no rank; the long-lived keeper beside the vessel that keeps the hearth lit through a rebuild (#/the-pulama) |
 | the re-stand | ''kūkulu'' | "to build, as a house, erect, establish, set up"; a vessel raised again around a hearth that never went out; //nā kūkulu ʻehā// (the four pillars at the horizon) and //kūkulu hale// (raising a house) give it its basins |
@@ -238,6 +238,6 @@ Three different things answer to the word "row" in the design's talk-out; this c
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gxUbwdGxFKOl-z-0vLGUid53cg98LNE4D3ZagwsngWE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-QyGZ5GSnznYgxOzx0IjbCtZ2FvDRk4VxLnqE8UUQ4Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

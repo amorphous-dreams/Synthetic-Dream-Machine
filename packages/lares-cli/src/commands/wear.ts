@@ -14,7 +14,7 @@ import type { ParsedArgs } from "../parse-args.js";
 
 /**
  * The harness's own marks, as each AI harness sets them in the shells it runs (Claude Code, Codex's sandbox). A wear sent under
- * one carries `seat: "ai"`, and the vessel refuses it: a seat never wears. Swap for local-connector's HARNESS_SEAT_MARKS once
+ * one carries `seat: "ai"`, and the vessel answers it as it answers the operator's own: a seat wears on the operator's word. Swap for local-connector's HARNESS_SEAT_MARKS once
  * that list lands (#231), which reads these same names.
  */
 const SEAT_MARKS = ["CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"] as const;
