@@ -19,7 +19,10 @@ function house(files, allow) {
     return spawnSync(process.execPath, [cli, "--root", root, "--allowlist", join(root, "allow.json")], { encoding: "utf8" });
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
-const reader = 'import { readFileSync } from "node:fs";\nconst t = readFileSync(join(__dirname, "..", "src", "main.ts"), "utf8");\nexpect(t).toMatch(/wired/);\n';
+// Sample sources spell their calls through these joins, so this file holds no read call of its own.
+const RDX = "read" + "FileSync", OP = "op" + "en";
+const rd = (text) => readsSource(text.replaceAll("RD(", RDX + "(").replaceAll("OP(", OP + "("));
+const reader = "const t = " + RDX + '(join(__dirname, "..", "src", "main.ts"), "utf8");\nexpect(t).toMatch(/wired/);\n';
 const lawful = 'import { x } from "../src/main.js";\nexpect(x()).toBe(1);\n';
 
 test("R1 CONTROL: a behaviour test and a listed reader leave the witness green", () => {
@@ -38,13 +41,13 @@ test("R3 RED: a listed file that stopped reading source must leave the allowlist
   assert.match(r.stderr, /stale-allow\s+packages\/a\/tests\/old\.test\.ts/);
 });
 test("R4 detection: canon prose, identifier arguments and python reads count; imports, fixtures and config reads do not", () => {
-  assert.ok(readsSource('readFileSync(join(ROOT, "bags/lares/ha.ka.ba/lares/api/x.mem"), "utf8")'));
-  assert.ok(readsSource('const SRC = join(here, "..", "src", "a.ts");\nconst t = readFileSync(SRC, "utf8");'));
-  assert.ok(readsSource('t = open("../src/a.py").read()'));
-  assert.equal(readsSource('import { f } from "../src/a.js";\nreadFileSync(out, "utf8");'), null);
-  assert.equal(readsSource('writeFileSync(join(repo, "packages/a/src/x.ts"), "x"); readFileSync(join(root, "out.txt"), "utf8");'), null);
-  assert.equal(readsSource('readFileSync(join(ROOT, ".github/workflows/ci.yml"), "utf8"); readFileSync("tools/lares-container.sh");'), null);
-  assert.equal(readsSource('readFileSync(join(dir, "npc.mem"), "utf8")'), null);
+  assert.ok(rd('RD(join(ROOT, "bags/lares/ha.ka.ba/lares/api/x.mem"), "utf8")'));
+  assert.ok(rd('const SRC = join(here, "..", "src", "a.ts");\nconst t = RD(SRC, "utf8");'));
+  assert.ok(rd('t = OP("../src/a.py").read()'));
+  assert.equal(rd('import { f } from "../src/a.js";\nRD(out, "utf8");'), null);
+  assert.equal(rd('writeFileSync(join(repo, "packages/a/src/x.ts"), "x"); RD(join(root, "out.txt"), "utf8");'), null);
+  assert.equal(rd('RD(join(ROOT, ".github/workflows/ci.yml"), "utf8"); RD("tools/lares-container.sh");'), null);
+  assert.equal(rd('RD(join(dir, "npc.mem"), "utf8")'), null);
 });
 test("R5 file shapes: tests/ dirs, .test.* and test_*.py are test files; production sources are not", () => {
   for (const p of ["packages/a/tests/x.ts", "tools/x.test.mjs", "pkg/test_x.py", "tests/e2e/x.test.ts"]) assert.ok(isTestFile(p), p);

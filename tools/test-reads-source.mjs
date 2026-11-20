@@ -16,7 +16,7 @@
 // path list.
 //
 // RATCHET. `tools/test-reads-source-allowlist.json` lists the test files that read source today. A reader outside it
-// fails; a listed file that stopped reading (or vanished) fails until its row leaves the list. The list only shrinks.
+// fails; a listed file that reads no source (or is absent) fails until its row leaves the list. The list only shrinks.
 import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
@@ -74,7 +74,7 @@ export function scan(root) {
   return found.sort((a, b) => (a.path < b.path ? -1 : 1));
 }
 
-/** The ratchet: {fresh: readers outside the allowlist, stale: listed files that no longer read}. */
+/** The ratchet: {fresh: readers outside the allowlist, stale: listed files that read no source}. */
 export function ratchet(found, allow) {
   const reading = new Set(found.map((f) => f.path));
   const listed = new Set(allow);
@@ -97,7 +97,7 @@ function main() {
   const { fresh, stale } = ratchet(found, allow);
   console.log(`[test-reads-source] ${found.length} test file(s) read source, ${allow.length} allowlisted`);
   for (const f of fresh) console.error(`new-reader  ${f.path}  (reads ${f.why})`);
-  for (const p of stale) console.error(`stale-allow ${p}  (no longer reads source: remove it from the allowlist)`);
+  for (const p of stale) console.error(`stale-allow ${p}  (reads no source: remove it from the allowlist)`);
   if (fresh.length || stale.length) {
     console.error('pono: exercise behaviour instead of reading source text; when a burn or conversion ends a read, drop the row from tools/test-reads-source-allowlist.json (the list only shrinks)');
     process.exitCode = 1;
