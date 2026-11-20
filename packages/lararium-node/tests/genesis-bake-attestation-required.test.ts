@@ -61,5 +61,12 @@ describe("★ the genesis bake refuses an absent attestation, never bakes an una
     const seedPath = join(genesisDir, "seed.json");
     expect(existsSync(seedPath)).toBe(true);
     expect(JSON.parse(readFileSync(seedPath, "utf8"))).toHaveProperty("tiddlers");
+    // THE FLOOR RIDES RELEASES: a develop bake carries the snapshots the tracked genesis names, never a fresh cut of canon.
+    type Blobs = Record<string, { sha256: string; kind?: string }>;
+    const snapshots = (blobs: Blobs) => Object.fromEntries(Object.entries(blobs).filter(([id, b]) => b.kind === "floor" && id !== "floor-manifest" && id !== "floor-plugin-offering").map(([id, b]) => [id, b.sha256]));
+    const tracked = JSON.parse(readFileSync(join(HERE, "..", "..", "..", "genesis", "seed.json"), "utf8")) as { blobs: Blobs };
+    const baked = JSON.parse(readFileSync(seedPath, "utf8")) as { blobs: Blobs };
+    expect(snapshots(baked.blobs)).toEqual(snapshots(tracked.blobs));
+    expect(r.stdout).toMatch(/develop bake: the floor carries forward/);
   });
 });

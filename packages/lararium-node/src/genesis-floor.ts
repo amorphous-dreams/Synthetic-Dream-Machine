@@ -10,8 +10,9 @@ import { join } from "node:path";
 import { carrierFiles, declaresCarrier, rootMetaFields, deserializeCarrier } from "@lararium/tw5";
 import { verdict } from "@lararium/memetic-frame";
 import { carrierBaseRelPath, isPrivateProjectionSlug } from "./bag-paths.js";
-import { cutFloorSnapshot, floorCarriesTier, floorManifestBytes, floorManifestCid, houseCanonSlugs, FLOOR_MANIFEST_FORMAT, FLOOR_REQUIRED_SLUGS, type FloorManifest, type FloorSnapshot } from "@lararium/mesh";
+import { cutFloorSnapshot, floorCarriesTier, floorManifestBytes, floorManifestCid, houseCanonSlugs, openFloorSnapshot, ownEntry, readFloorManifest, sha256HexBytesSync, FLOOR_MANIFEST_FORMAT, FLOOR_REQUIRED_SLUGS, type FloorManifest, type FloorSnapshot } from "@lararium/mesh";
 import { readBagManifest } from "./bag-declare.js";
+import { genesisCasDir, readGenesisSeed } from "./genesis-artifact.js";
 
 /** The house-canon slugs a checkout's floor keys: the tracked `bags/` dirs a bake sees, read through `houseCanonSlugs`, each kept
  *  only where its own `meta.mem` declares a tier the floor carries (a bag that declares none reads `veil` and stays off). */
@@ -79,4 +80,47 @@ export function cutGenesisFloor(opts: { repoRoot: string; engine: string; plugin
   };
   const manifestBytes = floorManifestBytes(manifest);
   return { manifest, manifestCid: floorManifestCid(manifest), manifestBytes, snapshots, rows };
+}
+
+/** What a carry refuses: a genesis dir that stands no floor to carry, or a floor row whose bytes fail their name. */
+function uncarried(reason: string): Error {
+  return new Error(`[genesis-floor] genesis-floor-uncarried: ${reason}`);
+}
+
+/**
+ * THE FLOOR RIDES RELEASES. A develop bake carries the floor the standing seed names, byte for byte: each `floor-<slug>`
+ * snapshot reads off `<genesisDir>/cas/<cid>` and must hash to the CID its manifest names, and no carrier gets read. Only the
+ * manifest's code fields move, re-stamped with the engine and plugins offering this bake packs, so the manifest keeps saying
+ * which engine and plugins the floor rides beside while its snapshots stand as the last release cut them (`cutGenesisFloor`,
+ * the release bake). A genesis dir that stands no floor refuses: a release bake cuts the first one.
+ */
+export function carryGenesisFloor(opts: { genesisDir: string; engine: string; plugins: string }): ReturnType<typeof cutGenesisFloor> {
+  const seed = readGenesisSeed(opts.genesisDir);
+  const manifestRow = seed ? ownEntry(seed.blobs, "floor-manifest") : undefined;
+  if (!seed || !manifestRow || manifestRow.kind !== "floor") {
+    throw uncarried(`${opts.genesisDir} stands no seed naming a floor-manifest row; a release bake cuts the floor from canon (pnpm --filter @lararium/node build:genesis-release)`);
+  }
+  const casDir = genesisCasDir(opts.genesisDir);
+  const read = (id: string, cid: string): Uint8Array => {
+    let bytes: Uint8Array;
+    try { bytes = new Uint8Array(readFileSync(join(casDir, cid))); }
+    catch { throw uncarried(`${id} names ${cid} and ${casDir} holds no such member`); }
+    if (sha256HexBytesSync(bytes) !== cid) throw uncarried(`${id} bytes at ${join(casDir, cid)} fail their CID`);
+    return bytes;
+  };
+  const standing = readFloorManifest(read("floor-manifest", manifestRow.sha256));
+  if ("refusal" in standing) throw uncarried(`floor-manifest reads unread (${standing.refusal}: ${standing.reason})`);
+  const snapshots: Record<string, FloorSnapshot> = {};
+  const rows: Record<string, number> = {};
+  for (const [slug, cid] of Object.entries(standing.manifest.snapshots)) {
+    const id = `floor-${slug}`;
+    if (ownEntry(seed.blobs, id)?.sha256 !== cid) throw uncarried(`floor-manifest names ${id} ${cid} and the seed's ${id} row names another`);
+    const bytes = read(id, cid);
+    const opened = openFloorSnapshot(bytes, cid);
+    if ("refusal" in opened) throw uncarried(`${id} reads unread (${opened.refusal}: ${opened.reason})`);
+    snapshots[slug] = { cid, bytes };
+    rows[slug] = Object.keys(opened.rows).length;
+  }
+  const manifest: FloorManifest = { format: FLOOR_MANIFEST_FORMAT, engine: opts.engine, plugins: opts.plugins, snapshots: standing.manifest.snapshots };
+  return { manifest, manifestCid: floorManifestCid(manifest), manifestBytes: floorManifestBytes(manifest), snapshots, rows };
 }

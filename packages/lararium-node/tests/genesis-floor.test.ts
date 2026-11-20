@@ -9,7 +9,7 @@ vi.mock("@lararium/tw5", async (importOriginal) => {
   return { ...actual, carrierFiles: () => [...fixtureFiles] };
 });
 import { forgetCarrierFiles } from "@lararium/tw5";
-import { cutGenesisFloor } from "../src/genesis-floor.js";
+import { carryGenesisFloor, cutGenesisFloor } from "../src/genesis-floor.js";
 import { openFloorSnapshot } from "@lararium/mesh";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
@@ -139,5 +139,72 @@ describe("genesis floor carrier cut", () => {
     expect(result.rows["lararium"]).toBe(0);
     expect(result.snapshots["lararium"]!.bytes).toBeInstanceOf(Uint8Array);
     expect(result.manifest.snapshots["lararium"]).toBe(result.snapshots["lararium"]!.cid);
+  });
+});
+
+/**
+ * THE FLOOR RIDES RELEASES (lar:///ha.ka.ba/lararium/node/genesis-island#/the-floor-rides-releases). A develop bake carries the
+ * standing seed's snapshots forward byte for byte and re-stamps the manifest's code fields; only a release bake re-cuts from canon.
+ * The fixture stands a genesis dir the way a bake leaves one: seed.json naming the floor rows, each row's bytes at cas/<sha256>.
+ */
+describe("genesis floor carry", () => {
+  let genesisDir = "";
+  afterEach(() => { if (genesisDir) rmSync(genesisDir, { recursive: true, force: true }); genesisDir = ""; });
+
+  function standGenesis(cut: ReturnType<typeof cutGenesisFloor>): string {
+    genesisDir = mkdtempSync(join(tmpdir(), "genesis-floor-carry-"));
+    mkdirSync(join(genesisDir, "cas"));
+    const blobs: Record<string, unknown> = {
+      "floor-manifest": { id: "floor-manifest", version: "1", sha256: cut.manifestCid, mimeType: "application/vnd.lararium.floor-manifest+json", kind: "floor" },
+    };
+    writeFileSync(join(genesisDir, "cas", cut.manifestCid), cut.manifestBytes);
+    for (const [slug, snap] of Object.entries(cut.snapshots)) {
+      blobs[`floor-${slug}`] = { id: `floor-${slug}`, version: "1", sha256: snap.cid, mimeType: "application/vnd.lararium.floor-snapshot", kind: "floor" };
+      writeFileSync(join(genesisDir, "cas", snap.cid), snap.bytes);
+    }
+    writeFileSync(join(genesisDir, "seed.json"), JSON.stringify({ format: "lararium-genesis-seed", actorSeed: "a".repeat(64), blobs, tiddlers: {} }));
+    return genesisDir;
+  }
+
+  test("a canon edit after the release moves no carried snapshot (CONTROL: a fresh cut of the edited tree moves lares)", () => {
+    const [laresPath] = fixture([realA], [realC]);
+    const released = cutGenesisFloor(opts(root));
+    const dir = standGenesis(released);
+    writeFileSync(join(root, laresPath!), realA.replace("! RFC 2119 — Key Words", "! RFC 2119 (edited on develop) — Key Words"));
+    forgetCarrierFiles(root);
+
+    const carried = carryGenesisFloor({ genesisDir: dir, engine: "engine", plugins: "b".repeat(64) });
+    expect(carried.manifest.snapshots).toEqual(released.manifest.snapshots);
+    for (const slug of Object.keys(released.snapshots)) expect([...carried.snapshots[slug]!.bytes]).toEqual([...released.snapshots[slug]!.bytes]);
+    expect(carried.rows).toEqual(released.rows);
+    expect(carried.manifestCid).toBe(released.manifestCid);
+
+    const recut = cutGenesisFloor(opts(root));
+    expect(recut.manifest.snapshots["lares"]).not.toBe(released.manifest.snapshots["lares"]);
+  });
+
+  test("a code move re-stamps the manifest's engine and plugins over the carried snapshots", () => {
+    fixture([realA], [realC]);
+    const released = cutGenesisFloor(opts(root));
+    const dir = standGenesis(released);
+    const carried = carryGenesisFloor({ genesisDir: dir, engine: "engine-two", plugins: "c".repeat(64) });
+    expect(carried.manifest).toEqual({ format: "lararium-floor", engine: "engine-two", plugins: "c".repeat(64), snapshots: released.manifest.snapshots });
+    expect(carried.manifestCid).not.toBe(released.manifestCid);
+  });
+
+  test("refuses by name a snapshot whose bytes fail their CID, and a genesis that stands no floor", () => {
+    fixture([realA], [realC]);
+    const released = cutGenesisFloor(opts(root));
+    const dir = standGenesis(released);
+    writeFileSync(join(dir, "cas", released.snapshots["lares"]!.cid), "torn");
+    expect(() => carryGenesisFloor({ genesisDir: dir, engine: "engine", plugins: "b".repeat(64) })).toThrow(/genesis-floor-uncarried.*floor-lares/);
+    rmSync(join(dir, "seed.json"));
+    expect(() => carryGenesisFloor({ genesisDir: dir, engine: "engine", plugins: "b".repeat(64) })).toThrow(/genesis-floor-uncarried.*build:genesis-release/);
+  });
+
+  test("the checkout's tracked genesis carries the floor its seed names", () => {
+    const carried = carryGenesisFloor({ genesisDir: join(REPO, "genesis"), engine: "engine", plugins: "b".repeat(64) });
+    const seed = JSON.parse(readFileSync(join(REPO, "genesis", "seed.json"), "utf8")) as { blobs: Record<string, { sha256: string }> };
+    for (const [slug, cid] of Object.entries(carried.manifest.snapshots)) expect(seed.blobs[`floor-${slug}`]!.sha256).toBe(cid);
   });
 });

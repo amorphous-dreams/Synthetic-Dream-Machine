@@ -5,12 +5,20 @@
  * Layer B (mesh):      buildGenesisDoc(inputs) — platform-neutral Automerge construction.
  * Layer C (this file): write artifact bytes to disk.
  *
- * THE FLOOR RIDES THE BAKE. `cutGenesisFloor` cuts one history-free snapshot per public house-canon bag from the checkout's
- * tracked carriers (`bags/lares` and `bags/lararium` always; every other holding but the public board `crossroads`, and only
- * where the bag's own `meta.mem` declares `cap-tier = "public"`), and the
- * seed names their manifest by CID: the static floor every wiki's recipe composes read-only through `@oracle`. The LIVE
- * house-canon documents stay outside the bake: they rest in the Kahu realm, a founding mints them, and no seed row or
- * catalog row names one.
+ * TWO BAKES, BY INTENT. Genesis carries CODE (the engine, the memetic-wikitext grammar, the boot shadows, the stock themes and
+ * the floor's plugins offering) beside the FOUNDING FLOOR (one history-free snapshot per public house-canon bag, under one
+ * manifest the seed names: the static floor every wiki's recipe composes read-only through `@oracle`, the fallback an offline
+ * founding stands on and the vessel pin's starting point). The two move on different clocks:
+ *
+ *   · THE DEVELOP BAKE (`build:genesis`, the default, and every staged bake `lares vessel bake` runs) re-cuts the code and
+ *     CARRIES the floor: `carryGenesisFloor` reads the snapshots the checkout's tracked `genesis/` names, byte for byte, and
+ *     re-stamps only the manifest's code fields (`engine`, `plugins`). A canon edit on develop moves no genesis byte.
+ *   · THE RELEASE BAKE (`build:genesis-release`, a `main` release's cut) re-cuts the floor from canon as well: `cutGenesisFloor`
+ *     reads the checkout's tracked carriers (`bags/lares` and `bags/lararium` always; every other holding but the public board
+ *     `crossroads`, and only where the bag's own `meta.mem` declares `cap-tier = "public"`).
+ *
+ * The LIVE house-canon documents stay outside both: they rest in the Kahu realm, a founding mints them, and no seed row or
+ * catalog row names one. (lar:///ha.ka.ba/lararium/node/genesis-island#/the-floor-rides-releases)
  *
  * Determinism invariant:
  *   The KUPONO law (`genesis-actor-seed`): actorSeed folds ONLY what every Lararium shares and boots
@@ -19,8 +27,9 @@
  *   Nothing per-operator or per-place folds: no bags/ working copy, no draft, no file on one machine
  *   alone. Two builds of one commit, from any checkout location, produce identical seed/CAS bytes.
  *
- * Run via:  tsx scripts/build-genesis-island.ts
- * Or via:   pnpm --filter @lararium/node build:genesis
+ * Run via:  pnpm --filter @lararium/node build:genesis            (the develop bake: code re-cut, floor carried)
+ *           pnpm --filter @lararium/node build:genesis-release    (the release bake: code and floor re-cut)
+ * Or via:   tsx scripts/build-genesis-island.ts [--release] [--genesis <dir>]
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync }              from "fs";
@@ -47,7 +56,7 @@ import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { genesisSeedFileBytes } from "../src/genesis-artifact.js";
 import { deriveGenesisActorSeed, genesisPackedPluginFiles } from "../src/genesis-actor-seed.js";
-import { cutGenesisFloor } from "../src/genesis-floor.js";
+import { carryGenesisFloor, cutGenesisFloor } from "../src/genesis-floor.js";
 
 // ---------------------------------------------------------------------------
 // Path constants
@@ -68,6 +77,11 @@ function resolveGenesisDir(): string {
   const index = args.indexOf("--genesis");
   const flagged = index !== -1 ? args[index + 1] : undefined;
   return resolve(flagged ?? process.env["LAR_GENESIS"] ?? DEFAULT_GENESIS_DIR);
+}
+
+/** The release bake re-cuts the floor from canon; every other bake carries the floor the tracked genesis names. */
+function releaseBake(): boolean {
+  return process.argv.slice(2).includes("--release");
 }
 
 function readPluginAttestations(): Map<string, PluginBuildAttestation> {
@@ -242,7 +256,16 @@ async function main(): Promise<void> {
       ...(p.author ? { author: p.author } : {}),
     }),
   });
-  const cut = cutGenesisFloor({ repoRoot: REPO_ROOT, engine: computeEngineCid(coreSha256), plugins: offering.cid });
+  // THE FLOOR RIDES RELEASES: a release bake cuts it from canon; a develop bake carries the snapshots the checkout's tracked
+  // genesis names (read before any write, so a bake into that same dir reads the floor it replaces) and re-stamps the code fields.
+  const release = releaseBake();
+  const floorArgs = { engine: computeEngineCid(coreSha256), plugins: offering.cid };
+  const cut = release
+    ? cutGenesisFloor({ repoRoot: REPO_ROOT, ...floorArgs })
+    : carryGenesisFloor({ genesisDir: DEFAULT_GENESIS_DIR, ...floorArgs });
+  console.log(release
+    ? "[genesis] RELEASE BAKE: the floor re-cuts from the checkout's canon carriers"
+    : `[genesis] develop bake: the floor carries forward from ${DEFAULT_GENESIS_DIR} (snapshots byte for byte; a release bake re-cuts them)`);
   const floor = { ...cut, offering: { bytes: offering.bytes, cid: offering.cid } };
   console.log(`[genesis] floor plugins offering = ${offering.cid}  (${offering.offering.blobs.length} blob(s), offeror ${offering.offering.offeror.slice(0, 16)}…)`);
   const inputs: GenesisInputs = {
@@ -277,7 +300,7 @@ async function main(): Promise<void> {
   const casDir   = join(genesisDir, "cas");
   const casWrote = writeCasEntriesFs(artifact.casEntries, casDir);
 
-  console.log(`[genesis] ✓ floor  ${floor.manifestCid}  ${Object.keys(floor.snapshots).sort().map((slug) => `${slug}=${floor.snapshots[slug]!.cid} (${floor.rows[slug]} rows)`).join("  ")}`);
+  console.log(`[genesis] ✓ floor (${release ? "cut" : "carried"})  ${floor.manifestCid}  ${Object.keys(floor.snapshots).sort().map((slug) => `${slug}=${floor.snapshots[slug]!.cid} (${floor.rows[slug]} rows)`).join("  ")}`);
   console.log(`[genesis] ✓ genesis/cas  ${artifact.casEntries.length} blob file(s) by CID (${casWrote} newly written)`);
   console.log(`[genesis] ✓ seed.json  PLAIN-DATA oracle seed (the boot artifact)  tiddlers=${Object.keys(artifact.seed.tiddlers).length}  blobs=${Object.keys(artifact.seed.blobs).length}`);
   console.log(`[genesis] ✓ blobs(meta)=${counts.blobCount}  tiddlers=${counts.tiddlerCount}`);
