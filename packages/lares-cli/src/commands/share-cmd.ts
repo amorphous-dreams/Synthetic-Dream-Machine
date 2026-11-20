@@ -122,8 +122,8 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
         doors.out(`  workbench: wiki ${String(w["slug"])} rides realm ${String(w["realmId"]).slice(0, 12)}… (${Number(w["members"] ?? 0)} member face(s)${w["founded"] === true ? ", founded now" : ""})`);
         if (w["restsUnderOwner"] === true && Number(w["members"] ?? 0) > 0) doors.out(`    its document rests sealed under its owner face on this vessel, so each seated face here writes its own personal layer of ${String(w["slug"])} and offers from there; the seats stand for the wire and for each face's own vessels`);
       }
-      // THE ROW KEEPS ITS OWNER, by pet-name, in the vessel-private file: after a re-founding the seed re-stands the wiki at
-      // that face's wear. The name joins two faces of one human, so it rests here and in the control document alone.
+      // THE ROW KEEPS ITS OWNER, by pet-name, in the vessel-local file: after a re-founding the seed re-stands the wiki at
+      // that face's wear. The name is a local label, so it rests here and in the control document alone and reaches no published document.
       const landedOwners = new Map<string, string>();
       for (const w of Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : []) {
         const pet = faces.find((f) => f.handleIndex === w["owner"])?.petname;

@@ -19,7 +19,7 @@
  * by slug. `bags` names the domain bags the realm's folder holds; a wiki placed in a realm brings its own canon bag.
  *
  * LOCAL ALONE. The label rests beside the face labels, outside every mirror, and never rides a share row or any replicated
- * document: "The DreamNet/Lararium code SHALL NOT publish a roster that links a human's faces together", and which wikis a
+ * document, since no DreamNet-published document carries a pet name (a pet name stays a local label); which wikis a
  * realm groups reads as local too. No projector, census, ingest or export walks it as a carrier.
  *
  * THE PET-NAME RULE matches a face's (`faceSegmentRefusal`): no separator, colon, NUL or leading dot, never empty, unique per

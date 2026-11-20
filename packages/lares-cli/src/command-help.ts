@@ -557,8 +557,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "share rests once, in its REALM's folder (projections/realms/<realm pet name>/wikis/<slug>/, or the workspace its share row names), " +
       "each wiki folder its own git tree under the wiki's identity, never a face's; --realm <realm pet name> names the realm.",
     details: [
-      "  lares surface init     make the worn (or named) face's root a pool: .git (0700), the house's ignore list, a local author, the roster hook",
-      "  lares surface check    the roster witness over the repo standing here; exit 1 names each breach (the pre-commit hook runs it)",
+      "  lares surface init     make the worn (or named) face's root a pool: .git (0700), the house's ignore list, a local author, the pool-check hook",
+      "  lares surface check    the pool check over the repo standing here; exit 1 names each breach (the pre-commit hook runs it)",
       "  lares surface open     print `<editor> -n <face root> <realm pools>`; --launch runs it; writes no workspace file",
       "  lares surface commit   commit only what the house already agrees with, under a lar: subject naming no face; never pushes",
       "  lares surface face     the face the house resolves and its pet name (the host asks the vessel this alone)",
@@ -586,7 +586,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   "surface check": {
     usage: "usage: lares surface check [--face N | --realm <realm pet name>]",
     synopsis:
-      "The roster witness over the repo standing at this directory (or the named face's pool). It refuses a repo top holding face-labels/, " +
+      "The pool check over the repo standing at this directory (or the named face's pool). It refuses a repo top holding face-labels/, " +
       "realm-labels/, kahua-index.toml, share.tid, kahua-pending.json or another face's root; any repo holding projections/ or config/, or spanning a " +
       "realm's wikis (a repo at realms/<realm pet name>/); and an author email or " +
       "signing key another face pool in the house carries. It reads local config alone and exits 1 naming each breach. From a realm pool " +

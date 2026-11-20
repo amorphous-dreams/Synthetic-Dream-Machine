@@ -1,8 +1,8 @@
 /**
  * keep-seal — the keep bundle seals its roster (cabal-realm.mem:189; research/tideline-surface #/roster, #/ward-scope).
  *
- * A remote the keep pushes to crosses to another vessel, so the bundle a keep cuts carries no linked roster of one human's faces
- * in clear: no pet-name, no Handle, no chair, no handle index and no share owner or seat, in any file or any path.
+ * A remote the keep pushes to crosses to another vessel, so the bundle a keep cuts carries the map between one human's faces
+ * (the pet names, Handles and seats the house keeps locally) sealed and never in clear: no pet-name, no Handle, no chair, no handle index and no share owner or seat, in any file or any path.
  *
  *   KS1  RED: a cut bundle holds no face's pet-name, Handle or chair label, and no share row's owner or seats, in any byte or
  *        any path; the manifest's faces carry their path key alone and its rows name a face by that key; no path carries a
@@ -31,7 +31,7 @@ const F1 = "11111111-1111-4111-8111-111111111111";
 const F2 = "22222222-2222-4222-8222-222222222222";
 const G1 = "33333333-3333-4333-8333-333333333333";
 const G2 = "44444444-4444-4444-8444-444444444444";
-/** Every string that would join the two faces into one human's roster. */
+/** Every string that would carry the map between the two faces in clear. */
 const ROSTER = ["otter-face", "kestrel-face", "Otterhandle", "Kestrelhandle", "north-chair"];
 
 let root: string, out: string;

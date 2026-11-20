@@ -66,8 +66,8 @@ export interface ShareEntry {
   readonly workspace?: string;
   /**
    * A wiki row's OWNER, by pet-name: the face whose realm holds the wiki's workbench, written by the share door once the
-   * landing names it. VESSEL-PRIVATE, as the whole row stands (`config/share.tid`, the control document): it joins two faces
-   * of one human by name, so it rides no record that crosses to another member or vessel. A seed reads it after a re-founding:
+   * landing names it. VESSEL-LOCAL, as the whole row stands (`config/share.tid`, the control document): it names a face by its pet name, a local
+   * label, so it rides no document published to another member or vessel. A seed reads it after a re-founding:
    * the wiki re-stands at its owner's wear.
    */
   readonly owner?: string;

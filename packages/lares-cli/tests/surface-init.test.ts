@@ -19,7 +19,7 @@ beforeEach(() => { rig = openSurfaceRig(); });
 afterEach(() => { rig.close(); });
 
 describe("lares surface init", () => {
-  test("★ makes the worn face's root a repo: .git at 0700, local author, signing off, the roster hook ★", async () => {
+  test("★ makes the worn face's root a repo: .git at 0700, local author, signing off, the pool-check hook ★", async () => {
     const root = faceRoot(rig.projections, "Heron Lantern");
     expect(await cmdSurface(surfaceArgs(["init"]), rig.doors)).toBe(0);
     expect(statSync(join(root, ".git")).isDirectory()).toBe(true);

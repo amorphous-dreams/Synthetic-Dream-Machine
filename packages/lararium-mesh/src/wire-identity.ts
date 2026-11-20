@@ -39,7 +39,7 @@
  *     salts. The floor derives under its own scope's secret, apart from every face.
  *
  * A scope's name in the store derives from the PersonaGroup by a one-way digest, so the store's own key names hold no
- * group id. The store itself rests vessel-private (it joins a human's faces as every vessel-private record does).
+ * group id. The store itself rests vessel-local, and no DreamNet-published document carries it.
  *
  * Pure but for the store it wraps: no key, no signer, no timer, no clock.
  *
