@@ -110,7 +110,7 @@ export function vmCarrierFile(tw5: Parameters<typeof exportCarrierFile>[0]): (ur
  * Mount the disk projection an island's manifest grants: one `LarDiskProjector` over
  * `manifest.diskMirrors`, the ONE render shore, the shadow-aware unlink gate and the disk-ward.
  * A wiki island and the daemon island call the same function — the daemon wiki projects to
- * `<projections>/faces/<pet name>/wiki/` much as a wiki's working layer projects to `<projections>/realms/<realm pet name>/wikis/<slug>/`.
+ * `<projections>/faces/<pet name>/wikis/daemon/` much as a wiki's working layer projects to `<projections>/realms/<realm pet name>/wikis/<slug>/`.
  */
 export function mountDiskProjection(
   manifest: IslandMsg_Manifest,

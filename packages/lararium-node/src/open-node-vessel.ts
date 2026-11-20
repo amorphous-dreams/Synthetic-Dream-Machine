@@ -118,8 +118,8 @@ import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_D
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
 import { ledgerWorkbenches, ledgerWorkbenchRealms } from "@lararium/mesh";
 import { armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
-import { ensurePoolTree, healPoolTrees, poolTreeLine } from "./pool-tree.js";
-import { islandIngestSubmit, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
+import { ensurePoolTree, faceShelvingLine, healPoolTrees, poolTreeLine, shelveFaceRoot } from "./pool-tree.js";
+import { islandIngestSubmit, openSyncedTree, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
 import { poolHeads } from "./pool-head.js";
 import { newRequestId, KAHUA_BAG } from "@lararium/mesh";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
@@ -970,7 +970,22 @@ async function prepareNodeBootOn(
     if (!petname) petname = await (await makeNodePersonaPetnameStore()).get(handleIndex).catch(() => undefined);
     const read = faceSiteOf({ relation, petname: petname ?? null, handleIndex }, projections);
     if ("refused" in read) { console.warn(`[faces] the face ${relation} makes no folder under ${FACES_PROJECTION_DIR}/ (${read.refused.code}: ${read.refused.why}); its private planes project nowhere until it does`); return null; }
+    shelveFace(projections, read.site.segment);
     return read.site.segment;
+  };
+  /** EVERY SHELF BEFORE ANY MIRROR (operator, 2026-11-20, "Approve model B"): a face root standing in the older shape (`wiki/`,
+   *  `canon/`, `stage/`) moves onto its shelves before a mirror composes over it, its Synced tree bases moving with each folder,
+   *  so no file reads as vanished from where it stood. The re-stand's heal runs the same act over every face root on disk. */
+  const shelveFace = (projections: string, segment: string): void => {
+    try {
+      const line = faceShelvingLine(shelveFaceRoot(faceRoot(projections, segment), segment, movedFaceFolder));
+      if (line !== null) console.log(`[faces] ${line}`);
+    } catch (err) { console.warn(`[faces] the face root ${segment} took no shelf: ${err instanceof Error ? err.message : String(err)}`); }
+  };
+  /** A face folder moved onto its shelf: the Synced tree's bases (and kāpae shadows) under it re-stand under the shelf. */
+  const movedFaceFolder = (from: string, to: string): void => {
+    const n = openSyncedTree().movePaths(from, to);
+    if (n > 0) console.log(`[faces] ${n} Synced tree base(s) move with ${from} -> ${to}`);
   };
   const siblingFaces = new Map<string, { readonly ordinal: number; readonly relation: string | null; readonly face: string | null }>();
   const siblingWork = siblingFaceWork();
@@ -4678,7 +4693,7 @@ async function prepareNodeBootOn(
     // ONE TREE PER ENTITY, HEALED AT THE RE-STAND: each face root and each realm root standing on disk takes its git tree where
     // none stands (the pools' one init, no remote), and a realm root lifts each tree nested below it with its history kept, so a
     // root laid before this step stood heals with no hand act; a standing tree's author, exclude and history stay as they stand.
-    healPoolTrees(projectionRoot, (line) => console.log(`[pools] ${line}`));
+    healPoolTrees(projectionRoot, (line) => console.log(`[pools] ${line}`), { moved: movedFaceFolder });
     readWorkbenches = () => workbenchFolders({ projectionRoot, workspaces, sourcedSlugs: projection.sourcedSlugs(), realms: realmPlacement(projectionRoot).realms() });
     // A realm root takes its one tree where the mount lays a wiki or bag folder in it (a wiki minted, moved into a realm, or shared
     // in since the re-stand); each realm root is read once a boot.
@@ -4816,7 +4831,7 @@ async function prepareNodeBootOn(
     // THE WATCH OVER THE WORN FACE'S POOL (face-pools W1, W2): armed here, off the boot path (the arm hands back at once), over
     // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and lands each settled wave by itself
     // (`poolIngestPorts`): an UNATTENDED INGEST wave per plane on the daemon island (`islandIngestSubmit`), the working layer
-    // under `wiki/`, the face's daemon canon under `canon/`, the kahua stage under `stage/`, each where the island grants
+    // under `wikis/daemon/`, the face's daemon canon under `bags/daemon/`, the kahua stage under `bags/kahua/`, each where the island grants
     // its mirror. A stand-off (both moved, or no base over records that say something else), a vanish and a personal-layer file go to the
     // island's disk shore (`shore` op `sense`). A teardown (a lock, or a wear that moves the mount) sets the face down: the
     // final wave, then the pool's commit seam; the stand-down runs the same as a down (`facePoolStandDown`).

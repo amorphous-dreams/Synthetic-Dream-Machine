@@ -42,17 +42,17 @@ const heron: FaceSite = { relation: F1, segment: "Heron" };
 describe("R1 — every per-face mirror sites under faces/<pet name>/", () => {
   test("daemon working, canon, stage and temp", () => {
     expect(FACES_PROJECTION_DIR).toBe("faces");
-    expect(daemonWorkingMirror(P, heron).mirrorRoot).toBe(`${P}/faces/Heron/wiki`);
-    expect(daemonCanonMirror(P, heron)).toEqual({ bagId: daemonFaceCanonBag(F1), mirrorRoot: `${P}/faces/Heron/canon` });
-    expect(kahuaStageMirror(P, heron)).toEqual({ bagId: KAHUA_BAG, mirrorRoot: `${P}/faces/Heron/stage`, titlePaths: true });
-    expect(daemonTempMirror(P, heron).mirrorRoot).toBe(`${P}/faces/Heron/wiki/temp`);
+    expect(daemonWorkingMirror(P, heron).mirrorRoot).toBe(`${P}/faces/Heron/wikis/daemon`);
+    expect(daemonCanonMirror(P, heron)).toEqual({ bagId: daemonFaceCanonBag(F1), mirrorRoot: `${P}/faces/Heron/bags/daemon` });
+    expect(kahuaStageMirror(P, heron)).toEqual({ bagId: KAHUA_BAG, mirrorRoot: `${P}/faces/Heron/bags/kahua`, titlePaths: true });
+    expect(daemonTempMirror(P, heron).mirrorRoot).toBe(`${P}/faces/Heron/wikis/daemon/temp`);
     expect(faceRoot(P, "Heron")).toBe(`${P}/faces/Heron`);
   });
 
   test("the daemon VM's one list: each private mirror under the face root; no face worn, none", () => {
     const list = daemonDiskMirrors({ projectionRoot: P, canonBags: "/absent", face: heron, canon: true, temp: true });
     const privates = list.filter((m) => m.scope !== "crossroads");
-    expect(privates.map((m) => m.mirrorRoot).sort()).toEqual([`${P}/faces/Heron/canon`, `${P}/faces/Heron/stage`, `${P}/faces/Heron/wiki`, `${P}/faces/Heron/wiki/temp`]);
+    expect(privates.map((m) => m.mirrorRoot).sort()).toEqual([`${P}/faces/Heron/bags/daemon`, `${P}/faces/Heron/bags/kahua`, `${P}/faces/Heron/wikis/daemon`, `${P}/faces/Heron/wikis/daemon/temp`]);
     for (const m of list) expect(m.mirrorRoot).not.toMatch(/daemon-|kahua-|\/personal\//);
     expect(daemonDiskMirrors({ projectionRoot: P, canonBags: "/absent", face: null }).map((m) => m.scope)).toEqual(["crossroads"]);
   });

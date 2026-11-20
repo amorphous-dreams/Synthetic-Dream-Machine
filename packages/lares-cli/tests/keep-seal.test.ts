@@ -66,11 +66,11 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = root;
   await plantKeptSeat(root);
   out = join(mkdtempSync(join(tmpdir(), "lar-keep-seal-out-")), "bundle");
-  put("projections/faces/otter-face/wiki/ha.ka.ba/notes/pond.tid", tid("lar:///ha.ka.ba/notes/pond", "the pond at dusk"));
-  put("projections/faces/kestrel-face/wiki/ha.ka.ba/notes/reed.tid", tid("lar:///ha.ka.ba/notes/reed", "a reed bends"));
+  put("projections/faces/otter-face/wikis/daemon/ha.ka.ba/notes/pond.tid", tid("lar:///ha.ka.ba/notes/pond", "the pond at dusk"));
+  put("projections/faces/kestrel-face/wikis/daemon/ha.ka.ba/notes/reed.tid", tid("lar:///ha.ka.ba/notes/reed", "a reed bends"));
   // A repo someone made inside a mirror: its config names a person, and the house never held a byte of it.
-  put("projections/faces/otter-face/wiki/.git/config", "[user]\n\tname = otter-face\n");
-  put("projections/faces/otter-face/wiki/.git/HEAD", "ref: refs/heads/main\n");
+  put("projections/faces/otter-face/wikis/daemon/.git/config", "[user]\n\tname = otter-face\n");
+  put("projections/faces/otter-face/wikis/daemon/.git/HEAD", "ref: refs/heads/main\n");
   put("projections/realms/notes/wikis/notes/ha.ka.ba/notes/shared.tid", tid("lar:///ha.ka.ba/notes/shared", "a shared page"));
 });
 afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); delete process.env["LAR_ROOT"]; });
@@ -118,7 +118,7 @@ describe("the keep bundle seals its roster", () => {
 
   test("KS4 RED: no face relation and no handle index rides the bundle in clear", async () => {
     const RELATIONS = [F1, F2];
-    put("projections/faces/otter-face/canon/ha.ka.ba/notes/canon-note.tid", tid("lar:///ha.ka.ba/notes/canon-note", "a canon note"));
+    put("projections/faces/otter-face/bags/daemon/ha.ka.ba/notes/canon-note.tid", tid("lar:///ha.ka.ba/notes/canon-note", "a canon note"));
     const faces: BundleVesselFace[] = [
       { handleIndex: 0, petname: "otter-face", relation: F1, handle: "Otterhandle", seat: true, chair: "north-chair",
         kahua: [{ title: "lar:///ha.ka.ba/kahua/memory/heron", cid: "a".repeat(64), text: "remember the heron", fields: {}, taint: [], sources: [] }] },

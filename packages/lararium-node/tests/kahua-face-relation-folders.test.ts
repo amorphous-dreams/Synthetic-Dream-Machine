@@ -4,7 +4,7 @@
  *
  * Operator ruling (2026-11-18, "one pool per face keyed by pet name"), superseding 2026-11-02's relation-keyed folders: a relation
  * id changes at every re-found, so a relation-keyed folder orphans; the pet name carries across. The wiki projects to
- * `<projections>/faces/<pet name>/wiki` and the stage to `<projections>/faces/<pet name>/stage`. The label index is a DISK view
+ * `<projections>/faces/<pet name>/wikis/daemon` and the stage to `<projections>/faces/<pet name>/bags/kahua`. The label index is a DISK view
  * regenerated from the face records and never read to decide.
  *
  * Reds: the folders name the pet name; a group change (rotation or recovery) and a re-found (a new relation) leave the folder
@@ -23,9 +23,9 @@ const SCOPE_TAG = "2a1f0c9e4b7d";
 
 describe("the folder names the pet name", () => {
   test("RED: wiki and stage mirrors rest in the face's root; a new relation under the same pet name keeps them", () => {
-    expect(daemonWorkingMirror("/state", { relation: F1, segment: "home" }).mirrorRoot).toBe("/state/faces/home/wiki");
-    expect(kahuaStageMirror("/state", { relation: F1, segment: "home" }).mirrorRoot).toBe("/state/faces/home/stage");
-    expect(kahuaStageMirror("/state", { relation: F2, segment: "home" }).mirrorRoot).toBe("/state/faces/home/stage");
+    expect(daemonWorkingMirror("/state", { relation: F1, segment: "home" }).mirrorRoot).toBe("/state/faces/home/wikis/daemon");
+    expect(kahuaStageMirror("/state", { relation: F1, segment: "home" }).mirrorRoot).toBe("/state/faces/home/bags/kahua");
+    expect(kahuaStageMirror("/state", { relation: F2, segment: "home" }).mirrorRoot).toBe("/state/faces/home/bags/kahua");
   });
   test("CONTROL: two faces never share a folder", () => {
     expect(() => faceSegment("HOME", ["home"])).toThrowError(/face-segment-collision/);
@@ -52,7 +52,7 @@ describe("the label index is a convenience view", () => {
     const after = kahuaIndexToml([{ relation: F1, tag: "t1", label: "home", group: "g-new" }]);
     expect(after).toContain('group = "g-new"');
     expect(before.replace("g-old", "g-new")).toBe(after);
-    expect(kahuaStageMirror("/state", { relation: F1, segment: "home" }).mirrorRoot).toBe("/state/faces/home/stage");
+    expect(kahuaStageMirror("/state", { relation: F1, segment: "home" }).mirrorRoot).toBe("/state/faces/home/bags/kahua");
   });
 });
 

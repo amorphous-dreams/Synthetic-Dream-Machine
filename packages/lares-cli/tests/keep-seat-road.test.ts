@@ -39,7 +39,7 @@ beforeEach(() => {
   // THE OPERATOR'S OWN SURFACE never leaks in: its pūlama signal rides a file under HOME.
   priorHome = process.env["HOME"]; process.env["HOME"] = join(root, "operator"); delete process.env["LARES_PULAMA"];
   scratch = mkdtempSync(join(tmpdir(), "lar-keep-road-out-"));
-  const p = join(root, "projections", "faces", "otter-face", "wiki", "ha.ka.ba", "notes", "pond.tid");
+  const p = join(root, "projections", "faces", "otter-face", "wikis", "daemon", "ha.ka.ba", "notes", "pond.tid");
   mkdirSync(dirname(p), { recursive: true });
   writeFileSync(p, "title: lar:///ha.ka.ba/notes/pond\ntype: text/vnd.tiddlywiki\n\nthe pond\n");
 });

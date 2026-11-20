@@ -56,6 +56,23 @@ describe("synced-tree — observations persist atomically", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  test("a folder moved whole carries its bases (and its shadows') to the same place below the new folder, durably", () => {
+    const dir = mkdtempSync(join(tmpdir(), "synced-"));
+    const p = join(dir, "synced-tree");
+    const t = new SyncedTree(p);
+    t.set("lar:///a", "/scratch/faces/Heron/wiki/a.mem", "h1", "r1", "doc-1");
+    t.set("lar:///b", "/scratch/faces/Heron/wikiish/b.mem", "h2");
+    t.shadows().set("lar:///c", "/scratch/faces/Heron/wiki/c.kapae", "h3");
+    expect(t.movePaths("/scratch/faces/Heron/wiki", "/scratch/faces/Heron/wikis/daemon")).toBe(2);
+    const again = new SyncedTree(p);
+    expect(again.baseAt("lar:///a", "/scratch/faces/Heron/wikis/daemon/a.mem")).toEqual({ path: "/scratch/faces/Heron/wikis/daemon/a.mem", disk: "h1", records: "r1", doc: "doc-1" });
+    expect(again.baseAt("lar:///a", "/scratch/faces/Heron/wiki/a.mem")).toBeNull();
+    expect(again.baseAt("lar:///b", "/scratch/faces/Heron/wikiish/b.mem"), "a sibling folder sharing the prefix stays").not.toBeNull();
+    expect(again.shadows().baseAt("lar:///c", "/scratch/faces/Heron/wikis/daemon/c.kapae")).not.toBeNull();
+    expect(again.movePaths("/scratch/faces/Heron/wiki", "/scratch/faces/Heron/wikis/daemon"), "a second move finds nothing").toBe(0);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
   test("delete removes the observation durably", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
     const p = join(dir, "synced-tree");
