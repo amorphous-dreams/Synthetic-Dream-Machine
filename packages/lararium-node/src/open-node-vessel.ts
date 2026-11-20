@@ -117,7 +117,7 @@ import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } 
 import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
 import { ledgerWorkbenches, ledgerWorkbenchRealms } from "@lararium/mesh";
-import { armFacePoolWatch, armWorkspaceWatch, type FacePoolWatch } from "./watch-core.js";
+import { armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
 import { islandIngestSubmit, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
 import { poolHeads } from "./pool-head.js";
 import { newRequestId, KAHUA_BAG } from "@lararium/mesh";
@@ -3615,6 +3615,11 @@ async function prepareNodeBootOn(
             const petname = await store.get(entry.handleIndex);
             if (!current()) return;
             writeFaceLabel({ relation, petname, handleIndex: entry.handleIndex }, projections);
+            // The sibling's pool tends its own ignore block here, whichever face the vessel wears: no watch arms over it.
+            if (current() && petname !== undefined) {
+              try { tendLitFacePool(faceRoot(projections, petname), `face h${entry.handleIndex}`, (line) => console.log(`[faces] ${line}`)); }
+              catch (e) { console.warn(`[faces] the pool of h${entry.handleIndex} stands untended: ${e instanceof Error ? e.message : String(e)}`); }
+            }
           } catch (e) {
             if (!current()) return;
             console.warn(`[face-label] the label for ${relation} did not write: ${e instanceof Error ? e.message : String(e)}`);

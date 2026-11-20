@@ -210,6 +210,12 @@ function tendingLine(name: string, t: ExcludeTending): string | null {
   return parts.length === 0 ? null : parts.join("; ");
 }
 
+/** A lit face's pool tends its ignore block with no watch armed (a face lit beside the worn one has none): the same tend the arm runs, its line to `log`. */
+export function tendLitFacePool(pool: string, name: string, log: (line: string) => void, git: GitRun = runGit): void {
+  const line = tendingLine(name, tendPoolExclude(pool, [], git));
+  if (line !== null) log(line);
+}
+
 const firstLine = (s: string): string => s.split("\n").find((l) => l.trim() !== "")?.trim() ?? "git answered nothing";
 
 /** One stage edit made on disk since the last sitting: its title, its path in the pool, and the commit that holds it. */
