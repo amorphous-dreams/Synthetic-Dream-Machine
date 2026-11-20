@@ -49,11 +49,11 @@ Disk projection serves ''content'' bags (definitions + instances). State and vie
 | Bag | Role | Disk surface |
 |---|---|---|
 | `lares` / `lararium` / `sdm` | seed / canon (definitions; `lararium` = the engine's ''memetic corpus'' — see #oracle-split); house canon rests in the Kahu realm at contract and projects back to `bags/` on the steward's vessel, every other face reading its floor snapshot (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/house-canon`>>) | `bags/` |
-| `@<wikiSlug>` | wiki content (instance) | `wikis/{slug}/` |
+| `@{slug}` | a wiki's canon bag: one capability in the wiki's stack (operator, 2026-11-20, state/decisions: the wiki's name rides its stack), taking a write by promotion alone | `realms/<realm pet name>/bags/{slug}/` under the projections root where a mirror grant names it |
 | `@oracle` | ''runtime system island'' — genesis-loaded engine BLOBs + bag→doc oracle + genesis-cid | ''none'' — genesis-loaded + federated read-only; regenerable (see #oracle-split) |
 | `@personal` | one face's view-state AND what it keeps for itself over the wiki's shared workbench | `faces/<pet name>/personal/{slug}/` under the projections root, in the face's root (see #personal) |
-| `@working` | per-wiki ''saved'' working layer, resting in the wiki's realm workbench (cabal-realm#/the-workbench) | `wikis/{slug}/` — live, tracked; or the operator workspace the wiki's share share entry names (`/lar/workspaces/<name>`) |
-| `@draft` | per-wiki ''unsaved'' drafts (TW5 draft state) | `faces/<pet name>/recovery/{slug}/`, the writing face's root, only under an explicit recovery grant; never canon or publication, never under the shared `wikis/{slug}/` |
+| `@working` | per-wiki ''saved'' working layer, resting in the wiki's realm workbench (cabal-realm#/the-workbench) | `realms/<realm pet name>/wikis/{slug}/` under the projections root, in the realm's one tree (the daemon wiki's: `faces/<pet name>/wiki/`) — live, tracked; or the operator workspace the wiki's share share entry names (`/lar/workspaces/<name>`) |
+| `@draft` | per-wiki ''unsaved'' drafts (TW5 draft state) | `faces/<pet name>/recovery/{slug}/`, the writing face's root, only under an explicit recovery grant; never canon or publication, never under the shared realm workbench |
 | `@temp` | volatile session layer | `faces/<pet name>/temp/{slug}/` (the daemon wiki's beside its working top, `faces/<pet name>/wiki/temp/`) only where the recipe designates it and the operator's consent consent entry names the slug (`projection.temp.<slug>`); its internal volatile state never |
 | `@daemon` | operator's sovereign authority doc | ''none'' — private; syncs to operator devices via the admin-doc surface |
 
@@ -265,6 +265,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XLmX3_f80i2exMtNYuNBAGaCrjfn81KZssk5nNRDe4s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zpWID0HrrbpDQ-DrQwBFuCznkrVDdMJH18Qh6qqLdgM`>>
 
 <<^ code=`&#x0004;` to=`?`>>
