@@ -79,7 +79,7 @@ Several Keyhive instances may hold object-local Rust maps, but that observation 
 
 # Yin-Luna · Lares (Tasked Spirit) · Persona: Ink-Clerk
 
-Sources below were read 2026-10-18; repository paths are relative to `/home/joshu/Synthetic-Dream-Machine`. “Own” means Yin’s wave-one claim; “twin” means Yang’s. The framing ruling is the governing target, not evidence that the implementation meets it.
+Sources below were read 2026-10-18; repository paths are relative to the repository root. “Own” means Yin’s wave-one claim; “twin” means Yang’s. The framing ruling is the governing target, not evidence that the implementation meets it.
 
 ## Claims ledger
 
@@ -150,7 +150,7 @@ Sources below were read 2026-10-18; repository paths are relative to `/home/josh
 
 ## Claims checked
 
-Sources below are repository paths under `/home/joshu/Synthetic-Dream-Machine`; inspected 2026-10-18. “CONFIRMED/REFUTED” means the cited source supports/contradicts the claim as phrased. Leads have not been established.
+Sources below are repository paths relative to the repository root; inspected 2026-10-18. “CONFIRMED/REFUTED” means the cited source supports/contradicts the claim as phrased. Leads have not been established.
 
 | Claim | From | Result | Source |
 |---|---|---|---|
@@ -220,6 +220,6 @@ Sources below are repository paths under `/home/joshu/Synthetic-Dream-Machine`; 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OiiIv3TvbzhRZWCKQfOTlth5DgccvMuMiNexsfO4TOs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;edJZg17ilnDNb6Efjxnuo7mAaiF2isIYW1AebAlZ9u8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

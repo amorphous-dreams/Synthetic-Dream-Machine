@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/docs/pono/k15-custody-step-zero"
 !! K15 STEP 0 — custody contract before bytes move
 
 
-''Status:'' build specification, 2026-10-19. ''LEAD'' marks a target disposition or fact whose payload, selector, or implementation has not been proved by the cited code. Source paths below are relative to `/home/joshu/Synthetic-Dream-Machine`; line numbers identify the read-only snapshot. No suite, build, or git write in that repository forms evidence for this specification.
+''Status:'' build specification, 2026-10-19. ''LEAD'' marks a target disposition or fact whose payload, selector, or implementation has not been proved by the cited code. Source paths below are relative to the repository root; line numbers identify the read-only snapshot. No suite, build, or git write in that repository forms evidence for this specification.
 
 <<~/ahu>>
 
@@ -278,6 +278,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Iokx4Ien_YP12jEJNiG25kLxKGPN3GmT2aiR_ReoV60`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9fjP2HKE-JDI2aeEf0GGv8j0W5nhgvaOjWMYAhD8Y08`>>
 
 <<^ code=`&#x0004;` to=`?`>>

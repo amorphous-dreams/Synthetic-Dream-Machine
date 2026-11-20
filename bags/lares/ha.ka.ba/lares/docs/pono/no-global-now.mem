@@ -62,7 +62,7 @@ the direction and the boundary, not those fields.
 
 !! The mines — what got read, and what answered
 
-''The transcripts.'' Every `*.jsonl` under `/home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/` — ''69 files, 707 MB'', streamed line-by-line (never loaded whole), filtering `type: user` and main-conversation `type: assistant` text and dropping `isSidechain: true`. ''2733 turns'' carried at least one term.
+''The transcripts.'' Every `*.jsonl` in the project’s local conversation transcripts — ''69 files, 707 MB'', streamed line-by-line (never loaded whole), filtering `type: user` and main-conversation `type: assistant` text and dropping `isSidechain: true`. ''2733 turns'' carried at least one term.
 
 ''Term counts across the whole transcript corpus'' (raw substring, case-folded; the noisy ones marked):
 
@@ -347,6 +347,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SF93y2fkRy6BfuE0TUZ26ujb3d6u1GgPJlMssfHedKQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;grLkzj-OVpheetiVwLniMc6eVNM09UwIPicK0f7iZ5Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

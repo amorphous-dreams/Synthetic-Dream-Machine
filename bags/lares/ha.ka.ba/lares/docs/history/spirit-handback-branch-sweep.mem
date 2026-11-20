@@ -213,7 +213,7 @@ Local branches and origin refs are listed separately.
 
 3. ''The remote tip check cannot protect against a later remote move.'' [INFERRED: lines 101, 105–116, 131] `git fetch` updates local tracking refs, and `check` compares those refs to nine-character scout IDs. A push by someone else after fetch and before line 131 can move a remote branch while the local tracking ref still passes. `git push origin --delete` carries no expected-old-tip lease and can then delete the new work. Pin full object IDs and use server-enforced expected-tip leases for every deletion. If the server supports it, request an atomic push for the remote batch; otherwise report partial success explicitly.
 
-4. ''The preflight promises more than it checks.'' [INFERRED: lines 5–6, 100–122] It checks listed target tips and local worktree occupancy, but never checks the protected span or main tips, current repository identity, or remote URL. The span's local tracking tip now reads `381596346c02`, while the scout inventory captured `20728cdd6`; the script does not notice that base change. Recheck merge evidence against the freshly fetched bases and bind the run to `/home/joshu/Synthetic-Dream-Machine` and the expected origin. `git fetch` happens before any prompt and writes Git state even when the operator answers `n`.
+4. ''The preflight promises more than it checks.'' [INFERRED: lines 5–6, 100–122] It checks listed target tips and local worktree occupancy, but never checks the protected span or main tips, current repository identity, or remote URL. The span's local tracking tip now reads `381596346c02`, while the scout inventory captured `20728cdd6`; the script does not notice that base change. Recheck merge evidence against the freshly fetched bases and bind the run to the intended repository and the expected origin. `git fetch` happens before any prompt and writes Git state even when the operator answers `n`.
 
 5. ''A successful `mapfile` can hide a failed list builder.'' [REACHED: lines 118–122] `mapfile -t A < <(names ...)` returns the status of `mapfile`, not the process substitution. A read-only Bash reproduction confirmed that `mapfile` returns success after a failing producer under `set -euo pipefail`. The `names` helpers also use `n` without `local`, though the current callers do not depend on its previous value. Build arrays with checked producer status, or count and validate every expected ref before prompting. `mapfile` also requires Bash 4 or newer, which the shebang alone does not guarantee on a stock macOS Bash.
 
@@ -255,6 +255,6 @@ Sources: `in/branch-scout-luna.md; in/sweep-cold-reader.md`. Persona: Branch-Sco
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ATYXDarEGpGxKzD_RUFXHgL04_U-4k-eFacRBd8ec60`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zM71MFwVTQ2ghWuNMaX7qabBGPpmdcPZtGnKibXlMjQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

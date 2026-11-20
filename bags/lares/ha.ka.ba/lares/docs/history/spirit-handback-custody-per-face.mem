@@ -25,7 +25,7 @@ Verbatim wave-two handbacks of four Luna-6 YIN and YANG rounds (2026-10-19); onl
 
 YIN-Luna · merged F6 seal-fork handback · platform lens · accessed 2026-10-19
 
-Evidence marks: MEASURED means read directly in cited source or on a cited vendor/spec page. LEAD means inference, an unverified detail, or a proposed design consequence. Claim provenance in the ratchet: confirmed-by-both, yours-alone, or twin-alone (TWIN.md = YANG code lens; MINE.md = YIN platform lens). Local paths below are repository-relative to `/home/joshu/Synthetic-Dream-Machine`, unless a path begins `bags/`.
+Evidence marks: MEASURED means read directly in cited source or on a cited vendor/spec page. LEAD means inference, an unverified detail, or a proposed design consequence. Claim provenance in the ratchet: confirmed-by-both, yours-alone, or twin-alone (TWIN.md = YANG code lens; MINE.md = YIN platform lens). Local paths below are relative to the repository root, unless a path begins `bags/`.
 
 <<~/ahu>>
 
@@ -91,7 +91,7 @@ Evidence marks: MEASURED means read directly in cited source or on a cited vendo
 
 YANG handback — F6 seal fork (code lens)
 
-Evidence labels: MEASURED means directly present in source; LEAD means inferred or unverified. Repository paths are relative to /home/joshu/Synthetic-Dream-Machine. Read on 2026-10-19; no suites, builds, or git writes were run.
+Evidence labels: MEASURED means directly present in source; LEAD means inferred or unverified. Repository paths are relative to the repository root. Read on 2026-10-19; no suites, builds, or git writes were run.
 
 <<~/ahu>>
 
@@ -240,7 +240,7 @@ YIN's twin handback is TWIN.md; its platform evidence is distinct from this code
 !! YIN · Wave-two ratchet handback — per-face custody keys
 
 
-Research date: ''2026-10-19''. ''MEASURED'' = directly supported by code or dated primary/vendor source; ''LEAD'' = inference or recommendation. Provenance suffixes: ''confirmed-by-both'', ''yours-alone'', ''twin-alone'' refer to MINE.md (YIN) and TWIN.md (YANG). Repository paths are relative to `/home/joshu/Synthetic-Dream-Machine`; repository was read-only. No suites, builds, or git writes were run.
+Research date: ''2026-10-19''. ''MEASURED'' = directly supported by code or dated primary/vendor source; ''LEAD'' = inference or recommendation. Provenance suffixes: ''confirmed-by-both'', ''yours-alone'', ''twin-alone'' refer to MINE.md (YIN) and TWIN.md (YANG). Repository paths are relative to the repository root; repository was read-only. No suites, builds, or git writes were run.
 
 <<~/ahu>>
 
@@ -374,7 +374,7 @@ K15.4 removal/content-key lifecycle → K15.5 one-face restore → K15.6 atomic 
 !! YANG · Wave two ratchet: per-face custody keys
 
 
-Research date: 2026-10-19. Repository source is read-only; no suites, builds, or git writes were run. Paths are relative to `/home/joshu/Synthetic-Dream-Machine`. ''MEASURED'' = directly shown in source or cited vendor/spec page; ''LEAD'' = inference or recommendation. Each finding also identifies provenance: ''confirmed-by-both'', ''yours-alone'' (YANG code lens), or ''twin-alone'' (YIN platform lens). Round-one baseline: `PRIOR-YANG.md`, `PRIOR-YIN.md`; ratchet handbacks: `MINE.md`, `TWIN.md`.
+Research date: 2026-10-19. Repository source is read-only; no suites, builds, or git writes were run. Paths are relative to the repository root. ''MEASURED'' = directly shown in source or cited vendor/spec page; ''LEAD'' = inference or recommendation. Each finding also identifies provenance: ''confirmed-by-both'', ''yours-alone'' (YANG code lens), or ''twin-alone'' (YIN platform lens). Round-one baseline: `PRIOR-YANG.md`, `PRIOR-YIN.md`; ratchet handbacks: `MINE.md`, `TWIN.md`.
 
 <<~/ahu>>
 
@@ -498,7 +498,7 @@ These systems are precedents, not evidence of Lares isolation. “Type per ident
 !! YIN — wave-two merged handback: unasking vessel-common unlock
 
 
-Research date: ''2026-10-19''. Repo read-only; no suites, builds or git writes run. `MEASURED` means directly stated by checked-in source or a primary/vendor source page accessed 2026-10-19. `LEAD` means classification/design inference. Provenance after each finding: ''confirmed-by-both'', ''yours-alone'', or ''twin-alone'' (MINE=YIN; TWIN=YANG). Repo paths are relative to `/home/joshu/Synthetic-Dream-Machine`.
+Research date: ''2026-10-19''. Repo read-only; no suites, builds or git writes run. `MEASURED` means directly stated by checked-in source or a primary/vendor source page accessed 2026-10-19. `LEAD` means classification/design inference. Provenance after each finding: ''confirmed-by-both'', ''yours-alone'', or ''twin-alone'' (MINE=YIN; TWIN=YANG). Repo paths are relative to the repository root.
 
 <<~/ahu>>
 
@@ -639,7 +639,7 @@ Create A, B and C with independent random FCKs, distinct slot trees, archives, f
 !! YANG wave-two merged handback — what remains common?
 
 
-Research date: ''2026-10-19''. Repository `/home/joshu/Synthetic-Dream-Machine` was read-only; no suite, build, or git write was run. ''MEASURED'' means direct code or primary-source statement. ''LEAD'' means classification, target architecture, or inference. Provenance: ''confirmed-by-both'', ''yours-alone'', ''twin-alone'' compares my first-pass MINE.md and the YIN lens in local `TWIN.md`. Repo line numbers refer to the checked-in snapshot read on 2026-10-19. Frequency is semantic cadence, not telemetry.
+Research date: ''2026-10-19''. The repository was read-only; no suite, build, or git write was run. ''MEASURED'' means direct code or primary-source statement. ''LEAD'' means classification, target architecture, or inference. Provenance: ''confirmed-by-both'', ''yours-alone'', ''twin-alone'' compares my first-pass MINE.md and the YIN lens in local `TWIN.md`. Repo line numbers refer to the checked-in snapshot read on 2026-10-19. Frequency is semantic cadence, not telemetry.
 
 <<~/ahu>>
 
@@ -745,7 +745,7 @@ Create faces A, B, C with independent random FCKs, distinct slot trees, face arc
 !! YIN — round-four confirmation and lock
 
 
-Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` first, then `MINE.md` and `TWIN.md`. The repo stayed read-only; I ran no suite, build, or git write. `MEASURED` means source/spec/vendor evidence directly says it; `LEAD` means target allocation or inference. Provenance marks compare the wave-one notes: ''confirmed-by-both'', ''yours-alone'' (YIN/MINE), ''twin-alone'' (YANG/TWIN). File paths below are relative to `/home/joshu/Synthetic-Dream-Machine`; all external pages were accessed 2026-10-19.
+Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` first, then `MINE.md` and `TWIN.md`. The repo stayed read-only; I ran no suite, build, or git write. `MEASURED` means source/spec/vendor evidence directly says it; `LEAD` means target allocation or inference. Provenance marks compare the wave-one notes: ''confirmed-by-both'', ''yours-alone'' (YIN/MINE), ''twin-alone'' (YANG/TWIN). File paths below are relative to the repository root; all external pages were accessed 2026-10-19.
 
 <<~/ahu>>
 
@@ -873,7 +873,7 @@ For every vessel, instantiate faces A/B/C with independent random FCKs, distinct
 !! YANG — wave-three node-side confirmation and lock
 
 
-Research date: ''2026-10-19''. Repository `/home/joshu/Synthetic-Dream-Machine` was read-only; no suites, builds, or git writes were run. This handback is the complete wave-three note. ''MEASURED'' means direct source/code evidence. ''LEAD'' means classification or target design. Paths and line numbers below refer to the repository snapshot read today. `../PRIOR-YIN.md` and `../PRIOR-YANG.md` were read first; their shared D/F/S census is the row inventory used here.
+Research date: ''2026-10-19''. The repository was read-only; no suites, builds, or git writes were run. This handback is the complete wave-three note. ''MEASURED'' means direct source/code evidence. ''LEAD'' means classification or target design. Paths and line numbers below refer to the repository snapshot read today. `../PRIOR-YIN.md` and `../PRIOR-YANG.md` were read first; their shared D/F/S census is the row inventory used here.
 
 <<~/ahu>>
 
@@ -1064,7 +1064,7 @@ No test, build, suite, or git write was run. The tree remained read-only. Local 
 !! YIN wave-one internet scout — place signer
 
 
-Research date: ''2026-10-19''. All claims below are dated to 2026-10-19. ''MEASURED'' means read directly in the cited primary source/code; ''LEAD'' means an inference or proposed Lares design. Round-four handbacks `../PRIOR-YIN.md` and `../PRIOR-YANG.md` were read first. The repo `/home/joshu/Synthetic-Dream-Machine` remained read-only; no suite, build, or git write was run. This is wave one's internet lens: Q3 is deepest; Q1 is mapped only to the handed-off canon, not freshly re-audited.
+Research date: ''2026-10-19''. All claims below are dated to 2026-10-19. ''MEASURED'' means read directly in the cited primary source/code; ''LEAD'' means an inference or proposed Lares design. Round-four handbacks `../PRIOR-YIN.md` and `../PRIOR-YANG.md` were read first. The repo remained read-only; no suite, build, or git write was run. This is wave one's internet lens: Q3 is deepest; Q1 is mapped only to the handed-off canon, not freshly re-audited.
 
 <<~/ahu>>
 
@@ -1178,7 +1178,7 @@ Internet claims above cite primary vendor/project specifications or official doc
 !! YANG handback — place signer code audit
 
 
-Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` before source work. The repository `/home/joshu/Synthetic-Dream-Machine` remained read-only; no suite, build, or git write ran. `MEASURED` means directly read in source; `LEAD` marks implications or recommendations. No web search was done in wave one, per assignment. Claims below carry their date and evidence mark.
+Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` before source work. The repository remained read-only; no suite, build, or git write ran. `MEASURED` means directly read in source; `LEAD` marks implications or recommendations. No web search was done in wave one, per assignment. Claims below carry their date and evidence mark.
 
 <<~/ahu>>
 
@@ -1289,7 +1289,7 @@ Research date: ''2026-10-19''. I read `../PRIOR-YIN.md` and `../PRIOR-YANG.md` b
 !! YIN wave-two handback — place signer
 
 
-Research date: ''2026-10-19''. All claims are dated 2026-10-19. ''MEASURED'' means read in source or on a primary project/vendor page; ''LEAD'' means inference or proposed design. Provenance labels: ''confirmed-by-both'' (supported in both YIN and YANG wave-one handbacks), ''yours-alone'' (YIN), ''twin-alone'' (YANG). I read `../PRIOR-YIN.md`, `../PRIOR-YANG.md`, `MINE.md`, and `TWIN.md`. The repository `/home/joshu/Synthetic-Dream-Machine` remained read-only; no tests, builds, or git writes were run. All edits are confined to this directory.
+Research date: ''2026-10-19''. All claims are dated 2026-10-19. ''MEASURED'' means read in source or on a primary project/vendor page; ''LEAD'' means inference or proposed design. Provenance labels: ''confirmed-by-both'' (supported in both YIN and YANG wave-one handbacks), ''yours-alone'' (YIN), ''twin-alone'' (YANG). I read `../PRIOR-YIN.md`, `../PRIOR-YANG.md`, `MINE.md`, and `TWIN.md`. The repository remained read-only; no tests, builds, or git writes were run. All edits are confined to this directory.
 
 <<~/ahu>>
 
@@ -1470,6 +1470,6 @@ Current seed's direct and derived uses exceed the candidate's “place acts only
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;j4K5nDTvDTCBsXY3wVIJdctlX7ZkaMWsfJdthI6EbqI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TlCCWGrkbxPtR-Q2N-F0iIFdPxMRzS5dxz8bo-Yg3AQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

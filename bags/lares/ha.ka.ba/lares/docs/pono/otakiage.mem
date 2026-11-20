@@ -380,7 +380,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 ⚠ ''The general form, for every later stage the house adds:'' name a stage whose exit runs to deletion, and the evidence for that stage moves into the governing carrier's prose. A ladder cannot cite its own last rung by reference.
 
 |! stage |! carrier |! why it reads there |
-| ''`fleeting`'' | //no address — by definition// | the `temp` slot's records (`island-recipe.ts` `buildIslandRecipe`, a `MemoryTiddlerStore`) and this scout's own scratch under `/home/joshu/.claude/jobs/`. Nothing on the shelf, nothing in git, nothing checked |
+| ''`fleeting`'' | //no address — by definition// | the `temp` slot's records (`island-recipe.ts` `buildIslandRecipe`, a `MemoryTiddlerStore`) and this scout's own scratch job files. Nothing on the shelf, nothing in git, nothing checked |
 | ''`designed`'' | <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/aniani`>> | `status = "designed"`, `status-why = "doctrine; no source carries it yet"`. The purest case: a whole doctrine argued, zero code owed against it, and the carrier says so in six words |
 | ''`designed` (this one)'' | <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage`>> | this carrier. Leans open at #/leans, questions open at #/questions, nothing built, nothing burned |
 | ''`standing` × `build`'' | <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>> | "ruled 2026-09-11 and ENACTED — all seven clauses … stand in code with a red-first witness each" — and it names what still has no production caller, which is what an honest witness looks like |
@@ -467,6 +467,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vZeQai69m3UwcOZTfveRIGJBQQUmMRe7BfTcBLAm7IA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QCaWmYo2ByFtHcdpOBmQ7BzRRLX1V3RvAIA0JSQw058`>>
 
 <<^ code=`&#x0004;` to=`?`>>
