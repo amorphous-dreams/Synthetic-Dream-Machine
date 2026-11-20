@@ -1,7 +1,7 @@
 /**
  * rite — the store holder runs a rite's rows against the daemon wiki: `begin`, `land`, `receipts`.
  *
- * A rite that takes the vessel down keeps a tessera (a kūkulu keeps one per lent face, `beginLentFaces`): `begin` derives the head's tree (out of the checkout's object store, `gitTreeOf`, no git binary; a `keep` derives its bundle id from the staged bundle itself, `riteTreeOf`), returns the
+ * A rite that takes the vessel down keeps a tessera (a kūkulu keeps one per lent face and begins every face or none, `beginLentFaces`): `begin` derives the head's tree (out of the checkout's object store, `gitTreeOf`, no git binary; a `keep` derives its bundle id from the staged bundle itself, `riteTreeOf`), returns the
  * rite's lei at that head (the testimony, the count and the reach all judged in the mesh core) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
  * host half once a vessel stands again; `receipts` lists every half and runs conferre over them; `receipt` rests the
  * place-signed `receipt/<tree>` every return rests on, over the verdict the host's battery hands in; `offer` gathers what a
@@ -27,7 +27,7 @@ import type { Repo } from "@automerge/automerge-repo";
 import { lstatSync, realpathSync } from "node:fs";
 import { join, sep } from "node:path";
 import {
-  WORKSPACE_NAME_RE, SwarmRefused, beginRite, conferre, cosignPortWitness, isSwarmLeiRite, landRite, restReceipt, riteReceipts,
+  WORKSPACE_NAME_RE, SwarmRefused, beginChecked, beginRite, checkReturn, conferre, cosignPortWitness, isSwarmLeiRite, landRite, restReceipt, riteReceipts,
   type PlaceSigner, type SwarmLeiRite, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { loadVesselVerifyingKey, vesselPlaceSignerDoor } from "../node-vessel-identity.js";
@@ -108,27 +108,39 @@ export async function lentOfferFaces(lent: readonly number[], face: (ordinal: nu
 export interface BegunFace { readonly face: string; readonly ordinal: number; readonly tessera: string; readonly lei: string; readonly n: number; readonly begun: string }
 
 /**
- * ONE LEI PER LENT FACE. A kūkulu lends the next vessel every face this one serves, so it begins one rite per lent ordinal, in
- * the lend's order, each spending that face's own lei under that face's own hand (`begin`). A face whose lei is missing
- * (`swarm-lei-absent`) waits by name, as at the offer and the pūlama; with every face waiting the begin refuses
- * `swarm-lei-absent` naming them. Any other reading refuses the whole begin. No lent face refuses `lent-faces-empty`.
+ * ONE LEI PER LENT FACE, ALL OR NONE. A kūkulu lends the next vessel every face this one serves, so it begins one rite per lent
+ * ordinal, in the lend's order, each spending that face's own lei under that face's own hand. It CHECKS every face first
+ * (`check`: the lei stands with a return left, its testimony reads pass for the tree) and claims nothing; only once every
+ * face answers does it claim each face's return and rest its guest half (`begin`). A face whose lei is missing
+ * (`swarm-lei-absent`, or `swarm-lei-group` where only other faces' leis rest on the line) waits by name, as at the offer
+ * and the pūlama; with every face waiting the begin refuses
+ * `swarm-lei-absent` naming them. Any other reading refuses the whole begin, naming that face, before any face's return is
+ * claimed (a red receipt has still narrowed that face's wide lei, as the testimony reads red either way). No lent face refuses
+ * `lent-faces-empty`.
  */
-export async function beginLentFaces(
+export async function beginLentFaces<C>(
   lent: readonly number[],
-  begin: (ordinal: number) => Promise<{ readonly tessera: string; readonly lei: string; readonly n: number; readonly begun: string }>,
+  check: (ordinal: number) => Promise<C>,
+  begin: (checked: C) => Promise<{ readonly tessera: string; readonly lei: string; readonly n: number; readonly begun: string }>,
 ): Promise<{ readonly rite: "kukulu"; readonly faces: readonly BegunFace[]; readonly waits: readonly string[] }> {
   if (lent.length === 0) throw new SwarmRefused("lent-faces-empty", "a kūkulu begins over the lent faces, and this vessel serves no face");
-  const faces: BegunFace[] = [], waits: string[] = [];
+  const checked: { ordinal: number; checked: C }[] = [], waits: string[] = [];
   for (const ordinal of lent) {
-    try {
-      const b = await begin(ordinal);
-      faces.push({ face: `h${ordinal}`, ordinal, tessera: b.tessera, lei: b.lei, n: b.n, begun: b.begun });
-    } catch (e) {
-      if (e instanceof SwarmRefused && e.code === "swarm-lei-absent") { waits.push(`h${ordinal}`); continue; }
-      throw e;
+    try { checked.push({ ordinal, checked: await check(ordinal) }); }
+    catch (e) {
+      if (!(e instanceof SwarmRefused)) throw e;
+      // ONE LINE, EVERY LENT FACE'S LEI: each face's kukulu lei rests under the branch's one line on the shared wiki, so a face
+      // whose hand strung none there reads the other faces' rows as another group's. That face has no lei here, and waits.
+      if (e.code === "swarm-lei-absent" || e.code === "swarm-lei-group") { waits.push(`h${ordinal}`); continue; }
+      throw new SwarmRefused(e.code, `the lent face h${ordinal} refuses, so no face's return is claimed: ${e.message}`);
     }
   }
-  if (faces.length === 0) throw new SwarmRefused("swarm-lei-absent", `no kukulu lei of its own hand stands for any lent face (${waits.join(", ")}), so this kūkulu begins nothing`);
+  if (checked.length === 0) throw new SwarmRefused("swarm-lei-absent", `no kukulu lei of its own hand stands for any lent face (${waits.join(", ")}), so this kūkulu begins nothing`);
+  const faces: BegunFace[] = [];
+  for (const { ordinal, checked: c } of checked) {
+    const b = await begin(c);
+    faces.push({ face: `h${ordinal}`, ordinal, tessera: b.tessera, lei: b.lei, n: b.n, begun: b.begun });
+  }
   return { rite: "kukulu", faces, waits };
 }
 
@@ -184,7 +196,7 @@ export async function runRiteVerb(opts: {
     }) };
   }
   if (opts.action === "begin" && opts.args["rite"] === "kukulu") {
-    // A KŪKULU BEGINS FOR EVERY LENT FACE: one rite per face, each returning that face's own lei and resting its own guest half.
+    // A KŪKULU BEGINS FOR EVERY LENT FACE OR FOR NONE: every face's return checks first, then each claims and rests its guest half.
     if (!str("branch") || !str("head")) throw new SwarmRefused("rite-malformed", "a rite names its rite, its branch and the head it runs at");
     const at = { rite: "kukulu" as const, branch: str("branch"), head: str("head"), tree: await (opts.treeOf ?? gitTreeOf)(str("head")) };
     const wiki = opts.wiki;
@@ -192,8 +204,8 @@ export async function runRiteVerb(opts: {
       let face: RiteFace;
       try { face = await riteFaceOf(opts.repo, opts.catalogUrl, ordinal, placeKey); }
       catch (e) { if (e instanceof SwarmRefused) throw e; throw new SwarmRefused("face-log-unreadable", `the lent face h${ordinal} loads no log: ${e instanceof Error ? e.message : String(e)}`); }
-      return beginRite(wiki, at, face.trust, face.group, face.vessel, face.ward);
-    }) };
+      return checkReturn(wiki, at, face.trust, face.group, face.vessel, face.ward);
+    }, (checked) => beginChecked(wiki, checked)) };
   }
   let loaded: FaceFold;
   try { loaded = await loadFaceFold(opts.repo, opts.catalogUrl, { index: opts.face }); }

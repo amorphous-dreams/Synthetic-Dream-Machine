@@ -24,8 +24,8 @@
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import type { SwarmLeiRite } from "./swarm-lei-rite.js";
 import {
-  SwarmRefused, returnLei, signSwarmAct, swarmActCid, swarmTesseraPrefix, swarmTesseraTitle, verifySwarmRecord,
-  type SwarmLeiLine, type SwarmRiteBegunBody, type SwarmRiteLandedBody, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
+  SwarmRefused, checkReturn, claimReturn, signSwarmAct, swarmActCid, swarmTesseraPrefix, swarmTesseraTitle, verifySwarmRecord,
+  type SwarmLeiLine, type SwarmReturnable, type SwarmRiteBegunBody, type SwarmRiteLandedBody, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "./swarm-tiddlers.js";
 import type { WardActWitness } from "./ward-cosign.js";
 
@@ -49,7 +49,16 @@ export interface TesseraReading {
  */
 export async function beginRite(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head: string; readonly tree: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort, ward: WardActWitness):
   Promise<{ tessera: string; rite: SwarmLeiRite; lei: string; n: number; begun: string }> {
-  const ret = await returnLei(wiki, at, trust, group, vessel, ward);
+  return beginChecked(wiki, await checkReturn(wiki, at, trust, group, vessel, ward));
+}
+
+/**
+ * Begin a rite whose return `checkReturn` already judged: claim that return, then rest the guest half under the vessel the check
+ * named. A kūkulu checks every lent face first and begins each only once all of them answer.
+ */
+export async function beginChecked(wiki: SwarmWikiPort, checked: SwarmReturnable): Promise<{ tessera: string; rite: SwarmLeiRite; lei: string; n: number; begun: string }> {
+  const { at, group, spender: vessel } = checked;
+  const ret = await claimReturn(wiki, checked);
   const tessera = tesseraOf(ret);
   const act = await signSwarmAct({ act: "rite-begun", group, rite: at.rite, branch: at.branch, head: at.head, tree: at.tree, lei: ret.lei, n: ret.n, tessera }, vessel);
   // One return claims one row, so one tessera: a guest half already resting names a return this vessel never made.

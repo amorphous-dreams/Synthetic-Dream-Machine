@@ -349,6 +349,25 @@ export async function readLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly
 export async function returnLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head: string; readonly tree: string }, trust: SwarmTrust, group: string, spender: SwarmSignerPort, ward: WardActWitness,
   /** The scope check an `exec` spend runs over the standing lei (`spendExecLei`): a refusal it names ends the spend unclaimed. */
   admits?: (lei: SwarmLeiBody) => SwarmRefused | null): Promise<{ lei: string; reach: SwarmLeiReach; n: number }> {
+  return claimReturn(wiki, await checkReturn(wiki, at, trust, group, spender, ward, admits));
+}
+
+/** A return a spend may claim: the standing lei, the line and head it spends at, and the vessel that spends it. */
+export interface SwarmReturnable {
+  readonly at: SwarmLeiLine & { readonly head: string; readonly tree: string };
+  readonly lei: { readonly act: SignedSwarmAct; readonly cid: string; readonly reach: SwarmLeiReach; readonly returnsLeft: number };
+  readonly group: string;
+  readonly spender: SwarmSignerPort;
+}
+
+/**
+ * JUDGE A SPEND AND CLAIM NOTHING: the lei stands with a return left (`readLei`), the vessel spends it, an `exec` lei passes its
+ * scope check, and a testifying rite's tree carries a passing receipt. Each refusal reads as `returnLei` names it. A red receipt
+ * still narrows a wide lei here, since the testimony reads red whether or not the spend goes on. A spend over many lines (a
+ * kūkulu's lent faces) checks every line first and claims (`claimReturn`) only once every check answers.
+ */
+export async function checkReturn(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head: string; readonly tree: string }, trust: SwarmTrust, group: string, spender: SwarmSignerPort, ward: WardActWitness,
+  admits?: (lei: SwarmLeiBody) => SwarmRefused | null): Promise<SwarmReturnable> {
   const lei = await readLei(wiki, at, trust, group, ward);
   if (!lei.ok) throw new SwarmRefused(`swarm-lei-${lei.refusal}`, `the ${at.rite} lei for "${at.branch}" at ${at.head} does not stand (${lei.refusal})`);
   if (!trust.vessel(spender.key.toLowerCase())) throw new SwarmRefused("swarm-return-role", "the vessel alone spends a lei");
@@ -356,7 +375,8 @@ export async function returnLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readon
   if (at.rite === "exec" && admits === undefined) throw new SwarmRefused("swarm-lei-exec-unscoped", "an exec lei spends only through its scope check (spendExecLei)");
   const outside = admits?.(lei.act.body as SwarmLeiBody) ?? null;
   if (outside) throw outside;
-  if (!leiRiteTestifies(at.rite)) return claimReturn(wiki, at, lei, group, spender);
+  const returnable: SwarmReturnable = { at, lei: { act: lei.act, cid: lei.cid, reach: lei.reach, returnsLeft: lei.returnsLeft }, group, spender };
+  if (!leiRiteTestifies(at.rite)) return returnable;
   const absent = (): never => { throw new SwarmRefused("swarm-lei-testimony-absent", `no passing receipt stands for the tree of ${at.head}; a spend names the head's tree and rests on its receipt`); };
   if (!str(at.tree)) absent();
   const receiptTitle = swarmReceiptTitle(at.tree);
@@ -370,12 +390,11 @@ export async function returnLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readon
     }
     throw new SwarmRefused("swarm-lei-testimony-red", `the receipt for the tree of ${at.head} reads fail${lei.reach === "wide" ? "; the lei narrows to head-only until a fresh lei follows it" : ""}`);
   }
-  return claimReturn(wiki, at, lei, group, spender);
+  return returnable;
 }
 
-/** Claim the lowest free return row of a standing lei, atomically; past its count it refuses spent. */
-async function claimReturn(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head: string; readonly tree: string }, lei: { readonly act: SignedSwarmAct; readonly cid: string; readonly reach: SwarmLeiReach }, group: string, spender: SwarmSignerPort):
-  Promise<{ lei: string; reach: SwarmLeiReach; n: number }> {
+/** Claim the lowest free return row of a checked lei, atomically; past its count it refuses spent. */
+export async function claimReturn(wiki: SwarmWikiPort, { at, lei, group, spender }: SwarmReturnable): Promise<{ lei: string; reach: SwarmLeiReach; n: number }> {
   const returns = lei.reach === "wide" ? (lei.act.body as Extract<SwarmLeiBody, { reach: "wide" }>).returns : 1;
   for (let n = 1; n <= returns; n++) {
     const spent = await signSwarmAct({ act: "lei-returned", group, branch: at.branch, head: at.head, tree: at.tree, lei: lei.cid, n }, spender);
