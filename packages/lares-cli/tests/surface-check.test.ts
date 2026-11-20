@@ -1,10 +1,9 @@
 /**
  * surface-check — `lares surface check`, the pool check the pre-commit hook runs, over planted breaches.
  *
- * A face pool holds that face's private planes alone (face-pools #/shape): it refuses a repo top holding an index file
- * that maps one face to another (`face-labels/`, `kahua-index.toml`, `share.tid`, `kahua-pending.json`) or another face's root; it
- * refuses any repo rooted at `projections/` or `config/`; it refuses an author email or signing key another face pool in
- * the same house already carries. It reads LOCAL config alone, and exits 1 naming each breach.
+ * A face pool holds that face's private planes alone (face-pools #/shape): it refuses a repo that holds another face's root, any repo
+ * rooted at `projections/` or `config/`, and a signing key another face pool in the same house already carries (a crypto identity).
+ * A pet name binds nothing: index files mapping pet names, and an author another face carries, pass. It reads LOCAL config alone, and exits 1 naming each breach.
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { mkdirSync } from "node:fs";
@@ -38,16 +37,12 @@ describe("lares surface check", () => {
     expect(await check({ face: "0" })).toBe(0);
   });
 
-  test.each(["kahua-index.toml", "share.tid", "kahua-pending.json"])("★ refuses a pool top holding the index file %s ★", async (name) => {
+  // A PET NAME BINDS NOTHING: the map files that name a face's pet name may rest anywhere, with or without a remote.
+  test.each(["kahua-index.toml", "share.tid", "kahua-pending.json", "face-labels/abc.json"])("★ a pool top holding the pet-name map %s passes, remote or none ★", async (name) => {
     plant(join(heron, name), "x\n");
-    expect(await check()).toBe(1);
-    expect(rig.said()).toContain(name);
-  });
-
-  test("★ refuses a pool top holding face-labels/ ★", async () => {
-    plant(join(heron, "face-labels", "abc.json"), "{}\n");
-    expect(await check()).toBe(1);
-    expect(rig.said()).toContain("face-labels");
+    expect(await check()).toBe(0);
+    git(heron, "remote", "add", "origin", "git@example.invalid:heron.git");
+    expect(await check()).toBe(0);
   });
 
   test("★ refuses a repo that holds another face's root ★", async () => {
@@ -74,15 +69,14 @@ describe("lares surface check", () => {
     expect(await check()).toBe(1);
   });
 
-  test("★ refuses an author email another face pool in the house carries ★", async () => {
+  test("★ an author another face pool in the house carries passes: an author is a pet name ★", async () => {
     rig.wear({ index: 1, petname: "Moth" });
     expect(await cmdSurface(surfaceArgs(["init"]), rig.doors)).toBe(0);
     const moth = faceRoot(rig.projections, "Moth");
     git(moth, "config", "--local", "user.email", "HERON-LANTERN@face.invalid");
+    git(moth, "remote", "add", "origin", "git@example.invalid:moth.git");
     rig.at(moth);
-    expect(await check()).toBe(1);
-    expect(rig.said()).toMatch(/heron-lantern@face\.invalid/i);
-    expect(rig.said()).toContain("Heron Lantern");
+    expect(await check()).toBe(0);
   });
 
   test("★ refuses a signing key another face pool in the house carries ★", async () => {
@@ -96,15 +90,6 @@ describe("lares surface check", () => {
     expect(rig.said()).toMatch(/signing key/);
   });
 
-  test("names every breach at once", async () => {
-    plant(join(heron, "kahua-index.toml"), "x\n");
-    plant(join(heron, "share.tid"), "x\n");
-    expect(await check()).toBe(1);
-    const said = rig.said();
-    expect(said).toContain("kahua-index.toml");
-    expect(said).toContain("share.tid");
-  });
-
   test("a folder no repo holds refuses by name", async () => {
     const bare = join(rig.scratch.home, "bare");
     mkdirSync(bare, { recursive: true });
@@ -114,10 +99,13 @@ describe("lares surface check", () => {
   });
 
   test("the hook's git env names no other repo: a GIT_DIR inherited from the hook leaves the read on the pool", async () => {
-    plant(join(heron, "share.tid"), "x\n");
+    rig.wear({ index: 1, petname: "Moth" });
+    expect(await cmdSurface(surfaceArgs(["init"]), rig.doors)).toBe(0);
+    git(heron, "config", "--local", "user.signingkey", "ssh-ed25519 AAAAshared");
+    git(faceRoot(rig.projections, "Moth"), "config", "--local", "user.signingkey", "ssh-ed25519 AAAAshared");
     const prior = process.env["GIT_DIR"];
     process.env["GIT_DIR"] = join(rig.scratch.home, "elsewhere.git");
     try { expect(await check()).toBe(1); } finally { if (prior === undefined) delete process.env["GIT_DIR"]; else process.env["GIT_DIR"] = prior; }
-    expect(rig.said()).toContain("share.tid");
+    expect(rig.said()).toMatch(/signing key/);
   });
 });

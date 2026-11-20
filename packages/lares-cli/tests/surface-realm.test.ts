@@ -5,9 +5,8 @@
  * pet name (operator ruling 2026-11-19): `projections/realms/<realm pet name>/wikis/<slug>/`, or the workspace its share row names.
  * `init --realm <realm pet name>` makes EACH wiki folder the realm holds its own git working tree (`.git` at the folder's top,
  * never one tree over the realm) under the wiki's identity (`<slug> <slug>@realm.invalid`), never a face's; `check` run from one
- * refuses an index file, a face root inside it, an author naming a face, and a remote on a realm only the house's own faces share
- * (its history interleaves the operator's faces' commits, so it stays local: research/tideline-surface #/hats); a repo spanning
- * the realm refuses; `commit --realm <realm pet name>` stages each by the synced base as the face commit does.
+ * refuses a face root inside it and a repo spanning the realm; an index file, an author naming a face and a remote
+ * pass (a pet name binds nothing); `commit --realm <realm pet name>` stages each by the synced base as the face commit does.
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -120,10 +119,9 @@ describe("lares surface check, from a realm pool", () => {
     expect(await run(["check"], { realm: "Garden" })).toBe(0);
   });
 
-  test.each(["kahua-index.toml", "share.tid", "kahua-pending.json", "face-labels/abc.json"])("★ refuses a realm pool top holding the index file %s ★", async (name) => {
+  test.each(["kahua-index.toml", "share.tid", "kahua-pending.json", "face-labels/abc.json"])("★ a realm pool top holding the pet-name map %s passes ★", async (name) => {
     plant(join(notes, name), "x\n");
-    expect(await run(["check"])).toBe(1);
-    expect(rig.said()).toContain(name.split("/")[0]);
+    expect(await run(["check"])).toBe(0);
   });
 
   test("★ refuses a face root inside the realm pool ★", async () => {
@@ -132,40 +130,22 @@ describe("lares surface check, from a realm pool", () => {
     expect(rig.said()).toMatch(/surface-realm-face-root/);
   });
 
-  test("★ refuses an author naming a face's pet name ★", async () => {
+  test("★ an author naming a face's pet name, or at face.invalid, passes with a remote: a pet name binds nothing ★", async () => {
     git(notes, "config", "--local", "user.name", "Heron Lantern");
-    expect(await run(["check"])).toBe(1);
-    expect(rig.said()).toMatch(/surface-realm-face-author/);
-    expect(rig.said()).toContain("Heron Lantern");
-  });
-
-  test("★ refuses an author email at face.invalid ★", async () => {
     git(notes, "config", "--local", "user.email", "heron-lantern@face.invalid");
-    expect(await run(["check"])).toBe(1);
-    expect(rig.said()).toMatch(/surface-realm-face-author/);
-  });
-
-  test("★ refuses a remote on a realm no share row opens past the house: it stays local ★", async () => {
     git(notes, "remote", "add", "origin", "git@example.invalid:notes.git");
-    expect(await run(["check"])).toBe(1);
-    expect(rig.said()).toMatch(/surface-realm-remote/);
+    expect(await run(["check"])).toBe(0);
   });
 
-  test("★ refuses a remote on a realm whose share row names only the house's own faces (a cabal of one) ★", async () => {
+  test("★ a remote passes on a realm no share row opens past the house, and on a cabal of one's ★", async () => {
+    git(notes, "remote", "add", "origin", "git@example.invalid:notes.git");
+    expect(await run(["check"])).toBe(0);
     rig.wear({ index: 1, petname: "Moth" });
     expect(await run(["init"])).toBe(0);
     shares([{ slug: "notes", kind: "wiki", read: "[[Heron Lantern]] *", write: "Moth" }]);
-    git(notes, "remote", "add", "origin", "git@example.invalid:notes.git");
-    expect(await run(["check"])).toBe(1);
-    expect(rig.said()).toMatch(/cabal of one/);
-  });
-
-  test("a remote on a realm whose row names a member no face here carries: passes, warning it commits under the realm alone", async () => {
-    shares([{ slug: "notes", kind: "wiki", read: "[[Heron Lantern]] Stranger", write: "[[Heron Lantern]]" }]);
-    git(notes, "remote", "add", "origin", "git@example.invalid:notes.git");
     expect(await run(["check"])).toBe(0);
-    expect(rig.said()).toMatch(/realm's identity/);
-    expect(rig.said()).toContain("Stranger");
+    shares([{ slug: "notes", kind: "wiki", read: "[[Heron Lantern]] Stranger", write: "[[Heron Lantern]]" }]);
+    expect(await run(["check"])).toBe(0);
   });
 
   test("CONTROL: the face pool's own check still passes beside the realm pool", async () => {

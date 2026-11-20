@@ -586,12 +586,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   "surface check": {
     usage: "usage: lares surface check [--face N | --realm <realm pet name>]",
     synopsis:
-      "The pool check over the repo standing at this directory (or the named face's pool). It refuses a repo top holding face-labels/, " +
-      "realm-labels/, kahua-index.toml, share.tid, kahua-pending.json or another face's root; any repo holding projections/ or config/, or spanning a " +
-      "realm's wikis (a repo at realms/<realm pet name>/); and an author email or " +
-      "signing key another face pool in the house carries. It reads local config alone and exits 1 naming each breach. From a realm pool " +
-      "(or --realm <realm pet name>, over each of its wiki pools) it also refuses a faces/ folder, an author naming a face's pet name or @face.invalid, and any remote while the share " +
-      "row names only this house's own faces (or no row stands): a cabal of one's realm stays local. A row naming a member no face here wears warns instead.",
+      "The pool check over the repo standing at this directory (or the named face's pool). A pet name binds nothing here: it names no " +
+      "refusal, so an index file, an author or a remote carrying pet names passes. It refuses what guards a crypto identity or the pool's " +
+      "structure: another face's root; any repo holding projections/ or config/, or spanning a realm's wikis (a repo at " +
+      "realms/<realm pet name>/); and a signing key another face pool in the house carries. It reads local config alone and exits 1 " +
+      "naming each breach. From a realm pool (or --realm <realm pet name>, over each of its wiki pools) it also refuses a faces/ folder.",
     examples: ["lares surface check", "lares surface check --face 1 --json", "lares surface check --realm notes"],
     flags: ["--face N   check that face's pool wherever this runs", "--realm <realm pet name>   check each wiki pool of that realm wherever this runs"],
   },
