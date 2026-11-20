@@ -10,7 +10,7 @@
  *   S3  the lay's lines print each skip, file and reason
  *   S4  a personal-layer file under `lares watch` (`fileToUriForSource`) derives its title: a loci `.mem` and a plain one
  *   S5  `lares watch` prints its skips even when no candidate rides the wave
- *   S6  the mirror walk honours HOUSE_IGNORED: no `.git/`, `.vscode/`, `.shore/`, atomic temp or `.orphans/` file rides
+ *   S6  the mirror walk honours HOUSE_IGNORED: no `.git/`, `.vscode/`, `.shore/`, atomic temp, `.orphans/` or view-state file rides
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -111,8 +111,9 @@ describe("no silent skips", () => {
     put(`faces/hearth-one/wiki/.shore/ha.ka.ba/notes/pond.tid`, tid("lar:///ha.ka.ba/notes/pond"));
     put(`faces/hearth-one/wiki/ha.ka.ba/notes/pond.orphans/part.mem`, "x");
     put(`faces/hearth-one/wiki/ha.ka.ba/notes/pond.tid.4242.00000000-0000-4000-8000-000000000000.tmp`, "x");
+    put(`faces/hearth-one/wiki/$__StoryList.tid`, tid("$:/StoryList"));
     const rels = mirrorFiles(P(`faces/hearth-one/wiki`));
-    expect(rels.filter((r) => r.startsWith(".") || r.includes(".orphans/") || r.endsWith(".tmp"))).toEqual([]);
+    expect(rels.filter((r) => r.startsWith(".") || r.includes(".orphans/") || r.endsWith(".tmp") || r === "$__StoryList.tid")).toEqual([]);
     expect(rels).toContain("My Notes.tid");
   });
 });

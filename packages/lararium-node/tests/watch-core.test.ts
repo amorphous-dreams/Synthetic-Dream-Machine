@@ -13,17 +13,19 @@
  *       no interval ever arms, and the final wave at the seam reads the whole pool once
  *   W2d the commit seam: the pool's git history takes the watched planes as they stand, under a `lar:` subject naming no
  *       face; nothing moved commits nothing; a pool with no history commits nothing, by name
+ *   W2e the arm tends the pool's ignore block: a block `lares surface init` wrote before a rule joined re-reads HOUSE_IGNORED,
+ *       the operator's lines kept; a tracked file the house now ignores reads by name; a pool init never made stays as it stands
  *   S1  stage/ joins the watched planes (RULED floor 4 (b)), and the wake names every stage edit made on disk since the last
  *       sitting, each title with its pool commit or "uncommitted"
  *   C   control: the house's ignore list already keeps a pool's `.git/` out of every scan
  */
 import { describe, test, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
 import { EventEmitter } from "node:events";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { houseIgnored } from "../src/bag-paths.js";
+import { houseIgnored, POOL_EXCLUDE_CLOSE, POOL_EXCLUDE_OPEN, withExcludeBlock } from "../src/bag-paths.js";
 
 type WatchCore = typeof import("../src/watch-core.js");
 const WATCH_CORE = "../src/watch-core.js";
@@ -119,7 +121,7 @@ describe("W1b/W2a — the host arms off the boot path and catches up at wear", (
 });
 
 describe("W1c — the host watches the pool's planes alone", () => {
-  test("an edit under each watched plane rides a wave; .git, temp, the pool root and litter wake none", async () => {
+  test("an edit under each watched plane rides a wave; .git, temp, view state, the pool root and litter wake none", async () => {
     const waves: string[] = [];
     const { watch, fire } = fakeWatch();
     const host = wc.armFacePoolWatch({
@@ -128,7 +130,7 @@ describe("W1c — the host watches the pool's planes alone", () => {
     });
     await host.armed;
     for (const rel of ["wiki/daemon/My Notes.tid", "canon/ha.ka.ba/notes/pond.mem", "stage/memory/heron.tid", "personal/elyncia/Aside.tid", "recovery/elyncia/Draft.tid"]) fire(rel);
-    for (const rel of [".git/index", "temp/elyncia/x.tid", "loose.tid", "stage/memory/.heron.tid.swp", "wiki/daemon/x.tid~", "wiki/daemon/x.tid.123.tmp"]) fire(rel);
+    for (const rel of [".git/index", "temp/elyncia/x.tid", "loose.tid", "stage/memory/.heron.tid.swp", "wiki/daemon/x.tid~", "wiki/daemon/x.tid.123.tmp", "personal/elyncia/$__StoryList.tid"]) fire(rel);
     await settle(40);
     expect(waves.map((f) => f.slice(pool.length + 1)).sort()).toEqual([
       "canon/ha.ka.ba/notes/pond.mem", "personal/elyncia/Aside.tid", "recovery/elyncia/Draft.tid", "stage/memory/heron.tid", "wiki/daemon/My Notes.tid",
@@ -217,6 +219,52 @@ describe("W2d — the commit seam over the pool's git history", () => {
   test("a pool with no history commits nothing, by name", async () => {
     put("stage/memory/heron.tid", tid("memory/heron"));
     expect(await wc.poolCommitSeam(pool, "down")).toEqual({ committed: false, why: "no-pool-history" });
+  });
+});
+
+describe("W2e — the arm tends the pool's ignore block", () => {
+  const armOnce = async (lines: string[]): Promise<void> => {
+    const host = wc.armFacePoolWatch({
+      pool, watch: fakeWatch().watch, cookie: async () => true, settleMs: 5, log: (l) => lines.push(l),
+      ports: { catchUp: async () => {}, wave: async () => {}, commit: async () => ({ committed: false, why: "nothing-moved" }) },
+    });
+    await host.armed;
+    await host.down("down");
+  };
+
+  test("a block written before a rule joined learns it at the arm; the operator's lines stay; a tracked view-state file reads by name", async () => {
+    initPool();
+    put("personal/lares/$__StoryList.tid", tid("$:/StoryList", "tracked before the rule"));
+    git("add", "-A"); git("commit", "-q", "-m", "an older sitting");
+    const exclude = join(pool, ".git", "info", "exclude");
+    const older = `my-own-notes/\n${POOL_EXCLUDE_OPEN}\n.vscode/\n${POOL_EXCLUDE_CLOSE}\n`;
+    writeFileSync(exclude, older);
+    const lines: string[] = [];
+    await armOnce(lines);
+    expect(readFileSync(exclude, "utf8")).toBe(withExcludeBlock(older));
+    expect(readFileSync(exclude, "utf8")).toMatch(/^my-own-notes\/\n/);
+    expect(lines.join("\n")).toMatch(/re-reads HOUSE_IGNORED/);
+    expect(lines.join("\n")).toMatch(/1 file\(s\) the house ignores stand tracked \(personal\/lares\/\$__StoryList\.tid\)/);
+    // Once out of the history, the view state never rides a sitting's close again.
+    git("rm", "-q", "--cached", "personal/lares/$__StoryList.tid"); git("commit", "-q", "-m", "out once");
+    put("personal/lares/$__StoryList.tid", tid("$:/StoryList", "a later view"));
+    put("personal/lares/$__HistoryList.tid", tid("$:/HistoryList"));
+    expect(await wc.poolCommitSeam(pool, "down")).toEqual({ committed: false, why: "nothing-moved" });
+    const again: string[] = [];
+    await armOnce(again);
+    expect(readFileSync(exclude, "utf8")).toBe(withExcludeBlock(older));
+    expect(again.some((l) => /re-reads HOUSE_IGNORED|stand tracked/.test(l)), "a current block and a clean history log nothing").toBe(false);
+  });
+
+  test("a pool `lares surface init` never made stays as it stands", () => {
+    initPool();
+    const exclude = join(pool, ".git", "info", "exclude");
+    writeFileSync(exclude, "my-own-notes/\n");
+    expect(wc.tendPoolExclude(pool)).toEqual({ reading: "unmade", tracked: [] });
+    expect(readFileSync(exclude, "utf8")).toBe("my-own-notes/\n");
+    rmSync(join(pool, ".git"), { recursive: true });
+    expect(wc.tendPoolExclude(pool)).toEqual({ reading: "unmade", tracked: [] });
+    expect(existsSync(join(pool, ".git"))).toBe(false);
   });
 });
 

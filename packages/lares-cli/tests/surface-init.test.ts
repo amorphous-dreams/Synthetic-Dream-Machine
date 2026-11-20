@@ -2,15 +2,16 @@
  * surface-init — `lares surface init` makes the worn (or named) face's root a git working tree, once.
  *
  * Witnessed on a scratch house: `.git` stands inside `projections/faces/<pet name>/` at 0700; `.git/info/exclude` carries
- * the house's one ignore list (`HOUSE_IGNORED`) and never the pointer carriers (`.meta`, `.kapae`, `.mem`, `.tid`); the
+ * the house's one ignore list (`HOUSE_IGNORED`, a personal layer's view state among it) and never the pointer carriers
+ * (`.meta`, `.kapae`, `.mem`, `.tid`); the
  * author reads `<pet name> <slug>@face.invalid` from LOCAL config with signing off, and nothing reaches a global config;
  * a pre-commit hook runs `lares surface check`; a second init changes nothing and says "already".
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, readFileSync, statSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { faceRoot, HOUSE_IGNORED } from "@lararium/node";
-import { cmdSurface, faceEmailSlug, surfaceExcludeLines } from "../src/commands/surface.js";
+import { faceRoot, houseExcludeLines, HOUSE_IGNORED } from "@lararium/node";
+import { cmdSurface, faceEmailSlug } from "../src/commands/surface.js";
 import { git, openSurfaceRig, plant, surfaceArgs, type SurfaceRig } from "./support/surface-rig.js";
 
 let rig: SurfaceRig;
@@ -47,7 +48,7 @@ describe("lares surface init", () => {
     const root = faceRoot(rig.projections, "Heron Lantern");
     expect(await cmdSurface(surfaceArgs(["init"]), rig.doors)).toBe(0);
     const exclude = readFileSync(join(root, ".git", "info", "exclude"), "utf8");
-    for (const line of surfaceExcludeLines()) expect(exclude).toContain(line);
+    for (const line of houseExcludeLines()) expect(exclude).toContain(line);
     for (const dir of HOUSE_IGNORED.topDirs.filter((d) => d !== ".git")) expect(exclude).toContain(`${dir}/`);
     plant(join(root, "wiki", "Room 4.tid"), "title: Room 4\n\nbody\n");
     plant(join(root, "wiki", "Room 4.tid.meta"), "tags: x\n");
@@ -57,8 +58,12 @@ describe("lares surface init", () => {
     plant(join(root, "wiki", "family.orphans", "slot.mem"), "orphan\n");
     plant(join(root, "wiki", `Room 4.tid.${process.pid}.tmp`), "atomic\n");
     plant(join(root, "wiki", `Room 4.tid.${process.pid}.0123abcd-0123-4567-89ab-0123456789ab.tmp`), "atomic\n");
+    plant(join(root, "personal", "lares", "$__StoryList.tid"), "title: $:/StoryList\n\n");
+    plant(join(root, "personal", "lares", "$__HistoryList.tid"), "title: $:/HistoryList\n\n");
+    plant(join(root, "personal", "lares", "$__state_folded_Room 4.tid"), "title: $:/state/folded/Room 4\n\n");
+    plant(join(root, "canon", "$__config_lares_ProjectionFilter.tid"), "title: $:/config/lares/ProjectionFilter\n\n");
     const listed = git(root, "ls-files", "--others", "--exclude-standard").out.split("\n").filter(Boolean).sort();
-    expect(listed).toEqual(["canon/note.mem", "wiki/Room 4.tid", "wiki/Room 4.tid.meta", "wiki/gone.kapae"]);
+    expect(listed).toEqual(["canon/$__config_lares_ProjectionFilter.tid", "canon/note.mem", "wiki/Room 4.tid", "wiki/Room 4.tid.meta", "wiki/gone.kapae"]);
   });
 
   test("★ a second init changes nothing and says already ★", async () => {

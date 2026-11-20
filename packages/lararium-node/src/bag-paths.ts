@@ -441,13 +441,27 @@ export function wikisFileToUri(instanceRoot: string, filePath: string): string |
  *     `lares shore diff`), and the `temp` layer, which mirrors its own bag beside a working folder;
  *   - `dirSuffixes`: an orphan slot's folder (`<root-stem>.orphans/`): the projector writes it beside its root, and the
  *     family's root carries those slots home;
- *   - `tempFile`: the atomic writer's temp (`fs-atomic.ts`: `<path>.<pid>.<uuid>.tmp`, or `<path>.<pid>.tmp` for a sync write).
+ *   - `tempFile`: the atomic writer's temp (`fs-atomic.ts`: `<path>.<pid>.<uuid>.tmp`, or `<path>.<pid>.tmp` for a sync write);
+ *   - `viewState`: a personal layer's view state at any depth, by TiddlyWiki's flattened file name (`$:/` reads `$__`, each
+ *     later `/` reads `_`): the navigator's story and history (`$:/StoryList`, `$:/HistoryList`), the palette, the fold and tab
+ *     states (`isPersonalTitle`, lar-kind). It stays with the face that set it: the personal layer's own document carries it
+ *     across devices, so no lay reads it back, no export carries it and no pool's history takes it.
  */
 export const HOUSE_IGNORED = {
   topDirs: [".git", ".vscode", ".shore", TEMP_LAYER_DIR] as readonly string[],
   dirSuffixes: [ORPHAN_FOLDER_SUFFIX] as readonly string[],
   tempFile: /\.\d+(?:\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?\.tmp$/,
+  viewState: {
+    /** Whole file names, each with any extension (`$__StoryList.tid`, a `.json` with its `.meta`). */
+    names: ["$__StoryList", "$__HistoryList", "$__palette"] as readonly string[],
+    /** File-name prefixes: one file per folded tiddler or tab set. */
+    prefixes: ["$__state_folded_", "$__state_tab-"] as readonly string[],
+  },
 } as const;
+
+/** The file name at the end of `rel` names a personal layer's view state (`HOUSE_IGNORED.viewState`). */
+const isViewStateName = (name: string): boolean =>
+  HOUSE_IGNORED.viewState.names.some((n) => name === n || name.startsWith(`${n}.`)) || HOUSE_IGNORED.viewState.prefixes.some((p) => name.startsWith(p));
 
 /** Why the house ignores the file at `rel` (posix, relative to its mirror's holding folder), or null where it reads. */
 export function houseIgnored(rel: string): string | null {
@@ -456,7 +470,44 @@ export function houseIgnored(rel: string): string | null {
   if (segments.length > 1 && HOUSE_IGNORED.topDirs.includes(segments[0]!)) return `${segments[0]}/ holds no record of this house's (HOUSE_IGNORED)`;
   if (segments.slice(0, -1).some((d) => HOUSE_IGNORED.dirSuffixes.some((x) => d.endsWith(x)))) return "an orphan slot's folder: its family's root carries it (HOUSE_IGNORED)";
   if (HOUSE_IGNORED.tempFile.test(segments[segments.length - 1]!)) return "an atomic writer's temp (HOUSE_IGNORED)";
+  if (isViewStateName(segments[segments.length - 1]!)) return "a personal layer's view state, which stays with the face that set it (HOUSE_IGNORED)";
   return null;
+}
+
+/** The lines that open and close the house's block in a pool's `.git/info/exclude`; the operator's own lines rest outside it. */
+export const POOL_EXCLUDE_OPEN = "# >>> lares surface: the house's one ignore list (HOUSE_IGNORED); `lares surface init` keeps this block";
+export const POOL_EXCLUDE_CLOSE = "# <<< lares surface";
+
+/**
+ * THE EXCLUDE RULES, from `HOUSE_IGNORED` alone: each top folder but `.git` (git keeps its own), each orphan folder suffix, the
+ * atomic writer's temp (`<path>.<pid>[.<uuid>].tmp`), and each view-state name and prefix. The patterns float (no leading `/`),
+ * since the mirrors rest one folder down (`wiki/`, `canon/`, `personal/<slug>/`). The pointer carriers (`.meta`, `.kapae`,
+ * `.mem`, `.tid`) never appear here: the pool commits them.
+ */
+export function houseExcludeLines(): string[] {
+  return [
+    ...HOUSE_IGNORED.topDirs.filter((d) => d !== ".git").map((d) => `${d}/`),
+    ...HOUSE_IGNORED.dirSuffixes.map((s) => `*${s}/`),
+    "*.[0-9]*.tmp",
+    ...HOUSE_IGNORED.viewState.names.flatMap((n) => [n, `${n}.*`]),
+    ...HOUSE_IGNORED.viewState.prefixes.map((p) => `${p}*`),
+  ];
+}
+
+/**
+ * A REALM POOL'S OWN RULES, beside the house's list: the shared workbench's `recovery/` and `temp/`, anchored at the pool's top,
+ * where an older lay left them (each face's drafts now rest in its own root, `faces/<pet name>/recovery/<slug>/`).
+ */
+export const REALM_EXCLUDE_LINES: readonly string[] = [`/${FACE_PLANES.recovery}/`, `/${FACE_PLANES.temp}/`];
+
+/** The exclude file with the house's block written in place (or appended), with any extra lines the pool's scale adds; the
+ *  operator's own lines stay as they stand. */
+export function withExcludeBlock(text: string, extra: readonly string[] = []): string {
+  const block = [POOL_EXCLUDE_OPEN, ...houseExcludeLines(), ...extra, POOL_EXCLUDE_CLOSE].join("\n") + "\n";
+  const start = text.indexOf(POOL_EXCLUDE_OPEN);
+  const end = start === -1 ? -1 : text.indexOf(POOL_EXCLUDE_CLOSE, start);
+  if (start !== -1 && end !== -1) return text.slice(0, start) + block + text.slice(end + POOL_EXCLUDE_CLOSE.length).replace(/^\n/, "");
+  return (text === "" || text.endsWith("\n") ? text : `${text}\n`) + block;
 }
 
 // ── Siting run backward (the mirror lay's and the watcher's read) ──────────

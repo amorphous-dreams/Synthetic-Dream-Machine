@@ -26,10 +26,10 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/project/face-pools
  */
 
-import { watch as fsWatch, existsSync, mkdirSync, rmSync, writeFileSync, type FSWatcher, type WatchListener } from "node:fs";
+import { watch as fsWatch, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, type FSWatcher, type WatchListener } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { isAbsolute, join, sep } from "node:path";
-import { FACE_PLANES, TEMP_LAYER_DIR, houseIgnored, siteFileToTitle } from "./bag-paths.js";
+import { FACE_PLANES, POOL_EXCLUDE_OPEN, REALM_EXCLUDE_LINES, TEMP_LAYER_DIR, houseExcludeLines, houseIgnored, siteFileToTitle, withExcludeBlock } from "./bag-paths.js";
 
 // ── the drain seat ─────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -177,6 +177,39 @@ export async function poolCommitSeam(pool: string, close: SittingClose, git: Git
   return { committed: true, sha: git(["rev-parse", "HEAD"], pool).stdout.trim() };
 }
 
+/** What one tend of a pool's exclude block read: the block rewritten, already current, or no block (a pool `lares surface init`
+ *  never made); and each file the pool's history still tracks that the house's rules now ignore. */
+export interface ExcludeTending {
+  readonly reading: "tended" | "current" | "unmade";
+  readonly tracked: readonly string[];
+}
+
+/**
+ * THE POOL KEEPS THE HOUSE'S IGNORE LIST: where `lares surface init` wrote the house's block into the pool's `.git/info/exclude`,
+ * the block re-reads `HOUSE_IGNORED` (with `extra`, a realm pool's own lines) and rewrites only where it differs; the operator's
+ * lines outside it stay as they stand. A pool with no block, or no history, stays as it stands: the tend founds nothing. A rule
+ * stops nothing the history already tracks, so the tend names each such file; `git rm --cached` takes it out once.
+ */
+export function tendPoolExclude(pool: string, extra: readonly string[] = [], git: GitRun = runGit): ExcludeTending {
+  const exclude = join(pool, ".git", "info", "exclude");
+  let was: string;
+  try { was = readFileSync(exclude, "utf8"); } catch { return { reading: "unmade", tracked: [] }; }
+  if (!was.includes(POOL_EXCLUDE_OPEN)) return { reading: "unmade", tracked: [] };
+  const now = withExcludeBlock(was, extra);
+  if (now !== was) writeFileSync(exclude, now);
+  const listed = git(["ls-files", "-z", "--cached", "--ignored", ...[...houseExcludeLines(), ...extra].flatMap((p) => ["-x", p])], pool);
+  const tracked = listed.code === 0 ? listed.stdout.split("\0").filter((f) => f !== "") : [];
+  return { reading: now === was ? "current" : "tended", tracked };
+}
+
+/** The log's line for one tend: silent where the block stood current and nothing ignored stays tracked. */
+function tendingLine(name: string, t: ExcludeTending): string | null {
+  const parts: string[] = [];
+  if (t.reading === "tended") parts.push(`${name}: the house's ignore block in .git/info/exclude re-reads HOUSE_IGNORED`);
+  if (t.tracked.length > 0) parts.push(`${name}: ${t.tracked.length} file(s) the house ignores stand tracked (${t.tracked.slice(0, 3).join(", ")}${t.tracked.length > 3 ? ", …" : ""}); \`git rm --cached\` takes each out once`);
+  return parts.length === 0 ? null : parts.join("; ");
+}
+
 const firstLine = (s: string): string => s.split("\n").find((l) => l.trim() !== "")?.trim() ?? "git answered nothing";
 
 /** One stage edit made on disk since the last sitting: its title, its path in the pool, and the commit that holds it. */
@@ -278,8 +311,9 @@ export interface FacePoolWatch {
 export const POOL_SETTLE_MS = 400;
 
 /**
- * ARM THE WATCH over the worn face's pool. Hands back at once: nothing here blocks the composition that arms it. A fault of
- * the catch-up or a wave names itself in the log and the watch stands.
+ * ARM THE WATCH over the worn face's pool. Hands back at once: nothing here blocks the composition that arms it. Its first step
+ * off the boot path tends the pool's ignore block (`tendPoolExclude`), so no wave and no sitting's close reads a rule the house
+ * added since the pool stood. A fault of the catch-up or a wave names itself in the log and the watch stands.
  */
 export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
   const git = o.git ?? runGit;
@@ -288,6 +322,7 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
     log: o.log ?? ((line: string) => console.log(`[faces] ${line}`)),
     ...(o.watch ? { watch: o.watch } : {}), ...(o.cookie ? { cookie: o.cookie } : {}),
     accepts: (rel) => WATCHED_PLANES.includes(rel.split("/")[0] ?? "") && rel.includes("/"),
+    prepare: (log) => { const line = tendingLine("the face pool", tendPoolExclude(o.pool, [], git)); if (line !== null) log(line); },
     wake: () => stageEditsSinceSitting(o.pool, git),
     commit: o.ports.commit ?? ((c: SittingClose) => poolCommitSeam(o.pool, c, git)),
     covers: WATCHED_PLANES.join(", "),
@@ -352,7 +387,7 @@ export interface WorkspaceWatchOptions {
 
 /**
  * ARM THE WATCH over a shared wiki's workbench folder, the same seat a face pool takes. Hands back at once; off the boot path it
- * reads whether the folder's tree stands (naming a plain mirror where none does), then the watch, the cookie and the catch-up.
+ * reads whether the folder's tree stands (naming a plain mirror where none does) and tends its ignore block, then the watch, the cookie and the catch-up.
  * Every file of the folder wakes a wave but the house's ignore list, its skipped tops and editor litter. The down runs the final
  * wave, then the workbench's commit seam. The wake names nothing: a workbench holds no stage.
  */
@@ -364,7 +399,9 @@ export function armWorkspaceWatch(o: WorkspaceWatchOptions): FacePoolWatch {
     ...(o.watch ? { watch: o.watch } : {}), ...(o.cookie ? { cookie: o.cookie } : {}),
     accepts: (rel) => !(rel.includes("/") && WORKSPACE_SKIP.includes(rel.split("/")[0] ?? "")),
     prepare: () => {
-      if (!poolHistoryStands(o.workspace)) log(`${o.name}: no git tree stands at ${o.workspace} (\`lares surface init\` founds one); it serves as a plain mirror, and its seam commits nothing`);
+      if (!poolHistoryStands(o.workspace)) { log(`${o.name}: no git tree stands at ${o.workspace} (\`lares surface init\` founds one); it serves as a plain mirror, and its seam commits nothing`); return; }
+      const line = tendingLine(o.name, tendPoolExclude(o.workspace, REALM_EXCLUDE_LINES, git));
+      if (line !== null) log(line);
     },
     commit: o.ports.commit ?? ((c: SittingClose) => workspaceCommitSeam(o.workspace, c, git)),
     covers: `the workbench ${o.name}`,
@@ -382,8 +419,8 @@ interface SeatOptions {
   readonly cookie?: FacePoolWatchOptions["cookie"];
   /** Whether a path (posix, relative to the root, already past the house's noise) opens a wave. */
   readonly accepts: (rel: string) => boolean;
-  /** The first step off the boot path, before the wake (a workspace stands its tree here). */
-  readonly prepare?: () => void;
+  /** The first step off the boot path, before the wake and every wave: the pool's exclude block re-reads the house's list here. */
+  readonly prepare?: (log: (line: string) => void) => void;
   /** The wake's read: every stage edit made on disk since the last sitting. Absent: the wake names nothing and logs nothing. */
   readonly wake?: () => readonly StageEdit[];
   readonly commit: (close: SittingClose) => Promise<SeamReading>;
@@ -412,7 +449,7 @@ function armSeat(o: SeatOptions): FacePoolWatch {
   const armed = (async (): Promise<WatchState> => {
     // Off the boot path: the arm's caller already holds its handle when this first step runs.
     await Promise.resolve();
-    if (o.prepare) { try { o.prepare(); } catch (e) { fault("the stand of the tree")(e); } }
+    if (o.prepare) { try { o.prepare(log); } catch (e) { fault("the tend of the pool's ignore block")(e); } }
     let edits: readonly StageEdit[] = [];
     if (o.wake) {
       try { edits = o.wake(); } catch (e) { fault("the wake's stage read")(e); }
