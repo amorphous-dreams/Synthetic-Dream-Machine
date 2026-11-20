@@ -48,14 +48,14 @@
       "cli": { "command": "tiddler", "positional": ["delete", "Other"], "options": { "recipe": "default", "if-match": "sha256-ff" }, "flags": {} },
       "mcp": { "title": "Other", "recipe": "default", "base": "sha256-ff" },
       "wire": { "verb": "tiddler-delete", "args": { "recipe": "default", "title": "Other", "base": "sha256-ff" } },
-      "output": { "recipe": "default", "title": "Other", "decision": "removed", "mode": "kapae", "tombstoned": ["Other"], "retracted": [], "hash": "sha256-ff", "consequence": { "act": "delete", "target": "Other", "bare": false, "position": "plain", "family": null, "acts": [{ "title": "Other", "act": "tombstone", "bag": "lar:///ha.ka.ba/wikis/daemon/working", "holds": ["lar:///ha.ka.ba/wikis/daemon/working"], "shadowed": [] }], "leaves": [], "orphans": [], "refusals": [], "versions": { "Other": "sha256-ff" } } }
+      "output": { "recipe": "default", "title": "Other", "decision": "removed", "mode": "plain", "tombstoned": [], "retracted": ["Other"], "hash": "sha256-ff", "consequence": { "act": "delete", "target": "Other", "bare": false, "position": "plain", "family": null, "acts": [{ "title": "Other", "act": "retract", "bag": "lar:///ha.ka.ba/wikis/daemon/working", "holds": ["lar:///ha.ka.ba/wikis/daemon/working"], "reveals": null }], "leaves": [], "orphans": [], "refusals": [], "versions": { "Other": "sha256-ff" } } }
     },
     {
       "tool": "tiddler_delete",
       "cli": { "command": "tiddler", "positional": ["delete", "lar:///t/x"], "options": { "recipe": "default" }, "flags": { "family": true } },
       "mcp": { "title": "lar:///t/x", "recipe": "default", "family": true },
       "wire": { "verb": "tiddler-delete", "args": { "recipe": "default", "title": "lar:///t/x", "family": true } },
-      "output": { "recipe": "default", "title": "lar:///t/x", "decision": "removed", "mode": "kapae", "tombstoned": ["lar:///t/x", "lar:///t/x#/b"], "retracted": [], "hash": "sha256-aa", "consequence": { "act": "delete", "target": "lar:///t/x", "bare": false, "position": "root", "family": "lar:///t/x", "acts": [{ "title": "lar:///t/x", "act": "tombstone", "bag": "lar:///ha.ka.ba/wikis/daemon/working" }, { "title": "lar:///t/x#/b", "act": "tombstone", "bag": "lar:///ha.ka.ba/wikis/daemon/working" }], "leaves": [{ "title": "lar:///t/x/child", "why": "path-child-stands-as-its-own-meme" }], "orphans": [], "refusals": [], "versions": { "lar:///t/x": "sha256-aa", "lar:///t/x#/b": "sha256-cc" } } }
+      "output": { "recipe": "default", "title": "lar:///t/x", "decision": "removed", "mode": "plain", "tombstoned": [], "retracted": ["lar:///t/x", "lar:///t/x#/b"], "hash": "sha256-aa", "consequence": { "act": "delete", "target": "lar:///t/x", "bare": false, "position": "root", "family": "lar:///t/x", "acts": [{ "title": "lar:///t/x", "act": "retract", "bag": "lar:///ha.ka.ba/wikis/daemon/working" }, { "title": "lar:///t/x#/b", "act": "retract", "bag": "lar:///ha.ka.ba/wikis/daemon/working" }], "leaves": [{ "title": "lar:///t/x/child", "why": "path-child-stands-as-its-own-meme" }], "orphans": [], "refusals": [], "versions": { "lar:///t/x": "sha256-aa", "lar:///t/x#/b": "sha256-cc" } } }
     },
     {
       "tool": "tiddler_delete",

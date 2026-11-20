@@ -35,17 +35,20 @@
  * `family` read through `familyOf`; a delete reads its `consequence` before anything lands, over the reader's view,
  * so a record the face may not read enters no consequence. A plain tiddler leaves. A meme root or slot answers its
  * consequence and `decision: "refused"` (`refusal: "tiddler-delete-in-a-family"`) unless the call names the family act
- * (`family: true`); with it the consequence's tombstones land as ONE change in the working layer. A slot its parent
+ * (`family: true`); with it the consequence's acts land as ONE change per layer. A slot its parent
  * calls by `kahea` refuses even then, since the parent's text would have to move: that rides `meme put`.
  *
- * A DELETE OVER LAYERS NAMES ITS MEANING (`mode`, lar:///ha.ka.ba/lares/api/pono/kapae #/core-cut). `kapae`, the default
- * and what every delete door raised before the name stood (the engine's own delete through the island adaptor, `meme
- * delete`, `store.tombstone`): a tombstone in a writable layer at or above the working layer, which shadows every record
- * of the title beneath, so the wiki reads the title gone and the lower layers keep theirs. `reveal`: the topmost record
- * retracts to absent and the record beneath surfaces; it refuses `reveal-top-unwritable` where the face cannot write the
- * layer that holds the topmost record. Each act of the consequence names the layers that hold the title (`holds`) and
- * what the wiki reads afterward (`shadowed: [bags]` or `reveals: bag | null`). One mode covers a whole family, and each
- * layer takes its members as one change.
+ * A DELETE DELETES PLAINLY; ONLY A LOWER LAYER MAKES IT A CHOICE (lar:///ha.ka.ba/lares/api/pono/kapae #/core-cut). With
+ * no `mode` named, each record leaves its own layer to absent (`mode: "plain"` in the answer): no tombstone rises and no
+ * `.kapae` shadow lands on disk, since nothing beneath needs hiding. Where a lower layer holds the title too, or a member
+ * rests in a layer this face cannot remove it from, the plain delete refuses `delete-mode-needed` and names both
+ * meanings, and the caller names one. `kapae`: a tombstone in a writable layer at or above the working layer, which
+ * shadows every record of the title beneath, so the wiki reads the title gone and the lower layers keep theirs. `reveal`:
+ * the topmost record retracts to absent and the record beneath surfaces; it refuses `reveal-top-unwritable` where the
+ * face cannot write the layer that holds the topmost record. Each act of the consequence names the layers that hold the
+ * title (`holds`) and what the wiki reads afterward (`shadowed: [bags]` or `reveals: bag | null`). One mode covers a
+ * whole family, and each layer takes its members as one change. A kāpae over a title the wiki reads absent still answers: a plain
+ * delete retracts a tombstone that hides nothing, and a reveal retracts one that hides a lower record.
  *
  * EVERY ANSWER STAYS BOUNDED. A filter pages by rows and bytes under a cursor that names the answer it continues
  * (`pageFilterAnswer`, the one page law the record port's `filter` ask shares); a render and a get hold a byte cap.
@@ -267,17 +270,10 @@ interface LayerFacts {
   readonly writable: Set<string>;
 }
 
-/**
- * THE LAYERS A DELETE READS. For the target and every title that composes onto its root address (the only titles a
- * component can hold): each mounted layer that holds a record, topmost first, live or a raised kāpae, minus the layers
- * the face may not read. A layer takes this face's delete where the island mounts it writable at or above the working
- * layer (a tombstone shadows only from above, and a canon layer beneath takes no hand's delete: the adaptor's own rule)
- * and the Kahu predicate and the face's write cap both admit it.
- */
-async function layerFactsFor(
-  opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], view: EngineWiki, mayRead: (bag: string | null) => Promise<boolean>, title: string,
-  asker?: VerbContext["asker"],
-): Promise<LayerFacts> {
+/** The layers a delete reads (topmost first, minus those the face may not read) and the ones its delete may write. */
+async function layerReach(
+  opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], mayRead: (bag: string | null) => Promise<boolean>, asker?: VerbContext["asker"],
+): Promise<{ readable: string[]; writable: Set<string> }> {
   const composite = opts.composite;
   const stack = [...composite.layerIds].reverse();
   const workingIndex = composite.layerIndexOf(anchor.bag);
@@ -292,6 +288,22 @@ async function layerFactsFor(
       if ((await cap("admin", bag)).ok) writable.add(bag);
     } catch { /* a layer the Kahu predicate keeps from this hand takes no delete of its */ }
   }
+  return { readable, writable };
+}
+
+/**
+ * THE LAYERS A DELETE READS. For the target and every title that composes onto its root address (the only titles a
+ * component can hold): each mounted layer that holds a record, topmost first, live or a raised kāpae, minus the layers
+ * the face may not read. A layer takes this face's delete where the island mounts it writable at or above the working
+ * layer (a tombstone shadows only from above, and a canon layer beneath takes no hand's delete: the adaptor's own rule)
+ * and the Kahu predicate and the face's write cap both admit it.
+ */
+async function layerFactsFor(
+  opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], view: EngineWiki, mayRead: (bag: string | null) => Promise<boolean>, title: string,
+  asker?: VerbContext["asker"],
+): Promise<LayerFacts> {
+  const composite = opts.composite;
+  const { readable, writable } = await layerReach(opts, anchor, cap, mayRead, asker);
   const address = rootAddressOf(title);
   const prefix = `${address}#`;
   const of: LayerFacts["of"] = new Map();
@@ -574,19 +586,23 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     if (!title) throw new Error("tiddler-delete: args.title is required");
     refuseWithheld(title, "tiddler-delete");
     await requireWrite(opts, anchor, ctx.cap, "tiddler delete", ctx.asker);
+    const named = optionalStringArg(args, "mode");
+    if (named !== null && named !== "kapae" && named !== "reveal") {
+      throw new VerbRefusal("delete-mode-unknown", `delete-mode-unknown: args.mode reads "kapae" (a tombstone that keeps a lower layer's record of the title hidden) or "reveal" (the topmost record retracts and the one beneath surfaces); got "${named}". Name none for a plain delete.`);
+    }
     const wiki = anchor.engine.wiki;
     const standing = wiki.tiddlerExists(title) ? wiki.getTiddler(title) : undefined;
-    if (!standing) return { recipe: "default", title, decision: "absent", tombstoned: [] };
+    if (!standing) return await retractBareKapae(opts, anchor, args, ctx, title, named);
     const { fields, bag } = readRecord(standing);
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
     if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
     const hash = hashOf(fields);
 
-    const named = optionalStringArg(args, "mode");
-    if (named !== null && named !== "kapae" && named !== "reveal") {
-      throw new VerbRefusal("delete-mode-unknown", `delete-mode-unknown: args.mode reads "kapae" (a tombstone that shadows the layers beneath; the default) or "reveal" (the topmost record retracts and the one beneath surfaces); got "${named}".`);
-    }
-    const mode: DeleteMode = named === "reveal" ? "reveal" : "kapae";
+    // A PLAIN DELETE where no mode is named: the record leaves its own layer and nothing stays set aside. It reads as
+    // a reveal that reveals nothing, so the reveal's consequence answers it; where a lower layer would surface, or a
+    // member rests in a layer this face cannot retract from, the delete refuses `delete-mode-needed` below.
+    const mode: DeleteMode = named === "kapae" ? "kapae" : "reveal";
+    const modeName = named ?? "plain";
 
     // THE FAMILY LAW DECIDES WHAT A DELETE MOVES: the consequence gets read first, over the reader's view and the
     // layers the composition holds, and a refusal lands nothing. The read stays meme-aware (never `bare`): this door
@@ -594,7 +610,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     const layers = await layerFactsFor(opts, anchor, ctx.cap, view, mayRead, title, ctx.asker);
     const read: Consequence = consequence(familyViewAt(anchor, view, layers), { kind: "delete", title, mode });
     const refused = (refusal: string, why: string): Record<string, unknown> =>
-      ({ recipe: "default", title, decision: "refused", mode, refusal, why: `${refusal}: ${why}`, tombstoned: [], retracted: [], hash, consequence: read });
+      ({ recipe: "default", title, decision: "refused", mode: modeName, refusal, why: `${refusal}: ${why}`, tombstoned: [], retracted: [], hash, consequence: read });
     const tombstones = tombstonesOf(read);
     const retracts = retractsOf(read);
     const moves = tombstones.length + retracts.length;
@@ -603,6 +619,20 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     }
     const rendered = renderedWriteFault(title, fields, null, "tiddler delete");
     if (rendered !== null) return refused(RENDERED_DERIVES_REASON, rendered.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
+    if (named === null) {
+      // THE DEFAULT NEVER CHOOSES FOR A LOWER LAYER. A record of the title beneath the one this delete removes (or a
+      // record this face cannot retract at all) makes the delete a choice between hiding it and letting it surface.
+      const kept = read.refusals.find((row) => row.code === "reveal-top-unwritable")?.title
+        ?? read.leaves.find((row) => row.why.startsWith("reveal-keeps:"))?.title;
+      if (kept !== undefined) {
+        const rests = layers.of.get(kept)?.find((layer) => layer.state === "live")?.bag ?? bag ?? "a lower layer";
+        return refused("delete-mode-needed", `"${kept}" rests in ${rests}, a layer this face's delete cannot remove it from, so a plain delete would leave it standing. \`--mode kapae\` (\`mode: "kapae"\`) raises a tombstone in ${anchor.bag} that hides it; ${rests} keeps its record. Nothing moved.`);
+      }
+      const beneath = read.acts.find((row) => row.act === "retract" && typeof row.reveals === "string");
+      if (beneath !== undefined) {
+        return refused("delete-mode-needed", `"${beneath.title}" also stands in ${beneath.reveals} beneath the record in ${beneath.bag}, so this delete must name what happens to it: \`--mode kapae\` (\`mode: "kapae"\`) raises a tombstone that keeps it hidden; \`--mode reveal\` (\`mode: "reveal"\`) removes the record in ${beneath.bag} and lets ${beneath.reveals}'s surface. Nothing moved.`);
+      }
+    }
     if (read.refusals.length > 0) {
       const first = read.refusals[0]!;
       const why = first.code === "reveal-top-unwritable"
@@ -616,10 +646,10 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
       return refused("tiddler-delete-in-a-family", `"${title}" stands as a slot "${dangling.title}" calls by \`kahea\`; the call leaves with the slot, and a family's text moves through the meme door: \`lares meme put ${read.family}\` (meme_put) with the slot's block gone.`);
     }
     // A record no mounted layer holds (the engine's own, or a wiki with no store beneath it) has nothing to retract.
-    const unheld = read.acts.find((row) => row.act === "retract" && (row.holds?.length ?? 0) === 0);
+    const unheld = named === "reveal" ? read.acts.find((row) => row.act === "retract" && (row.holds?.length ?? 0) === 0) : undefined;
     if (unheld) return refused("reveal-top-unwritable", `no mounted layer holds a record of "${unheld.title}", so a reveal has nothing to retract; \`mode: "kapae"\` removes it. Nothing moved.`);
     const base = optionalStringArg(args, "base");
-    if (base !== null && base !== hash) return { recipe: "default", title, decision: "conflict", mode, tombstoned: [], retracted: [], hash };
+    if (base !== null && base !== hash) return { recipe: "default", title, decision: "conflict", mode: modeName, tombstoned: [], retracted: [], hash };
 
     // THE LANDING: each layer takes its members as ONE change (tombstones and retracts together), and the shore lands
     // that change in the wiki as one grain. A record no layer holds leaves through the live wiki, as a hand's delete.
@@ -637,8 +667,70 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
       await opts.composite.writeFamily([], group.tombstones, origin, { bag: landing as never, ...(group.retracts.length > 0 ? { retracts: group.retracts } : {}) });
     }
     for (const member of byHand) { wikiWearsNext(opts.tw5, member, wornOrigin(ctx.worn).face); wiki.deleteTiddler(member); }
-    return { recipe: "default", title, decision: "removed", mode, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
+    return { recipe: "default", title, decision: "removed", mode: modeName, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
   };
+}
+
+/**
+ * A TOMBSTONE OVER A TITLE THE WIKI READS ABSENT still answers a delete. Where the wiki reads the title absent and a layer this
+ * face may write holds a raised kāpae over it, a plain delete (or a reveal) retracts that kāpae to absent: the title
+ * reads as it did before the kāpae rose, and the projector lowers its shadow file. A kāpae that hides a live record
+ * beneath it retracts only under `mode: "reveal"`, since the record would surface; no mode named refuses
+ * `delete-mode-needed`, and `mode: "kapae"` answers absent (the kāpae it asks for already stands). A root address takes
+ * its tombstoned slots with it only under `family: true`, as a standing family does.
+ */
+async function retractBareKapae(
+  opts: TiddlerVerbOptions, anchor: Anchor, args: Record<string, unknown>, ctx: VerbContext, title: string, named: string | null,
+): Promise<Record<string, unknown>> {
+  const absent = { recipe: "default", title, decision: "absent", tombstoned: [], retracted: [] };
+  if (named === "kapae") return absent;
+  const { mayRead } = await viewFor(opts, anchor, ctx.cap);
+  const { readable, writable } = await layerReach(opts, anchor, ctx.cap, mayRead, ctx.asker);
+  const recordsOf = async (candidate: string): Promise<Array<{ bag: string; state: "live" | "kapae" }>> => {
+    const held: Array<{ bag: string; state: "live" | "kapae" }> = [];
+    for (const bag of readable) {
+      const record = await opts.composite.storeForBag(bag)?.get(candidate);
+      if (record) held.push({ bag, state: record.meta?.deleted ? "kapae" : "live" });
+    }
+    return held;
+  };
+  /** The retract a candidate takes: its topmost record, where that record stands as a kāpae in a layer this face writes. */
+  const retractOf = async (candidate: string) => {
+    const held = await recordsOf(candidate);
+    const top = held[0];
+    if (top === undefined || top.state !== "kapae" || !writable.has(top.bag)) return null;
+    const beneath = held[1];
+    return { title: candidate, act: "retract" as const, bag: top.bag, holds: held.filter((layer) => layer.state === "live").map((layer) => layer.bag),
+      reveals: beneath !== undefined && beneath.state === "live" ? beneath.bag : null };
+  };
+  const target = await retractOf(title);
+  if (target === null) return absent;
+  // The slots a root address held, tombstoned with it: each layer this face writes names its own.
+  const slots = new Set<string>();
+  if (rootAddressOf(title) === title) {
+    for (const bag of writable) {
+      const store = opts.composite.storeForBag(bag) as (LarTiddlerStore & { listTombstoned?: () => string[] }) | null | undefined;
+      for (const candidate of store?.listTombstoned?.() ?? []) if (candidate.startsWith(`${title}#`)) slots.add(candidate);
+    }
+  }
+  const acts = [target];
+  for (const slot of [...slots].sort()) { const row = await retractOf(slot); if (row !== null) acts.push(row); }
+  const consequence = { act: "delete", target: title, position: acts.length > 1 ? "root" : "plain", family: acts.length > 1 ? title : null, acts, leaves: [], orphans: [], refusals: [] };
+  const mode = named ?? "plain";
+  const refused = (refusal: string, why: string): Record<string, unknown> =>
+    ({ recipe: "default", title, decision: "refused", mode, refusal, why: `${refusal}: ${why}`, tombstoned: [], retracted: [], consequence });
+  if (acts.length > 1 && !flagOn(args["family"])) {
+    return refused("tiddler-delete-in-a-family", `"${title}" stands as a kāpae over a meme root whose ${acts.length - 1} slot${acts.length === 2 ? "" : "s"} stand tombstoned with it; name the family act (\`family: true\`, \`--family\`) to retract them as one change. Nothing moved.`);
+  }
+  const surfacing = acts.find((row) => row.reveals !== null);
+  if (surfacing !== undefined && named !== "reveal") {
+    return refused("delete-mode-needed", `the kāpae over "${surfacing.title}" in ${surfacing.bag} hides a record in ${surfacing.reveals}; \`--mode reveal\` (\`mode: "reveal"\`) retracts the kāpae and lets ${surfacing.reveals}'s surface, and \`--mode kapae\` keeps it hidden (it already stands). Nothing moved.`);
+  }
+  const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
+  const perBag = new Map<string, string[]>();
+  for (const row of acts) perBag.set(row.bag, [...(perBag.get(row.bag) ?? []), row.title]);
+  for (const [landing, retracts] of perBag) await opts.composite.writeFamily([], [], origin, { bag: landing as never, retracts });
+  return { recipe: "default", title, decision: "removed", mode, tombstoned: [], retracted: acts.map((row) => row.title), consequence };
 }
 
 // ── wiki-status ───────────────────────────────────────────────────────────────────────────────────────

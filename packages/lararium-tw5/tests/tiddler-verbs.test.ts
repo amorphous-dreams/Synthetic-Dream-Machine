@@ -9,7 +9,7 @@ import { describe, test, expect } from "vitest";
 import { SwarmRefused } from "@lararium/mesh";
 import { CompositeStore, bagUri, VERB_URI_PREFIX } from "@lararium/mesh";
 import { CARRIER_TYPE as CARRIER } from "@lararium/mesh/carrier-type";
-import { tombstonesOf, type Consequence } from "@lararium/mesh/family";
+import { retractsOf, tombstonesOf, type Consequence } from "@lararium/mesh/family";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { evaluateMeme, placeMeme, readMeme, wikiMemeSink } from "../src/place-meme.js";
 import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
@@ -380,22 +380,22 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await sealedNow()).toBe(true);
   });
 
-  test("tiddler-delete: a meme root or slot answers its consequence and refuses without the family flag; a plain tiddler leaves with its consequence named; a stale base moves nothing", async () => {
+  test("tiddler-delete: a meme root or slot answers its consequence and refuses without the family flag; a plain tiddler leaves plainly with its consequence named; a stale base moves nothing", async () => {
     const r = await rig();
     await placeMeme({ uri: MEME, text: memeText(["a"]) }, wikiMemeSink(r.engine.wiki));
     const del = makeTiddlerDeleteReactor(r.opts);
     const root = await del({ ...A, title: MEME }, ctx());
     expect(root).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", tombstoned: [],
       consequence: { act: "delete", target: MEME, position: "root", family: MEME, refusals: [] } });
-    expect(tombstonesOf(root["consequence"] as Consequence)).toEqual([MEME, `${MEME}#/a`]);
+    expect(retractsOf(root["consequence"] as Consequence)).toEqual([MEME, `${MEME}#/a`]);
     expect(await del({ ...A, title: `${MEME}#/a` }, ctx())).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", consequence: { position: "slot", family: MEME } });
     expect(r.engine.wiki.tiddlerExists(MEME)).toBe(true);
     expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
     expect(await del({ ...A, title: "Other", base: "sha256-" + "0".repeat(64) }, ctx())).toMatchObject({ decision: "conflict" });
     expect(r.engine.wiki.tiddlerExists("Other")).toBe(true);
     await expect(del({ ...A, title: "Other" }, ctx(reader))).rejects.toThrow(/cap-denied/);
-    expect(await del({ ...A, title: "Other" }, ctx())).toMatchObject({ decision: "removed", tombstoned: ["Other"],
-      consequence: { act: "delete", target: "Other", position: "plain", family: null, acts: [{ title: "Other", act: "tombstone", bag: DAEMON }], leaves: [], orphans: [], refusals: [] } });
+    expect(await del({ ...A, title: "Other" }, ctx())).toMatchObject({ decision: "removed", mode: "plain", tombstoned: [], retracted: ["Other"],
+      consequence: { act: "delete", target: "Other", position: "plain", family: null, acts: [{ title: "Other", act: "retract", bag: DAEMON }], leaves: [], orphans: [], refusals: [] } });
     expect(r.engine.wiki.tiddlerExists("Other")).toBe(false);
     expect(await del({ ...A, title: "Other" }, ctx())).toMatchObject({ decision: "absent", tombstoned: [] });
   });
@@ -421,28 +421,29 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     // The door that deletes reads the same law: the stray leaves as a plain tiddler, the called slot refuses.
     const del = makeTiddlerDeleteReactor(r.opts);
     expect(await del({ ...A, title: `${ROOT}#/called` }, ctx())).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family" });
-    expect(await del({ ...A, title: `${ROOT}#/stray` }, ctx())).toMatchObject({ decision: "removed", tombstoned: [`${ROOT}#/stray`] });
+    expect(await del({ ...A, title: `${ROOT}#/stray` }, ctx())).toMatchObject({ decision: "removed", retracted: [`${ROOT}#/stray`] });
   });
 
-  test("family-delete-lands-one-change: `family: true` on a root tombstones the root and its slots in ONE store change; a path child and an inbound reference stay, named under leaves; CONTROL: without the flag nothing moves", async () => {
+  test("family-delete-lands-one-change: `family: true` on a root the working layer alone holds retracts the root and its slots in ONE store change, no tombstone raised; a path child and an inbound reference stay, named under leaves; CONTROL: without the flag nothing moves", async () => {
     const r = await rig();
     const wiki = r.engine.wiki;
     await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(wiki));
     wiki.addTiddler({ title: `${MEME}/child`, type: CARRIER, text: "a path child, its own meme" });
     await r.hold(DAEMON, [MEME, `${MEME}#/a`, `${MEME}#/b`, `${MEME}/child`]);
-    const calls: Array<{ tombstones: readonly string[]; bag: unknown }> = [];
+    const calls: Array<{ tombstones: readonly string[]; retracts: readonly string[] | undefined; bag: unknown }> = [];
     const writeFamily = r.composite.writeFamily.bind(r.composite);
-    r.composite.writeFamily = async (puts, tombstones, origin, options) => { calls.push({ tombstones, bag: options?.bag }); return writeFamily(puts, tombstones, origin, options); };
+    r.composite.writeFamily = async (puts, tombstones, origin, options) => { calls.push({ tombstones, retracts: options?.retracts, bag: options?.bag }); return writeFamily(puts, tombstones, origin, options); };
     const del = makeTiddlerDeleteReactor(r.opts);
     expect(await del({ ...A, title: MEME }, ctx())).toMatchObject({ decision: "refused" });
     expect(calls).toHaveLength(0);
     const out = await del({ ...A, title: MEME, family: true }, ctx());
-    expect(out).toMatchObject({ decision: "removed", tombstoned: [MEME, `${MEME}#/a`, `${MEME}#/b`], consequence: { position: "root", family: MEME, refusals: [] } });
+    expect(out).toMatchObject({ decision: "removed", retracted: [MEME, `${MEME}#/a`, `${MEME}#/b`], consequence: { position: "root", family: MEME, refusals: [] } });
     expect((out["consequence"] as Consequence).leaves).toContainEqual({ title: `${MEME}/child`, why: "path-child-stands-as-its-own-meme" });
-    expect(calls).toEqual([{ tombstones: [MEME, `${MEME}#/a`, `${MEME}#/b`], bag: DAEMON }]);
+    expect(calls).toEqual([{ tombstones: [], retracts: [MEME, `${MEME}#/a`, `${MEME}#/b`], bag: DAEMON }]);
     // The answer stays bounded: versions name the family and what it leaves, never the wiki's other dozen notes.
     expect(Object.keys((out["consequence"] as Consequence).versions).sort()).toEqual([MEME, `${MEME}#/a`, `${MEME}#/b`, `${MEME}/child`]);
-    expect(out).toMatchObject({ mode: "kapae", retracted: [] });
+    expect(out).toMatchObject({ mode: "plain", tombstoned: [] });
+    for (const title of [MEME, `${MEME}#/a`, `${MEME}#/b`]) expect(await r.composite.storeForBag(DAEMON)!.get(title)).toBeNull();
     // The shore lands the store's change in the wiki (the rig's subscription stands in for the island adaptor).
     await r.landed();
     expect(wiki.tiddlerExists(MEME)).toBe(false);
@@ -461,7 +462,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(called).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", tombstoned: [] });
     expect(String(called["why"])).toContain("meme put");
     expect(wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
-    expect(await del({ ...A, title: "lar:///t/gone#/a", family: true }, ctx())).toMatchObject({ decision: "removed", tombstoned: ["lar:///t/gone#/a", "lar:///t/gone#/a/b"] });
+    expect(await del({ ...A, title: "lar:///t/gone#/a", family: true }, ctx())).toMatchObject({ decision: "removed", retracted: ["lar:///t/gone#/a", "lar:///t/gone#/a/b"] });
     await r.landed();
     expect(wiki.tiddlerExists("lar:///t/gone#/a/b")).toBe(false);
   });
@@ -490,9 +491,12 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect((await makeTiddlerGetReactor(a.opts)({ ...A, title: "Tri" }, ctx(both)))["tiddler"]).toMatchObject({ bag: DAEMON, fields: { text: "working words" } });
     expect([await live(a, PERSONAL), await live(a, DAEMON), await live(a, CANON)]).toEqual([null, "working words", "canon words"]);
 
-    // KĀPAE (the default): a tombstone where the top record stands shadows both records beneath; they stay in their bags.
+    // NO MODE NAMED over a title lower layers hold: the delete refuses and names both meanings; nothing moves.
     const b = await seed();
-    const shadowed = await makeTiddlerDeleteReactor(b.opts)({ ...A, title: "Tri" }, ctx(both));
+    expect(await makeTiddlerDeleteReactor(b.opts)({ ...A, title: "Tri" }, ctx(both))).toMatchObject({ decision: "refused", refusal: "delete-mode-needed", tombstoned: [], retracted: [] });
+    expect(b.engine.wiki.getTiddlerText("Tri")).toBe("personal words");
+    // KĀPAE: a tombstone where the top record stands shadows both records beneath; they stay in their bags.
+    const shadowed = await makeTiddlerDeleteReactor(b.opts)({ ...A, title: "Tri", mode: "kapae" }, ctx(both));
     expect(shadowed).toMatchObject({ decision: "removed", mode: "kapae", tombstoned: ["Tri"], retracted: [],
       consequence: { acts: [{ title: "Tri", act: "tombstone", bag: PERSONAL, holds: [PERSONAL, DAEMON, CANON], shadowed: [DAEMON, CANON] }] } });
     await b.landed();
@@ -515,11 +519,72 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await r.landed();
     const del = makeTiddlerDeleteReactor(r.opts);
     expect(await del({ ...A, title: "Canon Note", mode: "reveal" }, ctx())).toMatchObject({ decision: "refused", refusal: "reveal-top-unwritable" });
-    expect(await del({ ...A, title: "Canon Note" }, ctx())).toMatchObject({ decision: "removed", mode: "kapae",
+    expect(await del({ ...A, title: "Canon Note" }, ctx())).toMatchObject({ decision: "refused", refusal: "delete-mode-needed" });
+    expect(await del({ ...A, title: "Canon Note", mode: "kapae" }, ctx())).toMatchObject({ decision: "removed", mode: "kapae",
       consequence: { acts: [{ title: "Canon Note", act: "tombstone", bag: DAEMON, shadows: CANON, holds: [CANON], shadowed: [CANON] }] } });
     await r.landed();
     expect(r.engine.wiki.tiddlerExists("Canon Note")).toBe(false);
     expect(((await r.composite.storeForBag(CANON)!.get("Canon Note"))!.tiddler as Record<string, unknown>)["text"]).toBe("house words");
+  });
+
+  test("delete-plain-by-default: a title the working layer alone holds leaves plainly. Its record retracts to absent and no tombstone rises in the store; CONTROL: a title a lower layer also holds refuses `delete-mode-needed` with no mode named, names both meanings, and moves nothing", async () => {
+    const r = await rig();
+    const o = { kind: "lares-verb", requestId: "seed" } as const;
+    await r.composite.storeForBag(DAEMON)!.put({ tiddler: { title: "Solo", text: "mine alone" }, meta: {} }, o);
+    await r.composite.storeForBag(CANON)!.put({ tiddler: { title: "Dup", text: "house words" }, meta: {} }, o);
+    await r.composite.storeForBag(DAEMON)!.put({ tiddler: { title: "Dup", text: "my words" }, meta: {} }, o);
+    await r.landed();
+    const del = makeTiddlerDeleteReactor(r.opts);
+    expect(await del({ ...A, title: "Solo" }, ctx())).toMatchObject({ decision: "removed", mode: "plain", tombstoned: [], retracted: ["Solo"],
+      consequence: { acts: [{ title: "Solo", act: "retract", bag: DAEMON, holds: [DAEMON], reveals: null }] } });
+    await r.landed();
+    expect(r.engine.wiki.tiddlerExists("Solo")).toBe(false);
+    expect(await r.composite.storeForBag(DAEMON)!.get("Solo")).toBeNull();
+    const needed = await del({ ...A, title: "Dup" }, ctx());
+    expect(needed).toMatchObject({ decision: "refused", refusal: "delete-mode-needed", tombstoned: [], retracted: [] });
+    expect(String(needed["why"])).toContain("--mode kapae");
+    expect(String(needed["why"])).toContain("--mode reveal");
+    expect(String(needed["why"])).toContain(CANON);
+    expect(r.engine.wiki.getTiddlerText("Dup")).toBe("my words");
+    // A record that rests beneath the working layer alone (canon) leaves only by a kāpae: no mode named refuses toward it.
+    await r.composite.storeForBag(CANON)!.put({ tiddler: { title: "Canon Only", text: "house words" }, meta: {} }, o);
+    await r.landed();
+    const canonOnly = await del({ ...A, title: "Canon Only" }, ctx());
+    expect(canonOnly).toMatchObject({ decision: "refused", refusal: "delete-mode-needed" });
+    expect(String(canonOnly["why"])).toContain("--mode kapae");
+    expect(r.engine.wiki.tiddlerExists("Canon Only")).toBe(true);
+  });
+
+  test("retract-a-bare-kapae: a tombstone that shadows nothing retracts under a plain delete, leaving no record at all; a meme's tombstoned family retracts whole under `family`; CONTROL: a kāpae over a canon record refuses with no mode named, and `reveal` retracts it so canon surfaces", async () => {
+    const r = await rig();
+    const o = { kind: "lares-verb", requestId: "seed" } as const;
+    const working = r.composite.storeForBag(DAEMON)!;
+    await working.put({ tiddler: { title: "Ghost", text: "gone" }, meta: {} }, o);
+    await working.tombstone("Ghost", o);
+    for (const title of [MEME, `${MEME}#/a`]) { await working.put({ tiddler: { title, text: "x" }, meta: {} }, o); await working.tombstone(title, o); }
+    await r.composite.storeForBag(CANON)!.put({ tiddler: { title: "Veiled", text: "house words" }, meta: {} }, o);
+    await working.put({ tiddler: { title: "Veiled", text: "mine" }, meta: {} }, o);
+    await working.tombstone("Veiled", o);
+    await r.landed();
+    expect(r.engine.wiki.tiddlerExists("Ghost")).toBe(false);
+    const del = makeTiddlerDeleteReactor(r.opts);
+    expect(await del({ ...A, title: "Ghost" }, ctx())).toMatchObject({ decision: "removed", mode: "plain", tombstoned: [], retracted: ["Ghost"] });
+    expect(await working.get("Ghost")).toBeNull();
+    // A tombstone that already stands answers a kāpae as absent: nothing moves.
+    expect(await del({ ...A, title: MEME, mode: "kapae" }, ctx())).toMatchObject({ decision: "absent" });
+    expect(await del({ ...A, title: MEME }, ctx())).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family" });
+    expect(await del({ ...A, title: MEME, family: true }, ctx())).toMatchObject({ decision: "removed", mode: "plain", retracted: [MEME, `${MEME}#/a`] });
+    expect([await working.get(MEME), await working.get(`${MEME}#/a`)]).toEqual([null, null]);
+    const veiled = await del({ ...A, title: "Veiled" }, ctx());
+    expect(veiled).toMatchObject({ decision: "refused", refusal: "delete-mode-needed" });
+    expect(String(veiled["why"])).toContain("--mode reveal");
+    expect(r.engine.wiki.tiddlerExists("Veiled")).toBe(false);
+    expect(await del({ ...A, title: "Veiled", mode: "reveal" }, ctx())).toMatchObject({ decision: "removed", mode: "reveal", retracted: ["Veiled"],
+      consequence: { acts: [{ title: "Veiled", act: "retract", bag: DAEMON, reveals: CANON }] } });
+    await r.landed();
+    expect(r.engine.wiki.getTiddlerText("Veiled")).toBe("house words");
+    // Nothing left to retract answers absent, as before.
+    expect(await del({ ...A, title: "Ghost" }, ctx())).toMatchObject({ decision: "absent" });
   });
 
   test("a family reveal retracts the members this hand holds and keeps the rest: a working copy of a canon root retracts, the canon slots stay named under leaves, and the wiki reads canon's root again", async () => {
@@ -549,7 +614,10 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const out = await makeTiddlerDeleteReactor(r.opts)({ ...A, title: MEME }, ctx(only));
     expect(JSON.stringify(out)).not.toContain("sealed");
     const whole = await makeTiddlerDeleteReactor(r.opts)({ ...A, title: MEME }, ctx());
-    expect(tombstonesOf(whole["consequence"] as Consequence)).toContain(`${MEME}#/sealed`);
+    // The face that reads it names it: a plain delete cannot remove it from that bag, so it rides `leaves`, and the kāpae act would shadow it.
+    expect((whole["consequence"] as Consequence).leaves).toContainEqual({ title: `${MEME}#/sealed`, why: `reveal-keeps:${bagUri("sealed")}` });
+    const hidden = await makeTiddlerDeleteReactor(r.opts)({ ...A, title: MEME, mode: "kapae" }, ctx());
+    expect(tombstonesOf(hidden["consequence"] as Consequence)).toContain(`${MEME}#/sealed`);
   });
 
   test("wiki-status-names-layers: a reader's face reads every layer read-only; a writer's names the working layer writable and canon read-only", async () => {

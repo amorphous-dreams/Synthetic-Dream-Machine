@@ -31,7 +31,7 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emitAnswer, exitFor, refuseUsage } from "../render.js";
-import { riteKukulu, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer } from "../rite-kukulu.js";
+import { priorImageRef, riteKukulu, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer } from "../rite-kukulu.js";
 import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
@@ -269,11 +269,25 @@ const liveRefill: RefillPort = hostRefill(
   () => process.stdin.isTTY === true && process.stdout.isTTY === true,
 );
 
+/**
+ * The image the vessel stands from at the rite's start, read from the docker CLI (reads only): the image ref the shim reads
+ * (`LARES_IMAGE`, else `lares-surface:local`), its revision label and id. Null where docker answers nothing.
+ */
+const readPriorImage = (): Promise<PriorImage | null> => new Promise((resolve) => {
+  const ref = (process.env["LARES_IMAGE"] ?? "").trim() || "lares-surface:local";
+  execFile("docker", ["image", "inspect", "--format", '{{.Id}}|{{ index .Config.Labels "org.opencontainers.image.revision" }}', ref], { encoding: "utf8" }, (err, stdout) => {
+    if (err) return resolve(null);
+    const [id = "", revision = ""] = stdout.trim().split("|");
+    resolve(id === "" ? null : priorImageRef(ref, revision.replace(/[^0-9a-z-]/g, ""), id));
+  });
+});
+
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
 function hostPorts(runShim: (verb: string) => Promise<number>, say: (line: string) => void, image: () => Promise<string | null>): RitePorts {
   return {
     image,
     refill: liveRefill,
+    prior: readPriorImage,
     seedOffer: (head) => hostSeedOffer(head).catch(() => null),   // a read-only line never stops the rite
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),

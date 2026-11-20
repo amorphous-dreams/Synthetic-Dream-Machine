@@ -210,7 +210,7 @@ VERB_SEATS = {
     "wiki_render": (True, False),       # wikify a title or a span to text or html — a read → HOTL
     "wiki_status": (True, False),       # each layer's writeability for the session's face — a read → HOTL
     "tiddler_put": (True, False),       # patch fields, tags, or named text in the working layer — reversible, trusted → HOTL
-    "tiddler_delete": (True, False),    # tombstone one plain tiddler, or a meme family where `family=True` names the act → HOTL
+    "tiddler_delete": (True, False),    # remove one plain tiddler plainly, or a meme family where `family=True` names the act; a lower layer asks `mode` → HOTL
     # The offering door — an offer appends a signed row to the Nexus's offer table and moves no canon byte; the reads fold
     # the table → HOTL. The promotion never seats here: no MCP tool carries it.
     "meme_offer": (True, False),        # one signed offer toward a house-canon bag — grants nothing, trusted → HOTL
@@ -1321,25 +1321,29 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_REMOVES)
     def tiddler_delete(title: str, recipe: "str | None" = None, bag: "str | None" = None,
                        base: "str | None" = None, family: bool = False, mode: "str | None" = None) -> dict:
-        """REMOVE ONE TIDDLER, BY THE FAMILY LAW — mirrors `lares tiddler delete <title> [--family]`. The removal lands a
-        tombstone in the wiki's working layer (kāpae: a re-put restores). `base` carries the `hash` read from
+        """REMOVE ONE TIDDLER, BY THE FAMILY LAW — mirrors `lares tiddler delete <title> [--family] [--mode kapae|reveal]`.
+        A DELETE DELETES PLAINLY: with no `mode`, each record leaves its own layer to absent and no tombstone rises (the
+        receipt reads `mode: "plain"` and names each title under `retracted`). `base` carries the `hash` read from
         `tiddler_get`: a record that moved past it moves nothing and the call raises `conflict` naming the live hash.
-        Returns {recipe, title, decision, tombstoned, hash, consequence}: `decision` reads `removed`, or `absent` where
-        no tiddler stands; `consequence` names what the act moved ({act, target, bare, position, family, acts, leaves,
-        orphans, refusals, versions}). THE FAMILY LAW: a PLAIN tiddler leaves alone. A meme ROOT or SLOT moves nothing
-        and the call raises `tiddler-delete-in-a-family`, quoting the consequence the delete would land (every title it
-        would tombstone, what it would leave); pass `family=True` to name the family act, and the root leaves with its
-        slots as ONE change (`tombstoned` names each). A slot its parent's text calls refuses even then: it leaves
-        through a `meme_put` of its root's text. A `$:/` title refuses too. A DELETE OVER LAYERS NAMES ITS MEANING: a
-        wiki composes layers (canon under working under personal), and one title may stand in several. `mode="kapae"`
-        (the default) raises a tombstone in a writable layer that SHADOWS every record beneath: the wiki reads the title
-        gone, the lower layers keep theirs. `mode="reveal"` RETRACTS the topmost record: the record beneath surfaces
-        (raises `reveal-top-unwritable` where the face cannot write the layer holding the top record). Each act in
-        `consequence.acts` names `bag` (the layer written), `holds` (every layer holding the title) and what the wiki
-        reads afterward: `shadowed: [bags]` or `reveals: bag | null`; the receipt names `mode`, `tombstoned` and
-        `retracted`. A rendered tiddler (one carrying `rendered-from`) refuses `rendered-derives`: only the renderer
-        writes it, and it leaves when its source drops `projection: rendered`. CONTAINER LAW: exactly one of `recipe` /
-        `bag`; this phase answers `recipe="default"`."""
+        Returns {recipe, title, decision, mode, tombstoned, retracted, hash, consequence}: `decision` reads `removed`, or
+        `absent` where nothing stands to remove; `consequence` names what the act moved ({act, target, bare, position,
+        family, acts, leaves, orphans, refusals, versions}). THE FAMILY LAW: a PLAIN tiddler leaves alone. A meme ROOT or
+        SLOT moves nothing and the call raises `tiddler-delete-in-a-family`, quoting the consequence the delete would
+        land (every title it would move, what it would leave); pass `family=True` to name the family act, and the root
+        leaves with its slots as ONE change. A slot its parent's text calls refuses even then: it leaves through a
+        `meme_put` of its root's text. A `$:/` title refuses too. ONLY A LOWER LAYER MAKES A DELETE A CHOICE: a wiki
+        composes layers (canon under working under personal), and one title may stand in several. Where a lower layer
+        holds the title too, or the record rests in a layer this face cannot remove it from, a delete with no `mode`
+        raises `delete-mode-needed` naming both meanings: `mode="kapae"` raises a tombstone in a writable layer that
+        SHADOWS every record beneath (the wiki reads the title gone, the lower layers keep theirs); `mode="reveal"`
+        RETRACTS the topmost record so the record beneath surfaces (raises `reveal-top-unwritable` where the face cannot
+        write the layer holding the top record). A kāpae over a title the wiki reads absent still answers: with no `mode` the call
+        retracts a tombstone that hides nothing (its `.kapae` shadow leaves the disk), and `mode="reveal"` retracts one
+        that hides a lower record. Each act in `consequence.acts` names `bag` (the layer written), `holds` (every layer
+        holding the title) and what the wiki reads afterward: `shadowed: [bags]` or `reveals: bag | null`. A rendered
+        tiddler (one carrying `rendered-from`) refuses `rendered-derives`: only the renderer writes it, and it leaves when
+        its source drops `projection: rendered`. CONTAINER LAW: exactly one of `recipe` / `bag`; this phase answers
+        `recipe="default"`."""
         args: dict = {**_meme_container("tiddler_delete", recipe, bag), "title": title}
         if base is not None:
             args["base"] = base

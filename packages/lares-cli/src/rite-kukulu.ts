@@ -54,6 +54,11 @@ export interface RitePorts {
   refill?: RefillPort;
   /** The digest of the image the build left, as the HOST reads it; null where the host names none. Absent, the rite writes no offer. */
   image?(): Promise<string | null>;
+  /**
+   * The image the vessel stands from when the rite begins (its revision label and the tag the shim's rebuild gives it as the
+   * outgoing image); null where the host reads none. Absent, the answer names no prior.
+   */
+  prior?(): Promise<PriorImage | null>;
   /** One verb of the host shim; the answer carries its exit code. */
   shim(verb: "build" | "down" | "up"): Promise<number>;
   say(line: string): void;
@@ -63,6 +68,26 @@ export interface RitePorts {
    */
   seedOffer?(head: string): Promise<SeedOffer | null>;
 }
+
+/** The image a kūkulu replaced: its revision label and the tag the shim keeps it under. */
+export interface PriorImage {
+  readonly revision: string;
+  readonly tag: string;
+}
+
+/**
+ * The tag the shim's rebuild gives the outgoing image (`<repo>:rev-<12 hex of the revision label>`, `rev-unlabeled-<12 hex of
+ * the id>` where the image names no revision), from the image ref the vessel stands from.
+ */
+export function priorImageRef(imageRef: string, revision: string, id: string): PriorImage {
+  const repo = /:[^/]*$/.test(imageRef) ? imageRef.slice(0, imageRef.lastIndexOf(":")) : imageRef;
+  return revision.trim() !== ""
+    ? { revision, tag: `${repo}:rev-${revision.slice(0, 12)}` }
+    : { revision: "unlabeled", tag: `${repo}:rev-unlabeled-${id.replace(/^sha256:/, "").slice(0, 12)}` };
+}
+
+/** The one existing command that raises a prior tagged image again with no rebuild: the shim's `up` over the image the tag names. */
+export const wayBackCommand = (prior: PriorImage): string => `LARES_IMAGE=${prior.tag} tools/lares-container.sh up`;
 
 /** The founding record beside the seed an image offers. */
 export interface SeedOffer {
@@ -121,6 +146,12 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
       spent["seed"] = seed;
     }
   }
+  // THE IMAGE THIS RITE REPLACES, read before the build moves its tag; every answer from here names it.
+  const prior = ports.prior ? await ports.prior().catch(() => null) : null;
+  if (prior !== null) {
+    spent["prior"] = prior;
+    ports.say(`kūkulu: the replaced image keeps the tag ${prior.tag} (revision ${prior.revision})`);
+  }
   const landCall = begunFaces.map((f) => `lares rite land --tessera ${f.tessera} --head ${head} --face ${f.ordinal}`).join("; ");
   for (const verb of ["build", "down", "up"] as const) {
     const code = await ports.shim(verb);
@@ -159,5 +190,9 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
     return { code: 1, data: { ...base, ...spent, begun: true, landed: false, refusal: landed.code } };
   }
   ports.say(par ? "kūkulu: landed; conferre reads every face's tessera par" : "kūkulu: landed at another head than the rite began at; conferre reads a tessera red");
-  return { code: par ? 0 : 1, data: { ...base, ...spent, begun: true, landed: true, par } };
+  if (par || prior === null) return { code: par ? 0 : 1, data: { ...base, ...spent, begun: true, landed: true, par } };
+  // OFF PAR, the way back: the shim's `up` over the replaced image's tag (no rebuild; `down` first runs by the shim's own moved-image law).
+  const wayBack = wayBackCommand(prior);
+  ports.say(`kūkulu: to raise the replaced image ${prior.tag} again, run: ${wayBack}`);
+  return { code: 1, data: { ...base, ...spent, begun: true, landed: true, par, wayBack } };
 }

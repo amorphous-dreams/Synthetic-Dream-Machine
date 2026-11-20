@@ -1340,6 +1340,33 @@ export interface WorkspaceIngestOptions {
 }
 
 /**
+ * DOES THE FOLDER STAND AS THE LAST SYNC LEFT IT? The catch-up's question, answered from what the house already holds of the
+ * mirror (the Synced tree's rows, and its `kapae/` shadow rows) and the files on disk, so no island wakes to ask it. A file
+ * the tree holds no base for, or holds another hash for, is an add or an edit; a base whose file stands no more, or a shadow
+ * row whose file stands no more or reads other bytes, is a removal or an edit. Any of these is a diff; none is no diff.
+ * `skip` names the folder's own tooling, which no wave carries (`recovery/`, `temp/`).
+ */
+function folderDiffers(
+  folder: WaveFolder, files: readonly string[], tree: SyncedTree, skip: (file: string) => boolean, heads: BaseFromGit | undefined,
+): boolean {
+  const root = resolve(folder.dir) + sep;
+  const inside = (path: string): boolean => path.startsWith(root) && !skip(path);
+  const scan = scanFiles(folder.dir, files, folder.bag, tree, (_r, file) => titleOf(folder.site(file, tree)), heads);
+  if (scan.rows.some((r) => r.status !== "unchanged") || (scan.refusedShadows?.length ?? 0) > 0) return true;
+  const shadowTree = tree.shadows();
+  for (const file of files) {
+    if (extname(file) !== KAPAE_EXT) continue;
+    const title = titleOf(folder.site(file, tree));
+    let text: string;
+    try { text = readFileSync(file, "utf8"); } catch { continue; }
+    if (typeof title !== "string" || shadowTree.baseAt(syncedTreeKey(folder.bag, title), file)?.disk !== carrierHash(text)) return true;
+  }
+  for (const row of tree.rows()) if (row.bagId === folder.bag && inside(row.base.path) && !existsSync(row.base.path)) return true;
+  for (const row of shadowTree.rows()) if (row.bagId === folder.bag && inside(row.base.path) && !existsSync(row.base.path)) return true;
+  return false;
+}
+
+/**
  * THE VESSEL'S WAVE OVER A NAMED WORKSPACE: a shared wiki's workbench mirror, one disk copy whichever face wears. Each settle's
  * touched files land as ONE unattended INGEST wave in the wiki's working layer (`wikis/<slug>/working`), run in that wiki's own
  * island (`inWiki`), under the worn face's actor; the island's gate decides each carrier as it does over a face pool's plane, and
@@ -1362,6 +1389,9 @@ export function workspaceIngestPorts(o: WorkspaceIngestOptions): Pick<FacePoolPo
   const waveOver = async (files: readonly string[], whole: boolean): Promise<void> => {
     const touched = files.filter((f) => !skipped(f));
     if (touched.length === 0 && gone.size === 0 && !whole) return;
+    // THE CATCH-UP WAKES ON A DIFF: a folder that stands as the last sync left it asks nothing of its wiki, so a cold wiki
+    // stays cold (`wsSense` and the wave's submit both activate it).
+    if (whole && gone.size === 0 && !folderDiffers(folder, touched, (o.tree?.() ?? openSyncedTree()), skipped, o.heads)) return;
     const r = await folderWave(folder, gone, touched, { submit: o.submit, did: o.did, ...(o.tree ? { tree: o.tree } : {}), ...(o.heads ? { heads: o.heads } : {}), log });
     if (whole || r.vanishedNow) await o.sense();
     else if (r.sense.length > 0) await o.sense([...new Set(r.sense)]);

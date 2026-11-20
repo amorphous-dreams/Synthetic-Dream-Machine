@@ -15,7 +15,7 @@ import { genesisSeedCid } from "@lararium/node";
 import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
 import { RiteUsage, hostRefill, hostRowLine, ritePlan } from "../src/commands/rite.js";
-import { kukuluSeedLine, riteKukulu, type RitePorts, type RiteVerbAnswer } from "../src/rite-kukulu.js";
+import { kukuluSeedLine, priorImageRef, riteKukulu, type RitePorts, type RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
 import { COMMAND_NAMES } from "../src/bin/lares.js";
 
@@ -235,6 +235,34 @@ describe("kukulu-offer-reaches-the-new-vessel (the host's step)", () => {
     const row = red.ports.row;
     red.ports.row = async (verb, args) => verb === "rite-land" && args["face"] === 2 ? { ok: true, output: { par: false } } : row(verb, args);
     expect(await riteKukulu(red.ports, {})).toMatchObject({ code: 1, data: { landed: true, par: false } });
+  });
+
+  it("RED: every kūkulu answer names the image it replaced as `prior: {revision, tag}`, and an off-par landing prints the ONE command that raises it again as `wayBack`; CONTROL: a par landing names the prior and no way back, and no prior port leaves the answer as it stood", async () => {
+    const PRIOR = { revision: "b".repeat(40), tag: "lares-surface:rev-bbbbbbbbbbbb" };
+    const par = fakes();
+    par.ports.prior = async () => PRIOR;
+    const ok = await riteKukulu(par.ports, {});
+    expect(ok.data).toMatchObject({ par: true, prior: PRIOR });
+    expect(ok.data).not.toHaveProperty("wayBack");
+    expect(par.said.join("\n")).toMatch(/replaced image keeps the tag lares-surface:rev-bbbbbbbbbbbb/);
+    const red = fakes();
+    red.ports.prior = async () => PRIOR;
+    const row = red.ports.row;
+    red.ports.row = async (verb, args) => verb === "rite-land" ? { ok: true, output: { par: false } } : row(verb, args);
+    const off = await riteKukulu(red.ports, {});
+    expect(off).toMatchObject({ code: 1, data: { landed: true, par: false, prior: PRIOR, wayBack: "LARES_IMAGE=lares-surface:rev-bbbbbbbbbbbb tools/lares-container.sh up" } });
+    expect(red.said.join("\n")).toMatch(/LARES_IMAGE=lares-surface:rev-bbbbbbbbbbbb tools\/lares-container\.sh up/);
+    const stopped = fakes({ shim: { up: 9 } });
+    stopped.ports.prior = async () => PRIOR;
+    expect((await riteKukulu(stopped.ports, {})).data).toMatchObject({ stopped: "up", prior: PRIOR });
+    const bare = await riteKukulu(fakes().ports, {});
+    expect(bare.data).not.toHaveProperty("prior");
+  });
+
+  it("RED: the prior image's tag follows the shim's rule (`rev-<12 hex of the revision label>`, `rev-unlabeled-<12 hex of the id>` where none); CONTROL: no image names no prior", () => {
+    expect(priorImageRef("lares-surface:local", "c".repeat(40), "sha256:" + "d".repeat(64))).toEqual({ revision: "c".repeat(40), tag: "lares-surface:rev-cccccccccccc" });
+    expect(priorImageRef("lares-surface:local", "", "sha256:" + "d".repeat(64))).toEqual({ revision: "unlabeled", tag: "lares-surface:rev-unlabeled-dddddddddddd" });
+    expect(priorImageRef("reg.io:5000/lares-surface", "c".repeat(40), "sha256:" + "d".repeat(64)).tag).toBe("reg.io:5000/lares-surface:rev-cccccccccccc");
   });
 
   it("RED: the host names each face the offer vouches for, and each face whose line carries no lei waits by name", async () => {
