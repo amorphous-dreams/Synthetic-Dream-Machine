@@ -249,10 +249,6 @@ export const CARRY_BUNDLE_DOMAIN = mint("carry-bundle");
 /** A PLACE's positive receipt for one carriage it took (`carriage-log`): signed by the place signer, keyed by the carriage's
  *  own content or causal id. Its own name: a receipt must never verify as a carrier seal, a floor pin or any other duty. */
 export const CARRIAGE_RECEIPT_DOMAIN = mint("carriage-receipt");
-/** A PLACE's receipt over one tree a rite rests on (`swarm-tiddlers` `restReceipt`): the place signer notarises the verdict the
- *  host's battery handed in, once per tree, and every lent face's lei return trusts it. A receipt testifies about code, never
- *  about a face, so it names no face group. Its own name: a rite receipt never verifies as a carriage receipt or any other duty. */
-export const RITE_RECEIPT_DOMAIN = mint("rite-receipt");
 /** One hand's act over one RELATIONSHIP — a raise or a lower, by the edge's holder or by the seat quorum. */
 export const EDGE_KAPAE_DOMAIN = mint("edge-act");
 /** One signed ACT in a face's `@persona` log (founding, admission, device edge, lease advance): the canonical

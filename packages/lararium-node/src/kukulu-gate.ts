@@ -11,7 +11,7 @@
  * Each face's lei verifies under that face's own hand (its root key) and binds that face's group alone, so no face lends
  * another. A vouched face that stands dark, names no hand, or finds no lei of its own hand waits: the scope names it in
  * `unlent` with its reading, and the lend stands for the rest. With no face begun, the hello refuses by the first reading.
- * Any other reading of the lei family (a returned, narrowed or forked lei, a red walk) refuses the whole kūkulu.
+ * Any other reading of the lei family (a returned or forked lei, a red walk) refuses the whole kūkulu.
  *
  * ── A VESSEL WITH NO OFFER ENTERS BY ITS IMAGE ──────────────────────────────────────────────────
  * A hello that carries neither lei nor vouch reads the admitted set (`pulama-admit`): where the image the host reports
@@ -39,7 +39,7 @@
  *   `kukulu-hand-absent`        the pūlama's own custody names no hand's key for that face, so no lei reads
  *   the lei family's own readings (`KukuluRitePort.begin`): `swarm-lei-absent` (no lei of this face's hand stands for the
  *   vouch's branch), `swarm-lei-head-mismatch` (a lei that pins a head pins another than the vouch's), `swarm-lei-returned` ·
- *   `swarm-lei-returns-spent`, `swarm-lei-unstrung`, `swarm-lei-narrowed`, `swarm-lei-forked`, `rite-begun-stands`
+ *   `swarm-lei-returns-spent`, `swarm-lei-unstrung`, `swarm-lei-forked`, `rite-begun-stands`
  *
  * ── THE RETURN CLAIMS BEFORE ANYTHING SERVES ────────────────────────────────────────────────────
  * The rite begins once every other reading passed: the return lands atomically, then the guest half. A fault after the

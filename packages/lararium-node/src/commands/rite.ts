@@ -2,23 +2,16 @@
  * rite — the store holder runs a rite's rows against the daemon wiki: `begin`, `land`, `receipts`.
  *
  * A rite that takes the vessel down keeps a tessera (a kūkulu keeps one per lent face and begins every face or none, `beginLentFaces`): `begin` derives the head's tree (out of the checkout's object store, `gitTreeOf`, no git binary; a `keep` derives its bundle id from the staged bundle itself, `riteTreeOf`), returns the
- * rite's lei at that head (the count and the reach judged in the mesh core, and the testimony too for a `push` or `keep`; a `kukulu` rests on the lei alone) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
- * host half once a vessel stands again; `receipts` lists every half and runs conferre over them; `receipt` rests the
- * place-signed `receipt/<tree>` every `push` and `keep` return rests on, over the verdict the host's battery hands in; `offer` gathers what a
+ * rite's lei at that head (the count and the reach judged in the mesh core; the signed lei, with a `push` lei's ward co-sign, stands as the consent) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
+ * host half once a vessel stands again; `receipts` lists every half and runs conferre over them; `offer` gathers what a
  * kūkulu carries to the pūlama (the line's lei and this vessel's vouch over the image the host built) and rests it in the
  * house's config home for the next vessel (`kukulu-offer`).
  *
  * THE LEI CARRIES THE GRANT. No row here reads hand-only: the hand strung the lei under the ward, and any seat holding the
  * line may spend it.
  *
- * THE VESSEL SIGNS AS THIS DEVICE'S ATOM IN THE FACE. A return, a narrowing and each tessera half rest as the vessel's
+ * THE VESSEL SIGNS AS THIS DEVICE'S ATOM IN THE FACE. A return and each tessera half rest as the vessel's
  * witness, and a swarm record stays device-local, so the trust names this device's own atom as the vessel and no other key.
- *
- * THE PLACE SIGNS THE RECEIPT. A receipt testifies about code, never about a face, so it loads no face: the place signer (the
- * key at the head of the place's KEL, `vesselPlaceSignerDoor`, which a vessel opens at every boot with no route, under a pūlama
- * too) signs `receipt/<tree>` once, and every face's trust names that key as its `place`, so one receipt stands for every lent
- * face's return. It notarises the host's testimony: the place re-runs no check, and any seat may hand a verdict in, so a
- * receipt vouches for what this place heard, never for the tree.
  *
  * With no standing daemon wiki every row refuses by name before a face loads.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
@@ -27,10 +20,9 @@ import type { Repo } from "@automerge/automerge-repo";
 import { lstatSync, realpathSync } from "node:fs";
 import { join, sep } from "node:path";
 import {
-  WORKSPACE_NAME_RE, SwarmRefused, beginChecked, beginRite, checkReturn, conferre, cosignPortWitness, isSwarmLeiRite, landRite, restReceipt, riteReceipts,
-  type PlaceSigner, type SwarmLeiRite, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
+  WORKSPACE_NAME_RE, SwarmRefused, beginChecked, beginRite, checkReturn, conferre, cosignPortWitness, isSwarmLeiRite, landRite, riteReceipts,
+  type SwarmLeiRite, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
-import { loadVesselVerifyingKey, vesselPlaceSignerDoor } from "../node-vessel-identity.js";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { treeOfHead } from "../git-tree-reader.js";
 import { openedCustody, unlockedFaceOrdinals } from "../custody-seat.js";
@@ -38,13 +30,13 @@ import { kukuluOfferPath, writeKukuluOffer, type KukuluOfferFace } from "../kuku
 import { larWorkspacesHome } from "../vessel-paths.js";
 import { BundleVerifyRefused, unsafeRelPath, verifyBundle } from "../bundle-manifest.js";
 
-export type RiteAction = "begin" | "land" | "receipts" | "receipt" | "offer";
+export type RiteAction = "begin" | "land" | "receipts" | "offer";
 
 /** Where the vessel looks for the checkout a rite's head belongs to: its own working directory, then the house's workspace mount. */
 export const RITE_CHECKOUTS: readonly string[] = [process.cwd(), "/workspace"];
 
 /**
- * THE VESSEL DERIVES THE HEAD'S TREE ITSELF. A `push` or `keep` return rests on the receipt standing for the head's tree, and a kūkulu's lei pins a head the same way, so the tree never
+ * THE VESSEL DERIVES THE HEAD'S TREE ITSELF. A return names the head's tree, and a lei pins a head the same way, so the tree never
  * comes from the caller. The vessel's image carries no git binary, so the vessel reads the checkout's object store directly
  * (`../git-tree-reader.ts`): the commit the head names, held to its own hash, and the tree that commit names. A head that
  * reads as no object name, a place with no checkout, or a head no store holds refuses `rite-tree-unreadable`: the rite begins
@@ -75,8 +67,8 @@ export function keepStagedTree(branch: string, staged: string, home: string = la
  * `keep` runs over no checkout: its head names a house bundle by its id (the sha-256 over the bundle's sorted file list), and
  * a content name already names its tree. THE VESSEL DERIVES THAT ID ITSELF from the staged bundle (`keepTree`), so a keep
  * never rests on an id its spender chose: a head that spells no bundle id, or a keep that names no staged bundle, refuses
- * `rite-tree-unreadable`; a staged tree that derives another id than the head refuses `rite-tree-differs`. The receipt the
- * return then rests on stands at the id this vessel derived.
+ * `rite-tree-unreadable`; a staged tree that derives another id than the head refuses `rite-tree-differs`. The return
+ * then names the id this vessel derived.
  */
 export async function riteTreeOf(rite: SwarmLeiRite, head: string, gitTree: (head: string) => Promise<string> = gitTreeOf, keepTree?: () => string): Promise<string> {
   if (rite !== "keep") return gitTree(head);
@@ -110,12 +102,12 @@ export interface BegunFace { readonly face: string; readonly ordinal: number; re
 /**
  * ONE LEI PER LENT FACE, ALL OR NONE. A kūkulu lends the next vessel every face this one serves, so it begins one rite per lent
  * ordinal, in the lend's order, each spending that face's own lei under that face's own hand. It CHECKS every face first
- * (`check`: the lei stands with a return left, and its testimony reads pass where the rite testifies) and claims nothing; only once every
+ * (`check`: the lei stands with a return left) and claims nothing; only once every
  * face answers does it claim each face's return and rest its guest half (`begin`). A face whose lei is missing
  * (`swarm-lei-absent`, or `swarm-lei-group` where only other faces' leis rest on the line) waits by name, as at the offer
  * and the pūlama; with every face waiting the begin refuses
  * `swarm-lei-absent` naming them. Any other reading refuses the whole begin, naming that face, before any face's return is
- * claimed (where the rite testifies, a red receipt has still narrowed that face's wide lei). No lent face refuses
+ * claimed. No lent face refuses
  * `lent-faces-empty`.
  */
 export async function beginLentFaces<C>(
@@ -147,13 +139,13 @@ export async function beginLentFaces<C>(
 /** One lent face as a kūkulu row reads it: the offer's parts beside the device atom that signs its rite's halves. */
 type RiteFace = KukuluOfferFace & { readonly vessel: SwarmSignerPort };
 
-/** One loaded face: its group, the trust its hand, this device's atom and the place verify under, its ward witness, and that atom. */
-async function riteFaceOf(repo: Repo, catalogUrl: string | undefined, ordinal: number, placeKey: string): Promise<RiteFace> {
+/** One loaded face: its group, the trust its hand and this device's atom verify under, its ward witness, and that atom. */
+async function riteFaceOf(repo: Repo, catalogUrl: string | undefined, ordinal: number): Promise<RiteFace> {
   let fold: FaceFold;
   try { fold = await loadFaceFold(repo, catalogUrl, { index: ordinal }); }
   catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", `h${ordinal}: ${e.message}`); throw e; }
   const vesselKey = fold.signer.key.toLowerCase();
-  const trust: SwarmTrust = { hand: (key) => fold.face.currentSigner(key), vessel: (key) => key === vesselKey, place: (key) => key === placeKey, lead: () => false };
+  const trust: SwarmTrust = { hand: (key) => fold.face.currentSigner(key), vessel: (key) => key === vesselKey, lead: () => false };
   const vessel: SwarmSignerPort = { key: fold.signer.key, sign: (bytes) => fold.signer.sign(bytes) };
   try { return { group: fold.group, trust, vessel, ward: cosignPortWitness(await nodeWardCosignPortOf(repo, fold)) }; }
   catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", `h${ordinal}: ${e.message}`); throw e; }
@@ -170,26 +162,16 @@ export async function runRiteVerb(opts: {
   workspacesHome?: string;
   /** The faces this vessel serves, by ordinal; the custody seat's unlocked faces where the caller seats none. */
   lentOrdinals?: () => Promise<readonly number[]>;
-  /** The place's verifying key every face's trust names as its `place`; the identity home's where the caller seats none. */
-  placeKey?: () => Promise<string>;
-  /** The place signer a receipt signs under; the identity home's (`vesselPlaceSignerDoor`) where the caller seats none. */
-  placeSigner?: () => Promise<PlaceSigner>;
 }): Promise<Record<string, unknown>> {
   if (!opts.wiki) throw new SwarmRefused("swarm-no-daemon", "no standing daemon: a rite's records need the founded wiki");
   const str = (key: string): string => (typeof opts.args[key] === "string" ? opts.args[key] as string : "");
-  if (opts.action === "receipt") {
-    // THE RECEIPT NOTARISES THE HOST'S TESTIMONY: the battery ran on the host, and the place signs the verdict it heard, once
-    // for every face it lends. No face loads.
-    return { ...await restReceipt(opts.wiki, { tree: str("tree"), checks: opts.args["checks"] as readonly string[], verdict: opts.args["verdict"] as "pass" | "fail", definitions: str("definitions") }, await (opts.placeSigner ?? vesselPlaceSignerDoor)()) };
-  }
-  const placeKey = (await (opts.placeKey ?? loadVesselVerifyingKey)()).toLowerCase();
   if (opts.action === "offer") {
     // THE OFFER A KŪKULU CARRIES TO THE PŪLAMA: this vessel, still standing, gathers every lent face's line and signs one vouch
     // per face over the image the host named, then rests them where the next vessel reads them (`kukulu-offer`). It loads each
     // lent face itself, so no one face loads first.
     if (!str("branch") || !str("head") || !str("image")) throw new SwarmRefused("rite-offer-malformed", "an offer names its branch, its head and the image the host built");
     const offerTree = await (opts.treeOf ?? gitTreeOf)(str("head"));
-    const faces = await lentOfferFaces(await (opts.lentOrdinals ?? unlockedFaceOrdinals)(), (ordinal) => riteFaceOf(opts.repo, opts.catalogUrl, ordinal, placeKey));
+    const faces = await lentOfferFaces(await (opts.lentOrdinals ?? unlockedFaceOrdinals)(), (ordinal) => riteFaceOf(opts.repo, opts.catalogUrl, ordinal));
     return { ...await writeKukuluOffer({
       wiki: opts.wiki, faces, branch: str("branch"), head: str("head"), tree: offerTree, image: str("image"),
       holder: await openedCustody(), path: opts.offerPath ?? kukuluOfferPath(),
@@ -202,7 +184,7 @@ export async function runRiteVerb(opts: {
     const wiki = opts.wiki;
     return { ...await beginLentFaces(await (opts.lentOrdinals ?? unlockedFaceOrdinals)(), async (ordinal) => {
       let face: RiteFace;
-      try { face = await riteFaceOf(opts.repo, opts.catalogUrl, ordinal, placeKey); }
+      try { face = await riteFaceOf(opts.repo, opts.catalogUrl, ordinal); }
       catch (e) { if (e instanceof SwarmRefused) throw e; throw new SwarmRefused("face-log-unreadable", `the lent face h${ordinal} loads no log: ${e instanceof Error ? e.message : String(e)}`); }
       return checkReturn(wiki, at, face.trust, face.group, face.vessel, face.ward);
     }, (checked) => beginChecked(wiki, checked)) };
@@ -213,7 +195,7 @@ export async function runRiteVerb(opts: {
   const { group, face, signer } = loaded;
   const vesselKey = signer.key.toLowerCase();
   const vessel: SwarmSignerPort = { key: signer.key, sign: (bytes) => signer.sign(bytes) };
-  const trust: SwarmTrust = { hand: (key) => face.currentSigner(key), vessel: (key) => key === vesselKey, place: (key) => key === placeKey, lead: () => false };
+  const trust: SwarmTrust = { hand: (key) => face.currentSigner(key), vessel: (key) => key === vesselKey, lead: () => false };
   if (opts.action === "receipts") return { receipts: await riteReceipts(opts.wiki, trust, group), conferre: await conferre(opts.wiki, trust, group) };
   if (opts.action === "land") {
     if (!/^[0-9a-f]{64}$/.test(str("tessera")) || !str("head")) throw new SwarmRefused("rite-malformed", "a landing names its tessera and the head the vessel stands at");

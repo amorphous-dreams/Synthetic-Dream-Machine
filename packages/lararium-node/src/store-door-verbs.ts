@@ -218,7 +218,7 @@ export const STORE_DOOR_VERBS = [
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
-  "rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer",
+  "rite-begin", "rite-land", "rite-receipts", "rite-offer",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -396,7 +396,6 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "rite-begin": (args) => answer("rite-begin", () => riteVerb("begin", args)),
     "rite-land": (args) => answer("rite-land", () => riteVerb("land", args)),
     "rite-receipts": (args) => answer("rite-receipts", () => riteVerb("receipts", args)),
-    "rite-receipt": (args) => answer("rite-receipt", () => riteVerb("receipt", args)),
     "rite-offer": (args) => answer("rite-offer", () => riteVerb("offer", args)),
     "swarm-show": (args) => answer("swarm-show", () => swarmVerb("show", args)),
     "swarm-cap-set": (args) => answer("swarm-cap-set", () => swarmVerb("cap-set", args)),

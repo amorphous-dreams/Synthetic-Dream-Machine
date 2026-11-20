@@ -14,7 +14,6 @@ import {
   type SignedSwarmAct, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import { soloCosign } from "./ward-cosign-table.js";
-import { placeTrust, restPlaceReceipt } from "./place-receipt.js";
 
 const GROUP = "face-group", BRANCH = "feature/x", HEAD = "a".repeat(40), TREE = "1".repeat(40);
 const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -25,7 +24,7 @@ async function stand(who: SwarmDoorDeps["who"]["kind"] = "hand") {
   const doc = { tiddlers: {} } as LarDoc, rows = new Map<string, string>();
   const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
     list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
-  const trust = { hand: (k: string) => k === root.key, vessel: (k: string) => k === vessel.key, place: placeTrust(), lead: () => false };
+  const trust = { hand: (k: string) => k === root.key, vessel: (k: string) => k === vessel.key, lead: () => false };
   const deps: SwarmDoorDeps = {
     group: GROUP, face: { group: GROUP, grant: (k) => k === root.key }, signer: root, trust, epoch: () => 0, wiki,
     board: { records: async () => swarmBoardRecords(doc, GROUP), land: async (act) => { writeSwarmBoardAct(doc, act); } },
@@ -41,7 +40,6 @@ async function stand(who: SwarmDoorDeps["who"]["kind"] = "hand") {
       after = swarmActCid(next); out.push(after);
     }
   };
-  await restPlaceReceipt(wiki, TREE);
   const read = () => readLei(wiki, { rite: "push", branch: BRANCH, head: HEAD }, trust, GROUP, ONE_DEVICE);
   const giveBack = () => returnLei(wiki, { rite: "push", branch: BRANCH, head: HEAD, tree: TREE }, trust, GROUP, vessel, ONE_DEVICE);
   return { deps, wiki, rows, trust, root, vessel, line, read, giveBack };
