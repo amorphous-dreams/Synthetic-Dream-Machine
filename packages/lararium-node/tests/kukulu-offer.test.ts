@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, placeSignerFromSeed, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle,
   verifyKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "../src/custody-holder.js";
@@ -60,8 +60,7 @@ async function stand() {
   // THE STANDING VESSEL'S OWN WITNESS: its device atom signs the returns and halves in its control records.
   const seed = new Uint8Array(32).fill(4);
   const atom: SwarmSignerPort = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
-  const place = placeSignerFromSeed(new Uint8Array(32).fill(7));
-  const trust: SwarmTrust = { hand: (k) => k === root.verifyingKey, vessel: (k) => k === atom.key, place: (k) => k === place.key, lead: () => false };
+  const trust: SwarmTrust = { hand: (k) => k === root.verifyingKey, vessel: (k) => k === atom.key, lead: () => false };
   const wiki = controlWiki();
   const string = async (terms: SwarmLeiTerms, after: string | null = null): Promise<SignedSwarmAct> => {
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite: "kukulu", branch: BRANCH, after, ...terms }, hand);
@@ -73,7 +72,7 @@ async function stand() {
     try { return (await fx!.vessel(offered).unlock([])).reading; }
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
   };
-  return { fx, path, wiki, hand, place, string, offer, hello, raise: (d: string | null) => { raised = d; } };
+  return { fx, path, wiki, hand, string, offer, hello, raise: (d: string | null) => { raised = d; } };
 }
 
 describe("RED kukulu-offer-reaches-the-new-vessel", () => {
@@ -145,10 +144,9 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
   test("RED every lent face's line rides the offer: one vouch per face, each over its own group; a face whose line carries no lei rides its vouch and waits by name", async () => {
     const s = await stand();
     await s.string({ reach: "wide", returns: 2 });
-    const place = (k: string) => k === s.place.key;
-    const trust: SwarmTrust = { hand: () => false, vessel: () => false, place, lead: () => false };
+    const trust: SwarmTrust = { hand: () => false, vessel: () => false, lead: () => false };
     const wrote = await writeKukuluOffer({
-      wiki: s.wiki, faces: [{ group: GROUP, trust: { hand: () => true, vessel: () => true, place, lead: () => false }, ward: NO_COSIGN, name: "h0" }, { group: "group-two", trust, ward: NO_COSIGN, name: "h1" }],
+      wiki: s.wiki, faces: [{ group: GROUP, trust: { hand: () => true, vessel: () => true, lead: () => false }, ward: NO_COSIGN, name: "h0" }, { group: "group-two", trust, ward: NO_COSIGN, name: "h1" }],
       branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, holder: s.fx.local, path: s.path,
     });
     expect(wrote).toMatchObject({ lei: 1, faces: ["h0", "h1"], waits: ["h1"] });

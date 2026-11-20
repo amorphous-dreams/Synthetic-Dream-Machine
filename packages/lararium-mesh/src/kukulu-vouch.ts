@@ -4,7 +4,7 @@
  *
  * The standing vessel boots the candidate under a scratch root, walks it, and signs what it saw: the face's group, the
  * branch, the head and its tree and the image's digest. The pūlama returns the kūkulu lei at the head and
- * tree the vouch names (a lei that pins a head pins that one), and the vouch's digest stands as the return's testimony, so the
+ * tree the vouch names (a lei that pins a head pins that one), and the vouch's digest names the candidate the return belongs to, so the
  * lei reaches the one candidate that vessel walked and no other.
  *
  * A VOUCH CERTIFIES CONTINUITY, NEVER GOODNESS. It signs under a child of the custody root (`KUKULU_VOUCH_DOMAIN`), so only a
@@ -51,7 +51,7 @@ export async function signKukuluVouch(parts: KukuluVouchParts, signer: { readonl
   return { body, signer: signer.key.toLowerCase(), sig: await signer.sign(canonicalJsonBytes(body)) };
 }
 
-/** The vouch's digest: its body and its signer, canonical. The return a kūkulu rests on names it as its testimony. */
+/** The vouch's digest: its body and its signer, canonical. The return a kūkulu rests on names it. */
 export const kukuluVouchDigest = (vouch: { readonly body: KukuluVouchBody; readonly signer: string }): string =>
   sha256HexBytesSync(canonicalJsonBytes({ body: vouch.body, signer: vouch.signer }));
 

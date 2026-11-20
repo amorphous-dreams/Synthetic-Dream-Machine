@@ -65,7 +65,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep|exec --branch <name> [--scope '<json>'] [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]  |  lares lei land '<pūlama answer>' [--face N]  |  lares lei terms kui|restring|unstring --rite <r> --branch <name> [--returns <n>] [--reach wide|head] [--head <h>] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]",
     synopsis:
       "A lei grants one rite at one branch. A wide lei (the default) names no head and carries its returns; a head lei pins one head. " +
-      "The hand strings (kui), unstrings and restrings; any seat reads. A `push` or `keep` return rests on a passing receipt for the head's tree; a `kukulu` return rests on the lei alone. " +
+      "The hand strings (kui), unstrings and restrings; any seat reads. The signed lei carries the consent, and a `push` lei adds its ward co-sign. " +
       "Under a pūlama the hand signs at the pūlama's hand door and `land` lands the record; `terms` prints the one JSON line that door takes " +
       "(the face from --face, else a keep's own face, else the daemon mount; a restring's `after` from the line's tip), and writes nothing. `kui --all` strings one lei for every open face under ONE route, each face's own record by its own hand at its own line's tip, and names each face's cid; a show of one line naming no face reads every open face's line.",
     examples: [
@@ -85,7 +85,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] [--face N] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash>",
+    usage: "usage: lares rite kukulu [--branch <name>] [--face N] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts",
     synopsis:
       "A rite spends a lei. kūkulu raises the vessel again around its hearth: the rite begins in the vessel (the lei's return and " +
       "the guest half of a tessera) before the host shim rebuilds the image and raises a new vessel, which rests the host half. " +
@@ -106,7 +106,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares rite offer --branch main --head <commit> --image <digest>   # the standing vessel rests what the next one carries to a pūlama",
       "lares rite land --tessera <id> --head <commit>          # land a rite whose vessel came back locked",
       "lares rite receipts --json                              # data.receipts, data.conferre",
-      "lares rite receipt --tree <tree> --checks typecheck,mesh --verdict pass --definitions <hash>   # the battery's verdict, signed once by the place",
     ],
     flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rite <r>   (begin) the rite", "--head <commit>   (begin, offer, land) the head",
       "--staging <path>   (begin, a keep) the bundle the keep staged inside its workspace; the vessel derives the id from it",
@@ -114,8 +113,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--accept-omissions   (keep, keep-cut) name the bundle partial where the census reads unsettled",
       "--if-due             (keep) keep only where the house moved since the pushed bundle; reads LARES_KEEP_WORKSPACE with no --workspace",
       "--image <digest>   (offer) the digest of the image the host built",
-      "--tessera <id>   (land) the tessera a begin answered", "--tree <t>   (receipt) the tree the battery read", "--checks <a,b>   (receipt) the checks its verdict covers",
-      "--verdict pass|fail   (receipt) the verdict", "--definitions <hash>   (receipt) the hash of the definitions the checks ran under", "--face N   face index (a kūkulu naming none acts as the worn face; a keep naming none acts as the keep's face and says so; the floor refuses by name)"],
+      "--tessera <id>   (land) the tessera a begin answered", "--face N   face index (a kūkulu naming none acts as the worn face; a keep naming none acts as the keep's face and says so; the floor refuses by name)"],
   },
   kapae: {
     usage: "usage: lares kapae raise|lower|flag <digest> [--wiki wiki] [--face N]",

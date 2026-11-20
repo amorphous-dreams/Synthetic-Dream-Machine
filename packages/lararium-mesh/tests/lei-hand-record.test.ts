@@ -28,7 +28,7 @@ async function stand(opts: { readonly cosign?: SwarmDoorDeps["cosign"] } = {}) {
     list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
   const keyless: SwarmSignerPort = { key: root.key, sign: async () => { throw new Error("needs-the-human: this vessel holds no face root"); } };
   const deps: SwarmDoorDeps = {
-    group: GROUP, face: { group: GROUP, grant: (k) => k === root.key }, signer: keyless, trust: { hand: (k) => k === root.key, vessel: () => false, place: () => false, lead: () => false }, epoch: () => 0, wiki,
+    group: GROUP, face: { group: GROUP, grant: (k) => k === root.key }, signer: keyless, trust: { hand: (k) => k === root.key, vessel: () => false, lead: () => false }, epoch: () => 0, wiki,
     board: { records: async () => swarmBoardRecords(doc, GROUP), land: async (act) => { writeSwarmBoardAct(doc, act); } },
     who: { kind: "hand", id: root.key }, cosign: opts.cosign ?? (() => soloCosign(GROUP, root)),
   };

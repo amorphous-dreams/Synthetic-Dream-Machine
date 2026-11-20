@@ -17,9 +17,6 @@
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
  *   offer      `rite-offer` in the STANDING vessel, between the build and the lowering: gather every lent face's line, sign one
  *              vouch per face over the image the host built, and rest the offer the next vessel carries to the pūlama
- *   receipt    `rite-receipt`: the host battery hands the vessel its verdict over a tree, and the place signs `receipt/<tree>`, the testimony a `push` or `keep` return rests on
- *              once for every face it lends. It names no face: a receipt testifies about code. It notarises testimony: the
- *              place re-runs no check
  *
  * The lei carries the grant: the hand strung it (`lares lei kui --rite kukulu …`, `--rite keep --branch <workspace> …`), and any
  * seat holding the line may spend it.
@@ -48,7 +45,7 @@ import { vesselDid } from "../env.js";
 
 export class RiteUsage extends Error {}
 
-export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-receipt" | "rite-offer";
+export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-offer";
 export interface RitePlan { readonly verb: RiteVerb; readonly args: Record<string, unknown> }
 
 /** The host sub-verb's two spellings. */
@@ -69,17 +66,6 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if (rite === undefined || branch === undefined || head === undefined) throw new RiteUsage("begin names its rite, its branch and its head: --rite kukulu --branch <name> --head <commit> (a keep adds --staging <path>, the bundle it staged inside its workspace)");
     const staged = word(args.options["staging"]);
     return { verb: "rite-begin", args: { rite, branch, head, ...(staged === undefined ? {} : { staged }), ...face } };
-  }
-  if (act === "receipt") {
-    // `--tree` reads as a bare flag across this CLI (the parser's boolean list), so the tree itself rides the next word:
-    // `receipt --tree <t>` and `receipt <t>` name it alike.
-    const tree = args.flags["tree"] === false ? undefined : word(args.positional[1]);
-    const verdict = word(args.options["verdict"]), definitions = word(args.options["definitions"]);
-    const checks = (word(args.options["checks"]) ?? "").split(",").map((c) => c.trim()).filter((c) => c !== "");
-    if (tree === undefined || verdict === undefined || definitions === undefined || checks.length === 0) throw new RiteUsage("receipt names its tree, its checks, its verdict and its definitions: --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash>");
-    // THE PLACE SIGNS IT for every face it lends, so a receipt names no face.
-    if (faceWord !== undefined) throw new RiteUsage("receipt names no face: the place signs it once, for every face it lends");
-    return { verb: "rite-receipt", args: { tree, checks, verdict, definitions } };
   }
   if (act === "offer") {
     const branch = word(args.options["branch"]), image = word(args.options["image"]);

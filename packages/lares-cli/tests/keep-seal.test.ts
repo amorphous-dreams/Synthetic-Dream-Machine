@@ -2,7 +2,7 @@
  * keep-seal — the keep bundle seals its roster (cabal-realm.mem:189; research/tideline-surface #/roster, #/ward-scope).
  *
  * A remote the keep pushes to crosses to another vessel, so the bundle a keep cuts carries the map between one human's faces
- * (the pet names, Handles and seats the house keeps locally) sealed and never in clear: no pet-name, no Handle, no chair, no handle index and no share owner or seat, in any file or any path.
+ * (the pet names, Handles and seats the house keeps) sealed and never in clear: no pet-name, no Handle, no chair, no handle index and no share owner or seat, in any file or any path.
  *
  *   KS1  RED: a cut bundle holds no face's pet-name, Handle or chair label, and no share row's owner or seats, in any byte or
  *        any path; the manifest's faces carry their path key alone and its rows name a face by that key; no path carries a

@@ -25,7 +25,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sealRedeclare, sha256Hex, verifyBundle, zeroCounts, type BundleFile, type BundleManifest } from "../src/bundle-manifest.js";
-import { KEEP_CHECK, KeepRefused, riteKeep, type KeepPorts } from "../src/rite-keep.js";
+import { KeepRefused, riteKeep, type KeepPorts } from "../src/rite-keep.js";
 import type { RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { RiteUsage, keepPlan } from "../src/commands/rite.js";
 import { parseArgs } from "../src/parse-args.js";
@@ -68,7 +68,6 @@ function rig(over: { lei?: Record<string, unknown>; leiOn?: Record<number, Recor
       const mount = over.mount === undefined ? 0 : over.mount;
       if (mount !== null && typeof args["face"] === "number" && args["face"] !== mount) return { ok: false, code: "chore-face-not-mounted", message: `chore-face-not-mounted: asked as h${String(args["face"])}, the daemon mount runs h${mount}` };
       if (verb === "swarm-show") return { ok: true, output: { lei: over.leiOn !== undefined ? (over.leiOn[Number(args["face"])] ?? { standing: false, refusal: "absent", after: null }) : state.lei } };
-      if (verb === "rite-receipt") return { ok: true, output: { tree: args["tree"], verdict: "pass" } };
       if (typeof args["staged"] === "string") stagedAtBegin.push(verifyBundle(join(workspace(), ...String(args["staged"]).split("/"))).manifest.bundleId);
       return state.begin ?? { ok: true, output: { tessera: TESSERA, rite: "keep", lei: LEI, n: 1, begun: "b".repeat(64) } };
     },
@@ -112,7 +111,7 @@ describe("the keep rite, vessel half", () => {
     expect(spent.calls.length).toBe(1);
   });
 
-  test("K2 RED: with a lei standing the keep cuts, rests the receipt, begins the rite and then moves the bundle into place; CONTROL: the bundle verifies whole and the workspace keeps what else it held", async () => {
+  test("K2 RED: with a lei standing the keep cuts, begins the rite and then moves the bundle into place; CONTROL: the bundle verifies whole and the workspace keeps what else it held", async () => {
     const r = rig();
     const out = await riteKeep(r.ports, { workspace: "backup" });
     const dest = join(workspace(), "house");
@@ -122,7 +121,6 @@ describe("the keep rite, vessel half", () => {
     expect(r.calls).toEqual([
       `swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 0 })}`,
       `cut ${workspace()} accept=false`,
-      `rite-receipt ${JSON.stringify({ tree: id, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(BUNDLE_SCHEMA) })}`,
       expect.stringMatching(new RegExp(`^rite-begin \\{"rite":"keep","branch":"backup","head":"${id}","staged":"\\.house\\.keep-[0-9a-f]{12}","face":0\\}$`)),
     ]);
     // The begin names the staged tree by its place inside the workspace, and the tree stands whole there when the vessel reads it.
@@ -136,7 +134,7 @@ describe("the keep rite, vessel half", () => {
     expect(there.dest).toBe(join(workspace(), "devices", "one", "house"));
     expect(deep.calls[0]).toBe(`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 1 })}`);
     expect(deep.calls[1]).toBe(`cut ${workspace()} accept=true`);
-    expect(deep.calls[3]).toMatch(new RegExp(`^rite-begin \\{"rite":"keep","branch":"backup","head":"${there.bundleId}","staged":"devices/one/\\.house\\.keep-[0-9a-f]{12}","face":1\\}$`));
+    expect(deep.calls[2]).toMatch(new RegExp(`^rite-begin \\{"rite":"keep","branch":"backup","head":"${there.bundleId}","staged":"devices/one/\\.house\\.keep-[0-9a-f]{12}","face":1\\}$`));
   });
 
   test("K3 RED: a begin the vessel refuses leaves the workspace as it stood; CONTROL: the earlier bundle still verifies, byte for byte", async () => {
@@ -225,9 +223,9 @@ describe("the keep rite, vessel half", () => {
     expect(out).toMatchObject({ kept: true, face: 1, faceBy: "keep" });
     const rows = r.calls.filter((c) => !c.startsWith("cut"));
     expect(rows[0]).toBe(`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 0 })}`);
-    expect(rows.slice(1).map((c) => c.split(" ")[0])).toEqual(["swarm-show", "rite-receipt", "rite-begin"]);
-    // The receipt names no face (the place signs it for every face); every other row names the keep's face.
-    expect(rows.slice(1).every((c) => c.startsWith("rite-receipt ") ? !c.includes('"face"') : c.includes('"face":1'))).toBe(true);
+    expect(rows.slice(1).map((c) => c.split(" ")[0])).toEqual(["swarm-show", "rite-begin"]);
+    // Every row after the first names the keep's face.
+    expect(rows.slice(1).every((c) => c.includes('"face":1'))).toBe(true);
     // The lei stands on h0: the keep acts as h0 and reads no other face.
     const zero = rig({ leiOn: { 0: STANDING } });
     expect(await riteKeep({ ...zero.ports, houseFaces: async () => ({ open: [1, 0], shut: [] }) }, { workspace: "backup" })).toMatchObject({ face: 0, faceBy: "keep" });
@@ -248,8 +246,8 @@ describe("the keep rite, vessel half", () => {
     expect(out).toMatchObject({ kept: true, face: 2, faceBy: "keep" });
     const rows = r.calls.filter((c) => !c.startsWith("cut"));
     expect(rows.slice(0, 3)).toEqual([0, 1, 2].map((f) => `swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: f })}`));
-    expect(rows.slice(3).map((c) => c.split(" ")[0])).toEqual(["rite-receipt", "rite-begin"]);
-    expect(rows.slice(3).every((c) => c.startsWith("rite-receipt ") ? !c.includes('"face"') : c.includes('"face":2'))).toBe(true);
+    expect(rows.slice(3).map((c) => c.split(" ")[0])).toEqual(["rite-begin"]);
+    expect(rows.slice(3).every((c) => c.includes('"face":2'))).toBe(true);
     // The lei stands on h0: h0, and no other face read (the bundle the first keep laid stands, so this one spends nothing).
     const zero = rig({ leiOn: { 0: STANDING }, mount: null });
     expect(await riteKeep({ ...zero.ports, houseFaces: lent }, { workspace: "backup" })).toMatchObject({ face: 0, faceBy: "keep" });
