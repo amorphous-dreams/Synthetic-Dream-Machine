@@ -106,9 +106,13 @@ describe("the keep rite, vessel half", () => {
     expect(await refusal(riteKeep(r.ports, { workspace: "backup" }))).toBe("swarm-lei-absent");
     expect(r.calls).toEqual([`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 0 })}`]);
     expect(readdirSync(workspace()).sort()).toEqual([".git", "README.md"]);
-    const spent = rig({ lei: { standing: false, refusal: "returns-spent", after: LEI } });
-    expect(await refusal(riteKeep(spent.ports, { workspace: "backup" }))).toBe("swarm-lei-returns-spent");
+    const spent = rig({ lei: { standing: false, refusal: "returns-spent", after: LEI, returns: 6 } });
+    // THE PLAIN REMEDY: the spent lei's own returns and its face, and no cid (a kui follows the tip itself).
+    const said = await riteKeep(spent.ports, { workspace: "backup" }).then(() => "", (e: Error) => e.message);
+    expect(said).toContain("`lares lei kui --rite keep --branch backup --returns 6 --face 0`");
+    expect(said).not.toMatch(/[0-9a-f]{64}/);
     expect(spent.calls.length).toBe(1);
+    expect(await refusal(riteKeep(spent.ports, { workspace: "backup" }))).toBe("swarm-lei-returns-spent");
   });
 
   test("K2 RED: with a lei standing the keep cuts, begins the rite and then moves the bundle into place; CONTROL: the bundle verifies whole and the workspace keeps what else it held", async () => {

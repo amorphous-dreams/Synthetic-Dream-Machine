@@ -154,6 +154,8 @@ describe("the door issues a lei under its reach", () => {
     const strung = await swarmCommand({ action: "lei-kui", rite: "push", branch: BRANCH, returns: 4, after: null }, s.deps);
     expect(strung).toEqual({ rite: "push", branch: BRANCH, reach: "wide", returns: 4, lei: expect.stringMatching(/^[0-9a-f]{64}$/) });
     expect(await swarmCommand({ action: "show", rite: "push", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { standing: true, reach: "wide", returnsLeft: 4, after: strung["lei"] } });
+    // THE LINE NAMES ITS LEI'S RETURNS (a spent line's refill strings the same count).
+    expect(await swarmCommand({ action: "show", rite: "push", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { returns: 4 } });
     // The same words again name the lei that already rests: nothing more lands.
     const rows = s.wiki.rows.size;
     await expect(swarmCommand({ action: "lei-kui", rite: "push", branch: BRANCH, returns: 4, after: null }, s.deps)).rejects.toBeDefined();

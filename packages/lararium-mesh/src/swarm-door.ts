@@ -144,6 +144,9 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
     const chain = at ? await readLeiChain(wiki, at, deps.trust, deps.group, await lineWitness(at.rite)) : undefined;
     const follows = chain ? (chain.tips.length === 1 ? chain.tips[0]!.cid : null) : undefined;
     const forks = chain && chain.tips.length > 1 ? chain.tips.map((g) => g.cid) : undefined;
+    // `returns`: the tip lei's wide count, so a spent line names how many its refill strings (the tip stays the line's last lei).
+    const tipBody = chain && chain.tips.length === 1 ? chain.tips[0]!.body : undefined;
+    const tipReturns = tipBody && tipBody.reach === "wide" ? tipBody.returns : undefined;
     return {
       cap: r.cap, ok: r.ok, ...(r.refusal ? { refusal: r.refusal } : {}), ...(r.capBraked ? { braked: { cap: "refused-tip" as const } } : {}), shares: Object.fromEntries([...r.shares].sort(([a], [b]) => a.localeCompare(b))), refused: r.refused.length,
       ...(r.unavailable.cap || r.unavailable.shares.size > 0 ? { unavailable: {
@@ -151,7 +154,7 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
         shares: Object.fromEntries([...r.unavailable.shares].sort(([a], [b]) => a.localeCompare(b))),
       } } : {}),
       // `after`: the lei a fresh issue at this branch names as the one it follows.
-      ...(lei ? { lei: { ...(lei.ok ? { standing: true, reach: lei.reach, returnsLeft: lei.returnsLeft, ...(lei.head !== undefined ? { head: lei.head } : {}) } : { standing: false, refusal: lei.refusal }), after: follows ?? null, ...(forks ? { forks } : {}) } } : {}),
+      ...(lei ? { lei: { ...(lei.ok ? { standing: true, reach: lei.reach, returnsLeft: lei.returnsLeft, ...(lei.head !== undefined ? { head: lei.head } : {}) } : { standing: false, refusal: lei.refusal }), after: follows ?? null, ...(tipReturns !== undefined ? { returns: tipReturns } : {}), ...(forks ? { forks } : {}) } } : {}),
     };
   }
   if (deps.who.kind !== "hand") throw new SwarmRefused("swarm-needs-hand", "a hand must decide");

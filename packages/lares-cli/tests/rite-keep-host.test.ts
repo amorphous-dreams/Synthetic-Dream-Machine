@@ -598,6 +598,22 @@ describe("the keep rite, host half", () => {
     expect(named.data).toMatchObject({ face: 2, faceBy: "named" });
   });
 
+  test("KH19 spent-lei-offers-its-refill: a keep stopped on a spent lei strings the refill the refusal names (its returns, its face) through the refill port and goes on once; declined or on a pipe it keeps today's refusal", async () => {
+    const spentRow = (r: ReturnType<typeof rig>, strung: { n: number }): KeepHostPorts["row"] => async (verb, args) => {
+      if (verb === "keep-cut" && strung.n === 0) { r.calls.push(`${verb} ${JSON.stringify(args)}`); return { ok: false, code: "swarm-lei-returns-spent", message: "no keep lei stands for the workspace \"backup\" (returns-spent); the hand strings one: `lares lei kui --rite keep --branch backup --returns 6 --face 0`" }; }
+      return r.ports.row(verb, args);
+    };
+    const r = rig(); const strung = { n: 0 }; const asked: unknown[] = [];
+    const yes = await riteKeepHost({ ...r.ports, sessions: null, row: spentRow(r, strung), refill: async (req) => { asked.push(req); strung.n++; return { strung: true, remedy: "unused" }; } }, { workspace: "backup" });
+    expect(asked).toEqual([{ rite: "keep", branch: "backup", returns: 6, face: 0 }]);
+    expect(yes.code).toBe(0);
+    expect(r.calls.filter((c) => c.startsWith("keep-cut"))).toHaveLength(2);
+    const n = rig({ at: join(scratch, "declined") }); const none = { n: 0 };
+    const no = await riteKeepHost({ ...n.ports, sessions: null, row: spentRow(n, none), refill: async () => ({ strung: false, remedy: "lares lei kui --rite keep --branch backup --returns 6 --face 0" }) }, { workspace: "backup" });
+    expect(no).toMatchObject({ code: 1, data: { refusal: "swarm-lei-returns-spent" } });
+    expect(n.calls.filter((c) => c.startsWith("keep-cut"))).toHaveLength(1);
+  });
+
   test("KH18 keep-names-its-code-once: a vessel half refused under a message that already leads with its code says the code once", async () => {
     const r = rig();
     const ports: KeepHostPorts = { ...r.ports, sessions: null, row: async (verb, args) => {

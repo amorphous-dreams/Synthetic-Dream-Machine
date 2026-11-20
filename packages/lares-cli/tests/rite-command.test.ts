@@ -14,7 +14,7 @@ import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, foundingRecordDigests, type GenesisD
 import { genesisSeedCid } from "@lararium/node";
 import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
-import { RiteUsage, hostRowLine, ritePlan } from "../src/commands/rite.js";
+import { RiteUsage, hostRefill, hostRowLine, ritePlan } from "../src/commands/rite.js";
 import { kukuluSeedLine, priorImageRef, riteKukulu, type RitePorts, type RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
 import { COMMAND_NAMES } from "../src/bin/lares.js";
@@ -78,6 +78,39 @@ describe("rite-begun-before-down", () => {
     expect(f.calls[1]).toBe(`rite-begin ${JSON.stringify({ rite: "kukulu", branch: "feature/x", head: HEAD })}`);
     expect(f.calls.filter((c) => c.startsWith("shim"))).toEqual(["shim build", "shim down", "shim up"]);
     expect(out).toMatchObject({ code: 1, data: { landed: false, stopped: "up" } });
+  });
+});
+
+describe("a spent lei offers its refill inline", () => {
+  const spent: RiteVerbAnswer = { ok: false, code: "swarm-lei-returns-spent", message: "this lei's returns ran out; a fresh lei restrings it" };
+  it("RED: a begin stopped on a spent kukulu lei strings the refill the port offers and begins again; unstrung, it keeps the refusal and names the plain line (no cid)", async () => {
+    const f = fakes();
+    let begins = 0;
+    const row = f.ports.row;
+    const refilled: unknown[] = [];
+    const ports: RitePorts = { ...f.ports, row: async (verb, args) => (verb === "rite-begin" && begins++ === 0 ? spent : row(verb, { ...args })), refill: async (req) => { refilled.push(req); return { strung: true, remedy: "x" }; } };
+    expect((await riteKukulu(ports, { face: 0 })).code).toBe(0);
+    expect(refilled).toEqual([{ rite: "kukulu", branch: "main", face: 0 }]);
+    const g = fakes({ begin: spent });
+    const out = await riteKukulu({ ...g.ports, refill: async () => ({ strung: false, remedy: "lares lei kui --rite kukulu --branch main --returns 3 --all" }) }, {});
+    expect(out).toMatchObject({ code: 1, data: { begun: false, refusal: "swarm-lei-returns-spent" } });
+    expect(g.said.join("\n")).toContain("string more by hand: lares lei kui --rite kukulu --branch main --returns 3 --all");
+    expect(g.said.join("\n")).not.toMatch(/[0-9a-f]{64}/);
+  });
+
+  it("RED: the live refill asks only a real terminal, names the spent lei's returns, runs `lei kui` with them and no cid on a yes; a pipe is asked nothing and reads the plain line", async () => {
+    const asks: string[] = [], ran: string[][] = [];
+    const req = { rite: "keep", branch: "house-backup", face: 0 } as const;
+    const tty = hostRefill(async (q) => { asks.push(q); return true; }, async (argv) => { ran.push([...argv]); return 0; }, () => true, async () => 6);
+    expect(await tty(req)).toEqual({ strung: true, remedy: "lares lei kui --rite keep --branch house-backup --returns 6 --face 0" });
+    expect(asks).toEqual(["the keep lei for house-backup is spent; string 6 more under your route?"]);
+    expect(ran).toEqual([["lei", "kui", "--rite", "keep", "--branch", "house-backup", "--returns", "6", "--face", "0"]]);
+    asks.length = 0; ran.length = 0;
+    const pipe = hostRefill(async (q) => { asks.push(q); return true; }, async (argv) => { ran.push([...argv]); return 0; }, () => false, async () => 6);
+    expect(await pipe(req)).toEqual({ strung: false, remedy: "lares lei kui --rite keep --branch house-backup --returns 6 --face 0" });
+    expect([asks, ran]).toEqual([[], []]);
+    const no = hostRefill(async () => false, async () => 0, () => true, async () => 6);
+    expect((await no(req)).strung).toBe(false);
   });
 });
 

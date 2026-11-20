@@ -230,7 +230,9 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
   if (!line.ok) throw keepRowRefused(line, acting.face!);
   const lei = line.output["lei"] as { standing?: boolean; refusal?: string } | undefined;
   if (lei?.standing !== true) {
-    throw new KeepRefused(`swarm-lei-${lei?.refusal ?? "absent"}`, `no keep lei stands for the workspace "${name}" (${lei?.refusal ?? "absent"}); the hand strings one: \`lares lei kui --rite keep --branch ${name} --returns <n>${hintFace}\``);
+    // A SPENT LINE NAMES ITS OWN REFILL: the same returns as the lei that ran out, the same face, and no cid (a kui follows the tip itself).
+    const again = (lei as { returns?: unknown } | undefined)?.returns;
+    throw new KeepRefused(`swarm-lei-${lei?.refusal ?? "absent"}`, `no keep lei stands for the workspace "${name}" (${lei?.refusal ?? "absent"}); the hand strings one: \`lares lei kui --rite keep --branch ${name} --returns ${typeof again === "number" ? again : "<n>"}${hintFace}\``);
   }
 
   const parent = dirname(target);
