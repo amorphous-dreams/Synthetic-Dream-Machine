@@ -256,6 +256,24 @@ describe("W2e — the arm tends the pool's ignore block", () => {
     expect(again.some((l) => /re-reads HOUSE_IGNORED|stand tracked/.test(l)), "a current block and a clean history log nothing").toBe(false);
   });
 
+  test("a lit face's pool tends itself without a watch: the block re-reads, the operator's lines stay, a tracked file reads by name, a current pool stays silent", () => {
+    initPool();
+    put("personal/lares/$__StoryList.tid", tid("$:/StoryList", "tracked before the rule"));
+    git("add", "-A"); git("commit", "-q", "-m", "an older sitting");
+    const exclude = join(pool, ".git", "info", "exclude");
+    const older = `my-own-notes/\n${POOL_EXCLUDE_OPEN}\n.vscode/\n${POOL_EXCLUDE_CLOSE}\n`;
+    writeFileSync(exclude, older);
+    const lines: string[] = [];
+    wc.tendLitFacePool(pool, "h1", (l) => lines.push(l));
+    expect(readFileSync(exclude, "utf8")).toBe(withExcludeBlock(older));
+    expect(lines.join("\n")).toMatch(/h1: the house's ignore block .* re-reads HOUSE_IGNORED/);
+    expect(lines.join("\n")).toMatch(/h1: 1 file\(s\) the house ignores stand tracked/);
+    git("rm", "-q", "--cached", "personal/lares/$__StoryList.tid"); git("commit", "-q", "-m", "out once");
+    const again: string[] = [];
+    wc.tendLitFacePool(pool, "h1", (l) => again.push(l));
+    expect(again).toEqual([]);
+  });
+
   test("a pool `lares surface init` never made stays as it stands", () => {
     initPool();
     const exclude = join(pool, ".git", "info", "exclude");

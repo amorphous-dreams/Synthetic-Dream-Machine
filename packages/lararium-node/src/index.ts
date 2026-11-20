@@ -203,7 +203,7 @@ export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, typ
   POOL_EXCLUDE_OPEN, POOL_EXCLUDE_CLOSE, REALM_EXCLUDE_LINES, isTempLayerInternalTitle, TEMP_LAYER_DIR,
   isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
 // The drain, one seat (face-pools W1, W2): the CLI's `lares watch` and the vessel's host over the worn face's pool.
-export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolWatch, poolCommitSeam, tendPoolExclude, type ExcludeTending, stageEditsSinceSitting, wakeStageLine, runGit,
+export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolWatch, poolCommitSeam, tendPoolExclude, tendLitFacePool, type ExcludeTending, stageEditsSinceSitting, wakeStageLine, runGit,
   armWorkspaceWatch, workspaceCommitSeam, WORKSPACE_SKIP, WORKSPACE_CLOSE_PREFIX, type WorkspaceWatchOptions,
   WATCHED_PLANES, SITTING_CLOSE_PREFIX, POOL_SETTLE_MS, type DrainSeat, type FacePoolWatch, type FacePoolPorts, type FacePoolWatchOptions, type SeamReading,
   type SittingClose, type StageEdit, type WatchState, type GitRun } from "./watch-core.js";
