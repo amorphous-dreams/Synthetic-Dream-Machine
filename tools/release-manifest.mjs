@@ -11,6 +11,10 @@
 // this tool emits and verifies the record and publishes nothing. The CIDs follow the genesis directory it reads,
 // so a release cut after the engine fold names the folded CIDs with no change here.
 //
+// THE FLOOR RIDES RELEASES. A `main` release bakes genesis with `pnpm --filter @lararium/node build:genesis-release`
+// (code and founding floor re-cut from canon) before it builds the image and emits this record; every develop bake
+// between releases re-cuts code alone and carries the floor (lar:///ha.ka.ba/lararium/node/genesis-island#/the-floor-rides-releases).
+//
 // THE FLOOR'S SHAPE. The engine CID reads off the genesis floor manifest (format, engine, plugins, snapshots: a
 // manifest naming grammar refuses `floor-manifest-malformed`), and must agree with the seed's engine witness; the
 // floor's `plugins` must name the sha256 of the `floor-plugin-offering` row's bytes. GRAMMAR STAYS IN THE RECORD:

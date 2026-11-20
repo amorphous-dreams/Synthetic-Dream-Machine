@@ -45,7 +45,7 @@ The per-wiki live layers ride above the fold, each rooted at the wiki's identity
 
 `bags/lares` (and each house-canon bag beside it) names two things, and no reader may fuse them:
 
-* ''The static floor — a seed for every wiki.'' The genesis bake cuts one history-free snapshot per public house-canon bag from the tracked carriers (`cutGenesisFloor`; a bag that declares a tier under `public` in its own `meta.mem` keys none), a manifest names each by ''CID'', and every recipe composes them read-only through `@oracle` (`floorReadFace`): reproducible from the hash, unreachable by an edit. A later floor reaches a vessel only as a release its Nexus's Kahu cabal approved and the vessel accepted. A write aimed at the floor copies up into the wiki's own working layer.
+* ''The static floor — a seed for every wiki.'' A `main` release's genesis bake cuts one history-free snapshot per public house-canon bag from the tracked carriers, and each develop bake between releases carries them forward unchanged (`cutGenesisFloor`, `carryGenesisFloor`; a bag that declares a tier under `public` in its own `meta.mem` keys none), a manifest names each by ''CID'', and every recipe composes them read-only through `@oracle` (`floorReadFace`): reproducible from the hash, unreachable by an edit. A later floor reaches a vessel only as a release its Nexus's Kahu cabal approved and the vessel accepted. A write aimed at the floor copies up into the wiki's own working layer.
 * ''The live canon — the `wikis/lares` stack's canon layer.'' One CRDT document in the Kahu realm, which the Kahu cabal holds the write reach on (`requireKahuReach`). The `lares` wiki composes it beneath its draft and working layers and above the floor; a hand edits in the working layer and a promotion carries the edit into canon (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/offering`>> #/the-canon-offer). On the Kahu's vessel, in a checkout-sourced boot, that document mirrors to disk at `bags/lares`. A vessel outside the cabal holds no live document and reads the floor.
 
 ''The decoupling carries the safety.'' The floor answers to a CID, so editing `wikis/lares` cannot break what another wiki reads: a promotion moves live canon alone, and every other wiki's floor moves only when a release cuts a fresh snapshot from that canon and the vessel accepts it. Edit freely, promote deliberately, release by the cabal's act.
@@ -90,6 +90,6 @@ Two maps, cleanly separated — each the operator's own, never a registry of oth
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — separates floor records from vessel pointers
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model`>> — places system floor beneath writable recipe layers
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UygrXR9tXjVSq9FPSIlan4vCjhNWya7_gIfR1EMLkLA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Rhe38YvAp2ynvQwMt_C0lDirF80UV4cv6rlwfVWnXsM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

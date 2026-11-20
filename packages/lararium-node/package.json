@@ -24,6 +24,7 @@
     "dev": "tsx src/main.ts",
     "start": "node dist/src/main.js",
     "build:genesis": "pnpm --filter @lararium/tw5 build:plugin && tsx scripts/build-genesis-island.ts",
+    "build:genesis-release": "pnpm --filter @lararium/tw5 build:plugin && tsx scripts/build-genesis-island.ts --release",
     "test:quine": "tsx scripts/test-quine.ts"
   },
   "dependencies": {

@@ -17,6 +17,12 @@ const pkg = JSON.parse(readFileSync(join(HERE, "..", "package.json"), "utf8")) a
 describe("★ build:genesis reads the engine, never mints it ★", () => {
   test("the script spells no vendor render", () => {
     expect(pkg.scripts["build:genesis"]).not.toMatch(/build:tw5-vendor|build:vendor|build-tw5-vendor/);
+    expect(pkg.scripts["build:genesis-release"]).not.toMatch(/build:tw5-vendor|build:vendor|build-tw5-vendor/);
+  });
+  test("two bakes by intent: the develop bake carries the floor, the release bake alone re-cuts it", () => {
+    expect(pkg.scripts["build:genesis"]).not.toMatch(/--release/);
+    expect(pkg.scripts["build:genesis-release"]).toMatch(/build:plugin/);
+    expect(pkg.scripts["build:genesis-release"]).toMatch(/build-genesis-island\.ts --release$/);
   });
   test("CONTROL: the script still packs the plugin and bakes the island", () => {
     expect(pkg.scripts["build:genesis"]).toMatch(/build:plugin/);
