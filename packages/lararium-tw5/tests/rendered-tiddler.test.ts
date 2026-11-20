@@ -9,6 +9,8 @@
  *   - a change the render reached re-renders it, a change it never reached writes nothing, and the rendered tiddler's
  *     own landing never feeds its own loop;
  *   - the render fires no action widget;
+ *   - a source surfaced from a layer the island only reads (the oracle floor) renders nowhere, and a render standing from
+ *     one leaves; the same source copied up into the writable layer renders;
  *   - the agent surface: one `tiddler-get` answers the whole render, and `wiki-filter` over the sources answers a slice.
  *
  * A real engine boots here (`bootTestWiki`), so the render answers as TiddlyWiki answers it.
@@ -23,6 +25,7 @@ import type { VerbContext } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 
 const DAEMON = bagUri("daemon");
+const ORACLE = bagUri("oracle");
 const WORKING_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 const ROAD_TEXT = `<$list filter="[tag[road/rank]sort[order]]"><h2><$text text=<<currentTiddler>>/></h2><$transclude mode="block"/></$list>`;
 
@@ -40,6 +43,7 @@ async function rig(extra: Array<Record<string, string>> = []) {
     ...extra,
   ] });
   const composite = new CompositeStore();
+  composite.addLayer({ bagId: ORACLE, store: new MemoryTiddlerStore(ORACLE), writable: false });
   composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true });
   // THE SHORE, IN SMALL: a store change lands in the wiki, as the island adaptor lands it.
   composite.subscribe((change) => {
@@ -54,6 +58,7 @@ async function rig(extra: Array<Record<string, string>> = []) {
   const stop = armRenderedTiddlers(engine, {
     write: async (fields) => { writes.push(fields); await composite.put({ tiddler: fields as never, meta: {} }, { kind: "lares-verb", requestId: "render" }); },
     remove: async (title) => { removes.push(title); await composite.tombstone(title, { kind: "lares-verb", requestId: "render" }); },
+    ownsBag: (bag) => composite.hasWritableBag(bag),
   });
   await settle();
   const writesOf = (title: string) => writes.filter((w) => w["title"] === title);
@@ -143,6 +148,23 @@ describe.skipIf(wikiSkip)(`the rendered tiddler${skipNote}`, () => {
     }]);
     expect(r.engine.wiki.getTiddler("Fired")).toBeUndefined();
     expect(String(r.engine.wiki.getTiddler("Acts.rendered")!.fields["text"])).toContain("press");
+    r.stop();
+  }, 60_000);
+
+  test("RED: a marked source the oracle floor carries renders nowhere, and a render standing from it leaves at arm; CONTROL: copied up into the writable layer, it renders", async () => {
+    const floorRoad = { title: "Floor Road", type: "text/vnd.tiddlywiki", projection: "rendered", "render-type": "text/html", "render-title": "floor-road.html", text: "{{Note}}" };
+    const r = await rig([
+      { ...floorRoad, "$origin-bag": ORACLE },
+      { title: "floor-road.html", type: "text/html", text: "stale", [RENDERED_FROM_FIELD]: "Floor Road", "$origin-bag": DAEMON },
+    ]);
+    expect(r.writesOf("floor-road.html"), "a floor-borne source writes no render").toEqual([]);
+    expect(r.removes, "the render standing from a floor-borne source leaves").toContain("floor-road.html");
+    expect(r.engine.wiki.getTiddler("floor-road.html")).toBeUndefined();
+    expect(r.engine.wiki.getTiddler("Road.rendered"), "a source no layer stamped renders as the engine holds it").toBeDefined();
+    r.engine.setTiddler({ ...floorRoad, "$origin-bag": DAEMON });
+    await settle();
+    expect(r.writesOf("floor-road.html").length).toBe(1);
+    expect(String(r.engine.wiki.getTiddler("floor-road.html")!.fields["text"])).toContain("noted");
     r.stop();
   }, 60_000);
 
