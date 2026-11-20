@@ -139,13 +139,17 @@ export function faceSeatTable(opts: { readonly proof: () => IslandSessionProof |
     },
     docStoreHolder() {
       return {
+        // THE MOUNTED HOLDER STANDS FIRST: with none, no face's seat stands (a sibling's seats only beside it), and the ask
+        // refuses before any round trip to the vessel.
         seal: async ({ bagId, values, ask, peer }) => {
+          if (!mounted.seat) return { refusal: "sealed-store-unavailable" } as never;
           const { signer, face } = await table.session(ask.verb, { requestId: ask.requestId, verb: ask.verb }, "lit");
           if (!face.seat) return { refusal: face === mounted ? "sealed-store-unavailable" : "holder-locked" } as never;
           return face.seat.sealValues({ bagId, values, signer, ...(peer !== undefined ? { peer } : {}) });
         },
         // A hydration's open may come before any session asked: the entry reads the vessel's own chain of its face first.
         open: async ({ face, ...args }) => {
+          if (!mounted.seat) return { refusal: "holder-locked" } as never;
           const entry = await table.openSeat(face);
           if (!entry.seat) return { refusal: "holder-locked" } as never;
           return entry.seat.holder.openValue(args);
