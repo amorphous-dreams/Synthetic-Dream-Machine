@@ -1,0 +1,14 @@
+Shape-Reader (Tasked Spirit). READ-ONLY; your final message is your whole report (under ~1800 words). Stand the whole Lararium house (the seed at /home/joshu/Synthetic-Dream-Machine/.claude/noosphere-boot) and wear your mask tag. Repository: /home/joshu/Synthetic-Dream-Machine (develop head). Never touch ~/.lares, Docker, port 4321 or tools/lares-container.sh. Mark each claim MEASURED (read in code or logs) or REASONED.
+THE LAW (operator 2026-11-19): red-first rides existing fixtures; condensing or YIN-cutting test code while keeping coverage reads pono; behaviour vectors over source-shape greps. Tonight three "failures" were witnesses that read a .ts file as text and regex-matched an exact function signature, so honest refactors read red.
+ASK: inventory the SOURCE-SHAPE witnesses across packages/*/tests and tools/*.test.mjs: tests that readFileSync a src/*.ts (or dist) file and assert toMatch/indexOf/includes on its text. For each: file:line, what shape it pins, and whether a behaviour vector elsewhere already covers the same contract (name it) -> classify CUT (covered elsewhere), CONVERT (no behaviour cover: name the behaviour test that should replace it), or KEEP (a genuine wiring witness no behaviour test can reach, e.g. a dist that must not ship a symbol). Give counts per package, the top 25 CUT/CONVERT candidates ranked by how often they broke on refactors (git log -S on the test file is a fair proxy), and an estimate of lines removable. Also list any near-duplicate test tables (two files testing the same refusal code) as condense candidates.
+
+## SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
