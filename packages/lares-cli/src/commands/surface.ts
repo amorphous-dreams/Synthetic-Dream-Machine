@@ -21,8 +21,7 @@
  * tree, `.git` at the folder's top, never one tree over the realm. `init --realm <realm pet name>` makes each wiki folder the
  * realm holds a pool under the wiki's identity (`<slug> <slug>@realm.invalid`), never a face's; `check` from one refuses an index
  * file, a face root, an author naming a face, and a remote on a realm only the house's own faces share (its history interleaves
- * those faces' commits, and a remote would carry that history and its authors' pet names to a third party; pet names stay local
- * labels, and these rows keep a pool's history on this disk: research/tideline-surface #/hats); `commit --realm <realm pet name>` stages each by
+ * those faces' commits, and a remote would carry that history to a third party: research/tideline-surface #/hats); `commit --realm <realm pet name>` stages each by
  * the synced base as the face commit does.
  *
  * A HOST VERB. The pools rest on the disk the house's projections rest on, so the door runs where that disk stands and git

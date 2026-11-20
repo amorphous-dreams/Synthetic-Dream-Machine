@@ -138,7 +138,7 @@ export interface BundleRedeclareFace {
 /**
  * One shared wiki's row set, as the vessel-private share config held it: who owns the wiki's workbench and who sits there, by
  * PET-NAME. A bundle counts as the operator's own private carry; these names label one human's faces locally, so a bundle handed to
- * another party carries that map to them (cabal-realm#/the-workbench: pet names stay local, and no DreamNet-published document joins a human's faces).
+ * another party carries that map to them (cabal-realm#/the-workbench: no DreamNet-published document joins a human's faces by crypto identity or Handle).
  */
 export interface BundleShareEntry { readonly slug: string; readonly kind: "bag" | "wiki"; readonly read: string; readonly write: string; readonly owner?: string; readonly workspace?: string; readonly note?: string }
 /**
