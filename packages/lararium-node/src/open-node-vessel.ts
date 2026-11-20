@@ -170,7 +170,8 @@ import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-store.js";
 import { raiseAnchorFromSlots } from "./lease-observation.js";
-import { readFacePersonaRecords } from "./persona-act-store.js";
+import { readFacePersonaRecords, readSiblingPersonaRecords } from "./persona-act-store.js";
+import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
 import { joinedFaceAuth, unlitServedFaces, siblingFaceWork, litSiblingOrdinals, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
@@ -3465,9 +3466,12 @@ async function prepareNodeBootOn(
         const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
         const chain = personaKelChainForPrefix(board.doc(), other.personaKelPrefix);
         if (!chain || chain.length === 0) return null;
-        // A SIBLING'S PLANE RESTS UNMOUNTED: the composition mounts the worn face's plane alone, so the proof reads this replica's
-        // own store for it (never a peer). The store's own face gate still decides what opens, and the log proves itself below.
-        const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, extraDocs: [secretHome?.handle.doc()], heldOnly: true, resting: true });
+        // A SIBLING'S PLANE RESTS UNMOUNTED: the composition mounts the worn face's plane alone, so the proof reads the plane's
+        // bytes from this vessel's own face-gated store into a scratch document (`readSiblingPersonaRecords`): no Repo handle, no
+        // peer, and a face that stands shut at the read reads no plane. Nothing it reads reaches the live Repo, proved or not.
+        const records = await readSiblingPersonaRecords({ storage: sealedRest.store, personaUrl: plane.url, group: plane.personaGroupId,
+          faceOpen: async () => { const holder = standingCustody(); return holder !== null && holder.isUnlocked() && (await holder.faceStanding({ group: personaGroupDigest(plane.personaGroupId) }))?.unlocked === true; },
+          carried: [secretHome?.handle.doc()] });
         const otherFace = faceBootTiddlers ? bootFacePlanes(faceBootTiddlers, plane.personaGroupId) : null;
         if (!otherFace?.intentsUrl) return null;
         const proof = proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace.intentsUrl } });

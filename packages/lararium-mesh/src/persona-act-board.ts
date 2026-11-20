@@ -9,7 +9,8 @@
  * Meme: lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026
  */
 
-import { parseAutomergeUrl, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
+import * as A from "@automerge/automerge";
+import { parseAutomergeUrl, type AutomergeUrl, type Chunk, type Repo, type StorageAdapterInterface } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
 import { PERSONA_ACT_DOMAIN } from "./domains.js";
@@ -111,31 +112,37 @@ export function heldDocOf(repo: Repo, url: string): LarDoc | undefined {
 }
 
 /**
- * A plane doc this replica holds: loaded in memory, or resting in its own store though no mount has loaded it yet (a lit
- * sibling's persona plane: the composition mounts the worn face's plane alone, so a sibling's founding act rests on disk
- * unread). The read asks the store alone and settles the moment the store answers; it never waits on a peer: a store that
- * holds nothing answers undefined, as {@link heldDocOf} does, while the mesh may still deliver. A store that never answers
- * within `boundMs` reads as holding nothing, so a proof that rides this read refuses, never waits.
+ * A plane doc as this replica's own STORE rests it, read from the storage adapter's bytes alone and loaded into a scratch
+ * document: never a Repo handle, never the network, never a peer. A lit sibling's persona plane rests so (the composition
+ * mounts the worn face's plane alone), and its proof reads it here before anything admits it anywhere: a plane that fails
+ * its proof never reached the live Repo, since this read never touches one.
+ *
+ * Pass the vessel's own face-gated store as `storage`: a chunk sealed under a face outside the open set refuses there, and
+ * the refusal reads as absent. The bound holds at acceptance: an answer that lands after `boundMs` reads absent, and since
+ * the read loads nothing into any Repo, a late answer populates nothing. Absent (nothing rests, a refusal, a torn chunk, the
+ * bound spent) answers undefined.
  */
-export async function restingDocOf(repo: Repo, url: string, boundMs = DOCUMENT_READY_TIMEOUT_MS): Promise<LarDoc | undefined> {
-  const held = heldDocOf(repo, url);
-  if (held) return held;
-  const query = repo.findWithProgress<LarDoc>(url as AutomergeUrl);
-  const verdict = (s: ReturnType<typeof query.peek>): { doc: LarDoc | undefined } | null => {
-    if (s.state === "ready") return { doc: s.handle.doc() as LarDoc | undefined };
-    // The store still reads: wait for its answer. Any other answer (the store holds nothing, a storage-less Repo, a fault)
-    // settles here, before any peer's.
-    if (s.state === "loading" && s.sources["storage"] === "pending") return null;
-    return { doc: undefined };
-  };
-  const now = verdict(query.peek());
-  if (now) return now.doc;
-  return new Promise<LarDoc | undefined>((resolve) => {
-    let settled = false;
-    const finish = (doc: LarDoc | undefined): void => { if (settled) return; settled = true; clearTimeout(timer); unsubscribe(); resolve(doc); };
-    const timer = setTimeout(() => finish(undefined), boundMs);
-    const unsubscribe = query.subscribe((s) => { const v = verdict(s); if (v) finish(v.doc); });
-    const late = verdict(query.peek());
-    if (late) finish(late.doc);
-  });
+export async function readRestingDoc(
+  storage: Pick<StorageAdapterInterface, "loadRange">, url: string, boundMs = DOCUMENT_READY_TIMEOUT_MS,
+): Promise<LarDoc | undefined> {
+  const documentId = parseAutomergeUrl(url as AutomergeUrl).documentId;
+  // THE BOUND HOLDS AT ACCEPTANCE: once the timer spends it, no answer counts, whichever settles first.
+  let spent = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<null>((resolve) => { timer = setTimeout(() => { spent = true; resolve(null); }, boundMs); });
+  let chunks: Chunk[] | null;
+  try { chunks = await Promise.race([storage.loadRange([documentId]).catch(() => null), late]); }
+  finally { clearTimeout(timer); }
+  if (chunks === null || spent) return undefined;
+  // The engine's own order (`StorageSubsystem.loadDocData`): snapshots, then incrementals; no other role carries the doc.
+  const role = (c: Chunk): number => (c.key[1] === "snapshot" ? 0 : c.key[1] === "incremental" ? 1 : -1);
+  const parts = chunks.filter((c): c is Chunk & { data: Uint8Array } => c.data !== undefined && role(c) >= 0).sort((a, b) => role(a) - role(b));
+  if (parts.length === 0) return undefined;
+  const bytes = new Uint8Array(parts.reduce((n, c) => n + c.data.length, 0));
+  let at = 0;
+  for (const c of parts) { bytes.set(c.data, at); at += c.data.length; }
+  try {
+    const doc = A.loadIncremental(A.init<LarDoc>(), bytes);
+    return A.getHeads(doc).length > 0 ? (doc as LarDoc) : undefined;
+  } catch { return undefined; }
 }
