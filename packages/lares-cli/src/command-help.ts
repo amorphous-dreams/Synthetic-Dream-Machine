@@ -949,7 +949,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares wear <N>   (N names a face standing open, a whole number from 0; `--face N` reads the same)",
     synopsis:
       "UNLOCK OPENS CUSTODY; WEAR CHOOSES THE FACE. The vessel's mount moves to face hN, a face already standing open " +
-      "(under a pūlama, one the pūlama lends), and the vessel composes again on it. A wear asks no route and carries none. " +
+      "(under a pūlama, one the pūlama lends), and the vessel composes again on it. A wear asks no route and carries none, and an AI seat wears on the operator's word as the operator's own terminal does. " +
       "A vessel holding no key refuses `custody-locked` and names `lares vault unlock`; a composition that refuses wears " +
       "the face it left, and the vessel key stays held.",
     examples: [

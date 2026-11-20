@@ -190,16 +190,29 @@ describe("RED wear's rollback: a key never rests over a floor", () => {
   });
 });
 
-describe("RED a seat never wears", () => {
-  test("seat-wears-no-face: a wear frame marked `seat: \"ai\"` refuses by name, pointing to the operator's own terminal, and moves nothing", async () => {
+describe("RED a seat's wear moves the mount", () => {
+  test("a wear frame marked `seat: \"ai\"` over an open face moves the mount like the operator's own", async () => {
     const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
     await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
     v.composed.length = 0;
     const a = await v.send({ op: "wear", face: 1, seat: "ai" });
-    expect(a).toMatchObject({ op: "wear", status: "error", refusal: { reason: "seat-wears-no-face" } });
-    expect(String(a["errorMessage"])).toMatch(/operator's own terminal/);
+    expect(a).toMatchObject({ op: "wear", face: 1, held: true });
+    expect(mountedFaceOrdinal()).toBe(1);
+    expect(v.composed.length).toBeGreaterThan(0);
+  });
+
+  test("CONTROL: a seat's wear of a shut face refuses `face-not-open`", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), face: 0 });
+    const a = await v.send({ op: "wear", face: 1, seat: "ai" });
+    expect(a).toMatchObject({ op: "wear", status: "error", refusal: { reason: "face-not-open" } });
     expect(mountedFaceOrdinal()).toBe(0);
-    expect(v.composed).toEqual([]);
+  });
+
+  test("CONTROL: a seat's wear on a locked vessel refuses `custody-locked`", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    const a = await v.send({ op: "wear", face: 1, seat: "ai" });
+    expect(a).toMatchObject({ op: "wear", status: "error", refusal: { reason: "custody-locked" } });
   });
 
   test("the seat key carries `ai` alone; any other value refuses as a bad frame. CONTROL: an unmarked wear still wears", async () => {
