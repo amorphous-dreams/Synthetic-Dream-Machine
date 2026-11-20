@@ -284,8 +284,8 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
       for (const root of listing.roots ?? []) classes.memes[`${recipe} ${root.uri}`] = root.canonicalHash;
       for (const bag of listing.unreached ?? []) classes.memes[`${recipe} !unreached ${bag}`] = "unreached";
     }
-    // PLAIN RECORDS READ OVER THE DAEMON WIKI ALONE: `wiki filter` answers recipe `default` only in this phase
-    // (`wiki-not-anchored`, wiki-surface-scout #/phases), so a named wiki's non-meme records have no listing door yet.
+    // PLAIN RECORDS READ OVER THE DAEMON WIKI ALONE: the drill reads recipe `default` only. A named wiki answers `wiki filter`
+    // through its own engine since #390 (an unreachable recipe refuses `wiki-unreached`; `wiki-not-anchored` stays for a bag), see wiki-surface-scout #/phases.
     {
       const recipe = "default";
       // The text rides the filter's own rows; a row too large for one page sheds it (`omitted`), and that one record reads
