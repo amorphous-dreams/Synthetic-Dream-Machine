@@ -28,7 +28,9 @@
  *   tessera/<tessera>/guest · tessera/<tessera>/host
  *                              the two halves of one rite across a restart (`swarm-tessera.ts`): `rite-begun` rests before the
  *                              vessel goes down, `rite-landed` after it stands again; each the VESSEL's witness
- *   receipt/<tree>             a check seat's verdict over a tree, signed by the VESSEL
+ *   receipt/<tree>             a check seat's verdict over a tree, signed by THE PLACE once (`restReceipt`): a receipt testifies
+ *                              about code, never about a face, so it names no group and every face's trust reads it through its
+ *                              `place` predicate; its signature rides the place signer's own floor duty (`RITE_RECEIPT_DOMAIN`)
  *   house-cap · lane/<lane>/share
  *                              ride the face-private board (`swarm-board.ts`) so a fleet folds one cap; their titles belong to this family
  *
@@ -36,7 +38,8 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
-import { SWARM_ACT_DOMAIN } from "./domains.js";
+import { RITE_RECEIPT_DOMAIN, SWARM_ACT_DOMAIN } from "./domains.js";
+import { frameFloorDuty, verifyPlaceDuty, type PlaceSigner } from "./place-signer.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { SWARM_URI_PREFIX } from "./lar-uris.js";
 import { SWARM_LEI_RITES, isSwarmLeiRite, leiRiteCosigns, leiRiteTestifies, wardLeiVerb, type SwarmLeiRite } from "./swarm-lei-rite.js";
@@ -57,10 +60,12 @@ export interface SwarmWikiPort {
   list(prefix: string): Promise<readonly string[]>;
 }
 
-/** Who may sign what: the face's hand, the vessel as witness, a lead under its own seat name. */
+/** Who may sign what: the face's hand, the vessel as witness, the place over a tree's receipt, a lead under its own seat name. */
 export interface SwarmTrust {
   readonly hand: (key: string) => boolean;
   readonly vessel: (key: string) => boolean;
+  /** The place a rite receipt signs under: one receipt per tree serves every face the place lends. */
+  readonly place: (key: string) => boolean;
   /** A lead signs one lane's state alone: the trust binds the seat, its lane and its key together. */
   readonly lead: (seat: string, lane: string, key: string) => boolean;
 }
@@ -153,14 +158,16 @@ export interface SwarmLeiReturnedBody { readonly act: "lei-returned"; readonly g
 export interface SwarmLeiNarrowedBody { readonly act: "lei-narrowed"; readonly group: string; readonly lei: string; readonly head: string; readonly tree: string }
 export interface SwarmLaneStateBody { readonly act: "lane-state"; readonly group: string; readonly lane: string; readonly seat: string; readonly state: Readonly<Record<string, string | number | boolean | null>> }
 export interface SwarmRosterBody { readonly act: "roster"; readonly group: string; readonly seat: string; readonly model: string; readonly mode: string; readonly reading: number; readonly ceiling: number; readonly outcome: string }
-export interface SwarmReceiptBody { readonly act: "receipt"; readonly group: string; readonly tree: string; readonly checks: readonly string[]; readonly verdict: "pass" | "fail"; readonly definitions: string }
+/** A rite receipt: the verdict over one tree, the checks it covers and the hash of their definitions. It names no face group. */
+export interface RiteReceiptBody { readonly kind: typeof RITE_RECEIPT_DOMAIN; readonly tree: string; readonly checks: readonly string[]; readonly verdict: "pass" | "fail"; readonly definitions: string }
+export interface SignedRiteReceipt { readonly body: RiteReceiptBody; readonly signer: string; readonly sig: string }
 /** The hand unstrung a lei: the lei, and the rite and branch whose line it rests on. */
 export interface SwarmLeiUnstrungBody { readonly act: "lei-unstrung"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly lei: string }
 /** The guest half: the rite began. `lei` and `n` name the return that paid for it; `head` and `tree` name what the rite runs at. */
 export interface SwarmRiteBegunBody { readonly act: "rite-begun"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly head: string; readonly tree: string; readonly lei: string; readonly n: number; readonly tessera: string }
 /** The host half: the vessel stood again. `begun` names the guest half by its cid; `head` names the head the vessel stands at. */
 export interface SwarmRiteLandedBody { readonly act: "rite-landed"; readonly group: string; readonly rite: SwarmLeiRite; readonly tessera: string; readonly begun: string; readonly head: string }
-export type SwarmBodyParts = SwarmLeiBody | SwarmLeiReturnedBody | SwarmLeiNarrowedBody | SwarmLeiUnstrungBody | SwarmRiteBegunBody | SwarmRiteLandedBody | SwarmLaneStateBody | SwarmRosterBody | SwarmReceiptBody;
+export type SwarmBodyParts = SwarmLeiBody | SwarmLeiReturnedBody | SwarmLeiNarrowedBody | SwarmLeiUnstrungBody | SwarmRiteBegunBody | SwarmRiteLandedBody | SwarmLaneStateBody | SwarmRosterBody;
 export type SwarmBody = SwarmBodyParts & { readonly kind: typeof SWARM_ACT_DOMAIN };
 export interface SignedSwarmAct { readonly body: SwarmBody; readonly signer: string; readonly sig: string }
 export type SwarmReadRefusal = "absent" | "shape" | "domain" | "group" | "signature" | "title" | "role";
@@ -186,7 +193,6 @@ function shape(b: Record<string, unknown>): boolean {
     case "rite-landed": return isSwarmLeiRite(b["rite"]) && hex(b["tessera"], 64) && hex(b["begun"], 64) && str(b["head"]);
     case "lane-state": return str(b["lane"]) && str(b["seat"]) && object(b["state"]) && Object.values(b["state"]).every((v) => v === null || ["string", "number", "boolean"].includes(typeof v));
     case "roster": return str(b["seat"]) && str(b["model"]) && str(b["mode"]) && count(b["reading"]) && count(b["ceiling"]) && str(b["outcome"]);
-    case "receipt": return str(b["tree"]) && Array.isArray(b["checks"]) && b["checks"].every(str) && (b["verdict"] === "pass" || b["verdict"] === "fail") && hex(b["definitions"], 64);
     default: return false;
   }
 }
@@ -203,7 +209,6 @@ function titleOf(b: SwarmBody): string | null {
       case "rite-landed": return swarmTesseraTitle(b.tessera, "host");
       case "lane-state": return swarmLaneStateTitle(b.lane);
       case "roster": return swarmRosterTitle(b.seat);
-      case "receipt": return swarmReceiptTitle(b.tree);
     }
   } catch { return null; }
 }
@@ -220,7 +225,7 @@ const allowed = (b: SwarmBody, key: string, trust: SwarmTrust): boolean => {
   switch (b.act) {
     case "lei": case "lei-unstrung": return trust.hand(key);
     case "lane-state": return trust.lead(b.seat, b.lane, key);
-    case "lei-returned": case "lei-narrowed": case "rite-begun": case "rite-landed": case "roster": case "receipt": return trust.vessel(key);
+    case "lei-returned": case "lei-narrowed": case "rite-begun": case "rite-landed": case "roster": return trust.vessel(key);
   }
 };
 
@@ -325,10 +330,11 @@ export async function readLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly
 /**
  * Spend a lei of the named rite at one head. The spend names the lei by its cid, which binds the rite and the reach.
  *
- * THE TESTIMONY: the spender names the head's `tree`, and a passing `receipt/<tree>` the vessel signed must stand for it, else the
+ * THE TESTIMONY: the spender names the head's `tree`, and a passing `receipt/<tree>` the place signed must stand for it, else the
  * spend refuses `swarm-lei-testimony-absent` and claims nothing. This core reads no repository, so THE SPENDER DERIVES THE TREE
  * (the vessel reads it off the head) and the spend record carries head and tree together under the vessel's signature: the
- * vessel testifies the pairing, and a reader holds the record to it.
+ * vessel testifies the pairing, and a reader holds the record to it. The receipt verifies under the trust's `place` alone, so
+ * one receipt stands for every lent face's spend at that tree, and a receipt any face key signed reads absent.
  *
  * A RED NARROWS: a receipt standing `fail` for the tree refuses `swarm-lei-testimony-red`. For a wide lei the vessel first rests a
  * signed narrowing at `lei-narrowed/<lei cid>`, and from then the lei spends nothing (`swarm-lei-narrowed`): the line reads
@@ -354,9 +360,9 @@ export async function returnLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readon
   const absent = (): never => { throw new SwarmRefused("swarm-lei-testimony-absent", `no passing receipt stands for the tree of ${at.head}; a spend names the head's tree and rests on its receipt`); };
   if (!str(at.tree)) absent();
   const receiptTitle = swarmReceiptTitle(at.tree);
-  const receipt = verifySwarmRecord(await wiki.read(receiptTitle), receiptTitle, trust, group);
-  if (!receipt.ok || receipt.act.body.act !== "receipt") return absent();
-  if (receipt.act.body.verdict !== "pass") {
+  const receipt = verifyRiteReceipt(await wiki.read(receiptTitle), receiptTitle, trust.place);
+  if (!receipt.ok) return absent();
+  if (receipt.receipt.body.verdict !== "pass") {
     if (lei.reach === "wide") {
       const narrowed = await signSwarmAct({ act: "lei-narrowed", group, lei: lei.cid, head: at.head, tree: at.tree }, spender);
       // The first red rests; a second one finds the lei narrowed already.
@@ -380,15 +386,53 @@ async function claimReturn(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly he
     : new SwarmRefused("swarm-lei-returned", "this lei was already returned");
 }
 
+/** The image a place signs for a rite receipt: the receipt duty's frame over the canonical body. */
+export const riteReceiptImage = (body: RiteReceiptBody): Uint8Array => frameFloorDuty(RITE_RECEIPT_DOMAIN, canonicalJsonBytes(body));
+/** A rite receipt's id: its body beside the place key that signed it. */
+export const riteReceiptCid = (r: { readonly body: RiteReceiptBody; readonly signer: string }): string => sha256HexBytesSync(canonicalJsonBytes({ body: r.body, signer: r.signer }));
+export type RiteReceiptRefusal = "absent" | "shape" | "domain" | "signature" | "title" | "role";
+
 /**
- * Rest a receipt over a tree: the vessel signs the verdict the host's battery handed it and rests it at `receipt/<tree>`, where
- * a later receipt for the same tree replaces it.
- *
- * THE RECEIPT NOTARISES TESTIMONY. The vessel re-runs nothing: it vouches that it heard this verdict, for this tree, over these
- * checks and these definitions, never that the tree passes. Every return rests on a receipt, so a return rests on that
- * testimony until the vessel samples a check itself.
+ * Verify one rite receipt's JSON at the title it came from: its shape, its domain, the place duty's signature over the framed
+ * body, the title its tree belongs at, and a signer the `place` predicate names. A face's key never signs as the place, so a
+ * receipt it signed refuses, and a caller reads any refusal as no testimony.
  */
-export async function restReceipt(wiki: SwarmWikiPort, receipt: { readonly tree: string; readonly checks: readonly string[]; readonly verdict: "pass" | "fail"; readonly definitions: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort):
+export function verifyRiteReceipt(text: string | null, title: string, place: (key: string) => boolean): { ok: true; receipt: SignedRiteReceipt; cid: string } | { ok: false; refusal: RiteReceiptRefusal } {
+  if (text === null) return { ok: false, refusal: "absent" };
+  let raw: unknown;
+  try { raw = JSON.parse(text); } catch { return { ok: false, refusal: "shape" }; }
+  if (!object(raw) || !object(raw["body"]) || !hex(raw["signer"], 64) || typeof raw["sig"] !== "string") return { ok: false, refusal: "shape" };
+  const b = raw["body"];
+  if (Object.keys(b).sort().join(",") !== "checks,definitions,kind,tree,verdict" || !str(b["tree"]) || !Array.isArray(b["checks"]) || b["checks"].length === 0 || !b["checks"].every(str)
+    || (b["verdict"] !== "pass" && b["verdict"] !== "fail") || !hex(b["definitions"], 64)) return { ok: false, refusal: "shape" };
+  if (b["kind"] !== RITE_RECEIPT_DOMAIN) return { ok: false, refusal: "domain" };
+  const body = b as unknown as RiteReceiptBody, signer = raw["signer"] as string;
+  try { if (!verifyPlaceDuty({ domain: RITE_RECEIPT_DOMAIN, image: riteReceiptImage(body), sig: raw["sig"], signerKey: signer })) return { ok: false, refusal: "signature" }; }
+  catch { return { ok: false, refusal: "signature" }; }
+  let at: string | null;
+  try { at = swarmReceiptTitle(body.tree); } catch { at = null; }
+  if (at !== title) return { ok: false, refusal: "title" };
+  if (!place(signer)) return { ok: false, refusal: "role" };
+  const receipt = raw as unknown as SignedRiteReceipt;
+  return { ok: true, receipt, cid: riteReceiptCid(receipt) };
+}
+
+/** Sign a rite receipt under the place signer's receipt duty. */
+export async function signRiteReceipt(parts: Omit<RiteReceiptBody, "kind">, place: PlaceSigner): Promise<SignedRiteReceipt> {
+  const body: RiteReceiptBody = { kind: RITE_RECEIPT_DOMAIN, tree: parts.tree, checks: [...parts.checks], verdict: parts.verdict, definitions: parts.definitions };
+  return { body, signer: place.key.toLowerCase(), sig: await place.signFloor(RITE_RECEIPT_DOMAIN, riteReceiptImage(body)) };
+}
+
+/**
+ * Rest a receipt over a tree: THE PLACE signs the verdict the host's battery handed it, once, and rests it at `receipt/<tree>`,
+ * where a later receipt for the same tree replaces it. One receipt stands for every face the place lends: a receipt testifies
+ * about code, never about a face, so it names no group and no face signs it.
+ *
+ * THE RECEIPT NOTARISES TESTIMONY. The place re-runs nothing: it vouches that it heard this verdict, for this tree, over these
+ * checks and these definitions, never that the tree passes. Every return rests on a receipt, so a return rests on that
+ * testimony until the place samples a check itself.
+ */
+export async function restReceipt(wiki: SwarmWikiPort, receipt: { readonly tree: string; readonly checks: readonly string[]; readonly verdict: "pass" | "fail"; readonly definitions: string }, place: PlaceSigner):
   Promise<{ tree: string; verdict: "pass" | "fail"; checks: readonly string[]; receipt: string }> {
   const malformed = (detail: string): never => { throw new SwarmRefused("swarm-receipt-malformed", detail); };
   if (!str(receipt.tree)) malformed("a receipt names its tree");
@@ -397,10 +441,9 @@ export async function restReceipt(wiki: SwarmWikiPort, receipt: { readonly tree:
   if (!hex(receipt.definitions, 64)) malformed("a receipt names the hash of the definitions its checks ran under");
   let title: string;
   try { title = swarmReceiptTitle(receipt.tree); } catch { return malformed("a receipt's tree rides one title segment"); }
-  if (!trust.vessel(vessel.key.toLowerCase())) throw new SwarmRefused("swarm-receipt-role", "the vessel alone signs a receipt");
-  const act = await signSwarmAct({ act: "receipt", group, tree: receipt.tree, checks: [...receipt.checks], verdict: receipt.verdict, definitions: receipt.definitions }, vessel);
+  const act = await signRiteReceipt(receipt, place);
   await wiki.write(title, JSON.stringify(act));
-  return { tree: receipt.tree, verdict: receipt.verdict, checks: [...receipt.checks], receipt: swarmActCid(act) };
+  return { tree: receipt.tree, verdict: receipt.verdict, checks: [...receipt.checks], receipt: riteReceiptCid(act) };
 }
 
 /** The sum law, share side: shares never sum past the house cap. `null` stands where the law holds. */

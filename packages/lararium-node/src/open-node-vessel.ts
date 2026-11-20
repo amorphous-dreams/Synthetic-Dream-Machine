@@ -4310,7 +4310,8 @@ async function prepareNodeBootOn(
       const { group, face, signer } = await loadFaceFold(repo, assembly.catalogHandle.url, { index: mountFace ?? undefined });
       const vesselKey = signer.key.toLowerCase();
       return { group, spender: { key: signer.key, sign: (bytes: Uint8Array) => signer.sign(bytes) },
-        trust: { hand: (key: string) => face.currentSigner(key), vessel: (key: string) => key === vesselKey, lead: () => false } };
+        // An exec spend runs its scope check and rests on no receipt, so no place signs for it here.
+        trust: { hand: (key: string) => face.currentSigner(key), vessel: (key: string) => key === vesselKey, place: () => false, lead: () => false } };
     } }));
 
     // THE STORE'S DOOR TABLE — `lares nexus kapae/posture/admit-take`, and every other store-touching verb run

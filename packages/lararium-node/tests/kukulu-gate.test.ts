@@ -8,8 +8,8 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   conferre, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, signKukuluVouch, signSwarmAct, swarmActCid, swarmLeiNarrowedTitle,
-  swarmLeiReturnedPrefix, swarmLeiRecordTitle, swarmReceiptTitle, swarmTesseraPrefix, verifySwarmRecord,
-  type KukuluVouchParts, type SignedKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
+  swarmLeiReturnedPrefix, swarmLeiRecordTitle, swarmReceiptTitle, swarmTesseraPrefix, verifyRiteReceipt, verifySwarmRecord, RITE_RECEIPT_DOMAIN,
+  type KukuluVouchParts, type SignedRiteReceipt, type SignedKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { KUKULU_COLD_READS, kukuluGate, pulamaSignerOf, vouchSignerOf } from "../src/kukulu-gate.js";
@@ -61,7 +61,7 @@ async function stand() {
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
   };
   const pulamaKey = (await pulamaSignerOf(fx.kept)).key;
-  const trust: SwarmTrust = { hand: (k) => k === root.verifyingKey, vessel: (k) => k === pulamaKey, lead: () => false };
+  const trust: SwarmTrust = { hand: (k) => k === root.verifyingKey, vessel: (k) => k === pulamaKey, place: (k) => k === pulamaKey, lead: () => false };
   const returns = async (lei: SignedSwarmAct): Promise<number> => (await records.list(swarmLeiReturnedPrefix(swarmActCid(lei)))).length;
   return { fx, face, records, string, vouch, hello, hand, trust, pulamaKey, returns, raise: (digest: string | null) => { raised = digest; } };
 }
@@ -83,13 +83,16 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
     // The offered lei landed at the family's own title and reads there as the hand's.
     const leiTitle = swarmLeiRecordTitle("kukulu", BRANCH, cid);
     expect(verifySwarmRecord(await s.records.read(leiTitle), leiTitle, s.trust, GROUP)).toMatchObject({ ok: true, cid });
-    // THE RETURN, the receipt and the guest half each carry the pūlama's own key: no key a vessel holds signed them.
+    // THE RETURN, the receipt and the guest half each carry the pūlama's own key: no key a vessel holds signed them. The
+    // receipt names no face: the pūlama signs it as the place, and it verifies under the place.
     const returned = JSON.parse((await s.records.read(`${swarmLeiReturnedPrefix(cid)}1`))!) as SignedSwarmAct;
     expect(returned.signer).toBe(s.pulamaKey);
     expect(returned.body).toMatchObject({ act: "lei-returned", lei: cid, n: 1, head: HEAD, tree: TREE, branch: BRANCH });
-    const receipt = JSON.parse((await s.records.read(swarmReceiptTitle(TREE)))!) as SignedSwarmAct;
+    const receiptText = await s.records.read(swarmReceiptTitle(TREE));
+    const receipt = JSON.parse(receiptText!) as SignedRiteReceipt;
     expect(receipt.signer).toBe(s.pulamaKey);
-    expect(receipt.body).toMatchObject({ act: "receipt", verdict: "pass", checks: [KUKULU_VOUCH_CHECK], definitions: kukuluVouchDigest(v) });
+    expect(receipt.body).toEqual({ kind: RITE_RECEIPT_DOMAIN, tree: TREE, verdict: "pass", checks: [KUKULU_VOUCH_CHECK], definitions: kukuluVouchDigest(v) });
+    expect(verifyRiteReceipt(receiptText, swarmReceiptTitle(TREE), s.trust.place)).toMatchObject({ ok: true });
     expect((await vouchSignerOf(s.fx.kept)).key).not.toBe(s.pulamaKey);
 
     // CONFERRE before the vessel composed: the guest half stands alone and reads red. After `landRite`, the pair reads par.

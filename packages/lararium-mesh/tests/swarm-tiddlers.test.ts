@@ -15,6 +15,7 @@ import {
   swarmLaneStateTitle, swarmReceiptTitle, swarmRecordFields, swarmRosterTitle, swarmShareRefusal, swarmShareTitle, SWARM_URI_PREFIX,
   type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
+import { placeTrust, restPlaceReceipt } from "./place-receipt.js";
 
 const GROUP = "face-group", HEAD = "a".repeat(40), TREE = "b".repeat(40);
 const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -30,7 +31,7 @@ const ONE_DEVICE = { accepts: () => true };
 
 async function fixture() {
   const hand = await keyed(1), vessel = await keyed(2), lead = await keyed(3), outsider = await keyed(4);
-  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: (seat: string, lane: string, k: string) => seat === "lead-a" && lane === "lane-a" && k === lead.key };
+  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, place: placeTrust(), lead: (seat: string, lane: string, k: string) => seat === "lead-a" && lane === "lane-a" && k === lead.key };
   const leiBody = (over: Record<string, unknown> = {}) => ({ group: GROUP, rite: "push" as const, reach: "head" as const, branch: "feature/x", head: HEAD, after: null, ...over });
   return { hand, vessel, lead, outsider, trust, wiki: wikiPort(), leiBody };
 }
@@ -72,13 +73,12 @@ describe("the sum law", () => {
 });
 
 describe("verify-on-read fails closed", () => {
-  test("CONTROL: a hand-signed lei, a vessel-signed roster and receipt, and a lead-signed lane state each read", async () => {
+  test("CONTROL: a hand-signed lei, a vessel-signed roster and a lead-signed lane state each read", async () => {
     const f = await fixture();
     const lei = await signSwarmAct({ act: "lei", ...f.leiBody() }, f.hand);
     const roster = await signSwarmAct({ act: "roster", group: GROUP, seat: "seat-1", model: "gpt-5.3-codex", mode: "build", reading: 10, ceiling: 100, outcome: "running" }, f.vessel);
-    const receipt = await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }, f.vessel);
     const state = await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-a", seat: "lead-a", state: { phase: "build" } }, f.lead);
-    for (const [title, act] of [[swarmLeiRecordTitle("push", "feature/x", swarmActCid(lei)), lei], [swarmRosterTitle("seat-1"), roster], [swarmReceiptTitle(TREE), receipt], [swarmLaneStateTitle("lane-a"), state]] as const) {
+    for (const [title, act] of [[swarmLeiRecordTitle("push", "feature/x", swarmActCid(lei)), lei], [swarmRosterTitle("seat-1"), roster], [swarmLaneStateTitle("lane-a"), state]] as const) {
       await putSwarmAct(f.wiki, title, act);
       expect(await readSwarmRecord(f.wiki, title, f.trust, GROUP), title).toMatchObject({ ok: true });
     }
@@ -92,7 +92,6 @@ describe("verify-on-read fails closed", () => {
       [swarmRosterTitle("lead-a"), await signSwarmAct(roster, f.lead)],
       [swarmLeiRecordTitle("push", "feature/x", swarmActCid(vesselGo)), vesselGo],
       [swarmLaneStateTitle("lane-b"), await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-b", seat: "lead-b", state: {} }, f.lead)],
-      [swarmReceiptTitle(TREE), await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: [], verdict: "pass", definitions: "d".repeat(64) }, f.outsider)],
     ] as const;
     for (const [title, act] of cases) { await putSwarmAct(f.wiki, title, act); expect(await readSwarmRecord(f.wiki, title, f.trust, GROUP), title).toEqual({ ok: false, refusal: "role" }); }
     await putSwarmAct(f.wiki, swarmRosterTitle("lead-a"), await signSwarmAct(roster, f.vessel));
@@ -137,7 +136,7 @@ describe("a lei binds branch and head and is spent once", () => {
     const lei = await signSwarmAct({ act: "lei", ...f.leiBody(over) }, signer);
     await putSwarmAct(f.wiki, swarmLeiRecordTitle("push", "feature/x", swarmActCid(lei)), lei);
     // A spend rests on a passing receipt for the head's tree (`lei-reach.test.ts`): one stands beside every lei issued here.
-    await putSwarmAct(f.wiki, swarmReceiptTitle(TREE), await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }, f.vessel));
+    await restPlaceReceipt(f.wiki, TREE);
     return swarmActCid(lei);
   };
 
@@ -197,7 +196,7 @@ describe("a name escapes no segment (S1 cold read, P2-1)", () => {
 describe("a lead's trust binds its lane (S1 cold read, P2-3)", () => {
   test("RED: a lead's key signing another lane's state refuses by role; CONTROL: its own lane reads", async () => {
     const hand = await keyed(1), lead = await keyed(3);
-    const trust = { hand: (k: string) => k === hand.key, vessel: () => false, lead: (seat: string, lane: string, k: string) => seat === "lead-a" && lane === "lane-a" && k === lead.key };
+    const trust = { hand: (k: string) => k === hand.key, vessel: () => false, place: () => false, lead: (seat: string, lane: string, k: string) => seat === "lead-a" && lane === "lane-a" && k === lead.key };
     const wiki = wikiPort();
     const other = await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-b", seat: "lead-a", state: { phase: "build" } }, lead);
     await putSwarmAct(wiki, swarmLaneStateTitle("lane-b"), other);

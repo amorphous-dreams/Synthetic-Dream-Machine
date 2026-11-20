@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, restReceipt, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, placeSignerFromSeed, restReceipt, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle,
   verifyKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "../src/custody-holder.js";
@@ -57,23 +57,25 @@ async function stand() {
   expect((await fx.local.unlockFace({ ordinal: 0 }, fixtureRoute)).reading).toBe("opens");
   const root = await generateOrLoadPersonaGroupRoot(0, fixtureWard());
   const hand: SwarmSignerPort = { key: root.verifyingKey, sign: async (bytes) => (await wardRootSigner(0, fixtureWard(), "a swarm control")).sign(bytes) };
-  // THE STANDING VESSEL'S OWN WITNESS: its device atom signs the receipts in its control records.
+  // THE STANDING VESSEL'S OWN WITNESS: its device atom signs the returns and halves in its control records, and THE PLACE
+  // signs the receipt, once for every face it lends.
   const seed = new Uint8Array(32).fill(4);
   const atom: SwarmSignerPort = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
-  const trust: SwarmTrust = { hand: (k) => k === root.verifyingKey, vessel: (k) => k === atom.key, lead: () => false };
+  const place = placeSignerFromSeed(new Uint8Array(32).fill(7));
+  const trust: SwarmTrust = { hand: (k) => k === root.verifyingKey, vessel: (k) => k === atom.key, place: (k) => k === place.key, lead: () => false };
   const wiki = controlWiki();
   const string = async (terms: SwarmLeiTerms, after: string | null = null): Promise<SignedSwarmAct> => {
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite: "kukulu", branch: BRANCH, after, ...terms }, hand);
     await wiki.write(swarmLeiRecordTitle("kukulu", BRANCH, swarmActCid(lei)), JSON.stringify(lei));
     return lei;
   };
-  const receipt = (verdict: "pass" | "fail") => restReceipt(wiki, { tree: TREE, checks: ["typecheck", "mesh"], verdict, definitions: "d".repeat(64) }, trust, GROUP, atom);
+  const receipt = (verdict: "pass" | "fail") => restReceipt(wiki, { tree: TREE, checks: ["typecheck", "mesh"], verdict, definitions: "d".repeat(64) }, place);
   const offer = (image = IMAGE) => writeKukuluOffer({ wiki, faces: [{ group: GROUP, trust, ward: NO_COSIGN }], branch: BRANCH, head: HEAD, tree: TREE, image, holder: fx!.local, path });
   const hello = async (offered: unknown): Promise<string> => {
     try { return (await fx!.vessel(offered).unlock([])).reading; }
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
   };
-  return { fx, path, wiki, hand, string, receipt, offer, hello, raise: (d: string | null) => { raised = d; } };
+  return { fx, path, wiki, hand, place, string, receipt, offer, hello, raise: (d: string | null) => { raised = d; } };
 }
 
 describe("RED kukulu-offer-reaches-the-new-vessel", () => {
@@ -148,9 +150,10 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     const s = await stand();
     await s.string({ reach: "wide", returns: 2 });
     await s.receipt("pass");
-    const trust: SwarmTrust = { hand: () => false, vessel: () => false, lead: () => false };
+    const place = (k: string) => k === s.place.key;
+    const trust: SwarmTrust = { hand: () => false, vessel: () => false, place, lead: () => false };
     const wrote = await writeKukuluOffer({
-      wiki: s.wiki, faces: [{ group: GROUP, trust: { hand: () => true, vessel: () => true, lead: () => false }, ward: NO_COSIGN, name: "h0" }, { group: "group-two", trust, ward: NO_COSIGN, name: "h1" }],
+      wiki: s.wiki, faces: [{ group: GROUP, trust: { hand: () => true, vessel: () => true, place, lead: () => false }, ward: NO_COSIGN, name: "h0" }, { group: "group-two", trust, ward: NO_COSIGN, name: "h1" }],
       branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, holder: s.fx.local, path: s.path,
     });
     expect(wrote).toMatchObject({ lei: 1, faces: ["h0", "h1"], waits: ["h1"] });

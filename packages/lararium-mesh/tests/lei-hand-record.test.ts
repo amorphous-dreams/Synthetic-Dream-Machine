@@ -28,7 +28,7 @@ async function stand(opts: { readonly cosign?: SwarmDoorDeps["cosign"] } = {}) {
     list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
   const keyless: SwarmSignerPort = { key: root.key, sign: async () => { throw new Error("needs-the-human: this vessel holds no face root"); } };
   const deps: SwarmDoorDeps = {
-    group: GROUP, face: { group: GROUP, grant: (k) => k === root.key }, signer: keyless, trust: { hand: (k) => k === root.key, vessel: () => false, lead: () => false }, epoch: () => 0, wiki,
+    group: GROUP, face: { group: GROUP, grant: (k) => k === root.key }, signer: keyless, trust: { hand: (k) => k === root.key, vessel: () => false, place: () => false, lead: () => false }, epoch: () => 0, wiki,
     board: { records: async () => swarmBoardRecords(doc, GROUP), land: async (act) => { writeSwarmBoardAct(doc, act); } },
     who: { kind: "hand", id: root.key }, cosign: opts.cosign ?? (() => soloCosign(GROUP, root)),
   };
@@ -62,7 +62,7 @@ describe("the vessel lands a lei the hand signed at the pūlama", () => {
     const foreign = await signSwarmAct({ act: "lei", group: GROUP, rite: "kukulu", branch: BRANCH, after: null, reach: "wide", returns: 2 }, stranger);
     const elsewhere = await signSwarmAct({ act: "lei", group: "another-group", rite: "kukulu", branch: BRANCH, after: null, reach: "wide", returns: 2 }, s.root);
     const moved = { ...good, body: { ...good.body, returns: 12 } } as SignedSwarmAct;
-    const receipt = await signSwarmAct({ act: "receipt", group: GROUP, tree: "1".repeat(40), checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }, s.root);
+    const receipt = await signSwarmAct({ act: "roster", group: GROUP, seat: "seat-1", model: "m", mode: "solo", reading: 1, ceiling: 2, outcome: "ok" }, s.root);
     for (const [name, bad] of [["no grant", foreign], ["another group", elsewhere], ["moved terms", moved], ["no lei", receipt], ["no record", { body: 1 }], ["no JSON", "{"]] as const) {
       await expect(land(bad, s.deps), name).rejects.toMatchObject({ code: "swarm-hand-record-unverified" });
     }

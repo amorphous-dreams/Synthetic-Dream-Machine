@@ -31,7 +31,7 @@
 import { closeSync, fsyncSync, mkdirSync, openSync, renameSync, rmSync, writeSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
-  SwarmRefused, kukuluVouchDigest, readLeiChain, signKukuluVouch, swarmLeiUnstrungTitle, swarmReceiptTitle, verifySwarmRecord,
+  SwarmRefused, kukuluVouchDigest, readLeiChain, signKukuluVouch, swarmLeiUnstrungTitle, swarmReceiptTitle, verifyRiteReceipt,
   type SignedKukuluVouch, type SignedSwarmAct, type SwarmTrust, type SwarmWikiPort, type WardActWitness,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "./custody-holder.js";
@@ -88,11 +88,11 @@ export async function writeKukuluOffer(a: {
     }
   }
   if (lei.length === 0) throw new SwarmRefused("swarm-lei-absent", `no kukulu lei rests for "${a.branch}" on any face's line, so this kūkulu wears none`);
-  // THE WALK'S RECEIPT rests at one title per tree, under the group of the face whose hand rested it.
+  // THE WALK'S RECEIPT rests at one title per tree, signed by the place every lent face's trust names.
   const receiptTitle = swarmReceiptTitle(a.tree), receiptText = await a.wiki.read(receiptTitle);
-  const receipt = a.faces.map((face) => verifySwarmRecord(receiptText, receiptTitle, face.trust, face.group)).find((r) => r.ok && r.act.body.act === "receipt");
-  if (receipt === undefined || !receipt.ok || receipt.act.body.act !== "receipt") throw new SwarmRefused("rite-offer-testimony-absent", `no receipt stands for the tree of ${a.head}; a vouch carries the verdict of the walk it rests on`);
-  const verdict = receipt.act.body.verdict;
+  const receipt = a.faces.map((face) => verifyRiteReceipt(receiptText, receiptTitle, face.trust.place)).find((r) => r.ok);
+  if (receipt === undefined || !receipt.ok) throw new SwarmRefused("rite-offer-testimony-absent", `no receipt stands for the tree of ${a.head}; a vouch carries the verdict of the walk it rests on`);
+  const verdict = receipt.receipt.body.verdict;
   const signer = await vouchSignerOf(a.holder);
   const vouch: SignedKukuluVouch[] = [];
   for (const face of a.faces) vouch.push(await signKukuluVouch({ group: face.group, branch: a.branch, head: a.head, tree: a.tree, image: a.image, verdict, receipt: receipt.cid }, signer));

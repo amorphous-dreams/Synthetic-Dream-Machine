@@ -351,6 +351,8 @@ test("rite-receipt-names-the-definitions-hash: the receipt step hands the door t
   const defs = args[args.indexOf("--definitions") + 1];
   assert.match(defs, /^[0-9a-f]{64}$/);
   assert.equal(defs, createHash("sha256").update(readFileSync(new URL("./rite-walk/image-leg.mjs", import.meta.url))).digest("hex"));
+  // The place signs the receipt once for every face it lends, so the line names no face.
+  assert.equal(args.includes("--face"), false);
 });
 test("image-leg-table-ends-in-teardown, and the line refuses before any act where it names no scope", () => {
   const ids = imageLeg.IMAGE_STEPS.map((s) => s.id);

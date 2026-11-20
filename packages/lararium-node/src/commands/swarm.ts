@@ -79,8 +79,9 @@ export async function runSwarmVerb(opts: {
         ...(opts.args["confirm"] === true ? { confirm: true } : {}) };
   return await swarmCommand(request, {
     group, face: { group, grant }, signer: signing, epoch: () => face.lineage[face.lineage.length - 1]!.epoch, wiki: opts.wiki,
-    // The vessel and lead trust join at the slices that sign roster, receipt and lane state; at S1 the hand alone signs.
-    trust: { hand: grant, vessel: () => false, lead: () => false },
+    // The vessel and lead trust join at the slices that sign roster and lane state; at S1 the hand alone signs, and no swarm
+    // row here reads a receipt.
+    trust: { hand: grant, vessel: () => false, place: () => false, lead: () => false },
     board: { records: async () => swarmBoardRecords(handle.doc(), group), land: async (act) => { handle.change((d) => writeSwarmBoardAct(d, act)); await opts.repo.flush(); } },
     // A local process names its own hand; the session gate refuses declared seat hands before custody reads. That `who` is
     // advisory for `show` alone: every signing row now signs under the ward, which no unlocked custody opens.

@@ -42,7 +42,7 @@ The face identifier in this document means a stable, canonical PersonaGroup iden
 This table covers every `buildTable()` entry in `packages/lararium-node/src/vault-carriers.ts:236-398`. “Current” names the code's custody class. “Owner / target” is the K15 contract. Where the source only names a filename, ''LEAD'' requires a payload and caller audit before the classification can be implemented. There is no implicit S catchall.
 
 | Current carrier and code line | Current | Owner / target and required cut |
-| `vessel-key` `:240-242` | floor | ''S:'' private place signing seed owned by this node. Its public verifying key belongs in F. The scoped signer grants five framed floor duties; it is never a custody S key or face ancestor. `node-vessel-identity.ts:429-442,451-487` proves the private seed is read from disk and used at the floor door. |
+| `vessel-key` `:240-242` | floor | ''S:'' private place signing seed owned by this node. Its public verifying key belongs in F. The scoped signer grants seven framed floor duties; it is never a custody S key or face ancestor. `node-vessel-identity.ts:429-442,451-487` proves the private seed is read from disk and used at the floor door. |
 | `relay-gate-seed` | floor | S: random durable relay service key; the relay-only opener serves the handshake, and explicit rotation requires hearth address re-pinning. |
 | `vessel-kel` `:243-245` | floor | ''F:'' public armed chain (inception and rotations), node place principal. |
 | `vessel-rotating` | floor | ''S:'' the staged replacement signer and its signed rotation, present only between a rotation's stage and publish. |
@@ -144,7 +144,7 @@ The per-face slot tree carries wrapped FCK, slot identifiers and nonsecret KDF p
 
 ''Relay service S record.'' `relay-gate-seed.hex` rests under the identity home as a random 32-byte floor seed. The relay service owns it; `openRelayGateSeed` alone opens it for the relay handshake. `rotateRelayGateSeed` replaces it and hands back the new public pin for hearth re-pinning after restart. It grants no place signer duty, face opening, daemon authority or content read.
 
-''Node S register.'' The node's named place signing record opens through `vesselPlaceSignerDoor`: `proveStandingKey` holds the private seed to the KEL head, and the door lends only five framed floor duties. `vesselFloorKeyDoor` alone lends registered floor children. The random `relay-gate-seed` record belongs to the relay service, opens only by `openRelayGateSeed`, and rotates by explicit `rotateRelayGateSeed`; its public address pin changes and hearths re-pin. Neither record is a face ancestor or a custody S key. The SK tree has zero serving payload records. A container inherits these named records and mints no separate service authority.
+''Node S register.'' The node's named place signing record opens through `vesselPlaceSignerDoor`: `proveStandingKey` holds the private seed to the KEL head, and the door lends only seven framed floor duties. `vesselFloorKeyDoor` alone lends registered floor children. The random `relay-gate-seed` record belongs to the relay service, opens only by `openRelayGateSeed`, and rotates by explicit `rotateRelayGateSeed`; its public address pin changes and hearths re-pin. Neither record is a face ancestor or a custody S key. The SK tree has zero serving payload records. A container inherits these named records and mints no separate service authority.
 
 
 <<~/ahu>>
@@ -278,6 +278,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-Y6MxvhW4_VeYfmLLmMKJbvYfND0F1s7vyLFsJSLZ_g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Iokx4Ien_YP12jEJNiG25kLxKGPN3GmT2aiR_ReoV60`>>
 
 <<^ code=`&#x0004;` to=`?`>>

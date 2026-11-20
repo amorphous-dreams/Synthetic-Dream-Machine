@@ -249,6 +249,10 @@ export const CARRY_BUNDLE_DOMAIN = mint("carry-bundle");
 /** A PLACE's positive receipt for one carriage it took (`carriage-log`): signed by the place signer, keyed by the carriage's
  *  own content or causal id. Its own name: a receipt must never verify as a carrier seal, a floor pin or any other duty. */
 export const CARRIAGE_RECEIPT_DOMAIN = mint("carriage-receipt");
+/** A PLACE's receipt over one tree a rite rests on (`swarm-tiddlers` `restReceipt`): the place signer notarises the verdict the
+ *  host's battery handed in, once per tree, and every lent face's lei return trusts it. A receipt testifies about code, never
+ *  about a face, so it names no face group. Its own name: a rite receipt never verifies as a carriage receipt or any other duty. */
+export const RITE_RECEIPT_DOMAIN = mint("rite-receipt");
 /** One hand's act over one RELATIONSHIP — a raise or a lower, by the edge's holder or by the seat quorum. */
 export const EDGE_KAPAE_DOMAIN = mint("edge-act");
 /** One signed ACT in a face's `@persona` log (founding, admission, device edge, lease advance): the canonical
@@ -266,7 +270,7 @@ export const PROMOTE_ACT_DOMAIN = mint("promote-act");
 /** A daemon or kahua promotion's ward signature: the face root over (wiki, digest, seq), made under a fresh ward unlock
  *  (seat-harness#/the-ward). Its own name, so no promote act, kahua act or swarm act verifies as one. */
 export const PROMOTE_WARD_DOMAIN = mint("promote-ward");
-/** One signed swarm control: the house cap, a lane share, a lei, its return, narrowing or unstringing, a rite's begin or land, a lane's state, a roster row or a check receipt.
+/** One signed swarm control: the house cap, a lane share, a lei, its return, narrowing or unstringing, a rite's begin or land, a lane's state or a roster row.
  *  Its own name, so no swarm record verifies as a promote or kahua act and none of those as a swarm control. */
 export const SWARM_ACT_DOMAIN = mint("swarm-act");
 /** A kūkulu vouch (apart from the cabal vouch edge below): the standing vessel's signature over the candidate image it walked before a kūkulu (the-worn-house#/the-pulama).

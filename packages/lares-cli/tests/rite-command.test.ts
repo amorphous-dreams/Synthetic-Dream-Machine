@@ -111,9 +111,15 @@ describe("lares rite plans one store row per vessel sub-verb", () => {
     expect(plan("land", "--tessera", TESSERA, "--head", HEAD, "--face", "1")).toEqual({ verb: "rite-land", args: { tessera: TESSERA, head: HEAD, face: 1 } });
     expect(plan("receipts")).toEqual({ verb: "rite-receipts", args: {} });
     expect(plan("begin", "--rite", "keep", "--branch", "backup", "--head", "c".repeat(64), "--staging", ".house.keep-0a")).toEqual({ verb: "rite-begin", args: { rite: "keep", branch: "backup", head: "c".repeat(64), staged: ".house.keep-0a" } });
-    // receipt-door-signs-the-tree: the host battery hands the vessel its verdict over a tree.
+    // receipt-door-signs-the-tree: the host battery hands the vessel its verdict over a tree, and the place signs it.
     expect(plan("receipt", "--tree", "b".repeat(40), "--checks", "typecheck, mesh,cli", "--verdict", "pass", "--definitions", "d".repeat(64)))
       .toEqual({ verb: "rite-receipt", args: { tree: "b".repeat(40), checks: ["typecheck", "mesh", "cli"], verdict: "pass", definitions: "d".repeat(64) } });
+  });
+
+  it("RED: a receipt that names a face refuses by usage, since the place signs it once for every face it lends; CONTROL: the same line with no face plans the row", () => {
+    const line = ["receipt", "--tree", "b".repeat(40), "--checks", "typecheck", "--verdict", "pass", "--definitions", "d".repeat(64)];
+    expect(() => plan(...line, "--face", "0")).toThrow(/receipt names no face/);
+    expect(plan(...line).args).not.toHaveProperty("face");
   });
 
   it("RED: an unknown sub-verb and a line that lacks a name refuse by usage; `kukulu` plans no single row", () => {

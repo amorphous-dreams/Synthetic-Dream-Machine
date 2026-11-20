@@ -84,7 +84,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] [--face N] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash> [--face N]",
+    usage: "usage: lares rite kukulu [--branch <name>] [--face N] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash>",
     synopsis:
       "A rite spends a lei. kūkulu raises the vessel again around its hearth: the rite begins in the vessel (the lei's return and " +
       "the guest half of a tessera) before the host shim rebuilds the image and raises a new vessel, which rests the host half. " +
@@ -105,7 +105,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares rite offer --branch main --head <commit> --image <digest>   # the standing vessel rests what the next one carries to a pūlama",
       "lares rite land --tessera <id> --head <commit>          # land a rite whose vessel came back locked",
       "lares rite receipts --json                              # data.receipts, data.conferre",
-      "lares rite receipt --tree <tree> --checks typecheck,mesh --verdict pass --definitions <hash>   # the battery's verdict, signed by the vessel",
+      "lares rite receipt --tree <tree> --checks typecheck,mesh --verdict pass --definitions <hash>   # the battery's verdict, signed once by the place",
     ],
     flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rite <r>   (begin) the rite", "--head <commit>   (begin, offer, land) the head",
       "--staging <path>   (begin, a keep) the bundle the keep staged inside its workspace; the vessel derives the id from it",
