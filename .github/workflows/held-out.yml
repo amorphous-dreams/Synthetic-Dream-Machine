@@ -47,7 +47,9 @@ on:
 # A newer head supersedes an older run of the same ref.
 concurrency:
   group: held-out-${{ github.ref }}
-  cancel-in-progress: true
+  # A develop or main run finishes once begun: a newer push queues behind it (queued runs coalesce to the newest head),
+  # so a burst of merges never cuts a held-out reading off mid-run. A lane's run still yields to its next push.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
