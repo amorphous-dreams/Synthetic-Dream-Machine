@@ -41,7 +41,8 @@ export const VERDICT_FILE = "held-out-verdict.json";
  * save seconds, and would spend nine more of the account's concurrent jobs.
  */
 export const DRIVERS = [
-  { driver: "browser-weld", seconds: 150 },
+  // The browser weld stands dim (operator, 2026-11-20; BROWSER_LAMPS_DIM in tools/ci-cells.mjs). To relight, restore
+  // `{ driver: "browser-weld", seconds: 150 }` here and its three held-out.yml steps (pull the pinned Playwright image, the entry-contract test, the driver case).
   { driver: "civic", seconds: 200, image: true },
   { driver: "crossing", seconds: 150, image: true },
   { driver: "herm-mesh", seconds: 120, image: true, mesh: true },

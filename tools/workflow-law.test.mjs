@@ -268,7 +268,7 @@ test("WL3 RED: no workflow installs Playwright, and every image field of every w
   }
   assert.deepEqual(found, []);
   assert.equal(literal, 0, "no workflow restates the pin: the capability probe holds it alone");
-  assert.ok(byRef >= 3, "CONTROL: the browser cells read the pin by reference (ci.yml's two matrix rows, held-out's weld driver)");
+  assert.equal(byRef, 0, "CONTROL: with the browser lamps dim (tools/ci-cells.mjs BROWSER_LAMPS_DIM) no image field reads the pin; relit, ci.yml's two matrix rows and held-out's weld driver read it by reference again (three or more)");
 });
 
 test("WL4 CONTROL: an unpinned reference, a changed digest, a second image, a docker run and an install each fail; comments never count", () => {
@@ -312,10 +312,22 @@ const withFixture = (range, dependency) => ({
   [webManifest]: JSON.stringify({ ...originalWeb, devDependencies: { ...originalWeb.devDependencies, [fixtureName]: "workspace:*" } }),
   [`${fixtureDir}/package.json`]: JSON.stringify({ name: fixtureName, version: "1.0.0", engines: { node: range }, dependencies: dependency ?? {} }),
 });
-async function boundaryWitness(overlay = {}) {
+// THE BROWSER LAMPS STAND DIM (tools/ci-cells.mjs BROWSER_LAMPS_DIM): ci.yml names no container row and no quick-job pw-container step now.
+// The closure laws below keep their teeth by reading ci.yml RELIT (the two rows' containers and one quick step restored in memory), so
+// relighting the real file finds the witness exact; `G55 dim CONTROL` reads the real file and finds no browser cell to judge.
+const relitCi = () => readFileSync(join(boundaryRoot, ".github/workflows/ci.yml"), "utf8")
+  .replace(/(- cell: (?:web-tw5|cli-mesh)\n\s+engines: )''/g, `$1'chromium'\n            container: { image: "x", options: "--init" }`)
+  .replace("      - name: Run the hosted witness cell contract-witness", "      - name: relit browser step\n        run: |\n          cd packages/lararium-web\n          tools/pw-container.sh npx vitest\n      - name: Run the hosted witness cell contract-witness");
+async function boundaryWitness(overlay = {}, { relit = true } = {}) {
   const law = await import("./browser-node-boundary.mjs");
-  return law.browserNodeBoundary({ root: boundaryRoot, overlay });
+  return law.browserNodeBoundary({ root: boundaryRoot, overlay: { ...(relit ? { ".github/workflows/ci.yml": relitCi() } : {}), ...overlay } });
 }
+
+test("G55 dim CONTROL: with the lamps dim the real ci.yml names no browser cell and the witness reads clean", async () => {
+  assert.deepEqual(await boundaryWitness({}, { relit: false }), []);
+  const law = await import("./browser-node-boundary.mjs");
+  assert.ok(law.browserCells(relitCi()).length >= 3, "CONTROL: the relit file names the two rows and the quick job");
+});
 const refuses = (diagnostics, cell, name) => assert.ok(
   diagnostics.some((d) => d.includes(cell) && d.includes(name)),
   `expected refusal naming ${cell} and ${name}: ${JSON.stringify(diagnostics)}`,

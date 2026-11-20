@@ -148,9 +148,9 @@ test("RED: the recorded held-out run reads red for its own head and names each d
   assert.equal(h.behind, 0);
   assert.deepEqual(Object.fromEntries(h.drivers.map((d) => [d.driver, d.result])),
     // The recorded run holds no roll cell, so that driver answered no job there.
-    { "browser-weld": "failure", civic: "success", crossing: "success", "herm-mesh": "failure", "herm-mesh-roll": "unread", "mesh-scenarios": "success" });
+    { civic: "success", crossing: "success", "herm-mesh": "failure", "herm-mesh-roll": "unread", "mesh-scenarios": "success" });
   const text = renderHeldOut(h).join("\n");
-  assert.match(text, /^held-out: RED for cb8a1a9a8 — run 38491127984 reads failure: browser-weld, herm-mesh failed/);
+  assert.match(text, /^held-out: RED for cb8a1a9a8 — run 38491127984 reads failure: herm-mesh, Held-out · browser-weld failed/);
   assert.match(text, /herm-mesh: failure — red: herm-mesh/);
   assert.match(text, /civic: success/);
 });
@@ -163,7 +163,7 @@ test("UNREAD: a head no held-out run names reads unread, beside the newest run, 
   assert.equal(h.behind, 44);
   const text = renderHeldOut(h).join("\n");
   assert.match(text, /no held-out run names this head; the newest \(run 38491127984, failure\) measured cb8a1a9a8, 44 commit\(s\) behind it/);
-  assert.match(text, /browser-weld: failure/, "the newest run's drivers still print");
+  assert.match(text, /herm-mesh: failure/, "the newest run's drivers still print");
   assert.match(text, /UNREAD never reads as green/);
   // A green newest run on ANOTHER head still reads unread for this one: the mutation that would hide the dark spot.
   const green = readHeldOut({ runs: heldRun(), head: "0".repeat(40), views: { 7: unfolded() }, behind: 1 });

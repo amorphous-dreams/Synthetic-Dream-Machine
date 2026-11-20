@@ -118,7 +118,7 @@ test("G4 RED: the quick job keeps every folded gate as a named step that runs wh
     "Every dependency names ONE version", "Every trailer key names a known key", "Generated artifacts must be fresh (build emits no tracked diff)", "Typecheck all packages",
     "noosphere-boot.mem stands where the hooks load it", "generate-parity — the committed parser.c stays the truth",
     "fold + golden manifest gates (py host)", "wasm builds under the pinned CLI", "fold + parity gates (ts host)",
-    "Run the floor crossing under a scratch home", "meme-routes + standalone single-file contact against the pristine engine",
+    "meme-routes contact against the pristine engine",
     "The log names the engine it met", "Run the hosted witness cell contract-witness",
   ]) {
     assert.ok(named.has(want), `the quick job lost the step "${want}"`);
