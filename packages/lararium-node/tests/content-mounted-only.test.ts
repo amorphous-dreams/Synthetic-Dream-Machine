@@ -104,6 +104,11 @@ test("the vessel's own channel pushes under a label that names no face: it passe
     expect(await call(verb, "persona", {}, false), `${verb} synced label`).toMatchObject({ reason: "content-mounted-only" });
     expect(await call(verb, "did:key:z6MkStranger", {}, true), `${verb} local stranger DID`).toMatchObject({ reason: "content-mounted-only" });
   }
+  // A lane verb from a stranger's DID names no face of this island: the face lane never takes it (no `face-not-open`, which
+  // names a face of this vessel standing shut), and the fence refuses it.
+  for (const verb of FACE_LANE_VERBS) {
+    expect(await call(verb, `0x${"11".repeat(32)}`, { bag: BAG }, true), `${verb} local stranger key`).toMatchObject({ reason: "content-mounted-only" });
+  }
 });
 
 test("THE CENSUS: every daemon verb is fenced unless it stands on the named neutral list, and a new verb is fenced by default", async () => {

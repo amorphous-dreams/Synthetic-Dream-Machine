@@ -1701,7 +1701,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           if (context.local === true && context.presenter !== undefined && !namesADid(context.presenter)) return;
           // EACH HAT REACHED BY NAME: a lane verb from the vessel's own channel passes to its face lane (`face-lane`), which runs
           // it as the mount, on a lit sibling's own lane, or refuses a shut face `face-not-open`. A synced claim still refuses.
-          if (context.local === true && context.presenter !== undefined && FACE_LANE_VERBS.has(verb)) return;
+          // Only a DID naming one of this island's own faces (the mount, or a face joined beside it) reaches the lane: a
+          // stranger's DID names no face here, so it meets the fence below and refuses `content-mounted-only`.
+          if (context.local === true && context.presenter !== undefined && FACE_LANE_VERBS.has(verb)
+            && (bareKey(context.presenter) === bareKey(daemonAuth.atom.key) || litSiblings.has(bareKey(context.presenter)))) return;
           // Only the vessel's own channel or a person's surface act wears the mounted face: an unsigned synced claim that
           // names the mounted atom stays a claim and refuses like any other.
           if (context.local !== true || context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
