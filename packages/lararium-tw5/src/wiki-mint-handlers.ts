@@ -85,7 +85,6 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
           text: wikiHandle.url,
           kind: "oracle",
           "path-filter": "lar-bag-path[wiki-shadow]",
-          "mirror-root": `wikis/${slug}`,
           // The veil's mark: the vessel itself minted this wiki with no face, so the row rests on the floor's half.
           ...(opts.veilFloor && !existingWikiUrl ? { "face-reach": "vessel-only", "minted-by": opts.veilFloor.mintedBy } : {}),
         }, "lares-cli:wiki-init");

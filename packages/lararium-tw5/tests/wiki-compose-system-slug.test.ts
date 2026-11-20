@@ -161,6 +161,8 @@ describe("a system slug composes through the vessel's own record", () => {
       expect(r.created).toEqual(["create"]);
       expect(out).toMatchObject({ status: "minted", wikiUri: wikiUri("elyncia"), canonBag: wikiBagUri("elyncia") });
       expect(r.catalog.tiddlers[wikiBagUri("elyncia")]).toBeDefined();
+      // The canon row stamps no `mirror-root`: nothing reads it, and the workbench projects under its realm root.
+      expect(JSON.stringify(r.catalog.tiddlers[wikiBagUri("elyncia")])).not.toContain("mirror-root");
       expect(r.catalog.tiddlers[recipeUri("catalog", "elyncia")]).toBeDefined();
       expect(plainField(r.catalog.tiddlers[recipeUri("catalog", "elyncia")], "bag-stack"))
         .toBe(`lar:///ha.ka.ba/bags/oracle ${wikiBagUri("elyncia")}`);
