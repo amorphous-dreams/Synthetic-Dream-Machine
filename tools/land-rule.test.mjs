@@ -77,7 +77,7 @@ test("CONTROL: every required check reads success on the sha's CI run and the sh
   assert.equal(v.code, 0);
   assert.equal(v.line, `land-rule: LAND ${SHA.slice(0, 9)} — CI run 42 reads Quick gates, Test, Witnesses, E2E / Merge shard reports success; descends from develop ${SPAN_HEAD.slice(0, 9)}`);
   assert.deepEqual(h.calls, [
-    `run list --commit ${SHA} --workflow CI --json databaseId,status,conclusion,event --limit 20`,
+    `run list --commit ${SHA} --workflow CI --json databaseId,status,conclusion,event,headBranch --limit 20`,
     "run view 42 --json jobs",
     `api repos/{owner}/{repo}/compare/develop...${SHA} --jq {status: .status, base: .base_commit.sha}`,
   ]);
@@ -97,7 +97,7 @@ test("a required check that fails, skips or never ran holds by name (exit 1); a 
   for (const [patch, said] of [
     [{ Test: { conclusion: "failure" } }, /Test reads failure/],
     [{ "Quick gates": { conclusion: "skipped" } }, /Quick gates reads skipped/],
-    // A lane push runs the Quick gates alone (doorstep quick): Test and Witnesses report skipped, which GitHub's queue reads as passing and this rule never does.
+    // A canon doorstep run: Test and Witnesses report skipped, which GitHub's queue reads as passing and this rule never does.
     [{ Test: { conclusion: "skipped" }, Witnesses: { conclusion: "skipped" } }, /Test reads skipped; .*Witnesses reads skipped/],
     [{ "E2E / Merge shard reports": { drop: true } }, /no job named E2E \/ Merge shard reports/],
   ]) {
@@ -188,11 +188,17 @@ test("a sha's merge_group run decides over a newer lane or doorstep run of the s
   assert.ok(h.calls.includes("run view 42 --json jobs"));
 });
 
-test("a doorstep run (a push, Test and Witnesses skipped) holds and says plainly that its green reads quick-only", async () => {
+test("a doorstep run (a push, Test and Witnesses skipped) and a lane push's targeted run each hold, and say plainly that their green reads partial", async () => {
   const runs = [{ databaseId: 44, status: "completed", conclusion: "success", event: "push" }];
   const v = await landRule({ sha: SHA }, hands({ runs, view: { jobs: jobs({ Test: { conclusion: "skipped" }, Witnesses: { conclusion: "skipped" } }) } }));
   assert.equal(v.word, "HOLD");
   assert.equal(v.code, 1);
   assert.match(v.line, /doorstep run reads quick-only/);
   assert.match(v.line, /merge_group/);
+  // A lane push runs what it touches: its Test and Witnesses may read success over a selection, never the whole battery.
+  for (const headBranch of ["develop--x", "lane/x"]) {
+    const lane = await landRule({ sha: SHA }, hands({ runs: [{ ...runs[0], headBranch }] }));
+    assert.equal(lane.word, "HOLD", headBranch);
+    assert.match(lane.line, /lane push runs what it touches/);
+  }
 });
