@@ -15,10 +15,11 @@ import {
 
 const ROWS = ["rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer"] as const;
 
-test("RED: every rite row is a store-door verb that acts as a face; CONTROL: a seat may run each, and none asks a ward route", () => {
+test("RED: every rite row is a store-door verb, each acting as a face but the receipt, which the place signs; CONTROL: a seat may run each, and none asks a ward route", () => {
   for (const row of ROWS) {
     expect(STORE_DOOR_VERBS as readonly string[], row).toContain(row);
-    expect(STORE_DOOR_FACE_VERBS.has(row as never), row).toBe(true);
+    // The receipt testifies about a tree, never a face: the place signs it, so it rides no face's session.
+    expect(STORE_DOOR_FACE_VERBS.has(row as never), row).toBe(row !== "rite-receipt");
     // The lei carries the grant: the hand strung it (a ward act), and the rite spends it.
     expect(STORE_DOOR_HAND_ONLY_ACTS.has(row), row).toBe(false);
     expect(storeVerbNeedsWard(row, {}), row).toBe(false);
