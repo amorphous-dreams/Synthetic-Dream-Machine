@@ -19,6 +19,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { siteFileToTitle, houseIgnored, HOUSE_IGNORED } from "../src/bag-paths.js";
+import { isPersonalTitle } from "@lararium/tw5";
 import { SyncedTree, syncedTreeKey } from "../src/synced-tree.js";
 
 let plane: string;
@@ -110,10 +111,25 @@ describe("SyncedTree.uriAt — the reverse lookup a base row gives", () => {
 describe("HOUSE_IGNORED — the one list every scan, watcher and bundle honours", () => {
   test("names each ignored shape with its reason, and passes a carrier", () => {
     for (const rel of [".git/config", ".git/objects/ab/cdef", ".vscode/settings.json", ".shore/ha.ka.ba/x.mem",
-      "ha.ka.ba/notes/pond.orphans/part.mem", `ha.ka.ba/notes/pond.mem.4242.${"0".repeat(8)}-0000-4000-8000-${"0".repeat(12)}.tmp`, "temp/scratch.tid"]) {
+      "ha.ka.ba/notes/pond.orphans/part.mem", `ha.ka.ba/notes/pond.mem.4242.${"0".repeat(8)}-0000-4000-8000-${"0".repeat(12)}.tmp`, "temp/scratch.tid",
+      "$__StoryList.tid", "personal/lares/$__StoryList.tid", "wiki/$__HistoryList.tid", "$__StoryList.json.meta", "personal/lares/$__state_folded_Room 4.tid"]) {
       expect(houseIgnored(rel), rel).not.toBeNull();
     }
-    for (const rel of ["ha.ka.ba/notes/pond.mem", "My Notes.tid", "notes/.gitkeep-not-top/x.tid", "ha.ka.ba/git/x.mem"]) expect(houseIgnored(rel), rel).toBeNull();
+    for (const rel of ["ha.ka.ba/notes/pond.mem", "My Notes.tid", "notes/.gitkeep-not-top/x.tid", "ha.ka.ba/git/x.mem",
+      "$__config_lares_ProjectionFilter.tid", "$__StoryListing.tid", "StoryList.tid"]) expect(houseIgnored(rel), rel).toBeNull();
     expect(HOUSE_IGNORED.topDirs).toEqual(expect.arrayContaining([".git", ".vscode", ".shore", "temp"]));
+  });
+
+  test("view state names the personal titles by TiddlyWiki's flattened file name, and no other system title (lar-kind weld)", () => {
+    const flat = (title: string): string => `${title.replace(/^\$:\//, "$__").replace(/[/\\<>~:"|?*^]/g, "_")}.tid`;
+    for (const title of ["$:/StoryList", "$:/palette", "$:/state/folded/Room 4", "$:/state/tab-1749438307"]) {
+      expect(isPersonalTitle(title), title).toBe(true);
+      expect(houseIgnored(`personal/lares/${flat(title)}`), title).not.toBeNull();
+    }
+    expect(houseIgnored(flat("$:/HistoryList")), "the navigator's history rides with its story").not.toBeNull();
+    for (const title of ["$:/config/lares/ProjectionFilter", "$:/state/popup/x", "$:/temp/x"]) {
+      expect(isPersonalTitle(title), title).toBe(false);
+      expect(houseIgnored(flat(title)), title).toBeNull();
+    }
   });
 });

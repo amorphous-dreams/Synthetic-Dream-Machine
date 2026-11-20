@@ -508,7 +508,6 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     // ordinary wave. It never lays into a shared workbench. IT LAYS AT ITS OWN FACE'S WEAR: a wiki's island stands over the
     // daemon mount's personal document and the vessel grants the personal mirror to the daemon mount's root alone, so an open face
     // that stands unworn waits by name where its personal layer holds a carrier new or moved against its base.
-    const viewState = (rel: string): boolean => (rel.split("/").pop() ?? "").startsWith("$__");
     for (const seg of placed) {
       const face = target.get(seg)!;
       const personalDir = join(facesDir, seg, FACE_PLANES.personal);
@@ -527,7 +526,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
         const owner = ownerOf(slug);
         const stands = async (): Promise<boolean> => mintedSlugs.has(slug) || held.has(slug) || (await doors.heldSlugs()).has(slug) || (await seatOf(slug)).bound;
         if (owner !== null && mountFace?.petname !== owner && !doors.sourced(slug) && !(await stands())) {
-          if (mirrorFiles(folder).filter((rel) => !viewState(rel)).length === 0) continue;
+          if (mirrorFiles(folder).length === 0) continue;
           waitBench(slug, folder, { why: "owner", owner });
           continue;
         }

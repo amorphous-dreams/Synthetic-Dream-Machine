@@ -572,7 +572,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares surface init [--face N | --realm <realm pet name>]",
     synopsis:
       "Make the worn (or named) face's root, projections/faces/<pet name>/, a git working tree: .git inside it at 0700; .git/info/exclude carries the " +
-      "house's one ignore list (HOUSE_IGNORED: .vscode/, .shore/, temp/, *.orphans/, the atomic writer's temps) while .meta, .kapae, .mem and .tid stay " +
+      "house's one ignore list (HOUSE_IGNORED: .vscode/, .shore/, temp/, *.orphans/, the atomic writer's temps, a personal layer's view state such as $__StoryList.tid; the vessel's watch keeps that block current at each arm) while .meta, .kapae, .mem and .tid stay " +
       "committable; local config sets user.name to the pet name, user.email to <slug>@face.invalid and commit.gpgsign=false, never a global config; " +
       "a pre-commit hook runs `lares surface check`. A second init changes nothing and says already; a hook of another hand stands, named. " +
       "--realm <realm pet name> makes EACH wiki folder the realm holds its own pool instead (.git at the folder's top, never one tree over the " +

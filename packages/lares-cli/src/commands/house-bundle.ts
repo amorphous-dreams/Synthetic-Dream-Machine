@@ -170,9 +170,6 @@ export function carriedFileTitle(mirrorDir: string, file: string): string | null
   return typeof title === "string" && title !== "" && !title.startsWith("lar:") ? title : null;
 }
 
-/** A view-state carrier of a `personal` layer (a `$:/` title: the story list, a fold state): it never travels. */
-const isViewState = (rel: string): boolean => (rel.split("/").pop() ?? "").startsWith("$__");
-
 /** What one ingest wave settled, as the export and import read it. */
 export interface BundleIngestAnswer {
   readonly landed: readonly string[];
@@ -592,7 +589,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
       repos.push(...listed.repos.map((r) => `faces/${fk}/personal/${slug}/${r}`));
       for (const rel of listed.files) {
         if (isStray(rel)) { strays++; continue; }
-        if (isViewState(rel) || houseIgnored(rel) !== null) continue;
+        if (houseIgnored(rel) !== null) continue;          // HOUSE_IGNORED: a view-state carrier (the story list, a fold state) never travels
         const abs = join(personalRoot, slug, ...rel.split("/"));
         plan.push({ from: abs, to: `faces/${fk}/personal/${slug}/${rel}`, row: { face: fk, bag: wikiSlotUri(slug, "personal"), layer: "personal", title: carriedFileTitle(personalRoot, abs), rowKey: null } });
       }

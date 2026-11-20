@@ -841,7 +841,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }, { relation: G1, petname: "engineer", handleIndex: 1 }], join(root, "projections"));
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R0);
     v.held.add("lares");
-    // A view-state carrier the face left: with no base standing at its path it reads back as nothing, and nothing stands off.
+    // A view-state carrier the face left: the house ignores it (HOUSE_IGNORED), so it reads back as nothing and nothing stands off.
     put(FR("engineer", "personal/lares/$__StoryList.tid"), tid("$:/StoryList", "the story here"));
     const first = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     expect(first.refusals).toEqual([]);

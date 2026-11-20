@@ -3,8 +3,8 @@
  *
  * ONE POOL PER FACE, KEYED BY PET NAME. Each face's private planes rest under `projections/faces/<pet name>/`
  * (`faceRoot`, `FACE_PLANES`), and that root holds the face's one git working tree: `.git` inside it (0700), the house's
- * one ignore list (`HOUSE_IGNORED`) in `.git/info/exclude`, a local author `<pet name> <slug>@face.invalid` with signing
- * off, and a pre-commit hook that runs the roster check. Git always runs here with an empty global config and no system
+ * one ignore list (`HOUSE_IGNORED`) in `.git/info/exclude` (the vessel's watch keeps that block current at each arm:
+ * `tendPoolExclude`), a local author `<pet name> <slug>@face.invalid` with signing off, and a pre-commit hook that runs the roster check. Git always runs here with an empty global config and no system
  * config, so nothing this door writes or reads reaches past the pool.
  *
  *   - `init [--face N]`: make the worn (or named) face's root a pool; a second run changes nothing and says "already".
@@ -40,7 +40,7 @@ import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSy
 import { join, posix, relative, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
 import {
-  faceRoot, faceSegmentRefusal, HOUSE_IGNORED, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
+  faceRoot, faceSegmentRefusal, withExcludeBlock, REALM_EXCLUDE_LINES, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
   larProjectionsHome, larConfigHome, larWorkspacesHome, syncedTreeDir, labelledRelations, readFaceLabel, REALMS_PROJECTION_DIR,
   REALM_PLANES, REALM_LABELS_DIR, findRealmLabel, realmPlacement,
 } from "@lararium/node";
@@ -265,46 +265,6 @@ function localConfig(root: string, key: string): string | null {
 }
 
 // ── init ───────────────────────────────────────────────────────────────────────────────────────────────────
-
-/** The lines that open and close the house's block in `.git/info/exclude`; the operator's own lines rest outside it. */
-const EXCLUDE_OPEN = "# >>> lares surface: the house's one ignore list (HOUSE_IGNORED); `lares surface init` keeps this block";
-const EXCLUDE_CLOSE = "# <<< lares surface";
-
-/**
- * THE EXCLUDE RULES, from `HOUSE_IGNORED` alone: each top folder but `.git` (git keeps its own), each orphan folder
- * suffix, and the atomic writer's temp (`<path>.<pid>[.<uuid>].tmp`). The patterns float (no leading `/`), since the
- * mirrors rest one folder down (`wiki/`, `canon/`, `personal/<slug>/`). The pointer carriers (`.meta`, `.kapae`, `.mem`,
- * `.tid`) never appear here: the pool commits them.
- */
-export function surfaceExcludeLines(): string[] {
-  return [
-    ...HOUSE_IGNORED.topDirs.filter((d) => d !== ".git").map((d) => `${d}/`),
-    ...HOUSE_IGNORED.dirSuffixes.map((s) => `*${s}/`),
-    "*.[0-9]*.tmp",
-  ];
-}
-
-/**
- * A REALM POOL'S OWN RULES, beside the house's list: the shared workbench's `recovery/` and `temp/`, anchored at the pool's top,
- * where an older lay left them (each face's drafts now rest in its own root, `faces/<pet name>/recovery/<slug>/`).
- */
-export const REALM_EXCLUDE_LINES: readonly string[] = [`/${FACE_PLANES.recovery}/`, `/${FACE_PLANES.temp}/`];
-
-/** The house's block, whole, with any extra lines the pool's scale adds. */
-function excludeBlock(extra: readonly string[]): string {
-  return [EXCLUDE_OPEN, ...surfaceExcludeLines(), ...extra, EXCLUDE_CLOSE].join("\n") + "\n";
-}
-
-/** The exclude file with the house's block written in place (or appended), the operator's own lines kept. */
-function withExcludeBlock(text: string, extra: readonly string[] = []): string {
-  const start = text.indexOf(EXCLUDE_OPEN);
-  const end = start === -1 ? -1 : text.indexOf(EXCLUDE_CLOSE, start);
-  if (start !== -1 && end !== -1) {
-    const after = text.slice(end + EXCLUDE_CLOSE.length).replace(/^\n/, "");
-    return text.slice(0, start) + excludeBlock(extra) + after;
-  }
-  return (text === "" || text.endsWith("\n") ? text : `${text}\n`) + excludeBlock(extra);
-}
 
 /** The marker the house's own pre-commit hook carries. */
 const HOOK_MARK = "# lares surface: the roster check runs before every commit";
