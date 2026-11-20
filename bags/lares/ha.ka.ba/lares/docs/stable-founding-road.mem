@@ -144,7 +144,7 @@ The talk-story of 2026-11-14 settled the residency model (<<~ loulou uri=`lar://
 
 !!! Owed items riding the leaps ~ each folds into the leap that touches its file
 ''The veil and the leaf fleet'' (the lanes' successor maps, 2026-11-12):
-* The veil floor's draft document and personal binding ride the floor registry: mint the id ahead, `announceFloor(slug, "draft", id)`, entry `floor/slot/<slug>/draft`, then the first byte; the Lift drops the entry (anon-lift step 3).
+* The veil floor's draft document and personal binding ride the floor registry: mint the id ahead, `announceFloor(slug, "draft", id)`, entry `floor/slot/<slug>/draft`, then the first byte; a face's landing leaves the entry and its document where they rest.
 * Persona roots and atoms key by PersonaGroup, never by handle index (`generateOrLoadBrowserPersonaRoot`, `wearBrowserPersona`, `BrowserRootFace.handleIndex`, the `ward/h0/persona-root` records, the `persona-root-roster` codec, the node's `listPersonaRoots` and face ordinals).
 * The first fleet offer founds the face (#/rulings, 2026-11-12): the offer act takes the founding door's one-boot ask, or a founding composer the fleet-root door can call.
 * A second face founded later in one browser: the founding door founds only where no face stands (`facedBootstrap(bootstrap) === null`), and a later face lifts nothing and links to no other face, with no red yet.
@@ -1289,6 +1289,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;e1wEeDEAS8hyowqj7VGPuKCMjYbtnIinSQsSB463z2A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TGvCZgm4Charcfx12fAtS3grpEQdI04YZMDmogOOl_4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -9,7 +9,7 @@
  *   V2 — `resolveOrMintBinding` with a face pinned and NO seat mints on the vessel's own key, never throws,
  *        and the binding record says so
  *   V3 — a face record adopts its document without another grant (CONTROL), and reuse leaves `vessel-only`
- *        standing (CONTROL). A vessel-only record moves under a seated face by the lift (`anon-veil-lift.test.ts`), never here.
+ *        standing (CONTROL). A vessel-only record stays at the floor when a face seats (`anon-floor-stays.test.ts`).
  */
 import { describe, test, expect } from "vitest";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";

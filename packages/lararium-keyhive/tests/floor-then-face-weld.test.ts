@@ -7,22 +7,19 @@
  *   W2  THE WELD: the node's founding (`commands/init.ts`) and the browser's boot (`open-browser-vessel.ts`) both stand the
  *       place through `foundThePlace` and land a face through `foundTheFace`, in that order, and neither host calls the
  *       fused `runFoundingCeremony`. A host that founds a face by another path reads red here.
- *   W3  a face-0 landing over a floor that wrote nothing runs the Lift and finds nothing: no row moves, nothing re-files.
+ *   W3  THE LANDING MOVES NOTHING: no host's seat, founding, admission, wear or unlock site calls a floor lift, so the floor's
+ *       documents stay where they rest when a face lands (a carry stays a future explicit act).
  */
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import {
-  makeIslandRepo, CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, HEARTH_TRUE_NAME_TIDDLER, MESH_CABAL_SENTINEL_URI, PERSONA_GROUP_ID_TIDDLER, SIGNER_DID_TIDDLER,
-  PERSONA_KEL_PREFIX_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER, HEARTH_DAEMON_URL_TIDDLER, didFromVerifyingKey, emptyLarDoc,
+  makeIslandRepo, HEARTH_TRUE_NAME_TIDDLER, MESH_CABAL_SENTINEL_URI, PERSONA_GROUP_ID_TIDDLER, SIGNER_DID_TIDDLER,
+  PERSONA_KEL_PREFIX_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER, HEARTH_DAEMON_URL_TIDDLER,
   type LarDoc,
 } from "@lararium/mesh";
-import { MemoryTiddlerStore, makeCatalogAccessor } from "@lararium/tw5";
 import { foundThePlace, meshCabalSentinelUriFor } from "../src/ceremony-core.js";
-import { KeyhiveProvider } from "../src/keyhive-provider.js";
-import { makeSlotDocResolver } from "../src/slot-doc-resolver.js";
-import { makeFaceBagDoor } from "../src/face-bag-door.js";
 
 const FACE_PINS = [PERSONA_GROUP_ID_TIDDLER, SIGNER_DID_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER, HEARTH_DAEMON_URL_TIDDLER];
 const REPO = resolve(import.meta.dirname, "../../..");
@@ -84,30 +81,16 @@ describe("the floor stands first and a face lands over it, on every host", () =>
     }
   });
 
-  test("W3 a face-0 landing over an unwritten floor lifts nothing", async () => {
-    const kh = new KeyhiveProvider();
-    await kh.init({ seed: new Uint8Array(32).fill(7), eventStore: { put: async () => {}, list: async () => [] } });
-    const group = await kh.createGroup();
-    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
-    const catalogHandle = repo.create<LarDoc>(emptyLarDoc());
-    const daemon = new CompositeStore();
-    daemon.addLayer({ bagId: DAEMON_BAG_ID, store: new MemoryTiddlerStore(DAEMON_BAG_ID), writable: true });
-    const control = new CompositeStore();
-    control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
-    const key = "cd".repeat(32);
-    const refiled: string[] = [];
-    const faced = makeSlotDocResolver({
-      repo, daemonStore: daemon, control, keyhive: kh, deviceScoped: (slug: string) => slug === "daemon", catalog: makeCatalogAccessor(repo, catalogHandle.url),
-      vesselDid: () => didFromVerifyingKey(key), mintedByHex: () => key, personaGroupId: group.groupId, faceSeated: async () => true,
-      faceDoor: makeFaceBagDoor({ face: kh, groupId: group.groupId }) as never,
-      announceLifted: (slug: string, documentId: string) => { refiled.push(`${slug}:${documentId}`); },
-    } as never);
-    const out = await faced.liftFloor();
-    expect(out.moved).toEqual([]);
-    expect(out.finished).toEqual([]);
-    expect(out.skipped).toEqual([]);
-    expect(refiled).toEqual([]);
-    await kh.dispose();
-    await repo.shutdown();
+  test("W3 THE LANDING MOVES NOTHING: no host's seat, founding, admission, wear or unlock calls a floor lift", () => {
+    const sites = [
+      "packages/lararium-keyhive/src/operator-daemon-behavior.ts", "packages/lararium-keyhive/src/face-seat.ts",
+      "packages/lararium-keyhive/src/slot-doc-resolver.ts", "packages/lararium-node/src/open-node-vessel.ts",
+      "packages/lararium-browser/src/open-browser-vessel.ts", "packages/lararium-node/src/commands/init.ts",
+      "packages/lararium-node/src/commands/fleet-join.ts",
+    ];
+    for (const site of sites) {
+      const text = source(site);
+      expect(firstCall(text, "liftFloor"), `${site} lifts the floor`).toBe(-1);
+    }
   });
 });

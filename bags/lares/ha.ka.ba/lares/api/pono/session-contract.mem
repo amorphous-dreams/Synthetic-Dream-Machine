@@ -110,7 +110,7 @@ A leaf with an admit and no seat writes nothing to the face's wikis, and a vesse
 
 A face the share stops naming loses its seat by Keyhive's convergent revoke, and its later writes refuse `workbench-not-a-member`. The workbench keeps its address; a hard cut forks the realm, so a new realm id names a new address.
 
-The working kind of every wiki but the daemon's rests in the wiki's REALM WORKBENCH (operator rulings 2026-11-11; <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>). The slot-doc resolver (`packages/lararium-keyhive/src/slot-doc-resolver.ts`) asks its workbench port (`workbenchRealm`) for the realm the vessel ledger notes for the wiki under the worn face's seat; the wiki's first stand founds a private cabal of one (`standWorkbench`, `packages/lararium-keyhive/src/workbench-realm.ts`), and the slot answers `realmWorkbenchDocUrl(realm, slug)`, which no member change moves. The working bag rides the realm's Keyhive Document, so the realm's roster and the layer's readers stay one list. A vessel that wears no face stands no wiki working layer and refuses `no-face`; no working document rests at the floor, and the anon-veil lift carries drafts and personal bindings alone. The daemon wiki keeps its face-private device slot. The resolver that keys bindings by `prefix/fingerprint` through `daemonStore` (`packages/lararium-keyhive/src/resolve-binding.ts`) serves the draft and personal kinds.
+The working kind of every wiki but the daemon's rests in the wiki's REALM WORKBENCH (operator rulings 2026-11-11; <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>). The slot-doc resolver (`packages/lararium-keyhive/src/slot-doc-resolver.ts`) asks its workbench port (`workbenchRealm`) for the realm the vessel ledger notes for the wiki under the worn face's seat; the wiki's first stand founds a private cabal of one (`standWorkbench`, `packages/lararium-keyhive/src/workbench-realm.ts`), and the slot answers `realmWorkbenchDocUrl(realm, slug)`, which no member change moves. The working bag rides the realm's Keyhive Document, so the realm's roster and the layer's readers stay one list. A vessel that wears no face stands no wiki working layer and refuses `no-face`; no working document rests at the floor, and a face's landing carries no floor draft or personal binding (they stay where they rest). The daemon wiki keeps its face-private device slot. The resolver that keys bindings by `prefix/fingerprint` through `daemonStore` (`packages/lararium-keyhive/src/resolve-binding.ts`) serves the draft and personal kinds.
 
 <<~/ahu>>
 
@@ -335,6 +335,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YlZdSq0KzwGhTksNCqwMYhOew3xryv7mcnNtb8V-bzs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z8ifpr3mxonXxq7pEgdphmBp4t44GK76nWzRTuEuF3g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

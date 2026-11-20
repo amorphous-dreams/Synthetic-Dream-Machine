@@ -18,12 +18,12 @@ function fixture() {
   let lifts = 0;
   let verifies = 0;
   let failIngest = false;
-  let failLift = false;
-  let skipLift = 0;
-  let arrival: Promise<unknown> | undefined;
   let refuse = false;
   const logs: string[] = [];
+  // A lift port a stale wiring might still hand the seat: the landing never asks it (the landing alone moves nothing).
+  const stray = { lift: async () => { lifts++; } };
   const seat = makeFaceSeat({
+    ...stray,
     group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
     knowsAgent: async () => known,
     grants: async () => records,
@@ -39,7 +39,6 @@ function fixture() {
       return refuse ? { ok: false, reason: "refused" } : { ok: true };
     },
     ingest: async () => { ingests++; if (failIngest) throw new Error("ingest"); known = true; },
-    lift: async () => { lifts++; if (failLift) throw new Error("lift"); return { skipped: skipLift, ...(arrival ? { arrivals: [arrival] } : {}) }; },
     log: (message) => { logs.push(message); },
   });
   return {
@@ -49,9 +48,6 @@ function fixture() {
     pendingOnce: () => { pendingOnce = true; },
     asked: () => asked, read: () => read,
     failIngest: (value: boolean) => { failIngest = value; },
-    failLift: (value: boolean) => { failLift = value; },
-    skipLift: (count: number) => { skipLift = count; },
-    arrival: (p: Promise<unknown> | undefined) => { arrival = p; },
     refuse: () => { refuse = true; },
     counts: () => ({ ingests, lifts, verifies }),
     seated: () => known,
@@ -71,7 +67,7 @@ describe("a causal face seat", () => {
           : context.dyad?.(FOUNDER) === "unknown"
             ? { ok: false, reason: "founder dyad standing unknown", pending: true }
             : { ok: true },
-        ingest: async () => { ingests++; }, lift: async () => {}, log: (message) => { logs.push(message); },
+        ingest: async () => { ingests++; }, log: (message) => { logs.push(message); },
       });
       await seat.run();
       return { logs, ingests };
@@ -88,7 +84,7 @@ describe("a causal face seat", () => {
     const seat = makeFaceSeat({
       group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
       knowsAgent: async () => false, grants: async () => [{ title, record: grant }], founderStanding: async () => "unknown",
-      verify: async () => ({ ok: true }), ingest: async () => { ingests++; }, lift: async () => {}, log: () => {},
+      verify: async () => ({ ok: true }), ingest: async () => { ingests++; }, log: () => {},
     });
     await seat.run();
     expect(ingests).toBe(0);
@@ -98,40 +94,18 @@ describe("a causal face seat", () => {
     const seat = makeFaceSeat({
       group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
       knowsAgent: async () => false, grants: async () => [{ title, record: grant }], founderStanding: async () => "aside",
-      verify: async () => ({ ok: true }), ingest: async () => { ingests++; }, lift: async () => {}, log: () => {},
+      verify: async () => ({ ok: true }), ingest: async () => { ingests++; }, log: () => {},
     });
     await seat.run();
     expect(ingests).toBe(0);
   });
-  test("R1 grant arrival seats and lifts without a binding call; absent grant leaves the floor", async () => {
+  test("R1 grant arrival seats without a binding call, and the landing alone moves nothing: a lift a stale wiring still offers is never asked; absent grant leaves the floor", async () => {
     const f = fixture(); f.standingArrives();
     expect(await f.seat.run()).toBe(false);
     expect(f.counts().lifts).toBe(0);
     f.arrive(); f.seat.wake(); await f.seat.settled();
     expect(f.seated()).toBe(true);
-    expect(f.counts()).toEqual({ ingests: 1, lifts: 1, verifies: 1 });
-  });
-  test("O3 a lift that SKIPPED a silent floor record never latches: the next pass lifts again, and a clean lift latches (CONTROL)", async () => {
-    const f = fixture(); f.standingArrives(); f.arrive(); f.skipLift(1);
-    await f.seat.run(); await f.seat.settled();
-    expect(f.counts().lifts).toBe(1);
-    f.seat.wake(); await f.seat.settled();
-    expect(f.counts().lifts, "the skipped record gets a second pass").toBe(2);
-    f.skipLift(0);
-    f.seat.wake(); await f.seat.settled();
-    expect(f.counts().lifts).toBe(3);
-    f.seat.wake(); await f.seat.settled();
-    expect(f.counts().lifts, "a clean lift latches").toBe(3);
-  });
-  test("O3 the skipped floor document's own ARRIVAL wakes the seat: the lift runs again with no other wake", async () => {
-    const f = fixture(); f.standingArrives(); f.arrive();
-    let arrive!: () => void; f.arrival(new Promise<void>((resolve) => { arrive = resolve; })); f.skipLift(1);
-    await f.seat.run(); await f.seat.settled();
-    expect(f.counts().lifts).toBe(1);
-    f.skipLift(0); f.arrival(undefined);
-    arrive();                                         // the silent document answers
-    await new Promise((r) => setImmediate(r)); await f.seat.settled();
-    expect(f.counts().lifts, "the arrival alone drew the second pass").toBe(2);
+    expect(f.counts(), "the seat lands and carries nothing off the floor").toEqual({ ingests: 1, lifts: 0, verifies: 1 });
   });
   test("R2 a grant waits unjudged while its founder's standing reads unknown", async () => {
     const f = fixture(); f.arrive();
@@ -171,7 +145,7 @@ describe("a causal face seat", () => {
     expect(f.counts()).toEqual({ ingests: 0, lifts: 0, verifies: 1 });
     expect(f.logs.some((m) => /grant pending .*persona-KEL proof unavailable/.test(m))).toBe(true);
     f.seat.daemonChanged("any/title"); await f.seat.settled();
-    expect(f.counts()).toEqual({ ingests: 1, lifts: 1, verifies: 2 });
+    expect(f.counts()).toEqual({ ingests: 1, lifts: 0, verifies: 2 });
   });
   test("a founder lift retries the same set-aside grant on a daemon change; CONTROL: an unchanged aside never seats", async () => {
     const f = fixture(); f.arrive(); f.founderAside();
@@ -197,7 +171,7 @@ describe("a causal face seat", () => {
         founderStanding: async () => { const snapshot = answer; if (++reads === 1) { started(); await blocked; } return snapshot; },
         verify: async (_record, ctx) => ctx.dyad?.(FOUNDER) === "aside"
           ? { ok: false, reason: "founder device set aside" } : { ok: true },
-        ingest: async () => { ingests++; known = true; }, lift: async () => {}, log: () => {},
+        ingest: async () => { ingests++; known = true; }, log: () => {},
       });
       const running = seat.run(); await reading;
       if (lift) answer = "clear";
@@ -222,7 +196,7 @@ describe("a causal face seat", () => {
           if (++verifies === 1) { started(); await blocked; }
           return snapshot === "aside" ? { ok: false, reason: "founder device set aside" } : { ok: true };
         },
-        ingest: async () => { ingests++; known = true; }, lift: async () => {}, log: () => {},
+        ingest: async () => { ingests++; known = true; }, log: () => {},
       });
       const running = seat.run(); await verifying;
       if (aside) { standing = "aside"; seat.daemonChanged("edge/aside"); }
@@ -237,7 +211,7 @@ describe("a causal face seat", () => {
     const running = f.seat.run();
     for (let i = 0; i < 8; i++) f.seat.wake();
     await running; await f.seat.settled();
-    expect(f.counts()).toEqual({ ingests: 1, lifts: 1, verifies: 1 });
+    expect(f.counts()).toEqual({ ingests: 1, lifts: 0, verifies: 1 });
   });
   test("R4 an ingest fault leaves the signature open; a refusal judges once", async () => {
     const f = fixture(); f.arrive(); f.standingArrives(); f.failIngest(true);
@@ -248,20 +222,17 @@ describe("a causal face seat", () => {
     await refused.seat.run(); await refused.seat.run();
     expect(refused.counts().verifies).toBe(1);
   });
-  test("R5 a restart with the veil already seated lifts once and ingests nothing", async () => {
+  test("R5 a restart with the veil already seated ingests nothing and asks no lift", async () => {
     let lifts = 0; let ingests = 0;
+    const stray = { lift: async () => { lifts++; } };
     const seat = makeFaceSeat({
+      ...stray,
       group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
       knowsAgent: async () => true, grants: async () => [{ title, record: grant }], founderStanding: async () => "clear",
-      verify: async () => ({ ok: true }), ingest: async () => { ingests++; }, lift: async () => { lifts++; }, log: () => {},
+      verify: async () => ({ ok: true }), ingest: async () => { ingests++; }, log: () => {},
     });
     await seat.run(); seat.wake(); await seat.run();
-    expect({ lifts, ingests }).toEqual({ lifts: 1, ingests: 0 });
-  });
-  test("R5 a lift fault retries on the next act without another ingest", async () => {
-    const f = fixture(); f.arrive(); f.standingArrives(); f.failLift(true);
-    await f.seat.run(); f.failLift(false); await f.seat.run();
-    expect(f.counts()).toEqual({ ingests: 1, lifts: 2, verifies: 1 });
+    expect({ lifts, ingests }).toEqual({ lifts: 0, ingests: 0 });
   });
 });
 
@@ -280,20 +251,6 @@ test("R6 mint settles a running seat before its read", async () => {
     faceSeated: async () => { order.push("seated"); return true; },
   });
   expect(order).toEqual(["settled", "seated"]);
-});
-
-test("R6 a lift inside the act completes while settlement points to that act", async () => {
-  let seat!: ReturnType<typeof makeFaceSeat>;
-  let known = true;
-  seat = makeFaceSeat({
-    group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
-    knowsAgent: async () => known, grants: async () => [], founderStanding: async () => "clear",
-    verify: async () => ({ ok: true }), ingest: async () => { known = true; },
-    lift: async () => { expect(await seat.seated()).toBe(true); }, log: () => {},
-  });
-  const seatSettled = () => seat.settled();
-  expect(await seat.run()).toBe(true);
-  await seatSettled();
 });
 
 test("R6 reuse of a vessel-only record reads the record and asks no seat; a face record still adopts", async () => {
@@ -318,18 +275,6 @@ test("R6 reuse of a vessel-only record reads the record and asks no seat; a face
   expect(asked).toEqual([]);
 });
 
-test("R6 the resolver's lift never waits on the seat act", async () => {
-  const { makeSlotDocResolver } = await import("../src/slot-doc-resolver.js");
-  let settledCalls = 0;
-  const resolver = makeSlotDocResolver({
-    repo: {} as never, daemonStore: {} as never, keyhive: {} as never, catalog: null, vesselDid: () => "did", mintedByHex: () => "vessel",
-    personaGroupId: group, faceSeated: async () => false, faceDoor: {} as never,
-    seatSettled: async () => { settledCalls++; await new Promise(() => {}); },
-  });
-  expect(await resolver.liftFloor()).toEqual({ moved: [], finished: [], skipped: [], skippedDocs: [] });
-  expect(settledCalls).toBe(0);
-});
-
 describe("the seat speaks its states", () => {
   test("S1 an unseated pass logs the pinned line once; two identical passes log one; no grant moves no binding", async () => {
     const f = fixture(); f.standingArrives();
@@ -351,7 +296,7 @@ describe("the seat speaks its states", () => {
     const seat = makeFaceSeat({
       group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
       knowsAgent: async () => true, grants: async () => [], founderStanding: async () => "clear",
-      verify: async () => ({ ok: true }), ingest: async () => {}, lift: async () => {}, log: (m) => { logs.push(m); },
+      verify: async () => ({ ok: true }), ingest: async () => {}, log: (m) => { logs.push(m); },
     });
     await seat.run();
     expect(logs).toEqual([]);
@@ -361,7 +306,7 @@ describe("the seat speaks its states", () => {
     const seat = makeFaceSeat({
       group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
       knowsAgent: async () => false, grants: async () => [{ title, record: grant }], founderStanding: async () => "clear",
-      verify: async () => ({ ok: true }), ingest: async () => {}, lift: async () => {}, log: (m) => { logs.push(m); },
+      verify: async () => ({ ok: true }), ingest: async () => {}, log: (m) => { logs.push(m); },
     });
     await seat.run(); await seat.run();
     expect(logs.filter(l => l.includes("still unseated after ingest"))).toHaveLength(1);
@@ -437,38 +382,5 @@ describe("the group document listener never gives up silently", () => {
     const g = listenerFixture({ urlAtBoot: false });
     await g.listener.attempt(); g.listener.stop(); g.learn(); await g.settle();
     expect(g.counts().opens).toBe(0);
-  });
-});
-
-describe("the lift stands off the ea path (Sol/P5: the seated verdict gates the bindings, the lift's wait never does)", () => {
-  function seatWith(lift: () => Promise<void>) {
-    let known = true, lifts = 0;
-    const logs: string[] = [];
-    const seat = makeFaceSeat({
-      group, selfVerifyingKey: self, personaRootDid: "root", personaKel: { prefix: "root", chain: [] },
-      knowsAgent: async () => known, grants: async () => [], founderStanding: async () => "clear",
-      verify: async () => ({ ok: true }), ingest: async () => {}, lift: async () => { lifts++; await lift(); }, log: (m) => { logs.push(m); },
-    });
-    return { seat, logs, lifts: () => lifts };
-  }
-  test("RED: a lift that never answers does not hold `run()` or `settled()`; CONTROL: the lift was still asked, once", async () => {
-    const { seat, lifts } = seatWith(() => new Promise<never>(() => {}));
-    expect(await seat.run(), "the seated verdict returns").toBe(true);
-    await seat.settled();
-    expect(lifts(), "the lift began").toBe(1);
-  }, 5_000);
-  test("RED: a lift that faults after the verdict is named and retried by the next pass; CONTROL: a lift that succeeds is not asked twice", async () => {
-    let fail = true;
-    const { seat, logs, lifts } = seatWith(async () => { if (fail) throw new Error("lift"); });
-    expect(await seat.run()).toBe(true);
-    await new Promise((r) => setTimeout(r, 10));
-    expect(logs.join("\n")).toContain("face lift faulted");
-    fail = false;
-    expect(await seat.run()).toBe(true);
-    await new Promise((r) => setTimeout(r, 10));
-    expect(lifts()).toBe(2);
-    expect(await seat.run()).toBe(true);
-    await new Promise((r) => setTimeout(r, 10));
-    expect(lifts(), "a lifted seat is not lifted again").toBe(2);
   });
 });

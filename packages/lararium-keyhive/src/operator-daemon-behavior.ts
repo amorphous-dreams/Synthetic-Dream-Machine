@@ -165,7 +165,7 @@ import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, nexusOfferSigner, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
-import { readFace, answerDocStoreAsks, announceSlotDoc, announceLiftedDoc, floorSlotTitle, floorRegistryOf, FloorUnavailable, type FloorRegistry } from "@lararium/mesh";
+import { readFace, answerDocStoreAsks, announceSlotDoc, floorSlotTitle, floorRegistryOf, FloorUnavailable, type FloorRegistry } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { slotAnnouncer } from "./slot-announcer.js";
 import { makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
@@ -498,14 +498,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       ...(docStoreDoor ? { announceDevice: wornSlots.device } : {}),
       // THE VEIL FLOOR'S WIKI SLOT names itself to the vessel as the vessel's own, before its first byte (it seals under the floor's rest key).
       ...(docStoreDoor ? { announceFloor: (slug: string, kind: "working" | "draft" | "personal", documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(slug, kind), documentId, true) } : {}),
-      ...(docStoreDoor ? { announceLifted: (slug: string, documentId: string) => announceLiftedDoc(docStoreDoor, wikiBagUri(slug), documentId) } : {}),
       // THE WORKBENCH names itself before it materializes (`workingDoc`), so its first save finds its bag mapped.
       announceWorking: (slug: string, url: string) => announced(slug, "working", url),
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(mintedByHex),
       mintedByHex: () => mintedByHex,
-      floorMinter: () => ({ mintedByHex: daemonAuth.placeVerifyingKey, vesselDid: didFromVerifyingKey(daemonAuth.placeVerifyingKey) }),
       ...(daemonAuth.personaGroupId ? { personaGroupId: daemonAuth.personaGroupId } : {}),
       ...(faceDoor() ? { faceDoor: faceDoor()! } : {}),
       faceSeated: async () => faceSeat ? faceSeat.seated() : !!(kh && daemonAuth.personaGroupId && await kh.knowsAgent(daemonAuth.personaGroupId)),
@@ -1754,19 +1752,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           founderStanding: async (key) => requireDyadReader(dyadReader(ctx), "the grant founder")(edge.personaRootDid, key),
           verify: verifyFaceGrantRecord,
           ingest: async (record, admit) => { await absorbCapEvents(veil, secretEvents(ctx, daemonAuth.personaGroupId!), record.capEvents.map(base64ToBytes), { admit }); },
-          lift: async () => {
-            const lifted = await slotDocsOf(ctx).liftFloor();
-            if (lifted.moved.length + lifted.finished.length > 0)
-              console.log(`[daemon] the seat landed: ${lifted.moved.length} floor record(s) moved under the face, ${lifted.finished.length} burn(s) finished`);
-            // THE LIFT NAMES WHAT IT MOVED AND WHAT IT LEFT, so a count that reads short shows which record stayed at the floor.
-            if (lifted.moved.length > 0) console.log(`[daemon] face lift moved: ${lifted.moved.join(" · ")}`);
-            if ((lifted.kept?.length ?? 0) > 0) console.log(`[daemon] face lift kept at the floor: ${lifted.kept!.map((k) => `${k.slug}: ${k.titles.join(", ")}`).join(" · ")}`);
-            // One wake per skipped document, on what it waits for: a document peers have not delivered wakes on its arrival (`whenReady`); a
-            // document whose flush storage never confirmed wakes when a flush of it rests. A ready document's arrival would resolve at once.
-            const arrivals = lifted.skippedDocs.map(({ url, waits }) => ctx.repo.find<LarDoc>(url as never).then((handle) =>
-              waits === "arrival" ? (handle as { whenReady?: () => Promise<unknown> }).whenReady?.() : ctx.repo.flush([handle.documentId])));
-            return { skipped: lifted.skipped.length, arrivals };
-          },
           log: (message) => console.log(`[daemon] ${message}`),
         });
         const seat = faceSeat;

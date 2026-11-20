@@ -1,4 +1,7 @@
-/** A joinee's one serialized grant take and floor lift, driven only by causal wakes. */
+/**
+ * A joinee's one serialized grant take, driven only by causal wakes. The landing seats the face and moves nothing: the
+ * floor's documents stay where they rest, and a carry stays a future explicit act (the-veil-ladder#/the-base-model).
+ */
 import type { EdgeStanding } from "@lararium/mesh";
 import { FACE_GRANT_PREFIX, type FaceGrantRecord, type FaceGrantVerdict, type FaceGrantVerifyContext } from "./face-grant-record.js";
 import { IngestOvertaken } from "./daemon-event-store.js";
@@ -47,8 +50,6 @@ export interface FaceSeatPorts {
   /** Takes the grant's cap events. `admit` answers whether this pass's reading still stands; the ingest asks it at the commit
    *  boundary, immediately before Keyhive mutates, and refuses with `IngestOvertaken` when it does not. */
   readonly ingest: (record: FaceGrantRecord, admit: () => boolean) => Promise<void>;
-  /** Lifts the floor under the face; answers how many records a silent floor document held back, so the next pass tries again. */
-  readonly lift: () => Promise<void | { readonly skipped: number; /** One promise per skipped document, settling when it arrives (a read peers never answered) or rests (a flush storage never confirmed): that wakes the seat. */ readonly arrivals?: readonly Promise<unknown>[] }>;
   readonly log: (message: string) => void;
 }
 
@@ -132,30 +133,16 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
   const judged = new Set<string>();
   const prefix = `${FACE_GRANT_PREFIX}${ports.group}/`;
   const self = ports.selfVerifyingKey.toLowerCase();
-  let lifted = false;
   let active: Promise<boolean> | null = null;
   let dirty = false;
   let proofVersion = 0;
   let waitingOnProof = false;
   let announcedUnseated = false;
   const seated = () => ports.knowsAgent(ports.group);
-  const lift = async () => {
-    if (lifted) return;
-    lifted = true;
-    try {
-      const result = await ports.lift();
-      // A floor record the lift skipped (its document silent) has not moved: the latch stays open, so a later pass lifts it.
-      if (result && result.skipped > 0) { lifted = false; ports.log(`face lift skipped ${result.skipped} floor record(s) its document held back; the document's arrival wakes the next pass`); for (const arrival of result.arrivals ?? []) void arrival.then(() => wake(), () => {}); }
-    } catch (error) {
-      lifted = false;
-      ports.log(`face lift faulted: ${String(error)}`);
-    }
-  };
   const pass = async (): Promise<boolean> => {
     waitingOnProof = false;
-    // The SEATED VERDICT is what the bindings wait on; the lift moves floor documents under the face afterwards and stands off that path
-    // (guarded by `lifted`, its faults named, retried by the next pass).
-    if (await seated()) { announcedUnseated = false; void lift(); return true; }
+    // The SEATED VERDICT is what the bindings wait on. The landing moves no floor document.
+    if (await seated()) { announcedUnseated = false; return true; }
     let taken = false;
     const settle = async (): Promise<boolean> => {
       const answer = await seated();
@@ -218,7 +205,7 @@ export function makeFaceSeat(ports: FaceSeatPorts) {
         taken = true;
         const nowSeated = await seated();
         ports.log(`face-join grant record taken from the PersonaGroup plane (${record.capEvents.length} cap events, ${record.reSealed?.length ?? 0} chunks re-sealed) — face ${nowSeated ? "SEATED" : "still unseated after ingest"}`);
-        if (nowSeated) { announcedUnseated = false; void lift(); return true; }
+        if (nowSeated) { announcedUnseated = false; return true; }
         announcedUnseated = true;
       }
     } catch (error) { ports.log(`face-join grant read faulted: ${String(error)}`); }

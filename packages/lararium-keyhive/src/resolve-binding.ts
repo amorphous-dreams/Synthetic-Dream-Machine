@@ -137,7 +137,7 @@ export class BindingRegistrationRefusal extends Error {
  * writes the floor's row alone.
  *
  * Reuse-on-present returns the stored URL without minting. A vessel-only record
- * moves under the face at the seat's landing, by the lift pass (`anon-lift`), and this resolver never re-registers it. A face record's recorded Keyhive document ID restores
+ * stays at the floor when a seat lands, and this resolver never re-registers it under a face. A face record's recorded Keyhive document ID restores
  * the process-local mapping on the provider that holds it. Reuse MUST NOT block boot on
  * a doc not yet decryptable on this device (the two-phase Keyhive window): the
  * caller mounts the URL and the island surfaces it when sync delivers the BeeKEM

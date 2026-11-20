@@ -5,7 +5,7 @@
  * THE HOLE: the daemon wiki's working and draft slots (the D half of the daemon bag) carry the verb outcome ledger and
  * the receipt facts. Sealed under the face while the register set names only the user wiki's slots, each record there
  * reads `writer-not-capable` under the production standing (`ownChainStanding` over the island's `registerBags`), its
- * seal refuses, and the anon-veil lift's flush waits on it.
+ * seal refuses.
  *
  *   W1 — a lit, proved face seals the daemon wiki's slots beside the user wiki's
  *   W2 — every sealed bag reads its writer capable under the production standing over the derived register set
@@ -13,7 +13,7 @@
  *   W4 — CONTROL, the floor: a vessel no lit face stands in seals nothing and registers no daemon slot
  *   W5 — NONSENSE: a bag the face never registers reads not capable, and a foreign chain reads not capable
  *   W6 — the face's own catalog (U1's D half of the catalog) seals and registers under the lit face, so the boot's island
- *        holds its key before the lift opens it; the floor seals and registers none
+ *        holds its key before the face's session opens it; the floor seals and registers none
  */
 import { describe, expect, test } from "vitest";
 import { FACE_CATALOG_BAG_ID, deriveRegisterBags, wikiSlotUri, wornFaceWikiBags } from "@lararium/mesh";

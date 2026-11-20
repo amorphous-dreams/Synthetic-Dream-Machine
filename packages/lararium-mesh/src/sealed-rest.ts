@@ -413,11 +413,6 @@ export function announceSiblingSlotDoc(port: Pick<Port, "post">, bagId: string, 
   try { port.post({ type: "docstore:slot", bagId, documentId, sibling: true } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
 }
 
-/** THE LIFT NAMES A DOCUMENT IT CARRIED IN PLACE: `documentId` now stands as the face's `bagId`, released from the vessel's class. */
-export function announceLiftedDoc(port: Pick<Port, "post">, bagId: string, documentId: string): void {
-  try { port.post({ type: "docstore:slot", bagId, documentId, lifted: true } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
-}
-
 /** The vessel hears each slot notice. Returns the unsubscribe. */
 export function answerSlotNotices(port: Port, onSlot: (bagId: string, documentId: string, floor: boolean, lifted: boolean, sibling: boolean) => void): () => void {
   return port.listen((raw) => {
@@ -651,9 +646,9 @@ export function mountedDocumentId(store: unknown): string | null {
 
 /**
  * A WORKING SLOT'S DOCUMENT MOVES WHERE IT STANDS: swap `bagId`'s layer onto `store` at the same priority, writable and the
- * default writable, so the cascade above and beneath it reads as before. The anon-veil lift moves a working slot from the
- * floor's document to the face's derived one (`anon-lift`); every composite that mounts the slot follows, or one side
- * writes where the other never reads. False when no layer for `bagId` stands, or it stands on that document already.
+ * default writable, so the cascade above and beneath it reads as before. A seat that lands turns a working slot from the
+ * floor's document to the face's own (the floor's document stays where it rests, unread by the face); every composite that
+ * mounts the slot follows, or one side writes where the other never reads. False when no layer for `bagId` stands, or it stands on that document already.
  */
 export function rebindWorkingLayer(composite: CompositeStore, bagId: string, store: LarTiddlerStore & { readonly documentId?: string }): boolean {
   const at = composite.layerIndexOf(bagId);

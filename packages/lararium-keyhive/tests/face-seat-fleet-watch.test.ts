@@ -65,7 +65,7 @@ describe("the face seat follows its local fleet board", () => {
         grants: async () => [{ title: `${FACE_GRANT_PREFIX}group/abcd`, record: { sig: "sig", capEvents: [], founderEdge: { deviceVerifyingKey: "founder" } } as unknown as FaceGrantRecord }],
         founderStanding: async () => { const snapshot = standing; if (++reads === 1) { started(); await blocked; } return snapshot; },
         verify: async (_record, context) => context.dyad?.("founder") === "aside" ? { ok: false, reason: "aside" } : { ok: true },
-        ingest: async () => { ingests++; known = true; }, lift: async () => {}, log: () => {},
+        ingest: async () => { ingests++; known = true; }, log: () => {},
       });
       const watch = watchFaceSeatFleet({
         open: async () => ({ on: (_event, fn) => { listener = fn; }, off: () => { listener = undefined; } }),

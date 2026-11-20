@@ -83,7 +83,7 @@ describe("the seat hands its reading's guard to the ingest", () => {
         if (mutations === 0) { opening(); await gate; }
         await absorbCapEvents(sink, recordingStore(), record.capEvents.map(b64), { admit });
       },
-      lift: async () => {}, log: () => {},
+      log: () => {},
     });
     const run = seat.run();
     await opened;

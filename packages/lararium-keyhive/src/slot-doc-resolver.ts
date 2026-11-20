@@ -20,9 +20,9 @@
  *              seat (seated `read`, or nowhere) writes its own `personal` layer (`writeSlot`). A vessel with no face stands
  *              the VEIL FLOOR's own document instead, where its floor key stands (`floor/slot/<slug>/working` in the
  *              place's daemon document, the-veil-ladder#/the-base-model), sealed under the floor's rest key; where it does
- *              not stand (a locked floor, a herm that derives none) no working layer stands and a mint refuses `no-face`. A seat that lands lifts the
- *              floor's rows into the workbench (`liftFloor`). The daemon wiki keeps its face-private device slot
- *              (`deviceScoped`), the AI-memory ruling.
+ *              not stand (a locked floor, a herm that derives none) no working layer stands and a mint refuses `no-face`. A seat that lands
+ *              leaves the floor's rows where they rest: the face reads its own layers and none of the floor's, and a carry stays a
+ *              future explicit act. The daemon wiki keeps its face-private device slot (`deviceScoped`), the AI-memory ruling.
  *   personal — the PersonaGroup × fingerprint binding when seated, the vessel's own when not
  *
  * Lives in @lararium/keyhive because the mint sequence needs keyhive (`registerBag` + `delegate`).
@@ -41,7 +41,6 @@ import { catalogCanonAddress, type CatalogAccessor } from "@lararium/tw5";
 import type { CapabilityProvider } from "./capability-provider.js";
 import type { FaceBagDoor } from "./face-bag-door.js";
 import { resolveOrMintBinding, type BindingKind, type DocMinter } from "./resolve-binding.js";
-import { liftVesselOnlyIntoFace, type LiftRepo, type LiftResult } from "./anon-lift.js";
 
 /** The Automerge-repo surface the resolver needs: mint (`create`) and the floor mint's readiness. */
 export interface SlotDocRepo extends DocMinter {
@@ -59,8 +58,6 @@ export type WikiWriteSlot = "working" | "personal" | null;
 export type FloorSlotKind = "working" | "draft" | "personal";
 
 export interface SlotDocResolverArgs {
-  /** How long the floor lift waits on a silent floor document before it names it and skips it (default: the house document-ready bound). */
-  readonly liftReadBoundMs?: number;
   readonly repo: SlotDocRepo;
   readonly deviceScoped?: (slug: string) => boolean;
   /**
@@ -88,8 +85,6 @@ export interface SlotDocResolverArgs {
    * derives from the realm, so it reads before the document materializes, and no save of it lands ahead of its bag's naming.
    */
   readonly announceWorking?: (slug: string, url: string) => void;
-  /** The Lift carried a veil-minted wiki's canon in place: tell the vessel, which re-files its seal under the face (`announceLiftedDoc`). */
-  readonly announceLifted?: (slug: string, documentId: string) => void;
   /** The daemon-bag composite — binding records live here. */
   readonly daemonStore: CompositeStore;
   /** Absent at the faceless floor: a floor document carries no Keyhive registration. */
@@ -99,8 +94,6 @@ export interface SlotDocResolverArgs {
   /** The vessel DID, the one spelling (`didFromVerifyingKey`) — the floor key derives from it. */
   readonly vesselDid: () => string | Promise<string>;
   readonly mintedByHex: () => string;
-  /** The labels the faceless floor gave its documents, so a lit face lifts them (`anon-lift`). */
-  readonly floorMinter?: () => { readonly mintedByHex: string; readonly vesselDid: string };
   readonly personaGroupId?: string | undefined;
   /** Read the veil seat without taking a grant. */
   readonly faceSeated?: () => Promise<boolean>;
@@ -126,7 +119,7 @@ export interface SlotDocResolverArgs {
   readonly workbenchDoc?: (url: string, slug: string) => Promise<{ readonly documentId: string }>;
 }
 
-/** A wiki's working slot stands no workbench here: no face (`no-face`), or the floor's lift asked for one no realm answers (`no-workbench`). */
+/** A wiki's working slot stands no workbench here: a realm seats a face, and this vessel wears none (`no-face`). */
 export class WorkingSlotRefusal extends Error {
   override readonly name = "WorkingSlotRefusal";
   constructor(readonly reason: string, detail: string) { super(`working slot: ${reason}: ${detail}`); }
@@ -149,8 +142,6 @@ export interface SlotDocResolver {
   slotDoc(slug: string, kind: WikiSlotKind, opts?: { mint?: boolean }): Promise<SlotDoc | null>;
   /** The ONE draft resolver: `slotDoc(slug, "draft")`, minting on absent — never null. */
   draft(slug: string): Promise<SlotDoc>;
-  /** The anon-veil lift (`anon-lift`): everything this vessel minted at the floor moves under the seated face. Idempotent. */
-  liftFloor(): Promise<LiftResult>;
 }
 
 type RecipeTrace = { readonly wikiDocId: string; readonly libraryBagDocIds: readonly string[] };
@@ -269,8 +260,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
 
   /**
    * THE PERSONAL LAYER. A seated face holds it by binding (PersonaGroup × fingerprint). With no seat, where the floor's
-   * rest key stands, it rests in a floor document the floor's registry names (`floor/slot/<slug>/personal`); the Lift
-   * carries it under the face's binding when a seat lands. A floor with no key keeps the faceless binding row.
+   * rest key stands, it rests in a floor document the floor's registry names (`floor/slot/<slug>/personal`), and it stays
+   * there when a seat lands. A floor with no key keeps the faceless binding row.
    */
   const personalDoc = async (slug: string, fingerprint: string, recipeTrace: RecipeTrace): Promise<SlotDoc> => {
     if (!(await seated()) && floorStands()) return (await floorSlot(slug, "personal", true))!;
@@ -304,7 +295,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
   const deviceSlot = async (kind: Exclude<WikiSlotKind, "temp">, mint: boolean): Promise<SlotDoc | null> => {
     // leaf-fleet (Leaf-Finisher): A FACE PINNED AND NOT YET SEATED keeps the floor's slot. Its own slot would seal under a
     // session that stands only once the face seats, so its bytes would wait in memory and a reload would lose them; the
-    // floor's slot rests under the floor's key, and the Lift carries it into the face's slot when the seat lands.
+    // floor's slot rests under the floor's key, and it stays there when the seat lands: the seated face mints its own.
     const owner = args.personaGroupId && await seated() ? args.personaGroupId : null;
     // A FACE'S SLOT takes its name in the control document (it mints with the face); THE FLOOR'S takes its name in the floor
     // registry, in the place's daemon document, and refuses by name where the floor's rest key does not stand.
@@ -374,7 +365,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
    * group"). A vessel that wears no face and whose floor key stands stands a wiki's working layer in a floor document
    * the floor registry names (`floor/slot/<slug>/working`), named before its first byte, exactly as the daemon wiki's
    * floor device slot stands. A vessel whose floor key does not stand (a locked hearth, a herm that derives none)
-   * stands none and answers null. The Lift moves its rows into the face's realm workbench when a seat lands (`anon-lift`).
+   * stands none and answers null. A seat that lands leaves its rows where they rest.
    */
   const floorMints = new Map<string, Promise<SlotDoc | null>>();
   /** Whether the floor's rest key stands on this vessel now (its registry refuses nothing). */
@@ -473,33 +464,6 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     },
     slotDoc,
     draft: async (slug) => (await slotDoc(slug, "draft"))!,
-    liftFloor: async () => {
-      if (!args.faceDoor || !args.personaGroupId || !(await seated())) return { moved: [], finished: [], skipped: [], skippedDocs: [] };   // no seat, nothing to lift into
-      const repo = args.repo as unknown as Partial<LiftRepo>;
-      if (typeof repo.find !== "function" || typeof repo.delete !== "function") throw new Error("slot-doc: the lift needs a repo that finds and deletes documents");
-      return liftVesselOnlyIntoFace({
-        repo: args.repo as unknown as LiftRepo, daemonStore: args.daemonStore, catalog: args.catalog, faceDoor: args.faceDoor,
-        mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()), personaGroupId: args.personaGroupId,
-        ...(args.liftReadBoundMs !== undefined ? { readBoundMs: args.liftReadBoundMs } : {}),
-        ...(args.floorMinter ? { floor: args.floorMinter() } : {}),
-        // THE WORKING FLOOR lifts into the face's realm workbench, stood on ask (`workingDoc` with mint).
-        ...(args.floor && args.workbenchRealm ? { working: { floor: args.floor, workbench: async (slug: string) => {
-          const stood = await workingDoc(slug, true);
-          if (!stood) throw new WorkingSlotRefusal("no-workbench", `no realm answers for "${slug}" under this face (another face of the vessel stands its workbench, and seats this face nowhere)`);
-          return stood.url;
-        } } } : {}),
-        // THE FLOOR'S DRAFT AND PERSONAL LAYER lift into the face's own binding of that kind, stood on ask.
-        ...(args.floor ? { faceLayers: { floor: args.floor, faceSlot: async (slug: string, kind: "draft" | "personal") => {
-          const trace = await traceOf(slug).catch(() => null);   // the mount's trace where this session mounted the wiki
-          return trace ? (await binding(kind, trace.fingerprint, trace.recipeTrace)).url : null;
-        } } } : {}),
-        // THE DAEMON WIKI'S FLOOR MEMORY lifts into the face's own device slot of each kind (face-private).
-        ...(args.floor ? { daemon: { floor: args.floor, faceSlot: async (kind: "working" | "personal" | "draft") => (await deviceSlot(kind, true))!.url } } : {}),
-        // THE CANON OF A WIKI THE VEIL MINTED stays where it stands; the vessel re-files its seal on this word.
-        ...(args.floor ? { canon: { floor: args.floor, lifted: (slug: string, documentId: string) => { args.announceLifted?.(slug, documentId); } } } : {}),
-        traceOf: (slug) => traceOf(slug).catch(() => null),
-      });
-    },
   };
 }
 
