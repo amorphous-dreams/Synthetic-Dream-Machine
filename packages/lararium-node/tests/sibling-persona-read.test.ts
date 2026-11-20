@@ -18,6 +18,8 @@
  *   SP13 THE TABLE: every plane reading proves or refuses with a valid carried founding beside it, as `SIBLING_PLANE_USE` names
  *        (only `nothing-rests` lets the carried acts answer alone)
  *   SP14 RED lock race: a lock, or a lock and re-open, that discards a decoded plane refuses; the carried founding never proves
+ *   SP15 RED empty-read lock race: the same during an empty read refuses `lock-mid-read`; the carried founding never proves
+ *   SP16 a carried-only proof whose opening closes before acceptance reads null
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
@@ -221,6 +223,35 @@ describe("proveSiblingFromRest: a lit sibling proves from its own rest while the
       expect(await proving).toEqual({ proved: null, plane: "lock-mid-read" });
       expect(proveRan).toBe(false);
     }
+  });
+
+  test("SP15 RED empty-read lock race: a lock, or a lock and re-open, while an empty read waits refuses; the carried founding never proves under the expired opening", async () => {
+    const s = await sibling();
+    const carried = [carriedOf(s.log)];
+    const empty = memoryAdapter();
+    // The control: the carried founding proves alone where the read found nothing at rest and the opening held.
+    expect((await proveSiblingFromRest({ storage: empty, personaUrl: s.planes.persona, group, face: gate({ opening: "boot:1" }), carried, prove: s.prove })).proved).not.toBeNull();
+    for (const after of [null, "boot:2"] as const) {
+      const custody: Custody = { opening: "boot:1" };
+      let release!: () => void;
+      const pending = new Promise<void>((done) => { release = done; });
+      const slow = { loadRange: async (prefix: StorageKey) => { await pending; return empty.loadRange(prefix); } };
+      let proveRan = false;
+      const proving = proveSiblingFromRest({ storage: slow, personaUrl: s.planes.persona, group, face: gate(custody), carried, prove: (r) => { proveRan = true; return s.prove(r); } });
+      await Promise.resolve();
+      custody.opening = after;   // a lock, or a lock and re-open, while the empty read waits
+      release();
+      expect(await proving).toEqual({ proved: null, plane: "lock-mid-read" });
+      expect(proveRan).toBe(false);
+    }
+  });
+
+  test("SP16: a carried-only proof whose opening closes before acceptance reads null", async () => {
+    const s = await sibling();
+    const custody: Custody = { opening: "boot:1" };
+    const r = await proveSiblingFromRest({ storage: memoryAdapter(), personaUrl: s.planes.persona, group, face: gate(custody), carried: [carriedOf(s.log)],
+      prove: (records) => { const p = s.prove(records); custody.opening = null; return p; } });
+    expect(r).toEqual({ proved: null, plane: "lock-mid-read" });
   });
 
   test("SP8: an over-cap plane names itself and refuses: never read as nothing at rest, and the carried acts never stand in", async () => {

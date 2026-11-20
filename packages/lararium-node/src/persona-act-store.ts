@@ -49,7 +49,7 @@ export type SiblingPlaneReading = "read" | "face-shut" | "lock-mid-read" | Resti
  * a chunk unread or empty, past the caps, a url that names no document), where restoring the missing part could expose a
  * signed fork that makes the same proof refuse; a store that did not answer in time or refused (a flaky or disrupted store,
  * no byte changed, would otherwise turn a plane that refuses into a carried-only proof); a face shut at the read; and a lock,
- * or a lock and re-open, that discarded a plane already decoded (the carried founding would otherwise prove pins the full log
+ * or a lock and re-open, while the read waited, whether it found a plane or an empty rest (the carried founding would otherwise prove pins the full log
  * refuses). THE LIVENESS COST: a slow or refusing store, or a face shut at the moment, refuses the sibling until the next ask
  * (the next light, the next custody open, the next boot), and that ask reads the plane afresh under the opening it finds.
  */
@@ -67,8 +67,9 @@ export const SIBLING_PLANE_USE: Readonly<Record<SiblingPlaneReading, "plane" | "
  *
  * Custody decides at both ends, by OPENING: the face must stand open before the read (a shut face reads no plane and its store
  * goes unasked), the read keys its one outstanding adapter call to that opening (`scope`), and the same opening must still
- * stand when the proof is accepted. `prove` runs synchronously on the records and this checks `stillOpen` in the same turn, so
- * a plane read under an opening that closed (a lock, or a lock and re-open) never proves; the answer reads null, fail closed.
+ * stand before either proof path runs and again when ANY proof is accepted, carried-only included. `prove` runs synchronously on
+ * the records and this checks `stillOpen` in the same turn, so nothing read under an opening that closed (a lock, or a lock and
+ * re-open), a decoded plane or an empty rest, ever proves; the answer reads null, fail closed.
  *
  * `carried` names the documents that carry admit acts beside the plane (the vessel's secret home: a joined face's admit
  * bundle rests there until its plane syncs). They answer alone only where the read succeeded and found nothing at rest; every
@@ -89,16 +90,17 @@ export async function proveSiblingFromRest<T>(input: {
   let reading: SiblingPlaneReading = "face-shut";
   if (opening !== null) {
     const read = await readRestingDoc(input.storage, input.personaUrl, { ...(input.boundMs !== undefined ? { boundMs: input.boundMs } : {}), scope: opening });
-    if ("doc" in read) {
-      // A lock that landed while the read ran drops the plane: only the carried acts may answer.
-      if (input.face.stillOpen()) { plane = read.doc; reading = "read"; } else reading = "lock-mid-read";
-    } else reading = read.absent;
+    reading = "doc" in read ? "read" : read.absent;
+    if ("doc" in read) plane = read.doc;
+    // THE OPENING BEFORE EITHER PATH: a lock, or a lock and re-open, while the read waited voids whatever it found, a decoded
+    // plane and an empty rest alike; neither the plane nor the carried acts prove under an opening that closed.
+    if (!input.face.stillOpen()) { plane = undefined; reading = "lock-mid-read"; }
   }
-  // A PLANE KNOWN TO REST THAT DID NOT READ WHOLE REFUSES: the carried acts never stand in for an incomplete history.
+  // Every reading but a plane read whole, or a read that found nothing at rest, refuses before the proof runs.
   if (SIBLING_PLANE_USE[reading] === "refuse") return { proved: null, plane: reading };
   const records = [plane, ...(input.carried ?? [])].flatMap((doc) => personaActRecordsOfGroup(doc, input.group));
   const proved = input.prove(records);
-  // ACCEPTANCE: a proof that leaned on the plane stands only while the opening it was read under still stands.
-  if (proved !== null && plane !== undefined && !input.face.stillOpen()) return { proved: null, plane: "lock-mid-read" };
+  // ACCEPTANCE: ANY proof, carried-only included, stands only while the opening it was read under still stands.
+  if (proved !== null && !input.face.stillOpen()) return { proved: null, plane: "lock-mid-read" };
   return { proved, plane: reading };
 }
