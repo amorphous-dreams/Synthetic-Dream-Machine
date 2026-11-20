@@ -237,14 +237,47 @@ export async function syncCheckout(dir: string): Promise<SyncAnswer> {
   }
   const counts = upstream === null ? null : await out(["rev-list", "--left-right", "--count", "HEAD...@{upstream}"]);
   const [ahead = 0, behind = 0] = (counts ?? "0 0").split(/\s+/).map(Number);
-  const dirty = ((await out(["status", "--porcelain", "--untracked-files=no"])) ?? "") !== "";
+  const dirty = ((await out(["status", "--porcelain", "--untracked-files=no", "--ignore-submodules=all"])) ?? "") !== "";
   const plan = syncPlan({ branch, upstream, ahead, behind, dirty });
-  if (plan.act !== "fast-forward") return { ok: plan.act === "stand", line: fetched + plan.line };
+  if (plan.act !== "fast-forward") {
+    if (plan.act !== "stand") return { ok: false, line: fetched + plan.line };
+    const kept = await keepPins(dir);
+    return { ok: kept.ok, line: fetched + plan.line + kept.line };
+  }
   const from = (await out(["rev-parse", "HEAD"])) ?? "";
   const merged = await gitIn(dir, ["merge", "--ff-only", "--quiet", "@{upstream}"]);
   if (merged.code !== 0) return { ok: false, line: `${fetched}the fast-forward of ${branch} to ${upstream} refused (${merged.stderr.trim().split("\n").at(-1) || `exit ${merged.code}`}); nothing moved` };
   const to = (await out(["rev-parse", "HEAD"])) ?? "";
-  return { ok: true, line: `${fetched}${branch} fast-forwarded ${behind} commit(s) from ${upstream}: ${from.slice(0, 12)}..${to.slice(0, 12)}` };
+  const kept = await keepPins(dir);
+  return { ok: kept.ok, line: `${fetched}${branch} fast-forwarded ${behind} commit(s) from ${upstream}: ${from.slice(0, 12)}..${to.slice(0, 12)}${kept.line}` };
+}
+
+/**
+ * THE SUBMODULES' PINS: each submodule sits at the commit the superproject records, never a newer one (`git submodule update
+ * --init --recursive`, no `--remote`). A submodule that must move yet holds local or untracked changes stops the rite with
+ * one line naming it, and its work stays. The returned line (empty where every pin already held) leads with `; ` and names
+ * each submodule that moved, from..to in short shas.
+ */
+async function keepPins(dir: string): Promise<{ readonly ok: boolean; readonly line: string }> {
+  const read = async (): Promise<{ code: number; rows: { mark: string; sha: string; path: string }[] }> => {
+    const r = await gitIn(dir, ["submodule", "status", "--recursive"]);
+    const rows = r.stdout.split("\n").flatMap((l) => { const m = /^([ +\-U])([0-9a-f]{40}) (\S+)/.exec(l); return m ? [{ mark: m[1]!, sha: m[2]!, path: m[3]! }] : []; });
+    return { code: r.code, rows };
+  };
+  const before = await read();
+  const owing = before.rows.filter((r) => r.mark !== " ");
+  if (before.code !== 0 || owing.length === 0) return { ok: true, line: "" };
+  const conflicted = owing.find((r) => r.mark === "U");
+  if (conflicted) return { ok: false, line: `; submodule ${conflicted.path} stands in a merge conflict, so no submodule moved; settle it by hand, then run it again` };
+  for (const r of owing.filter((x) => x.mark === "+")) {
+    const status = await gitIn(join(dir, r.path), ["status", "--porcelain"]);
+    if (status.code === 0 && status.stdout.trim() !== "") return { ok: false, line: `; submodule ${r.path} holds local or untracked changes, so it stays as it stands and no submodule moved; commit or set them aside by hand, then run it again` };
+  }
+  const updated = await gitIn(dir, ["submodule", "update", "--init", "--recursive"]);
+  if (updated.code !== 0) return { ok: false, line: `; the submodule update refused (${updated.stderr.trim().split("\n").at(-1) || `exit ${updated.code}`}); the submodules stand as they stood` };
+  const after = new Map((await read()).rows.map((r) => [r.path, r.sha] as const));
+  const moved = owing.flatMap((r) => { const now = after.get(r.path) ?? r.sha; return r.mark === "-" ? [`${r.path} initialised at ${now.slice(0, 12)}`] : now === r.sha ? [] : [`${r.path} ${r.sha.slice(0, 12)}..${now.slice(0, 12)}`]; });
+  return { ok: true, line: moved.length > 0 ? `; submodules kept at their pins: ${moved.join(", ")}` : "" };
 }
 
 /**
