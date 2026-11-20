@@ -450,6 +450,8 @@ export const CENSUS_PAGE_MS = 15_000;
 /** What one census read of every disk shore names: each carrier not settled, and each island that could not answer. */
 export interface ShoreCensus {
   readonly carriers: ReadonlyArray<{ readonly state: string; readonly uri: string; readonly bagId: string | null; readonly island: ShoreIsland }>;
+  /** Each file a mirror's checkout never tracked, by path: an owed commit (absent: none). */
+  readonly untracked?: ReadonlyArray<{ readonly path: string; readonly bagId: string | null; readonly island: ShoreIsland }>;
   readonly unanswered: ReadonlyArray<{ readonly part: string; readonly why: string }>;
 }
 
@@ -460,6 +462,7 @@ export interface ShoreCensus {
  */
 export async function askShoreCensus(did: string, run: RunVerb = runVerb): Promise<ShoreCensus> {
   const carriers: Array<ShoreCensus["carriers"][number]> = [];
+  const untracked: Array<NonNullable<ShoreCensus["untracked"]>[number]> = [];
   const unanswered: Array<ShoreCensus["unanswered"][number]> = [];
   for (const island of SHORE_ISLANDS) {
     const part = `${island === "wiki" ? "the active wiki's" : "the daemon"} island's disk projector`;
@@ -479,6 +482,16 @@ export async function askShoreCensus(did: string, run: RunVerb = runVerb): Promi
       for (const c of o["carriers"] as Array<Record<string, unknown>>) {
         rows.push({ state: String(c["state"]), uri: String(c["uri"]), bagId: typeof c["bagId"] === "string" ? c["bagId"] : null, island });
       }
+      // THE OWED COMMITS ride the first page: each file a mirror's checkout never tracked, and each checkout git could not read.
+      if (pages === 0) {
+        for (const u of Array.isArray(o["untracked"]) ? o["untracked"] as Array<Record<string, unknown>> : []) {
+          if (typeof u["path"] === "string" && !untracked.some((t) => t.path === u["path"])) untracked.push({ path: u["path"], bagId: typeof u["bagId"] === "string" ? u["bagId"] : null, island });
+        }
+        for (const u of Array.isArray(o["untrackedUnread"]) ? o["untrackedUnread"] as Array<Record<string, unknown>> : []) {
+          const part = `the checkout under ${String(u["root"])}`;
+          if (!unanswered.some((x) => x.part === part)) unanswered.push({ part, why: String(u["why"]) });
+        }
+      }
       const next = o["next"];
       if (typeof next !== "string" || next === "") {
         if (typeof o["carrierCount"] === "number" && o["carrierCount"] !== rows.length && pages === 0) failed = `the census counted ${String(o["carrierCount"])} carriers and named ${rows.length}`;
@@ -490,5 +503,5 @@ export async function askShoreCensus(did: string, run: RunVerb = runVerb): Promi
     carriers.push(...rows);
     if (failed !== null) unanswered.push({ part, why: failed });
   }
-  return { carriers, unanswered };
+  return { carriers, ...(untracked.length > 0 ? { untracked } : {}), unanswered };
 }

@@ -207,6 +207,7 @@ export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolW
   WATCHED_PLANES, SITTING_CLOSE_PREFIX, POOL_SETTLE_MS, type DrainSeat, type FacePoolWatch, type FacePoolPorts, type FacePoolWatchOptions, type SeamReading,
   type SittingClose, type StageEdit, type WatchState, type GitRun } from "./watch-core.js";
 // HEAD's words for a file with no synced base (face-pools A5): both gates read the pool's last sitting as the base a re-found cleared.
+export { checkoutTracking, type CarrierTracking, type UntrackedReading } from "./checkout-carriers.js";
 export { walledGit, poolPlaceOf, blobAt, poolHeadOf, poolHeads, facePoolHeads, type PoolPlace, type PoolHead, type BaseFromGit } from "./pool-head.js";
 // The disk→records gesture's pure machinery behind one submit port (tideline-surface #/seam point 1): the CLI fills it with the
 // verb socket, the vessel with its daemon island's INGEST, so the watch over the worn face's pool lands an edit by itself.
