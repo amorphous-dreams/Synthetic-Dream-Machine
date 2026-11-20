@@ -21,6 +21,13 @@
  * prototype's action and message doors (`invokeActions`, `invokeActionString`, `invokeActionsByTag`, `dispatchEvent`)
  * answer nothing, and the tree hangs under no parent, so no `tm-*` message reaches a handler.
  *
+ * THE RENDER STANDS WHERE ITS SOURCE TAKES WRITES. A source renders in the island whose composite holds the bag it surfaced
+ * from (`$origin-bag`) as a writable layer; a source this island only reads (the oracle floor every recipe stands on, a
+ * read-only library) renders nowhere here, and a render standing from one leaves at arm. So a floor row marked rendered
+ * derives its render in the wiki whose own live layer carries it, never one copy per wiki that reads the floor, and a cold
+ * wiki's workbench holds no render it never wrote. A source copied up into a writable layer renders from then on; a source
+ * whose writable copy leaves (the floor answers again) takes its render with it.
+ *
  * ONLY THE RENDERER WRITES A RENDERED TIDDLER: a hand's door refuses `rendered-derives`, and a wave lands none and
  * answers each render carrier `derived` on its rung (`@lararium/mesh` `rendered-derives.ts`). A source that drops its mark, or leaves, takes its render with it; a render whose source no
  * longer marks it leaves at arm.
@@ -77,10 +84,12 @@ export function renderTypeOf(fields: Fields): "text/html" | "text/plain" {
   return fields[RENDER_TYPE_FIELD] === "text/html" ? "text/html" : "text/plain";
 }
 
-/** Where a render's writes go: `write` lands the rendered record, `remove` takes a render whose source left. */
+/** Where a render's writes go: `write` lands the rendered record, `remove` takes a render whose source left; `ownsBag`
+ *  answers whether this island writes the bag a source surfaced from (a writable layer of its composite). */
 export interface RenderedTiddlerPorts {
   write(fields: Record<string, string>): Promise<void>;
   remove(title: string): Promise<void>;
+  ownsBag(bag: string): boolean;
 }
 
 interface Render {
@@ -123,6 +132,14 @@ export function armRenderedTiddlers(tw5: TW5Engine, ports: RenderedTiddlerPorts)
     return view;
   };
 
+  // THE RENDER STANDS WHERE ITS SOURCE TAKES WRITES: a marked source surfaced from a bag this island only reads derives
+  // nothing here. A tiddler that never crossed a layer (no `$origin-bag`) renders as the engine holds it.
+  const derives = (fields: Fields | null | undefined): boolean => {
+    if (!marksRendered(fields)) return false;
+    const bag = fields!["$origin-bag"];
+    return typeof bag !== "string" || bag === "" || ports.ownsBag(bag);
+  };
+
   const output = (render: Render): string => render.type === "text/html" ? render.container.innerHTML : render.container.textContent;
 
   const emit = (render: Render): void => {
@@ -163,7 +180,7 @@ export function armRenderedTiddlers(tw5: TW5Engine, ports: RenderedTiddlerPorts)
   // THE FIRST PASS: every standing source renders, and a render no source claims any longer leaves.
   for (const source of wiki.filterTiddlers(`[field:${PROJECTION_FIELD}[${PROJECTION_RENDERED}]]`)) {
     const fields = wiki.getTiddler(source)?.fields;
-    if (marksRendered(fields)) build(source, fields!);
+    if (derives(fields)) build(source, fields!);
   }
   const claimed = new Set([...renders.values()].map((render) => render.title));
   for (const title of wiki.filterTiddlers(`[has[${RENDERED_FROM_FIELD}]]`)) {
@@ -175,9 +192,10 @@ export function armRenderedTiddlers(tw5: TW5Engine, ports: RenderedTiddlerPorts)
     for (const title of Object.keys(changes)) {
       const fields = changes[title]?.deleted ? undefined : wiki.getTiddler(title)?.fields;
       const armed = renders.get(title);
-      if (!armed && !marksRendered(fields)) continue;
-      // A SOURCE MOVED: it builds afresh (its text, type or title may have moved), or leaves where it dropped its mark.
-      if (!marksRendered(fields)) { disarm(title); continue; }
+      if (!armed && !derives(fields)) continue;
+      // A SOURCE MOVED: it builds afresh (its text, type or title may have moved), or leaves where it dropped its mark or
+      // fell back to a layer this island only reads.
+      if (!derives(fields)) { disarm(title); continue; }
       const next = renderedTitleOf(fields!);
       if (armed) disarm(title, next);
       if (build(title, fields!)) rebuilt.add(title);
@@ -198,6 +216,7 @@ export function armRenderedTiddlers(tw5: TW5Engine, ports: RenderedTiddlerPorts)
 
 /**
  * `#has` rendered-tiddlers — every TW5 VM island renders its marked sources (the pool wiki and the daemon surface alike).
+ * A source renders only where the island writes the bag it surfaced from (`ownsBag`, the composite's writable layers).
  * The render lands in the island's composite as any record lands (the working layer the recipe writes), so the projector
  * writes it natively to its wiki's workbench and every read door answers it; its source's leaving tombstones it there.
  */
@@ -209,6 +228,7 @@ export function hasRenderedTiddlers(): IslandCap {
       return armRenderedTiddlers(ctx.tw5, {
         write: (fields) => ctx.composite.put({ tiddler: fields as LarTiddlerRecord["tiddler"], meta: {} }, origin(fields[RENDERED_FROM_FIELD] ?? "")),
         remove: (title) => ctx.composite.tombstone(title, origin(title)),
+        ownsBag: (bag) => ctx.composite.hasWritableBag(bag),
       });
     },
   };
