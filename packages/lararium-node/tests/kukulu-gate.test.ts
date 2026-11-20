@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   conferre, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signKukuluVouch, signSwarmAct, swarmActCid,
-  swarmLeiReturnedPrefix, swarmLeiRecordTitle, swarmReceiptTitle, swarmTesseraPrefix, verifySwarmRecord,
+  swarmLeiReturnedPrefix, swarmLeiRecordTitle, swarmTesseraPrefix, verifySwarmRecord,
   type KukuluVouchParts, type SignedKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "../src/custody-holder.js";
@@ -61,7 +61,7 @@ async function stand() {
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
   };
   const pulamaKey = (await pulamaSignerOf(fx.kept)).key;
-  const trust: SwarmTrust = { hand: (k) => k === root.verifyingKey, vessel: (k) => k === pulamaKey, place: (k) => k === pulamaKey, lead: () => false };
+  const trust: SwarmTrust = { hand: (k) => k === root.verifyingKey, vessel: (k) => k === pulamaKey, lead: () => false };
   const returns = async (lei: SignedSwarmAct): Promise<number> => (await records.list(swarmLeiReturnedPrefix(swarmActCid(lei)))).length;
   return { fx, face, records, string, vouch, hello, hand, trust, pulamaKey, returns, raise: (digest: string | null) => { raised = digest; } };
 }
@@ -87,8 +87,7 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
     const returned = JSON.parse((await s.records.read(`${swarmLeiReturnedPrefix(cid)}1`))!) as SignedSwarmAct;
     expect(returned.signer).toBe(s.pulamaKey);
     expect(returned.body).toMatchObject({ act: "lei-returned", lei: cid, n: 1, head: HEAD, tree: TREE, branch: BRANCH });
-    // No receipt rests for the tree: the lei the hand strung stands as the consent, and the tessera par reads the verdict after.
-    expect(await s.records.read(swarmReceiptTitle(TREE))).toBeNull();
+    // The lei the hand strung stands as the consent, and the tessera par reads the verdict after.
     expect((await vouchSignerOf(s.fx.kept)).key).not.toBe(s.pulamaKey);
 
     // CONFERRE before the vessel composed: the guest half stands alone and reads red. After `landRite`, the pair reads par.

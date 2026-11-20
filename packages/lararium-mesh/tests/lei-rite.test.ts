@@ -13,12 +13,11 @@ import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import { SWARM_LEI_RITES, leiRiteCosigns, wardLeiVerb } from "../src/swarm-lei-rite.js";
 import {
-  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiRecordTitle, swarmLeiTitle, swarmReceiptTitle,
+  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiRecordTitle, swarmLeiTitle,
   type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import type { WardCosignAct } from "../src/ward-cosign.js";
 import { soloCosign } from "./ward-cosign-table.js";
-import { placeTrust, restPlaceReceipt } from "./place-receipt.js";
 
 const GROUP = "face-group", HEAD = "a".repeat(40), TREE = "b".repeat(40), BRANCH = "feature/x";
 const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -32,7 +31,7 @@ function wikiPort(): SwarmWikiPort & { rows: Map<string, string> } {
 
 async function fixture() {
   const hand = await keyed(1), vessel = await keyed(2);
-  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, place: placeTrust(), lead: () => false };
+  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: () => false };
   const wiki = wikiPort();
   /** A hand-signed lei of one rite, at its own row; hands back the record and its cid. */
   const issue = async (rite: "push" | "kukulu" | "keep") => {
@@ -40,8 +39,6 @@ async function fixture() {
     await putSwarmAct(wiki, swarmLeiRecordTitle(rite, BRANCH, swarmActCid(lei)), lei);
     return { lei, cid: swarmActCid(lei) };
   };
-  // Every spend rests on a passing receipt for the head's tree (`lei-reach.test.ts`); one stands here for each spend below.
-  await restPlaceReceipt(wiki, TREE);
   return { hand, vessel, trust, wiki, issue };
 }
 
@@ -132,7 +129,7 @@ describe("the door issues a lei under its rite", () => {
   async function stand() {
     const root = await keyed(1);
     const doc = { tiddlers: {} } as LarDoc, wiki = wikiPort();
-    const trust = { hand: (k: string) => k === root.key, vessel: () => false, place: () => false, lead: () => false };
+    const trust = { hand: (k: string) => k === root.key, vessel: () => false, lead: () => false };
     const deps: SwarmDoorDeps = {
       group: GROUP, face: { group: GROUP, grant: (k) => k === root.key }, signer: root, trust, epoch: () => 0, wiki,
       board: { records: async () => swarmBoardRecords(doc, GROUP), land: async (act) => { writeSwarmBoardAct(doc, act); } },

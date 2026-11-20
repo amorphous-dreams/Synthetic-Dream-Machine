@@ -11,12 +11,11 @@
 import { describe, expect, test } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
-import { SWARM_LEI_RITES, leiRiteCosigns, leiRiteTestifies } from "../src/swarm-lei-rite.js";
+import { SWARM_LEI_RITES, leiRiteCosigns } from "../src/swarm-lei-rite.js";
 import { readLei, returnLei, signSwarmAct, swarmLeiHead, type SwarmWikiPort } from "../src/swarm-tiddlers.js";
 import { admitStartupRecords, execLeiBranch, execRecordCid, spendExecLei, type ExecLeiScope } from "../src/exec-lei.js";
 import { SwarmRefused } from "../src/swarm-tiddlers.js";
 import { soloCosign } from "./ward-cosign-table.js";
-import { placeTrust } from "./place-receipt.js";
 
 const GROUP = "face-group", WIKI = "lar:///ha.ka.ba/wikis/notes";
 const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -31,7 +30,7 @@ function wikiPort(): SwarmWikiPort & { rows: Map<string, string> } {
 
 async function fixture() {
   const hand = await keyed(1), vessel = await keyed(2);
-  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, place: placeTrust(), lead: () => false };
+  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: () => false };
   const wiki = wikiPort();
   const deps: SwarmDoorDeps = {
     group: GROUP, face: { grant: (k: string) => k === hand.key, group: GROUP }, signer: hand, trust, epoch: () => 1,
@@ -42,11 +41,10 @@ async function fixture() {
 }
 
 describe("exec-lei — the executable-record lei rides the lei grammar", () => {
-  test("RED: the rite list names `exec`; an exec lei and a kukulu lei ask no testimony; CONTROL: push and keep still testify", () => {
+  test("RED: the rite list names `exec`, and an exec lei waits on no co-sign; CONTROL: a push lei still waits on one", () => {
     expect([...SWARM_LEI_RITES]).toContain("exec");
     expect(leiRiteCosigns("exec")).toBe(false);
-    for (const rite of ["exec", "kukulu"] as const) expect(leiRiteTestifies(rite)).toBe(false);
-    for (const rite of ["push", "keep"] as const) expect(leiRiteTestifies(rite)).toBe(true);
+    expect(leiRiteCosigns("push")).toBe(true);
   });
 
   test("RED: the hand strings an exec lei for a seat, scoped to a class, and each executable land spends one return with no receipt; CONTROL: past its returns it refuses spent", async () => {

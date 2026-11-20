@@ -12,7 +12,7 @@
  * lei (`tesseraOf`), so each rite takes its own.
  *
  * THE RETURN COMES FIRST. `beginRite` returns the lei before it rests the guest half, and the caller takes the vessel down only
- * after `beginRite` answers: a rite with no lei, no testimony or no return left begins nothing. A rite that dies after its
+ * after `beginRite` answers: a rite with no lei or no return left begins nothing. A rite that dies after its
  * return leaves a begun half alone, and the lei's return stays spent.
  *
  * CONFERRE matches the halves, at each wake and with no clock: a pair reads `par` where the host half names the guest half's
@@ -44,7 +44,7 @@ export interface TesseraReading {
 }
 
 /**
- * Begin a rite: return its lei at this head (the testimony, the count and the reach all judged there, `returnLei`), then rest
+ * Begin a rite: return its lei at this head (the count and the reach all judged there, `returnLei`), then rest
  * the guest half. The answer names the tessera; the caller takes the vessel down only after it.
  */
 export async function beginRite(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head: string; readonly tree: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort, ward: WardActWitness):

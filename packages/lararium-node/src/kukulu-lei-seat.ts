@@ -21,8 +21,8 @@
  * nothing lands nowhere, and the read then finds no lei.
  *
  * ── THE LEI STANDS AS THE CONSENT ───────────────────────────────────────────────────────────────
- * A `kukulu` return rests on the hand's signed lei alone (`SWARM_LEI_TESTIFIED_RITES` names no `kukulu`): no receipt weighs
- * the tree. The pūlama verified the vouch before it began, and the restand's tessera par stays the verdict after the fact.
+ * A `kukulu` return rests on the hand's signed lei alone: no receipt weighs
+ * the tree, for no rite carries one. The pūlama verified the vouch before it began, and the restand's tessera par stays the verdict after the fact.
  * Rites still begin one at a time here.
  *
  * ONE LEI PER LENT FACE: the gate begins one rite per face it lends, each under that face's group and hand. Every face's lei
@@ -40,7 +40,7 @@ import type { KukuluRiteAt, KukuluRitePort } from "./kukulu-gate.js";
 const NO_COSIGN: WardActWitness = { accepts: () => true };
 const trustOf = (at: KukuluRiteAt): SwarmTrust => {
   const pulama = at.by.key.toLowerCase();
-  return { hand: (key) => at.hand(key), vessel: (key) => key.toLowerCase() === pulama, place: (key) => key.toLowerCase() === pulama, lead: () => false };
+  return { hand: (key) => at.hand(key), vessel: (key) => key.toLowerCase() === pulama, lead: () => false };
 };
 
 /** Land one offered row at the title its own body belongs at, where the family's reader verifies it there. */

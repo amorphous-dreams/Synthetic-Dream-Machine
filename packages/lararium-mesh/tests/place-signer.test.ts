@@ -2,9 +2,9 @@ import { ed25519 } from "@noble/curves/ed25519.js";
 import { describe, expect, it } from "vitest";
 import {
   CARRIAGE_CARRIER_DOMAIN, CARRIAGE_RECEIPT_DOMAIN, DEVICE_DELEGATION_DOMAIN, carriageReceiptImage, GATE_PLACE_FINISH_DOMAIN, FLOW_POINTER_DOMAIN,
-  PLACE_FLOOR_PIN_DOMAIN, PLACE_SIGNER_DOMAINS, RAISE_CHALLENGE_DOMAIN, RITE_RECEIPT_DOMAIN, buildFlowPointer, carrierContractBytes,
+  PLACE_FLOOR_PIN_DOMAIN, PLACE_SIGNER_DOMAINS, RAISE_CHALLENGE_DOMAIN, buildFlowPointer, carrierContractBytes,
   floorDutyOf, flowPointerSigningImage, frameFloorDuty, hex, mintPlaceInception, mintPlaceRotation, placeFloorPinImage,
-  placeSignerFromSeed, raiseChallengeBytes, riteReceiptImage, utf8Bytes, verifyPlaceDuty, verifyPlaceDutyAtHead,
+  placeSignerFromSeed, raiseChallengeBytes, utf8Bytes, verifyPlaceDuty, verifyPlaceDutyAtHead,
 } from "../src/index.js";
 import { gatePlaceFinishImage } from "../src/gate-exchange.js";
 
@@ -17,7 +17,6 @@ const images: Record<string, Uint8Array> = {
   [PLACE_FLOOR_PIN_DOMAIN]: placeFloorPinImage(key(1), pin),
   [RAISE_CHALLENGE_DOMAIN]: raiseChallengeBytes({ vesselId: "v", nexus: "n", epoch: 7, nonce: "x" }),
   [CARRIAGE_RECEIPT_DOMAIN]: carriageReceiptImage({ carriage: "bafkr4iacarried", lane: "cas-block", place: key(1) }),
-  [RITE_RECEIPT_DOMAIN]: riteReceiptImage({ kind: RITE_RECEIPT_DOMAIN, tree: "1".repeat(40), checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }),
   [GATE_PLACE_FINISH_DOMAIN]: gatePlaceFinishImage({ handshakeHash: new Uint8Array(32), bundleDigest: "00".repeat(32), presentationDigest: "11".repeat(32), audience: "aud", placeKey: key(1) }),
 };
 
