@@ -109,6 +109,8 @@ function rowOf(value: unknown): Row | null {
 }
 
 const stem = (s: string): string => sha256HexSync(s).slice(0, 32);
+/** The directory the kāpae shadows' rows rest in, inside the tree's own (`shadows`). No row file takes its name. */
+const SHADOW_DIR = "kapae";
 /** A row's file name: its carrier, then its path. The name never moves, so a write replaces the row whole,
  *  and every row of one carrier shares the leading stem. */
 const rowFile = (key: string, path: string): string => `${stem(key)}.${stem(path)}.json`;
@@ -348,6 +350,21 @@ export class SyncedTree {
     }
     return (this.byPath = byPath);
   }
+
+  /**
+   * THE KĀPAE SHADOWS' OWN TREE (`kapae-shadow.ts`): a shadow file names no carrier home, so its rows rest apart from the
+   * carriers' bases, in a `kapae/` directory inside this tree's own. Each row keys by the bag and the title the shadow
+   * sets aside, stands at the shadow file's path, and names the hash of the bytes the projector last wrote there (or
+   * found already standing as its own write would leave them); the projector removes the row as it lowers the shadow.
+   * So the house remembers its last write of every shadow, and `lares surface commit` stages the lowering where the
+   * disk still holds those bytes, as it stages a carrier the house agrees with. A tree held in memory keeps its shadow
+   * rows in memory too.
+   */
+  shadows(): SyncedTree {
+    return (this.shadowTree ??= new SyncedTree(this.dirPath === null ? null : join(this.dirPath, SHADOW_DIR)));
+  }
+
+  private shadowTree: SyncedTree | null = null;
 
   /** Every row the tree holds: the carrier's bag and address beside its base. */
   rows(): Array<{ readonly bagId: string; readonly uri: string; readonly base: SyncedBase }> {

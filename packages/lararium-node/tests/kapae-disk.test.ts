@@ -2,10 +2,11 @@ import { afterEach, expect, test } from "vitest";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CompositeStore, wikiSlotUri, type ChangeOrigin } from "@lararium/mesh";
+import { CompositeStore, carrierHash, wikiSlotUri, type ChangeOrigin } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { daemonWorkingMirror, faceRoot } from "../src/bag-paths.js";
 import { LarDiskProjector } from "../src/disk-projector.js";
+import { SyncedTree, syncedTreeDir, syncedTreeKey } from "../src/synced-tree.js";
 
 const bag = wikiSlotUri("daemon", "working");
 const title = "lar:///ha.ka.ba/t/daemon/shadow-test";
@@ -18,25 +19,30 @@ async function rig() {
   root = mkdtempSync(join(tmpdir(), "kapae-disk-"));
   const store = new MemoryTiddlerStore(bag);
   await store.put({ tiddler: { title, text: "live" } }, origin);
+  const treeDir = syncedTreeDir(join(root, "checkpoints"));
   const projector = new LarDiskProjector({
     mirrors: [daemonWorkingMirror(root, { relation: tag, segment: "Heron" })],
     carrierFileFn: async () => ({ ext: ".mem", body: "live", defaultRelPath: "ha.ka.ba/t/daemon/shadow-test.mem" }),
     recoveryStore: () => store,
     bagsHolding: async () => { const record = await store.get(title); return record && !record.meta?.deleted ? [bag] : []; },
+    syncedTree: new SyncedTree(treeDir),
   });
   const internal = projector as unknown as { flush(b: string, t: string): Promise<void>; reconcile(t: string): Promise<void> };
   await internal.flush(bag, title);
   const stem = join(faceRoot(root, "Heron"), "wiki", "ha.ka.ba/t/daemon/shadow-test");
-  return { store, internal, stem };
+  /** The house's memory of its shadow write, read afresh from the directory the way `lares surface commit` reads it. */
+  const shadowWrite = () => new SyncedTree(treeDir).shadows().baseAt(syncedTreeKey(bag, title), stem + ".kapae");
+  return { store, internal, stem, shadowWrite };
 }
 
-test("exclusion projects a persistent kāpae alongside the removed carrier", async () => {
-  const { store, internal, stem } = await rig();
+test("★ exclusion projects a persistent kāpae alongside the removed carrier, and the house records its write of it ★", async () => {
+  const { store, internal, stem, shadowWrite } = await rig();
   expect(existsSync(stem + ".mem")).toBe(true);
   await store.tombstone(title, origin);
   await internal.reconcile(title);
   expect(existsSync(stem + ".mem")).toBe(false);
   expect(JSON.parse(readFileSync(stem + ".kapae", "utf8"))).toEqual({ title, kapae: "raised" });
+  expect(shadowWrite()?.disk).toBe(carrierHash(readFileSync(stem + ".kapae", "utf8")));
 });
 
 test("control: retract-to-absent leaves no kāpae", async () => {
@@ -54,15 +60,17 @@ test("control: retract-to-absent leaves no kāpae", async () => {
   expect((await composite.get(title))?.tiddler.text).toBe("canon");
 });
 
-test("control: lowering the kāpae (the record returns live) takes the shadow down as the carrier writes back", async () => {
-  const { store, internal, stem } = await rig();
+test("control: lowering the kāpae (the record returns live) takes the shadow down as the carrier writes back, its record with it", async () => {
+  const { store, internal, stem, shadowWrite } = await rig();
   await store.tombstone(title, origin);
   await internal.reconcile(title);
   expect(existsSync(stem + ".kapae")).toBe(true);
+  expect(shadowWrite()).not.toBeNull();
   await store.put({ tiddler: { title, text: "live" } }, origin);
   await internal.flush(bag, title);
   expect(existsSync(stem + ".mem")).toBe(true);
   expect(existsSync(stem + ".kapae")).toBe(false);
+  expect(shadowWrite()).toBeNull();
 });
 
 test("★ a kāpae raised before the face root stood projects its shadow into the face root at the projector's start ★", async () => {

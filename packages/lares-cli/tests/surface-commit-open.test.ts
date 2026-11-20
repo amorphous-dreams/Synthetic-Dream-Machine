@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { carrierHash } from "@lararium/mesh";
-import { ensureRealmLabel, faceRoot, syncedTreeKey } from "@lararium/node";
+import { ensureRealmLabel, faceRoot, kapaeShadowBody, syncedTreeKey } from "@lararium/node";
 import { cmdSurface, LIVE_SURFACE_DOORS, SURFACE_EDITOR_FILE, SURFACE_EDITOR_TITLE } from "../src/commands/surface.js";
 import { git, openSurfaceRig, plant, stubLaresOnPath, surfaceArgs, type SurfaceRig } from "./support/surface-rig.js";
 
@@ -144,6 +144,44 @@ describe("lares surface commit", () => {
     rig.tree.set(syncedTreeKey(BAG, "pic.png"), resolve(file), hash, hash);
     expect(await commit()).toBe(0);
     expect(git(heron, "show", "--name-only", "--format=", "HEAD").out.trim()).toBe("wiki/pic.png");
+  });
+
+  test("★ a kāpae shadow stages where its bytes equal the house's own write; a hand's shadow and a moved one stand apart; the lowering removes ★", async () => {
+    /** Plant a shadow; `house` records the house's write of it (over `wrote`, the planted bytes by default). */
+    const shadow = (rel: string, title: string, opts: { house?: boolean; wrote?: string } = {}): string => {
+      const body = kapaeShadowBody(title);
+      const file = plant(join(heron, rel), body);
+      if (opts.house !== false) rig.tree.shadows().set(syncedTreeKey(BAG, title), resolve(file), carrierHash(opts.wrote ?? body));
+      return file;
+    };
+    const worn = shadow("wiki/ha.ka.ba/lares/docs/pono/the-worn-house.kapae", "lar:///ha.ka.ba/lares/docs/pono/the-worn-house");
+    const kept = shadow("wiki/Kept.kapae", "Kept");
+    shadow("wiki/Hand.kapae", "Hand", { house: false });
+    shadow("wiki/Moved.kapae", "Moved", { wrote: kapaeShadowBody("Elsewhere") });
+    expect(await commit()).toBe(0);
+    expect(git(heron, "show", "--name-only", "--format=", "HEAD").out.split("\n").filter(Boolean).sort())
+      .toEqual(["wiki/Kept.kapae", "wiki/ha.ka.ba/lares/docs/pono/the-worn-house.kapae"]);
+    expect(lastMessage()).toContain("Kapae: lar:///ha.ka.ba/lares/docs/pono/the-worn-house");
+    const status = git(heron, "status", "--porcelain").out;
+    expect(status).toContain("?? wiki/Hand.kapae");
+    expect(status).toContain("?? wiki/Moved.kapae");
+    // The house lowers one (its row leaves with the file); a hand removes the other while the house's write still stands.
+    rmSync(worn);
+    rig.tree.shadows().deleteAt(syncedTreeKey(BAG, "lar:///ha.ka.ba/lares/docs/pono/the-worn-house"), resolve(worn));
+    rmSync(kept);
+    expect(await commit()).toBe(0);
+    expect(git(heron, "show", "--name-status", "--format=", "HEAD").out.trim()).toBe("D\twiki/ha.ka.ba/lares/docs/pono/the-worn-house.kapae");
+    expect(git(heron, "status", "--porcelain").out).toContain(" D wiki/Kept.kapae");
+  });
+
+  test("a pointer the house wrote as its `.meta` alone stages that sidecar", async () => {
+    const file = join(heron, "wiki", "doc.pdf");
+    const meta = "title: doc.pdf\ntype: application/pdf\n_canonical_uri: cid:x\n";
+    plant(`${file}.meta`, meta);
+    const hash = carrierHash("", meta);
+    rig.tree.set(syncedTreeKey(BAG, "doc.pdf"), resolve(file), hash, hash);
+    expect(await commit()).toBe(0);
+    expect(git(heron, "show", "--name-only", "--format=", "HEAD").out.trim()).toBe("wiki/doc.pdf.meta");
   });
 });
 
