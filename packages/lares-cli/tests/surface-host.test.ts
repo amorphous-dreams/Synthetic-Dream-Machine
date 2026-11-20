@@ -112,10 +112,10 @@ describe("lares surface open, on the host", () => {
     ensureRealmLabel(join(house, "projections"), "lore", null);
     mkdirSync(join(house, "projections", "realms", "lore", "wikis", "lore"), { recursive: true });
     expect(await cmdSurface(surfaceArgs(["open"]), hostDoors())).toBe(0);
-    expect(rig.said()).toContain(`code -n '${root}' ${join(house, "projections", "realms", "lore", "wikis", "lore")}`);
+    expect(rig.said()).toContain(`code -n '${root}' ${join(house, "projections", "realms", "lore")}`);
     expect(rig.said()).not.toContain("/lar/");
     expect(await cmdSurface(surfaceArgs(["open"], {}, { launch: true }), hostDoors())).toBe(0);
-    expect(rig.launched).toEqual([["code", "-n", root, join(house, "projections", "realms", "lore", "wikis", "lore")]]);
+    expect(rig.launched).toEqual([["code", "-n", root, join(house, "projections", "realms", "lore")]]);
   });
 });
 

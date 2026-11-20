@@ -186,7 +186,7 @@ describe("lares surface commit", () => {
 });
 
 describe("lares surface open", () => {
-  test("★ prints `code -n` over the worn face's root and the realm pools it belongs to, and writes no workspace file ★", async () => {
+  test("★ prints `code -n` over the worn face's root and the realm roots it belongs to, and writes no workspace file ★", async () => {
     plant(join(heron, "personal", "garden", "Mine.tid"), "title: Mine\n\nm\n");
     ensureRealmLabel(rig.projections, "garden", null);   // the realm's default pet name: its slug
     plant(join(rig.projections, "realms", "garden", "wikis", "garden", "Shared.tid"), "title: Shared\n\ns\n");
@@ -196,7 +196,8 @@ describe("lares surface open", () => {
     const said = rig.said();
     expect(said).toContain("code -n");
     expect(said).toContain(heron);
-    expect(said).toContain(join(rig.projections, "realms", "garden", "wikis", "garden"));
+    expect(said).toContain(join(rig.projections, "realms", "garden"));
+    expect(said).not.toContain(join(rig.projections, "realms", "garden", "wikis"));
     expect(said).not.toContain("unwoven");
     expect(rig.launched).toEqual([]);
     expect(readdirSync(heron).sort()).toEqual(before);

@@ -565,7 +565,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     details: [
       "  lares surface init     make the worn (or named) face's root a pool: .git (0700), the house's ignore list, a local author, the pool-check hook",
       "  lares surface check    the pool check over the repo standing here; exit 1 names each breach (the pre-commit hook runs it)",
-      "  lares surface open     print `<editor> -n <face root> <realm pools>`; --launch runs it; writes no workspace file",
+      "  lares surface open     print `<editor> -n <face root> <realm roots>`; --launch runs it; writes no workspace file",
       "  lares surface commit   commit only what the house already agrees with, under a lar: subject naming no face; never pushes",
       "  lares surface face     the face the house resolves and its pet name (the host asks the vessel this alone)",
     ],
@@ -608,8 +608,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   "surface open": {
     usage: "usage: lares surface open [--face N] [--launch]",
     synopsis:
-      "Print the one window line: `<editor> -n` over the worn face's root and the realm pools it belongs to (each wiki it keeps a personal layer or a " +
-      "recovery folder for, where that wiki's workbench folder stands in its realm). --launch runs it. It writes no workspace file. The editor " +
+      "Print the one window line: `<editor> -n` over the worn face's root and the realm roots it belongs to (the entity roots: each realm whose workbench holds a wiki " +
+      "the face keeps a personal layer or a recovery folder for, once per realm). --launch runs it. It writes no workspace file. The editor " +
       "reads from the house config tiddler $:/config/lares/surface/Editor (<config>/surface-editor.tid: its text names the command, as " +
       "code-insiders), else `code`.",
     examples: ["lares surface open", "lares surface open --launch"],

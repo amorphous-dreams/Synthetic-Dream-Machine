@@ -11,7 +11,7 @@
  *   tiddler-put    { recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, base?, create? }
  *                                                                         → { recipe, title, decision: put|noop|conflict|exists, bag, created, changed, hash, textHash, position, family? }
  *   tiddler-delete { recipe, title, base?, family?, mode? }               → { recipe, title, decision: removed|absent|conflict|refused, mode, tombstoned, retracted, hash?, refusal?, why?, consequence? }
- *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted, read, write, working?, why? }] }
+ *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted: writable|read-only|promotion-only, read, write, working?, why? }] }
  *
  * EVERY WIKI ITS ENGINE. `recipe: "default"` answers through the daemon island's live `$tw.wiki`, the daemon mount's daemon
  * wiki. `recipe: <slug>` answers through THAT wiki's own engine (`wiki-engine`: the one per-face engine machinery laid over
@@ -815,6 +815,12 @@ async function retractBareKapae(
   return { recipe: anchor.recipe, title, decision: "removed", mode, tombstoned: [], retracted: acts.map((row) => row.title), consequence };
 }
 
+/** Whether `bag` stands as this wiki's canon: a named wiki's gate, else the daemon wiki's per-face canon (`bags/daemon-<F>`). */
+function isCanonLayer(opts: TiddlerVerbOptions, slug: string, bag: string): boolean {
+  if (opts.wiki !== undefined) return opts.wiki.gate === bag;
+  return slug === DAEMON_WIKI_SLUG && /^lar:\/\/\/ha\.ka\.ba\/bags\/daemon-[^/]+$/.test(bag);
+}
+
 // ── wiki-status ───────────────────────────────────────────────────────────────────────────────────────
 
 export const makeWikiStatusReactor = everyWiki("wiki-status", false, (opts: TiddlerVerbOptions): VerbReactor => {
@@ -826,6 +832,13 @@ export const makeWikiStatusReactor = everyWiki("wiki-status", false, (opts: Tidd
     else { try { working = anchorBagOf(opts); } catch { working = null; } }
     const layers: Array<Record<string, unknown>> = [];
     for (const bag of opts.composite.layerIds) {
+      // CANON TAKES NO LANE WRITE: it mounts writable so a promotion (an ACTION verb) can land in it, and `defaultWritable: false` keeps
+      // every put off it (`recipe-layer-model` #/the-recipe-stack). Status names it `promotion-only`, never a writable door.
+      if (isCanonLayer(opts, slug, bag) && opts.composite.hasWritableBag(bag)) {
+        const read = (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null;
+        layers.push({ bag, mounted: "promotion-only", read, write: false });
+        continue;
+      }
       const mounted = opts.composite.hasWritableBag(bag);
       const read = (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null || wikiSlotKindOf(slug, bag) === "temp";
       let write = false;

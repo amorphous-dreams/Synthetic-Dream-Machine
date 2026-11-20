@@ -25,7 +25,7 @@ A `lar:` URI names one of three surfaces, and the KIND rides the ''first path se
 
 !! Identity ⋈ canon — a wiki's two addresses
 
-A wiki's IDENTITY (`wikis/slug`, its recipe/`#has`-stack) stands apart from its CANON (`bags/slug`, its published content). `wiki init` registers BOTH: the recipe under `wikis/slug` and the canonical home bag under `bags/slug`. Content resolves from the canon bag; the recipe names the stack.
+A wiki's IDENTITY (`wikis/slug`, its recipe/`#has`-stack) stands apart from its CANON (`bags/slug`, its published content). `wiki init` mints the canonical home bag under `bags/slug` and the recipe at `bags/catalog/recipes/<slug>`, and its answer names the stack (`wikiUri`: `wikis/slug`) with the canon bag beside it (`canonBag`: `bags/slug`). Content resolves from the canon bag; the recipe names the stack. The nameless stack carries the wiki's name and the canon bag stands as one capability in it (operator, 2026-11-20, state/decisions: the wiki's name rides its stack).
 
 !! Meme URIs carry NO relation to bag URIs
 
@@ -35,7 +35,7 @@ A meme moves between bags freely, or lives in several at once. Bag identity NEVE
 
 The two disk planes carry the two STATES of a meme:
 
-* ''`wikis/{slug}`'' — the LIVE wiki. The operator edits here; a live edit projects to the `/wikis/{slug}/…` disk tree (`wikisFileToUri`). The `mirror-root: wikis/{slug}` `wiki init` stamps names this projection.
+* ''`wikis/{slug}`'' — the LIVE wiki. The operator edits here; a live edit projects to the wiki's workbench folder under its realm root, `realms/<realm pet name>/wikis/{slug}/…` (`wikisFileToUri`), or the workspace its share row names; the daemon wiki's rests in its face's root, `faces/<pet name>/wiki/`. `wiki init` stamps no projection field on the canon row: the realm placement names the folder.
 * ''`bags/{slug}`'' — the CANONICAL bag. Published content, projecting to the `/bags/{slug}/…` tree (`bagsFileToUri`).
 * ''The MOVE makes the shore.'' The operator promotes a tiddler from the live wiki to the canonical bag of the same name; the projector re-projects it `/wikis/ → /bags/` (tiddler-store canon-promotion, `wiki-layer-ontology#shore-law`). Which state holds a meme reads from its URI alone.
 
@@ -81,7 +81,7 @@ One recipe expansion serves every context. `expandRecipe(recipe)` serves as the 
 Two maps, cleanly separated — each the operator's own, never a registry of others:
 
 * ''bags'' — `bags/{slug}` → automerge url. Composable recipe pieces, each one doc, shared per the user's wish.
-* ''wikis'' — `wikis/{slug}` → recipe (the `#has` bag-stack). Per-wiki layers route from here.
+* ''recipes'' — the recipe (the `#has` bag-stack) rests at `bags/catalog/recipes/<slug>`, keyed by the slug. No catalog row stands at `wikis/{slug}`: that prefix mints the wiki's slots (`wikis/{slug}/working`, `/personal`, `/draft`, `/temp`) and keys its host facets (`recipeHostFacets`), and the realm id names the wiki globally. Per-wiki layers route from the recipe.
 
 `@oracle` names the shared system floor from its genesis seed. The read-face projects only seed-named records and blob descriptors as a content-addressed snapshot without Automerge history; the snapshot carries the seed CID beside its own CID. It never hands the oracle document itself across the read-face. The floor's frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road. LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>>).
 
@@ -90,6 +90,6 @@ Two maps, cleanly separated — each the operator's own, never a registry of oth
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — separates floor records from vessel pointers
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model`>> — places system floor beneath writable recipe layers
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lIxkSpy9JIWbQ6-mXCERuAAvAof_ab4wervyDJB61U4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G4fCv3pvgQstUCACwLVpvlvCbBUv4y4_NsM81zuUaJg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

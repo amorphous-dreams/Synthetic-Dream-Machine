@@ -61,7 +61,7 @@ The operator leans the `lararium` bag. ''Weighed'' (measured): `bags/lararium/me
 
 !!! Decision 3 ~ shared house memory lives in the `house` topic wiki; until `C2` and `L17-2a`, in the steward's daemon wiki (overrulable)
 
-`L35` rules the reach: a face reads its own daemon wiki and every topic wiki shared to it. A topic wiki named `house` holds what every face shares (the house laws, the standing rulings, the open ledger), owned by the steward with every face seated `write`; a face's own memory stays in its daemon wiki. ''Measured blockers'': on one vessel a seated face mounts no workbench of another face's realm and writes its own `personal` (`cabal-realm` #/the-workbench, the rest gate; `C2`), so before `C2` the engineer would read none of the steward's house memory; and `wiki_filter` on `house` refuses `wiki-not-anchored` before `L17-2a` (`packages/lararium-tw5/src/tiddler-verbs.ts:150-160`). So the handoff walk writes the house laws into the steward's daemon wiki first (rank 4 of the road already names that wiki), and they re-put into `house` once both items land. ''Its cost'': one carry step later, and until then the engineer's sessions read the house laws only while the steward wears.
+`L35` rules the reach: a face reads its own daemon wiki and every topic wiki shared to it. A topic wiki named `house` holds what every face shares (the house laws, the standing rulings, the open ledger), owned by the steward with every face seated `write`; a face's own memory stays in its daemon wiki. ''Measured blockers'': on one vessel a seated face mounts no workbench of another face's realm and writes its own `personal` (`cabal-realm` #/the-workbench, the rest gate; `C2`), so before `C2` the engineer would read none of the steward's house memory; and `wiki_filter` on `house` read `wiki-not-anchored` before every wiki stood its own engine (#390; an unreachable recipe now refuses `wiki-unreached`). So the handoff walk writes the house laws into the steward's daemon wiki first (rank 4 of the road already names that wiki), and they re-put into `house` once both items land. ''Its cost'': one carry step later, and until then the engineer's sessions read the house laws only while the steward wears.
 
 !!! The new classes, defined, with the true-up owed to `recipe-layer-model`
 
@@ -113,7 +113,7 @@ type: text/vnd.tiddlywiki
 The tiddler door's six daemon verbs on the anchor.
 
 |! lines |! kind |! name |
-| 150-160 | function | anchorOf (the `wiki-not-anchored` refusal) |
+| 222-230 | function | wikiOf (the `wiki-not-anchored` refusal for a bag; `wiki-unreached` answers an unreachable recipe) |
 | 315-356 | export function | makeWikiFilterReactor |
 | 361-409 | export function | makeTiddlerGetReactor |
 | 466-484 | function | refuseCodeClass (the code-class fence) |
@@ -145,7 +145,7 @@ Each runs as `wiki_filter(filter=…, recipe="lararium", fields=[…])` on the M
 
 !!! What blocks it today
 
-* `wiki-not-anchored` on every named wiki (measured, `tiddler-verbs.ts:150-160`): the wiki reads wait on `L17-2a`.
+* ''Burned by #390'': a named wiki answers through its own engine; an unreachable recipe refuses `wiki-unreached`, and `wiki-not-anchored` stays for a bag container alone.
 * The code-class fence: none, by the shape above.
 * The rest gate: none, since no face writes the map.
 * The derived class: unbuilt; the bake, the offer and the export read no `derived` key today (inferred from the class's absence in `packages/lararium-mesh/src/bag-home.ts:50`).
@@ -202,7 +202,7 @@ The store door hands the kahua memes the worn face, refuses a write for any othe
 
 !!! What blocks it today
 
-* `wiki-not-anchored` for `works` on the tiddler door (`L17-2a`): the daemon-wiki bridge carries the wave meanwhile.
+* ''Burned by #390'': `works` answers on the tiddler door through its own engine (an unreachable recipe refuses `wiki-unreached`).
 * The rest gate (`C2`): only the steward's wear writes `works`' workbench on one vessel.
 * A cold wiki's put reaches disk only once the wiki wakes (`lares wiki hold works`, by a face that holds a writer's seat there; an export names a wiki that still stands cold as `cold-wikis`).
 * The road's slot law awaits a ruling before `L17-2d` writes road items.
@@ -390,6 +390,6 @@ Each step names the call, the answer expected, and a mark: ''day one'' (reachabl
 * ''The unit suites' JSON reporter'': a `ci.yml` edit. Default: the controller's hand, in `L42b`'s window.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XOUBypHzktbSwT4uqQK5dYTcFgZNzvQ8RIvy0tHT3OE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IhSDfAtJDsHz5Ar0GE4oyLgpyrg3LV9jm9ggyj5_nAA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

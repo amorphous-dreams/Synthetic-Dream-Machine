@@ -634,6 +634,21 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect((asReader["layers"] as Array<{ read: boolean }>).every((l) => l.read === true)).toBe(true);
   });
 
+  test("RED: wiki-status reads a mounted canon layer promotion-only: a write reaches canon by action verb alone, so no lane write lands there; the working layer stays writable", async () => {
+    const r = await rig();
+    // A named wiki's engine mounts its canon bag writable (the routing, which `defaultWritable: false` keeps off canon); status must not call that a write door.
+    const GARDEN = bagUri("garden");
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: GARDEN, store: new MemoryTiddlerStore(GARDEN), writable: true });
+    composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true, defaultWritable: true });
+    const opts: TiddlerVerbOptions = { ...r.opts, composite, wiki: { slug: "lares", gate: GARDEN } };
+    const asWriter = await makeWikiStatusReactor(opts)({ recipe: "lares" }, ctx(writer));
+    expect(asWriter["layers"]).toEqual([
+      { bag: GARDEN, mounted: "promotion-only", read: true, write: false },
+      { bag: DAEMON, mounted: "writable", read: true, write: true, working: true },
+    ]);
+  });
+
   test("the caller's face decides reach: a face with no read on the anchor refuses every read; a wiki this island reaches no engine for refuses by name", async () => {
     const r = await rig();
     await expect(makeWikiFilterReactor(r.opts)({ ...A, filter: "[tag[memory]]" }, ctx(stranger))).rejects.toThrow(/cap-denied: read/);

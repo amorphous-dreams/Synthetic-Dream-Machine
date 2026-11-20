@@ -42,7 +42,7 @@
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
-import { join, posix, relative, resolve, sep } from "node:path";
+import { dirname, join, posix, relative, resolve, sep } from "node:path";
 import {
   poolGit, POOL_PRE_COMMIT, faceEmailSlug, REALM_EMAIL_DOMAIN, initFacePool, initRealmPool, initWorkspacePool, liftNestedTrees, PoolTreeRefused, type PoolInitResult, type LiftedTree,
   faceRoot, faceSegmentRefusal, KAPAE_EXT, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
@@ -448,9 +448,10 @@ export function surfaceCheckRealm(top: string, name: string, projections: string
 // ── open ───────────────────────────────────────────────────────────────────────────────────────────────────
 
 /**
- * THE REALM POOLS A FACE BELONGS TO, as its own root reads them: each wiki slug it keeps a personal layer or a recovery folder for
- * (`personal/<slug>/`, `recovery/<slug>/`), mapped to that wiki's workbench folder in the realm that holds it
- * (`projections/realms/<realm pet name>/wikis/<slug>/`) where it stands. A slug whose workbench stands nowhere names no root.
+ * THE REALM ROOTS A FACE BELONGS TO, as its own root reads them: each wiki slug it keeps a personal layer or a recovery folder for
+ * (`personal/<slug>/`, `recovery/<slug>/`), mapped to the realm root that holds that wiki's workbench
+ * (`projections/realms/<realm pet name>/`, the realm's one git tree) where the workbench stands. A realm holding several of the
+ * face's wikis names its root once; a slug whose workbench stands nowhere names no root.
  */
 export function realmPools(projections: string, root: string): string[] {
   const slugs = new Set<string>();
@@ -460,8 +461,13 @@ export function realmPools(projections: string, root: string): string[] {
     for (const n of names) { try { if (statSync(join(root, plane, n)).isDirectory()) slugs.add(n); } catch { /* left since the listing */ } }
   }
   const at = realmPlacement(projections);
-  return [...slugs].sort().map((s) => { const base = at.wikisBase(s); return base === null ? null : join(base, s); })
-    .filter((p): p is string => { try { return p !== null && statSync(p).isDirectory(); } catch { return false; } });
+  const roots = new Set<string>();
+  for (const s of [...slugs].sort()) {
+    const base = at.wikisBase(s);
+    if (base === null || dirOrNull(join(base, s)) === null) continue;
+    roots.add(dirname(base));
+  }
+  return [...roots];
 }
 
 /**

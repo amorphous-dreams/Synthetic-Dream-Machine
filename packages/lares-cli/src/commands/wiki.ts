@@ -166,7 +166,8 @@ export async function cmdWikiInit(args: ParsedArgs, realmDoors: RealmDoors = LIV
       console.log(`wiki: ${slug}`);
       console.log(`  status:    ${result["status"]}`);
       console.log(`  wiki URI:  ${result["wikiUri"]}`);
-      console.log(`  wiki doc:  ${result["wikiDocUrl"]}`);
+      console.log(`  canon bag: ${result["canonBag"]}`);
+      console.log(`  canon doc: ${result["wikiDocUrl"]}`);
       console.log(`  draft URI: ${result["draftBagId"]}`);
       console.log(`  draft doc: ${result["draftDocUrl"]}`);
       console.log(`  recipe:    ${result["recipeUri"]}`);
