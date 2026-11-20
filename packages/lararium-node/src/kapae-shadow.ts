@@ -22,6 +22,10 @@
  * A retract-to-absent (MOVE, promotion, an ingest rename re-link) writes no shadow, and removes one that
  * stands: the record fell through, so nothing stays set aside. Lowering a kāpae (a live record returns)
  * removes the shadow when the carrier writes back.
+ *
+ * The house remembers its own write of every shadow (`SyncedTree.shadows`): the projector records the hash of the bytes
+ * it wrote, and forgets it as the shadow leaves, so `lares surface commit` carries the kāpae into the face pool's
+ * history as set aside, and never takes a shadow a hand wrote or moved for the house's own.
  */
 
 /** The shadow file's extension. */

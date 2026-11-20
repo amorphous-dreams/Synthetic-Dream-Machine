@@ -40,7 +40,7 @@ import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSy
 import { join, posix, relative, resolve, sep } from "node:path";
 import { createHash } from "node:crypto";
 import {
-  faceRoot, faceSegmentRefusal, withExcludeBlock, REALM_EXCLUDE_LINES, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
+  faceRoot, faceSegmentRefusal, withExcludeBlock, KAPAE_EXT, REALM_EXCLUDE_LINES, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
   larProjectionsHome, larConfigHome, larWorkspacesHome, syncedTreeDir, labelledRelations, readFaceLabel, REALMS_PROJECTION_DIR,
   REALM_PLANES, REALM_LABELS_DIR, findRealmLabel, realmPlacement,
 } from "@lararium/node";
@@ -553,6 +553,8 @@ export interface SurfaceCommitResult {
   readonly staged: readonly string[];
   /** The carrier URIs whose bytes it kept. */
   readonly carriers: readonly string[];
+  /** The titles whose kāpae shadow it kept: the house's own write of each, carried as set aside, never as a live page. */
+  readonly kapae: readonly string[];
   /** The content paths it kept as removals (the house holds no base there). */
   readonly removed: readonly string[];
   /** The paths standing off the house, each named. */
@@ -577,32 +579,71 @@ function changedPaths(root: string): string[] {
   return [...new Set(out)];
 }
 
-/** Whether the house agrees with the carrier whose content file rests at `file`: its URI where it does, else why not. */
-type Agreement = { readonly ok: true; readonly uri: string | null } | { readonly ok: false; readonly why: string };
+/** Whether the house agrees with the file at `file`: the URI (a carrier's, or the title a shadow sets aside) where it does,
+ *  else why not. `lone` marks a carrier the house wrote as its `.meta` alone (a pointer whose body the tier lacked). */
+type Agreement = { readonly ok: true; readonly uri: string | null; readonly lone?: true } | { readonly ok: false; readonly why: string };
+
+/** The rows a commit weighs, each list keyed by the path its agreement stands at. */
+type BasesAt = ReadonlyMap<string, ReadonlyArray<{ readonly uri: string; readonly base: SyncedBase }>>;
 
 /**
  * THE AGREEMENT TEST, as the ingest gesture's scan reads a file: the carrier's bytes (utf8 text, or base64 for a binary
  * one) with its `.meta` sidecar folded in, hashed whole, against the disk side of each base standing at that very path.
  * A file gone from disk agrees only where no base stands there (the house already removed it); where one stands, the
- * shore holds it pending.
+ * shore holds it pending, unless the base names the sidecar alone (an empty body beside the `.meta`, as the projector
+ * writes a pointer whose bytes the tier lacks) and the sidecar still holds those bytes.
  */
-function agreementAt(file: string, bases: ReadonlyMap<string, ReadonlyArray<{ readonly uri: string; readonly base: SyncedBase }>>, spell: (file: string) => string): Agreement {
+function agreementAt(file: string, bases: BasesAt, spell: (file: string) => string): Agreement {
   const standing = bases.get(spell(file)) ?? []; // the one spelling a base carries (`syncedPath`: absolute, normalized, symlinks unread)
+  let meta: string | undefined;
+  try { if (existsSync(`${file}.meta`)) meta = readFileSync(`${file}.meta`, "utf8"); } catch { /* no readable sidecar */ }
   if (!existsSync(file)) {
-    return standing.length === 0
-      ? { ok: true, uri: null }
+    if (standing.length === 0) return { ok: true, uri: null };
+    const lone = meta === undefined ? undefined : standing.find((s) => digestsEqual(carrierHash("", meta), s.base.disk));
+    return lone !== undefined
+      ? { ok: true, uri: lone.uri, lone: true }
       : { ok: false, why: "vanished where a base stands: the shore holds it pending (`lares shore`)" };
   }
   if (standing.length === 0) return { ok: false, why: "no base: the house holds no agreement at this path" };
   let text: string;
   try { ({ text } = readCarrierText(file)); } catch { return { ok: false, why: "unreadable on disk" }; }
-  let meta: string | undefined;
-  try { if (existsSync(`${file}.meta`)) meta = readFileSync(`${file}.meta`, "utf8"); } catch { /* no readable sidecar */ }
   const disk = carrierHash(text, meta);
   const agreed = standing.find((s) => digestsEqual(disk, s.base.disk));
   return agreed !== undefined
     ? { ok: true, uri: agreed.uri }
     : { ok: false, why: "stands off its base: the disk moved since the house agreed (`lares shore`)" };
+}
+
+/**
+ * THE SHADOW TEST (`SyncedTree.shadows`): a kāpae shadow agrees where its bytes equal the house's own last write of it.
+ * A shadow gone from disk agrees only where the house's memory of it left too (the house lowered it); a shadow the house
+ * holds no memory of, and one whose bytes moved since, each stand off by name, as a live page does.
+ */
+function shadowAgreementAt(file: string, shadows: BasesAt, spell: (file: string) => string): Agreement {
+  const standing = shadows.get(spell(file)) ?? [];
+  if (!existsSync(file)) {
+    return standing.length === 0
+      ? { ok: true, uri: null }
+      : { ok: false, why: "a kāpae shadow vanished where the house still holds its write: no hand of the house removed it" };
+  }
+  if (standing.length === 0) return { ok: false, why: "a kāpae shadow the house holds no write of" };
+  let text: string;
+  try { text = readFileSync(file, "utf8"); } catch { return { ok: false, why: "unreadable on disk" }; }
+  const agreed = standing.find((s) => digestsEqual(carrierHash(text), s.base.disk));
+  return agreed !== undefined
+    ? { ok: true, uri: agreed.uri }
+    : { ok: false, why: "a kāpae shadow stands off the house's write of it: the bytes moved by hand" };
+}
+
+/** Fold tree rows into lists keyed by the path each agreement stands at. */
+function basesByPath(rows: ReadonlyArray<{ readonly uri: string; readonly base: SyncedBase }>): BasesAt {
+  const bases = new Map<string, Array<{ uri: string; base: SyncedBase }>>();
+  for (const row of rows) {
+    const list = bases.get(row.base.path) ?? [];
+    list.push({ uri: row.uri, base: row.base });
+    bases.set(row.base.path, list);
+  }
+  return bases;
 }
 
 /** A seam names one slug. */
@@ -613,38 +654,45 @@ export const HAND_SEAM = "by-hand";
 /**
  * KEEP THE SITTING: stage only the pool paths the house already agrees with, and commit them under
  * `lar:///surface.keeps.the-sitting/<seam> — N carriers`, the carrier URIs in the body, the author from the pool's local
- * config. `spell` names a file as the bases spell it (the vessel's `/lar/...` where the door runs on the host). A `.meta` sidecar rides with its carrier. A path the operator staged by hand that stands off stays staged and
+ * config. `spell` names a file as the bases spell it (the vessel's `/lar/...` where the door runs on the host). A `.meta` sidecar rides with its carrier.
+ * A kāpae shadow (`.kapae`) stages where its bytes equal the house's own last write of it (`SyncedTree.shadows`), and its
+ * removal where the house's memory of it left, so the pool's history carries each kāpae as set aside. A path the operator staged by hand that stands off stays staged and
  * out of this commit (the commit names its paths). Never pushes.
  */
 export function surfaceCommit(root: string, tree: SyncedTree, seam: string = HAND_SEAM, spell: (file: string) => string = resolve): SurfaceCommitResult {
   if (!SEAM.test(seam)) throw new SurfaceRefused("surface-seam-malformed", `a seam names one slug (a-z, 0-9, -), never ${JSON.stringify(seam)}`);
   if (!existsSync(join(root, ".git"))) throw new SurfaceRefused("surface-no-pool", `no pool stands at ${root}: run \`lares surface init\` (\`--realm <realm pet name>\` for a realm's wikis)`);
-  const bases = new Map<string, Array<{ uri: string; base: SyncedBase }>>();
-  for (const row of tree.rows()) {
-    const list = bases.get(row.base.path) ?? [];
-    list.push({ uri: row.uri, base: row.base });
-    bases.set(row.base.path, list);
-  }
+  const bases = basesByPath(tree.rows()), shadows = basesByPath(tree.shadows().rows());
   const staged: string[] = [], apart: SurfaceApart[] = [], removed: string[] = [];
-  const carriers = new Set<string>();
+  const carriers = new Set<string>(), kapae = new Set<string>();
+  const fileOf = (rel: string): string => join(root, ...rel.split("/"));
   for (const rel of changedPaths(root).sort()) {
+    if (rel.endsWith(KAPAE_EXT)) {
+      const agreement = shadowAgreementAt(fileOf(rel), shadows, spell);
+      if (!agreement.ok) { apart.push({ path: rel, why: agreement.why }); continue; }
+      staged.push(rel);
+      if (agreement.uri !== null) kapae.add(agreement.uri); else removed.push(rel);
+      continue;
+    }
     const content = rel.endsWith(".meta") ? rel.slice(0, -".meta".length) : rel;
-    const agreement = agreementAt(join(root, ...content.split("/")), bases, spell);
+    const agreement = agreementAt(fileOf(content), bases, spell);
     if (!agreement.ok) { apart.push({ path: rel, why: agreement.why }); continue; }
+    // A sidecar the house wrote alone vouches for itself, never for a body a hand removed beside it.
+    if (agreement.ok && agreement.lone === true && content === rel) { apart.push({ path: rel, why: "vanished where a base stands: the shore holds it pending (`lares shore`)" }); continue; }
     staged.push(rel);
     if (agreement.uri !== null) carriers.add(agreement.uri);
     else if (content === rel) removed.push(rel);
   }
-  if (staged.length === 0) return { staged, carriers: [], removed, apart, commit: null, subject: null };
+  if (staged.length === 0) return { staged, carriers: [], kapae: [], removed, apart, commit: null, subject: null };
   const add = surfaceGit(root, ["--literal-pathspecs", "add", "-A", "--", ...staged]);
   if (add.code !== 0) throw new SurfaceRefused("surface-git-add-failed", `git add in ${root} answered ${add.code}: ${add.err.trim()}`);
-  const kept = [...carriers].sort();
-  const subject = `lar:///surface.keeps.the-sitting/${seam} — ${kept.length + removed.length} carriers`;
-  const message = [subject, "", ...kept, ...removed.map((r) => `Removed: ${r}`), ""].join("\n");
+  const kept = [...carriers].sort(), shadowed = [...kapae].sort();
+  const subject = `lar:///surface.keeps.the-sitting/${seam} — ${kept.length + shadowed.length + removed.length} carriers`;
+  const message = [subject, "", ...kept, ...shadowed.map((t) => `Kapae: ${t}`), ...removed.map((r) => `Removed: ${r}`), ""].join("\n");
   const commit = surfaceGit(root, ["--literal-pathspecs", "commit", "-q", "-F", "-", "--", ...staged], message);
   if (commit.code !== 0) throw new SurfaceRefused("surface-commit-refused", `git commit in ${root} answered ${commit.code}${commit.err.trim() ? `: ${commit.err.trim()}` : ""} (the pre-commit roster check runs first: \`lares surface check\`)`);
   const head = surfaceGit(root, ["rev-parse", "HEAD"]).out.trim();
-  return { staged, carriers: kept, removed, apart, commit: head, subject };
+  return { staged, carriers: kept, kapae: shadowed, removed, apart, commit: head, subject };
 }
 
 // ── the command ────────────────────────────────────────────────────────────────────────────────────────────

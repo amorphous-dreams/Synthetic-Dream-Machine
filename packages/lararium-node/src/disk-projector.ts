@@ -1614,22 +1614,31 @@ export class LarDiskProjector {
       const body = kapaeShadowBody(title);
       let standing: string | null = null;
       try { standing = existsSync(gate.path) ? readFileSync(gate.path, "utf-8") : null; } catch { standing = null; }
-      if (standing === body) return;
-      this.writing.add(title);
-      try {
-        mkdirSync(dirname(gate.path), { recursive: true });
-        this.atomicWrite(gate.path, body);
-      } finally { this.writing.delete(title); }
+      if (standing !== body) {
+        this.writing.add(title);
+        try {
+          mkdirSync(dirname(gate.path), { recursive: true });
+          this.atomicWrite(gate.path, body);
+        } finally { this.writing.delete(title); }
+      }
+      // THE HOUSE REMEMBERS ITS SHADOW (`SyncedTree.shadows`): the bytes it wrote, or found standing as it would write them.
+      const shadows = this.syncedTree.shadows();
+      const key = syncedTreeKey(mirror.bagId, title), hash = carrierHash(body);
+      if (shadows.baseAt(key, gate.path)?.disk !== hash) shadows.set(key, gate.path, hash);
       return;
     }
     if (record !== null || !existsSync(gate.path)) return;
     this.writing.add(title);
-    try { LarDiskProjector.lowerShadowAt(gate.path); } finally { this.writing.delete(title); }
+    try { this.lowerShadowAt(mirror.bagId, title, gate.path); } finally { this.writing.delete(title); }
   }
 
-  /** A shadow standing at `path` leaves: its title surfaced again, or fell through to absent. The caller holds the write mark. */
-  private static lowerShadowAt(path: string): void {
-    try { if (existsSync(path)) unlinkSync(path); } catch { /* best-effort — a hand can clean up */ }
+  /** A shadow standing at `path` leaves, and the house's memory of it with it: its title surfaced again, or fell through to
+   *  absent. The caller holds the write mark. A shadow the disk would not give up keeps its row. */
+  private lowerShadowAt(bagId: string, title: string, path: string): void {
+    const shadows = this.syncedTree.shadows(), key = syncedTreeKey(bagId, title);
+    let stood = false;
+    try { if (existsSync(path)) { stood = true; unlinkSync(path); } } catch { return; /* best-effort — a hand can clean up */ }
+    if (stood || shadows.baseAt(key, path) !== null) shadows.deleteAt(key, path);
   }
 
   /**
@@ -2261,7 +2270,7 @@ export class LarDiskProjector {
       if (!bodyPending) this.atomicWrite(candidate, writeBytes);
       if (metaPath !== null) this.atomicWrite(metaPath, metaBody!);
       // THE KĀPAE LOWERED: the carrier writes back, so a shadow standing at its stem leaves with the raise.
-      LarDiskProjector.lowerShadowAt(candidate.slice(0, candidate.length - extname(candidate).length) + KAPAE_EXT);
+      this.lowerShadowAt(bagId, tiddlerUri, candidate.slice(0, candidate.length - extname(candidate).length) + KAPAE_EXT);
       // The observation names the WHOLE carrier; under a pending body it names the sidecar alone.
       this.pin(bagId, tiddlerUri, candidate, gateRecords);
       // A bag counts as projected once a file of it stands: a pending body with no sidecar wrote nothing yet.

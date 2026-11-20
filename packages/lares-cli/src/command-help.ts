@@ -609,7 +609,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares surface commit [--face N | --realm <realm pet name>] [-m <seam>]",
     synopsis:
       "Keep the sitting: stage only the pool paths whose disk bytes equal the synced base (the house already agrees with them; a .meta rides " +
-      "with its carrier, a removal stages where no base stands), and commit them under `lar:///surface.keeps.the-sitting/<seam> — N carriers`, " +
+      "with its carrier, a removal stages where no base stands; a .kapae shadow stages where its bytes equal the house's own write of it, " +
+      "its removal where the house lowered it), and commit them under `lar:///surface.keeps.the-sitting/<seam> — N carriers`, " +
       "naming no face, the carrier URIs in the body, the author from the pool's local config. A path standing off reads apart by name and stays " +
       "unstaged. It never pushes. --realm <realm pet name> keeps each wiki pool's sitting the same way, one commit per wiki tree, under each wiki's author.",
     examples: ["lares surface commit", "lares surface commit -m sitting-close", "lares surface commit --realm notes"],
