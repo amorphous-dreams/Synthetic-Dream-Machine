@@ -111,72 +111,83 @@ export function heldDocOf(repo: Repo, url: string): LarDoc | undefined {
   return handle?.isReady() ? (handle.doc() as LarDoc | undefined) : undefined;
 }
 
-/** The most chunks one resting plane may carry before its read refuses as absent (a persona plane holds a face's few acts). */
+/** The most chunks one resting plane may carry before its read refuses `over-cap` (a persona plane holds a face's few acts). */
 export const RESTING_DOC_MAX_CHUNKS = 4096;
-/** The most bytes one resting plane may carry before its read refuses as absent, checked before any buffer allocates. */
+/** The most bytes one resting plane may carry before its read refuses `over-cap`, checked before the concatenation allocates. */
 export const RESTING_DOC_MAX_BYTES = 32 * 1024 * 1024;
 
-/** One read of a document's chunks per store at a time: a silent store holds one read, never a pile of them. */
-const restingReads = new WeakMap<object, Map<string, Promise<Chunk[] | null>>>();
-function readChunksOnce(storage: Pick<StorageAdapterInterface, "loadRange">, documentId: string): Promise<Chunk[] | null> {
-  let reads = restingReads.get(storage);
-  if (reads === undefined) { reads = new Map(); restingReads.set(storage, reads); }
-  const standing = reads.get(documentId);
-  if (standing !== undefined) return standing;
-  let read: Promise<Chunk[] | null>;
-  try { read = Promise.resolve(storage.loadRange([documentId])).catch(() => null); }
-  catch { read = Promise.resolve(null); }   // an adapter that throws on the call answers absence, as one that rejects does
-  const held = reads;
-  const settled: Promise<Chunk[] | null> = read.finally(() => { if (held.get(documentId) === settled) held.delete(documentId); });
-  reads.set(documentId, settled);
-  return settled;
-}
+/** Why a resting read answered no document. Each reads as its own name, so a caller can tell `over-cap` from nothing at rest. */
+export type RestingAbsence =
+  | "url-malformed" | "read-outstanding" | "bound-spent" | "refused" | "nothing-rests" | "chunk-unread" | "chunk-empty" | "over-cap" | "torn";
+export type RestingRead = { readonly doc: LarDoc } | { readonly absent: RestingAbsence };
+
+/** The reads still waiting on each store, by document and scope: one at a time per key, never shared between callers. */
+const outstandingReads = new WeakMap<object, Set<string>>();
 
 /**
  * A plane doc as this replica's own STORE rests it, read from the storage adapter's bytes alone and loaded into a scratch
  * document: never a Repo handle, never the network, never a peer. A lit sibling's persona plane rests so (the composition
  * mounts the worn face's plane alone), and its proof reads it here before anything admits it anywhere: a plane that fails
- * its proof never reached the live Repo, since this read never touches one.
+ * its proof never reached the live Repo, since this read never touches one. Pass the vessel's own face-gated store as
+ * `storage`: a chunk sealed under a face outside the open set refuses there (`refused`).
  *
- * Pass the vessel's own face-gated store as `storage`: a chunk sealed under a face outside the open set refuses there, and
- * the refusal reads as absent. THE TIMER CLOSES THE WINDOW: the bound's timer callback alone marks the read spent, and the
- * read accepts only while that mark stands clear, checked after the decode and before the answer returns, so an answer that
- * lands once the timer fired reads absent (a late answer populates nothing: nothing loads into any Repo). The store's own
- * read cannot cancel through its interface; one read per document per store stands at a time, so a silent store holds one.
+ * THE BOUND IS THE EVENT LOOP'S TIMER ORDER, NEVER WALL TIME (house law reads no clock here). The bound's timer callback
+ * alone marks the read spent; the read ACCEPTS at the one continuation after the race, where it checks that mark, and an
+ * answer that reaches that continuation after the timer callback ran reads `bound-spent`. A timer the loop delivers late
+ * moves the bound with it: the contract orders callbacks, it measures no elapsed time. The decode runs synchronously after
+ * acceptance, no callback can interleave it, and the byte cap bounds it; the timer stays armed until the decode ends.
  *
- * ABSENT means undefined, never a partial plane: nothing rests; a refusal; the bound spent; any reported chunk whose bytes did
- * not read (an older snapshot never stands in for a missing incremental); more than `RESTING_DOC_MAX_CHUNKS` chunks or
- * `RESTING_DOC_MAX_BYTES` bytes (checked before allocation); a malformed url; a torn chunk; any throw on the way.
+ * ONE READ PER KEY, NEVER SHARED: each call makes its own adapter read, keyed by document and `scope` (the caller's custody
+ * opening). A call while that key's read still waits answers `read-outstanding` at once, so a silent store holds one read
+ * per key and no later caller ever takes an expired read's bytes. The adapter's read cannot cancel through its interface.
+ *
+ * ABSENT NEVER MEANS PARTIAL: a reported chunk that did not read (`chunk-unread`) or carries no bytes (`chunk-empty`) refuses
+ * the whole plane, so an older snapshot never stands in for a missing incremental; more than `RESTING_DOC_MAX_CHUNKS` chunks or
+ * `RESTING_DOC_MAX_BYTES` bytes refuses `over-cap` before the concatenation allocates (the adapter has already loaded those
+ * chunks by then: its interface lists no sizes before it loads them, so the cap bounds the decode, not the adapter's own load).
  */
 export async function readRestingDoc(
-  storage: Pick<StorageAdapterInterface, "loadRange">, url: string, boundMs = DOCUMENT_READY_TIMEOUT_MS,
-): Promise<LarDoc | undefined> {
+  storage: Pick<StorageAdapterInterface, "loadRange">, url: string, opts: { readonly boundMs?: number; readonly scope?: string } = {},
+): Promise<RestingRead> {
   let documentId: string;
-  try { documentId = parseAutomergeUrl(url as AutomergeUrl).documentId; } catch { return undefined; }
+  try { documentId = parseAutomergeUrl(url as AutomergeUrl).documentId; } catch { return { absent: "url-malformed" }; }
+  const key = `${documentId}\u0000${opts.scope ?? ""}`;
+  let waiting = outstandingReads.get(storage);
+  if (waiting === undefined) { waiting = new Set(); outstandingReads.set(storage, waiting); }
+  if (waiting.has(key)) return { absent: "read-outstanding" };
+  let read: Promise<Chunk[] | null>;
+  try { read = Promise.resolve(storage.loadRange([documentId])).catch(() => null); }
+  catch { read = Promise.resolve(null); }   // an adapter that throws on the call refuses, as one that rejects does
+  waiting.add(key);
+  const held = waiting;
+  void read.then(() => { held.delete(key); });
   let spent = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const late = new Promise<null>((resolve) => { timer = setTimeout(() => { spent = true; resolve(null); }, boundMs); });
-  let chunks: Chunk[] | null;
-  try { chunks = await Promise.race([readChunksOnce(storage, documentId), late]); }
-  finally { clearTimeout(timer); }
-  if (chunks === null || spent) return undefined;
+  const bound = new Promise<null>((resolve) => { timer = setTimeout(() => { spent = true; resolve(null); }, opts.boundMs ?? DOCUMENT_READY_TIMEOUT_MS); });
   try {
+    const chunks = await Promise.race([read, bound]);
+    // ACCEPTANCE: this continuation, and only while the timer callback has not run.
+    if (spent) return { absent: "bound-spent" };
+    if (chunks === null) return { absent: "refused" };
     // The engine's own order (`StorageSubsystem.loadDocData`): snapshots, then incrementals; no other role carries the doc.
     const role = (c: Chunk): number => (c.key[1] === "snapshot" ? 0 : c.key[1] === "incremental" ? 1 : -1);
     const parts = chunks.filter((c) => role(c) >= 0);
-    if (parts.length === 0 || parts.length > RESTING_DOC_MAX_CHUNKS) return undefined;
+    if (parts.length === 0) return { absent: "nothing-rests" };
+    if (parts.length > RESTING_DOC_MAX_CHUNKS) return { absent: "over-cap" };
     let total = 0;
     for (const c of parts) {
-      if (!(c.data instanceof Uint8Array)) return undefined;   // a reported chunk that did not read: absent, never stale-present
+      if (!(c.data instanceof Uint8Array)) return { absent: "chunk-unread" };
+      if (c.data.length === 0) return { absent: "chunk-empty" };
       total += c.data.length;
-      if (total > RESTING_DOC_MAX_BYTES) return undefined;
+      if (total > RESTING_DOC_MAX_BYTES) return { absent: "over-cap" };
     }
-    const ordered = [...parts].sort((a, b) => role(a) - role(b));
-    const bytes = new Uint8Array(total);
-    let at = 0;
-    for (const c of ordered) { bytes.set(c.data!, at); at += c.data!.length; }
-    const doc = A.loadIncremental(A.init<LarDoc>(), bytes);
-    if (spent || A.getHeads(doc).length === 0) return undefined;
-    return doc as LarDoc;
-  } catch { return undefined; }
+    try {
+      const ordered = [...parts].sort((a, b) => role(a) - role(b));
+      const bytes = new Uint8Array(total);
+      let at = 0;
+      for (const c of ordered) { bytes.set(c.data!, at); at += c.data!.length; }
+      const doc = A.loadIncremental(A.init<LarDoc>(), bytes);
+      return A.getHeads(doc).length > 0 ? { doc: doc as LarDoc } : { absent: "torn" };
+    } catch { return { absent: "torn" }; }
+  } finally { clearTimeout(timer); }
 }

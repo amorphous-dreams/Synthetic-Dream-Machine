@@ -3471,19 +3471,21 @@ async function prepareNodeBootOn(
         const { faceRelationOf } = await import("@lararium/mesh");
         // A SIBLING'S PLANE RESTS UNMOUNTED: the composition mounts the worn face's plane alone, so the proof reads the plane's
         // bytes from this vessel's own face-gated store into a scratch document (`proveSiblingFromRest`): no Repo handle, no
-        // peer. The face must stand open before the read, and the same opening must still stand when the proof is accepted
-        // (`unlockedFaces`, read synchronously beside the proof). Nothing it reads reaches the live Repo, proved or not.
-        let openedFcid: string | null = null;
-        return await proveSiblingFromRest({ storage: sealedRest.store, personaUrl: plane.url, group: plane.personaGroupId,
+        // peer. Custody binds by OPENING (`faceOpening`): the face stands open before the read, the read keys to that opening,
+        // and the same opening still stands when the proof is accepted; a lock, or a lock and re-open, voids it. Nothing it
+        // reads reaches the live Repo, proved or not.
+        let opened: { readonly fcid: string; readonly opening: number } | null = null;
+        const sibling = await proveSiblingFromRest({ storage: sealedRest.store, personaUrl: plane.url, group: plane.personaGroupId,
           face: {
             open: async () => {
               const holder = standingCustody();
-              if (holder === null || !holder.isUnlocked()) return false;
+              if (holder === null || !holder.isUnlocked()) return null;
               const standing = await holder.faceStanding({ group: personaGroupDigest(plane.personaGroupId) });
-              openedFcid = standing?.unlocked === true ? standing.fcid : null;
-              return openedFcid !== null;
+              const opening = standing?.unlocked === true ? holder.faceOpening?.(standing.fcid) ?? null : null;
+              opened = standing && opening !== null ? { fcid: standing.fcid, opening } : null;
+              return opened ? `${opened.fcid}#${opened.opening}` : null;
             },
-            stillOpen: () => { const holder = standingCustody(); return openedFcid !== null && holder !== null && holder.isUnlocked() && holder.unlockedFaces().includes(openedFcid); },
+            stillOpen: () => { const holder = standingCustody(); return opened !== null && holder !== null && holder.isUnlocked() && holder.faceOpening?.(opened.fcid) === opened.opening; },
           },
           carried: [secretHome?.handle.doc()],
           prove: (records) => {
@@ -3494,6 +3496,9 @@ async function prepareNodeBootOn(
               relation: faceRelationOf(proof.projection),
             };
           } });
+        // AN OVER-CAP PLANE NAMES ITSELF: its proof leans on the carried acts alone, and where those found nothing it fails by this name.
+        if (sibling.plane === "over-cap") console.warn(`[lit-set] the persona plane of ${plane.personaGroupId.slice(0, 8)}… rests past the read's caps (over-cap); its proof read the carried acts alone${sibling.proved ? "" : " and refused"}`);
+        return sibling.proved;
       } catch (e) { if (!(e instanceof CustodyLocked)) throw e; return null; }
     }
     const proveRelayFace = async (group: string) => {

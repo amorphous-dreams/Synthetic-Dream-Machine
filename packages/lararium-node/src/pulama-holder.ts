@@ -112,6 +112,10 @@ export function makePulamaHolder(a: {
   readonly offer: () => unknown | Promise<unknown>;
 }): PulamaHolder {
   let session: Session | null = null;
+  /** Each face's opening as the lent set names it: a face that leaves the set and returns takes a fresh number. */
+  const openings = new Map<string, number>();
+  let openingSeq = 0;
+  const reopened = (before: readonly string[], after: readonly string[]): void => { for (const f of after) if (!before.includes(f)) openings.set(f, ++openingSeq); };
   let nextId = 1;
   let dialing: Promise<HolderUnlock> | null = null;
   /** Counts this side's leavings: a dial that began before a `lock` seats no session after it. */
@@ -149,7 +153,7 @@ export function makePulamaHolder(a: {
       if (f["ok"] === true) p.resolve(f["v"]); else p.reject(unpackRefusal(f["err"]));
     } else if (f.t === "ev") {
       for (const child of Object.values(s.derived)) child.fill(0);
-      s.standing = standingOf(f["standing"]);
+      { const before = s.standing.faces; s.standing = standingOf(f["standing"]); reopened(before, s.standing.faces); }
       s.derived = derivedOf(f["derived"]);
       fire(openedListeners);
     }
@@ -186,6 +190,7 @@ export function makePulamaHolder(a: {
       scope: { faces: lent.faces }, pending: new Map(),
     };
     session = stood;
+    reopened([], stood.standing.faces);
     refused = null;
     channel.onClose(() => drop(stood));
     fire(openedListeners);
@@ -321,6 +326,7 @@ export function makePulamaHolder(a: {
     faceStanding: (face) => faceOf(face),
     lockFace: () => needsHuman("a face's lock"),
     unlockedFaces: () => session?.standing.faces ?? [],
+    faceOpening: (fcid) => (session?.standing.faces.includes(fcid) ? openings.get(fcid) ?? null : null),
     withWardKey: () => needsHuman("a ward act"),
     async wardPublicKey(face) { return await call("face.ward-key", { face }) as string | null; },
     watchWardKeys() { /* this side opens no ward key */ },

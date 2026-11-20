@@ -259,6 +259,11 @@ export interface CustodyHolder {
   /** The custody ids of the faces standing unlocked. */
   unlockedFaces(): readonly string[];
   /**
+   * Which opening of the face stands, or null while it stands shut: each open of a face takes a fresh number, so a reader that
+   * captured one opening tells a lock and re-open of the same face (same custody id) from the opening it read under.
+   */
+  faceOpening?(fcid: string): number | null;
+  /**
    * ONE WARD ACT: open the face's ward key fresh from `credentials` (a human route; a passkey refuses), run `act` over that face's
    * warded rows, then zero the key. The face must stand unlocked. A miss spends one of the face's unlock attempts, as `unlockFace`'s
    * does. The key never enters the faces this holder holds open, and nothing here caches a credential or a key between acts.
@@ -286,7 +291,8 @@ type Located =
   | { readonly kind: "treeKey"; readonly row: CarrierRow; readonly path: string; readonly name: string }
   | { readonly kind: "face"; readonly row: CarrierRow; readonly path: string; readonly carrier: FaceCarrier; readonly fcid: string; readonly treePath: string };
 
-interface FaceSeat { readonly fck: FaceCustodyKey; readonly slot: string | null; readonly ordinal: number }
+/** `opening` counts each open of a face on this holder: a lock and a later open of the same face carry different openings. */
+interface FaceSeat { readonly fck: FaceCustodyKey; readonly slot: string | null; readonly ordinal: number; readonly opening: number }
 
 const heldPort = (io: CustodyIo): CustodyIo => ({
   read: (path) => io.read(path), write: (path, bytes) => io.write(path, bytes), rename: (from, to) => io.rename(from, to),
@@ -316,6 +322,7 @@ export function makeCustodyHolder(a: {
   let spent = 0;
   const faceSpent = new Map<string, number>();
   const faces = new Map<string, FaceSeat>();
+  let openings = 0;
   /** Ward keys opened for an act in flight: never a face's seat, zeroed when the act settles or a lock lands. */
   const wardKeys = new Set<WardKey>();
   let wardWatch: ((key: WardKey) => void) | null = null;
@@ -438,7 +445,7 @@ export function makeCustodyHolder(a: {
         await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: ownerCarrier(fcid), plaintext: encodeOwner({ fcid, group: args.group ?? null }) });
         // THE WARD KEY'S PUBLIC HALF lands with the ward: the face's admission carries it, and the ward key itself zeroes below.
         await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: wardKeyCarrier(fcid), plaintext: await wardKeyBytes(ward) });
-        faces.set(fcid, { fck, slot: null, ordinal });
+        faces.set(fcid, { fck, slot: null, ordinal, opening: ++openings });
         return { ordinal, fcid };
       });
     } catch (err) { fck.fill(0); throw err; }
@@ -585,7 +592,7 @@ export function makeCustodyHolder(a: {
         return refuse(`the anchors row reads ${anchored.reading}`);
       }
     }
-    faces.set(fcid, { fck: opened.fck, slot: opened.slot, ordinal });
+    faces.set(fcid, { fck: opened.fck, slot: opened.slot, ordinal, opening: ++openings });
     keyOpened();
     return { reading: "opens", fcid, ordinal, slot: opened.slot };
   };
@@ -907,6 +914,7 @@ export function makeCustodyHolder(a: {
       return run;
     },
     unlockedFaces: () => [...faces.keys()],
+    faceOpening: (fcid) => faces.get(fcid)?.opening ?? null,
     async withWardKey(face, credentials, act) {
       // The derivation takes its turn on the unlock chain (attempts never race); the act runs outside it, and the key zeroes after.
       const run = unlockChain.then(() => doWardOpen(face, credentials), () => doWardOpen(face, credentials));
