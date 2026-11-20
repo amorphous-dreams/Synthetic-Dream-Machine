@@ -54,7 +54,7 @@ async function stand() {
   const root = await generateOrLoadPersonaGroupRoot(0, fixtureWard());
   const hand: SwarmSignerPort = { key: root.verifyingKey, sign: async (bytes) => (await wardRootSigner(0, fixtureWard(), "a swarm control")).sign(bytes) };
   const lei: SignedSwarmAct = await signSwarmAct({ act: "lei", group: GROUP, rite: "kukulu", branch: BRANCH, after: null, reach: "wide", returns: 2 }, hand);
-  const vouch = async (img = IMAGE) => signKukuluVouch({ group: GROUP, branch: BRANCH, head: HEAD, tree: TREE, image: img, verdict: "pass", receipt: null }, await vouchSignerOf(fx!.local));
+  const vouch = async (img = IMAGE) => signKukuluVouch({ group: GROUP, branch: BRANCH, head: HEAD, tree: TREE, image: img }, await vouchSignerOf(fx!.local));
   const hello = async (offer: unknown): Promise<string> => {
     try { return (await fx!.vessel(offer).unlock([])).reading; }
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
