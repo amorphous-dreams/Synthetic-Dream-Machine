@@ -10,7 +10,8 @@
  *   R4  CUSTODY: a decryptable plane whose log the root never signed reads, fails its fold, and never reached the live Repo
  *   R5  BOUND: a silent store and a late store each read bound-spent at the timer; the late answer populates nothing
  *   R6  ORDER: the callback-order contract: the timer callback alone closes the window (fake timers, no clock)
- *   R7  ONE READ PER KEY: a call while its key's read waits answers read-outstanding; an expired read's bytes reach no one
+ *   R7  SHARED READ, OWN BOUNDS: callers of one opening share its adapter read, each under its own bound (R7b); a read that never
+ *       lands holds the opening only until every listener's bound spends, and the stale read reaches no one (R7c)
  *   R8  PARTIAL: a chunk that did not read, an empty chunk, too many chunks or bytes refuse by name
  *   R9  ABSENCE BY NAME: a malformed url, a throwing adapter, nothing at rest and torn bytes, never a throw
  *
@@ -183,7 +184,7 @@ describe("readRestingDoc: a sibling's plane reads from this replica's own store 
     } finally { vi.useRealTimers(); }
   });
 
-  test("R7 ONE READ PER KEY, NEVER SHARED: a call while its key's read waits answers read-outstanding at once; another opening reads its own; the key frees when the read settles", async () => {
+  test("R7 SHARED READ, OWN BOUNDS: callers of one opening share its adapter read, each under its own bound; a different opening reads its own", async () => {
     const real = memoryAdapter();
     const url = await restPlane(real, { "lar:///founding": { text: "rests" } });
     const chunks = await real.loadRange([url.replace(/^automerge:/, "")]);
@@ -192,23 +193,59 @@ describe("readRestingDoc: a sibling's plane reads from this replica's own store 
     const slow = { loadRange: () => { asked++; return new Promise<Chunk[]>((done) => { answers.push(done); }); } };
     vi.useFakeTimers();
     try {
-      const first = readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#1" });
-      expect(await readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#1" })).toEqual({ absent: "read-outstanding" });
+      const first = readRestingDoc(slow, url, { boundMs: 100, scope: "fcid#1" });
+      const second = readRestingDoc(slow, url, { boundMs: 100, scope: "fcid#1" });
+      const other = readRestingDoc(slow, url, { boundMs: 100, scope: "fcid#2" });
+      expect(asked).toBe(2);   // one read for opening 1, its own for opening 2
       await vi.advanceTimersByTimeAsync(50);
-      expect(await first).toEqual({ absent: "bound-spent" });
-      // The expired read still waits on the adapter: its key stays taken, so no caller takes its bytes.
-      expect(await readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#1" })).toEqual({ absent: "read-outstanding" });
-      // A new opening reads with its own adapter call.
-      const reopened = readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#2" });
+      answers[0]!(chunks); answers[1]!(chunks);
+      expect(textOf(docOf(await first), "lar:///founding")).toBe("rests");
+      expect(textOf(docOf(await second), "lar:///founding")).toBe("rests");   // contention never downgrades a read in budget
+      expect(textOf(docOf(await other), "lar:///founding")).toBe("rests");
+    } finally { vi.useRealTimers(); }
+  });
+
+  test("R7b OWN BOUNDS: a joiner whose own bound spends first reads bound-spent and never takes the bytes; the caller still in budget reads them", async () => {
+    const real = memoryAdapter();
+    const url = await restPlane(real, { "lar:///founding": { text: "rests" } });
+    const chunks = await real.loadRange([url.replace(/^automerge:/, "")]);
+    let answer!: (c: Chunk[]) => void;
+    const slow = { loadRange: () => new Promise<Chunk[]>((done) => { answer = done; }) };
+    vi.useFakeTimers();
+    try {
+      const patient = readRestingDoc(slow, url, { boundMs: 200, scope: "fcid#1" });
+      const hasty = readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#1" });
+      await vi.advanceTimersByTimeAsync(50);
+      expect(await hasty).toEqual({ absent: "bound-spent" });
+      await vi.advanceTimersByTimeAsync(50);
+      answer(chunks);
+      expect(textOf(docOf(await patient), "lar:///founding")).toBe("rests");
+    } finally { vi.useRealTimers(); }
+  });
+
+  test("R7c NO POISON: a read that never lands holds its opening only until every listener's bound spends; the next caller reads fresh, and the stale read reaches no one", async () => {
+    const real = memoryAdapter();
+    const url = await restPlane(real, { "lar:///founding": { text: "rests" } });
+    const chunks = await real.loadRange([url.replace(/^automerge:/, "")]);
+    let asked = 0;
+    const answers: Array<(c: Chunk[]) => void> = [];
+    const slow = { loadRange: () => { asked++; return new Promise<Chunk[]>((done) => { answers.push(done); }); } };
+    vi.useFakeTimers();
+    try {
+      const stuck = readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#1" });
+      await vi.advanceTimersByTimeAsync(50);
+      expect(await stuck).toEqual({ absent: "bound-spent" });
+      const fresh = readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#1" });
+      expect(asked).toBe(2);   // the key let the stuck read go: a fresh adapter read
       answers[1]!(chunks);
-      expect(textOf(docOf(await reopened), "lar:///founding")).toBe("rests");
-      // The expired read settles; its bytes reach no caller, and its key frees.
+      expect(textOf(docOf(await fresh), "lar:///founding")).toBe("rests");
+      // The stale read lands late: it frees nothing of the newer read's and reaches no caller.
+      const after = readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#1" });
+      expect(asked).toBe(3);
       answers[0]!(chunks);
       await vi.advanceTimersByTimeAsync(0);
-      const again = readRestingDoc(slow, url, { boundMs: 50, scope: "fcid#1" });
       answers[2]!(chunks);
-      expect(textOf(docOf(await again), "lar:///founding")).toBe("rests");
-      expect(asked).toBe(3);
+      expect(textOf(docOf(await after), "lar:///founding")).toBe("rests");
     } finally { vi.useRealTimers(); }
   });
 

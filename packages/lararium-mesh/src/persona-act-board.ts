@@ -118,11 +118,34 @@ export const RESTING_DOC_MAX_BYTES = 32 * 1024 * 1024;
 
 /** Why a resting read answered no document. Each reads as its own name, so a caller can tell `over-cap` from nothing at rest. */
 export type RestingAbsence =
-  | "url-malformed" | "read-outstanding" | "bound-spent" | "refused" | "nothing-rests" | "chunk-unread" | "chunk-empty" | "over-cap" | "torn";
+  | "url-malformed" | "bound-spent" | "refused" | "nothing-rests" | "chunk-unread" | "chunk-empty" | "over-cap" | "torn";
 export type RestingRead = { readonly doc: LarDoc } | { readonly absent: RestingAbsence };
 
-/** The reads still waiting on each store, by document and scope: one at a time per key, never shared between callers. */
-const outstandingReads = new WeakMap<object, Set<string>>();
+/** One adapter read waiting, and the callers listening for it; a caller whose bound spends leaves the set. */
+interface PendingRead { readonly listeners: Set<(chunks: Chunk[] | null) => void> }
+/** The adapter reads still waiting on each store, by document and scope (the caller's custody opening). */
+const pendingReads = new WeakMap<object, Map<string, PendingRead>>();
+
+/** Join the key's waiting read, or start one: one adapter call per key serves every caller listening while it waits. */
+function joinRead(storage: Pick<StorageAdapterInterface, "loadRange">, documentId: string, key: string): { readonly pending: PendingRead; readonly reads: Map<string, PendingRead> } {
+  let reads = pendingReads.get(storage);
+  if (reads === undefined) { reads = new Map(); pendingReads.set(storage, reads); }
+  const standing = reads.get(key);
+  if (standing !== undefined) return { pending: standing, reads };
+  const pending: PendingRead = { listeners: new Set() };
+  reads.set(key, pending);
+  let read: Promise<Chunk[] | null>;
+  try { read = Promise.resolve(storage.loadRange([documentId])).catch(() => null); }
+  catch { read = Promise.resolve(null); }   // an adapter that throws on the call refuses, as one that rejects does
+  const held = reads;
+  void read.then((chunks) => {
+    if (held.get(key) === pending) held.delete(key);
+    // Only the callers still listening hear it: one whose bound spent left the set, and a read the key let go reaches none.
+    for (const listener of [...pending.listeners]) listener(chunks);
+    pending.listeners.clear();
+  });
+  return { pending, reads };
+}
 
 /**
  * A plane doc as this replica's own STORE rests it, read from the storage adapter's bytes alone and loaded into a scratch
@@ -131,15 +154,18 @@ const outstandingReads = new WeakMap<object, Set<string>>();
  * its proof never reached the live Repo, since this read never touches one. Pass the vessel's own face-gated store as
  * `storage`: a chunk sealed under a face outside the open set refuses there (`refused`).
  *
- * THE BOUND IS THE EVENT LOOP'S TIMER ORDER, NEVER WALL TIME (house law reads no clock here). The bound's timer callback
- * alone marks the read spent; the read ACCEPTS at the one continuation after the race, where it checks that mark, and an
- * answer that reaches that continuation after the timer callback ran reads `bound-spent`. A timer the loop delivers late
- * moves the bound with it: the contract orders callbacks, it measures no elapsed time. The decode runs synchronously after
- * acceptance, no callback can interleave it, and the byte cap bounds it; the timer stays armed until the decode ends.
+ * THE BOUND IS THE EVENT LOOP'S TIMER ORDER, NEVER WALL TIME (house law reads no clock here). Each caller's own timer callback
+ * alone marks THAT caller's read spent and takes it off the read's listeners; the caller ACCEPTS at its one continuation
+ * after the answer, where it checks its own mark, and an answer that reaches that continuation after its timer callback ran
+ * reads `bound-spent`. A timer the loop delivers late moves the bound with it: the contract orders callbacks, it measures no
+ * elapsed time. The decode runs synchronously after acceptance, no callback can interleave it, and the byte cap bounds it;
+ * the timer stays armed until the decode ends.
  *
- * ONE READ PER KEY, NEVER SHARED: each call makes its own adapter read, keyed by document and `scope` (the caller's custody
- * opening). A call while that key's read still waits answers `read-outstanding` at once, so a silent store holds one read
- * per key and no later caller ever takes an expired read's bytes. The adapter's read cannot cancel through its interface.
+ * ONE ADAPTER READ PER KEY, EACH CALLER ITS OWN BOUND: callers of one document and one `scope` (the custody opening) share the
+ * key's one waiting adapter read, each listening under its own timer, its own spent mark and its own acceptance, so contention
+ * never downgrades a read that lands in a caller's budget. A different opening never joins. Once every listener's bound has
+ * spent, the key lets the read go and the next caller starts a fresh one; the stale read, when it lands, reaches no caller.
+ * The adapter's read cannot cancel through its interface.
  *
  * ABSENT NEVER MEANS PARTIAL: a reported chunk that did not read (`chunk-unread`) or carries no bytes (`chunk-empty`) refuses
  * the whole plane, so an older snapshot never stands in for a missing incremental; more than `RESTING_DOC_MAX_CHUNKS` chunks or
@@ -152,21 +178,22 @@ export async function readRestingDoc(
   let documentId: string;
   try { documentId = parseAutomergeUrl(url as AutomergeUrl).documentId; } catch { return { absent: "url-malformed" }; }
   const key = `${documentId}\u0000${opts.scope ?? ""}`;
-  let waiting = outstandingReads.get(storage);
-  if (waiting === undefined) { waiting = new Set(); outstandingReads.set(storage, waiting); }
-  if (waiting.has(key)) return { absent: "read-outstanding" };
-  let read: Promise<Chunk[] | null>;
-  try { read = Promise.resolve(storage.loadRange([documentId])).catch(() => null); }
-  catch { read = Promise.resolve(null); }   // an adapter that throws on the call refuses, as one that rejects does
-  waiting.add(key);
-  const held = waiting;
-  void read.then(() => { held.delete(key); });
+  const { pending, reads } = joinRead(storage, documentId, key);
   let spent = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const bound = new Promise<null>((resolve) => { timer = setTimeout(() => { spent = true; resolve(null); }, opts.boundMs ?? DOCUMENT_READY_TIMEOUT_MS); });
   try {
-    const chunks = await Promise.race([read, bound]);
-    // ACCEPTANCE: this continuation, and only while the timer callback has not run.
+    const chunks = await new Promise<Chunk[] | null>((resolve) => {
+      const listener = (answer: Chunk[] | null): void => resolve(answer);
+      pending.listeners.add(listener);
+      timer = setTimeout(() => {
+        spent = true;
+        pending.listeners.delete(listener);
+        // The last listener's bound spent: the key lets this read go, so the next caller starts a fresh one.
+        if (pending.listeners.size === 0 && reads.get(key) === pending) reads.delete(key);
+        resolve(null);
+      }, opts.boundMs ?? DOCUMENT_READY_TIMEOUT_MS);
+    });
+    // ACCEPTANCE: this continuation, and only while this caller's timer callback has not run.
     if (spent) return { absent: "bound-spent" };
     if (chunks === null) return { absent: "refused" };
     // The engine's own order (`StorageSubsystem.loadDocData`): snapshots, then incrementals; no other role carries the doc.

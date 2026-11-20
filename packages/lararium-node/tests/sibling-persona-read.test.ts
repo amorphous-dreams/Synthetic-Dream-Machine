@@ -10,6 +10,7 @@
  *   SP5  CUSTODY: the face locks WHILE the read is pending: the plane drops, and the proof refuses
  *   SP6  CUSTODY: the face locks after the read and before acceptance: the proof that leaned on the plane reads null
  *   SP7  CUSTODY: lock and re-light mid-read (one custody id, two openings): the old caller refuses, the new one reads its own
+ *   SP9  two proofs of one opening at once share its read and both prove
  *   SP8  an over-cap plane names itself (`over-cap`), never reading as nothing at rest; the carried acts still answer
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
@@ -153,6 +154,23 @@ describe("proveSiblingFromRest: a lit sibling proves from its own rest while the
     const fresh = await after;
     expect(fresh.proved).not.toBeNull();
     expect(fresh.plane).toBe("read");
+  });
+
+  test("SP9: two proofs of one opening at once share its read and both prove: contention never downgrades a proof to the carried acts", async () => {
+    const s = await sibling();
+    const custody: Custody = { opening: 1 };
+    let release!: () => void;
+    const pending = new Promise<void>((done) => { release = done; });
+    let asked = 0;
+    const slow = { loadRange: async (prefix: StorageKey) => { asked++; await pending; return s.storage.loadRange(prefix); } };
+    const one = proveSiblingFromRest({ storage: slow, personaUrl: s.planes.persona, group, face: gate(custody), prove: s.prove });
+    const two = proveSiblingFromRest({ storage: slow, personaUrl: s.planes.persona, group, face: gate(custody), prove: s.prove });
+    await Promise.resolve(); await Promise.resolve();
+    release();
+    const [a, b] = await Promise.all([one, two]);
+    expect(asked).toBe(1);
+    expect(a.plane).toBe("read"); expect(a.proved).not.toBeNull();
+    expect(b.plane).toBe("read"); expect(b.proved).not.toBeNull();
   });
 
   test("SP8: an over-cap plane names itself: alone it loses its proof as over-cap, never as nothing at rest; the carried acts still answer", async () => {

@@ -50,6 +50,8 @@ export interface PulamaStanding {
   readonly slot: string | null; readonly attemptsLeft: number;
   /** The lent faces that stand lit, by custody id. */
   readonly faces: readonly string[];
+  /** Each lit face's opening as the pūlama's own holder numbers it: a lock and re-lend there carries a new number. */
+  readonly openings: Readonly<Record<string, number>>;
   /** The lent faces still dark at the pūlama, by ordinal. */
   readonly waiting: readonly number[];
   /** The face a wear door last wore, as the pūlama remembers it; absent where it heard no wear since it was lit. */
@@ -89,11 +91,13 @@ const needsHuman = (what: string): Promise<never> =>
   Promise.reject(new PulamaRefused("needs-the-human", `${what} asks a human route, and a pūlama session carries none: ask it at the pūlama's own hand door`));
 
 const standingOf = (raw: unknown): PulamaStanding => {
-  const s = (raw ?? {}) as { slot?: unknown; attemptsLeft?: unknown; faces?: unknown; waiting?: unknown; worn?: unknown };
+  const s = (raw ?? {}) as { slot?: unknown; attemptsLeft?: unknown; faces?: unknown; openings?: unknown; waiting?: unknown; worn?: unknown };
   return {
     slot: typeof s.slot === "string" ? s.slot : null,
     attemptsLeft: typeof s.attemptsLeft === "number" ? s.attemptsLeft : 0,
     faces: Array.isArray(s.faces) ? s.faces.filter((f): f is string => typeof f === "string") : [],
+    openings: typeof s.openings === "object" && s.openings !== null
+      ? Object.fromEntries(Object.entries(s.openings).filter((e): e is [string, number] => Number.isSafeInteger(e[1]) && (e[1] as number) > 0)) : {},
     waiting: Array.isArray(s.waiting) ? s.waiting.filter((o): o is number => Number.isSafeInteger(o) && o >= 0) : [],
     ...(Number.isSafeInteger(s.worn) && (s.worn as number) >= 0 ? { worn: s.worn as number } : {}),
   };
@@ -112,10 +116,6 @@ export function makePulamaHolder(a: {
   readonly offer: () => unknown | Promise<unknown>;
 }): PulamaHolder {
   let session: Session | null = null;
-  /** Each face's opening as the lent set names it: a face that leaves the set and returns takes a fresh number. */
-  const openings = new Map<string, number>();
-  let openingSeq = 0;
-  const reopened = (before: readonly string[], after: readonly string[]): void => { for (const f of after) if (!before.includes(f)) openings.set(f, ++openingSeq); };
   let nextId = 1;
   let dialing: Promise<HolderUnlock> | null = null;
   /** Counts this side's leavings: a dial that began before a `lock` seats no session after it. */
@@ -153,7 +153,7 @@ export function makePulamaHolder(a: {
       if (f["ok"] === true) p.resolve(f["v"]); else p.reject(unpackRefusal(f["err"]));
     } else if (f.t === "ev") {
       for (const child of Object.values(s.derived)) child.fill(0);
-      { const before = s.standing.faces; s.standing = standingOf(f["standing"]); reopened(before, s.standing.faces); }
+      s.standing = standingOf(f["standing"]);
       s.derived = derivedOf(f["derived"]);
       fire(openedListeners);
     }
@@ -190,7 +190,6 @@ export function makePulamaHolder(a: {
       scope: { faces: lent.faces }, pending: new Map(),
     };
     session = stood;
-    reopened([], stood.standing.faces);
     refused = null;
     channel.onClose(() => drop(stood));
     fire(openedListeners);
@@ -326,7 +325,8 @@ export function makePulamaHolder(a: {
     faceStanding: (face) => faceOf(face),
     lockFace: () => needsHuman("a face's lock"),
     unlockedFaces: () => session?.standing.faces ?? [],
-    faceOpening: (fcid) => (session?.standing.faces.includes(fcid) ? openings.get(fcid) ?? null : null),
+    // THE OPENING COMES FROM ITS SOURCE: the pūlama's own number, verbatim; a face it names no opening for reads none (fail closed).
+    faceOpening: (fcid) => (session?.standing.faces.includes(fcid) ? session.standing.openings[fcid] ?? null : null),
     withWardKey: () => needsHuman("a ward act"),
     async wardPublicKey(face) { return await call("face.ward-key", { face }) as string | null; },
     watchWardKeys() { /* this side opens no ward key */ },
