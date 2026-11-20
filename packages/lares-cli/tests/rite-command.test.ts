@@ -245,6 +245,24 @@ describe("kukulu-fast-forwards-the-checkout", () => {
       expect(again.line).toContain(`vendor ${p.was.slice(0, 12)}..${p.now.slice(0, 12)}`);
     }));
 
+    it("RED: a submodule whose pin did not move but holds local or untracked work is named in the answer, never blocks and never discards; CONTROL: a clean one is not named", () => withFileAllowed(async () => {
+      const p = pinned();
+      expect((await syncCheckout(p.clone)).ok).toBe(true);
+      const sub = join(p.clone, "vendor");
+      const clean = await syncCheckout(p.clone);
+      expect(clean.ok).toBe(true);
+      expect(clean.line).not.toMatch(/vendor/);
+      writeFileSync(join(sub, "s.txt"), "mine\n");
+      writeFileSync(join(sub, "new.txt"), "mine\n");
+      const out = await syncCheckout(p.clone);
+      expect(out.ok).toBe(true);
+      expect(out.line).toMatch(/submodule vendor holds local or untracked changes at its pin/);
+      expect(out.line).not.toContain("\n");
+      expect(head(sub)).toBe(p.now);
+      expect(readFileSync(join(sub, "s.txt"), "utf8")).toBe("mine\n");
+      expect(readFileSync(join(sub, "new.txt"), "utf8")).toBe("mine\n");
+    }));
+
     it("RED: a submodule with local or untracked changes stops the rite with one line naming it, and its work stays", () => withFileAllowed(async () => {
       for (const touch of [(d: string) => writeFileSync(join(d, "s.txt"), "mine\n"), (d: string) => writeFileSync(join(d, "new.txt"), "mine\n")]) {
         const p = pinned();
