@@ -1,21 +1,28 @@
 /**
- * sibling-persona-read — a lit sibling's proof reads its plane from this vessel's own store, and only while that face stands
- * open (`readSiblingPersonaRecords`).
+ * sibling-persona-read — a lit sibling proves from its own rest (`proveSiblingFromRest`): its plane reads from this vessel's
+ * own store, only while that face stands open, and the same opening must still stand when the proof is accepted. Every case
+ * proves through the real fold (`proveFaceFromLog`) over a signed founding log.
  *
- *   SP1  an open face's resting plane answers its records, beside the carried admit acts
- *   SP2  CUSTODY: a face that stands shut at the read reads no plane: the store goes unasked, and only the carried acts answer
- *   SP3  CUSTODY: a plane that rests nowhere answers the carried acts alone, never a peer's copy
+ *   SP1  an open face's resting signed plane proves
+ *   SP2  CUSTODY: a shut face reads no plane: the store goes unasked, and with nothing carried the proof refuses
+ *   SP3  SIGNED CARRIED-ONLY: with no plane at rest, the signed admit acts carried in the secret home prove alone
+ *   SP4  CUSTODY: a resting plane whose founding another key signed reads, and the fold refuses it
+ *   SP5  CUSTODY: the face locks WHILE the read is pending: the plane drops, and the proof refuses
+ *   SP6  CUSTODY: the face locks after the read and before acceptance: the proof that leaned on the plane reads null
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
 import { describe, expect, test } from "vitest";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
-import { personaActEntryKey, storedLarRecord, type LarDoc } from "@lararium/mesh";
-import { readSiblingPersonaRecords } from "../src/persona-act-store.js";
+import {
+  emptyLarDoc, signFoundingLog, mintFaceAnchor, faceRootCommitment, didFromVerifyingKey, ed25519VerifyingKeyFromSeed,
+  ed25519SignerFromSeed, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, writePersonaKelEvent,
+  personaKelChainForPrefix, proveFaceFromLog, writePersonaAct, type LarDoc, type SignedAct,
+} from "@lararium/mesh";
+import { proveSiblingFromRest, type SiblingFaceGate } from "../src/persona-act-store.js";
+import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
-const GROUP = "g-sibling";
-/** One carried record under the group's act prefix (the proof judges it; this read only carries it). */
-const act = (seq: number, cid: string) => { const key = personaActEntryKey(GROUP, seq, cid); return { [key]: storedLarRecord(key, { text: JSON.stringify({ body: { group: GROUP, seq }, sig: "s" }) }, cid) }; };
+const group = "cd".repeat(16);
 
 function memoryAdapter(): StorageAdapterInterface & { asked: number } {
   const bytes = new Map<string, Uint8Array>();
@@ -32,37 +39,82 @@ function memoryAdapter(): StorageAdapterInterface & { asked: number } {
   return adapter;
 }
 
-async function restingPlane(): Promise<{ storage: ReturnType<typeof memoryAdapter>; url: string }> {
+/** One sibling face: its KEL, its anchor, and a signed founding log naming its persona plane. */
+async function sibling(rootSeed = 21, signerSeed = rootSeed) {
+  const rootKey = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(rootSeed));
+  const did = didFromVerifyingKey(rootKey);
+  const signer = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(signerSeed)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(signerSeed)) };
+  const recoveryContacts = await Promise.all([1, 2, 3].map(async (n, i) =>
+    recoveryContactRegistrationCard((["mine", "contact-a", "contact-b"] as const)[i]!, await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), null)));
+  const inception = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid: did, recoveryContacts, recoveryThreshold: 2 }).inception;
+  const board = emptyLarDoc();
+  writePersonaKelEvent(board, inception);
+  const chain = personaKelChainForPrefix(board, inception.prefix)!;
+  const anchor = mintFaceAnchor({ personaGroup: group, personaKelPrefix: inception.prefix, personaRootDid: did, edge: {}, leaseEpoch: 0 });
+  // The plane rests in a store as a founding leaves it: written by a Repo that then shuts.
   const storage = memoryAdapter();
   const founding = new Repo({ storage, network: [], sharePolicy: async () => false });
-  const plane = founding.create<LarDoc>({ tiddlers: { ...act(0, "c0") } } as unknown as LarDoc);
+  const handle = founding.create<LarDoc>(emptyLarDoc());
+  const planes = { persona: handle.url as string, intents: "automerge:t" };
+  const log = await signFoundingLog({ group, personaKelPrefix: inception.prefix, rootCommitment: faceRootCommitment(did), epoch: 0,
+    planes, deviceKey: rootKey, edgeDigest: "edge", vesselTag: await testVesselTag(1, group, rootKey) }, signer);
+  handle.change((d) => { for (const act of log) writePersonaAct(d, act); });
   await founding.flush();
   await founding.shutdown();
   storage.asked = 0;
-  return { storage, url: plane.url };
+  const prove = (records: unknown[]) => { const p = proveFaceFromLog({ records, chain, group, anchor, planes }); return p.ok ? p : null; };
+  return { storage, planes, log, prove };
 }
-const carried = { tiddlers: { ...act(1, "c1") } } as unknown as LarDoc;
-const seqs = (records: unknown[]): number[] => records.map((r) => (r as { body?: { seq?: number } }).body?.seq ?? -1).sort();
+const carriedOf = (log: readonly SignedAct[]): LarDoc => { const doc = emptyLarDoc(); for (const act of log) writePersonaAct(doc, act); return doc; };
+const gate = (state: { open: boolean }): SiblingFaceGate => ({ open: async () => state.open, stillOpen: () => state.open });
 
-describe("readSiblingPersonaRecords: a lit sibling's plane reads from its own rest while its face stands open", () => {
-  test("SP1: an open face's resting plane answers its records beside the carried acts", async () => {
-    const { storage, url } = await restingPlane();
-    const records = await readSiblingPersonaRecords({ storage, personaUrl: url, group: GROUP, faceOpen: async () => true, carried: [carried] });
-    expect(seqs(records)).toEqual([0, 1]);
+describe("proveSiblingFromRest: a lit sibling proves from its own rest while its face stands open", () => {
+  test("SP1: an open face's resting signed plane proves", async () => {
+    const s = await sibling();
+    expect(await proveSiblingFromRest({ storage: s.storage, personaUrl: s.planes.persona, group, face: gate({ open: true }), prove: s.prove })).not.toBeNull();
   });
 
-  test("SP2 CUSTODY: a shut face reads no plane; the store goes unasked and the carried acts alone answer", async () => {
-    const { storage, url } = await restingPlane();
-    const records = await readSiblingPersonaRecords({ storage, personaUrl: url, group: GROUP, faceOpen: async () => false, carried: [carried] });
-    expect(storage.asked).toBe(0);
-    expect(seqs(records)).toEqual([1]);
+  test("SP2 CUSTODY: a shut face reads no plane; its store goes unasked and, with nothing carried, the proof refuses", async () => {
+    const s = await sibling();
+    expect(await proveSiblingFromRest({ storage: s.storage, personaUrl: s.planes.persona, group, face: gate({ open: false }), prove: s.prove })).toBeNull();
+    expect(s.storage.asked).toBe(0);
   });
 
-  test("SP3 CUSTODY: a plane that rests nowhere answers the carried acts alone", async () => {
-    const { url } = await restingPlane();
+  test("SP3 SIGNED CARRIED-ONLY: with no plane at rest, the signed admit acts carried in the secret home prove alone", async () => {
+    const s = await sibling();
     const empty = memoryAdapter();
-    const records = await readSiblingPersonaRecords({ storage: empty, personaUrl: url, group: GROUP, faceOpen: async () => true, carried: [carried] });
-    expect(empty.asked).toBe(1);
-    expect(seqs(records)).toEqual([1]);
+    expect(await proveSiblingFromRest({ storage: empty, personaUrl: s.planes.persona, group, face: gate({ open: true }), prove: s.prove })).toBeNull();
+    expect(await proveSiblingFromRest({ storage: empty, personaUrl: s.planes.persona, group, face: gate({ open: true }), carried: [carriedOf(s.log)], prove: s.prove })).not.toBeNull();
+    expect(empty.asked).toBe(2);
+  });
+
+  test("SP4 CUSTODY: a resting plane whose founding another key signed reads, and the fold refuses it", async () => {
+    const s = await sibling(21, 99);
+    let read = 0;
+    expect(await proveSiblingFromRest({ storage: s.storage, personaUrl: s.planes.persona, group, face: gate({ open: true }), prove: (r) => { read = r.length; return s.prove(r); } })).toBeNull();
+    expect(read).toBeGreaterThan(0);
+  });
+
+  test("SP5 CUSTODY: the face locks while the read is pending: the plane drops and the proof refuses", async () => {
+    const s = await sibling();
+    const state = { open: true };
+    let release!: () => void;
+    const pending = new Promise<void>((done) => { release = done; });
+    const slow = { loadRange: async (prefix: StorageKey) => { await pending; return s.storage.loadRange(prefix); } };
+    let seen = -1;
+    const proving = proveSiblingFromRest({ storage: slow, personaUrl: s.planes.persona, group, face: gate(state), prove: (r) => { seen = r.length; return s.prove(r); } });
+    await Promise.resolve();
+    state.open = false;   // the lock lands mid-read
+    release();
+    expect(await proving).toBeNull();
+    expect(seen).toBe(0);
+  });
+
+  test("SP6 CUSTODY: the face locks after the read and before acceptance: the proof that leaned on the plane reads null", async () => {
+    const s = await sibling();
+    const state = { open: true };
+    const proved = await proveSiblingFromRest({ storage: s.storage, personaUrl: s.planes.persona, group, face: gate(state),
+      prove: (r) => { const p = s.prove(r); state.open = false; return p; } });
+    expect(proved).toBeNull();
   });
 });

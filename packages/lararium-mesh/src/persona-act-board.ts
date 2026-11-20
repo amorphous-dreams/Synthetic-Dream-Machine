@@ -111,6 +111,27 @@ export function heldDocOf(repo: Repo, url: string): LarDoc | undefined {
   return handle?.isReady() ? (handle.doc() as LarDoc | undefined) : undefined;
 }
 
+/** The most chunks one resting plane may carry before its read refuses as absent (a persona plane holds a face's few acts). */
+export const RESTING_DOC_MAX_CHUNKS = 4096;
+/** The most bytes one resting plane may carry before its read refuses as absent, checked before any buffer allocates. */
+export const RESTING_DOC_MAX_BYTES = 32 * 1024 * 1024;
+
+/** One read of a document's chunks per store at a time: a silent store holds one read, never a pile of them. */
+const restingReads = new WeakMap<object, Map<string, Promise<Chunk[] | null>>>();
+function readChunksOnce(storage: Pick<StorageAdapterInterface, "loadRange">, documentId: string): Promise<Chunk[] | null> {
+  let reads = restingReads.get(storage);
+  if (reads === undefined) { reads = new Map(); restingReads.set(storage, reads); }
+  const standing = reads.get(documentId);
+  if (standing !== undefined) return standing;
+  let read: Promise<Chunk[] | null>;
+  try { read = Promise.resolve(storage.loadRange([documentId])).catch(() => null); }
+  catch { read = Promise.resolve(null); }   // an adapter that throws on the call answers absence, as one that rejects does
+  const held = reads;
+  const settled: Promise<Chunk[] | null> = read.finally(() => { if (held.get(documentId) === settled) held.delete(documentId); });
+  reads.set(documentId, settled);
+  return settled;
+}
+
 /**
  * A plane doc as this replica's own STORE rests it, read from the storage adapter's bytes alone and loaded into a scratch
  * document: never a Repo handle, never the network, never a peer. A lit sibling's persona plane rests so (the composition
@@ -118,31 +139,44 @@ export function heldDocOf(repo: Repo, url: string): LarDoc | undefined {
  * its proof never reached the live Repo, since this read never touches one.
  *
  * Pass the vessel's own face-gated store as `storage`: a chunk sealed under a face outside the open set refuses there, and
- * the refusal reads as absent. The bound holds at acceptance: an answer that lands after `boundMs` reads absent, and since
- * the read loads nothing into any Repo, a late answer populates nothing. Absent (nothing rests, a refusal, a torn chunk, the
- * bound spent) answers undefined.
+ * the refusal reads as absent. THE TIMER CLOSES THE WINDOW: the bound's timer callback alone marks the read spent, and the
+ * read accepts only while that mark stands clear, checked after the decode and before the answer returns, so an answer that
+ * lands once the timer fired reads absent (a late answer populates nothing: nothing loads into any Repo). The store's own
+ * read cannot cancel through its interface; one read per document per store stands at a time, so a silent store holds one.
+ *
+ * ABSENT means undefined, never a partial plane: nothing rests; a refusal; the bound spent; any reported chunk whose bytes did
+ * not read (an older snapshot never stands in for a missing incremental); more than `RESTING_DOC_MAX_CHUNKS` chunks or
+ * `RESTING_DOC_MAX_BYTES` bytes (checked before allocation); a malformed url; a torn chunk; any throw on the way.
  */
 export async function readRestingDoc(
   storage: Pick<StorageAdapterInterface, "loadRange">, url: string, boundMs = DOCUMENT_READY_TIMEOUT_MS,
 ): Promise<LarDoc | undefined> {
-  const documentId = parseAutomergeUrl(url as AutomergeUrl).documentId;
-  // THE BOUND HOLDS AT ACCEPTANCE: once the timer spends it, no answer counts, whichever settles first.
+  let documentId: string;
+  try { documentId = parseAutomergeUrl(url as AutomergeUrl).documentId; } catch { return undefined; }
   let spent = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const late = new Promise<null>((resolve) => { timer = setTimeout(() => { spent = true; resolve(null); }, boundMs); });
   let chunks: Chunk[] | null;
-  try { chunks = await Promise.race([storage.loadRange([documentId]).catch(() => null), late]); }
+  try { chunks = await Promise.race([readChunksOnce(storage, documentId), late]); }
   finally { clearTimeout(timer); }
   if (chunks === null || spent) return undefined;
-  // The engine's own order (`StorageSubsystem.loadDocData`): snapshots, then incrementals; no other role carries the doc.
-  const role = (c: Chunk): number => (c.key[1] === "snapshot" ? 0 : c.key[1] === "incremental" ? 1 : -1);
-  const parts = chunks.filter((c): c is Chunk & { data: Uint8Array } => c.data !== undefined && role(c) >= 0).sort((a, b) => role(a) - role(b));
-  if (parts.length === 0) return undefined;
-  const bytes = new Uint8Array(parts.reduce((n, c) => n + c.data.length, 0));
-  let at = 0;
-  for (const c of parts) { bytes.set(c.data, at); at += c.data.length; }
   try {
+    // The engine's own order (`StorageSubsystem.loadDocData`): snapshots, then incrementals; no other role carries the doc.
+    const role = (c: Chunk): number => (c.key[1] === "snapshot" ? 0 : c.key[1] === "incremental" ? 1 : -1);
+    const parts = chunks.filter((c) => role(c) >= 0);
+    if (parts.length === 0 || parts.length > RESTING_DOC_MAX_CHUNKS) return undefined;
+    let total = 0;
+    for (const c of parts) {
+      if (!(c.data instanceof Uint8Array)) return undefined;   // a reported chunk that did not read: absent, never stale-present
+      total += c.data.length;
+      if (total > RESTING_DOC_MAX_BYTES) return undefined;
+    }
+    const ordered = [...parts].sort((a, b) => role(a) - role(b));
+    const bytes = new Uint8Array(total);
+    let at = 0;
+    for (const c of ordered) { bytes.set(c.data!, at); at += c.data!.length; }
     const doc = A.loadIncremental(A.init<LarDoc>(), bytes);
-    return A.getHeads(doc).length > 0 ? (doc as LarDoc) : undefined;
+    if (spent || A.getHeads(doc).length === 0) return undefined;
+    return doc as LarDoc;
   } catch { return undefined; }
 }

@@ -170,7 +170,7 @@ import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-store.js";
 import { raiseAnchorFromSlots } from "./lease-observation.js";
-import { readFacePersonaRecords, readSiblingPersonaRecords } from "./persona-act-store.js";
+import { readFacePersonaRecords, proveSiblingFromRest } from "./persona-act-store.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
@@ -3466,20 +3466,34 @@ async function prepareNodeBootOn(
         const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
         const chain = personaKelChainForPrefix(board.doc(), other.personaKelPrefix);
         if (!chain || chain.length === 0) return null;
-        // A SIBLING'S PLANE RESTS UNMOUNTED: the composition mounts the worn face's plane alone, so the proof reads the plane's
-        // bytes from this vessel's own face-gated store into a scratch document (`readSiblingPersonaRecords`): no Repo handle, no
-        // peer, and a face that stands shut at the read reads no plane. Nothing it reads reaches the live Repo, proved or not.
-        const records = await readSiblingPersonaRecords({ storage: sealedRest.store, personaUrl: plane.url, group: plane.personaGroupId,
-          faceOpen: async () => { const holder = standingCustody(); return holder !== null && holder.isUnlocked() && (await holder.faceStanding({ group: personaGroupDigest(plane.personaGroupId) }))?.unlocked === true; },
-          carried: [secretHome?.handle.doc()] });
         const otherFace = faceBootTiddlers ? bootFacePlanes(faceBootTiddlers, plane.personaGroupId) : null;
         if (!otherFace?.intentsUrl) return null;
-        const proof = proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace.intentsUrl } });
-        if (!proof.ok) return null;
-        return {
-          planes: provenPlaneUrls(proof.projection, { circles: otherFace.circlesUrl, identities: otherFace.identitiesUrl, sessions: otherFace.sessionsUrl, intents: otherFace.intentsUrl }),
-          relation: (await import("@lararium/mesh")).faceRelationOf(proof.projection),
-        };
+        const { faceRelationOf } = await import("@lararium/mesh");
+        // A SIBLING'S PLANE RESTS UNMOUNTED: the composition mounts the worn face's plane alone, so the proof reads the plane's
+        // bytes from this vessel's own face-gated store into a scratch document (`proveSiblingFromRest`): no Repo handle, no
+        // peer. The face must stand open before the read, and the same opening must still stand when the proof is accepted
+        // (`unlockedFaces`, read synchronously beside the proof). Nothing it reads reaches the live Repo, proved or not.
+        let openedFcid: string | null = null;
+        return await proveSiblingFromRest({ storage: sealedRest.store, personaUrl: plane.url, group: plane.personaGroupId,
+          face: {
+            open: async () => {
+              const holder = standingCustody();
+              if (holder === null || !holder.isUnlocked()) return false;
+              const standing = await holder.faceStanding({ group: personaGroupDigest(plane.personaGroupId) });
+              openedFcid = standing?.unlocked === true ? standing.fcid : null;
+              return openedFcid !== null;
+            },
+            stillOpen: () => { const holder = standingCustody(); return openedFcid !== null && holder !== null && holder.isUnlocked() && holder.unlockedFaces().includes(openedFcid); },
+          },
+          carried: [secretHome?.handle.doc()],
+          prove: (records) => {
+            const proof = proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace.intentsUrl! } });
+            if (!proof.ok) return null;
+            return {
+              planes: provenPlaneUrls(proof.projection, { circles: otherFace.circlesUrl, identities: otherFace.identitiesUrl, sessions: otherFace.sessionsUrl, intents: otherFace.intentsUrl }),
+              relation: faceRelationOf(proof.projection),
+            };
+          } });
       } catch (e) { if (!(e instanceof CustodyLocked)) throw e; return null; }
     }
     const proveRelayFace = async (group: string) => {

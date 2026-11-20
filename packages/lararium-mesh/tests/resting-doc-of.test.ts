@@ -8,15 +8,20 @@
  *       then fetches it over that real network, so the peer could have answered)
  *   R3  CUSTODY: a sibling's plane sealed under its own face reads while that face stands open, and absent once it locks
  *   R4  CUSTODY: a decryptable plane whose log the root never signed reads, fails its fold, and never reached the live Repo
- *   R5  BOUND: a silent store and a late store each read absent at the bound; the late answer populates nothing
+ *   R5  BOUND: a silent store and a late store each read absent at the bound; the late answer populates nothing (fake timers)
+ *   R6  ORDER: the timer callback alone closes the window; a read it races and loses reads absent (fake timers)
+ *   R7  BOUND: one read per document per store stands at a time
+ *   R8  PARTIAL: a reported chunk that did not read, too many chunks, or too many bytes read absent
+ *   R9  ABSENCE: a malformed url, a throwing adapter and torn bytes read absent, never a throw
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { Repo, type AutomergeUrl, type Chunk, type PeerId, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
+import * as A from "@automerge/automerge";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { MessageChannel, type MessagePort } from "node:worker_threads";
-import { heldDocOf, personaActRecordsOfGroup, personaLineageFromKel, readRestingDoc, signFoundingLog, writePersonaAct } from "../src/persona-act-board.js";
+import { RESTING_DOC_MAX_BYTES, RESTING_DOC_MAX_CHUNKS, heldDocOf, personaActRecordsOfGroup, personaLineageFromKel, readRestingDoc, signFoundingLog, writePersonaAct } from "../src/persona-act-board.js";
 import { projectPersonaLog } from "../src/persona-act.js";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { faceProofSubjectRef } from "../src/face-proof-subjects.js";
@@ -138,21 +143,87 @@ describe("readRestingDoc: a sibling's plane reads from this replica's own store 
     expect(holdsHandle(live, url)).toBe(false);
   });
 
-  test("R5 BOUND: a silent store and a late store each read absent at the bound, and the late answer populates nothing", async () => {
+  test("R5 BOUND: a silent store reads absent at the bound, and a late store's answer reads absent and populates nothing", async () => {
     const real = memoryAdapter();
     const url = await restPlane(real, { "lar:///founding": { text: "rests" } });
-    const silent = { loadRange: () => new Promise<Chunk[]>(() => {}) };
-    let t0 = Date.now();
-    expect(await readRestingDoc(silent, url, 300)).toBeUndefined();
-    expect(Date.now() - t0).toBeLessThan(2_000);
-    let landed = false;
-    const late = { loadRange: (prefix: StorageKey) => new Promise<Chunk[]>((done) => setTimeout(() => { landed = true; void real.loadRange(prefix).then(done); }, 600)) };
     const live = repoOf({ storage: real, network: [], sharePolicy: async () => false });
-    t0 = Date.now();
-    expect(await readRestingDoc(late, url, 200)).toBeUndefined();
-    expect(Date.now() - t0).toBeLessThan(500);
-    await new Promise((done) => setTimeout(done, 700));
-    expect(landed).toBe(true);
-    expect(holdsHandle(live, url)).toBe(false);
+    vi.useFakeTimers();
+    try {
+      const silent = { loadRange: () => new Promise<Chunk[]>(() => {}) };
+      const quiet = readRestingDoc(silent, url, 300);
+      await vi.advanceTimersByTimeAsync(300);
+      expect(await quiet).toBeUndefined();
+      let answer!: (chunks: Chunk[]) => void;
+      const late = { loadRange: () => new Promise<Chunk[]>((done) => { answer = done; }) };
+      const reading = readRestingDoc(late, url, 200);
+      await vi.advanceTimersByTimeAsync(200);
+      answer(await real.loadRange([url.replace(/^automerge:/, "")]));
+      expect(await reading).toBeUndefined();
+      expect(holdsHandle(live, url)).toBe(false);
+    } finally { vi.useRealTimers(); }
+  });
+
+  test("R6 ORDER: the timer callback alone closes the window: an answer settled before it fires reads whole; one it races and loses reads absent", async () => {
+    const real = memoryAdapter();
+    const url = await restPlane(real, { "lar:///founding": { text: "rests" } });
+    const chunks = await real.loadRange([url.replace(/^automerge:/, "")]);
+    vi.useFakeTimers();
+    try {
+      // Settled one tick inside the bound: the timer has not fired, so the answer stands.
+      let early!: (c: Chunk[]) => void;
+      const inside = readRestingDoc({ loadRange: () => new Promise<Chunk[]>((done) => { early = done; }) }, url, 100);
+      await vi.advanceTimersByTimeAsync(99);
+      early(chunks);
+      expect(textOf(await inside, "lar:///founding")).toBe("rests");
+      // The I/O completes, and the timer fires before the race's continuation runs: the timer's mark closes the window, so the
+      // completed read never counts, however it orders against the timer's own resolve.
+      let racing!: (c: Chunk[]) => void;
+      const raced = readRestingDoc({ loadRange: () => new Promise<Chunk[]>((done) => { racing = done; }) }, url, 100);
+      await vi.advanceTimersByTimeAsync(99);
+      racing(chunks);
+      vi.advanceTimersByTime(1);
+      expect(await raced).toBeUndefined();
+    } finally { vi.useRealTimers(); }
+  });
+
+  test("R7 BOUND: one read per document per store stands at a time; a silent store holds one read, never a pile", async () => {
+    const real = memoryAdapter();
+    const url = await restPlane(real, { "lar:///founding": { text: "rests" } });
+    let asked = 0;
+    const silent = { loadRange: () => { asked++; return new Promise<Chunk[]>(() => {}); } };
+    vi.useFakeTimers();
+    try {
+      const reads = [readRestingDoc(silent, url, 50), readRestingDoc(silent, url, 50), readRestingDoc(silent, url, 50)];
+      await vi.advanceTimersByTimeAsync(50);
+      expect(await Promise.all(reads)).toEqual([undefined, undefined, undefined]);
+      expect(asked).toBe(1);
+    } finally { vi.useRealTimers(); }
+  });
+
+  test("R8 PARTIAL: a reported chunk that did not read, too many chunks, or too many bytes read absent, never stale-present", async () => {
+    const real = memoryAdapter();
+    const url = await restPlane(real, { "lar:///founding": { text: "rests" } });
+    // The plane's resting chunks, then one incremental beside them, as the engine writes a later change.
+    const id = url.replace(/^automerge:/, "");
+    const rested = await real.loadRange([id]);
+    const base = A.loadIncremental(A.init<LarDoc>(), rested[0]!.data!);
+    const heads = A.getHeads(base);
+    const next = A.change(base, (d) => { (d.tiddlers as Record<string, unknown>)["lar:///second"] = { text: "an incremental" }; });
+    const chunks: Chunk[] = [...rested, { key: [id, "incremental", "later"], data: A.saveSince(next, heads) }];
+    expect(textOf(await readRestingDoc({ loadRange: async () => chunks }, url), "lar:///second")).toBe("an incremental");
+    const missing: Chunk[] = chunks.map((c) => (c.key[1] === "incremental" ? { key: c.key, data: undefined } : c));
+    expect(await readRestingDoc({ loadRange: async () => missing }, url)).toBeUndefined();
+    const many = Array.from({ length: RESTING_DOC_MAX_CHUNKS + 1 }, (_, i) => ({ key: [url, "incremental", `h${i}`], data: new Uint8Array(1) }));
+    expect(await readRestingDoc({ loadRange: async () => many }, url)).toBeUndefined();
+    const heavy = [{ key: [url, "snapshot", "big"], data: new Uint8Array(RESTING_DOC_MAX_BYTES + 1) }];
+    expect(await readRestingDoc({ loadRange: async () => heavy }, url)).toBeUndefined();
+  });
+
+  test("R9 ABSENCE: a malformed url, an adapter that throws on the call, and torn bytes each read absent, never a throw", async () => {
+    const real = memoryAdapter();
+    const url = await restPlane(real, { "lar:///founding": { text: "rests" } });
+    expect(await readRestingDoc(real, "not-a-url")).toBeUndefined();
+    expect(await readRestingDoc({ loadRange: () => { throw new Error("adapter fault"); } }, url)).toBeUndefined();
+    expect(await readRestingDoc({ loadRange: async () => [{ key: [url, "snapshot", "x"], data: new Uint8Array([1, 2, 3, 4]) }] }, url)).toBeUndefined();
   });
 });
