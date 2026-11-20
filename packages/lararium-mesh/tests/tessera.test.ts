@@ -9,7 +9,7 @@ import { describe, expect, test } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { beginRite, conferre, landRite, riteReceipts, tesseraOf } from "../src/swarm-tessera.js";
 import {
-  putSwarmAct, readSwarmRecord, signSwarmAct, swarmActCid, swarmLeiReturnedTitle, swarmLeiRecordTitle, swarmReceiptTitle, swarmTesseraTitle,
+  putSwarmAct, readSwarmRecord, signSwarmAct, swarmActCid, swarmLeiReturnedTitle, swarmLeiRecordTitle, swarmTesseraTitle,
   type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import { placeTrust, restPlaceReceipt } from "./place-receipt.js";

@@ -10,7 +10,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { SWARM_VERB_HAND_CODES, restringLei, swarmCommand, unstringLei, type SwarmDoorDeps } from "../src/swarm-door.js";
 import {
-  putSwarmAct, readLei, readSwarmRecord, returnLei, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiTitle, swarmLeiUnstrungTitle, swarmReceiptTitle,
+  readLei, readSwarmRecord, returnLei, swarmActCid, swarmLeiRecordTitle, swarmLeiTitle, swarmLeiUnstrungTitle,
   type SignedSwarmAct, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import { soloCosign } from "./ward-cosign-table.js";
