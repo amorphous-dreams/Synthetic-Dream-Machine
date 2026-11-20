@@ -430,11 +430,16 @@ test("every workflow pins ONE exact pnpm: package.json `packageManager` names it
     // THE RECORDS SPEAK, THE WORKFLOWS DO NOT RESTATE: a workflow-level env key naming a version or an image is a second copy.
     assert.doesNotMatch(text, /^\s*(NODE_VERSION|PNPM_VERSION|TW5_PRISTINE|PLAYWRIGHT_IMAGE):/m, `${name} restates a pin an existing record holds`);
     assert.doesNotMatch(text, /env\.(NODE_VERSION|PNPM_VERSION|PLAYWRIGHT_IMAGE)/, `${name} reads a pin env`);
+    // THE PRISTINE ENGINE IS A LOCKFILE DEPENDENCY: no workflow packs, caches, tags or resolves one by hand.
+    assert.doesNotMatch(text, /TW5_PRISTINE|npm pack|lares-pristine|npm view/, `${name} names a pristine engine by hand`);
     // pnpm/action-setup reads package.json `packageManager` when `version` is omitted.
     for (const m of text.matchAll(/pnpm\/action-setup@[^\n]*\n(?:\s+(?:if|name|id):[^\n]*\n)*(\s+with:\n(?:\s+[a-z-]+:[^\n]*\n)+)?/g)) {
       assert.doesNotMatch(m[1] ?? "", /version:/, `${name} gives pnpm/action-setup a version beside package.json`);
     }
   }
+  const tw5 = JSON.parse(readFileSync(join(ROOT, "packages/lararium-tw5/package.json"), "utf8"));
+  assert.match(tw5.devDependencies?.["tiddlywiki-pristine"] ?? "", /^npm:tiddlywiki@\d+\.\d+\.\d+$/, "the pristine engine rides the lockfile as an exact npm alias");
+  assert.match(readFileSync(join(ROOT, "pnpm-lock.yaml"), "utf8"), /tiddlywiki-pristine:\n\s+specifier: npm:tiddlywiki@/, "the lockfile records the alias");
   assert.match(readFileSync(join(ROOT, "Dockerfile"), "utf8"), new RegExp(`npm install -g pnpm@${exact.replaceAll(".", "\\.")}\\b`), "the Dockerfile installs another pnpm");
 });
 

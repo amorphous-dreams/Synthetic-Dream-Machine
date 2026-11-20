@@ -295,44 +295,23 @@ jobs:
       - name: Point dist-plugin at the committed standalone artifact
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
-      # THE UPSTREAM RELEASE THE FORK STANDS ON. The submodule's nearest release tag names the published tiddlywiki the plugin must
-      # also drop into: a function of the pinned submodule commit, never of what npm publishes next. The checkout is shallow and
-      # holds no tags, so the step fetches the submodule's commit graph (no trees, no blobs) and its tags, then reads `describe`.
-      - name: Read the upstream release the fork stands on
+      # THE PUBLISHED ENGINE IS A DEPENDENCY. `tiddlywiki-pristine` (packages/lararium-tw5 devDependencies, an npm alias of the stock
+      # release) lands in the lockfile with its integrity hash and in the install above; the contact reads its version off the
+      # installed package, so nothing here restates it.
+      - name: Witness the pristine engine is the installed alias
         if: ${{ !cancelled() }}
         run: |
-          git -C TiddlyWiki5 fetch --quiet --tags --filter=tree:0 --depth=2147483647 origin
-          tag=$(git -C TiddlyWiki5 describe --tags --abbrev=0)
-          test -n "$tag"
-          echo "TW5_PRISTINE=${tag#v}" >> "$GITHUB_ENV"
-      - name: Cache the published tiddlywiki
-        id: pristine-cache
-        if: ${{ !cancelled() }}
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/lares-pristine/tiddlywiki-${{ env.TW5_PRISTINE }}
-          key: pristine-tiddlywiki-${{ env.TW5_PRISTINE }}
-      - name: Pack the published tiddlywiki from npm
-        if: ${{ !cancelled() && steps.pristine-cache.outputs.cache-hit != 'true' }}
-        run: |
-          dir=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE
-          mkdir -p "$dir" && cd "$dir"
-          npm pack "tiddlywiki@$TW5_PRISTINE" --silent
-          tar xzf "tiddlywiki-$TW5_PRISTINE.tgz"
-      - name: Witness the engine is the one pinned
-        if: ${{ !cancelled() }}
-        run: |
-          pkg=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package
-          test -f "$pkg/tiddlywiki.js"
-          node -e 'const v=require(process.argv[1]+"/package.json").version; console.log("pristine engine: tiddlywiki@"+v); if(v!==process.env.TW5_PRISTINE){console.error("::error::packed "+v+", pinned "+process.env.TW5_PRISTINE);process.exit(1)}' "$pkg"
+          dir=$(node -p "require('path').dirname(require.resolve('tiddlywiki-pristine/tiddlywiki.js', { paths: ['packages/lararium-tw5'] }))")
+          test -f "$dir/tiddlywiki.js"
+          node -p "'pristine engine: tiddlywiki@' + require(process.argv[1] + '/package.json').version" "$dir"
       - name: meme-routes + standalone single-file contact against the pristine engine
         if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.chromium.outcome == 'success' }}
         run: |
-          export LARES_TW5_JS=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package/tiddlywiki.js
+          export LARES_TW5_JS=$(node -p "require.resolve('tiddlywiki-pristine/tiddlywiki.js', { paths: ['packages/lararium-tw5'] })")
           export LARES_E2E_TMP="$RUNNER_TEMP/pristine-e2e"
           mkdir -p "$LARES_E2E_TMP"
           cd packages/lararium-tw5
-          env PW_MOUNTS="$HOME/.cache/lares-pristine $LARES_E2E_TMP" PW_ENV="LARES_TW5_JS LARES_E2E_TMP" \
+          env PW_MOUNTS="$LARES_E2E_TMP" PW_ENV="LARES_TW5_JS LARES_E2E_TMP" \
             "$GITHUB_WORKSPACE/tools/pw-container.sh" npx vitest run tests/meme-routes.e2e.test.ts tests/standalone-single-file.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
           test "${PIPESTATUS[0]}" -eq 0
       - name: The log names the engine it met
@@ -340,8 +319,10 @@ jobs:
         run: |
           line=$(grep -a "meme-routes.e2e: contact with TiddlyWiki" "$RUNNER_TEMP/pristine.log" || true)
           echo "$line"
-          if ! grep -aq "contact with TiddlyWiki $TW5_PRISTINE " "$RUNNER_TEMP/pristine.log"; then
-            echo "::error::the contact never named tiddlywiki@$TW5_PRISTINE — the suite skipped or met another engine"
+          dir=$(node -p "require('path').dirname(require.resolve('tiddlywiki-pristine/tiddlywiki.js', { paths: ['packages/lararium-tw5'] }))")
+          version=$(node -p "require(process.argv[1] + '/package.json').version" "$dir")
+          if ! grep -aq "contact with TiddlyWiki $version " "$RUNNER_TEMP/pristine.log"; then
+            echo "::error::the contact never named tiddlywiki@$version — the suite skipped or met another engine"
             exit 1
           fi
       # ── the contract witness (the hosted witness cell `contract-witness`; WITNESS_CELLS in tools/ci-cells.mjs) ──

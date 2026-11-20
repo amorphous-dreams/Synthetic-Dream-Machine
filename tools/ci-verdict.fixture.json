@@ -144,15 +144,7 @@
        "conclusion": "success"
       },
       {
-       "name": "Cache the published tiddlywiki",
-       "conclusion": "success"
-      },
-      {
-       "name": "Pack the published tiddlywiki from npm",
-       "conclusion": "skipped"
-      },
-      {
-       "name": "Witness the engine is the one pinned",
+       "name": "Witness the pristine engine is the installed alias",
        "conclusion": "success"
       },
       {
@@ -161,10 +153,6 @@
       },
       {
        "name": "The log names the engine it met",
-       "conclusion": "success"
-      },
-      {
-       "name": "Post Cache the published tiddlywiki",
        "conclusion": "success"
       },
       {

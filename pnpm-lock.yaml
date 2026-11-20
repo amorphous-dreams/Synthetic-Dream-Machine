@@ -287,6 +287,9 @@ importers:
       fast-check:
         specifier: 4.10.2
         version: 4.10.2
+      tiddlywiki-pristine:
+        specifier: npm:tiddlywiki@5.4.1
+        version: tiddlywiki@5.4.1
       tsx:
         specifier: 4.23.15
         version: 4.23.15
@@ -1769,6 +1772,11 @@ packages:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
 
+  tiddlywiki@5.4.1:
+    resolution: {integrity: sha512-5Pnk7j8cUMoQHD0CarOWd4ixITURsN4DJxLfg8AGYSMiQoOHH6bp8JDCAgSdvZHRCQmvXtbm5FRxBFBT6WG24A==}
+    engines: {node: '>=20.0.0'}
+    hasBin: true
+
   tinybench@6.2.2:
     resolution: {integrity: sha512-nIZ2N2dFpjBsg2hgitKu7mA+FvsIJuGJOwysRngmVRRmWgR/UyPjwJj8c/fT/dhm8EkHnF5EOogRf+0Z2qrimA==}
     engines: {node: '>=20.0.0'}
@@ -3154,6 +3162,8 @@ snapshots:
   supports-color@7.2.0:
     dependencies:
       has-flag: 4.0.0
+
+  tiddlywiki@5.4.1: {}
 
   tinybench@6.2.2: {}
 
