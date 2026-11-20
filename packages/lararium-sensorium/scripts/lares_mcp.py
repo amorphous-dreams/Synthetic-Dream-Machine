@@ -1261,8 +1261,8 @@ def build_mcp(coordinator: LaresCoordinator):
         """NAME EACH LAYER THE WIKI COMPOSES AND WHETHER THIS SESSION'S FACE READS AND WRITES IT — mirrors `lares wiki
         status`. Returns {recipe, working, layers: [{bag, mounted, read, write, working?, why?}]}: `working` names the
         layer every `tiddler_put` and `meme_put` lands in (null where none stands attached); each layer reads `mounted`
-        "writable" or "read-only", the face's own `read` and `write`, and `why` where a mounted-writable layer still
-        refuses this face. Read it before a write to learn where the write lands. CONTAINER LAW: exactly one of
+        "writable", "read-only" or "promotion-only" (a canon layer: a write reaches it by action verb alone, never by a put),
+        the face's own `read` and `write`, and `why` where a mounted-writable layer still refuses this face. Read it before a write to learn where the write lands. CONTAINER LAW: exactly one of
         `recipe` / `bag`; `recipe` names a wiki: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`."""
         return _meme_wire("wiki-status", _meme_container("wiki_status", recipe, bag))
 
