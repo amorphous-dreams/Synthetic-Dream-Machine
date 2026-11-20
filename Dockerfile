@@ -79,8 +79,10 @@ WORKDIR /app
 
 # The Node slim base omits Python's runtime libraries even though both images
 # use Bookworm. Install the shared libraries explicitly before probing imports.
+# git reads the mounted checkout's tracking: the census names a mirror file git never
+# tracked as an owed commit, and the projector keeps such a file rather than delete it.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      libsqlite3-0 libbz2-1.0 liblzma5 libffi8 libexpat1 libgomp1 libssl3 \
+      libsqlite3-0 libbz2-1.0 liblzma5 libffi8 libexpat1 libgomp1 libssl3 git \
     && rm -rf /var/lib/apt/lists/*
 
 # One explicit Python interpreter and installed dependency closure live beside
