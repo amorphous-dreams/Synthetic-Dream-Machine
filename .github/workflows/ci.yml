@@ -38,7 +38,8 @@ name: CI
 #               (a job-level `if:` cannot read the matrix), and a row the selection leaves out skips every step behind
 #               `contains(needs.scope.outputs.cells, matrix.cell)`; a running row walks its selected packages alone, and the
 #               Test gate owes their reports alone (`--select`).
-#   witnesses — the witness cells and their gate run on a lane when canon moved beside code, or when the full battery runs.
+#   witnesses — the witness cells and their gate run on a lane when canon moved beside code, when a source genesis carries moved
+#               (`isGenesisSource`: the engine's inputs, a packed plugin file), or when the full battery runs.
 # FAIL OPEN TO MORE, NEVER FEWER: a path outside every package dir (tools/, the workflows, the root package.json or lockfile, a
 # non-meme file under bags/), a package no test cell carries, an unread diff or graph selects the full battery (`packages=all`).
 # The full battery runs unchanged on `merge_group`, on a push to `develop` or `main` (and any other branch, a feature span's
