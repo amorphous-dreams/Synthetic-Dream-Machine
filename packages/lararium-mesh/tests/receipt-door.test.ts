@@ -35,11 +35,11 @@ async function faceOf(wiki: SwarmWikiPort, n: number) {
   const group = `face-group-${n}`, hand = await keyed(10 + n), vessel = await keyed(20 + n);
   const trust: SwarmTrust = { hand: (k) => k === hand.key, vessel: (k) => k === vessel.key, place: placeTrust(), lead: () => false };
   const kui = async (terms: Record<string, unknown>, after: string | null = null): Promise<string> => {
-    const lei = await signSwarmAct({ act: "lei", group, rite: "kukulu", branch: BRANCH, after, ...terms } as unknown as SwarmBodyParts, hand);
-    await putSwarmAct(wiki, swarmLeiRecordTitle("kukulu", BRANCH, swarmActCid(lei)), lei);
+    const lei = await signSwarmAct({ act: "lei", group, rite: "keep", branch: BRANCH, after, ...terms } as unknown as SwarmBodyParts, hand);
+    await putSwarmAct(wiki, swarmLeiRecordTitle("keep", BRANCH, swarmActCid(lei)), lei);
     return swarmActCid(lei);
   };
-  const begin = () => beginRite(wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE }, trust, group, vessel, ONE_DEVICE);
+  const begin = () => beginRite(wiki, { rite: "keep", branch: BRANCH, head: HEAD, tree: TREE }, trust, group, vessel, ONE_DEVICE);
   return { n, group, hand, vessel, trust, kui, begin };
 }
 
@@ -95,14 +95,14 @@ describe("receipt-door-signs-the-tree", () => {
 });
 
 describe("one-receipt-serves-every-lent-face", () => {
-  test("RED: three lent faces each hold a kukulu lei on one shared swarm wiki, and one place-signed passing receipt returns all three faces' leis; CONTROL: with no receipt each face refuses `swarm-lei-testimony-absent`", async () => {
+  test("RED: three lent faces each hold a keep lei on one shared swarm wiki, and one place-signed passing receipt returns all three faces' leis; CONTROL: with no receipt each face refuses `swarm-lei-testimony-absent`", async () => {
     const wiki = wikiPort();
     const faces = await Promise.all([0, 1, 2].map((n) => faceOf(wiki, n)));
     const leis = [];
     for (const face of faces) leis.push(await face.kui({ reach: "wide", returns: 2 }));
     for (const face of faces) await expect(face.begin(), `h${face.n}`).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
     await restReceipt(wiki, { tree: TREE, checks: ["typecheck"], verdict: "pass", definitions: DEFS }, PLACE);
-    for (const [i, face] of faces.entries()) await expect(face.begin(), `h${face.n}`).resolves.toMatchObject({ rite: "kukulu", lei: leis[i], n: 1 });
+    for (const [i, face] of faces.entries()) await expect(face.begin(), `h${face.n}`).resolves.toMatchObject({ rite: "keep", lei: leis[i], n: 1 });
     expect([...wiki.rows.keys()].filter((t) => t.includes("/tessera/"))).toHaveLength(3);
   });
 

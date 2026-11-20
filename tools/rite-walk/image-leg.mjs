@@ -715,18 +715,6 @@ const leiKui = async (h) => {
     measures: { branch, exit: r.code, wardPrompted: r.typed, withNoTerminal: quote(refusal(plain)).slice(0, 200), standing } };
 };
 
-/** The receipt the walk rests for a tree: its checks ran under this walker, so the definitions name the walker's sha256. */
-export const receiptArgs = (tree) => ["rite", "receipt", "--tree", tree, "--checks", "rite-walk-image", "--verdict", "pass",
-  "--definitions", sha256(readFileSync(join(CHECKOUT, "tools/rite-walk/image-leg.mjs"))), "--json"];
-
-const riteReceipt = async (h) => {
-  const tree = execFileSync("git", ["-C", CHECKOUT, "rev-parse", "HEAD^{tree}"], { encoding: "utf8" }).trim();
-  const r = await h.shim(receiptArgs(tree), { timeout: 120_000 });
-  const text = h.said(r);
-  if (r.code !== 0 && doorAbsent(text)) return { unreached: "door-absent", answer: refusal(r) };
-  return { ok: r.code === 0, answer: r.code === 0 ? quote(r.stdout) : refusal(r), measures: { tree, exit: r.code } };
-};
-
 const riteKukulu = async (h) => {
   const before = await h.cid("lares");
   const r = await h.hostCli(["rite", "kukulu", "--no-json"], { timeout: 45 * 60_000 });
@@ -777,7 +765,6 @@ export const IMAGE_STEPS = Object.freeze([
   { id: "aho-restart", command: "docker compose restart lares", via: "seat-stdio", needs: ["aho-handshake"], expect: "the child falls and a fresh one stands under the same seat", run: ahoRestart },
   { id: "aho-in-flight", command: "docker compose pause lares · a call · docker compose kill lares", via: "seat-stdio", needs: ["aho-handshake"], expect: "outcome-unknown", run: ahoInFlight },
   { id: "lei-kui", command: "lares lei kui --rite kukulu --branch <branch> --returns 2", via: "pty", needs: ["up"], expect: "the lei strings", run: leiKui },
-  { id: "rite-receipt", command: "lares rite receipt --tree <head tree> --checks … --verdict pass --definitions …", needs: ["up"], expect: "the receipt rests", run: riteReceipt },
   // The pūlama stands beside the vessel (LARES_PULAMA=1 from here on).
   { id: "pulama-up", command: "lares-container.sh pulama up", needs: ["found"], expect: "standing unlit", run: pulamaUp },
   { id: "pulama-status", command: "lares-container.sh pulama status", needs: ["pulama-up"], expect: "lit: false", run: pulamaStatus(false) },

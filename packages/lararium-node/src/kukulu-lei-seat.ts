@@ -13,20 +13,17 @@
  * ── WHO SIGNS WHAT HERE ─────────────────────────────────────────────────────────────────────────
  * The family's trust names a hand, a vessel and a place. Here the hand reads as the key the gate handed in (the face's own,
  * off the pūlama's custody), and both the vessel's witness seat and the place belong to THE PŪLAMA, which keeps the hearth:
- * its own key signs every return and tessera half in this store, and signs the receipt as the place, under the receipt duty's
- * frame (`signRiteReceipt`). No key a vessel holds signs as any of them.
+ * its own key signs every return and tessera half in this store. No key a vessel holds signs as any of them.
  *
  * ── THE OFFER LANDS ONLY WHAT VERIFIES ──────────────────────────────────────────────────────────
  * The vessel offers its lei, the lei that one follows (a chain reads from its first lei), and any unstringing it holds. Each
  * row lands only where the family's own reader verifies it as the hand's record at its own title; a row that verifies as
  * nothing lands nowhere, and the read then finds no lei.
  *
- * ── THE VOUCH STANDS AS THE TESTIMONY ───────────────────────────────────────────────────────────
- * A return rests on a receipt for the head's tree. The pūlama verified the vouch, so it rests the receipt itself, as the
- * witness: the vouch's digest as its definitions and the walk's verdict as its own. A red walk therefore reads as the family
- * reads any red: the return refuses `swarm-lei-testimony-red`, and a wide lei narrows. The receipt sits at one title per tree
- * and names no face, so every lent face's return reads the one receipt; rites still begin one at a time here: a hello rests
- * its own vouch's verdict and returns under it before another writes.
+ * ── THE LEI STANDS AS THE CONSENT ───────────────────────────────────────────────────────────────
+ * A `kukulu` return rests on the hand's signed lei alone (`SWARM_LEI_TESTIFIED_RITES` names no `kukulu`): no receipt weighs
+ * the tree. The pūlama verified the vouch before it began, and the restand's tessera par stays the verdict after the fact.
+ * Rites still begin one at a time here.
  *
  * ONE LEI PER LENT FACE: the gate begins one rite per face it lends, each under that face's group and hand. Every face's lei
  * rests on the branch's one line here, and a face that finds only other faces' rows there reads `swarm-lei-absent`.
@@ -35,21 +32,16 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import {
-  SwarmRefused, beginRite, landRite, signRiteReceipt, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle, swarmReceiptTitle, verifySwarmRecord,
-  type PlaceSigner, type SignedSwarmAct, type SwarmTrust, type SwarmWikiPort, type WardActWitness,
+  SwarmRefused, beginRite, landRite, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle, verifySwarmRecord,
+  type SignedSwarmAct, type SwarmTrust, type SwarmWikiPort, type WardActWitness,
 } from "@lararium/mesh";
 import type { KukuluRiteAt, KukuluRitePort } from "./kukulu-gate.js";
-
-/** The check a receipt the pūlama rests names: the vouch it verified. */
-export const KUKULU_VOUCH_CHECK = "kukulu-vouch";
 
 const NO_COSIGN: WardActWitness = { accepts: () => true };
 const trustOf = (at: KukuluRiteAt): SwarmTrust => {
   const pulama = at.by.key.toLowerCase();
   return { hand: (key) => at.hand(key), vessel: (key) => key.toLowerCase() === pulama, place: (key) => key.toLowerCase() === pulama, lead: () => false };
 };
-/** The pūlama signing as the place: its own key over the receipt duty's framed image, which `signRiteReceipt` builds. */
-const placeOf = (at: KukuluRiteAt): PlaceSigner => ({ key: at.by.key, signFloor: (_domain, image) => at.by.sign(image) });
 
 /** Land one offered row at the title its own body belongs at, where the family's reader verifies it there. */
 async function landOffered(records: SwarmWikiPort, raw: unknown, trust: SwarmTrust, at: KukuluRiteAt): Promise<void> {
@@ -67,8 +59,7 @@ async function landOffered(records: SwarmWikiPort, raw: unknown, trust: SwarmTru
 
 /** The kūkulu rite's port over the pūlama's record store. */
 export function kukuluRiteOver(records: SwarmWikiPort): KukuluRitePort {
-  // ONE RITE BEGINS AT A TIME. The receipt a return rests on sits at one title per tree, so two hellos for one tree must
-  // never interleave: each rests ITS vouch's verdict and returns under it before the next one writes.
+  // ONE RITE BEGINS AT A TIME: two hellos for one tree never interleave their writes.
   let turn: Promise<unknown> = Promise.resolve();
   const inTurn = <T>(act: () => Promise<T>): Promise<T> => { const run = turn.then(act, act); turn = run.catch(() => undefined); return run; };
   return {
@@ -76,8 +67,6 @@ export function kukuluRiteOver(records: SwarmWikiPort): KukuluRitePort {
       const trust = trustOf(at);
       for (const raw of [...offer.lei.slice(0, 64), ...offer.unstrung.slice(0, 64)]) await landOffered(records, raw, trust, at);
       try {
-        const receipt = await signRiteReceipt({ tree: at.tree, checks: [KUKULU_VOUCH_CHECK], verdict: at.verdict, definitions: at.vouch }, placeOf(at));
-        await records.write(swarmReceiptTitle(at.tree), JSON.stringify(receipt));
         const begun = await beginRite(records, { rite: "kukulu", branch: at.branch, head: at.head, tree: at.tree }, trust, at.group, at.by, NO_COSIGN);
         return { ok: true as const, tessera: begun.tessera, lei: begun.lei, n: begun.n };
       } catch (err) {

@@ -17,7 +17,7 @@
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
  *   offer      `rite-offer` in the STANDING vessel, between the build and the lowering: gather every lent face's line, sign one
  *              vouch per face over the image the host built, and rest the offer the next vessel carries to the pūlama
- *   receipt    `rite-receipt`: the host battery hands the vessel its verdict over a tree, and the place signs `receipt/<tree>`
+ *   receipt    `rite-receipt`: the host battery hands the vessel its verdict over a tree, and the place signs `receipt/<tree>`, the testimony a `push` or `keep` return rests on
  *              once for every face it lends. It names no face: a receipt testifies about code. It notarises testimony: the
  *              place re-runs no check
  *
