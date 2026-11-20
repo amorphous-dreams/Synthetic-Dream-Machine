@@ -6,6 +6,9 @@
  *      root, and its teardown (a lock, a wear that moves the mount) runs the host's down as a lock
  *   H2 the hearth's graceful shutdown runs the one composition teardown, where the face pool's watch stands in the
  *      producers phase (its final wave and commit seam, as a down) ahead of the flush, the signers and the islands
+ *   H3 every pool a tree: the re-stand heals each pool root on disk (`healPoolTrees`) after the realm folders settle, the worn
+ *      face's arm names its owner (so it founds its pool), a lit face founds its pool before its tend, and the mount's realm
+ *      placement founds each realm wiki folder's tree where it lays it (`ensurePoolTree`)
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -30,5 +33,16 @@ describe("the vessel hosts the watch over the worn face's pool", () => {
     expect(vessel).toMatch(/stood\.push\(\{ what: "the face pool's watch", phase: "producers"/);
     const order = readFileSync(new URL("../src/composition-shutdown.ts", import.meta.url), "utf8");
     expect(order).toMatch(/\["producers", "flush", "signers", "islands", "resources", "repo"\]/);
+  });
+
+  test("H3 — every pool a tree: the re-stand heals, the worn arm names its owner, a lit face and a realm lay found theirs", () => {
+    const restand = vessel.slice(vessel.indexOf("settleRealmFolders();"), vessel.indexOf("const diskMirrorGrant"));
+    expect(restand).toMatch(/healPoolTrees\(projectionRoot/);
+    const afterLive = vessel.slice(vessel.indexOf("const afterLive:"), vessel.indexOf("const orchestration:"));
+    expect(afterLive).toMatch(/armFacePoolWatch\(\{ pool, owner: wornFaceSegment,/);
+    const lit = vessel.slice(vessel.indexOf("writeFaceLabel({ relation, petname"), vessel.indexOf("tendLitFacePool(faceRoot("));
+    expect(lit).toMatch(/ensurePoolTree\(faceRoot\(projections, petname\), \{ face: petname \}/);
+    const lay = vessel.slice(vessel.indexOf("const realmBaseOf ="), vessel.indexOf("const diskMirrorGrant"));
+    expect(lay).toMatch(/ensurePoolTree\(join\(base, slug\), \{ realm: slug \}/);
   });
 });

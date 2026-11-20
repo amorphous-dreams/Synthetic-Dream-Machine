@@ -7,7 +7,9 @@
  * `tendPoolExclude`), a local author `<pet name> <slug>@face.invalid` with signing off, and a pre-commit hook that runs the pool check. Git always runs here with an empty global config and no system
  * config, so nothing this door writes or reads reaches past the pool.
  *
- *   - `init [--face N]`: make the worn (or named) face's root a pool; a second run changes nothing and says "already".
+ *   - `init [--face N]`: make the worn (or named) face's root a pool; a second run changes nothing and says "already". The
+ *     vessel founds the same tree by itself, through the same init (`initFacePool`, `initRealmPool`), wherever it lays a pool
+ *     root with none standing (`ensurePoolTree`); `init` re-tends a standing pool's author, exclude block and hook by hand.
  *   - `check [--face N]`: the pool check over the repo standing here (or the named face's pool); exit 1 names each breach.
  *   - `open [--face N] [--launch]`: print (and run) `<editor> -n <face root> <realm pools>`; writes no workspace file. The
  *     editor reads from the house config tiddler `$:/config/lares/surface/Editor` (`<config>/surface-editor.tid`), else `code`.
@@ -37,11 +39,11 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/project/face-pools
  */
 import { spawnSync } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { join, posix, relative, resolve, sep } from "node:path";
-import { createHash } from "node:crypto";
 import {
-  faceRoot, faceSegmentRefusal, withExcludeBlock, KAPAE_EXT, REALM_EXCLUDE_LINES, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
+  poolGit, POOL_PRE_COMMIT, faceEmailSlug, REALM_EMAIL_DOMAIN, initFacePool, initRealmPool, PoolTreeRefused, type PoolInitResult,
+  faceRoot, faceSegmentRefusal, KAPAE_EXT, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
   larProjectionsHome, larConfigHome, larWorkspacesHome, syncedTreeDir, labelledRelations, readFaceLabel, REALMS_PROJECTION_DIR,
   REALM_PLANES, findRealmLabel, realmPlacement,
 } from "@lararium/node";
@@ -246,18 +248,10 @@ export class SurfaceRefused extends Error {
 // ── git, walled ────────────────────────────────────────────────────────────────────────────────────────────
 
 /**
- * Run git in `cwd` with an empty global config and no system config. Every `GIT_*` name the caller's environment carries
- * leaves first: a pre-commit hook hands its child `GIT_DIR` and `GIT_INDEX_FILE`, and an author name in the environment
- * would outrank the pool's own local config.
+ * Run git in `cwd` with an empty global config and no system config, every `GIT_*` name stripped: the pools' one walled git
+ * (`poolGit`), so nothing this door writes or reads reaches past the pool.
  */
-export function surfaceGit(cwd: string, args: readonly string[], input?: string): { readonly code: number; readonly out: string; readonly err: string } {
-  const env: Record<string, string> = {};
-  for (const [k, v] of Object.entries(process.env)) if (v !== undefined && !k.startsWith("GIT_")) env[k] = v;
-  env["GIT_CONFIG_GLOBAL"] = "/dev/null";
-  env["GIT_CONFIG_NOSYSTEM"] = "1";
-  const r = spawnSync("git", [...args], { cwd, env, encoding: "utf8", ...(input !== undefined ? { input } : {}) });
-  return { code: r.status ?? -1, out: r.stdout ?? "", err: r.stderr ?? (r.error?.message ?? "") };
-}
+export const surfaceGit = poolGit;
 
 /** One local config value, or null where the pool sets none. */
 function localConfig(root: string, key: string): string | null {
@@ -267,76 +261,29 @@ function localConfig(root: string, key: string): string | null {
 
 // ── init ───────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** The marker the house's own pre-commit hook carries. */
-const HOOK_MARK = "# lares surface: the roster check runs before every commit";
-/** The pre-commit hook `init` writes. */
-export const SURFACE_PRE_COMMIT = `#!/bin/sh\n${HOOK_MARK} (\`lares surface init\` wrote this hook)\nexec lares surface check\n`;
-
-/**
- * THE AUTHOR EMAIL'S LOCAL PART: the pet name folded to lower-case Latin letters and digits, runs of anything else to one
- * `-`. A name with no Latin letter or digit left takes `face-` and the first eight hex of its NFC bytes' sha256, so two
- * such names never fold to one address. Never a real address: the domain reads `face.invalid`.
- */
-export function faceEmailSlug(petname: string): string {
-  const folded = petname.normalize("NFKD").replace(/\p{M}+/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  if (folded !== "") return folded;
-  return `face-${createHash("sha256").update(petname.normalize("NFC"), "utf8").digest("hex").slice(0, 8)}`;
-}
+/** The pre-commit hook `init` writes: the pools' one hook (`POOL_PRE_COMMIT`), the same the house writes as it founds a pool. */
+export const SURFACE_PRE_COMMIT = POOL_PRE_COMMIT;
+export { faceEmailSlug, REALM_EMAIL_DOMAIN };
 
 /** What one init did: each thing it changed, and each thing it found standing and left. */
-export interface SurfaceInitResult { readonly root: string; readonly changed: readonly string[]; readonly left: readonly string[] }
+export type SurfaceInitResult = PoolInitResult;
 
-/** Make `root` a face pool for `petname`, changing only what does not already stand as the house writes it. */
-export function surfaceInit(root: string, petname: string): SurfaceInitResult {
-  return initPool(root, { name: petname.normalize("NFC"), email: `${faceEmailSlug(petname)}@face.invalid` }, [], "the face root");
+/** The pools' one init, its refusal named in this door's grammar. */
+function byHand(init: () => PoolInitResult): SurfaceInitResult {
+  try { return init(); } catch (e) { if (e instanceof PoolTreeRefused) throw new SurfaceRefused(e.code, e.detail); throw e; }
 }
 
-/** The domain a realm pool's author email carries: never a real address, and never a face's. */
-export const REALM_EMAIL_DOMAIN = "realm.invalid";
+/** Make `root` a face pool for `petname`, changing only what does not already stand as the house writes it (`initFacePool`). */
+export function surfaceInit(root: string, petname: string): SurfaceInitResult {
+  return byHand(() => initFacePool(root, petname));
+}
 
 /**
  * Make the realm pool at `root` (a shared wiki's workbench, standing) a pool under the REALM's identity: author
- * `<slug> <slug>@realm.invalid`, never a face's, since its history interleaves the operator's faces' commits.
+ * `<slug> <slug>@realm.invalid`, never a face's, since its history interleaves the operator's faces' commits (`initRealmPool`).
  */
 export function surfaceInitRealm(root: string, slug: string): SurfaceInitResult {
-  return initPool(root, { name: slug, email: `${slug}@${REALM_EMAIL_DOMAIN}` }, REALM_EXCLUDE_LINES, "the realm root");
-}
-
-/** One pool's init, at either scale: the repository, its mode, the exclude block, the local author, the pool-check hook. */
-function initPool(root: string, author: { readonly name: string; readonly email: string }, extraExclude: readonly string[], rootNoun: string): SurfaceInitResult {
-  const changed: string[] = [], left: string[] = [];
-  if (!existsSync(root)) { mkdirSync(root, { recursive: true }); changed.push(rootNoun); }
-  const dotGit = join(root, ".git");
-  if (!existsSync(join(dotGit, "HEAD"))) {
-    const r = surfaceGit(root, ["init", "-q", "-b", "main"]);
-    if (r.code !== 0) throw new SurfaceRefused("surface-git-init-failed", `git init in ${root} answered ${r.code}: ${r.err.trim()}`);
-    changed.push("git repository");
-  }
-  if ((statSync(dotGit).mode & 0o777) !== 0o700) { chmodSync(dotGit, 0o700); changed.push(".git mode 0700"); }
-  const exclude = join(dotGit, "info", "exclude");
-  const was = existsSync(exclude) ? readFileSync(exclude, "utf8") : "";
-  const now = withExcludeBlock(was, extraExclude);
-  if (now !== was) { mkdirSync(join(dotGit, "info"), { recursive: true }); writeFileSync(exclude, now); changed.push("info/exclude"); }
-  const want: ReadonlyArray<readonly [string, string]> = [
-    ["user.name", author.name],
-    ["user.email", author.email],
-    ["commit.gpgsign", "false"],
-  ];
-  for (const [key, value] of want) {
-    if (localConfig(root, key) === value) continue;
-    const r = surfaceGit(root, ["config", "--local", key, value]);
-    if (r.code !== 0) throw new SurfaceRefused("surface-git-config-failed", `git config --local ${key} in ${root} answered ${r.code}: ${r.err.trim()}`);
-    changed.push(key);
-  }
-  const hook = join(dotGit, "hooks", "pre-commit");
-  const standing = existsSync(hook) ? readFileSync(hook, "utf8") : null;
-  if (standing !== null && !standing.includes(HOOK_MARK)) {
-    left.push(`a pre-commit hook of another hand stands at ${hook}; add \`lares surface check\` to it by hand`);
-  } else {
-    if (standing !== SURFACE_PRE_COMMIT) { mkdirSync(join(dotGit, "hooks"), { recursive: true }); writeFileSync(hook, SURFACE_PRE_COMMIT); changed.push("hooks/pre-commit"); }
-    if ((statSync(hook).mode & 0o111) === 0) { chmodSync(hook, 0o755); if (!changed.includes("hooks/pre-commit")) changed.push("hooks/pre-commit mode"); }
-  }
-  return { root, changed, left };
+  return byHand(() => initRealmPool(root, slug));
 }
 
 // ── check ──────────────────────────────────────────────────────────────────────────────────────────────────
