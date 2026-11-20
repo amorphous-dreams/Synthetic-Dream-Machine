@@ -165,11 +165,23 @@ describe.skipIf(!built)("the pre-commit hook on the host", () => {
     const clean = run("git", ["commit", "-q", "-m", "a sitting"]);
     expect(clean.status, clean.stderr).toBe(0);
 
+    // A pet-name map passes: a pet name binds nothing.
     plant(join(root, "share.tid"), "x\n");
     expect(run("git", ["add", "-A"]).status).toBe(0);
-    const refused = run("git", ["commit", "-q", "-m", "an index file"]);
+    const mapped = run("git", ["commit", "-q", "-m", "an index file"]);
+    expect(mapped.status, mapped.stderr).toBe(0);
+
+    // A signing key another face pool carries refuses: a signing key is a crypto identity.
+    const moth = join(root, "..", "Moth");
+    mkdirSync(moth, { recursive: true });
+    expect(run("git", ["-C", moth, "init", "-q"]).status).toBe(0);
+    expect(run("git", ["config", "--local", "user.signingkey", "ssh-ed25519 AAAAshared"]).status).toBe(0);
+    expect(run("git", ["-C", moth, "config", "--local", "user.signingkey", "ssh-ed25519 AAAAshared"]).status).toBe(0);
+    plant(join(root, "wiki", "Room 5.tid"), "title: Room 5\n\nbody\n");
+    expect(run("git", ["add", "-A"]).status).toBe(0);
+    const refused = run("git", ["commit", "-q", "-m", "a shared key"]);
     expect(refused.status).not.toBe(0);
-    expect(refused.stderr).toContain("share.tid");
+    expect(refused.stderr).toMatch(/signing key/);
     expect(refused.stderr).not.toMatch(/LAR_ROOT names no house root|no house root/);
   });
 });

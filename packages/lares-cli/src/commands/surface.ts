@@ -19,9 +19,10 @@
  * rests once, in its REALM's folder, named by the realm's local pet name (operator ruling 2026-11-19): the workbench mirror
  * `projections/realms/<realm pet name>/wikis/<slug>/`, or the workspace its share row names. Each wiki folder holds its OWN git
  * tree, `.git` at the folder's top, never one tree over the realm. `init --realm <realm pet name>` makes each wiki folder the
- * realm holds a pool under the wiki's identity (`<slug> <slug>@realm.invalid`), never a face's; `check` from one refuses an index
- * file, a face root, an author naming a face, and a remote on a realm only the house's own faces share (its history interleaves
- * those faces' commits, and a remote would carry that history to a third party: research/tideline-surface #/hats); `commit --realm <realm pet name>` stages each by
+ * realm holds a pool under the wiki's identity (`<slug> <slug>@realm.invalid`), never a face's; `check` from one refuses a face root
+ * inside it. A pet name binds nothing here: it is the human-scale grip on the crypto identities beneath it, so the check names no
+ * pet-name row (an index file, an author, a remote); it guards crypto identity (a signing key two pools share) and structure
+ * (one pool per face, no repo over the house's homes); `commit --realm <realm pet name>` stages each by
  * the synced base as the face commit does.
  *
  * A HOST VERB. The pools rest on the disk the house's projections rest on, so the door runs where that disk stands and git
@@ -42,10 +43,10 @@ import { createHash } from "node:crypto";
 import {
   faceRoot, faceSegmentRefusal, withExcludeBlock, KAPAE_EXT, REALM_EXCLUDE_LINES, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
   larProjectionsHome, larConfigHome, larWorkspacesHome, syncedTreeDir, labelledRelations, readFaceLabel, REALMS_PROJECTION_DIR,
-  REALM_PLANES, REALM_LABELS_DIR, findRealmLabel, realmPlacement,
+  REALM_PLANES, findRealmLabel, realmPlacement,
 } from "@lararium/node";
 import {
-  ownPersonaPetname, carrierHash, digestsEqual, parseShareFile, parseShareFilter, SHARE_CONFIG_FILE,
+  ownPersonaPetname, carrierHash, digestsEqual, parseShareFile, SHARE_CONFIG_FILE,
   WORKSPACE_NAME_RE, type ShareEntry,
 } from "@lararium/mesh";
 import { emit, refuseUsage } from "../render.js";
@@ -340,9 +341,6 @@ function initPool(root: string, author: { readonly name: string; readonly email:
 
 // ── check ──────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** Index files that map one face to another: none rests at a pool's top, so a pool that syncs or pushes carries no such map. */
-export const POOL_INDEX_FILES: readonly string[] = [FACE_LABELS_DIR, REALM_LABELS_DIR, "kahua-index.toml", "share.tid", "kahua-pending.json"];
-
 /** One breach the pool check names. */
 export interface SurfaceBreach { readonly code: string; readonly message: string }
 
@@ -365,9 +363,6 @@ export function surfaceCheck(top: string, projections: string, config: string): 
   for (const home of [projections, config]) {
     if (within(real(home), at)) breaches.push({ code: "surface-house-root", message: `the repo at ${at} holds the house's ${home}: no repo roots at projections/ or config/ (one pool per face, under faces/<pet name>/)` });
   }
-  for (const name of POOL_INDEX_FILES) {
-    if (existsSync(join(at, name))) breaches.push({ code: "surface-index-file", message: `${join(at, name)} maps one face to another, and no such index file rests in a face pool (a pool that syncs or pushes would carry the map past this disk): move it out of ${at}` });
-  }
   // ONE TREE PER WIKI FOLDER: a repo at `realms/`, a realm's root or its `wikis/` would hold several wikis' histories in one.
   const realms = real(join(projections, REALMS_PROJECTION_DIR));
   const overRealm = relative(realms, at);
@@ -376,12 +371,9 @@ export function surfaceCheck(top: string, projections: string, config: string): 
   for (const other of roots) {
     if (other.path !== at && within(other.path, at)) breaches.push({ code: "surface-other-face", message: `the repo at ${at} holds the face "${other.petname}"'s root ${other.path}: one pool per face` });
   }
-  const email = localConfig(at, "user.email")?.toLowerCase() ?? null;
   const signing = localConfig(at, "user.signingkey");
   for (const other of roots) {
     if (other.path === at || within(at, other.path) || within(other.path, at) || !existsSync(join(other.path, ".git"))) continue;
-    const theirs = localConfig(other.path, "user.email")?.toLowerCase() ?? null;
-    if (email !== null && email !== "" && theirs === email) breaches.push({ code: "surface-author-shared", message: `the author email ${email} also signs the face "${other.petname}"'s pool (${other.path}): each face commits under its own` });
     const theirKey = localConfig(other.path, "user.signingkey");
     if (signing !== null && signing !== "" && theirKey === signing) breaches.push({ code: "surface-signing-key-shared", message: `the signing key also signs the face "${other.petname}"'s pool (${other.path}): each face signs with its own` });
   }
@@ -438,58 +430,21 @@ export function realmAt(top: string, doors: SurfaceDoors): string | null {
   return null;
 }
 
-/** The pet names the house's faces wear: each face root's folder, and each face label's pet name (NFC). */
-function houseFaceNames(projections: string): string[] {
-  const names = new Set(houseFaceRoots(projections).map((p) => p.slice(p.lastIndexOf(sep) + 1).normalize("NFC")));
-  for (const relation of labelledRelations(projections)) {
-    const label = readFaceLabel(relation, projections);
-    if (label !== null && label.petname.trim() !== "") names.add(label.petname.normalize("NFC"));
-  }
-  return [...names];
-}
-
 /** What the realm check found: each breach, and each warning it names without refusing. */
 export interface RealmCheck { readonly breaches: readonly SurfaceBreach[]; readonly warnings: readonly string[] }
 
 /**
- * THE REALM CHECK over the realm pool for `slug` whose top stands at `top`. Beside the pool check's house-wide rows (no index
- * file, no repo at projections/ or config/, no house face root inside), it refuses:
- *   - a `faces/` folder at the pool's top: a face root rests in its own pool, never inside a realm's;
- *   - an author naming a face: a `user.name` some face here wears, or a `user.email` at `face.invalid` (the realm commits
- *     under its own identity, `<slug>@realm.invalid`);
- *   - a remote, where the realm reads as a CABAL OF ONE: no share row opens the wiki past its owner, or the row's read and
- *     write lists name only `*` and pet names this house's faces wear. Its history interleaves the operator's faces' commits,
- *     so it stays local. A row naming a member no face here wears reads as a realm of many: its remote stands, warned.
+ * THE REALM CHECK over the realm pool for `slug` whose top stands at `top`. Beside the pool check's house-wide rows (no repo at
+ * projections/ or config/, no house face root inside, no repo spanning a realm's wikis), it refuses a `faces/` folder at
+ * the pool's top: a face root rests in its own pool, never inside a realm's. A pet name binds nothing: an author naming a face, an
+ * index file and a remote on a cabal of one's realm all pass, since a realm pool commits unsigned under the wiki's identity and
+ * carries no crypto identity a remote could join.
  */
 export function surfaceCheckRealm(top: string, slug: string, projections: string, config: string): RealmCheck {
   const at = real(top);
-  const breaches: SurfaceBreach[] = surfaceCheck(top, projections, config).filter((b) => b.code !== "surface-author-shared" && b.code !== "surface-signing-key-shared");
-  const warnings: string[] = [];
+  const breaches: SurfaceBreach[] = surfaceCheck(top, projections, config).filter((b) => b.code !== "surface-signing-key-shared");
   if (existsSync(join(at, FACES_PROJECTION_DIR))) breaches.push({ code: "surface-realm-face-root", message: `${join(at, FACES_PROJECTION_DIR)} stands inside the realm pool "${slug}": a face root rests in its own pool (projections/faces/<pet name>/), never in a realm's` });
-  const faces = houseFaceNames(projections);
-  const fold = (n: string): string => n.normalize("NFC").toLowerCase();
-  const name = localConfig(at, "user.name");
-  const email = localConfig(at, "user.email");
-  const face = name === null ? undefined : faces.find((f) => fold(f) === fold(name));
-  if (face !== undefined) breaches.push({ code: "surface-realm-face-author", message: `the realm pool "${slug}" commits as "${face}", a face's pet name: a realm pool commits under the realm's identity (${slug} <${slug}@${REALM_EMAIL_DOMAIN}>; \`lares surface init --realm ${slug}\` sets it)` });
-  if (email !== null && /@face\.invalid$/i.test(email)) breaches.push({ code: "surface-realm-face-author", message: `the realm pool "${slug}" commits as ${email}, a face's address: a realm pool commits under ${slug}@${REALM_EMAIL_DOMAIN}` });
-  const remotes = surfaceGit(at, ["remote"]).out.split("\n").map((r) => r.trim()).filter((r) => r !== "");
-  if (remotes.length > 0) {
-    const row = houseShareRows(config).find((r) => r.kind === "wiki" && r.slug === slug);
-    let strangers: string[] = [];
-    if (row !== undefined) {
-      try {
-        const own = new Set(faces.map(fold));
-        strangers = [...new Set([...parseShareFilter(row.read).names, ...parseShareFilter(row.write).names])].filter((n) => !own.has(fold(n)));
-      } catch { strangers = []; }
-    }
-    if (strangers.length === 0) {
-      breaches.push({ code: "surface-realm-remote", message: `the realm pool "${slug}" carries the remote ${remotes.join(", ")}, and ${row === undefined ? "no share row opens the wiki past its owner" : "its share row names only this house's own faces"}: a cabal of one's realm pool interleaves the operator's faces' commits, so a remote would carry that history to a third party and it stays local (remove the remote: \`git remote remove ${remotes[0]}\`)` });
-    } else {
-      warnings.push(`the realm pool "${slug}" carries the remote ${remotes.join(", ")}; its share row names ${strangers.map((n) => JSON.stringify(n)).join(", ")}, whom no face here wears, so it reads as a realm of many: whatever it pushes commits under the realm's identity (${slug} <${slug}@${REALM_EMAIL_DOMAIN}>), never a face's`);
-    }
-  }
-  return { breaches, warnings };
+  return { breaches, warnings: [] };
 }
 
 // ── open ───────────────────────────────────────────────────────────────────────────────────────────────────
