@@ -6,6 +6,10 @@
 //       cold, so their pages reach no mirror. A keep lei strung, `rite keep-cut` holds each cold wiki in turn before it cuts:
 //       every page rests in the staged tree as a `wiki-working` row, the manifest names none of the woken wikis cold, and the
 //       held set reads as it stood before the cut (`bravo` alone).
+//   W2  the same house, once every wiki holds a workbench folder (the keep woke each and its mirror rests on disk): a restart
+//       arms a watch over each folder, and the catch-up compares the folder with what the house last synced WITHOUT waking
+//       the wiki, so the cold wikis stay cold. Control: a file edited in one cold wiki's folder while the vessel stood down
+//       wakes that wiki alone, and the edit ingests.
 //
 // The house stands under its own marked scratch LAR_ROOT through the test custody doors; no LAR_BAGS, no docker.
 import "./test-ward-env.mjs";
@@ -38,9 +42,10 @@ async function standHouse(tag, name) {
   assert.equal(found.status, 0, `found ${tag}: ${found.stdout}${found.stderr}`);
   // The daemon stands, then the custody opens; a restart walks both again (rotatable holds live in the daemon alone).
   let child;
+  let log = "";   // the running daemon's own words, read afresh at each boot
   const boot = async () => {
     child = spawn(process.execPath, [nodeMain, "--root", root, "--port", String(port)], { cwd: join(repo, "packages/lararium-node"), env });
-    let log = "";
+    log = "";
     child.stdout.on("data", (d) => { log += String(d); }); child.stderr.on("data", (d) => { log += String(d); });
     const c = child;
     await new Promise((resolve, reject) => { const poll = setInterval(() => { if (daemonStood(log)) { clearInterval(poll); resolve(); } else if (c.exitCode !== null) { clearInterval(poll); reject(new Error(log.slice(-3000))); } }, 200); });
@@ -52,7 +57,7 @@ async function standHouse(tag, name) {
   const restart = async () => { await stop(); await boot(); };
   const must = (args) => { const r = lares(args); assert.equal(r.status, 0, `lares ${args.join(" ")}\n${r.stdout}\n${r.stderr}`); return r; };
   const answer = (r) => JSON.parse(r.stdout.trim().split("\n").pop());
-  return { root, port, lares, must, answer, stop, restart };
+  return { root, port, lares, must, answer, stop, restart, start: boot, logText: () => log };
 }
 const memeText = (uri, body) => { const path = uri.slice("lar:///".length); return `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${path}"\n\`\`\`\n\n! ${path.split("/").pop()}\n\n${body}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`; };
 
@@ -97,6 +102,63 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
     const cold = manifest.omissions.find((o) => o.kind === "cold-wikis");
     for (const slug of SLUGS) assert.ok(!(cold?.items ?? []).includes(slug), `the keep woke ${slug}, so it names it cold nowhere: ${JSON.stringify(cold)}`);
     assert.deepEqual(held(), ["bravo"], "the pins read as they stood before the cut");
+  } finally {
+    await h.stop();
+    rmSync(h.root, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
+/** The wikis `wiki active` lists as live (the daemon stands outside the list). */
+const liveWikis = (h) => {
+  const out = h.must(["wiki", "active"]).stdout.split("\n");
+  const from = out.findIndex((l) => l.startsWith("active wikis"));
+  return out.slice(from + 1).filter((l) => /^\s+\S/.test(l) && !/daemon|rotatable/.test(l)).map((l) => l.trim().split(/\s+/).pop()).sort();
+};
+/** Wait until each wiki's workbench watch has finished its catch-up and stands live (the log names its folder). */
+const watchesStand = async (h, slugs) => {
+  const stands = (slug) => h.logText().includes(`the watch stands over ${join(h.root, "projections", "realms", slug, "wikis", slug)}`);
+  for (let i = 0; i < 300 && !slugs.every(stands); i++) await new Promise((r) => setTimeout(r, 200));
+  assert.ok(slugs.every(stands), `every workbench watch stands: ${h.logText().split("\n").filter((l) => l.includes("watch")).join("\n")}`);
+};
+
+test("W2 a restart over wikis that hold workbench folders wakes none of them; an edit made while down wakes that wiki alone and ingests", { timeout: 900_000 }, async () => {
+  const scratch = mkdtempSync(join(tmpdir(), "lares-keep-cold-files-"));
+  const h = await standHouse("w2", "steward");
+  try {
+    for (const slug of SLUGS) h.must(["wiki", "init", slug, "--json"]);
+    await h.restart();
+    h.must(["wiki", "hold", "bravo"]);
+    // What a restart holds live with no folder in the way (the home wiki, the held pin): the baseline no cold wiki joins.
+    const stands = liveWikis(h);
+    const joined = () => liveWikis(h).filter((s) => !stands.includes(s));
+    for (const slug of SLUGS) {
+      const file = join(scratch, `${slug}.mem`);
+      writeFileSync(file, memeText(pageUri(slug), `a page in ${slug}`));
+      h.must(["meme", "put", pageUri(slug), "--recipe", slug, "--file", file, "--json"]);
+    }
+    // The keep wakes each cold wiki, and a woken wiki projects its workbench: every wiki now holds a folder on disk.
+    mkdirSync(join(h.root, "workspaces", "backup", ".git"), { recursive: true });
+    h.must(["lei", "kui", "--rite", "keep", "--branch", "backup", "--returns", "2", "--json"]);
+    assert.equal(h.answer(h.must(["rite", "keep-cut", "--workspace", "backup", "--json"])).data.kept, true);
+    const folder = (slug) => join(h.root, "projections", "realms", slug, "wikis", slug);
+    const pageFile = (slug) => join(folder(slug), "ha.ka.ba", "notes", "page", `${slug}-one.mem`);
+    for (const slug of SLUGS) assert.ok(existsSync(pageFile(slug)), `${slug} holds a workbench folder`);
+
+    // THE RED STANDS: the restart's catch-up woke every wiki that holds a folder.
+    await h.restart();
+    await watchesStand(h, SLUGS);
+    assert.deepEqual(joined(), [], "no cold wiki wakes for a folder that stands as the last sync left it");
+
+    // CONTROL: one file edited in a cold wiki's folder while the vessel stood down wakes that wiki alone, and the edit lands.
+    await h.stop();
+    const edited = pageFile("charlie");
+    writeFileSync(edited, readFileSync(edited, "utf8").replace("a page in charlie", "a page in charlie, edited while down"));
+    await h.start();
+    await watchesStand(h, SLUGS);
+    assert.deepEqual(joined(), ["charlie"], "the edited wiki wakes alone");
+    const got = h.must(["meme", "get", pageUri("charlie"), "--recipe", "charlie", "--no-json"]).stdout;
+    assert.match(got, /edited while down/, "the edit ingests");
   } finally {
     await h.stop();
     rmSync(h.root, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
