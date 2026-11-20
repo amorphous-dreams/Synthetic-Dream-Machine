@@ -20,6 +20,9 @@
  *
  * The page's reading of each click decides each step (`defaultPrevented` read at the document, after the sink's handler
  * ran; the story river read off the DOM); a timeout only bounds a wait.
+ *
+ * W4-W6 act on the page W3 leaves (`alpha` alone in the river). They stand on W3: a W3 that did not walk through skips them,
+ * so a beta that arrives after W3 gave up never reads as their failure.
  */
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -38,6 +41,8 @@ const WAIT = 120_000;
 const ALPHA = golden.world.tiddlers[0]!.title;
 const BETA = golden.world.tiddlers[1]!.title;
 let sentinelCount = 0;
+/** W3 walked through: the page stands with `alpha` alone again, the ground W4-W6 act on. */
+let navigated = false;
 
 let hearth: LarInstance | null = null;
 let browser: Browser | null = null;
@@ -228,9 +233,11 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
     expect(opened.length, "no tab opened").toBe(before);
     await closeTiddler(BETA);
     expect(await story()).toEqual([ALPHA]);
+    navigated = true;
   });
 
-  test("W4 — a modified click and a middle click leave the browser default standing and the story holds", async () => {
+  test("W4 — a modified click and a middle click leave the browser default standing and the story holds", async (ctx) => {
+    if (!navigated) ctx.skip();
     const link = wiki().locator(".tc-story-river a.tc-tiddlylink-resolves").first();
     const before = opened.length;
     await link.click({ modifiers: ["Control"] });
@@ -243,7 +250,8 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
     expect(await story()).toEqual([ALPHA]);
   });
 
-  test("W5 — an external href never relays: the default stands and the story holds", async () => {
+  test("W5 — an external href never relays: the default stands and the story holds", async (ctx) => {
+    if (!navigated) ctx.skip();
     const before = opened.length;
     await wiki().locator(".tc-story-river a.tc-tiddlylink-external").first().click();
     await expect.poll(() => opened.length, { timeout: 20_000 }).toBe(before + 1);
@@ -252,7 +260,8 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
     expect(await story()).toEqual([ALPHA]);
   });
 
-  test("W6 — an unbound span raises no act: the default stands and the story holds", async () => {
+  test("W6 — an unbound span raises no act: the default stands and the story holds", async (ctx) => {
+    if (!navigated) ctx.skip();
     const before = opened.length;
     await wiki().locator(".tc-story-river span.plain").first().click();
     const clicked = await lastClick();   // the sentinel's own clicks come after: read this one's verdict first
