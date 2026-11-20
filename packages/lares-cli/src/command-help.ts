@@ -41,6 +41,34 @@ export interface CommandHelp {
 }
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
+  ddate: {
+    usage: "usage: lares ddate [+FORMAT] [day month year]",
+    synopsis:
+      "Print the Discordian date, computed by the house's own calendar (no host ddate binary stands behind it). " +
+      "Five seasons of 73 days (Chaos, Discord, Confusion, Bureaucracy, The Aftermath), a five-day week (Sweetmorn, Boomtime, Pungenday, " +
+      "Prickle-Prickle, Setting Orange), YOLD = the Gregorian year + 1166, St. Tib's Day on February 29 (no season, no weekday), " +
+      "an apostle's holyday on day 5 of a season and its season holyday on day 50. With no date it reads today's local day. " +
+      "X-Day (Confusion 40, 9827 YOLD) is the Church of the SubGenius's date, set forward once the first X-Day passed without incident; %X counts the days to it.",
+    details: [
+      "  %A %a   weekday, long and short          %B %b   season, long and short",
+      "  %d      day of the season                %e      the ordinal (1st, 11th, 21st, 22nd, 23rd)",
+      "  %E      the ordinal by its last digit alone (11st, 12nd, 13rd): the first ddate's reading, an easter egg",
+      "  %H      the day's holyday, if any        %N      stop here unless the day holds a holyday",
+      "  %Y      the YOLD                         %X      days until X-Day (negative once it passed)",
+      "  %n %t   newline, tab                     %.      an exclamation from the platform's entropy door",
+      "  %{ %}   the span between them reads \"St. Tib's Day\" on February 29 and prints plain on every other day",
+    ],
+    examples: [
+      "lares ddate                                       # today, with the default format",
+      "lares ddate 5 1 2024                              # a named day: Setting Orange, Chaos 5, 3190 YOLD",
+      "lares ddate '+%{%A, the %e of %B%}, %Y. %N%nCelebrate %H' 19 2 2025",
+      "lares ddate +%X 20 11 2026                        # days until X-Day",
+      "lares ddate --no-json '+%. %E'                    # an exclamation and the first ddate's ordinal",
+    ],
+    flags: [
+      "--json       emit {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}; `entropy` names the door a `%.` drew from",
+    ],
+  },
   herm: {
     usage: "usage: lares herm [--port N] [--relay-port N]  |  lares herm relay-rotate",
     synopsis: "Stand a herm: the wiki-less wayfarer that stands the carriage crossroads a family's hearths dial to carry sealed bodies between each other. It boots the same node the vessel runs, under the herm recipe, and prints the crossroads' dial URL(s) and gate key once the node attests ready.",

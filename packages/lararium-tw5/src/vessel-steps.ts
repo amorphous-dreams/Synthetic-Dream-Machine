@@ -30,7 +30,8 @@ import {
   type WikiRecipe,
   type WikiMountSpec,
   type IslandGrants, ownEntry, litFaceCatalogOf, isFloorCanonAddress} from "@lararium/mesh";
-import type { VerbTable } from "./verb-dispatcher.js";
+import { VERB_SURFACE, type VerbTable } from "./verb-dispatcher.js";
+import { ddateVerb } from "./ddate-verb.js";
 import { effectiveRecipe } from "./recipe-planes.js";
 
 /** Resolve one bag's doc handle. Encodes the platform/office seed policy
@@ -73,6 +74,13 @@ export function seedVesselDefaults(registry: VerbTable): void {
   // echo — universal protocol smoke verb.
   if (!registry.has("echo")) {
     registry.register("echo", async (args) => ({ echoed: args }));
+  }
+  // ddate — the Discordian calendar through the house's own core; the caller names today's date (the clock seam).
+  if (!registry.has("ddate")) {
+    registry.register("ddate", ddateVerb, {
+      summary: "Read the Discordian date through the house's own calendar: `format` (ddate(1) codes: %A %a %B %b %d %e %E %H %N %n %t %Y %. %X %{ %}) and a date (`day`, `month`, `year`, together), or `today` ({year, month, day}) when none rides. Answers {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}.",
+      surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent],
+    });
   }
 }
 

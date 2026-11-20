@@ -12,6 +12,14 @@
       "import": "./dist/agile-digest.js",
       "types": "./dist/agile-digest.d.ts"
     },
+    "./ddate": {
+      "import": "./dist/ddate.js",
+      "types": "./dist/ddate.d.ts"
+    },
+    "./entropy-door": {
+      "import": "./dist/entropy-door.js",
+      "types": "./dist/entropy-door.d.ts"
+    },
     "./bures-metric": {
       "import": "./dist/bures-metric.js",
       "types": "./dist/bures-metric.d.ts"

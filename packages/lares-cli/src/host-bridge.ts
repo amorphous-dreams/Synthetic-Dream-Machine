@@ -79,7 +79,7 @@ export function shimHelpLines(verb: string): string[] | null {
 }
 
 /** Commands that run on this machine whole. */
-const HOST_COMMANDS: ReadonlySet<string> = new Set(["home", "repo", "help", "wing-of", "mempalace", "mcp", "surface"]);
+const HOST_COMMANDS: ReadonlySet<string> = new Set(["home", "repo", "help", "wing-of", "ddate", "mempalace", "mcp", "surface"]);
 
 /** Commands with some sub-verbs local and the rest in the vessel. */
 const MIXED_COMMANDS: ReadonlySet<string> = new Set(["meme", "rite"]);

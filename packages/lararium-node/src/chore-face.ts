@@ -33,7 +33,7 @@ export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze(
   // The main thread's reads.
   "recall": READ, "status": READ, "rejim": READ, "worldline": READ, "worldline-compare": READ, "worldline-trajectory": READ,
   "analyze": READ, "ki": READ, "li": READ, "jing": READ, "couple-r": READ, "forecast": READ, "mismatch": READ, "flow": READ,
-  "roster": READ, "inspect": READ, "residency": READ, "wiki-active": READ, "echo": READ,
+  "roster": READ, "inspect": READ, "residency": READ, "wiki-active": READ, "echo": READ, "ddate": READ,
   ...Object.fromEntries(STORE_DOOR_VERBS.filter((verb) => !STORE_DOOR_FACE_VERBS.has(verb)).map((verb) => [verb, PLACE])),
 });
 
