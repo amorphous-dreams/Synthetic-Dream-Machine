@@ -4,11 +4,11 @@
  * ONE POOL PER FACE, KEYED BY PET NAME. Each face's private planes rest under `projections/faces/<pet name>/`
  * (`faceRoot`, `FACE_PLANES`), and that root holds the face's one git working tree: `.git` inside it (0700), the house's
  * one ignore list (`HOUSE_IGNORED`) in `.git/info/exclude` (the vessel's watch keeps that block current at each arm:
- * `tendPoolExclude`), a local author `<pet name> <slug>@face.invalid` with signing off, and a pre-commit hook that runs the roster check. Git always runs here with an empty global config and no system
+ * `tendPoolExclude`), a local author `<pet name> <slug>@face.invalid` with signing off, and a pre-commit hook that runs the pool check. Git always runs here with an empty global config and no system
  * config, so nothing this door writes or reads reaches past the pool.
  *
  *   - `init [--face N]`: make the worn (or named) face's root a pool; a second run changes nothing and says "already".
- *   - `check [--face N]`: the roster witness over the repo standing here (or the named face's pool); exit 1 names each breach.
+ *   - `check [--face N]`: the pool check over the repo standing here (or the named face's pool); exit 1 names each breach.
  *   - `open [--face N] [--launch]`: print (and run) `<editor> -n <face root> <realm pools>`; writes no workspace file. The
  *     editor reads from the house config tiddler `$:/config/lares/surface/Editor` (`<config>/surface-editor.tid`), else `code`.
  *   - `commit [--face N] [-m <seam>]`: stage only the paths whose disk bytes equal the synced base, and commit them under a
@@ -21,7 +21,7 @@
  * tree, `.git` at the folder's top, never one tree over the realm. `init --realm <realm pet name>` makes each wiki folder the
  * realm holds a pool under the wiki's identity (`<slug> <slug>@realm.invalid`), never a face's; `check` from one refuses an index
  * file, a face root, an author naming a face, and a remote on a realm only the house's own faces share (its history interleaves
- * those faces' commits, so it stays local: research/tideline-surface #/hats); `commit --realm <realm pet name>` stages each by
+ * those faces' commits, and a remote would carry that history to a third party: research/tideline-surface #/hats); `commit --realm <realm pet name>` stages each by
  * the synced base as the face commit does.
  *
  * A HOST VERB. The pools rest on the disk the house's projections rest on, so the door runs where that disk stands and git
@@ -301,7 +301,7 @@ export function surfaceInitRealm(root: string, slug: string): SurfaceInitResult 
   return initPool(root, { name: slug, email: `${slug}@${REALM_EMAIL_DOMAIN}` }, REALM_EXCLUDE_LINES, "the realm root");
 }
 
-/** One pool's init, at either scale: the repository, its mode, the exclude block, the local author, the roster hook. */
+/** One pool's init, at either scale: the repository, its mode, the exclude block, the local author, the pool-check hook. */
 function initPool(root: string, author: { readonly name: string; readonly email: string }, extraExclude: readonly string[], rootNoun: string): SurfaceInitResult {
   const changed: string[] = [], left: string[] = [];
   if (!existsSync(root)) { mkdirSync(root, { recursive: true }); changed.push(rootNoun); }
@@ -340,10 +340,10 @@ function initPool(root: string, author: { readonly name: string; readonly email:
 
 // ── check ──────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** Index files that link faces: none ever rests at a pool's top. */
+/** Index files that map one face to another: none rests at a pool's top, so a pool that syncs or pushes carries no such map. */
 export const POOL_INDEX_FILES: readonly string[] = [FACE_LABELS_DIR, REALM_LABELS_DIR, "kahua-index.toml", "share.tid", "kahua-pending.json"];
 
-/** One breach the roster check names. */
+/** One breach the pool check names. */
 export interface SurfaceBreach { readonly code: string; readonly message: string }
 
 const real = (p: string): string => { try { return realpathSync(p); } catch { return resolve(p); } };
@@ -358,7 +358,7 @@ function houseFaceRoots(projections: string): string[] {
   return names.filter((n) => faceSegmentRefusal(n) === null).map((n) => join(faces, n)).filter((p) => { try { return statSync(p).isDirectory(); } catch { return false; } });
 }
 
-/** THE ROSTER CHECK over the repo whose top stands at `top`, in a house whose homes are `projections` and `config`. */
+/** THE POOL CHECK over the repo whose top stands at `top`, in a house whose homes are `projections` and `config`. */
 export function surfaceCheck(top: string, projections: string, config: string): SurfaceBreach[] {
   const breaches: SurfaceBreach[] = [];
   const at = real(top);
@@ -366,7 +366,7 @@ export function surfaceCheck(top: string, projections: string, config: string): 
     if (within(real(home), at)) breaches.push({ code: "surface-house-root", message: `the repo at ${at} holds the house's ${home}: no repo roots at projections/ or config/ (one pool per face, under faces/<pet name>/)` });
   }
   for (const name of POOL_INDEX_FILES) {
-    if (existsSync(join(at, name))) breaches.push({ code: "surface-index-file", message: `${join(at, name)} links faces, and no index file rests in a face pool: move it out of ${at}` });
+    if (existsSync(join(at, name))) breaches.push({ code: "surface-index-file", message: `${join(at, name)} maps one face to another, and no such index file rests in a face pool (a pool that syncs or pushes would carry the map past this disk): move it out of ${at}` });
   }
   // ONE TREE PER WIKI FOLDER: a repo at `realms/`, a realm's root or its `wikis/` would hold several wikis' histories in one.
   const realms = real(join(projections, REALMS_PROJECTION_DIR));
@@ -452,7 +452,7 @@ function houseFaceNames(projections: string): string[] {
 export interface RealmCheck { readonly breaches: readonly SurfaceBreach[]; readonly warnings: readonly string[] }
 
 /**
- * THE REALM CHECK over the realm pool for `slug` whose top stands at `top`. Beside the roster check's house-wide rows (no index
+ * THE REALM CHECK over the realm pool for `slug` whose top stands at `top`. Beside the pool check's house-wide rows (no index
  * file, no repo at projections/ or config/, no house face root inside), it refuses:
  *   - a `faces/` folder at the pool's top: a face root rests in its own pool, never inside a realm's;
  *   - an author naming a face: a `user.name` some face here wears, or a `user.email` at `face.invalid` (the realm commits
@@ -484,7 +484,7 @@ export function surfaceCheckRealm(top: string, slug: string, projections: string
       } catch { strangers = []; }
     }
     if (strangers.length === 0) {
-      breaches.push({ code: "surface-realm-remote", message: `the realm pool "${slug}" carries the remote ${remotes.join(", ")}, and ${row === undefined ? "no share row opens the wiki past its owner" : "its share row names only this house's own faces"}: a cabal of one's realm pool interleaves the operator's faces' commits, so it stays local (remove the remote: \`git remote remove ${remotes[0]}\`)` });
+      breaches.push({ code: "surface-realm-remote", message: `the realm pool "${slug}" carries the remote ${remotes.join(", ")}, and ${row === undefined ? "no share row opens the wiki past its owner" : "its share row names only this house's own faces"}: a cabal of one's realm pool interleaves the operator's faces' commits, so a remote would carry that history to a third party and it stays local (remove the remote: \`git remote remove ${remotes[0]}\`)` });
     } else {
       warnings.push(`the realm pool "${slug}" carries the remote ${remotes.join(", ")}; its share row names ${strangers.map((n) => JSON.stringify(n)).join(", ")}, whom no face here wears, so it reads as a realm of many: whatever it pushes commits under the realm's identity (${slug} <${slug}@${REALM_EMAIL_DOMAIN}>), never a face's`);
     }

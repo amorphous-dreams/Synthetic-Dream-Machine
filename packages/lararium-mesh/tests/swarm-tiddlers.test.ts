@@ -2,7 +2,7 @@
  * swarm-tiddlers — the swarm's live controls as signed records in the daemon wiki: the titles, the `swarm-act` signing domain, the
  * share sum law, a lei that binds branch and head and is spent once, and a verify-on-read that fails closed.
  *
- * Each record names who may sign it: the face's hand (lei), the vessel as witness (roster, receipt, a lei's spend), the lead under its
+ * Each record names who may sign it: the face's hand (lei), the vessel as witness (roster, a lei's spend), the lead under its
  * own seat name (lane state). A record that fails any check reads as ABSENT for the caller's purpose, never as a softer grant.
  * Every red pairs with a CONTROL. Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
@@ -11,11 +11,10 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { PROMOTE_ACT_DOMAIN, SWARM_ACT_DOMAIN } from "../src/domains.js";
 import { canonicalJsonBytes } from "../src/crypto.js";
 import {
-  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmCapRefusal, swarmLeiNarrowedTitle, swarmLeiRecordTitle, swarmLeiReturnedTitle, swarmLeiTitle, swarmHouseCapTitle,
-  swarmLaneStateTitle, swarmReceiptTitle, swarmRecordFields, swarmRosterTitle, swarmShareRefusal, swarmShareTitle, SWARM_URI_PREFIX,
+  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmCapRefusal, swarmLeiRecordTitle, swarmLeiReturnedTitle, swarmLeiTitle, swarmHouseCapTitle,
+  swarmLaneStateTitle, swarmRecordFields, swarmRosterTitle, swarmShareRefusal, swarmShareTitle, SWARM_URI_PREFIX,
   type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
-import { placeTrust, restPlaceReceipt } from "./place-receipt.js";
 
 const GROUP = "face-group", HEAD = "a".repeat(40), TREE = "b".repeat(40);
 const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -31,14 +30,14 @@ const ONE_DEVICE = { accepts: () => true };
 
 async function fixture() {
   const hand = await keyed(1), vessel = await keyed(2), lead = await keyed(3), outsider = await keyed(4);
-  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, place: placeTrust(), lead: (seat: string, lane: string, k: string) => seat === "lead-a" && lane === "lane-a" && k === lead.key };
+  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: (seat: string, lane: string, k: string) => seat === "lead-a" && lane === "lane-a" && k === lead.key };
   const leiBody = (over: Record<string, unknown> = {}) => ({ group: GROUP, rite: "push" as const, reach: "head" as const, branch: "feature/x", head: HEAD, after: null, ...over });
   return { hand, vessel, lead, outsider, trust, wiki: wikiPort(), leiBody };
 }
 
 describe("the titles and the signing domain", () => {
   test("RED: every title rests under the swarm prefix, a name escapes as one segment, and the signing domain is its own minted name; CONTROL: a dot name refuses", () => {
-    for (const t of [swarmHouseCapTitle(), swarmShareTitle("lane-a"), swarmLeiTitle("push", "feature/x"), swarmLaneStateTitle("lane-a"), swarmRosterTitle("seat-1"), swarmReceiptTitle(TREE), swarmLeiReturnedTitle("c".repeat(64), 1)]) expect(t.startsWith(SWARM_URI_PREFIX), t).toBe(true);
+    for (const t of [swarmHouseCapTitle(), swarmShareTitle("lane-a"), swarmLeiTitle("push", "feature/x"), swarmLaneStateTitle("lane-a"), swarmRosterTitle("seat-1"), swarmLeiReturnedTitle("c".repeat(64), 1)]) expect(t.startsWith(SWARM_URI_PREFIX), t).toBe(true);
     expect(swarmLeiTitle("push", "feature/x")).toBe("$:/lares/swarm/lei/push/feature%2Fx");
     expect(swarmShareTitle("lane-a")).toBe("$:/lares/swarm/lane/lane-a/share");
     expect(SWARM_ACT_DOMAIN).not.toBe(PROMOTE_ACT_DOMAIN);
@@ -135,8 +134,6 @@ describe("a lei binds branch and head and is spent once", () => {
   const issue = async (f: Awaited<ReturnType<typeof fixture>>, over: Record<string, unknown> = {}, signer = f.hand): Promise<string> => {
     const lei = await signSwarmAct({ act: "lei", ...f.leiBody(over) }, signer);
     await putSwarmAct(f.wiki, swarmLeiRecordTitle("push", "feature/x", swarmActCid(lei)), lei);
-    // A spend rests on a passing receipt for the head's tree (`lei-reach.test.ts`): one stands beside every lei issued here.
-    await restPlaceReceipt(f.wiki, TREE);
     return swarmActCid(lei);
   };
 
@@ -186,7 +183,7 @@ describe("a name escapes no segment (S1 cold read, P2-1)", () => {
   });
 
   test("RED: a one-segment name (lane, seat, tree, a spend cid) refuses a slash and every dot spelling; CONTROL: a plain name stands", () => {
-    for (const make of [swarmShareTitle, swarmLaneStateTitle, swarmRosterTitle, swarmReceiptTitle, (cid: string) => swarmLeiReturnedTitle(cid, 1), swarmLeiNarrowedTitle]) {
+    for (const make of [swarmShareTitle, swarmLaneStateTitle, swarmRosterTitle, (cid: string) => swarmLeiReturnedTitle(cid, 1)]) {
       for (const bad of ["a/b", "..", "%2e%2e", "a%2Fb", "%2F"]) expect(() => make(bad), `${make.name} ${bad}`).toThrow(SwarmRefused);
       expect(make("lane-a").startsWith(SWARM_URI_PREFIX)).toBe(true);
     }
@@ -196,7 +193,7 @@ describe("a name escapes no segment (S1 cold read, P2-1)", () => {
 describe("a lead's trust binds its lane (S1 cold read, P2-3)", () => {
   test("RED: a lead's key signing another lane's state refuses by role; CONTROL: its own lane reads", async () => {
     const hand = await keyed(1), lead = await keyed(3);
-    const trust = { hand: (k: string) => k === hand.key, vessel: () => false, place: () => false, lead: (seat: string, lane: string, k: string) => seat === "lead-a" && lane === "lane-a" && k === lead.key };
+    const trust = { hand: (k: string) => k === hand.key, vessel: () => false, lead: (seat: string, lane: string, k: string) => seat === "lead-a" && lane === "lane-a" && k === lead.key };
     const wiki = wikiPort();
     const other = await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-b", seat: "lead-a", state: { phase: "build" } }, lead);
     await putSwarmAct(wiki, swarmLaneStateTitle("lane-b"), other);

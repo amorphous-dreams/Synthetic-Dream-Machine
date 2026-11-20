@@ -12,7 +12,6 @@ import {
   putSwarmAct, readSwarmRecord, signSwarmAct, swarmActCid, swarmLeiReturnedTitle, swarmLeiRecordTitle, swarmTesseraTitle,
   type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
-import { placeTrust } from "./place-receipt.js";
 
 const GROUP = "face-group", BRANCH = "main", HEAD = "a".repeat(40), HEAD2 = "b".repeat(40), TREE = "1".repeat(40);
 const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -20,7 +19,7 @@ const ONE_DEVICE = { accepts: () => true };
 
 async function fixture() {
   const hand = await keyed(1), vessel = await keyed(2), outsider = await keyed(4);
-  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, place: placeTrust(), lead: () => false };
+  const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: () => false };
   const rows = new Map<string, string>();
   const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
     list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };

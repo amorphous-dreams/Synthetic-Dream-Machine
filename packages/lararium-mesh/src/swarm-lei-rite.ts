@@ -32,12 +32,3 @@ export const leiRiteCosigns = (rite: SwarmLeiRite): boolean => SWARM_LEI_COSIGNE
 
 /** The ward verb a lei of this rite asks its co-sign under, where its rite co-signs (`leiRiteCosigns`). */
 export const wardLeiVerb = (rite: SwarmLeiRite): WardLeiVerb => `ward-${rite}-lei`;
-
-/**
- * THE TESTIMONY WEIGHS A TREE. A rite that runs at a head and testifies (`push`, `keep`) spends only beside a passing receipt for that
- * head's tree (`returnLei`). A `kukulu` spend rests on the hand's signed lei alone: the lei stands as the operator's consent, and the
- * restand's tessera par stays the verdict after the fact. An `exec` spend names a record, never a tree of commits: the hand's signed lei, scoped to the record,
- * stands as its consent, and its spend runs the scope check instead (`spendExecLei`).
- */
-export const SWARM_LEI_TESTIFIED_RITES: readonly SwarmLeiRite[] = ["push", "keep"];
-export const leiRiteTestifies = (rite: SwarmLeiRite): boolean => SWARM_LEI_TESTIFIED_RITES.includes(rite);

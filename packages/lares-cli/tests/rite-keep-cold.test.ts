@@ -44,7 +44,6 @@ function rig(over: { listed?: string[]; active?: string[]; held?: string[]; budg
     row: async (verb) => {
       calls.push(verb);
       if (verb === "swarm-show") return { ok: true, output: { lei: over.lei === false ? { standing: false, refusal: "absent" } : { standing: true } } };
-      if (verb === "rite-receipt") return { ok: true, output: {} };
       return { ok: true, output: { tessera: "e".repeat(64), lei: "d".repeat(64), n: 1 } };
     },
     cut: async (dest, opts) => {
@@ -89,7 +88,7 @@ describe("the keep wakes cold wikis", () => {
     // The walk's own pins release, and bravo, held before, holds again.
     expect(r.calls.slice(6, 10)).toEqual(["read", "release charlie", "release delta", "hold bravo"]);
     expect(r.state.held).toEqual(["bravo"]);
-    expect(r.calls.slice(10)).toEqual(["rite-receipt", "rite-begin"]);
+    expect(r.calls.slice(10)).toEqual(["rite-begin"]);
   });
 
   test("C2 RED: a hold that never lands stays out of the woken set, and the walk goes on; CONTROL: the pins still come back", async () => {

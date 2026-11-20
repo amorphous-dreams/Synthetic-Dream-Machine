@@ -111,20 +111,15 @@ describe("lares rite plans one store row per vessel sub-verb", () => {
     expect(plan("land", "--tessera", TESSERA, "--head", HEAD, "--face", "1")).toEqual({ verb: "rite-land", args: { tessera: TESSERA, head: HEAD, face: 1 } });
     expect(plan("receipts")).toEqual({ verb: "rite-receipts", args: {} });
     expect(plan("begin", "--rite", "keep", "--branch", "backup", "--head", "c".repeat(64), "--staging", ".house.keep-0a")).toEqual({ verb: "rite-begin", args: { rite: "keep", branch: "backup", head: "c".repeat(64), staged: ".house.keep-0a" } });
-    // receipt-door-signs-the-tree: the host battery hands the vessel its verdict over a tree, and the place signs it.
-    expect(plan("receipt", "--tree", "b".repeat(40), "--checks", "typecheck, mesh,cli", "--verdict", "pass", "--definitions", "d".repeat(64)))
-      .toEqual({ verb: "rite-receipt", args: { tree: "b".repeat(40), checks: ["typecheck", "mesh", "cli"], verdict: "pass", definitions: "d".repeat(64) } });
   });
 
-  it("RED: a receipt that names a face refuses by usage, since the place signs it once for every face it lends; CONTROL: the same line with no face plans the row", () => {
-    const line = ["receipt", "--tree", "b".repeat(40), "--checks", "typecheck", "--verdict", "pass", "--definitions", "d".repeat(64)];
-    expect(() => plan(...line, "--face", "0")).toThrow(/receipt names no face/);
-    expect(plan(...line).args).not.toHaveProperty("face");
+  it("RED: the burned `receipt` sub-verb plans no row and refuses by usage; CONTROL: `receipts` still plans its row", () => {
+    expect(() => plan("receipt", "--tree", "b".repeat(40))).toThrow(RiteUsage);
+    expect(plan("receipts")).toEqual({ verb: "rite-receipts", args: {} });
   });
 
   it("RED: an unknown sub-verb and a line that lacks a name refuse by usage; `kukulu` plans no single row", () => {
-    for (const line of [[], ["restart"], ["begin", "--rite", "kukulu", "--branch", "main"], ["begin", "--branch", "main", "--head", HEAD], ["land", "--head", HEAD], ["land", "--tessera", TESSERA], ["kukulu"],
-      ["receipt", "--tree", "t", "--checks", "a", "--verdict", "pass"], ["receipt", "--tree", "t", "--checks", " , ", "--verdict", "pass", "--definitions", "d"], ["receipt", "--checks", "a", "--verdict", "pass", "--definitions", "d"]]) {
+    for (const line of [[], ["restart"], ["begin", "--rite", "kukulu", "--branch", "main"], ["begin", "--branch", "main", "--head", HEAD], ["land", "--head", HEAD], ["land", "--tessera", TESSERA], ["kukulu"]]) {
       expect(() => plan(...line), line.join(" ")).toThrow(RiteUsage);
     }
   });
@@ -139,7 +134,7 @@ describe("the rite runs on the host, and its rows in the vessel", () => {
   it("RED: `rite kukulu` (and its spelling `kūkulu`) stays on this machine, where the shim stands; CONTROL: begin, land and receipts forward into the vessel", () => {
     expect(route(["rite", "kukulu"])).toBe("local");
     expect(route(["rite", "kūkulu", "--branch", "main"])).toBe("local");
-    for (const sub of ["begin", "land", "receipts", "receipt", "offer"]) expect(route(["rite", sub, "--json"]), sub).toBe("forward");
+    for (const sub of ["begin", "land", "receipts", "offer"]) expect(route(["rite", sub, "--json"]), sub).toBe("forward");
   });
 
   it("RED: `rite keep` (the keep's host half: git in the operator's workspace clone) stays on this machine; CONTROL: its vessel half `rite keep-cut` forwards", () => {

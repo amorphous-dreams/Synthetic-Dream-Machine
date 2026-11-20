@@ -160,8 +160,9 @@ export function namedBagMirror(
  *
  * A face root holds ONLY the face's private planes: a shared wiki's workbench and every domain bag rest in their realm pool
  * (`realms/<realm pet name>/wikis/<slug>/` and `/bags/<slug>/`, or the workspace a share row names), one disk copy whichever
- * face wears. No index file that links faces
- * (`face-labels/`, `kahua-index.toml`, `share.tid`, `kahua-pending.json`) ever rests under `faces/`.
+ * face wears. No index file that maps one face to another
+ * (`face-labels/`, `kahua-index.toml`, `share.tid`, `kahua-pending.json`) ever rests under `faces/`, so a face pool that syncs
+ * or pushes carries its own planes alone.
  */
 export const FACES_PROJECTION_DIR = "faces";
 /** The planes inside a face root. */
@@ -223,7 +224,7 @@ export function faceRoot(projectionRoot: string, segment: string): string {
  *     bags/<slug>/       each domain bag's canon mirror
  *
  * The realm pet name follows the face segment rule (`realmPetNameRefusal`), so it names exactly one folder. No index file that
- * links realms or faces (`realm-labels/`, `face-labels/`) ever rests under `realms/`.
+ * maps realms or faces to one another (`realm-labels/`, `face-labels/`) ever rests under `realms/`.
  */
 export const REALMS_PROJECTION_DIR = "realms";
 /** The planes inside a realm root. */
