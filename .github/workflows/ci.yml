@@ -295,15 +295,16 @@ jobs:
       - name: Point dist-plugin at the committed standalone artifact
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
-      # THE PUBLISHED LINE BELOW THE FORK. The fork (TiddlyWiki5/package.json) rides a 5.x prerelease; the engine the plugin must also
-      # drop into is the newest tiddlywiki npm publishes below that release. The tarball caches by the resolved version.
-      - name: Resolve the published tiddlywiki below the fork
+      # THE UPSTREAM RELEASE THE FORK STANDS ON. The submodule's nearest release tag names the published tiddlywiki the plugin must
+      # also drop into: a function of the pinned submodule commit, never of what npm publishes next. The checkout is shallow and
+      # holds no tags, so the step fetches the submodule's commit graph (no trees, no blobs) and its tags, then reads `describe`.
+      - name: Read the upstream release the fork stands on
         if: ${{ !cancelled() }}
         run: |
-          fork=$(node -p "require('./TiddlyWiki5/package.json').version.replace(/-.*/, '')")
-          pin=$(npm view "tiddlywiki@<$fork-0" version --json | node -p "[].concat(JSON.parse(require('fs').readFileSync(0, 'utf8'))).pop()")
-          test -n "$pin"
-          echo "TW5_PRISTINE=$pin" >> "$GITHUB_ENV"
+          git -C TiddlyWiki5 fetch --quiet --tags --filter=tree:0 --depth=2147483647 origin
+          tag=$(git -C TiddlyWiki5 describe --tags --abbrev=0)
+          test -n "$tag"
+          echo "TW5_PRISTINE=${tag#v}" >> "$GITHUB_ENV"
       - name: Cache the published tiddlywiki
         id: pristine-cache
         if: ${{ !cancelled() }}
@@ -318,12 +319,12 @@ jobs:
           mkdir -p "$dir" && cd "$dir"
           npm pack "tiddlywiki@$TW5_PRISTINE" --silent
           tar xzf "tiddlywiki-$TW5_PRISTINE.tgz"
-      - name: Witness the engine is the one resolved
+      - name: Witness the engine is the one pinned
         if: ${{ !cancelled() }}
         run: |
           pkg=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package
           test -f "$pkg/tiddlywiki.js"
-          node -e 'const v=require(process.argv[1]+"/package.json").version; console.log("pristine engine: tiddlywiki@"+v); if(v!==process.env.TW5_PRISTINE){console.error("::error::packed "+v+", resolved "+process.env.TW5_PRISTINE);process.exit(1)}' "$pkg"
+          node -e 'const v=require(process.argv[1]+"/package.json").version; console.log("pristine engine: tiddlywiki@"+v); if(v!==process.env.TW5_PRISTINE){console.error("::error::packed "+v+", pinned "+process.env.TW5_PRISTINE);process.exit(1)}' "$pkg"
       - name: meme-routes + standalone single-file contact against the pristine engine
         if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.chromium.outcome == 'success' }}
         run: |

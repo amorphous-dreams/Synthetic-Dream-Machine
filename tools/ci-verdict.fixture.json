@@ -148,7 +148,7 @@
        "conclusion": "success"
       },
       {
-       "name": "Pack tiddlywiki@5.4.1 from npm",
+       "name": "Pack the published tiddlywiki from npm",
        "conclusion": "skipped"
       },
       {
