@@ -12,7 +12,7 @@ import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { kuiLei, swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import {
   putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiNarrowedTitle, swarmLeiRecordTitle, swarmLeiReturnedTitle,
-  swarmReceiptTitle, type SwarmBodyParts, type SwarmWikiPort,
+  type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import { soloCosign } from "./ward-cosign-table.js";
 import { PLACE, placeOf, placeTrust, restPlaceReceipt } from "./place-receipt.js";
