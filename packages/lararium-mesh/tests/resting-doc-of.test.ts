@@ -12,7 +12,8 @@
  *   R6  ORDER: the callback-order contract: the timer callback alone closes the window (fake timers, no clock)
  *   R7  SHARED READ, OWN BOUNDS: callers of one opening share its adapter read, each under its own bound (R7b); a read that never
  *       lands holds the opening only until every listener's bound spends, and the stale read reaches no one (R7c)
- *   R8  PARTIAL: a chunk that did not read, an empty chunk, too many chunks or bytes refuse by name
+ *   R8  PARTIAL: a chunk that did not read, an empty chunk, a change whose parent no chunk carries (`torn`), too many chunks or
+ *       bytes refuse by name
  *   R9  ABSENCE BY NAME: a malformed url, a throwing adapter, nothing at rest and torn bytes, never a throw
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
@@ -249,7 +250,7 @@ describe("readRestingDoc: a sibling's plane reads from this replica's own store 
     } finally { vi.useRealTimers(); }
   });
 
-  test("R8 PARTIAL: a chunk that did not read, an empty chunk, too many chunks and too many bytes each refuse by name, never stale-present", async () => {
+  test("R8 PARTIAL: a chunk that did not read, an empty chunk, a change whose parent no chunk carries, too many chunks and too many bytes each refuse by name, never stale-present", async () => {
     const real = memoryAdapter();
     const url = await restPlane(real, { "lar:///founding": { text: "rests" } });
     // The plane's resting chunks, then one incremental beside them, as the engine writes a later change.
@@ -262,6 +263,14 @@ describe("readRestingDoc: a sibling's plane reads from this replica's own store 
     expect(textOf(docOf(await readRestingDoc({ loadRange: async () => chunks }, url)), "lar:///second")).toBe("an incremental");
     const unread: Chunk[] = chunks.map((c) => (c.key[1] === "incremental" ? { key: c.key, data: undefined } : c));
     expect(await readRestingDoc({ loadRange: async () => unread }, url)).toEqual({ absent: "chunk-unread" });
+    // A later incremental whose parent incremental no chunk carries: the engine queues it and keeps the snapshot's heads, so the
+    // read must refuse as torn, never answer the snapshot alone (the face stands open the whole while).
+    const middle = A.change(next, (d) => { (d.tiddlers as Record<string, unknown>)["lar:///third"] = { text: "a later act" }; });
+    const later = A.saveSince(middle, A.getHeads(next));
+    const gapped: Chunk[] = [...rested, { key: [id, "incremental", "after-the-gap"], data: later }];
+    expect(A.getMissingDeps(A.loadIncremental(A.init<LarDoc>(), new Uint8Array([...rested[0]!.data!, ...later])), []).length).toBeGreaterThan(0);
+    expect(await readRestingDoc({ loadRange: async () => gapped }, url)).toEqual({ absent: "torn" });
+    expect(textOf(docOf(await readRestingDoc({ loadRange: async () => [...chunks, { key: [id, "incremental", "after-the-gap"], data: later }] }, url)), "lar:///third")).toBe("a later act");
     const empty: Chunk[] = chunks.map((c) => (c.key[1] === "incremental" ? { key: c.key, data: new Uint8Array(0) } : c));
     expect(await readRestingDoc({ loadRange: async () => empty }, url)).toEqual({ absent: "chunk-empty" });
     const many = Array.from({ length: RESTING_DOC_MAX_CHUNKS + 1 }, (_, i) => ({ key: [id, "incremental", `h${i}`], data: new Uint8Array(1) }));
