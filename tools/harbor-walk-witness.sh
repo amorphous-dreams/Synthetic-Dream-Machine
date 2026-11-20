@@ -157,8 +157,8 @@ result 'leg 1: the engine restarted nothing'                    test "$(docker i
 # The mirror root splits by origin (operator ruling 2026-11-01): a canon bag whose source stands in the workspace projects
 # back there, while the house's private planes (the daemon wiki, the store, custody) land under the house root alone.
 mkdir -p "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs"
-sed -e 's#ha.ka.ba/lares/docs/stable-founding-road#ha.ka.ba/lares/docs/harbor-walk-probe#g' -e 's#docs/stable-founding-road.mem#docs/harbor-walk-probe.mem#' \
-  "$ROOT/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem" > "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
+sed -e 's#ha.ka.ba/lares/docs/federation#ha.ka.ba/lares/docs/harbor-walk-probe#g' \
+  "$ROOT/bags/lares/ha.ka.ba/lares/docs/federation.mem" > "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
 lares meme normalize /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem >/dev/null
 # Keep the settle answer visible: a record can land with no granted mirror.
 lares ingest --source /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem --to lar:///ha.ka.ba/bags/crossroads --apply --yes

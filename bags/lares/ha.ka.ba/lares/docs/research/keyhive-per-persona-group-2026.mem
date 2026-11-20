@@ -88,9 +88,9 @@ Sources below were read 2026-10-18; repository paths are relative to the reposit
 | Today a vessel Keyhive identity registers all bags supplied to boot, and is seeded from vessel seed. | both | CONFIRMED | `packages/lararium-keyhive/src/boot-daemon-keyhive.ts:95-101,185-188` |
 | Face founding makes a veil identity and a PersonaGroup under it; vessel and veil use the same replayed event store. | both | CONFIRMED | `packages/lararium-keyhive/src/ceremony-core.ts:343-370` |
 | Each face already has its own archive slot/record, while vessel archive remains too. | both | CONFIRMED | `packages/lararium-node/src/identity-anchors.ts:124-169`; `packages/lararium-browser/src/browser-keyhive-archive.ts:18-31,69-94` |
-| Registration is a union over all fleet memberships; a session needs exactly one face and a face-local registry. | twin / own | CONFIRMED (current union); target is the 2026-10-18 ruling | `packages/lararium-mesh/src/register-bags.ts:84-119`; roadmap `stable-founding-road.mem:106-109` |
-| Face group removal rolls reached bags; founder identity cannot leave its own group, so fresh group is the ruling/lean. | both | CONFIRMED as house design; K12 remains owed implementation | `kapae.mem:234,272`; `sealed-store.mem:357`; roadmap `stable-founding-road.mem:598,751` |
-| Carried bag events expose creator in clear; this is a measured privacy leak, not merely inference. | twin / own | CONFIRMED | roadmap `stable-founding-road.mem:486` (measured probe, 2026-10-16); `ceremony-core.ts:350-355` |
+| Registration is a union over all fleet memberships; a session needs exactly one face and a face-local registry. | twin / own | CONFIRMED (current union); target is the 2026-10-18 ruling | `packages/lararium-mesh/src/register-bags.ts:84-119`; roadmap `lar:///ha.ka.ba/lares/docs/stable-founding-road` |
+| Face group removal rolls reached bags; founder identity cannot leave its own group, so fresh group is the ruling/lean. | both | CONFIRMED as house design; K12 remains owed implementation | `kapae.mem:234,272`; `sealed-store.mem:357`; roadmap `lar:///ha.ka.ba/lares/docs/stable-founding-road` |
+| Carried bag events expose creator in clear; this is a measured privacy leak, not merely inference. | twin / own | CONFIRMED | roadmap `lar:///ha.ka.ba/lares/docs/stable-founding-road` (measured probe, 2026-10-16); `ceremony-core.ts:350-355` |
 | Herm can boot at floor without face pins, receiving fewer caps. | both | CONFIRMED | `boot-daemon-keyhive.ts:109-124` |
 | Per-face restore should carry only that face’s archive, group and key memory; current code already guarantees this. | twin | LEAD in the first clause as desired architecture; REFUTED as a current guarantee: vessel-wide shared store/provider and key holder remain | `operator-daemon-behavior.ts:971-1002,1043-1054`; per-face archive paths above. Exact event/key isolation needs wiring and probe. |
 | Multiple Keyhive providers can safely coexist in one WASM process with separate identities/stores. | twin / own | LEAD | Keyhive Rust `keyhive/keyhive_core/src/keyhive.rs:85-132` holds maps/stores on each object; local provider calls `KH.Keyhive.init` at `keyhive-provider.ts:190-255`. No cited source promises WASM runtime isolation or independent mutable globals. |
@@ -154,7 +154,7 @@ Sources below are repository paths relative to the repository root; inspected 20
 
 | Claim | From | Result | Source |
 |---|---|---|---|
-| One Keyhive identity per PersonaGroup, with none above faces, is the approved target. | Twin | CONFIRMED | `kh-framing.md` (operator’s 2026-10-18 framing); `stable-founding-road.mem` #/rulings. |
+| One Keyhive identity per PersonaGroup, with none above faces, is the approved target. | Twin | CONFIRMED | `kh-framing.md` (operator’s 2026-10-18 framing); `lar:///ha.ka.ba/lares/docs/stable-founding-road` #/rulings. |
 | Face veil creates the group but shares the vessel event store. | Twin | CONFIRMED | `packages/lararium-keyhive/src/ceremony-core.ts:345-370`; same `store` initializes both providers (`:346`, `:361-365`). |
 | Vessel provider registers all supplied bags; face bags are delegated vessel→veil→group. | Twin | CONFIRMED | `boot-daemon-keyhive.ts:95-105,185-188`; `operator-daemon-behavior.ts:203-216`. |
 | Registration currently unions all face memberships. | Twin | CONFIRMED | `packages/lararium-mesh/src/register-bags.ts:16-19,105-119`. This describes the current vessel model, not the approved one-face session target. |
@@ -163,9 +163,9 @@ Sources below are repository paths relative to the repository root; inspected 20
 | A content-key holder is beside vessel and veil identities and currently receives both providers. | Own | CONFIRMED | `operator-daemon-behavior.ts:195-202,1036-1054`. **Change of mind:** my wave-one wording that the holder was already face-seated overstated the implementation. Per-face seating is a target; current holder is shared by the mounted vessel process. |
 | A single process can use multiple isolated Keyhive instances with separate event stores/archives. | Own | LEAD | Vendored `keyhive/keyhive_core/src/keyhive.rs:85-127` puts identity, groups, docs, pending events and ciphertext store on each `Keyhive` object. This supports object-local maps, but does not prove WASM/global-state or runtime isolation. Probe two instances with disjoint stores, interleaved operations, export/reboot, and cross-instance lookup; no conclusion from docs alone. |
 | Herm may retain a floor/place identity with no face capability. | Twin / own | CONFIRMED | `boot-daemon-keyhive.ts:109-124` supports faceless boot; **target constraint** from framing: no identity above faces. Whether floor identity can be made incapable of face authorship needs a red test. |
-| Removal is causal; group reach rolls documents, not sentinel itself. | Twin / own | CONFIRMED | `kapae.mem` #/keys; `sealed-store.mem` #/owed and #/the-store; `stable-founding-road.mem` K12. Founder/implicit-seat removal and successor founding need explicit handling. |
+| Removal is causal; group reach rolls documents, not sentinel itself. | Twin / own | CONFIRMED | `kapae.mem` #/keys; `sealed-store.mem` #/owed and #/the-store; `lar:///ha.ka.ba/lares/docs/stable-founding-road` K12. Founder/implicit-seat removal and successor founding need explicit handling. |
 | Current node/browser restore records already provide one-face bundles. | Own | REFUTED | Carrier code stores face veil records, but also vessel archive (`identity-anchors.ts:124-168`; browser records `browser-keyhive-archive.ts:18-31`). That is not the approved selected-face-only bundle or fresh face identity restore. |
-| Fresh per-face identity and archive split is the correct migration. | Twin / own | CONFIRMED | Ruling and fence in `stable-founding-road.mem` #/rulings; current shared store/registration paths above establish the migration need. Exact byte migration remains a design choice. |
+| Fresh per-face identity and archive split is the correct migration. | Twin / own | CONFIRMED | Ruling and fence in `lar:///ha.ka.ba/lares/docs/stable-founding-road` #/rulings; current shared store/registration paths above establish the migration need. Exact byte migration remains a design choice. |
 
 ## Converged story × vessel
 
@@ -220,6 +220,6 @@ Sources below are repository paths relative to the repository root; inspected 20
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;edJZg17ilnDNb6Efjxnuo7mAaiF2isIYW1AebAlZ9u8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3fWIl7U6kj0QxBz2GL7S2f9L00U72H1FfD0mYLeZte0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -5,7 +5,7 @@ Short orientation for humans and agents reviewing `packages/`.
 ## Source of truth
 
 - `packages/AGENTS.md` carries package-boundary law.
-- `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem` carries the road: rulings, the leaps, and the owed rows.
+- `lar:///ha.ka.ba/lares/docs/stable-founding-road` carries the road: rulings, the leaps, and the owed rows.
 - `bags/lares/ha.ka.ba/lares/docs/pono/controller-handoff.mem` carries session state: what stands on which branch, and what runs.
 - `packages/.shelf/` keeps earlier planning torches as archive.
 - `lar:///ha.ka.ba/lararium/api/mempalace-integration` carries the current
