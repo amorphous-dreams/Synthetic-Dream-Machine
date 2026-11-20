@@ -369,6 +369,14 @@ const keyOf = async (page: Page): Promise<string> => {
   }
   throw new Error(`the tab's vessel named no key within 90 s: ${JSON.stringify(await lares(page, "vessel", "read").catch((e: unknown) => String(e)))}`);
 };
+/** Confirm the reset and wait on every tab's own reload; a tab that never reloads names where the ceremony stood (its words, the store it waits on). */
+const burnReloads = async (rite: Page, tabs: readonly Page[]): Promise<void> => {
+  const loads = tabs.map((tab) => tab.waitForEvent("load", { timeout: WAIT }));
+  try { await Promise.all([...loads, rite.locator("#ceremony-go").click()]); } catch (err) {
+    const stood = await rite.evaluate(() => ({ state: document.getElementById("ceremony-state")?.textContent ?? "", waits: document.body.dataset["resetWaits"] ?? null })).catch(() => "the ceremony window closed");
+    throw new Error(`${err instanceof Error ? err.message : String(err)} — the ceremony stood at ${JSON.stringify(stood)}`);
+  }
+};
 
 test("K3 RED — the console door reads the vessel, and the reset ceremony's typed words return every tab to a fresh anon floor", { timeout: 300_000 }, async () => {
   const context = await browser.newContext();
@@ -407,7 +415,7 @@ test("K3 RED — the console door reads the vessel, and the reset ceremony's typ
     assert.equal(await keyOf(first), before, "wrong words burned nothing");
     // THE TYPED CONFIRMATION burns the place, and both tabs boot afresh.
     await rite.locator("#ceremony-pass").fill("reset this browser");
-    await Promise.all([first.waitForEvent("load", { timeout: WAIT }), second.waitForEvent("load", { timeout: WAIT }), rite.locator("#ceremony-go").click()]);
+    await burnReloads(rite, [first, second]);
     const after = await keyOf(first);
     assert.notEqual(after, before, "the reset burned the place: the vessel stands under a new veil key");
     assert.equal(await keyOf(second), after, "the second tab stands on the same fresh floor");
@@ -452,7 +460,7 @@ test("K4 RED — the reset ceremony burns only for an ask a page of this origin 
     assert.equal(new URL(rite.url()).hash, `#reset=${again}`);
     assert.equal(await rite.evaluate(() => document.body.dataset["refusal"] ?? null), null, "an ask the page raised and still shows stands its ceremony");
     await rite.locator("#ceremony-pass").fill("reset this browser");
-    await Promise.all([page.waitForEvent("load", { timeout: WAIT }), rite.locator("#ceremony-go").click()]);
+    await burnReloads(rite, [page]);
     assert.notEqual(await keyOf(page), before, "the raised ask's ceremony burned the place: the vessel stands under a new key");
     // The burned ask's id stands no second ceremony.
     assert.equal((await standAt(again)).refusal, "reset-unasked", "a burned ask's id stands no ceremony again");

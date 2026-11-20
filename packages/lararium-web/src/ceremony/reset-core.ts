@@ -36,8 +36,14 @@ export const OWNED_STORAGE_PREFIX = "lares:";
  * THE ASK RECORD. A page that paints a reset ask records its id in the origin's own storage, one key per ask under the
  * vessel's prefix (`lares:reset-ask:<id>`), and the ceremony burns only for an id that record names: a navigation to
  * `ceremony.html#reset=<id>` from anywhere else names an id nobody raised, and refuses `reset-unasked`. The record leaves when
- * the ceremony burns or the person declines, and when the page withdraws the ask ("not now"), so a settled id stands no
- * ceremony again. localStorage carries it because the ceremony's window opens with no opener and shares no sessionStorage.
+ * the person declines, and when the page withdraws the ask ("not now"); the burn turns it from `raised` to `burned`, its
+ * receipt. Either way a settled id stands no ceremony again. localStorage carries it because the ceremony's window opens with
+ * no opener and shares no sessionStorage.
+ *
+ * THE BURNED RECEIPT lets a tab that hears the ceremony late still honour it. The channel and the storage carry no order
+ * between them, so a tab can read the record after the burn settled it; the receipt names that id as confirmed and burned,
+ * and a tab honours that id's `reset:stand-down` and `reset:burned` on it (`reset-tab.ts`). It carries no secret and stands no
+ * ceremony (`resetAskStands` reads `raised` alone), and it rides the vessel's prefix, so the next reset's burn clears it.
  *
  * WHAT THIS DEFENDS: a bare inbound link, and an id no standing ask answers to. WHAT IT CANNOT: script already running in a page of
  * this origin writes the same storage a page writes, and deletes a database as the burn does. The confirm gate asks the
@@ -46,6 +52,8 @@ export const OWNED_STORAGE_PREFIX = "lares:";
 export const RESET_ASK_KEY = "lares:reset-ask";
 export const resetAskKey = (askId: string): string => `${RESET_ASK_KEY}:${askId}`;
 export type AskRecord = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+const RAISED = "raised";
+const BURNED = "burned";
 
 /** The origin's own record, or null where the browser withholds its storage. */
 export function originAskRecord(): AskRecord | null { try { return localStorage; } catch { return null; } }
@@ -53,13 +61,23 @@ export function originAskRecord(): AskRecord | null { try { return localStorage;
 /** Record one raised ask. Answers whether the record now names it: a storage that withholds itself records nothing. */
 export function recordResetAsk(record: AskRecord | null, askId: string): boolean {
   if (!record) return false;
-  try { record.setItem(resetAskKey(askId), "raised"); return record.getItem(resetAskKey(askId)) !== null; } catch { return false; }
+  try { record.setItem(resetAskKey(askId), RAISED); return record.getItem(resetAskKey(askId)) === RAISED; } catch { return false; }
 }
 
+const recordReads = (record: Pick<Storage, "getItem"> | null, askId: string): string | null => {
+  if (!record) return null;
+  try { return record.getItem(resetAskKey(askId)); } catch { return null; }
+};
+
 /** Whether the record names this ask as raised and still standing. */
-export function resetAskStands(record: Pick<Storage, "getItem"> | null, askId: string): boolean {
-  if (!record) return false;
-  try { return record.getItem(resetAskKey(askId)) !== null; } catch { return false; }
+export function resetAskStands(record: Pick<Storage, "getItem"> | null, askId: string): boolean { return recordReads(record, askId) === RAISED; }
+
+/** Whether the record holds this ask's burned receipt: the holder confirmed it and the place burned. It stands no ceremony. */
+export function resetAskBurned(record: Pick<Storage, "getItem"> | null, askId: string): boolean { return recordReads(record, askId) === BURNED; }
+
+/** Settle one ask as burned: one write turns its record into the receipt. A storage that refuses the write forgets the ask. */
+function settleBurnedAsk(record: AskRecord | null, askId: string): void {
+  try { record?.setItem(resetAskKey(askId), BURNED); } catch { forgetResetAsk(record, askId); }
 }
 
 /** Forget one ask: it burned, the person declined it, or the page withdrew it. */
@@ -105,6 +123,8 @@ export interface ResetEnv {
   readonly signal: (msg: ResetSignal) => void;
   /** Tell the person where the burn stands. */
   readonly say: (words: string) => void;
+  /** Name the database the burn waits on while another context holds it open, and null once it lands. */
+  readonly waits?: (database: string | null) => void;
 }
 
 /** What the burn removed, counted and named. */
@@ -122,9 +142,9 @@ export function clearOwnedKeys(storage: Pick<Storage, "length" | "key" | "remove
  * BURN THE PLACE, on a pass the confirm gate minted for the reset and for nothing else: no pass, another procedure's or a
  * spent one refuses `gate-unpassed` first. Then the ask: an id the origin's record does not name refuses `reset-unasked`
  * before anything reads or moves. The census reads next, so an engine that names no database list refuses `reset-census-absent` before any
- * tab stands down or any byte burns. Then every tab stands down, each database deletes (a held one names itself and waits),
- * the file system, the caches, the owned storage keys and the service worker follow, the ask's own record leaves last, and
- * `reset:burned` tells every tab to boot afresh. A step that fails rejects with its own words; what burned before it stays
+ * tab stands down or any byte burns. Then every tab stands down, each database deletes (a held one names itself and waits,
+ * `waits`), the file system, the caches, the owned storage keys and the service worker follow, the ask's own record turns to
+ * its burned receipt last, and `reset:burned` tells every tab to boot afresh. A step that fails rejects with its own words; what burned before it stays
  * burned, the ask still stands recorded, and a second run passes the gate again and goes on.
  */
 export async function burnPlace(env: ResetEnv, askId: string, pass: GatePass): Promise<ResetReport> {
@@ -135,7 +155,13 @@ export async function burnPlace(env: ResetEnv, askId: string, pass: GatePass): P
   env.signal({ t: "reset:stand-down", askId });
   env.say("Every tab of this site stands its vessel down.");
   for (const name of databases) {
-    await env.deleteDatabase(name, () => env.say(`The reset waits: another tab or window of this site still holds "${name}" open. Close it and the reset lands.`));
+    let held = false;
+    await env.deleteDatabase(name, () => {
+      held = true;
+      env.waits?.(name);
+      env.say(`The reset waits: another tab or window of this site still holds "${name}" open. Close it and the reset lands.`);
+    });
+    if (held) env.waits?.(null);
     env.say(`Burned "${name}".`);
   }
   let files = 0;
@@ -149,7 +175,7 @@ export async function burnPlace(env: ResetEnv, askId: string, pass: GatePass): P
   for (const storage of env.storages) storageKeys += clearOwnedKeys(storage, resetAskKey(askId));
   let workers = 0;
   if (env.workers) for (const registration of await env.workers.getRegistrations()) { if (await registration.unregister()) workers++; }
-  forgetResetAsk(env.record, askId); storageKeys++;
+  settleBurnedAsk(env.record, askId);
   env.signal({ t: "reset:burned", askId });
   return { databases, files, caches: cachesGone, storageKeys, workers };
 }
