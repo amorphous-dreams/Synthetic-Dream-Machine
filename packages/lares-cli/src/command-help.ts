@@ -630,11 +630,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon. `get` reads the " +
       "record (fields, then the text) and the `base` hash a writer hands back; `put` PATCHES: it sets and unsets " +
       "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it, landing in the " +
-      "wiki's working layer; `delete` removes a plain tiddler; a meme root or slot answers the consequence the " +
-      "delete would land and refuses by name (`tiddler-delete-in-a-family`) unless `--family` names the family " +
-      "act, which lands the root and its slots as one change. Over layers a delete names its meaning: `--mode " +
-      "kapae` (the default) raises a tombstone that shadows the records beneath, which stay in their bags; `--mode " +
-      "reveal` retracts the topmost record and the one beneath surfaces. A meme root or slot " +
+      "wiki's working layer; `delete` removes a plain tiddler plainly: the record leaves its layer and no tombstone " +
+      "rises; a meme root or slot answers the consequence the delete would land and refuses by name " +
+      "(`tiddler-delete-in-a-family`) unless `--family` names the family act, which lands the root and its slots as " +
+      "one change. Only a lower layer makes a delete a choice: where one holds the title too, a delete with no mode " +
+      "refuses `delete-mode-needed` and names both meanings: `--mode kapae` raises a tombstone that keeps the " +
+      "records beneath hidden (they stay in their bags); `--mode reveal` retracts the topmost record and the one " +
+      "beneath surfaces. A delete of a title the wiki reads absent retracts a kāpae that hides nothing (its " +
+      "`.kapae` shadow leaves the disk); `--mode reveal` retracts one that hides a lower record. A meme root or slot " +
       "takes a field or tag patch here; its text moves through `lares meme put`. `--base` carries the hash last " +
       "read: a record that moved past it answers `conflict` and nothing lands. The engine verbs stand beside this " +
       "door: `lares wiki filter | render | status`.",
@@ -647,6 +650,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares tiddler delete \"Old Note\" --recipe default --if-match <hash>   # a stale base moves nothing",
       "lares tiddler delete lar:///t/x --recipe default --family              # a meme root and its slots, one change",
       "lares tiddler delete \"Room 4\" --recipe default --mode reveal          # drop my copy; the layer beneath surfaces",
+      "lares tiddler delete \"Room 4\" --recipe default --mode kapae           # hide the title; the layers beneath keep theirs",
       "lares wiki filter '[tag[memory]sort[title]]' --recipe default --limit 5   # one page; --after <cursor> continues, --all walks it",
       "lares wiki filter '[[Room 4]backlinks[]]' --recipe default               # the link graph rides filters",
       "lares wiki render Handover --recipe default --form html                  # transclusions resolved by the engine",
@@ -665,7 +669,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--create             (put) land only where no tiddler stands; an existing one answers `exists`",
       "--if-match <hash>    (delete) the hash last read; stale → conflict, nothing moves",
       "--family             (delete) name the family act: a meme root leaves with its slots, as one change",
-      "--mode <kapae|reveal> (delete) kapae (default): shadow the layers beneath   ·   reveal: retract the top record",
+      "--mode <kapae|reveal> (delete) over a lower layer's record: kapae hides it   ·   reveal surfaces it (none: a plain delete)",
       "--max-bytes <N>      (get) the byte cap on the answer; the largest fields leave first and get named",
     ],
     next: ["lares wiki filter '[tag[memory]]' --recipe default", "lares meme get <uri> --recipe default   # a family's whole text"],

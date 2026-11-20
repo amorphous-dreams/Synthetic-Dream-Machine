@@ -73,6 +73,20 @@ test("control: lowering the kāpae (the record returns live) takes the shadow do
   expect(shadowWrite()).toBeNull();
 });
 
+test("★ retracting a kāpae that shadows nothing (a plain delete of a tombstoned title) takes its shadow down and the house's memory of it, so `lares surface commit` stages the removal ★", async () => {
+  const { store, internal, stem, shadowWrite } = await rig();
+  await store.tombstone(title, origin);
+  await internal.reconcile(title);
+  expect(existsSync(stem + ".kapae")).toBe(true);
+  expect(shadowWrite()).not.toBeNull();
+  await store.remove(title, origin);
+  expect(await store.get(title)).toBeNull();
+  await internal.reconcile(title);
+  expect(existsSync(stem + ".mem")).toBe(false);
+  expect(existsSync(stem + ".kapae")).toBe(false);
+  expect(shadowWrite()).toBeNull();
+});
+
 test("★ a kāpae raised before the face root stood projects its shadow into the face root at the projector's start ★", async () => {
   // The face's planes moved to `faces/<pet name>/` (the old relation-keyed folder held the shadow): a fresh face root
   // meets a bag whose title already stands kāpae'd, with no change event to carry it. The start's own pass writes it.
