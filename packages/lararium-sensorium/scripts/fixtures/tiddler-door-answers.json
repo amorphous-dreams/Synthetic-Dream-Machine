@@ -70,6 +70,27 @@
       "mcp": { "recipe": "default" },
       "wire": { "verb": "wiki-status", "args": { "recipe": "default" } },
       "output": { "recipe": "default", "working": "lar:///ha.ka.ba/wikis/daemon/working", "layers": [{ "bag": "lar:///ha.ka.ba/bags/lares", "mounted": "read-only", "read": true, "write": false }, { "bag": "lar:///ha.ka.ba/wikis/daemon/working", "mounted": "writable", "read": true, "write": true, "working": true }] }
+    },
+    {
+      "tool": "wiki_filter",
+      "cli": { "command": "wiki", "positional": ["filter", "[tag[road]sort[title]]"], "options": { "recipe": "kahu" }, "flags": {} },
+      "mcp": { "filter": "[tag[road]sort[title]]", "recipe": "kahu" },
+      "wire": { "verb": "wiki-filter", "args": { "recipe": "kahu", "filter": "[tag[road]sort[title]]" } },
+      "output": { "recipe": "kahu", "filter": "[tag[road]sort[title]]", "titles": ["Road 01", "Road 02"], "total": 2, "next": null, "asOf": "fedcba9876543210" }
+    },
+    {
+      "tool": "tiddler_put",
+      "cli": { "command": "tiddler", "positional": ["put", "Road note"], "options": { "recipe": "kahu", "text": "first words" }, "flags": { "create": true } },
+      "mcp": { "title": "Road note", "recipe": "kahu", "text": "first words", "create": true },
+      "wire": { "verb": "tiddler-put", "args": { "recipe": "kahu", "title": "Road note", "create": true, "text": "first words" } },
+      "output": { "recipe": "kahu", "title": "Road note", "decision": "put", "bag": "lar:///ha.ka.ba/wikis/kahu/working", "created": true, "changed": ["title", "text"], "hash": "sha256-ee", "textHash": "sha256-ff", "position": "plain" }
+    },
+    {
+      "tool": "wiki_status",
+      "cli": { "command": "wiki", "positional": ["status"], "options": { "recipe": "kahu" }, "flags": {} },
+      "mcp": { "recipe": "kahu" },
+      "wire": { "verb": "wiki-status", "args": { "recipe": "kahu" } },
+      "output": { "recipe": "kahu", "working": "lar:///ha.ka.ba/wikis/kahu/working", "layers": [{ "bag": "lar:///ha.ka.ba/bags/kahu", "mounted": "read-only", "read": true, "write": false }, { "bag": "lar:///ha.ka.ba/wikis/kahu/working", "mounted": "writable", "read": true, "write": true, "working": true }] }
     }
   ]
 }

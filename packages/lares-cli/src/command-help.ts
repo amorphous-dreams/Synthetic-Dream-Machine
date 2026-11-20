@@ -632,13 +632,16 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   tiddler: {
-    usage: "usage: lares tiddler <get | put | delete> <title> (--recipe <slug> | --bag <slug>)   (this phase answers --recipe default)",
+    usage: "usage: lares tiddler <get | put | delete> <title> --recipe <slug>   (default: the daemon wiki; any slug: a wiki this face reaches)",
     synopsis:
       "THE TIDDLER DOOR — one record with its fields, whatever its type: a plain note, a data tiddler, a meme's root " +
-      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon. `get` reads the " +
+      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon: `--recipe default` " +
+      "names the worn face's daemon wiki, and `--recipe <slug>` any wiki this face reaches (one it hosts, or one shared " +
+      "to it), composed over that wiki's canon, its shared working layer and this face's own layers; a wiki the face " +
+      "reaches none of refuses `wiki-unreached`. `get` reads the " +
       "record (fields, then the text) and the `base` hash a writer hands back; `put` PATCHES: it sets and unsets " +
       "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it, landing in the " +
-      "wiki's working layer; `delete` removes a plain tiddler plainly: the record leaves its layer and no tombstone " +
+      "wiki's working layer (this face's own personal layer of a wiki where it holds no writer's seat); `delete` removes a plain tiddler plainly: the record leaves its layer and no tombstone " +
       "rises; a meme root or slot answers the consequence the delete would land and refuses by name " +
       "(`tiddler-delete-in-a-family`) unless `--family` names the family act, which lands the root and its slots as " +
       "one change. Only a lower layer makes a delete a choice: where one holds the title too, a delete with no mode " +
@@ -663,10 +666,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares wiki filter '[[Room 4]backlinks[]]' --recipe default               # the link graph rides filters",
       "lares wiki render Handover --recipe default --form html                  # transclusions resolved by the engine",
       "lares wiki status --recipe default                                       # which layer takes a write for this face",
+      "lares wiki filter '[tag[road]sort[title]]' --recipe kahu                 # a shared wiki, in its own engine",
+      "lares tiddler put \"Road note\" --recipe kahu --create --text \"first words\"   # lands in that wiki's working layer",
     ],
     flags: [
-      "--recipe <slug>      the wiki read or written (this phase: default, the daemon mount's wiki)",
-      "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling's tiddler acts wait for its own engine and refuse by name)",
+      "--recipe <slug>      the wiki read or written: default (the worn face's daemon wiki) or any wiki this face reaches",
+      "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling answers from its own daemon wiki, --recipe default)",
       "--slot <#/name>      (get) one slot of the meme the title names",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
       "--skinny             (get) every field, the text left home",
