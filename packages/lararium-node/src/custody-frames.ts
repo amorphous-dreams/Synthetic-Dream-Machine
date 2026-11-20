@@ -58,7 +58,7 @@ export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
   | { readonly op: "lock"; readonly face?: number }
   /** Wear face `face`: the session's choice among the faces standing open. No credential rides it; `seat: "ai"` marks a frame
-   *  an AI seat sent, which the door refuses (a seat never wears). */
+   *  an AI seat sent, which the door answers as it answers the operator's own. */
   | { readonly op: "wear"; readonly face: number; readonly seat?: "ai" }
   | { readonly op: "custody" }
   /** The census of saves held in memory, read before a stop: no credential, no act, no chain. */
@@ -568,12 +568,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         answer(sock, { op, status: "error", errorMessage: "a wear frame carries `op`, a `face` (a handle index, a whole number from 0) and at most `seat: \"ai\"`, and nothing beside them: no route rides a wear", refusal: { reason: "bad-custody-frame" } });
         return true;
       }
-      // A SEAT NEVER WEARS: the worn face stays the operator's choice (the standing orders: no spirit switches the worn face).
-      if (frame["seat"] === "ai") {
-        deps.onLog("wear: refused (seat-wears-no-face)");
-        answer(sock, { op, status: "error", errorMessage: "a seat wears no face: the worn face stays the operator's choice; run `lares wear N` from the operator's own terminal", refusal: { reason: "seat-wears-no-face" } });
-        return true;
-      }
+      // A WEAR MOVES THE MOUNT FOR ANY SEAT: it asks no route and carries no key, and reaches only a face already standing open;
+      // unlock and custody stay the operator's own acts.
       act = () => wear(face as number);
     } else if (op === "unlock" && deps.pulama) {
       // A PŪLAMA HOLDS THIS VESSEL'S CUSTODY: the frame's credentials go unread (no route opens anything here), the vessel
