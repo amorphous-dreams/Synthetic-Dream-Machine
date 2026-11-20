@@ -7,13 +7,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
-  conferre, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, signKukuluVouch, signSwarmAct, swarmActCid, swarmLeiNarrowedTitle,
-  swarmLeiReturnedPrefix, swarmLeiRecordTitle, swarmReceiptTitle, swarmTesseraPrefix, verifyRiteReceipt, verifySwarmRecord, RITE_RECEIPT_DOMAIN,
-  type KukuluVouchParts, type SignedRiteReceipt, type SignedKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
+  conferre, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signKukuluVouch, signSwarmAct, swarmActCid,
+  swarmLeiReturnedPrefix, swarmLeiRecordTitle, swarmReceiptTitle, swarmTesseraPrefix, verifySwarmRecord,
+  type KukuluVouchParts, type SignedKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { KUKULU_COLD_READS, kukuluGate, pulamaSignerOf, vouchSignerOf } from "../src/kukulu-gate.js";
-import { KUKULU_VOUCH_CHECK, kukuluRiteOver } from "../src/kukulu-lei-seat.js";
+import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
 import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey } from "../src/node-vessel-identity.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { pulamaRecords } from "../src/pulama-state.js";
@@ -55,7 +55,7 @@ async function stand() {
     signSwarmAct({ act: "lei", group: GROUP, rite: "kukulu", branch: more.branch ?? BRANCH, after: more.after ?? null, ...terms }, more.signer ?? hand);
   // THE STANDING VESSEL vouches under the custody root's vouch child, which its in-process holder derives as the pūlama does.
   const vouch = async (parts: Partial<KukuluVouchParts> = {}): Promise<SignedKukuluVouch> =>
-    signKukuluVouch({ group: GROUP, branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, verdict: "pass", receipt: null, ...parts }, await vouchSignerOf(fx!.local));
+    signKukuluVouch({ group: GROUP, branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, ...parts }, await vouchSignerOf(fx!.local));
   const hello = async (offer: unknown): Promise<string> => {
     try { return (await fx!.vessel(offer).unlock([])).reading; }
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
@@ -83,16 +83,12 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
     // The offered lei landed at the family's own title and reads there as the hand's.
     const leiTitle = swarmLeiRecordTitle("kukulu", BRANCH, cid);
     expect(verifySwarmRecord(await s.records.read(leiTitle), leiTitle, s.trust, GROUP)).toMatchObject({ ok: true, cid });
-    // THE RETURN, the receipt and the guest half each carry the pūlama's own key: no key a vessel holds signed them. The
-    // receipt names no face: the pūlama signs it as the place, and it verifies under the place.
+    // THE RETURN and the guest half each carry the pūlama's own key: no key a vessel holds signed them.
     const returned = JSON.parse((await s.records.read(`${swarmLeiReturnedPrefix(cid)}1`))!) as SignedSwarmAct;
     expect(returned.signer).toBe(s.pulamaKey);
     expect(returned.body).toMatchObject({ act: "lei-returned", lei: cid, n: 1, head: HEAD, tree: TREE, branch: BRANCH });
-    const receiptText = await s.records.read(swarmReceiptTitle(TREE));
-    const receipt = JSON.parse(receiptText!) as SignedRiteReceipt;
-    expect(receipt.signer).toBe(s.pulamaKey);
-    expect(receipt.body).toEqual({ kind: RITE_RECEIPT_DOMAIN, tree: TREE, verdict: "pass", checks: [KUKULU_VOUCH_CHECK], definitions: kukuluVouchDigest(v) });
-    expect(verifyRiteReceipt(receiptText, swarmReceiptTitle(TREE), s.trust.place)).toMatchObject({ ok: true });
+    // No receipt rests for the tree: the lei the hand strung stands as the consent, and the tessera par reads the verdict after.
+    expect(await s.records.read(swarmReceiptTitle(TREE))).toBeNull();
     expect((await vouchSignerOf(s.fx.kept)).key).not.toBe(s.pulamaKey);
 
     // CONFERRE before the vessel composed: the guest half stands alone and reads red. After `landRite`, the pair reads par.
@@ -169,37 +165,6 @@ describe("RED pulama-refuses-an-unvouched-kukulu", () => {
     await s.fx.server.lock();
     expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("pulama-locked");
   });
-
-  test("a red walk refuses and narrows a wide lei; CONTROL: a fresh lei restrings the line and a passing vouch then serves", async () => {
-    const s = await stand();
-    const lei = await s.string({ reach: "wide", returns: 3 });
-    expect(await s.hello({ lei: [lei], vouch: [await s.vouch({ verdict: "fail" })] })).toBe("swarm-lei-testimony-red");
-    expect(await s.returns(lei)).toBe(0);
-    expect(await s.records.read(swarmLeiNarrowedTitle(swarmActCid(lei)))).not.toBeNull();
-    // The narrowed lei spends nothing, even beside a passing vouch.
-    expect(await s.hello({ lei: [lei], vouch: [await s.vouch()] })).toBe("swarm-lei-narrowed");
-    const fresh = await s.string({ reach: "wide", returns: 1 }, { after: swarmActCid(lei) });
-    expect(await s.hello({ lei: [lei, fresh], vouch: [await s.vouch()] })).toBe("opens");
-    expect(await s.returns(fresh)).toBe(1);
-  });
-});
-
-describe("each hello returns under its own vouch's verdict", () => {
-  test("RED: a red vouch and a passing vouch for one tree, offered at once, never trade verdicts: the red one opens no session in either order", async () => {
-    const s = await stand();
-    let after: string | null = null;
-    for (const order of [["fail", "pass"], ["pass", "fail"]] as const) {
-      const lei: SignedSwarmAct = await s.string({ reach: "head", head: HEAD }, { after });
-      after = swarmActCid(lei);
-      const vouches = { fail: await s.vouch({ verdict: "fail" }), pass: await s.vouch() };
-      const [first, second] = await Promise.all(order.map((verdict) => s.hello({ lei: [lei], vouch: [vouches[verdict]] })));
-      const read = { [order[0]]: first, [order[1]]: second } as Record<"fail" | "pass", string>;
-      // The red hello meets its own red receipt, or, where the passing one went first, a lei already returned: never a session.
-      expect(read.fail, order.join(" then ")).toBe(order[0] === "fail" ? "swarm-lei-testimony-red" : "swarm-lei-returned");
-      expect(read.pass, order.join(" then ")).toBe("opens");
-      expect(await s.returns(lei)).toBe(1);
-    }
-  });
 });
 
 describe("RED pulama-refuses-a-returned-lei", () => {
@@ -252,7 +217,7 @@ async function standLend(admissions?: PulamaAdmissions) {
   const string = (ordinal: number, by = ordinal): Promise<SignedSwarmAct> =>
     signSwarmAct({ act: "lei", group: GROUPS[ordinal]!, rite: "kukulu", branch: BRANCH, after: null, reach: "wide", returns: 2 }, hands[by]!);
   const vouch = async (ordinal: number): Promise<SignedKukuluVouch> =>
-    signKukuluVouch({ group: GROUPS[ordinal]!, branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, verdict: "pass", receipt: null }, await vouchSignerOf(fx!.local));
+    signKukuluVouch({ group: GROUPS[ordinal]!, branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE }, await vouchSignerOf(fx!.local));
   const returns = async (lei: SignedSwarmAct): Promise<number> => (await records.list(swarmLeiReturnedPrefix(swarmActCid(lei)))).length;
   const sessionScope = (): unknown => fx!.lines.fromPulama.map((l) => JSON.parse(l) as Record<string, unknown>).filter((f) => f["t"] === "session").at(-1)?.["scope"];
   const hello = async (offer: unknown): Promise<string> => {

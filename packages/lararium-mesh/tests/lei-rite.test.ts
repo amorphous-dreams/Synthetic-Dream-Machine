@@ -13,7 +13,7 @@ import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import { SWARM_LEI_RITES, leiRiteCosigns, wardLeiVerb } from "../src/swarm-lei-rite.js";
 import {
-  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiRecordTitle, swarmLeiTitle, swarmReceiptTitle,
+  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiRecordTitle, swarmLeiTitle,
   type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import type { WardCosignAct } from "../src/ward-cosign.js";

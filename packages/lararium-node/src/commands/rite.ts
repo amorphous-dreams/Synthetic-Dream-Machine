@@ -2,9 +2,9 @@
  * rite — the store holder runs a rite's rows against the daemon wiki: `begin`, `land`, `receipts`.
  *
  * A rite that takes the vessel down keeps a tessera (a kūkulu keeps one per lent face and begins every face or none, `beginLentFaces`): `begin` derives the head's tree (out of the checkout's object store, `gitTreeOf`, no git binary; a `keep` derives its bundle id from the staged bundle itself, `riteTreeOf`), returns the
- * rite's lei at that head (the testimony, the count and the reach all judged in the mesh core) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
+ * rite's lei at that head (the count and the reach judged in the mesh core, and the testimony too for a `push` or `keep`; a `kukulu` rests on the lei alone) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
  * host half once a vessel stands again; `receipts` lists every half and runs conferre over them; `receipt` rests the
- * place-signed `receipt/<tree>` every return rests on, over the verdict the host's battery hands in; `offer` gathers what a
+ * place-signed `receipt/<tree>` every `push` and `keep` return rests on, over the verdict the host's battery hands in; `offer` gathers what a
  * kūkulu carries to the pūlama (the line's lei and this vessel's vouch over the image the host built) and rests it in the
  * house's config home for the next vessel (`kukulu-offer`).
  *
@@ -44,7 +44,7 @@ export type RiteAction = "begin" | "land" | "receipts" | "receipt" | "offer";
 export const RITE_CHECKOUTS: readonly string[] = [process.cwd(), "/workspace"];
 
 /**
- * THE VESSEL DERIVES THE HEAD'S TREE ITSELF. A return rests on the receipt standing for the head's tree, so the tree never
+ * THE VESSEL DERIVES THE HEAD'S TREE ITSELF. A `push` or `keep` return rests on the receipt standing for the head's tree, and a kūkulu's lei pins a head the same way, so the tree never
  * comes from the caller. The vessel's image carries no git binary, so the vessel reads the checkout's object store directly
  * (`../git-tree-reader.ts`): the commit the head names, held to its own hash, and the tree that commit names. A head that
  * reads as no object name, a place with no checkout, or a head no store holds refuses `rite-tree-unreadable`: the rite begins
@@ -110,12 +110,12 @@ export interface BegunFace { readonly face: string; readonly ordinal: number; re
 /**
  * ONE LEI PER LENT FACE, ALL OR NONE. A kūkulu lends the next vessel every face this one serves, so it begins one rite per lent
  * ordinal, in the lend's order, each spending that face's own lei under that face's own hand. It CHECKS every face first
- * (`check`: the lei stands with a return left, its testimony reads pass for the tree) and claims nothing; only once every
+ * (`check`: the lei stands with a return left, and its testimony reads pass where the rite testifies) and claims nothing; only once every
  * face answers does it claim each face's return and rest its guest half (`begin`). A face whose lei is missing
  * (`swarm-lei-absent`, or `swarm-lei-group` where only other faces' leis rest on the line) waits by name, as at the offer
  * and the pūlama; with every face waiting the begin refuses
  * `swarm-lei-absent` naming them. Any other reading refuses the whole begin, naming that face, before any face's return is
- * claimed (a red receipt has still narrowed that face's wide lei, as the testimony reads red either way). No lent face refuses
+ * claimed (where the rite testifies, a red receipt has still narrowed that face's wide lei). No lent face refuses
  * `lent-faces-empty`.
  */
 export async function beginLentFaces<C>(

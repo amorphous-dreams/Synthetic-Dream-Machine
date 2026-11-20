@@ -6,7 +6,7 @@ import { ALL_DOMAINS, PULAMA_TESSERA_DOMAIN, SWARM_ACT_DOMAIN, KUKULU_VOUCH_DOMA
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { signKukuluVouch, verifyKukuluVouch, kukuluVouchDigest, type KukuluVouchParts } from "../src/kukulu-vouch.js";
 
-const PARTS: KukuluVouchParts = { group: "group-a", branch: "feature/x", head: "a".repeat(40), tree: "tree-1", image: "sha256:" + "ab".repeat(32), verdict: "pass", receipt: null };
+const PARTS: KukuluVouchParts = { group: "group-a", branch: "feature/x", head: "a".repeat(40), tree: "tree-1", image: "sha256:" + "ab".repeat(32) };
 const keyed = async (n: number) => { const seed = new Uint8Array(32).fill(n); return { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) }; };
 
 describe("a vouch", () => {
@@ -25,10 +25,10 @@ describe("a vouch", () => {
     expect(verifyKukuluVouch(vouch, other.key)).toEqual({ ok: false, refusal: "signer" });
     expect(verifyKukuluVouch(await signKukuluVouch(PARTS, other), signer.key)).toEqual({ ok: false, refusal: "signer" });
     expect(verifyKukuluVouch({ ...vouch, body: { ...vouch.body, image: "sha256:" + "cd".repeat(32) } }, signer.key)).toEqual({ ok: false, refusal: "signature" });
-    expect(verifyKukuluVouch({ ...vouch, body: { ...vouch.body, verdict: "fail" } }, signer.key)).toEqual({ ok: false, refusal: "signature" });
+    expect(verifyKukuluVouch({ ...vouch, body: { ...vouch.body, head: "b".repeat(40) } }, signer.key)).toEqual({ ok: false, refusal: "signature" });
     const swarm = { ...vouch.body, kind: SWARM_ACT_DOMAIN };
     expect(verifyKukuluVouch({ body: swarm, signer: signer.key, sig: await signer.sign(new TextEncoder().encode(JSON.stringify(swarm))) }, signer.key)).toEqual({ ok: false, refusal: "domain" });
-    for (const raw of [null, "vouch", { ...vouch, extra: 1 }, { ...vouch, body: { ...vouch.body, extra: 1 } }, { ...vouch, body: { ...vouch.body, verdict: "maybe" } }, { ...vouch, signer: "zz" }, { ...vouch, body: { ...vouch.body, receipt: "short" } }]) {
+    for (const raw of [null, "vouch", { ...vouch, extra: 1 }, { ...vouch, body: { ...vouch.body, extra: 1 } }, { ...vouch, body: { ...vouch.body, verdict: "pass" } }, { ...vouch, signer: "zz" }]) {
       expect(verifyKukuluVouch(raw, signer.key), JSON.stringify(raw)).toEqual({ ok: false, refusal: "shape" });
     }
     await expect(signKukuluVouch({ ...PARTS, image: "" }, signer)).rejects.toBeInstanceOf(TypeError);
@@ -38,7 +38,7 @@ describe("a vouch", () => {
     const signer = await keyed(1), base = kukuluVouchDigest(await signKukuluVouch(PARTS, signer));
     const moved: KukuluVouchParts[] = [
       { ...PARTS, group: "group-b" }, { ...PARTS, branch: "main" }, { ...PARTS, tree: "tree-2" }, { ...PARTS, head: "b".repeat(40) },
-      { ...PARTS, image: "sha256:" + "cd".repeat(32) }, { ...PARTS, verdict: "fail" }, { ...PARTS, receipt: "ef".repeat(32) },
+      { ...PARTS, image: "sha256:" + "cd".repeat(32) },
     ];
     const digests = new Set([base]);
     for (const parts of moved) digests.add(kukuluVouchDigest(await signKukuluVouch(parts, signer)));

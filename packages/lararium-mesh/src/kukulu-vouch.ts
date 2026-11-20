@@ -3,7 +3,7 @@
  * vouch family (`vouch-dag`, `vouch-board`), where one member vouches for a joiner: this record vouches for an image.
  *
  * The standing vessel boots the candidate under a scratch root, walks it, and signs what it saw: the face's group, the
- * branch, the head and its tree, the image's digest and the walk's verdict. The pūlama returns the kūkulu lei at the head and
+ * branch, the head and its tree and the image's digest. The pūlama returns the kūkulu lei at the head and
  * tree the vouch names (a lei that pins a head pins that one), and the vouch's digest stands as the return's testimony, so the
  * lei reaches the one candidate that vessel walked and no other.
  *
@@ -28,16 +28,12 @@ export interface KukuluVouchParts {
   readonly tree: string;
   /** The candidate image's digest, as its walker read it. */
   readonly image: string;
-  /** The walk's verdict; a pūlama serves a `pass` alone. */
-  readonly verdict: "pass" | "fail";
-  /** The cid of the walk's receipt, where one rests. */
-  readonly receipt: string | null;
 }
 export type KukuluVouchBody = KukuluVouchParts & { readonly kind: typeof KUKULU_VOUCH_DOMAIN; readonly act: "vouch" };
 export interface SignedKukuluVouch { readonly body: KukuluVouchBody; readonly signer: string; readonly sig: string }
 export type KukuluVouchRefusal = "shape" | "domain" | "signature" | "signer";
 
-const KEYS = ["act", "branch", "group", "head", "image", "kind", "receipt", "tree", "verdict"].join(",");
+const KEYS = ["act", "branch", "group", "head", "image", "kind", "tree"].join(",");
 const text = (x: unknown): x is string => typeof x === "string" && x.length > 0 && x.length <= 512;
 const hex64 = (x: unknown): x is string => typeof x === "string" && /^[0-9a-f]{64}$/.test(x);
 
@@ -45,13 +41,12 @@ function shape(b: unknown): b is KukuluVouchBody {
   if (typeof b !== "object" || b === null || Array.isArray(b)) return false;
   const v = b as Record<string, unknown>;
   return Object.keys(v).sort().join(",") === KEYS && v["act"] === "vouch" && typeof v["kind"] === "string"
-    && text(v["group"]) && text(v["branch"]) && text(v["head"]) && text(v["tree"]) && text(v["image"])
-    && (v["verdict"] === "pass" || v["verdict"] === "fail") && (v["receipt"] === null || hex64(v["receipt"]));
+    && text(v["group"]) && text(v["branch"]) && text(v["head"]) && text(v["tree"]) && text(v["image"]);
 }
 
 /** Sign a vouch under the vouch key (`key`: its verifying half, 64 lower hex). */
 export async function signKukuluVouch(parts: KukuluVouchParts, signer: { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> }): Promise<SignedKukuluVouch> {
-  const body: KukuluVouchBody = { kind: KUKULU_VOUCH_DOMAIN, act: "vouch", group: parts.group, branch: parts.branch, head: parts.head, tree: parts.tree, image: parts.image, verdict: parts.verdict, receipt: parts.receipt };
+  const body: KukuluVouchBody = { kind: KUKULU_VOUCH_DOMAIN, act: "vouch", group: parts.group, branch: parts.branch, head: parts.head, tree: parts.tree, image: parts.image };
   if (!shape(body)) throw new TypeError("vouch: the parts form no vouch");
   return { body, signer: signer.key.toLowerCase(), sig: await signer.sign(canonicalJsonBytes(body)) };
 }

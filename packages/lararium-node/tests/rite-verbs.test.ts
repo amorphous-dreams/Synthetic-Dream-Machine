@@ -70,11 +70,11 @@ test("RED: a kūkulu checks every lent face before it begins any, each spending 
 });
 
 /**
- * THE SEAM, measured live on a three-face house: each lent face's kukulu begin verifies `receipt/<tree>` on the ONE shared swarm
- * wiki under its own trust, so a receipt one face signed stood for that face alone. The place signs the receipt once, and every
- * face's trust names the place.
+ * THE SEAM, measured live on a three-face house: the kukulu lei the hand signed stands as the operator's consent, so each lent
+ * face's begin spends one return of its own lei and rests its guest half with no receipt on the shared swarm wiki. The restand's
+ * tessera par stays the after-the-fact verdict.
  */
-test("RED: three lent faces each hold a kukulu lei and one place-signed passing receipt stands for the tree: the kūkulu begin returns all three faces' leis; CONTROL: no receipt reads absent for every face, a failing one narrows the first face's wide lei, and a receipt a face key signed reads absent", async () => {
+test("RED: three lent faces each hold a kukulu lei and no receipt stands for the tree: the kūkulu begin spends one return per face and rests three guest halves; CONTROL: an exhausted lei still refuses", async () => {
   const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
   const house = async () => {
     const rows = new Map<string, string>();
@@ -92,38 +92,22 @@ test("RED: three lent faces each hold a kukulu lei and one place-signed passing 
     const at = { rite: "kukulu" as const, branch: "develop", head: "a".repeat(40), tree: "b".repeat(40) };
     const check = (ordinal: number) => checkReturn(wiki, at, faces[ordinal]!.trust, faces[ordinal]!.group, faces[ordinal]!.atom, { accepts: () => true });
     const kukulu = (lent: readonly number[] = [0, 1, 2]) => beginLentFaces(lent, check, (c) => beginChecked(wiki, c));
-    const receipt = (verdict: "pass" | "fail", by = place) => restReceipt(wiki, { tree: at.tree, checks: ["typecheck"], verdict, definitions: "d".repeat(64) }, by);
     const claimed = () => faces.map((f) => [...rows.keys()].filter((t) => t.startsWith(swarmLeiReturnedPrefix(f.lei))).length);
     const guests = () => [...rows.keys()].filter((t) => t.endsWith("/guest")).length;
-    return { rows, faces, kukulu, receipt, claimed, guests };
+    return { rows, faces, kukulu, claimed, guests };
   };
   const h = await house();
-  await h.receipt("pass");
   const begun = await h.kukulu();
   expect(begun.waits).toEqual([]);
   expect(begun.faces.map((f) => [f.face, f.lei, f.n])).toEqual(h.faces.map((f, i) => [`h${i}`, f.lei, 1]));
   expect([h.claimed(), h.guests()]).toEqual([[1, 1, 1], 3]);
-  // CONTROL: no receipt reads absent for every face, and the begin refuses by the testimony's reading.
-  const bare = await house();
-  await expect(bare.kukulu()).rejects.toMatchObject({ code: "swarm-lei-testimony-absent", message: expect.stringContaining("h0") });
-  // CONTROL: a failing receipt narrows the wide lei it meets first (the begin refuses the whole kūkulu there).
-  const red = await house();
-  await red.receipt("fail");
-  await expect(red.kukulu()).rejects.toMatchObject({ code: "swarm-lei-testimony-red" });
-  expect([...red.rows.keys()].some((t) => t.includes(`/lei-narrowed/${red.faces[0]!.lei}`))).toBe(true);
-  // CONTROL: a receipt face h0's own device atom signed stands for no face, h0's included.
-  const faceSigned = await house();
-  await faceSigned.receipt("pass", placeSignerFromSeed(new Uint8Array(32).fill(20)));
-  for (const ordinal of [0, 1, 2]) await expect(faceSigned.kukulu([ordinal]), `h${ordinal}`).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
   // RED: h2's returns ran out, so the begin refuses naming h2 and claims no face's return nor rests any guest half.
   const spent = await house();
-  await spent.receipt("pass");
   for (const n of [1, 2]) spent.rows.set(swarmLeiReturnedTitle(spent.faces[2]!.lei, n), "{}");
   await expect(spent.kukulu()).rejects.toMatchObject({ code: "swarm-lei-returns-spent", message: expect.stringContaining("h2") });
   expect([spent.claimed(), spent.guests()]).toEqual([[0, 0, 2], 0]);
   // CONTROL: a face with no lei of its own waits by name, and the others claim.
   const absent = await house();
-  await absent.receipt("pass");
   for (const t of [...absent.rows.keys()]) if (t === swarmLeiRecordTitle("kukulu", "develop", absent.faces[1]!.lei)) absent.rows.delete(t);
   expect((await absent.kukulu()).waits).toEqual(["h1"]);
   expect([absent.claimed(), absent.guests()]).toEqual([[1, 0, 1], 2]);

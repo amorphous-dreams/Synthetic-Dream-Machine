@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, placeSignerFromSeed, restReceipt, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, placeSignerFromSeed, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle,
   verifyKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "../src/custody-holder.js";
@@ -35,7 +35,7 @@ let fx: PulamaFixture | null = null;
 const dirs: string[] = [];
 afterEach(async () => { await fx?.drop(); fx = null; for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });
 
-/** The standing vessel's control records, in memory: where its lei, its receipts and its unstringings rest. */
+/** The standing vessel's control records, in memory: where its lei and its unstringings rest. */
 function controlWiki(): SwarmWikiPort {
   const rows = new Map<string, string>();
   return {
@@ -57,8 +57,7 @@ async function stand() {
   expect((await fx.local.unlockFace({ ordinal: 0 }, fixtureRoute)).reading).toBe("opens");
   const root = await generateOrLoadPersonaGroupRoot(0, fixtureWard());
   const hand: SwarmSignerPort = { key: root.verifyingKey, sign: async (bytes) => (await wardRootSigner(0, fixtureWard(), "a swarm control")).sign(bytes) };
-  // THE STANDING VESSEL'S OWN WITNESS: its device atom signs the returns and halves in its control records, and THE PLACE
-  // signs the receipt, once for every face it lends.
+  // THE STANDING VESSEL'S OWN WITNESS: its device atom signs the returns and halves in its control records.
   const seed = new Uint8Array(32).fill(4);
   const atom: SwarmSignerPort = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
   const place = placeSignerFromSeed(new Uint8Array(32).fill(7));
@@ -69,13 +68,12 @@ async function stand() {
     await wiki.write(swarmLeiRecordTitle("kukulu", BRANCH, swarmActCid(lei)), JSON.stringify(lei));
     return lei;
   };
-  const receipt = (verdict: "pass" | "fail") => restReceipt(wiki, { tree: TREE, checks: ["typecheck", "mesh"], verdict, definitions: "d".repeat(64) }, place);
   const offer = (image = IMAGE) => writeKukuluOffer({ wiki, faces: [{ group: GROUP, trust, ward: NO_COSIGN }], branch: BRANCH, head: HEAD, tree: TREE, image, holder: fx!.local, path });
   const hello = async (offered: unknown): Promise<string> => {
     try { return (await fx!.vessel(offered).unlock([])).reading; }
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
   };
-  return { fx, path, wiki, hand, place, string, receipt, offer, hello, raise: (d: string | null) => { raised = d; } };
+  return { fx, path, wiki, hand, place, string, offer, hello, raise: (d: string | null) => { raised = d; } };
 }
 
 describe("RED kukulu-offer-reaches-the-new-vessel", () => {
@@ -83,9 +81,8 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     const s = await stand();
     const first = await s.string({ reach: "wide", returns: 1 });
     const lei = await s.string({ reach: "wide", returns: 3 }, swarmActCid(first));
-    await s.receipt("pass");
     const wrote = await s.offer();
-    expect(wrote).toMatchObject({ path: s.path, lei: 2, verdict: "pass" });
+    expect(wrote).toMatchObject({ path: s.path, lei: 2 });
     expect(statSync(s.path).mode & 0o777).toBe(0o600);
 
     // THE FILE: the whole line, and a vouch this vessel's custody root signed over the image the host named.
@@ -96,7 +93,7 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     expect(file.vouch).toHaveLength(1);
     const vouched = verifyKukuluVouch(file.vouch[0], await vouchKeyOf(s.fx.kept));
     expect(vouched).toMatchObject({ ok: true, digest: wrote.vouch[0] });
-    expect(file.vouch[0]!.body).toMatchObject({ group: GROUP, branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, verdict: "pass" });
+    expect(file.vouch[0]!.body).toMatchObject({ group: GROUP, branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE });
     expect(kukuluVouchDigest(file.vouch[0]!)).toBe(wrote.vouch[0]);
     // Nothing secret rests in the file: no route, no key the holder holds.
     expect(readFileSync(s.path, "utf8")).not.toContain(Buffer.from(s.fx.treeKey).toString("hex"));
@@ -123,7 +120,6 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
   test("a later offer supersedes the last; an unstringing rides the offer; a hello the pūlama refuses leaves the file for the next dial", async () => {
     const s = await stand();
     const lei = await s.string({ reach: "wide", returns: 2 });
-    await s.receipt("pass");
     const one = await s.offer();
     const two = await s.offer("sha256:" + "cd".repeat(32));
     expect(two.vouch).not.toEqual(one.vouch);
@@ -149,7 +145,6 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
   test("RED every lent face's line rides the offer: one vouch per face, each over its own group; a face whose line carries no lei rides its vouch and waits by name", async () => {
     const s = await stand();
     await s.string({ reach: "wide", returns: 2 });
-    await s.receipt("pass");
     const place = (k: string) => k === s.place.key;
     const trust: SwarmTrust = { hand: () => false, vessel: () => false, place, lead: () => false };
     const wrote = await writeKukuluOffer({
@@ -163,16 +158,14 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     expect((await s.offer()).waits).toEqual([]);
   });
 
-  test("an offer with no lei, no receipt or no image digest writes nothing; a red receipt rides the vouch and the pūlama refuses it", async () => {
+  test("an offer with no lei or no image digest writes nothing; with a lei and no receipt standing the offer writes and the pūlama serves it", async () => {
     const s = await stand();
     await expect(s.offer()).rejects.toMatchObject({ code: "swarm-lei-absent" });
     await s.string({ reach: "wide", returns: 2 });
-    await expect(s.offer()).rejects.toMatchObject({ code: "rite-offer-testimony-absent" });
-    await s.receipt("fail");
     await expect(s.offer("lares-surface:local")).rejects.toMatchObject({ code: "rite-offer-malformed" });
     expect(existsSync(s.path)).toBe(false);
-    expect((await s.offer()).verdict).toBe("fail");
-    expect(await s.hello(readKukuluOffer(s.path))).toBe("swarm-lei-testimony-red");
+    await s.offer();
+    expect(await s.hello(readKukuluOffer(s.path))).toBe("opens");
     expect(consumeKukuluOffer(s.path)).toBe(true);
     expect(consumeKukuluOffer(s.path)).toBe(false);
     expect(consumeKukuluOffer(undefined)).toBe(false);

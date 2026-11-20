@@ -14,7 +14,7 @@
  *   6. rite-land    IN THE NEW VESSEL: rest each face's host half (`rite-landed`) under that face, naming its begun half and
  *                   the head it stands at; the rite reads par only where every pair reads par
  *
- * THE RITE BEGINS BEFORE THE VESSEL GOES DOWN. A begin the vessel refuses (no lei, no testimony, no return left) runs no shim
+ * THE RITE BEGINS BEFORE THE VESSEL GOES DOWN. A begin the vessel refuses (no lei, no return left) runs no shim
  * verb at all. The return comes first by design, so a build that fails leaves the lei's return spent and the begun half
  * waiting: conferre reads it red at the next wake, and the vessel still stands.
  *
