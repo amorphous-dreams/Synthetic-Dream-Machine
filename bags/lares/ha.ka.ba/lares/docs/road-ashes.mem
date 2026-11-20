@@ -9,7 +9,7 @@ l-space      = "stable"
 projection   = "rendered"
 render-title = "road-ashes.html"
 render-type  = "text/html"
-role         = "THE ROAD'S ASHES — the founding road's finished work beside it: every road child tagged road/ashes, the landed leaps, the o-takiage rite's complete items and the one-line ashes, so the road itself shows pending work alone"
+role         = "THE ROAD'S ASHES — the founding road's finished work beside it: every road child tagged road/ashes, the o-takiage rite's complete items and the one-line ashes, so the road itself shows pending work alone"
 title        = "lar:///ha.ka.ba/lares/docs/road-ashes"
 type         = "text/memetic-wikitext+tiddlywiki"
 uri-path     = "ha.ka.ba/lares/docs/road-ashes"
@@ -20,7 +20,7 @@ written      = "2026-11-19"
 
 ! The road's ashes ~ finished work beside the founding road
 
-The founding road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>) shows pending work alone; this carrier gathers what stands finished (operator, 2026-11-19: //"we should consider moving the 'done/ashes/o-takiage' sections to a completely seperate meme. The filter based collections/lists should then allow moving to the ashes pile with a tag or something like that, and querying the Roadmap will only show pending work."//). A road child moves here by one act: it takes the tag `road/ashes` beside its own, and its text stays in its own carrier. A child takes the tag when its work stands fully built, burned or superseded; a ruling stays law in the road and never takes it. The landed leaps, the o-takiage rite's complete items and the one-line ashes moved here from the road whole on the same day.
+The founding road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>) shows pending work alone; this carrier gathers what stands finished (operator, 2026-11-19: //"we should consider moving the 'done/ashes/o-takiage' sections to a completely seperate meme. The filter based collections/lists should then allow moving to the ashes pile with a tag or something like that, and querying the Roadmap will only show pending work."//). A road child moves here by one act: it takes the tag `road/ashes` beside its own, and its text stays in its own carrier. A child takes the tag when its work stands fully built, burned or superseded; a ruling stays law in the road and never takes it. The o-takiage rite's complete items and the one-line ashes moved here from the road whole on the same day; the landed leaps burned, git keeps them.
 
 <<~/ahu>>
 
@@ -41,25 +41,6 @@ The founding road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-ro
 <$transclude mode="block"/>
 
 </$list>
-
-<<~/ahu>>
-
-<<~ ahu slot=`#/landed-leaps`>>
-
-!! The landed leaps, one line each
-
-* ''Leap 0, the clockless sweep'' (`e2fc2158c`, its bake `6d2f476f3`): no version literal, a KEL ordered by hash-chain descent with `seq` as a cross-check, a floor announcement linked by `prior`, the IndexedDB version a pinned platform constant.
-* ''Leap 1, the vessel floor and its accept'' (`63bc695d9`, with its bake): <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin`>>; its owed items rest in that carrier's #/owed.
-* ''Leaps 2a and 3, the private workbench and the workspaces'' (`952f50dec`): <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>.
-* ''Leap 4, the offering door'' (`312c2f2a0`, with its bake): <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/offering`>>.
-* ''Leap 5, the canon true-up'' (`3156b4e94`), and the pre-walk lane (`07d53bdc4`, its bake `5a8b5e603`) with the test-typecheck ratchet (`8843a8eff`).
-* ''The veil floor and the leaf fleet'' (merged `4c38d53d5` and `cef201dac`, their bake `cd4a04f46`): <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model`>>, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/device-seats`>>.
-* ''The contract build'' (`490d2b040`, `105773654`, `13fa40151`, its bake `ce48376c1`): one workbench for a wiki on a vessel, one folder for a workbench, and every carry act following the document: <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>.
-* ''The veil's first cut'' (`110804ead..7ba75df75`): a store id for each worn face, a peer id for each composition, an offer keyed at its Nexus, a salted recovery commitment (`C1`).
-* ''The carry residue'' (`c28a77478..7bc2e42fb`): a kahua act rides its own face's wear (`kahua-face-unworn`), the daemon island mounts the pinned floor, a share landing counts what moved, every carry act names its waits and accounts for every record, and the runbook's release and carry blocks read as a walked hearth answered them (`C8`; its open item rides `C15`).
-* ''The browser's confirm gate'' (`ca1a989b6..f7ff6827c`): the reset proves the holder's passphrase at rest before anything burns (`C4`).
-* ''The TiddlyWiki caps, phase 1'' (`6ef0e3d61..567b3d518`, `b3b9a7654..1c64c2781`): one family law with the orphan folder and its flag, and the tiddler door on the anchor with its delete's two modes, joined to the family law (`9228064ba`, `96b6e59a3`; `L17`).
-* ''The mirror, whole'': the glass theme (`00c7af858`), the floor's replay into every island and the pane as viewport (`18c05e779`, `a8f6058d0`), the whole handoff and the doors (`231e0c6a4`, `2eeef99fe`), and the module holds CI asked for (`7ebcb57d7`, `c09ebfdce`): <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/d3-glass-lane#/the-handoff`>>.
 
 <<~/ahu>>
 
@@ -181,6 +162,6 @@ Finished items rest here in one line each, naming what landed them, until the op
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jSQMCgRbLo4KJ72PXdTVe1jiVRu_NWWqgi4I89u9Whc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3EP9oyAhu11_O0u2UD_aJkgkwDcAwL-8qLLKY3WfK1E`>>
 
 <<^ code=`&#x0004;` to=`?`>>
