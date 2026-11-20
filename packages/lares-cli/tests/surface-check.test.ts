@@ -1,8 +1,8 @@
 /**
- * surface-check — `lares surface check`, the roster witness the pre-commit hook runs, over planted breaches.
+ * surface-check — `lares surface check`, the pool check the pre-commit hook runs, over planted breaches.
  *
  * A face pool holds that face's private planes alone (face-pools #/shape): it refuses a repo top holding an index file
- * that links faces (`face-labels/`, `kahua-index.toml`, `share.tid`, `kahua-pending.json`) or another face's root; it
+ * that maps one face to another (`face-labels/`, `kahua-index.toml`, `share.tid`, `kahua-pending.json`) or another face's root; it
  * refuses any repo rooted at `projections/` or `config/`; it refuses an author email or signing key another face pool in
  * the same house already carries. It reads LOCAL config alone, and exits 1 naming each breach.
  */

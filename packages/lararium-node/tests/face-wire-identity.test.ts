@@ -1,7 +1,7 @@
 /**
  * face-wire-identity — THE ACCEPTANCE TEST for the veil at the wire: one vessel, two faces, one recording peer.
  *
- * Operator, 2026-11-14: "a human 'publishes' no roster that joins their faces". A Repo names itself to every peer with a
+ * Operator, 2026-11-19: "a crypto-registry or any other DreamNet published document SHALL NOT link a human's faces", by their crypto identities (+ public Handles); pet names carry no restriction. A Repo names itself to every peer with a
  * peer id and its store's id (the peer metadata), and signs each change with an actor. A vessel keeps ONE store for
  * every face it holds, so each of the three could join face A to face B for a peer that met both.
  *

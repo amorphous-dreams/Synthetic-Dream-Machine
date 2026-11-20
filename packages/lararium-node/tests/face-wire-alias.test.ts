@@ -1,7 +1,7 @@
 /**
  * face-wire-alias — THE ACCEPTANCE TEST for the veil's second cut: ONE composition, several faces lit, several Nexuses.
  *
- * Operator, 2026-11-14: "a human 'publishes' no roster that joins their faces". The first cut (`face-wire-identity`)
+ * Operator, 2026-11-19: "a crypto-registry or any other DreamNet published document SHALL NOT link a human's faces", by their crypto identities (+ public Handles); pet names carry no restriction. The first cut (`face-wire-identity`)
  * closed the MOUNT switch: a fresh composition presents a fresh peer id and its own scope's store id. Inside one
  * composition every leg still presented that composition's one peer id and one store id, so a face lit beside the worn
  * one (`vault unlock --all` lights three) and a face that stands at two Nexuses each showed one identifier twice.

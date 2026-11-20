@@ -126,7 +126,7 @@ describe("lares surface commit", () => {
     expect(git(remote, "for-each-ref").out.trim()).toBe("");
   });
 
-  test("the pre-commit hook runs the roster check, and a refusing check commits nothing", async () => {
+  test("the pre-commit hook runs the pool check, and a refusing check commits nothing", async () => {
     stub.restore();
     stub = stubLaresOnPath(1);
     carrier("wiki/Room 4.tid", "Room 4", "title: Room 4\n\nbody\n");
