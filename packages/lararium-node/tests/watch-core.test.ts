@@ -18,7 +18,11 @@
  *   W2f EVERY POOL A TREE: where no history stands at or above a pool root, the house founds one (`ensurePoolTree`) with the
  *       face pool's init (`git init -b main`, the house's exclude block, the local author, signing off, the pool-check hook) and
  *       no remote; a standing repo stays exactly as it stands; a folder resting inside another history founds nothing. The
- *       worn face's arm founds its pool, and the boot's heal (`healPoolTrees`) founds each face root and realm wiki folder on disk
+ *       worn face's arm founds its pool, and the boot's heal (`healPoolTrees`) founds each face root and realm root on disk; a
+ *       realm's ONE tree roots at `realms/<pet>/` under the realm's identity, and a wiki folder inside it founds none
+ *   W2h ONE TREE PER ENTITY: a wiki folder holding its own tree below a realm root lifts into the realm's tree, every commit kept
+ *       reachable (the re-root commit's parent names the wiki's head), its uncommitted edits kept, its old git dir kept inside
+ *       the realm's `.git`; a second heal changes nothing
  *   S1  stage/ joins the watched planes (RULED floor 4 (b)), and the wake names every stage edit made on disk since the last
  *       sitting, each title with its pool commit or "uncommitted"
  *   C   control: the house's ignore list already keeps a pool's `.git/` out of every scan
@@ -388,38 +392,110 @@ describe("W2f — every pool a tree: the house founds a pool's history where non
     expect(existsSync(join(inner, ".git"))).toBe(false);
   });
 
-  test("a realm wiki folder founds under the wiki's identity with the realm's exclude lines, never one tree over the realm", async () => {
+  test("a realm root founds under the realm's identity with the realm's exclude lines; a wiki folder inside founds no tree of its own", async () => {
     const { ensurePoolTree } = await pt();
     const { REALM_EXCLUDE_LINES } = await import("../src/bag-paths.js");
-    const wiki = join(dirname(pool), "realms", "kahu", "wikis", "kahu");
-    expect(ensurePoolTree(wiki, { realm: "kahu" }).reading).toBe("founded");
-    expect(cfg(wiki, "user.name")).toBe("kahu");
-    expect(cfg(wiki, "user.email")).toBe("kahu@realm.invalid");
-    const exclude = readFileSync(join(wiki, ".git", "info", "exclude"), "utf8");
+    const realm = join(dirname(pool), "realms", "Kahu Hale");
+    const wiki = join(realm, "wikis", "kahu");
+    mkdirSync(wiki, { recursive: true });
+    expect(ensurePoolTree(realm, { realm: "Kahu Hale" }).reading).toBe("founded");
+    expect(cfg(realm, "user.name")).toBe("Kahu Hale");
+    expect(cfg(realm, "user.email")).toBe("kahu-hale@realm.invalid");
+    const exclude = readFileSync(join(realm, ".git", "info", "exclude"), "utf8");
     for (const line of REALM_EXCLUDE_LINES) expect(exclude).toContain(line);
     expect(withExcludeBlock(exclude, REALM_EXCLUDE_LINES), "the house's block with the realm's lines stands current").toBe(exclude);
-    expect(existsSync(join(dirname(pool), "realms", "kahu", ".git"))).toBe(false);
+    expect(ensurePoolTree(wiki, { realm: "Kahu Hale" }).reading).toBe("inside-another-tree");
+    expect(existsSync(join(wiki, ".git"))).toBe(false);
   });
 
-  test("the boot's heal founds each face root and each realm wiki folder standing on disk, and leaves the standing ones", async () => {
+  test("the boot's heal founds each face root and each realm root standing on disk, and leaves the standing ones", async () => {
     const { healPoolTrees } = await pt();
     const projections = join(dirname(pool), "projections");
     const heron = join(projections, "faces", "Heron"), egret = join(projections, "faces", "Egret");
-    const kahu = join(projections, "realms", "kahu", "wikis", "kahu");
+    const kahuRealm = join(projections, "realms", "kahu");
+    const kahu = join(kahuRealm, "wikis", "kahu");
     for (const d of [heron, egret, kahu]) mkdirSync(d, { recursive: true });
     bare(egret, "init", "-q");
     bare(egret, "config", "user.name", "Egret's Own");
     const lines: string[] = [];
     const healed = healPoolTrees(projections, (l) => lines.push(l));
-    expect(healed.map((h) => `${h.root} ${h.reading}`).sort()).toEqual([`${egret} standing`, `${heron} founded`, `${kahu} founded`].sort());
+    expect(healed.map((h) => `${h.root} ${h.reading}`).sort()).toEqual([`${egret} standing`, `${heron} founded`, `${kahuRealm} founded`].sort());
     expect(cfg(heron, "user.email")).toBe("heron@face.invalid");
-    expect(cfg(kahu, "user.email")).toBe("kahu@realm.invalid");
+    expect(cfg(kahuRealm, "user.email")).toBe("kahu@realm.invalid");
     expect(cfg(egret, "user.name")).toBe("Egret's Own");
-    expect(existsSync(join(projections, "realms", "kahu", ".git"))).toBe(false);
+    expect(existsSync(join(kahu, ".git"))).toBe(false);
     expect(lines.filter((l) => /founds a git tree/.test(l)).length).toBe(2);
     const again: string[] = [];
     expect(healPoolTrees(projections, (l) => again.push(l)).every((h) => h.reading === "standing")).toBe(true);
     expect(again).toEqual([]);
+  });
+});
+
+describe("W2h — one tree per entity: the heal lifts a wiki folder's own tree into its realm root, history kept", () => {
+  const pt = (): Promise<typeof import("../src/pool-tree.js")> => import(/* @vite-ignore */ "../src/pool-tree.js");
+  const g = (root: string, ...args: string[]): string => {
+    const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
+    const r = spawnSync("git", ["-c", "core.quotepath=off", ...args], { cwd: root, env, encoding: "utf8" });
+    if (r.status !== 0) throw new Error(`git ${args.join(" ")} in ${root}: ${r.stderr}`);
+    return (r.stdout ?? "").trim();
+  };
+  /** The live house's shape: `realms/<pet>/wikis/<slug>/` holding its own tree, its commits made, the realm root holding none. */
+  const wikiTree = (projections: string, pet: string, slug: string, commits: number): { dir: string; head: string } => {
+    const dir = join(projections, "realms", pet, "wikis", slug);
+    mkdirSync(dir, { recursive: true });
+    g(dir, "init", "-q", "-b", "main");
+    g(dir, "config", "user.name", slug); g(dir, "config", "user.email", `${slug}@realm.invalid`); g(dir, "config", "commit.gpgsign", "false");
+    for (let i = 1; i <= commits; i++) {
+      writeFileSync(join(dir, `Page ${i}.tid`), tid(`Page ${i}`));
+      g(dir, "add", "-A"); g(dir, "commit", "-q", "--no-verify", "-m", `the wiki's own commit ${i}`);
+    }
+    return { dir, head: g(dir, "rev-parse", "HEAD") };
+  };
+
+  test("★ the live shape (one wiki tree, one commit): the realm root takes the tree, every commit stays reachable, the files track under wikis/<slug>/ ★", async () => {
+    const { healPoolTrees } = await pt();
+    const projections = join(dirname(pool), "projections");
+    const realm = join(projections, "realms", "kahu");
+    const { dir, head } = wikiTree(projections, "kahu", "kahu", 1);
+    writeFileSync(join(dir, "Page 1.tid"), tid("Page 1", "an edit no commit holds yet"));
+    const lines: string[] = [];
+    healPoolTrees(projections, (l) => lines.push(l));
+    expect(existsSync(join(realm, ".git", "HEAD"))).toBe(true);
+    expect(existsSync(join(dir, ".git")), "no tree stands nested below the realm root").toBe(false);
+    expect(g(realm, "merge-base", "--is-ancestor", head, "HEAD"), "the wiki's head stands in the realm's history").toBe("");
+    expect(g(realm, "rev-parse", "HEAD^")).toBe(head);
+    expect(g(realm, "log", "--format=%s", "HEAD~1")).toBe("the wiki's own commit 1");
+    expect(g(realm, "ls-tree", "-r", "--name-only", "HEAD")).toBe("wikis/kahu/Page 1.tid");
+    const lift = g(realm, "log", "-1", "--format=%an <%ae>%n%B");
+    expect(lift).toContain("kahu <kahu@realm.invalid>");
+    expect(lift).toContain("lar:///realm.lifts.a-tree/kahu");
+    expect(lift).toContain(head);
+    expect(g(realm, "status", "--porcelain", "-z").replace(/\0/g, ""), "the uncommitted edit survives as a change to the lifted path").toBe("M wikis/kahu/Page 1.tid");
+    expect(readFileSync(join(dir, "Page 1.tid"), "utf8")).toContain("an edit no commit holds yet");
+    expect(lines.join("\n")).toMatch(/lifts the tree at .*wikis\/kahu/);
+    const again: string[] = [];
+    const before = g(realm, "rev-parse", "HEAD");
+    healPoolTrees(projections, (l) => again.push(l));
+    expect(g(realm, "rev-parse", "HEAD"), "a second heal changes nothing").toBe(before);
+    expect(again).toEqual([]);
+  });
+
+  test("two wiki trees in one realm: both lift, each head an ancestor of the realm's, the old git dirs kept inside the realm's .git", async () => {
+    const { healPoolTrees } = await pt();
+    const projections = join(dirname(pool), "projections");
+    const realm = join(projections, "realms", "Garden");
+    const notes = wikiTree(projections, "Garden", "notes", 2);
+    const works = wikiTree(projections, "Garden", "works", 1);
+    healPoolTrees(projections, () => {});
+    for (const w of [notes, works]) {
+      expect(g(realm, "merge-base", "--is-ancestor", w.head, "HEAD")).toBe("");
+      expect(existsSync(join(w.dir, ".git"))).toBe(false);
+    }
+    expect(existsSync(join(realm, ".git", "lifted", "notes.git", "HEAD"))).toBe(true);
+    expect(existsSync(join(realm, ".git", "lifted", "works.git", "HEAD"))).toBe(true);
+    expect(g(realm, "ls-tree", "-r", "--name-only", "HEAD").split("\n")).toEqual(["wikis/notes/Page 1.tid", "wikis/notes/Page 2.tid", "wikis/works/Page 1.tid"]);
+    expect(g(realm, "status", "--porcelain")).toBe("");
+    expect(g(realm, "rev-list", "--count", "HEAD")).toBe("5");
   });
 });
 

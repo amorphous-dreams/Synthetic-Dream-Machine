@@ -15,8 +15,9 @@
  *       the worn face's actor; a stand-off goes to that wiki's shore
  *   WP4 the witness on a scratch house: a user wiki bound to a workspace (as `notes` would be) flows a disk edit back by itself
  *       and commits at lock
- *   WP5 the workbench folders: each bound workspace, then each `realms/<pet>/wikis/<slug>/` a realm label holds that no workspace
- *       takes; control: a plain `wikis/<slug>/` takes no seat, and a realm's slug with no folder on disk takes none
+ *   WP2b a realm's wiki folder commits into its realm's one tree (`realms/<pet>/`), its own paths alone
+ *   WP5 the workbench folders: each bound workspace (its own tree), then each `realms/<pet>/wikis/<slug>/` a realm label holds
+ *       that no workspace takes (its tree at the realm root); control: a plain `wikis/<slug>/` takes no seat, and a realm's slug with no folder on disk takes none
  *   WP6 the vessel arms one seat per workbench folder in its after-live step, unawaited, under the worn face's actor, and downs
  *       each at lock, wear and shutdown
  */
@@ -165,6 +166,30 @@ describe("WP2 — the seat over a workbench: off the boot path, the whole folder
   });
 });
 
+describe("WP2b — a realm wiki folder commits into its realm's ONE tree, its own paths alone", () => {
+  test("★ the seam reads the tree at the realm root, stages the wiki folder alone, and keeps its recovery/ and temp/ out ★", async () => {
+    const realm = join(house, "projections", "realms", "Garden");
+    const notes = join(realm, "wikis", "notes"), works = join(realm, "wikis", "works");
+    mkdirSync(notes, { recursive: true }); mkdirSync(works, { recursive: true });
+    stubTree(realm);
+    writeFileSync(join(notes, "My Notes.tid"), tid("My Notes"));
+    mkdirSync(join(notes, "recovery"), { recursive: true }); writeFileSync(join(notes, "recovery", "Draft.tid"), tid("Draft"));
+    writeFileSync(join(works, "Other.tid"), tid("Other"));
+    const { watch } = fakeWatch();
+    const lines: string[] = [];
+    const seat = wc.armWorkspaceWatch({
+      workspace: notes, tree: realm, name: "notes", watch, cookie: async () => true, settleMs: 10_000, log: (l) => lines.push(l),
+      ports: { catchUp: async () => {}, wave: async () => {} },
+    });
+    await seat.armed;
+    expect(lines.some((l) => /plain mirror/.test(l)), "the realm's tree serves the folder").toBe(false);
+    expect(await seat.down("lock")).toEqual({ committed: true, sha: expect.any(String) });
+    expect(gitIn(realm, "show", "--name-only", "--format=", "HEAD").out.split("\n")).toEqual(["wikis/notes/My Notes.tid"]);
+    expect(gitIn(realm, "status", "--porcelain", "-uall").out).toContain("?? wikis/works/Other.tid");
+    expect(() => statSync(join(notes, ".git"))).toThrow();
+  });
+});
+
 describe("WP3 — the workspace's ports: an unattended wave in the wiki's own island, under the worn face's actor", () => {
   test("a clean edit lands in the working layer, in-wiki, unattended, under the did it was handed; then pins", async () => {
     const plain = put("My Notes.tid", tid("My Notes", "the new words"));
@@ -303,9 +328,9 @@ describe("WP5 — the workbench folders: each bound workspace, then each wiki a 
     const bound = workspaceRootsOf({ rows: [{ slug: "notes", kind: "wiki", workspace: "notes" }, { slug: "works", kind: "wiki" }], workspacesHome: join(house, "workspaces"), hearth: join(house, "hearth"), sourcedSlugs: [] });
     const folders = workbenchFolders({ projectionRoot: projections, workspaces: bound, sourcedSlugs: ["lares"], realms: realmPlacement(projections).realms() });
     expect(folders).toEqual([
-      { slug: "notes", dir: bound.roots["notes"], name: "notes" },
-      { slug: "elyncia", dir: join(projections, "realms", "Garden", "wikis", "elyncia"), name: "elyncia" },
-      { slug: "works", dir: join(projections, "realms", "Garden", "wikis", "works"), name: "works" },
+      { slug: "notes", dir: bound.roots["notes"], name: "notes", tree: bound.roots["notes"] },
+      { slug: "elyncia", dir: join(projections, "realms", "Garden", "wikis", "elyncia"), name: "elyncia", tree: join(projections, "realms", "Garden") },
+      { slug: "works", dir: join(projections, "realms", "Garden", "wikis", "works"), name: "works", tree: join(projections, "realms", "Garden") },
     ]);
   });
 

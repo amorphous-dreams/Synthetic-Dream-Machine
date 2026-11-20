@@ -200,16 +200,16 @@ export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
 export { workspaceRootsOf, workbenchFolders, type WorkbenchFolder, REALMS_PROJECTION_DIR, REALM_PLANES, realmRoot, FACES_PROJECTION_DIR, FACE_PLANES, faceSegment, faceSegmentRefusal, FaceSegmentRefused, faceRoot, facePersonalRoot, type FaceSite, type FaceSegmentCode } from "./bag-paths.js";
 export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, houseExcludeLines, withExcludeBlock,
-  POOL_EXCLUDE_OPEN, POOL_EXCLUDE_CLOSE, REALM_EXCLUDE_LINES, isTempLayerInternalTitle, TEMP_LAYER_DIR,
+  POOL_EXCLUDE_OPEN, POOL_EXCLUDE_CLOSE, REALM_EXCLUDE_LINES, WORKSPACE_EXCLUDE_LINES, isTempLayerInternalTitle, TEMP_LAYER_DIR,
   isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
 // The drain, one seat (face-pools W1, W2): the CLI's `lares watch` and the vessel's host over the worn face's pool.
 export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolWatch, poolCommitSeam, tendPoolExclude, tendLitFacePool, type ExcludeTending, stageEditsSinceSitting, wakeStageLine, runGit,
   armWorkspaceWatch, workspaceCommitSeam, WORKSPACE_SKIP, WORKSPACE_CLOSE_PREFIX, type WorkspaceWatchOptions,
   WATCHED_PLANES, SITTING_CLOSE_PREFIX, POOL_SETTLE_MS, type DrainSeat, type FacePoolWatch, type FacePoolPorts, type FacePoolWatchOptions, type SeamReading,
   type SittingClose, type StageEdit, type WatchState, type GitRun } from "./watch-core.js";
-// EVERY POOL A TREE: the face and realm pools' one init, the house's idempotent ensure, and the re-stand's heal (`pool-tree`).
-export { PoolTreeRefused, poolGit, POOL_PRE_COMMIT, poolPreCommit, IN_IMAGE_CLI, refreshPoolHook, faceEmailSlug, REALM_EMAIL_DOMAIN, initFacePool, initRealmPool, ensurePoolTree, poolTreeLine,
-  healPoolTrees, type PoolInitResult, type PoolOwner, type PoolTreeEnsured } from "./pool-tree.js";
+// ONE TREE PER ENTITY: the face, realm and workspace pools' one init, the house's idempotent ensure, the re-stand's heal and lift (`pool-tree`).
+export { PoolTreeRefused, poolGit, POOL_PRE_COMMIT, poolPreCommit, IN_IMAGE_CLI, refreshPoolHook, faceEmailSlug, REALM_EMAIL_DOMAIN, realmAuthor, initFacePool, initRealmPool, initWorkspacePool, ensurePoolTree, poolTreeLine,
+  healPoolTrees, liftNestedTrees, commitRealmMove, retagRealmAuthor, type LiftedTree, type PoolInitResult, type PoolOwner, type PoolTreeEnsured } from "./pool-tree.js";
 // HEAD's words for a file with no synced base (face-pools A5): both gates read the pool's last sitting as the base a re-found cleared.
 export { checkoutTracking, type CarrierTracking, type UntrackedReading } from "./checkout-carriers.js";
 export { walledGit, poolPlaceOf, blobAt, poolHeadOf, poolHeads, facePoolHeads, type PoolPlace, type PoolHead, type BaseFromGit } from "./pool-head.js";

@@ -7,7 +7,8 @@
  *       realm id the vessel's ledger binds; `realm list` reads it back; a move that empties a label drops it and says so
  *   RC2 refusals by name: a bad pet name, a face's pet name, an unknown realm to rename; a missing `--to` or a stray word
  *       refuses as usage naming the corrected form; the retired `name` refuses (no alias)
- *   RC3 THE RENAME MOVE: `realm rename <cur> --to <new>` moves `realms/<cur>/` to `realms/<new>/` at once while no vessel answers;
+ *   RC3 THE RENAME MOVE: `realm rename <cur> --to <new>` moves `realms/<cur>/` to `realms/<new>/` in one rename (its one tree with
+ *       it) at once while no vessel answers;
  *       while one does, the label moves and the folder waits for the vessel's next lock or re-stand, and the line says so
  *   RC4 `wiki init <slug> --realm <pet>` places the wiki into an existing realm before the mint (an unknown realm refuses before
  *       anything mints); with no `--realm` the wiki takes its own realm under its slug
@@ -89,7 +90,7 @@ describe("lares realm", () => {
     live = false;
     said = [];
     expect(await run(["rename", "Orchard"], { to: "Grove" })).toBe(0);
-    expect(said.join("\n")).toContain(`moved ${join(p, "realms", "Garden", "wikis", "notes")} -> ${join(p, "realms", "Grove", "wikis", "notes")}`);
+    expect(said.join("\n")).toContain(`moved ${join(p, "realms", "Garden")} -> ${join(p, "realms", "Grove")}`);
     expect(existsSync(join(p, "realms", "Grove", "wikis", "notes", ".git"))).toBe(true);
     expect(existsSync(join(p, "realms", "Garden"))).toBe(false);
   });
