@@ -10,6 +10,9 @@
  * drops (`drop`) and the engine closes: its adaptor drains every owed save, the bridge detaches and the VM releases. A face
  * with no source (shut, or outside the lit set) composes nothing.
  *
+ * THE ONE POOL (`enginePool`) holds engines by any key: a face by its handle index here, a named wiki by its slug in
+ * `wiki-engine`. A pool given `idleMs` closes an engine no ask touched for that long (cold), and the next ask composes afresh.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
 import { CompositeStore, type FaceActorDoor, type WikiRecipe } from "@lararium/mesh";
@@ -27,6 +30,8 @@ export interface FaceEngineSource {
   readonly ready: readonly RecipeReadyBinding[];
   /** The island Repo's actor door: a write this engine lands under a session's face takes that face's actor. */
   readonly wear?: FaceActorDoor;
+  /** The face holds no writer's seat in the wiki's workbench: its `personal` slot takes the default write. */
+  readonly writeSlot?: "personal";
 }
 
 /** One face's engine and the composition it answers over: the tiddler door's options for that face. */
@@ -44,6 +49,7 @@ export async function composeFaceEngine(source: FaceEngineSource): Promise<FaceE
   const { adaptor } = buildIslandRecipe({
     tw5, composite, recipe: source.recipe, ready: source.ready,
     ...(source.wear ? { wear: source.wear } : {}),
+    ...(source.writeSlot ? { writeSlot: source.writeSlot } : {}),
   });
   const unbridge = bridgeWikiToAdaptor(tw5, adaptor);
   let closed: Promise<void> | null = null;
@@ -55,39 +61,68 @@ export async function composeFaceEngine(source: FaceEngineSource): Promise<FaceE
   return { tw5, composite, close };
 }
 
-/** One engine per face, composed on its first ask. */
-export interface FaceEngines {
-  /** The face's engine, or null where the face has no source (shut, or outside the lit set). */
-  of(face: number): Promise<FaceEngine | null>;
-  /** Close and forget the face's engine (the face dropped). */
-  drop(face: number): Promise<void>;
+/** Engines by key, each composed on its first ask. */
+export interface EnginePool<K, E> {
+  /** The key's engine, or null where the key has no source. */
+  of(key: K): Promise<E | null>;
+  /** Close and forget the key's engine. */
+  drop(key: K): Promise<void>;
   /** Close every engine. */
   dropAll(): Promise<void>;
 }
 
-export function faceEngines(sourceOf: (face: number) => Promise<FaceEngineSource | null>): FaceEngines {
-  const engines = new Map<number, Promise<FaceEngine | null>>();
-  const drop = async (face: number): Promise<void> => {
-    const pending = engines.get(face);
-    engines.delete(face);
+/**
+ * THE ONE POOL: one engine per key, composed on its first ask and answered after until it drops. With `idleMs`, an engine no
+ * ask touched for that long closes (owed saves drain first), and the next ask composes afresh. A key with no source, or a
+ * composition that failed, leaves no entry: the next ask reads afresh.
+ */
+export function enginePool<K, E extends { close(): Promise<void> }>(
+  compose: (key: K) => Promise<E | null>, opts: { readonly idleMs?: number } = {},
+): EnginePool<K, E> {
+  const engines = new Map<K, Promise<E | null>>();
+  const timers = new Map<K, ReturnType<typeof setTimeout>>();
+  const quiet = (key: K): void => { const timer = timers.get(key); if (timer !== undefined) clearTimeout(timer); timers.delete(key); };
+  const drop = async (key: K): Promise<void> => {
+    quiet(key);
+    const pending = engines.get(key);
+    engines.delete(key);
     const engine = await pending?.catch(() => null);
     await engine?.close();
   };
+  /** Each ask re-arms the cold clock; it never holds the process open. */
+  const touch = (key: K, composing: Promise<E | null>): void => {
+    if (opts.idleMs === undefined) return;
+    quiet(key);
+    const timer = setTimeout(() => {
+      timers.delete(key);
+      if (engines.get(key) === composing) void drop(key).catch(() => {});
+    }, opts.idleMs);
+    (timer as { unref?: () => void }).unref?.();
+    timers.set(key, timer);
+  };
   return {
-    of: (face) => {
-      const standing = engines.get(face);
-      if (standing) return standing;
-      const composing = (async () => {
-        const source = await sourceOf(face);
-        return source ? composeFaceEngine(source) : null;
-      })();
-      engines.set(face, composing);
-      // A face with no source, or a composition that failed, leaves no entry: the next ask reads afresh.
-      composing.then((engine) => { if (engine === null && engines.get(face) === composing) engines.delete(face); },
-        () => { if (engines.get(face) === composing) engines.delete(face); });
+    of: (key) => {
+      const standing = engines.get(key);
+      if (standing) { touch(key, standing); return standing; }
+      const composing = compose(key);
+      engines.set(key, composing);
+      composing.then((engine) => {
+        if (engines.get(key) !== composing) return;
+        if (engine === null) engines.delete(key); else touch(key, composing);
+      }, () => { if (engines.get(key) === composing) engines.delete(key); });
       return composing;
     },
     drop,
     dropAll: async () => { await Promise.all([...engines.keys()].map(drop)); },
   };
+}
+
+/** One engine per face, composed on its first ask. */
+export type FaceEngines = EnginePool<number, FaceEngine>;
+
+export function faceEngines(sourceOf: (face: number) => Promise<FaceEngineSource | null>): FaceEngines {
+  return enginePool<number, FaceEngine>(async (face) => {
+    const source = await sourceOf(face);
+    return source ? composeFaceEngine(source) : null;
+  });
 }

@@ -16,8 +16,9 @@
  * from a writable layer and the layers beneath keep their records; `--mode reveal` retracts the topmost record and the
  * one beneath surfaces. A title the wiki reads absent answers too: a plain delete retracts a kāpae that hides nothing.
  *
- * The container law holds: name `--recipe <slug>` or `--bag <slug>`. This phase answers `--recipe default`, the worn
- * face's daemon wiki; a named wiki refuses `wiki-not-anchored` by name.
+ * The container law holds: name `--recipe <slug>` or `--bag <slug>`. `--recipe default` answers the worn face's daemon
+ * wiki, and `--recipe <slug>` any wiki that face reaches, in that wiki's own engine; a wiki it reaches none of refuses
+ * `wiki-unreached`, and a bag (one bag, no wiki) refuses `wiki-not-anchored`.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout
  */

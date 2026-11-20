@@ -37,17 +37,20 @@ import { kahuaLayerStore } from "./kahua-layer.js";
 import { MemoryTiddlerStore } from "./memory-store.js";
 import type { TW5Engine } from "./tw5-vm.js";
 
-export interface RecipeReadyBinding {
-  /** Slot URI from the expanded recipe. */
-  slot: SlotUri;
-  handle: DocHandle<LarDoc>;
-}
+/**
+ * One slot's binding: a CRDT handle the recipe wraps in its own store, or a store already standing over that slot's document
+ * (a named wiki's layer reached by reference, or its floor snapshot), which the recipe lays as it stands. A store handed here
+ * belongs to this composition alone: the recipe replays it into this engine.
+ */
+export type RecipeReadyBinding =
+  | { /** Slot URI from the expanded recipe. */ slot: SlotUri; handle: DocHandle<LarDoc> }
+  | { /** Slot URI from the expanded recipe. */ slot: SlotUri; store: LarTiddlerStore };
 
 export interface BuildIslandRecipeInput {
   tw5: TW5Engine;
   composite: CompositeStore;
   recipe: WikiRecipe;
-  /** Resolved CRDT handles keyed by slot URI. temp has no entry. */
+  /** Resolved CRDT handles (or stores) keyed by slot URI. temp has no entry. */
   ready: readonly RecipeReadyBinding[];
   /** Pinned system snapshots beneath the live oracle seed. */
   floorRecords?: readonly Readonly<Record<string, LarTiddlerRecord>>[];
@@ -85,7 +88,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   const STARTUP_ACTIONS = "[all[shadows+tiddlers]tag[$:/tags/StartupAction]!has[draft.of]]";
   const ranAtBoot = new Set<string>(tw5.$tw.wiki.filterTiddlers(STARTUP_ACTIONS));
 
-  const handleBySlot   = new Map(ready.map((r) => [r.slot, r.handle]));
+  const boundBySlot    = new Map(ready.map((r) => [r.slot, r]));
   const slots          = expandRecipe(recipe);
   const slug           = recipe.wikiSlug;
   const tempSlot       = wikiSlotUri(slug, "temp");
@@ -101,13 +104,14 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
       stores.push({ slot, store: tempStore });
       continue;
     }
-    const handle = handleBySlot.get(slot);
-    if (!handle) continue; // CRDT slot not provided — skip (cold or unmapped)
+    const bound = boundBySlot.get(slot);
+    if (!bound) continue; // CRDT slot not provided — skip (cold or unmapped)
     // THE KAHUA SLOT READS THE FOLD: any member of the face writes any tiddler into the stage doc, so the layer serves the
     // verified standing items alone, through the one seam (`kahuaLayerStore`), and never the doc's titles.
-    const base: LarTiddlerStore = slot === KAHUA_BAG
-      ? kahuaLayerStore(handle, input.kahuaFace ?? (() => null), input.kahuaFaceWatch)
-      : new AutomergeDocStore(handle, slot, input.wear ? { wear: input.wear } : {});
+    const base: LarTiddlerStore = "store" in bound ? bound.store
+      : slot === KAHUA_BAG
+        ? kahuaLayerStore(bound.handle, input.kahuaFace ?? (() => null), input.kahuaFaceWatch)
+        : new AutomergeDocStore(bound.handle, slot, input.wear ? { wear: input.wear } : {});
     const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRecords ?? [], base, bagId: slot }) : base;
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
@@ -139,7 +143,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   // an empty write-layer pointer makes unrouted saves raise the alert-rail refusal.
   if (tempStore) {
     // A face that holds no writer's seat in the workbench routes its saves to its own `personal` slot, where that slot stands.
-    const writeLayer = handleBySlot.has(defaultWritableSlot(slug, writeSlot)) ? defaultWritableSlot(slug, writeSlot) : "";
+    const writeLayer = boundBySlot.has(defaultWritableSlot(slug, writeSlot)) ? defaultWritableSlot(slug, writeSlot) : "";
     const configSeed: Record<string, string> = {
       "lar:///ha.ka.ba/lararium/config/current-wiki-bag":      writeLayer,
       "lar:///ha.ka.ba/lararium/config/current-wiki-temp":     wikiSlotUri(slug, "temp"),

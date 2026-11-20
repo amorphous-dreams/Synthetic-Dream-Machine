@@ -13,9 +13,15 @@
  *   tiddler-delete { recipe, title, base?, family?, mode? }               → { recipe, title, decision: removed|absent|conflict|refused, mode, tombstoned, retracted, hash?, refusal?, why?, consequence? }
  *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted, read, write, working?, why? }] }
  *
- * THIS PHASE ANSWERS THE ANCHOR ALONE: `recipe: "default"`, the daemon mount's daemon wiki, through the daemon island's live
- * `$tw.wiki`. The container law of the meme door holds (exactly one of `recipe` / `bag`, else `no-container`); a named
- * wiki or a bag refuses `wiki-not-anchored`, since reaching a named wiki's own engine rides the port relay (phase 2).
+ * EVERY WIKI ITS ENGINE. `recipe: "default"` answers through the daemon island's live `$tw.wiki`, the daemon mount's daemon
+ * wiki. `recipe: <slug>` answers through THAT wiki's own engine (`wiki-engine`: the one per-face engine machinery laid over
+ * the wiki's recipe as the face sees it, its canon by reference, the shared working layer and the face's personal and draft
+ * layers), which the island's door (`wikis`) composes on the first ask and closes when cold; a write lands in that engine's
+ * write layer (`working`, or the face's `personal` where it holds no writer's seat). A wiki the door reaches no engine for
+ * (no recipe names it, none of its layers stands for the face, or the island holds no door) refuses `wiki-unreached` by
+ * name; `recipe: "daemon"` refuses the same way, since the daemon wiki answers to `default` alone. The container law of the
+ * meme door holds (exactly one of `recipe` / `bag`, else `no-container`); a bag names no wiki and so no engine, and refuses
+ * `wiki-not-anchored`.
  *
  * THE FENCES. The caller's face decides reach: every read asks the face's read cap on the anchor's working bag, and a
  * record another bag answers stays out where the face holds no read on that bag (`withheld` counts them). A filter and a
@@ -59,7 +65,7 @@
  */
 
 import {
-  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  NoWorkingLayerRefusal, VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -78,9 +84,24 @@ export interface TiddlerVerbOptions {
   readonly composite: CompositeStore;
   /** The daemon island's engine: its live `$tw.wiki` answers every verb here. Read lazily, at verb time. */
   readonly tw5: Pick<TW5Engine, "$tw">;
+  /**
+   * THE NAMED WIKIS' DOOR: a registered wiki's own engine under the island's worn face (`wiki-engine`), or null where the face
+   * reaches no such wiki. `write` asks for the face's write layer of it (minted where none stands). Absent: every named wiki
+   * refuses `wiki-unreached`.
+   */
+  readonly wikis?: { of(slug: string, need: { readonly write: boolean }): Promise<NamedWikiEngine | null> };
+  /** Set on a named wiki's engine options alone: the wiki this engine composes. Absent: the daemon anchor. */
+  readonly wiki?: { readonly slug: string; readonly gate?: string };
   readonly kahuReach?: KahuReachSource;
   /** A house canon bag's floor snapshot, where the floor this island mounted carries one (it rests public by CID). */
   readonly floorCanon?: (bag: string) => LarTiddlerStore | null;
+}
+
+/** What the named wikis' door answers: the wiki's own engine and composition, and the bag a read gates on where no write layer stands. */
+export interface NamedWikiEngine {
+  readonly tw5: Pick<TW5Engine, "$tw">;
+  readonly composite: CompositeStore;
+  readonly gate?: string;
 }
 
 // ── THE BOUNDS AND THE PAGE LAW live in `filter-page.ts`, the leaf the record port's `filter` ask shares ──
@@ -134,6 +155,8 @@ interface Engine {
 const engineOf = (opts: TiddlerVerbOptions): Engine => opts.tw5.$tw as unknown as Engine;
 
 const ORIGIN_BAG = "$origin-bag";
+/** The config tiddler naming where a `lar:` save lands in a wiki (`island-recipe` seeds it). */
+const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
 /** A record's fields as strings, the host's residency stamp lifted off beside them. */
 function readRecord(tiddler: EngineTiddler): { fields: Record<string, string>; bag: string | null } {
@@ -153,15 +176,74 @@ export type TiddlerPosition = FamilyPosition;
 
 // ── THE GATES ─────────────────────────────────────────────────────────────────────────────────────────
 
-interface Anchor { readonly engine: Engine; readonly bag: string }
+interface Anchor {
+  readonly engine: Engine;
+  /** The bag the door gates on: the write layer, or (a named wiki's read where no write layer stands) its canon. */
+  readonly bag: string;
+  /** The wiki as the caller names it: `default`, or a named wiki's slug. Every answer carries it. */
+  readonly recipe: string;
+  /** The wiki's own slug: `daemon` for the anchor. */
+  readonly slug: string;
+}
 
-/** The container law, then the anchor: this phase answers `recipe: "default"` alone. */
-function anchorOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>>, verb: string): Anchor {
+const refuseUnreached = (verb: string, why: string): VerbRefusal =>
+  new VerbRefusal("wiki-unreached", `wiki-unreached: ${verb} — ${why}; \`lares wiki list\` names the wikis this face reaches, and \`--recipe default\` names its daemon wiki.`);
+
+/**
+ * THE NAMED WIKI'S OPTIONS: where the call names a registered wiki, the options its own engine answers under, or null where
+ * the anchor answers (`recipe: "default"`, a bag, or options already a named wiki's). A wiki the door reaches no engine for
+ * refuses `wiki-unreached` before a cap ask, a read or a write.
+ */
+async function namedWikiOptions(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>>, verb: string, write: boolean): Promise<TiddlerVerbOptions | null> {
+  if (opts.wiki) return null;
   const target = readContainer(args, verb);
-  if (target.recipe !== "default") {
-    throw new VerbRefusal("wiki-not-anchored", `wiki-not-anchored: ${verb} answers recipe "default" (the worn face's daemon wiki) alone in this phase; ${target.bag ? `bag "${target.bag}"` : `wiki "${target.recipe}"`} waits on the port relay into its own engine (wiki-surface-scout #/phases, phase 2). The meme verbs read a named wiki's store today.`);
+  if (target.recipe === null || target.recipe === "default") return null;
+  const slug = target.recipe;
+  if (slug === DAEMON_WIKI_SLUG) throw refuseUnreached(verb, `the daemon wiki answers to \`recipe: "default"\` alone`);
+  if (!opts.wikis) throw refuseUnreached(verb, `this island holds no door to a named wiki's engine, so "${slug}" answers nothing here`);
+  const engine = await opts.wikis.of(slug, { write });
+  if (engine === null) throw refuseUnreached(verb, `no wiki "${slug}" this face reaches: no recipe names it, or none of its layers stands for this face`);
+  const { wikis: _door, ...rest } = opts;
+  return { ...rest, tw5: engine.tw5, composite: engine.composite, wiki: { slug, ...(engine.gate !== undefined ? { gate: engine.gate } : {}) } };
+}
+
+/** A reactor that answers the anchor itself, and a named wiki in that wiki's own engine. */
+function everyWiki(verb: string, write: boolean, make: (opts: TiddlerVerbOptions) => VerbReactor): (opts: TiddlerVerbOptions) => VerbReactor {
+  return (opts) => {
+    const anchor = make(opts);
+    return async (args, ctx) => {
+      const named = await namedWikiOptions(opts, args, verb, write);
+      return named ? make(named)(args, ctx) : anchor(args, ctx);
+    };
+  };
+}
+
+/** The wiki this call reaches: the container law, then the anchor or the named wiki these options compose. */
+function wikiOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>>, verb: string): { readonly recipe: string; readonly slug: string } {
+  const target = readContainer(args, verb);
+  const recipe = opts.wiki?.slug ?? "default";
+  if (target.recipe !== recipe) {
+    throw new VerbRefusal("wiki-not-anchored", `wiki-not-anchored: ${verb} answers a wiki through its own engine; ${target.bag ? `bag "${target.bag}" names one bag and no wiki` : `wiki "${target.recipe}" names another engine than this one`}. Name the wiki: \`--recipe <slug>\` (\`recipe: "default"\` for the daemon wiki). The meme verbs read one bag's store.`);
   }
-  return { engine: engineOf(opts), bag: anchorBagOf(opts) };
+  return { recipe, slug: opts.wiki?.slug ?? DAEMON_WIKI_SLUG };
+}
+
+/** The bag a named wiki's engine routes a `lar:` save to, or "" where no write layer stands. */
+function writeLayerOf(opts: TiddlerVerbOptions): string {
+  const wiki = opts.tw5.$tw.wiki as { getTiddlerText?: (title: string, fallback?: string) => string };
+  return wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
+}
+
+/** The container law, then the anchor: the daemon wiki, or the named wiki these options compose. */
+function anchorOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>>, verb: string, write = false): Anchor {
+  const { recipe, slug } = wikiOf(opts, args, verb);
+  if (!opts.wiki) return { engine: engineOf(opts), bag: anchorBagOf(opts), recipe, slug };
+  const layer = writeLayerOf(opts);
+  if (layer) return { engine: engineOf(opts), bag: layer, recipe, slug };
+  if (write || opts.wiki.gate === undefined) {
+    throw new NoWorkingLayerRefusal(`The ${verb} into wiki "${slug}"`, "This face holds no layer of the wiki a write lands in (no writer's seat in its workbench and no personal layer of it).");
+  }
+  return { engine: engineOf(opts), bag: opts.wiki.gate, recipe, slug };
 }
 
 /**
@@ -190,7 +272,7 @@ async function reachOf(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContex
     if (bag === null) return Promise.resolve(true);
     let known = memo.get(bag);
     if (!known) {
-      known = (async () => wikiSlotKindOf(DAEMON_WIKI_SLUG, bag) === "temp" || (await cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null)();
+      known = (async () => wikiSlotKindOf(anchor.slug, bag) === "temp" || (await cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null)();
       memo.set(bag, known);
     }
     return known;
@@ -336,7 +418,7 @@ async function requireWrite(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbC
 
 // ── wiki-filter ───────────────────────────────────────────────────────────────────────────────────────
 
-export function makeWikiFilterReactor(opts: TiddlerVerbOptions): VerbReactor {
+export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const anchor = anchorOf(opts, args, "wiki-filter");
     const filter = stringArg(args, "filter");
@@ -367,13 +449,13 @@ export function makeWikiFilterReactor(opts: TiddlerVerbOptions): VerbReactor {
       ...(rowOf ? { rowOf } : {}),
     });
     return {
-      recipe: "default", filter,
+      recipe: anchor.recipe, filter,
       ...(page.rows ? { rows: page.rows } : { titles: page.titles }),
       total: page.total, next: page.next, asOf: page.asOf,
       ...(withheld > 0 ? { withheld } : {}),
     };
   };
-}
+});
 
 // ── tiddler-get ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -382,7 +464,7 @@ function slotTitle(root: string, slot: string): string {
   return `${root}${slot.startsWith("#") ? slot : `#/${slot.replace(/^\/+/, "")}`}`;
 }
 
-export function makeTiddlerGetReactor(opts: TiddlerVerbOptions): VerbReactor {
+export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const anchor = anchorOf(opts, args, "tiddler-get");
     const named = stringArg(args, "title");
@@ -393,7 +475,7 @@ export function makeTiddlerGetReactor(opts: TiddlerVerbOptions): VerbReactor {
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
     const wiki = anchor.engine.wiki;
     const tiddler = wiki.getTiddler(title);
-    if (!tiddler) return { recipe: "default", title, tiddler: null };
+    if (!tiddler) return { recipe: anchor.recipe, title, tiddler: null };
     const { fields, bag } = readRecord(tiddler);
     if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
     const names = namesArg(args["fields"]);
@@ -418,11 +500,11 @@ export function makeTiddlerGetReactor(opts: TiddlerVerbOptions): VerbReactor {
       }
     }
     return {
-      recipe: "default", title,
+      recipe: anchor.recipe, title,
       tiddler: { fields: shown, hash: hashOf(fields), textHash: textHashOf(fields), bag, ...placeFields(placeOf(anchor, view, title)), ...(omitted.length > 0 ? { omitted } : {}) },
     };
   };
-}
+});
 
 // ── wiki-render ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -431,7 +513,7 @@ const GLOBAL_IMPORT = "\\import [all[shadows+tiddlers]tag[$:/tags/Global]!is[dra
 const WIKITEXT = "text/vnd.tiddlywiki";
 const RENDER_FORMS: Readonly<Record<string, string>> = { text: "text/plain", html: "text/html" };
 
-export function makeWikiRenderReactor(opts: TiddlerVerbOptions): VerbReactor {
+export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const anchor = anchorOf(opts, args, "wiki-render");
     const title = optionalStringArg(args, "title");
@@ -446,7 +528,7 @@ export function makeWikiRenderReactor(opts: TiddlerVerbOptions): VerbReactor {
     let rendered: string;
     if (title !== null) {
       const tiddler = wiki.getTiddler(title);
-      if (!tiddler) throw new VerbRefusal("tiddler-absent", `tiddler-absent: no tiddler stands at "${title}" in the daemon wiki; wiki-render renders a title that stands, or a span passed as args.text.`);
+      if (!tiddler) throw new VerbRefusal("tiddler-absent", `tiddler-absent: no tiddler stands at "${title}" in wiki "${anchor.recipe}"; wiki-render renders a title that stands, or a span passed as args.text.`);
       const { bag } = readRecord(tiddler);
       if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
       rendered = view.renderText(outputType, WIKITEXT,
@@ -480,11 +562,11 @@ export function makeWikiRenderReactor(opts: TiddlerVerbOptions): VerbReactor {
       end += point > 0xffff ? 2 : 1;
     }
     return {
-      recipe: "default", title, form, text: rendered.slice(offset, end), bytes: bytesOf(rendered),
+      recipe: anchor.recipe, title, form, text: rendered.slice(offset, end), bytes: bytesOf(rendered),
       truncated: end < rendered.length, next: end < rendered.length ? `${end}.${asOf}` : null,
     };
   };
-}
+});
 
 // ── tiddler-put ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -512,9 +594,9 @@ function patchArg(raw: unknown): Record<string, string> {
   return value as Record<string, string>;
 }
 
-export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
+export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
-    const anchor = anchorOf(opts, args, "tiddler-put");
+    const anchor = anchorOf(opts, args, "tiddler-put", true);
     const title = stringArg(args, "title");
     if (!title) throw new Error("tiddler-put: args.title is required");
     refuseWithheld(title, "tiddler-put");
@@ -528,7 +610,7 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
     const liveHash = before ? hashOf(before) : null;
     const place = standing ? placeOf(anchor, view, title) : { position: "plain" as TiddlerPosition, family: null, orphan: false };
     const answer = (decision: string, more: Record<string, unknown>): Record<string, unknown> =>
-      ({ recipe: "default", title, decision, bag: anchor.bag, ...more, ...placeFields(place) });
+      ({ recipe: anchor.recipe, title, decision, bag: anchor.bag, ...more, ...placeFields(place) });
 
     // CREATE-ONLY ON REQUEST, and the base where one rides: either answers before any field moves.
     if (flagOn(args["create"]) && wiki.tiddlerExists(title)) return answer("exists", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
@@ -567,7 +649,7 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
     const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
     if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
     // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei.
-    await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: "default", port: ctx.execLei });
+    await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: anchor.recipe, port: ctx.execLei });
     // The record lands through the live wiki, so the in-wiki cascade routes it to the working layer as a person's edit would.
     // THE FACE CROSSES THE HOP: the shore's write of this title carries the session's worn face on its origin.
     wikiWearsNext(opts.tw5, title, wornOrigin(ctx.worn).face);
@@ -575,13 +657,13 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
     const landed = readRecord(wiki.getTiddler(title)!).fields;
     return answer("put", { created: !standing, changed, hash: hashOf(landed), textHash: textHashOf(landed) });
   };
-}
+});
 
 // ── tiddler-delete ────────────────────────────────────────────────────────────────────────────────────
 
-export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor {
+export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
-    const anchor = anchorOf(opts, args, "tiddler-delete");
+    const anchor = anchorOf(opts, args, "tiddler-delete", true);
     const title = stringArg(args, "title");
     if (!title) throw new Error("tiddler-delete: args.title is required");
     refuseWithheld(title, "tiddler-delete");
@@ -610,7 +692,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     const layers = await layerFactsFor(opts, anchor, ctx.cap, view, mayRead, title, ctx.asker);
     const read: Consequence = consequence(familyViewAt(anchor, view, layers), { kind: "delete", title, mode });
     const refused = (refusal: string, why: string): Record<string, unknown> =>
-      ({ recipe: "default", title, decision: "refused", mode: modeName, refusal, why: `${refusal}: ${why}`, tombstoned: [], retracted: [], hash, consequence: read });
+      ({ recipe: anchor.recipe, title, decision: "refused", mode: modeName, refusal, why: `${refusal}: ${why}`, tombstoned: [], retracted: [], hash, consequence: read });
     const tombstones = tombstonesOf(read);
     const retracts = retractsOf(read);
     const moves = tombstones.length + retracts.length;
@@ -649,7 +731,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     const unheld = named === "reveal" ? read.acts.find((row) => row.act === "retract" && (row.holds?.length ?? 0) === 0) : undefined;
     if (unheld) return refused("reveal-top-unwritable", `no mounted layer holds a record of "${unheld.title}", so a reveal has nothing to retract; \`mode: "kapae"\` removes it. Nothing moved.`);
     const base = optionalStringArg(args, "base");
-    if (base !== null && base !== hash) return { recipe: "default", title, decision: "conflict", mode: modeName, tombstoned: [], retracted: [], hash };
+    if (base !== null && base !== hash) return { recipe: anchor.recipe, title, decision: "conflict", mode: modeName, tombstoned: [], retracted: [], hash };
 
     // THE LANDING: each layer takes its members as ONE change (tombstones and retracts together), and the shore lands
     // that change in the wiki as one grain. A record no layer holds leaves through the live wiki, as a hand's delete.
@@ -667,9 +749,9 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
       await opts.composite.writeFamily([], group.tombstones, origin, { bag: landing as never, ...(group.retracts.length > 0 ? { retracts: group.retracts } : {}) });
     }
     for (const member of byHand) { wikiWearsNext(opts.tw5, member, wornOrigin(ctx.worn).face); wiki.deleteTiddler(member); }
-    return { recipe: "default", title, decision: "removed", mode: modeName, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
+    return { recipe: anchor.recipe, title, decision: "removed", mode: modeName, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
   };
-}
+});
 
 /**
  * A TOMBSTONE OVER A TITLE THE WIKI READS ABSENT still answers a delete. Where the wiki reads the title absent and a layer this
@@ -682,7 +764,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
 async function retractBareKapae(
   opts: TiddlerVerbOptions, anchor: Anchor, args: Record<string, unknown>, ctx: VerbContext, title: string, named: string | null,
 ): Promise<Record<string, unknown>> {
-  const absent = { recipe: "default", title, decision: "absent", tombstoned: [], retracted: [] };
+  const absent = { recipe: anchor.recipe, title, decision: "absent", tombstoned: [], retracted: [] };
   if (named === "kapae") return absent;
   const { mayRead } = await viewFor(opts, anchor, ctx.cap);
   const { readable, writable } = await layerReach(opts, anchor, ctx.cap, mayRead, ctx.asker);
@@ -718,7 +800,7 @@ async function retractBareKapae(
   const consequence = { act: "delete", target: title, position: acts.length > 1 ? "root" : "plain", family: acts.length > 1 ? title : null, acts, leaves: [], orphans: [], refusals: [] };
   const mode = named ?? "plain";
   const refused = (refusal: string, why: string): Record<string, unknown> =>
-    ({ recipe: "default", title, decision: "refused", mode, refusal, why: `${refusal}: ${why}`, tombstoned: [], retracted: [], consequence });
+    ({ recipe: anchor.recipe, title, decision: "refused", mode, refusal, why: `${refusal}: ${why}`, tombstoned: [], retracted: [], consequence });
   if (acts.length > 1 && !flagOn(args["family"])) {
     return refused("tiddler-delete-in-a-family", `"${title}" stands as a kāpae over a meme root whose ${acts.length - 1} slot${acts.length === 2 ? "" : "s"} stand tombstoned with it; name the family act (\`family: true\`, \`--family\`) to retract them as one change. Nothing moved.`);
   }
@@ -730,24 +812,22 @@ async function retractBareKapae(
   const perBag = new Map<string, string[]>();
   for (const row of acts) perBag.set(row.bag, [...(perBag.get(row.bag) ?? []), row.title]);
   for (const [landing, retracts] of perBag) await opts.composite.writeFamily([], [], origin, { bag: landing as never, retracts });
-  return { recipe: "default", title, decision: "removed", mode, tombstoned: [], retracted: acts.map((row) => row.title), consequence };
+  return { recipe: anchor.recipe, title, decision: "removed", mode, tombstoned: [], retracted: acts.map((row) => row.title), consequence };
 }
 
 // ── wiki-status ───────────────────────────────────────────────────────────────────────────────────────
 
-export function makeWikiStatusReactor(opts: TiddlerVerbOptions): VerbReactor {
+export const makeWikiStatusReactor = everyWiki("wiki-status", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
-    const target = readContainer(args, "wiki-status");
-    if (target.recipe !== "default") {
-      throw new VerbRefusal("wiki-not-anchored", `wiki-not-anchored: wiki-status answers recipe "default" (the worn face's daemon wiki) alone in this phase; ${target.bag ? `bag "${target.bag}"` : `wiki "${target.recipe}"`} waits on the port relay (wiki-surface-scout #/phases, phase 2).`);
-    }
+    const { recipe, slug } = wikiOf(opts, args, "wiki-status");
     // A wiki with no working layer attached still answers its status: `working` reads null and no layer takes a write.
     let working: string | null = null;
-    try { working = anchorBagOf(opts); } catch { working = null; }
+    if (opts.wiki) working = writeLayerOf(opts) || null;
+    else { try { working = anchorBagOf(opts); } catch { working = null; } }
     const layers: Array<Record<string, unknown>> = [];
     for (const bag of opts.composite.layerIds) {
       const mounted = opts.composite.hasWritableBag(bag);
-      const read = (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null || wikiSlotKindOf(DAEMON_WIKI_SLUG, bag) === "temp";
+      const read = (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null || wikiSlotKindOf(slug, bag) === "temp";
       let write = false;
       let why: string | undefined;
       if (mounted) {
@@ -760,6 +840,6 @@ export function makeWikiStatusReactor(opts: TiddlerVerbOptions): VerbReactor {
       }
       layers.push({ bag, mounted: mounted ? "writable" : "read-only", read, write, ...(bag === working ? { working: true } : {}), ...(why !== undefined ? { why } : {}) });
     }
-    return { recipe: "default", working, layers };
+    return { recipe, working, layers };
   };
-}
+});
