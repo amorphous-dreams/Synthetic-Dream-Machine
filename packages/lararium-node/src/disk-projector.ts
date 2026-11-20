@@ -94,6 +94,11 @@ import { familyRootOf, memeOrphanAlertTitle, orphansUnder, rootAddressOf, ORPHAN
 import type { BagMirrorConfig } from "./bag-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import type { BaseFromGit } from "./pool-head.js";
+import type { CarrierTracking } from "./checkout-carriers.js";
+
+/** The alert a carrier file git never tracked raises where the records dropped it and the file stays: one per path. */
+export const UNTRACKED_CARRIER_ALERT_PREFIX = "$:/temp/lares/alert/untracked-carrier/";
+export const untrackedCarrierAlertTitle = (path: string): string => `${UNTRACKED_CARRIER_ALERT_PREFIX}${path}`;
 
 /** The mode every projected file takes at creation: the operator alone reads the house's plaintext renders. */
 export const PROJECTION_FILE_MODE = 0o600;
@@ -280,6 +285,13 @@ export interface LarDiskProjectorOptions {
    * record the house does not hold never gains a base. Absent → no history stands in for a base.
    */
   readonly baseFromGit?: BaseFromGit;
+  /**
+   * THE FILES A CHECKOUT NEVER TRACKED (`checkoutTracking`). Where the records drop a carrier whose file rests untracked
+   * in a canon-sourced tree, that file holds the only copy: it stays, and an alert names its path and the cure (commit
+   * it, or remove it by hand). A checkout git cannot read keeps the file too. The census reads the same port. Absent →
+   * no file reads as an owed commit.
+   */
+  readonly untrackedAt?: CarrierTracking;
   /**
    * Vessel journal writer. When present, the projector appends one `bag-projected` entry per bag after
    * that bag's mirror first gains a carrier file on disk.
@@ -510,6 +522,7 @@ export class LarDiskProjector {
   private readonly debugJson: boolean;
   private readonly syncedTree: SyncedTree;
   private readonly baseFromGit: BaseFromGit | undefined;
+  private readonly untrackedAt: CarrierTracking | undefined;
   private readonly documentOf: LarDiskProjectorOptions["documentOf"];
   private readonly journal: VesselJournal | undefined;
   private readonly onBagProjected: ((info: { bagId: string; path: string }) => void) | undefined;
@@ -541,6 +554,7 @@ export class LarDiskProjector {
     this.debugJson    = opts.debugJson ?? false;
     this.syncedTree   = opts.syncedTree ?? new SyncedTree(null);
     this.baseFromGit  = opts.baseFromGit;
+    this.untrackedAt  = opts.untrackedAt;
     this.journal      = opts.journal;
     this.onBagProjected = opts.onBagProjected;
     for (const entry of this.journal?.since() ?? []) {
@@ -1280,6 +1294,41 @@ export class LarDiskProjector {
     return { held: hash };
   }
 
+  /**
+   * THE HOMES A CHECKOUT NEVER TRACKED, where the records dropped their carrier. Each content file (or its sidecar) git
+   * reads untracked, or a checkout git cannot read, stays and raises one alert per path naming the cure; a home that no
+   * longer stands untracked clears the alert it raised. Answers whether any home stays, so the caller leaves every home
+   * of this carrier where it stands.
+   */
+  private keepUntracked(bagId: string, uri: string, homes: readonly string[]): boolean {
+    if (this.untrackedAt === undefined) return false;
+    const wiki = this._tw5?.$tw.wiki as unknown as {
+      getTiddler?: (t: string) => unknown; addTiddler?: (f: Record<string, unknown>) => void; deleteTiddler?: (t: string) => void;
+    } | undefined;
+    let kept = false;
+    for (const home of [...new Set(homes)].sort()) {
+      const alert = untrackedCarrierAlertTitle(home);
+      const files = [home, `${home}.meta`].filter((f) => existsSync(f));
+      const reading = files.length === 0 ? null : this.untrackedAt(dirname(home));
+      const untracked = reading !== null && "untracked" in reading ? files.filter((f) => reading.untracked.includes(f)) : [];
+      const why = reading !== null && "why" in reading ? reading.why : null;
+      if (untracked.length === 0 && why === null) {
+        if (wiki?.getTiddler?.(alert) !== undefined) wiki.deleteTiddler?.(alert);
+        continue;
+      }
+      kept = true;
+      const text = why === null
+        ? `The records dropped ${uri}, and its file at ${home} rests untracked in a checkout: it holds the only copy, so it stays. Commit it, or remove it by hand.`
+        : `The records dropped ${uri}, and its file at ${home} stays: ${why}. Commit it, or remove it by hand.`;
+      const standing = (wiki?.getTiddler?.(alert) as { fields?: Record<string, unknown> } | undefined)?.fields;
+      if (standing?.["text"] !== text) {
+        console.error(`[disk-ward] untracked carrier kept (${bagId} <- ${uri}): ${home}`);
+        wiki?.addTiddler?.({ title: alert, text, tags: "$:/tags/Alert", "alert-kind": "untracked-carrier", path: home, uri, bag: bagId });
+      }
+    }
+    return kept;
+  }
+
   /** Remove one carrier home the judge agreed to: the content file and its sidecar; the base that stood there leaves with it. */
   private unlinkHome(bagId: string, uri: string, contentPath: string): void {
     this.writing.add(uri);
@@ -1527,6 +1576,9 @@ export class LarDiskProjector {
       homes.push(...this.basedHomes(mirror, title));
       // Where the carrier sited, read BEFORE its siting leaves: the kāpae shadow takes that stem.
       const shadowBase = this.sited.get(sitedKey(mirror.bagId, title)) ?? carrierBaseRelPath(title);
+      // A FILE GIT NEVER TRACKED STAYS: in a checkout it holds the only copy, so no proof of agreement lets it leave.
+      // Its base stays with it, so the next scan reads the file where its agreement left it, never as an arrival.
+      if (this.keepUntracked(mirror.bagId, title, homes)) continue;
       // The records hold no such carrier, so the base alone can vouch for a file. A held one stays.
       if (!this.settleHomes(mirror.bagId, title, homes, null, null, `the records dropped ${title}`)) continue;
       this._leaveStandoff(mirror.bagId, title);
@@ -1896,6 +1948,28 @@ export class LarDiskProjector {
    * (`pending`), and each whose latest reconcile threw (`failed`), with the bag the view names for it (null: none).
    * A stop that would leave these off disk lists them first (`lares vessel census`).
    */
+  /**
+   * THE FILES EACH MIRROR'S CHECKOUT NEVER TRACKED, read and never moved: every untracked file under a mirror root a
+   * checkout holds (by path, with the mirror's bag), and each root whose checkout git could not read. A mirror outside
+   * every checkout names none. A stop with these on disk lists them first (`lares vessel census`): each owes a commit.
+   */
+  untrackedCarriers(): { readonly files: ReadonlyArray<{ readonly path: string; readonly bagId: string }>; readonly unread: ReadonlyArray<{ readonly root: string; readonly why: string }> } {
+    const files = new Map<string, string>();
+    const unread = new Map<string, string>();
+    if (this.untrackedAt === undefined) return { files: [], unread: [] };
+    for (const mirror of this.mirrors) {
+      const root = resolvePath(mirror.mirrorRoot);
+      const reading = this.untrackedAt(root);
+      if (reading === null) continue;
+      if ("why" in reading) { unread.set(root, reading.why); continue; }
+      for (const path of reading.untracked) if (!files.has(path)) files.set(path, mirror.bagId);
+    }
+    return {
+      files: [...files].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([path, bagId]) => ({ path, bagId })),
+      unread: [...unread].map(([root, why]) => ({ root, why })),
+    };
+  }
+
   unsettled(): { readonly pending: ReadonlyArray<{ readonly uri: string; readonly bagId: string | null }>; readonly failed: ReadonlyArray<{ readonly uri: string; readonly bagId: string | null }> } {
     const bagOf = (uri: string): string | null => {
       const origin = (this._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined)?.["$origin-bag"];

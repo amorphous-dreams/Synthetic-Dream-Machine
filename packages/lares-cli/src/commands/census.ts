@@ -4,7 +4,9 @@
  * A vessel holds two kinds of content that rest nowhere yet: saves its sealed rest keeps in memory (a change no
  * session booked, a document whose map names no bag now, a seal the holder refused: `save-unbooked`,
  * `save-unmapped`, `save-unsealed`), and carriers its disk projector has not settled (each its queue still owes a
- * reconcile, each whose latest reconcile threw). A stopped container holds no memory to count, so the host shim
+ * reconcile, each whose latest reconcile threw), and files a mirror root inside a checkout holds that git never tracked
+ * (`untracked`: each an owed commit, named by path, since a re-found that takes its record leaves it the only copy). A
+ * stopped container holds no memory to count, so the host shim
  * asks this census at `down`, while the vessel still stands, and refuses a silent stop over a non-empty answer.
  *
  * Two lines carry it, both read-only and neither asking custody: the custody door's `census` frame (the saves, by
@@ -29,7 +31,8 @@ export const CENSUS_CUSTODY_MS = 10_000;
 /** One item a stop would drop. */
 export type CensusItem =
   | { readonly kind: "held-save"; readonly refusal: string; readonly documentId: string; readonly saves: number; readonly bagId: string | null }
-  | { readonly kind: "carrier"; readonly state: string; readonly uri: string; readonly bagId: string | null; readonly island: string };
+  | { readonly kind: "carrier"; readonly state: string; readonly uri: string; readonly bagId: string | null; readonly island: string }
+  | { readonly kind: "untracked"; readonly path: string; readonly bagId: string | null; readonly island: string };
 
 export interface CensusReading {
   readonly clean: boolean;
@@ -104,6 +107,7 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
   try { shore = await lines.shore(); }
   catch (e) { shore = { carriers: [], unanswered: [{ part: "the disk projector", why: e instanceof Error ? e.message : String(e) }] }; }
   for (const c of shore.carriers) items.push({ kind: "carrier", state: c.state, uri: c.uri, bagId: c.bagId, island: c.island });
+  for (const u of shore.untracked ?? []) items.push({ kind: "untracked", path: u.path, bagId: u.bagId, island: u.island });
   unanswered.push(...shore.unanswered);
   // A LOCKED HEARTH SAYS SO IN ONE LINE. Its key stands shut, so the islands refuse `vessel-locked` and nothing the census
   // asks can answer; the cure reads "unlock, then down", never "could not answer". A herm never unlocks, so it never hears it.
@@ -119,9 +123,9 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
 
 /** One item as one printed line: kind, state, name, and where it belongs. Never a body. */
 export function censusLine(item: CensusItem): string {
-  return item.kind === "held-save"
-    ? `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}`
-    : `carrier  ${item.state}  ${item.uri}  bag ${item.bagId ?? "(none named)"}  island ${item.island}`;
+  if (item.kind === "held-save") return `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}`;
+  if (item.kind === "untracked") return `untracked  ${item.path}  bag ${item.bagId ?? "(none named)"}  island ${item.island}  (an owed commit: commit it, or remove it by hand)`;
+  return `carrier  ${item.state}  ${item.uri}  bag ${item.bagId ?? "(none named)"}  island ${item.island}`;
 }
 
 export async function cmdCensus(args: ParsedArgs, lines: CensusLines = LIVE_LINES): Promise<number> {

@@ -20,7 +20,9 @@
  *   remove         delete the vanished carrier in the wiki, by the wiki shore's own delete door
  *   census         name every carrier the projector has not settled: each its queue still owes (`pending`) and
  *                  each whose latest reconcile threw (`failed`), after a bounded wait for the queue to drain
- *                  (`lares vessel census`, read before a stop)
+ *                  (`lares vessel census`, read before a stop); its first page also names, by path, each file a
+ *                  mirror's checkout never tracked (`untracked`, an owed commit) and each checkout git could not
+ *                  read (`untrackedUnread`)
  *
  * ONE STANDOFF, TWO DOORS. `take-records` settles a standoff toward the records, and this island's
  * projector performs it: the records' render writes over the file. Its twin, `lares shore take-disk`,
@@ -120,6 +122,9 @@ export const CENSUS_SETTLE_MS = 5_000;
 /** One carrier the projector has not settled, as the census names it: its state, its title and its bag. */
 export interface CensusCarrier { readonly state: "pending" | "failed"; readonly uri: string; readonly bagId: string | null }
 
+/** One file a mirror's checkout never tracked, as the census names it: its path and the mirror's bag. */
+export interface CensusUntracked { readonly path: string; readonly bagId: string }
+
 /**
  * THE CENSUS: what this island's projector has not settled, a page at a time. The first page (no `after`) waits up
  * to `settleMs` for the queue to drain, so a routine stop reads clean; a page past it reads the state that stands.
@@ -127,7 +132,10 @@ export interface CensusCarrier { readonly state: "pending" | "failed"; readonly 
  */
 export async function shoreCensus(
   projector: LarDiskProjector, after: string | null = null, settleMs = CENSUS_SETTLE_MS,
-): Promise<{ carriers: CensusCarrier[]; carrierCount: number; drained: boolean; next: string | null }> {
+): Promise<{
+  carriers: CensusCarrier[]; carrierCount: number; drained: boolean; next: string | null;
+  untracked?: readonly CensusUntracked[]; untrackedUnread?: ReadonlyArray<{ readonly root: string; readonly why: string }>;
+}> {
   let drained = true;
   if (after === null) {
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -144,7 +152,13 @@ export async function shoreCensus(
   const behind = after === null ? rows : rows.filter((r) => r.cursor > after);
   const taken = behind.slice(0, SHORE_LIST_PAGE);
   const next = behind.length > taken.length ? taken[taken.length - 1]!.cursor : null;
-  return { carriers: taken.map((r) => r.row), carrierCount: rows.length, drained, next };
+  // THE OWED COMMITS ride the first page alone, whole: a file the checkout never tracked, by path.
+  const owed = after === null ? projector.untrackedCarriers() : { files: [], unread: [] };
+  return {
+    carriers: taken.map((r) => r.row), carrierCount: rows.length, drained, next,
+    ...(owed.files.length > 0 ? { untracked: owed.files } : {}),
+    ...(owed.unread.length > 0 ? { untrackedUnread: owed.unread } : {}),
+  };
 }
 
 /**

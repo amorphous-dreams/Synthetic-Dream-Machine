@@ -6,6 +6,9 @@
  *   V3  a line that cannot answer (no socket, a silent custody door, an island that refuses) exits 2 by name and
  *       never reads clean.
  *   V4  the shore census reads both islands' pages; an island that mounts no projection holds none.
+ *   V7  a file a mirror's checkout never tracked reads by path, an owed commit like an unsealed save: one line, exit 3,
+ *       the JSON item names the path; both islands naming one path read it once, and a checkout git cannot read lands
+ *       unanswered by its root.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { VERB_RESULT_KEY } from "@lararium/mesh";
@@ -44,6 +47,18 @@ describe("the vessel census", () => {
       "carrier  pending  lar:///ha.ka.ba/notes/pond  bag notes  island wiki",
     ]);
     expect(c.err.join("\n")).toMatch(/2 item\(s\) rest nowhere yet/);
+  });
+
+  test("V7 — a file the checkout never tracked prints by path, an owed commit, and the census exits 3", async () => {
+    const c = capture();
+    const PATH = "/lar/workspaces/sdm/wikis/lares/ha.ka.ba/lares/docs/history/first-contact.mem";
+    const owed = lines({ shore: async () => ({ carriers: [], untracked: [{ path: PATH, bagId: "lares", island: "wiki" }], unanswered: [] }) });
+    expect(await cmdCensus(args(false), owed)).toBe(3);
+    expect(c.out).toEqual([`untracked  ${PATH}  bag lares  island wiki  (an owed commit: commit it, or remove it by hand)`]);
+    expect(c.err.join("\n")).toMatch(/1 item\(s\) rest nowhere yet/);
+    c.out.length = 0;
+    expect(await cmdCensus(args(true), owed)).toBe(3);
+    expect(JSON.parse(c.out.join("")).data.census.items).toEqual([{ kind: "untracked", path: PATH, bagId: "lares", island: "wiki" }]);
   });
 
   test("V2 — a clean vessel answers clean and exits 0; the JSON names empty lists", async () => {
@@ -134,10 +149,13 @@ describe("the shore census", () => {
       seen.push({ name, after: shoreArgs["after"] });
       if (name === "wiki-act") {
         return shoreArgs["after"] === undefined
-          ? answer({ ok: true, op: "census", carriers: [{ state: "failed", uri: "lar:///a/one", bagId: "b" }], carrierCount: 2, drained: true, next: "c1" })
+          ? answer({ ok: true, op: "census", carriers: [{ state: "failed", uri: "lar:///a/one", bagId: "b" }], carrierCount: 2, drained: true, next: "c1",
+            untracked: [{ path: "/lar/workspaces/sdm/wikis/lares/ha.ka.ba/lares/docs/history/first-contact.mem", bagId: "lares" }] })
           : answer({ ok: true, op: "census", carriers: [{ state: "pending", uri: "lar:///a/two", bagId: null }], carrierCount: 2, drained: true, next: null });
       }
-      return answer({ ok: false, refusal: "no-disk-shore", why: "this island mounts no disk projection" });
+      return answer({ ok: true, op: "census", carriers: [], carrierCount: 0, drained: true, next: null,
+        untracked: [{ path: "/lar/workspaces/sdm/wikis/lares/ha.ka.ba/lares/docs/history/first-contact.mem", bagId: "lares" }],
+        untrackedUnread: [{ root: "/lar/workspaces/sdm/bags/lares", why: "git cannot run in this runtime" }] });
     };
     const census = await askShoreCensus("did:test", run);
     expect(census).toEqual({
@@ -145,7 +163,8 @@ describe("the shore census", () => {
         { state: "failed", uri: "lar:///a/one", bagId: "b", island: "wiki" },
         { state: "pending", uri: "lar:///a/two", bagId: null, island: "wiki" },
       ],
-      unanswered: [],
+      untracked: [{ path: "/lar/workspaces/sdm/wikis/lares/ha.ka.ba/lares/docs/history/first-contact.mem", bagId: "lares", island: "wiki" }],
+      unanswered: [{ part: "the checkout under /lar/workspaces/sdm/bags/lares", why: "git cannot run in this runtime" }],
     });
     expect(seen).toEqual([{ name: "wiki-act", after: undefined }, { name: "wiki-act", after: "c1" }, { name: "shore", after: undefined }]);
   });
