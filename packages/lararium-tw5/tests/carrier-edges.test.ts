@@ -99,8 +99,13 @@ describe("carrier-edges — every address a carrier points at", () => {
       const u = /^uri-path\s*=\s*"([^"]+)"/m.exec(t)?.[1];
       if (u) held.add(u);
     }
-    const dangling = texts.flatMap(readCarrierEdges).filter((e) => !held.has(e.address));
+    const unheld = texts.flatMap(readCarrierEdges).filter((e) => !held.has(e.address));
+    const workbench = unheld.filter((e) => homedInTheKahuWorkbench(e.address));
+    const dangling = unheld.filter((e) => !homedInTheKahuWorkbench(e.address));
     expect(files.length).toBeGreaterThan(500);
+    // The workbench class holds its own ceiling, so a canon link into the road still reads as a count
+    // that moves by a deliberate act: 143 edges across 72 carriers when the road left canon.
+    expect(workbench.length, "a canon link into the founding road grew — name it, or write the road's name as prose").toBeLessThanOrEqual(143);
     // A CEILING ONLY EVER LOWERS, and it lowers by the same measurement either side of a change:
     // `lares meme check --edges` before and after. A broken edge gets repaired, never absorbed.
     //
@@ -109,6 +114,35 @@ describe("carrier-edges — every address a carrier points at", () => {
     // `live-equivocation.mem` names `elyncia/characters/primary-characters/telarus`,
     // `lararium/mesh/ahi-ka` and `lares/api/pono/recovery-registration`, carriers nobody has written
     // yet. A FORWARD REFERENCE IS INTENT RECORDED AHEAD OF ITS CARRIER.
-    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(169);
+    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(121);
+  });
+
+  test("the workbench class reads the founding road alone, never a neighbour that shares its letters", () => {
+    for (const a of [
+      "ha.ka.ba/lares/docs/stable-founding-road",
+      "ha.ka.ba/lares/docs/road-ashes",
+      "ha.ka.ba/lares/docs/road/rank-4j",
+      "ha.ka.ba/lares/docs/road/ruling-2026-11-19-road-to-a-stable-house",
+    ]) expect(homedInTheKahuWorkbench(a), a).toBe(true);
+    for (const a of [
+      "ha.ka.ba/lares/docs/roadmap",
+      "ha.ka.ba/lares/docs/road-ashes-two",
+      "ha.ka.ba/lares/docs/pono/dreamdom-roadmap",
+      "ha.ka.ba/lares/docs/pono/test-recut-road",
+      "ha.ka.ba/lararium/docs/road/rank-2",
+    ]) expect(homedInTheKahuWorkbench(a), a).toBe(false);
   });
 });
+
+/**
+ * HOMED IN THE KAHU WORKBENCH, OUTSIDE THE CORPUS — the one class of unheld edge that names a carrier
+ * standing somewhere this reader cannot see. The operator's ruling of 2026-11-20 moved the founding
+ * road (`docs/stable-founding-road`, `docs/road-ashes`, every `docs/road/*` rank and ruling) out of
+ * canon and into the shared Kahu workbench wiki (slug `kahu`, `--recipe kahu`): an engineer's working
+ * plan, not shared canon. A canon loulou to the road still names a live carrier; it answers in the
+ * workbench, never in `bags/`. The class names that prefix exactly and nothing beside it, and it holds
+ * its own ceiling, so no other broken edge hides inside it.
+ */
+function homedInTheKahuWorkbench(address: string): boolean {
+  return /^ha\.ka\.ba\/lares\/docs\/(?:stable-founding-road|road-ashes|road\/[^/]+)$/.test(address);
+}

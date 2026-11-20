@@ -97,7 +97,7 @@ NO_JOINT_FOUNDING = (
     "(lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus). No CLI verb founds that joint genesis: "
     "`seal seat` refuses a foreign seat by fingerprint (`foreignSeats`, packages/lares-cli/src/seal-import.ts), "
     "and the Nexus founding act stands in the roadmap's R-CHARTER train "
-    "(bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem)"
+    "(lar:///ha.ka.ba/lares/docs/stable-founding-road, a working plan in the shared Kahu workbench wiki)"
 )
 UNREACHABLE: dict[str, str] = {
     f"{p}/nexus/{r}": NO_JOINT_FOUNDING for p in posture for r in realms if "nexus" in phases

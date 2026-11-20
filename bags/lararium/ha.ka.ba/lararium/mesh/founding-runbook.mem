@@ -230,7 +230,7 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 `persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. `lares persona recovery-contact show <index>` reads a face's prefix and set. `lares persona recovery-contact offer --prefix <prefix>` cuts one recovery contact key for that face; the recovery contact keeps its card and hands over its offer. `lares persona recovery-contact enrol <index> --threshold <k> <offer>…` lets the face's current key sign its typed first enrolment. The vessel keeps that set in a sealed `recovery-contact-set` record and refuses a key another face holds. A later recovery contact rotation needs the recovery contact quorum; the root-card reader and the bundle's carriage of an enrolled set still stand owed.
 
-▢ ''OWED — the catastrophe rite.'' A lost card at a two-seat Nexus ends that Nexus (#/reserve holds the cold-key rite). `stable-founding-road.mem` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
+▢ ''OWED — the catastrophe rite.'' A lost card at a two-seat Nexus ends that Nexus (#/reserve holds the cold-key rite). `lar:///ha.ka.ba/lares/docs/stable-founding-road` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
 
 ''Do'': compare each physical or offline copy with the CLI's printed destination instructions, then confirm an independent second location.
 
@@ -255,7 +255,7 @@ Household HTTPS uses a DNS-01 wildcard certificate for a Kahu-held domain and on
 
 ''See'': on that device, at home, the household name opens the vessel's page over `https` with no certificate warning. Away from home the household name answers nothing, by design.
 
-▢ ''OWED — household HTTPS integration.'' The optional Compose profile supplies a terminator and split-horizon resolver. The operator still needs DNS-01 issuance and renewal, LAN binding and DHCP wiring, and a verified trusted origin on a household device. Carriers: `harbor.mem`, `secure-context.mem`, and `stable-founding-road.mem`.
+▢ ''OWED — household HTTPS integration.'' The optional Compose profile supplies a terminator and split-horizon resolver. The operator still needs DNS-01 issuance and renewal, LAN binding and DHCP wiring, and a verified trusted origin on a household device. Carriers: `harbor.mem`, `secure-context.mem`, and `lar:///ha.ka.ba/lares/docs/stable-founding-road`.
 
 ''See'': the carriers describe the required DNS-01 wildcard, resolver, and terminator boundary; the road still tracks the integration.
 
@@ -269,7 +269,7 @@ Household HTTPS uses a DNS-01 wildcard certificate for a Kahu-held domain and on
 
 The first operator starts with a browser leaf; a tablet or phone forms a separate leaf. Each device mints its own key and receives one face's fleet-join answer for that key. The answer transfers no seed; it carries the internal `device-admit` edge, that face's certificates and grants, and its sealed address secret.
 
-▢ ''OWED — browser and phone leaf ceremony.'' Browser crossing and render rungs run, and a leaf-side edit survives a reload. Fleet join runs on node and browser. The complete household phone walk still needs secure-origin boot, on-device key minting and a verified live leaf. Do not use a desktop seed on a phone or call an HTTP LAN page a secure context. Measure actual device capabilities with `tools/capability-probe/`. Carriers: `stable-founding-road.mem` (browser rungs and HARBOR), `secure-context.mem`, and `persona-circle.mem`.
+▢ ''OWED — browser and phone leaf ceremony.'' Browser crossing and render rungs run, and a leaf-side edit survives a reload. Fleet join runs on node and browser. The complete household phone walk still needs secure-origin boot, on-device key minting and a verified live leaf. Do not use a desktop seed on a phone or call an HTTP LAN page a secure context. Measure actual device capabilities with `tools/capability-probe/`. Carriers: `lar:///ha.ka.ba/lares/docs/stable-founding-road` (browser rungs and HARBOR), `secure-context.mem`, and `persona-circle.mem`.
 
 ''See'': no supported command sequence can yet show a household phone leaf online.
 
@@ -327,7 +327,7 @@ tools/lares-container.sh nexus admit-take /workspace/admit-bundle.json
 
 A further family member may ride as a user leaf under an operator's Nexus. That path still needs the same secure browser origin and per-device key property. It does not turn the family member into a second operator or transfer an operator seed.
 
-▢ ''OWED — hosted phone-browser admission.'' The CLI supplies host and walker invite verbs. The complete phone-browser path still needs trusted HTTPS, on-device key minting, admission, and a verified live leaf. Carriers: `membership-doctrine.mem` and `stable-founding-road.mem`.
+▢ ''OWED — hosted phone-browser admission.'' The CLI supplies host and walker invite verbs. The complete phone-browser path still needs trusted HTTPS, on-device key minting, admission, and a verified live leaf. Carriers: `membership-doctrine.mem` and `lar:///ha.ka.ba/lares/docs/stable-founding-road`.
 
 ''See'': membership doctrine describes the user relation; the road tracks browser and foreign-leaf work still ahead.
 
@@ -343,7 +343,7 @@ Keep house-root and `/workspace` backups distinct. The house-root backup holds v
 
 A live vessel may continue with its local corpus while household HTTPS, browser leaves, or user admission remain owed. The road carries these build steps and the two-household live check. The sensorium runbook carries a separate later walk.
 
-''Do'': record backup owners and locations, then follow `stable-founding-road.mem` for the remaining HARBOR and two-household work.
+''Do'': record backup owners and locations, then follow `lar:///ha.ka.ba/lares/docs/stable-founding-road` for the remaining HARBOR and two-household work.
 
 ''See'': the operator can name the next owner and carrier for every owed slice.
 
@@ -591,6 +591,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iOhyJsMy_YlQiWLupdsIO77iOXOOivV8ewkdHpYxS3M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;J4Xop0P9llfAnIHzF1mIXBxPfqQxfPp-8EmRY6jaW2c`>>
 
 <<^ code=`&#x0004;` to=`?`>>
