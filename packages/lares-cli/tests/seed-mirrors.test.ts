@@ -265,15 +265,15 @@ const FR = (pet: string, rel = ""): string => `projections/faces/${pet}${rel ===
 
 /** The old founding's disk: face "hearth-one"'s root (F1 wore it), a house bag, a kahua item. */
 function oldDisk(): void {
-  put(FR("hearth-one", "canon/ha.ka.ba/notes/pond.tid"), POND_CANON);
-  put(FR("hearth-one", "canon/ha.ka.ba/memory/deep.tid"), tid(DEEP, "a memory promoted to the face's canon"));
-  put(FR("hearth-one", "wiki/ha.ka.ba/notes/pond.tid"), POND_WORKING);
-  put(FR("hearth-one", "wiki/ha.ka.ba/kahua/memory/heron.tid"), tid(HERON, "remember the heron"));
-  put(FR("hearth-one", "wiki/ha.ka.ba/notes/gone.kapae"), kapaeShadowBody(GONE));
+  put(FR("hearth-one", "bags/daemon/ha.ka.ba/notes/pond.tid"), POND_CANON);
+  put(FR("hearth-one", "bags/daemon/ha.ka.ba/memory/deep.tid"), tid(DEEP, "a memory promoted to the face's canon"));
+  put(FR("hearth-one", "wikis/daemon/ha.ka.ba/notes/pond.tid"), POND_WORKING);
+  put(FR("hearth-one", "wikis/daemon/ha.ka.ba/kahua/memory/heron.tid"), tid(HERON, "remember the heron"));
+  put(FR("hearth-one", "wikis/daemon/ha.ka.ba/notes/gone.kapae"), kapaeShadowBody(GONE));
   put(FR("hearth-one", "recovery/garden/draft-one.tid"), tid("draft one", "half a thought"));
   put("projections/realms/garden/bags/garden/ha.ka.ba/garden/rose.tid", tid(ROSE, "a rose"));
   // A stage carrier's body rides as it stands: the projector adds no newline after it, and the lay's lift reads it byte for byte.
-  put(FR("hearth-one", "stage/ha.ka.ba/kahua/memory/heron.tid"), tid(HERON, "remember the heron", `kahua-taint: []\nkahua-sources: [{"title":"${POND}","revision":"r1"}]\n`).replace(/\n$/, ""));
+  put(FR("hearth-one", "bags/kahua/ha.ka.ba/kahua/memory/heron.tid"), tid(HERON, "remember the heron", `kahua-taint: []\nkahua-sources: [{"title":"${POND}","revision":"r1"}]\n`).replace(/\n$/, ""));
 }
 /** Clear the old founding's face root (and, with `garden`, its house bag), as a hand does. */
 const clearFace = (garden = false): void => { rmSync(P("faces/hearth-one"), { recursive: true, force: true }); if (garden) rmSync(P("realms/garden/bags/garden"), { recursive: true, force: true }); };
@@ -333,7 +333,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     expect(after.lifts).toEqual([{ face: 0, title: HERON, text: "remember the heron", signer: "new-grant", parent: null }]);
     expect(readKahuaPending()).toEqual([]);
     // THE ROOT STANDS WHERE IT STOOD: nothing adopted, copied or moved to ashes.
-    expect(existsSync(P("faces/hearth-one/wiki/ha.ka.ba/notes/pond.tid"))).toBe(true);
+    expect(existsSync(P("faces/hearth-one/wikis/daemon/ha.ka.ba/notes/pond.tid"))).toBe(true);
     expect(existsSync(P("ashes"))).toBe(false);
 
     const imported = await houseImport(out, { apply: true, doors: after.bundleDoors() });
@@ -387,7 +387,7 @@ describe("the lay lays every mirror back into its one layer", () => {
       expect(h.live(WORKING, POND)).toBeUndefined();
       expect(h.lifts).toEqual([]);
       expect(h.laid.some((s) => s.startsWith(P("faces/hearth-one")))).toBe(false);
-      expect(existsSync(P("faces/hearth-one/wiki/ha.ka.ba/notes/pond.tid"))).toBe(true);
+      expect(existsSync(P("faces/hearth-one/wikis/daemon/ha.ka.ba/notes/pond.tid"))).toBe(true);
     };
     const twins = refound([{ handleIndex: 0, petname: "hearth-one", relation: F2 }, { handleIndex: 1, petname: "hearth-one", relation: F3 }]);
     const t = await seedMirrors({ apply: true, doors: twins.mirrorDoors() });
@@ -450,7 +450,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     await oldVessel();
     const after = refound();
     await seedMirrors({ apply: true, doors: after.mirrorDoors(), liftKahua: 1 });
-    put("projections/ashes/burned-one/wiki/ha.ka.ba/notes/late.tid", tid("lar:///ha.ka.ba/notes/late", "written into ashes"));
+    put("projections/ashes/burned-one/wikis/daemon/ha.ka.ba/notes/late.tid", tid("lar:///ha.ka.ba/notes/late", "written into ashes"));
     after.laid = [];
     await seedMirrors({ apply: true, doors: after.mirrorDoors() });
     expect(after.laid.some((s) => s.includes(`${join("projections", "ashes")}`))).toBe(false);
@@ -460,7 +460,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     expect(manifest.files.some((f) => f.path.includes("late") || f.path.includes("ashes"))).toBe(false);
     expect(manifest.omissions.some((o) => o.kind === "unclaimed-face-folders")).toBe(false);
     // The face worn now projects under its own root, never under ashes: the late file lands in no live mirror.
-    expect(existsSync(P("faces/hearth-one/wiki/ha.ka.ba/notes/late.tid"))).toBe(false);
+    expect(existsSync(P("faces/hearth-one/wikis/daemon/ha.ka.ba/notes/late.tid"))).toBe(false);
   });
 
   test("M6 — an import's bag row meets the seeded canon at the gate: divergence stands off and never overwrites", async () => {
@@ -500,7 +500,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     const forkBase = old.layer(WORKING).get(POND)!.base!;
     // Canon moved past the fork before the reset: the face canon's disk file says something newer.
     const NEWER = tid(POND, "the pond as canon says it now");
-    put(FR("hearth-one", "canon/ha.ka.ba/notes/pond.tid"), NEWER);
+    put(FR("hearth-one", "bags/daemon/ha.ka.ba/notes/pond.tid"), NEWER);
     const after = refound();
     await seedMirrors({ apply: true, doors: after.mirrorDoors(), liftKahua: 1 });
     expect(after.live(daemonFaceCanonBag(F2), POND)?.text).toBe(NEWER);
@@ -514,7 +514,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     const B0 = `sha256:${"a".repeat(64)}`, BP = `sha256:${"b".repeat(64)}`, BX = `sha256:${"c".repeat(64)}`;
     const asked: Array<{ uri: string; overrideBase?: string; familyBases?: Readonly<Record<string, string>> }> = [];
     const submit = async (o: { candidates: readonly { uri: string }[] }) => { asked.push(...o.candidates); return { status: "error" as const, requestId: "probe", errorMessage: "probe: the vessel stands nowhere" }; };
-    const wave: MirrorWave = { source: P("faces/hearth-one/wiki"), uriDir: P("faces/hearth-one"), toBag: WORKING, skipTop: ["temp"], bases: { [POND]: B0, [`${POND}#/part`]: BP, [`${HERON}-twin#/part`]: BX } };
+    const wave: MirrorWave = { source: P("faces/hearth-one/wikis/daemon"), uriDir: P("faces/hearth-one/wikis"), toBag: WORKING, skipTop: ["temp"], bases: { [POND]: B0, [`${POND}#/part`]: BP, [`${HERON}-twin#/part`]: BX } };
     await liveLay(wave, true, { did: async () => "0xprobe", submit });
     const pond = asked.find((c) => c.uri === POND);
     expect(pond?.overrideBase).toBe(B0);
@@ -525,7 +525,7 @@ describe("the lay lays every mirror back into its one layer", () => {
   test("M9 — two faces: each face's working rows carry its own bases, never the face the daemon wears", async () => {
     const two = new FakeHouse([{ handleIndex: 0, petname: "hearth-one", relation: F1 }, { handleIndex: 1, petname: "two", relation: F3 }], "grant", F1);
     two.held.add("garden");
-    put(FR("two", "wiki/ha.ka.ba/notes/pond.tid"), tid(POND, "face two's pond"));
+    put(FR("two", "wikis/daemon/ha.ka.ba/notes/pond.tid"), tid(POND, "face two's pond"));
     const B1 = `sha256:${"1".repeat(64)}`, B3 = `sha256:${"3".repeat(64)}`;
     writeFaceBases(F1, { [POND]: B1 }, join(root, "projections"));
     writeFaceBases(F3, { [POND]: B3 }, join(root, "projections"));
@@ -559,7 +559,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     const old = await oldVessel();
     await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     // The face wrote one more memory after the export: the bundle never carried it.
-    put(FR("hearth-one", "wiki/ha.ka.ba/notes/after-export.tid"), tid("lar:///ha.ka.ba/notes/after-export", "written after the export"));
+    put(FR("hearth-one", "wikis/daemon/ha.ka.ba/notes/after-export.tid"), tid("lar:///ha.ka.ba/notes/after-export", "written after the export"));
     const after = refound();
     after.held.add("garden");
     const imported = await houseImport(out, { apply: true, doors: after.bundleDoors() });
@@ -575,7 +575,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     // The FORMER founding's three faces left their roots, each named by its pet-name.
     clearFace();
     const pets = ["joshua-fontany", "joshua-fontany-engineer", "joshua-fontany-referee"];
-    [N0, N1, N2].forEach((n, i) => put(FR(pets[i]!, `wiki/ha.ka.ba/notes/${n.slice(n.lastIndexOf("/") + 1)}.tid`), tid(n, `face h${i}'s own memory`)));
+    [N0, N1, N2].forEach((n, i) => put(FR(pets[i]!, `wikis/daemon/ha.ka.ba/notes/${n.slice(n.lastIndexOf("/") + 1)}.tid`), tid(n, `face h${i}'s own memory`)));
     writeFaceLabels([G0, G1, G2].map((relation, handleIndex) => ({ relation, petname: pets[handleIndex]!, handleIndex })), join(root, "projections"));
     // Re-founded: the same three pet-names on fresh relations; `vault unlock --all --face 1` opened all three, h1 worn.
     const [R0, R1, R2] = ["bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb0", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2"];
@@ -606,7 +606,7 @@ describe("the lay lays every mirror back into its one layer", () => {
     const [N0, N1, N2] = ["lar:///ha.ka.ba/notes/zero-own", "lar:///ha.ka.ba/notes/one-own", "lar:///ha.ka.ba/notes/two-own"];
     clearFace();
     const pets = ["joshua-fontany", "joshua-fontany-engineer", "joshua-fontany-referee"];
-    [N0, N1, N2].forEach((n, i) => put(FR(pets[i]!, `wiki/ha.ka.ba/notes/${n.slice(n.lastIndexOf("/") + 1)}.tid`), tid(n, `face h${i}'s memory`)));
+    [N0, N1, N2].forEach((n, i) => put(FR(pets[i]!, `wikis/daemon/ha.ka.ba/notes/${n.slice(n.lastIndexOf("/") + 1)}.tid`), tid(n, `face h${i}'s memory`)));
     writeFaceLabels([G0, G1, G2].map((relation, handleIndex) => ({ relation, petname: pets[handleIndex]!, handleIndex })), join(root, "projections"));
     const [R0, R1, R2] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2"];
     const v = new FakeHouse([
@@ -637,8 +637,8 @@ describe("the lay lays every mirror back into its one layer", () => {
     const [G0, G1] = ["ffffffff-ffff-4fff-8fff-fffffffffff0", "ffffffff-ffff-4fff-8fff-fffffffffff1"];
     clearFace();
     const pets = ["joshua-fontany", "joshua-fontany-engineer"];
-    put(FR(pets[0]!, "wiki/ha.ka.ba/notes/zero.tid"), tid("lar:///ha.ka.ba/notes/zero", "h0's"));
-    put(FR(pets[1]!, "wiki/ha.ka.ba/notes/one.tid"), tid("lar:///ha.ka.ba/notes/one", "h1's"));
+    put(FR(pets[0]!, "wikis/daemon/ha.ka.ba/notes/zero.tid"), tid("lar:///ha.ka.ba/notes/zero", "h0's"));
+    put(FR(pets[1]!, "wikis/daemon/ha.ka.ba/notes/one.tid"), tid("lar:///ha.ka.ba/notes/one", "h1's"));
     writeFaceLabels([G0, G1].map((relation, handleIndex) => ({ relation, petname: pets[handleIndex]!, handleIndex })), join(root, "projections"));
     const [R0, R1] = ["abababab-abab-4bab-8bab-ababababab00", "abababab-abab-4bab-8bab-ababababab01"];
     const v = new FakeHouse([{ handleIndex: 0, petname: pets[0]!, relation: R0 }, { handleIndex: 1, petname: pets[1]!, relation: R1 }], "grant", R1);
@@ -657,9 +657,9 @@ describe("the lay lays every mirror back into its one layer", () => {
     const old = new FakeHouse([F1, F2, F3].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "old", F1);
     old.held.add("garden");
     clearFace();
-    put(FR("one", "wiki/ha.ka.ba/notes/pond.tid"), POND_WORKING);
-    put(FR("two", "wiki/ha.ka.ba/notes/two.tid"), tid("lar:///ha.ka.ba/notes/two", "face two's"));
-    put(FR("three", "wiki/ha.ka.ba/notes/three.tid"), tid("lar:///ha.ka.ba/notes/three", "face three's"));
+    put(FR("one", "wikis/daemon/ha.ka.ba/notes/pond.tid"), POND_WORKING);
+    put(FR("two", "wikis/daemon/ha.ka.ba/notes/two.tid"), tid("lar:///ha.ka.ba/notes/two", "face two's"));
+    put(FR("three", "wikis/daemon/ha.ka.ba/notes/three.tid"), tid("lar:///ha.ka.ba/notes/three", "face three's"));
     await houseExport(out, { acceptOmissions: true, doors: old.bundleDoors() });
     rmSync(P("faces"), { recursive: true, force: true });
     const [R0, R1, R2] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1", "cccccccc-cccc-4ccc-8ccc-ccccccccccc2"];
@@ -677,18 +677,18 @@ describe("the lay lays every mirror back into its one layer", () => {
 
   test("M15 — one refused root never halts the rest: an unmatched root records its line, the face's own lands", async () => {
     await oldVessel();
-    put(FR("nobody-here", "wiki/ha.ka.ba/notes/stray.tid"), tid("lar:///ha.ka.ba/notes/stray", "a stranger's memory"));
+    put(FR("nobody-here", "wikis/daemon/ha.ka.ba/notes/stray.tid"), tid("lar:///ha.ka.ba/notes/stray", "a stranger's memory"));
     const after = refound();
     const r = await seedMirrors({ apply: true, doors: after.mirrorDoors(), liftKahua: 1 });
     expect(r.refusals.map((x) => [x.face, x.code])).toEqual([["nobody-here", "seed-face-unmatched"]]);
     expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
     expect(after.live(WORKING, "lar:///ha.ka.ba/notes/stray")).toBeUndefined();
-    expect(existsSync(P("faces/nobody-here/wiki/ha.ka.ba/notes/stray.tid"))).toBe(true);
+    expect(existsSync(P("faces/nobody-here/wikis/daemon/ha.ka.ba/notes/stray.tid"))).toBe(true);
   });
 
   test("M16 — a face whose pet-name would not read blocks only the folders no other face claims; a SHUT face waits for its own", async () => {
     await oldVessel();
-    put(FR("unknown-one", "wiki/ha.ka.ba/notes/stray.tid"), tid("lar:///ha.ka.ba/notes/stray", "whose?"));
+    put(FR("unknown-one", "wikis/daemon/ha.ka.ba/notes/stray.tid"), tid("lar:///ha.ka.ba/notes/stray", "whose?"));
     const after = refound([{ handleIndex: 0, petname: "hearth-one", relation: F2 }, { handleIndex: 1, petname: null, relation: null, kahua: null, kahuaRefusal: "vessel-locked" }]);
     const r = await seedMirrors({ apply: true, doors: after.mirrorDoors(), liftKahua: 1 });
     expect(r.refusals.map((x) => [x.face, x.code])).toEqual([["unknown-one", "seed-faces-unread"]]);
@@ -696,19 +696,19 @@ describe("the lay lays every mirror back into its one layer", () => {
 
     // A face that stands SHUT under a pet-name it still answers: its root waits, named, never refused.
     rmSync(P("faces/unknown-one"), { recursive: true });
-    put(FR("referee", "wiki/ha.ka.ba/notes/shut.tid"), tid("lar:///ha.ka.ba/notes/shut", "the referee's"));
+    put(FR("referee", "wikis/daemon/ha.ka.ba/notes/shut.tid"), tid("lar:///ha.ka.ba/notes/shut", "the referee's"));
     const shut = refound([{ handleIndex: 0, petname: "hearth-one", relation: F2 }, { handleIndex: 2, petname: "referee", relation: null, kahua: null, kahuaRefusal: "face-locked" }]);
     const s2 = await seedMirrors({ apply: true, doors: shut.mirrorDoors() });
     expect(s2.refusals).toEqual([]);
     expect(s2.waiting.map((w) => [w.handleIndex, w.petname, w.folders])).toEqual([[2, "referee", [P("faces/referee")]]]);
     expect(mirrorLines(s2).out.join("\n")).toContain("referee stays shut: `lares vault unlock --face 2`, then lay again");
-    expect(existsSync(P("faces/referee/wiki/ha.ka.ba/notes/shut.tid"))).toBe(true);
+    expect(existsSync(P("faces/referee/wikis/daemon/ha.ka.ba/notes/shut.tid"))).toBe(true);
   });
 
   test("M17 — a kahua refusal names its face", async () => {
     await oldVessel();
     // A stage file naming no item beside the heron.
-    put(FR("hearth-one", "stage/ha.ka.ba/kahua/memory/broken.tid"), "no carrier here\n");
+    put(FR("hearth-one", "bags/kahua/ha.ka.ba/kahua/memory/broken.tid"), "no carrier here\n");
     const after = refound();
     const r = await seedMirrors({ apply: true, doors: after.mirrorDoors(), liftKahua: 1 });
     expect(r.kahua.refused.length).toBe(1);
@@ -941,7 +941,7 @@ describe("no plain-title working tiddler drops at a re-found (tideline-surface#/
   const PLAIN: Record<string, string> = { "My Notes.tid": "My Notes", "Time_ dusk.tid": "Time: dusk", "$__config_Foo.tid": "$:/config/Foo", "Room 4.tid": "Room 4" };
 
   test("M23 — reset -> found -> lay keeps every plain-title working tiddler of the former face, each under its own title", async () => {
-    for (const [file, title] of Object.entries(PLAIN)) put(FR("hearth-one", `wiki/${file}`), tid(title, `the words of ${title}`));
+    for (const [file, title] of Object.entries(PLAIN)) put(FR("hearth-one", `wikis/daemon/${file}`), tid(title, `the words of ${title}`));
     const old = await oldVessel();
     for (const title of Object.values(PLAIN)) expect(old.live(WORKING, title)?.text, title).toBe(tid(title, `the words of ${title}`));
     const after = refound();
@@ -952,20 +952,20 @@ describe("no plain-title working tiddler drops at a re-found (tideline-surface#/
   });
 
   test("M24 — a file no rule reads names itself in the lay's lines, and the lay says it skipped", async () => {
-    put(FR("hearth-one", "wiki/$__state_fold.tid"), tid("$:/state/fold", "a fold"));
+    put(FR("hearth-one", "wikis/daemon/$__state_fold.tid"), tid("$:/state/fold", "a fold"));
     const v = new FakeHouse([{ handleIndex: 0, petname: "hearth-one", relation: F1 }], "grant", F1);
     v.held.add("garden");
     const r = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     const working = r.layers.find((t) => t.toBag === WORKING)!;
-    expect(working.skipped.map((s) => s.file)).toEqual([P("faces/hearth-one/wiki/$__state_fold.tid")]);
+    expect(working.skipped.map((s) => s.file)).toEqual([P("faces/hearth-one/wikis/daemon/$__state_fold.tid")]);
     expect(mirrorLines(r).err.some((l) => l.includes("$__state_fold.tid") && /projection filter/.test(l))).toBe(true);
   });
 
   test("M25 — HOUSE_IGNORED reaches the bundle: an export carries no `.git/` (the face root's own pool, or one inside a plane), and a lay reads none", async () => {
     put(FR("hearth-one", ".git/config"), "[user]\n  name = someone\n");
     put(FR("hearth-one", ".git/objects/ab/cdef"), "blob");
-    put(FR("hearth-one", "wiki/.git/HEAD"), "ref: refs/heads/main\n");
-    put(FR("hearth-one", "wiki/.vscode/settings.json"), "{}");
+    put(FR("hearth-one", "wikis/daemon/.git/HEAD"), "ref: refs/heads/main\n");
+    put(FR("hearth-one", "wikis/daemon/.vscode/settings.json"), "{}");
     const old = await oldVessel();
     expect(old.laid.some((s) => s.includes(".git"))).toBe(false);
     const { manifest } = await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
@@ -991,8 +991,8 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
 
   test("W1 — RED: a kahua item of an open, unworn face waits by name for its own wear: the count names what this wear lifts, no lift reaches the vessel for it, the lay leaves no work; CONTROL: the worn face's item lifts, and the unworn face's lifts at its own wear", async () => {
     clearOld();
-    put(FR("steward", "stage/ha.ka.ba/kahua/memory/heron.tid"), kahuaTid(HERON, "remember the heron"));
-    put(FR("engineer", "stage/ha.ka.ba/kahua/memory/wren.tid"), kahuaTid(WREN, "remember the wren"));
+    put(FR("steward", "bags/kahua/ha.ka.ba/kahua/memory/heron.tid"), kahuaTid(HERON, "remember the heron"));
+    put(FR("engineer", "bags/kahua/ha.ka.ba/kahua/memory/wren.tid"), kahuaTid(WREN, "remember the wren"));
     writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }, { relation: G1, petname: "engineer", handleIndex: 1 }], join(root, "projections"));
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R0);
     const doors = (): MirrorDoors => ({ ...v.mirrorDoors(), kahuaLift: liftsAsWornAlone(v) });
@@ -1014,7 +1014,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
 
   test("W2 — RED: a face-named wave the island answers `document-unavailable` for (a lit face's own layer, sealed under its own key) waits by name and leaves the exit green; CONTROL: any other refusal still reads as work for a hand", async () => {
     clearOld();
-    put(FR("engineer", "wiki/ha.ka.ba/notes/engineer-own.tid"), tid(NOTE, "the engineer's own memory"));
+    put(FR("engineer", "wikis/daemon/ha.ka.ba/notes/engineer-own.tid"), tid(NOTE, "the engineer's own memory"));
     writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }, { relation: G1, petname: "engineer", handleIndex: 1 }], join(root, "projections"));
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R0);
     const sealed = "[document-unavailable] lar:///ha.ka.ba/wikis/daemon/working (a lit face's own layer) unavailable: doc automerge:2rZ45c35 was reported unavailable by every reachable peer; make the document reachable from a peer, then restart.";
@@ -1035,7 +1035,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(readKahuaFile(kahuaTid(WREN, "a body that ends with none"))?.text).toBe("a body that ends with none");
     clearOld();
     const body = "remember the wren, and the line ends here\n";
-    put(FR("steward", "stage/ha.ka.ba/kahua/memory/wren.tid"), kahuaTid(WREN, body));
+    put(FR("steward", "bags/kahua/ha.ka.ba/kahua/memory/wren.tid"), kahuaTid(WREN, body));
     writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }], join(root, "projections"));
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }], "old-grant", G0);
     old.stage.set(0, [{ title: WREN, cid: sha("old-wren"), text: body, fields: {}, taint: [], sources: [] }]);
@@ -1069,7 +1069,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
   test("W5 — RED: an import accounts for every bundle row: a personal row and a kahua head of an open, unworn face count as waiting and name their face, and no lift reaches the vessel for them; CONTROL: at that face's own wear both land, and a second import lands and waits on nothing", async () => {
     clearOld();
     put(FR("engineer", "personal/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid"), tid(OWN_PAGE, "what the engineer kept for itself"));
-    put(FR("engineer", "stage/ha.ka.ba/kahua/memory/wren.tid"), kahuaTid(WREN, "remember the wren\n"));
+    put(FR("engineer", "bags/kahua/ha.ka.ba/kahua/memory/wren.tid"), kahuaTid(WREN, "remember the wren\n"));
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G0);
     old.held.add("lares");
     old.stage.set(1, [{ title: WREN, cid: sha("old-wren"), text: "remember the wren\n", fields: {}, taint: [], sources: [] }]);
@@ -1196,11 +1196,11 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
 
   test("W8 — RED: an import's face-named wave the island refuses WHOLE with `document-unavailable` (a lit face's own layer), whether the live door folds it into rows or a door throws it, waits by name: nothing lands, no restored file stays in that face's mirror, and the face's own wear lands every row; CONTROL: a whole-wave throw that names no wait still rejects and strands no file", async () => {
     clearOld();
-    put(FR("engineer", "wiki/ha.ka.ba/notes/engineer-own.tid"), tid(NOTE, "the engineer's own memory"));
+    put(FR("engineer", "wikis/daemon/ha.ka.ba/notes/engineer-own.tid"), tid(NOTE, "the engineer's own memory"));
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G0);
     await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     rmSync(P("faces/engineer"), { recursive: true });
-    const restored = P("faces/engineer/wiki/ha.ka.ba/notes/engineer-own.tid");
+    const restored = P("faces/engineer/wikis/daemon/ha.ka.ba/notes/engineer-own.tid");
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R0);
     await expect(houseImport(out, { apply: true, doors: { ...v.bundleDoors(), ingest: liveIngest(v, "cap-denied: write on the layer required", "throw") } }),
       "CONTROL: a whole-wave throw that names no wait still rejects").rejects.toThrow(/cap-denied/);
@@ -1324,10 +1324,10 @@ describe("P1 — the face root, keyed by pet name", () => {
   /** The face's pool as the projector lays it now: every plane under `faces/<pet name>/`. */
   const poolDisk = (): void => {
     rmSync(join(root, "projections"), { recursive: true, force: true });
-    put(`projections/faces/${FACE}/canon/ha.ka.ba/notes/pond.tid`, POND_CANON);
-    put(`projections/faces/${FACE}/wiki/ha.ka.ba/notes/pond.tid`, POND_WORKING);
-    put(`projections/faces/${FACE}/wiki/ha.ka.ba/kahua/memory/heron.tid`, tid(HERON, "remember the heron"));
-    put(`projections/faces/${FACE}/wiki/My Notes.tid`, tid("My Notes", "a plain-title working tiddler"));
+    put(`projections/faces/${FACE}/bags/daemon/ha.ka.ba/notes/pond.tid`, POND_CANON);
+    put(`projections/faces/${FACE}/wikis/daemon/ha.ka.ba/notes/pond.tid`, POND_WORKING);
+    put(`projections/faces/${FACE}/wikis/daemon/ha.ka.ba/kahua/memory/heron.tid`, tid(HERON, "remember the heron"));
+    put(`projections/faces/${FACE}/wikis/daemon/My Notes.tid`, tid("My Notes", "a plain-title working tiddler"));
     put(`projections/faces/${FACE}/personal/notes/Aside.tid`, tid("Aside", "a personal layer over the notes wiki"));
     put(`projections/faces/${FACE}/recovery/notes/draft-one.tid`, tid("draft one", "half a thought"));
   };
@@ -1369,7 +1369,7 @@ describe("P1 — the face root, keyed by pet name", () => {
     expect(r.refusals[0]!.message).toContain(FACE);
     expect(stranger.live(WORKING, POND)).toBeUndefined();
     expect(stranger.laid.some((s) => s.startsWith(P(`faces/${FACE}`)))).toBe(false);
-    expect(existsSync(P(`faces/${FACE}/wiki/ha.ka.ba/notes/pond.tid`))).toBe(true);
+    expect(existsSync(P(`faces/${FACE}/wikis/daemon/ha.ka.ba/notes/pond.tid`))).toBe(true);
     expect(existsSync(P("ashes"))).toBe(false);
   });
 
@@ -1381,7 +1381,7 @@ describe("P1 — the face root, keyed by pet name", () => {
     const moved = moveFaceToAshes(projections, FACE, ["someone-else"]);
     expect(moved).toMatchObject({ segment: FACE });
     expect(existsSync(P(`faces/${FACE}`))).toBe(false);
-    expect(existsSync(P(`ashes/${FACE}/wiki/ha.ka.ba/notes/pond.tid`))).toBe(true);
+    expect(existsSync(P(`ashes/${FACE}/wikis/daemon/ha.ka.ba/notes/pond.tid`))).toBe(true);
   });
 
   test("FR4 — RED: export reads each plane off the face root, and import lands each back there", async () => {
@@ -1401,14 +1401,14 @@ describe("P1 — the face root, keyed by pet name", () => {
     const imported = await houseImport(out, { apply: true, doors: after.bundleDoors() });
     expect(Object.values(imported.tallies).every((t) => t.stoodOff.length === 0 && t.refused.length === 0)).toBe(true);
     expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
-    expect(readFileSync(P(`faces/${FACE}/wiki/ha.ka.ba/notes/pond.tid`), "utf8")).toBe(POND_WORKING);
+    expect(readFileSync(P(`faces/${FACE}/wikis/daemon/ha.ka.ba/notes/pond.tid`), "utf8")).toBe(POND_WORKING);
     expect(readFileSync(P(`faces/${FACE}/recovery/notes/draft-one.tid`), "utf8")).toBe(tid("draft one", "half a thought"));
     expect(existsSync(P("realms/notes/wikis/notes/recovery"))).toBe(false);
   });
 
   test("FR5 — RED: no index file rests under faces/, and two faces never share a root", async () => {
     poolDisk();
-    put("projections/faces/Egret/wiki/Shell.tid", tid("Shell", "egret's own"));
+    put("projections/faces/Egret/wikis/daemon/Shell.tid", tid("Shell", "egret's own"));
     const v = new FakeHouse([{ handleIndex: 0, petname: FACE, relation: F1 }, { handleIndex: 1, petname: "Egret", relation: F2 }], "grant", F1);
     v.held.add("notes");
     await seedMirrors({ apply: true, doors: v.mirrorDoors() });
@@ -1430,7 +1430,7 @@ describe("P1 — the face root, keyed by pet name", () => {
     writeFaceLabels([{ relation: F1, petname: FACE, handleIndex: 0 }], projections);
     await labelFaceAtNaming({ handleIndex: 0, petname: "Night Heron", relation: F1, formerPetname: FACE }, async () => F1, projections);
     expect(existsSync(P(`faces/${FACE}`))).toBe(false);
-    expect(readFileSync(P("faces/Night Heron/wiki/ha.ka.ba/notes/pond.tid"), "utf8")).toBe(POND_WORKING);
+    expect(readFileSync(P("faces/Night Heron/wikis/daemon/ha.ka.ba/notes/pond.tid"), "utf8")).toBe(POND_WORKING);
     expect(readFaceLabel(F1, projections)?.petname).toBe("Night Heron");
   });
 
@@ -1439,9 +1439,9 @@ describe("P1 — the face root, keyed by pet name", () => {
     const projections = join(root, "projections");
     const dirs = { bags: join(root, "bags"), wikis: join(root, "wikis"), projections };
     const read = (source: string, file: string) => fileToUriForSource(root, source, dirs)(root, file);
-    expect(read(P(`faces/${FACE}/wiki`), P(`faces/${FACE}/wiki/My Notes.tid`))).toBe("My Notes");
-    expect(read(P(`faces/${FACE}/wiki`), P(`faces/${FACE}/wiki/ha.ka.ba/notes/pond.tid`))).toBe(POND);
-    expect(read(P(`faces/${FACE}/canon`), P(`faces/${FACE}/canon/ha.ka.ba/notes/pond.tid`))).toBe(POND);
+    expect(read(P(`faces/${FACE}/wikis/daemon`), P(`faces/${FACE}/wikis/daemon/My Notes.tid`))).toBe("My Notes");
+    expect(read(P(`faces/${FACE}/wikis/daemon`), P(`faces/${FACE}/wikis/daemon/ha.ka.ba/notes/pond.tid`))).toBe(POND);
+    expect(read(P(`faces/${FACE}/bags/daemon`), P(`faces/${FACE}/bags/daemon/ha.ka.ba/notes/pond.tid`))).toBe(POND);
     expect(read(P(`faces/${FACE}/personal/notes`), P(`faces/${FACE}/personal/notes/Aside.tid`))).toBe("Aside");
   });
 });

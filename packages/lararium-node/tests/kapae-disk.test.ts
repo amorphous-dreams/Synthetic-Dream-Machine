@@ -29,7 +29,7 @@ async function rig() {
   });
   const internal = projector as unknown as { flush(b: string, t: string): Promise<void>; reconcile(t: string): Promise<void> };
   await internal.flush(bag, title);
-  const stem = join(faceRoot(root, "Heron"), "wiki", "ha.ka.ba/t/daemon/shadow-test");
+  const stem = join(faceRoot(root, "Heron"), "wikis", "daemon", "ha.ka.ba/t/daemon/shadow-test");
   /** The house's memory of its shadow write, read afresh from the directory the way `lares surface commit` reads it. */
   const shadowWrite = () => new SyncedTree(treeDir).shadows().baseAt(syncedTreeKey(bag, title), stem + ".kapae");
   return { store, internal, stem, shadowWrite };
@@ -107,6 +107,6 @@ test("★ a kāpae raised before the face root stood projects its shadow into th
   const stop = projector.start(engine);
   await projector.idle();
   await stop();
-  const stem = join(faceRoot(root, "Heron"), "wiki", "ha.ka.ba/t/daemon/shadow-test");
+  const stem = join(faceRoot(root, "Heron"), "wikis", "daemon", "ha.ka.ba/t/daemon/shadow-test");
   expect(JSON.parse(readFileSync(stem + ".kapae", "utf8"))).toEqual({ title, kapae: "raised" });
 }, 60_000);

@@ -6,8 +6,8 @@
  * CONTENT, never as identity: no key, signature, CRDT history or AID travels, and the import writes NEW changes under
  * the new face's authority. The sensoriums (captured conversation memory, `<root>/sensoriums`) survive by where they
  * stand and never enter a bundle. Control records rest in the vessel control document and never travel in a bundle;
- * the daemon wiki travels through the face's root (`faces/<pet name>/`): its working (`wiki/`) and canon (`canon/`)
- * mirrors, and kahua through its `stage/`.
+ * the daemon wiki travels through the face's root (`faces/<pet name>/`): its working (`wikis/daemon/`) and canon (`bags/daemon/`)
+ * mirrors, and kahua through its `bags/kahua/`.
  *
  * EXPORT (a vessel that holds a disk store and wears its faces, standing):
  *   1. refuses a dest inside the house root or the workspace, or one that already stands (the config home takes one, and so
@@ -569,7 +569,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
         const read = readKapaeShadow(readFileSync(abs, "utf8"));
         return { face: fk, bag: wikiSlotUri("daemon", "working"), layer: "kapae", title: "title" in read ? read.title : null, rowKey: null };
       }
-      return withBase({ face: fk, bag: wikiSlotUri("daemon", "working"), layer: "working", title: carriedFileTitle(root, abs), rowKey: null }, faceBases);
+      return withBase({ face: fk, bag: wikiSlotUri("daemon", "working"), layer: "working", title: carriedFileTitle(dirname(wiki), abs), rowKey: null }, faceBases);
     }, [TEMP_LAYER_DIR]);
     if (consented.has("daemon")) {
       addTree(join(wiki, TEMP_LAYER_DIR), `faces/${fk}/temp/daemon`, (_rel, abs) => {
@@ -580,7 +580,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     } else if (existsSync(join(wiki, TEMP_LAYER_DIR))) omissions.push({ kind: "temp-unconsented", detail: `the daemon wiki's temp folder stands with no consent row (projection.temp.daemon); it stays behind` });
     // THE CANON ROW BY FACE KEY: the face's own canon bag names its relation, so the row names the daemon's canon bag alone and the
     // import resolves the landing face's relation (`daemonFaceCanonBag` of the face it maps to).
-    addTree(join(root, FACE_PLANES.canon), `faces/${fk}/canon`, (_rel, abs) => ({ face: fk, bag: FACE_CANON_ROW_BAG, layer: "daemon-canon", title: carriedFileTitle(root, abs), rowKey: null }));
+    addTree(join(root, FACE_PLANES.canon), `faces/${fk}/canon`, (_rel, abs) => ({ face: fk, bag: FACE_CANON_ROW_BAG, layer: "daemon-canon", title: carriedFileTitle(dirname(join(root, FACE_PLANES.canon)), abs), rowKey: null }));
     addTree(join(root, FACE_PLANES.stage), `faces/${fk}/kahua`, () => ({ face: fk, bag: KAHUA_BAG, layer: "kahua-carrier", title: null, rowKey: null }));
     const personalRoot = join(root, FACE_PLANES.personal);
     for (const slug of folders(personalRoot)) {

@@ -26,6 +26,11 @@
  * commit stays reachable unchanged and the folder's uncommitted edits read as changes in the realm's tree; the nested git dir
  * then rests inside the realm's `.git/lifted/`, kept whole (its other refs, reflog and stash), never deleted.
  *
+ * A FACE ROOT IN THE OLDER SHAPE TAKES EVERY SHELF (`shelveFaceRoot`; operator, 2026-11-20, "Approve model B"): its `wiki/`,
+ * `canon/` and `stage/` move onto `wikis/daemon/`, `bags/daemon/` and `bags/kahua/` as ONE house commit naming each move, built
+ * from HEAD so git reads each path as renamed and `git log --follow` crosses it, while every uncommitted edit and untracked file
+ * rides the folder's move on disk and stays uncommitted. A second heal finds no older folder and moves nothing.
+ *
  * A WIKI MOVING BETWEEN REALMS (`commitRealmMove`) commits on each side: the tree it leaves takes the removal and the tree it lands
  * in takes the files, each commit's message naming both ends.
  *
@@ -38,7 +43,7 @@ import { spawnSync } from "node:child_process";
 import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
-import { faceSegmentRefusal, FACES_PROJECTION_DIR, REALM_EXCLUDE_LINES, REALM_PLANES, REALMS_PROJECTION_DIR, WORKSPACE_EXCLUDE_LINES, withExcludeBlock } from "./bag-paths.js";
+import { faceSegmentRefusal, FACE_SHELF_MOVES, FACES_PROJECTION_DIR, REALM_EXCLUDE_LINES, REALM_PLANES, REALMS_PROJECTION_DIR, WORKSPACE_EXCLUDE_LINES, withExcludeBlock } from "./bag-paths.js";
 
 /** A refusal one pool init names by code. */
 export class PoolTreeRefused extends Error {
@@ -382,12 +387,90 @@ export function retagRealmAuthor(root: string, fromPet: string, toPet: string): 
   return true;
 }
 
+/** What one face root's shelving did: each folder moved (`from` and `to`, posix under the root), each move refused by name, and
+ *  the house commit that names the moves (null where no tree stands or nothing it tracked moved). */
+export interface FaceShelving {
+  readonly root: string;
+  readonly moved: ReadonlyArray<{ readonly from: string; readonly to: string }>;
+  readonly refused: ReadonlyArray<{ readonly code: "face-shelf-both-stand"; readonly from: string; readonly to: string }>;
+  readonly commit: string | null;
+}
+
+/** A folder that stands and holds anything. */
+function holdsAnything(p: string): boolean {
+  try { return statSync(p).isDirectory() && readdirSync(p).length > 0; } catch { return false; }
+}
+
+/**
+ * MOVE A FACE ROOT'S OLDER FOLDERS ONTO ITS SHELVES (`FACE_SHELF_MOVES`: `wiki/` -> `wikis/daemon/`, `canon/` -> `bags/daemon/`,
+ * `stage/` -> `bags/kahua/`). Where the face's tree stands, ONE house commit takes every move at once: built from HEAD, it drops
+ * each old prefix and lays the tree HEAD held there under its new prefix, so git reads each path as renamed and history follows.
+ * Then each folder moves whole on disk, carrying every uncommitted edit and untracked file, and the working index re-reads only
+ * the moved paths from the new HEAD, so what stood uncommitted stays uncommitted. A landing that already holds anything refuses
+ * that one move by name (`face-shelf-both-stand`) and leaves both sides as they stand; the other moves still land. `moved` hears
+ * each folder's move (the vessel re-keys the Synced tree's bases with it). Idempotent: a root with no older folder moves nothing.
+ */
+export function shelveFaceRoot(root: string, petname: string, moved?: (from: string, to: string) => void): FaceShelving {
+  const go: Array<{ from: string; to: string }> = [];
+  const refused: Array<{ code: "face-shelf-both-stand"; from: string; to: string }> = [];
+  for (const m of FACE_SHELF_MOVES) {
+    try { if (!statSync(join(root, m.from)).isDirectory()) continue; } catch { continue; }
+    if (holdsAnything(join(root, ...m.to.split("/")))) { refused.push({ code: "face-shelf-both-stand", from: m.from, to: m.to }); continue; }
+    go.push({ from: m.from, to: m.to });
+  }
+  if (go.length === 0) return { root, moved: [], refused, commit: null };
+  let commit: string | null = null;
+  if (existsSync(join(root, ".git", "HEAD")) && revOf(root, "HEAD") !== null) {
+    const tracked = go.filter((m) => poolGit(root, ["rev-parse", "--verify", "-q", `HEAD:${m.from}`]).code === 0);
+    if (tracked.length > 0) {
+      const pet = petname.normalize("NFC");
+      const message = [
+        `lar:///face.takes.every-shelf/${pet} — the face root "${pet}" moves its folders onto the plural shelves, one shelf per kind it holds`,
+        "",
+        ...tracked.map((m) => `Moved: ${m.from}/ -> ${m.to}/`),
+        "",
+      ].join("\n");
+      commit = houseCommit(root, {
+        code: "face-shelf-commit-failed", parents: [], message,
+        fill: (index) => {
+          for (const m of tracked) {
+            step(root, "face-shelf-index-failed", ["rm", "--cached", "-r", "-q", "--ignore-unmatch", "--", m.from, m.to], undefined, index);
+            step(root, "face-shelf-index-failed", ["read-tree", `--prefix=${m.to}/`, `HEAD:${m.from}`], undefined, index);
+          }
+        },
+        sync: () => {},
+      });
+    }
+  }
+  for (const m of go) {
+    const from = join(root, m.from), to = join(root, ...m.to.split("/"));
+    try { if (statSync(to).isDirectory()) rmSync(to, { recursive: true }); } catch { /* no empty landing stands */ }
+    mkdirSync(dirname(to), { recursive: true });
+    renameSync(from, to);
+    moved?.(from, to);
+  }
+  if (commit !== null) step(root, "face-shelf-index-failed", ["reset", "-q", "HEAD", "--", ...go.flatMap((m) => [m.from, m.to])]);
+  return { root, moved: go, refused, commit };
+}
+
+/** The log's line for one shelving: silent where nothing moved and nothing refused. */
+export function faceShelvingLine(s: FaceShelving): string | null {
+  const parts: string[] = [];
+  if (s.moved.length > 0) parts.push(`the face root ${s.root} takes every shelf (${s.moved.map((m) => `${m.from}/ -> ${m.to}/`).join(", ")})${s.commit !== null ? ` in one commit ${s.commit.slice(0, 12)}` : ""}`);
+  for (const r of s.refused) parts.push(`${r.code}: the face root ${s.root} holds both ${r.from}/ and ${r.to}/, so ${r.from}/ stays where it stands until a person merges the two`);
+  return parts.length === 0 ? null : parts.join("; ");
+}
+
+/** What the heal hands its caller beside the log: each face folder it moves onto a shelf (`shelveFaceRoot`). */
+export interface HealPoolOptions { readonly moved?: (from: string, to: string) => void }
+
 /**
  * THE RE-STAND'S HEAL: each face root under `<projections>/faces/` and each realm root under `<projections>/realms/` (each folder
- * named by its pet name) takes its tree where none stands, and a realm root lifts each tree nested below it. A fault on one root
- * names itself and the heal walks on.
+ * named by its pet name) takes its tree where none stands, and a realm root lifts each tree nested below it. A face root then
+ * takes every shelf (`shelveFaceRoot`); a realm root already stands on its shelves, and a workspace stays the operator's, so the
+ * heal moves neither. A fault on one root names itself and the heal walks on.
  */
-export function healPoolTrees(projections: string, log: (line: string) => void): PoolTreeEnsured[] {
+export function healPoolTrees(projections: string, log: (line: string) => void, opts: HealPoolOptions = {}): PoolTreeEnsured[] {
   const out: PoolTreeEnsured[] = [];
   const tend = (root: string, owner: PoolOwner): void => {
     try {
@@ -396,6 +479,11 @@ export function healPoolTrees(projections: string, log: (line: string) => void):
       const line = poolTreeLine(e);
       if (line !== null) log(line);
     } catch (err) { log(`the pool at ${root} took no tree: ${err instanceof Error ? err.message : String(err)}`); }
+    if (!("face" in owner)) return;
+    try {
+      const line = faceShelvingLine(shelveFaceRoot(root, owner.face, opts.moved));
+      if (line !== null) log(line);
+    } catch (err) { log(`the face root ${root} took no shelf: ${err instanceof Error ? err.message : String(err)}`); }
   };
   for (const [dir, owner] of [[FACES_PROJECTION_DIR, (n: string): PoolOwner => ({ face: n })], [REALMS_PROJECTION_DIR, (n: string): PoolOwner => ({ realm: n })]] as const) {
     const at = join(projections, dir);

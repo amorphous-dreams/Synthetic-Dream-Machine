@@ -24,7 +24,7 @@ import {
 } from "@lararium/mesh";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { SyncedTree, syncedTreeKey, syncedTreeDir } from "./synced-tree.js";
-import { bagsFileToUri, houseIgnored, siteFileToTitle, FACES_PROJECTION_DIR, FACE_PLANES, REALMS_PROJECTION_DIR, REALM_PLANES, TEMP_LAYER_DIR, type FileSiting } from "./bag-paths.js";
+import { bagsFileToUri, houseIgnored, siteFileToTitle, facePlaneOf, facePlaneSiteDir, FACES_PROJECTION_DIR, FACE_PLANES, REALMS_PROJECTION_DIR, REALM_PLANES, TEMP_LAYER_DIR, type FacePlane, type FileSiting } from "./bag-paths.js";
 import { larProjectionCheckpointDir } from "./vessel-paths.js";
 import { KAPAE_EXT, readKapaeShadow } from "./kapae-shadow.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
@@ -229,9 +229,9 @@ export function fileToUriForSource(
   if (faces !== null && under(faces)) {
     return (_root, file) => {
       const abs = resolve(file);
-      const [face = "", plane = ""] = abs.startsWith(faces + sep) ? abs.slice(faces.length + 1).split(sep) : [];
-      if (face === "" || plane === "") return { why: `stands outside any face's planes under ${faces}` };
-      return titleOf(siteFaceFile(join(faces, face), plane, file, tree));
+      const [face = "", ...rest] = abs.startsWith(faces + sep) ? abs.slice(faces.length + 1).split(sep) : [];
+      if (face === "" || rest.length === 0) return { why: `stands outside any face's planes under ${faces}` };
+      return titleOf(siteFaceFile(join(faces, face), file, tree));
     };
   }
   // A REALM ROOT (`<projections>/realms/<realm pet name>/`) reads as its two planes: `wikis` (one workbench folder per slug) and
@@ -253,15 +253,18 @@ export function fileToUriForSource(
 }
 
 /**
- * THE TITLE A FACE ROOT'S FILE READS BACK UNDER, by its plane: the personal plane (one folder per wiki slug), the
- * stage sited by title, `wiki` and `canon` by the projector's siting run backward over the root; `recovery` and `temp` place
- * back as files, never through a layer. `tree` lends rule 0, the base at the path.
+ * THE TITLE A FACE ROOT'S FILE READS BACK UNDER, by the plane its path rests under (`facePlaneOf`): the personal plane (one
+ * folder per wiki slug), the kahua stage (`bags/kahua/`) sited by title, the daemon wiki (`wikis/daemon/`) and its canon
+ * (`bags/daemon/`) by the projector's siting run backward over their shelf (`facePlaneSiteDir`); `recovery` and `temp` place
+ * back as files, never through a layer, and a path under no plane reads none. `tree` lends rule 0, the base at the path.
  */
-export function siteFaceFile(root: string, plane: string, file: string, tree?: SyncedTree): FileSiting {
-  if (plane === FACE_PLANES.personal) return siteMirrorFile(join(root, plane), file, tree, true);
-  if (plane === FACE_PLANES.recovery || plane === FACE_PLANES.temp) return { why: `a face's ${plane} folder places back as files, never through a layer` };
-  if (plane === FACE_PLANES.stage) return siteFileToTitle({ planeDir: root, titlePaths: true, ...(tree !== undefined ? { uriAt: (path: string) => tree.uriAt(path) } : {}) }, file);
-  return siteMirrorFile(root, file, tree, false);
+export function siteFaceFile(root: string, file: string, tree?: SyncedTree): FileSiting {
+  const plane = facePlaneOf(relative(root, file));
+  if (plane === null) return { why: `stands under no plane of the face root ${root}` };
+  if (plane === "personal") return siteMirrorFile(facePlaneSiteDir(root, plane), file, tree, true);
+  if (plane === "recovery" || plane === "temp") return { why: `a face's ${FACE_PLANES[plane]} folder places back as files, never through a layer` };
+  if (plane === "stage") return siteFileToTitle({ planeDir: facePlaneSiteDir(root, plane), titlePaths: true, ...(tree !== undefined ? { uriAt: (path: string) => tree.uriAt(path) } : {}) }, file);
+  return siteMirrorFile(facePlaneSiteDir(root, plane), file, tree, false);
 }
 
 /** A siting as a `FileToUriFn` answers it: the title, or the `{ why }` the scan's skip carries. */
@@ -1164,7 +1167,8 @@ export interface PoolIngestOptions {
   /** The worn face's root: `projections/faces/<pet name>/`. */
   readonly pool: string;
   /** The bag each plane's wave lands in, as the daemon island's mirrors grant it (`daemonDiskMirrors`): the working layer
-   *  under `wiki/`, the face's daemon canon under `canon/`, the kahua stage under `stage/`. A plane named here rides no wave. */
+   *  under `wikis/daemon/`, the face's daemon canon under `bags/daemon/`, the kahua stage under `bags/kahua/` (`FACE_PLANES`). A
+   *  plane this map leaves out rides no wave. */
   readonly bags: PoolPlaneBags;
   /** The submit port (`islandIngestSubmit` in the vessel). */
   readonly submit: IngestSubmit;
@@ -1178,7 +1182,7 @@ export interface PoolIngestOptions {
   readonly log?: (line: string) => void;
 }
 
-const POOL_WAVE_PLANES = [FACE_PLANES.wiki, FACE_PLANES.canon, FACE_PLANES.stage] as const;
+const POOL_WAVE_PLANES = ["wiki", "canon", "stage"] as const satisfies readonly FacePlane[];
 type PoolWavePlane = typeof POOL_WAVE_PLANES[number];
 
 /**
@@ -1275,7 +1279,7 @@ export function poolIngestPorts(o: PoolIngestOptions): Pick<FacePoolPorts, "catc
 
   /** One plane's wave: what it owes the shore, and whether a carrier newly vanished. */
   const planeWave = (plane: PoolWavePlane, bag: string, touched: readonly string[]): Promise<FolderWaveReading> => folderWave(
-    { dir: join(o.pool, plane), bag, site: (file, tree) => siteFaceFile(o.pool, plane, file, tree), label: `${plane}/` },
+    { dir: join(o.pool, FACE_PLANES[plane]), bag, site: (file, tree) => siteFaceFile(o.pool, file, tree), label: `${FACE_PLANES[plane]}/` },
     vanished.get(plane)!, touched, { submit: o.submit, did: o.did, ...(o.tree ? { tree: o.tree } : {}), ...(o.heads ? { heads: o.heads } : {}), log },
   );
 
@@ -1285,13 +1289,15 @@ export function poolIngestPorts(o: PoolIngestOptions): Pick<FacePoolPorts, "catc
     let look = whole;
     for (const file of files) {
       const rel = relative(o.pool, file).split(sep);
-      const plane = rel[0] ?? "";
-      const bag = (POOL_WAVE_PLANES as readonly string[]).includes(plane) ? o.bags[plane as PoolWavePlane] : undefined;
-      if (bag !== undefined) { const list = byPlane.get(plane as PoolWavePlane) ?? []; list.push(file); byPlane.set(plane as PoolWavePlane, list); continue; }
+      const plane = facePlaneOf(rel.join("/"));
+      const wave = plane !== null && (POOL_WAVE_PLANES as readonly FacePlane[]).includes(plane) ? plane as PoolWavePlane : null;
+      const bag = wave !== null ? o.bags[wave] : undefined;
+      if (wave !== null && bag !== undefined) { const list = byPlane.get(wave) ?? []; list.push(file); byPlane.set(wave, list); continue; }
       // No daemon layer takes this plane: the shore's look, as a title, or whole where the file left (it states no title).
       if (!existsSync(file)) { look = true; continue; }
-      const sited = plane === FACE_PLANES.personal ? siteFileToTitle({ planeDir: join(o.pool, plane) }, file)
-        : siteFileToTitle({ planeDir: o.pool, ...(plane === FACE_PLANES.stage ? { titlePaths: true } : {}) }, file);
+      // A draft or temp file reads with its slug as part of its name, as it always read (the face root its plane dir).
+      const sited: FileSiting = plane === null ? { why: "it rests under no plane of the face root" }
+        : siteFileToTitle({ planeDir: plane === "recovery" || plane === "temp" ? o.pool : facePlaneSiteDir(o.pool, plane), ...(plane === "stage" ? { titlePaths: true } : {}) }, file);
       if ("title" in sited) shoreTitles.add(sited.title);
       else log(`a wave reads no carrier from ${rel.join("/")}: ${sited.why}`);
     }
@@ -1311,8 +1317,8 @@ export function poolIngestPorts(o: PoolIngestOptions): Pick<FacePoolPorts, "catc
       const files: string[] = [];
       for (const plane of POOL_WAVE_PLANES) {
         if (o.bags[plane] === undefined) continue;
-        const dir = join(o.pool, plane);
-        for (const rel of mirrorFiles(dir, plane === FACE_PLANES.wiki ? [TEMP_LAYER_DIR] : [])) if (!rel.endsWith(".meta")) files.push(join(dir, ...rel.split("/")));
+        const dir = join(o.pool, FACE_PLANES[plane]);
+        for (const rel of mirrorFiles(dir, plane === "wiki" ? [TEMP_LAYER_DIR] : [])) if (!rel.endsWith(".meta")) files.push(join(dir, ...rel.split("/")));
       }
       return waveOver(files, true);
     }),

@@ -75,7 +75,7 @@ const settle = (ms = 30): Promise<void> => new Promise((r) => setTimeout(r, ms))
 describe("C — control: the house's ignore list keeps a pool's .git out of every scan", () => {
   test("houseIgnored names .git/ inside a pool", () => {
     expect(houseIgnored(".git/HEAD")).not.toBeNull();
-    expect(houseIgnored("stage/memory/heron.tid")).toBeNull();
+    expect(houseIgnored("bags/kahua/memory/heron.tid")).toBeNull();
   });
 });
 
@@ -137,20 +137,20 @@ describe("W1c — the host watches the pool's planes alone", () => {
       ports: { catchUp: async () => {}, wave: async (files) => { waves.push(...files); }, commit: async () => ({ committed: false, why: "nothing-moved" }) },
     });
     await host.armed;
-    for (const rel of ["wiki/daemon/My Notes.tid", "canon/ha.ka.ba/notes/pond.mem", "stage/memory/heron.tid", "personal/elyncia/Aside.tid", "recovery/elyncia/Draft.tid"]) fire(rel);
-    for (const rel of [".git/index", "temp/elyncia/x.tid", "loose.tid", "stage/memory/.heron.tid.swp", "wiki/daemon/x.tid~", "wiki/daemon/x.tid.123.tmp", "personal/elyncia/$__StoryList.tid"]) fire(rel);
+    for (const rel of ["wikis/daemon/My Notes.tid", "bags/daemon/ha.ka.ba/notes/pond.mem", "bags/kahua/memory/heron.tid", "personal/elyncia/Aside.tid", "recovery/elyncia/Draft.tid"]) fire(rel);
+    for (const rel of [".git/index", "temp/elyncia/x.tid", "loose.tid", "bags/kahua/memory/.heron.tid.swp", "wikis/daemon/x.tid~", "wikis/daemon/x.tid.123.tmp", "personal/elyncia/$__StoryList.tid", "bags/other/x.tid", "wikis/notes/x.tid", "wiki/Old.tid"]) fire(rel);
     await settle(40);
     expect(waves.map((f) => f.slice(pool.length + 1)).sort()).toEqual([
-      "canon/ha.ka.ba/notes/pond.mem", "personal/elyncia/Aside.tid", "recovery/elyncia/Draft.tid", "stage/memory/heron.tid", "wiki/daemon/My Notes.tid",
+      "bags/daemon/ha.ka.ba/notes/pond.mem", "bags/kahua/memory/heron.tid", "personal/elyncia/Aside.tid", "recovery/elyncia/Draft.tid", "wikis/daemon/My Notes.tid",
     ]);
     await host.down("down");
   });
 
-  test("WATCHED_PLANES holds stage beside wiki, canon, personal and recovery, and never temp", () => {
-    expect([...wc.WATCHED_PLANES].sort()).toEqual(["canon", "personal", "recovery", "stage", "wiki"]);
+  test("WATCHED_PLANES holds the kahua stage beside the daemon wiki, the daemon canon, personal and recovery, and never temp", () => {
+    expect([...wc.WATCHED_PLANES].sort()).toEqual(["bags/daemon", "bags/kahua", "personal", "recovery", "wikis/daemon"]);
   });
 
-  test("a real backend: a hand edit under stage/ reaches the wave", async () => {
+  test("a real backend: a hand edit under bags/kahua/ reaches the wave", async () => {
     const waves: string[] = [];
     const host = wc.armFacePoolWatch({
       pool, settleMs: 20, log: () => {},
@@ -158,9 +158,9 @@ describe("W1c — the host watches the pool's planes alone", () => {
     });
     const state = await host.armed;
     if (state === "inotify-dead") return;     // a backend with no inotify names itself; W2c covers that road
-    put("stage/memory/heron.tid", tid("memory/heron"));
+    put("bags/kahua/memory/heron.tid", tid("memory/heron"));
     for (let i = 0; i < 50 && waves.length === 0; i++) await settle(20);
-    expect(waves).toContain(join(pool, "stage", "memory", "heron.tid"));
+    expect(waves).toContain(join(pool, "bags", "kahua", "memory", "heron.tid"));
     await host.down("down");
   });
 });
@@ -178,9 +178,9 @@ describe("W2b — lock and down: the final wave, then the commit seam", () => {
       },
     });
     await host.armed;
-    fire("stage/memory/heron.tid");
+    fire("bags/kahua/memory/heron.tid");
     const reading = await host.down("lock");
-    expect(order).toEqual(["wave stage/memory/heron.tid", "seam lock"]);
+    expect(order).toEqual(["wave bags/kahua/memory/heron.tid", "seam lock"]);
     expect(reading).toEqual({ committed: true, sha: "abc" });
     expect(host.state()).toBe("down");
     // A second down reads the same close, and runs nothing again.
@@ -212,20 +212,20 @@ describe("W2c — dead inotify degrades to a named state, never a poll loop", ()
 describe("W2d — the commit seam over the pool's git history", () => {
   test("commits the watched planes under a lar: subject naming no face; nothing moved commits nothing", async () => {
     initPool();
-    put("stage/memory/heron.tid", tid("memory/heron"));
-    put("wiki/daemon/My Notes.tid", tid("My Notes"));
+    put("bags/kahua/memory/heron.tid", tid("memory/heron"));
+    put("wikis/daemon/My Notes.tid", tid("My Notes"));
     put("loose.txt", "not a plane\n");
     const first = await wc.poolCommitSeam(pool, "lock");
     expect(first.committed).toBe(true);
     const subject = git("log", "-1", "--format=%s");
     expect(subject.startsWith("lar:///pool.closes.the-sitting/lock")).toBe(true);
     expect(subject).not.toMatch(/Heron/);
-    expect(git("show", "--name-only", "--format=", "HEAD").split("\n").sort()).toEqual(["stage/memory/heron.tid", "wiki/daemon/My Notes.tid"]);
+    expect(git("show", "--name-only", "--format=", "HEAD").split("\n").sort()).toEqual(["bags/kahua/memory/heron.tid", "wikis/daemon/My Notes.tid"]);
     expect(await wc.poolCommitSeam(pool, "down")).toEqual({ committed: false, why: "nothing-moved" });
   });
 
   test("a pool with no history commits nothing, by name", async () => {
-    put("stage/memory/heron.tid", tid("memory/heron"));
+    put("bags/kahua/memory/heron.tid", tid("memory/heron"));
     expect(await wc.poolCommitSeam(pool, "down")).toEqual({ committed: false, why: "no-pool-history" });
   });
 });
@@ -297,17 +297,17 @@ describe("W2e — the arm tends the pool's ignore block", () => {
 describe("S1 — the wake names every stage edit made on disk since the last sitting", () => {
   test("each title with its pool commit or uncommitted; a wiki edit stays out", async () => {
     initPool();
-    put("stage/memory/old.tid", tid("memory/old"));
+    put("bags/kahua/memory/old.tid", tid("memory/old"));
     await wc.poolCommitSeam(pool, "lock");                                  // the last sitting closes here
-    put("stage/memory/heron.tid", tid("memory/heron", "a hand edited this"));
-    git("add", "stage/memory/heron.tid"); git("commit", "-q", "-m", "a hand commit");
+    put("bags/kahua/memory/heron.tid", tid("memory/heron", "a hand edited this"));
+    git("add", "bags/kahua/memory/heron.tid"); git("commit", "-q", "-m", "a hand commit");
     const hand = git("rev-parse", "HEAD");
-    put("stage/memory/pond.tid", tid("memory/pond"));                       // left uncommitted
-    put("wiki/daemon/Other.tid", tid("Other"));
+    put("bags/kahua/memory/pond.tid", tid("memory/pond"));                       // left uncommitted
+    put("wikis/daemon/Other.tid", tid("Other"));
     const edits = wc.stageEditsSinceSitting(pool);
     expect(edits).toEqual([
-      { title: "memory/heron", file: "stage/memory/heron.tid", commit: hand },
-      { title: "memory/pond", file: "stage/memory/pond.tid", commit: "uncommitted" },
+      { title: "memory/heron", file: "bags/kahua/memory/heron.tid", commit: hand },
+      { title: "memory/pond", file: "bags/kahua/memory/pond.tid", commit: "uncommitted" },
     ]);
     const line = wc.wakeStageLine(edits);
     expect(line).toContain("memory/heron");
@@ -317,7 +317,7 @@ describe("S1 — the wake names every stage edit made on disk since the last sit
 
   test("no edit since the last sitting reads as such", async () => {
     initPool();
-    put("stage/memory/old.tid", tid("memory/old"));
+    put("bags/kahua/memory/old.tid", tid("memory/old"));
     await wc.poolCommitSeam(pool, "lock");
     expect(wc.stageEditsSinceSitting(pool)).toEqual([]);
     expect(wc.wakeStageLine([])).toMatch(/no stage edit/);
@@ -326,7 +326,7 @@ describe("S1 — the wake names every stage edit made on disk since the last sit
   test("the arm names the wake before its catch-up", async () => {
     initPool();
     await wc.poolCommitSeam(pool, "lock");
-    put("stage/memory/pond.tid", tid("memory/pond"));
+    put("bags/kahua/memory/pond.tid", tid("memory/pond"));
     const lines: string[] = [];
     const { watch } = fakeWatch();
     const host = wc.armFacePoolWatch({
@@ -552,5 +552,101 @@ describe("W2g — the pool-check hook answers on both sides, and refuses where n
     writeFileSync(hook, "#!/bin/sh\necho mine\n", { mode: 0o755 });
     expect(ensurePoolTree(pool, { face: "Heron" })).toEqual({ root: pool, reading: "standing" });
     expect(readFileSync(hook, "utf8")).toBe("#!/bin/sh\necho mine\n");
+  });
+});
+
+describe("W2i — every shelf plural: the heal moves a face root's folders onto its shelves, one commit, history kept", () => {
+  const g = (root: string, ...args: string[]): string => {
+    const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
+    const r = spawnSync("git", ["-c", "core.quotepath=off", ...args], { cwd: root, env, encoding: "utf8" });
+    if (r.status !== 0) throw new Error(`git ${args.join(" ")} in ${root}: ${r.stderr}`);
+    return (r.stdout ?? "").trim();
+  };
+  const at = (root: string, rel: string): string => join(root, ...rel.split("/"));
+  const lay = (root: string, rel: string, text: string): void => { mkdirSync(dirname(at(root, rel)), { recursive: true }); writeFileSync(at(root, rel), text); };
+  const pt = (): Promise<typeof import("../src/pool-tree.js")> => import(/* @vite-ignore */ "../src/pool-tree.js");
+
+  test("★ a face root before its shelves (wiki/, canon/, stage/ committed, an edit uncommitted, a file untracked): one commit names each move, history follows, nothing uncommitted is lost ★", async () => {
+    const { healPoolTrees } = await pt();
+    const projections = join(dirname(pool), "projections");
+    const face = join(projections, "faces", "Heron");
+    mkdirSync(face, { recursive: true });
+    g(face, "init", "-q", "-b", "main"); g(face, "config", "user.name", "Heron"); g(face, "config", "user.email", "heron@face.invalid"); g(face, "config", "commit.gpgsign", "false");
+    lay(face, "wiki/My Notes.tid", tid("My Notes"));
+    lay(face, "wiki/temp/Scratch.tid", tid("Scratch"));
+    lay(face, "canon/ha.ka.ba/notes/pond.mem", "pond\n");
+    lay(face, "stage/memory/heron.tid", tid("memory/heron"));
+    lay(face, "personal/notes/Aside.tid", tid("Aside"));
+    g(face, "add", "-A", "--", "wiki/My Notes.tid", "canon", "stage", "personal"); g(face, "commit", "-q", "--no-verify", "-m", "the sitting before the shelves");
+    lay(face, "wiki/My Notes.tid", tid("My Notes", "a hand edit no commit holds yet"));
+    lay(face, "stage/memory/pond.tid", tid("memory/pond"));                      // untracked
+    const moved: Array<[string, string]> = [];
+    const lines: string[] = [];
+    healPoolTrees(projections, (l) => lines.push(l), { moved: (from, to) => moved.push([from, to]) });
+    for (const old of ["wiki", "canon", "stage"]) expect(existsSync(join(face, old)), `${old}/ leaves the face root`).toBe(false);
+    expect(readFileSync(join(face, "wikis", "daemon", "My Notes.tid"), "utf8")).toContain("a hand edit no commit holds yet");
+    expect(existsSync(at(face, "wikis/daemon/temp/Scratch.tid"))).toBe(true);
+    expect(existsSync(at(face, "bags/daemon/ha.ka.ba/notes/pond.mem"))).toBe(true);
+    expect(existsSync(at(face, "bags/kahua/memory/pond.tid"))).toBe(true);
+    expect(existsSync(at(face, "personal/notes/Aside.tid")), "personal/<slug>/ stays where it stands").toBe(true);
+    expect(g(face, "ls-tree", "-r", "--name-only", "HEAD").split("\n").sort()).toEqual([
+      "bags/daemon/ha.ka.ba/notes/pond.mem", "bags/kahua/memory/heron.tid", "personal/notes/Aside.tid", "wikis/daemon/My Notes.tid",
+    ]);
+    const message = g(face, "log", "-1", "--format=%B");
+    expect(message).toMatch(/^lar:\/\/\/face\.takes\.every-shelf\//);
+    for (const m of ["wiki/ -> wikis/daemon/", "canon/ -> bags/daemon/", "stage/ -> bags/kahua/"]) expect(message).toContain(m);
+    expect(g(face, "rev-list", "--count", "HEAD")).toBe("2");
+    expect(g(face, "log", "--follow", "--format=%s", "--", "bags/kahua/memory/heron.tid").split("\n")).toContain("the sitting before the shelves");
+    expect(g(face, "diff", "--name-only"), "the hand edit stays uncommitted, unstaged, at its new path").toBe("wikis/daemon/My Notes.tid");
+    expect(g(face, "diff", "--cached", "--name-only"), "nothing stands staged").toBe("");
+    expect(g(face, "ls-files", "--others").split("\n").sort(), "the untracked files stay untracked").toEqual(["bags/kahua/memory/pond.tid", "wikis/daemon/temp/Scratch.tid"]);
+    expect(moved).toEqual([[join(face, "wiki"), join(face, "wikis", "daemon")], [join(face, "canon"), join(face, "bags", "daemon")], [join(face, "stage"), join(face, "bags", "kahua")]]);
+    expect(lines.some((l) => l.includes("takes every shelf"))).toBe(true);
+    const head = g(face, "rev-parse", "HEAD");
+    const again: string[] = [];
+    healPoolTrees(projections, (l) => again.push(l), { moved: (from, to) => moved.push([from, to]) });
+    expect(g(face, "rev-parse", "HEAD"), "a second heal commits nothing").toBe(head);
+    expect(moved.length).toBe(3);
+    expect(again).toEqual([]);
+  });
+
+  test("a face root with no tree yet: the folders move on disk and the founded tree reads the shelves", async () => {
+    const { healPoolTrees } = await pt();
+    const projections = join(dirname(pool), "projections");
+    const face = join(projections, "faces", "Egret");
+    lay(face, "wiki/Page.tid", tid("Page"));
+    lay(face, "stage/memory/egret.tid", tid("memory/egret"));
+    healPoolTrees(projections, () => {});
+    expect(existsSync(at(face, "wikis/daemon/Page.tid"))).toBe(true);
+    expect(existsSync(at(face, "bags/kahua/memory/egret.tid"))).toBe(true);
+    expect(existsSync(join(face, "wiki"))).toBe(false);
+    expect(existsSync(join(face, ".git", "HEAD"))).toBe(true);
+  });
+
+  test("both shapes standing at once: that move refuses by name and nothing on either side moves or leaves", async () => {
+    const { healPoolTrees } = await pt();
+    const projections = join(dirname(pool), "projections");
+    const face = join(projections, "faces", "Ibis");
+    lay(face, "wiki/Old.tid", tid("Old"));
+    lay(face, "wikis/daemon/New.tid", tid("New"));
+    lay(face, "canon/ha.ka.ba/notes/pond.mem", "pond\n");
+    const lines: string[] = [];
+    healPoolTrees(projections, (l) => lines.push(l));
+    expect(existsSync(at(face, "wiki/Old.tid"))).toBe(true);
+    expect(existsSync(at(face, "wikis/daemon/New.tid"))).toBe(true);
+    expect(existsSync(at(face, "wikis/daemon/Old.tid"))).toBe(false);
+    expect(existsSync(at(face, "bags/daemon/ha.ka.ba/notes/pond.mem")), "a move with a clear landing still lands").toBe(true);
+    expect(lines.some((l) => l.includes("face-shelf-both-stand") && l.includes("wiki/"))).toBe(true);
+  });
+
+  test("a realm root stays untouched by the face heal", async () => {
+    const { healPoolTrees } = await pt();
+    const projections = join(dirname(pool), "projections");
+    const realm = join(projections, "realms", "kahu");
+    lay(realm, "wikis/kahu/Page.tid", tid("Page"));
+    lay(realm, "wiki/Stray.tid", tid("Stray"));
+    healPoolTrees(projections, () => {});
+    expect(existsSync(at(realm, "wiki/Stray.tid"))).toBe(true);
+    expect(existsSync(at(realm, "wikis/daemon"))).toBe(false);
   });
 });

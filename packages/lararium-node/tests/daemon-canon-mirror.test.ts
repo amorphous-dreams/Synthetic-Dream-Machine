@@ -1,6 +1,6 @@
 /**
  * daemon-canon-mirror — the daemon wiki's mirrors follow the worn face: its working top projects to
- * `<projections>/faces/<pet name>/wiki`, its canon `bags/daemon-<F>` to `<projections>/faces/<pet name>/canon`. The daemon document
+ * `<projections>/faces/<pet name>/wikis/daemon`, its canon `bags/daemon-<F>` to `<projections>/faces/<pet name>/bags/daemon`. The daemon document
  * (`bags/daemon`) and the control document (`bags/control`) carry no mirror, so no control family reaches disk by placement.
  */
 import { describe, test, expect } from "vitest";
@@ -12,10 +12,10 @@ import { standFaceDaemonCanon } from "@lararium/mesh";
 const F = "123e4567-e89b-42d3-a456-426614174000";
 
 describe("the daemon wiki's mirrors follow the worn face", () => {
-  test("RED: a worn face with its canon mirrors the working top at faces/<pet name>/wiki and the canon bag bags/daemon-<F> at faces/<pet name>/canon; neither the daemon nor the control document mirrors", () => {
+  test("RED: a worn face with its canon mirrors the working top at faces/<pet name>/wikis/daemon and the canon bag bags/daemon-<F> at faces/<pet name>/bags/daemon; neither the daemon nor the control document mirrors", () => {
     const list = daemonDiskMirrors({ projectionRoot: "/p", canonBags: "/absent", face: { relation: F, segment: "Heron" }, canon: true });
-    expect(list.find((m) => m.scope === "daemon")).toMatchObject({ bagId: wikiSlotUri("daemon", "working"), mirrorRoot: "/p/faces/Heron/wiki" });
-    expect(list.find((m) => m.scope === "daemon-canon")).toMatchObject({ bagId: daemonFaceCanonBag(F), mirrorRoot: "/p/faces/Heron/canon" });
+    expect(list.find((m) => m.scope === "daemon")).toMatchObject({ bagId: wikiSlotUri("daemon", "working"), mirrorRoot: "/p/faces/Heron/wikis/daemon" });
+    expect(list.find((m) => m.scope === "daemon-canon")).toMatchObject({ bagId: daemonFaceCanonBag(F), mirrorRoot: "/p/faces/Heron/bags/daemon" });
     expect(list.map((m) => m.scope)).toEqual(expect.arrayContaining(["kahua", "crossroads"]));
     expect(list.some((m) => m.bagId === DAEMON_BAG_ID || m.bagId === CONTROL_HOME_ID)).toBe(false);
   });

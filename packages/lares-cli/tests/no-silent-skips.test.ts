@@ -35,12 +35,12 @@ afterEach(() => { rmSync(root, { recursive: true, force: true }); });
 
 /** A daemon mirror holding one loci carrier, four plain-title working tiddlers, and one file no rule reads. */
 function daemonMirror(): void {
-  put(`faces/hearth-one/wiki/ha.ka.ba/notes/pond.tid`, tid("lar:///ha.ka.ba/notes/pond"));
-  put(`faces/hearth-one/wiki/My Notes.tid`, tid("My Notes"));
-  put(`faces/hearth-one/wiki/Time_ dusk.tid`, tid("Time: dusk"));
-  put(`faces/hearth-one/wiki/$__config_Foo.tid`, tid("$:/config/Foo"));
-  put(`faces/hearth-one/wiki/Room 4.tid`, tid("Room 4", "a hand edited this projected tiddler"));
-  put(`faces/hearth-one/wiki/$__state_fold.tid`, tid("$:/state/fold"));
+  put(`faces/hearth-one/wikis/daemon/ha.ka.ba/notes/pond.tid`, tid("lar:///ha.ka.ba/notes/pond"));
+  put(`faces/hearth-one/wikis/daemon/My Notes.tid`, tid("My Notes"));
+  put(`faces/hearth-one/wikis/daemon/Time_ dusk.tid`, tid("Time: dusk"));
+  put(`faces/hearth-one/wikis/daemon/$__config_Foo.tid`, tid("$:/config/Foo"));
+  put(`faces/hearth-one/wikis/daemon/Room 4.tid`, tid("Room 4", "a hand edited this projected tiddler"));
+  put(`faces/hearth-one/wikis/daemon/$__state_fold.tid`, tid("$:/state/fold"));
 }
 
 const probe = (asked: string[]) => async (o: { candidates: readonly { uri: string }[] }) => {
@@ -52,19 +52,19 @@ describe("no silent skips", () => {
   test("S1 — the mirror lay reads every plain-title working tiddler back under its in-band title", async () => {
     daemonMirror();
     const asked: string[] = [];
-    const wave: MirrorWave = { source: P(`faces/hearth-one/wiki`), uriDir: P("faces/hearth-one"), toBag: WORKING, skipTop: ["temp"] };
+    const wave: MirrorWave = { source: P(`faces/hearth-one/wikis/daemon`), uriDir: P("faces/hearth-one/wikis"), toBag: WORKING, skipTop: ["temp"] };
     const laid = await liveLay(wave, true, { did: async () => "0xprobe", submit: probe(asked) });
     expect([...asked].sort()).toEqual(["$:/config/Foo", "My Notes", "Room 4", "Time: dusk", "lar:///ha.ka.ba/notes/pond"]);
     expect([...laid.planned].sort()).toEqual([...asked].sort());
     // The one file no rule reads names itself and its reason.
-    expect(laid.skipped.map((s) => s.file)).toEqual([P(`faces/hearth-one/wiki/$__state_fold.tid`)]);
+    expect(laid.skipped.map((s) => s.file)).toEqual([P(`faces/hearth-one/wikis/daemon/$__state_fold.tid`)]);
     expect(laid.skipped[0]!.why).toMatch(/projection filter/);
   });
 
   test("S2 — every skip carries its file and its reason, and skipped + rows == files", () => {
     daemonMirror();
-    put(`faces/hearth-one/wiki/README`, "no extension");
-    const source = P(`faces/hearth-one/wiki`);
+    put(`faces/hearth-one/wikis/daemon/README`, "no extension");
+    const source = P(`faces/hearth-one/wikis/daemon`);
     const files = mirrorFiles(source, ["temp"]).map((r) => join(source, ...r.split("/")));
     const scan = scanFiles(source, files, WORKING, new SyncedTree(null), fileToUriForSource(root, source, { bags: join(root, "bags"), wikis: join(root, "wikis"), projections: P("") }));
     expect(scan.skipped.length + scan.rows.length).toBe(files.length);
@@ -105,14 +105,14 @@ describe("no silent skips", () => {
 
   test("S6 — the mirror walk honours HOUSE_IGNORED", () => {
     daemonMirror();
-    put(`faces/hearth-one/wiki/.git/config`, "[core]\n");
-    put(`faces/hearth-one/wiki/.git/objects/ab/cdef`, "blob");
-    put(`faces/hearth-one/wiki/.vscode/settings.json`, "{}");
-    put(`faces/hearth-one/wiki/.shore/ha.ka.ba/notes/pond.tid`, tid("lar:///ha.ka.ba/notes/pond"));
-    put(`faces/hearth-one/wiki/ha.ka.ba/notes/pond.orphans/part.mem`, "x");
-    put(`faces/hearth-one/wiki/ha.ka.ba/notes/pond.tid.4242.00000000-0000-4000-8000-000000000000.tmp`, "x");
-    put(`faces/hearth-one/wiki/$__StoryList.tid`, tid("$:/StoryList"));
-    const rels = mirrorFiles(P(`faces/hearth-one/wiki`));
+    put(`faces/hearth-one/wikis/daemon/.git/config`, "[core]\n");
+    put(`faces/hearth-one/wikis/daemon/.git/objects/ab/cdef`, "blob");
+    put(`faces/hearth-one/wikis/daemon/.vscode/settings.json`, "{}");
+    put(`faces/hearth-one/wikis/daemon/.shore/ha.ka.ba/notes/pond.tid`, tid("lar:///ha.ka.ba/notes/pond"));
+    put(`faces/hearth-one/wikis/daemon/ha.ka.ba/notes/pond.orphans/part.mem`, "x");
+    put(`faces/hearth-one/wikis/daemon/ha.ka.ba/notes/pond.tid.4242.00000000-0000-4000-8000-000000000000.tmp`, "x");
+    put(`faces/hearth-one/wikis/daemon/$__StoryList.tid`, tid("$:/StoryList"));
+    const rels = mirrorFiles(P(`faces/hearth-one/wikis/daemon`));
     expect(rels.filter((r) => r.startsWith(".") || r.includes(".orphans/") || r.endsWith(".tmp") || r === "$__StoryList.tid")).toEqual([]);
     expect(rels).toContain("My Notes.tid");
   });
