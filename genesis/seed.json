@@ -49,7 +49,7 @@
     "floor-manifest": {
       "id": "floor-manifest",
       "version": "1",
-      "sha256": "46841f7b852a145e41b1e21440159043990b9d7ebc033f1eaa8f7a2b16e1e3eb",
+      "sha256": "2d7f777d5a891e4cde09062475cd16b747b707025255923eec8408c5db164c71",
       "mimeType": "application/vnd.lararium.floor-manifest+json",
       "kind": "floor"
     },
@@ -77,7 +77,7 @@
     "floor-lares": {
       "id": "floor-lares",
       "version": "1",
-      "sha256": "2d57cd625cd70ffa1c612285aea1bf44fcd43cda45c2acdfa7b1f07807e7d3fa",
+      "sha256": "96476629dde6be3cd66e68fd428670c98ab3f6a997a161a0a1890c8e75665bbb",
       "mimeType": "application/vnd.lararium.floor-snapshot",
       "kind": "floor"
     },
@@ -224,7 +224,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/blobs/floor-lares",
         "text": "floor-lares",
-        "sha256": "2d57cd625cd70ffa1c612285aea1bf44fcd43cda45c2acdfa7b1f07807e7d3fa",
+        "sha256": "96476629dde6be3cd66e68fd428670c98ab3f6a997a161a0a1890c8e75665bbb",
         "version": "1",
         "mimeType": "application/vnd.lararium.floor-snapshot",
         "tags": "blob-descriptor",
@@ -238,7 +238,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/blobs/floor-manifest",
         "text": "floor-manifest",
-        "sha256": "46841f7b852a145e41b1e21440159043990b9d7ebc033f1eaa8f7a2b16e1e3eb",
+        "sha256": "2d7f777d5a891e4cde09062475cd16b747b707025255923eec8408c5db164c71",
         "version": "1",
         "mimeType": "application/vnd.lararium.floor-manifest+json",
         "tags": "blob-descriptor",
@@ -376,7 +376,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/genesis-cid-floor",
         "text": "",
-        "cid": "46841f7b852a145e41b1e21440159043990b9d7ebc033f1eaa8f7a2b16e1e3eb",
+        "cid": "2d7f777d5a891e4cde09062475cd16b747b707025255923eec8408c5db164c71",
         "note": "genesis floor manifest content-CID",
         "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
       },
