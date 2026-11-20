@@ -33,6 +33,7 @@ import {
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, MemoryTiddlerStore,
   makeShareSetReactor, makeShareListReactor, readShareEntries,
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
+  faceEngines, type FaceEngines,
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
@@ -169,7 +170,8 @@ import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-
 import { readFace, answerDocStoreAsks, announceSlotDoc, announceLiftedDoc, floorSlotTitle, floorRegistryOf, FloorUnavailable, type FloorRegistry } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { slotAnnouncer } from "./slot-announcer.js";
-import { makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
+import { makeLitFaceDocs, makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
+import { composeSiblingEngineSource } from "./face-engine-source.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
@@ -187,7 +189,7 @@ import { proposeDraftsToKahua, pageTitleList } from "./kahua-page-propose.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat } from "./content-key-seat.js";
 import { faceSeatTable, type FaceSeat } from "./face-seat-table.js";
-import { faceLaneReactor, FACE_LANE_VERBS, type FaceLanePorts } from "./face-lane.js";
+import { faceEngineReactor, faceLaneReactor, FACE_LANE_VERBS, type FaceEnginePorts, type FaceLanePorts } from "./face-lane.js";
 /** The verbs a lit sibling reaches on its own lane (`face-lane`). */
 export { FACE_LANE_VERBS } from "./face-lane.js";
 import { ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
@@ -430,12 +432,30 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const announced = wornSlots.announced;
   const announcing = wornSlots.announcing;
   /** The face-named wave's target over the lit set (`lit-face-target`): a sibling's daemon slot opens at its own wear alone. */
+  const asLit = (f: { readonly handleIndex?: number; readonly personaGroupId?: string; readonly faceRelation?: string }): LitFace | null =>
+    typeof f.handleIndex === "number" && f.personaGroupId ? { handleIndex: f.handleIndex, group: f.personaGroupId, relation: f.faceRelation ?? null } : null;
+  const litSiblingFaces = (): LitFace[] => [...litSiblings.values()].map(asLit).filter((f): f is LitFace => f !== null);
+  /**
+   * EACH HAT REACHED BY NAME: each lit sibling's OWN engine (`face-engine`), composed on its first tiddler-door ask over its own
+   * daemon documents (`face-engine-source`), and closed when the face drops.
+   */
+  let siblingEngines: FaceEngines | null = null;
+  const siblingEnginesOf = (ctx: IslandContext): FaceEngines => (siblingEngines ??= faceEngines(async (handleIndex) => {
+    const face = litSiblingFaces().find((f) => f.handleIndex === handleIndex) ?? null;
+    if (face === null) return null;
+    const wear = wearOf(ctx.repo).wear;
+    return composeSiblingEngineSource({
+      face, recipe: ctx.recipe, bootSet: ctx.bootSet, resolveByCid: ctx.resolveByCid,
+      docs: makeLitFaceDocs({ worn: () => asLit(daemonAuth), siblings: litSiblingFaces, control: () => controlOf(ctx) }),
+      shared: (slot) => ctx.handles.get(slot) ?? null,
+      open: async (url, bag) => await findOrThrow(ctx.repo, url, `${bag} (h${handleIndex}'s own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never,
+      ...(wear ? { wear } : {}),
+    });
+  }));
   const litFaceTargetOf = (ctx: IslandContext) => {
-    const asLit = (f: { readonly handleIndex?: number; readonly personaGroupId?: string; readonly faceRelation?: string }): LitFace | null =>
-      typeof f.handleIndex === "number" && f.personaGroupId ? { handleIndex: f.handleIndex, group: f.personaGroupId, relation: f.faceRelation ?? null } : null;
     return makeLitFaceTarget({
       worn: () => asLit(daemonAuth),
-      siblings: () => [...litSiblings.values()].map(asLit).filter((f): f is LitFace => f !== null),
+      siblings: litSiblingFaces,
       control: () => controlOf(ctx),
       wornStore: (bag) => ctx.composite.hasBag(bag) ? ctx.composite.storeForBag(bag) : null,
       storeOf: async (url, bag) => new AutomergeDocStore(await findOrThrow(ctx.repo, url, `${bag} (a lit face's own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never, bag, wearOf(ctx.repo)),
@@ -994,12 +1014,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // answered by this island's own `$tw` on the anchor (`recipe: "default"`, the worn face's daemon wiki). The same
       // options the meme verbs read: the caller's cap decides reach, the Kahu predicate and the write cap gate each write,
       // and a write lands through the live wiki so the cascade routes it to the working layer. No action string rides here.
-      registry.register("wiki-filter", makeWikiFilterReactor(memeOpts), { summary: "Run a TiddlyWiki filter in the daemon wiki's own engine; answers a bounded page of titles (or rows with named fields), `total`, and a `next` cursor to hand back as `after`. A malformed filter refuses `filter-malformed`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("tiddler-get", makeTiddlerGetReactor(memeOpts), { summary: "Read one tiddler with its fields, its `hash` (a writer's base) and its `textHash`; `fields` names a subset, `text: false` leaves the text home, `slot` reads one slot of a meme.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("wiki-render", makeWikiRenderReactor(memeOpts), { summary: "Wikify a title or a wikitext span through the daemon wiki's own engine to `text` or `html`, under a byte cap with a `next` cursor.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("tiddler-put", makeTiddlerPutReactor(memeOpts), { summary: "Patch one tiddler: set fields, unset fields, add and remove tags, and move the text only where named; `base` = the hash last read (stale answers `conflict`), `create` lands only where no tiddler stands. Lands in the wiki's working layer.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("tiddler-delete", makeTiddlerDeleteReactor(memeOpts), { summary: "Remove one tiddler by the family law: with no `mode` a delete deletes plainly (each record leaves its own layer, no tombstone; `mode: plain` in the answer) and retracts a kāpae that hides nothing; a meme root or slot answers its `consequence` and `decision: refused` (`tiddler-delete-in-a-family`) unless `family: true` names the family act, which lands every member as one change; where a lower layer holds the title too, no mode refuses `delete-mode-needed` and the caller names one: `kapae` tombstones in a writable layer and shadows the records beneath, `reveal` retracts the topmost record so the one beneath surfaces; each act names `holds` and `shadowed` or `reveals`; `base` = the hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("wiki-status", makeWikiStatusReactor(memeOpts), { summary: "Name each layer the daemon wiki composes and whether the session's face reads and writes it; `working` names the layer a write lands in.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      // EACH HAT REACHED BY NAME: each engine verb answers in the engine of the face whose session placed it, the mount's for the
+      // mounted face and a lit sibling's OWN engine (its own daemon documents) for that sibling; every answer names the face.
+      const enginePorts: FaceEnginePorts = { ...lanePorts, engine: (face) => siblingEnginesOf(ctx).of(face) };
+      const engineVerb = (verb: string, make: (opts: typeof memeOpts) => VerbReactor): VerbReactor =>
+        faceEngineReactor(verb, make(memeOpts), (engine) => make({ ...memeOpts, tw5: engine.tw5, composite: engine.composite }), enginePorts);
+      registry.register("wiki-filter", engineVerb("wiki-filter", makeWikiFilterReactor), { summary: "Run a TiddlyWiki filter in the daemon wiki's own engine; answers a bounded page of titles (or rows with named fields), `total`, and a `next` cursor to hand back as `after`. A malformed filter refuses `filter-malformed`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("tiddler-get", engineVerb("tiddler-get", makeTiddlerGetReactor), { summary: "Read one tiddler with its fields, its `hash` (a writer's base) and its `textHash`; `fields` names a subset, `text: false` leaves the text home, `slot` reads one slot of a meme.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("wiki-render", engineVerb("wiki-render", makeWikiRenderReactor), { summary: "Wikify a title or a wikitext span through the daemon wiki's own engine to `text` or `html`, under a byte cap with a `next` cursor.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("tiddler-put", engineVerb("tiddler-put", makeTiddlerPutReactor), { summary: "Patch one tiddler: set fields, unset fields, add and remove tags, and move the text only where named; `base` = the hash last read (stale answers `conflict`), `create` lands only where no tiddler stands. Lands in the wiki's working layer.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("tiddler-delete", engineVerb("tiddler-delete", makeTiddlerDeleteReactor), { summary: "Remove one tiddler by the family law: with no `mode` a delete deletes plainly (each record leaves its own layer, no tombstone; `mode: plain` in the answer) and retracts a kāpae that hides nothing; a meme root or slot answers its `consequence` and `decision: refused` (`tiddler-delete-in-a-family`) unless `family: true` names the family act, which lands every member as one change; where a lower layer holds the title too, no mode refuses `delete-mode-needed` and the caller names one: `kapae` tombstones in a writable layer and shadows the records beneath, `reveal` retracts the topmost record so the one beneath surfaces; each act names `holds` and `shadowed` or `reveals`; `base` = the hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("wiki-status", engineVerb("wiki-status", makeWikiStatusReactor), { summary: "Name each layer the daemon wiki composes and whether the session's face reads and writes it; `working` names the layer a write lands in.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live
       // activation state and this writes the LOCAL, volatile $:/temp/lares/switcher
@@ -1727,7 +1752,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           if (face) {
             providers.delete(key);
             litInputs.delete(key);
+            const dropped = litSiblings.get(key);
             litSiblings.delete(key);
+            // Its own engine closes with it: owed saves drain, the bridge detaches, the VM releases.
+            if (typeof dropped?.handleIndex === "number") await siblingEngines?.drop(dropped.handleIndex).catch((error: unknown) => console.warn(`[daemon] face ${key.slice(0, 12)}…'s own engine closed with a fault: ${error instanceof Error ? error.message : String(error)}`));
             // CLOSING A FACE DROPS ITS ENTRY WHOLE: its seat locks, its chain and fold leave, before its identity goes.
             faces.drop(key);
             await Promise.allSettled([...(inFlight.get(face.provider) ?? [])]);

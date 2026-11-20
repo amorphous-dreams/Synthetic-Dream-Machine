@@ -112,6 +112,8 @@ export type {
 export { IslandAdaptor } from "./island-adaptor.js";
 export { buildIslandRecipe, wikiLandedCovers, bindRecoveryAtRest } from "./island-recipe.js";
 export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe.js";
+export { composeFaceEngine, faceEngines } from "./face-engine.js";
+export type { FaceEngine, FaceEngines, FaceEngineSource } from "./face-engine.js";
 export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
 export type { VerbPlacement } from "./verb-vm.js";
 export { MemoryTiddlerStore } from "./memory-store.js";

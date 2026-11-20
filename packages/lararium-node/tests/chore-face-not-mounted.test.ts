@@ -208,12 +208,25 @@ test("EACH HAT REACHED BY NAME: a session wearing LIT h1 asking a meme write pla
   expect(held.find((h) => h.verb === "session:seat")).toEqual({ verb: "session:seat", face: "atom-h1" });
 });
 
-test("EACH HAT REACHED BY NAME, CONTROL: the lane carries the meme writes alone; a lit h1's tiddler write or sweep still refuses chore-face-not-mounted, and h0's session books no face key", async () => {
+test("EACH HAT REACHED BY NAME: a session wearing LIT h1 asking a tiddler write places AS h1 (its own engine's write), and books h1's own face key", async () => {
   const held: Array<{ verb: string; face?: string }> = [];
   const signers = new SessionSignBook({ onHold: (session: BookedSession, verb: string) => { held.push({ verb, ...(session.face !== undefined ? { face: session.face } : {}) }); } });
   const v = await stand({ lit: [1], signers });
   const env = await v.open("h1");
-  for (const verb of ["tiddler-put", "sweep"]) {
+  for (const verb of ["tiddler-put", "tiddler-delete"]) {
+    const reply = await v.peer.ask({ op: "session:call", ...env, requestId: `engine-${verb}`, verb, args: { recipe: "default", title: "T" } });
+    expect(reply, verb).toMatchObject({ kind: "session:result", status: "done", chore: { acting: 1, asker: "cli", session: env.sessionId } });
+  }
+  expect(v.placed.map((p) => [p.verb, p.ordinal])).toEqual([["tiddler-put", 1], ["tiddler-delete", 1]]);
+  expect(held.filter((h) => h.verb !== "session:seat")).toEqual([{ verb: "tiddler-put", face: "atom-h1" }, { verb: "tiddler-delete", face: "atom-h1" }]);
+});
+
+test("EACH HAT REACHED BY NAME, CONTROL: the lane carries its own writes alone; a lit h1's sweep still refuses chore-face-not-mounted, and h0's session books no face key", async () => {
+  const held: Array<{ verb: string; face?: string }> = [];
+  const signers = new SessionSignBook({ onHold: (session: BookedSession, verb: string) => { held.push({ verb, ...(session.face !== undefined ? { face: session.face } : {}) }); } });
+  const v = await stand({ lit: [1], signers });
+  const env = await v.open("h1");
+  for (const verb of ["sweep", "meme-patch"]) {
     expect(await v.peer.ask({ op: "session:call", ...env, requestId: `fenced-${verb}`, verb, args: {} }), verb)
       .toMatchObject({ kind: "session:refused", refusal: "chore-face-not-mounted" });
   }

@@ -12,6 +12,8 @@
  *   L4 — a face outside the lit set resolves nothing; a canon bag resolves by the face's relation alone, never another's
  *   L5 — a sibling's daemon CANON resolves off the control document and posts no slot notice, and a wave naming the sibling's
  *        daemon slot posts none either. CONTROL: the worn face's own resolver names its slot unmarked
+ *   L6 — EACH HAT REACHED BY NAME: a sibling's daemon slot its OWN wear already named in the control document opens as that
+ *        face's own (owner the sibling); a kind its wear never named still resolves nothing and mints no row
  */
 import { describe, expect, test } from "vitest";
 import { makeIslandRepo } from "@lararium/mesh";
@@ -164,5 +166,19 @@ describe("every lit face resolves its own slots", () => {
     expect(notices.length).toBeGreaterThan(0);
     for (const n of notices) { expect(n.bagId).toBe(WORKING); expect(n.sibling, "the worn face's slot rides unmarked").toBeUndefined(); }
     expect(notices.some((n) => `automerge:${n.documentId}` === own!.url)).toBe(true);
+  });
+
+  test("L6 — a sibling's daemon slot its own wear named opens as its own; a kind it never named resolves nothing and mints nothing", async () => {
+    const r = targetRig();
+    // The sibling's own wear (earlier) minted its working slot and named it under its group.
+    const own = r.repo.create<LarDoc>(emptyLarDoc());
+    await r.control.put(mutableLarRecord(`${CONTROL_HOME_ID}/daemon-slot/working/group-h1`, { text: own.url }, "test"), { kind: "lares-verb", requestId: "t" });
+    const out = await r.target(1, WORKING);
+    expect(out, "the sibling's named working slot resolves").not.toBeNull();
+    expect((out!.store as unknown as { documentId: string }).documentId).toBe(own.documentId);
+    expect(out!.owner, "its owner reads as the sibling").toBe(1);
+    expect(await r.target(1, wikiSlotUri("daemon", "draft")), "a kind its wear never named resolves nothing").toBeNull();
+    expect(await r.control.get(`${CONTROL_HOME_ID}/daemon-slot/draft/group-h1`), "and no row mints for it").toBeNull();
+    expect((await r.target(0, WORKING))?.store ?? null, "CONTROL: the worn face's slot still reads the composite alone").toBe(r.wornStore);
   });
 });
