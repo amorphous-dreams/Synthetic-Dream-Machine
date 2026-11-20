@@ -231,13 +231,25 @@ function dirsOf(artifactsDir, prefix) {
   return existsSync(artifactsDir) ? readdirSync(artifactsDir).filter((d) => d.startsWith(prefix)).sort() : [];
 }
 
+/**
+ * actions/download-artifact lays an artifact under `<path>/<artifact name>/` when the pattern matches several, and straight
+ * into `<path>` when it matches ONE (a targeted lane selects one cell). Both layouts read alike: a report file loose in the
+ * directory names its cell by its own `report-<cell>-` prefix, a cell the table does not carry reading as no cell.
+ */
 export function readTestReports(artifactsDir) {
   const reports = new Map();
+  const take = (cell, dir, file) => {
+    try { reports.set(file, { cell, report: JSON.parse(readFileSync(join(dir, file), "utf8")) }); }
+    catch (err) { reports.set(file, { cell, report: null, parseError: String(err?.message ?? err) }); }
+  };
+  const isReport = (f) => /^report-.*\.json$/.test(f);
   for (const dir of dirsOf(artifactsDir, "test-cell-")) {
-    const cell = dir.slice("test-cell-".length);
-    for (const file of readdirSync(join(artifactsDir, dir)).filter((f) => /^report-.*\.json$/.test(f))) {
-      try { reports.set(file, { cell, report: JSON.parse(readFileSync(join(artifactsDir, dir, file), "utf8")) }); }
-      catch (err) { reports.set(file, { cell, report: null, parseError: String(err?.message ?? err) }); }
+    for (const file of readdirSync(join(artifactsDir, dir)).filter(isReport)) take(dir.slice("test-cell-".length), join(artifactsDir, dir), file);
+  }
+  if (existsSync(artifactsDir)) {
+    const ids = cellIds(TEST_CELLS).sort((a, b) => b.length - a.length);
+    for (const file of readdirSync(artifactsDir).filter(isReport)) {
+      take(ids.find((id) => file.startsWith(`report-${id}-`)) ?? "?", artifactsDir, file);
     }
   }
   return reports;
@@ -249,6 +261,13 @@ export function readWitnessLogs(artifactsDir) {
     const cell = dir.slice("witness-cell-".length);
     const file = join(artifactsDir, dir, `${cell}.log`);
     if (existsSync(file)) logs.set(cell, readFileSync(file, "utf8"));
+  }
+  // One matched artifact lands loose in the directory (see readTestReports).
+  if (existsSync(artifactsDir)) {
+    for (const cell of cellIds(WITNESS_CELLS)) {
+      const file = join(artifactsDir, `${cell}.log`);
+      if (!logs.has(cell) && existsSync(file)) logs.set(cell, readFileSync(file, "utf8"));
+    }
   }
   return logs;
 }

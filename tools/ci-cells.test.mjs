@@ -3,12 +3,13 @@
 // `ci-cells.mjs` are the one statement of the cells, and the workflow, the packages and the witness roster are held to them.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import {
-  TEST_CELLS, WITNESS_CELLS, expectedTestReports, evaluateTestCells, evaluateWitnessCells, testReportName, cellIds, selectCells,
+  TEST_CELLS, WITNESS_CELLS, expectedTestReports, evaluateTestCells, evaluateWitnessCells, testReportName, cellIds, selectCells, readTestReports, readWitnessLogs,
 } from "./ci-cells.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -188,4 +189,32 @@ test("C9 RED: a cell's report name carries its cell and package, and the table k
     const script = JSON.parse(readFileSync(join(ROOT, p.dir, "package.json"), "utf8")).scripts.test;
     assert.match(script, /^vitest run( --config \S+)?$/, `${p.dir}: its test script is no plain vitest run, so a cell cannot append a shard and a reporter to it`);
   }
+});
+
+// download-artifact lays ONE matched artifact straight into `path` (no `test-cell-<cell>/` subdirectory), which is what a
+// targeted lane (one cell selected) always downloads; the readers owe the same answer for either layout.
+test("C10 RED: a targeted lane's single downloaded artifact lands flat, and the gate still reads its report and log", () => {
+  const flat = mkdtempSync(join(tmpdir(), "cells-flat-"));
+  const nested = mkdtempSync(join(tmpdir(), "cells-nested-"));
+  const cli = expectedTestReports(selectCells("@lares/cli")).find((r) => r.cell === "cli-mesh");
+  assert.equal(cli.file, "report-cli-mesh-lares-cli.json");
+  writeFileSync(join(flat, cli.file), JSON.stringify(lawful(5)));
+  mkdirSync(join(nested, "test-cell-cli-mesh"));
+  writeFileSync(join(nested, "test-cell-cli-mesh", cli.file), JSON.stringify(lawful(5)));
+  for (const dir of [flat, nested]) {
+    const reports = readTestReports(dir);
+    assert.equal(reports.get(cli.file)?.cell, "cli-mesh", `${dir}: the report reads under its cell`);
+    const v = evaluateTestCells({ reports, cells: selectCells("@lares/cli"), tracked: TRACKED });
+    assert.deepEqual(v.problems, [], dir);
+  }
+  const wf = mkdtempSync(join(tmpdir(), "cells-wflat-"));
+  writeFileSync(join(wf, "contract-witness.log"), "x");
+  assert.equal(readWitnessLogs(wf).get("contract-witness"), "x");
+});
+
+test("C10b CONTROL: a flat report that no cell of the table owns reads as its own stray, never as a cell", () => {
+  const flat = mkdtempSync(join(tmpdir(), "cells-stray-"));
+  writeFileSync(join(flat, "report-nowhere-x.json"), JSON.stringify(lawful()));
+  const v = evaluateTestCells({ reports: readTestReports(flat), tracked: TRACKED });
+  assert.ok(v.problems.some((q) => q.startsWith("unexpected report")));
 });
