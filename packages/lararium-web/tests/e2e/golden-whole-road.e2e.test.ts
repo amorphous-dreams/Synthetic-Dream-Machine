@@ -136,6 +136,45 @@ async function armDefaultProbe(): Promise<void> {
     document.addEventListener("auxclick", note);
   });
 }
+/**
+ * ONE CLICK ON THE INTERNAL LINK, ENDED BY THE ISLAND'S ANSWER. The click names the render target the page shows; the island
+ * either opens beta or answers that very target with a refusal, which the page paints into its words layer
+ * (`output[data-lar-for][data-lar-reason]`, `projection-sink.ts`). An observer armed before the click records every word
+ * painted for the clicked target (a repaint may drop the words straight after), and the attempt ends on whichever comes
+ * first: `arrived`, or the refusal's reason. The timeout only bounds a silence, and a silence fails; it never retries.
+ */
+async function clickInternalLink(): Promise<"arrived" | string> {
+  const link = wiki().locator(".tc-story-river a.tc-tiddlylink-resolves").first();
+  const target = await link.evaluate((a) => {
+    for (let node: Element | null = a; node; node = node.parentElement) {
+      const id = node.getAttribute("data-control-id") ?? node.getAttribute("data-lar-rid");
+      if (id) return id;
+    }
+    return null;
+  });
+  expect(target, "CONTROL: the internal link names the render target its click relays").not.toBeNull();
+  await wiki().evaluate((host, t) => {
+    const w = globalThis as unknown as { __refused: string[]; __refusalWatch?: MutationObserver };
+    w.__refused = [];
+    w.__refusalWatch?.disconnect();
+    const note = (node: Node): void => {
+      if (node instanceof HTMLElement && node.matches("output[data-lar-reason]") && node.dataset["larFor"] === t) w.__refused.push(node.dataset["larReason"]!);
+    };
+    w.__refusalWatch = new MutationObserver((records) => {
+      for (const r of records) { if (r.type === "attributes") note(r.target); else r.addedNodes.forEach(note); }
+    });
+    w.__refusalWatch.observe(host.shadowRoot!, { subtree: true, childList: true, attributes: true, attributeFilter: ["data-lar-reason"] });
+  }, target!);
+  await link.click();
+  const answer = await page!.waitForFunction((t) => {
+    if (document.querySelector("#projection")?.shadowRoot?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]`)) return "arrived";
+    return (globalThis as unknown as { __refused: string[] }).__refused[0] ?? false;
+  }, BETA, { timeout: WAIT }).then((h) => h.jsonValue() as Promise<string>)
+    .catch(async (e) => { throw new Error(`${e}\nstory=${JSON.stringify(await story())}\n${consoleLines.filter((l) => !l.startsWith("Warning: Global assignment")).slice(-40).join("\n")}`); });
+  await wiki().evaluate(() => { (globalThis as unknown as { __refusalWatch?: MutationObserver }).__refusalWatch?.disconnect(); });
+  return answer;
+}
+
 async function lastClick(): Promise<{ prevented: boolean; button: number; ctrl: boolean }> {
   return page!.evaluate(() => (globalThis as unknown as { __clicks: Array<{ prevented: boolean; button: number; ctrl: boolean }> }).__clicks.at(-1)!);
 }
@@ -214,20 +253,19 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
 
   test("W3 — an ordinary click navigates: beta opens in the river and the page cancels the browser default", async () => {
     const before = opened.length;
-    // THE CLICK WAITS FOR THE ISLAND'S LAST FRAME. A relayed act names the render target the page showed; the island answers
-    // `stale-target` to an act whose target a newer frame replaced, and the page paints that refusal and relays nothing again.
-    // W1 ends on the editor's confirm, and the island may still repaint the river after its answer, so a click straight after
-    // W1/W2 can land on a target the very next frame retires: beta never opens and the wait below runs out. The barrier is
-    // the one W4-W6 raise behind their clicks: the island answers in the order the acts left the page, so once the throwaway
-    // tiddler's frames have come and gone, no earlier frame remains in flight and the link read next is the one the island holds.
-    await raiseSentinel();
-    await wiki().locator(".tc-story-river a.tc-tiddlylink-resolves").first().click();
+    // THE CLICK MAY MEET A RETIRED TARGET. A relayed act names the render target the page showed, and the island answers
+    // `stale-target` to an act whose target a newer frame replaced (W1 ends on the editor's confirm, and the island may still
+    // repaint the river after its answer). Each attempt ends on the island's own answer to that click: beta's arrival, or its
+    // refusal. A named `stale-target` clicks the fresh target the newer frame painted; any other refusal fails by name.
+    const TRIES = 3;
+    let answer = "";
+    for (let n = 0; n < TRIES; n++) {
+      answer = await clickInternalLink();
+      if (answer !== "stale-target") break;
+    }
+    expect(answer, "the island opened beta for the click (a refusal names its reason)").toBe("arrived");
     // The page's template opens a followed link below its source (`tiddlywiki.openLinkFromInsideRiver`), where the
-    // golden's bare navigator world has no source frame; the claim is that beta joins the story. The island's answer
-    // rides the same road every other wait here rides, so it gets the same bound (WAIT), not a shorter one.
-    await page!.waitForFunction((t) => !!document.querySelector("#projection")?.shadowRoot
-      ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]`), BETA, { timeout: WAIT })
-      .catch(async (e) => { throw new Error(`${e}\nstory=${JSON.stringify(await story())}\n${consoleLines.filter((l) => !l.startsWith("Warning: Global assignment")).slice(-40).join("\n")}`); });
+    // golden's bare navigator world has no source frame; the claim is that beta joins the story.
     expect(await story()).toEqual([ALPHA, BETA]);
     expect((await lastClick()).prevented).toBe(true);
     expect(opened.length, "no tab opened").toBe(before);
