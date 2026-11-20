@@ -299,7 +299,7 @@ The sibling seer measures the estate in full; these numbers only ground the desi
 **Instruments the design reuses rather than replaces** [measured]:
 
 - `tools/ci-cells.mjs`: test cells dealt by measured file weight; the `Test` gate fails closed on a missing cell.
-- `ci.yml`: "DOORSTEP QUICK, FORD FULL": lane pushes run Quick gates alone; `merge_group`, `develop` and `main` run the battery; a canon-only push runs the doorstep.
+- `ci.yml`: "A LANE RUNS WHAT IT TOUCHES": a lane push runs the Quick gates and the cells its diff touches (touched packages and their in-repo dependents, witnesses where canon moved beside code, the full battery where the scope cannot classify); `merge_group`, `develop` and `main` run the battery; a canon-only push runs the doorstep.
 - `packages/lararium-node/vitest.config.ts`: the `heavy` (serial) and `main` (4 workers) projects, with `THRASHERS` naming the three heavy classes and `heavy-roster-is-complete.test.ts` holding the roster.
 - `packages/lararium-node/tests/support/kept-house.ts`: stands a house once per file and copies it per case.
 - `tools/law-mutants.mjs`: applies each named mutant, runs the naming law files, restores the source, reads `SURVIVED` or `STALE` as red.
@@ -623,7 +623,7 @@ Sequencing rules:
 
 ## 9. Open questions for the operator
 
-1. **The doorstep.** May T1 add affected-selection suites to lane pushes, or does the 2026-11-18 ruling (Quick gates alone) stand as written?
+1. **The doorstep.** Answered 2026-11-19 (operator: "we'll need to figure out a way to run targeted tests for PRs"): a lane push runs the cells its diff touches, beside the Quick gates.
 2. **The KDF.** Does the `SCRYPT` cost bind test fixtures too? The design assumes yes and routes around it with kept houses.
 3. **Mutation as a gate.** Advisory on lanes first, a gate on the queue later: at what survivor noise level does it turn into a gate?
 4. **Nightly budget.** How many runner-hours per night may T3 spend?
@@ -669,6 +669,6 @@ Repo files read: `.github/workflows/ci.yml`, `e2e-shards.yml`, `held-out.yml` (h
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4o7YICxHwI8dGdKQ6pJzuILTFTS1XR_ioJg9GAaZ4rI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nPwNCiu5_oZ_sFaaU755nhsME-q78Ot5PZUTGdk2dV4`>>
 
 <<^ code=`&#x0004;` to=`?`>>
