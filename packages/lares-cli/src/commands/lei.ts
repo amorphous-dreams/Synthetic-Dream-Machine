@@ -4,21 +4,26 @@
  * A lei grants one rite (`push` · `kukulu` · `keep`) at one branch under one reach. Each sub-verb plans one row of the store door and the
  * args it carries (`leiPlan`); the row runs in the vessel, where the hand-only gate, the ward and the co-sign stand:
  *
- *   show       `swarm-show`          reads the board; with `--rite --branch [--head]` it also reads one rite's standing lei (`data.lei`)
+ *   show       `swarm-show`          reads the board; with `--rite --branch [--head]` it also reads one rite's standing lei (`data.lei`);
+ *                                    naming no face with several faces open, it reads every open face's line (`data.faces`)
  *   kui        `swarm-lei-kui`       strings a lei: wide by default (`--returns <n>`), or `--reach head --head <h>` to pin one head;
  *                                    `--after <lei cid>` names the lei it follows, absent for the first on the line; more than
- *                                    twelve returns asks `--yes`
+ *                                    twelve returns asks `--yes`. `--all` (push, kukulu) strings one lei for EVERY open face under
+ *                                    ONE route: each face's own record by its own hand, at its own line's tip; `data.faces` names
+ *                                    each face's cid (`lei`). A lei stays one face's record; only the act gathers them
  *   unstring   `swarm-lei-unstring`  revokes a lei that still holds returns (`--lei <cid>`): a signed record, nothing deleted
  *   restring   `swarm-lei-restring`  supersedes the standing lei with a newer one; the door fills `after` from the line's tip
  *   land       `swarm-lei-kui` · `swarm-lei-unstring` with `signed`: lands a record the hand signed at the pūlama's hand door
  *                                    (`pulama-main.js lei …`), where a vessel under a pūlama sends its lei acts: the line names the
  *                                    pūlama's printed answer (its record and face) or a bare record with `--face`. A lei (a kui,
  *                                    or a restring after the tip it names) rides the kui row, an unstring the unstring row; the
- *                                    vessel verifies the record and asks no route
+ *                                    vessel verifies the record and asks no route. An answer for every face (`faces`) lands each
+ *                                    face's record by its own face, and names where the pūlama's signing stopped (`stopped`)
  *   terms      no row written:       prints ONE stdout line, the terms JSON the pūlama's `lei kui|restring|unstring` takes (the
  *                                    pūlama opens no document, so the host hands it what the vessel knows): `face` from
  *                                    `--face`, else for a keep the keep's face (the face whose keep lei stands, else h0), else
  *                                    the daemon mount; a restring's `after` from the line's tip (`swarm-show`'s `data.lei`).
+ *                                    `kui --all` prints `{ "faces": [ … ] }`, one terms object per open face at its own tip.
  *                                    It writes nothing and asks no route
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
@@ -29,6 +34,7 @@ import { emit, exitFor, refuseUsage } from "../render.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { houseFaces } from "../custody-door.js";
+import { gatherWardRoute } from "../ward-door.js";
 import { keepFaceOf, lineHeld, type HouseFaces } from "../rite-keep.js";
 import type { RiteVerbAnswer } from "../rite-kukulu.js";
 import { execLeiBranch } from "@lararium/mesh";
@@ -42,33 +48,54 @@ export interface LeiPlan { readonly verb: LeiVerb; readonly args: Record<string,
 
 const ACTS: Readonly<Record<string, LeiVerb>> = { show: "swarm-show", kui: "swarm-lei-kui", unstring: "swarm-lei-unstring", restring: "swarm-lei-restring" };
 
-/** One sub-verb's store row and args, or a `LeiUsage` naming what the line lacks. The vessel's door judges the values. */
-/** `land`: the row a hand record lands by, its record as `signed`, and the face the pūlama's answer or the line names. */
-function landPlan(args: ParsedArgs): LeiPlan {
-  if (args.positional.length !== 2) throw new LeiUsage("land names one record: the pūlama's answer, or a bare record with --face N");
-  let read: unknown;
-  try { read = JSON.parse(args.positional[1]!); } catch { throw new LeiUsage("land's record reads as no JSON"); }
-  if (typeof read !== "object" || read === null || Array.isArray(read)) throw new LeiUsage("land's record reads as no object");
-  const r = read as Record<string, unknown>;
-  // THE PŪLAMA'S ANSWER carries the record and its face; a refusal it answered signed nothing to land.
+/** One pūlama answer's (or a bare record's) row: the record as `signed`, and the face the answer or the line names. */
+function landRow(r: Record<string, unknown>, named: number | undefined): LeiPlan {
+  // THE PŪLAMA'S ANSWER carries the record and its face; a bare record carries neither answer nor face.
   const answer = r["op"] === "lei";
-  if (answer && r["reading"] !== "signed") throw new LeiUsage(`the pūlama signed nothing (${String(r["reading"])}), so nothing lands`);
   const record = (answer ? r["record"] : r) as Record<string, unknown> | undefined;
   const act = (record?.["body"] as { act?: unknown } | undefined)?.act;
   const verb: LeiVerb | null = act === "lei" ? "swarm-lei-kui" : act === "lei-unstrung" ? "swarm-lei-unstring" : null;
   if (verb === null) throw new LeiUsage("land's record names no lei and no unstring");
-  const raw = args.options["face"];
-  const named = raw === undefined ? undefined : /^(?:0|[1-9][0-9]*)$/.test(raw.trim()) ? Number(raw.trim()) : NaN;
-  if (named !== undefined && !Number.isSafeInteger(named)) throw new LeiUsage("--face takes a whole count from 0");
   const carried = answer && typeof r["face"] === "number" ? r["face"] as number : undefined;
   if (named !== undefined && carried !== undefined && named !== carried) throw new LeiUsage(`the pūlama signed for h${carried}, and the line names h${named}`);
   const face = carried ?? named;
   return { verb, args: { signed: record, ...(face !== undefined ? { face } : {}) } };
 }
 
+/** Where a signing for every face stopped: the face that refused, and its reading. */
+export interface LeiLandStop { readonly face?: number; readonly reading: string; readonly detail?: string }
+
+/**
+ * `land`: the rows the hand's records land by. One answer (or a bare record) lands one row; the answer of one stringing for every
+ * face (`faces`) lands one row per face that signed, each by its own face, and names where the signing stopped (`stopped`).
+ * An answer that signed nothing lands nothing and refuses by usage.
+ */
+export function leiLandPlans(args: ParsedArgs): { readonly plans: readonly LeiPlan[]; readonly stopped?: LeiLandStop } {
+  if (args.positional.length !== 2) throw new LeiUsage("land names one record: the pūlama's answer, or a bare record with --face N");
+  let read: unknown;
+  try { read = JSON.parse(args.positional[1]!); } catch { throw new LeiUsage("land's record reads as no JSON"); }
+  if (typeof read !== "object" || read === null || Array.isArray(read)) throw new LeiUsage("land's record reads as no object");
+  const r = read as Record<string, unknown>;
+  const raw = args.options["face"];
+  const named = raw === undefined ? undefined : /^(?:0|[1-9][0-9]*)$/.test(raw.trim()) ? Number(raw.trim()) : NaN;
+  if (named !== undefined && !Number.isSafeInteger(named)) throw new LeiUsage("--face takes a whole count from 0");
+  if (r["op"] === "lei" && Array.isArray(r["faces"])) {
+    if (named !== undefined) throw new LeiUsage("an answer for every face names each record's face; land it with no --face");
+    const each = (r["faces"] as unknown[]).filter((f): f is Record<string, unknown> => typeof f === "object" && f !== null && !Array.isArray(f));
+    const signed = each.filter((f) => f["reading"] === "signed");
+    const stop = each.find((f) => f["reading"] !== "signed");
+    if (signed.length === 0) throw new LeiUsage(`the pūlama signed nothing (${String(r["reading"])}), so nothing lands`);
+    return { plans: signed.map((f) => landRow(f, undefined)),
+      ...(stop ? { stopped: { ...(typeof stop["face"] === "number" ? { face: stop["face"] } : {}), reading: String(stop["reading"]), ...(typeof stop["detail"] === "string" ? { detail: stop["detail"] } : {}) } } : {}) };
+  }
+  // A refusal the pūlama answered signed nothing to land.
+  if (r["op"] === "lei" && r["reading"] !== "signed") throw new LeiUsage(`the pūlama signed nothing (${String(r["reading"])}), so nothing lands`);
+  return { plans: [landRow(r, named)] };
+}
+
+/** One sub-verb's store row and args, or a `LeiUsage` naming what the line lacks. The vessel's door judges the values. */
 export function leiPlan(args: ParsedArgs): LeiPlan {
   const sub = args.positional[0];
-  if (sub === "land") return landPlan(args);
   const verb = sub === undefined ? undefined : ACTS[sub];
   if (verb === undefined) throw new LeiUsage("name a sub-verb: show, kui, unstring, restring, land or terms");
   // Each flag reads by its own literal name, so the accepts law walks them.
@@ -91,6 +118,15 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
   const branch = word(args.options["branch"]) ?? (scope ? execLeiBranch(scope["wiki"] as string) : undefined);
   const head = word(args.options["head"]);
   const face = count("face", word(args.options["face"]), 0);
+  // ONE STRINGING FOR EVERY FACE (`--all`): a kui alone, each open face's lei by its own hand at its own line's tip, so it names
+  // no face and no `after`; a keep stands one per house and an exec lei names one writer, so neither strings that way.
+  const all = args.flags["all"] === true;
+  if (all) {
+    if (sub !== "kui") throw new LeiUsage("only a kui strings for every open face (--all)");
+    if (face !== undefined) throw new LeiUsage("--all strings for every open face; it names no --face");
+    if (word(args.options["after"]) !== undefined) throw new LeiUsage("--all follows each face's own line's tip; it names no --after");
+    if (rite === "keep" || rite === "exec") throw new LeiUsage(`a ${rite} lei names one face, so it strings with no --all`);
+  }
   if (sub === "show") {
     // The board reads with no line named; one rite's line reads by rite and branch, and a head rides along to ask after one head.
     if ([rite, branch, head].some((x) => x !== undefined)) {
@@ -113,6 +149,7 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
       if (head !== undefined) out["head"] = head;
       const after = word(args.options["after"]);
       if (sub === "restring") { if (after !== undefined) throw new LeiUsage("a restring follows the line's tip; it names no --after"); }
+      else if (all) out["all"] = true;
       else out["after"] = after ?? null;
       // A count above twelve strings only with the hand's explicit confirm (`--yes`).
       if (args.flags["yes"] === true) out["confirm"] = true;
@@ -131,11 +168,40 @@ export interface LeiTermsPorts {
 
 /** The flags each pūlama act takes beside `--rite`, `--branch` and `--face`; any other lei flag refuses. */
 const TERMS_TAKES: Readonly<Record<string, readonly string[]>> = {
-  kui: ["returns", "reach", "head", "after", "yes", "scope"],
+  kui: ["returns", "reach", "head", "after", "yes", "scope", "all"],
   restring: ["returns", "reach", "head", "yes", "scope"],
   unstring: ["lei"],
 };
-const LEI_FLAGS = ["rite", "branch", "face", "returns", "reach", "head", "after", "lei", "yes", "scope"] as const;
+const LEI_FLAGS = ["rite", "branch", "face", "returns", "reach", "head", "after", "lei", "yes", "scope", "all"] as const;
+
+/** One face's terms object, in the pūlama's order: `face`, `rite`, `branch`, then the act's own. */
+function termsAt(act: string, a: Readonly<Record<string, unknown>>, face: number, after: unknown): Record<string, unknown> {
+  const out: Record<string, unknown> = { face, rite: a["rite"], branch: a["branch"] };
+  for (const key of ["reach", "returns", "head", "scope"] as const) if (a[key] !== undefined) out[key] = a[key];
+  if (act !== "unstring") out["after"] = after ?? null;
+  if (a["confirm"] === true) out["confirm"] = true;
+  if (a["lei"] !== undefined) out["lei"] = a["lei"];
+  return out;
+}
+
+/**
+ * EVERY OPEN FACE'S TERMS (`kui --all`): one object per face the house holds open, ascending, each following its own line's tip
+ * (`swarm-show`'s `data.lei.after`, null where the line holds none). A forked line on any face refuses by name before anything signs.
+ */
+async function everyFaceTerms(a: Readonly<Record<string, unknown>>, ports: LeiTermsPorts): Promise<Record<string, unknown>[]> {
+  const open = [...(await ports.houseFaces()).open].sort((x, y) => x - y);
+  if (open.length === 0) throw new LeiTermsRefused("face-none-open", "no face stands open to string a lei for: open one (`lares vault unlock`)");
+  const rite = String(a["rite"]), branch = String(a["branch"]);
+  const out: Record<string, unknown>[] = [];
+  for (const face of open) {
+    const line = await ports.show(rite, branch, face);
+    if (!line.ok) throw new LeiTermsRefused(line.code, `h${face}: ${line.message}`);
+    const lei = (line.output["lei"] ?? {}) as { after?: unknown; forks?: unknown };
+    if (Array.isArray(lei.forks) && lei.forks.length > 1) throw new LeiTermsRefused("swarm-lei-forked", `the ${rite} line at "${branch}" forks for h${face} (${lei.forks.join(", ")}); name one tip with a kui --after --face ${face}`);
+    out.push(termsAt("kui", a, face, typeof lei.after === "string" && lei.after !== "" ? lei.after : null));
+  }
+  return out;
+}
 
 /**
  * `terms`: the one JSON object the pūlama's `lei <act>` takes, in its order (`face`, `rite`, `branch`, then `reach` ·
@@ -150,6 +216,7 @@ export async function leiTerms(args: ParsedArgs, ports: LeiTermsPorts): Promise<
   // The values read as the vessel's own acts read them (`leiPlan`), so a terms line and a direct act agree.
   const plan = leiPlan({ ...args, positional: [act] });
   const a = plan.args;
+  if (a["all"] === true) return { faces: await everyFaceTerms(a, ports) };
   let line: RiteVerbAnswer | null = null;
   let face: number;
   if (typeof a["face"] === "number") face = a["face"];
@@ -177,12 +244,7 @@ export async function leiTerms(args: ParsedArgs, ports: LeiTermsPorts): Promise<
     if (typeof lei.after !== "string" || lei.after === "") throw new LeiTermsRefused("swarm-lei-nothing-to-restring", `no lei stands on the ${String(a["rite"])} line at "${String(a["branch"])}" for h${face}; a kui strings its first`);
     after = lei.after;
   }
-  const out: Record<string, unknown> = { face, rite: a["rite"], branch: a["branch"] };
-  for (const key of ["reach", "returns", "head", "scope"] as const) if (a[key] !== undefined) out[key] = a[key];
-  if (act !== "unstring") out["after"] = after ?? null;
-  if (a["confirm"] === true) out["confirm"] = true;
-  if (a["lei"] !== undefined) out["lei"] = a["lei"];
-  return out;
+  return termsAt(act, a, face, after);
 }
 
 /** The terms' live ports: the swarm-show row through the store door, the custody door's census, the face the vessel wears. */
@@ -215,20 +277,64 @@ async function cmdLeiTerms(line: ParsedArgs): Promise<number> {
   }
 }
 
+/** A line that answers one row per face: each face's answer, and where the line stopped (the face, by its refusal). */
+async function perFace(args: ParsedArgs, head: Record<string, unknown>, rows: ReadonlyArray<{ readonly face?: number; run(): Promise<Record<string, unknown>> }>, stopped?: LeiLandStop): Promise<number> {
+  const faces: Record<string, unknown>[] = [];
+  for (const row of rows) {
+    try { faces.push({ ...(row.face !== undefined ? { face: row.face } : {}), ...await row.run() }); }
+    catch (err) {
+      const failure = storeFailure(err);
+      const at = row.face !== undefined ? `h${row.face}: ` : "";
+      emit(args, { ok: false, data: { ...head, faces }, error: { code: failure.code, message: `${at}${failure.message}` }, human: () => { console.log(JSON.stringify({ ...head, faces })); console.error(`lares lei: ${at}${failure.message}`); } });
+      return exitFor(failure.code);
+    }
+  }
+  const data = { ...head, faces, ...(stopped ? { stopped } : {}) };
+  if (stopped) {
+    const message = `the pūlama stopped at ${stopped.face !== undefined ? `h${stopped.face}` : "a face"} (${stopped.reading}); the faces it signed before landed`;
+    emit(args, { ok: false, data, error: { code: stopped.reading, message }, human: () => { console.log(JSON.stringify(data)); console.error(`lares lei: ${message}`); } });
+    return exitFor(stopped.reading);
+  }
+  emit(args, { ok: true, data, human: () => console.log(JSON.stringify(data)) });
+  return 0;
+}
+
 export async function cmdLei(args: ParsedArgs): Promise<number> {
   if (args.positional[0] === "terms") return cmdLeiTerms(args);
   let plan: LeiPlan;
-  try { plan = leiPlan(args); }
+  let landing: ReturnType<typeof leiLandPlans> | null = null;
+  try {
+    if (args.positional[0] === "land") { landing = leiLandPlans(args); plan = landing.plans[0]!; }
+    else plan = leiPlan(args);
+  }
   catch (err) {
     if (err instanceof LeiUsage) return refuseUsage(args, "lei", helpLines("lei"), err.message);
     throw err;
   }
+  const run = (p: LeiPlan, route?: Parameters<typeof storeVerb>[4]) => async () => (await storeVerb(p.verb, p.args, undefined, undefined, route)).output;
+  // THE ANSWER OF ONE STRINGING FOR EVERY FACE lands each face's record by its own face.
+  if (landing !== null && (landing.plans.length > 1 || landing.stopped !== undefined)) {
+    return perFace(args, {}, landing.plans.map((p) => ({ ...(typeof p.args["face"] === "number" ? { face: p.args["face"] } : {}), run: run(p) })), landing.stopped);
+  }
+  const { all, ...rowArgs } = plan.args;
+  const line = { rite: plan.args["rite"], branch: plan.args["branch"] };
   try {
-    const { output } = await storeVerb(plan.verb, plan.args);
+    // ONE STRINGING FOR EVERY FACE (no pūlama): ONE route for every open face, each face's kui by its own hand at its own line's tip.
+    if (all === true) {
+      const every = await everyFaceTerms(rowArgs, TERMS_PORTS);
+      const route = await gatherWardRoute(`lares lei kui --all (${every.map((t) => `h${String(t["face"])}`).join(", ")})`);
+      return await perFace(args, line, every.map((t) => ({ face: t["face"] as number, run: run({ verb: "swarm-lei-kui", args: t }, route) })));
+    }
+    // ONE LINE NAMING NO FACE with several faces open reads every open face's line.
+    if (plan.verb === "swarm-show" && plan.args["rite"] !== undefined && plan.args["face"] === undefined) {
+      const open = [...(await houseFaces()).open].sort((x, y) => x - y);
+      if (open.length > 1) return await perFace(args, line, open.map((face) => ({ face, run: run({ verb: "swarm-show", args: { ...plan.args, face } }) })));
+    }
+    const output = await run(plan)();
     emit(args, { ok: true, data: output, human: () => console.log(JSON.stringify(output)) });
     return 0;
   } catch (err) {
-    const failure = storeFailure(err);
+    const failure = err instanceof LeiTermsRefused ? { code: err.code, message: err.message } : storeFailure(err);
     emit(args, { ok: false, error: failure, human: () => console.error(`lares lei: ${failure.message}`) });
     return exitFor(failure.code);
   }

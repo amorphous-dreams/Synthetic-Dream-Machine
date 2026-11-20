@@ -6,7 +6,10 @@
  *            nothing), and the image the host reports rests admitted, so a vessel raised from it wakes served
  *   lei      `lei kui|restring|unstring '<terms>'`: read the route on a real terminal, hand it to the hand door with the lei's
  *            terms (one JSON object: `face`, `rite`, `branch`, and `returns` · `reach` · `head` · `after` · `confirm` · `lei`
- *            as the act needs): the face root signs one record there, and the answer carries it for the vessel to land
+ *            as the act needs): the face root signs one record there, and the answer carries it for the vessel to land. Terms
+ *            of `{ "faces": [ … ] }` (one terms object per face, `lares lei terms kui --all`) read the route ONCE and sign one
+ *            record per face, each by that face's own root, stopping at the first face that refuses; the answer lists each
+ *            face's (`faces`)
  *   keep-seat  read the route on a real terminal, hand it to the hand door: the route proves against the lit holder and a fresh
  *            keep pair mints under it. The pūlama's container stands read-only with no config home, so the verb writes NOTHING:
  *            it prints exactly ONE stdout line (`keepSeatLine`) the host's shim writes to the house's `keep-seat.json` at 0600, or
@@ -78,7 +81,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | unadmit <image digest> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | unadmit <image digest> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -121,14 +124,28 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     if (act !== "kui" && act !== "restring" && act !== "unstring") throw new PulamaVerbUsage();
     let terms: unknown;
     try { terms = JSON.parse(raw!); } catch { throw new PulamaVerbUsage(); }
-    if (typeof terms !== "object" || terms === null || Array.isArray(terms) || "credentials" in terms || "op" in terms || "act" in terms) throw new PulamaVerbUsage();
-    const t = terms as Record<string, unknown>;
+    const termsOk = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x) && !("credentials" in x) && !("op" in x) && !("act" in x);
+    if (!termsOk(terms)) throw new PulamaVerbUsage();
+    // ONE STRINGING FOR EVERY FACE: `faces` lists one terms object per face, each signed by that face's own hand under ONE route.
+    const every = terms["faces"];
+    if (every !== undefined && (!Array.isArray(every) || every.length === 0 || !every.every(termsOk))) throw new PulamaVerbUsage();
+    const each: readonly Record<string, unknown>[] = every === undefined ? [terms] : every as Record<string, unknown>[];
+    const t = each[0]!;
     // THE DOOR READS FIRST: an unlit pūlama refuses here, before anybody types a route.
     const standing = await ports.ask({ op: "status" });
     if (standing["lit"] !== true) return { op: "lei", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then string the lei" };
     const what = act === "unstring" ? `unstring the ${String(t["rite"])} lei ${String(t["lei"])}` : `${act} a ${String(t["rite"])} lei`;
-    const passphrase = await ports.route(`pūlama route, to ${what} at "${String(t["branch"])}" for h${String(t["face"])}: `, "a lei");
-    return ports.ask({ op: "lei", act, ...t, credentials: [{ kind: "passphrase", passphrase }] });
+    const passphrase = await ports.route(`pūlama route, to ${what} at "${String(t["branch"])}" for ${each.map((f) => `h${String(f["face"])}`).join(", ")}: `, "a lei");
+    const credentials = [{ kind: "passphrase", passphrase }];
+    if (every === undefined) return ports.ask({ op: "lei", act, ...t, credentials });
+    // The signing stops at the first face that refuses, so a mistyped route spends one attempt, never one per face.
+    const faces: PulamaHandAnswer[] = [];
+    for (const f of each) {
+      const answer = await ports.ask({ op: "lei", act, ...f, credentials });
+      faces.push(answer);
+      if (answer["reading"] !== "signed") return { op: "lei", act, reading: answer["reading"], faces };
+    }
+    return { op: "lei", act, reading: "signed", faces };
   }
   if ((verb === "lock" || verb === "status" || verb === "tessera") && arg === undefined) return ports.ask({ op: verb });
   if (verb === "image" && typeof arg === "string") {

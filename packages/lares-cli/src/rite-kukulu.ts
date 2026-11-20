@@ -70,7 +70,8 @@ export const RITE_KUKULU = "kukulu";
 
 /**
  * `face` names the face the begin's and the offer's sessions act as where several faces stand open; each row still gathers
- * every lent face, one lei and one vouch apiece. Naming none, the rows name none, and the vessel resolves its one open face.
+ * every lent face, one lei and one vouch apiece. Naming none, the rows name none, and their sessions ride the face the operator
+ * wears (the store door's worn reading), so several open faces ask no `--face`.
  */
 export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number }): Promise<{ code: number; data: Record<string, unknown> }> {
   const checkout = await ports.checkout();

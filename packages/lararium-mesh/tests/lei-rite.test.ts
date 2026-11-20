@@ -147,7 +147,7 @@ describe("the door issues a lei under its rite", () => {
       await expect(swarmCommand({ action: "lei-kui", rite, branch: BRANCH, head: HEAD, after: null } as never, s.deps), String(rite)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
     }
     expect([...s.wiki.rows.keys()]).toEqual([]);
-    expect(await swarmCommand({ action: "lei-kui", rite: "kukulu", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps)).toEqual({ rite: "kukulu", branch: BRANCH, reach: "head", head: HEAD });
+    expect(await swarmCommand({ action: "lei-kui", rite: "kukulu", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps)).toEqual({ rite: "kukulu", branch: BRANCH, reach: "head", head: HEAD, lei: expect.stringMatching(/^[0-9a-f]{64}$/) });
     expect([...s.wiki.rows.keys()].every((t) => t.startsWith(`${swarmLeiTitle("kukulu", BRANCH)}/`))).toBe(true);
   });
 
@@ -158,7 +158,7 @@ describe("the door issues a lei under its rite", () => {
     expect(await swarmCommand({ action: "show", rite: "push", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { standing: false, refusal: "absent", after: null } });
     await expect(swarmCommand({ action: "show", branch: BRANCH, head: HEAD } as never, s.deps)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
     // The push chain holds no lei, so its first names no predecessor: the kukulu lei never counts as the one it follows.
-    await expect(swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps)).resolves.toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD });
+    await expect(swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps)).resolves.toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD, lei: expect.stringMatching(/^[0-9a-f]{64}$/) });
     expect(await swarmCommand({ action: "show", rite: "push", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { standing: true } });
   });
 });

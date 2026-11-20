@@ -101,7 +101,7 @@ describe("lei-restring-supersedes", () => {
     expect(s.line()).toEqual([]);
     await swarmCommand({ action: "lei-kui", rite: "push", branch: BRANCH, returns: 5, after: null }, s.deps);
     const [old] = s.line();
-    expect(await restringLei({ rite: "push", branch: BRANCH, reach: "head", head: HEAD }, s.deps)).toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD, restrung: old });
+    expect(await restringLei({ rite: "push", branch: BRANCH, reach: "head", head: HEAD }, s.deps)).toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD, lei: expect.stringMatching(/^[0-9a-f]{64}$/), restrung: old });
     const [, fresh] = s.line();
     // The newer lei names the one it supersedes, under the hand's signature; the old row rests where it stood.
     expect(JSON.parse(s.rows.get(swarmLeiRecordTitle("push", BRANCH, fresh!))!)).toMatchObject({ signer: s.root.key, body: { act: "lei", after: old, reach: "head" } });

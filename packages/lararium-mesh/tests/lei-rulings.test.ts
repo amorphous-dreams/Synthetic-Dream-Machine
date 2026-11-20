@@ -60,7 +60,7 @@ describe("the co-sign weighs reach: a kukulu lei stays home", () => {
     let asks = 0;
     const s = await stand(() => { asks++; throw new Error("the co-sign port stands unreachable here"); });
     // show reads the board's cap through the witness; a line's read alone runs below.
-    await expect(swarmCommand({ action: "lei-kui", rite: "kukulu", branch: BRANCH, returns: 2, after: null }, s.deps)).resolves.toEqual({ rite: "kukulu", branch: BRANCH, reach: "wide", returns: 2 });
+    await expect(swarmCommand({ action: "lei-kui", rite: "kukulu", branch: BRANCH, returns: 2, after: null }, s.deps)).resolves.toEqual({ rite: "kukulu", branch: BRANCH, reach: "wide", returns: 2, lei: expect.stringMatching(/^[0-9a-f]{64}$/) });
     expect(asks).toBe(0);
     const rows = s.rows.size;
     await expect(swarmCommand({ action: "lei-kui", rite: "kukulu", branch: BRANCH, returns: 2, after: null }, s.deps)).rejects.toMatchObject({ code: "swarm-lei-already-strung" });

@@ -236,9 +236,11 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
       const refused = leiFollowRefusal(chain, branch, leiHead, after);
       if (refused) throw refused;
       const act = await signSwarmAct({ act: "lei", group: deps.group, rite, branch, after, ...terms }, deps.signer);
+      const cid = swarmActCid(act);
       // Each lei claims its own row: a second writer of the same lei lands nothing more.
-      if (!(await wiki.writeNew(swarmLeiRecordTitle(rite, branch, swarmActCid(act)), JSON.stringify(act)))) throw replay();
-      return { rite, branch, ...terms };
+      if (!(await wiki.writeNew(swarmLeiRecordTitle(rite, branch, cid), JSON.stringify(act)))) throw replay();
+      // `lei`: the strung lei's cid, the line's tip a next lei follows.
+      return { rite, branch, ...terms, lei: cid };
     };
     // THE CO-SIGN WEIGHS REACH: a rite whose effect leaves the device waits on a second device at the gate; one that stays home
     // strings on the hand's ward-bound signature alone.

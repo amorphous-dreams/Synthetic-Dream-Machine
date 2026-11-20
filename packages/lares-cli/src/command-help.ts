@@ -62,17 +62,18 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   preparation reason", "--keep   keep an orphan", "--drop   drop an orphan"],
   },
   lei: {
-    usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep|exec --branch <name> [--scope '<json>'] [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N]  |  lares lei land '<pūlama answer>' [--face N]  |  lares lei terms kui|restring|unstring --rite <r> --branch <name> [--returns <n>] [--reach wide|head] [--head <h>] [--after <cid>] [--lei <cid>] [--yes] [--face N]",
+    usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep|exec --branch <name> [--scope '<json>'] [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]  |  lares lei land '<pūlama answer>' [--face N]  |  lares lei terms kui|restring|unstring --rite <r> --branch <name> [--returns <n>] [--reach wide|head] [--head <h>] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]",
     synopsis:
       "A lei grants one rite at one branch. A wide lei (the default) names no head and carries its returns; a head lei pins one head. " +
       "The hand strings (kui), unstrings and restrings; any seat reads. Each return rests on a passing receipt for the head's tree. " +
       "Under a pūlama the hand signs at the pūlama's hand door and `land` lands the record; `terms` prints the one JSON line that door takes " +
-      "(the face from --face, else a keep's own face, else the daemon mount; a restring's `after` from the line's tip), and writes nothing.",
+      "(the face from --face, else a keep's own face, else the daemon mount; a restring's `after` from the line's tip), and writes nothing. `kui --all` strings one lei for every open face under ONE route, each face's own record by its own hand at its own line's tip, and names each face's cid; a show of one line naming no face reads every open face's line.",
     examples: [
       "lares lei show --rite kukulu --branch main --json                    # data.lei: standing, reach, returnsLeft",
       "lares lei show --rite push --branch feature/x --head <commit> --json   # ask after one head",
       "lares lei kui --rite push --branch feature/x --returns 3               # a wide lei of three returns",
       "lares lei kui --rite kukulu --branch main --reach head --head <commit> # a lei pinned to one head",
+      "lares lei kui --rite kukulu --branch main --returns 3 --all          # one route: a kukulu lei for every open face",
       "lares lei kui --rite keep --branch house-backup --returns 6           # six keeps into the workspace house-backup",
       "lares lei unstring --rite push --branch feature/x --lei <cid>          # revoke it; a signed record, nothing deleted",
       "lares lei restring --rite push --branch feature/x --returns 2          # supersede the standing lei",
@@ -81,7 +82,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     flags: ["--rite <r>   push, kukulu, keep or exec", "--scope '<json>'   (exec) the wiki, the writer, and titles or one class; the branch derives from the wiki", "--branch <name>   the branch the lei binds (a keep lei: the workspace's name)", "--head <commit>   the head a show reads at, or a head lei pins",
       "--returns <n>   a wide lei's count of returns (more than twelve asks --yes)", "--reach wide|head   the lei's reach (wide where absent)", "--after <cid>   (kui) the lei this one follows; absent for the first",
-      "--lei <cid>   (unstring) the lei to revoke", "--face N   face index"],
+      "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
   rite: {
     usage: "usage: lares rite kukulu [--branch <name>] [--face N] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash>",
@@ -97,8 +98,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--no-sessions (or LARES_KEEP_SESSIONS=0) keeps the house alone. " +
       "conferre matches the halves at each wake: a match reads par, a half with no match reads red.",
     examples: [
-      "lares lei kui --rite kukulu --branch main --returns 3   # the hand strings the lei first",
-      "lares rite kukulu                                       # begin, rebuild, raise, land",
+      "lares lei kui --rite kukulu --branch main --returns 3 --all   # the hand strings every open face's lei first, one route",
+      "lares rite kukulu                                       # begin, rebuild, raise, land: every lent face, as the worn face",
       "lares lei kui --rite keep --branch house-backup --returns 6 --face 0   # the hand strings a keep lei for one workspace, as one face",
       "lares rite keep --workspace house-backup                # guard, cut into <workspace>/house, commit, push, land: par",
       "lares rite keep-cut --workspace house-backup            # the vessel half alone: cut, verify, spend a return, rest the bundle",
@@ -114,7 +115,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--if-due             (keep) keep only where the house moved since the pushed bundle; reads LARES_KEEP_WORKSPACE with no --workspace",
       "--image <digest>   (offer) the digest of the image the host built",
       "--tessera <id>   (land) the tessera a begin answered", "--tree <t>   (receipt) the tree the battery read", "--checks <a,b>   (receipt) the checks its verdict covers",
-      "--verdict pass|fail   (receipt) the verdict", "--definitions <hash>   (receipt) the hash of the definitions the checks ran under", "--face N   face index (a keep naming none acts as the daemon mount and says so; the floor refuses by name)"],
+      "--verdict pass|fail   (receipt) the verdict", "--definitions <hash>   (receipt) the hash of the definitions the checks ran under", "--face N   face index (a kūkulu naming none acts as the worn face; a keep naming none acts as the keep's face and says so; the floor refuses by name)"],
   },
   kapae: {
     usage: "usage: lares kapae raise|lower|flag <digest> [--wiki wiki] [--face N]",
