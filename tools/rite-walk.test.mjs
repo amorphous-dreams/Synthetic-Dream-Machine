@@ -148,6 +148,47 @@ test("rite-walk-wears-what-stood: a wear whose switch refused fails the step, wh
   }
 });
 
+// ── walk-holds-the-kahua-item ───────────────────────────────────────────────────────────────────────────────────────
+
+const KAHUA_ITEM = "lar:///ha.ka.ba/kahua/law/rite-walk";
+const kahuaCtx = (vars, { list = "", lifts = [] } = {}) => ({
+  vars, cli: async (args) => {
+    if (args[0] === "kahua") return { code: 0, stdout: list, stderr: "" };
+    lifts.push(args.join(" "));
+    return { code: 0, stdout: "", stderr: "" };
+  },
+});
+const liftEngineer = STEPS.find((s) => s.id === "lift-kahua-engineer");
+
+test("walk-holds-the-kahua-item: the engineer's lift fails by name when nothing previewed and the stage reads nothing", async () => {
+  const r = await liftEngineer.run(kahuaCtx({ liftKahua: 0, layText: "lay: ok" }));
+  assert.equal(r.ok, false);
+  assert.ok(r.answer.includes(KAHUA_ITEM));
+});
+
+test("CONTROL walk-holds-the-kahua-item: a preview naming the item lifts it, and a stage that already reads it passes", async () => {
+  const lifts = [];
+  const lifted = await liftEngineer.run(kahuaCtx({ liftKahua: 1, layText: `kahua: 1 item(s) stand pending\n${KAHUA_ITEM}` }, { list: KAHUA_ITEM, lifts }));
+  assert.equal(lifted.ok, true);
+  assert.ok(lifts[0].includes("--lift-kahua 1"));
+  assert.equal((await liftEngineer.run(kahuaCtx({ liftKahua: 0 }, { list: KAHUA_ITEM }))).ok, true);
+});
+
+test("walk-holds-the-kahua-item: a lift that lands yet leaves the stage without the item fails", async () => {
+  assert.equal((await liftEngineer.run(kahuaCtx({ liftKahua: 1, layText: KAHUA_ITEM }))).ok, false);
+});
+
+test("walk-holds-the-kahua-item: the import wears the engineer first and fails where its stage never reads the item", async () => {
+  const imp = STEPS.find((s) => s.id === "import");
+  const wears = [];
+  const mk = (list) => ({ carry: () => "carry", wear: async (f) => (wears.push(f), { wears: f }),
+    cli: async (args) => (args[0] === "kahua" ? { code: 0, stdout: list, stderr: "" } : { code: 0, stdout: "landed 0 already 1", stderr: "" }) });
+  assert.equal((await imp.run(mk(""))).ok, false);
+  const ok = await imp.run(mk(KAHUA_ITEM));
+  assert.equal(ok.ok, true);
+  assert.ok(wears[0] === 1 && wears.at(-1) === 2);
+});
+
 test("CONTROL rite-walk-wears-what-stood: a wear that stood the asked face passes", async () => {
   assert.equal((await runStep("lay-wear-referee", { op: "unlock", reading: "already-unlocked", wears: 2, standing: "hearth", held: true })).ok, true);
 });

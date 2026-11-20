@@ -301,6 +301,7 @@ const lay = async (ctx) => {
   // The count the WORN face's lay previewed; an item waiting on another face's wear names no count here.
   const preview = /kahua: (\d+) item\(s\) stand pending/.exec(text);
   ctx.vars.liftKahua = preview ? Number(preview[1]) : 0;
+  ctx.vars.layText = text;
   // Every wait the mirror leg names and every row it refused rides the answer beside the holdings line, so a folder that laid
   // nowhere reads in the receipt by name.
   const waits = text.split("\n").filter((l) => /^mirrors: |^\s+refused: /.test(l)).map((l) => l.trim());
@@ -310,6 +311,22 @@ const liftKahua = async (ctx) => {
   const n = ctx.vars.liftKahua ?? 0;
   if (n === 0) return { ok: true, answer: "the worn face's lay previewed no kahua item; nothing to lift" };
   return await cli(["vessel", "lay", "--apply", "--lift-kahua", String(n), "--no-json"])(ctx);
+};
+/** Whether the engineer's kahua stage reads the walk's pre-export item. */
+const engineerReads = async (ctx) => {
+  const list = await ctx.cli(["kahua", "list", "--face", "1", "--json"]);
+  return list.code === 0 && `${list.stdout}`.includes(STAGED);
+};
+/** The engineer's lift knows the item the walk staged before the export: its lay previews it (and the lift lands it), or the stage already reads it. Zero previews with no item standing fails by name. */
+const liftKahuaEngineer = async (ctx) => {
+  const n = ctx.vars.liftKahua ?? 0;
+  if (n > 0 && (ctx.vars.layText ?? "").includes(STAGED)) {
+    const lifted = await liftKahua(ctx);
+    if (!lifted.ok) return lifted;
+    return (await engineerReads(ctx)) ? { ok: true, answer: `previewed ${STAGED}, lifted ${n}; the engineer's stage reads it` } : { ok: false, answer: `the lift of ${n} landed, yet the engineer's stage never reads ${STAGED}` };
+  }
+  if (await engineerReads(ctx)) return { ok: true, answer: `the engineer's stage already reads ${STAGED}` };
+  return { ok: false, answer: `the engineer's pre-export kahua item ${STAGED} neither previewed at the engineer's lay (${n} pending) nor stands on its stage` };
 };
 const found = cli((ctx) => ["vessel", "found", "--hearth", "--name", FACES.steward, "--chair", "dreamnet-kahu-0", "--root", ctx.root, "--skip-build", "--no-json"], "the hearth stands");
 const up = async (ctx) => ({ ok: true, answer: await ctx.up() });
@@ -440,7 +457,7 @@ export const STEPS = Object.freeze([
   { id: "lift-kahua-steward", fence: LIFT, via: SC, needs: ["lay-steward"], run: liftKahua },
   { id: "lay-wear-engineer", fence: "lares vault unlock --face 1", via: SC, needs: ["unlock-all-again"], expect: "wears 1", run: wear(1) },
   { id: "lay-engineer", fence: LAY, nth: 2, needs: ["lay-wear-engineer"], run: lay },
-  { id: "lift-kahua-engineer", fence: LIFT, nth: 1, via: SC, needs: ["lay-engineer"], run: liftKahua },
+  { id: "lift-kahua-engineer", fence: LIFT, nth: 1, via: SC, needs: ["lay-engineer"], run: liftKahuaEngineer },
   { id: "lay-wear-referee", fence: "lares vault unlock --face 2", nth: 1, via: SC, needs: ["unlock-all-again"], expect: "wears 2", run: wear(2) },
   { id: "lay-referee", fence: LAY, nth: 3, needs: ["lay-wear-referee"], run: lay },
 
@@ -461,6 +478,14 @@ export const STEPS = Object.freeze([
   { id: "import", prose: "Then `lares import ~/.lares/config/carry-2 --apply`", needs: ["export", "lay-referee"], expect: "lands nothing and counts every record as `already` or `waiting`",
     quoted: ["lands nothing and counts every record as `already`"],
     run: async (ctx) => {
+      // The engineer's kahua head re-lifts at its own wear: import worn as the engineer first, and its stage must read the item.
+      const worn = await ctx.wear(1);
+      if (worn?.wears !== 1) return { ok: false, answer: `the engineer never stood worn: ${JSON.stringify(worn)}` };
+      const own = await ctx.cli(["import", ctx.carry(), "--apply", "--no-json"]);
+      if (own.code !== 0) return { ok: false, answer: `engineer's import: ${refusalOf(own)}` };
+      if (!(await engineerReads(ctx))) return { ok: false, answer: `after the engineer's import its kahua stage never reads ${STAGED}` };
+      const back = await ctx.wear(2);
+      if (back?.wears !== 2) return { ok: false, answer: `the referee never stood worn: ${JSON.stringify(back)}` };
       const r = await ctx.cli(["import", ctx.carry(), "--apply", "--no-json"]);
       if (r.code !== 0) return { ok: false, answer: refusalOf(r) };
       const counts = r.stdout.split("\n").map((l) => l.trim()).filter((l) => /\blanded \d+/.test(l));
