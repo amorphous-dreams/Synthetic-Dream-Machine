@@ -86,6 +86,18 @@ describe("store rows on a running vessel", () => {
     expect(opened).toEqual(["h1"]);
   });
 
+  it("RED: a rite row that gathers every lent face (the kūkulu's begin and offer) rides the WORN face's session where it names none; CONTROL: a named face rides its own", async () => {
+    vi.mocked(sealedAct).mockResolvedValue({ face: 2 } as never);
+    await storeVerb("rite-begin", { rite: "kukulu", branch: "main", head: "h" });
+    await storeVerb("rite-offer", { branch: "main", head: "h", image: "sha256:x" });
+    expect(vi.mocked(sealedAct).mock.calls).toEqual([["face.resolve", { worn: true }], ["face.resolve", { worn: true }]]);
+    expect(opened).toEqual(["h2", "h2"]);
+    vi.mocked(sealedAct).mockClear();
+    await storeVerb("rite-begin", { rite: "kukulu", branch: "main", head: "h", face: 0 });
+    expect(sealedAct).not.toHaveBeenCalled();
+    expect(opened.at(-1)).toBe("h0");
+  });
+
   it("a face row the vessel could not run throws with its words and the act's own reason", async () => {
     answerOf = () => ({ status: "error", errorMessage: "capability denied for routed verb \"cabal-face\"" });
     const denied = await storeVerb("cabal-face", { realm: "r", face: 0 }).catch((e: unknown) => e);

@@ -38,6 +38,38 @@ describe("the hand's lei verb at the pūlama", () => {
     expect(p.frames.filter((f) => f["op"] === "lei").map((f) => [f["act"], f["face"]])).toEqual([["kui", 0], ["restring", 2], ["unstring", 2]]);
   });
 
+  test("RED: terms naming every open face (`faces`) read the route ONCE, naming each face, and hand one lei frame per face under it, each that face's own; the answer names each face's", async () => {
+    const p = ports(true);
+    const each = (face: number, after: string | null) => ({ face, rite: "kukulu", branch: "main", returns: 2, after });
+    const answer = await runHandVerb("lei", ["kui", JSON.stringify({ faces: [each(0, null), each(1, CID)] })], p);
+    expect(p.asked).toHaveLength(1);
+    expect(p.asked[0]).toMatch(/h0, h1/);
+    const route = [{ kind: "passphrase", passphrase: "the-route" }];
+    expect(p.frames).toEqual([{ op: "status" }, { op: "lei", act: "kui", ...each(0, null), credentials: route }, { op: "lei", act: "kui", ...each(1, CID), credentials: route }]);
+    expect(answer).toEqual({ op: "lei", act: "kui", reading: "signed", faces: [{ op: "lei", reading: "signed" }, { op: "lei", reading: "signed" }] });
+  });
+
+  test("RED: the every-face signing stops at the first face that refuses, so one mistyped route spends one attempt; the answer reads that refusal and names the faces signed before it", async () => {
+    const p = ports(true);
+    let n = 0;
+    const ask = async (frame: Readonly<Record<string, unknown>>) => {
+      p.frames.push({ ...frame });
+      if (frame["op"] === "status") return { op: "status", lit: true };
+      n += 1;
+      return n === 1 ? { op: "lei", reading: "signed", face: 0 } : { op: "lei", reading: "ward-no-slot-opens", face: frame["face"] as number };
+    };
+    const each = (face: number) => ({ face, rite: "kukulu", branch: "main", returns: 1, after: null });
+    const answer = await runHandVerb("lei", ["kui", JSON.stringify({ faces: [each(0), each(1), each(2)] })], { ...p, ask });
+    expect(p.frames.filter((f) => f["op"] === "lei").map((f) => f["face"])).toEqual([0, 1]);
+    expect(answer).toEqual({ op: "lei", act: "kui", reading: "ward-no-slot-opens", faces: [{ op: "lei", reading: "signed", face: 0 }, { op: "lei", reading: "ward-no-slot-opens", face: 1 }] });
+    // Usage: `faces` names no list, an empty one, or one whose entry reads as no object, or carries a route.
+    for (const bad of [{ faces: 1 }, { faces: [] }, { faces: [1] }, { faces: [{ ...each(0), credentials: [] }] }]) {
+      const q = ports(true);
+      await expect(runHandVerb("lei", ["kui", JSON.stringify(bad)], q), JSON.stringify(bad)).rejects.toBeInstanceOf(PulamaVerbUsage);
+      expect(q.frames).toEqual([]);
+    }
+  });
+
   test("RED: an unlit pūlama answers `pulama-locked` and asks no route; CONTROL: a lit one asks once", async () => {
     const dark = ports(false);
     expect(await runHandVerb("lei", ["kui", JSON.stringify({ face: 0, rite: "kukulu", branch: "main", returns: 1 })], dark)).toMatchObject({ op: "lei", reading: "pulama-locked" });

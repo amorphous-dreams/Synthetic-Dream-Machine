@@ -17,8 +17,9 @@ const seam = vi.hoisted(() => ({
   shut: [] as number[],
 }));
 vi.mock("../src/store-door.js", () => ({
-  storeVerb: async (verb: string, args: Record<string, unknown>) => {
-    seam.calls.push([verb, args]);
+  storeVerb: async (verb: string, args: Record<string, unknown>, _refusal?: unknown, _standing?: unknown, route?: unknown) => {
+    seam.calls.push([verb, route === undefined ? args : { ...args, route }]);
+    if (verb === "swarm-lei-kui") return { output: { rite: args["rite"], branch: args["branch"], lei: `cid-h${String(args["face"])}` }, via: "vessel" };
     return { output: { lei: seam.lines[Number(args["face"])] ?? { standing: false, refusal: "absent", after: null } }, via: "vessel" };
   },
   storeFailure: (err: unknown) => ({ code: "error", message: err instanceof Error ? err.message : String(err) }),
@@ -26,6 +27,10 @@ vi.mock("../src/store-door.js", () => ({
 }));
 vi.mock("../src/sealed-act-door.js", () => ({
   sealedAct: async (act: string, args: Record<string, unknown>) => { seam.calls.push([act, args]); return { face: seam.mount }; },
+}));
+// ONE ROUTE per act: the every-face kui gathers it once and hands it to each face's row.
+vi.mock("../src/ward-door.js", () => ({
+  gatherWardRoute: async (what: string) => { seam.calls.push(["route", { what }]); return [{ kind: "passphrase", passphrase: "the-route" }]; },
 }));
 vi.mock("../src/custody-door.js", () => ({
   houseFaces: async () => { seam.calls.push(["census", {}]); return { open: seam.open, shut: seam.shut }; },
@@ -148,9 +153,58 @@ describe("lares lei terms prints the pūlama's terms, one line", () => {
     expect(JSON.parse(written.join(""))).toEqual({ ok: true, data: { face: 0, rite: "push", branch: "b", returns: 1, after: TIP } });
   });
 
+  test("RED: kui --all names one terms object per open face, ascending, each following its own line's tip (null for a line's first); a fork on any face refuses by name", async () => {
+    seam.open = [0, 2, 1]; seam.lines[1] = lineAt(TIP);
+    expect(JSON.stringify(await terms("kui", "--rite", "kukulu", "--branch", "main", "--returns", "3", "--all")))
+      .toBe(`{"faces":[{"face":0,"rite":"kukulu","branch":"main","returns":3,"after":null},{"face":1,"rite":"kukulu","branch":"main","returns":3,"after":"${TIP}"},{"face":2,"rite":"kukulu","branch":"main","returns":3,"after":null}]}`);
+    expect(seam.calls.map(([v, a]) => `${v} ${String(a["face"] ?? "")}`)).toEqual(["swarm-show 0", "swarm-show 1", "swarm-show 2"]);
+    seam.lines[2] = lineAt(null, { forks: [TIP, CID] });
+    expect(await refusal(terms("kui", "--rite", "kukulu", "--branch", "main", "--returns", "3", "--all"))).toBe("swarm-lei-forked");
+    seam.open = [];
+    expect(await refusal(terms("kui", "--rite", "kukulu", "--branch", "main", "--returns", "3", "--all"))).toBe("face-none-open");
+  });
+
+  test("RED: --all strings a kui alone, names no face and no after, and no keep (one per house) or exec (one writer) line; CONTROL: push and kukulu take it", async () => {
+    for (const line of [["kui", "--rite", "kukulu", "--branch", "b", "--returns", "1", "--all", "--face", "0"], ["kui", "--rite", "kukulu", "--branch", "b", "--returns", "1", "--all", "--after", CID],
+      ["kui", "--rite", "keep", "--branch", "b", "--returns", "1", "--all"], ["kui", "--rite", "exec", "--scope", `{"wiki":"w","writer":"x","class":"c"}`, "--returns", "1", "--all"], ["restring", "--rite", "kukulu", "--branch", "b", "--returns", "1", "--all"]]) {
+      expect(await refusal(terms(...line)), line.join(" ")).toBe("usage");
+    }
+    expect(await refusal(terms("kui", "--rite", "push", "--branch", "b", "--returns", "1", "--all"))).toBe("no refusal");
+  });
+
+  it("RED: `lares lei kui --all` with no pūlama: ONE route for every open face, each face's kui at its own line's tip, and the answer names each face's cid", async () => {
+    const out: string[] = [];
+    vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => { out.push(String(chunk)); return true; });
+    seam.open = [0, 1]; seam.lines[1] = lineAt(TIP);
+    expect(await cmdLei(parseArgs(["lei", "kui", "--rite", "kukulu", "--branch", "main", "--returns", "2", "--all", "--json"]))).toBe(0);
+    const route = [{ kind: "passphrase", passphrase: "the-route" }];
+    expect(seam.calls.filter(([v]) => v === "route")).toHaveLength(1);
+    expect(seam.calls.filter(([v]) => v === "swarm-lei-kui")).toEqual([
+      ["swarm-lei-kui", { rite: "kukulu", branch: "main", returns: 2, after: null, face: 0, route }],
+      ["swarm-lei-kui", { rite: "kukulu", branch: "main", returns: 2, after: TIP, face: 1, route }],
+    ]);
+    expect(JSON.parse(out.join("")).data).toEqual({ rite: "kukulu", branch: "main", faces: [{ face: 0, rite: "kukulu", branch: "main", lei: "cid-h0" }, { face: 1, rite: "kukulu", branch: "main", lei: "cid-h1" }] });
+  });
+
+  it("RED: `lares lei show --rite --branch` naming no face lists every open face's line; CONTROL: one face open, or a face named, reads the one line as it stood", async () => {
+    const out: string[] = [];
+    vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => { out.push(String(chunk)); return true; });
+    seam.open = [1, 0]; seam.lines[1] = lineAt(TIP);
+    expect(await cmdLei(parseArgs(["lei", "show", "--rite", "kukulu", "--branch", "main", "--json"]))).toBe(0);
+    expect(JSON.parse(out.join("")).data).toEqual({ rite: "kukulu", branch: "main", faces: [
+      { face: 0, lei: { standing: false, refusal: "absent", after: null } }, { face: 1, lei: lineAt(TIP) }] });
+    out.length = 0; seam.open = [0]; seam.calls = [];
+    expect(await cmdLei(parseArgs(["lei", "show", "--rite", "kukulu", "--branch", "main", "--json"]))).toBe(0);
+    expect(seam.calls.filter(([v]) => v === "swarm-show")).toEqual([["swarm-show", { rite: "kukulu", branch: "main" }]]);
+    out.length = 0; seam.open = [0, 1]; seam.calls = [];
+    expect(await cmdLei(parseArgs(["lei", "show", "--rite", "kukulu", "--branch", "main", "--face", "1", "--json"]))).toBe(0);
+    expect(seam.calls).toEqual([["swarm-show", { rite: "kukulu", branch: "main", face: 1 }]]);
+  });
+
   test("the lei help names land and terms", () => {
     const help = helpLines("lei").join("\n");
     expect(help).toMatch(/lares lei land /);
     expect(help).toMatch(/lares lei terms kui\|restring\|unstring/);
+    expect(help).toMatch(/lares lei kui --rite kukulu --branch main --returns 3 --all/);
   });
 });

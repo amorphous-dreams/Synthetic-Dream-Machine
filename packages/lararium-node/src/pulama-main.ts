@@ -21,7 +21,8 @@
  *   node dist/src/pulama-main.js lei kui|restring|unstring '<terms>'
  *                                                   the operator strings, restrings or unstrings a lei: reads the route on a
  *                                                   real terminal, the face root signs one record here, and the answer prints
- *                                                   it for the vessel to land (`lares lei land`)
+ *                                                   it for the vessel to land (`lares lei land`); terms naming `faces` sign
+ *                                                   one record per face under that one route
  *
  * Environment (every name required for `serve`; the hand verbs need `LAR_PULAMA_HAND` alone):
  *   LAR_ROOT            the house root whose hearth this pūlama keeps (the same root the vessel names)
