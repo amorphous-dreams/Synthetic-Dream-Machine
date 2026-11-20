@@ -20,10 +20,12 @@ const URI = "lar:///ha.ka.ba/t/session/absent";
 const TEST_DOOR = join(new URL("../..", import.meta.url).pathname, "tools/unlock-test-custody.mjs");
 let lar: LarInstance;
 
+// LIVENESS: the bound names a stalled staging only; the rendezvous event ends the wait. The staged boot measured ~149s alone and ~240s beside
+// another e2e file under parallel load, so the bound stands at 360s (1.5x the loaded measure): a hang trips it, a loaded boot never does.
 beforeAll(async () => {
   lar = await targetInstance();
   if (!(await awaitRendezvous(lar))) throw new Error(`the staged daemon bound no rendezvous:\n${lar.bootLog().slice(-800)}`);
-}, 150_000);
+}, 360_000);
 afterAll(async () => { await lar?.stop(); });
 
 describe("e2e/session-wears-the-lit-face", () => {
