@@ -65,7 +65,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep|exec --branch <name> [--scope '<json>'] [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]  |  lares lei land '<pūlama answer>' [--face N]  |  lares lei terms kui|restring|unstring --rite <r> --branch <name> [--returns <n>] [--reach wide|head] [--head <h>] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]",
     synopsis:
       "A lei grants one rite at one branch. A wide lei (the default) names no head and carries its returns; a head lei pins one head. " +
-      "The hand strings (kui), unstrings and restrings; any seat reads. Each return rests on a passing receipt for the head's tree. " +
+      "The hand strings (kui), unstrings and restrings; any seat reads. A `push` or `keep` return rests on a passing receipt for the head's tree; a `kukulu` return rests on the lei alone. " +
       "Under a pūlama the hand signs at the pūlama's hand door and `land` lands the record; `terms` prints the one JSON line that door takes " +
       "(the face from --face, else a keep's own face, else the daemon mount; a restring's `after` from the line's tip), and writes nothing. `kui --all` strings one lei for every open face under ONE route, each face's own record by its own hand at its own line's tip, and names each face's cid; a show of one line naming no face reads every open face's line.",
     examples: [

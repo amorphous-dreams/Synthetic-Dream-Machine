@@ -39,8 +39,7 @@
  *   `kukulu-hand-absent`        the pūlama's own custody names no hand's key for that face, so no lei reads
  *   the lei family's own readings (`KukuluRitePort.begin`): `swarm-lei-absent` (no lei of this face's hand stands for the
  *   vouch's branch), `swarm-lei-head-mismatch` (a lei that pins a head pins another than the vouch's), `swarm-lei-returned` ·
- *   `swarm-lei-returns-spent`, `swarm-lei-unstrung`, `swarm-lei-narrowed`, `swarm-lei-forked`, `swarm-lei-testimony-red` (the
- *   vouch's walk did not pass; a wide lei narrows), `rite-begun-stands`
+ *   `swarm-lei-returns-spent`, `swarm-lei-unstrung`, `swarm-lei-narrowed`, `swarm-lei-forked`, `rite-begun-stands`
  *
  * ── THE RETURN CLAIMS BEFORE ANYTHING SERVES ────────────────────────────────────────────────────
  * The rite begins once every other reading passed: the return lands atomically, then the guest half. A fault after the
@@ -80,11 +79,11 @@ export interface KukuluRiteAt {
 /** What the gate asks of the lei family and its tessera, for the one rite `kukulu` (`kukulu-lei-seat`). */
 export interface KukuluRitePort {
   /**
-   * Begin the rite over what the vessel offered: the offered lei rows land where they verify as the hand's, the vouch stands
-   * as the return's testimony (`vouch`: its digest; `verdict`: its walk's), the lei returns once, and the guest half rests.
+   * Begin the rite over what the vessel offered: the offered lei rows land where they verify as the hand's, the lei
+   * returns once under the hand's own consent (no receipt weighs the tree), and the guest half rests.
    * Answers the tessera, or the family's own refusal reading.
    */
-  begin(offer: { readonly lei: readonly unknown[]; readonly unstrung: readonly unknown[] }, at: KukuluRiteAt & { readonly vouch: string; readonly verdict: "pass" | "fail" }):
+  begin(offer: { readonly lei: readonly unknown[]; readonly unstrung: readonly unknown[] }, at: KukuluRiteAt):
     Promise<{ readonly ok: true; readonly tessera: string; readonly lei: string; readonly n: number } | { readonly ok: false; readonly refusal: string }>;
   /** Rest the host half of `tessera` at the head the rite began at; answers whether the pair reads par. */
   land(tessera: string, at: KukuluRiteAt): Promise<{ readonly par: boolean }>;
@@ -115,7 +114,7 @@ export async function vouchSignerOf(holder: Pick<CustodyHolder, "derive">): Prom
   };
 }
 
-/** The key the pūlama witnesses under: every return, receipt and tessera half in its own records carries it. */
+/** The key the pūlama witnesses under: every return and tessera half in its own records carries it. */
 export async function pulamaSignerOf(holder: Pick<CustodyHolder, "derive">): Promise<KukuluSigner> {
   const seed = holder.derive(PULAMA_TESSERA_DOMAIN);
   let key: string;
@@ -204,7 +203,7 @@ export function kukuluGate(a: {
       const readings: Array<{ readonly ordinal: number; readonly reading: string }> = [];
       const begun: Array<{ readonly face: { readonly fcid: string; readonly ordinal: number }; readonly at: KukuluRiteAt; readonly tessera: string }> = [];
       let first: { readonly ordinal: number; readonly reading: string } | null = null;
-      for (const { vouch, digest } of vouches) {
+      for (const { vouch } of vouches) {
         const { body } = vouch;
         const face = await holder.faceStanding({ group: personaGroupDigest(body.group) });
         if (face === null) { first ??= { ordinal: -1, reading: "kukulu-face-absent" }; continue; }
@@ -214,7 +213,7 @@ export function kukuluGate(a: {
         if (!handKey) { wait("kukulu-hand-absent"); continue; }
         const at: KukuluRiteAt = { group: body.group, branch: body.branch, head: body.head, tree: body.tree, hand: (key) => key.toLowerCase() === handKey, by };
         // THE RETURN CLAIMS FIRST: from here a fault burns the return and serves nothing.
-        const rite = await a.rite.begin({ lei, unstrung }, { ...at, vouch: digest, verdict: body.verdict });
+        const rite = await a.rite.begin({ lei, unstrung }, at);
         if (rite.ok) { begun.push({ face: { fcid: face.fcid, ordinal: face.ordinal }, at, tessera: rite.tessera }); continue; }
         // A face no lei of its own hand lends waits; any other reading of the family refuses the whole kūkulu.
         if (rite.refusal !== "swarm-lei-absent") return refuse(rite.refusal);

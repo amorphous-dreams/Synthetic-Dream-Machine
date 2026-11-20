@@ -42,11 +42,11 @@ async function fixture() {
 }
 
 describe("exec-lei — the executable-record lei rides the lei grammar", () => {
-  test("RED: the rite list names `exec`; an exec lei asks no co-sign and no testimony; CONTROL: push, kukulu and keep still testify", () => {
+  test("RED: the rite list names `exec`; an exec lei and a kukulu lei ask no testimony; CONTROL: push and keep still testify", () => {
     expect([...SWARM_LEI_RITES]).toContain("exec");
     expect(leiRiteCosigns("exec")).toBe(false);
-    expect(leiRiteTestifies("exec")).toBe(false);
-    for (const rite of ["push", "kukulu", "keep"] as const) expect(leiRiteTestifies(rite)).toBe(true);
+    for (const rite of ["exec", "kukulu"] as const) expect(leiRiteTestifies(rite)).toBe(false);
+    for (const rite of ["push", "keep"] as const) expect(leiRiteTestifies(rite)).toBe(true);
   });
 
   test("RED: the hand strings an exec lei for a seat, scoped to a class, and each executable land spends one return with no receipt; CONTROL: past its returns it refuses spent", async () => {
