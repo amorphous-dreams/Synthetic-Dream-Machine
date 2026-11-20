@@ -56,7 +56,7 @@ describe("each vessel's Repo stands on the sealed rest", () => {
 describe("the node holds the lit set (sealed-store#/the-lit-set)", () => {
   it("each sibling stands its own place session in the book, its own canon and bases keeper; a lock drops its waiting saves and handles", () => {
     const node = stripped(["lararium-node", "src", "open-node-vessel.ts"]);
-    expect(node).toMatch(/const litSibling = async \(entry: JoinedFaceAuth, live: \(\) => boolean\): Promise<void> => \{[\s\S]{0,900}await standSiblingSession\(\{ group, atomKey: entry\.atom\.key \}, current\)/);
+    expect(node).toMatch(/const litSibling = async \(entry: JoinedFaceAuth, live: \(\) => boolean\): Promise<void> => \{[\s\S]{0,900}await standSiblingSession\(\{ group, atomKey: entry\.atom\.key \}, current, entry\.deviceEdge\.personaRootDid\)/);
     expect(node).toMatch(/for \(const sibling of siblingSessions\.values\(\)\) sibling\.seat\.book\(book\)/);
     expect(node).toMatch(/standFaceDaemonCanon\(\{ repo, control, faceRelation: relation/);
     expect(node).toMatch(/siblingBasesKeepers\.set\(group, keepFaceBases\(/);

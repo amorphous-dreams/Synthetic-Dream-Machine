@@ -15,6 +15,8 @@
  *   LS3 — a load of b's document with only a lit throws session-face-foreign
  *   LS4 — lock b: b's later save waits, a's keeps sealing
  *   LS5 — lock b drops b's waiting saves from memory (`forget`): none reaches disk, and nothing of them seals later
+ *   LS6 — each hat its own holder: an open names the face its document's bag wears, so the island opens it through THAT
+ *         face's holder (the door routes by face, never by the worn face's seat)
  *
  * Written beside the cure (written, unrun here; CI runs it).
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
@@ -64,6 +66,7 @@ async function twoFaces() {
   const holderOf = (subject: string): Vessel => (subject === faceA ? a : b);
   const sealedBy: Array<{ bagId: string; subject: string }> = [];
   const held: string[] = [];
+  const opened: Array<{ bagId: string; face: string | undefined }> = [];
   const open = new Set<string>([faceA]);
   const docsOfB = new Set<string>();
   const inner = memoryAdapter();
@@ -79,7 +82,13 @@ async function twoFaces() {
         sealedBy.push({ bagId: args.bagId, subject: session.subject });
         return holderOf(session.subject).holder.sealValues({ ...args, signer: session.signer });
       },
-      open: (args) => (args.bagId === BAG_B ? b : a).holder.openValue(args),
+      // EACH HAT ITS OWN HOLDER: the open names its face, and only that face's holder answers it.
+      open: async (args) => {
+        const face = (args as { face?: string }).face;
+        opened.push({ bagId: args.bagId, face });
+        const holder = face === faceB ? b : face === faceA ? a : null;
+        return holder === null ? { refusal: "face-unnamed" } as never : holder.holder.openValue(args);
+      },
     },
     flushRepo: async () => { await repo?.flush(); },
     onHeld: (h) => held.push(`${h.refusal}:${h.documentId}`),
@@ -87,7 +96,7 @@ async function twoFaces() {
   repo = new Repo({ storage: rest.store, network: [] });
   // One standing session (a's) answers for every document: the watch must refuse it for b's documents.
   rest.watch(repo, () => (open.has(faceA) ? sessionA : null));
-  return { rest, repo, inner, faceA, faceB, sessionA, sessionB, sealedBy, held, open, docsOfB, a, b };
+  return { rest, repo, inner, faceA, faceB, sessionA, sessionB, sealedBy, held, opened, open, docsOfB, a, b };
 }
 
 const docOfB = <T>(r: Awaited<ReturnType<typeof twoFaces>>, init: (d: T) => void) => {
@@ -185,6 +194,21 @@ describe("the lit set: each open face seals under its own key", () => {
     r.open.add(r.faceB);
     expect(await r.rest.rebook(r.sessionB)).toBe(0);
     expect(restsAny(r.inner, theirs.documentId)).toBe(false);
+    await r.repo.shutdown();
+  });
+
+  it("LS6 — each hat its own holder: b's open names b's face and a's names a's, so each opens under its own holder", async () => {
+    const r = await twoFaces();
+    r.open.add(r.faceB);
+    const mine = r.repo.create<{ note?: string }>();
+    mine.change((d) => { d.note = "a's own"; });
+    const theirs = docOfB<{ note?: string }>(r, (d) => { d.note = "b's own"; });
+    await r.repo.flush();
+    await r.rest.rebook(r.sessionB);
+    const keyOf = (id: string) => [...r.inner.bytes.keys()].find((k) => k.startsWith(id))!.split("\u0000");
+    expect(await r.rest.store.load(keyOf(theirs.documentId))).toBeInstanceOf(Uint8Array);
+    expect(await r.rest.store.load(keyOf(mine.documentId))).toBeInstanceOf(Uint8Array);
+    expect(r.opened).toEqual([{ bagId: BAG_B, face: r.faceB }, { bagId: BAG_A, face: r.faceA }]);
     await r.repo.shutdown();
   });
 });

@@ -157,7 +157,8 @@ export interface SealedDocumentPorts {
    *  never lands clear, and no removal reaches a sealed pointer, until the map stands again and the save seals. */
   readonly waitOverSealed?: boolean;
   /** The holder's open of one value by its role and logical reference. */
-  open(args: { readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string }): Promise<OpenedValue | HolderRefusal>;
+  /** `face`: the face the document's bag wears (`SealedBag#face`), so the island opens it through THAT face's holder. */
+  open(args: { readonly bagId: string; readonly role: DocumentValue["role"]; readonly ref: string; readonly face?: string | null }): Promise<OpenedValue | HolderRefusal>;
   /** A RESTART'S HYDRATION (a vessel's store): a load of a sealed document that refuses only because its map, its
    *  session or its holder has not stood yet waits for the next `mapMoved` and reads again, so a document the engine
    *  asks for ahead of its dial never strands unavailable; `endHydration` (the rest stands down) ends every such wait
@@ -578,7 +579,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       }
       throw new SealedDocumentRefusal("pointer-malformed");
     }
-    const opened = await this.#ports.open({ bagId: bag.bagId, role, ref: logicalRefOf(key) });
+    const opened = await this.#ports.open({ bagId: bag.bagId, role, ref: logicalRefOf(key), face });
     if ("refusal" in opened) throw new SealedDocumentRefusal(opened.refusal, opened.cause);
     if (!this.#wears(face, opened.writer)) { opened.plaintext.fill(0); throw new SealedDocumentRefusal("writer-face-foreign"); }
     this.#heldOf(key[0]!).set(nameOf(key), opened.address);

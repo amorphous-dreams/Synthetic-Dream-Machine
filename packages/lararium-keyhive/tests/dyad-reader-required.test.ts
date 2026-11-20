@@ -40,8 +40,10 @@ describe("the island's dyad consults take a reader or refuse", () => {
     expect(code).not.toMatch(/"the intent door"/);
     // The seat summons (the joinee's half of the intent door) reads its OWN edge's standing through the same guard: never a summons from an edge set aside.
     expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the seat summons"\)\(/g) ?? []).length).toBe(1);
-    // The content-key seat reads a seat's standing and its own shadow through the same guard.
-    expect((code.match(/requireDyadReader\(dyadReader\(ctx\), "the content-key seat"\)\(/g) ?? []).length).toBe(2);
+    // The content-key seat reads a seat's standing and its own shadow through the same guard: each face's seat (the mounted
+    // face's and each lit sibling's, one builder) through ITS OWN reader, and each face hands its own.
+    expect((code.match(/requireDyadReader\(face\.dyad\(\), "the content-key seat"\)\(/g) ?? []).length).toBe(2);
+    expect((code.match(/dyad: \(\) => dyadReader\(ctx(?:, \{ \.\.\.daemonAuth, \.\.\.face \})?\)/g) ?? []).length).toBe(2);
     expect(code).not.toMatch(/dyadReading\s*\?(?!:)/);     // no ternary over the reader: no optional consult, no default
     expect(code).toMatch(/dyadReading\?: DyadReader;/);     // control for the line above: the option's own declaration stands
     expect(code).not.toMatch(/await dyadReading\(/);       // no raw ask around the guard

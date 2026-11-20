@@ -11,6 +11,11 @@
  * vectors stand the same map and rest as the mesh vectors, over that standing, with the register set the boot hands and
  * the late registration the naming makes.
  *
+ * EACH HAT ITS OWN CHAIN (vessel-audit P1 #2): two faces stand lit, the worn A and the sibling B, and B's save travels the
+ * actual route: the vessel's session sign book (`SessionSignBook`), the island's session door (`islandSessionDoor`) over a
+ * port, the island's face seats (`faceSeatTable`) and the document store's door both ways. B seals under B's chain, B's
+ * holder and B's fold; B's lock leaves A sealing.
+ *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · lar:///ha.ka.ba/lararium/api/personal-slot
  */
 import { afterEach, describe, expect, it } from "vitest";
@@ -22,7 +27,11 @@ import { wornFaceWikiBags, type WikiSlotBags } from "../../lararium-mesh/src/reg
 import { wikiBagUri, wikiSlotUri } from "../../lararium-mesh/src/wiki-recipe.js";
 import type { SessionOwnChain } from "../../lararium-mesh/src/index.js";
 import { vessel, world, type Vessel } from "../../lararium-mesh/tests/content-key-fixture.js";
-import { ownChainStanding } from "../../lararium-keyhive/src/island-session-proof.js";
+import { islandSessionDoor, ownChainStanding } from "../../lararium-keyhive/src/island-session-proof.js";
+import { faceSeatTable, type FaceSeatTable } from "../../lararium-keyhive/src/face-seat-table.js";
+import type { ContentKeySeat } from "../../lararium-keyhive/src/content-key-seat.js";
+import { SessionSignBook, type BookedSession } from "../../lararium-mesh/src/session-sign-book.js";
+import { answerSessionSign } from "../../lararium-mesh/src/capability-record.js";
 
 const SECRET = "the-personal-layer-holds-the-heron-count";
 const SLOT: WikiSlotBags = { wikiBagId: wikiBagUri("lares"), workingBagId: wikiSlotUri("lares", "working"), draftBagId: wikiSlotUri("lares", "draft") };
@@ -208,3 +217,168 @@ describe("a face's personal layer reopens sealed after a restart, under the prod
     await next.repo.shutdown();
   });
 });
+
+// ── EACH HAT ITS OWN CHAIN ──────────────────────────────────────────────────────────────────────────────────────────
+const SECRET_B = "the-sibling-keeps-the-crane-count";
+const ATOM_B = "atom-of-face-b";
+type HatSession = Session & { readonly booked: BookedSession };
+
+/** A fixture holder as the island's seat reads it, counting the seals it makes. */
+function seatOf(v: Vessel, sealed: string[], name: string): ContentKeySeat {
+  return {
+    get holder() { return v.holder; },
+    sealValues: async (args: Parameters<ContentKeySeat["sealValues"]>[0]) => { sealed.push(name); return v.holder.sealValues(args); },
+    lock: () => {},
+  } as unknown as ContentKeySeat;
+}
+
+const ownChainOf = (v: Vessel): SessionOwnChain =>
+  ({ scope: { faceKey: v.chain.scope.faceKey, nexus: v.chain.scope.nexus }, vesselFaceKey: v.chain.sessionCertificate.vesselFaceKey }) as SessionOwnChain;
+
+async function hats() {
+  const w = world();
+  let table!: FaceSeatTable;
+  const a = await vessel(w, "a", { standing: ownChainStanding(() => table.mounted.chain, BOOT_REGISTERED) });
+  const b = await vessel(w, "b", { standing: ownChainStanding(() => table.lit(ATOM_B)?.chain ?? null, BOOT_REGISTERED) });
+  const faceA = faceProofSubjectRef(a.chain.scope), faceB = faceProofSubjectRef(b.chain.scope);
+  const lit = new Set<string>([faceA, faceB]);
+  const signerOf = (v: Vessel) => {
+    const s = { dropped: false, certificate: v.signer.certificate, sign: async (purpose: "act", payload: Uint8Array) => (s.dropped ? { refusal: "signer-refused" } : v.signer.sign(purpose, payload) as never) };
+    return s;
+  };
+  const sessionA: HatSession = { id: "s-a", subject: faceA, signer: a.signer, booked: { signer: signerOf(a), anchor: { kind: "nexus" }, subject: faceA } };
+  const sessionB: HatSession = { id: "s-b", subject: faceB, signer: b.signer, booked: { signer: signerOf(b), anchor: { kind: "nexus" }, subject: faceB, face: ATOM_B } };
+  // THE VESSEL'S SIDE: one book, one door; each face's chain and fold as the vessel reads it (B's only while B stands lit).
+  const book = new SessionSignBook();
+  const raisesRead: Array<string | null> = [];
+  const caps = {
+    sessionSign: book.door(
+      (face) => (face === null ? ownChainOf(a) : face === ATOM_B && lit.has(faceB) ? ownChainOf(b) : null),
+      async (face) => { raisesRead.push(face ?? null); return { read: true, counted: [], unanswered: [] }; },
+    ),
+  };
+  const signChannel = new MessageChannel();
+  const vesselSign = portOf(signChannel.port1), islandSign = portOf(signChannel.port2);
+  vesselSign.listen((m) => {
+    const ask = m as { type?: string; requestId?: string };
+    if (ask?.type !== "session:sign" || typeof ask.requestId !== "string") return;
+    void answerSessionSign(caps, ask as never).then((reply) => vesselSign.post(reply));
+  });
+  // THE ISLAND'S SIDE: the session door over the port, the face seats, and the document store's door.
+  table = faceSeatTable({ proof: () => sessionDoor });
+  const sessionDoor = islandSessionDoor({ post: (msg) => islandSign.post(msg), listen: (cb) => { islandSign.listen(cb); } }, { idPrefix: "hats" });
+  const sealed: string[] = [];
+  const standSeats = (): void => { table.mounted.seat = seatOf(a, sealed, "a"); table.light(ATOM_B, seatOf(b, sealed, "b")); };
+  standSeats();
+  const inner = memoryAdapter();
+  const docsOfB = new Set<string>();
+  const held: string[] = [];
+  const vesselRest = () => {
+    const storeChannel = new MessageChannel();
+    const vesselStore = portOf(storeChannel.port1), islandStore = portOf(storeChannel.port2);
+    answerDocStoreAsks(islandStore, table.docStoreHolder());
+    let repo: Repo | null = null;
+    const rest: SealedRest<HatSession> = composeSealedRest<HatSession>({
+      inner,
+      bagOf: (documentId) => ({ bagId: DAEMON_WORKING, face: docsOfB.has(documentId) ? faceB : faceA }),
+      sessionFace: () => faceA,
+      openFaces: () => [...lit],
+      door: vesselDocStoreDoor<HatSession>(() => vesselStore, {
+        book: (ask, verb, session) => book.hold(ask, verb, session.booked),
+        idPrefix: "hats",
+        faceKeyOf: (subject) => (subject === faceB ? ATOM_B : undefined),
+      }),
+      flushRepo: async () => { await repo?.flush(); },
+      onHeld: (notice) => held.push(`${notice.refusal}:${docsOfB.has(notice.documentId) ? "b" : "a"}${notice.cause ? `:${notice.cause.split(" — ")[0]}` : notice.error ? `:${notice.error.split(" — ")[0]}` : ""}`),
+    });
+    repo = new Repo({ storage: rest.store, network: [] });
+    return { rest, repo };
+  };
+  return { a, b, faceA, faceB, lit, sessionA, sessionB, table, sealed, raisesRead, docsOfB, held, vesselRest, standSeats };
+}
+
+describe("each hat its own chain: a sibling's save seals under the sibling, through the book-to-holder route", () => {
+  it("B SEALS UNDER B: B's save books B's session, reads B's chain and B's fold, and seals through B's holder; A's beside it seals through A's; both reopen after a restart", async () => {
+    const h = await hats();
+    const { rest, repo } = h.vesselRest();
+    const docB = repo.create<{ note?: string }>();
+    h.docsOfB.add(docB.documentId);
+    rest.wrote(docB.documentId, h.sessionB);
+    docB.change((d) => { d.note = SECRET_B; });
+    await repo.flush();
+    await rest.store.flush();
+    expect(h.held, "nothing of B's held").toEqual([]);
+    expect(rest.store.waiting(docB.documentId), "B's save rested, none waiting").toBe(0);
+    expect(await rest.restsSealed(docB.documentId)).toBe(true);
+    expect(h.sealed).toEqual(expect.arrayContaining(["b"]));
+    expect(h.sealed).not.toContain("a");
+    expect(h.raisesRead).toContain(ATOM_B);
+    const docA = repo.create<{ note?: string }>();
+    rest.wrote(docA.documentId, h.sessionA);
+    docA.change((d) => { d.note = SECRET; });
+    await repo.flush();
+    await rest.store.flush();
+    expect(await rest.restsSealed(docA.documentId)).toBe(true);
+    expect(h.sealed).toContain("a");
+    // THE MOUNTED FACE'S READING STANDS ITS OWN: B's session never wrote A's chain.
+    expect(h.table.mounted.chain).toEqual(ownChainOf(h.a));
+    await repo.shutdown();
+    h.a.restart(); h.b.restart(); h.standSeats();
+    const next = h.vesselRest();
+    expect(await read(next.repo, docB.documentId)).toBe(SECRET_B);
+    expect(await read(next.repo, docA.documentId)).toBe(SECRET);
+    await next.repo.shutdown();
+  });
+
+  it("B'S LOCK LEAVES A WORKING: B shut, B's next save waits by name and seals nothing; A's keeps sealing under A", async () => {
+    const h = await hats();
+    const { rest, repo } = h.vesselRest();
+    const docB = repo.create<{ note?: string }>();
+    h.docsOfB.add(docB.documentId);
+    rest.wrote(docB.documentId, h.sessionB);
+    docB.change((d) => { d.note = "before the lock"; });
+    const docA = repo.create<{ note?: string }>();
+    rest.wrote(docA.documentId, h.sessionA);
+    docA.change((d) => { d.note = "a before"; });
+    await repo.flush();
+    await rest.store.flush();
+    expect(rest.store.waiting(docB.documentId)).toBe(0);
+    // THE LOCK OF B: the vessel drops B's signer and B leaves the lit set; the island closes B's entry.
+    (h.sessionB.booked.signer as { dropped: boolean }).dropped = true;
+    h.lit.delete(h.faceB);
+    h.table.drop(ATOM_B);
+    await rest.lock(h.sessionB.id);
+    const before = h.sealed.length;
+    docB.change((d) => { d.note = "after the lock"; });
+    docA.change((d) => { d.note = "a after"; });
+    await repo.flush();
+    await rest.store.flush();
+    expect(rest.store.waiting(docB.documentId), "B's save waits in memory").toBeGreaterThan(0);
+    expect(h.sealed.slice(before)).toEqual(expect.arrayContaining(["a"]));
+    expect(h.sealed.slice(before)).not.toContain("b");
+    expect(h.table.lit(ATOM_B)).toBeUndefined();
+    await repo.shutdown();
+  });
+
+  it("B UNADMITTED ON THE ISLAND: the vessel answers B's chain but the island holds B shut; B's save refuses face-not-open on its own, and A seals", async () => {
+    const h = await hats();
+    h.table.drop(ATOM_B);
+    const { rest, repo } = h.vesselRest();
+    const docB = repo.create<{ note?: string }>();
+    h.docsOfB.add(docB.documentId);
+    rest.wrote(docB.documentId, h.sessionB);
+    docB.change((d) => { d.note = "no seat stands for b"; });
+    const docA = repo.create<{ note?: string }>();
+    rest.wrote(docA.documentId, h.sessionA);
+    docA.change((d) => { d.note = "a seals"; });
+    await repo.flush();
+    await rest.store.flush();
+    expect(h.held).toContain("save-unsealed:b:[daemon] docstore-seal: face-not-open");
+    expect(rest.store.waiting(docB.documentId)).toBeGreaterThan(0);
+    expect(await rest.restsSealed(docA.documentId)).toBe(true);
+    expect(h.sealed).toEqual(["a"]);
+    expect(h.table.mounted.chain).toEqual(ownChainOf(h.a));
+    await repo.shutdown();
+  });
+});
+

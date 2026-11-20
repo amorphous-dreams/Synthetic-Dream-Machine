@@ -14,9 +14,11 @@
  *     to revoke.
  *   · The book reads the session's (face, anchor), whatever the anchor: a Nexus session signs under its session
  *     certificate, a place session under the place certificate its face's atom signed at the vessel's own place.
- *   · The answer carries the vessel's own verified face chain (public), from which the island reads who may write. A
- *     chain that names no standing at the session's anchor (no chain, or no place beside a Nexus) answers
- *     `signer-unavailable`: a floor or a locked face signs nothing, and its save waits, never written clear.
+ *   · The answer carries the verified chain (public) of THE FACE THE SESSION WEARS, from which the island reads who may
+ *     write: the worn face's for its own sessions, a lit sibling's for that sibling's (each hat its own chain; the
+ *     answer names the sibling's `face`, so the island seals through that face's holder). A chain that names no standing
+ *     at the session's anchor (no chain, or no place beside a Nexus) answers `signer-unavailable`: a floor, a locked face
+ *     or a shut sibling signs nothing, and its save waits, never written clear, while every other face keeps signing.
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
@@ -36,7 +38,13 @@ export interface BookedSession {
   readonly anchor: { readonly kind: "nexus" | "place" };
   /** The session's proof subject, as its face reads on the owner's table. */
   readonly subject: string;
+  /** The lit sibling face this session wears, by its bare atom key; absent, the worn face. The door reads this face's own
+   *  chain and fold for it, never the worn face's. */
+  readonly face?: string;
 }
+
+/** What the vessel counts on one face's fleet board and what no subscriber has taken yet. */
+export interface FaceFold { readonly read: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }
 
 interface Booking { readonly verb: string; readonly session: BookedSession }
 
@@ -81,31 +89,34 @@ export class SessionSignBook {
   /** How many calls stand booked now (a vector reads it; a booking never outlives its call). */
   get size(): number { return this.#held.size; }
 
-  /** The door the daemon island's asks reach. `chain` answers this vessel's own verified face chain, or null;
-   *  `raises` answers what the vessel counts on the face's fleet board and what no subscriber has taken yet. */
-  door(chain: () => SessionOwnChain | null, raises: () => Promise<{ readonly read: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] }> = async () => ({ read: false, counted: [], unanswered: [] })): SessionSignDoor {
-    const fold = async (): Promise<{ readonly read: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] } | null> => {
-      try { return await raises(); } catch { return null; }
+  /** The door the daemon island's asks reach. `chain(face)` answers the verified chain of one face this vessel holds open
+   *  (null: the worn face; a sibling by its bare atom key), or null where that face stands shut; `raises(face)` answers
+   *  what the vessel counts on THAT face's fleet board and what no subscriber has taken yet. */
+  door(chain: (face: string | null) => SessionOwnChain | null, raises: (face: string | null) => Promise<FaceFold> = async () => ({ read: false, counted: [], unanswered: [] })): SessionSignDoor {
+    const fold = async (face: string | null): Promise<FaceFold | null> => {
+      try { return await raises(face); } catch { return null; }
     };
     return async (ask) => {
       // THE VESSEL'S OWN READING, no session asked: its chain and its fold, public, for the island's own count (a
       // backup's cut, a restore's import). It signs nothing; with no chain or no fold it refuses.
       if (ask.op === "own") {
-        const own = chain();
-        const read = own === null ? null : await fold();
+        const face = typeof ask.face === "string" ? ask.face : null;
+        const own = chain(face);
+        const read = own === null ? null : await fold(face);
         return own === null || read === null ? { refusal: "chain-absent" } : { own: true, chain: own, foldRead: read.read, counted: [...read.counted], unanswered: [...read.unanswered] };
       }
       const booking = this.#held.get(ask.ask);
       if (booking === undefined || booking.verb !== ask.verb) return { refusal: "signer-unavailable" };
       const { signer, anchor, subject } = booking.session;
       if (signer.dropped) return { refusal: "signer-refused" };
-      const own = chain();
+      const face = booking.session.face ?? null;
+      const own = chain(face);
       if (own === null || !chainStandsAt(own, anchor.kind)) return { refusal: "signer-unavailable" };
       if (ask.op === "read") {
         // A fold that fails reads as nothing counted and nothing unanswered never: it refuses, and nothing seals.
-        const read = await fold();
+        const read = await fold(face);
         if (read === null) return { refusal: "signer-unavailable" };
-        return { certificate: signer.certificate, subject, chain: own, foldRead: read.read, counted: [...read.counted], unanswered: [...read.unanswered] };
+        return { certificate: signer.certificate, subject, chain: own, foldRead: read.read, counted: [...read.counted], unanswered: [...read.unanswered], ...(face !== null ? { face } : {}) };
       }
       if (!(ask.payload instanceof Uint8Array)) return { refusal: "signer-refused" };
       const signed = await signer.sign("act", ask.payload);
