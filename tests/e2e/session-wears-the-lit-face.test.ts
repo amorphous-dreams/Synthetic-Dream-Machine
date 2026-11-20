@@ -116,7 +116,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(status["face" as never], "the answer names the sibling").toBe(1);
     expect(status.working, `the sibling's working layer never opened: ${JSON.stringify(status.layers)}`).not.toBeNull();
     expect(status.layers.find((l) => l.working), JSON.stringify(status.layers)).toMatchObject({ write: true });
-    expect(status.layers.find((l) => l.bag === siblingBag), `the sibling daemon canon never opened: ${JSON.stringify(status.layers)}\n${walk.bootLog().split("\n").filter((l) => /lit-set|sibling|face h1|\[faces\]|relation/i.test(l)).slice(-30).join("\n")}`).toMatchObject({ write: true });
+    expect(status.layers.find((l) => l.bag === siblingBag), `the sibling daemon canon never opened: ${JSON.stringify(status.layers)}`).toMatchObject({ write: true });
   }, 120_000);
 
   test("W1: a meme put as face 1 lands in face 1's working layer, face 1 reads it back, the worn face reads absent", async () => {

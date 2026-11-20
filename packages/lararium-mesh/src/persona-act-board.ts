@@ -15,6 +15,7 @@ import { tiddlerText } from "./base-doc.js";
 import { PERSONA_ACT_DOMAIN } from "./domains.js";
 import { makeHandLineage, type HandLineage } from "./hand-lineage.js";
 import { verifyingKeyFromDid, type LarDid } from "./lar-did.js";
+import { DOCUMENT_READY_TIMEOUT_MS } from "./find-or-throw.js";
 import { foldPersonaContests, type PersonaKelEvent } from "./persona-kel.js";
 import { actCid, signAct, type SignedAct } from "./signed-act.js";
 import { storedLarRecord } from "./stored-record.js";
@@ -107,4 +108,34 @@ export async function signFoundingLog(parts: {
 export function heldDocOf(repo: Repo, url: string): LarDoc | undefined {
   const handle = repo.handles[parseAutomergeUrl(url as AutomergeUrl).documentId];
   return handle?.isReady() ? (handle.doc() as LarDoc | undefined) : undefined;
+}
+
+/**
+ * A plane doc this replica holds: loaded in memory, or resting in its own store though no mount has loaded it yet (a lit
+ * sibling's persona plane: the composition mounts the worn face's plane alone, so a sibling's founding act rests on disk
+ * unread). The read asks the store alone and settles the moment the store answers; it never waits on a peer: a store that
+ * holds nothing answers undefined, as {@link heldDocOf} does, while the mesh may still deliver. A store that never answers
+ * within `boundMs` reads as holding nothing, so a proof that rides this read refuses, never waits.
+ */
+export async function restingDocOf(repo: Repo, url: string, boundMs = DOCUMENT_READY_TIMEOUT_MS): Promise<LarDoc | undefined> {
+  const held = heldDocOf(repo, url);
+  if (held) return held;
+  const query = repo.findWithProgress<LarDoc>(url as AutomergeUrl);
+  const verdict = (s: ReturnType<typeof query.peek>): { doc: LarDoc | undefined } | null => {
+    if (s.state === "ready") return { doc: s.handle.doc() as LarDoc | undefined };
+    // The store still reads: wait for its answer. Any other answer (the store holds nothing, a storage-less Repo, a fault)
+    // settles here, before any peer's.
+    if (s.state === "loading" && s.sources["storage"] === "pending") return null;
+    return { doc: undefined };
+  };
+  const now = verdict(query.peek());
+  if (now) return now.doc;
+  return new Promise<LarDoc | undefined>((resolve) => {
+    let settled = false;
+    const finish = (doc: LarDoc | undefined): void => { if (settled) return; settled = true; clearTimeout(timer); unsubscribe(); resolve(doc); };
+    const timer = setTimeout(() => finish(undefined), boundMs);
+    const unsubscribe = query.subscribe((s) => { const v = verdict(s); if (v) finish(v.doc); });
+    const late = verdict(query.peek());
+    if (late) finish(late.doc);
+  });
 }
