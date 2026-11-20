@@ -167,8 +167,8 @@ function initPool(root: string, author: { readonly name: string; readonly email:
 /** Whose pool a root holds: a face (by its pet name) or a realm's wiki (by its slug). */
 export type PoolOwner = { readonly face: string } | { readonly realm: string };
 
-/** What one ensure read: a tree founded now, one already standing (left as it stands, but for an older house hook it re-read:
- *  `hook: "refreshed"`), or a root inside another history. */
+/** What one ensure read: a tree founded now, one already standing (left as it stands, but for a house hook that differs from
+ *  `POOL_PRE_COMMIT`, which it rewrote: `hook: "refreshed"`), or a root inside another history. */
 export interface PoolTreeEnsured {
   readonly root: string;
   readonly reading: "founded" | "standing" | "inside-another-tree";
@@ -184,8 +184,8 @@ function nearestStanding(p: string): string {
 
 /**
  * ENSURE THE POOL AT `root` IS A GIT TREE. A `.git` standing there leaves the pool as it stands (no config, exclude or history
- * touched), but a pre-commit hook the HOUSE wrote re-reads the current one (`refreshPoolHook`), so a pool founded before the hook
- * answered inside the container commits there too; a hook of another hand stays. A root inside another work tree founds
+ * touched), but a pre-commit hook the HOUSE wrote and differs from `POOL_PRE_COMMIT` takes it (`refreshPoolHook`), so every
+ * house-hooked pool commits on the host and inside the container alike; a hook of another hand stays. A root inside another work tree founds
  * nothing; else the root takes its owner's init, laid where missing.
  */
 export function ensurePoolTree(root: string, owner: PoolOwner): PoolTreeEnsured {
