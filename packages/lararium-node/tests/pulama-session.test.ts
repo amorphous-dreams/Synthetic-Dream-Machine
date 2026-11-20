@@ -324,6 +324,40 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     expect(session["scope"]).toEqual({ faces: [{ ordinal: 0 }, { ordinal: 2 }] });
   });
 
+  test("each opening of a lent face takes its own number: a dim and re-light of one face reads a new opening; the other lit face's stands", async () => {
+    fx = await standPulama("pulama-face-opening", () => openGate({ faces: lend(0, 2), coldReads: [] }));
+    const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    await fx.kept.foundFace({ group: personaGroupDigest(GROUP_B), ordinal: 1, slots: fixtureSlots });
+    const c = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_C), ordinal: 2, slots: fixtureSlots });
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    const first = vessel.faceOpening?.(c.fcid), other = vessel.faceOpening?.(a.fcid);
+    expect(typeof first).toBe("string");
+    // THE LOCK TELLS THE VESSEL ITSELF: no refresh, the pūlama's own standing lands the moment the face shuts.
+    await fx.kept.lockFace(c.fcid);
+    await vi.waitFor(() => expect(vessel.faceOpening?.(c.fcid)).toBeNull());
+    await fx.kept.unlockFace({ fcid: c.fcid }, fixtureRoute);
+    fx.server.refresh();
+    await vi.waitFor(() => expect(typeof vessel.faceOpening?.(c.fcid)).toBe("string"));
+    expect(vessel.faceOpening?.(c.fcid)).not.toBe(first);
+    expect(vessel.faceOpening?.(a.fcid)).toBe(other);
+  });
+
+  test("RED re-lend: the pūlama locks and re-lends a face back to back, and the vessel reads the new opening from the pūlama's own name, never one inferred from what it observed", async () => {
+    fx = await standPulama("pulama-face-relend", () => openGate({ faces: lend(0), coldReads: [] }));
+    const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    const first = vessel.faceOpening?.(a.fcid);
+    expect(first).toBe(fx.kept.faceOpening?.(a.fcid));
+    // The lock and the re-lend land at the pūlama back to back: no standing reaches the vessel in between.
+    await fx.kept.lockFace(a.fcid);
+    await fx.kept.unlockFace({ fcid: a.fcid }, fixtureRoute);
+    fx.server.refresh();
+    await vi.waitFor(() => expect(vessel.faceOpening?.(a.fcid)).toBe(fx!.kept.faceOpening?.(a.fcid)));
+    expect(vessel.faceOpening?.(a.fcid)).not.toBe(first);
+  });
+
   test("RED no-set-serves-no-face: a gate scope naming no lent set refuses the hello by name and no session stands; NO SET NEVER MEANS EVERY FACE", async () => {
     let faces: unknown = null;
     fx = await standPulama("pulama-lend-none", () => ({ admit: async () => ({ ok: true, scope: { faces, coldReads: [] } as never }) }));

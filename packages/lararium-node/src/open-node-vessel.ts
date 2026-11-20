@@ -170,7 +170,8 @@ import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-store.js";
 import { raiseAnchorFromSlots } from "./lease-observation.js";
-import { readFacePersonaRecords } from "./persona-act-store.js";
+import { readFacePersonaRecords, proveSiblingFromRest, SIBLING_PLANE_USE } from "./persona-act-store.js";
+import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
 import { joinedFaceAuth, unlitServedFaces, siblingFaceWork, litSiblingOrdinals, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
@@ -3480,15 +3481,41 @@ async function prepareNodeBootOn(
         const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
         const chain = personaKelChainForPrefix(board.doc(), other.personaKelPrefix);
         if (!chain || chain.length === 0) return null;
-        const records = await readFacePersonaRecords(repo, { personaUrl: plane.url, group: plane.personaGroupId, extraDocs: [secretHome?.handle.doc()], heldOnly: true });
         const otherFace = faceBootTiddlers ? bootFacePlanes(faceBootTiddlers, plane.personaGroupId) : null;
         if (!otherFace?.intentsUrl) return null;
-        const proof = proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace.intentsUrl } });
-        if (!proof.ok) return null;
-        return {
-          planes: provenPlaneUrls(proof.projection, { circles: otherFace.circlesUrl, identities: otherFace.identitiesUrl, sessions: otherFace.sessionsUrl, intents: otherFace.intentsUrl }),
-          relation: (await import("@lararium/mesh")).faceRelationOf(proof.projection),
-        };
+        const { faceRelationOf } = await import("@lararium/mesh");
+        // A SIBLING'S PLANE RESTS UNMOUNTED: the composition mounts the worn face's plane alone, so the proof reads the plane's
+        // bytes from this vessel's own face-gated store into a scratch document (`proveSiblingFromRest`): no Repo handle, no
+        // peer. Custody binds by OPENING (`faceOpening`): the face stands open before the read, the read keys to that opening,
+        // and the same opening still stands when the proof is accepted; a lock, or a lock and re-open, voids it. Nothing it
+        // reads reaches the live Repo, proved or not. Under a pūlama, a lock not yet heard stays a message's latency wide; the gate's
+        // contract (`SiblingFaceGate`) names that window and why a read inside it proves nothing a read before the lock would not.
+        let opened: { readonly fcid: string; readonly opening: string } | null = null;
+        const sibling = await proveSiblingFromRest({ storage: sealedRest.store, personaUrl: plane.url, group: plane.personaGroupId,
+          face: {
+            open: async () => {
+              const holder = standingCustody();
+              if (holder === null || !holder.isUnlocked()) return null;
+              const standing = await holder.faceStanding({ group: personaGroupDigest(plane.personaGroupId) });
+              const opening = standing?.unlocked === true ? holder.faceOpening?.(standing.fcid) ?? null : null;
+              opened = standing && opening !== null ? { fcid: standing.fcid, opening } : null;
+              return opened ? `${opened.fcid}#${opened.opening}` : null;
+            },
+            stillOpen: () => { const holder = standingCustody(); return opened !== null && holder !== null && holder.isUnlocked() && holder.faceOpening?.(opened.fcid) === opened.opening; },
+          },
+          carried: [secretHome?.handle.doc()],
+          prove: (records) => {
+            const proof = proveFaceFromLog({ records, chain, group: plane.personaGroupId, anchor: other, planes: { persona: plane.url, intents: otherFace.intentsUrl! } });
+            if (!proof.ok) return null;
+            return {
+              planes: provenPlaneUrls(proof.projection, { circles: otherFace.circlesUrl, identities: otherFace.identitiesUrl, sessions: otherFace.sessionsUrl, intents: otherFace.intentsUrl }),
+              relation: faceRelationOf(proof.projection),
+            };
+          } });
+        // THE READING TRAVELS WITH THE RESULT: a proof carries the plane's reading, and a refusal names it (`SIBLING_PLANE_USE`);
+        // a refusal for a shut face, a lock mid-read or a slow store clears at the next ask, which reads the plane afresh.
+        if (SIBLING_PLANE_USE[sibling.plane] === "refuse") console.warn(`[lit-set] the sibling proof of ${plane.personaGroupId.slice(0, 8)}… refuses on its plane's reading (${sibling.plane}); the carried acts do not stand in`);
+        return sibling.proved ? { ...sibling.proved, reading: sibling.plane } : null;
       } catch (e) { if (!(e instanceof CustodyLocked)) throw e; return null; }
     }
     const proveRelayFace = async (group: string) => {

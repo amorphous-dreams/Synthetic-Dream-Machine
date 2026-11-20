@@ -123,7 +123,11 @@ export function servePulama(a: {
     const fcidAt = (ordinal: number): string | null => { const f = index[ordinal]; return f !== undefined && "fcid" in f ? f.fcid : null; };
     const lit = s.scope.faces.flatMap((f) => { const fcid = fcidAt(f.ordinal); return fcid !== null && open.has(fcid) && lends(s, { ordinal: f.ordinal, fcid }) ? [f.ordinal] : []; });
     const { served, waiting } = servedOf(s.scope.faces, lit);
-    return { slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), faces: served.map((f) => fcidAt(f.ordinal)!), waiting: waiting.map((f) => f.ordinal), ...(worn !== undefined ? { worn } : {}) };
+    const faces = served.map((f) => fcidAt(f.ordinal)!);
+    // EACH SERVED FACE'S OPENING, as this holder numbers it (`faceOpening`): a lock and re-lend here carries a new number, so the
+    // vessel reads the opening from its source and never infers it from the membership it happened to observe.
+    const openings = Object.fromEntries(faces.flatMap((fcid) => { const n = holder.faceOpening?.(fcid); return typeof n === "string" ? [[fcid, n]] : []; }));
+    return { slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), faces, openings, waiting: waiting.map((f) => f.ordinal), ...(worn !== undefined ? { worn } : {}) };
   };
   /** The session's children, fresh; `send` encodes them before the copies zero-fill. */
   const withDerived = (send: (derived: Record<string, Uint8Array>) => void): void => {
@@ -315,6 +319,9 @@ export function servePulama(a: {
   };
 
   holder.onOpened?.(() => { for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(s), derived })); });
+  // A FACE THAT SHUTS HERE TELLS EVERY SESSION AT ONCE: the standing leaves the lent face's opening out the moment it locks, so a
+  // vessel's window on a lock it has not heard stays the message's own latency, never a wait for a refresh.
+  holder.onClosed?.(() => { for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(s), derived })); });
 
   return {
     accept(channel) {

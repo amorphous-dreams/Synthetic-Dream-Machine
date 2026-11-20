@@ -38,7 +38,7 @@
  *
  * Node-main only: a worker never imports this module.
  */
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import {
   openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal, treeKeyEquals,
   openFaceCarrier, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, commitFaceTree, bindSlot, mintFck,
@@ -259,6 +259,15 @@ export interface CustodyHolder {
   /** The custody ids of the faces standing unlocked. */
   unlockedFaces(): readonly string[];
   /**
+   * Which opening of the face stands, or null while it stands shut: each open of a face takes a fresh name, `<boot>:<n>`, where
+   * `<boot>` is a nonce this holder minted when it stood and `n` counts its opens. A reader that captured one opening tells a
+   * lock and re-open of the same face (same custody id) from the opening it read under, and a restarted holder whose count
+   * starts over never repeats a name an earlier boot handed out.
+   */
+  faceOpening?(fcid: string): string | null;
+  /** Hear each time one face this holder held open shuts (`lockFace`; a whole-holder `lock` drops every session instead). Returns the unsubscribe. */
+  onClosed?(listener: () => void): () => void;
+  /**
    * ONE WARD ACT: open the face's ward key fresh from `credentials` (a human route; a passkey refuses), run `act` over that face's
    * warded rows, then zero the key. The face must stand unlocked. A miss spends one of the face's unlock attempts, as `unlockFace`'s
    * does. The key never enters the faces this holder holds open, and nothing here caches a credential or a key between acts.
@@ -286,7 +295,8 @@ type Located =
   | { readonly kind: "treeKey"; readonly row: CarrierRow; readonly path: string; readonly name: string }
   | { readonly kind: "face"; readonly row: CarrierRow; readonly path: string; readonly carrier: FaceCarrier; readonly fcid: string; readonly treePath: string };
 
-interface FaceSeat { readonly fck: FaceCustodyKey; readonly slot: string | null; readonly ordinal: number }
+/** `opening` counts each open of a face on this holder: a lock and a later open of the same face carry different openings. */
+interface FaceSeat { readonly fck: FaceCustodyKey; readonly slot: string | null; readonly ordinal: number; readonly opening: number }
 
 const heldPort = (io: CustodyIo): CustodyIo => ({
   read: (path) => io.read(path), write: (path, bytes) => io.write(path, bytes), rename: (from, to) => io.rename(from, to),
@@ -316,6 +326,11 @@ export function makeCustodyHolder(a: {
   let spent = 0;
   const faceSpent = new Map<string, number>();
   const faces = new Map<string, FaceSeat>();
+  let openings = 0;
+  /** This holder's boot: every opening it names carries it, so a restart's count never repeats an earlier opening's name. */
+  const bootNonce = randomBytes(16).toString("hex");
+  const closedListeners = new Set<() => void>();
+  const faceClosed = (): void => { for (const listener of [...closedListeners]) { try { listener(); } catch { /* a listener's fault never reaches the holder */ } } };
   /** Ward keys opened for an act in flight: never a face's seat, zeroed when the act settles or a lock lands. */
   const wardKeys = new Set<WardKey>();
   let wardWatch: ((key: WardKey) => void) | null = null;
@@ -438,7 +453,7 @@ export function makeCustodyHolder(a: {
         await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: ownerCarrier(fcid), plaintext: encodeOwner({ fcid, group: args.group ?? null }) });
         // THE WARD KEY'S PUBLIC HALF lands with the ward: the face's admission carries it, and the ward key itself zeroes below.
         await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: wardKeyCarrier(fcid), plaintext: await wardKeyBytes(ward) });
-        faces.set(fcid, { fck, slot: null, ordinal });
+        faces.set(fcid, { fck, slot: null, ordinal, opening: ++openings });
         return { ordinal, fcid };
       });
     } catch (err) { fck.fill(0); throw err; }
@@ -585,7 +600,7 @@ export function makeCustodyHolder(a: {
         return refuse(`the anchors row reads ${anchored.reading}`);
       }
     }
-    faces.set(fcid, { fck: opened.fck, slot: opened.slot, ordinal });
+    faces.set(fcid, { fck: opened.fck, slot: opened.slot, ordinal, opening: ++openings });
     keyOpened();
     return { reading: "opens", fcid, ordinal, slot: opened.slot };
   };
@@ -900,13 +915,15 @@ export function makeCustodyHolder(a: {
       const drop = async (): Promise<void> => {
         await Promise.allSettled([...active]);
         faces.get(fcid)?.fck.fill(0);
-        faces.delete(fcid);
+        if (faces.delete(fcid)) faceClosed();
       };
       const run = unlockChain.then(drop, drop);
       unlockChain = run.catch(() => undefined);
       return run;
     },
     unlockedFaces: () => [...faces.keys()],
+    faceOpening: (fcid) => { const seat = faces.get(fcid); return seat ? `${bootNonce}:${seat.opening}` : null; },
+    onClosed(listener) { closedListeners.add(listener); return () => { closedListeners.delete(listener); }; },
     async withWardKey(face, credentials, act) {
       // The derivation takes its turn on the unlock chain (attempts never race); the act runs outside it, and the key zeroes after.
       const run = unlockChain.then(() => doWardOpen(face, credentials), () => doWardOpen(face, credentials));
