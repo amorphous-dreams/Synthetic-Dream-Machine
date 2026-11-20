@@ -75,7 +75,7 @@ if any(c.split()[0] == "found" for c in _bare_shim):
     cmds.add("vessel found")
 
 # A rite that walks the container instructs through the HOST SHIM. The shim answers some verbs itself (the engine's
-# up, down, logs, build; reset, which clears the hearth on the host; the pūlama's own verb; image-digest), spells the
+# up, down, logs, build; reset, which clears the hearth on the host; the pūlama's own verb; rebuild, the restand `lares rite kukulu` calls), spells the
 # founding act `found`, and hands every other word to the CLI. So a shim line claims a CLI door exactly as a bare
 # `lares` line does, unless the shim's own arm answers it.
 #

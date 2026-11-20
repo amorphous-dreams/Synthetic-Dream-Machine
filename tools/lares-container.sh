@@ -17,10 +17,14 @@
 #                                                house's cache, through the env file, stamping that revision as its
 #                                                label; an uncommitted or untracked file never rides it, and a dirty
 #                                                tree builds from HEAD and names what it left out; no checkout refuses
-#   lares-container.sh rebuild [--at <rev>]      re-stand the house onto a new image: down (keep, census), build from the
-#                                                commit (tag, prune), then up, the pūlama's admit on this terminal and the
-#                                                last face worn; where the pūlama's code closure moved it restands the
-#                                                pūlama and stops for your light: `pulama light`, then `rebuild --resume`
+#   lares-container.sh rebuild [--at <rev> | --prior] [--image]
+#                                                the restand `lares rite kukulu` calls (the one human verb): the image of
+#                                                the revision (the tag, a kept rev tag, or a build), then down (keep,
+#                                                census), the pūlama re-stood and lit on this terminal where its code moved
+#                                                or it stands unlit, up, its admit where owed, the last face worn. It reads
+#                                                where the house stands each run, so a stopped run picks up from there; with
+#                                                no terminal, a light or admit owed stops it before anything moves.
+#                                                `--image` stops after the image and prints the reading as one JSON line
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing.
 #                                                Every stand and restart this shim performs (`up` too) warns when the
@@ -37,6 +41,11 @@
 # vessel verb to this shim with the same argv (packages/lares-cli/src/host-bridge.ts), so `lares <verb>` from the host
 # shell answers from the vessel; host verbs (home, repo, help) stay on the host. The attach (`-t`) asks a terminal on
 # stdin AND stdout, and NO_COLOR, TERM, COLORTERM and LARES_DEBUG cross into the vessel by name (`-e NAME`).
+#
+# ONE HUMAN VERB RAISES THE HOUSE: `lares rite kukulu`. It fast-forwards the checkout where it stands clean and behind its
+# upstream, then calls `rebuild` here, which reads where the house stands and walks only what remains; a kukulu lei spends a
+# return where one stands, so a day that needs no route asks none. The pūlama's light and admit read the route inside the
+# pūlama, attached to this terminal; this shim never reads or types one.
 #
 # A VESSEL STANDS HOLDING NO KEY. Every start returns it to the floor: it carries and serves its public shelf and
 # every sovereign act waits. So after `up`, after `vessel stand`, and after each restart this shim performs, it runs
@@ -507,7 +516,7 @@ run_waited() { # $1 = exec|run; the rest = the compose argv
 waited_exec() { run_waited exec exec -e LARES_EXEC_TAG "$@"; }
 waited_run() { run_waited run --profile offline run --rm --name "$RUN_NAME" "$@"; }
 
-[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|build|rebuild|image-digest|pulama|vessel stand|<lares verb…> (build builds the vessel image, every package, from a commit; rebuild walks down, build, up, admit and the worn face)"
+[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|build|rebuild|pulama|vessel stand|<lares verb…> (build builds the vessel image, every package, from a commit; rebuild is the restand \`lares rite kukulu\` walks)"
 verb=$1; shift
 
 # A WORKSPACE (cabal-realm#/the-workbench): an operator-configured directory a private wiki's workbench mirror rests in,
@@ -558,7 +567,7 @@ up_with_workspaces() {
 
 # The pūlama stands before any vessel: up with --no-recreate leaves a lit one lit. Then the host reports the image digest
 # the vessel will raise, since a vessel never vouches for its own face.
-# The digest of the image a vessel stands from: what up reports to the pūlama and what the kūkulu rite's offer names.
+# The digest of the image a vessel stands from: what up reports to the pūlama.
 image_digest() {
   image=$(value_of LARES_IMAGE); [ -n "$image" ] || image=lares-surface:local
   digest=$(docker image inspect --format '{{.Id}}' "$image") || die "cannot read the vessel image's digest ($image); nothing raised"
@@ -626,7 +635,7 @@ warn_pulama_skew() {
   pr_vessel=$(vessel_clause)
   case "$pr_state" in
     level) printf 'lares-container: the pūlama runs image %s, and %s stands at the same %s%s\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" "$pr_vessel" >&2 ;;
-    moved) printf 'lares-container: the pūlama runs image %s, and %s stands at %s%s; its code closure moved (or reads unlabeled), so it keeps the older code until `tools/lares-container.sh down` and `tools/lares-container.sh pulama restand` (then light it by hand, `up`, and `pulama admit`)\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" "$pr_vessel" >&2 ;;
+    moved) printf 'lares-container: the pūlama runs image %s, and %s stands at %s%s; its code closure moved (or reads unlabeled), so it keeps the older code until `lares rite kukulu` re-stands it (`pulama restand`) and lights it on a terminal\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" "$pr_vessel" >&2 ;;
     closure-level) printf 'lares-container: the pūlama runs image %s, and %s stands at %s%s; its code closure reads the same (%s), so it stands lit and owes no restand\n' "$pr_ran" "$IMAGE_REF" "$pr_stands" "$pr_vessel" "$(printf '%s' "$pr_closure" | cut -c1-19)" >&2 ;;
   esac
 }
@@ -908,78 +917,199 @@ pulama_restand() {
   restand_image=$(value_of LARES_IMAGE); [ -n "$restand_image" ] || restand_image=lares-surface:local
   restand_digest=$(docker image inspect --format '{{.Id}}' "$restand_image" 2>/dev/null) || restand_digest=""
   restand_digest=$(printf '%s' "$restand_digest" | tr -d '\r')
-  printf 'lares-container: the pūlama stands unlit on %s; light it by hand (`tools/lares-container.sh pulama light`), then `tools/lares-container.sh up` and `tools/lares-container.sh pulama admit`\n' "${restand_digest:-$restand_image}" >&2
+  if [ -n "$IN_REBUILD" ]; then printf 'lares-container: the pūlama stands unlit on %s\n' "${restand_digest:-$restand_image}" >&2
+  else printf 'lares-container: the pūlama stands unlit on %s; light it by hand (`tools/lares-container.sh pulama light`), then `tools/lares-container.sh up` and `tools/lares-container.sh pulama admit` (`lares rite kukulu` on a terminal walks all of it)\n' "${restand_digest:-$restand_image}" >&2; fi
 }
 
-# THE REBUILD RITE (road rank 4l, L7): one verb re-stands the house onto a new image, internally re-standable.
-#   1  the down path: the keep (`rite keep --if-due`, while the vessel stands), the census, the refusal of a silent stop
-#   2  the build from the commit (HEAD unless --at names another): the outgoing image keeps its revision tag, old ones prune
-#   3  under a pūlama whose code closure moved (or that stands absent): `pulama restand`, then it STOPS with one line,
-#      since the light reads the operator's route by their own hand; `rebuild --resume` picks up after the light
-#   4  `up` on the new image; under a pūlama, `pulama admit` on this terminal (the one route a rebuild reads, and the
-#      pūlama reads it, never this shim), then the vessel's unlock (detached) and the face last worn
-#   5  one closing line: the image's revision, the worn face, the keep
-# It never switches a branch, never reads or types a route, and never lights the pūlama.
-REBUILD_PENDING="$HOUSE/cache/rebuild-pending"
+# THE RESTAND (road rank 4l, L7, folded under `lares rite kukulu`, the one human verb that calls it): `rebuild` raises the
+# house onto the image of one revision. It reads where the house stands on every run and walks only what remains, so a run
+# that stopped (a refused census, a light not yet typed, no terminal) picks up from wherever the house stands; no file
+# remembers a half-done run.
+#   1  the image of the revision (HEAD, `--at <rev>`, or `--prior`: the newest kept image before the one the tag holds):
+#      the tag holds it already; else a kept `<repo>:rev-<12 hex>` tag does, and it takes the tag (no build); else a build
+#      from the commit. `--image` stops here and prints ONE JSON line on stdout naming where the house stands (the rite's
+#      reading: the revision, the image, the vessel, the pūlama, lit, admitted, a kūkulu offer)
+#   2  under a pūlama: a light is owed where none runs, where its code closure moved, or where it stands unlit; an admit
+#      where a new vessel rises on an image the pūlama has not admitted and no kūkulu offer carries. With no terminal, a
+#      light or an admit owed stops HERE, before anything moves, and names the hand act
+#   3  the down path (keep, census) where the vessel runs another image or the pūlama re-stands; a vessel already on the
+#      image stays standing
+#   4  the pūlama re-stands where its code moved, then lights ATTACHED on this terminal: the pūlama reads the route
+#   5  up on the image; under a pūlama its admit, attached, where owed, then the vessel's unlock (detached) and the face last worn
+#   6  one closing line: the revision, the worn face, the keep
+# It never switches a branch, never moves the checkout, and never reads or types a route.
+IN_REBUILD=""
 worn_now() { # the face the census frame names worn, or nothing
   run_census --json >/dev/null 2>&1 || true
   printf '%s\n' "$census_out" | sed -n 's/.*"worn"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' | head -n 1
 }
-rebuild_verb() {
-  r_resume=""; r_at=HEAD; r_at_given=""
-  while [ "$#" -gt 0 ]; do
-    case "$1" in
-      --resume) r_resume=yes; shift ;;
-      --at) [ "$#" -ge 2 ] || die "rebuild --at wants a revision"; r_at=$2; r_at_given=yes; shift 2 ;;
-      *) die "rebuild takes --at <rev> or --resume, and \"$1\" names neither" ;;
-    esac
+label_of() { # $1 = an image reference; the revision its label names, or nothing
+  docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$1" 2>/dev/null | LC_ALL=C sed -e 's/[[:cntrl:]]//g'
+}
+image_id() { docker image inspect --format '{{.Id}}' "$IMAGE_REF" 2>/dev/null | tr -d '\r'; }
+# THE PRIOR IMAGE: the newest kept `rev-<12 hex>` tag whose image the tag does not hold now, read by its revision label.
+prior_revision() {
+  pv_cur=$(image_id) || pv_cur=""
+  pv_tags=$(docker image ls --format '{{.Tag}}' "$IMAGE_REPO" 2>/dev/null | tr -d '\r') || return 0
+  pv_rows=""
+  for pv_tag in $pv_tags; do
+    printf '%s' "$pv_tag" | grep -Eq '^rev-[0-9a-f]{12}$' || continue
+    pv_info=$(docker image inspect --format '{{.Created}} {{.Id}}' "$IMAGE_REPO:$pv_tag" 2>/dev/null | tr -d '\r') || continue
+    [ -n "$pv_info" ] && [ "${pv_info#* }" != "$pv_cur" ] || continue
+    pv_rows="$pv_rows$pv_info $pv_tag
+"
   done
-  [ -z "$r_resume" ] || [ -z "$r_at_given" ] || die "rebuild --resume takes no --at: the image stands built; run rebuild --at <rev> for another"
-  if [ -n "$PULAMA_MODE" ] && [ -z "$HAVE_TTY" ]; then die "rebuild under a pūlama ends on the pūlama's admit, which reads your route on a terminal; run it on one (nothing touched)"; fi
-  if [ -z "$r_resume" ]; then
+  [ -n "$pv_rows" ] || return 0
+  pv_best=$(printf '%s' "$pv_rows" | LC_ALL=C sort -r | head -n 1)
+  label_of "$IMAGE_REPO:${pv_best##* }"
+}
+R_REV=""; R_HOW=""
+resolve_image() { # $1 = a revision, or nothing for the prior image
+  [ -n "$GIT_REV" ] || die "rebuild refuses: no git checkout answers at $SHIM_DIR, so no revision names the image; run it from a checkout"
+  ri_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel) || die "rebuild refuses: no git checkout answers at $SHIM_DIR"
+  if [ -z "$1" ]; then
+    R_REV=$(prior_revision)
+    printf '%s' "$R_REV" | grep -Eq '^[0-9a-f]{40}$' || die "rebuild --prior finds no kept image before the one $IMAGE_REF holds (a kept image carries the tag $IMAGE_REPO:rev-<12 hex> and its revision label); nothing moved"
+  else
+    R_REV=$(git -C "$ri_top" rev-parse --verify --quiet "$1^{commit}") || die "rebuild refuses: $1 names no commit in $ri_top; nothing moved"
+  fi
+  ri_short=$(printf '%s' "$R_REV" | cut -c1-12)
+  if [ "$(label_of "$IMAGE_REF")" = "$R_REV" ]; then
+    R_HOW=stood
+    printf 'lares-container: %s holds the image of %s already; no build\n' "$IMAGE_REF" "$ri_short"
+    return 0
+  fi
+  ri_kept="$IMAGE_REPO:rev-$ri_short"
+  if [ "$(label_of "$ri_kept")" = "$R_REV" ]; then
+    tag_outgoing
+    docker tag "$ri_kept" "$IMAGE_REF" || die "the kept image $ri_kept could not take the tag $IMAGE_REF; it stands as it stood"
+    R_HOW=kept
+    printf 'lares-container: %s now holds the kept image %s; no build\n' "$IMAGE_REF" "$ri_kept"
+    return 0
+  fi
+  [ -n "$1" ] || die "rebuild --prior: the kept tag $ri_kept no longer holds revision $ri_short; nothing moved"
+  build_image "$R_REV"
+  R_HOW=built
+}
+# THE PŪLAMA'S OWN STATUS (`pulama-main.js status`, read detached): whether it stands lit, and whether the admitted set it
+# reads under its key names the image and no tombstone ends it. An unlit pūlama lists no admission; a status that never
+# answers leaves both unread.
+ps_lit=""; ps_admitted=""
+pulama_status_read() { # $1 = the image digest
+  ps_lit=""; ps_admitted=""
+  ps_flat=$(compose --profile pulama exec -T pulama node "$PULAMA_MAIN" status </dev/null 2>/dev/null | tr -d ' \t\r\n') || return 0
+  case "$ps_flat" in *'"lit":true'*) ps_lit=yes ;; *'"lit":false'*) ps_lit=no; return 0 ;; *) return 0 ;; esac
+  ps_list=$(printf '%s' "$ps_flat" | sed -n 's/.*"admitted":\[\([^]]*\)\].*/\1/p')
+  ps_ended=$(printf '%s' "$ps_flat" | sed -n 's/.*"ended":\[\([^]]*\)\].*/\1/p')
+  ps_admitted=no
+  case "$ps_list" in *"\"$1\""*) case "$ps_ended" in *"\"$1\""*) ;; *) ps_admitted=yes ;; esac ;; esac
+}
+# A kūkulu offer the standing vessel rested (config/kukulu-offer.json) whose vouch names the image: the next vessel offers
+# it once, and the pūlama lends on it with no admit.
+offer_carries() { [ -n "$1" ] && [ -f "$HOUSE/config/kukulu-offer.json" ] && grep -qF -- "$1" "$HOUSE/config/kukulu-offer.json"; }
+# Does a vessel run the image the tag names? vo_running reads yes wherever a vessel runs at all.
+vo_running=""
+vessel_on_image() {
+  vo_running=""
+  vo_id=$(compose ps -q --status running lares 2>/dev/null) || return 1
+  [ -n "$vo_id" ] || return 1
+  vo_running=yes
+  vo_ran=$(docker inspect --format '{{.Image}}' "$vo_id" 2>/dev/null | tr -d '\r') || return 1
+  vo_stands=$(image_id) || return 1
+  [ -n "$vo_ran" ] && [ "$vo_ran" = "$vo_stands" ]
+}
+print_reading() {
+  rd_image=$(image_id) || rd_image=""
+  if vessel_on_image; then rd_current=true; else rd_current=false; fi
+  if [ -n "$vo_running" ]; then rd_vessel=standing; else rd_vessel=down; fi
+  rd_pulama=off; rd_lit=null; rd_admitted=null
+  if [ -n "$PULAMA_MODE" ]; then
+    pulama_reading; rd_pulama=$pr_state
+    case "$pr_state" in
+      absent|unread) ;;
+      *) pulama_status_read "$rd_image"
+         case "$ps_lit" in yes) rd_lit=true ;; no) rd_lit=false ;; esac
+         case "$ps_admitted" in yes) rd_admitted=true ;; no) rd_admitted=false ;; esac ;;
+    esac
+  fi
+  if offer_carries "$rd_image"; then rd_offer=true; else rd_offer=false; fi
+  printf '{"op":"rebuild-image","revision":"%s","image":"%s","how":"%s","vessel":"%s","current":%s,"pulama":"%s","lit":%s,"admitted":%s,"offer":%s}\n' \
+    "$R_REV" "$rd_image" "$R_HOW" "$rd_vessel" "$rd_current" "$rd_pulama" "$rd_lit" "$rd_admitted" "$rd_offer"
+}
+HAND_LINE='your hand: lares rite kukulu on a terminal'
+stand_house() {
+  s_digest=$(image_id) || s_digest=""
+  s_restand=""; s_light=""; s_admit=""; s_stays=""; s_why=""
+  if vessel_on_image; then s_stays=yes; fi
+  if [ -n "$PULAMA_MODE" ]; then
+    pulama_reading
+    case "$pr_state" in
+      unread) die "rebuild stops before anything moves: whether the pūlama stands, or what it runs, reads unknown (read it with \`tools/lares-container.sh pulama status\`)" ;;
+      absent) s_restand=yes; s_light=yes; s_why="no pūlama runs" ;;
+      moved) s_restand=yes; s_light=yes; s_why="the pūlama's code closure moved" ;;
+      *) pulama_status_read "$s_digest"
+         case "$ps_lit" in
+           yes) ;;
+           no) s_light=yes; s_why="the pūlama stands unlit" ;;
+           *) die "rebuild stops before anything moves: the pūlama answers no status, so whether it stands lit reads unknown (read it with \`tools/lares-container.sh pulama status\`)" ;;
+         esac ;;
+    esac
+    [ -z "$s_restand" ] || s_stays=""
+    if [ -z "$s_light" ] && [ -z "$s_stays" ] && [ "$ps_admitted" != yes ] && ! offer_carries "$s_digest"; then s_admit=yes; fi
+    if [ -z "$HAVE_TTY" ]; then
+      [ -z "$s_light" ] || die "rebuild stops before anything moves: $s_why, and its light reads your route on a terminal; $HAND_LINE"
+      [ -z "$s_admit" ] || die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HAND_LINE (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)"
+    fi
+  fi
+  if [ -n "$s_stays" ]; then
+    KEEP_SAID="the vessel stayed standing, so no keep ran"
+    printf 'lares-container: rebuild: the vessel runs %s already and stays standing\n' "$s_digest" >&2
+  else
     printf '%s\n' 'lares-container: rebuild: the down path (keep, census)' >&2
     down_vessel
-    printf 'lares-container: rebuild: the build from %s\n' "$r_at" >&2
-    build_image "$r_at"
-    if [ -n "$PULAMA_MODE" ]; then
-      pulama_reading
-      case "$pr_state" in
-        unread) die "rebuild stops: whether the pūlama stands, or what it runs, reads unknown; the image stands built (read it with \`tools/lares-container.sh pulama status\`)" ;;
-        absent|moved)
-          pulama_restand
-          mkdir -p -- "$HOUSE/cache" && printf '%s\n' "$KEEP_SAID" > "$REBUILD_PENDING" || true
-          printf '%s\n' 'lares-container: rebuild stops for your hand: the pūlama stands unlit on the new image; light it (`tools/lares-container.sh pulama light`), then `tools/lares-container.sh rebuild --resume`' >&2
-          exit 0 ;;
-        *) printf '%s\n' "lares-container: rebuild: the pūlama's code closure stands unmoved, so it stays lit (no restand, no light)" >&2 ;;
-      esac
-    fi
-  else
-    if [ -n "$PULAMA_MODE" ]; then
-      pulama_reading
-      case "$pr_state" in
-        unread) die "rebuild --resume refuses: whether the pūlama stands, or what it runs, reads unknown; read it with \`tools/lares-container.sh pulama status\`" ;;
-        absent) die "rebuild --resume refuses: no pūlama runs; \`tools/lares-container.sh pulama restand\`, light it, then rebuild --resume" ;;
-        moved) die "rebuild --resume refuses: the pūlama still runs an older code closure; \`tools/lares-container.sh pulama restand\`, light it, then rebuild --resume" ;;
-      esac
-    fi
-    KEEP_SAID=$(cat -- "$REBUILD_PENDING" 2>/dev/null) || KEEP_SAID=""
-    [ -n "$KEEP_SAID" ] || KEEP_SAID="ran before the light, in the rebuild's first half"
   fi
-  rm -f -- "$REBUILD_PENDING"
-  REBUILDING=yes
-  up_verb
+  [ -z "$s_restand" ] || pulama_restand
+  if [ -n "$s_light" ]; then
+    printf 'lares-container: rebuild: %s; the pūlama lights on this terminal (it reads your route, this shim never does)\n' "$s_why" >&2
+    compose --profile pulama exec pulama node "$PULAMA_MAIN" light || true
+    pulama_status_read "$s_digest"
+    [ "$ps_lit" = yes ] || die "the pūlama did not light (above); run \`lares rite kukulu\` again on a terminal, and it picks up from here"
+    if [ -z "$s_stays" ] && [ "$ps_admitted" != yes ] && ! offer_carries "$s_digest"; then s_admit=yes; fi
+  fi
+  if [ -z "$s_stays" ]; then REBUILDING=yes; up_verb; fi
   if [ -n "$PULAMA_MODE" ]; then
-    printf '%s\n' 'lares-container: rebuild: the pūlama admits the new image; it reads your route on this terminal' >&2
-    compose --profile pulama exec pulama node "$PULAMA_MAIN" admit || die "the pūlama admitted nothing (above); the vessel stands at the floor: \`tools/lares-container.sh pulama admit\`, then \`tools/lares-container.sh vault unlock --all\`"
-    # shellcheck disable=SC2046
-    waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all </dev/null || die "the vessel did not open after the admit (above); read it with \`tools/lares-container.sh pulama status\`, then \`tools/lares-container.sh vault unlock --all\`"
-    if none_worn; then wear_last_face; fi
-  fi
+    if [ -n "$s_admit" ]; then
+      printf '%s\n' 'lares-container: rebuild: the pūlama admits the image; it reads your route on this terminal' >&2
+      compose --profile pulama exec pulama node "$PULAMA_MAIN" admit || die "the pūlama admitted nothing (above); the vessel stands at the floor: \`tools/lares-container.sh pulama admit\`, then \`tools/lares-container.sh vault unlock --all\`"
+    fi
+    if [ -n "$s_stays" ]; then unlock_or_name
+    else
+      # shellcheck disable=SC2046
+      waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all </dev/null || die "the vessel did not open (above); read it with \`tools/lares-container.sh pulama status\`, then \`tools/lares-container.sh vault unlock --all\`"
+      if none_worn; then wear_last_face; fi
+    fi
+  elif [ -n "$s_stays" ]; then unlock_or_name; fi
   r_worn=${WORE#h}; [ -n "$r_worn" ] || r_worn=$(worn_now)
-  r_rev=$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$IMAGE_REF" 2>/dev/null) || r_rev=""
-  r_rev=$(printf '%s' "$r_rev" | tr -d '\r' | cut -c1-12)
+  r_rev=$(label_of "$IMAGE_REF" | cut -c1-12)
   if [ -n "$r_worn" ]; then r_wearing="wearing h$r_worn"; else r_wearing="no face worn (wear one: \`tools/lares-container.sh wear N\`)"; fi
-  printf 'lares-container: rebuilt: the vessel stands on revision %s, %s; keep: %s\n' "${r_rev:-unlabeled}" "$r_wearing" "${KEEP_SAID:-none ran}" >&2
+  printf 'lares-container: the house stands on revision %s, %s; keep: %s\n' "${r_rev:-unlabeled}" "$r_wearing" "${KEEP_SAID:-none ran}" >&2
+}
+rebuild_verb() {
+  r_at=HEAD; r_at_given=""; r_prior=""; r_image=""
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --at) [ "$#" -ge 2 ] || die "rebuild --at wants a revision"; r_at=$2; r_at_given=yes; shift 2 ;;
+      --prior) r_prior=yes; shift ;;
+      --image) r_image=yes; shift ;;
+      *) die "rebuild takes --at <rev>, --prior and --image, and \"$1\" names none of them" ;;
+    esac
+  done
+  [ -z "$r_prior" ] || [ -z "$r_at_given" ] || die "rebuild takes --at <rev> or --prior, never both"
+  IN_REBUILD=yes
+  # Every line the image step prints rides stderr, so stdout carries the reading alone.
+  if [ -n "$r_prior" ]; then resolve_image "" >&2; else resolve_image "$r_at" >&2; fi
+  if [ -n "$r_image" ]; then print_reading; return 0; fi
+  stand_house
 }
 
 case "$verb" in
@@ -1086,10 +1216,6 @@ case "$verb" in
     [ -z "$failed" ] || exit 1
     printf '%s\n' 'lares-container: hearth cleared; sensoriums, projections, library and config stand; the hearth can be founded again.' ;;
   logs)  compose logs "$@" lares ;;
-  image-digest)
-    [ "$#" -eq 0 ] || die "image-digest takes no arguments"
-    image_digest
-    printf '%s\n' "$digest" ;;
   build)
     at=HEAD
     if [ "${1:-}" = --at ]; then [ "$#" -ge 2 ] || die "build --at wants a revision"; at=$2; shift 2; fi

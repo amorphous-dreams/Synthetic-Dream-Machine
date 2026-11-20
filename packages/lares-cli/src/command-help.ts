@@ -85,10 +85,17 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] [--face N] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts",
+    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts",
     synopsis:
-      "A rite spends a lei. kūkulu raises the vessel again around its hearth: the rite begins in the vessel (the lei's return and " +
-      "the guest half of a tessera) before the host shim rebuilds the image and raises a new vessel, which rests the host half. " +
+      "A rite spends a lei. kūkulu is the one verb that raises the house again around its hearth, and it picks up wherever the " +
+      "house stands: it fast-forwards the checkout where it stands clean and behind its upstream (a dirty tree behind, a diverged " +
+      "branch or a detached head stops with one line), makes the image (the tag, a kept image, or a build from the commit), spends " +
+      "each face's kukulu lei where one stands (the guest half of a tessera; no prompt), takes the vessel down (keep, census) and " +
+      "raises the new one, and the new vessel rests the host half. A pūlama whose code moved, or that stands unlit, lights on this " +
+      "terminal in the same run; an image no admission and no lei carries asks the pūlama's admit there too. With no terminal, a day " +
+      "that owes either route stops before anything moves and names the hand act (`lares rite kukulu` on a terminal); every other " +
+      "day flows. --rollback stands the image that ran before (--rollback <rev>: an older revision's kept image, or a build from " +
+      "that commit), with no checkout move. " +
       "keep lays the house's authored memory, cut as a cleartext house bundle a new house imports, into a workspace the operator " +
       "bound, and keeps it in the operator's repo: on the host it guards the workspace clone (only <into> changes; a committed `* -text` " +
       ".gitattributes; no secret-shaped string), runs keep-cut in the vessel (a return of the keep lei strung for that workspace; the " +
@@ -99,7 +106,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "conferre matches the halves at each wake: a match reads par, a half with no match reads red.",
     examples: [
       "lares lei kui --rite kukulu --branch main --returns 3 --all   # the hand strings every open face's lei first, one route",
-      "lares rite kukulu                                       # begin, rebuild, raise, land: every lent face, as the worn face",
+      "lares rite kukulu                                       # fast-forward, image, begin, restand, land: the whole raise",
+      "lares rite kukulu --rollback                            # stand the image that ran before, no build, no checkout move",
       "lares lei kui --rite keep --branch house-backup --returns 6 --face 0   # the hand strings a keep lei for one workspace, as one face",
       "lares rite keep --workspace house-backup                # guard, cut into <workspace>/house, commit, push, land: par",
       "lares rite keep-cut --workspace house-backup            # the vessel half alone: cut, verify, spend a return, rest the bundle",
@@ -107,7 +115,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares rite land --tessera <id> --head <commit>          # land a rite whose vessel came back locked",
       "lares rite receipts --json                              # data.receipts, data.conferre",
     ],
-    flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rite <r>   (begin) the rite", "--head <commit>   (begin, offer, land) the head",
+    flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rollback [<rev>]   (kukulu) the image that ran before, or an older revision's", "--rite <r>   (begin) the rite", "--head <commit>   (begin, offer, land) the head",
       "--staging <path>   (begin, a keep) the bundle the keep staged inside its workspace; the vessel derives the id from it",
       "--workspace <name>   (keep, keep-cut) the bound workspace the bundle rests in", "--into <path>   (keep, keep-cut) the place inside it (house where absent)",
       "--accept-omissions   (keep, keep-cut) name the bundle partial where the census reads unsettled",
