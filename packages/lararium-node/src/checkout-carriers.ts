@@ -50,7 +50,7 @@ const under = (root: string, at: string): boolean => {
 
 /**
  * The untracked files at `at`, for any checkout outside the projections root. The root reads at each call (a house with
- * none names no pool to spare). `at` may name a file that no longer stands: the read then answers for its directory.
+ * none names no pool to spare). `at` may name a path with no file on disk: the read then answers for its directory.
  */
 export function checkoutTracking(projectionsRoot: () => string | null, git: GitRun = walledGit): CarrierTracking {
   return (at) => {
