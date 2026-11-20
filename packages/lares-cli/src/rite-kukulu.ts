@@ -35,11 +35,23 @@ export type RiteVerbAnswer =
   | { readonly ok: true; readonly output: Record<string, unknown> }
   | { readonly ok: false; readonly code: string; readonly message: string };
 
+/** The refusal a rite stops on where its lei spent every return. */
+export const RETURNS_SPENT = "swarm-lei-returns-spent";
+
+/** A spent line's refill: the rite, the branch, the face (or every open face), and the returns the spent lei carried where known. */
+export interface RefillReq { readonly rite: "keep" | "kukulu"; readonly branch: string; readonly face?: number; readonly all?: boolean; readonly returns?: number }
+/** `strung`: the hand strung the refill on a terminal; `remedy`: the plain line that does it by hand (it names no cid, a kui follows the tip itself). */
+export interface RefillAnswer { readonly strung: boolean; readonly remedy: string }
+/** The offer a real terminal gets: ask, then string the refill through the hand door; a pipe or an AI seat only reads the remedy. */
+export type RefillPort = (req: RefillReq) => Promise<RefillAnswer>;
+
 export interface RitePorts {
   /** The checkout's head and the branch it rides. */
   checkout(): Promise<{ readonly head: string; readonly branch: string }>;
   /** One store row, answered by the vessel that stands (or the offline door where none does). */
   row(verb: "rite-begin" | "rite-land" | "rite-offer", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
+  /** Where a spent kūkulu lei is offered its refill inline; absent, the rite refuses as it did. */
+  refill?: RefillPort;
   /** The digest of the image the build left, as the HOST reads it; null where the host names none. Absent, the rite writes no offer. */
   image?(): Promise<string | null>;
   /** One verb of the host shim; the answer carries its exit code. */
@@ -78,9 +90,16 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
   const head = checkout.head, branch = opts.branch ?? checkout.branch;
   const base = { rite: RITE_KUKULU, branch, head };
   const asFace = opts.face === undefined ? {} : { face: opts.face };
-  const begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asFace });
+  let begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asFace });
+  let remedy = "";
+  if (!begun.ok && begun.code === RETURNS_SPENT && ports.refill) {
+    // A SPENT LEI OFFERS ITS OWN REFILL on a terminal, then the rite goes on; elsewhere the refusal names the plain line.
+    const again = await ports.refill({ rite: "kukulu", branch, ...(opts.face === undefined ? { all: true } : { face: opts.face }) });
+    if (again.strung) begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asFace });
+    else remedy = `; string more by hand: ${again.remedy}`;
+  }
   if (!begun.ok) {
-    ports.say(`kūkulu: the rite begins nothing: ${begun.message}`);
+    ports.say(`kūkulu: the rite begins nothing: ${begun.message}${remedy}`);
     return { code: 1, data: { ...base, begun: false, refusal: begun.code } };
   }
   // ONE RITE PER LENT FACE: each face's tessera lands under that face, and a face with no lei of its own waits by name.

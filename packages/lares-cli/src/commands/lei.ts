@@ -7,7 +7,8 @@
  *   show       `swarm-show`          reads the board; with `--rite --branch [--head]` it also reads one rite's standing lei (`data.lei`);
  *                                    naming no face with several faces open, it reads every open face's line (`data.faces`)
  *   kui        `swarm-lei-kui`       strings a lei: wide by default (`--returns <n>`), or `--reach head --head <h>` to pin one head;
- *                                    `--after <lei cid>` names the lei it follows, absent for the first on the line; more than
+ *                                    with no `--after` it follows the line's own tip (the first on an empty line);
+ *                                    a named `--after` that is no tip refuses as forked, before any route or signature; more than
  *                                    twelve returns asks `--yes`. `--all` (push, kukulu) strings one lei for EVERY open face under
  *                                    ONE route: each face's own record by its own hand, at its own line's tip; `data.faces` names
  *                                    each face's cid (`lei`). A lei stays one face's record; only the act gathers them
@@ -30,7 +31,7 @@
  */
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
-import { emit, exitFor, refuseUsage } from "../render.js";
+import { emit, emitAnswer, exitFor, refuseUsage } from "../render.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { houseFaces } from "../custody-door.js";
@@ -204,6 +205,26 @@ async function everyFaceTerms(a: Readonly<Record<string, unknown>>, ports: LeiTe
 }
 
 /**
+ * The `after` a kui follows, read off the line (`swarm-show`'s `data.lei`): the line's one tip when none is named (null where the line
+ * holds none); a named `after` that is no tip of the line refuses by the door's own names (`swarm-lei-forked`, or
+ * `swarm-lei-after-moved` where the line holds no lei), so the vessel predicts what its door would refuse.
+ */
+export function kuiAfter(line: RiteVerbAnswer, rite: string, branch: string, face: number, named: string | undefined): string | null {
+  if (!line.ok) throw new LeiTermsRefused(line.code, line.message);
+  const lei = (line.output["lei"] ?? {}) as { after?: unknown; forks?: unknown };
+  const forks = Array.isArray(lei.forks) && lei.forks.length > 1 ? lei.forks.map(String) : [];
+  const tip = typeof lei.after === "string" && lei.after !== "" ? lei.after : null;
+  if (forks.length > 0) {
+    if (named !== undefined && forks.includes(named)) return named;
+    throw new LeiTermsRefused("swarm-lei-forked", `the ${rite} line at "${branch}" forks for h${face} (${forks.join(", ")}); name one tip with --after`);
+  }
+  if (named === undefined) return tip;
+  if (named === tip) return tip;
+  if (tip === null) throw new LeiTermsRefused("swarm-lei-after-moved", `no lei stands on the ${rite} line at "${branch}" for h${face}; a kui strings its first with no --after`);
+  throw new LeiTermsRefused("swarm-lei-forked", `a lei at "${branch}" already follows ${named}; name the chain's tip ${tip}`);
+}
+
+/**
  * `terms`: the one JSON object the pūlama's `lei <act>` takes, in its order (`face`, `rite`, `branch`, then `reach` ·
  * `returns` · `head` · `after` · `confirm` · `lei` as the act carries them). It reads and writes nothing else.
  */
@@ -235,6 +256,12 @@ export async function leiTerms(args: ParsedArgs, ports: LeiTermsPorts): Promise<
     }
   } else face = await ports.mountFace();
   let after: unknown = a["after"];
+  if (act === "kui") {
+    // A KUI NAMES THE LINE'S TIP ITSELF: unnamed, it follows the tip the line stands at (null for a line's first); a named `after`
+    // that is no tip refuses here, before the pūlama asks the hand to sign what the vessel would refuse.
+    line ??= await ports.show(String(a["rite"]), String(a["branch"]), face);
+    after = kuiAfter(line, String(a["rite"]), String(a["branch"]), face, args.options["after"]?.trim() || undefined);
+  }
   if (act === "restring") {
     // THE LINE'S TIP, as `lares lei show --rite --branch` reads it (`data.lei.after`): the lei the restring follows.
     line ??= await ports.show(String(a["rite"]), String(a["branch"]), face);
@@ -272,7 +299,7 @@ async function cmdLeiTerms(line: ParsedArgs): Promise<number> {
   } catch (err) {
     if (err instanceof LeiUsage) return refuseUsage(args, "lei", helpLines("lei"), err.message);
     const failure = err instanceof LeiTermsRefused ? { code: err.code, message: err.message } : storeFailure(err);
-    emit(args, { ok: false, error: failure, human: () => console.error(`lares lei: ${failure.message}`) });
+    emitAnswer(args, { ok: false, error: failure, human: () => console.error(`lares lei: ${failure.message}`) }, `lares lei: ${failure.message}`);
     return exitFor(failure.code);
   }
 }
@@ -285,17 +312,17 @@ async function perFace(args: ParsedArgs, head: Record<string, unknown>, rows: Re
     catch (err) {
       const failure = storeFailure(err);
       const at = row.face !== undefined ? `h${row.face}: ` : "";
-      emit(args, { ok: false, data: { ...head, faces }, error: { code: failure.code, message: `${at}${failure.message}` }, human: () => { console.log(JSON.stringify({ ...head, faces })); console.error(`lares lei: ${at}${failure.message}`); } });
+      emitAnswer(args, { ok: false, data: { ...head, faces }, error: { code: failure.code, message: `${at}${failure.message}` }, human: () => { console.log(JSON.stringify({ ...head, faces })); console.error(`lares lei: ${at}${failure.message}`); } }, `lares lei: ${at}${failure.message}`);
       return exitFor(failure.code);
     }
   }
   const data = { ...head, faces, ...(stopped ? { stopped } : {}) };
   if (stopped) {
     const message = `the pūlama stopped at ${stopped.face !== undefined ? `h${stopped.face}` : "a face"} (${stopped.reading}); the faces it signed before landed`;
-    emit(args, { ok: false, data, error: { code: stopped.reading, message }, human: () => { console.log(JSON.stringify(data)); console.error(`lares lei: ${message}`); } });
+    emitAnswer(args, { ok: false, data, error: { code: stopped.reading, message }, human: () => { console.log(JSON.stringify(data)); console.error(`lares lei: ${message}`); } }, `lares lei: ${message}`);
     return exitFor(stopped.reading);
   }
-  emit(args, { ok: true, data, human: () => console.log(JSON.stringify(data)) });
+  emitAnswer(args, { ok: true, data, human: () => console.log(JSON.stringify(data)) }, `lares lei: ${faces.length} face${faces.length === 1 ? "" : "s"} answered`);
   return 0;
 }
 
@@ -330,12 +357,19 @@ export async function cmdLei(args: ParsedArgs): Promise<number> {
       const open = [...(await houseFaces()).open].sort((x, y) => x - y);
       if (open.length > 1) return await perFace(args, line, open.map((face) => ({ face, run: run({ verb: "swarm-show", args: { ...plan.args, face } }) })));
     }
-    const output = await run(plan)();
-    emit(args, { ok: true, data: output, human: () => console.log(JSON.stringify(output)) });
+    // A KUI WITH NO PŪLAMA NAMES THE LINE'S TIP ITSELF, as `terms` does: one read of the line (and a refusal the vessel predicts, before
+    // any route is asked), then the row at that face and tip.
+    let row = plan;
+    if (landing === null && plan.verb === "swarm-lei-kui") {
+      const read = await leiTerms({ ...args, positional: ["terms", "kui"] }, TERMS_PORTS);
+      row = { verb: plan.verb, args: { ...rowArgs, face: read["face"], after: read["after"] } };
+    }
+    const output = await run(row)();
+    emitAnswer(args, { ok: true, data: output, human: () => console.log(JSON.stringify(output)) }, `lares lei ${String(args.positional[0])}: done`);
     return 0;
   } catch (err) {
     const failure = err instanceof LeiTermsRefused ? { code: err.code, message: err.message } : storeFailure(err);
-    emit(args, { ok: false, error: failure, human: () => console.error(`lares lei: ${failure.message}`) });
+    emitAnswer(args, { ok: false, error: failure, human: () => console.error(`lares lei: ${failure.message}`) }, `lares lei: ${failure.message}`);
     return exitFor(failure.code);
   }
 }

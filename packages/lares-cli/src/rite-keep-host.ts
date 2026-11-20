@@ -46,7 +46,7 @@ import { MANIFEST_FILE, unsafeRelPath } from "./bundle-manifest.js";
 import { configuredKeepSessions } from "./keep-config.js";
 import { DEVICES_DIR, SessionsRefused, mirrorSessions, readOrMintDevice, sessionSources, type SessionSources } from "./keep-sessions.js";
 import { KEEP_INTO, KeepRefused, RITE_KEEP, codedMessage, keepFaceLine } from "./rite-keep.js";
-import type { RiteVerbAnswer } from "./rite-kukulu.js";
+import { RETURNS_SPENT, type RefillPort, type RiteVerbAnswer } from "./rite-kukulu.js";
 
 /**
  * The secret-shaped strings no keep pushes, the same list the operator's claude-backup sync scans with: an Anthropic key, a
@@ -119,6 +119,8 @@ export interface KeepHostPorts {
   /** git in `dir`; never throws. */
   git(dir: string, argv: readonly string[]): Promise<GitAnswer>;
   say(line: string): void;
+  /** Where a spent keep lei is offered its refill inline (a real terminal); absent, the refusal stands and names the plain line. */
+  refill?: RefillPort;
 }
 
 export interface KeepHostOptions {
@@ -251,7 +253,14 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
 
     // ── 3. THE VESSEL HALF ────────────────────────────────────────────────────────────────────────────────────
     stage = "keep";
-    const cut = await ports.row("keep-cut", { workspace: name, into, ...(opts.acceptOmissions === true ? { "accept-omissions": true } : {}), ...face });
+    const cutRow = (): Promise<RiteVerbAnswer> => ports.row("keep-cut", { workspace: name, into, ...(opts.acceptOmissions === true ? { "accept-omissions": true } : {}), ...face });
+    let cut = await cutRow();
+    if (!cut.ok && cut.code === RETURNS_SPENT && ports.refill) {
+      // A SPENT KEEP LEI OFFERS ITS OWN REFILL on a terminal (the returns and the face the refusal names), then the keep goes on once.
+      const returns = /--returns (\d+)/.exec(cut.message)?.[1], at = /--face (\d+)/.exec(cut.message)?.[1];
+      const again = await ports.refill({ rite: "keep", branch: name, ...(returns ? { returns: Number(returns) } : {}), ...(at ? { face: Number(at) } : face.face !== undefined ? { face: face.face } : {}) });
+      if (again.strung) cut = await cutRow();
+    }
     if (!cut.ok) throw new HostRefused(cut.code, KEEP_VESSEL_UNREACHED.has(cut.code) ? `${KEEP_VESSEL_DOWN} (${cut.message}). No return spent, and nothing commits or pushes${sessionsMoved ? `; the sessions rest mirrored in ${devRel!}/ for the keep that follows` : ""}` : cut.message);
     const actedAs = cut.output["face"];
     if (typeof actedAs === "number" && Number.isSafeInteger(actedAs)) {

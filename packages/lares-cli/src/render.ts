@@ -208,3 +208,14 @@ export function emit(args: ParsedArgs, e0: Emission): void {
     typeof e.error === "string" ? { code: "error", message: e.error } : e.error;
   stdout.write(JSON.stringify(payload) + "\n");
 }
+
+/**
+ * ONE ANSWER SHAPE for the hand verbs (`lei show|kui|unstring|restring|land`, `rite keep|kukulu`): the one-line JSON envelope
+ * rides stdout on a terminal and on a pipe alike, and a terminal also reads one line of prose on stderr (`say`: the verdict in
+ * words, the refusal by its message). Only an explicit `--no-json` asks the prose route (`e.human`) in place of the envelope.
+ */
+export function emitAnswer(args: ParsedArgs, e: Emission, say: string): void {
+  const asked = { ...args, flags: { ...args.flags, json: args.flags["json"] !== false } };
+  emit(asked, e);
+  if (asked.flags["json"] === true && stdout.isTTY) console.error(say);
+}

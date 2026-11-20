@@ -25,12 +25,13 @@
 import { execFile, spawn } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
+import { createInterface } from "node:readline";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
-import { emit, exitFor, refuseUsage } from "../render.js";
-import { riteKukulu, type RitePorts, type RiteVerbAnswer } from "../rite-kukulu.js";
+import { emitAnswer, exitFor, refuseUsage } from "../render.js";
+import { riteKukulu, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer } from "../rite-kukulu.js";
 import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
@@ -141,17 +142,17 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
   }
   try {
     const out = await riteKeep(KEEP_PORTS, plan);
-    emit(args, { ok: true, data: out, human: () => {
+    emitAnswer(args, { ok: true, data: out, human: () => {
       if (out.faceBy === "keep" && out.face !== undefined) console.log(`keep: ${keepFaceLine(out.face)}`);
       if (!out.kept) { console.log(`keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`); return; }
       console.log(`keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest} (faces: ${out.faces.join(", ") || "(none)"}), return ${out.n} of the keep lei spent`);
       for (const o of out.omissions) console.log(`  left behind: ${o.kind}${o.count !== undefined ? ` (${o.count})` : ""} — ${o.detail}`);
       console.log(`keep: the bundle rests unencrypted (private memory as plain files); the host half commits and pushes it, then lands the rite: lares rite land --tessera ${out.tessera} --head ${out.bundleId}`);
-    } });
+    } }, out.kept ? `keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest}, return ${out.n} of the keep lei spent; land it: lares rite land --tessera ${out.tessera} --head ${out.bundleId}` : `keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`);
     return 0;
   } catch (err) {
     if (err instanceof KeepRefused) {
-      emit(args, { ok: false, error: { code: err.code, message: err.message }, human: () => console.error(`lares rite keep-cut: ${err.message}`) });
+      emitAnswer(args, { ok: false, error: { code: err.code, message: err.message }, human: () => console.error(`lares rite keep-cut: ${err.message}`) }, `lares rite keep-cut: ${err.message}`);
       return exitFor(err.code);
     }
     return bundleRefusal(args, "rite keep-cut", err);
@@ -161,11 +162,11 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
 async function runRiteVerb(args: ParsedArgs, plan: RitePlan): Promise<number> {
   try {
     const { output } = await storeVerb(plan.verb, plan.args);
-    emit(args, { ok: true, data: output, human: () => console.log(JSON.stringify(output)) });
+    emitAnswer(args, { ok: true, data: output, human: () => console.log(JSON.stringify(output)) }, `lares rite ${plan.verb}: done`);
     return 0;
   } catch (err) {
     const failure = storeFailure(err);
-    emit(args, { ok: false, error: failure, human: () => console.error(`lares rite: ${failure.message}`) });
+    emitAnswer(args, { ok: false, error: failure, human: () => console.error(`lares rite: ${failure.message}`) }, `lares rite: ${failure.message}`);
     return exitFor(failure.code);
   }
 }
@@ -233,10 +234,46 @@ const hostSeedOffer = hostSeedOfferPort({
   },
 });
 
+/** The words of a spent line's refill: `lares lei kui` with the spent lei's own returns and the face (or every open face), naming no cid. */
+export const refillArgs = (req: RefillReq, returns: number | null): string[] =>
+  ["lei", "kui", "--rite", req.rite, "--branch", req.branch, "--returns", returns === null ? "<n>" : String(returns), ...(req.face !== undefined ? ["--face", String(req.face)] : req.all === true ? ["--all"] : [])];
+
+/** The returns the spent line carried, read off `lei show` (one face's `lei`, or the first spent face's); null where none reads. */
+async function spentReturns(req: RefillReq): Promise<number | null> {
+  const shown = await cliVerb(["lei", "show", "--rite", req.rite, "--branch", req.branch, ...(req.face !== undefined ? ["--face", String(req.face)] : [])]);
+  if (!shown.ok) return null;
+  const lines = Array.isArray(shown.output["faces"]) ? (shown.output["faces"] as Array<{ lei?: { returns?: unknown } }>).map((f) => f.lei) : [shown.output["lei"] as { returns?: unknown } | undefined];
+  const found = lines.find((l) => typeof l?.returns === "number");
+  return found ? Number(found.returns) : null;
+}
+
+/**
+ * THE INLINE REFILL: a rite stopped on a spent lei asks the person at a real terminal (stdin and stdout both) whether to string the
+ * same returns again under their route, then runs the checkout shim's own `lei kui` (the hand door, under a pūlama or none). A pipe or
+ * an AI seat is asked nothing and reads the plain line.
+ */
+export function hostRefill(ask: (q: string) => Promise<boolean>, run: (argv: readonly string[]) => Promise<number>, tty: () => boolean, readReturns: (req: RefillReq) => Promise<number | null> = spentReturns): RefillPort {
+  return async (req) => {
+    const returns = req.returns ?? await readReturns(req);
+    const argv = refillArgs(req, returns);
+    const remedy = `lares ${argv.join(" ")}`;
+    if (returns === null || !tty()) return { strung: false, remedy };
+    if (!(await ask(`the ${req.rite} lei for ${req.branch} is spent; string ${returns} more under your route?`))) return { strung: false, remedy };
+    return { strung: (await run(argv)) === 0, remedy };
+  };
+}
+
+const liveRefill: RefillPort = hostRefill(
+  (q) => new Promise((resolve) => { const rl = createInterface({ input: process.stdin, output: process.stderr }); rl.question(`${q} [y/N] `, (a) => { rl.close(); resolve(/^y(es)?$/i.test(a.trim())); }); }),
+  (argv) => new Promise((resolve) => { const c = spawn(join(CHECKOUT, "tools", "lares-container.sh"), [...argv], { stdio: "inherit" }); c.once("error", () => resolve(127)); c.once("close", (code) => resolve(code ?? 1)); }),
+  () => process.stdin.isTTY === true && process.stdout.isTTY === true,
+);
+
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
 function hostPorts(runShim: (verb: string) => Promise<number>, say: (line: string) => void, image: () => Promise<string | null>): RitePorts {
   return {
     image,
+    refill: liveRefill,
     seedOffer: (head) => hostSeedOffer(head).catch(() => null),   // a read-only line never stops the rite
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
@@ -278,14 +315,14 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
   }
   if ((process.env[IN_CONTAINER_ENV] ?? "").trim() !== "") {
     const message = "keep-host-half-in-vessel: the keep's host half commits and pushes the workspace with the host's git; run `lares rite keep` on the host, where the bridge reaches the vessel half (`lares rite keep-cut`) as a row";
-    emit(args, { ok: false, error: { code: "keep-host-half-in-vessel", message }, human: () => console.error(`lares rite: ${message}`) });
+    emitAnswer(args, { ok: false, error: { code: "keep-host-half-in-vessel", message }, human: () => console.error(`lares rite: ${message}`) }, `lares rite: ${message}`);
     return 2;
   }
   // `--if-due` with no workspace named reads the house config's keep workspace; a config naming none keeps nothing, and says so.
   const workspace = plan.workspace ?? configuredKeepWorkspace();
   if (workspace === null) {
     const data = { rite: "keep", due: false, workspace: null, why: "no keep workspace named (LARES_KEEP_WORKSPACE, or one LARES_WORKSPACES pair)" };
-    emit(args, { ok: true, data, human: () => console.error(`keep: ${data.why}; nothing kept`) });
+    emitAnswer(args, { ok: true, data, human: () => console.error(`keep: ${data.why}; nothing kept`) }, `keep: ${data.why}; nothing kept`);
     return 0;
   }
   const ports: KeepHostPorts = {
@@ -293,12 +330,16 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
     row: (verb, rowArgs) => cliVerb(["rite", verb, ...flagsOf(rowArgs)]),
     git: gitIn,
     say: (line) => console.error(line),
+    // The down path's `--if-due` keep asks nobody; a keep the operator runs by hand offers a spent lei's refill.
+    ...(plan.ifDue === true ? {} : { refill: liveRefill }),
   };
   const out = await riteKeepHost(ports, { ...plan, workspace });
   const refusal = String(out.data["refusal"] ?? "keep-stopped");
-  emit(args, out.code === 0
+  const keepSaid = String(out.data["message"] ?? "the keep rite did not complete");
+  emitAnswer(args, out.code === 0
     ? { ok: true, data: out.data, human: () => console.log(JSON.stringify(out.data)) }
-    : { ok: false, data: out.data, error: { code: refusal, message: String(out.data["message"] ?? "the keep rite did not complete") }, human: () => console.log(JSON.stringify(out.data)) });
+    : { ok: false, data: out.data, error: { code: refusal, message: keepSaid }, human: () => console.log(JSON.stringify(out.data)) },
+  out.code === 0 ? "lares rite keep: kept" : `lares rite keep: ${keepSaid}`);
   return out.code === 0 ? 0 : exitFor(refusal);
 }
 
@@ -309,16 +350,18 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
     const shim = join(CHECKOUT, "tools", "lares-container.sh"), envFile = join(homedir(), ".lares", "lares-surface.env");
     if ((process.env["LAR_ROOT"] ?? "").trim() !== "" || !existsSync(shim) || !existsSync(envFile)) {
       const message = "rite-needs-the-container-house: kūkulu rebuilds the vessel's image and raises its container through the host shim; run it on the host, with LAR_ROOT unset, where ~/.lares/lares-surface.env and tools/lares-container.sh stand";
-      emit(args, { ok: false, error: { code: "rite-needs-the-container-house", message }, human: () => console.error(`lares rite: ${message}`) });
+      emitAnswer(args, { ok: false, error: { code: "rite-needs-the-container-house", message }, human: () => console.error(`lares rite: ${message}`) }, `lares rite: ${message}`);
       return 2;
     }
     const branch = typeof args.options["branch"] === "string" && args.options["branch"].trim() !== "" ? args.options["branch"].trim() : undefined;
     const faceWord = typeof args.options["face"] === "string" ? args.options["face"].trim() : undefined;
     if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
     const out = await riteKukulu(hostPorts((verb) => runShim(shim, verb), (line) => console.error(line), async () => { const d = await readShim(shim, SHIM_IMAGE_VERB); return d !== null && /^[a-z0-9]+:[0-9a-f]{32,128}$/.test(d) ? d : null; }), { ...(branch === undefined ? {} : { branch }), ...(faceWord === undefined ? {} : { face: Number(faceWord) }) });
-    emit(args, out.code === 0
+    const kukuluMessage = "the kūkulu rite did not complete; the lines above name where it stopped";
+    emitAnswer(args, out.code === 0
       ? { ok: true, data: out.data, human: () => console.log(JSON.stringify(out.data)) }
-      : { ok: false, data: out.data, error: { code: String(out.data["refusal"] ?? `rite-stopped-at-${String(out.data["stopped"] ?? "landing")}`), message: "the kūkulu rite did not complete; the lines above name where it stopped" }, human: () => console.log(JSON.stringify(out.data)) });
+      : { ok: false, data: out.data, error: { code: String(out.data["refusal"] ?? `rite-stopped-at-${String(out.data["stopped"] ?? "landing")}`), message: kukuluMessage }, human: () => console.log(JSON.stringify(out.data)) },
+    out.code === 0 ? "lares rite kukulu: the rite completed" : `lares rite kukulu: ${kukuluMessage}`);
     return out.code;
   }
   const sub = args.positional[0];
