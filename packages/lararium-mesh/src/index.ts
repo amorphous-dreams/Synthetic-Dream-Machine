@@ -299,6 +299,7 @@ export * from "./residency-actions.js";
 export * from "./verb-refusal.js";
 export * from "./content-handle.js";
 export * from "./effect-record.js";
+export * from "./retired-shell-record.js";
 export * from "./kumu-device.js";
 export * from "./genesis-doc.js";
 export * from "./genesis-compare.js";

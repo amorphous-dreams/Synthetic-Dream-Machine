@@ -135,14 +135,25 @@ test("--force --count rides as the typed confirmation; --count without --force a
   expect(existsSync(folder())).toBe(true);
 });
 
-test("RED (referee walk #5) --dry-run and the landed retire name the house's effect records apart from the authored ones", async () => {
-  answer = { status: "done", output: { slug: SLUG, status: "would-retire", catalogRows: ["a"], realmId: ID, records: { working: 0, draft: 0, personal: 0, effects: 1 }, total: 0 } };
+test("RED (referee walk #5, the record of leaving stays) --dry-run and the landed retire name the house's effect records apart from the authored ones, and where they go", async () => {
+  const where = { title: "lar:///ha.ka.ba/lararium/retired-shells/elyncia-referee", bag: "lar:///ha.ka.ba/wikis/daemon/working" };
+  answer = { status: "done", output: { slug: SLUG, status: "would-retire", catalogRows: ["a"], realmId: ID, records: { working: 0, draft: 0, personal: 0, effects: 1 }, total: 0, carryTo: where } };
   expect(await run("--dry-run")).toBe(0);
   expect(text).toMatch(/authored records: 0 \(working 0, draft 0, personal 0\)/);
-  expect(text).toMatch(/effect records:\s+1 \(the house's own residency rows; they leave with the shell, unforced\)/);
+  expect(text).toMatch(/effect records:\s+1 \(the house's own residency rows; carried to lar:\/\/\/ha\.ka\.ba\/lararium\/retired-shells\/elyncia-referee in lar:\/\/\/ha\.ka\.ba\/wikis\/daemon\/working before the shell goes\)/);
   text = "";
   answer = retired(ID);
   (answer.output!["records"] as Record<string, number>)["effects"] = 1;
+  answer.output!["carried"] = { ...where, records: 1, added: 1 };
   expect(await run()).toBe(0);
-  expect(text).toMatch(/records destroyed:\s+none authored; 1 effect record\(s\) dropped with the shell/);
+  expect(text).toMatch(/records destroyed:\s+none authored/);
+  expect(text).toMatch(/effect records:\s+1 carried to lar:\/\/\/ha\.ka\.ba\/lararium\/retired-shells\/elyncia-referee \(lar:\/\/\/ha\.ka\.ba\/wikis\/daemon\/working; 1 new\), then erased with the shell/);
+});
+
+test("RED (the record of leaving stays) a carry that cannot land refuses by its code and exits 1; nothing local runs", async () => {
+  answer = { status: "error", errorMessage: "retire-carry-unlanded: the face's daemon working layer holds no durable document; nothing retired" };
+  expect(await run()).toBe(1);
+  expect(sent).toEqual([]);
+  expect(existsSync(folder())).toBe(true);
+  expect(text).toContain("retire-carry-unlanded");
 });
