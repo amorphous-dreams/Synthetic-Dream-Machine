@@ -2783,7 +2783,9 @@ async function prepareNodeBootOn(
       // family, the pin and every face plane read off the bootstrap alone.
       const {
         personaPlanes, personaBagId, personaUrl, identitiesUrl, circlesUrl, sessionsUrl, intentsUrl,
-      } = bootFacePlanes(bootstrapTiddlers, wornMount?.personaGroupId ?? null);
+      // THE PLANES FOLLOW THE FACE CUSTODY SELECTED (the worn mount, else the founding handle's own anchors), never a bootstrap pin a
+      // sibling's landing left naming another face: selection and mount resolution agree on one face.
+      } = bootFacePlanes(bootstrapTiddlers, custodyGroup);
       // ── THE PLACE STANDS ALONE; THE FACE RIDES OPTIONAL ────────────────────────────────────────
       // Only the daemon doc reads required — a founding stands a PLACE first (`lares vessel found`) and a FACE
       // later (`lares persona new 0`), so a vessel that carries and serves while holding no persona names

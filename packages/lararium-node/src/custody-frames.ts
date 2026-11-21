@@ -254,6 +254,18 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * unnamed daemon mount did, and never drops the vessel to the floor while another face stands open.
    */
   let mountByOpening = false;
+  /**
+   * WHETHER A FACE HOLDS ANCHORS: a face whose join still waits (its handle reserved, its anchors absent) never takes the mount,
+   * by an opening, a lock's slide or a held selection. The boot would read its anchors empty while the daemon names the face that
+   * landed, and stand at the floor.
+   */
+  const holdsAnchors = async (ordinal: number): Promise<boolean> =>
+    (await holder.readRecord("identity", `anchors-h${ordinal}.json`).catch(() => null))?.reading === "opens";
+  /** The lowest face of `ordinals` that holds anchors, or undefined where none does. */
+  const lowestAnchored = async (ordinals: readonly number[]): Promise<number | undefined> => {
+    for (const ordinal of [...ordinals].sort((x, y) => x - y)) if (await holdsAnchors(ordinal)) return ordinal;
+    return undefined;
+  };
   const composing = <A extends unknown[], T>(act: (...args: A) => Promise<T>) => async (...args: A): Promise<T> => {
     composingDepth += 1;
     try { return await act(...args); } finally { composingDepth -= 1; }
@@ -303,14 +315,10 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       // THE MOUNT AFTER AN OPENING: the one face this route opened, else the lowest of those it opened; `lares wear N` switches.
       // A FACE WHOSE ANCHORS STAND ABSENT (a join still pending, its handle reserved) never takes the mount: the boot would read
       // its anchors empty while the daemon names the face that landed. The opening mounts the lowest opened face holding anchors.
-      if (mounted === undefined && mountedBefore === undefined && opened.length > 0) {
-        const sorted = [...opened].sort((x, y) => x - y);
-        let anchored: number | undefined;
-        for (const ordinal of sorted) {
-          const reading = await holder.readRecord("identity", `anchors-h${ordinal}.json`).catch(() => null);
-          if (reading?.reading === "opens") { anchored = ordinal; break; }
-        }
-        mounted = anchored ?? sorted[0]!;
+      // A HELD SELECTION THAT NAMES A FACE HOLDING NO ANCHORS is no selection: the opening chooses again, as a fresh one does.
+      const keepsBefore = mountedBefore !== undefined && await holdsAnchors(mountedBefore);
+      if (mounted === undefined && !keepsBefore && opened.length > 0) {
+        mounted = (await lowestAnchored(opened)) ?? [...opened].sort((x, y) => x - y)[0]!;
         chosenByOpening = true;
       }
     } else if (sel.face !== undefined) {
@@ -444,7 +452,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // A MOUNT THE OPENING CHOSE SLIDES: locked, it moves to the next face standing open, and the vessel composes there.
     if (wasOpen && mountByOpening && ordinal === mountedFaceOrdinal()) {
       const open = new Set(holder.unlockedFaces());
-      const next = listFaceCustodyIds().filter((f) => open.has(f.fcid)).map((f) => f.ordinal).sort((x, y) => x - y)[0];
+      // The slide lands only on a face holding anchors; with none, the mount clears and the next opening chooses afresh.
+      const next = await lowestAnchored(listFaceCustodyIds().filter((f) => open.has(f.fcid)).map((f) => f.ordinal));
+      if (next === undefined) setMountedFace(undefined);
       if (next !== undefined) {
         setMountedFace(next);
         deps.onLog(`the mount slides to h${next}, the next face standing open`);

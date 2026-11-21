@@ -228,4 +228,23 @@ describe("the unlock answers honestly, and a failed switch wears the face it lef
     expect(all).toMatchObject({ reading: "opens", held: true, wears: 1 });
     expect(mountedFaceOrdinal()).toBe(1);
   });
+
+  // A LOCK NEVER SLIDES THE MOUNT ONTO A PENDING FACE, AND A HELD SELECTION NEVER KEEPS ONE (Sol, #408 round 3): with h0 pending
+  // and h1 landed, `lock --face 1` slid to the open h0 (no anchors) and the boot refused; a second `--all` kept h0 selected and
+  // answered held while the vessel stood on the floor.
+  test("RED: a lock slides only to a face holding anchors, and a later `--all` reselects the anchored face, never a pending one", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, FIXTURE_PASSPHRASE], undefined, [personaGroupDigest("the-pending-group"), personaGroupDigest("the-landed-group")]);
+    await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), face: 1 });
+    await v.holder.writeRecord("identity", "anchors-h1.json", new TextEncoder().encode(JSON.stringify({ personaGroupId: "the-landed-group", meshCabalDocIdHex: "ab" })));
+    await v.holder.lock();
+    setMountedFace(undefined);
+    expect(await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true })).toMatchObject({ held: true, wears: 1 });
+    const locked = await v.send({ op: "lock", face: 1 });
+    expect(locked).toMatchObject({ op: "lock", locked: true });
+    expect(mountedFaceOrdinal(), "the mount never slides onto the pending h0").not.toBe(0);
+    const again = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true });
+    expect(again).toMatchObject({ held: true, wears: 1 });
+    expect(mountedFaceOrdinal()).toBe(1);
+  });
 });
+

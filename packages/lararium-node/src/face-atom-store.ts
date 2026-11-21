@@ -156,6 +156,13 @@ export async function keepAndRetireFoundingSeed(group: string, ask: FoundingAtom
 export async function recoverFoundingSeedFromGroup(
   ask: FoundingAtomAsk, checkpoints: Readonly<Record<string, unknown>>,
 ): Promise<Uint8Array | null> {
+  return (await recoverFoundingGroup(ask, checkpoints))?.seed ?? null;
+}
+
+/** The interrupted founding this ask resumes, as `recoverFoundingSeedFromGroup` finds it: its group seed and the group its checkpoint names. */
+export async function recoverFoundingGroup(
+  ask: FoundingAtomAsk, checkpoints: Readonly<Record<string, unknown>>,
+): Promise<{ readonly seed: Uint8Array; readonly group: string } | null> {
   const scope = JSON.stringify([ask.hearthTrueName, ask.bindingMode, ask.personaKelPrefix, ask.mount, foundingAskDigest(ask)]);
   const prefix = "lar:///ha.ka.ba/dreamnet/face-founding-checkpoint/";
   const bodies = Object.entries(checkpoints).filter(([title]) => title.startsWith(prefix))
@@ -167,7 +174,7 @@ export async function recoverFoundingSeedFromGroup(
     const anchors = await loadIdentityAnchors(index);
     if (anchors) anchored.add(anchors.personaGroupId);
   }
-  let matched: Uint8Array | null = null;
+  let matched: { seed: Uint8Array; group: string } | null = null;
   // The group rows of the faces this seat serves alone (`openFaceFileNames`): a face outside the lend holds its rows shut.
   for (const file of (await openFaceFileNames()).filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
     const seed = await readCustodyRecord("identity", file);
@@ -178,7 +185,7 @@ export async function recoverFoundingSeedFromGroup(
       const group = checkpoint.result?.personaGroupId;
       if (checkpoint.scope !== scope || typeof group !== "string" || anchored.has(group) || faceAtomGroupFile(group) !== file) continue;
       if (matched) throw new Error("founding ask opens more than one unanchored group");
-      matched = seed;
+      matched = { seed, group };
     }
   }
   return matched;

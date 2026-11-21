@@ -47,7 +47,8 @@ import { personaGroupDigest } from "../persona-group-file.js";
 import { ensureFaceCustodyOfAsk, settleFaceCustody } from "../face-route.js";
 import { foundingVesselFaceTagDoor, settleFoundingVesselFaceTag } from "../vessel-face-tag-store.js";
 import { landFaceAddressSecret, mintFaceAddressSecret } from "../fleet-join-custody.js";
-import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
+import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingGroup, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
+import { readFaceIndexSync } from "../face-index.js";
 import { keepFaceAnchorOfGroup, loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { makeCustodyHolder } from "../custody-holder.js";
 import { loadRecoveryDeviceShare } from "../recovery-share-store.js";
@@ -66,7 +67,7 @@ import {
   retireFaceCheckpoint, retireApplyCheckpoint, DEVICE_ADMIT_KIND,
 } from "@lararium/keyhive";
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../open-node-vessel.js";
-import { openVesselSecretHome, standVesselSecretHome } from "../secret-home-store.js";
+import { openVesselSecretHome, openVesselSecretHomeIfNamed, standVesselSecretHome } from "../secret-home-store.js";
 
 export interface InitOptions {
   readonly placeFoundingCard?: PlaceFoundingCard;
@@ -554,6 +555,21 @@ export async function armRecoveryAtFounding(
  * inception, veil, `anchors-hN`) and writes only a register-many bootstrap PLANE ENTRY the boot consumes;
  * it writes no mount pin, so the mounted face stands byte-unchanged. Wearing it is a later act.
  */
+/**
+ * Refuse a founding that would mint a NEW group at a handle the floor index already binds to another group, before any write: the
+ * one founding that may stand there is the interrupted founding of that same group, which its checkpoint (opened under the group's
+ * own seed) names. Refuses `anchors-face-mismatch`; a re-found takes a new handle.
+ */
+async function refuseFreshGroupAtHeldHandle(handleIndex: number, ask: FoundingAtomAsk, repo: Repo): Promise<void> {
+  const held = readFaceIndexSync(larIdentityDir()).faces[handleIndex];
+  if (held === undefined || !("fcid" in held) || held.group === null) return;
+  const home = await openVesselSecretHomeIfNamed(repo);
+  const resume = await recoverFoundingGroup(ask, home?.handle.doc()?.tiddlers ?? {});
+  if (resume !== null && personaGroupDigest(resume.group) === held.group) { resume.seed.fill(0); return; }
+  resume?.seed.fill(0);
+  throw new Error(`anchors-face-mismatch: face h${handleIndex} stands under another PersonaGroup, and this founding would mint a new one there; a re-found takes a new handle; nothing was written`);
+}
+
 export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFaceResult> {
   await sweepFoundingSeeds();
   const defaults    = defaultDirs();
@@ -642,6 +658,10 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // at the ordinal that is its handle index. The face asks the route it binds (never the vessel's).
   // ONE PROMPT, ONE ACT: the route the face's custody was born under (or the one the caller carried) opens the face's ward for this
   // founding's root acts; nothing holds it once the founding settles.
+  // A HANDLE ANOTHER GROUP HOLDS TAKES NO NEW GROUP, read before this founding touches anything (its custody, root, secret home,
+  // ask row, plane documents, genesis or checkpoint): only the interrupted founding of that same group resumes there. A re-found
+  // takes a handle of its own.
+  await refuseFreshGroupAtHeldHandle(handleIndex, foundingAsk, repo);
   let born: WardCredential | null = null;
   await ensureFaceCustodyOfAsk(foundingAskDigest(foundingAsk), `h${handleIndex}`, handleIndex, (slots) => { born = wardCredentialOfRoute(slots); });
   const ward = opts.ward ?? born ?? undefined;

@@ -8,6 +8,7 @@ import type { Socket } from "node:net";
 import { afterEach, describe, expect, test } from "vitest";
 import type { SlotSpec } from "@lararium/mesh";
 import { custodyFrameHandler } from "../src/custody-frames.js";
+import { personaGroupDigest } from "../src/persona-group-file.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "../src/node-vessel-identity.js";
 import type { WardCredential } from "../src/ward-credential.js";
@@ -32,7 +33,11 @@ interface Composing { readonly refuse: Set<number>; readonly throwOn: Set<number
 async function vessel(faceRoutes: readonly string[], refuseWearing?: number, ctl: Composing = { refuse: new Set(), throwOn: new Set() }) {
   seat = await seatScratchCustody("wear-frame");
   const { holder } = seat;
-  for (const [i, route] of faceRoutes.entries()) await holder.foundFace({ group: `${String(i + 1).repeat(64)}`, slots: [slot(route)] });
+  // EACH FACE LANDED: its group, and its anchors naming that group (a face whose join waits holds none, and never takes the mount).
+  for (const [i, route] of faceRoutes.entries()) {
+    await holder.foundFace({ group: personaGroupDigest(`wear-frame-face-${i}`), slots: [slot(route)] });
+    await holder.writeRecord("identity", `anchors-h${i}.json`, new TextEncoder().encode(JSON.stringify({ personaGroupId: `wear-frame-face-${i}`, meshCabalDocIdHex: "ab" })));
+  }
   await holder.lock();
   const composed: Array<{ sovereign: boolean; ward: WardCredential | undefined; mount: number | undefined }> = [];
   const logs: string[] = [];

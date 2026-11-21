@@ -3,20 +3,28 @@
  * join for h1 lands FIRST, and the vessel opens every face it holds with `unlock --all`, naming none.
  *
  *   L1 RED  the unlock mounts the face that landed (h1), never the pending h0 whose anchors stand absent, and the vessel stands
- *           sovereign on it: no `anchor-missing`, and the landed face's anchors name the hearth's second face.
+ *           sovereign on it: no `anchor-missing`.
+ *   L2 RED  `lock --face 1` never slides the mount onto the pending h0, and a second unnamed `unlock --all` wears h1 again and
+ *           stands sovereign: a `held: true` answer means the vessel wears a face.
+ *   L3 RED  h0's join lands second; a fresh unnamed `unlock --all` wears h0 (it holds anchors now) and the vessel stands on h0's
+ *           own planes, never the planes the bootstrap pin a sibling's landing left names.
  *
  * Scratch roots alone (`openStagedJoinee`), the test custody route, A with two faces.
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { openStaged, openStagedJoinee, awaitRendezvous, type CliResult, type LarInstance, type StagedJoinee } from "../harness/instance.js";
+import { cliFor, openStaged, openStagedJoinee, awaitRendezvous, type CliResult, type LarInstance, type StagedJoinee } from "../harness/instance.js";
 
 const DOOR = join(new URL("../..", import.meta.url).pathname, "tools/unlock-test-custody.mjs");
 const ROUTE = join(new URL("../..", import.meta.url).pathname, "tools/test-custody-route.mjs");
 let joinee: StagedJoinee;
 let B: LarInstance | null = null;
 let unlocked: Record<string, unknown> | null = null;
+/** The answer for face 0's join, kept aside while face 1's lands first. */
+let answer0 = "";
+let send: (frame: unknown) => Promise<Record<string, unknown> | null>;
+let route: { kind: "passphrase"; passphrase: string }[];
 
 beforeAll(async () => {
   let cliA: ((args: readonly string[]) => Promise<CliResult>) | null = null;
@@ -41,6 +49,8 @@ beforeAll(async () => {
       if (request.code !== 0) throw new Error(`B: request for face 1 failed (${request.code})\n${request.stderr.slice(-1500)}`);
       const answer = await cliA!(["fleet", "join", "answer", request1, "--face", "1", "--sync-url", syncUrl, "--out", answer1]);
       if (answer.code !== 0) throw new Error(`A: answer for face 1 failed (${answer.code})\n${answer.stderr.slice(-1500)}`);
+      answer0 = join(dir, "fleet-answer-0.json");
+      writeFileSync(answer0, readFileSync(files.answer));
       writeFileSync(files.answer, readFileSync(answer1));
     },
   });
@@ -49,7 +59,9 @@ beforeAll(async () => {
   B = await openStaged({ tag: "admit-second-first-B", root: joinee.rootB, port: joinee.portB, found: async () => {}, locked: true });
   const { sendCustodyFrame } = await import(DOOR) as { sendCustodyFrame: (root: string, frame: unknown) => Promise<Record<string, unknown> | null> };
   const { TEST_PASSPHRASE } = await import(ROUTE) as { TEST_PASSPHRASE: string };
-  unlocked = await sendCustodyFrame(joinee.rootB, { op: "unlock", credentials: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }], all: true });
+  route = [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }];
+  send = (frame) => sendCustodyFrame(joinee.rootB, frame);
+  unlocked = await send({ op: "unlock", credentials: route, all: true });
 }, 600_000);
 afterAll(async () => { await B?.stopDaemonOnly(); await joinee?.stop(); });
 
@@ -60,4 +72,26 @@ describe("e2e/first-admit-lands-second", () => {
     expect(B!.bootLog()).not.toContain("anchor-missing");
     expect(await awaitRendezvous(B!)).toBe(true);
   }, 120_000);
+
+  test("L2 RED: lock --face 1 never slides onto the pending h0, and a second unlock --all wears h1 again", async () => {
+    const locked = await send({ op: "lock", face: 1 });
+    expect(locked, JSON.stringify(locked)).toMatchObject({ op: "lock", locked: true });
+    const again = await send({ op: "unlock", credentials: route, all: true });
+    expect(again, JSON.stringify(again)).toMatchObject({ op: "unlock", held: true, wears: 1 });
+    expect(again?.["refused"], `the composition refused: ${B!.bootLog().slice(-2000)}`).toBeUndefined();
+    expect(B!.bootLog()).not.toContain("anchor-missing");
+  }, 240_000);
+
+  test("L3 RED: h0's join lands second, and a fresh unlock --all stands on h0's own planes", async () => {
+    await B!.stopDaemonOnly();
+    const cliB = cliFor({ LAR_ROOT: joinee.rootB, LAR_PORT: String(joinee.portB) });
+    const landed = await cliB(["fleet", "join", "land", answer0]);
+    expect(landed.code, `${landed.stdout.slice(-800)}\n${landed.stderr.slice(-1500)}`).toBe(0);
+    B = await openStaged({ tag: "admit-second-first-B2", root: joinee.rootB, port: joinee.portB, found: async () => {}, locked: true });
+    const fresh = await send({ op: "unlock", credentials: route, all: true });
+    expect(fresh, JSON.stringify(fresh)).toMatchObject({ op: "unlock", held: true, wears: 0 });
+    expect(fresh?.["refused"], `the composition refused: ${B.bootLog().slice(-2000)}`).toBeUndefined();
+    expect(B.bootLog()).not.toContain("anchor-missing");
+    expect(await awaitRendezvous(B)).toBe(true);
+  }, 360_000);
 });

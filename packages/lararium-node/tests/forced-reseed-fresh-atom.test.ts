@@ -5,7 +5,8 @@ seatSuiteWard();
 import { askRecordPath, faceRecordNames, groupRecordPath } from "./face-paths.js";
 import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, relative } from "node:path";
+import { createHash } from "node:crypto";
 import { afterAll, describe, expect, test, vi } from "vitest";
 import { hex, personaScopedBagIds } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
@@ -51,6 +52,20 @@ async function rig() {
   });
 }
 
+/** Every file under `dir`, by path relative to it, and the digest of its bytes. */
+function treeDigests(dir: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const walk = (at: string): void => {
+    for (const entry of readdirSync(at, { withFileTypes: true })) {
+      const path = join(at, entry.name);
+      if (entry.isDirectory()) walk(path);
+      else if (entry.isFile()) out.set(relative(dir, path), createHash("sha256").update(readFileSync(path)).digest("hex"));
+    }
+  };
+  walk(dir);
+  return out;
+}
+
 function removePlaneEntry(group: string): void {
   const plugin = JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string };
   const packed = JSON.parse(plugin.text) as { tiddlers: Record<string, unknown> };
@@ -90,8 +105,14 @@ describe("a forced re-seed mints a fresh atom", () => {
 
       // EACH ANCHORS ROW NAMES ITS FACE: handle 1 still stands under the orphan's PersonaGroup, so a re-seed that mints a new group
       // there refuses (`anchors-face-mismatch`) before it writes any row of that group.
+      // NOTHING MOVES ON THE REFUSAL: every file under the root (custody rows, the store's plane documents and secret home with its
+      // checkpoints, genesis, the bootstrap) reads byte for byte as it stood before the founding asked.
+      const before = treeDigests(root);
       const refusal = await foundFace({ genesisDir, handleIndex: 1 }).catch((e: unknown) => e);
       expect(String(refusal)).toMatch(/anchors-face-mismatch/);
+      const after = treeDigests(root);
+      const moved = [...new Set([...before.keys(), ...after.keys()])].filter((f) => before.get(f) !== after.get(f));
+      expect(moved, "the refused founding wrote nothing").toEqual([]);
       expect((await loadIdentityAnchors(1))?.personaGroupId, "handle 1 keeps the orphan's own anchors").toBe(orphan);
       expect(readFileSync(groupRecordPath(orphan, faceAtomGroupFile(orphan))).equals(atomBytes), "the orphan's group atom row keeps its bytes").toBe(true);
       expect(readFileSync(veilArchivePath(orphan)).equals(archiveBytes), "the orphan's archive keeps its bytes").toBe(true);
