@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/face-intent-plane-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+description = "the record behind api/pono/face-intent-plane: the build order road item I1 carries and its sibling items, kept for the kahu road; the plane's law speaks in the api meme"
+tags        = ["api/pono/meme", "api/pono/face-intent-plane"]
+title       = "lar:///ha.ka.ba/lares/docs/pono/face-intent-plane-record"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/docs/pono/face-intent-plane-record"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! The face intent plane ~ the record
+
+The plane's law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>; its dated rulings stand in that meme's `#/rulings`. This record keeps the build order.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-build`>>
+
+!! The build ~ road item `I1`
+
+Item `I1` at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> carries the build, red-first in this order: the plane and its entry kinds; stand-down and the verb classes; the read-side winner; claims, takeover and causal voids; the face-join summons moving off the daemon doc onto the plane (closing "two hearths of one face"); the daemon wiki's view pane; the rubric's witness; then the far agent's relay seat, item `I2`, built. Item `I3` carries the plane's hardening under re-pin, re-target and growth (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane`>>). The CLI's per-invocation face naming (the session model's commit 5) lands beside the summons move, since an intent names its issuing face.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hcnv6VsUoaWq7o6k7VO7Piic_c67Imb3IwHIDa0bpZk`>>
+
+<<^ code=`&#x0004;` to=`?`>>
