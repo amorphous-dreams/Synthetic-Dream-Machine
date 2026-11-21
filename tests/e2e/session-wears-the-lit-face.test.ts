@@ -113,14 +113,15 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
   const errCode = (r: CliResult): unknown => (r.json?.["error"] as { code?: unknown } | undefined)?.code;
   const out = (r: CliResult): string => `${r.stdout}\n${r.stderr}`;
 
-  test("W0: the sibling's engine composes over its own daemon wiki: its daemon canon and working layer open and take a write", async () => {
+  test("W0: the sibling's engine composes over its own daemon wiki: its daemon canon opens for reading (promotion-only) and its working layer takes a write", async () => {
     const s = await walk.cli(["wiki", "status", "--recipe", "default", "--face", "1", "--json"]);
     expect(s.code, out(s)).toBe(0);
-    const status = data(s) as { working: string | null; layers: Array<{ bag: string; write: boolean; working?: boolean }> };
+    const status = data(s) as { working: string | null; layers: Array<{ bag: string; read?: boolean; write: boolean; mounted?: string; working?: boolean }> };
     expect(status["face" as never], "the answer names the sibling").toBe(1);
     expect(status.working, `the sibling's working layer never opened: ${JSON.stringify(status.layers)}`).not.toBeNull();
     expect(status.layers.find((l) => l.working), JSON.stringify(status.layers)).toMatchObject({ write: true });
-    expect(status.layers.find((l) => l.bag === siblingBag), `the sibling daemon canon never opened: ${JSON.stringify(status.layers)}`).toMatchObject({ write: true });
+    // A mounted canon layer reads `promotion-only`: writes reach canon by action verb alone, so the walk asks presence and a read.
+    expect(status.layers.find((l) => l.bag === siblingBag), `the sibling daemon canon never opened: ${JSON.stringify(status.layers)}`).toMatchObject({ read: true, mounted: "promotion-only" });
   }, 120_000);
 
   test("W1: a meme put as face 1 lands in face 1's working layer, face 1 reads it back, the worn face reads absent", async () => {
