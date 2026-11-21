@@ -397,6 +397,25 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     expect(fx.server.closing()).toEqual([]);
   });
 
+  test("SOL R7 (a session admitted after the close lights the face from its standing): it reads the closing face shut, its rows refuse face-closing, and the told session still drains under it", async () => {
+    fx = await standPulama("pulama-close-late-session", () => openGate({ faces: lend(0), coldReads: [] }));
+    const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    const told = fx.vessel();
+    await told.unlock([]);
+    expect(await fx.server.closeFace(0)).toMatchObject({ reading: "closing", unanswered: 1 });
+    const late = fx.vessel();
+    await late.unlock([]);
+    expect(late.unlockedFaces(), "the late session never reads the closing face as served").toEqual([]);
+    expect(await late.isFaceUnlocked({ fcid: a.fcid })).toBe(false);
+    expect(late.closingFaces!()).toEqual([a.fcid]);
+    await expect(late.readRecord("identity", faceAtomGroupFile(GROUP_A))).rejects.toMatchObject({ reading: "face-closing" });
+    expect(told.unlockedFaces(), "the told session still drains under the face").toEqual([a.fcid]);
+    expect(await told.readRecord("identity", faceAtomGroupFile(GROUP_A))).toMatchObject({ reading: expect.any(String) });
+    expect(fx.server.closing()).toEqual([{ face: 0, unanswered: 1, note: "face h0: the vessel has not answered its close" }]);
+    await told.faceClosed!(a.fcid, fx.kept.faceOpening!(a.fcid));
+    await vi.waitFor(() => expect(fx!.kept.unlockedFaces()).not.toContain(a.fcid));
+  });
+
   test("a close of a face no session lends locks at once; a shut face answers face-locked", async () => {
     fx = await standPulama("pulama-close-unlent", () => openGate({ faces: lend(0), coldReads: [] }));
     await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });

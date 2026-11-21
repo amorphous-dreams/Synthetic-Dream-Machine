@@ -142,22 +142,26 @@ export function servePulama(a: {
   const closings = new Map<string, { readonly ordinal: number; readonly opening: string | null; readonly awaiting: Set<Session> }>();
 
   /** Whether the session's lend names this face: its ordinal in the set, and its custody id where the set names one. */
+  /** Whether a face closes and `s` stands outside the sessions its close told: such a session reads the face shut. */
+  const closedTo = (s: Session, fcid: string): boolean => { const held = closings.get(fcid); return held !== undefined && !held.awaiting.has(s); };
   const lends = (s: { readonly scope: PulamaScope }, face: { readonly ordinal: number; readonly fcid: string }): boolean =>
     isLent(s.scope.faces, face.ordinal) && s.scope.faces.every((f) => f.ordinal !== face.ordinal || f.fcid === undefined || f.fcid === face.fcid);
   /** The holder's standing as one session reads it: the lent faces that stand lit (by custody id) serve, the lent faces
    *  still dark wait (by ordinal), and a lit face outside the lend never shows. */
-  const standing = (s: { readonly scope: PulamaScope }) => {
+  const standing = (s: Session) => {
     const open = new Set(holder.unlockedFaces());
     const index = readFaceIndexSync(holder.homes.identity).faces;
     const fcidAt = (ordinal: number): string | null => { const f = index[ordinal]; return f !== undefined && "fcid" in f ? f.fcid : null; };
-    const lit = s.scope.faces.flatMap((f) => { const fcid = fcidAt(f.ordinal); return fcid !== null && open.has(fcid) && lends(s, { ordinal: f.ordinal, fcid }) ? [f.ordinal] : []; });
+    // A FACE CLOSING SERVES ONLY THE SESSIONS ITS CLOSE TOLD (they drain under it); any other session, one admitted after the
+    // close among them, reads it shut, so it never lights the face and never stands outside the close's answer set.
+    const lit = s.scope.faces.flatMap((f) => { const fcid = fcidAt(f.ordinal); return fcid !== null && open.has(fcid) && !closedTo(s, fcid) && lends(s, { ordinal: f.ordinal, fcid }) ? [f.ordinal] : []; });
     const { served, waiting } = servedOf(s.scope.faces, lit);
     const faces = served.map((f) => fcidAt(f.ordinal)!);
     // EACH SERVED FACE'S OPENING, as this holder numbers it (`faceOpening`): a lock and re-lend here carries a new number, so the
     // vessel reads the opening from its source and never infers it from the membership it happened to observe.
     const openings = Object.fromEntries(faces.flatMap((fcid) => { const n = holder.faceOpening?.(fcid); return typeof n === "string" ? [[fcid, n]] : []; }));
-    // A face closing still serves its rows (the vessel drains under it), and the standing names it closing, so no vessel lights it.
-    const closingNow = faces.filter((fcid) => closings.has(fcid));
+    // A face closing still serves the told sessions' rows (each vessel drains under it), and the standing names it closing.
+    const closingNow = s.scope.faces.flatMap((f) => { const fcid = fcidAt(f.ordinal); return fcid !== null && closings.has(fcid) ? [fcid] : []; });
     return { slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), faces, openings, waiting: waiting.map((f) => f.ordinal),
       ...(closingNow.length ? { closing: closingNow } : {}), ...(worn !== undefined ? { worn } : {}) };
   };
@@ -193,6 +197,7 @@ export function servePulama(a: {
     }
     if (c.kind === "face") {
       const found = await holder.faceStanding(c.selector as FaceRef);
+      if (found !== null && closedTo(s, found.fcid)) throw new PulamaRefused("face-closing", `face h${found.ordinal} is closing, and this session stands outside its close`);
       if (found !== null && !lends(s, found)) {
         throw new PulamaRefused("outside-the-lei", `the pūlama lends this vessel ${renderLentFaces(s.scope.faces)}; this ${c.row} row selects ${JSON.stringify(c.selector)}, face h${found.ordinal}`);
       }
@@ -299,7 +304,12 @@ export function servePulama(a: {
         if (s.claims.get(args["claim"] as number) !== claim) throw new PulamaRefused("pulama-claim-absent", "that claim ended before this row was reached");
         return op === "records.read" ? claim.records.read(home, file) : claim.records.remove(home, file);
       }
-      case "face.standing": { const found = await holder.faceStanding(faceOf(args["face"])); return inScope(s, found) ? found : null; }
+      case "face.standing": {
+        const found = await holder.faceStanding(faceOf(args["face"]));
+        if (!inScope(s, found)) return null;
+        // A session outside a closing face's close reads it locked: it never lights the face.
+        return found !== null && closedTo(s, found.fcid) ? { ...found, unlocked: false } : found;
+      }
       case "face.closed": {
         if (typeof args["fcid"] !== "string" || (args["opening"] !== null && typeof args["opening"] !== "string") || Object.keys(args).some((k) => k !== "fcid" && k !== "opening")) {
           throw new PulamaRefused("pulama-frame-malformed", "a closed names one custody id and the opening its closing named, and nothing beside them");
@@ -321,7 +331,7 @@ export function servePulama(a: {
         const open = new Set(holder.unlockedFaces());
         const out: Array<{ ordinal: number; fcid: string; unlocked: boolean }> = [];
         readFaceIndexSync(holder.homes.identity).faces.forEach((f, ordinal) => {
-          if ("fcid" in f && inScope(s, { ordinal, fcid: f.fcid })) out.push({ ordinal, fcid: f.fcid, unlocked: open.has(f.fcid) });
+          if ("fcid" in f && inScope(s, { ordinal, fcid: f.fcid })) out.push({ ordinal, fcid: f.fcid, unlocked: open.has(f.fcid) && !closedTo(s, f.fcid) });
         });
         return out;
       }
