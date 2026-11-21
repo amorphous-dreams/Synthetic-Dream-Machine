@@ -56,6 +56,8 @@ describe("e2e/session-wears-the-lit-face", () => {
  *   W2  a tiddler put (the sibling's own TW5 engine) as face 1 lands there; face 1 reads it back; the worn face reads absent
  *   W3  the worn face's own write lands in its own layer, and face 1 reads it absent
  *   W4  CONTROL: a face that stands shut refuses `face-not-open`, and nothing writes
+ *   W5  a read of every face's names (`persona list`, the custody door's `selves.read`) leaves no save held in memory: the
+ *       census reads no `held-save`, since the lit sibling's selves record seals under that sibling's own hive
  */
 describe("e2e/two-face-walk: a lit sibling writes into its own layers while another face stands worn", () => {
   const MEME = "lar:///ha.ka.ba/kahua/memory/walk/sibling-lane";
@@ -111,14 +113,15 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
   const errCode = (r: CliResult): unknown => (r.json?.["error"] as { code?: unknown } | undefined)?.code;
   const out = (r: CliResult): string => `${r.stdout}\n${r.stderr}`;
 
-  test("W0: the sibling's engine composes over its own daemon wiki: its daemon canon and working layer open and take a write", async () => {
+  test("W0: the sibling's engine composes over its own daemon wiki: its daemon canon opens for reading (promotion-only) and its working layer takes a write", async () => {
     const s = await walk.cli(["wiki", "status", "--recipe", "default", "--face", "1", "--json"]);
     expect(s.code, out(s)).toBe(0);
-    const status = data(s) as { working: string | null; layers: Array<{ bag: string; write: boolean; working?: boolean }> };
+    const status = data(s) as { working: string | null; layers: Array<{ bag: string; read?: boolean; write: boolean; mounted?: string; working?: boolean }> };
     expect(status["face" as never], "the answer names the sibling").toBe(1);
     expect(status.working, `the sibling's working layer never opened: ${JSON.stringify(status.layers)}`).not.toBeNull();
     expect(status.layers.find((l) => l.working), JSON.stringify(status.layers)).toMatchObject({ write: true });
-    expect(status.layers.find((l) => l.bag === siblingBag), `the sibling daemon canon never opened: ${JSON.stringify(status.layers)}`).toMatchObject({ write: true });
+    // A mounted canon layer reads `promotion-only`: writes reach canon by action verb alone, so the walk asks presence and a read.
+    expect(status.layers.find((l) => l.bag === siblingBag), `the sibling daemon canon never opened: ${JSON.stringify(status.layers)}`).toMatchObject({ read: true, mounted: "promotion-only" });
   }, 120_000);
 
   test("W1: a meme put as face 1 lands in face 1's working layer, face 1 reads it back, the worn face reads absent", async () => {
@@ -165,6 +168,16 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     const seen = await walk.cli(["tiddler", "get", "$:/walk/worn-engine", "--recipe", "default", "--face", "1", "--json"]);
     expect(seen.code, out(seen)).not.toBe(0);
   }, 180_000);
+
+  test("W5 RED: reading every face's names leaves the census clean of held saves: no selves record waits in memory", async () => {
+    const list = await walk.cli(["persona", "list", "--json"]);
+    expect(list.code, out(list)).toBe(0);
+    // A held save names itself at its refusal; give the sealed rest a beat to try the seal and refuse.
+    await new Promise((r) => setTimeout(r, 3000));
+    const census = await walk.cli(["vessel", "census", "--json"]);
+    const items = ((data(census)["census"] as { items?: Array<{ kind: string; bagId?: string | null }> } | undefined)?.items ?? []);
+    expect(items.filter((i) => i.kind === "held-save"), `the census holds saves in memory: ${out(census)}`).toEqual([]);
+  }, 120_000);
 
   test("W4 CONTROL: a face that stands shut refuses `face-not-open` on a meme put and a tiddler put, and nothing writes", async () => {
     const file = join(scratch, "shut-lane.mem");
