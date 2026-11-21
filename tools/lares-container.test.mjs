@@ -43,6 +43,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const log = join(dir, "calls.log");
     await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n[ -z "\${LAR_KUKULU_OFFER:-}" ] || printf 'LAR_KUKULU_OFFER=%s\\n' "$LAR_KUKULU_OFFER" >> "$CALL_LOG"\n` +
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
+      `case " $* " in *" down --remove-orphans"*|*" stop "*lares*) : > "$CALL_LOG.down";; esac\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
       `last=''; for a in "$@"; do last=$a; done\n` +
@@ -58,7 +59,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"image inspect"*"org.opencontainers.image.revision"*) printf '%s\\n' "\${FAKE_IMAGE_REV_LABEL:-}"; exit 0;; esac\n` +
       `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
       // A container's image: the pūlama's (FAKE_PULAMA_ID) or the vessel's.
-      `case " $* " in *"inspect --format {{.Image}} "*) if [ -n "\${FAKE_PULAMA_ID:-}" ] && [ "$last" = "\${FAKE_PULAMA_ID}" ]; then printf '%s\\n' "\${FAKE_PULAMA_IMAGE:-}"; exit "\${FAKE_PULAMA_INSPECT_RC:-0}"; fi; printf '%s\\n' "\${FAKE_VESSEL_IMAGE:-}"; exit 0;; esac\n` +
+      `case " $* " in *"inspect --format {{.Image}} "*) if [ -n "\${FAKE_PULAMA_ID:-}" ] && [ "$last" = "\${FAKE_PULAMA_ID}" ]; then printf '%s\\n' "\${FAKE_PULAMA_IMAGE:-}"; exit "\${FAKE_PULAMA_INSPECT_RC:-0}"; fi; [ "\${FAKE_VESSEL_INSPECT_RC:-0}" = 0 ] || exit "\${FAKE_VESSEL_INSPECT_RC}"; printf '%s\\n' "\${FAKE_VESSEL_IMAGE:-}"; exit 0;; esac\n` +
       // A keep seat reads its route on a pty alone: the fake answers the pūlama's refusal unless the exec forces one, and
       // under one writes as a pty does, the prompt with no newline, then CRLF lines.
       `case " $* " in *"pulama-main.js keep-seat"*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '{"op":"keep-seat","reading":"refused","code":"route-needs-a-terminal","message":"a keep seat reads its route from a real terminal alone"}'; exit 1;; esac; printf '%s' 'pūlama route, to seat the house'"'"'s keep pair: '; printf '\\r\\n'; [ -z "\${FAKE_KEEP_SEAT_LINE:-}" ] || printf '%s\\r\\n' "\${FAKE_KEEP_SEAT_LINE}"; exit "\${FAKE_KEEP_SEAT_RC:-0}";; esac\n` +
@@ -68,11 +69,13 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"pulama-main.js light"*) : > "$CALL_LOG.lit"; exit "\${FAKE_EXEC_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js status"*) lit='{"op":"status","lit":true}'; if [ -e "$CALL_LOG.lit" ] && [ -n "\${FAKE_PULAMA_STATUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_PULAMA_STATUS_AFTER}"; else printf '%s\\n' "\${FAKE_PULAMA_STATUS-$lit}"; fi; exit 0;; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
+      `case " $* " in *" rite receipts "*) printf '%s\\n' "\${FAKE_RECEIPTS:-}"; exit "\${FAKE_RECEIPTS_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js lei "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_LEI_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
       `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" vessel census --json "*) printf '%s\\n' "\${FAKE_CENSUS_JSON:-}"; exit 0;; esac\n` +
-      `case " $* " in *" vessel census "*) [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
+      // After a stop (a down marks the run), the census answers FAKE_CENSUS_AFTER where a test names one: the new vessel's census.
+      `case " $* " in *" vessel census "*) if [ -e "$CALL_LOG.down" ] && [ -n "\${FAKE_CENSUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_CENSUS_AFTER}"; exit "\${FAKE_CENSUS_AFTER_RC:-0}"; fi; [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
       `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
       `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_STOOD_ID:-\${FAKE_RUNNING_ID:-}}"; exit 0;; esac\n` +
       `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
@@ -140,8 +143,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const filled = Object.fromEntries(Object.entries(env).map(([k, v]) => [k, typeof v === "string" ? fill(v).replaceAll("@HEAD12@", head.slice(0, 12)).replaceAll("@HEAD@", head) : v]));
     // `tty` names the bytes typed on a pseudo-terminal (`script`), which then carries stdout and stderr as one stream.
     const r = tty === undefined
-      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
-      : spawnSync("script", ["-qec", [cmd[0], ...cmd[1]].map((a) => `'${a}'`).join(" "), "/dev/null"], { env: { ...base, ...filled }, encoding: "utf8", input: tty });
+      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
+      : spawnSync("script", ["-qec", [cmd[0], ...cmd[1]].map((a) => `'${a}'`).join(" "), "/dev/null"], { env: { ...base, ...filled, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", input: tty });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     let worn = null; try { worn = (await readFile(join(house, "config", "last-worn-face"), "utf8")).trim(); } catch {}
     let seat = null; let seatMode = null; try { seat = JSON.parse(await readFile(join(house, "config", "keep-seat.json"), "utf8")); seatMode = (await stat(join(house, "config", "keep-seat.json"))).mode & 0o777; } catch {}
@@ -149,7 +152,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     for (const c of ["hearth", "sensoriums", "projections", "library", "config", "pulama/socket"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
     let cacheLeft = null; try { cacheLeft = await readdir(join(house, "cache")); } catch {}
     let vesselLog = null; try { vesselLog = await readFile(join(house, "run", "vessel-last.log"), "utf8"); } catch {}
-    return { ...r, calls, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, house };
+    let keepOwed = false; try { await stat(join(house, "run", "keep-owed")); keepOwed = true; } catch {}
+    return { ...r, calls, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, keepOwed, house };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
@@ -665,10 +669,11 @@ for (const [name, shim] of shims) {
 
   // THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
   // still stands, before the census; a keep that refuses never blocks the down.
+  const KEPT_ENVELOPE = '{"ok":true,"data":{"rite":"keep","due":true,"workspace":"house-backup"}}';
   const fakeHostCli = async (rc) => {
     const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
     const f = join(d, "lares");
-    await writeFile(f, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nexit ${rc}\n`);
+    await writeFile(f, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\n${rc === 0 ? `printf '%s\\n' '${KEPT_ENVELOPE}'\n` : ""}exit ${rc}\n`);
     await chmod(f, 0o755);
     return f;
   };
@@ -676,7 +681,7 @@ for (const [name, shim] of shims) {
     const cli = await fakeHostCli(0);
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: cli } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /HOSTCLI rite keep --if-due --no-json/);
+    assert.match(r.calls, /HOSTCLI rite keep --if-due --json/);
     assert.ok(r.calls.indexOf("HOSTCLI rite keep") < r.calls.indexOf("vessel census"), r.calls);
   });
   test(`${name}: down-goes-on-past-a-refused-keep: the keep's refusal is named and the down still stops the vessel`, async () => {
@@ -1060,6 +1065,189 @@ for (const [name, shim] of shims) {
     const r = await run(shim, ["rebuild"], { checkout: "clean", env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" } });
     assert.equal(r.status, 2);
     assert.doesNotMatch(r.calls, /up -d --wait lares|down --remove-orphans/);
+  });
+  // KŪKULU SURVIVES A CTRL+C (gate 2): the down path's keep refused `carry-unsettled` over the same census the stop then asked,
+  // and the keep never ran again. Now the restand keeps AFTER the raise once the new vessel's census reads clean, and says so.
+  const keepTwice = async (first, second) => {
+    const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
+    const f = join(d, "lares");
+    // A keep that kept answers the CLI's envelope naming its workspace, as `rite keep --if-due --json` does.
+    await writeFile(f, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nif [ -e "$CALL_LOG.kept1" ]; then rc=${second}; else : > "$CALL_LOG.kept1"; rc=${first}; fi\n[ "$rc" -ne 0 ] || printf '%s\\n' '${KEPT_ENVELOPE}'\nexit $rc\n`);
+    await chmod(f, 0o755);
+    return f;
+  };
+  test(`${name}: rebuild-keeps-after-the-raise: a keep that refused before the down runs again after the up once the census reads clean, and the closing line names it; CONTROL: a keep that kept before the down runs once`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup" };
+    const r = await run(shim, ["rebuild"], { checkout: "clean", env: { ...env, LARES_HOST_CLI: await keepTwice(1, 0) } });
+    assert.equal(r.status, 0, r.stderr);
+    const lines = r.calls.split("\n");
+    const keeps = lines.flatMap((l, i) => (/HOSTCLI rite keep --if-due/.test(l) ? [i] : []));
+    const up = lines.findIndex((l) => /up -d --wait lares/.test(l));
+    assert.equal(keeps.length, 2, r.calls);
+    assert.ok(keeps[0] < up && keeps[1] > up, `the second keep follows the up:\n${r.calls}`);
+    assert.ok(lines.findLastIndex((l) => /vessel census --no-json/.test(l)) > up, `the census after the up asks before the keep:\n${r.calls}`);
+    assert.match(r.stderr, /the keep before the down did not complete; the new vessel's census reads clean, so the keep runs now/);
+    assert.match(r.stderr, /keep: kept after the raise \(rite keep --if-due\)/);
+    const once = await run(shim, ["rebuild"], { checkout: "clean", env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(once.status, 0, once.stderr);
+    assert.equal(once.calls.split("\n").filter((l) => /HOSTCLI rite keep/.test(l)).length, 1, once.calls);
+    assert.match(once.stderr, /keep: kept \(rite keep --if-due\)/);
+  });
+  test(`${name}: rebuild-defers-the-keep-past-an-unsettled-census: a census after the raise that still names items keeps nothing and names the deferral, never silently`, async () => {
+    const r = await run(shim, ["rebuild"], { checkout: "clean", env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CENSUS_AFTER: ITEMS, FAKE_CENSUS_AFTER_RC: "3", FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: await keepTwice(1, 0) } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.calls.split("\n").filter((l) => /HOSTCLI rite keep/.test(l)).length, 1, r.calls);
+    assert.match(r.stderr, /keep: deferred: the census after the raise still names what rests nowhere yet; `lares rite keep` keeps once it reads clean/);
+  });
+  test(`${name}: down-names-a-held-saves-only-census-plainly: before the accept-loss offer, a census of held saves alone says so (how many, that no carrier or untracked file waits, that accept-loss drops exactly these); CONTROL: a census with a carrier says nothing of the kind`, async () => {
+    const held = "held-save  save-unbooked  doc doc-heron  2 save(s) in memory  bag notes\nheld-save  save-unmapped  doc doc-wren  1 save(s) in memory  bag (none mapped)";
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: held, FAKE_CENSUS_RC: "3" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /the census names held saves alone \(2 documents\): each a save the sealed rest keeps in memory until a session books it in this vessel; no carrier and no untracked file waits, so accept-loss drops exactly these/);
+    assert.ok(r.stderr.indexOf("held saves alone") < r.stderr.indexOf("Two ways on"), r.stderr);
+    const mixed = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" } });
+    assert.doesNotMatch(mixed.stderr, /held saves alone/);
+  });
+  test(`${name}: rebuild-image-names-when-the-offer-rested: an offer naming the image carries its time (UTC) in the reading; CONTROL: none resting names none`, async () => {
+    const r = await run(shim, ["rebuild", "--image"], { checkout: "clean", houseFiles: { "config/kukulu-offer.json": '{"vouch":[{"body":{"image":"sha256:new"}}]}\n' }, env: { ...STANDING, FAKE_IMAGE_ID: "sha256:new", FAKE_VESSEL_IMAGE: "sha256:old" } });
+    assert.equal(r.status, 0, r.stderr);
+    const reading = JSON.parse(r.stdout.trim().split("\n").at(-1));
+    assert.equal(reading.offer, true);
+    assert.match(reading.offerAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+  });
+  // THE SECOND READ (gate 2): an offer carries an image only by its vouch's own `image` field, never a digest that merely
+  // begins another; the keep a down left owed persists across invocations; and under the rite the keep waits for the landing.
+  test(`${name}: offer-carries-the-image-by-its-field: an offer naming a longer digest that begins with the image's carries none of it`, async () => {
+    const r = await run(shim, ["rebuild", "--image"], { checkout: "clean", houseFiles: { "config/kukulu-offer.json": '{"vouch":[{"body":{"image":"sha256:newer"}}]}\n' }, env: { ...STANDING, FAKE_IMAGE_ID: "sha256:new", FAKE_VESSEL_IMAGE: "sha256:old" } });
+    assert.equal(r.status, 0, r.stderr);
+    const reading = JSON.parse(r.stdout.trim().split("\n").at(-1));
+    assert.equal(reading.offer, false);
+    assert.equal("offerAt" in reading, false);
+  });
+  test(`${name}: keep-owed-persists: a down whose keep refused leaves run/keep-owed; the next raise from a down vessel (a Ctrl+C at the light stopped the last) keeps once the census reads clean and clears the mark; CONTROL: a keep that kept leaves no mark`, async () => {
+    const owed = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: await keepTwice(1, 1) } });
+    assert.equal(owed.status, 0, owed.stderr);
+    assert.equal(owed.keepOwed, true);
+    const later = await run(shim, ["rebuild"], { checkout: "clean", houseFiles: { "run/keep-owed": "" }, env: { ...MOUNTS, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(later.status, 0, later.stderr);
+    assert.match(later.calls, /HOSTCLI rite keep --if-due/);
+    assert.match(later.stderr, /keep: kept after the raise \(rite keep --if-due\)/);
+    assert.equal(later.keepOwed, false);
+    const kept = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(kept.keepOwed, false);
+  });
+  test(`${name}: keep-after-landing: under the rite (rebuild --keep-after-landing) the raise keeps nothing after the up and names the keep owed; the keep-owed verb then keeps once the census reads clean and clears the mark, or names the deferral and keeps the mark`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup", FAKE_RECEIPTS: '{"ok":true,"data":{"rite":"kukulu","standing":[],"pending":[],"offer":null}}' };
+    const r = await run(shim, ["rebuild", "--keep-after-landing"], { checkout: "clean", env: { ...env, LARES_HOST_CLI: await keepTwice(1, 0) } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.calls.split("\n").filter((l) => /HOSTCLI rite keep/.test(l)).length, 1, r.calls);
+    assert.match(r.stderr, /keep: owed; it runs after the rite lands its halves/);
+    assert.equal(r.keepOwed, true);
+    const after = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(after.status, 0, after.stderr);
+    assert.match(after.calls, /HOSTCLI rite keep --if-due/);
+    assert.match(after.stderr, /keep: kept after the raise \(rite keep --if-due\)/);
+    assert.equal(after.keepOwed, false);
+    const deferred = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3", LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(deferred.status, 0, deferred.stderr);
+    assert.doesNotMatch(deferred.calls, /HOSTCLI/);
+    assert.match(deferred.stderr, /keep: deferred: the census after the raise still names what rests nowhere yet/);
+    assert.equal(deferred.keepOwed, true);
+    const none = await run(shim, ["keep-owed"], { env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(none.status, 0, none.stderr);
+    assert.doesNotMatch(none.calls, /HOSTCLI|vessel census/);
+  });
+  // THE THIRD READ (gate 2): an owed keep waits for the landing. `keep-owed` refuses while any kūkulu half rests unlanded (or the
+  // debt reads nowhere), keeping the mark; under the rite the down path keeps nothing while a mark is owed; a raise reports the
+  // image its vessel runs.
+  test(`${name}: keep-owed-waits-for-the-landing: a half resting unlanded, or a debt read that fails, keeps nothing and keeps the mark; under the rite a down with a mark owed keeps nothing before the landing`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup" };
+    const pending = '{"ok":true,"data":{"rite":"kukulu","standing":[],"pending":[{"tessera":"' + "c".repeat(64) + '","group":"g","branch":"main","head":"a"}],"offer":null}}';
+    for (const extra of [{ FAKE_RECEIPTS: pending }, { FAKE_RECEIPTS: "", FAKE_RECEIPTS_RC: "2" }]) {
+      const waits = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, ...extra, LARES_HOST_CLI: await keepTwice(0, 0) } });
+      assert.equal(waits.status, 0, waits.stderr);
+      assert.doesNotMatch(waits.calls, /HOSTCLI/);
+      assert.match(waits.stderr, /keep: owed; a kūkulu half rests unlanded \(or the debt reads nowhere\), so the keep waits for `lares rite kukulu` to land it/);
+      assert.equal(waits.keepOwed, true);
+    }
+    const r = await run(shim, ["rebuild", "--keep-after-landing"], { checkout: "clean", houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.calls, /HOSTCLI/);
+    assert.match(r.stderr, /the keep a down left owed waits for the rite's landing/);
+    assert.equal(r.keepOwed, true);
+  });
+  test(`${name}: keep-owed-names-a-face: the debt read names the face last worn (face 0, the keep's face, where none rests remembered), so a house with several faces open answers; a read that refuses names "wear a face"`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, LARES_KEEP_WORKSPACE: "house-backup", FAKE_RECEIPTS: '{"ok":true,"data":{"pending":[]}}' };
+    const none = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.match(none.calls, /rite receipts --rite kukulu --face 0 --json/);
+    const worn = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "", "config/last-worn-face": "2\n" }, env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.match(worn.calls, /rite receipts --rite kukulu --face 2 --json/);
+    const refused = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, FAKE_RECEIPTS: "", FAKE_RECEIPTS_RC: "2", LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.match(refused.stderr, /the debt read refused \(with several faces open and none worn, wear a face: `lares wear N`\)/);
+    assert.equal(refused.keepOwed, true);
+  });
+  test(`${name}: keep-owed-reads-the-debt-whole (the fourth read): a debt read that exits non-zero waits even where its output names no pending half; a keep that resolves no workspace keeps the mark`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, LARES_KEEP_WORKSPACE: "house-backup" };
+    const masked = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, FAKE_RECEIPTS: '{"ok":true,"data":{"pending":[]}}', FAKE_RECEIPTS_RC: "2", LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.doesNotMatch(masked.calls, /HOSTCLI/);
+    assert.equal(masked.keepOwed, true);
+    const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
+    const none = join(d, "lares");
+    await writeFile(none, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nprintf '%s\\n' '{"ok":true,"data":{"rite":"keep","due":false,"workspace":null,"why":"no keep workspace named"}}'\nexit 0\n`);
+    await chmod(none, 0o755);
+    const nothing = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, FAKE_RECEIPTS: '{"ok":true,"data":{"pending":[]}}', LARES_HOST_CLI: none } });
+    assert.match(nothing.calls, /HOSTCLI rite keep --if-due/);
+    assert.equal(nothing.keepOwed, true);
+    assert.match(nothing.stderr, /keep: no keep workspace resolved, so nothing kept; the keep stays owed/);
+  });
+  test(`${name}: keep-clears-on-a-real-keep (the fifth read): a keep that exits zero with no answer, or an answer that reads as no envelope naming its workspace, keeps the mark; CONTROL: the envelope naming the workspace clears it`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, LARES_KEEP_WORKSPACE: "house-backup", FAKE_RECEIPTS: '{"ok":true,"data":{"pending":[]}}' };
+    for (const out of ["", "kept, probably", '{"ok":true,"data":{"rite":"keep","workspace":""}}', '{"ok":false,"data":{"workspace":"house-backup"}}', '{"ok":true,"data":{"workspace":"house-backup"', '{"ok":true,"note":"x","data":{"workspace":7},"also":{"workspace":"house-backup"}}', '{"ok":1,"data":{"workspace":"house-backup"}}', '[{"ok":true,"data":{"workspace":"house-backup"}}]', '{"ok":true,"data":{"workspace":"house-backup",},}', '{"ok":true,"n":NaN,"data":{"workspace":"house-backup"}}', '{"ok":true,"data":["house-backup"]}']) {
+      const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
+      const cli = join(d, "lares");
+      await writeFile(cli, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nprintf '%s\\n' '${out}'\nexit 0\n`);
+      await chmod(cli, 0o755);
+      const r = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: cli } });
+      assert.match(r.calls, /HOSTCLI rite keep --if-due/);
+      assert.equal(r.keepOwed, true, JSON.stringify(out));
+      assert.match(r.stderr, /keep: the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed|keep: no keep workspace resolved/);
+    }
+    const kept = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: await fakeHostCli(0) } });
+    assert.equal(kept.keepOwed, false);
+  });
+  test(`${name}: keep-marks-owed-on-the-first-failed-read (the eighth read): with no mark yet, a keep reply that reads as no real keep WRITES keep-owed; in sh a python3 that answers 127 (absent) names itself and marks the keep owed`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup" };
+    for (const out of ["", '{"ok":1,"data":{"workspace":"house-backup"}}', '{"ok":true,"data":{"workspace":null}}']) {
+      const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
+      const cli = join(d, "lares");
+      await writeFile(cli, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nprintf '%s\\n' '${out}'\nexit 0\n`);
+      await chmod(cli, 0o755);
+      const r = await run(shim, ["down"], { env: { ...env, LARES_HOST_CLI: cli } });
+      assert.equal(r.status, 0, r.stderr);
+      assert.equal(r.keepOwed, true, JSON.stringify(out));
+    }
+    if (name === "sh") {
+      const d = await mkdtemp(join(tmpdir(), "lares-keep-py-"));
+      await writeFile(join(d, "python3"), "#!/bin/sh\nexit 127\n");
+      await chmod(join(d, "python3"), 0o755);
+      const r = await run(shim, ["down"], { env: { ...env, LARES_HOST_CLI: await fakeHostCli(0), PATH: `${d}:${process.env.PATH}` } });
+      assert.equal(r.status, 0, r.stderr);
+      assert.equal(r.keepOwed, true);
+      assert.match(r.stderr, /python3 answers nowhere on this host, so the keep's answer reads unread; the keep stays owed/);
+    }
+  });
+  test(`${name}: vessel-image-fails-loud (the fourth read): an inspect that fails exits non-zero and prints nothing, never a digest`, async () => {
+    const r = await run(shim, ["vessel-image"], { env: { ...STANDING, FAKE_VESSEL_IMAGE: "sha256:" + "ee".repeat(32), FAKE_VESSEL_INSPECT_RC: "1" } });
+    assert.notEqual(r.status, 0);
+    assert.equal(r.stdout.trim(), "");
+  });
+  test(`${name}: vessel-image-reads-the-running-image: it prints the image the running vessel runs, by digest; none running prints nothing`, async () => {
+    const r = await run(shim, ["vessel-image"], { env: { ...STANDING, FAKE_VESSEL_IMAGE: "sha256:" + "ee".repeat(32) } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout.trim(), "sha256:" + "ee".repeat(32));
+    const none = await run(shim, ["vessel-image"], { env: MOUNTS });
+    assert.equal(none.status, 0, none.stderr);
+    assert.equal(none.stdout.trim(), "");
   });
   test(`${name}: rebuild-takes-at-or-prior: --at <rev> builds that commit; --resume, --prior beside --at, or a stray word, refuses before anything moves`, async () => {
     const at = await run(shim, ["rebuild", "--at", "HEAD"], { checkout: "clean", env: { ...MOUNTS, FAKE_CUSTODY_OUTPUT: HELD } });
@@ -1498,6 +1686,29 @@ test(`${name}: rebuild-flows-with-no-terminal-where-no-route-is-owed: a kūkulu 
     assert.match(r.calls, /up -d --wait lares[\s\S]* vault unlock --all\n[\s\S]* wear 2/);
     assert.match(r.stderr, /the house stands on revision 0123456789ab, wearing h2/);
   }
+});
+// A CTRL+C AT THE ADMIT (gate 2) leaves the vessel standing on the image at the floor, the image unadmitted and no offer carrying
+// it. The next run reads that house: the vessel stays, and the admit it never took is owed again, never a bare unlock that fails.
+const FLOOR = '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}';
+test(`${name}: rebuild-owes-the-admit-a-ctrl-c-left: a vessel on the image at the floor, the image neither admitted nor offered, owes the admit (no terminal: the hand act, nothing moves); CONTROL: a vessel that holds its key, or an offer naming the image, owes none`, { skip }, async () => {
+  const stays = { ...REBUILT, FAKE_IMAGE_REV_LABEL: "@HEAD@", FAKE_RUNNING_ID: "vessel", FAKE_VESSEL_IMAGE: "sha256:new", FAKE_IMAGE_CLOSURE: CL("a"), FAKE_PULAMA_CLOSURE: CL("a") };
+  const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...stays, FAKE_CUSTODY_OUTPUT: FLOOR } });
+  assert.equal(r.status, 2, r.stderr);
+  assert.match(r.stderr, /rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it[\s\S]*your hand: lares rite kukulu on a terminal/);
+  assert.doesNotMatch(r.calls, /down --remove-orphans|up -d --wait lares|pulama-main\.js admit/);
+  for (const [env, houseFiles] of [[{}, {}], [{ FAKE_CUSTODY_OUTPUT: FLOOR }, OFFER]]) {
+    const ok = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, checkout: "clean", houseFiles, env: { ...stays, ...env } });
+    assert.equal(ok.status, 0, ok.stderr);
+    assert.doesNotMatch(ok.calls, /pulama-main\.js admit/);
+    assert.match(ok.stderr, /the vessel runs sha256:new already and stays standing/);
+  }
+});
+test(`${name}: rebuild-owes-the-admit-a-ctrl-c-left, on a terminal: the stayed vessel's admit runs attached, then the unlock`, { skip: skip || !haveScript }, async () => {
+  const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", env: { ...REBUILT, FAKE_IMAGE_REV_LABEL: "@HEAD@", FAKE_RUNNING_ID: "vessel", FAKE_VESSEL_IMAGE: "sha256:new", FAKE_IMAGE_CLOSURE: CL("a"), FAKE_PULAMA_CLOSURE: CL("a"), FAKE_CUSTODY_OUTPUT: FLOOR } });
+  const lines = r.calls.split("\n");
+  const admit = lines.findIndex((l) => /pulama-main\.js admit$/.test(l)), unlock = lines.findIndex((l) => / vault unlock/.test(l));
+  assert.ok(admit >= 0 && unlock > admit, `order admit, unlock:\n${r.calls}`);
+  assert.doesNotMatch(r.calls, /down --remove-orphans|up -d --wait lares/);
 });
 test(`${name}: rebuild-keeps-a-lit-pulama-on-a-vessel-only-build: no restand, no light; up, the pūlama's admit on this terminal, the last face worn, one closing line`, { skip: skip || !haveScript }, async () => {
   const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", wornFace: 2, env: { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("a"), FAKE_PULAMA_CLOSURE: CL("a") } });

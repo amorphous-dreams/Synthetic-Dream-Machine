@@ -70,6 +70,8 @@ export interface KukuluSigner { readonly key: string; readonly sign: (bytes: Uin
 /** What a kūkulu's rite names: the face's group, the branch, and the head and tree the vouch walked. */
 export interface KukuluRiteAt {
   readonly group: string; readonly branch: string; readonly head: string; readonly tree: string;
+  /** The image the host raises, which the vouch walked: the rite's halves name it, and a retry reuses a half only over it. */
+  readonly image?: string;
   /** Whether a key signs as the face's hand. */
   readonly hand: (key: string) => boolean;
   /** The pūlama's own signer: the witness of every record it rests. */
@@ -211,7 +213,7 @@ export function kukuluGate(a: {
         if (!face.unlocked) { wait("kukulu-face-locked"); continue; }
         const handKey = (await a.hand(face.ordinal))?.toLowerCase();
         if (!handKey) { wait("kukulu-hand-absent"); continue; }
-        const at: KukuluRiteAt = { group: body.group, branch: body.branch, head: body.head, tree: body.tree, hand: (key) => key.toLowerCase() === handKey, by };
+        const at: KukuluRiteAt = { group: body.group, branch: body.branch, head: body.head, tree: body.tree, image: raised, hand: (key) => key.toLowerCase() === handKey, by };
         // THE RETURN CLAIMS FIRST: from here a fault burns the return and serves nothing.
         const rite = await a.rite.begin({ lei, unstrung }, at);
         if (rite.ok) { begun.push({ face: { fcid: face.fcid, ordinal: face.ordinal }, at, tessera: rite.tessera }); continue; }

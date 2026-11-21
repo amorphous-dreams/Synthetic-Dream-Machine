@@ -7,7 +7,9 @@
 # revision (the tag, a kept rev tag, or a build), then down (keep, census), the pūlama re-stood and lit on this terminal
 # where its code moved or it stands unlit, up, its admit where owed, the last face worn. It reads where the house stands each
 # run, so a stopped run picks up from there; with no terminal, a light or admit owed stops it before anything moves; `--image`
-# stops after the image and prints the reading as one JSON line. The pūlama reads every route; this shim never reads or
+# stops after the image and prints the reading as one JSON line; `--keep-after-landing` leaves a keep a down left owed
+# (`run/keep-owed`) to `keep-owed`, which the rite runs once it lands its halves (it waits while a kūkulu half rests
+# unlanded). `vessel-image` prints the image the running vessel runs. The pūlama reads every route; this shim never reads or
 # types one. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
@@ -418,8 +420,10 @@ function Indent([string]$text) {
 }
 # THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
 # still stands (it keeps only a house that moved); a keep that refuses never blocks the down. LARES_HOST_CLI names the
-# host's lares door, else the checkout's own bin under the host's node.
+# host's lares door, else the checkout's own bin under the host's node. A keep that refuses leaves the house's
+# `run/keep-owed` mark, which outlives this invocation (a Ctrl+C, a later run), and a keep that keeps clears it.
 $script:KeepSaid = ''
+function KeepOwedMark { return (Join-Path (Join-Path $House 'run') 'keep-owed') }
 function KeepBeforeDown {
   $script:KeepSaid = 'no keep workspace named'
   if ([string]::IsNullOrEmpty((ValueOf 'LARES_KEEP_WORKSPACE') + (ValueOf 'LARES_WORKSPACES'))) { return }
@@ -427,9 +431,41 @@ function KeepBeforeDown {
   if ($hostCli) { $cmd = $hostCli; $pre = @() }
   elseif (Get-Command node -ErrorAction SilentlyContinue) { $cmd = 'node'; $pre = @((Join-Path $Root 'packages/lares-cli/bin/lares.mjs')) }
   else { $script:KeepSaid = 'no host node answered, so nothing kept'; [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
-  & $cmd @pre rite keep --if-due --no-json
-  if ($LASTEXITCODE -ne 0) { $script:KeepSaid = 'the keep did not complete'; [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand') }
-  else { $script:KeepSaid = 'kept (rite keep --if-due)' }
+  # THE MARK CLEARS ON A REAL KEEP: an answer naming no workspace (`"workspace":null`) kept nothing, and the keep stays owed.
+  $kbLines = @(& $cmd @pre rite keep --if-due --json)
+  $kbRc = $LASTEXITCODE
+  # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty),
+  # parsed as JSON; an answer that parses as none reads nothing kept.
+  if ($kbRc -eq 0) {
+    # STRICT JSON (System.Text.Json: no trailing commas, no NaN), each type checked: the root an object, `ok` the boolean true,
+    # `data` an object, `data.workspace` a non-empty string (or null: none named).
+    $last = @($kbLines | Where-Object { "$_".Trim() }) | Select-Object -Last 1
+    $verdict = 'malformed'
+    try {
+      $doc = [System.Text.Json.JsonDocument]::Parse("$last")
+      $rootEl = $doc.RootElement
+      $okEl = [System.Text.Json.JsonElement]::new(); $dataEl = [System.Text.Json.JsonElement]::new(); $wsEl = [System.Text.Json.JsonElement]::new()
+      if ($rootEl.ValueKind -eq 'Object' -and $rootEl.TryGetProperty('ok', [ref]$okEl) -and $okEl.ValueKind -eq 'True' -and $rootEl.TryGetProperty('data', [ref]$dataEl) -and $dataEl.ValueKind -eq 'Object' -and $dataEl.TryGetProperty('workspace', [ref]$wsEl)) {
+        if ($wsEl.ValueKind -eq 'Null') { $verdict = 'none' }
+        elseif ($wsEl.ValueKind -eq 'String' -and $wsEl.GetString().Trim()) { $verdict = 'kept' }
+      }
+    } catch { $verdict = 'malformed' }
+    # ANY ANSWER THAT READS AS NO REAL KEEP WRITES THE MARK (a first down holds none yet), so the next raise keeps again.
+    if ($verdict -ne 'kept') {
+      New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') | Out-Null
+      New-Item -ItemType File -Force -Path (KeepOwedMark) | Out-Null
+    }
+    if ($verdict -eq 'none') { $script:KeepSaid = 'no keep workspace resolved, so nothing kept; the keep stays owed'; return }
+    if ($verdict -ne 'kept') { $script:KeepSaid = 'the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed'; return }
+  }
+  $global:LASTEXITCODE = $kbRc
+  if ($LASTEXITCODE -ne 0) {
+    $script:KeepSaid = 'the keep did not complete'
+    New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') | Out-Null
+    New-Item -ItemType File -Force -Path (KeepOwedMark) | Out-Null
+    [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand')
+  }
+  else { $script:KeepSaid = 'kept (rite keep --if-due)'; Remove-Item -LiteralPath (KeepOwedMark) -Force -ErrorAction SilentlyContinue }
 }
 # The census exec, bounded: `--no-json` gives the lines down prints, `--json` the frame a mount read greps.
 function RunCensus([string]$fmt = '--no-json') {
@@ -464,6 +500,16 @@ function WearLastFace {
   if ((DetachedWear "$wear") -eq 0) { $script:Wore = "h$wear" }
   else { $script:Wore = ''; [Console]::Error.WriteLine("lares-container: h$wear stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``") }
 }
+# A CENSUS OF HELD SAVES ALONE says so plainly before the accept-loss offer: how many documents, that each waits in memory for a
+# session in this vessel, and that no carrier and no untracked file waits, so accept-loss drops exactly these. Under a restand it
+# adds that the keep runs after the raise once the new vessel's census reads clean.
+function HeldOnlyLine([string]$out) {
+  $lines = @($out -split "`r?`n" | Where-Object { $_ })
+  if ($lines.Count -eq 0 -or ($lines | Where-Object { -not $_.StartsWith('held-save ') })) { return }
+  $docs = if ($lines.Count -eq 1) { '1 document' } else { "$($lines.Count) documents" }
+  $more = if ($script:InRebuild) { "; the keep runs after the raise once the new vessel's census reads clean" } else { '' }
+  [Console]::Error.WriteLine("lares-container: the census names held saves alone ($docs): each a save the sealed rest keeps in memory until a session books it in this vessel; no carrier and no untracked file waits, so accept-loss drops exactly these$more")
+}
 function CensusBeforeStop {
   $c = RunCensus '--no-json'
   $out = $c.Out; $err = $c.Err; $rc = $c.Rc; $timedOut = $c.TimedOut
@@ -477,6 +523,7 @@ function CensusBeforeStop {
   if ($rc -eq 3 -and -not $timedOut) {
     [Console]::Error.WriteLine('lares-container: down refuses a silent stop: the census names content that rests nowhere yet, and a stop now drops it:')
     Indent $out
+    HeldOnlyLine $out
   } else {
     $why = if ($timedOut) { "no answer within ${CensusWaitSeconds}s (the vessel may stand wedged)" } else { "the census exec ended with status $rc" }
     [Console]::Error.WriteLine("lares-container: down refuses a silent stop: the census could not answer ($why), so what a stop would drop reads unknown")
@@ -634,7 +681,14 @@ function DownVessel([string[]]$opts) {
     [Console]::Error.WriteLine('lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown')
     [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
     OfferAcceptLoss
-  } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { KeepBeforeDown; CensusBeforeStop; SaveVesselLog ($ids -join "`n") }
+  } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) {
+    # UNDER THE RITE an owed keep waits for its landing: the down keeps nothing while the mark stands.
+    if ($script:KeepLater -and (Test-Path -LiteralPath (KeepOwedMark))) {
+      $script:KeepSaid = 'owed; it runs after the rite lands its halves'
+      [Console]::Error.WriteLine("lares-container: the keep a down left owed waits for the rite's landing; this down keeps nothing")
+    } else { KeepBeforeDown }
+    CensusBeforeStop; SaveVesselLog ($ids -join "`n")
+  }
   else { $script:KeepSaid = 'no vessel stood, so no keep ran' }
   if ($pulama -eq 'running') {
     # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
@@ -900,7 +954,9 @@ function PulamaRestand {
 #   3  the down path (keep, census) where the vessel runs another image or the pūlama re-stands; a vessel already on the
 #      image stays standing
 #   4  the pūlama re-stands where its code moved, then lights ATTACHED on this terminal: the pūlama reads the route
-#   5  up on the image; under a pūlama its admit, attached, where owed, then the vessel's unlock (detached) and the face last worn
+#   5  up on the image; under a pūlama its admit, attached, where owed (a vessel left standing at the floor on an image
+#      neither admitted nor offered, as a Ctrl+C at the admit leaves it, owes it too), then the vessel's unlock (detached)
+#      and the face last worn; a keep that refused before the down runs now where the new census reads clean
 #   6  one closing line: the revision, the worn face, the keep
 # It never switches a branch, never moves the checkout, and never reads or types a route.
 $script:InRebuild = $false
@@ -993,7 +1049,8 @@ function OfferCarries([string]$digest) {
   if (-not $digest) { return $false }
   $f = Join-Path (Join-Path $House 'config') 'kukulu-offer.json'
   if (-not (Test-Path -LiteralPath $f)) { return $false }
-  return (Get-Content -Raw -LiteralPath $f).Contains($digest)
+  # It reads the vouch's own `image` field, never a digest that merely begins another.
+  return (Get-Content -Raw -LiteralPath $f).Contains("`"image`":`"$digest`"")
 }
 # Does a vessel run the image the tag names? VoRunning reads true wherever a vessel runs at all.
 $script:VoRunning = $false
@@ -1019,10 +1076,30 @@ function PrintReading {
       if ($script:PsAdmitted -eq 'yes') { $adm = 'true' } elseif ($script:PsAdmitted -eq 'no') { $adm = 'false' }
     }
   }
-  $offer = if (OfferCarries $img) { 'true' } else { 'false' }
-  [Console]::Out.WriteLine("{`"op`":`"rebuild-image`",`"revision`":`"$($script:RRev)`",`"image`":`"$img`",`"how`":`"$($script:RHow)`",`"vessel`":`"$vessel`",`"current`":$current,`"pulama`":`"$pul`",`"lit`":$lit,`"admitted`":$adm,`"offer`":$offer}")
+  # An offer that rests names when it rested (its file's time, UTC), so a resumed rite names the begin it picks up.
+  $offer = 'false'; $at = ''
+  if (OfferCarries $img) {
+    $offer = 'true'
+    $f = Join-Path (Join-Path $House 'config') 'kukulu-offer.json'
+    try { $at = ",`"offerAt`":`"$((Get-Item -LiteralPath $f).LastWriteTimeUtc.ToString('yyyy-MM-ddTHH:mm:ssZ', [System.Globalization.CultureInfo]::InvariantCulture))`"" } catch { $at = '' }
+  }
+  [Console]::Out.WriteLine("{`"op`":`"rebuild-image`",`"revision`":`"$($script:RRev)`",`"image`":`"$img`",`"how`":`"$($script:RHow)`",`"vessel`":`"$vessel`",`"current`":$current,`"pulama`":`"$pul`",`"lit`":$lit,`"admitted`":$adm,`"offer`":$offer$at}")
 }
 $HandLine = 'your hand: lares rite kukulu on a terminal'
+# THE KEEP AFTER THE RAISE: a keep that refused before the down (its census named what rests nowhere yet) runs again once the
+# new vessel's census reads clean, so a restand never skips the keep silently; a census that still names items defers it by name.
+$script:KeepLater = $false
+function KeepAfterRaise {
+  if (-not (Test-Path -LiteralPath (KeepOwedMark))) { return }
+  $c = RunCensus '--no-json'
+  if ($c.Rc -eq 0 -and ($c.Out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) {
+    [Console]::Error.WriteLine("lares-container: the keep before the down did not complete; the new vessel's census reads clean, so the keep runs now")
+    KeepBeforeDown
+    if ($script:KeepSaid -eq 'kept (rite keep --if-due)') { $script:KeepSaid = 'kept after the raise (rite keep --if-due)' }
+  } else {
+    $script:KeepSaid = 'deferred: the census after the raise still names what rests nowhere yet; `lares rite keep` keeps once it reads clean'
+  }
+}
 function StandHouse {
   $digest = ImageId
   $restand = $false; $light = $false; $admit = $false; $why = ''
@@ -1041,6 +1118,9 @@ function StandHouse {
     }
     if ($restand) { $stays = $false }
     if (-not $light -and -not $stays -and $script:PsAdmitted -ne 'yes' -and -not (OfferCarries $digest)) { $admit = $true }
+    # A CTRL+C AT THE ADMIT left the vessel standing on the image at the floor, the image unadmitted and no offer carrying it:
+    # the admit it never took is owed again, never a bare unlock that cannot open.
+    if (-not $light -and $stays -and $script:PsAdmitted -ne 'yes' -and -not (OfferCarries $digest) -and -not (KeyHeld)) { $admit = $true }
     if (-not $script:Tty) {
       if ($light) { Die "rebuild stops before anything moves: $why, and its light reads your route on a terminal; $HandLine" }
       if ($admit) { Die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HandLine (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)" }
@@ -1074,6 +1154,8 @@ function StandHouse {
       if (NoneWorn) { WearLastFace }
     }
   } elseif ($stays) { UnlockOrName }
+  if ($script:KeepLater -and (Test-Path -LiteralPath (KeepOwedMark))) { $script:KeepSaid = 'owed; it runs after the rite lands its halves' }
+  else { KeepAfterRaise }
   $worn = $script:Wore -replace '^h', ''
   if (-not $worn) { $worn = WornNow }
   $rev = LabelOf $ImageRef
@@ -1091,7 +1173,8 @@ function RebuildVerb([string[]]$rargs) {
       '--at' { if ($i + 1 -ge $rargs.Count) { Die 'rebuild --at wants a revision' }; $at = [string]$rargs[$i + 1]; $atGiven = $true; $i += 2 }
       '--prior' { $prior = $true; $i++ }
       '--image' { $imageOnly = $true; $i++ }
-      default { Die "rebuild takes --at <rev>, --prior and --image, and `"$($rargs[$i])`" names none of them" }
+      '--keep-after-landing' { $script:KeepLater = $true; $i++ }
+      default { Die "rebuild takes --at <rev>, --prior, --image and --keep-after-landing, and `"$($rargs[$i])`" names none of them" }
     }
   }
   if ($prior -and $atGiven) { Die 'rebuild takes --at <rev> or --prior, never both' }
@@ -1101,9 +1184,42 @@ function RebuildVerb([string[]]$rargs) {
   StandHouse
 }
 
+# THE KEEP THE RITE RUNS AFTER ITS LANDING (`keep-owed`): the keep a down left owed, once the census reads clean, or its
+# deferral by name; with no keep owed it runs nothing.
+function KeepOwedVerb([string[]]$kargs) {
+  if ($kargs.Count -gt 0) { Die 'keep-owed takes no argument' }
+  if (-not (Test-Path -LiteralPath (KeepOwedMark))) { [Console]::Error.WriteLine('lares-container: keep: none owed'); return }
+  # THE KEEP WAITS FOR THE LANDING: a kūkulu half resting unlanded on any line, or a debt read that fails, keeps nothing.
+  # The read names a face, so a house with several faces open never refuses it for no face named: the
+  # face last worn, else face 0, the keep's face.
+  $koFace = LastWornFace; if ($koFace -eq '') { $koFace = '0' }
+  $debt = (($null | & docker compose @Base exec -T lares node $Cli rite receipts --rite kukulu --face $koFace --json 2>$null) -join '') -replace '\s', ''
+  $koRc = $LASTEXITCODE
+  if ($koRc -ne 0 -or -not $debt.Contains('"pending":[]')) {
+    $why = ''
+    if ($koRc -ne 0) { $why = '; the debt read refused (with several faces open and none worn, wear a face: `lares wear N`)' }
+    [Console]::Error.WriteLine('lares-container: keep: owed; a kūkulu half rests unlanded (or the debt reads nowhere), so the keep waits for `lares rite kukulu` to land it' + $why)
+    return
+  }
+  KeepAfterRaise
+  [Console]::Error.WriteLine("lares-container: keep: $($script:KeepSaid)")
+}
+
 switch ($verb) {
   'up' { UpVerb $rest }
   'rebuild' { RebuildVerb $rest }
+  'keep-owed' { KeepOwedVerb $rest }
+  'vessel-image' {
+    # THE IMAGE THE RUNNING VESSEL RUNS, by digest (the rite lands over it, never over a tag that may have moved); none prints nothing.
+    if ($rest.Count -gt 0) { Die 'vessel-image takes no argument' }
+    $id = ((& docker compose @Base ps -q --status running lares 2>$null) -join '').Trim()
+    if ($LASTEXITCODE -eq 0 -and $id) {
+      # An inspect that fails exits non-zero and prints nothing: the rite reads the image as unknown, never the staged digest.
+      $img = ((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()
+      if ($LASTEXITCODE -ne 0) { Die "vessel-image: the running vessel's image reads nowhere (docker inspect failed)" }
+      [Console]::Out.WriteLine($img)
+    }
+  }
   'down'  { DownVessel $rest }
   'pulama' {
     if (-not $PulamaMode) { Die "pulama needs LARES_PULAMA=1 in the environment or $EnvFile" }
