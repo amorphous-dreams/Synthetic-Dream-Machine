@@ -11,7 +11,7 @@
  * Conventions:
  *   bare tokens   → positional[]
  *   --key         → flag (boolean true)
- *   --key value   → option (string)
+ *   --key value   → option (string); a VALUE_FLAGS name takes the next token whatever it starts with
  *   --key=value   → option (string); splits at the FIRST `=`, so the value may carry more `=`.
  *                   An empty value (`--key=`) stays an option holding "".
  *   --no-key      → flag (boolean false)
@@ -45,6 +45,14 @@ export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
  */
 export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "rollback"]);
 
+
+/**
+ * THE VALUE FLAGS: names that carry free text (a tiddler body, a note, a reason, a field list) and ALWAYS take the next
+ * token as their value, whatever it starts with: `--text "---\nfront: matter\n---"` binds the front matter, never reads
+ * as a flag. Every other non-boolean name keeps the peek (`--key --other` leaves `--key` bare). `tests/parse-args.test.ts`
+ * reds a name here that a handler reads as a flag, or that sits in `BOOLEAN_FLAGS` / `VALUE_OR_FLAG`.
+ */
+export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "note", "reason", "text"]);
 
 /** A command line the grammar itself refuses (`--no-key=…`, `--=v`); the dispatcher turns it into exit 2. */
 export class ArgsError extends Error {
@@ -91,8 +99,8 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
       }
       if (BOOLEAN_FLAGS.has(body)) { flags[body] = true; continue; }
       const next = tokens[0];
-      // --key value form: peek; consume next token if it does not look like an option.
-      if (next !== undefined && !next.startsWith("--")) {
+      // --key value form: peek; consume next token if it does not look like an option (a VALUE_FLAGS name consumes it whatever it starts with).
+      if (next !== undefined && (VALUE_FLAGS.has(body) || !next.startsWith("--"))) {
         options[body] = next;
         tokens.shift();
       } else {
