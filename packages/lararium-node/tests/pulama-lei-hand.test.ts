@@ -30,7 +30,7 @@ let fx: PulamaFixture | null = null;
 const dirs: string[] = [];
 afterEach(async () => { await fx?.drop(); fx = null; for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });
 
-async function stand(opts: { readonly lei?: boolean; readonly unanchored?: boolean } = {}) {
+async function stand(opts: { readonly lei?: boolean; readonly unanchored?: boolean; readonly census?: () => Promise<ReadonlyArray<{ ordinal: number; key: string | null }>> } = {}) {
   fx = await standPulama("pulama-lei-hand", () => openGate({ faces: lend(0), coldReads: [] }));
   await fx.kept.foundFace({ group: personaGroupDigest(GROUP), ordinal: 0, slots: fixtureSlots });
   const holder = makeCustodyHolder({ io: new FsCustodyIo(fx.seat.homes), homes: fx.seat.homes });
@@ -47,6 +47,7 @@ async function stand(opts: { readonly lei?: boolean; readonly unanchored?: boole
       if (credentials.some((c) => c.kind !== "passphrase" || c.passphrase !== FIXTURE_PASSPHRASE)) throw new WardRefused("ward-no-slot-opens", "the route opens no slot of this face's ward (2 attempt(s) left)");
       return root;
     },
+    ...(opts.census ? { census: opts.census } : {}),
   };
   const lines: string[] = [];
   const door = pulamaHandDoor({ holder, server, image: pulamaImage(dir), records, onLog: (l) => lines.push(l), ...(opts.lei === false ? {} : { lei }) } as Parameters<typeof pulamaHandDoor>[0]);
@@ -143,5 +144,28 @@ describe("the hand abandons a pending kūkulu at the pūlama's hand door (gate 2
     expect(s.opened.length).toBe(opened);
     const wrong = await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts, credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] });
     expect(wrong["records"]).toBeUndefined();
+  });
+});
+
+describe("seat zero's retire runs the pūlama's own census (the retire's first read)", () => {
+  test("RED: the hand door signs a retire only once its OWN census reads every face and none holds the gone root: no census refuses `retire-census-unavailable`, a face it reads no root for `retire-census-unknown`, a face holding the root `retire-root-stands`, each before the route; CONTROL: a clean census signs as seat zero", async () => {
+    const gone = "ab".repeat(32);
+    const retire = { tessera: "c".repeat(64), group: GROUP, branch: BRANCH, begun: "d".repeat(64), house: "Eh", root: gone, statement: "h1's root is lost with its device" };
+    const frame = { op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, retire, credentials: route };
+    for (const [census, reading] of [
+      [undefined, "retire-census-unavailable"],
+      [async () => [{ ordinal: 0, key: "ee".repeat(32) }, { ordinal: 1, key: null }], "retire-census-unknown"],
+      [async () => [{ ordinal: 0, key: "ee".repeat(32) }, { ordinal: 1, key: gone }], "retire-root-stands"],
+    ] as const) {
+      const s = await stand(census ? { census } : {});
+      await s.light();
+      const opened = s.opened.length;
+      expect(await s.door(frame)).toMatchObject({ reading });
+      expect(s.opened.length).toBe(opened);
+      await fx!.drop(); fx = null;
+    }
+    const ok = await stand({ census: async () => [{ ordinal: 0, key: "ee".repeat(32) }, { ordinal: 1, key: "ff".repeat(32) }] });
+    await ok.light();
+    expect(await ok.door(frame)).toMatchObject({ reading: "signed", records: [{ body: { act: "rite-retired", root: gone } }] });
   });
 });

@@ -72,6 +72,11 @@ export interface PulamaLeiHand {
   /** The face root's signer for ONE act, opened fresh under the operator's route (a ward act); a route that opens no slot of the
    *  face's ward throws the ward's refusal by its reading. */
   signer(ordinal: number, credentials: readonly Credential[]): Promise<SwarmSignerPort>;
+  /**
+   * THE PŪLAMA'S OWN CENSUS for a retire: every face its custody names, beside the root its own records read for it (null where none
+   * reads). A vessel writes none of it. Absent, a retire refuses `retire-census-unavailable`.
+   */
+  census?(): Promise<ReadonlyArray<{ readonly ordinal: number; readonly key: string | null }>>;
 }
 
 type LeiAct = "kui" | "restring" | "unstring";
@@ -106,6 +111,20 @@ function leiPartsOf(act: LeiAct, group: string, f: Readonly<Record<string, unkno
     return { parts: { act: "lei", group, rite, branch, after, reach, head, ...(rite === "exec" ? { scope: f["scope"] as ExecLeiScope } : {}) }, ...(after !== null ? { after } : {}) };
   }
   return malformed("a lei's reach reads wide or head");
+}
+
+/**
+ * SEAT ZERO'S RETIRE, as the hand door reads it: only face 0 signs, over one `retire` part binding the house, group, branch,
+ * tessera, guest cid, the gone root and the operator's statement. Answers the record's parts, or the refusal's reading.
+ */
+export function retirePartsOf(f: Readonly<Record<string, unknown>>, branch: unknown): { readonly parts: SwarmBodyParts } | { readonly reading: string; readonly detail: string } {
+  const r = typeof f["retire"] === "object" && f["retire"] !== null ? f["retire"] as Record<string, unknown> : null;
+  if (f["face"] !== 0) return { reading: "retire-needs-seat-zero", detail: "seat zero (h0) alone retires a half whose root is gone" };
+  const ok = r !== null && typeof branch === "string" && r["branch"] === branch && typeof r["tessera"] === "string" && CID.test(r["tessera"]) && typeof r["begun"] === "string" && CID.test(r["begun"])
+    && typeof r["group"] === "string" && r["group"] !== "" && typeof r["house"] === "string" && r["house"] !== "" && typeof r["root"] === "string" && CID.test(r["root"])
+    && typeof r["statement"] === "string" && r["statement"].trim() !== "" && r["statement"].length <= 500;
+  if (!ok) return { reading: "lei-malformed", detail: "a retire names one half (tessera, guest cid, group, branch), the house, the gone root and the operator's statement" };
+  return { parts: { act: "rite-retired", group: r!["group"] as string, rite: "kukulu", branch: branch as string, tessera: r!["tessera"] as string, begun: r!["begun"] as string, house: r!["house"] as string, root: r!["root"] as string, statement: r!["statement"] as string } };
 }
 
 export function pulamaHandDoor(a: {
@@ -208,6 +227,29 @@ export function pulamaHandDoor(a: {
           // group), each a `rite-abandoned` record the face's root signs under the operator's route. Malformed parts sign nothing.
           const src = typeof f["data"] === "object" && f["data"] !== null ? f["data"] as Record<string, unknown> : f;
           const raw = src["parts"], branch = src["branch"] ?? f["branch"];
+          if (src["retire"] !== undefined) {
+            // SEAT ZERO'S RETIRE: one mark, face 0's root, under the operator's route.
+            const retire = retirePartsOf({ ...src, face }, branch);
+            if ("reading" in retire) return { op: "lei", act, ...retire, face };
+            // THE PŪLAMA'S OWN CENSUS, before the route: every face read, none holding the root the mark retires.
+            if (!a.lei.census) return { op: "lei", act, reading: "retire-census-unavailable", face, detail: "this pūlama runs no census of its faces' roots, so no retire signs here" };
+            const census = await a.lei.census().catch(() => null);
+            const gone = (retire.parts as { root: string }).root.toLowerCase();
+            if (census === null || census.some((c) => c.key === null)) return { op: "lei", act, reading: "retire-census-unknown", face, detail: `the census reads ${census === null ? "no face" : census.filter((c) => c.key === null).map((c) => `h${c.ordinal}`).join(", ")}, so whether the root still stands reads unknown` };
+            const holder = census.find((c) => c.key !== null && c.key.toLowerCase() === gone);
+            if (holder !== undefined) return { op: "lei", act, reading: "retire-root-stands", face, detail: `the root this retire names still stands at h${holder.ordinal}` };
+            const credentials = credentialsOf(f["credentials"]);
+            if (credentials === null) return { op: "lei", act, reading: "malformed" };
+            try {
+              const record = await signSwarmAct(retire.parts, await a.lei.signer(face, credentials));
+              log("signed by seat zero: a retire mark for one kūkulu half whose root is gone; the vessel lands it");
+              return { op: "lei", act, reading: "signed", face, records: [record] };
+            } catch (err) {
+              const e = err as { reading?: unknown; code?: unknown; message?: unknown };
+              const reading = typeof e.reading === "string" ? e.reading : typeof e.code === "string" ? e.code : "lei-sign-refused";
+              return { op: "lei", act, reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
+            }
+          }
           const parts = Array.isArray(raw) ? raw.slice(0, 64) : [];
           const ok = typeof branch === "string" && branch !== "" && parts.length > 0 && parts.every((x) => typeof x === "object" && x !== null
             && typeof (x as Record<string, unknown>)["tessera"] === "string" && CID.test((x as Record<string, unknown>)["tessera"] as string)

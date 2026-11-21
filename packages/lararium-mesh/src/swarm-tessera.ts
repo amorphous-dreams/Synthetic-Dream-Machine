@@ -38,7 +38,7 @@ import type { WardActWitness } from "./ward-cosign.js";
 /** The tessera one return of one lei takes. */
 export const tesseraOf = (ret: { readonly lei: string; readonly n: number }): string => sha256HexBytesSync(canonicalJsonBytes({ lei: ret.lei, n: ret.n }));
 
-export type TesseraRed = "landed-absent" | "abandoned" | "head-differs" | "image-differs" | "rite-differs" | "landed-names-another" | "begun-absent" | "begun-refused" | "landed-refused";
+export type TesseraRed = "landed-absent" | "abandoned" | "retired" | "head-differs" | "image-differs" | "rite-differs" | "landed-names-another" | "begun-absent" | "begun-refused" | "landed-refused";
 /**
  * One tessera as conferre reads it: each half by its record's cid (null where none verifies), and `par` for a match. Where the
  * begun half verifies, the reading names the branch and head that half began at, so a seat that owes a landing finds its own.
@@ -79,13 +79,14 @@ export async function beginChecked(wiki: SwarmWikiPort, checked: SwarmReturnable
  * the image it stands from where the caller names one. The answer reads `par` where that head equals the head the rite began
  * at and, where the begin named an image, the landing names the same one. A landing writes once, and never over an abandoned half.
  */
-export async function landRite(wiki: SwarmWikiPort, at: { readonly tessera: string; readonly head: string; readonly image?: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort):
+export async function landRite(wiki: SwarmWikiPort, at: { readonly tessera: string; readonly head: string; readonly image?: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort, retire?: RetireContext):
   Promise<{ tessera: string; rite: SwarmLeiRite; begun: string; landed: string; par: boolean }> {
   const guestTitle = swarmTesseraTitle(at.tessera, "guest");
   const guest = verifySwarmRecord(await wiki.read(guestTitle), guestTitle, trust, group);
   if (!guest.ok || guest.act.body.act !== "rite-begun") throw new SwarmRefused("rite-begun-absent", `no begun half stands for tessera ${at.tessera}${guest.ok ? "" : ` (${guest.refusal})`}`);
   if (!trust.vessel(vessel.key.toLowerCase())) throw new SwarmRefused("rite-land-role", "the vessel alone lands a rite");
   if (await abandonMarkStands(wiki, at.tessera)) throw new SwarmRefused("rite-abandoned", `the hand abandoned tessera ${at.tessera}, so no landing takes it`);
+  if (await retireMarkStands(wiki, at.tessera, retire)) throw new SwarmRefused("rite-retired", `seat zero set tessera ${at.tessera} aside, so no landing takes it`);
   const begun = guest.act.body;
   const act = await signSwarmAct({ act: "rite-landed", group, rite: begun.rite, tessera: at.tessera, begun: guest.cid, head: at.head, ...(at.image === undefined ? {} : { image: at.image }) }, vessel);
   if (!(await wiki.writeNew(swarmTesseraTitle(at.tessera, "host"), JSON.stringify(act)))) throw new SwarmRefused("rite-already-landed", `a host half already rests for tessera ${at.tessera}`);
@@ -122,6 +123,59 @@ export async function abandonMarkVerifies(wiki: SwarmWikiPort, tessera: string, 
   return mark.ok && mark.act.body.act === "rite-abandoned" && mark.act.body.tessera === tessera && mark.act.body.begun === guestCid;
 }
 
+/**
+ * What a reader names to honour seat zero's retire marks: whether a key signs as seat zero (the reader anchors it in h0's own
+ * signed face log, never a roster line a lent vessel can write), and the house the marks must bind.
+ */
+export interface RetireContext { readonly seatZero: (key: string) => boolean; readonly house: string }
+
+/**
+ * THE ROOT THAT STRUNG A HALF'S LEI, VERIFIED: the lei record at its own title verifies under its own signer as the hand, in the
+ * half's group, and its cid is the one the half names. A row whose `signer` was rewritten, or a lei of another cid, names none.
+ */
+export async function verifiedLeiRoot(wiki: SwarmWikiPort, tessera: string): Promise<string | null> {
+  let guest: { body?: Record<string, unknown> } | null;
+  try { guest = JSON.parse((await wiki.read(swarmTesseraTitle(tessera, "guest"))) ?? "null"); } catch { return null; }
+  const g = guest?.body;
+  if (!g || g["act"] !== "rite-begun" || typeof g["lei"] !== "string" || typeof g["group"] !== "string" || typeof g["branch"] !== "string") return null;
+  if (g["rite"] !== "kukulu" && g["rite"] !== "push" && g["rite"] !== "keep" && g["rite"] !== "exec") return null;
+  const leiTitle = swarmLeiRecordTitle(g["rite"] as SwarmLeiRite, g["branch"], g["lei"]);
+  const leiText = await wiki.read(leiTitle);
+  let signer: string;
+  try { signer = String((JSON.parse(leiText ?? "null") as { signer?: unknown }).signer ?? "").toLowerCase(); } catch { return null; }
+  if (signer === "") return null;
+  const lei = verifySwarmRecord(leiText, leiTitle, { hand: (key) => key.toLowerCase() === signer, vessel: () => false, lead: () => false }, g["group"]);
+  return lei.ok && lei.cid === g["lei"] ? signer : null;
+}
+
+/**
+ * WHETHER SEAT ZERO'S RETIRE MARK ENDS A HALF: the mark's text verifies as a `rite-retired` record signed by seat zero's root (the
+ * reader names it), binding this house, the half's group, branch, tessera and guest cid, and the root that strung the half's lei.
+ * With no context a reader honours none.
+ */
+export async function retireMarkVerifies(wiki: SwarmWikiPort, tessera: string, markText: string, ctx: RetireContext | undefined): Promise<boolean> {
+  if (ctx === undefined) return false;
+  let guest: { body?: Record<string, unknown>; signer?: unknown } | null;
+  try { guest = JSON.parse((await wiki.read(swarmTesseraTitle(tessera, "guest"))) ?? "null"); } catch { return false; }
+  const g = guest?.body;
+  if (!g || g["act"] !== "rite-begun" || typeof g["lei"] !== "string" || typeof g["group"] !== "string" || typeof g["branch"] !== "string" || typeof guest!.signer !== "string") return false;
+  if (g["rite"] !== "kukulu" && g["rite"] !== "push" && g["rite"] !== "keep" && g["rite"] !== "exec") return false;
+  // The gone root reads off the lei record VERIFIED (its signature and cid), never its `signer` field alone.
+  const leiRoot = await verifiedLeiRoot(wiki, tessera);
+  if (leiRoot === null) return false;
+  const read = verifySwarmRecord(markText, swarmTesseraTitle(tessera, "retired"), { hand: (key) => ctx.seatZero(key) || ctx.seatZero(key.toLowerCase()), vessel: () => false, lead: () => false }, g["group"]);
+  if (!read.ok || read.act.body.act !== "rite-retired") return false;
+  const b = read.act.body;
+  return b.tessera === tessera && b.begun === swarmActCid(guest as unknown as Parameters<typeof swarmActCid>[0]) && b.branch === g["branch"] && b.house === ctx.house && b.root.toLowerCase() === leiRoot;
+}
+
+/** Whether seat zero's retire mark resting beside a half verifies for this reader (`retireMarkVerifies`). */
+export async function retireMarkStands(wiki: SwarmWikiPort, tessera: string, ctx?: RetireContext): Promise<boolean> {
+  if (ctx === undefined) return false;
+  const text = await wiki.read(swarmTesseraTitle(tessera, "retired"));
+  return text !== null && retireMarkVerifies(wiki, tessera, text, ctx);
+}
+
 /** Whether the mark resting beside a half verifies (`abandonMarkVerifies`); no mark, or one that verifies as none, ends nothing. */
 export async function abandonMarkStands(wiki: SwarmWikiPort, tessera: string): Promise<boolean> {
   const text = await wiki.read(swarmTesseraTitle(tessera, "abandoned"));
@@ -133,7 +187,7 @@ export async function abandonMarkStands(wiki: SwarmWikiPort, tessera: string): P
  * abandon. It reads the rows themselves, not under a face's trust, so a half whose face stands shut, or was rehived under a new
  * group since, still counts; it names debt, and lands nothing (a landing verifies under the face's own trust).
  */
-export async function pendingBegins(wiki: SwarmWikiPort, rite: SwarmLeiRite, branch?: string): Promise<PendingBegin[]> {
+export async function pendingBegins(wiki: SwarmWikiPort, rite: SwarmLeiRite, branch?: string, retire?: RetireContext): Promise<PendingBegin[]> {
   const prefix = swarmTesseraPrefix();
   const halves = new Map<string, Set<string>>();
   for (const title of await wiki.list(prefix)) {
@@ -146,6 +200,7 @@ export async function pendingBegins(wiki: SwarmWikiPort, rite: SwarmLeiRite, bra
     if (!set.has("guest") || set.has("host")) continue;
     // ONLY A MARK THAT VERIFIES ends the debt: the half's own root, over its own guest cid.
     if (set.has("abandoned") && await abandonMarkStands(wiki, tessera)) continue;
+    if (set.has("retired") && await retireMarkStands(wiki, tessera, retire)) continue;
     let guest: { body: Record<string, unknown>; signer: string };
     try { guest = JSON.parse((await wiki.read(swarmTesseraTitle(tessera, "guest"))) ?? "null") as { body: Record<string, unknown>; signer: string }; } catch { continue; }
     const body = guest?.body;
@@ -196,7 +251,7 @@ async function halvesOf(wiki: SwarmWikiPort, trust: SwarmTrust, group: string): 
 }
 
 /** Conferre: match every tessera's halves. `par` holds the matched pairs; `red` holds every tessera that reads unmatched, by name. */
-export async function conferre(wiki: SwarmWikiPort, trust: SwarmTrust, group: string): Promise<{ par: TesseraReading[]; red: TesseraReading[] }> {
+export async function conferre(wiki: SwarmWikiPort, trust: SwarmTrust, group: string, retire?: RetireContext): Promise<{ par: TesseraReading[]; red: TesseraReading[] }> {
   const par: TesseraReading[] = [], red: TesseraReading[] = [];
   for (const [tessera, { guest, host, abandoned }] of await halvesOf(wiki, trust, group)) {
     const begun = guest.state === "ok" ? guest.cid : null, landed = host.state === "ok" ? host.cid : null;
@@ -205,7 +260,7 @@ export async function conferre(wiki: SwarmWikiPort, trust: SwarmTrust, group: st
       guest.state === "refused" ? "begun-refused"
       : host.state === "refused" ? "landed-refused"
       : guest.state === "absent" ? "begun-absent"
-      : host.state === "absent" ? (abandoned && await abandonMarkStands(wiki, tessera) ? "abandoned" : "landed-absent")
+      : host.state === "absent" ? (abandoned && await abandonMarkStands(wiki, tessera) ? "abandoned" : await retireMarkStands(wiki, tessera, retire) ? "retired" : "landed-absent")
       : host.body.begun !== guest.cid ? "landed-names-another"
       : host.body.rite !== guest.body.rite ? "rite-differs"
       : host.body.head !== guest.body.head ? "head-differs"

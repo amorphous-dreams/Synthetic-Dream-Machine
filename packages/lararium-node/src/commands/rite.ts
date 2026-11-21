@@ -22,9 +22,9 @@ import type { Repo } from "@automerge/automerge-repo";
 import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { join, sep } from "node:path";
 import {
-  WORKSPACE_NAME_RE, SwarmRefused, WardRefused, abandonMarkStands, abandonMarkVerifies, abandonRites, beginChecked, beginRite, checkReturn, conferre, cosignPortWitness, isSwarmLeiRite, landRite, pendingBegins, riteReceipts,
+  WORKSPACE_NAME_RE, SwarmRefused, WardRefused, abandonMarkStands, abandonMarkVerifies, abandonRites, retireMarkVerifies, signSwarmAct, verifiedLeiRoot, beginChecked, beginRite, checkReturn, conferre, cosignPortWitness, isSwarmLeiRite, landRite, pendingBegins, riteReceipts,
   swarmTesseraTitle,
-  type PendingBegin, type SwarmLeiRite, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort, type TesseraReading,
+  type PendingBegin, type RetireContext, type SwarmLeiRite, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort, type TesseraReading,
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { treeOfHead } from "../git-tree-reader.js";
@@ -32,6 +32,8 @@ import { openedCustody, unlockedFaceOrdinals } from "../custody-seat.js";
 import { kukuluOfferPath, writeKukuluOffer, type KukuluOfferFace } from "../kukulu-offer.js";
 import { larWorkspacesHome } from "../vessel-paths.js";
 import { wardRootSession } from "../ward-signer.js";
+import { listFaceCustodyIds } from "../identity-anchors.js";
+import { loadPlaceAid } from "../node-vessel-identity.js";
 import type { WardCredential } from "../ward-credential.js";
 import { BundleVerifyRefused, unsafeRelPath, verifyBundle } from "../bundle-manifest.js";
 
@@ -231,7 +233,7 @@ export async function acceptAbandons(wiki: SwarmWikiPort, branch: string, record
 /**
  * THE ABANDON'S FACE, BY NAME: the face named (`named`, the session's) must stand lent, else `face-not-lent`; with nothing pending on
  * the line `rite-abandon-nothing-pending`; with none of its own group's halves `rite-abandon-no-own-halves`, naming each other half
- * with the line that ends it (its own face's abandon, or the wait until a face carrying its group stands). Answers the
+ * with the line that ends it (its own face's abandon, or seat zero's retire where no lent face carries its group). Answers the
  * signing face, its own halves, and the rest by name.
  */
 export function ownAbandonParts(a: { readonly pending: readonly PendingBegin[]; readonly faces: ReadonlyArray<{ readonly ordinal: number; readonly group: string }>; readonly named?: number; readonly branch: string }):
@@ -248,10 +250,82 @@ export function ownAbandonParts(a: { readonly pending: readonly PendingBegin[]; 
   if (mine.length === 0) {
     const lines = others.map((o) => typeof o["face"] === "string"
       ? `${o["face"]} tessera ${String(o["tessera"])} waits for its own face's hand: lares rite kukulu --abandon --face ${String(o["face"]).slice(1)} --branch ${a.branch}`
-      : `${String(o["group"])} tessera ${String(o["tessera"])} waits: no lent face's hand carries its group, so it ends once that face stands again`);
+      : `${String(o["group"])} tessera ${String(o["tessera"])} waits: no lent face's hand carries its group; where its root is gone, seat zero sets it aside: lares rite kukulu --abandon --retire ${String(o["tessera"])} --statement "<why its root is gone>" --branch ${a.branch}`);
     throw new SwarmRefused("rite-abandon-no-own-halves", `h${signer} owes no half of its own on "${a.branch}"; ${lines.join("; ")}`);
   }
   return { signer, mine, others };
+}
+
+/**
+ * THE CENSUS a retire reads: every face of this house by ordinal, and whether it holds a key as its current root (off its own
+ * signed face log); `holds: null` where its log reads nowhere, which reads UNKNOWN and refuses, never as a root gone.
+ */
+export interface FaceRoot { readonly ordinal: number; readonly holds: ((key: string) => boolean) | null }
+
+/** The census's verdict over one root: a face that reads unknown refuses `rite-retire-census-unknown`; one holding it `rite-retire-root-stands`. */
+function censusClears(roots: readonly FaceRoot[], root: string, tessera: string): void {
+  const unknown = roots.filter((r) => r.holds === null);
+  if (unknown.length > 0) throw new SwarmRefused("rite-retire-census-unknown", `the census reads ${unknown.map((r) => `h${r.ordinal}`).join(", ")} nowhere, so whether its root still stands reads unknown: open ${unknown.length === 1 ? "that face" : "those faces"}, then retire again`);
+  const holder = roots.find((r) => r.holds !== null && r.holds(root));
+  if (holder !== undefined) throw new SwarmRefused("rite-retire-root-stands", `the root that strung tessera ${tessera}'s lei still stands at h${holder.ordinal}: that face abandons it itself (--abandon --face ${holder.ordinal})`);
+}
+
+/**
+ * SEAT ZERO'S RETIRE TERMS: the half pending on `branch` at `tessera` (else `rite-retire-not-pending`), the root that strung its lei
+ * (read off the lei record it names), and the operator's statement (blank refuses `rite-retire-statement`). A root any face of
+ * this house still holds refuses `rite-retire-root-stands`, naming that face: being absent from the lent set grants nothing.
+ */
+export async function retireTerms(wiki: SwarmWikiPort, a: { readonly branch: string; readonly tessera: string; readonly statement: string; readonly house: string; readonly roots: readonly FaceRoot[] }):
+  Promise<{ face: 0; rite: "kukulu"; branch: string; retire: { tessera: string; group: string; branch: string; begun: string; house: string; root: string; statement: string } }> {
+  if (a.statement.trim() === "" || a.statement.length > 500) throw new SwarmRefused("rite-retire-statement", "a retire carries the operator's statement of why the root is gone (`--statement`, up to 500 characters)");
+  const half = (await pendingBegins(wiki, "kukulu", a.branch)).find((p) => p.tessera === a.tessera);
+  if (half === undefined) throw new SwarmRefused("rite-retire-not-pending", `no kūkulu half rests unlanded at tessera ${a.tessera} on "${a.branch}"`);
+  // THE GONE ROOT reads off the lei record verified (its signature and its cid), never its `signer` field alone.
+  const root = await verifiedLeiRoot(wiki, half.tessera);
+  if (root === null || !/^[0-9a-f]{64}$/.test(root)) throw new SwarmRefused("rite-retire-not-pending", `the lei tessera ${a.tessera} spent verifies as no root this vessel reads`);
+  censusClears(a.roots, root, a.tessera);
+  return { face: 0, rite: "kukulu", branch: a.branch, retire: { tessera: half.tessera, group: half.group, branch: half.branch, begun: half.begun, house: a.house, root, statement: a.statement } };
+}
+
+/**
+ * SEAT ZERO'S RETIRE MARK, LANDED: it must verify as seat zero's `rite-retired` mark over a half pending on `branch`, binding this
+ * house and the half's own guest cid and lei root (`retireMarkVerifies`), and that root must stand at no face of this house. A
+ * mark that verifies takes the slot an unverified one occupies. Refuses `rite-retire-unsigned` otherwise.
+ */
+export async function acceptRetire(wiki: SwarmWikiPort, branch: string, records: readonly unknown[], ctx: RetireContext & { readonly roots: readonly FaceRoot[] }, want: { readonly tessera: string; readonly statement: string }): Promise<{ tessera: string }> {
+  // EXACTLY ONE MARK, the one the operator asked: its tessera and its statement.
+  const body0 = (records.length === 1 && typeof records[0] === "object" && records[0] !== null ? (records[0] as { body?: Record<string, unknown> }).body : undefined) ?? {};
+  if (records.length !== 1 || body0["tessera"] !== want.tessera || body0["statement"] !== want.statement) throw new SwarmRefused("rite-retire-terms-differ", `a retire lands exactly one mark, over tessera ${want.tessera} under the statement asked; the signed answer carried ${records.length}`);
+  const record = records[0];
+  const body = body0;
+  const tessera = typeof body["tessera"] === "string" && /^[0-9a-f]{64}$/.test(body["tessera"]) ? body["tessera"] : null;
+  if (body["act"] !== "rite-retired" || tessera === null || body["branch"] !== branch) throw new SwarmRefused("rite-retire-unsigned", "a retire lands only seat zero's `rite-retired` mark over this line");
+  if (!(await pendingBegins(wiki, "kukulu", branch, ctx)).some((p) => p.tessera === tessera)) throw new SwarmRefused("rite-retire-not-pending", `no kūkulu half rests unlanded at tessera ${tessera} on "${branch}"`);
+  censusClears(ctx.roots, String(body["root"] ?? "").toLowerCase(), tessera);
+  const text = JSON.stringify(record);
+  if (!(await retireMarkVerifies(wiki, tessera, text, ctx))) throw new SwarmRefused("rite-retire-unsigned", `the mark over tessera ${tessera} verifies as no seat-zero mark binding this house, its guest half and its lei's root`);
+  const title = swarmTesseraTitle(tessera, "retired");
+  if (!(await wiki.writeNew(title, text))) {
+    const resting = await wiki.read(title);
+    if (resting === null || !(await retireMarkVerifies(wiki, tessera, resting, ctx))) await wiki.write(title, text);
+  }
+  return { tessera };
+}
+
+/**
+ * THIS HOUSE'S RETIRE CONTEXT: seat zero anchored in h0's own signed face log (its current signer, which only the root's own
+ * lineage moves; never the roster line a lent vessel can write), the house as the place's AID, and the census of every face of the
+ * house off its own log (`holds: null` where it reads nowhere). Null where h0's log reads nowhere.
+ */
+async function retireContextOf(repo: Repo, catalogUrl: string | undefined): Promise<{ ctx: RetireContext; roots: FaceRoot[] } | null> {
+  const logOf = async (index: number): Promise<((key: string) => boolean) | null> => {
+    try { const fold = await loadFaceFold(repo, catalogUrl, { index }); return (key) => fold.face.currentSigner(key); } catch { return null; }
+  };
+  const seatZero = await logOf(0);
+  if (seatZero === null) return null;
+  const roots: FaceRoot[] = [];
+  for (const f of listFaceCustodyIds()) roots.push({ ordinal: f.ordinal, holds: await logOf(f.ordinal) });
+  return { ctx: { seatZero, house: await loadPlaceAid() }, roots };
 }
 
 /**
@@ -317,7 +391,7 @@ export async function runRiteVerb(opts: {
   /** Each lent face's tesserae conferre reads red, under that face's own trust. */
   const redOf = async (ordinal: number): Promise<readonly TesseraReading[]> => {
     const face = await riteFaceOf(opts.repo, opts.catalogUrl, ordinal);
-    return (await conferre(wiki, face.trust, face.group)).red;
+    return (await conferre(wiki, face.trust, face.group, (await retireContextOf(opts.repo, opts.catalogUrl).catch(() => null))?.ctx)).red;
   };
   /** Each lent face's group, named by its face, so a raw row (a pending half, a vouch) names the face that carries it. */
   const facesOfGroups = async (lent: readonly number[]): Promise<Map<string, string>> => {
@@ -331,7 +405,7 @@ export async function runRiteVerb(opts: {
     // halves a lent face lands, and the resting offer's vouches, so the host resumes only what matches, and never re-begins.
     const lent = await (opts.lentOrdinals ?? unlockedFaceOrdinals)();
     const faceOf = await facesOfGroups(lent);
-    const pending = (await pendingBegins(wiki, "kukulu", branchOrAll)).map((p) => ({ ...p, ...(faceOf.has(p.group) ? { face: faceOf.get(p.group)! } : {}) }));
+    const pending = (await pendingBegins(wiki, "kukulu", branchOrAll, (await retireContextOf(opts.repo, opts.catalogUrl).catch(() => null))?.ctx)).map((p) => ({ ...p, ...(faceOf.has(p.group) ? { face: faceOf.get(p.group)! } : {}) }));
     let offerText: string | null = null;
     try { offerText = readFileSync(opts.offerPath ?? kukuluOfferPath(), "utf8"); } catch { offerText = null; }
     return { rite: "kukulu", standing: await standingKukuluBegins(lent, redOf, branchOrAll), pending, offer: offerVouchesOf(offerText, faceOf) };
@@ -341,8 +415,9 @@ export async function runRiteVerb(opts: {
     // OWN group resting unlanded on the line, each by a mark binding the half's guest cid that only the root which strung the
     // half's lei verifies. Three forms: `terms` reads the parts this face's hand would sign and writes nothing (nothing of its own
     // refuses, before any route is asked); `signed` lands the marks the pūlama's hand door signed, each verified against its half's
-    // own root; bare, it is a ward act (the operator's route opens this face's root here). A seat's session never runs the row. The
-    // returns stay spent, and an abandon that ends nothing refuses by name.
+    // own root; bare, it is a ward act (the operator's route opens this face's root here). With `retire`, SEAT ZERO sets aside ONE
+    // half whose root no face of the house still holds, under the operator's statement (`retireTerms`). A seat's session never runs
+    // the row. The returns stay spent, and an abandon that ends nothing refuses by name.
     if (opts.args["rite"] !== "kukulu" || !str("branch")) throw new SwarmRefused("rite-malformed", "an abandon names its rite (kukulu) and its branch");
     const branch = str("branch");
     const lent = await (opts.lentOrdinals ?? unlockedFaceOrdinals)();
@@ -352,7 +427,23 @@ export async function runRiteVerb(opts: {
       const own = faces.find((f) => f.face.group === p.group);
       return { tessera: p.tessera, group: p.group, ...(own ? { face: `h${own.ordinal}` } : {}), head: p.head, ...(p.image === undefined ? { digestless: true } : { image: p.image }) };
     };
-    const pending = await pendingBegins(wiki, "kukulu", branch);
+    const retire = await retireContextOf(opts.repo, opts.catalogUrl).catch(() => null);
+    const pending = await pendingBegins(wiki, "kukulu", branch, retire?.ctx);
+    if (str("retire") !== "") {
+      // SEAT ZERO'S RETIRE: one tessera, its root gone from every face of this house, under the operator's statement.
+      if (retire === null) throw new SwarmRefused("rite-retire-no-seat-zero", "a retire signs as seat zero (h0), and h0's own face log reads nowhere");
+      const terms = await retireTerms(wiki, { branch, tessera: str("retire"), statement: str("statement"), house: retire.ctx.house, roots: retire.roots });
+      if (opts.args["terms"] === true) return terms;
+      const records: unknown[] = Array.isArray(opts.args["signed"]) ? opts.args["signed"] as unknown[] : [];
+      if (records.length === 0) {
+        if (opts.ward === undefined) throw new WardRefused("ward-needs-fresh-unlock", "a retire is seat zero's act: h0's route opens its root on the operator's terminal");
+        const seat = await wardRootSession(0, opts.ward, "the face root at h0 (seat zero), to retire a lost root's kūkulu half");
+        try { records.push(await signSwarmAct({ act: "rite-retired", rite: "kukulu", ...terms.retire }, seat)); } finally { seat.close(); }
+      }
+      const half = pending.find((p) => p.tessera === terms.retire.tessera);
+      const done = await acceptRetire(wiki, branch, records, { ...retire.ctx, roots: retire.roots }, { tessera: terms.retire.tessera, statement: terms.retire.statement });
+      return { rite: "kukulu", branch, retired: [{ ...(half ? named(half) : { tessera: done.tessera }), statement: terms.retire.statement }] };
+    }
     const own = ownAbandonParts({ pending, faces: faces.map((f) => ({ ordinal: f.ordinal, group: f.face.group })), ...(opts.face === undefined ? {} : { named: opts.face }), branch });
     if (opts.args["terms"] === true) return { face: own.signer, rite: "kukulu", branch, parts: own.mine.map((p) => ({ tessera: p.tessera, group: p.group, branch: p.branch, begun: p.begun })), others: own.others };
     let ended: string[];
@@ -368,7 +459,7 @@ export async function runRiteVerb(opts: {
       ended = [];
       for (const p of own.mine) if (await abandonMarkStands(wiki, p.tessera)) ended.push(p.tessera);
     }
-    if (ended.length === 0) throw new SwarmRefused("rite-abandon-unlanded", `no mark of h${own.signer}'s root verifies over its halves (${own.mine.map((p) => p.tessera).join(", ")}): their lei were strung by another root, so only that root ends them`);
+    if (ended.length === 0) throw new SwarmRefused("rite-abandon-unlanded", `no mark of h${own.signer}'s root verifies over its halves (${own.mine.map((p) => p.tessera).join(", ")}): their lei were strung by another root; set each aside as seat zero: lares rite kukulu --abandon --retire <tessera> --statement "<why its root is gone>"`);
     return { rite: "kukulu", branch, abandoned: own.mine.filter((p) => ended.includes(p.tessera)).map(named), others: own.others };
   }
   if (opts.action === "begin" && opts.args["rite"] === "kukulu") {
@@ -379,7 +470,7 @@ export async function runRiteVerb(opts: {
     // A BEGIN ALREADY STANDING ON THE LINE spends nothing more: it refuses by name over the raw debt before any face's return is
     // checked, a shut or rehived face's half included.
     const faceOf = await facesOfGroups(lent).catch(() => new Map<string, string>());
-    refuseStandingBegin((await pendingBegins(wiki, "kukulu", at.branch)).map((p) => ({ ...p, ...(faceOf.has(p.group) ? { face: faceOf.get(p.group)! } : {}) })));
+    refuseStandingBegin((await pendingBegins(wiki, "kukulu", at.branch, (await retireContextOf(opts.repo, opts.catalogUrl).catch(() => null))?.ctx)).map((p) => ({ ...p, ...(faceOf.has(p.group) ? { face: faceOf.get(p.group)! } : {}) })));
     return { ...await beginLentFaces(lent, async (ordinal) => {
       let face: RiteFace;
       try { face = await riteFaceOf(opts.repo, opts.catalogUrl, ordinal); }
@@ -394,10 +485,10 @@ export async function runRiteVerb(opts: {
   const vesselKey = signer.key.toLowerCase();
   const vessel: SwarmSignerPort = { key: signer.key, sign: (bytes) => signer.sign(bytes) };
   const trust: SwarmTrust = { hand: (key) => face.currentSigner(key), vessel: (key) => key === vesselKey, lead: () => false };
-  if (opts.action === "receipts") return { receipts: await riteReceipts(opts.wiki, trust, group), conferre: await conferre(opts.wiki, trust, group) };
+  if (opts.action === "receipts") return { receipts: await riteReceipts(opts.wiki, trust, group), conferre: await conferre(opts.wiki, trust, group, (await retireContextOf(opts.repo, opts.catalogUrl).catch(() => null))?.ctx) };
   if (opts.action === "land") {
     if (!/^[0-9a-f]{64}$/.test(str("tessera")) || !str("head")) throw new SwarmRefused("rite-malformed", "a landing names its tessera and the head the vessel stands at");
-    return { ...await landRite(opts.wiki, { tessera: str("tessera"), head: str("head"), ...(str("image") === "" ? {} : { image: str("image") }) }, trust, group, vessel) };
+    return { ...await landRite(opts.wiki, { tessera: str("tessera"), head: str("head"), ...(str("image") === "" ? {} : { image: str("image") }) }, trust, group, vessel, (await retireContextOf(opts.repo, opts.catalogUrl).catch(() => null))?.ctx) };
   }
   const rite = opts.args["rite"];
   if (!isSwarmLeiRite(rite) || !str("branch") || !str("head")) throw new SwarmRefused("rite-malformed", "a rite names its rite, its branch and the head it runs at");

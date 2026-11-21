@@ -71,17 +71,21 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     // THE HAND'S ABANDON of every kūkulu half resting unlanded on the line, by name; the store door runs it on a hand alone.
     const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
     if (rite === undefined || branch === undefined) throw new RiteUsage("abandon names its rite and its branch: --rite kukulu --branch <name>");
+    // SEAT ZERO'S RETIRE of one half whose root is gone carries the operator's statement in the same act.
+    const retireWord = word(args.options["retire"]), statement = word(args.options["statement"]);
+    if (retireWord !== undefined && statement === undefined) throw new RiteUsage("a retire carries the operator's statement of why the root is gone: --retire <tessera> --statement <text>");
+    const retire = retireWord === undefined ? {} : { retire: retireWord, statement: statement! };
     // `--terms` reads what the hand would sign; `--signed` lands the marks the pūlama's hand door signed (its answer, or a list).
-    if (args.flags["terms"] === true) return { verb: "rite-abandon", args: { rite, branch, terms: true, ...face } };
+    if (args.flags["terms"] === true) return { verb: "rite-abandon", args: { rite, branch, ...retire, terms: true, ...face } };
     const signedWord = word(args.options["signed"]);
     if (signedWord !== undefined) {
       let parsed: unknown;
       try { parsed = JSON.parse(signedWord); } catch { throw new RiteUsage("--signed takes the hand door's answer (JSON), or a list of the marks it signed"); }
       const records = Array.isArray(parsed) ? parsed : typeof parsed === "object" && parsed !== null && Array.isArray((parsed as Record<string, unknown>)["records"]) ? (parsed as Record<string, unknown>)["records"] as unknown[] : null;
       if (records === null) throw new RiteUsage("--signed takes the hand door's answer (JSON), or a list of the marks it signed");
-      return { verb: "rite-abandon", args: { rite, branch, signed: records, ...face } };
+      return { verb: "rite-abandon", args: { rite, branch, ...retire, signed: records, ...face } };
     }
-    return { verb: "rite-abandon", args: { rite, branch, ...face } };
+    return { verb: "rite-abandon", args: { rite, branch, ...retire, ...face } };
   }
   if (act === "receipts") {
     // `--rite kukulu` reads every lent face's begun halves resting unlanded (`--branch` narrows them to its line).
@@ -189,7 +193,7 @@ async function runRiteVerb(args: ParsedArgs, plan: RitePlan): Promise<number> {
   try {
     const { output } = await storeVerb(plan.verb, plan.args);
     // AN ABANDON THAT LANDED names each half it ended, by the hand's mark; its terms read prints as data for the hand door.
-    const abandoned = plan.verb === "rite-abandon" && plan.args["terms"] !== true && Array.isArray(output["abandoned"]) ? output["abandoned"] as Array<Record<string, unknown>> : null;
+    const abandoned = plan.verb === "rite-abandon" && plan.args["terms"] !== true && Array.isArray(output["abandoned"] ?? output["retired"]) ? (output["abandoned"] ?? output["retired"]) as Array<Record<string, unknown>> : null;
     const human = abandoned === null ? () => console.log(JSON.stringify(output)) : () => {
       if (abandoned.length === 0) console.error(`abandon: no kūkulu half rests unlanded on ${String(output["branch"])}; nothing abandoned`);
       for (const a of abandoned) console.error(`abandon: ${String(a["face"] ?? a["group"])} tessera ${String(a["tessera"])} (begun at ${String(a["head"]).slice(0, 12)}${a["digestless"] === true ? ", naming no image" : ""}) ends by the hand's mark; its return stays spent`);
@@ -471,8 +475,8 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
       return read.ok ? { ok: true, ...standingOf(read.output, branch) } : read;
     },
     // THE ABANDON RUNS ATTACHED: the hand's route reads on this terminal (the ward in the vessel, or the pūlama's hand door).
-    abandon: async (branch, face) => {
-      const code = await cliAttached(hostRowLine("rite-abandon", { rite: "kukulu", branch, ...(face === undefined ? {} : { face }) }));
+    abandon: async (branch, face, retire) => {
+      const code = await cliAttached(hostRowLine("rite-abandon", { rite: "kukulu", branch, ...(retire === undefined ? {} : { retire: retire.tessera, statement: retire.statement }), ...(face === undefined ? {} : { face }) }));
       return code === 0 ? { ok: true, output: { attached: true } } : { ok: false, code: "rite-abandon-refused", message: `the abandon answered ${code}; the lines above name why` };
     },
     ranImage: () => shimRead(shim, ["vessel-image"]),
@@ -544,6 +548,18 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
 }
 
 /**
+ * SEAT ZERO'S RETIRE on the host line: `--retire <tessera> --statement <text>` rides `--abandon` alone, and names its statement.
+ */
+export function retireOf(args: ParsedArgs): { readonly retire?: { readonly tessera: string; readonly statement: string } } {
+  const tessera = typeof args.options["retire"] === "string" ? args.options["retire"].trim() : "";
+  const statement = typeof args.options["statement"] === "string" ? args.options["statement"].trim() : "";
+  if (tessera === "" && statement === "") return {};
+  if (args.flags["abandon"] !== true) throw new RiteUsage("--retire rides --abandon: lares rite kukulu --abandon --retire <tessera> --statement <text>");
+  if (!/^[0-9a-f]{64}$/.test(tessera) || statement === "") throw new RiteUsage("a retire names one tessera (64 hex) and the operator's statement of why its root is gone: --retire <tessera> --statement <text>");
+  return { retire: { tessera, statement } };
+}
+
+/**
  * `--rollback` alone stands the image that ran before; `--rollback <rev>` an older revision's image (its kept tag, or a build
  * from that commit with no checkout move). Absent, the rite runs forward.
  */
@@ -569,7 +585,7 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
     const branch = typeof args.options["branch"] === "string" && args.options["branch"].trim() !== "" ? args.options["branch"].trim() : undefined;
     const faceWord = typeof args.options["face"] === "string" ? args.options["face"].trim() : undefined;
     if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
-    const out = await riteKukulu(hostPorts(shim, (line) => console.error(line)), { ...(branch === undefined ? {} : { branch }), ...(faceWord === undefined ? {} : { face: Number(faceWord) }), ...rollbackOf(args), ...(args.flags["abandon"] === true ? { abandon: true as const } : {}) });
+    const out = await riteKukulu(hostPorts(shim, (line) => console.error(line)), { ...(branch === undefined ? {} : { branch }), ...(faceWord === undefined ? {} : { face: Number(faceWord) }), ...rollbackOf(args), ...(args.flags["abandon"] === true ? { abandon: true as const } : {}), ...retireOf(args) });
     const kukuluMessage = "the kūkulu rite did not complete; the lines above name where it stopped";
     const settled = out.data["awaits"] === "hand" ? `lares rite kukulu: the house waits on your hand: ${String(out.data["hand"])} on a terminal` : out.data["awaits"] === "unlock" ? "lares rite kukulu: the house stands; the landing waits on the unlock" : "lares rite kukulu: the house stands";
     emitAnswer(args, out.code === 0

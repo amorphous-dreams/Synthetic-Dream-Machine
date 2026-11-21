@@ -133,12 +133,12 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     if (every !== undefined && (!Array.isArray(every) || every.length === 0 || !every.every(termsOk))) throw new PulamaVerbUsage();
     const each: readonly Record<string, unknown>[] = every === undefined ? [terms] : every as Record<string, unknown>[];
     const t = each[0]!;
-    // AN ABANDON OVER ZERO PARTS signs nothing: it refuses before anybody types a route.
-    if (act === "abandon" && !(Array.isArray(t["parts"]) && t["parts"].length > 0)) return { op: "lei", act, reading: "lei-malformed", detail: "an abandon names at least one part of the face's own; the vessel's terms named none" };
+    // AN ABANDON OVER ZERO PARTS (and no retire) signs nothing: it refuses before anybody types a route.
+    if (act === "abandon" && t["retire"] === undefined && !(Array.isArray(t["parts"]) && t["parts"].length > 0)) return { op: "lei", act, reading: "lei-malformed", detail: "an abandon names at least one part of the face's own; the vessel's terms named none" };
     // THE DOOR READS FIRST: an unlit pūlama refuses here, before anybody types a route.
     const standing = await ports.ask({ op: "status" });
     if (standing["lit"] !== true) return { op: "lei", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then string the lei" };
-    const what = act === "unstring" ? `unstring the ${String(t["rite"])} lei ${String(t["lei"])}` : act === "abandon" ? `abandon ${Array.isArray(t["parts"]) ? t["parts"].length : 0} pending kūkulu half(s)` : `${act} a ${String(t["rite"])} lei`;
+    const what = act === "unstring" ? `unstring the ${String(t["rite"])} lei ${String(t["lei"])}` : act === "abandon" ? (t["retire"] !== undefined ? "retire, as seat zero, one kūkulu half whose root is gone" : `abandon ${Array.isArray(t["parts"]) ? t["parts"].length : 0} pending kūkulu half(s)`) : `${act} a ${String(t["rite"])} lei`;
     const passphrase = await ports.route(`pūlama route, to ${what} at "${String(t["branch"])}" for ${each.map((f) => `h${String(f["face"])}`).join(", ")}: `, "a lei");
     const credentials = [{ kind: "passphrase", passphrase }];
     if (every === undefined) return ports.ask({ op: "lei", act, ...t, credentials });
