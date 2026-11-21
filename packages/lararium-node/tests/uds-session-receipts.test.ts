@@ -159,10 +159,10 @@ describe("face bound session receipts", () => {
       const later = await open("a");
       expect(await ask(later.peer, later.env, "session:receipt", "a-only")).toMatchObject({ receipt: { state: "done" } });
       await controlStoreOf(daemonHandle).put(buildReceiptFact({ requestId: faceScopedId("proof-a", "unlanded"), state: "committed",
-        inputDigest: "digest", bootEpoch: claim.bootEpoch, seq: 1000, face: "proof-a", action: "hold" }),
+        inputDigest: "digest", life: claim.life, seq: 1000, face: "proof-a", action: "hold" }),
         { kind: "lares-verb", requestId: "unlanded" });
       await repo.flush();
-      const priorBootEpoch = claim.bootEpoch;
+      const priorLife = claim.life;
       await front.detach();
       front.close();
       await claim.release();
@@ -173,7 +173,8 @@ describe("face bound session receipts", () => {
       expect(await ask(restarted.peer, restarted.env, "session:receipt", "a-only"))
         .toMatchObject({ receipt: { state: "done", position: { durable: { docUrl: daemonHandle.url } } } });
       expect(await ask(restarted.peer, restarted.env, "session:receipt", "unlanded"))
-        .toMatchObject({ receipt: { state: "interrupted", position: { bootEpoch: priorBootEpoch } } });
+        .toMatchObject({ receipt: { state: "interrupted", position: { ownerEpoch: priorLife } } });
+      expect(claim.life, "the restart begins another life").not.toBe(priorLife);
     } finally {
       for (const peer of peers) peer.destroy();
       front.close();

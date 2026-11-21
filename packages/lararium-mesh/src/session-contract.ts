@@ -11,7 +11,8 @@
  *     A copied id presented on another binding opens nothing. What a session may DO rests with the
  *     facets the sovereign worker holds for it; the table carries their labels alone.
  *   · THE OWNER'S EPOCH FENCES A RESTARTED OWNER. Every message after the open names the epoch of the owner
- *     that minted its session. The epoch stands opaque: the owner's own boot epoch, never a clock reading.
+ *     that minted its session. The epoch stands opaque: the owner's own life, a fresh random name per life and
+ *     never a clock reading or a count (a node vessel's life id, the one its store claim minted).
  *   · A GENERATION FENCES AN EFFECT. A switch advances the generation by one; a message of any other
  *     generation refuses, so an effect of an earlier generation never lands in a later one.
  *   · A FACE HOLDS REFERENCES. Every field of a session's face names something by string. No field can
@@ -158,7 +159,7 @@ export interface SessionSurface {
 /** A session as the owner holds it. The table hands out frozen copies, never its own record. */
 export interface Session {
   readonly sessionId:  string;                    // routes, and authorizes nothing
-  readonly ownerEpoch: string;                    // the minting owner's boot epoch
+  readonly ownerEpoch: string;                    // the minting owner's life
   readonly generation: number;                    // advances by one at each switch
   readonly face:       SessionFace;
   readonly profile:    CapabilityProfile;         // the hand's bound, fixed for the session's whole life

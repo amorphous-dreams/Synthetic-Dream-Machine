@@ -1,9 +1,9 @@
 /**
  * cas-pin.test.ts — `lares bag cas`'s pinned-blob reflection reads a pin by PRESENCE in the `.pins.json`
  * sidecar (basket-one #/grace-and-pin, retired to NO GLOBAL NOW 2026-10-10). `PinCap` carries NO
- * `expiry` field at all (M7) — only an OPTIONAL causal `fence`, which this CLI door never sets, so
- * every pin it writes holds by PRESENCE alone, forever, until an explicit `--release`. The proofs:
- *   · a freshly pinned cid reads `pinned` with no fence at all — nothing a wall clock could call "expired";
+ * `expiry` field at all (M7) — only an OPTIONAL causal `life`, which a bare `--pin` never sets, so
+ * every such pin holds by PRESENCE alone, forever, until an explicit `--release`. The proofs:
+ *   · a freshly pinned cid reads `pinned` with no life at all — nothing a wall clock could call "expired";
  *   · `--release` (here, `releaseCas` directly) drops it from `pinned` immediately, with no clock involved;
  *   · CONTROL: a SET-BACK and a SET-FORWARD wall clock (mocked `Date.now`) change neither verdict.
  */
@@ -31,7 +31,7 @@ function emptyDirs(): { casDir: string; bagsDir: string; wikisDir: string; genes
 }
 
 describe("readCas — pinned reflects PRESENCE in the sidecar, never a wall clock", () => {
-  test("a pin with no `fence` at all stands — nothing a clock-shaped reading could call expired", () => {
+  test("a pin with no `life` at all stands — nothing a clock-shaped reading could call expired", () => {
     const b = "a blob the operator means to keep";
     const cid = cidOf(b);
     writeFileSync(join(casDir, cid), b);

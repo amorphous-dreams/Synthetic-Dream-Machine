@@ -356,7 +356,8 @@ async function main(): Promise<void> {
   const custodyHomes = vesselCustodyHomes();
   // WHO HOLDS CUSTODY FOR THIS VESSEL: a pūlama, where the environment names one (the vessel then keeps no key and asks
   // it for rows and derivations), else the holder this process builds. Every caller reaches either through the one seat.
-  const pulama = vesselPulamaHolder(custodyHomes);
+  // Each hello names this vessel's life by the id its store claim minted, so the pūlama ties a reconnect to its drop.
+  const pulama = vesselPulamaHolder(custodyHomes, process.env, { id: floor.storeClaim.life });
   const holder = pulama ?? makeCustodyHolder({ io: new FsCustodyIo(custodyHomes), homes: custodyHomes });
   // THE ONE SEAT. Every sealed row this process reads or writes reaches the holder through it, and the seat
   // carries no opener: the key arrives on the custody door alone, and a row asked for at the floor refuses.

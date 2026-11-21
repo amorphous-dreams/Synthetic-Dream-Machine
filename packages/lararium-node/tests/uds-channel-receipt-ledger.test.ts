@@ -205,7 +205,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       const daemonHandle = secondRepo.import<LarDoc>(daemonBytes!);
       const workingHandle = secondRepo.import<LarDoc>(workingBytes!);
       second = await Vessel.restore({ repo: secondRepo, daemonHandle, workingHandle, placeVerbImpl: doneWorker(counter), ring: 8, dir: first.dir });
-      const ledger = new FactLedger(second.compositeForBoot(), secondRepo, 8, second.claim.bootEpoch);
+      const ledger = new FactLedger(second.compositeForBoot(), secondRepo, 8, second.claim.life);
       const facts = await Promise.all(ids.map((requestId) => ledger.get(requestId)));
       expect(facts.map((fact) => fact && fact !== "torn" ? fact.seq : null)).toEqual([0, 1, 2]);
       for (const requestId of ids) {
@@ -431,15 +431,15 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       await dispatchAndStrand(v, counter, inv);
       // CONTROL: the same boot still reads `committed`.
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("committed");
-      const firstEpoch = v.claim.bootEpoch;
+      const firstLife = v.claim.life;
 
       await v.restart();
-      expect(v.claim.bootEpoch).toBeGreaterThan(firstEpoch);
+      expect(v.claim.life, "the restart begins another life").not.toBe(firstLife);
 
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("interrupted");
       const stored = plainRecord(v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!).tiddler as Record<string, unknown>;
       expect(stored["state"]).toBe("interrupted");
-      expect(stored["boot-epoch"]).toBe(String(firstEpoch));
+      expect(stored["life"]).toBe(firstLife);
 
       const t0 = performance.now();
       const retry = await sendLine(v.socketPath, { ...inv, timeoutMs: 5_000 });
@@ -455,15 +455,15 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     } finally { await v.teardown(); }
   });
 
-  test("a second channel over the SAME claim (same boot epoch) leaves this boot's `committed` fact `committed`", async () => {
+  test("a second channel over the SAME claim (same life) leaves this boot's `committed` fact `committed`", async () => {
     const counter = { n: 0 };
     const v = await Vessel.boot({ placeVerbImpl: () => { counter.n++; } });
     try {
       const requestId = "req-same-claim";
       const inv = { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId, timeoutMs: 100 };
       await dispatchAndStrand(v, counter, inv);
-      // Only the channel closes; the claim (and so the boot epoch) stays. A fact whose epoch EQUALS
-      // the seeding channel's epoch belongs to this boot and never settles.
+      // Only the channel closes; the claim (and so the life) stays. A fact whose life IS the seeding
+      // channel's life belongs to this life and never settles.
       v.channel.close();
       v.channel = startUdsChannel({
         controlHandle: v.workingHandle, placeVerb: (o) => v.placeVerbImpl(o as Placed, v.workingHandle),
@@ -640,7 +640,7 @@ describe("the receipt ring bounds BYTES as well as count", () => {
     const ledgerAt = (ringBytes: number, ring = 100) => {
       const c = composite();
       const faults: string[] = [];
-      return { ledger: new FactLedger(c, repo, ring, ++boot, ringBytes, (line) => faults.push(line)), composite: c, faults };
+      return { ledger: new FactLedger(c, repo, ring, `life-${++boot}`, ringBytes, (line) => faults.push(line)), composite: c, faults };
     };
     return { repo, daemonHandle, workingHandle, ledgerAt };
   }
@@ -1081,7 +1081,7 @@ describe("a cancelled id leaves the ring as every other fact does", () => {
       const c = new CompositeStore();
       c.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
       c.addLayer({ bagId: WORKING, store: new AutomergeDocStore(workingHandle as never, WORKING), writable: true });
-      return { ledger: new FactLedger(c, repo, ring, ++boot), composite: c };
+      return { ledger: new FactLedger(c, repo, ring, `life-${++boot}`), composite: c };
     };
     /** The fields of the fact the store holds for `id`, as a later boot would read them. */
     const stored = (id: string): Record<string, unknown> =>

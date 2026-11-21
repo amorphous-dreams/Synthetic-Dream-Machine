@@ -148,12 +148,12 @@ describe("the fetch door — a CLEARTEXT cid crosses transit under its own verif
     expect(await fetchCidOverTransit(clearCid, makeStoreTransport(store))).toBeNull();
   });
 
-  test("prefetch is a per-peer CAP — absent → off; declared → only its holder, only before its fence (M7: never a wall-clock expiry)", () => {
-    expect(prefetchAllows(undefined, "fleet-B", 1_000)).toBe(false);          // DEFAULT OFF
-    const cap: PrefetchCap = { tier: "VEIL", holder: "fleet-B", fence: 2_000 };
-    expect(prefetchAllows(cap, "fleet-B", 1_000)).toBe(true);
-    expect(prefetchAllows(cap, "fleet-C", 1_000)).toBe(false);                // another peer
-    expect(prefetchAllows(cap, "fleet-B", 2_001)).toBe(false);                // the peer's own fence moved past it
+  test("prefetch is a per-peer CAP — absent → off; declared → only its holder, only within its life (M7: never a wall-clock expiry)", () => {
+    expect(prefetchAllows(undefined, "fleet-B", "life-b")).toBe(false);       // DEFAULT OFF
+    const cap: PrefetchCap = { tier: "VEIL", holder: "fleet-B", life: "life-b" };
+    expect(prefetchAllows(cap, "fleet-B", "life-b")).toBe(true);
+    expect(prefetchAllows(cap, "fleet-C", "life-b")).toBe(false);             // another peer
+    expect(prefetchAllows(cap, "fleet-B", "life-b2")).toBe(false);            // another life of the peer
   });
 });
 
