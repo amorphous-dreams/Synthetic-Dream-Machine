@@ -68,7 +68,7 @@ live exchange record
 The path MAY skip intermediate surfaces only when an admin-tier operator explicitly authorizes the skip and the target law permits it.
 The crossing MUST be named. Silent canon MOVE is a failure mode — see `lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite`.
 
-A canon-MOVE record SHOULD include (this IS the Sprint-4 `transfer`/`accession` effect record for the MOVE):
+A canon-MOVE record SHOULD include the fields below; it rides the `transfer`/`accession` effect records the MOVE writes (`packages/lararium-mesh/src/effect-record.ts`):
 
 * source live exchange URI or session record
 * target canon `lar:` URI — the subject's own address, identical either side of the crossing
@@ -108,6 +108,6 @@ Boundary event fields:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6OpceLZjKvLZVtUkjzJdhBhaCKV-ifL9Ml6AcN4m3QU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7-R_WK_OIgHgdPD6uDBYIMpPLlX19YKYsNlXokug_KM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

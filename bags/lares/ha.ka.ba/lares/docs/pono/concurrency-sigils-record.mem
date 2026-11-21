@@ -1,0 +1,64 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+description = "the record behind the concurrency sigils (holo, hui, lele, puka, hoolele, tick): the status lines each carried before the ever-speaking present, and the hoolele boundary's first naming, kept as testimony; each sigil speaks its standing in its api meme"
+tags        = ["api/pono/meme", "api/pono/holo", "api/pono/hui", "api/pono/lele", "api/pono/puka", "api/pono/hoolele", "api/pono/tick"]
+title       = "lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/docs/pono/concurrency-sigils-record"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Concurrency Sigils ~ the record
+
+The concurrency sigils speak their standing at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/holo`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hui`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lele`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/puka`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoolele`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tick`>>: the grammar table registers each, and no runtime executes one. This record keeps the status lines they carried, verbatim, and the forecast the tick hook waited on.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/status-lines`>>
+
+!! The status lines, as written
+
+Each role line closed on ''async-first concurrency sprint pending'' (holo, hui, lele, puka).
+
+* holo: ''Grammar only --- the cancelling-race execution runtime awaits the async-first sprint.''
+* hui: ''Grammar only --- the await-all join runtime awaits the async-first sprint.''
+* lele: ''Grammar only --- the fire-and-continue execution runtime awaits the async-first sprint.''
+* puka: ''Grammar only --- the selecting-race execution runtime awaits the async-first sprint.''
+* hoolele: ''Concurrency runtime pending (async-first sprint). Current tiddler registers grammar only.''
+* nihomano-sigils, the family heading: ''Concurrency sigils (async cluster; sprint pending)''.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tick-forecast`>>
+
+!! The tick hook's forecast
+
+The tick role line read ''DEFERRED to UE6 ~2027'', and its head read ''\tick (Deferred)''. Its status, verbatim:
+
+> ''Status: DEFERRED'' — full pono law spec and Hawaiian proper name await Visual Verse tick node confirmation (UE6 target ~2027). … Concurrency runtime (async-first sprint) comes first as a prerequisite. Grammar registration alone stands.
+
+The nihomano-sigils list carried the same forecast: ''Hawaiian proper name deferred pending Visual Verse tick node shape (UE6 ~2027)''. The nalu meme read: ''The `\tick` sigil (when it lands) will live at the grammar layer — it will be a device lifecycle declaration that says "run this procedure every nalu."''
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/hoolele-boundary`>>
+
+!! The hoolele boundary's first naming
+
+The hoolele use cases first named the boundary by classes the design anticipated; no class named `MemeSyncAdaptor` or `VmPool` stands in code, and the api meme names the wiki shore (`IslandAdaptor`) and the vessel's island pool (`VesselIslandPool`) in their places. Verbatim:
+
+> * ''`LarTiddlerStore` CRDT flush'' — must complete even if the `MemeSyncAdaptor` is disposed; spawn the flush, hold the task handle in the store.
+> * ''`VmPool` cross-VM coordination'' — work that spans wiki VM instances has no single containing scope; spawn the coordination task at pool level.
+>
+> The `MemeSyncAdaptor` boundary IS the `hoolele` boundary in the Lararium stack: work above it (wiki reactions, widget handlers) uses structured concurrency; work below it (CRDT, network) uses `hoolele`-style spawn semantics in TS.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;egvyf0boDcB8GTN0_Abp3dqLhHvBrPHM1XDamCa4y_g`>>
+
+<<^ code=`&#x0004;` to=`?`>>

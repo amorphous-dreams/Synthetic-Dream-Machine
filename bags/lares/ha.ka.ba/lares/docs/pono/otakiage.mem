@@ -11,7 +11,7 @@ namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-12"
 role              = "otakiage — the LIFECYCLE the house's carriers stand in, ruled and enacted. Five stages ride a TAG FAMILY on governed memes only (`lifecycle/designed · standing · folded · harvest · retiring`) so a filter answers the stage in the wiki and the stage RENDERS; a KIND rides `kind/rite` beside it; a carrier carrying no `lifecycle/*` tag stands UNGOVERNED and the gate asks nothing of it. `status` and `retain` retire as keys, `status-why` stays as the witness sentence, `cacheable` stays as an instruction to the API server behind the Lares. The six transitions as rites, each with a who, a witness and a record; the fire — what burns, what never burns, and the CALL that fires it, never a schedule; the harvest room as the rite walked it end to end; the siblings (kapu · tombstone) that take a carrier OUT of the fire's reach; the pattern-integrity rhymes with the Shinto return-rite, the Zettelkasten/evergreen ladders and the archive/tombstone disciplines, and where each rhyme breaks. Every house claim carries a current file and symbol or a dated measurement; every field claim carries a URL, the date the page shows, and the page's own words."
-status-why        = "RULED AND ENACTED 2026-09-12 (operator; the ruling stands verbatim at #/the-lifecycle). The tag family, the `meme check` stage law and `lares meme sitting` stand in code with a red-first witness each (`packages/lararium-tw5/src/carrier-lifecycle.ts`, `tests/carrier-lifecycle.test.ts`, `tests/meme-lifecycle-tag.test.ts`, `packages/lares-cli/tests/meme-command.test.ts`); 54 carriers took their tags (16 designed · 32 standing · 6 kind/rite) and 657 dropped the retired keys; the harvest room `bags/lares-history` was read whole, eight paragraphs lifted, five edges welded and all 51 files burned, dangling edges 198 -> 175. The carrier STAYS `designed` because it still argues its own crossing: it sits in `docs/pono` and moves to `api/pono/otakiage` only when the operator rules that crossing, which #/questions still puts to them — and the promotion receipt that crossing wants remains the declared blocker at `docs/pono/canon-boundary:97`"
+status-why        = "RULED AND ENACTED 2026-09-12 (operator; the ruling stands verbatim at #/the-lifecycle). The tag family, the `meme check` stage law and `lares meme sitting` stand in code with a red-first witness each (`packages/lararium-tw5/src/carrier-lifecycle.ts`, `tests/carrier-lifecycle.test.ts`, `tests/meme-lifecycle-tag.test.ts`, `packages/lares-cli/tests/meme-command.test.ts`); 54 carriers took their tags (16 designed · 32 standing · 6 kind/rite) and 657 dropped the retired keys; the harvest room `bags/lares-history` was read whole, eight paragraphs lifted, five edges welded and all 51 files burned, dangling edges 198 -> 175. The law lifted to api/pono/otakiage (operator ruling 2026-11-21, the ever-speaking present); this carrier keeps the design record — the field, the house as measured, the rhymes, the examples, the leans and the questions — and stays `designed` while its open leans and questions stand"
 tags              = ["api/pono/meme", "lifecycle/designed"]
 title             = "lar:///ha.ka.ba/lares/docs/pono/otakiage"
 type              = "text/memetic-wikitext+tiddlywiki"
@@ -23,6 +23,8 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 <<~ ahu slot=`#/charge`>>
 
 ! Otakiage ~ a carrier lifecycle, designed
+
+''The law stands at'' <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage`>>. This carrier keeps the design record the law rests on: the charge, the field, the house as measured on the day of the scout, the ruling as given, the walked harvest room, the rhymes, the examples, the leans and the questions.
 
 ''Register: Model-Standing.'' A scout read the house first — the code and the canon, never the memory index — then the field, and wrote the design against both. Every house claim names a file and a line or a measurement taken on 2026-09-12; every field claim names a URL, the date the page shows, and the page's own words. A claim carrying neither names itself as inference. Where the field yielded nothing, this carrier says so rather than reaching for a plausible source.
 
@@ -420,16 +422,16 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~ ahu slot=`#/questions`>>
 
-!! Questions ~ three ruled, four standing
+!! Questions ~ four ruled, three standing
 
 ''RULED 2026-09-12.'' Q1 — the key SPLITS, and further than either option asked: the stage rides `tags` as `lifecycle/*` and the kind rides `tags` as `kind/*`, so both checkable rules Option B wanted are statable and neither needs a key of its own. Q5 — `lares-history` STOPS being named an archive; it became the harvest room, and the rite emptied and deleted it. Q6 — `retain` RETIRES; `cacheable` stays, as an instruction to the API server behind the Lares that no house code reads.
 
-''The four below still stand at the operator's hand.''
+''The first three below still stand at the operator's hand; the fourth carries its ruling.''
 
 # ''Does any class of carrier MUST-carry a `status`?'' 669 of 726 carry none. A rule reading "every carrier under `docs/pono` and `api/pono` carries one" would cost a sweep across 265 carriers and would make the ladder mean something; leaving it optional keeps the shelf cheap and keeps the ladder advisory. Which?
 # ''Who calls the fire, and does an authored ending skip the call?'' This carrier proposes: the operator calls, any hand carries, and a disposition ruled at pour time (`retain = false`, or its successor) stands as a call already made. Does the operator hold that, or does every burn want a fresh call at the moment?
 # ''What schedules the sitting?'' This carrier proposes: an ahi-kā-shaped reading names candidates and never burns; the operator calls a Koshōgatsu-shaped season at a phase boundary. Does the reading get built at all, or do candidates simply surface when a spirit closes the last lean on a floor?
-# ''Does this carrier cross to `api/pono/otakiage`, and if so does it absorb `api/pono/meme#/retirement` or stand beside it?'' The existing law governs the NAME (deprecate-never-redefine); this design governs the BYTES. One carrier holding both would make the whole discipline readable in one place; two would keep each law's scope legible. Which?
+# ''Does this carrier cross to `api/pono/otakiage`, and if so does it absorb `api/pono/meme#/retirement` or stand beside it?'' The existing law governs the NAME (deprecate-never-redefine); this design governs the BYTES. One carrier holding both would make the whole discipline readable in one place; two would keep each law's scope legible. Which? ''RULED 2026-11-21'' (the ever-speaking present) — the law crosses to <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage`>> and stands beside `meme#/retirement`, the name's law and the bytes' law each in its own carrier; this record stays in docs.
 
 <<~/ahu>>
 
@@ -437,6 +439,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 !! Edges
 
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike`>>
@@ -467,6 +470,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QCaWmYo2ByFtHcdpOBmQ7BzRRLX1V3RvAIA0JSQw058`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hbo4nqEPBXNBsUWDqPxocx9PfVnYyEK9JNuMvjvV09o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

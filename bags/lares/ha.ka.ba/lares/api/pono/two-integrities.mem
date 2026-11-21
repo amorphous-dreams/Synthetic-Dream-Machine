@@ -9,7 +9,6 @@ hydrate           = true
 l-space           = "stable"
 namespace         = "&#x2299;"
 pattern-integrity = true
-revised-on        = "2026-09-02"
 role              = "two-integrities — the adoption plan for Ink & Switch's `onomancy` (a local-first name system) and `subduction` (peer-to-peer sync for hash-linked data, encryption-friendly). Onomancy answers WHICH DOCUMENT YOU MEANT and WHO MAY SPEAK FOR IT; subduction answers HOW BYTES CROSS UNREAD. They stack rather than compete. Carries the DOUBLE-BLIND WRAP: a lamplighter relay must learn neither the content nor the author, which realm-scoped writer keys buy and padding does not. Carries the one hard collision — subduction's handshake makes an absolute wall clock a LIVENESS precondition, where this house holds wall-clock adversary-controlled."
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/api/pono/two-integrities"
@@ -128,6 +127,6 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-6c1061c9LYX4-Q3BQMGYwDajwRQADQ9_emnDgMirvg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hdlkd2n5T2cTKukyHQC0-SqJceqsy-uLgfs668JJzfk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

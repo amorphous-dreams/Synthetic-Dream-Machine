@@ -139,7 +139,7 @@ The operator rules pinning in both senses (#/calls-owed, call 2).
 
 ''Two tags carry the grade.'' A live item reads `lifecycle/standing`; a cooled one reads `lifecycle/folded`. Cooling changes rank and visibility alone: recall lists a folded item low, its body stays whole, and a citation or a re-lift warms it back to standing. INFERRED from the forgetting research: inaccessible first, erased last, recoverable with the right cue. The otakiage reading of `folded` (pointers alone) runs narrower than this one; a distinct tag stays open to the operator.
 
-''O-takiage stays a called rite.'' Nothing in the kahua burns on decay. A burn fires only on the operator's call, exactly as the fire runs today (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-fire`>>).
+''O-takiage stays a called rite.'' Nothing in the kahua burns on decay. A burn fires only on the operator's call, exactly as the fire runs today (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage#/the-fire`>>).
 
 <<~/ahu>>
 
@@ -357,13 +357,13 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory#/two-organs`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory#/head`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu#/facets`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-fire`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage#/the-fire`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/alignment-layer#/two-planes`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/i1-intent-lane`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w14-floor-pin-lane`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/config`>>
@@ -372,6 +372,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;f450d5PyfnaLCXa6ds2INy1AhuiI2BXJJw3bVWF1KGU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KAFp-UilJ4aWze_ExgCfJcyD51xD4jBNvMdvDZMDrPA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

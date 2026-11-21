@@ -1,7 +1,7 @@
 ---
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
-source-check: "ni:///sha-256;Od1a5HOGMNLWu6z1SfMOV0tHrrqlCj1YwafQm_KuDAA"
+source-check: "ni:///sha-256;XoTa_-qqylI77fSF-sMYpFN37NLUM0wRhjmI333YXEc"
 title: "lar:///ha.ka.ba/lares/api/pono/submissions/tiddlywiki-wikitext"
 tongue: "x-lares>en"
 variant: "GFM"
@@ -298,7 +298,8 @@ document might use.
 ## Media Type
 
 TiddlyWiki names its wikitext `text/vnd.tiddlywiki` (`boot.js`, `registerFileType`, extension `.tid`).
-That name stands in NO IANA registry (checked against the registry 2026-08-24): it reads as an
+That name stands in NO IANA registry (the media-types registry at
+`https://www.iana.org/assignments/media-types/` lists no `vnd.tiddlywiki` entry): it reads as an
 unregistered vendor-tree spelling, so any registration citing it starts from zero rather than from a
 standing entry. The coordination — upstream files the `vnd.` registration with this description as its
 specification reference, or chooses another vehicle — belongs to the TiddlyWiki core maintainers, with

@@ -13,7 +13,6 @@ tags      = ["api/pono/meme", "api/pono/causal-islands", "api/pono/local-first"]
 title     = "lar:///ha.ka.ba/lares/api/pono/lararium-memory"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/lararium-memory"
-written   = "2026-06-24"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -254,7 +253,7 @@ conflict press a `hoike`.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
@@ -264,6 +263,6 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2RVPspxkWVs0HP5IoPiRxsjNmBK86AIku3KkmncL2Lw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sAogn8z13bM0VdPX9VoSOZTFFz61ku0orD-brDyy-TM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

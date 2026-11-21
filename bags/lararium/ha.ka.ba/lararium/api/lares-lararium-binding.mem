@@ -13,7 +13,6 @@ tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/lares-lararium-binding"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/lares-lararium-binding"
-written   = "2026-06-25"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
@@ -162,6 +161,6 @@ the `status` residency probe passes a non-did `requestedBy` and cap-errors quiet
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MJ3CCmgfZNqkG3NGCvpuW-0EiFpv3AzWn6jSb3uw2_8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-Noe__OWPV6OgMCHluyoDkqPVDRV2elNbX30IOuJ37I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

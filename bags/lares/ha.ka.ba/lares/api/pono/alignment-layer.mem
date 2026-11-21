@@ -4,16 +4,15 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x2299;"
-proposed-on = "2026-06-01"
-role        = "design invariant: the alignment plane — non-monotonic subjective trust ABOVE cryptographic capability; the lemures layer; how a mesh survives adversaries at federation scale without global consensus or a central registry"
-status-why  = "doctrine; no source carries it yet"
-tags        = ["api/pono/causal-islands", "lifecycle/designed"]
-title       = "lar:///ha.ka.ba/lares/api/pono/alignment-layer"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/alignment-layer"
+cacheable  = true
+l-space    = "stable"
+namespace  = "&#x2299;"
+role       = "design invariant: the alignment plane — non-monotonic subjective trust ABOVE cryptographic capability; the lemures layer; how a mesh survives adversaries at federation scale without global consensus or a central registry"
+status-why = "doctrine; no source carries it yet"
+tags       = ["api/pono/causal-islands", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lares/api/pono/alignment-layer"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/api/pono/alignment-layer"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -232,6 +231,6 @@ right — to decide whose presence the hearth refuses.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gOkPJxTr-bs4Ok7o_kcAbAX8HVi4ACZQvRIYuVBPGv4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MiXNdjrYd0g4x3vdhvtoXS8zE8wuXlt0B6APhUbDWk8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

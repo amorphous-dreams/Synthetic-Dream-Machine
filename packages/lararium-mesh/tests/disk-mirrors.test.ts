@@ -8,7 +8,7 @@
  * static bags/ roots. OCAP-clean: authority in the grant, designation in the
  * recipe, the per-instance bag + subdir resolved here.
  *
- * Canon: lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology (#shore-law)
+ * Canon: lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology (#shore-law)
  */
 
 import { describe, test, expect } from "vitest";

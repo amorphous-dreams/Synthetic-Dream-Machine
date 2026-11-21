@@ -13,7 +13,6 @@ role              = "the living-grammar pattern-integrity (kānāwai): teach a m
 title             = "lar:///ha.ka.ba/lares/api/pono/living-grammar"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/living-grammar"
-written           = "2026-06-29"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
@@ -158,6 +157,6 @@ seven substrates.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kYaanh_THT1rVAr8I5WGKCrO17FlwbwQRi1_c6JFYaM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Pd6O5u_gCU-AtYiLpn15WGIiGKTSQgGsdF2YL1CzprM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

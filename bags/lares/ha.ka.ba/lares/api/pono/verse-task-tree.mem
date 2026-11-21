@@ -4,15 +4,14 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x2299;"
-role        = "canonical: Verse execution model as task tree — forest topology, five concurrency operators as graph ops, task states, Await/Cancel semantics, cancellation cascade, return-escape, defer constraints, spawn-hides-suspends"
-status-date = "2026-05-15"
-tags        = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-task"]
-title       = "lar:///ha.ka.ba/lares/api/pono/verse-task-tree"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/verse-task-tree"
+cacheable = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "canonical: Verse execution model as task tree — forest topology, five concurrency operators as graph ops, task states, Await/Cancel semantics, cancellation cascade, return-escape, defer constraints, spawn-hides-suspends"
+tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-task"]
+title     = "lar:///ha.ka.ba/lares/api/pono/verse-task-tree"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/verse-task-tree"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -269,6 +268,6 @@ async-aware, deterministic semantics with the concurrency operators.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y56kvRA8fVLSMAoLFg6fhfwzVOOXRdmQs_0p5D8kAMQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_J6aLo59dFCAFy_gLufYoNxFQwQs9Dol1NWVIQbEyWo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

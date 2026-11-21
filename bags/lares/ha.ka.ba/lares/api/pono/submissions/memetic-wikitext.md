@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;TgFPmlZbOmYuq1YvZcuKTa2HMTrkKevWmUpEcMzzf2Q"
+source-check: "ni:///sha-256;q-kGG2bcpCR0jj2tawkmH3TYe_e-E3m0ZWYHnpZfBFM"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -190,8 +190,7 @@ facts the frame rests on, the first three the host's and the last two this gramm
   host's own definitions and to the macro name.
 - **`from=` and `to=` carry the relation.** A bearing names its two ends as two named values, each a
   backtick run, `from` written first and `to` second (a reader takes either order); no bare `->` stands
-  between them. Operator ruling 2026-10-31 reverses the earlier ruling that the arrow survives a
-  named-parameter frame ([FRAMING] #bearing-pair): the pair reads as the relation through the host's own
+  between them ([FRAMING] #bearing-pair): the pair reads as the relation through the host's own
   attribute reader. An arrow INSIDE a value stays (a ladder, a gauge slide, ``closed 0↺ -> open 1φ◇:reason``),
   and a prose marker (`->✶`) keeps its arrow.
 

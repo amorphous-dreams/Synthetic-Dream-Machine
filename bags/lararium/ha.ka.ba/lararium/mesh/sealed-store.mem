@@ -426,7 +426,7 @@ Faces do not know each other: no face's hive or catalog half names another face.
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`>> the roadmap threads the sealed store's five steps
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>> content resolution places the content-addressed tier
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>> the cap tier names who holds a read capability
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>> blob carriage rules pointers and their addresses
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage`>> blob carriage rules pointers and their addresses
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>> kapae rules removal, the key side and re-admission
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof`>> the face proof chains a session key beneath a face
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract`>> the session contract scopes what a session hydrates
@@ -437,6 +437,6 @@ Faces do not know each other: no face's hive or catalog half names another face.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rnyhR6aXz0PnzqELpLGravH1eyXo_2hqu4qlI9nvSVE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NPxyZa6MEmEt0o4Kk1l3ncaCoehuld-CIo22yOgddgU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

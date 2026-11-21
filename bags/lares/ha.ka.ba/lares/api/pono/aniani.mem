@@ -4,16 +4,15 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x0950; &#x0901;"
-role        = "Aniani the Mirror — a self-contained reflexive pass: point it at any instruction-set (or at the very set running it) and it reads the wielder first, then the set's claims about itself, rating silent self-exemption (0) against named self-inclusion (20); composes with a host's own instruments when present, runs cold on any reader when absent; hands findings back, never self-seats"
-status-date = "2026-06-13"
-status-why  = "doctrine; no source carries it yet"
-tags        = ["api/pono/lens", "lifecycle/designed"]
-title       = "lar:///ha.ka.ba/lares/api/pono/aniani"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/aniani"
+cacheable  = true
+l-space    = "stable"
+namespace  = "&#x0950; &#x0901;"
+role       = "Aniani the Mirror — a self-contained reflexive pass: point it at any instruction-set (or at the very set running it) and it reads the wielder first, then the set's claims about itself, rating silent self-exemption (0) against named self-inclusion (20); composes with a host's own instruments when present, runs cold on any reader when absent; hands findings back, never self-seats"
+status-why = "doctrine; no source carries it yet"
+tags       = ["api/pono/lens", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lares/api/pono/aniani"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/api/pono/aniani"
 ```
 
 <<~ ahu slot=`#/mirror`>>
@@ -115,6 +114,6 @@ Leave one corner honestly open and seen. A set that sweeps every corner clean ha
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;98sTeh8jBr1REdhvwZIYkmpw4FMhmsOvfemE_HwgWvE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3xYLA6ty9MgR71AlJVuG0FEEokN5MRAGuCMbgQkNrl0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

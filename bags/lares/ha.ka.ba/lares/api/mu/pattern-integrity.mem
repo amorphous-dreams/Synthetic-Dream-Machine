@@ -4,15 +4,14 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x0950; &#x0901;"
-role        = "invariant doctrine: Fuller's 5 pattern integrities applied to Lararium — tensegrity, wave/water, synergy, ephemeralization, trim tab"
-status-date = "2026-05-02"
-tags        = ["api/pono/meme"]
-title       = "lar:///ha.ka.ba/lares/api/mu/pattern-integrity"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/mu/pattern-integrity"
+cacheable = true
+l-space   = "stable"
+namespace = "&#x0950; &#x0901;"
+role      = "invariant doctrine: Fuller's 5 pattern integrities applied to Lararium — tensegrity, wave/water, synergy, ephemeralization, trim tab"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/mu/pattern-integrity"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/mu/pattern-integrity"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -217,6 +216,6 @@ Run this against any new code before merging:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6lvXUH0M1B_iwIG54Xpwh9oo3m1Gwokgk1lynHpHQmU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;f40UD5XpjjTqNHPHWMNFMGzIFvkb_o2XmmOESVPiXr4`>>
 
 <<^ code=`&#x0004;` to=`?`>>
