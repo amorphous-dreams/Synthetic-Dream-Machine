@@ -4,15 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable     = true
-l-space       = "stable"
-revised-on    = "2026-08-25"
-revision-note = "deep pass on two measured waves: the degradation law rewritten to the engine's real behavior (an unbound macro call renders as nothing, the parse stays total, storage round-trips verbatim), the extension mechanism stood up as a normative rule-object contract, the rule inventory corrected to real exported names (44), security gates measured, the test corpus cited as the executable conformance suite, references seated, and the document's voice held to TW5 ontology alone"
-role          = "the base-syntax specification draft for TiddlyWiki 5 wikitext — the normative reference the +tiddlywiki suffix registration requires and no standards track yet carries"
-tags          = ["api/pono/meme"]
-title         = "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
+cacheable = true
+l-space   = "stable"
+role      = "the base-syntax specification draft for TiddlyWiki 5 wikitext — the normative reference the +tiddlywiki suffix registration requires and no standards track yet carries"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
 ```
 
 <<~ ahu slot=`#/abstract`>>
@@ -323,7 +321,8 @@ document might use.
 !! Media Type
 
 TiddlyWiki names its wikitext `text/vnd.tiddlywiki` (`boot.js`, `registerFileType`, extension `.tid`).
-That name stands in NO IANA registry (checked against the registry 2026-08-24): it reads as an
+That name stands in NO IANA registry (the media-types registry at
+`https://www.iana.org/assignments/media-types/` lists no `vnd.tiddlywiki` entry): it reads as an
 unregistered vendor-tree spelling, so any registration citing it starts from zero rather than from a
 standing entry. The coordination — upstream files the `vnd.` registration with this description as its
 specification reference, or chooses another vehicle — belongs to the TiddlyWiki core maintainers, with
@@ -369,6 +368,6 @@ rather than minting sibling types.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Od1a5HOGMNLWu6z1SfMOV0tHrrqlCj1YwafQm_KuDAA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XoTa_-qqylI77fSF-sMYpFN37NLUM0wRhjmI333YXEc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

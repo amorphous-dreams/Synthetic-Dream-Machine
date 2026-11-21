@@ -4,13 +4,12 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable     = true
-l-space       = "lararium"
-research-date = "2026-06-30"
-role          = "moʻokūʻauhau — the genealogy of the one recursive #has-cap fractal: ancestors, the three pillars, the cousins, the anti-pattern corpse, and the weld verdict"
-title         = "lar:///ha.ka.ba/lararium/mesh/mookuauhau"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lararium/mesh/mookuauhau"
+cacheable = true
+l-space   = "lararium"
+role      = "moʻokūʻauhau — the genealogy of the one recursive #has-cap fractal: ancestors, the three pillars, the cousins, the anti-pattern corpse, and the weld verdict"
+title     = "lar:///ha.ka.ba/lararium/mesh/mookuauhau"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/mookuauhau"
 ```
 
 <<~ ahu slot=`#/entry`>>
@@ -109,6 +108,6 @@ No one has made ''one composition primitive serve simultaneously as the code-wir
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CEz__X4ChSE5uXB9wY-89fhzVYzOTFsizFzOO1ZPK2M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tMkDdCz0CLibNSq5usifWWbMgaEsPm64UGE0GYpCRiE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

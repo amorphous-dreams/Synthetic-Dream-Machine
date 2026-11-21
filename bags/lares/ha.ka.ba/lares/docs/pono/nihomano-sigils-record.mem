@@ -1,0 +1,52 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/nihomano-sigils-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+description = "the record behind api/pono/nihomano-sigils: the first census of the sigil set and the tag's companion work, kept as testimony; the cultural contract speaks in the api meme"
+tags        = ["api/pono/meme", "api/pono/nihomano-sigils"]
+title       = "lar:///ha.ka.ba/lares/docs/pono/nihomano-sigils-record"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/docs/pono/nihomano-sigils-record"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Nihomano Sigils ~ the record
+
+The cultural contract speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils`>>. This record keeps what the first-discovered set's slot counted and named as owed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/first-census`>>
+
+!! The first census
+
+> The nihomano discovery yielded the first coherent set of SharktoothSigil-registered sigils. The set holds 47 tiddlers, each carrying a pono law spec and passing the alignment check. They fall into eight families.
+
+The sigil tiddler shelf (`packages/lararium-tw5/tiddlers/sigil-*.tid`) names the set as it stands; a count in prose ages as the shelf grows.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/define-alias`>>
+
+!! The `\define` line
+
+The set's pragma list read: ''`\define` — backward-compat alias; use `\procedure` instead''. The mirror vocabulary states the present rule: `\define` mirrors `wehe` read-only, and `meme normalize` re-mints it as `wehe`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tag-companion-work`>>
+
+!! The tag's companion work
+
+> The migration from `$:/` to `lar:///` namespaces across all owned tags is the companion sprint to this one.
+
+The tag bullet also read: ''Readable by `grammar-cache.ts` via `wiki.filterTiddlers([tag[lar:///ha.ka.ba/tags/SharktoothSigil]])` — tiddler sigils take precedence over TOML fallback by name.'' No TOML fallback stands in `grammar-cache.ts`; the api meme names the filter and the `lar-name` rule the cache reads.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mcKRsbtAGLPouELdGZAOEM_Bf0_zUHc260NUhfHEozg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -246,7 +246,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       // offset we start appending at.
       //   Cross-peer presence (who is breathing in the mesh) is a SEPARATE organ and
       //   never lives in a persisted/synced doc — least of all the oracle plane, the cache-stable
-      //   federation floor. Per canon (api/pono/ea#not-a-heartbeat;
+      //   federation floor. Per canon (api/pono/ea#/contrast;
       //   DREAMNET-FEDERATION-RESEARCH "never write presence into the Automerge document"):
       //   presence rides an EPHEMERAL channel — `ea` once at establishment, then CRDT
       //   sync / frame:ack, or an ephemeral broadcast() with TTL derived locally. Presence

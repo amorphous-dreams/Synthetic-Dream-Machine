@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;WMW5I_d59ZsUF-s2H4_i08W2mSJeAf6zgEc4xyagTL8"
+source-check: "ni:///sha-256;l5H6m-EK0XgUjEhVrCG1y8_RuRqTBmKxDFZp5jgHzsI"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -313,9 +313,9 @@ end it answers for, ``from=`?` `` or ``to=`?` ``, never bare. A bare `?` names n
 control-soh scan captures the `to=` value as a group, so the bearing rides as PARSED STRUCTURE rather
 than as decoration inside the line.
 
-### Why the pair replaces the arrow
+### Why the pair carries the relation
 
-**Operator ruling 2026-10-31 reverses the ruling of 2026-09-07 that the arrow survives a named-parameter frame.** The earlier law held that a named parameter states a PROPERTY — *this carrier has a lar value* — while an arrow states a RELATION — *this carrier resolves toward that address* — so the arrow kept its seat between the values and named params rode in front of it. The reversal reads the pair itself as the relation: `from=` names one end and `to=` names the other, and a processor that reads both attributes recovers the edge with no special token. A bare `->` demanded a hand-rolled scan beside the host's parser; the pair rides the host's own attribute reader, a backtick value after a name. The earlier reasoning keeps one lesson: both ends belong to ONE call, so SOH carries `from` and `to` together, and EOT carries `to` alone, its source standing as the carrier itself. Writers write `from` first; readers take either order. An arrow INSIDE a value stays (a ladder, a gauge slide), and a prose marker (`->✶`) keeps its arrow and its editor scope.
+**No arrow stands between the two ends of a bearing.** One reading holds that a named parameter states a PROPERTY — *this carrier has a lar value* — while an arrow states a RELATION — *this carrier resolves toward that address* — and so seats an arrow between the values with named params in front of it. This specification reads the pair itself as the relation: `from=` names one end and `to=` names the other, and a processor that reads both attributes recovers the edge with no special token. A bare `->` demanded a hand-rolled scan beside the host's parser; the pair rides the host's own attribute reader, a backtick value after a name. The property-and-relation reading keeps one lesson: both ends belong to ONE call, so SOH carries `from` and `to` together, and EOT carries `to` alone, its source standing as the carrier itself. Writers write `from` first; readers take either order. An arrow INSIDE a value stays (a ladder, a gauge slide), and a prose marker (`->✶`) keeps its arrow and its editor scope.
 
 ### A declared unresolved bearing, distinct from a dangling link
 

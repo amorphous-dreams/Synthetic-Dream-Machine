@@ -70,7 +70,7 @@ The courier (main thread, orchestrator, or peer) acts as a delivery surface only
 | Mount breath | island → courier | `"breath"` |
 | Ea declaration | island → courier | `"ea"` |
 
-''The ea-breath law (2026-06-12):'' between manifest and settle, a mounting island breathes — `(phase, progress)` evidence on a steady interval. The courier's watchdog re-arms on each breath and judges frozen evidence by a stall budget; ''silence alone reads dead'', never elapsed mount time. A deadline counts the courier's clock; breath listens to the island's own act — readiness reads local.
+''The ea-breath law'' (#/rulings): between manifest and settle, a mounting island breathes — `(phase, progress)` evidence on a steady interval. The courier's watchdog re-arms on each breath and judges frozen evidence by a stall budget; ''silence alone reads dead'', never elapsed mount time. A deadline counts the courier's clock; breath listens to the island's own act — readiness reads local.
 
 <<~/ahu>>
 
@@ -78,14 +78,14 @@ The courier (main thread, orchestrator, or peer) acts as a delivery surface only
 
 !! Scope — What Can Declare Ea
 
-`ea` applies wherever a node or island on the DreamNet satisfies the three conditions. Current known sites:
+`ea` applies wherever a node or island on the DreamNet satisfies the three conditions. The sites that declare it:
 
 | Site | Vessel | Ea condition |
 |---|---|---|
 | Browser wiki island | `@lararium/browser` | Repo-in-island wired, the landing queue draining on the worker's host task, first frame ready |
 | Node wiki island | `@lararium/node` | Repo-in-island wired, the landing queue draining on `setImmediate`, initial tiddlers applied |
-| Future: UEFN device | — | Own CRDT peer, own tick loop |
-| Future: mobile island | — | Own CRDT peer, own timing |
+
+The three conditions also fit sites no vessel builds: a UEFN device (own CRDT peer, own tick loop) and a mobile island (own CRDT peer, own timing). Either declares `ea` once a vessel carries it and the three conditions hold.
 
 The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liveness// surface but not the sovereignty model. A heartbeat checks that something external still runs. `ea` names the island's own declaration of standing — it does not depend on a watcher.
 
@@ -101,6 +101,14 @@ The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liv
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Ruling 2026-06-12, the ea-breath law: a mounting island breathes `(phase, progress)` evidence between manifest and settle; the courier's watchdog re-arms on each breath and judges frozen evidence by a stall budget, never by elapsed mount time.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 !! Edges
@@ -110,6 +118,6 @@ The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VAdALAn35soM5wGAsElGF0MtKdSksw4wK_e_IRSDnxk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h64mhrWn2vidc50q1KzAWaTrekpG2047OnvGo7rdBRM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

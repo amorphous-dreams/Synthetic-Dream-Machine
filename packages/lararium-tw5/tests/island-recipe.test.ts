@@ -5,7 +5,7 @@
  * when its binding stands. A mount without that document has no default writable,
  * seeds an empty pointer, and refuses a save until the binding attaches.
  *
- * Canon: lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/shore-law
+ * Canon: lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology#/shore-law
  */
 
 import { describe, test, expect } from "vitest";

@@ -90,13 +90,13 @@ Who writes crossroads-plane (community authority shape), how Nexus-level federat
 
 !! Edges
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y7Gu8ATChHCGcuCq-DBH5lyQljsiEAuvf6rlR8R_aew`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0iQYpzaei2kUFKZ7viI7LKdAwt0Dxe7kh8quDOCPCP4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

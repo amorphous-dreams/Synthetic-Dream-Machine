@@ -199,11 +199,11 @@ The leans as first written, kept for the record:
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddler-record`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;r-IG7UnUUZBoZYY49QSIke5fX7zj93O4trItf_gzD5A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y1nMRlY7tKme041BZ1FWAj8cNi7U2-T0FGbyNlcRPt8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -12,7 +12,6 @@ tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-has"]
 title     = "lar:///ha.ka.ba/lares/api/pono/has"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/has"
-written   = "2026-09-09"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -218,6 +217,6 @@ after welded to the before. The trigger does the work the dead water would have 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZwAe8DOrcdqd0WIidDC9CIEXLTIQLbY-EImQ5Z056cU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jtt8S97BvGHNW2WVXxLSP_ydevBENRKrG9QT_oWgXNo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

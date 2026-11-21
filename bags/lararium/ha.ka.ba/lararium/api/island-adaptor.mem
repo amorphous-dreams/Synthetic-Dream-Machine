@@ -129,11 +129,11 @@ its tracked work settle and turns the shore resident (a seed landing that fails 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/save-path`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/verse-mesh`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gv7OIBqpQhMshJrHDIxTkUvA5-kkuhYWdtEqfesJdKs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0bxSetNbAQGSwaM7l5_dwoa3DRXqZFdcjKzQeJYf908`>>
 
 <<^ code=`&#x0004;` to=`?`>>

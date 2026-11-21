@@ -13,7 +13,6 @@ tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/lar-telemetry"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/lar-telemetry"
-written   = "2026-06-24"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory#/capture-before-wire`>>
@@ -225,6 +224,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uujosq1oXKf_0zwW3fNgogS1DSuMh910III8WLKnnoc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1SVTfKEFFL_yMXF2A_c1LYbInCC58mfASMbFD0X7kEg`>>
 
 <<^ code=`&#x0004;` to=`?`>>
