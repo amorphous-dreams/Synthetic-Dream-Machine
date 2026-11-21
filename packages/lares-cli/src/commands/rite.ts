@@ -26,9 +26,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { execFile, spawn } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { randomBytes } from "node:crypto";
-import { larConfigHome } from "@lararium/node";
+import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { createInterface } from "node:readline";
 import { dirname, join } from "node:path";
@@ -51,7 +49,7 @@ import { vesselDid } from "../env.js";
 
 export class RiteUsage extends Error {}
 
-export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-offer" | "rite-abandon";
+export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-offer";
 export interface RitePlan { readonly verb: RiteVerb; readonly args: Record<string, unknown> }
 
 /** The host sub-verb's two spellings. */
@@ -69,28 +67,6 @@ export function ritePlan(args: ParsedArgs): RitePlan {
   // A kūkulu's begin and landing name the image the host made, so a landing over another image never reads par.
   const imageWord = word(args.options["image"]);
   const image = imageWord === undefined ? {} : { image: imageWord };
-  if (act === "abandon") {
-    // THE HAND'S ABANDON of every kūkulu half resting unlanded on the line, by name; the store door runs it on a hand alone.
-    const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
-    if (rite === undefined || branch === undefined) throw new RiteUsage("abandon names its rite and its branch: --rite kukulu --branch <name>");
-    // `--terms` reads what the hand would sign; `--signed` lands the marks the pūlama's hand door signed (its answer, or a list).
-    if (args.flags["terms"] === true) return { verb: "rite-abandon", args: { rite, branch, terms: true, ...face } };
-    // `--signed-file <name>`: the hand door's answer rests in the house's config (the shim writes it there, never argv).
-    const signedFile = word(args.options["signed-file"]);
-    let signedWord = word(args.options["signed"]);
-    if (signedFile !== undefined) {
-      if (!/^rite-abandon-signed-[0-9a-f]+\.json$/.test(signedFile)) throw new RiteUsage("--signed-file names a `rite-abandon-signed-<hex>.json` in the house's config");
-      try { signedWord = readFileSync(join(larConfigHome(), signedFile), "utf8"); } catch { throw new RiteUsage(`--signed-file: no ${signedFile} rests in the house's config`); }
-    }
-    if (signedWord !== undefined) {
-      let parsed: unknown;
-      try { parsed = JSON.parse(signedWord); } catch { throw new RiteUsage("--signed takes the hand door's answer (JSON), or a list of the marks it signed"); }
-      const records = Array.isArray(parsed) ? parsed : typeof parsed === "object" && parsed !== null && Array.isArray((parsed as Record<string, unknown>)["records"]) ? (parsed as Record<string, unknown>)["records"] as unknown[] : null;
-      if (records === null) throw new RiteUsage("--signed takes the hand door's answer (JSON), or a list of the marks it signed");
-      return { verb: "rite-abandon", args: { rite, branch, signed: records, ...face } };
-    }
-    return { verb: "rite-abandon", args: { rite, branch, ...face } };
-  }
   if (act === "receipts") {
     // `--rite kukulu` reads every lent face's begun halves resting unlanded (`--branch` narrows them to its line).
     const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
@@ -112,7 +88,7 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if (tessera === undefined || head === undefined) throw new RiteUsage("land names its tessera and the head the vessel stands at: --tessera <id> --head <commit>");
     return { verb: "rite-land", args: { tessera, head, ...image, ...face } };
   }
-  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : "name a sub-verb: kukulu, keep, keep-cut, begin, offer, land, receipts, abandon or receipt");
+  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : "name a sub-verb: kukulu, keep, keep-cut, begin, offer, land, receipts or receipt");
 }
 
 /** What a `rite keep` line names, or a `RiteUsage` naming what it lacks. */
@@ -194,33 +170,12 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
 }
 
 async function runRiteVerb(args: ParsedArgs, plan: RitePlan): Promise<number> {
-  // THE ANSWER FILE, where the host asked one: the envelope this row answers, success or refusal, for the host to read back.
-  let answerName: string | undefined;
-  try { answerName = riteAnswerName(args); } catch (err) { if (err instanceof RiteUsage) return refuseUsage(args, "rite", helpLines("rite"), err.message); throw err; }
-  const writeAnswer = (envelope: Record<string, unknown>): void => {
-    if (answerName === undefined) return;
-    try { mkdirSync(larConfigHome(), { recursive: true }); writeFileSync(join(larConfigHome(), answerName), JSON.stringify(envelope), { mode: 0o600 }); } catch { /* the host reads the exit alone */ }
-  };
   try {
     const { output } = await storeVerb(plan.verb, plan.args);
-    // AN ABANDON THAT LANDED names each half it ended, by the hand's mark; its terms read prints as data for the hand door.
-    const abandoned = plan.verb === "rite-abandon" && plan.args["terms"] !== true && Array.isArray(output["abandoned"]) ? output["abandoned"] as Array<Record<string, unknown>> : null;
-    const human = abandoned === null ? () => console.log(JSON.stringify(output)) : () => {
-      if (abandoned.length === 0) console.error(`abandon: no kūkulu half rests unlanded on ${String(output["branch"])}; nothing abandoned`);
-      for (const a of abandoned) console.error(`abandon: ${String(a["face"] ?? a["group"])} tessera ${String(a["tessera"])} (begun at ${String(a["head"]).slice(0, 12)}${a["digestless"] === true ? ", naming no image" : ""}) ends by the hand's mark; its return stays spent`);
-      // EACH FACE'S HAND ENDS ITS OWN: another lent face's halves wait for its abandon; a group no lent face carries waits for it to stand.
-      for (const o of Array.isArray(output["others"]) ? output["others"] as Array<Record<string, unknown>> : []) {
-        console.error(typeof o["face"] === "string"
-          ? `abandon: ${o["face"]} tessera ${String(o["tessera"])} waits for its own face's hand: lares rite kukulu --abandon --face ${o["face"].slice(1)} --branch ${String(output["branch"])}`
-          : `abandon: ${String(o["group"])} tessera ${String(o["tessera"])} waits: no lent face's hand carries its group, so it ends once that face stands again`);
-      }
-    };
-    writeAnswer({ ok: true, data: output });
-    emitAnswer(args, { ok: true, data: output, human }, `lares rite ${plan.verb}: done`);
+    emitAnswer(args, { ok: true, data: output, human: () => console.log(JSON.stringify(output)) }, `lares rite ${plan.verb}: done`);
     return 0;
   } catch (err) {
     const failure = storeFailure(err);
-    writeAnswer({ ok: false, error: failure });
     emitAnswer(args, { ok: false, error: failure, human: () => console.error(`lares rite: ${failure.message}`) }, `lares rite: ${failure.message}`);
     return exitFor(failure.code);
   }
@@ -248,45 +203,6 @@ const cliVerb = (line: readonly string[]): Promise<RiteVerbAnswer> => new Promis
     if (answer?.ok === true && answer.data) resolve({ ok: true, output: answer.data });
     else resolve({ ok: false, code: answer?.error?.code ?? "rite-row-unreached", message: answer?.error?.message ?? `the row answered no reading (exit ${code ?? "none"})` });
   });
-});
-
-/** The host house root (`LARES_HOUSE`, the environment else the operator's surface env file); null where none reads. */
-function hostHouseRoot(): string | null {
-  const envFile = surfaceEnvPath(process.env);
-  let text: string | null = null;
-  try { text = envFile === null ? null : readFileSync(envFile, "utf8"); } catch { text = null; }
-  const house = envValue("LARES_HOUSE", process.env, text);
-  return house === undefined || house === null || String(house).trim() === "" ? null : String(house).trim();
-}
-
-/**
- * THE ATTACHED ABANDON'S ANSWER: the envelope the vessel wrote (its code, its data), else the child's exit alone (a zero names the
- * lines it printed, any other names the plain refusal).
- */
-export function abandonAnswerOf(code: number, text: string | null): RiteVerbAnswer {
-  if (text !== null) {
-    try {
-      const e = JSON.parse(text) as { ok?: unknown; data?: Record<string, unknown>; error?: { code?: unknown; message?: unknown } };
-      if (e.ok === true && typeof e.data === "object" && e.data !== null) return { ok: true, output: e.data };
-      if (e.ok === false && typeof e.error?.code === "string") return { ok: false, code: e.error.code, message: String(e.error.message ?? e.error.code) };
-    } catch { /* an unreadable answer reads as the exit alone */ }
-  }
-  return code === 0 ? { ok: true, output: { attached: true } } : { ok: false, code: "rite-abandon-refused", message: `the abandon answered ${code}; the lines above name why` };
-}
-
-/** `--answer <name>`: where a rite row also writes its envelope (the house's config), so an attached host reads its code back. */
-export function riteAnswerName(args: ParsedArgs): string | undefined {
-  const name = typeof args.options["answer"] === "string" ? args.options["answer"].trim() : "";
-  if (name === "") return undefined;
-  if (!/^rite-abandon-answer-[0-9a-f]+\.json$/.test(name)) throw new RiteUsage("--answer names a `rite-abandon-answer-<hex>.json` in the house's config");
-  return name;
-}
-
-/** One line of this CLI again, attached to this terminal (no output read): the bridge forwards it with the terminal, so a route reads here. */
-const cliAttached = (line: readonly string[]): Promise<number> => new Promise((resolve) => {
-  const child = spawn(process.execPath, [BIN, ...line], { stdio: "inherit" });
-  child.once("error", () => resolve(127));
-  child.once("close", (code) => resolve(code ?? 1));
 });
 
 /** One shim read: its last stdout line, trimmed, or null where it answers nothing or fails. */
@@ -410,7 +326,7 @@ async function keepPins(dir: string): Promise<{ readonly ok: boolean; readonly l
  * One vessel row as the host's CLI line. The begin and the offer gather every lent face in the vessel, so they name none;
  * each landing names the face its tessera began under in its own arguments.
  */
-export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer" | "rite-receipts" | "rite-abandon", rowArgs: Record<string, unknown>): string[] =>
+export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer" | "rite-receipts", rowArgs: Record<string, unknown>): string[] =>
   ["rite", verb.slice("rite-".length), ...flagsOf(rowArgs)];
 
 /**
@@ -519,18 +435,6 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
       const read = await cliVerb(hostRowLine("rite-receipts", { rite: "kukulu", branch, ...(face === undefined ? {} : { face }) }));
       return read.ok ? { ok: true, ...standingOf(read.output, branch) } : read;
     },
-    // THE ABANDON RUNS ATTACHED: the hand's route reads on this terminal (the ward in the vessel, or the pūlama's hand door).
-    abandon: async (branch, face) => {
-      // THE ANSWER CROSSES BY FILE: the attached child (and the vessel it reaches) writes its envelope to a named file in the house's
-      // config, which the host reads back, so the refusal's own code reaches this JSON; the terminal stays attached for the route.
-      const name = `rite-abandon-answer-${randomBytes(8).toString("hex")}.json`;
-      const code = await cliAttached([...hostRowLine("rite-abandon", { rite: "kukulu", branch, ...(face === undefined ? {} : { face }) }), "--answer", name]);
-      const house = hostHouseRoot();
-      const path = house === null ? null : join(house, "config", name);
-      let text: string | null = null;
-      if (path !== null) { try { text = readFileSync(path, "utf8"); } catch { text = null; } try { rmSync(path, { force: true }); } catch { /* the file goes with the next sweep */ } }
-      return abandonAnswerOf(code, text);
-    },
     ranImage: () => shimRead(shim, ["vessel-image"]),
     // THE KEEP AFTER THE LANDING: the raise defers the keep a down left owed (`--keep-after-landing`), and the rite runs it here.
     keepOwed: () => runShim(shim, ["keep-owed"]),
@@ -625,7 +529,7 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
     const branch = typeof args.options["branch"] === "string" && args.options["branch"].trim() !== "" ? args.options["branch"].trim() : undefined;
     const faceWord = typeof args.options["face"] === "string" ? args.options["face"].trim() : undefined;
     if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
-    const out = await riteKukulu(hostPorts(shim, (line) => console.error(line)), { ...(branch === undefined ? {} : { branch }), ...(faceWord === undefined ? {} : { face: Number(faceWord) }), ...rollbackOf(args), ...(args.flags["abandon"] === true ? { abandon: true as const } : {}) });
+    const out = await riteKukulu(hostPorts(shim, (line) => console.error(line)), { ...(branch === undefined ? {} : { branch }), ...(faceWord === undefined ? {} : { face: Number(faceWord) }), ...rollbackOf(args) });
     const kukuluMessage = "the kūkulu rite did not complete; the lines above name where it stopped";
     const settled = out.data["awaits"] === "hand" ? `lares rite kukulu: the house waits on your hand: ${String(out.data["hand"])} on a terminal` : out.data["awaits"] === "unlock" ? "lares rite kukulu: the house stands; the landing waits on the unlock" : "lares rite kukulu: the house stands";
     emitAnswer(args, out.code === 0

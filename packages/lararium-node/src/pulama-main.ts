@@ -18,7 +18,7 @@
  *                                                   `image '{"digest":…,"seed":…}'` it carries beside it the seed line the
  *                                                   host read (the seed that image offers beside the founding record)
  *   node dist/src/pulama-main.js tessera            print the pūlama's signed tessera halves
- *   node dist/src/pulama-main.js lei kui|restring|unstring|abandon '<terms>'
+ *   node dist/src/pulama-main.js lei kui|restring|unstring '<terms>'
  *                                                   the operator strings, restrings or unstrings a lei: reads the route on a
  *                                                   real terminal, the face root signs one record here, and the answer prints
  *                                                   it for the vessel to land (`lares lei land`); terms naming `faces` sign
@@ -55,7 +55,7 @@ import { listenPulama, socketPathFits } from "./pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "./pulama-state.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { wardCredential } from "./ward-credential.js";
-import { wardRootSession, wardRootSigner } from "./ward-signer.js";
+import { wardRootSigner } from "./ward-signer.js";
 
 class PulamaUnnamed extends Error {
   override readonly name = "PulamaUnnamed";
@@ -85,8 +85,6 @@ async function serve(): Promise<void> {
   const lei = {
     group: async (ordinal: number) => (await loadIdentityAnchors(ordinal).catch(() => null))?.personaGroupId ?? null,
     signer: (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => wardRootSigner(ordinal, wardCredential(credentials), `the face root at h${ordinal}, for a lei at the pūlama's hand door`),
-    // ONE OPENING PER ABANDON: the root opens once under the route and signs each mark of the act, then zeroes.
-    session: (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => wardRootSession(ordinal, wardCredential(credentials), `the face root at h${ordinal}, for an abandon at the pūlama's hand door`),
   };
   const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, onLog: log });
 

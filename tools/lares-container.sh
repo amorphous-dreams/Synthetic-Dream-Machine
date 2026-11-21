@@ -29,9 +29,6 @@
 #   lares-container.sh keep-owed                 run the keep a down left owed (`run/keep-owed`) once the census reads
 #                                                clean, or name its deferral; it waits while a kūkulu half rests unlanded
 #   lares-container.sh vessel-image              print the image the running vessel runs, by digest (the rite lands over it)
-#   lares-container.sh rite abandon --rite kukulu --branch <b>
-#                                                under a pūlama, the abandon's hand door: the vessel reads its terms, the pūlama
-#                                                signs one mark per pending half on this terminal, the vessel lands them
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing.
 #                                                Every stand and restart this shim performs (`up` too) warns when the
@@ -1227,30 +1224,6 @@ case "$verb" in
       vi_image=$(docker inspect --format '{{.Image}}' "$vi_id" 2>/dev/null) || die "vessel-image: the running vessel's image reads nowhere (docker inspect failed)"
       printf '%s\n' "$vi_image" | tr -d '\r'
     fi ;;
-  rite)
-    # THE ABANDON'S HAND DOOR UNDER A PŪLAMA: the vessel holds no face root, so it reads the abandon's terms (the face, one part
-    # per pending half), the pūlama reads the route on THIS terminal and signs one mark per half as the hand, and the vessel lands
-    # them. Without a pūlama the vessel's own ward reads the route (the attached CLI), as every ward act does.
-    if [ "${1:-}" = abandon ] && [ -n "$PULAMA_MODE" ]; then
-      shift
-      [ -n "$HAVE_TTY" ] || die "an abandon under a pūlama reads its route on a terminal; run it on one (nothing signed)"
-      # shellcheck disable=SC2046
-      terms=$(compose exec $(pass_env) -T lares node "$CLI" rite abandon --terms "$@" </dev/null) || exit $?
-      answer=$(compose --profile pulama exec --no-TTY=false pulama node "$PULAMA_MAIN" lei abandon "$terms" | tee /dev/stderr | tr -d '\r' | awk '/^\{/ { seen = 1; answer = "" } seen { answer = answer $0 } END { if (seen) print answer }')
-      [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
-      # ONLY A SIGNED ANSWER LANDS: a refusal the pūlama read (another group's half, a wrong route) lands nothing.
-      ab_reading=$(printf '%s' "$answer" | tr -d ' ' | sed -n 's/.*"reading":"\([^"]*\)".*/\1/p' | head -n 1)
-      [ "$ab_reading" = signed ] || die "the pūlama signed nothing (${ab_reading:-no reading}); nothing lands"
-      # THE SIGNED BATCH RIDES A FILE in the house's config (the vessel reads /lar/config), never argv: a large batch trips E2BIG.
-      ensure_house
-      ab_file="rite-abandon-signed-$(od -An -N8 -tx1 /dev/urandom | tr -d ' \n').json"
-      ( umask 077; printf '%s' "$answer" > "$HOUSE/config/$ab_file" ) || die "the signed batch could not rest in $HOUSE/config; nothing lands"
-      # shellcheck disable=SC2046
-      if waited_exec $(pass_env) -T lares node "$CLI" rite abandon --signed-file "$ab_file" "$@" </dev/null; then ab_rc=0; else ab_rc=$?; fi
-      rm -f -- "$HOUSE/config/$ab_file"
-      exit "$ab_rc"
-    fi
-    route_cli "$verb" "$@" ;;
   down) down_vessel "$@" ;;
   pulama)
     [ -n "$PULAMA_MODE" ] || die "pulama needs LARES_PULAMA=1 in the environment or $ENV_FILE"

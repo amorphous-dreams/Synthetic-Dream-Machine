@@ -81,7 +81,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | unadmit <image digest> | lei kui|restring|unstring|abandon '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | unadmit <image digest> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -121,11 +121,9 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     // THE LINE: an act and one JSON object of terms, nothing more; a route never rides it.
     if (!Array.isArray(arg) || arg.length !== 2) throw new PulamaVerbUsage();
     const [act, raw] = arg as readonly string[];
-    if (act !== "kui" && act !== "restring" && act !== "unstring" && act !== "abandon") throw new PulamaVerbUsage();
+    if (act !== "kui" && act !== "restring" && act !== "unstring") throw new PulamaVerbUsage();
     let terms: unknown;
     try { terms = JSON.parse(raw!); } catch { throw new PulamaVerbUsage(); }
-    // THE VESSEL CLI'S ANSWER rides its envelope (`{ ok, data }`, `emitAnswer`): the terms are its data.
-    if (typeof terms === "object" && terms !== null && (terms as Record<string, unknown>)["ok"] === true && typeof (terms as Record<string, unknown>)["data"] === "object") terms = (terms as Record<string, unknown>)["data"];
     const termsOk = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x) && !("credentials" in x) && !("op" in x) && !("act" in x);
     if (!termsOk(terms)) throw new PulamaVerbUsage();
     // ONE STRINGING FOR EVERY FACE: `faces` lists one terms object per face, each signed by that face's own hand under ONE route.
@@ -133,12 +131,10 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     if (every !== undefined && (!Array.isArray(every) || every.length === 0 || !every.every(termsOk))) throw new PulamaVerbUsage();
     const each: readonly Record<string, unknown>[] = every === undefined ? [terms] : every as Record<string, unknown>[];
     const t = each[0]!;
-    // AN ABANDON OVER ZERO PARTS signs nothing: it refuses before anybody types a route.
-    if (act === "abandon" && !(Array.isArray(t["parts"]) && t["parts"].length > 0)) return { op: "lei", act, reading: "lei-malformed", detail: "an abandon names at least one part of the face's own; the vessel's terms named none" };
     // THE DOOR READS FIRST: an unlit pūlama refuses here, before anybody types a route.
     const standing = await ports.ask({ op: "status" });
     if (standing["lit"] !== true) return { op: "lei", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then string the lei" };
-    const what = act === "unstring" ? `unstring the ${String(t["rite"])} lei ${String(t["lei"])}` : act === "abandon" ? `abandon ${Array.isArray(t["parts"]) ? t["parts"].length : 0} pending kūkulu half(s)` : `${act} a ${String(t["rite"])} lei`;
+    const what = act === "unstring" ? `unstring the ${String(t["rite"])} lei ${String(t["lei"])}` : `${act} a ${String(t["rite"])} lei`;
     const passphrase = await ports.route(`pūlama route, to ${what} at "${String(t["branch"])}" for ${each.map((f) => `h${String(f["face"])}`).join(", ")}: `, "a lei");
     const credentials = [{ kind: "passphrase", passphrase }];
     if (every === undefined) return ports.ask({ op: "lei", act, ...t, credentials });

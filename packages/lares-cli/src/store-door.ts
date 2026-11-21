@@ -320,10 +320,10 @@ const KEY_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([...STORE_D
  * THE ROWS WHOSE SESSION ONLY SEATS THE ACT: the kūkulu's begin and offer gather every lent face (one lei, one vouch apiece), so
  * naming no face they ride the face the operator WEARS (`face.resolve` worn, the mounted face), never a refusal for several open.
  */
-const WORN_SESSION_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["rite-begin", "rite-offer", "rite-abandon", "rite-land"]);
+const WORN_SESSION_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["rite-begin", "rite-offer", "rite-land"]);
 
 /**
- * Whether a row naming no face rides the worn face's session: the kūkulu's begin, offer and abandon, and its standing read
+ * Whether a row naming no face rides the worn face's session: the kūkulu's begin and offer, and its standing read
  * (`rite-receipts` with `rite: kukulu`), each gathering every lent face, so several faces open (the house lights h0, h1 and h2)
  * never refuse it; and a landing that names no face (the hand-landing line a read with no raw debt names). A plain receipts read
  * still resolves its one face.

@@ -7,11 +7,10 @@
 import { expect, test } from "vitest";
 import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, rowRefusalName, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
-import { ABANDON_BATCH, abandonPage, acceptAbandons, beginLentFaces, lentOfferFaces, offerVouchesOf, ownAbandonParts, refuseStandingBegin, signedMatchesTerms, standingKukuluBegins } from "../src/commands/rite.js";
+import { beginLentFaces, lentOfferFaces, offerVouchesOf, refuseStandingBegin, standingKukuluBegins } from "../src/commands/rite.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
-import { runHandVerb } from "../src/pulama-verbs.js";
 import {
-  SwarmRefused, abandonRites, beginChecked, checkReturn, conferre, landRite, pendingBegins, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiReturnedPrefix, swarmLeiReturnedTitle,
+  SwarmRefused, beginChecked, checkReturn, conferre, landRite, pendingBegins, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiReturnedPrefix, swarmLeiReturnedTitle,
   type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 
@@ -155,10 +154,10 @@ test("RED: a kūkulu begun and never landed reads each lent face's guest half st
 /**
  * THE SECOND READ (gate 2): the debt reads by raw rows, so a face shut or rehived since its begin still refuses a second begin;
  * the resting offer reads back as its vouches, each named by face, so the host reuses it only where it matches the pending
- * halves; the abandon row runs on a hand alone; and the pūlama's begin over one offer is idempotent, so a refused composition
+ * halves; and the pūlama's begin over one offer is idempotent, so a refused composition
  * and its retry spend one return.
  */
-test("RED: a face rehived since its begin (its old half verifies under no trust it holds now) still refuses a second begin by its raw row, naming the group and the abandon line; CONTROL: once abandoned, no debt stands", async () => {
+test("RED: a face rehived since its begin (its old half verifies under no trust it holds now) still refuses a second begin by its raw row, naming the group and the hand landing that sets it down", async () => {
   const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
   const rows = new Map<string, string>();
   const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
@@ -173,9 +172,7 @@ test("RED: a face rehived since its begin (its old half verifies under no trust 
   const rehivedRed = async () => (await conferre(wiki, { hand: () => false, vessel: () => false, lead: () => false }, "new-group")).red;
   expect(await standingKukuluBegins([0], rehivedRed, "develop")).toEqual([]);
   const debt = await pendingBegins(wiki, "kukulu", "develop");
-  expect(() => refuseStandingBegin(debt)).toThrow(expect.objectContaining({ code: "rite-begun-stands", message: expect.stringMatching(new RegExp(`old-group tessera ${begun.tessera}[\\s\\S]*lares rite kukulu --abandon --branch develop`)) }));
-  await abandonRites(wiki, debt, hand);
-  expect(await pendingBegins(wiki, "kukulu", "develop")).toEqual([]);
+  expect(() => refuseStandingBegin(debt)).toThrow(expect.objectContaining({ code: "rite-begun-stands", message: expect.stringMatching(new RegExp(`old-group tessera ${begun.tessera}[\\s\\S]*lares rite land --tessera`)) }));
 });
 
 test("RED: the resting offer reads back as its vouches, each named by the lent face whose group it carries; CONTROL: a vouch for a group no lent face carries stays unnamed, and a file that reads as no offer reads none", () => {
@@ -191,12 +188,6 @@ test("RED: the resting offer reads back as its vouches, each named by the lent f
   expect(offerVouchesOf(null, new Map())).toBeNull();
 });
 
-test("RED: the abandon row is a store-door face row a hand alone runs: a seat session refuses it by code; CONTROL: the begin, offer, land and receipts rows stay open to a seat", () => {
-  expect(STORE_DOOR_VERBS as readonly string[]).toContain("rite-abandon");
-  expect(STORE_DOOR_FACE_VERBS.has("rite-abandon" as never)).toBe(true);
-  expect(STORE_DOOR_HAND_ONLY_ACTS.has("rite-abandon")).toBe(true);
-  for (const row of ROWS) expect(STORE_DOOR_HAND_ONLY_ACTS.has(row), row).toBe(false);
-});
 
 test("RED: the pūlama's begin over one offer is idempotent: a composition refused after its claim, then the retry, rests one guest half and spends one return; CONTROL: once landed, the next kūkulu begins afresh", async () => {
   const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -216,35 +207,6 @@ test("RED: the pūlama's begin over one offer is idempotent: a composition refus
   expect(await port.begin({ lei: [lei], unstrung: [] }, at)).toMatchObject({ ok: true, n: 2 });
 });
 
-/**
- * THE THIRD READ (gate 2): the abandon is a hand act (a ward route opens the root, or the pūlama's hand door signs it), and the
- * vessel lands only marks a lent face's hand signed over a half pending on the line; the pūlama's reuse binds the image.
- */
-test("RED: the vessel lands an abandon mark only where a lent face's HAND signed it over a half pending on the line; a mark the vessel's atom signed, or one over no pending half, lands nothing; CONTROL: the abandon row is a ward act unless it carries the hand's signed marks or asks its terms", async () => {
-  const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
-  const rows = new Map<string, string>();
-  const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
-    list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
-  const hand = await keyed(70), atom = await keyed(71);
-  const trust: SwarmTrust = { hand: (k) => k === hand.key, vessel: (k) => k === atom.key, lead: () => false };
-  const lei = await signSwarmAct({ act: "lei", group: "g0", rite: "kukulu", branch: "main", after: null, reach: "wide", returns: 3 }, hand);
-  await wiki.write(swarmLeiRecordTitle("kukulu", "main", swarmActCid(lei)), JSON.stringify(lei));
-  const at = { rite: "kukulu" as const, branch: "main", head: "a".repeat(40), tree: "b".repeat(40) };
-  const begun = await beginChecked(wiki, await checkReturn(wiki, at, trust, "g0", atom, { accepts: () => true }));
-  const mark = (signer: typeof hand, tessera = begun.tessera, guest = begun.begun) => signSwarmAct({ act: "rite-abandoned", group: "g0", rite: "kukulu", branch: "main", tessera, begun: guest }, signer);
-  // THE FOURTH READ: only the root that strung the half's lei (its own face's hand) ends it, over that half's own guest cid.
-  const otherHand = await keyed(72);
-  await expect(acceptAbandons(wiki, "main", [await mark(atom)])).rejects.toMatchObject({ code: "rite-abandon-unsigned" });
-  await expect(acceptAbandons(wiki, "main", [await mark(otherHand)])).rejects.toMatchObject({ code: "rite-abandon-unsigned" });
-  await expect(acceptAbandons(wiki, "main", [await mark(hand, begun.tessera, "9".repeat(64))])).rejects.toMatchObject({ code: "rite-abandon-unsigned" });
-  await expect(acceptAbandons(wiki, "main", [await mark(hand, "9".repeat(64))])).rejects.toMatchObject({ code: "rite-abandon-not-pending" });
-  expect(await pendingBegins(wiki, "kukulu", "main")).toHaveLength(1);
-  expect(await acceptAbandons(wiki, "main", [await mark(hand)])).toEqual([{ tessera: begun.tessera, group: "g0", head: at.head }]);
-  expect(await pendingBegins(wiki, "kukulu", "main")).toEqual([]);
-  expect(storeVerbNeedsWard("rite-abandon", { rite: "kukulu", branch: "main" })).toBe(true);
-  expect(storeVerbNeedsWard("rite-abandon", { rite: "kukulu", branch: "main", signed: [] })).toBe(false);
-  expect(storeVerbNeedsWard("rite-abandon", { rite: "kukulu", branch: "main", terms: true })).toBe(false);
-});
 
 test("RED: the pūlama's reuse binds the image: a retry over another image claims its own return and never takes the first image's half; CONTROL: the same image reuses", async () => {
   const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -262,71 +224,14 @@ test("RED: the pūlama's reuse binds the image: a retry over another image claim
   expect(await port.begin({ lei: [lei], unstrung: [] }, at("sha256:" + "aa".repeat(32)))).toEqual(a);
 });
 
-test("RED (the fourth read): the pūlama's `lei` verb unwraps the CLI's answer envelope (`{ok, data}`) its abandon terms ride in, so the hand door reads the face and the parts; CONTROL: bare terms read as they stood", async () => {
-  const frames: Array<Record<string, unknown>> = [];
-  const ports = {
-    ask: async (f: Record<string, unknown>) => { frames.push(f); return f["op"] === "status" ? { op: "status", lit: true } : { op: "lei", reading: "signed" }; },
-    route: async () => "a route",
-  };
-  const terms = { face: 1, rite: "kukulu", branch: "main", parts: [{ tessera: "c".repeat(64), group: "g1", branch: "main", begun: "d".repeat(64) }] };
-  for (const text of [JSON.stringify({ ok: true, data: terms }), JSON.stringify(terms)]) {
-    frames.length = 0;
-    await runHandVerb("lei", ["abandon", text], ports as never);
-    expect(frames.at(-1)).toMatchObject({ op: "lei", act: "abandon", face: 1, parts: terms.parts });
-  }
-});
 
-/**
- * THE FIFTH READ (gate 2): the abandon names its face or refuses (an unlent `--face`, nothing owed, none of this face's own); the
- * pūlama asks no route over zero parts.
- */
-test("RED: the abandon's face reads by name: an unlent `--face` refuses `face-not-lent`; nothing pending refuses `rite-abandon-nothing-pending`; a face owing none of its own refuses `rite-abandon-no-own-halves` with each other face's own line; CONTROL: its own halves read as its parts", () => {
-  const half = (tessera: string, group: string) => ({ tessera, group, branch: "main", head: "a".repeat(40), lei: "l", n: 1, begun: "b".repeat(64) });
-  const faces = [{ ordinal: 0, group: "g0" }, { ordinal: 1, group: "g1" }];
-  expect(() => ownAbandonParts({ pending: [half("c".repeat(64), "g0")], faces, named: 2, branch: "main" })).toThrow(expect.objectContaining({ code: "face-not-lent" }));
-  expect(() => ownAbandonParts({ pending: [], faces, named: 0, branch: "main" })).toThrow(expect.objectContaining({ code: "rite-abandon-nothing-pending" }));
-  expect(() => ownAbandonParts({ pending: [half("c".repeat(64), "g1"), half("d".repeat(64), "gone")], faces, named: 0, branch: "main" })).toThrow(expect.objectContaining({
-    code: "rite-abandon-no-own-halves",
-    message: expect.stringMatching(/h1 tessera c+ waits for its own face's hand: lares rite kukulu --abandon --face 1 --branch main[\s\S]*gone tessera d+ waits: no lent face's hand carries its group, so it ends once that face stands again/),
-  }));
-  const own = ownAbandonParts({ pending: [half("c".repeat(64), "g1"), half("e".repeat(64), "g0")], faces, named: 0, branch: "main" });
-  expect([own.signer, own.mine.map((p) => p.tessera), own.others.map((o) => o["tessera"])]).toEqual([0, ["e".repeat(64)], ["c".repeat(64)]]);
-});
 
-test("RED: the pūlama's `lei abandon` with zero parts asks no route and signs nothing; CONTROL: parts ask the route once", async () => {
-  let routes = 0;
-  const ports = { ask: async (f: Record<string, unknown>) => (f["op"] === "status" ? { op: "status", lit: true } : { op: "lei", reading: "signed" }), route: async () => { routes++; return "a route"; } };
-  expect(await runHandVerb("lei", ["abandon", JSON.stringify({ ok: true, data: { face: 0, rite: "kukulu", branch: "main", parts: [] } })], ports as never)).toMatchObject({ reading: "lei-malformed" });
-  expect(routes).toBe(0);
-  await runHandVerb("lei", ["abandon", JSON.stringify({ face: 0, rite: "kukulu", branch: "main", parts: [{ tessera: "c".repeat(64), group: "g", branch: "main", begun: "d".repeat(64) }] })], ports as never);
-  expect(routes).toBe(1);
-});
 
-test("RED (the sixth read): a signed landing matches the operator's request: the marks name exactly the requested face's own halves, else `rite-abandon-terms-differ` and nothing lands; CONTROL: the very halves of the terms pass", () => {
-  const half = (tessera: string) => ({ tessera, group: "g0", branch: "main", head: "a".repeat(40), lei: "l", n: 1, begun: "b".repeat(64) });
-  const rec = (tessera: string, group = "g0") => ({ body: { act: "rite-abandoned", tessera, group, branch: "main" } });
-  const mine = [half("c".repeat(64)), half("d".repeat(64))];
-  expect(() => signedMatchesTerms([rec("c".repeat(64))], mine)).toThrow(expect.objectContaining({ code: "rite-abandon-terms-differ" }));
-  expect(() => signedMatchesTerms([rec("c".repeat(64)), rec("e".repeat(64))], mine)).toThrow(expect.objectContaining({ code: "rite-abandon-terms-differ" }));
-  expect(() => signedMatchesTerms([rec("c".repeat(64)), rec("d".repeat(64), "g1")], mine)).toThrow(expect.objectContaining({ code: "rite-abandon-terms-differ" }));
-  expect(() => signedMatchesTerms([rec("c".repeat(64)), rec("c".repeat(64)), rec("d".repeat(64))], mine)).toThrow(expect.objectContaining({ code: "rite-abandon-terms-differ" }));
-  expect(() => signedMatchesTerms([rec("d".repeat(64)), rec("c".repeat(64))], mine)).not.toThrow();
-});
 
-test("RED (the seventh read): a rite row's refusal answers under its own code (`rite-abandon-terms-differ`, `face-not-lent`), so the CLI's JSON names it; CONTROL: a store with no daemon still answers under the row's name, and another row's refusal keeps the row's name", () => {
-  expect(rowRefusalName("rite-abandon", new SwarmRefused("rite-abandon-terms-differ", "differ"))).toBe("rite-abandon-terms-differ");
-  expect(rowRefusalName("rite-abandon", new SwarmRefused("face-not-lent", "unlent"))).toBe("face-not-lent");
+test("RED (the seventh read): a rite row's refusal answers under its own code (`rite-begun-stands`, `rite-tree-unreadable`), so the CLI's JSON names it; CONTROL: a store with no daemon still answers under the row's name, and another row's refusal keeps the row's name", () => {
+  expect(rowRefusalName("rite-land", new SwarmRefused("rite-begun-absent", "absent"))).toBe("rite-begun-absent");
+  expect(rowRefusalName("rite-begin", new SwarmRefused("rite-tree-unreadable", "unreadable"))).toBe("rite-tree-unreadable");
   expect(rowRefusalName("rite-begin", new SwarmRefused("rite-begun-stands", "stands"))).toBe("rite-begun-stands");
   expect(rowRefusalName("rite-begin", new SwarmRefused("swarm-no-daemon", "no daemon"))).toBe("rite-begin-refused");
   expect(rowRefusalName("swarm-show", new SwarmRefused("swarm-lei-absent", "absent"))).toBe("swarm-show-refused");
-});
-
-test("RED (the eighth read): an abandon pages its own halves within the per-act bound, the rest named as more to come; CONTROL: a small set is one page", () => {
-  const half = (i: number) => ({ tessera: i.toString(16).padStart(64, "c"), group: "g0", branch: "main", head: "a".repeat(40), lei: "l", n: 1, begun: "b".repeat(64) });
-  const all = Array.from({ length: 150 }, (_, i) => half(i));
-  expect(ABANDON_BATCH).toBe(100);
-  const first = abandonPage(all);
-  expect([first.page.length, first.more]).toEqual([100, 50]);
-  expect(first.page.map((p) => p.tessera)).toEqual([...all].map((p) => p.tessera).sort().slice(0, 100));
-  expect(abandonPage(all.slice(0, 3))).toMatchObject({ more: 0 });
 });

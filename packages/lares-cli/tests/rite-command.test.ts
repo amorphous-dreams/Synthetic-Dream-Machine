@@ -16,7 +16,7 @@ import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, foundingRecordDigests, type GenesisD
 import { genesisSeedCid } from "@lararium/node";
 import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
-import { RiteUsage, abandonAnswerOf, hostRefill, hostRowLine, riteAnswerName, ritePlan, rollbackOf, standingOf, syncCheckout } from "../src/commands/rite.js";
+import { RiteUsage, hostRefill, hostRowLine, ritePlan, rollbackOf, standingOf, syncCheckout } from "../src/commands/rite.js";
 import { storeVerbRidesWorn } from "../src/store-door.js";
 import { kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
@@ -537,7 +537,7 @@ describe("the kūkulu's seed port reads the genesis dir the image carries (the h
  * rite now reads the debt that stands before it begins: every kūkulu half resting unlanded on the line (by its raw rows, so a
  * face shut or rehived since still counts), beside the halves a lent face can land and the offer's vouches. A debt that
  * matches this run (its head, the image the host made, every half landable) RESUMES: no return, no tessera, the offer reused
- * only where its vouches match. Any other debt refuses by name with the one line that clears it (`--abandon`), never stacks.
+ * only where its vouches match. Any other debt refuses by name with the lines that clear it (a hand landing), never stacks.
  */
 describe("kukulu-survives-a-ctrl-c", () => {
   const OLD = "b".repeat(40), D2 = "sha256:" + "d2".repeat(32);
@@ -587,34 +587,34 @@ describe("kukulu-survives-a-ctrl-c", () => {
     }
   });
 
-  it("RED: a begin standing at this head over ANOTHER image (the host rebuilt the head as another digest) refuses `kukulu-begun-unmatched` by name, naming the abandon line; never a fresh offer, never a false par", async () => {
+  it("RED: a begin standing at this head over ANOTHER image (the host rebuilt the head as another digest) refuses `kukulu-begun-unmatched` by name, naming the hand landing that clears it; never a fresh offer, never a false par", async () => {
     const f = standingFakes(read(BEGUN(HEAD, D2), { offer: VOUCH({ image: D2 }) }));
     const out = await riteKukulu(f.ports, {});
     expect(f.calls).toEqual(["checkout", STAGE, STANDS]);
     expect(out).toMatchObject({ code: 1, data: { begun: false, stopped: "begun-unmatched", refusal: "kukulu-begun-unmatched" } });
     const said = f.said.join("\n");
     expect(said).toMatch(new RegExp(`h0 tessera ${TESSERA} \\(begun at aaaaaaaaaaaa over ${D2}: another image than this run raises, sha256:abab`));
-    expect(said).toMatch(/clear it with: lares rite kukulu --abandon --branch main \(it ends each half by name; their returns stay spent\); nothing spent, nothing moved/);
+    expect(said).toMatch(/clear it with: land each by hand where the vessel stands \(conferre reads it red\): lares rite land --tessera c+ --head <the head the vessel runs> --face 0; the abandon that ends a half by name waits on its own branch \(develop--a-begun-rite-sets-down\); nothing spent, nothing moved/);
   });
 
-  it("RED: a begun-but-never-landed rite older than the new head refuses `kukulu-begun-stale` by name with the abandon line, and the rollback that lands it at its own head carries `--branch`; never stacks: no begin, no offer, no raise", async () => {
+  it("RED: a begun-but-never-landed rite older than the new head refuses `kukulu-begun-stale` by name with the hand landing, and the rollback that lands it at its own head carries `--branch`; never stacks: no begin, no offer, no raise", async () => {
     const f = standingFakes(read(BEGUN(OLD)));
     const out = await riteKukulu(f.ports, {});
     expect(f.calls).toEqual(["checkout", STAGE, STANDS]);
     expect(out).toMatchObject({ code: 1, data: { begun: false, stopped: "begun-stale", refusal: "kukulu-begun-stale", stale: [{ face: "h0", tessera: TESSERA, head: OLD }] } });
     const said = f.said.join("\n");
     expect(said).toMatch(/h0 tessera c+ \(begun at bbbbbbbbbbbb over sha256:abab[0-9a-f]*: another head than this run raises, aaaaaaaaaaaa\); it never stacks a second begin/);
-    expect(said).toMatch(/clear it with: lares rite kukulu --abandon --branch main \(it ends each half by name; their returns stay spent\); or land it at its own head: lares rite kukulu --rollback bbbbbbbbbbbb --branch main; nothing spent, nothing moved/);
+    expect(said).toMatch(/clear it with: land each by hand where the vessel stands \(conferre reads it red\): lares rite land --tessera c+ --head <the head the vessel runs> --face 0; the abandon that ends a half by name waits on its own branch \(develop--a-begun-rite-sets-down\); or land it at its own head: lares rite kukulu --rollback bbbbbbbbbbbb --branch main; nothing spent, nothing moved/);
   });
 
-  it("RED: two pending heads name the abandon line alone (each rollback would refuse on the other); a half whose face stands shut or rehived (pending, and no lent face lands it) refuses by its group, naming the abandon line", async () => {
+  it("RED: two pending heads name the hand landings alone (each rollback would refuse on the other); a half whose face stands shut or rehived (pending, and no lent face lands it) refuses by its group, waiting for its face", async () => {
     const two = standingFakes(read([...BEGUN(OLD), { face: "h1", ordinal: 1, tessera: "9".repeat(64), head: "e".repeat(40), image: IMAGE }]));
     expect(await riteKukulu(two.ports, {})).toMatchObject({ code: 1, data: { refusal: "kukulu-begun-stale" } });
-    expect(two.said.join("\n")).toMatch(/clear it with: lares rite kukulu --abandon --branch main \(it ends each half by name; their returns stay spent\); nothing spent/);
+    expect(two.said.join("\n")).toMatch(/clear it with: land each by hand where the vessel stands \(conferre reads it red\): lares rite land --tessera c+ --head <the head the vessel runs> --face 0; lares rite land --tessera 9+ --head <the head the vessel runs> --face 1;/);
     expect(two.said.join("\n")).not.toMatch(/--rollback/);
     const shut = standingFakes({ begins: [], pending: [{ tessera: TESSERA, group: "old-group-h1", head: HEAD, image: IMAGE }], offer: null });
     expect(await riteKukulu(shut.ports, {})).toMatchObject({ code: 1, data: { refusal: "kukulu-begun-unmatched" } });
-    expect(shut.said.join("\n")).toMatch(new RegExp(`old-group-h1 tessera ${TESSERA} \\(begun at aaaaaaaaaaaa over sha256:abab[0-9a-f]*: its face stands shut or rehived, so no lent face lands it\\)[\\s\\S]*--abandon --branch main`));
+    expect(shut.said.join("\n")).toMatch(new RegExp(`old-group-h1 tessera ${TESSERA} \\(begun at aaaaaaaaaaaa over sha256:abab[0-9a-f]*: its face stands shut or rehived, so no lent face lands it\\)[\\s\\S]*old-group-h1 tessera ${TESSERA} waits for its face to stand again`));
   });
 
   it("RED: a quiet day (the vessel already runs the image) with a matched begin standing lands it after the top-up, spending nothing; CONTROL: a quiet day with none standing lands nothing", async () => {
@@ -634,7 +634,7 @@ describe("kukulu-survives-a-ctrl-c", () => {
     expect(out).toMatchObject({ code: 0, data: { resumed: true, landed: true, par: true } });
     const stale = standingFakes(read([]), { reading: { vessel: "down" } }, read(BEGUN(OLD)));
     expect(await riteKukulu(stale.ports, {})).toMatchObject({ code: 1, data: { raised: true, refusal: "kukulu-begun-stale" } });
-    expect(stale.said.join("\n")).toMatch(/--abandon --branch main/);
+    expect(stale.said.join("\n")).toMatch(/lares rite land --tessera/);
     const none = standingFakes(read([]), { reading: { vessel: "down" } });
     expect(await riteKukulu(none.ports, {})).toMatchObject({ code: 0, data: { begun: false, raised: true } });
     expect(none.calls).toEqual(["checkout", STAGE, `raise ${HEAD}`, STANDS, "keep-owed"]);
@@ -666,26 +666,6 @@ describe("kukulu-survives-a-ctrl-c", () => {
     expect(out).toMatchObject({ code: 1, data: { begun: true, landed: false, stopped: "raise", interrupted: true } });
     expect(f.said.join("\n")).toMatch(/kūkulu: interrupted during the restand; the begun halves rest and the offer stands, so `lares rite kukulu` resumes them and spends no lei/);
     expect(f.calls).not.toContain("keep-owed");
-  });
-
-  it("RED: `--abandon` ends every pending half on the line by name, on a terminal alone: no sync, no image, no raise; a seat with no terminal refuses and abandons nothing; CONTROL: nothing pending says so", async () => {
-    const f = fakes();
-    const abandoned: string[] = [];
-    f.ports.abandon = async (branch) => { abandoned.push(branch); return { ok: true, output: { rite: "kukulu", abandoned: [{ tessera: TESSERA, group: "g-h0", face: "h0", head: OLD }, { tessera: "9".repeat(64), group: "old-group-h1", head: HEAD }] } }; };
-    const out = await riteKukulu(f.ports, { abandon: true });
-    expect(f.calls).toEqual(["checkout"]);
-    expect(abandoned).toEqual(["main"]);
-    expect(out).toMatchObject({ code: 0, data: { rite: "kukulu", branch: "main", abandoned: [{ tessera: TESSERA }, { tessera: "9".repeat(64) }] } });
-    const said = f.said.join("\n");
-    expect(said).toMatch(new RegExp(`kūkulu: abandoned h0 tessera ${TESSERA} \\(begun at bbbbbbbbbbbb\\); its lei's return stays spent, and conferre reads it red \`abandoned\``));
-    expect(said).toMatch(/kūkulu: abandoned old-group-h1 tessera 9+ \(begun at aaaaaaaaaaaa\)/);
-    const seat = fakes({ tty: false });
-    seat.ports.abandon = async () => { throw new Error("a seat abandons nothing"); };
-    expect(await riteKukulu(seat.ports, { abandon: true })).toMatchObject({ code: 1, data: { refusal: "kukulu-abandon-needs-hand" } });
-    const none = fakes();
-    none.ports.abandon = async () => ({ ok: true, output: { rite: "kukulu", abandoned: [] } });
-    expect(await riteKukulu(none.ports, { abandon: true })).toMatchObject({ code: 0, data: { abandoned: [] } });
-    expect(none.said.join("\n")).toMatch(/no begun half stands unlanded on main; nothing abandoned/);
   });
 
   /** A fake house that holds its state across runs: the stage reads it, each row and the raise move it. */
@@ -750,13 +730,12 @@ describe("kukulu-survives-a-ctrl-c", () => {
     ] } }, "main")).toEqual({ begins: [{ face: "the worn face", tessera: TESSERA, head: HEAD }] });
     expect(hostRowLine("rite-receipts", { rite: "kukulu", branch: "main", face: 1 })).toEqual(["rite", "receipts", "--rite", "kukulu", "--branch", "main", "--face", "1"]);
     expect(plan("receipts", "--rite", "kukulu", "--branch", "main")).toEqual({ verb: "rite-receipts", args: { rite: "kukulu", branch: "main" } });
-    expect(plan("abandon", "--rite", "kukulu", "--branch", "main")).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main" } });
     expect(plan("begin", "--rite", "kukulu", "--branch", "main", "--head", HEAD, "--image", IMAGE)).toEqual({ verb: "rite-begin", args: { rite: "kukulu", branch: "main", head: HEAD, image: IMAGE } });
     expect(plan("land", "--tessera", TESSERA, "--head", HEAD, "--image", IMAGE)).toEqual({ verb: "rite-land", args: { tessera: TESSERA, head: HEAD, image: IMAGE } });
   });
 
   it("RED (the blocker): with three faces lit and none named, the kūkulu's standing read rides the worn face's session as the begin and the offer do, never the refusal for several open; CONTROL: a plain receipts read still names its face", () => {
-    for (const [verb, args] of [["rite-begin", {}], ["rite-offer", {}], ["rite-receipts", { rite: "kukulu" }], ["rite-abandon", { rite: "kukulu" }]] as const) expect(storeVerbRidesWorn(verb, args), verb).toBe(true);
+    for (const [verb, args] of [["rite-begin", {}], ["rite-offer", {}], ["rite-receipts", { rite: "kukulu" }]] as const) expect(storeVerbRidesWorn(verb, args), verb).toBe(true);
     expect(storeVerbRidesWorn("rite-receipts", {})).toBe(false);
     // A LANDING NAMING NO FACE rides the worn face too: the hand-landing line a read with no raw debt names carries no ordinal.
     expect(storeVerbRidesWorn("rite-land", {})).toBe(true);
@@ -775,10 +754,10 @@ describe("kukulu-survives-a-ctrl-c", () => {
     expect(same.said.join("\n")).not.toMatch(/the vessel runs/);
   });
 
-  it("RED: the rollback hint stands only where EVERY pending half shares that one head and lands there; a matched half beside a stale one names the abandon alone", async () => {
+  it("RED: the rollback hint stands only where EVERY pending half shares that one head and lands there; a matched half beside a stale one names the hand landing alone", async () => {
     const f = standingFakes(read([...BEGUN(OLD), { face: "h1", ordinal: 1, tessera: "9".repeat(64), head: HEAD, image: IMAGE }]));
     expect(await riteKukulu(f.ports, {})).toMatchObject({ code: 1, data: { refusal: "kukulu-begun-stale" } });
-    expect(f.said.join("\n")).toMatch(/--abandon --branch main/);
+    expect(f.said.join("\n")).toMatch(/lares rite land --tessera/);
     expect(f.said.join("\n")).not.toMatch(/--rollback/);
   });
 
@@ -819,37 +798,4 @@ describe("kukulu-survives-a-ctrl-c", () => {
     expect(f.said.join("\n")).toMatch(/the image the raised vessel runs reads nowhere, so no landing names it: `lares rite kukulu` lands the halves once it reads, and spends no lei/);
   });
 
-  it("RED: the host's abandon runs ATTACHED (the route reads on this terminal, at the ward or the pūlama's hand door): an answer that names no list says the vessel named each half", async () => {
-    const f = fakes();
-    f.ports.abandon = async () => ({ ok: true, output: { attached: true } });
-    expect(await riteKukulu(f.ports, { abandon: true })).toMatchObject({ code: 0, data: { attached: true } });
-    expect(f.said.join("\n")).toMatch(/the vessel named each half it abandoned above, each by the hand's own mark/);
-  });
-
-  it("RED: `rite abandon` plans its terms read (`--terms`) and the landing of the hand's signed marks (`--signed`, the pūlama's answer or a bare list)", () => {
-    expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--terms")).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", terms: true } });
-    const rec = { body: { act: "rite-abandoned" }, signer: "k", sig: "s" };
-    expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", JSON.stringify({ op: "lei", reading: "signed", records: [rec] }))).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", signed: [rec] } });
-    expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", JSON.stringify([rec]))).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", signed: [rec] } });
-    expect(() => plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", "not json")).toThrow(RiteUsage);
-  });
-
-  it("RED (the eighth read): the attached abandon's own answer carries its code to the host: the vessel writes its envelope to a named file in the house's config, and the host reads it (a refusal by its own code, never `rite-abandon-refused`); CONTROL: no file read keeps the exit's reading", () => {
-    expect(abandonAnswerOf(1, JSON.stringify({ ok: false, error: { code: "rite-abandon-terms-differ", message: "differ" } }))).toEqual({ ok: false, code: "rite-abandon-terms-differ", message: "differ" });
-    expect(abandonAnswerOf(0, JSON.stringify({ ok: true, data: { rite: "kukulu", abandoned: [{ tessera: TESSERA, group: "g0", head: HEAD }] } }))).toEqual({ ok: true, output: { rite: "kukulu", abandoned: [{ tessera: TESSERA, group: "g0", head: HEAD }] } });
-    expect(abandonAnswerOf(2, null)).toEqual({ ok: false, code: "rite-abandon-refused", message: "the abandon answered 2; the lines above name why" });
-    expect(abandonAnswerOf(0, null)).toEqual({ ok: true, output: { attached: true } });
-    expect(riteAnswerName(parseArgs(["rite", "abandon", "--answer", "rite-abandon-answer-0a1b.json"]))).toBe("rite-abandon-answer-0a1b.json");
-    expect(() => riteAnswerName(parseArgs(["rite", "abandon", "--answer", "../escape.json"]))).toThrow(RiteUsage);
-  });
-
-  it("RED (the eighth read): `rite abandon --signed-file <name>` reads the hand's signed batch from the house's config (never argv); a name that escapes refuses", () => {
-    const rec = { body: { act: "rite-abandoned" }, signer: "k", sig: "s" };
-    const home = join(process.env["LAR_ROOT"]!, "config");
-    mkdirSync(home, { recursive: true });
-    writeFileSync(join(home, "rite-abandon-signed-0a1b.json"), JSON.stringify({ op: "lei", reading: "signed", records: [rec] }));
-    expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed-file", "rite-abandon-signed-0a1b.json")).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", signed: [rec] } });
-    expect(() => plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed-file", "../x.json")).toThrow(RiteUsage);
-    expect(() => plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed-file", "rite-abandon-signed-ffff.json")).toThrow(RiteUsage);
-  });
 });
