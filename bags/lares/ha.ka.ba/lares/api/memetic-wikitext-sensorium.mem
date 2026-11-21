@@ -12,7 +12,6 @@ role      = "the memetic-wikitext SENSORIUM — the design-of-record for the CON
 title     = "lar:///ha.ka.ba/lares/api/memetic-wikitext-sensorium"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/memetic-wikitext-sensorium"
-written   = "2026-07-01"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -55,7 +54,7 @@ corpus scale. It ''recurs'' — the same pattern holds at a finer scale, inside 
 ''So ONE structure serves both.'' The reader written for the stratum scale — split a text into
 co-located channels, window each into a signal, couple them — ''supplies the same shape'' composed at the
 corpus scale, where the two channels become two whole texts. //The reader you write for the stratum is the//
-//shape you compose for the corpus.// The concrete instance builds this once (a `coupleAligned` atom over an
+//shape you compose for the corpus.// The concrete instance holds this once (a `coupleAligned` atom over an
 FFZ-aligned tick stream) and calls it at both scales.
 
 > ''The black speaks; the red steers'' — and the same coupling that reads red↔black inside one meme reads
@@ -67,7 +66,7 @@ FFZ-aligned tick stream) and calls it at both scales.
 
 !! The Reader ~ island-scan + injection + standoff strata (no new parser)
 
-''Crucible verdict: do NOT build a new parser.'' The reader composes three instruments already fit to the
+''The reader builds no new parser'' (the crucible's verdict). It composes three instruments already fit to the
 disjoint partition the sigil register makes.
 
 <<~ scale name=`instrument` ranks=```island-scan ~ the meme-ast `collectEvents` scanner ([[scanner|lar:///ha.ka.ba/lararium/tw5/modules/meme-ast]]) — a DISJOINT-MATCH pass: the `<<~` ranges are the islands, the gaps are the sea; disjoint-match dodges tree-sitter's no-overlap limit -> injection ~ a tree-sitter INJECTION config — sigil grammar injected into the `<<~` ranges; injections model the disjoint partition NATIVELY (outer prose language, inner sigil language) -> standoff ~ a source-CID-pinned STANDOFF stratum-tag table: per byte-range `{span, tag, source-CID}`, held BESIDE the text (rust-analyzer style), never woven into it```>>
@@ -122,7 +121,7 @@ stratification (pattern); `readKi` returns the coupling (flow). The reader holds
 
 ''The skeletal-tier ⋈ strata model applies autosegmental phonology, read straight'' (Goldsmith 1976; Bird &
 Ellison 1994). That grounding hands the reader six properties — the first three enacted, the rest
-named for follow-up.
+named and open.
 
 <<~ scale name=`enacted` ranks=```typed-multigraph ~ the associations are a TYPED OVERLAP MULTIGRAPH — confidence-line ≠ ward-line ≠ voice-line, labeled distinct relations over ONE skeleton (feature-geometry class-links), never one undifferentiated association. `AssociationEdge.relation` carries the sigil head -> rightward-spread ~ SEED-FORWARD / marker-leads reads as textbook L-to-R SPREADING: a sigil anchored at its marker governs the prose that FOLLOWS until a boundary/competing marker; `direction` defaults rightward, docks leftward only for a closing/trailing sigil -> unit-anchored ~ Goldsmith's STABILITY argument: the edge keys on skeletal INDICES, never byte offsets, so the red register SURVIVES a splice/rewrite of the black stream (the autosegment re-docks) — curing the offset-drift / live-wiki re-projection tax (crucible-F1) for FREE```>>
 
@@ -170,6 +169,6 @@ identically across the TS/py shore: the li-reader on one bank, the ki-model on t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qFGxwmY3H5m_hzk-R1a73YR498Iot837WSLFUVum8fs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5tMa7ikJRm0vrc4kW7PrddQ_4eScsdT-XlrUssBsKK8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

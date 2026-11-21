@@ -133,7 +133,8 @@ function memeLocal(args: ParsedArgs): boolean {
 function readsCredential(args: ParsedArgs): boolean {
   const sub = args.positional[0];
   if (args.command === "found") return true;
-  if (args.command === "vault") return sub === "unlock" || sub === "bind" || sub === "unbind";
+  // A rehive reads the face's own route at the terminal (`vault rehive --face N`).
+  if (args.command === "vault") return sub === "unlock" || sub === "bind" || sub === "unbind" || sub === "rehive";
   if (args.command === "vessel") return sub === "found" || sub === "rotate";
   // A face founds under its own ward route, read at the terminal (`persona new N`, the face's custody born under it).
   if (args.command === "persona") return sub === "new";

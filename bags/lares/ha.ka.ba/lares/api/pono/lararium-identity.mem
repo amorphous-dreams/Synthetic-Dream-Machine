@@ -14,7 +14,6 @@ tags       = ["api/pono/meme", "api/pono/causal-islands", "api/pono/orichalcum-c
 title      = "lar:///ha.ka.ba/lares/api/pono/lararium-identity"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/lararium-identity"
-written    = "2026-06-23"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -55,7 +54,7 @@ layer — the capability //is// the identity, the petname its local name, both r
 regions (#/capability-and-petnames).
 
 The foundation (the two-axis WHO⊥INFRA split, per-vessel key, delegation edge,
-two-faced hearth, capability-is-identity + petnames — operator-ruled 2026-06-24) firms toward canon;
+two-faced hearth, capability-is-identity + petnames) stands ruled (#/rulings);
 the encrypt-from-start keying carries one kept dissent (#/provenance), so the meme
 stands ''PROPOSED'' until that settles.
 
@@ -71,7 +70,7 @@ stands ''PROPOSED'' until that settles.
 <<~ has entity=`Scale` name=`NexusGroup` params=`holds/a confederation — a principal that #has cabals + independent operators in the mesh`>>
 <<~ has entity=`Scale` name=`DreamNet` params=`holds/the super-mesh — the widest principal; no central authority, trust by treaty`>>
 
-''Nameless principals, not numbered planes'' (operator ruling 2026-06-24). Each scale stands
+''Nameless principals, not numbered planes'' (#/rulings). Each scale stands
 as a ''nameless entity carrying a `#has`-stack of capabilities'' (`has-stack-ontology`) that
 ''contains the scale beneath it'': a principal ''#has'' a stack of the principals below — a
 person #has a stack of vessels; a cabal #has a stack of persons. The scales nest ''recursively''
@@ -91,9 +90,8 @@ at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis
 
 ''Circles ride orthogonal — never a rung.'' A ''Circle'' names a Kowloon local-membership set that
 ''never federates'' (`circles-kowloon`); a vessel holds circles //within// its Lararium, and circles
-do not stack between operators. The earlier plane-list-vs-group-scale
-question closes with the ruling above — no numbered plane survives to reconcile; the group-scale
-(nameless `#has`-stacks) stands, Circles stay orthogonal to it.
+do not stack between operators. No numbered plane stands to reconcile with them: the group-scale
+(nameless `#has`-stacks) stands, and Circles stay orthogonal to it (#/rulings).
 
 ''A PersonaGroup stands PER-HANDLE, and the human's collection of handles forms a private VAULT — never a''
 ''published scale.'' One handle (one veiled-user pseudonym) owns one PersonaGroup of the human's own devices.
@@ -118,7 +116,7 @@ per-device model to escape it).
 
 So a vessel's first boot mints its ''distinct per-vessel device key'' with no ceremony, and
 mints no PersonaGroup: the vessel stands at its floor, anonymous, on its own key alone
-(the two-layer ruling, 2026-10-11; below). A face lands later, by an ''act'': a founding or a
+(the two-layer law below; #/rulings). A face lands later, by an ''act'': a founding or a
 fleet join mints or joins a ''PersonaGroup'', and the vessel then stands as one member of
 that group, never as the group itself. The face's atom ''binds to its operator by a signed
 delegation edge'' into the PersonaGroup (#/delegation-edge) — the bond climbs the
@@ -127,7 +125,7 @@ no Beelay needed.
 
 !!! Two layers, never fused ~ vessel roots below, the face/persona layer above
 
-''Each vessel holds its own roots, and the human relationship decides how it contracts in above them'' (operator ruling, 2026-10-11; quote license: //"In my mental model, each vessel holds its own roots, and the human relationship determines how they contract in as the face/persona layer above that."//).
+''Each vessel holds its own roots, and the human relationship decides how it contracts in above them'' (#/rulings).
 
 # ''VESSEL ROOTS.'' Device-minted, owned by that vessel. Every vessel mints and holds its own: a node, a laptop's browser, a family phone, a traveller's tab. No vessel borrows another's roots, and none stands with no roots. Minting them on first boot takes no ceremony.
 # ''THE FACE/PERSONA LAYER.'' The human relationship decides how a vessel contracts in: the same human's PersonaGroup · a household member · an invited user. A face or persona claim always takes an ACT (#/delegation-edge).
@@ -162,15 +160,15 @@ Revocation rides ''Keyhive concap'' — delegation + revocation as ''convergent 
 moved //to//, away from UCAN's external-state revocation. The standing edge carries no clock: `boundEpoch` against the PersonaGroup lease epoch records causal supersession. Quiet never lapses standing; departure, relation-scoped kapae, or renewal supersession records lapse. An epoch bump stays the heavy hammer for re-founding only. Revocation holds first-class standing and
 converges, never the deferred afterthought.
 
-''What `hearthTrueName` holds'' (operator ruling R1, 2026-10-05; the operator's approval of 2026-11-12). The field names the hearth's seed-charter Nexus AID, never an engine CID: an engine names a class, and a place takes its name from its charter (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>). ''A hearth-agnostic leaf binds `hearthTrueName: ""`'', stated and never omitted, and the root's signature with Keyhive membership carries the edge. ''No place wall stands for a leaf'': the edge runs sideways between a face's own devices (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>), so no founding device stands as a root to wall to. The wall a hearth gives arrives by an act: when a face founds or joins a hearth, that device gains an AID-bound edge, and its `""` edge stays good between leaves. A place's KEL prefix stays a floor duty and never enters a face relation.
+''What `hearthTrueName` holds'' (#/rulings). The field names the hearth's seed-charter Nexus AID, never an engine CID: an engine names a class, and a place takes its name from its charter (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>). ''A hearth-agnostic leaf binds `hearthTrueName: ""`'', stated and never omitted, and the root's signature with Keyhive membership carries the edge. ''No place wall stands for a leaf'': the edge runs sideways between a face's own devices (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>), so no founding device stands as a root to wall to. The wall a hearth gives arrives by an act: when a face founds or joins a hearth, that device gains an AID-bound edge, and its `""` edge stays good between leaves. A place's KEL prefix stays a floor duty and never enters a face relation.
 
-''Owed, the next leap: the integer `boundEpoch` retires'' (approved 2026-11-12, not built). An edge will name the head digest of the PersonaGroup lineage it bound under, a causal link in place of a counter. Supersession rides acts (a Keyhive revoke, a kapae, a renewal record linked by digest), and a hard break forks as exit: a new PersonaGroup id, or a new seed charter for a hearth. No clock and no global count orders any of it.
+The edge carries the integer `boundEpoch`; the approved successor (a lineage head digest in its place) rests on the road, named at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lararium-identity-record#/owed`>>.
 
 <<~/ahu>>
 
 <<~ ahu slot=`#/capability-and-petnames`>>
 
-!! Capability-is-Identity + Petnames ~ the ruled base (operator, 2026-06-24)
+!! Capability-is-Identity + Petnames ~ the ruled base (#/rulings)
 
 The base model ''rules Goblins/OCapN: a capability IS the identity.'' No account to look up — a
 ''reference reaches a place and carries its grant in one'' ("capability not account", the Elyncia
@@ -187,14 +185,14 @@ split and the walk-the-chain-at-use discipline merit stealing, but Ink&Switch mo
 (certificate-cap revocation needs external state); we follow their concap. KERI pre-rotation rides
 orthogonally as the rare root-rotation sub-lever (#/provenance).
 
-''Wire-C (Keyhive 0.1.0 scout, 2026-06-24) — the two layers COMPOSE, not duplicate.'' Keyhive's
+''The two layers COMPOSE, not duplicate.'' Keyhive's
 ''membership graph serves as the authority'' for the face↔device binding + revocation: a face's
 PersonaGroup, a Keyhive group of that face's devices (`addGroupMember`/`verifyGroupMembership`; a seat's revocation rolls the key of
 every bag the group reaches). The ''`device-delegation` edge''
 ''stands beside it as the OFFLINE projection'' — verifiable against the pinned operator root with no
 Keyhive boot (the light leaf path), place-bound, synchronously `exp`-bounded; a lossy offline witness
-of the authoritative graph, never a parallel authority. (Group still can't round-trip in 0.1.0-alpha.3
-→ a Document-sentinel stands in; the Beelay JS ciphertext transport still blocks full multi-vessel.)
+of the authoritative graph, never a parallel authority. The scout that found the composition, and the
+gaps it read in the Keyhive binding, rest at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lararium-identity-record#/scouts`>>.
 
 ''Petnames form the human/place layer'' — a vessel's //local// name for a reference it holds, resolving
 Zooko's triangle by layering (the unforgeable capability stays the root; the petname rides locally,
@@ -238,8 +236,8 @@ identity never collapses to a universal index; the veil + the capability stay lo
 <<~ has entity=`Veil` name=`Hold` params=`does/severs · spins a fresh veil over a fresh key (refound) · leaves the old veil's history unwelded ~ the unlinkability path; keeps the operator's multitude unlinkable (home-me·work-me·test-me) — the unbuilt twin`>>
 <<~ has entity=`Veil` name=`Veil`>>
 
-''The boundary rule'' (four blind domains converged — crypto key-rotation · persona-unlinkability ·
-immune/fungal commitment · institutional ceremony, 2026-06-25): a crossing earns a ''HOLD/refound''
+''The boundary rule'' (four blind domains ground it — crypto key-rotation · persona-unlinkability ·
+immune/fungal commitment · institutional ceremony; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lararium-identity-record#/syntheses`>>): a crossing earns a ''HOLD/refound''
 only when severance must run ''irreversible AND jointly-witnessed AND costly AND unlinkable''; every
 other crossing ''LIFTs'' — one key climbs over time. The test reads as one question: //does the//
 //crossing need to destroy the way home, or merely grant a wider room?//
@@ -249,7 +247,7 @@ other crossing ''LIFTs'' — one key climbs over time. The test reads as one que
 The ''HOLD'' path fires when a //lived// veil carries a public past that MUST stay severed from the
 persona it joins — keeping the key would publicly weld the anon's history to the group (the
 unlinkability collapse). A clean-slate or same-persona device ''LIFTs'' instead; the link reads as
-wanted. ''One key per face'' (operator ruling 2026-10-19: no device-wide key signs a face's proof): a Lift mints a fresh atom for the face it joins, so two faces on one vessel never link through a shared key, and the veil's continuity rides its content and a private signed record. Hold's key half therefore already stands; its content half (a join that lifts nothing) and its choice at the door stand owed. Lift stands built (the edge); Hold stands named, unbuilt —
+wanted. ''One key per face'' (no device-wide key signs a face's proof; #/rulings): a Lift mints a fresh atom for the face it joins, so two faces on one vessel never link through a shared key, and the veil's continuity rides its content and a private signed record. Hold's key half therefore stands; its content half (a join that lifts nothing) and its choice at the door stand unbuilt. Lift stands built (the edge); Hold stands named, unbuilt —
 the veil-primitive's open twin. Whether a vessel carries a severable past rides the operator's
 veil-policy choice, never a silent default.
 
@@ -261,8 +259,8 @@ veil-policy choice, never a silent default.
 
 Standing changes only through a recorded causal act. Renewal uses wā, a position with no clock installed; quiet never lapses standing. The vessel key stands durable; the //grant over it// — the tier, the
 edge — rides a ''causally superseded lease''. This restates the Elyncia bond as protocol: feed the Lar and it
-hums; signed departure, relation-scoped kapae, or renewal supersession records a lapse. Set foundational, never bolted on (operator,
-2026-06-25). Four blind domains converged on the shape (DHCP soft-state · UCAN attenuation ·
+hums; signed departure, relation-scoped kapae, or renewal supersession records a lapse. Foundational, never bolted on (#/rulings).
+Four blind domains ground the shape (DHCP soft-state · UCAN attenuation ·
 quorum-sensing hysteresis · the institutional lease-not-ceremony):
 
 <<~ has entity=`Lease` name=`Floor` params=`rests/anon, NEVER zero ~ a recorded departure, relation-scoped kapae, or renewal supersession returns a vessel to the floor; its key stays valid to re-climb`>>
@@ -278,8 +276,8 @@ convergent membership-removal (#/delegation-edge), immediate and irreversible at
 ''Anti-amplification holds'': only the kahu/root issues ceiling grants; no vessel self-escalates or
 grants above its own tier (the ocap attenuation law, `orichalcum-capabilities`).
 
-Most of the lease lives already — the edge `exp`, the epoch-lease,
-Keyhive-removal, the cap-lattice floor. The research firms the SHAPE (floor=anon · feed=re-issue ·
+Most of the lease stands built — the edge `exp`, the epoch-lease,
+Keyhive-removal, the cap-lattice floor. The research fixes the SHAPE (floor=anon · feed=re-issue ·
 T1/T2 + renewal-discount); the ''siege-gate's entry COST rides the dial below'' (#/the-siege-gate).
 
 <<~/ahu>>
@@ -290,8 +288,8 @@ T1/T2 + renewal-discount); the ''siege-gate's entry COST rides the dial below'' 
 
 A new DreamNet grows from spores in a hostile field — Sybil floods, infiltration, forks press the
 gate from the first day. So the crossing into a group (#the-veil, the LIFT or HOLD) ''costs'', and
-the cost guards the city. Four blind domains converged on the dial's shape (Sybil-graph defense ·
-ZK-credential · immune costimulation · ritual/club economics, 2026-06-25) — and the convergence
+the cost guards the city. Four blind domains ground the dial's shape (Sybil-graph defense ·
+ZK-credential · immune costimulation · ritual/club economics; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lararium-identity-record#/syntheses`>>) — and the convergence
 names not a price but a ''who: the voucher carries the cost.''
 
 ''The cost runs MARGINAL, never absolute.'' A fixed fee reads too cheap for a funded attacker and
@@ -387,7 +385,7 @@ The public oracle floor exposes only the system records named by its genesis see
 
 A registry names documents at one scope, and that scope's owner writes it. The vessel bootstrap names its daemon URL and face planes; the live house-canon documents rest in the Kahu realm, and no bootstrap, catalog or `@oracle` entry names them.
 
-LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape; R-WIRE owes answer carriage. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule.
+''The porch answer'' (ruled, unbuilt): one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape; the road items that build the answer rest at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lararium-identity-record#/owed`>>.
 
 The leaf's own gate opens exactly the canon documents its admit names. It never opens a system plane through that canon grant.
 
@@ -435,8 +433,8 @@ NIP-05 → DNS, AT-proto handle → DNS/PLC, ENS → ledger. ''A convenience lay
 
 !! Encrypt From the Start ~ the temporary keying
 
-''Operator ruling (2026-06-23): every surface encrypts from the first write.'' No
-plaintext-local easy path — it bites hard in early alpha. The keying rides ''nested''
+''Every surface encrypts from the first write'' (#/rulings). No
+plaintext-local easy path. The keying rides ''nested''
 ''Automerge docs'', reusing the registry-instead-of-DNS pattern (`@oracle`/`@catalog`),
 not a parallel key-store:
 
@@ -465,7 +463,7 @@ no sender; an unsigned wrap invites key-substitution). The content layer mandate
 ''DEK-encrypts content''; an untrusted-relay tier never rides a plaintext path. The bond
 between trust-domains always crosses encrypted.
 
-''The contract performs the key-agreement'' (deep-domain grounded, 2026-06-24). Private docs
+''The contract performs the key-agreement'' (deep-domain grounded; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lararium-identity-record#/syntheses`>>). Private docs
 spawn fresh and isolated per vessel — they hide in `@catalog` — and converge across a PersonaGroup
 ONLY when vessels mutually ''contract'' (the delegation handshake). That handshake, and only it,
 runs the key-agreement: the joining vessel's leaf enters the group tree, the path-to-root blanks,
@@ -498,7 +496,7 @@ not a tradeoff to mitigate. A leaked vessel key reads ''all history its grants e
 permanently: the old wrapped DEKs and old ciphertext persist in the log (Automerge never
 deletes), so no rotation reaches back to destroy them. ''Rotation buys future writes only'' —
 never claim "rotate-on-loss" heals the past. The honest forward lever lies in ''epoch group-key''
-''rotation'' (BeeKEM, when its JS binding lands — FS on //future// chunks only); the retroactive-FS
+''rotation'' (BeeKEM, unbuilt while its JS binding stays out of reach — FS on //future// chunks only); the retroactive-FS
 gap stays a ''documented invariant''. Two tempting escapes stand ''refuted'': ''puncturable encryption'' serves a single holder and does not fit a replicated-key
 mesh (one replica puncturing leaves the others + backups open; no-global-now makes "all replicas
 punctured" unprovable), and ''threshold does not touch the encryption-history gap at all''. Root
@@ -515,18 +513,33 @@ callers never change.
 
 !! Provenance ~ PROPOSED, pending the hoike
 
-This meme stands ''PROPOSED'' (crucible-before-binding). The stress-swarm ran; the ''hoike''
-''`#identity-encrypt-from-start`'' filed its kue (held: build-as-amended, the amendments above
-folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry keys:
+This meme stands ''PROPOSED'' (crucible-before-binding). The ''hoike''
+''`#identity-encrypt-from-start`'' holds its kue (held: build-as-amended, the amendments above
+folded in; the FS-limit stated as posture). Standing dissent, with re-entry keys:
 
-* ''The FS-limit is the substrate's nature'' (kue, security spirit) — a leaked vessel key reads all history it held; the only forward lever is epoch group-key rotation (BeeKEM, future chunks only). Puncturable encryption does NOT retire it (single-holder; refuted by the neg-entropy swarm for a replicated mesh).
-* ''The blast-radius kue is answered by per-vessel-key + delegation + revocation'' — already our lineage (Keyhive/Beelay; p2panda-auth converged independently), NOT by threshold. CORRECTION (neg-entropy swarm 2026-06-23): the earlier "threshold pays the kue" was wrong — threshold signing needs a synchronous quorum per signature, which "no global now" forbids. ''Threshold fits only the rare ROOT ceremony'' (Shamir-of-root for admit/rotate/recover, transient reassembly; swaps to FROST/DKG later).
-* ''The identity MODEL — RULED (operator, 2026-06-24): Goblins/OCapN capability-is-identity + petnames'' (see #capability-and-petnames). The capability IS the identity; petnames ride the `lar:` l-space regions (stable `ha.ka.ba` / unstable `t1.t2.t3`, ± authority chunk). ''KERI pre-rotation is retained as a sub-lever'' — not the base model, but the tool for rotating the place's //secret root// (the hearth's private face) in the rare root ceremony; it composes under capability-is-identity (rotate the root, keep the capabilities). did:peer's pairwise-root idea folds into unstable petnames.
-* ''Circle vs scale'' — RULED (operator 2026-06-24): no numbered planes survive (nameless `#has`-stacks replace plane-indices, #five-scale); Circles stay orthogonal to the group-scale, never a rung.
+* ''The FS-limit belongs to the substrate's nature'' (kue, security spirit) — a leaked vessel key reads all history it held; the only forward lever runs through epoch group-key rotation (BeeKEM, future chunks only). Puncturable encryption does NOT retire it (single-holder; it fails a replicated mesh).
+* ''Per-vessel-key + delegation + revocation answers the blast-radius kue'' — the house's own lineage (Keyhive/Beelay; p2panda-auth converges on it independently), NOT threshold: threshold signing needs a synchronous quorum per signature, which "no global now" forbids (#/rulings). ''Threshold fits only the rare ROOT ceremony'' (Shamir-of-root for admit/rotate/recover, transient reassembly; FROST/DKG stands as its later swap).
+* ''The identity model'' — capability-is-identity + petnames (#/capability-and-petnames; #/rulings). ''KERI pre-rotation stays a sub-lever'' — not the base model, but the tool for rotating the place's //secret root// (the hearth's private face) in the rare root ceremony; it composes under capability-is-identity (rotate the root, keep the capabilities). did:peer's pairwise-root idea folds into unstable petnames.
+* ''Circle vs scale'' — nameless `#has`-stacks replace plane-indices (#/five-scale); Circles stay orthogonal to the group-scale, never a rung (#/rulings).
 * ''Registry-as-island'' — keep each registry a causal island; resist a global registry re-growing (the web2 smell).
-* ''Two ratchets, never conflated'' — the public grammar ratchet (engine-epochs, shared) vs the private key ratchet (per-place); see #head.
-* ''The veil + the lease — the design crystallized'' (2026-06-25, two research-swarms + the Elyncia/Shadowtalk/Mage fiction layer): anon stands a first-class veil (#/the-veil), the crossing runs LIFT or HOLD on the boundary rule, decay rides native as the lease (#/the-lease). Lift built (the edge); HOLD (refound-sever) named-unbuilt. The crossing CEREMONY rides a ''siege-gate'' (born-besieged; cost + witness + invite-graph Sybil-filter) and ''dissent/forking stays allowed but COSTLY'' (Mage-Paradox: cost parts a schism from a siege) — both land in federation + dreamnet-architecture once the cost calibrates.
-* ''The cost dial — synthesized'' (swarm complete, 2026-06-25; #the-siege-gate): four blind domains (Sybil-graph defense · ZK-credential · immune costimulation · ritual/club economics) converged on the VOUCHER as the cost — MARGINAL-not-absolute (set the slope), invite-graph-relative (`rb>c`, the voucher supplies r), voucher-co-pays-and-watches, ''anergy-not-ban'' (no vouch → stay at floor=anon, re-presentable), entry-dear/maintenance-cheap/re-entry-costlier, group-value-tracking. The ZK-vouch rides the kahu as a blind oracle (carry rep across a HOLD without a link; price the HOLD at the staked rep). The mechanism stands ''unbuilt and contact-deferred'' (LIFT built; HOLD · siege-cost · ZK-vouch await the second spore). OPEN remnant: the exact dial numbers (stake-fraction · decay-rate) + whether ONE kahu or a THRESHOLD holds the blind-oracle link.
+* ''Two ratchets, never conflated'' — the public grammar ratchet (engine-epochs, shared) vs the private key ratchet (per-place); see #/head.
+* ''The veil, the lease and the cost dial'' — LIFT stands built (the edge); HOLD (refound-sever), the siege-cost and the ZK-vouch stand unbuilt and contact-deferred. OPEN remnant: the exact dial numbers (stake-fraction · decay-rate) and whether ONE kahu or a THRESHOLD holds the blind-oracle link. The syntheses behind #/the-veil, #/the-lease and #/the-siege-gate rest at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lararium-identity-record#/syntheses`>>.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Operator ruling 2026-06-23: every surface encrypts from the first write — no plaintext-local easy path; it bites hard in early alpha. CORRECTION (neg-entropy swarm 2026-06-23): threshold does not pay the blast-radius kue; threshold fits only the root ceremony.
+# Operator ruling 2026-06-24: the identity model rules Goblins/OCapN capability-is-identity + petnames; the foundation (two-axis WHO⊥INFRA split, per-vessel key, delegation edge, two-faced hearth) stands ruled with it.
+# Operator ruling 2026-06-24: nameless principals, not numbered planes; Circles stay orthogonal to the group-scale, never a rung (the plane-list-vs-group-scale question closes here).
+# Operator ruling 2026-06-25: the lease stands foundational, never bolted on.
+# Operator ruling R1, 2026-10-05 (approved again 2026-11-12): `hearthTrueName` names the seed-charter Nexus AID; a hearth-agnostic leaf binds `""`.
+# Operator ruling 2026-10-11, the two-layer ruling: //"In my mental model, each vessel holds its own roots, and the human relationship determines how they contract in as the face/persona layer above that."//
+# Operator ruling 2026-10-19: one key per face; no device-wide key signs a face's proof.
+
+The scouts, syntheses and owed work behind these rulings: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lararium-identity-record`>>.
 
 <<~/ahu>>
 
@@ -534,6 +547,7 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 !! Edges
 
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/lararium-identity-record`>> the record: scouts, syntheses, owed work
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/circles-kowloon`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
@@ -546,7 +560,7 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing`>>
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model`>> — derives board address and scopes steward answer
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split`>> — projects seed records without oracle document history
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>> — carries porch answer through an unsigned herm
@@ -554,6 +568,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qEfUTxhpcRpgu5Xc7qZNErX48T5Wt4vZQEDkyjOIRRU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5naUeE0RC7h6Ov_eFpKqVFHQxgyDrxWvk6nh-Dc_0iU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -14,7 +14,6 @@ tags       = ["mesh/carry-contract", "mesh/content-resolution", "mesh/membership
 title      = "lar:///ha.ka.ba/lararium/mesh/cap-tier"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/cap-tier"
-written    = "2026-07-23"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -168,6 +167,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;A2zVLFwEq31ijDdDafow5z2HW3_JJcryvpZSBMAE_8o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;f1_wNLiIqJnUqz-9P688kzS6PWurgpi3xAcpbjzvWE8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

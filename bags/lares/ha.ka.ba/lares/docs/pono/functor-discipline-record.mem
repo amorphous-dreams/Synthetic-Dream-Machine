@@ -1,0 +1,53 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/functor-discipline-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "adjacent"
+role      = "the record behind api/pono/functor-discipline: its naming, the holder and palace folds that ground the compose instance, and the two sessions that returned the recall derive and the worldline reads to the in-VM worker"
+title     = "lar:///ha.ka.ba/lares/docs/pono/functor-discipline-record"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/functor-discipline-record"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! The functor discipline ~ the record
+
+The law reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/functor-discipline`>>. This record keeps how it arrived.
+
+The operator named the discipline on 2026-06-29 and the house co-derived it; it seated as a lens at Synthesis, to earn Canon by talk-story over time.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/folds`>>
+
+!! The folds ~ the collapses that ground the compose instance
+
+The collapses ratified the discipline functorially: the four Python holders folded onto a cap-composition foundation and the palace became a cap-stack instance — each //composed// a shared transport while //preserving every op-surface//, the collapse landing byte-stable. Evidence: `git:b18235f6` (the holder collapse) and `git:0af5e326` (the palace collapse), both verified.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/enacted`>>
+
+!! Enacted ~ the two sessions, as the meme told them
+
+''Enacted once (this session).'' The recall query-derive moved off the coordinator into the in-VM
+`@daemon` worker — the node-side derive and its disk basis-cache deleted, no fallback kept — so capture
+and recall apply the ''identical'' functor against the same grammar/state. The derive that once ran two
+places (and so risked two maps) runs one.
+
+''Enacted again (this session).'' The worldline reads — the registry lookup and the compare/trajectory
+derive — moved off the node coordinator into the in-VM worker: a node-side holder deleted, the reads
+routed to the worker over `askIsland`. A carve-out had split a worldline READ onto the coordinator; the
+correction ''reversed'' it and returned the read to the stack, so the cap-stack lifts whole once more.
+The live proof of the rule it sharpens — no cap, not even a read,
+stays behind.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3kcZaoXVLbwFjhMkA4ARcb9N-jercXlU0FQ7Ej2BGUM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

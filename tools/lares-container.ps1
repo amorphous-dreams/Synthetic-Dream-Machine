@@ -431,6 +431,8 @@ function KeepBeforeDown {
   if ($hostCli) { $cmd = $hostCli; $pre = @() }
   elseif (Get-Command node -ErrorAction SilentlyContinue) { $cmd = 'node'; $pre = @((Join-Path $Root 'packages/lares-cli/bin/lares.mjs')) }
   else { $script:KeepSaid = 'no host node answered, so nothing kept'; [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
+  # SAID UP FRONT: a house that moved cuts and pushes a keep inside the stop, which can take minutes.
+  [Console]::Error.WriteLine('lares-container: keeping first (rite keep --if-due): a house that moved cuts and pushes its keep before the stop')
   # THE MARK CLEARS ON A REAL KEEP: an answer naming no workspace (`"workspace":null`) kept nothing, and the keep stays owed.
   $kbLines = @(& $cmd @pre rite keep --if-due --json)
   $kbRc = $LASTEXITCODE
@@ -1238,6 +1240,12 @@ switch ($verb) {
         foreach ($f in $face) { if ($f -notmatch '^[0-9]+$') { Die 'pulama admit takes face ordinals (numbers)' } }
         Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'admit') + $face)
       }
+      'rehive' {
+        # rehive stands a SHUT face's hive again from its own seed: the face's own route reads on a real terminal inside the
+        # pūlama, which holds its keys; `pulama lock` shuts every face first.
+        if ($rest.Count -ne 2 -or $rest[1] -notmatch '^[0-9]+$') { Die 'pulama rehive takes one face ordinal (a number)' }
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'rehive', $rest[1]))
+      }
       'unadmit' {
         # unadmit ends one image's admission: the route proves on a real terminal inside the pūlama, and a signed
         # tombstone naming the admission's tessera rests; the gate then reads pulama-image-unadmitted.
@@ -1275,7 +1283,7 @@ switch ($verb) {
         Move-Item -Force -LiteralPath $tmp -Destination $seatFile
         [Console]::Error.WriteLine("lares-container: the keep seat rests at $seatFile (0600); a keep now seals under it")
       }
-      default { Die 'pulama takes up, down, restand, light, admit, unadmit, keep-seat, lock, status or tessera' }
+      default { Die 'pulama takes up, down, restand, light, admit, unadmit, rehive, keep-seat, lock, status or tessera' }
     }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }

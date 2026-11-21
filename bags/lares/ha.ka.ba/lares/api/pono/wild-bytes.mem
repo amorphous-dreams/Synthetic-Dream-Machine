@@ -160,10 +160,10 @@ holds that line, and no bag-grade policy yet enforces it in the sink.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/graceful-parsing`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fdv3cEhmrG8V3_uAlbx2ft2uY7J9KApowxWP27JWLZs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;989pOn4V-WG3ZBEjf8cd5Ec4zTMwV2yyr0wyog1xiIY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,54 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/reaction-surface-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+description = "the record behind api/pono/vm-projection-bus and api/pono/reaction-graph: the collapse of the inline dispatch class and the bus's first design reading, kept as testimony; the contracts speak in the api memes"
+tags        = ["api/pono/meme", "api/pono/vm-projection-bus", "api/pono/reaction-graph"]
+title       = "lar:///ha.ka.ba/lares/docs/pono/reaction-surface-record"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/docs/pono/reaction-surface-record"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Reaction Surface ~ the record
+
+The projection bus speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/vm-projection-bus`>> and the reaction graph at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/reaction-graph`>>. This record keeps how the reaction surface reached its shape.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-collapse`>>
+
+!! The collapse
+
+The reaction graph's yin-collapse slot read ''What shipped'' and told it so:
+
+> `ReactionGraph` and `extractReactionBindings` reside in `reaction-graph.ts` (imported by `reaction-router.ts`). `ReactionEngine` class removed from `kumu-device.ts`. No inline `re.onChangeset()` call remains anywhere.
+>
+> TS irreducible layer carries only: `MemeSyncAdaptor` + `LarTiddlerStore` + `VesselIslandPool` + Keyhive.
+
+No class named `MemeSyncAdaptor` stands; the wiki shore (`IslandAdaptor`) holds that place. The dispatch-modes slot read `fireRace` / `fireRush` as ''reserved for competitive dispatch (future: multi-realm routing)''; `ReactionGraph` implements `fireSync` alone. The slot read that `reaction-router.ts` fires `IslandMsg_Event`; the router fires `tm-verse-event` and the island kernel posts the island message.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/first-design-reading`>>
+
+!! The bus's first design reading
+
+The projection bus first named its consumer `ReactionEngine`, its interface as ''defined in `@lararium/mesh`'', and its caller as ''VmPool or LarariumShell''. The consumer shape stands inline on `onVerseEvent` in `packages/lararium-tw5/src/tw5-vm.ts`; the island kernel registers through it; no `VmPool` or `LarariumShell` class stands.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/section-stamps`>>
+
+!! Section stamps
+
+Both memes' Scope-1 sections carried the stamp ''[surgical 2026-07-03]'', the day the two-scopes ruling seated them.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;F0gexxFuvpn3QWCAemAwVR7rT-2eWggacQJ8uPPhxp0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -14,7 +14,6 @@ tags       = ["mesh/cap-tier", "mesh/carry-contract", "api/pono/lararium-identit
 title      = "lar:///ha.ka.ba/lararium/mesh/secure-context"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/secure-context"
-written    = "2026-07-23"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -306,6 +305,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2OOqAC_F-k0Mq6JoQgFUl9Z3NguGvVYzjMzBsxHW58Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ds7HejCLhc9-JBVwVxv9lg6smvDEP9Whib-u4M7YxOA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

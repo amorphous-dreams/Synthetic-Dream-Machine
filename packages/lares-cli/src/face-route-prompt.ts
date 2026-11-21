@@ -66,3 +66,20 @@ export async function handFaceRouteToVessel(label: string, purpose: "persona-new
   }
   return answer["ref"] as string;
 }
+
+/**
+ * Hand a face's EXISTING route to the standing vessel, for a founding that stopped midway (its custody and anchors stand, its
+ * plane entry does not): the act runs again under the route that face already binds, so the ward door asks it ONCE, hidden, and
+ * nothing binds a new one (`persona-route-rebind`). The route rides the custody frame alone, as a new face's does.
+ */
+export async function handExistingFaceRouteToVessel(face: number, purpose: "persona-new", args: Readonly<Record<string, unknown>>): Promise<string> {
+  // LOADED WHEN ASKED: the ward door reaches the store door and its session connector, and this module rides every founding's import
+  // graph (a suite's setup loads it), so a static import would load the connector before a suite can mock it.
+  const { gatherWardRoute } = await import("./ward-door.js");
+  const route = await gatherWardRoute(`lares persona new ${face} (completing h${face}'s founding)`, face);
+  const slots: SlotSpec[] = route.flatMap((c) => (c.kind === "passphrase" ? [{ t: 1, pins: [{ kind: "passphrase" as const, passphrase: c.passphrase }] }] : []));
+  if (slots.length === 0) throw new Error(STANDING_VESSEL_PASSPHRASE_ONLY);
+  const answer = await sendCustodyFrame({ op: "face-route", slots, purpose, argsDigest: faceRouteBindDigest(purpose, args) });
+  if (answer === null || typeof answer["ref"] !== "string") throw new Error(`the standing vessel did not take h${face}'s route; nothing was founded`);
+  return answer["ref"] as string;
+}

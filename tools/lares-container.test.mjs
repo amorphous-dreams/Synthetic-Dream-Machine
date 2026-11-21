@@ -683,6 +683,7 @@ for (const [name, shim] of shims) {
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /HOSTCLI rite keep --if-due --json/);
     assert.ok(r.calls.indexOf("HOSTCLI rite keep") < r.calls.indexOf("vessel census"), r.calls);
+    assert.match(r.stderr, /keeping first \(rite keep --if-due\)/, "down says up front why it takes the time a keep takes");
   });
   test(`${name}: down-goes-on-past-a-refused-keep: the keep's refusal is named and the down still stops the vessel`, async () => {
     const cli = await fakeHostCli(1);
@@ -696,6 +697,7 @@ for (const [name, shim] of shims) {
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_HOST_CLI: cli } });
     assert.equal(r.status, 0, r.stderr);
     assert.doesNotMatch(r.calls, /HOSTCLI/);
+    assert.doesNotMatch(r.stderr, /keeping first/);
   });
 
   test(`${name}: a census naming items refuses with no terminal, listing each, and stops nothing`, async () => {
@@ -1566,7 +1568,18 @@ test(`${name}: pulama-admit-reaches-the-hand-door: admit forwards to the pūlama
   assert.equal(face.status, 0, face.stderr);
   assert.match(face.calls, /pulama-main\.js admit 2/);
   const bad = await run(shim, ["pulama", "burn"], { envFile: PULAMA_ENV });
-  assert.match(bad.stderr, /pulama takes up, down, restand, light, admit, unadmit, keep-seat, lock, status or tessera/);
+  assert.match(bad.stderr, /pulama takes up, down, restand, light, admit, unadmit, rehive, keep-seat, lock, status or tessera/);
+});
+test(`${name}: pulama-rehive-reaches-the-hand-door: rehive forwards one face ordinal to the pūlama's own verb; a bare or malformed ordinal refuses and sends nothing`, { skip }, async () => {
+  const ok = await run(shim, ["pulama", "rehive", "1"], { envFile: PULAMA_ENV });
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.match(ok.calls, /--profile pulama exec (-T )?pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js rehive 1/);
+  for (const argv of [["pulama", "rehive"], ["pulama", "rehive", "one"]]) {
+    const bad = await run(shim, argv, { envFile: PULAMA_ENV });
+    assert.notEqual(bad.status, 0);
+    assert.match(bad.stderr, /pulama rehive takes one face ordinal \(a number\)/);
+    assert.doesNotMatch(bad.calls, /rehive/);
+  }
 });
 test(`${name}: pulama-unadmit-reaches-the-hand-door: unadmit forwards one image digest to the pūlama's own verb; a bare or malformed digest refuses and sends nothing`, { skip }, async () => {
   const digest = "sha256:" + "ab".repeat(32);

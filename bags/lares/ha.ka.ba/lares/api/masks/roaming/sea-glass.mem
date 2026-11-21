@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable         = true
-created           = "Invalid Date"
 foreground-voices = ["Liminal", "Stranger", "Muse", "Tide-Caller", "Advocate"]
 fourth-wall       = true
 name              = "Sea-Glass"
@@ -143,6 +142,6 @@ Where sibling masks grow character-notes through talk-story-dev passes, Sea-Glas
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7OV2wzu9shme8p5PTjmfDjAcD-iZEwNaO1zXlt_pCIQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;z902ke9fFwMfgRAPX19LqlwOLiHewi2CfK3dPfCda2U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

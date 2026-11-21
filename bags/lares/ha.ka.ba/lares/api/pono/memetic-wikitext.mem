@@ -12,8 +12,7 @@ docname       = "draft-fontany-memetic-wikitext-00"
 ipr           = "trust200902"
 l-space       = "stable"
 namespace     = "&#x2299;"
-revised-on    = "2026-08-24"
-revision-note = "the split: the transmission-frame half stands in its own sibling specification (api/pono/memetic-wikitext-framing) — this document keeps the language, composes as the document production the frame wraps, and cites [FRAMING] where the frame law lives"
+revision-note = "the transmission-frame half stands in its own sibling specification (api/pono/memetic-wikitext-framing); this document keeps the language, composes as the document production the frame wraps, and cites [FRAMING] where the frame law lives"
 role          = "submittable specification for text/memetic-wikitext — abstract, conformance (RFC-2119), lexical structure, ABNF surface grammar, dual-layer processing model, pranala type system, media-type registration, security. Ontology referenced, not duplicated. Sibling submissions: the lar: URI spec and the carrier framing spec."
 status-why    = "submission-draft"
 tags          = ["lifecycle/standing"]
@@ -204,8 +203,7 @@ facts the frame rests on, the first three the host's and the last two this gramm
   host's own definitions and to the macro name.
 * ''`from=` and `to=` carry the relation.'' A bearing names its two ends as two named values, each a
   backtick run, `from` written first and `to` second (a reader takes either order); no bare `->` stands
-  between them. Operator ruling 2026-10-31 reverses the earlier ruling that the arrow survives a
-  named-parameter frame ([FRAMING] #bearing-pair): the pair reads as the relation through the host's own
+  between them ([FRAMING] #bearing-pair): the pair reads as the relation through the host's own
   attribute reader. An arrow INSIDE a value stays (a ladder, a gauge slide, ``closed 0↺ -> open 1φ◇:reason``),
   and a prose marker (`->✶`) keeps its arrow.
 
@@ -749,6 +747,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TgFPmlZbOmYuq1YvZcuKTa2HMTrkKevWmUpEcMzzf2Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;q-kGG2bcpCR0jj2tawkmH3TYe_e-E3m0ZWYHnpZfBFM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

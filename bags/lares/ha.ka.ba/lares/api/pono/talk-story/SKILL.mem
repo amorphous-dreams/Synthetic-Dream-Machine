@@ -50,9 +50,9 @@ Law lives at canon, not here: <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tal
 
 <<~ ahu slot=`#/crucible`>>
 
-!! Crucible Record — 2026-06-11
+!! Crucible Record ~ a kept hoike
 
-//The pair read against its own laws, the session after drafting. Co-located here per hoike law 3: this record contests the practice above.//
+//The pair read against its own laws in one crucible pass. The record stays co-located here per hoike law 3 (co-location): it contests the practice above, so whoever reads the practice reads the dissent.//
 
 ```
 <<~ talk-story slot=`#crucible` ground=`the four files of the deliberation layer, read against their own laws`>>
@@ -85,7 +85,7 @@ re-entry: either key; or the next crucible pass
 
 !! Worked Exits — show, don't tell
 
-//Examples 1 and 3 come from the live ledger (2026-06-10/11); example 2 abridges the floor that produced the hoike layer's first record.//
+//Examples 1 and 3 come from the live ledger; example 2 abridges the floor that filed the hoike layer's first record.//
 
 ''1 — floor closes moʻolelo'' (the floor that raised this very meme):
 
@@ -120,6 +120,6 @@ Read the three together and the grammar teaches itself: the floor opens on a rea
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dJ_VSkdi3A4xablNxpMqr4ltYnldQhPorPC4axzDVwg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5LvWXhazPwCEJM0cNGmpSu78hUobSn50-cRc7bY3-Hw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -13,7 +13,6 @@ tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/projection-nalu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/projection-nalu"
-written   = "2026-06-26"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>
@@ -179,6 +178,6 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the Automerge-boundary 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OMIvCbpsSKwvttFpbmY3A5VurIlKPMRAyEKenf8w5yA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pArCrJSgAo58DejlmZ_4sDwc0ngn4qyximO8I4BA-fY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

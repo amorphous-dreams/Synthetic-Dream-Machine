@@ -14,7 +14,6 @@ tags          = ["api/pono/meme"]
 title         = "lar:///ha.ka.ba/lares/api/pono/oracle"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/oracle"
-written       = "2026-06-16"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -204,6 +203,6 @@ certifies  = "nothing"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ySCJVWwOg1Vfd9-E1IvBtsCpoasJxGJQUWOM2H2Gz-w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OupedHaFN3kEJoErTFcZP35iLJhNHv510J6-l_w0tKM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

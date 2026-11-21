@@ -7,7 +7,7 @@
 cacheable      = true
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
 namespace      = "&#x2299;"
-role           = "meme invariant law, copy-shape authority, and rating posture root — nameless-entity / has-stack ontology (interfaces-and-implements REJECTED 2026-06-12)"
+role           = "meme invariant law, copy-shape authority, and rating posture root — nameless-entity / has-stack ontology; interfaces-and-implements stands rejected (#/rulings)"
 title          = "lar:///ha.ka.ba/lares/api/pono/meme"
 type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/api/pono/meme"
@@ -156,6 +156,14 @@ its own ceremony.
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Operator ruling 2026-06-12: a meme reads as a nameless entity composed by its has-stack; the interfaces-and-implements ontology stands REJECTED (#/head; the composition law: <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack#/rulings`>>).
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 !! Edges
@@ -171,6 +179,6 @@ its own ceremony.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fikLj4X2-99vN2nA08zoDvvWuv-nr-boxzPsKk5-mBo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SOnavsHNkRUuVShhMCWWP9WYfjudANcQfGetqz1fIvM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

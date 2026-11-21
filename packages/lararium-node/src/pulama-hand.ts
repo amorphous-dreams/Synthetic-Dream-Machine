@@ -16,6 +16,12 @@
  *            ended under a signed tombstone naming its tessera (`pulama-admit`); the gate then reads it unadmitted. An unlit
  *            pūlama refuses `pulama-locked` before the route reads; a digest no admission stands for answers
  *            `image-not-admitted` once the route proves.
+ *   rehive   THE HAND REHIVES A SHUT FACE (`face-rehive`): a face whose veil-archive row holds another identity's Archive stands
+ *            its hive again from its own seed. The face must stand SHUT here (a lit face refuses `face-open`: `lock` shuts every
+ *            face first); the face's own route opens its key for this act alone through the holder's attempt budget and checks
+ *            (`openFaceForAct`), the foreign bytes rest aside and one compare-and-replace seals the row's next bytes, and nothing
+ *            lights. It rides this door's one chain, so `light` never opens the face mid-act. The answer names what moved, what
+ *            was lost and the pūlama-path acts that come next.
  *   lock     every session drops and every key zero-fills.
  *   status   lit or not, the faces open, the sessions standing, attempts left, the image the host reported; while lit, the
  *            admitted digests and the ended ones. Opens nothing.
@@ -49,6 +55,8 @@ import type { CustodyHolder } from "./custody-holder.js";
 import { pulamaSignerOf } from "./kukulu-gate.js";
 import type { PulamaAdmissions } from "./pulama-admit.js";
 import type { PulamaServer } from "./pulama-server.js";
+import type { RehiveOutcome } from "./face-rehive.js";
+import { rehiveLines } from "./face-rehive-lines.js";
 
 export type PulamaHandAnswer = Readonly<Record<string, unknown>> & { readonly op: string };
 
@@ -116,6 +124,8 @@ export function pulamaHandDoor(a: {
   readonly admissions?: PulamaAdmissions;
   /** The face root the `lei` act signs under. Absent, `lei` refuses `lei-unavailable`. */
   readonly lei?: PulamaLeiHand;
+  /** The rehive of one SHUT face under its own route (`rehiveShutFace` over this pūlama's holder). Absent, `rehive` refuses `rehive-unavailable`. */
+  readonly rehive?: (ordinal: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
   readonly onLog?: (line: string) => void;
 }): (frame: unknown) => Promise<PulamaHandAnswer> {
   const { holder, server } = a;
@@ -242,6 +252,26 @@ export function pulamaHandDoor(a: {
         mint.signingSeed.fill(0);
         log("keep-seat: a fresh keep pair seated under the proved route; the verb writes the house's seat");
         return { op: "keep-seat", reading: "seated", seat: encodeKeepSeat(mint.seat), signingSeed, publicKey: Buffer.from(mint.seat.publicKey).toString("hex") };
+      }
+      case "rehive": {
+        if (!a.rehive) return { op: "rehive", reading: "rehive-unavailable" };
+        const face = f["face"];
+        const credentials = credentialsOf(f["credentials"]);
+        if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0 || credentials === null) return { op: "rehive", reading: "malformed", detail: "a rehive names the face by its whole ordinal and carries the face's own route" };
+        // THE FACE STANDS SHUT HERE, read before the route: a lit face's rows serve a vessel now.
+        const at = await holder.faceStanding({ ordinal: face });
+        if (at === null) return { op: "rehive", reading: "face-not-standing", face };
+        if (at.unlocked) return { op: "rehive", reading: "face-open", face, detail: `face h${face} stands lit at the pūlama: shut it first (tools/lares-container.sh pulama lock, which shuts every face and leaves the vessel at its floor), then rehive; nothing moved`, ...status() };
+        try {
+          const out = await a.rehive(face, credentials);
+          log(`rehived by hand: h${face} ${out.outcome}`);
+          return { op: "rehive", reading: "rehived", face, ...out, lines: rehiveLines({ face, ...out }, "pulama") };
+        } catch (err) {
+          const e = err as { reason?: unknown; message?: unknown };
+          const reading = typeof e.reason === "string" ? e.reason : "rehive-failed";
+          log(`rehive h${face}: ${reading}`);
+          return { op: "rehive", reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
+        }
       }
       case "lock": await server.lock(); return { op: "lock", ...status() };
       case "status": return { op: "status", ...status(), ...await admissionDigests() };

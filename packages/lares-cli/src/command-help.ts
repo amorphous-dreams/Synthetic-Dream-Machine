@@ -979,7 +979,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   vault: {
-    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>]> [--passphrase | --paper] [--rotate]",
+    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>] | rehive --face <N>> [--passphrase | --paper] [--rotate]",
     synopsis:
       "The VESSEL KEY custody door (status, unlock, lock, bind, unbind): the key seals the vessel's private rows, the " +
       "keyhive and veil archives among them, and every boot rests at the floor until a person unlocks it. " +
@@ -1009,11 +1009,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vault restore <file>             # bring a face back from its bundle: a recovery act that takes a NEW seat",
       "lares vault restore <file> --memory    # land the bundle's content keys on the restored seat (vessel standing, unlocked on the face)",
       "lares vault restore --cards --face <key|persona-…> --as 1   # rebuild a face's root from two split cards: a root, never memory",
+      "lares vault rehive --face <N>          # a SHUT face whose veil-archive row holds another identity's Archive stands from its own seed; the answer names the next acts",
     ],
     flags: [
       "--passphrase|--paper  (bind) which route the new slot carries; (unlock) skip the route question",
       "--rotate           (unbind) mint a new vessel key and re-bind each staying slot; put <slot-id> BEFORE it",
-      "--face <N>         (backup) the handle-index of the face to cut; the standing vessel holds it open",
+      "--face <N>         (backup) the handle-index of the face to cut; the standing vessel holds it open; (rehive) the SHUT face to rehive",
       "--out <file>       (backup) the bundle file to write; a file already standing there refuses",
       "--as <N>           (restore) the handle-index the face lands at here; absent, the index its bundle named",
       "--memory           (restore) import the bundle's memory section instead of its lineage",
@@ -1021,7 +1022,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--verbose          (status) one reading of each standing file the carrier table names, beside the summary",
       "--json             (status) the whole custody object (the slot tree, every row, the files outside the table, the door); (unlock) the door's answer as one object; the form a caller parses, since a pipe reads prose",
       "--face <key|pfx>   (restore --cards) the face the cards should rebuild: its root's public key or its prefix",
-      "unlock | bind | unbind | reseat | backup | restore read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
+      "unlock | bind | unbind | reseat | backup | restore | rehive read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
     ],
     next: ["lares vault status", "lares vault unlock"],
   },
@@ -1044,6 +1045,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares vault status", "lares vault unlock   # a vessel holding no key opens here first"],
     meme: "lar:///ha.ka.ba/lares/docs/pono/the-worn-house",
   },
+
 
   cabal: {
     usage: "usage: lares cabal <face | vouch | join | feed | clock>",

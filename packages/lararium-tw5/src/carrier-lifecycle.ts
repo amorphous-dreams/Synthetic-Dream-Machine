@@ -26,7 +26,7 @@
  * rides `lares meme check --edges` and `lares meme sitting`, which hold every carrier at once. This
  * module answers only what a single text can answer, and says so by answering nothing else.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/otakiage
+ * Meme: lar:///ha.ka.ba/lares/api/pono/otakiage
  */
 
 import { fencedSpans, inMask } from "@lararium/memetic-frame";
