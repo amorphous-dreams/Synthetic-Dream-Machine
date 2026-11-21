@@ -7,6 +7,7 @@
  *   E2  RED: two faces' engines stand apart: one face's put never reads in the other's wiki
  *   E3  RED: the engines cache one engine per face; a drop closes it and the next ask composes afresh; a face with no source
  *       composes nothing
+ *   E4  RED: an engine composed before its face recorded a working slot rebuilds over the slot on its arrival, and lands a put there
  *
  * A real engine boots here (`bootTestWiki`), with the real recipe, adaptor and bridge.
  */
@@ -88,5 +89,24 @@ describe.skipIf(wikiSkip)(`a lit face's own engine answers the tiddler door${ski
     const b = await engines.of(1);
     expect(b).not.toBe(a);
     expect(composed).toBe(2);
+  }, 60_000);
+
+  test("E4 RED: an engine started before its face recorded a working slot rebuilds on the slot's arrival", async () => {
+    const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
+    const h1 = faceDocs(repo, R1, "Canon of h1");
+    const bare: FaceEngineSource = { ...h1.source, ready: h1.source.ready.filter((r) => r.slot !== WORKING) };
+    let slotRecorded = false, composed = 0;
+    const engines = faceEngines(async () => { composed++; return slotRecorded ? h1.source : bare; });
+    downs.push(() => engines.dropAll());
+    const before = await engines.of(1);
+    expect(await engines.of(1), "while no working slot stands, the engine answers as it stood").toBe(before);
+    slotRecorded = true;
+    const after = await engines.of(1);
+    expect(after, "the slot's arrival rebuilds the engine").not.toBe(before);
+    expect(await engines.of(1), "and the rebuilt one stands as the cache answers").toBe(after);
+    const put = await putAndLand(after as never, h1.working, "Note of h1");
+    expect(put).toMatchObject({ decision: "put", bag: WORKING });
+    expect(holds(h1.working, "Note of h1"), "the put lands in the working document the slot named").toBe(true);
+    expect(composed).toBeGreaterThanOrEqual(3);
   }, 60_000);
 });

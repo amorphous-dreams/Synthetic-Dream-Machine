@@ -9,7 +9,7 @@
  * ONE INIT, THREE SCALES. `initFacePool`, `initRealmPool` and `initWorkspacePool` make a root a pool, changing only what does not
  * already stand as the house writes it: the repository (`git init -b main`), `.git` at 0700, the house's ignore block in
  * `.git/info/exclude` (with the scale's own lines), the local author (a face: `<pet name> <folded>@face.invalid`; a realm:
- * `<pet name> <folded>@realm.invalid`; a workspace: `<slug> <slug>@realm.invalid`) with signing off, and the pre-commit hook that
+ * `<pet name> <folded>@realm.invalid`; a workspace: `<slug> <slug>@workspace.invalid`) with signing off, and the pre-commit hook that
  * runs the pool check. `lares surface init` runs it by hand.
  *
  * THE HOUSE FOUNDS WHAT IS MISSING (`ensurePoolTree`), idempotently, wherever it lays an entity root: the worn face's arm, a face
@@ -138,6 +138,9 @@ export function realmAuthor(petName: string): { readonly name: string; readonly 
   return { name: petName.normalize("NFC"), email: `${foldedSlug(petName, "realm")}@${REALM_EMAIL_DOMAIN}` };
 }
 
+/** The domain a workspace pool's author email carries: a workspace stands as its own entity, so its domain names a workspace, never a realm. */
+export const WORKSPACE_EMAIL_DOMAIN = "workspace.invalid";
+
 /** What one init did: each thing it changed, and each thing it found standing and left. */
 export interface PoolInitResult { readonly root: string; readonly changed: readonly string[]; readonly left: readonly string[] }
 
@@ -156,10 +159,10 @@ export function initRealmPool(root: string, petName: string): PoolInitResult {
 
 /**
  * Make a workspace the operator binds for one wiki (a share row's `workspace`) a pool under the WIKI's identity:
- * `<slug> <slug>@realm.invalid`. A workspace stands as its own entity root, so its tree roots at its own top.
+ * `<slug> <slug>@workspace.invalid`. A workspace stands as its own entity root, so its tree roots at its own top.
  */
 export function initWorkspacePool(root: string, slug: string): PoolInitResult {
-  return initPool(root, { name: slug, email: `${slug}@${REALM_EMAIL_DOMAIN}` }, WORKSPACE_EXCLUDE_LINES, "the workspace");
+  return initPool(root, { name: slug, email: `${slug}@${WORKSPACE_EMAIL_DOMAIN}` }, WORKSPACE_EXCLUDE_LINES, "the workspace");
 }
 
 /** One pool's init, at either scale: the repository, its mode, the exclude block, the local author, the pool-check hook. */
