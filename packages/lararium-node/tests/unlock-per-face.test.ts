@@ -279,5 +279,16 @@ describe("the unlock answers honestly, and a failed switch wears the face it lef
     expect(v.holder.isUnlocked(), "the node key stays held").toBe(true);
     expect(v.holder.unlockedFaces().length, "h0's key stays open").toBe(1);
   });
+
+  // A LOCK CLEARS THE SELECTION IT ENDS (Sol, #410): a face a person named and then locked leaves no selection behind, so no door
+  // reads it worn after its key dropped.
+  test("RED: locking a named face clears its selection", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, FIXTURE_PASSPHRASE]);
+    await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), face: 1 });
+    expect(mountedFaceOrdinal()).toBe(1);
+    await v.send({ op: "lock", face: 1 });
+    expect(mountedFaceOrdinal(), "the named selection left with the key").toBeUndefined();
+    expect(sovereignStands()).toBe(false);
+  });
 });
 

@@ -346,14 +346,14 @@ describe("vault door — restore reads the bundle's route on a terminal", () => 
   });
 });
 
-describe("the vault door answers seven verbs", () => {
-  const SEVEN = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore"];
+describe("the vault door answers its live verbs", () => {
+  const LIVE_VERBS = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore", "rehive"];
 
-  it("★ the help names the seven live verbs ★", () => {
+  it("★ the help names the eight live verbs ★", () => {
     const text = helpLines("vault").join("\n");
     const usage = /usage: lares vault <([^>]*(?:<[^>]*>[^>]*)*)> /.exec(text.replace(/<(slot-id|N|file)>/g, "$1"));
     expect(usage, text).not.toBeNull();
-    expect(usage![1]!.split("|").map((part) => part.trim().split(/\s+/)[0])).toEqual(SEVEN);
+    expect(usage![1]!.split("|").map((part) => part.trim().split(/\s+/)[0])).toEqual(LIVE_VERBS);
   });
 
   it("★ an unknown word answers as no door: a usage refusal that names the word, and no byte moves ★", async () => {
@@ -362,7 +362,7 @@ describe("the vault door answers seven verbs", () => {
     expect(await run(verb)).toBe(2);
     expect([...out, ...err].join("\n")).toContain(`unknown sub-verb "${verb}"`);
     expect(tree(root)).toBe(before);
-    // CONTROL: a verb of the seven answers.
+    // CONTROL: a live verb answers.
     expect(await run("status")).toBe(0);
   });
 });

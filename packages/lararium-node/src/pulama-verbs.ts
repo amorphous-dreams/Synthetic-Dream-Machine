@@ -81,10 +81,18 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | unadmit <image digest> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | unadmit <image digest> | rehive <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
+
+/**
+ * The exit a hand verb's answer leaves: a rehive that did not land (`face-open`, `face-refused`, `hand-act-only`, any reading
+ * but `rehived`) exits 1, so a script reading the line's status never takes a refusal for a rehive. Every other verb exits 0.
+ */
+export function handVerbExit(verb: string, answer: PulamaHandAnswer): 0 | 1 {
+  return verb === "rehive" && answer["reading"] !== "rehived" ? 1 : 0;
+}
 
 /**
  * Run one hand verb: `ask` sends one frame to the hand door, `route` reads the operator's route. Answers the door's answer.
@@ -108,6 +116,13 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     const offered = typeof standing["seed"] === "string" ? ` (${standing["seed"]})` : "";
     const passphrase = await ports.route(`pūlama route, to admit ${standing["image"]}${offered}: `, "an admission");
     return ports.ask({ op: "admit", credentials: [{ kind: "passphrase", passphrase }], faces: args.map(Number) });
+  }
+  if (verb === "rehive") {
+    if (typeof arg !== "string" || !/^(0|[1-9]\d*)$/.test(arg) || !Number.isSafeInteger(Number(arg))) throw new PulamaVerbUsage();
+    const face = Number(arg);
+    // THE FACE'S OWN ROUTE, read on this terminal: it opens that face's key for the rehive alone.
+    const passphrase = await ports.route(`face h${face} route, to rehive it: `, "a rehive");
+    return ports.ask({ op: "rehive", face, credentials: [{ kind: "passphrase", passphrase }] });
   }
   if (verb === "unadmit") {
     if (typeof arg !== "string" || arg === "") throw new PulamaVerbUsage();

@@ -1238,6 +1238,12 @@ switch ($verb) {
         foreach ($f in $face) { if ($f -notmatch '^[0-9]+$') { Die 'pulama admit takes face ordinals (numbers)' } }
         Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'admit') + $face)
       }
+      'rehive' {
+        # rehive stands a SHUT face's hive again from its own seed: the face's own route reads on a real terminal inside the
+        # pūlama, which holds its keys; `pulama lock` shuts every face first.
+        if ($rest.Count -ne 2 -or $rest[1] -notmatch '^[0-9]+$') { Die 'pulama rehive takes one face ordinal (a number)' }
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'rehive', $rest[1]))
+      }
       'unadmit' {
         # unadmit ends one image's admission: the route proves on a real terminal inside the pūlama, and a signed
         # tombstone naming the admission's tessera rests; the gate then reads pulama-image-unadmitted.
@@ -1275,7 +1281,7 @@ switch ($verb) {
         Move-Item -Force -LiteralPath $tmp -Destination $seatFile
         [Console]::Error.WriteLine("lares-container: the keep seat rests at $seatFile (0600); a keep now seals under it")
       }
-      default { Die 'pulama takes up, down, restand, light, admit, unadmit, keep-seat, lock, status or tessera' }
+      default { Die 'pulama takes up, down, restand, light, admit, unadmit, rehive, keep-seat, lock, status or tessera' }
     }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
