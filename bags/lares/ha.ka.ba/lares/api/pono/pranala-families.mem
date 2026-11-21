@@ -9,7 +9,6 @@ l-space       = "stable"
 namespace     = "&#x2299;"
 role          = "canonical pranala edge-family taxonomy: eight families, role vocabularies, contract flags"
 source-symbol = "KNOWN_FAMILIES FAMILY_ROLES FAMILY_CONTRACTS"
-status-date   = "2026-06-05"
 tags          = ["api/pono/pranala", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-control", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-relation", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-observe", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-transclusion", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-dataflow", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-message", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-constraint", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-reaction", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-spatial"]
 title         = "lar:///ha.ka.ba/lares/api/pono/pranala-families"
 type          = "text/memetic-wikitext+tiddlywiki"
@@ -166,6 +165,6 @@ spatial    = "light-blue"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;odtvrpxqPADbh2X1cctqh6ytkYZmnA-oq9XMngnF5Rg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZNokkwvwtQ7qf5NuyDPBAnXm9qVb8NVV-m8q5xfbo_E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

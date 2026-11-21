@@ -12,7 +12,6 @@ role      = "the memetic-wikitext SENSORIUM — the design-of-record for the CON
 title     = "lar:///ha.ka.ba/lares/api/memetic-wikitext-sensorium"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/memetic-wikitext-sensorium"
-written   = "2026-07-01"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -170,6 +169,6 @@ identically across the TS/py shore: the li-reader on one bank, the ki-model on t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qFGxwmY3H5m_hzk-R1a73YR498Iot837WSLFUVum8fs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;U4PKdIP_wlH1DXMHU_xkP93ZcgbgTIfcsrj5e1xDza8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

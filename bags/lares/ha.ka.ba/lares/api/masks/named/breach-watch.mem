@@ -7,7 +7,6 @@
 aside             = false
 cacheable         = false
 corpus            = "[STUB — pending-talk-story]"
-created           = "Invalid Date"
 encroach          = false
 foreground-voices = ["Triage", "Gatekeeper", "Scryer", "Council", "Lorekeeper"]
 fourth-wall       = false
@@ -163,6 +162,6 @@ How Breach-Watch colors each Voice register when they speak through her incident
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;D9Hv_fh5H2unTVnlOgyUmBqyBsd5EPaD6V04AMAF12I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Yn4bW_44R5QhHnQ2luwNd23kLlVRRAwo0HaCEn4E6y8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

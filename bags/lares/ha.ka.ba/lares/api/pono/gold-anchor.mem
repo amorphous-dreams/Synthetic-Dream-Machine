@@ -12,7 +12,6 @@ role      = "the gold-anchor — the design-of-record for the EXTERNAL oracle / 
 title     = "lar:///ha.ka.ba/lares/api/pono/gold-anchor"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/gold-anchor"
-written   = "2026-06-30"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -376,6 +375,6 @@ spirit's lane); this meme states the design they enact.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EaMzfp7YEq8ZgKB2oPLvYPB0Q_pAE8b-OsLb-51fA20`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;v9lf3H3aQd0wR_3Ylj3Duuh9dBmMTriVuf9QC0DA9KE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

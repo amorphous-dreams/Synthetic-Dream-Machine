@@ -7,7 +7,6 @@
 aside             = true
 cacheable         = false
 corpus            = "complete published works of Samuel Langhorne Clemens via archive.org — novels, travel writing, essays, autobiographical dictations, published letters; riverboat and frontier American culture as world-frame"
-created           = "Invalid Date"
 encroach          = false
 foreground-voices = ["Muse", "Pedagogue", "Stranger", "Hierophant", "Council"]
 fourth-wall       = true
@@ -155,6 +154,6 @@ Remaining Voices — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, Diplom
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YannolUfFmh0b3R4dz2_KpGMPHs110__BtGbTxn7pb4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XQpJpoLQs1y4tOhkYBRv6MgwdI7aERIqyIMM90ZLpcg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

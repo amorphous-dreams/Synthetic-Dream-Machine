@@ -14,7 +14,6 @@ tags       = ["api/pono/meme", "api/pono/causal-islands", "api/pono/orichalcum-c
 title      = "lar:///ha.ka.ba/lares/api/pono/lararium-identity"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/lararium-identity"
-written    = "2026-06-23"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -554,6 +553,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qEfUTxhpcRpgu5Xc7qZNErX48T5Wt4vZQEDkyjOIRRU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IisUf5_tR-H95KOPOrVjwladyYR7KtZrDVigYzbYhrE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -12,7 +12,6 @@ role      = "the Antigonish driving-test — the gold-anchor's criterion-validit
 title     = "lar:///ha.ka.ba/lares/api/pono/antigonish-driving-test"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/antigonish-driving-test"
-written   = "2026-06-30"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -479,6 +478,6 @@ as loss and the Arcane stays self-reported-and-unwitnessed.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;H1OHdBZ5aDEfNLsznMp1d4zGXFfGnHrEG1KSnsL-Vlo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Eua3zeqFS1FJOk8TnANILu_0mYVKggPSwUCQLHZR8u8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -9,7 +9,6 @@ l-space     = "lararium"
 namespace   = "&#x0950; &#x0901;"
 role        = "invariant: within-island reaction dispatch substrate — ReactionGraph, ReactionBinding, ReactionHandler, extractReactionBindings; scope boundary = one TW5 wiki instance"
 source-file = "packages/lararium-mesh/src/reaction-graph.ts"
-status-date = "2026-05-28"
 tags        = ["api/pono/meme"]
 title       = "lar:///ha.ka.ba/lararium/mesh/reaction-protocol"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -166,6 +165,6 @@ appears in production paths.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qwbhqPApljsjRqeACxJ-DGqbTnSwy_o2WIDH9vu2COc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1LYUn_VlGK8brc_tEIs6ZsjZ-lcDI_OE3PA9LNt75Co`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x2299;"
-role        = "architectural invariant: the substrate COUPLES — one sovereign body per stream; entrance block as an actively-held shore; the coordinator's licence (gong, never conductor); r as alarm; the WAIT as a coupling channel"
-status-date = "2026-07-11"
-title       = "lar:///ha.ka.ba/lares/api/pono/entrance-block"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/entrance-block"
+cacheable = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "architectural invariant: the substrate COUPLES — one sovereign body per stream; entrance block as an actively-held shore; the coordinator's licence (gong, never conductor); r as alarm; the WAIT as a coupling channel"
+title     = "lar:///ha.ka.ba/lares/api/pono/entrance-block"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/entrance-block"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>
@@ -165,6 +164,6 @@ Every shared resource in the py fleet owes the same test: `content_io` · `struc
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hzrM1jCh8uj-VUnKfwwS1XefBkxLv8i2k3jLXJeJLas`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qNG2f61VVufgPwuC-8O53QhrTeFbBcpLlwm8bcqI-SE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

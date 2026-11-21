@@ -10,7 +10,6 @@ role      = "the functor discipline — the architectural keel: a nameless entit
 title     = "lar:///ha.ka.ba/lares/api/pono/functor-discipline"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/functor-discipline"
-written   = "2026-06-29"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -334,6 +333,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;h1HcN-Rzxi4J94e2eLjxxWTpzvtX_49-YPBff4eiXfQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nJSa8YAOQIxLkBolHAwFEhy_TZLtspiS4K0YsvlKebY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

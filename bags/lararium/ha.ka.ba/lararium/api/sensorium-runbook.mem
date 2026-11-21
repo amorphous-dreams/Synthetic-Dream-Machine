@@ -14,7 +14,6 @@ tags       = ["api/pono/li-ki-integrities", "api/pono/sensorium-machina", "larar
 title      = "lar:///ha.ka.ba/lararium/api/sensorium-runbook"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/api/sensorium-runbook"
-written    = "2026-08-04"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -489,6 +488,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cULHIDTao7RSLvYZW579gJO2mqd1VKpaGlO3CBD0M5w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JEB1aZ4z25SgU8LpMGsg2DMRCviHcWC_gg9nbbZTuec`>>
 
 <<^ code=`&#x0004;` to=`?`>>

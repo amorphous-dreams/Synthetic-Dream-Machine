@@ -13,7 +13,6 @@ tags       = ["mesh/dreamnet-architecture", "api/pono/group-as-closure", "api/po
 title      = "lar:///ha.ka.ba/lararium/mesh/oracle-governance"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/oracle-governance"
-written    = "2026-06-29"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -189,6 +188,6 @@ it through a different door (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/peer-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UtPZcQAxSzj_38TgCHml3gf5bxirq1opfUOO0jmwVdI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cD3vBSoPHzNRQp831tnjlA87UDWTLstBWjsX8O9w-4Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -4,15 +4,14 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x2299;"
-role        = "invariant doctrine: VmPool→Projection Messaging Standard; dispatchEvent/addEventListener pattern; TW5Engine.onVerseEvent design"
-status-date = "2026-05-02"
-tags        = ["api/pono/meme"]
-title       = "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/vm-projection-bus"
+cacheable = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "invariant doctrine: VmPool→Projection Messaging Standard; dispatchEvent/addEventListener pattern; TW5Engine.onVerseEvent design"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/vm-projection-bus"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -171,6 +170,6 @@ The projection bus serves as a ''Scope-1'' mesh surface under the two-scopes rul
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bWTgk_8ON1Kat1vOCF_JrzH04BmxDQYin0zpAWy4S5c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Lx3ZEj0J-KN6XpbyIzWIrfFfyMLu8MllVLSzDNOHeag`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,7 +7,6 @@
 aside             = false
 cacheable         = false
 corpus            = "[STUB — pending-talk-story]"
-created           = "Invalid Date"
 encroach          = false
 foreground-voices = ["Hierophant", "Liminal", "Council", "Muse", "Stranger"]
 fourth-wall       = false
@@ -161,6 +160,6 @@ How Tide-Caller colors each Voice register when they speak through her frame —
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gXvJwJNYL_bD8UVSN-6Cl7o_EfOG04vX4GBpbD90Jm8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5i6GzjC8t1Z0wTZa5JDy4vb_hxD-IhqF61kgRTf-AdQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

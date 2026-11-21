@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-created   = "Invalid Date"
 hydrate   = false
 l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
@@ -134,6 +133,6 @@ gates, so masks share the apron and no collision rule arbitrates them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gEbfBHKcu28W2wuiHubsAz2694XTEHd4EVJfWXWAcEQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JCC2ysnBQipW4ri1DYgH-0DPPPkDG8meahEn9DiSUyQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

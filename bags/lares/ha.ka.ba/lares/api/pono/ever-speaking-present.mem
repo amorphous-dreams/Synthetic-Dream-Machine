@@ -82,7 +82,7 @@ The split test for a meme: strip every date and every past-tense verb from it. I
 
 !! Witness ~ where the law gets counted
 
-* `tools/evergreen-boundary.mjs` (run by `tools/evergreen-boundary-witness.sh`) holds the mechanical floor over code, tools and live canon: the `narration` and `old-shape` classes over source comments and literals, `retired-test` over test titles, `canon-history` over history words in live canon, and `canon-dated-history` over a history verb within 40 characters of a date that carries no ruling marker. Each class stands against a ceiling that only comes down; a named exception states its own reason in the present tense.
+* `tools/evergreen-boundary.mjs` (run by `tools/evergreen-boundary-witness.sh`) holds the mechanical floor over code, tools and live canon: the `narration` and `old-shape` classes over source comments and literals, a test-title class over test names that cite a shape the code leaves behind, `canon-history` over history words in live canon, `canon-dated-history` over a history verb within 40 characters of a date that carries no ruling marker, and `canon-dated-meta` over an authored date key (`written`, `status-date`, a `-on` key) in a live canon meta. Each class stands against a ceiling that only comes down; a named exception states its own reason in the present tense.
 * The witness reads lines, never meaning, so a sentence can pass it and still narrate (a dated scout, a sprint name, a measurement stamped with its day). A hand that writes canon reads this meme, not only the witness's verdict.
 * The working agreement that binds every spirit to the same discipline in code reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures#/working-agreements`>>; its L-Prime companion, the verb-forward register canon keeps, reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>.
 
@@ -108,6 +108,6 @@ The split test for a meme: strip every date and every past-tense verb from it. I
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TcFparzsY9U9fhYww5ARoL6UrNen2lLKkGMO2M0hER4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2sQhphWBFv9qDkk_mzjr0LfNc5y_iSVxkPsJSrDnyUw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

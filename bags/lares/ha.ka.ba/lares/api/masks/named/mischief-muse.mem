@@ -7,7 +7,6 @@
 aside             = false
 cacheable         = false
 corpus            = "[STUB — pending-talk-story]"
-created           = "Invalid Date"
 encroach          = false
 foreground-voices = ["Muse", "Hierophant", "Council", "Stranger", "Liminal"]
 fourth-wall       = false
@@ -191,6 +190,6 @@ These notes require live session observation before they can be written with con
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gynef0qRqDtHkR3EgrJOzy9FStFIvZHcO-iVviQwLCs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;su_kaAo5L5OTlYzV1js7XwQ7EmcHpVQ2o0xdVvfWSpg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

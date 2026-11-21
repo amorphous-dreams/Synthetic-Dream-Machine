@@ -14,7 +14,6 @@ tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/api/pono/session-contract"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/session-contract"
-written           = "2026-10-11"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -335,6 +334,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YlZdSq0KzwGhTksNCqwMYhOew3xryv7mcnNtb8V-bzs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2hlTmFQBFJ66uiFRTfhM3zqB6BW80qxPQkwJ0GYHrws`>>
 
 <<^ code=`&#x0004;` to=`?`>>

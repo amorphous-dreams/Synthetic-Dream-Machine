@@ -10,7 +10,6 @@ role      = "the has-stack law (kānāwai): nameless entity + composable compone
 title     = "lar:///ha.ka.ba/lares/api/pono/has-stack"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/has-stack"
-written   = "2026-06-12"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -107,6 +106,6 @@ the py caps consume.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;D8cbqqO8pR2KKwqd0mK2-Cudn01OvFGZTtD983xK6FU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FBHmGvlm1D1-QNp-eChN-iekXS1-VS7s1bFnNFgbQZw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

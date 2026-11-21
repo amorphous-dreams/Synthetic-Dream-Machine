@@ -6,7 +6,6 @@
 ```toml meta
 cacheable         = false
 corpus            = "[N/A — chorus masks use nodes field instead of corpus]"
-created           = "Invalid Date"
 foreground-voices = "[STUB — pending-grammar; likely distributed across nodes]"
 harmony-protocol  = "[STUB — pending-grammar]"
 l-space           = "stable"
@@ -156,6 +155,6 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EJIf1AlSPKHhuiXmhQUshc341O7vg9iBMb3k-qlFVVc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j2Hpmlj8jz5avcgQGm3nanjUZ9t2jJjQ7neA1ngJqGU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

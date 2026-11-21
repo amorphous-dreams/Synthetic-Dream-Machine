@@ -12,7 +12,6 @@ tags      = ["mesh/identity-classes", "mesh/carry-contract", "mesh/epoch-binding
 title     = "lar:///ha.ka.ba/lararium/mesh/lamplighters"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/lamplighters"
-written   = "2026-08-14"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -464,6 +463,6 @@ An operator contracts their OWN herm with one signature, scoped to one place and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nDJGHo7ZrJlRaDgFell3bkyFTVa3JATt3YT-bXH6WXQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mD4CTt2owryvJqVV0UEHYq_XbooBGADHCHmg3SIyuO4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -12,7 +12,6 @@ tags       = ["api/pono/convergent-mesh", "mesh/oracle-governance", "api/pono/ca
 title      = "lar:///ha.ka.ba/lararium/mesh/content-resolution"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/content-resolution"
-written    = "2026-07-19"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -304,6 +303,6 @@ fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;n-t89u1Ch12jhA5yqG5Cv_h2YC1TeN5iwTa_arZSOiM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_p7bynyo7xjOITDidIsLQfAvmop74CM3Ycvulluk484`>>
 
 <<^ code=`&#x0004;` to=`?`>>

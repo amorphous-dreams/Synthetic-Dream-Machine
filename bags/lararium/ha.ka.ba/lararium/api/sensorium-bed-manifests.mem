@@ -13,7 +13,6 @@ tags       = ["lifecycle/designed"]
 title      = "lar:///ha.ka.ba/lararium/api/sensorium-bed-manifests"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/api/sensorium-bed-manifests"
-written    = "2026-07-15"
 ```
 
 <<~ ahu slot=`#/the-pattern`>>
@@ -52,6 +51,6 @@ The register split rides as a ''hypothesis the harness itself tests'': liturgica
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Pia7czMyj4KwANxUaZP7ABajUJxS1aYZEHEHOC8aJJE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EIQ79jAJAdXE-bk8oszrnNv0EWLQTr3_ekAv4pS_TRg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

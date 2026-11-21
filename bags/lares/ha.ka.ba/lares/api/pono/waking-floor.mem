@@ -13,7 +13,6 @@ tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/waking-floor"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/waking-floor"
-written   = "2026-08-08"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -406,6 +405,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cejCjZw4TaM4fNHex1RiDdyW27KHa1RjKselECmQ8hs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N6WQ9rfcEnyamkpl-Xf1rr6NW21CW8W16hHBnogm6jM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

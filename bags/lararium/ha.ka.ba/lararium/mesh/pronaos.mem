@@ -14,7 +14,6 @@ tags       = ["mesh/cap-tier", "mesh/secure-context", "mesh/nexus-topology", "ap
 title      = "lar:///ha.ka.ba/lararium/mesh/pronaos"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/pronaos"
-written    = "2026-09-22"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -406,6 +405,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Aem40xt244-JNr6e6MNDo5AP8d5WBIyfXTvlyySbimc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;w0q8CvR2Oa8Ij8ezxD_u52QLPL3ihimJGyNCkImKVn8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

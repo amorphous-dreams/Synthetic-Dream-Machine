@@ -9,7 +9,6 @@ l-space     = "stable"
 namespace   = "&#x0950; &#x0901;"
 role        = "source-of-truth: the Residency Model ACTION verb handler family — six verbs, withEffectRecord wrapping, cap-gate law, dispatch shore (Sprint 5)"
 source-file = "packages/lararium-tw5/src/action-handler.ts"
-status-date = "2026-06-01"
 status-why  = "the TW5 action handler stands live"
 tags        = ["api/residency-model", "lifecycle/standing"]
 title       = "lar:///ha.ka.ba/lararium/api/action-handler"
@@ -134,6 +133,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;G544DweD_SgN6BZBYIT6wUzu6d2OGOWk_3jyTLZ-OU8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2ywfeTnsfQrZQEKWGW43Bo1NWVAh7OSJuUczTnBWXtM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

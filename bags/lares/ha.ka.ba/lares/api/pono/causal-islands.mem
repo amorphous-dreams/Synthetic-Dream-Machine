@@ -10,7 +10,6 @@ l-space       = "stable"
 namespace     = "&#x2299;"
 role          = "invariant law: causal island doctrine — three structural axes (access × scale × powers) + alignment plane; authority-first sync order; visibility gate; edge island lifecycle"
 source-symbol = "ABILITY_LADDER AUTHORITY_FIRST_ORDER CAUSAL_ISLAND_MUST CAUSAL_ISLAND_MAY AuthorityFirstGuard visibilityGate"
-status-date   = "2026-06-01"
 tags          = ["api/pono/orichalcum-capabilities", "api/pono/federated-causal-islands", "api/pono/alignment-layer"]
 title         = "lar:///ha.ka.ba/lares/api/pono/causal-islands"
 type          = "text/memetic-wikitext+tiddlywiki"
@@ -363,6 +362,6 @@ meant to escape):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YytlMyeInKGuuhdeRCqHry5osaPQbk1lcnDbyKkBBCE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Vt_VqzR5gArXoxAe6uFTSr94hWJpJQyp6tAM5Zt4fkI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

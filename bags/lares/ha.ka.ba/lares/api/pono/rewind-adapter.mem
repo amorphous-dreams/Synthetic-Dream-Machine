@@ -12,7 +12,6 @@ role      = "the rewind-adapter — the donation-grade SOURCE-ADAPTER design tha
 title     = "lar:///ha.ka.ba/lares/api/pono/rewind-adapter"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/rewind-adapter"
-written   = "2026-06-30"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -253,6 +252,6 @@ Two research spirits stood the survey:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;usTLGA8BLO307u8zcK81LZKA9NlaaKGBHxihbk4_Ev4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZSwT27Ey5BRmlwAXq2-FXxgO9-9S1BaQaRxxpUcjhn8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

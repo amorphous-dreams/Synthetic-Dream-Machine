@@ -13,7 +13,6 @@ tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/servo"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/servo"
-written   = "2026-06-29"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lararium/api/projection-nalu#/servo`>>
@@ -182,6 +181,6 @@ TS/py shore; the polarity law and the two-loop shape hold identically wherever t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VleeUh73pnYy8JFObx87eLe4OsRFFGqlF2bpPFrisv4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;e4tthP2P2JrYDIFGoQRqbgwUIpoPRsVoWWclkLGosqY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

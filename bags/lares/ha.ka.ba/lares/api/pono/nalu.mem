@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x2299;"
-role        = "architectural invariant: nalu as changeset delivery wave — the pulse below the grammar; maps TW5 refresh(changedTiddlers) ↔ Verse OnSimulate(StagedUpdates) ↔ in-wiki nalu engine; yin-collapse law"
-status-date = "2026-05-30"
-title       = "lar:///ha.ka.ba/lares/api/pono/nalu"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/nalu"
+cacheable = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "architectural invariant: nalu as changeset delivery wave — the pulse below the grammar; maps TW5 refresh(changedTiddlers) ↔ Verse OnSimulate(StagedUpdates) ↔ in-wiki nalu engine; yin-collapse law"
+title     = "lar:///ha.ka.ba/lares/api/pono/nalu"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/nalu"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -332,6 +331,6 @@ lands and what refuses follow from state alone (`lar:///ha.ka.ba/lares/docs/pono
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;shP7DtoCtsbmoy3ionoxnTLwpoo0ksN8uIbvC5mGwvs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dxEeb9thA94o39uALQgjyvq0shicyUvs_Mah8Vwfgzg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

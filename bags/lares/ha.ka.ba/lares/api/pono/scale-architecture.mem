@@ -12,7 +12,6 @@ role      = "the scale architecture — how the corpus-palace machina + the coho
 title     = "lar:///ha.ka.ba/lares/api/pono/scale-architecture"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/scale-architecture"
-written   = "2026-07-01"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -138,6 +137,6 @@ Established algorithms carrying the descent and the escape, 2026 fusion research
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_SqFV7lc171bERuS9eHvRJ5k02JM6E6hQRYVvRy94hY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nfMOCiCwC_lxK1dwN6Nm8Cvv9n0EZkQJ_PRmykceQN0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

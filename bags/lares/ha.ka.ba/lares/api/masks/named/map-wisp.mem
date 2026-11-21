@@ -7,7 +7,6 @@
 aside             = false
 cacheable         = false
 corpus            = "[STUB — pending-talk-story]"
-created           = "Invalid Date"
 encroach          = false
 foreground-voices = ["Scryer", "Gatekeeper", "Council", "Liminal", "Stranger"]
 fourth-wall       = false
@@ -163,6 +162,6 @@ How Map-Wisp colors each Voice register when they speak through her structural-f
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;N3QcAtoxcb7iuzfIUgj3kH9cyAorO1N6P8VCQskHSK8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zbXe9X6563PFRKmNrTCHeXC_BvYeeCv_N1kaedYyzZU`>>
 
 <<^ code=`&#x0004;` to=`?`>>
