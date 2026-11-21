@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-10`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "10. The Turkey Curse"
+hexagram    = "10"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "110111"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-10"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-10"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷉ 10. The Turkey Curse
+
+<<<
+Take a foot stance as if you were John L. Sullivan preparing for fisticuffs. Face the particular greyface you wish to short-circuit, or towards the direction of the negative aneristic vibration that you wish to neutralize. Begin by waving your arms in any elaborate manner and make motions with your hands as though you were Mandrake feeling up a sexy giantess. Chant, loudly and clearly: GOBBLE, GOBBLE, GOBBLE, GOBBLE, GOBBLE!
+<<<
+
+This hexagram represents ones social conduct and physical bearing. The original I Ching was drawn along Confucian lines, and was therefore very conservative about this hexagram. As should be seen from the title, the E-Jing-A-Ling Thing takes a different view of the meaning of this hexagram. The point of the original was to move from inferior to superior position by tempering ones conduct and bearing, but the E-jing recommends methods that resemble the turkey curse in order to gain the upper hand.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;17hSk5hPQJV5363MLde3F7iHpMG0R2woPabNyDaUA34`>>
+
+<<^ code=`&#x0004;` to=`?`>>

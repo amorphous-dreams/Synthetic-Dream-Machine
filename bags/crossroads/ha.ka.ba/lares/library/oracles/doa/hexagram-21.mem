@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-21`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "21. Operation: Mindfuck"
+hexagram    = "21"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "100101"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-21"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-21"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷔ 21. Operation: Mindfuck
+
+<<<
+"I hung up in the stall of every single men's restroom on campus (which took a while) and in many of the women's stalls as well (I had help) a sign which read: "Whatever thy hand findest to do, do it with all thy heart." -Jesus It hung directly at eye level as you sat there." - Brock Sayre
+<<<
+
+This hexagram stands for battling through obstacles. The fact that there are obstacles may seem to some to indicate that this is a negative hexagram, but what fun would an obstacle-free life be (imagine a video game where you don't have any obstacles)? It is important to focus on battling through the obstacles as opposed to the obstacles themselves.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4vZy3BDZQjbsM6ZlcCi05v-2EKupZ3orBw9ESIEQq4Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>

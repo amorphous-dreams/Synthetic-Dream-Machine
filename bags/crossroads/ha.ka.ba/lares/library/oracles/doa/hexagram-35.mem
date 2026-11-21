@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-35`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "35. The Grand Unified Conspiracy Theory"
+hexagram    = "35"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "000101"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-35"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-35"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷢ 35. The Grand Unified Conspiracy Theory
+
+<<<
+"...and Hallmark has three of the same people on its board as the Snapple Corporation, whose VP of Marketing was a former CIA agent who just happened to be in Dealy Plaza...
+<<<
+
+This hexagram represents a coming together and suggests that feeling you get when there are only a few more pieces left to a 5000 piece puzzle. Everything seems to suddenly fit and, if you remain calm and cheerful, great progress will be made.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HBQ7DXq7ecJp9duBWdwFo_GYpcP5D_FeR3EARcQkskw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-63`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "63. Aneris"
+hexagram      = "63"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "101010"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-63"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-63"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷾ 63. Aneris
+
+<<<
+Aneris swore that no matter how many existent things Eris brought forth, she would eventually find them and turn them into non-existent things for her own.
+<<<
+
+This hexagram stands for chaos changing into order. As we all know this can be a very bad thing. The only salvagable aspect about this hexagram is that if all is order, there are many, many oppertunities for an enterprising Discordian to have loads of fun trying to bring about Hexagram 64.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5R3xOsBXiOahgSo4vS2nwCSzoqi2C-s2aF1JSnaHeiE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

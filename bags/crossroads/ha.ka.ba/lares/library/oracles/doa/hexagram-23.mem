@@ -1,0 +1,45 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-23`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "23. John Dillenger"
+hexagram    = "23"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "000001"
+page-lines  = "010010"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-23"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-23"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷖ 23. John Dillenger
+
+<<<
+"""
+The man that died that night was neither the same height nor weight than Dillinger.
+The dead man had brown eyes while it was a well known fact that Dillinger's eyes were bright blue.
+Dillinger's well publicized birth mark was not mentioned in the autopsy report.
+The report stated that the dead man had more teeth than Dillinger.
+And finally, there was evidence that the dead man had a rheumatic heart, a condition that would have certainly prevented Dillinger from serving in the U.S. Navy.
+The FBI continues to deny the discrepancies and claims that they were nothing more than untimely mistakes made in the coroner's office.
+"""
+<<<
+
+This hexagram represents a splitting apart (or a 23-Skidooing). It does not futher one to go anywhere, or you might get shot down in the street in front of a movie theatre or something as equally inconvenient. Just stay at home and play Cooknote Fiberglass or something and send your double to the theatre to get shot.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AxqEAcVXxtpifjhKL9mMUno0tthDcCKP2GxBLcXzo4U`>>
+
+<<^ code=`&#x0004;` to=`?`>>

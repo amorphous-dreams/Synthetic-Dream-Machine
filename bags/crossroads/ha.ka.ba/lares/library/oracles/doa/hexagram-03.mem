@@ -1,0 +1,49 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-03`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "3. Cosmogony"
+hexagram    = "3"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "100010"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-03"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-03"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷂ 3. Cosmogony
+
+<<<
+"""
+1. Before the beginning was the Nonexistent Chao, balanced in Oblivion by the Perfect Counterpushpull of the Hodge and the Podge.
+2. Whereupon, by an Act of Happenstance, the Hodge began gradually to overpower the Podge -- and the Primal Chaos thereby came to be.
+3. So in the beginning was the Primal Chaos, balanced on the Edge of Oblivion by the Perfect Counterpullpush of the Podge and the Hodge.
+4. Whereupon, by the Law of Negative Reversal, the Podge swiftly underpowered the Hodge and Everything broke loose.
+5. And therein emerged the Active Force of Discord, the Subtle Manifestation of the Nonexistent Chao, to guide Everything along the Path back to Oblivion - that it might not become lost among Precepts of Order in the Region of Thud.
+6. Forasmuch as it was Active, the Force of Discord entered the State of Confusion, wherein It copulated with the Queen and begat ERIS, Our Lady of Discord and Gross Manifestation of the Nonexistent Chao.
+7. And under Eris Confusion became established, and was hence called Bureaucracy; while over Bureaucracy Eris became established, and was hence called Discordia.
+8. By the by it came to pass that the Establishment of Bureaucracy perished in a paper shortage.
+9. Thus it was, in accord with the Law of Laws.
+10. During and after the Fall of the Establishment of Bureaucracy was the Aftermath, an Age of Disorder in which calculation, computations, and reckonings were put away by the Children of Eris in Acceptance and Preparation for the Return to Oblivion to be followed by a Repetition of the Universal Absurdity. Moreover, of Itself the Coming of Aftermath waseth a Resurrection of the Freedom-flowing Chaos. HAIL ERIS!
+11. Herein was set into motion the Eristic Pattern, which would Repeat Itself Five Times Over Seventy-three Times, after which nothing would happen.
+"""
+<<<
+
+This hexagram represents beginnings. It has historically been read as a bad sign, but this is because the ancient Chinese did not understand the positive aspect of chaos. During times of growth, everything is in motion and struggling to attain form - creating a chaotic maelstrom of potential growth and inspiration. Revel in the chaos and use it to further your own ends.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kBCV5J2_B7VON9zL2AvLnFRjzzLNh300TTB8efp8hmY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

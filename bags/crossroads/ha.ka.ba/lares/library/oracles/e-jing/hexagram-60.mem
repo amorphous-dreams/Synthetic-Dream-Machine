@@ -1,0 +1,63 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-60`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "60. Mornington Crescent"
+hexagram      = "60"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "110010"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-60"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-60"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷻ 60. Mornington Crescent
+
+<<<
+"""
+- - - Not quite: given that all critical eigenstates are open,
+- - - a path to the absolute plane can be made, which satisfies
+- - - it. (Check the rules.)
+"""
+
+"""
+- - Classic misunderstanding of Rushton's condition. It's only
+- - satisfied if the path passes through the majority of critical
+- - eigenstates - which is, as you say, easy to do - and *at
+- - least six* non-critical ones. This latter aspect of the
+- - condition is not satisfied, but it is not proven unsatisfiable
+- - either.
+"""
+
+"""
+- That's pre-Featherstonehaugh rules; it changed in 3154 to
+- eliminate the non-critical eigenstate requirement unless
+- the subject/object mapping is inverted (which is clearly
+- not the case here).
+"""
+
+"""
+and was promptly reverted by Rushton himself in 3192.
+we're not playing a game using exclusively those rules
+commonly used between 3155 and 3191, are we?
+"""
+<<<
+
+This hexagram refers to limitations and the need to limit (or destroy completely) limitations. Break barriers and strive to move the sticks forward and prevent stagnation or a situation that binds with rules. In the case of Mornington Crescent, we choose an example where limitations imposed can be broken fairly easily and without much thought at all.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pVwHI0_NIHxIb7aAQCoH8yf28QYDkug9e9d3mwYIffI`>>
+
+<<^ code=`&#x0004;` to=`?`>>
