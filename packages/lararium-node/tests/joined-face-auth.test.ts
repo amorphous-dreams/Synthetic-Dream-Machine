@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { deriveRegisterBags, litFaceOwnBags, daemonFaceCanonBag, wikiSlotUri, selvesRecordOf } from "@lararium/mesh";
-import { joinedFaceAuth, unlitServedFaces, siblingFaceWork, litSiblingOrdinals, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
+import { joinedFaceAuth, unlitServedFaces, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
+import { faceLives } from "../src/face-lifecycle.js";
 
 const edge = { deviceVerifyingKey: "ab" } as NonNullable<NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchors"]>>>["deviceEdge"]>;
 const anchor = {} as NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchor"]>>>;
@@ -65,108 +66,42 @@ describe("a face the lend serves after the composition stood", () => {
   });
 });
 
-function deferred() {
-  let resolve!: () => void;
-  const promise = new Promise<void>((done) => { resolve = done; });
-  return { promise, resolve };
-}
+describe("each face's one life replaces the generation ledger (`face-lifecycle`)", () => {
+  const island = () => {
+    const lights: Array<{ resolve: (lit: { atomKey: string | null; custody: string | null }) => void; reject: (e: unknown) => void; live: () => boolean }> = [];
+    const lives = faceLives({
+      light: (_o, _opening, live) => new Promise((resolve, reject) => { lights.push({ resolve, reject, live }); }),
+      drainSaves: async () => {}, dropWorker: async () => {}, teardownHost: () => {}, recompose: async () => {}, log: () => {},
+    }, { nonce: "jfa" });
+    return { lives, lights };
+  };
 
-describe("sibling generation ownership", () => {
-  test("removing an owning entry makes its served ordinal eligible for automatic lighting", () => {
-    const entries = new Map([["sibling", { ordinal: 1 }]]);
-    expect(unlitServedFaces([0, 1], 0, litSiblingOrdinals(entries.values()))).toEqual([]);
-    entries.delete("sibling");
-    expect(unlitServedFaces([0, 1], 0, litSiblingOrdinals(entries.values()))).toEqual([1]);
+  test("a failed light answers refused and an explicit light retries under a fresh opening", async () => {
+    const { lives, lights } = island();
+    const first = lives.light(1);
+    lights[0]!.reject(new Error("custody locked"));
+    expect(await first).toBe("refused");
+    const retry = lives.light(1);
+    lights[1]!.resolve({ atomKey: "k1", custody: null });
+    expect(await retry).toBe("lit");
   });
 
-  test("a failed mint rejects its awaited light and an explicit light retries", async () => {
-    const work = siblingFaceWork();
-    await expect(work.run(1, async () => { throw new Error("custody locked"); })).rejects.toThrow("custody locked");
-    let retries = 0;
-    await work.run(1, async (live) => { if (live()) retries++; });
-    expect(retries).toBe(1);
+  test("a close voids the light in flight at once, and a detached sidecar reading live() installs nothing after it", async () => {
+    const { lives, lights } = island();
+    void lives.light(1);
+    const closing = lives.close(1, "drop");
+    expect(lights[0]!.live()).toBe(false);
+    lights[0]!.resolve({ atomKey: "k1", custody: null });
+    await closing;
+    expect(lights[0]!.live()).toBe(false);
   });
 
-  test("drop invalidates work immediately, drains its provider admission, then permits a new light", async () => {
-    const work = siblingFaceWork(), gate = deferred(), entered = deferred();
-    const events: string[] = [];
-    const first = work.run(1, async (live) => {
-      entered.resolve();
-      await gate.promise;
-      events.push("provider admitted");
-      if (live()) events.push("session seated");
-    });
-    await entered.promise;
-    const dropping = work.remove(1, async () => { events.push("provider dropped"); });
-    const next = work.run(1, async (live) => { if (live()) events.push("replacement seated"); });
-    gate.resolve();
-    await Promise.all([first, dropping, next]);
-    expect(events).toEqual(["provider admitted", "provider dropped", "replacement seated"]);
-  });
-
-  test("a completed light's detached sidecar cannot install a keeper after drop or teardown", async () => {
-    for (const ending of ["drop", "teardown"]) {
-      const work = siblingFaceWork(), gate = deferred();
-      let sidecar!: Promise<void>, keepers = 0;
-      await work.run(1, async (live) => {
-        sidecar = gate.promise.then(() => { if (live()) keepers++; });
-      });
-      if (ending === "drop") await work.remove(1, async () => {});
-      else work.close();
-      gate.resolve();
-      await sidecar;
-      await work.run(2, async (live) => { if (ending === "teardown" && live()) keepers++; });
-      expect(keepers).toBe(0);
-    }
-  });
-
-  test("an open event overtaken during custody enumeration cannot start a new generation", async () => {
-    const work = siblingFaceWork(), gate = deferred();
-    const eventGeneration = work.capture(1);
-    let lights = 0;
-    const event = (async () => {
-      await gate.promise;
-      if (eventGeneration()) await work.run(1, async () => { lights++; });
-    })();
-    await work.remove(1, async () => {});
-    gate.resolve();
-    await event;
-    expect(lights).toBe(0);
-    await work.run(1, async () => { lights++; });
-    expect(lights).toBe(1);
-  });
-
-  test("an obsolete failure cannot clear its replacement flight, and another face lights independently", async () => {
-    const work = siblingFaceWork(), gate = deferred(), entered = deferred();
-    const replacementGate = deferred(), replacementEntered = deferred();
-    const first = work.run(1, async () => { entered.resolve(); await gate.promise; throw new Error("mint failed"); });
-    const rejected = expect(first).rejects.toThrow("mint failed");
-    await entered.promise;
-    const dropping = work.remove(1, async () => {});
-    let calls = 0;
-    const replacement = work.run(1, async () => { calls++; replacementEntered.resolve(); await replacementGate.promise; });
-    let other = false;
-    await work.run(2, async () => { other = true; });
-    expect(other).toBe(true);
-    gate.resolve();
-    await rejected;
-    await dropping;
-    await replacementEntered.promise;
-    expect(work.run(1, async () => { calls++; })).toBe(replacement);
-    replacementGate.resolve();
-    await replacement;
-    expect(calls).toBe(1);
-  });
-
-  test("proof stops after an overtaken await and wipes secrets already read", async () => {
-    const { ports, seeds } = fixture();
-    let live = true, archiveReads = 0;
-    const entries = await joinedFaceAuth({ ...ports, ordinals: () => [1], current: () => live,
-      addressSecret: async () => { live = false; return new Uint8Array([10]); },
-      veilArchive: async () => { archiveReads++; return null; },
-    });
-    expect(entries).toEqual([]);
-    expect(archiveReads).toBe(0);
-    expect(seeds.every((seed) => seed.every((byte) => byte === 0))).toBe(true);
+  test("another face lights independently of a face whose light still waits", async () => {
+    const { lives, lights } = island();
+    void lives.light(1);
+    const other = lives.light(2);
+    lights[1]!.resolve({ atomKey: "k2", custody: null });
+    expect(await other).toBe("lit");
+    expect(lives.state(1).kind).toBe("lighting");
   });
 });

@@ -446,7 +446,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const mountBefore = wasOpen ? await daemonMountOrdinal() : undefined;
     const namedMount = mountedFaceOrdinal() === ordinal && !mountByOpening;
     if (wasOpen && ordinal !== mountedFaceOrdinal() && deps.dropFace) {
-      // A lock answers locked only once the provider is gone: a refused drop leaves the key open and the answer an error.
+      // A LOCAL LOCK RUNS THE TWO PHASES IN ONE PROCESS: the face's actor closes first (`dropFace` answers at CLOSED: no visit or
+      // work admits, its saves drained, its island told, its host side down), and only then does the key lock. A drop that
+      // faults leaves the key open and the answer an error.
       try { await deps.dropFace(ordinal); }
       catch (error) {
         deps.onLog(`face h${ordinal} provider drop refused: ${String(error)}`);

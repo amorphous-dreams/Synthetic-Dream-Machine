@@ -58,7 +58,10 @@ export interface FaceLifeEffects {
   dropWorker(ordinal: number, atomKey: string): Promise<void>;
   /** Drop the host side (its documents' waiting saves from memory, its cache, session and keepers). Synchronous. */
   teardownHost(ordinal: number, opening: string): void;
-  /** Compose the island again without every face that does not read `lit` (the island supervisor). */
+  /**
+   * Compose the island again from every face whose actor reads `lit` (the island supervisor). Its open answers the actors through
+   * `recomposed`, naming the faces it composed with; this promise only says the restart ran.
+   */
   recompose(reason: string): Promise<void>;
   readonly log: (line: string) => void;
 }
@@ -113,7 +116,7 @@ type Message =
   | { t: "saves-drained"; opening: string }
   | { t: "worker-ack"; opening: string }
   | { t: "worker-refused"; opening: string; error: unknown }
-  | { t: "recomposed" };
+  | { t: "recomposed"; composed: ReadonlySet<number> };
 
 /** The vessel's set of face actors and its island supervisor. */
 export interface FaceLives {
@@ -142,8 +145,11 @@ export interface FaceLives {
   admitWork(ordinal: number): WorkTicket | null;
   /** Admit a visit to a face; `refuse` answers it if the face closes first. Null where the face does not stand lit. */
   admitVisit(ordinal: number, refuse: (reason: string) => void): VisitTicket | null;
-  /** THE SUPERVISOR: the island stood again; every face it left out because its actor did not read lit now reads dark. */
-  recomposed(): void;
+  /**
+   * THE SUPERVISOR: the island stood again, composed with `composed` (the faces whose actor read lit at its open). Every closing
+   * face it left out now reads dark (the fresh island holds no entry for it); a face it composed keeps closing.
+   */
+  recomposed(composed: ReadonlySet<number>): void;
   /** Stop: no new light; a pending waiter still resolves as its message lands. */
   stop(): void;
 }
@@ -322,21 +328,30 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
         return [() => superviseRecompose(`face h${ordinal} refused its drop`)];
       }
       case "recomposed": {
-        if (life.kind !== "closing" || (life.phase !== "told" && life.phase !== "recomposing")) return [];
+        if (life.kind !== "closing" || (life.phase !== "told" && life.phase !== "recomposing") || m.composed.has(ordinal)) return [];
         return toDark(ordinal, actor);
       }
     }
   };
 
-  /** ONE recompose at a time: a refusal that lands while one runs joins it. Its standing takes every left-out face dark. */
+  /**
+   * ONE recompose at a time. A refusal that lands while one runs asks for one more after it (that open may have composed the face
+   * while it still read lit); the open's own `recomposed` takes every left-out face dark.
+   */
+  let again: string | null = null;
   const superviseRecompose = (reason: string): void => {
-    if (recomposing !== null) return;
+    if (recomposing !== null) { again = reason; return; }
     recomposing = effects.recompose(reason).then(
-      () => { recomposing = null; release(); },
-      (error: unknown) => { recomposing = null; effects.log(`[face-life] the daemon island did not compose again: ${describe(error)}; the next restart releases the closing faces`); },
-    );
+      () => {},
+      (error: unknown) => { effects.log(`[face-life] the daemon island did not compose again: ${describe(error)}; the next restart releases the closing faces`); },
+    ).finally(() => {
+      recomposing = null;
+      const next = again;
+      again = null;
+      if (next !== null && [...lives.values()].some((a) => a.life.kind === "closing" && a.life.phase === "recomposing")) superviseRecompose(next);
+    });
   };
-  const release = (): void => { for (const ordinal of [...lives.keys()]) send(ordinal, { t: "recomposed" }); };
+  const release = (composed: ReadonlySet<number>): void => { for (const ordinal of [...lives.keys()]) send(ordinal, { t: "recomposed", composed }); };
 
   const read = (ordinal: number): FaceLifeState => {
     const life = lives.get(ordinal)?.life ?? { kind: "dark" as const };

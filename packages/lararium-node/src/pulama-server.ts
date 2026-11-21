@@ -42,7 +42,7 @@
  * face no session lends locks at once. A vessel that never answers leaves the face closing with no clock: `closing()` names it
  * ("the vessel has not answered its close"), and the operator's hand confirms a forced lock (`closeFace(face, {force})`). The
  * forced lock's window runs from the `closing` to the moment that vessel hears it: the causal-islands residue, named in
- * sealed-store#/the-lit-set. A whole-holder `lock` drops every session at once, and is itself the operator's hand.
+ * sealed-store#/the-lit-set. A whole-holder `lock` drops every session at once, and acts as the operator's hand.
  *
  * ── THE SESSION DROPS WITH ITS CHANNEL ──────────────────────────────────────────────────────────
  * A closed channel ends its session: every claim it held releases, and nothing it asked afterwards answers. `lock` drops
