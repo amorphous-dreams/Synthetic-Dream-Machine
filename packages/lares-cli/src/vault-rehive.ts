@@ -13,38 +13,12 @@
 import { gatherCredentials } from "./custody-prompt.js";
 import { sendCustodyFrame, type CustodyDoorAnswer } from "./custody-door.js";
 import { emit } from "./render.js";
+import { rehiveLines as sharedRehiveLines, type RehiveAnswerReading } from "@lararium/node";
 import type { ParsedArgs } from "./parse-args.js";
 
-/** What a person reads once a rehive lands: what moved, what was lost, and what to do next, in order. */
+/** What a person reads once a native rehive lands (`rehiveLines`, shared with the pūlama's hand door). */
 export function rehiveLines(a: CustodyDoorAnswer): string[] {
-  const face = Number(a["face"]);
-  const group = typeof a["personaGroup"] === "string" ? a["personaGroup"] : "<its PersonaGroup>";
-  const restored = a["outcome"] === "restored-prev";
-  const lines = [
-    `face h${face} rehived: its veil-archive row restored identity ${String(a["foreignIdentity"])}… (another identity's Archive), not the face's own ${String(a["ownIdentity"])}….`,
-    `the row moved aside to ${String(a["aside"])} in the face's own directory, under the face's own key, on this vessel; nothing was deleted.`,
-  ];
-  if (restored) {
-    lines.push(
-      "the face's previous generation (veil-archive .prev) restores the face's own identity, and it stands as the face's row again: only the last overwrite is lost.",
-      "",
-      "next:",
-      `  1. wear the face: lares vault unlock --all --face ${face}`,
-      `  2. read its reach: lares wiki status --recipe default --face ${face}. Where a shared bag or the kahua stage refuses to open, land that reach again as a rehive from the seed does (lares bag share --list --json first, then each row again with the same policy; lares kahua carry --all --face ${face}).`,
-    );
-    return lines;
-  }
-  lines.push(
-    "the face's next wear stands its hive from its intact seed: the same identity, the same PersonaGroup, and every delegation that names it stand.",
-    "LOST with the old Archive: the prekey secrets and the card the face last presented, and its key-agreement (CGKA) and membership state. Content keys sealed to those prekeys (shares this face received, lockboxes it wrapped) may not open again until their reach lands again.",
-    "",
-    "next, in order:",
-    `  1. wear the face: lares vault unlock --all --face ${face}. Its first boot stands the hive from the seed, and the archive floor writes the face's own new Archive. (A rehive runs only on a vessel holding its own custody, so this unlock reads both selectors.)`,
-    `  2. land its reach again, keeping each share's own policy: first keep the rows, lares bag share --list --json > shares-before.json. For each row that names h${face}, land it again with exactly the readers, writers and note that row names: lares bag share <bag> --remove, then lares bag share <bag> --read <its readers> [--write <its writers>] [--note <its note>]. A wiki share lands again the same way through lares wiki share <wiki> … [--workspace <its workspace>].`,
-    `  3. the kahu share: lares nexus cabal standing ${group} reads whether the face's PersonaGroup still stands in the Kahu cabal. The group did not change, so its admission stands unless that reading says otherwise.`,
-    `     Then lares kahua list --face ${face}: items that read mean the kahu share holds and nothing more is owed. Items that refuse to open (a key the face no longer holds) mean the kahu share needs granting again: lares kahua carry --all --face ${face} stands every earlier item again under the face's root (or name the revision cids instead of --all; carry is a person's hand at the face's kahua stage and needs its stage access), and a Kahu chair re-admits the group where the standing reads it out (lares nexus cabal admit ${group}).`,
-  );
-  return lines;
+  return sharedRehiveLines(a as unknown as RehiveAnswerReading, "native");
 }
 
 /** A rehive's usage refusal, in the vault door's own words; the caller renders it. */

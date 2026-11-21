@@ -557,7 +557,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (notHand !== null) return refuse(notHand, "a rehive is a person's own act at their terminal: an AI seat's peer never runs it; nothing moved");
     if (!deps.rehive) return refuse("rehive-unavailable", "this vessel's custody door rehives no face");
     // UNDER A PŪLAMA the face's custody rests with the pūlama, which lights faces on its own hand: the rehive runs where it rests.
-    if (deps.pulama) return refuse("rehive-under-pulama", "this vessel's custody rests with its pūlama, which may light the face at any moment: rehive the face on a vessel holding its own custody; nothing moved");
+    if (deps.pulama) return refuse("rehive-under-pulama", `this vessel's custody rests with its pūlama: rehive the face at the pūlama's own hand door, which holds its keys and lights faces on one chain: tools/lares-container.sh pulama lock (it shuts every face), then tools/lares-container.sh pulama rehive ${face}; nothing moved`);
     if (!holder.isUnlocked()) return refuse("custody-locked", "this vessel holds no key: open it first (`lares vault unlock`), leaving the face to rehive shut");
     const at = await holder.faceStanding({ ordinal: face });
     if (at === null) return refuse("face-not-standing", `no face h${face} stands on this vessel; nothing moved`);

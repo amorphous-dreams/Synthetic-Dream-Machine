@@ -1137,6 +1137,13 @@ case "$verb" in
         done
         # shellcheck disable=SC2046
         compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" admit "$@" ;;
+      rehive)
+        # rehive stands a SHUT face's hive again from its own seed (its veil-archive row holds another identity's Archive): the
+        # face's own route reads on a real terminal inside the pūlama, which holds its keys; `pulama lock` shuts every face first.
+        [ "$#" -eq 2 ] || die "pulama rehive takes one face ordinal (a number)"
+        case "$2" in ''|*[!0-9]*) die "pulama rehive takes one face ordinal (a number)" ;; esac
+        # shellcheck disable=SC2046
+        compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" rehive "$2" ;;
       unadmit)
         # unadmit ends one image's admission: the route proves on a real terminal inside the pūlama, and a signed
         # tombstone naming the admission's tessera rests; the gate then reads pulama-image-unadmitted.
@@ -1177,7 +1184,7 @@ case "$verb" in
         tmp="$seat_file.$$.tmp"
         ( umask 077; printf '%s\n' "$file" > "$tmp" ) && chmod 600 "$tmp" && mv -f -- "$tmp" "$seat_file" || { rm -f -- "$tmp"; die "the seat could not be written to $seat_file"; }
         printf 'lares-container: the keep seat rests at %s (0600); a keep now seals under it\n' "$seat_file" >&2 ;;
-      *) die "pulama takes up, down, restand, light, admit, unadmit, keep-seat, lock, status or tessera" ;;
+      *) die "pulama takes up, down, restand, light, admit, unadmit, rehive, keep-seat, lock, status or tessera" ;;
     esac ;;
   reset)
     [ "$#" -eq 0 ] || die "reset takes no arguments"

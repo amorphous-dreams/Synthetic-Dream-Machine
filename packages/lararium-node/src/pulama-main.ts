@@ -12,6 +12,9 @@
  *                                                   proves it against the lit holder, and prints exactly ONE stdout line (the seat
  *                                                   and its signer) the host's shim writes to the house's keep-seat.json at 0600, or
  *                                                   one refusal line and exit 1; it writes no file (the container stands read-only)
+ *   node dist/src/pulama-main.js rehive <N>         the operator rehives a SHUT face (its veil-archive row holds another identity's
+ *                                                   Archive): reads the face's own route on a real terminal; the face stands its
+ *                                                   hive again from its seed at its next wear
  *   node dist/src/pulama-main.js lock               drop every session, zero-fill every key
  *   node dist/src/pulama-main.js status             lit or not, faces open, sessions, attempts left, the reported image
  *   node dist/src/pulama-main.js image <digest>     the host shim reports the image digest it raises; as
@@ -49,6 +52,8 @@ import { loadIdentityAnchors } from "./identity-anchors.js";
 import { loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { pulamaAdmissions } from "./pulama-admit.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "./pulama-hand.js";
+import { rehiveShutFace } from "./face-rehive.js";
+import { handActRefusal } from "./hand-act-gate.js";
 import { PulamaVerbUsage, keepSeatLine, readRoute, runHandVerb } from "./pulama-verbs.js";
 import { servePulama } from "./pulama-server.js";
 import { listenPulama, socketPathFits } from "./pulama-socket.js";
@@ -86,7 +91,9 @@ async function serve(): Promise<void> {
     group: async (ordinal: number) => (await loadIdentityAnchors(ordinal).catch(() => null))?.personaGroupId ?? null,
     signer: (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => wardRootSigner(ordinal, wardCredential(credentials), `the face root at h${ordinal}, for a lei at the pūlama's hand door`),
   };
-  const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, onLog: log });
+  // THE REHIVE runs over this pūlama's own holder and custody files: the face's key opens for the act alone (`openFaceForAct`).
+  const rehive = (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => rehiveShutFace({ holder, io: new FsCustodyIo(homes), ordinal, credentials });
+  const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, rehive, onLog: log });
 
   // THE VESSEL SOCKET CLAIMS FIRST: a second pūlama over the same socket refuses here, before it touches a hand door.
   const listener = await listenPulama(socket, (channel) => server.accept(channel));
@@ -103,7 +110,11 @@ async function serve(): Promise<void> {
       let frame: unknown = null;
       try { frame = JSON.parse(buffered.slice(0, at)); } catch { /* answers unknown-act */ }
       buffered = "";
-      door(frame).then(
+      // A HAND ACT reads its peer first (`hand-act-gate`): an AI seat's peer never rehives a face.
+      const gated = (frame as { op?: unknown } | null)?.op === "rehive"
+        ? handActRefusal(sock).then((refused) => (refused === null ? door(frame) : { op: "rehive", reading: refused }))
+        : door(frame);
+      gated.then(
         (answer) => sock.end(JSON.stringify(answer) + "\n"),
         () => sock.end(JSON.stringify({ op: "fault", reading: "hand-act-faulted" }) + "\n"),
       );

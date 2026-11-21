@@ -17,7 +17,7 @@ describe("the rehive's answer", () => {
   test("V1 from the seed: the moved row, the loss, and the next acts in order", () => {
     const text = rehiveLines(ANSWER).join("\n");
     expect(text).toContain("restored identity 4719534d00000000aaaa…");
-    expect(text).toContain(`moved aside to ${ANSWER.aside}`);
+    expect(text).toContain(`rest aside at ${ANSWER.aside}`);
     expect(text).toContain("nothing was deleted");
     expect(text).toMatch(/LOST with the old Archive: the prekey secrets/);
     const wear = text.indexOf("lares vault unlock --all --face 1"), share = text.indexOf("lares bag share --list"), kahu = text.indexOf("lares nexus cabal standing 0xfeed");
