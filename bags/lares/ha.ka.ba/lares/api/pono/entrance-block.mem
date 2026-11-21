@@ -24,7 +24,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/entrance-block"
 
 A shared substrate never merely //risks// a false now. It ''manufactures a real one — and then leans on it.''
 
-Two domains reach this independently, sharing no vocabulary (2026-07-11, two tasked spirits):
+Two domains ground it independently, sharing no vocabulary (the scouts: #/rulings):
 
 <<~ scale name=`grounds` ranks=`cardiac ~ the Arnol'd tongues hold nonzero measure for ARBITRARILY SMALL coupling — no safe epsilon stands -> physarum ~ the tube contractions organize into a network-wide peristaltic wave; the entrainment CARRIES the transport, and the shared cytoplasm couples the oscillators whether or not anyone wills it`>>
 
@@ -46,7 +46,7 @@ Cardiology names the mechanism. A parasystolic focus keeps its own rhythm beside
 
 <<~moves name=`shared-substrate` params=`sovereign-body on/one-per-stream if/N-rhythms-carry-payload do/mount-the-shore-at-the-process-wall`>>
 
-''RULING (operator, 2026-07-11): ONE SOVEREIGN BODY PER STREAM.'' One OS process per stream — its own asyncio loop, its own nalu gate, its own recovered beat. No shared scheduler tick, no shared heap, no shared GC. The process wall MOUNTS the entrance block; nothing smaller holds it.
+''ONE SOVEREIGN BODY PER STREAM'' (#/rulings). One OS process per stream — its own asyncio loop, its own nalu gate, its own recovered beat. No shared scheduler tick, no shared heap, no shared GC. The process wall MOUNTS the entrance block; nothing smaller holds it.
 
 <<~/ahu>>
 
@@ -54,7 +54,7 @@ Cardiology names the mechanism. A parasystolic focus keeps its own rhythm beside
 
 !! Forbid the PHASE, never the PERIOD
 
-The earlier framing — //"the rhythms MUST NOT entrain"// — cut too coarse. It names the wrong quantity.
+A ban on entrainment as such — //"the rhythms MUST NOT entrain"// — cuts too coarse: it names the wrong quantity.
 
 The ''gankogui'' bell plays //without variation, steadily, without error, throughout the piece//: it carries a ''cycle'' and ''no message''. Around it the drummers hold ''private downbeats'' — the same period, different origins — and the music LIVES in that non-coincidence.
 
@@ -66,11 +66,11 @@ The ''gankogui'' bell plays //without variation, steadily, without error, throug
 
 <<~ ahu slot=`#/the-wait`>>
 
-!! The WAIT ~ the coupling channel canon missed
+!! The WAIT ~ the coupling channel beside the data path
 
 ''The false now enters not through the DATA path, but through the WAIT.''
 
-Canon already holds //"the daemon-plane carries verbs + a data-pointer, NO payload"// (#nalu, the home split). That reads ''necessary and NOT sufficient.'' A payload-free coordinator a handler must ''block on'' stands as a conductor — ''regardless of what it carries.''
+Canon holds //"the daemon-plane carries verbs + a data-pointer, NO payload"// (#nalu, the home split). That reads ''necessary and NOT sufficient.'' A payload-free coordinator a handler must ''block on'' stands as a conductor — ''regardless of what it carries.''
 
 ''Any place a handler waits on the centre to advance its own recovery, the centre has become the clock.''
 
@@ -154,16 +154,15 @@ The py capture body reads ''disposable''. The ''worldline'' holds the shrine.
 
 <<~/ahu>>
 
-<<~ ahu slot=`#/owed`>>
+<<~ ahu slot=`#/rulings`>>
 
-!! Owed ~ what this canon has not yet paid for
+!! Rulings and provenance
 
-''`embed_io` stands untested against the WAIT.'' The warm embedder rides as a shared holder — //"the model is the resource"// — and every stream reaches it. A stream that POINTS at the holder clears the shore; a stream that BLOCKS on it couples through the queue. ''Test it, or give each body its own embedder and pay the memory.''
-
-Every shared resource in the py fleet owes the same test: `content_io` · `structurepalace_io` · `form_store` · the WAL · the drain ledger. ''The question never reads "does it carry payload." It reads "does a stream WAIT on it."''
+# Operator ruling 2026-07-11: ONE SOVEREIGN BODY PER STREAM — one OS process per stream, its own loop, gate and recovered beat; the process wall mounts the entrance block (#/entrance-block).
+# The grounds, 2026-07-11: two tasked spirits read cardiac entrainment and physarum peristalsis and reached the coupling law independently (#/the-law). The record, and the WAIT tests every shared resource still owes: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/entrance-block-record`>>.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qNG2f61VVufgPwuC-8O53QhrTeFbBcpLlwm8bcqI-SE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DJDJnGcUrbv4GE-PE8Ix6Vi1Johkl34l8RWSTSJ-JZw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

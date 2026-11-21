@@ -57,7 +57,7 @@ runs STRUCTURAL, a property of shared mind, never a bug a cleaner harness remove
 
 No amount of harness engineering — better prompts, stricter
 rubrics, ensembling the same family — closes a loop whose two ends share one epistemic space; the four
-deep-knowledge scouts converged here, and the self-preference literature certifies it (a model prefers
+deep-knowledge scouts converge here (#/grounds), and the self-preference literature certifies it (a model prefers
 its own family's output, the mirror rating its own reflection). The circularity does not yield to
 cleverness inside the loop; it yields ONLY to an external license.
 
@@ -166,11 +166,10 @@ survived a real chance to refute.
 
 !! Rig disciplines ~ the five a forward-seed rig cannot run without
 
-Recovered from a Stone-audited rig design that lives now only as a record. Its grader travelled alone —
-its lexicon sits at `qa_anchor/lexicons/register_markers.json` with provenance intact (Hyland metadiscourse
-+ CoNLL-2010/BioScope cues + LIWC + Wikipedia words-to-watch), read by `qa_anchor/register.py`. The
-''disciplines'' had no home, and a rig that keeps the instrument while losing these measures confidently
-and means nothing.
+The rig's grader carries its lexicon at `packages/lararium-sensorium/scripts/qa_anchor/lexicons/register_markers.json`
+with provenance intact (Hyland metadiscourse + CoNLL-2010/BioScope cues + LIWC + Wikipedia words-to-watch),
+read by `qa_anchor/register.py`. The ''disciplines'' below ride beside it, since a rig that keeps the
+instrument while losing them measures confidently and means nothing (their source: #/rulings).
 
 !!! The PRETEST ~ turn assumed labels into a measured floor
 
@@ -300,8 +299,8 @@ turns it ranks high should produce FEWER Mana-Drift / off-true tells downstream
 game, because the catalogued failures carry their own independent definitions and operator-correction handles.
 
 ''Until the triad clears, the honest status holds:'' Tech measured, Arcane self-reported-and-unwitnessed.
-The framework's own grace-rating named the gap CORRECTLY — it
-reported "this reads Arcane" while marking that no external witness had checked — and that honest
+The framework's own grace-rating names the gap CORRECTLY — it
+reports "this reads Arcane" while marking that no external witness has checked — and that honest
 self-marking IS the posture this meme extends into method. The triad turns the self-report into a witnessed
 measurement; before it clears, the node states the Arcane as testimony, never as established fact.
 
@@ -347,16 +346,25 @@ Where the four scouts converge, the design seats at Synthesis-Canon; the specifi
 instruments, and the flow-lens hold at Synthesis, naming reconciliations and method-choices rather than
 settled law.
 
-''The compute kernel already stands.'' The build spirit owns the code; this meme owns the design. The
+''The compute kernel stands.'' The build spirit owns the code; this meme owns the design. The
 statistical core — `(d′, criterion)` Signal-Detection recovery, the unconditional loglinear correction,
 the percentile-bootstrap engine, Krippendorff's α with band-classification and bootstrap CI, and the
 four-story KUE-1 verdict (SENSITIVITY · CRITERION · AMBIGUOUS · NOT_RARE) — rides the `qa_anchor` kernel
-(`packages/lararium-mempalace/scripts/qa_anchor/`), pure stdlib + numpy, deterministic, unit-tested. That
+(`packages/lararium-sensorium/scripts/qa_anchor/`), pure stdlib + numpy, deterministic, unit-tested. That
 kernel grounds the "absence ≠ absence" theorem this design exists to resolve: a low marker-rate
 under-determines between low `d′` (blindness) and high `c` (caution), and only a human ground-truth pair
 recovers the split — which is why the gold anchor reads as mathematically MANDATORY, never merely good
-practice. The SAMPLE stage, the native DETECTORS, and the human kumu labels await downstream (the build
-spirit's lane); this meme states the design they enact.
+practice. The SAMPLE stage, the native DETECTORS, and the human kumu labels stand unbuilt; this meme states the
+design they enact.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings and provenance
+
+# Four deep-knowledge scouts, each passing independently, converge on the structural circularity (Semantic Laundering), the one ordering (human-gold licenses judge), and the MTMM design over an ablation-and-decoy artifact set (#/core-defense, #/mtmm, #/grounds).
+# The rig disciplines (#/rig-disciplines) come from a Stone-audited forward-seed rig design that rests only as a record; its grader travelled alone into `qa_anchor`, and the disciplines found their home here.
 
 <<~/ahu>>
 
@@ -375,6 +383,6 @@ spirit's lane); this meme states the design they enact.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;v9lf3H3aQd0wR_3Ylj3Duuh9dBmMTriVuf9QC0DA9KE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YWkN_jugosRTWAE94cxVOaVt4LEhfuZmM3IbbTKamUE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
