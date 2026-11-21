@@ -14,7 +14,8 @@
  * THE RETURN COMES FIRST. `beginRite` returns the lei before it rests the guest half, and the caller takes the vessel down only
  * after `beginRite` answers: a rite with no lei or no return left begins nothing. A rite that dies after its
  * return leaves a begun half alone, and the lei's return stays spent. A crash between the return and the guest half leaves an
- * orphan return; the next begin at the same branch, head and tree reuses it (`orphanReturn`), so a retry never spends twice.
+ * orphan return; the next begin at the same branch, head, tree and image reuses it (`checkReturn` finds it, even past the
+ * lei's count), so a retry never spends twice.
  *
  * THE IMAGE BINDS A KŪKULU. A begin that names the image it raises rests it in the guest half, and a landing reads par only
  * over the same image (`image-differs` otherwise). A half resting unlanded reads as debt off its raw rows (`pendingBegins`),
@@ -29,8 +30,8 @@
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import type { SwarmLeiRite } from "./swarm-lei-rite.js";
 import {
-  SwarmRefused, checkReturn, claimReturn, signSwarmAct, swarmActCid, swarmLeiReturnedTitle, swarmTesseraPrefix, swarmTesseraTitle, verifySwarmRecord,
-  type SwarmLeiBody, type SwarmLeiLine, type SwarmReturnable, type SwarmRiteBegunBody, type SwarmRiteLandedBody, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
+  SwarmRefused, checkReturn, claimReturn, signSwarmAct, swarmActCid, swarmTesseraPrefix, swarmTesseraTitle, verifySwarmRecord,
+  type SwarmLeiLine, type SwarmReturnable, type SwarmRiteBegunBody, type SwarmRiteLandedBody, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "./swarm-tiddlers.js";
 import type { WardActWitness } from "./ward-cosign.js";
 
@@ -54,7 +55,7 @@ export interface TesseraReading {
  */
 export async function beginRite(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head: string; readonly tree: string; readonly image?: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort, ward: WardActWitness):
   Promise<{ tessera: string; rite: SwarmLeiRite; lei: string; n: number; begun: string }> {
-  return beginChecked(wiki, await checkReturn(wiki, at, trust, group, vessel, ward));
+  return beginChecked(wiki, await checkReturn(wiki, at, trust, group, vessel, ward, undefined, { orphan: true }));
 }
 
 /**
@@ -63,37 +64,14 @@ export async function beginRite(wiki: SwarmWikiPort, at: SwarmLeiLine & { readon
  */
 export async function beginChecked(wiki: SwarmWikiPort, checked: SwarmReturnable): Promise<{ tessera: string; rite: SwarmLeiRite; lei: string; n: number; begun: string }> {
   const { at, group, spender: vessel } = checked;
-  // ONE RETURN PER BEGIN: a return this vessel claimed at this branch, head and tree whose guest half never rested (a crash
-  // between the two writes) pays for this begin, so a retry never claims a second.
-  const orphan = await orphanReturn(wiki, checked);
-  const ret = orphan === null ? await claimReturn(wiki, checked) : { lei: checked.lei.cid, n: orphan };
+  // ONE RETURN PER BEGIN: a return this vessel claimed at this branch, head, tree and image whose guest half never rested (a
+  // crash between the two writes; `checkReturn` found it, even past the lei's count) pays for this begin, never a second claim.
+  const ret = checked.orphan === undefined ? await claimReturn(wiki, checked) : { lei: checked.lei.cid, n: checked.orphan };
   const tessera = tesseraOf(ret);
   const act = await signSwarmAct({ act: "rite-begun", group, rite: at.rite, branch: at.branch, head: at.head, tree: at.tree, lei: ret.lei, n: ret.n, tessera, ...(at.image === undefined ? {} : { image: at.image }) }, vessel);
   // One return claims one row, so one tessera: a guest half already resting names a return this vessel never made.
   if (!(await wiki.writeNew(swarmTesseraTitle(tessera, "guest"), JSON.stringify(act)))) throw new SwarmRefused("rite-begun-stands", `a guest half already rests for tessera ${tessera}`);
   return { tessera, rite: at.rite, lei: ret.lei, n: ret.n, begun: swarmActCid(act) };
-}
-
-/**
- * The return a begin may reuse: one this vessel claimed on the checked lei at the same branch, head and tree, whose guest half
- * never rested. Null where none stands.
- */
-async function orphanReturn(wiki: SwarmWikiPort, checked: SwarmReturnable): Promise<number | null> {
-  const { at, lei, group, spender } = checked;
-  const returns = lei.reach === "wide" ? (lei.act.body as Extract<SwarmLeiBody, { reach: "wide" }>).returns : 1;
-  const own = spender.key.toLowerCase();
-  const trust: SwarmTrust = { hand: () => false, vessel: (key) => key.toLowerCase() === own, lead: () => false };
-  for (let n = 1; n <= returns; n++) {
-    const title = swarmLeiReturnedTitle(lei.cid, n);
-    const text = await wiki.read(title);
-    if (text === null) continue;
-    if ((await wiki.read(swarmTesseraTitle(tesseraOf({ lei: lei.cid, n }), "guest"))) !== null) continue;
-    const read = verifySwarmRecord(text, title, trust, group);
-    if (!read.ok || read.act.body.act !== "lei-returned") continue;
-    const b = read.act.body;
-    if (b.branch === at.branch && b.head === at.head && b.tree === at.tree) return n;
-  }
-  return null;
 }
 
 /**

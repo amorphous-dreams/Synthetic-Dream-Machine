@@ -69,6 +69,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"pulama-main.js light"*) : > "$CALL_LOG.lit"; exit "\${FAKE_EXEC_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js status"*) lit='{"op":"status","lit":true}'; if [ -e "$CALL_LOG.lit" ] && [ -n "\${FAKE_PULAMA_STATUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_PULAMA_STATUS_AFTER}"; else printf '%s\\n' "\${FAKE_PULAMA_STATUS-$lit}"; fi; exit 0;; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
+      // THE ABANDON'S TERMS and the kūkulu's debt read, as the vessel answers them where a test scripts one.
+      `case " $* " in *" rite abandon "*"--terms"*) printf '%s\\n' "\${FAKE_ABANDON_TERMS:-}"; exit 0;; esac\n` +
+      `case " $* " in *" rite receipts "*) printf '%s\\n' "\${FAKE_RECEIPTS:-}"; exit "\${FAKE_RECEIPTS_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js lei "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_LEI_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
       `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
@@ -1134,7 +1137,7 @@ for (const [name, shim] of shims) {
     assert.equal(kept.keepOwed, false);
   });
   test(`${name}: keep-after-landing: under the rite (rebuild --keep-after-landing) the raise keeps nothing after the up and names the keep owed; the keep-owed verb then keeps once the census reads clean and clears the mark, or names the deferral and keeps the mark`, async () => {
-    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup" };
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup", FAKE_RECEIPTS: '{"ok":true,"data":{"rite":"kukulu","standing":[],"pending":[],"offer":null}}' };
     const r = await run(shim, ["rebuild", "--keep-after-landing"], { checkout: "clean", env: { ...env, LARES_HOST_CLI: await keepTwice(1, 0) } });
     assert.equal(r.status, 0, r.stderr);
     assert.equal(r.calls.split("\n").filter((l) => /HOSTCLI rite keep/.test(l)).length, 1, r.calls);
@@ -1153,6 +1156,33 @@ for (const [name, shim] of shims) {
     const none = await run(shim, ["keep-owed"], { env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
     assert.equal(none.status, 0, none.stderr);
     assert.doesNotMatch(none.calls, /HOSTCLI|vessel census/);
+  });
+  // THE THIRD READ (gate 2): an owed keep waits for the landing. `keep-owed` refuses while any kūkulu half rests unlanded (or the
+  // debt reads nowhere), keeping the mark; under the rite the down path keeps nothing while a mark is owed; a raise reports the
+  // image its vessel runs; and under a pūlama `rite abandon` reads its terms in the vessel, signs at the hand door, and lands.
+  test(`${name}: keep-owed-waits-for-the-landing: a half resting unlanded, or a debt read that fails, keeps nothing and keeps the mark; under the rite a down with a mark owed keeps nothing before the landing`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup" };
+    const pending = '{"ok":true,"data":{"rite":"kukulu","standing":[],"pending":[{"tessera":"' + "c".repeat(64) + '","group":"g","branch":"main","head":"a"}],"offer":null}}';
+    for (const extra of [{ FAKE_RECEIPTS: pending }, { FAKE_RECEIPTS: "", FAKE_RECEIPTS_RC: "2" }]) {
+      const waits = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, ...extra, LARES_HOST_CLI: await keepTwice(0, 0) } });
+      assert.equal(waits.status, 0, waits.stderr);
+      assert.doesNotMatch(waits.calls, /HOSTCLI/);
+      assert.match(waits.stderr, /keep: owed; a kūkulu half rests unlanded \(or the debt reads nowhere\), so the keep waits for `lares rite kukulu` to land it/);
+      assert.equal(waits.keepOwed, true);
+    }
+    const r = await run(shim, ["rebuild", "--keep-after-landing"], { checkout: "clean", houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.calls, /HOSTCLI/);
+    assert.match(r.stderr, /the keep a down left owed waits for the rite's landing/);
+    assert.equal(r.keepOwed, true);
+  });
+  test(`${name}: vessel-image-reads-the-running-image: it prints the image the running vessel runs, by digest; none running prints nothing`, async () => {
+    const r = await run(shim, ["vessel-image"], { env: { ...STANDING, FAKE_VESSEL_IMAGE: "sha256:" + "ee".repeat(32) } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout.trim(), "sha256:" + "ee".repeat(32));
+    const none = await run(shim, ["vessel-image"], { env: MOUNTS });
+    assert.equal(none.status, 0, none.stderr);
+    assert.equal(none.stdout.trim(), "");
   });
   test(`${name}: rebuild-takes-at-or-prior: --at <rev> builds that commit; --resume, --prior beside --at, or a stray word, refuses before anything moves`, async () => {
     const at = await run(shim, ["rebuild", "--at", "HEAD"], { checkout: "clean", env: { ...MOUNTS, FAKE_CUSTODY_OUTPUT: HELD } });
@@ -1337,6 +1367,25 @@ test(`${name}: lei-hand-door-chain: under a pūlama, lei kui reads the terms in 
   const plain = await run(shim, ["lei", "show", "--rite", "push", "--branch", "x"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid" } });
   assert.match(plain.calls, /lares node \S+ lei show --rite push --branch x/);
   assert.doesNotMatch(plain.calls, /pulama-main\.js lei/);
+});
+test(`${name}: rite-abandon-hand-door-chain: under a pūlama, rite abandon reads its terms in the vessel, the pūlama signs the marks on this terminal as the hand, and the vessel lands them; no terminal signs nothing; a signing that answers nothing lands nothing`, { skip }, async () => {
+  const terms = '{"face":0,"rite":"kukulu","branch":"main","parts":[{"tessera":"' + "c".repeat(64) + '","group":"g","branch":"main"}]}';
+  const answer = '{"op":"lei","act":"abandon","reading":"signed","face":0,"records":[{"body":{"act":"rite-abandoned"}}]}';
+  const r = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: terms, FAKE_LEI_ANSWER: answer } });
+  assert.equal(r.status, 0, r.stdout);
+  const lines = r.calls.split("\n");
+  const read = lines.findIndex((l) => /exec (?:-e \S+ )*-T lares node \S+ rite abandon --terms --rite kukulu --branch main$/.test(l));
+  const sign = lines.findIndex((l) => l.includes(`--profile pulama exec --no-TTY=false pulama node packages/lararium-node/dist/src/pulama-main.js lei abandon ${terms}`));
+  const land = lines.findIndex((l) => l.includes("rite abandon --signed "));
+  assert.ok(read >= 0 && sign > read && land > sign, `order terms, sign (attached), land:\n${r.calls}`);
+  assert.deepEqual(JSON.parse(lines[land].slice(lines[land].indexOf("--signed ") + "--signed ".length, lines[land].lastIndexOf(" --rite"))), JSON.parse(answer));
+  const noTty = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: terms, FAKE_LEI_ANSWER: answer } });
+  assert.notEqual(noTty.status, 0);
+  assert.match(noTty.stderr, /an abandon under a pūlama reads its route on a terminal/);
+  assert.doesNotMatch(noTty.calls, /pulama-main\.js lei/);
+  const refused = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: terms } });
+  assert.notEqual(refused.status, 0);
+  assert.doesNotMatch(refused.calls, /rite abandon --signed/);
 });
 test(`${name}: pulama-keep-seat-writes-the-seat: the pūlama's seat line lands verbatim as config/keep-seat.json (0600), the signer never shown; an existing seat refuses without --reseat; a refusal writes nothing`, { skip }, async () => {
   const seat = { publicKey: "ab".repeat(32), stretchSalt: "11".repeat(16), tree: { slots: [{ kind: "passphrase", salt: "s1" }] }, verifyKey: "cd".repeat(32) };

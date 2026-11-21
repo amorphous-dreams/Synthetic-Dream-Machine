@@ -7,7 +7,7 @@
 import { expect, test } from "vitest";
 import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
-import { beginLentFaces, lentOfferFaces, offerVouchesOf, refuseStandingBegin, standingKukuluBegins } from "../src/commands/rite.js";
+import { acceptAbandons, beginLentFaces, lentOfferFaces, offerVouchesOf, refuseStandingBegin, standingKukuluBegins } from "../src/commands/rite.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
 import {
   SwarmRefused, abandonRites, beginChecked, checkReturn, conferre, landRite, pendingBegins, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiReturnedPrefix, swarmLeiReturnedTitle,
@@ -173,7 +173,7 @@ test("RED: a face rehived since its begin (its old half verifies under no trust 
   expect(await standingKukuluBegins([0], rehivedRed, "develop")).toEqual([]);
   const debt = await pendingBegins(wiki, "kukulu", "develop");
   expect(() => refuseStandingBegin(debt)).toThrow(expect.objectContaining({ code: "rite-begun-stands", message: expect.stringMatching(new RegExp(`old-group tessera ${begun.tessera}[\\s\\S]*lares rite kukulu --abandon --branch develop`)) }));
-  await abandonRites(wiki, debt, atom);
+  await abandonRites(wiki, debt, hand);
   expect(await pendingBegins(wiki, "kukulu", "develop")).toEqual([]);
 });
 
@@ -213,4 +213,47 @@ test("RED: the pūlama's begin over one offer is idempotent: a composition refus
   if (!first.ok) throw new Error("the first begin refused");
   await port.land(first.tessera, at);
   expect(await port.begin({ lei: [lei], unstrung: [] }, at)).toMatchObject({ ok: true, n: 2 });
+});
+
+/**
+ * THE THIRD READ (gate 2): the abandon is a hand act (a ward route opens the root, or the pūlama's hand door signs it), and the
+ * vessel lands only marks a lent face's hand signed over a half pending on the line; the pūlama's reuse binds the image.
+ */
+test("RED: the vessel lands an abandon mark only where a lent face's HAND signed it over a half pending on the line; a mark the vessel's atom signed, or one over no pending half, lands nothing; CONTROL: the abandon row is a ward act unless it carries the hand's signed marks or asks its terms", async () => {
+  const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
+  const rows = new Map<string, string>();
+  const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
+    list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
+  const hand = await keyed(70), atom = await keyed(71);
+  const trust: SwarmTrust = { hand: (k) => k === hand.key, vessel: (k) => k === atom.key, lead: () => false };
+  const lei = await signSwarmAct({ act: "lei", group: "g0", rite: "kukulu", branch: "main", after: null, reach: "wide", returns: 3 }, hand);
+  await wiki.write(swarmLeiRecordTitle("kukulu", "main", swarmActCid(lei)), JSON.stringify(lei));
+  const at = { rite: "kukulu" as const, branch: "main", head: "a".repeat(40), tree: "b".repeat(40) };
+  const begun = await beginChecked(wiki, await checkReturn(wiki, at, trust, "g0", atom, { accepts: () => true }));
+  const mark = (signer: typeof hand, tessera = begun.tessera) => signSwarmAct({ act: "rite-abandoned", group: "g0", rite: "kukulu", branch: "main", tessera }, signer);
+  const hands = (key: string) => key === hand.key;
+  await expect(acceptAbandons(wiki, "main", [await mark(atom)], hands)).rejects.toMatchObject({ code: "rite-abandon-unsigned" });
+  await expect(acceptAbandons(wiki, "main", [await mark(hand, "9".repeat(64))], hands)).rejects.toMatchObject({ code: "rite-abandon-not-pending" });
+  expect(await pendingBegins(wiki, "kukulu", "main")).toHaveLength(1);
+  expect(await acceptAbandons(wiki, "main", [await mark(hand)], hands)).toEqual([{ tessera: begun.tessera, group: "g0", head: at.head }]);
+  expect(await pendingBegins(wiki, "kukulu", "main")).toEqual([]);
+  expect(storeVerbNeedsWard("rite-abandon", { rite: "kukulu", branch: "main" })).toBe(true);
+  expect(storeVerbNeedsWard("rite-abandon", { rite: "kukulu", branch: "main", signed: [] })).toBe(false);
+  expect(storeVerbNeedsWard("rite-abandon", { rite: "kukulu", branch: "main", terms: true })).toBe(false);
+});
+
+test("RED: the pūlama's reuse binds the image: a retry over another image claims its own return and never takes the first image's half; CONTROL: the same image reuses", async () => {
+  const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
+  const rows = new Map<string, string>();
+  const records: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
+    list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
+  const hand = await keyed(80), pulama = await keyed(81);
+  const lei = await signSwarmAct({ act: "lei", group: "g0", rite: "kukulu", branch: "main", after: null, reach: "wide", returns: 3 }, hand);
+  const at = (image: string) => ({ group: "g0", branch: "main", head: "a".repeat(40), tree: "b".repeat(40), image, hand: (k: string) => k === hand.key, by: pulama });
+  const port = kukuluRiteOver(records);
+  const a = await port.begin({ lei: [lei], unstrung: [] }, at("sha256:" + "aa".repeat(32)));
+  const b = await port.begin({ lei: [lei], unstrung: [] }, at("sha256:" + "bb".repeat(32)));
+  expect(a).toMatchObject({ ok: true, n: 1 });
+  expect(b).toMatchObject({ ok: true, n: 2 });
+  expect(await port.begin({ lei: [lei], unstrung: [] }, at("sha256:" + "aa".repeat(32)))).toEqual(a);
 });

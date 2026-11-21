@@ -394,7 +394,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   const swarmVerb = (action: "show" | "cap-set" | "share-set" | "lei-kui" | "lei-unstring" | "lei-restring", args: Readonly<Record<string, unknown>>) =>
     runSwarmVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, ...opt("wiki", deps.swarmWiki), ...opt("ward", wardOf(args)) });
   const riteVerb = (action: RiteAction, args: Readonly<Record<string, unknown>>) =>
-    runRiteVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, ...opt("wiki", deps.swarmWiki) });
+    runRiteVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, ...opt("wiki", deps.swarmWiki), ...opt("ward", wardOf(args)) });
   return {
     "rite-begin": (args) => answer("rite-begin", () => riteVerb("begin", args)),
     "rite-land": (args) => answer("rite-land", () => riteVerb("land", args)),

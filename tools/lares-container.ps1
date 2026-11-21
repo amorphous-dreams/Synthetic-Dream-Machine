@@ -8,7 +8,8 @@
 # where its code moved or it stands unlit, up, its admit where owed, the last face worn. It reads where the house stands each
 # run, so a stopped run picks up from there; with no terminal, a light or admit owed stops it before anything moves; `--image`
 # stops after the image and prints the reading as one JSON line; `--keep-after-landing` leaves a keep a down left owed
-# (`run/keep-owed`) to `keep-owed`, which the rite runs once it lands its halves. The pūlama reads every route; this shim never reads or
+# (`run/keep-owed`) to `keep-owed`, which the rite runs once it lands its halves (it waits while a kūkulu half rests
+# unlanded). `vessel-image` prints the image the running vessel runs; `rite abandon` under a pūlama walks the hand door. The pūlama reads every route; this shim never reads or
 # types one. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
@@ -425,7 +426,7 @@ $script:KeepSaid = ''
 function KeepOwedMark { return (Join-Path (Join-Path $House 'run') 'keep-owed') }
 function KeepBeforeDown {
   $script:KeepSaid = 'no keep workspace named'
-  if ([string]::IsNullOrEmpty((ValueOf 'LARES_KEEP_WORKSPACE') + (ValueOf 'LARES_WORKSPACES'))) { Remove-Item -LiteralPath (KeepOwedMark) -Force -ErrorAction SilentlyContinue; return }
+  if ([string]::IsNullOrEmpty((ValueOf 'LARES_KEEP_WORKSPACE') + (ValueOf 'LARES_WORKSPACES'))) { return }
   $hostCli = ValueOf 'LARES_HOST_CLI'
   if ($hostCli) { $cmd = $hostCli; $pre = @() }
   elseif (Get-Command node -ErrorAction SilentlyContinue) { $cmd = 'node'; $pre = @((Join-Path $Root 'packages/lares-cli/bin/lares.mjs')) }
@@ -653,7 +654,14 @@ function DownVessel([string[]]$opts) {
     [Console]::Error.WriteLine('lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown')
     [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
     OfferAcceptLoss
-  } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { KeepBeforeDown; CensusBeforeStop; SaveVesselLog ($ids -join "`n") }
+  } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) {
+    # UNDER THE RITE an owed keep waits for its landing: the down keeps nothing while the mark stands.
+    if ($script:KeepLater -and (Test-Path -LiteralPath (KeepOwedMark))) {
+      $script:KeepSaid = 'owed; it runs after the rite lands its halves'
+      [Console]::Error.WriteLine("lares-container: the keep a down left owed waits for the rite's landing; this down keeps nothing")
+    } else { KeepBeforeDown }
+    CensusBeforeStop; SaveVesselLog ($ids -join "`n")
+  }
   else { $script:KeepSaid = 'no vessel stood, so no keep ran' }
   if ($pulama -eq 'running') {
     # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
@@ -1154,6 +1162,12 @@ function RebuildVerb([string[]]$rargs) {
 function KeepOwedVerb([string[]]$kargs) {
   if ($kargs.Count -gt 0) { Die 'keep-owed takes no argument' }
   if (-not (Test-Path -LiteralPath (KeepOwedMark))) { [Console]::Error.WriteLine('lares-container: keep: none owed'); return }
+  # THE KEEP WAITS FOR THE LANDING: a kūkulu half resting unlanded on any line, or a debt read that fails, keeps nothing.
+  $debt = (($null | & docker compose @Base exec -T lares node $Cli rite receipts --rite kukulu --json 2>$null) -join '') -replace '\s', ''
+  if ($LASTEXITCODE -ne 0 -or -not $debt.Contains('"pending":[]')) {
+    [Console]::Error.WriteLine('lares-container: keep: owed; a kūkulu half rests unlanded (or the debt reads nowhere), so the keep waits for `lares rite kukulu` to land it')
+    return
+  }
   KeepAfterRaise
   [Console]::Error.WriteLine("lares-container: keep: $($script:KeepSaid)")
 }
@@ -1162,6 +1176,34 @@ switch ($verb) {
   'up' { UpVerb $rest }
   'rebuild' { RebuildVerb $rest }
   'keep-owed' { KeepOwedVerb $rest }
+  'vessel-image' {
+    # THE IMAGE THE RUNNING VESSEL RUNS, by digest (the rite lands over it, never over a tag that may have moved); none prints nothing.
+    if ($rest.Count -gt 0) { Die 'vessel-image takes no argument' }
+    $id = ((& docker compose @Base ps -q --status running lares 2>$null) -join '').Trim()
+    if ($LASTEXITCODE -eq 0 -and $id) { [Console]::Out.WriteLine(((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()) }
+  }
+  'rite' {
+    # THE ABANDON'S HAND DOOR UNDER A PŪLAMA: the vessel reads the abandon's terms, the pūlama reads the route on this terminal and
+    # signs one mark per pending half as the hand, and the vessel lands them. Without a pūlama the vessel's own ward reads the route.
+    $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
+    if ($PulamaMode -and $sub -eq 'abandon') {
+      $more = @(); if ($rest.Count -gt 1) { $more = @($rest[1..($rest.Count - 1)]) }
+      if (-not $script:Tty) { Die 'an abandon under a pūlama reads its route on a terminal; run it on one (nothing signed)' }
+      $terms = ($null | & docker compose @Base exec @PassEnv -T lares node $Cli rite abandon --terms @more) -join ''
+      if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      $answer = ''
+      & docker compose @Base --profile pulama exec --no-TTY=false pulama node $PulamaMain lei abandon $terms | ForEach-Object {
+        [Console]::Error.WriteLine($_)
+        $line = "$_".Trim("`r")
+        if ($line.StartsWith('{')) { $answer = '' }
+        $answer += $line
+      }
+      if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
+      $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli rite abandon --signed $answer @more
+      exit $LASTEXITCODE
+    }
+    RouteCli (@($verb) + $rest) $true
+  }
   'down'  { DownVessel $rest }
   'pulama' {
     if (-not $PulamaMode) { Die "pulama needs LARES_PULAMA=1 in the environment or $EnvFile" }

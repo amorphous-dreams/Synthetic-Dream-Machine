@@ -27,7 +27,11 @@
 #                                                `--image` stops after the image and prints the reading as one JSON line; `--keep-after-landing` (the rite's) leaves a keep a down
 #                                                left owed to `keep-owed`, which the rite runs once it lands its halves
 #   lares-container.sh keep-owed                 run the keep a down left owed (`run/keep-owed`) once the census reads
-#                                                clean, or name its deferral; with none owed it runs nothing
+#                                                clean, or name its deferral; it waits while a kūkulu half rests unlanded
+#   lares-container.sh vessel-image              print the image the running vessel runs, by digest (the rite lands over it)
+#   lares-container.sh rite abandon --rite kukulu --branch <b>
+#                                                under a pūlama, the abandon's hand door: the vessel reads its terms, the pūlama
+#                                                signs one mark per pending half on this terminal, the vessel lands them
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing.
 #                                                Every stand and restart this shim performs (`up` too) warns when the
@@ -156,7 +160,7 @@ KEEP_SAID=""
 keep_owed_mark() { printf '%s' "$HOUSE/run/keep-owed"; }
 keep_before_down() {
   KEEP_SAID="no keep workspace named"
-  if [ -z "$(value_of LARES_KEEP_WORKSPACE)$(value_of LARES_WORKSPACES)" ]; then rm -f -- "$(keep_owed_mark)"; return 0; fi
+  [ -n "$(value_of LARES_KEEP_WORKSPACE)$(value_of LARES_WORKSPACES)" ] || return 0
   host_cli=$(value_of LARES_HOST_CLI)
   if [ -n "$host_cli" ]; then set -- "$host_cli"
   elif command -v node >/dev/null 2>&1; then set -- node "$ROOT/packages/lares-cli/bin/lares.mjs"
@@ -686,7 +690,11 @@ down_vessel() { # $@ = compose-down options
     printf '%s\n' 'lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.' >&2
     offer_accept_loss
   elif [ -n "$down_id" ]; then
-    keep_before_down
+    # UNDER THE RITE an owed keep waits for its landing: the down keeps nothing while the mark stands.
+    if [ -n "$R_KEEP_LATER" ] && [ -e "$(keep_owed_mark)" ]; then
+      KEEP_SAID="owed; it runs after the rite lands its halves"
+      printf '%s\n' "lares-container: the keep a down left owed waits for the rite's landing; this down keeps nothing" >&2
+    else keep_before_down; fi
     census_before_stop
     save_vessel_log "$down_id"
   else
@@ -1166,6 +1174,12 @@ rebuild_verb() {
 keep_owed_verb() {
   [ "$#" -eq 0 ] || die "keep-owed takes no argument"
   if [ ! -e "$(keep_owed_mark)" ]; then printf '%s\n' 'lares-container: keep: none owed' >&2; return 0; fi
+  # THE KEEP WAITS FOR THE LANDING: a kūkulu half resting unlanded on any line, or a debt read that fails, keeps nothing.
+  ko_debt=$(compose exec -T lares node "$CLI" rite receipts --rite kukulu --json </dev/null 2>/dev/null | tr -d ' \t\r\n') || ko_debt=""
+  case "$ko_debt" in
+    *'"pending":[]'*) ;;
+    *) printf '%s\n' 'lares-container: keep: owed; a kūkulu half rests unlanded (or the debt reads nowhere), so the keep waits for `lares rite kukulu` to land it' >&2; return 0 ;;
+  esac
   keep_after_raise
   printf 'lares-container: keep: %s\n' "$KEEP_SAID" >&2
 }
@@ -1174,6 +1188,27 @@ case "$verb" in
   up) up_verb "$@" ;;
   rebuild) rebuild_verb "$@" ;;
   keep-owed) keep_owed_verb "$@" ;;
+  vessel-image)
+    # THE IMAGE THE RUNNING VESSEL RUNS, by digest (the rite lands over it, never over a tag that may have moved); none prints nothing.
+    [ "$#" -eq 0 ] || die "vessel-image takes no argument"
+    vi_id=$(compose ps -q --status running lares 2>/dev/null) || vi_id=""
+    if [ -n "$vi_id" ]; then docker inspect --format '{{.Image}}' "$vi_id" 2>/dev/null | tr -d '\r' || true; fi ;;
+  rite)
+    # THE ABANDON'S HAND DOOR UNDER A PŪLAMA: the vessel holds no face root, so it reads the abandon's terms (the face, one part
+    # per pending half), the pūlama reads the route on THIS terminal and signs one mark per half as the hand, and the vessel lands
+    # them. Without a pūlama the vessel's own ward reads the route (the attached CLI), as every ward act does.
+    if [ "${1:-}" = abandon ] && [ -n "$PULAMA_MODE" ]; then
+      shift
+      [ -n "$HAVE_TTY" ] || die "an abandon under a pūlama reads its route on a terminal; run it on one (nothing signed)"
+      # shellcheck disable=SC2046
+      terms=$(compose exec $(pass_env) -T lares node "$CLI" rite abandon --terms "$@" </dev/null) || exit $?
+      answer=$(compose --profile pulama exec --no-TTY=false pulama node "$PULAMA_MAIN" lei abandon "$terms" | tee /dev/stderr | tr -d '\r' | awk '/^\{/ { seen = 1; answer = "" } seen { answer = answer $0 } END { if (seen) print answer }')
+      [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
+      # shellcheck disable=SC2046
+      waited_exec $(pass_env) -T lares node "$CLI" rite abandon --signed "$answer" "$@" </dev/null
+      exit $?
+    fi
+    route_cli "$verb" "$@" ;;
   down) down_vessel "$@" ;;
   pulama)
     [ -n "$PULAMA_MODE" ] || die "pulama needs LARES_PULAMA=1 in the environment or $ENV_FILE"

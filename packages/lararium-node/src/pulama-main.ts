@@ -18,7 +18,7 @@
  *                                                   `image '{"digest":…,"seed":…}'` it carries beside it the seed line the
  *                                                   host read (the seed that image offers beside the founding record)
  *   node dist/src/pulama-main.js tessera            print the pūlama's signed tessera halves
- *   node dist/src/pulama-main.js lei kui|restring|unstring '<terms>'
+ *   node dist/src/pulama-main.js lei kui|restring|unstring|abandon '<terms>'
  *                                                   the operator strings, restrings or unstrings a lei: reads the route on a
  *                                                   real terminal, the face root signs one record here, and the answer prints
  *                                                   it for the vessel to land (`lares lei land`); terms naming `faces` sign

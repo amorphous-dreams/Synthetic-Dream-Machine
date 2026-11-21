@@ -176,9 +176,45 @@ describe("kukulu-binds-its-image-and-spends-once", () => {
     const rehived = { hand: () => false, vessel: () => false, lead: () => false };
     expect((await conferre(f.wiki, rehived, "face-group-rehived")).red.filter((r) => r.red === "landed-absent")).toEqual([]);
     expect(await pendingBegins(f.wiki, "kukulu", "other")).toEqual([]);
-    expect(await abandonRites(f.wiki, pending, f.vessel)).toEqual([open.tessera]);
+    expect(await abandonRites(f.wiki, pending, f.hand)).toEqual([open.tessera]);
     expect(await pendingBegins(f.wiki, "kukulu", BRANCH)).toEqual([]);
     expect((await conferre(f.wiki, f.trust, GROUP)).red).toEqual([expect.objectContaining({ tessera: open.tessera, red: "abandoned" })]);
     await expect(f.land(open.tessera)).rejects.toMatchObject({ code: "rite-abandoned" });
+  });
+});
+
+/**
+ * THE THIRD READ (gate 2): the orphan return is found before the lei's count refuses, so a crash after the LAST claim still
+ * reuses it; the claim names the image it paid for, so a retry over another image never takes it; and the abandon mark is the
+ * hand's own record.
+ */
+describe("kukulu-reuses-its-own-return-and-the-hand-abandons", () => {
+  const D1 = "sha256:" + "d1".repeat(32), D2 = "sha256:" + "d2".repeat(32);
+
+  test("RED: a crash after the LAST claim (zero spare returns) still reuses that return for a begin over the same image; the claim names its image; CONTROL: a begin over another image takes no other image's orphan and the spent lei refuses", async () => {
+    const f = await fixture();
+    const cid = await f.kui("kukulu", { reach: "wide", returns: 1 });
+    const at = { rite: "kukulu" as const, branch: BRANCH, head: HEAD, tree: TREE, image: D1 };
+    await claimReturn(f.wiki, await checkReturn(f.wiki, at, f.trust, GROUP, f.vessel, ONE_DEVICE));
+    expect(JSON.parse(f.rows.get(swarmLeiReturnedTitle(cid, 1))!)).toMatchObject({ body: { act: "lei-returned", image: D1 } });
+    await expect(beginRite(f.wiki, { ...at, image: D2 }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-returns-spent" });
+    const begun = await beginRite(f.wiki, at, f.trust, GROUP, f.vessel, ONE_DEVICE);
+    expect([begun.n, begun.tessera]).toEqual([1, tesseraOf({ lei: cid, n: 1 })]);
+    await expect(beginRite(f.wiki, at, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-returns-spent" });
+  });
+
+  test("RED: the abandon mark verifies as the HAND's record; CONTROL: a mark the vessel signed verifies as none", async () => {
+    const f = await fixture();
+    await f.kui("kukulu", { reach: "wide", returns: 2 });
+    await f.begin();
+    const pending = await pendingBegins(f.wiki, "kukulu", BRANCH);
+    await abandonRites(f.wiki, pending, f.hand);
+    expect(await readSwarmRecord(f.wiki, swarmTesseraTitle(pending[0]!.tessera, "abandoned"), f.trust, GROUP)).toMatchObject({ ok: true, act: { signer: f.hand.key, body: { act: "rite-abandoned" } } });
+    const g = await fixture();
+    await g.kui("kukulu", { reach: "wide", returns: 2 });
+    await g.begin();
+    const theirs = await pendingBegins(g.wiki, "kukulu", BRANCH);
+    await abandonRites(g.wiki, theirs, g.vessel);
+    expect(await readSwarmRecord(g.wiki, swarmTesseraTitle(theirs[0]!.tessera, "abandoned"), g.trust, GROUP)).toMatchObject({ ok: false });
   });
 });

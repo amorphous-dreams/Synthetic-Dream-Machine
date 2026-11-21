@@ -758,6 +758,58 @@ describe("kukulu-survives-a-ctrl-c", () => {
   it("RED (the blocker): with three faces lit and none named, the kūkulu's standing read rides the worn face's session as the begin and the offer do, never the refusal for several open; CONTROL: a plain receipts read still names its face", () => {
     for (const [verb, args] of [["rite-begin", {}], ["rite-offer", {}], ["rite-receipts", { rite: "kukulu" }], ["rite-abandon", { rite: "kukulu" }]] as const) expect(storeVerbRidesWorn(verb, args), verb).toBe(true);
     expect(storeVerbRidesWorn("rite-receipts", {})).toBe(false);
-    expect(storeVerbRidesWorn("rite-land", {})).toBe(false);
+    // A LANDING NAMING NO FACE rides the worn face too: the hand-landing line a read with no raw debt names carries no ordinal.
+    expect(storeVerbRidesWorn("rite-land", {})).toBe(true);
+  });
+
+  it("RED (the third read): the landing names the image the raise actually ran, as the vessel reports it, never the digest captured before the raise; a moved tag says so and lands over the image that runs", async () => {
+    const f = standingFakes(read([]));
+    f.ports.ranImage = async () => { f.calls.push("ran-image"); return D2; };
+    await riteKukulu(f.ports, {});
+    expect(f.calls.slice(-3)).toEqual(["ran-image", `rite-land ${JSON.stringify({ tessera: TESSERA, head: HEAD, image: D2, face: 0 })}`, "keep-owed"]);
+    expect(f.said.join("\n")).toMatch(new RegExp(`the vessel runs ${D2}, not the image the begin bound \\(sha256:abab[0-9a-f]*\\)`));
+    const same = standingFakes(read([]));
+    same.ports.ranImage = async () => IMAGE;
+    await riteKukulu(same.ports, {});
+    expect(same.calls).toContain(LANDI);
+    expect(same.said.join("\n")).not.toMatch(/the vessel runs/);
+  });
+
+  it("RED: the rollback hint stands only where EVERY pending half shares that one head and lands there; a matched half beside a stale one names the abandon alone", async () => {
+    const f = standingFakes(read([...BEGUN(OLD), { face: "h1", ordinal: 1, tessera: "9".repeat(64), head: HEAD, image: IMAGE }]));
+    expect(await riteKukulu(f.ports, {})).toMatchObject({ code: 1, data: { refusal: "kukulu-begun-stale" } });
+    expect(f.said.join("\n")).toMatch(/--abandon --branch main/);
+    expect(f.said.join("\n")).not.toMatch(/--rollback/);
+  });
+
+  it("RED: a debt read the vessel refuses after the raise exits NON-ZERO by name; CONTROL: a locked new vessel names the unlock and still exits non-zero", async () => {
+    const f = standingFakes(read([]), { reading: { vessel: "down" } });
+    f.ports.standing = async () => ({ ok: false, code: "face-log-unreadable", message: "h1 loads no log" });
+    expect(await riteKukulu(f.ports, {})).toMatchObject({ code: 1, data: { raised: true, refusal: "face-log-unreadable" } });
+    const g = standingFakes(read([]), { reading: { vessel: "down" } });
+    g.ports.standing = async () => ({ ok: false, code: "vessel-locked", message: "this vessel's key rests unopened" });
+    expect(await riteKukulu(g.ports, {})).toMatchObject({ code: 1, data: { raised: true, refusal: "vessel-locked", awaits: "unlock" } });
+  });
+
+  it("RED: a standing read that names no raw debt (a vessel of the shape before) reads the debt as UNKNOWN, never empty: it says so and names the data; its hand-landing line rides the worn face", async () => {
+    const f = standingFakes({ begins: [] });
+    const out = await riteKukulu(f.ports, {});
+    expect(out.data).toMatchObject({ debt: "unread" });
+    expect(f.said.join("\n")).toMatch(/this vessel reads no raw debt, so a half whose face stands shut or was rehived reads nowhere/);
+  });
+
+  it("RED: the host's abandon runs ATTACHED (the route reads on this terminal, at the ward or the pūlama's hand door): an answer that names no list says the vessel named each half", async () => {
+    const f = fakes();
+    f.ports.abandon = async () => ({ ok: true, output: { attached: true } });
+    expect(await riteKukulu(f.ports, { abandon: true })).toMatchObject({ code: 0, data: { attached: true } });
+    expect(f.said.join("\n")).toMatch(/the vessel named each half it abandoned above, each by the hand's own mark/);
+  });
+
+  it("RED: `rite abandon` plans its terms read (`--terms`) and the landing of the hand's signed marks (`--signed`, the pūlama's answer or a bare list)", () => {
+    expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--terms")).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", terms: true } });
+    const rec = { body: { act: "rite-abandoned" }, signer: "k", sig: "s" };
+    expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", JSON.stringify({ op: "lei", reading: "signed", records: [rec] }))).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", signed: [rec] } });
+    expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", JSON.stringify([rec]))).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", signed: [rec] } });
+    expect(() => plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", "not json")).toThrow(RiteUsage);
   });
 });
