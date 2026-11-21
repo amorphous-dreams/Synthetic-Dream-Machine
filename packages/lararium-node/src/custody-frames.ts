@@ -112,7 +112,12 @@ export interface CustodyFrameDeps {
   /** Tear the standing composition down and compose again: `sovereign` true with the private rows, false at the floor. */
   readonly recompose: (sovereign: boolean, ward?: WardCredential) => Promise<CustodyStanding>;
   readonly lightFace?: (ordinal: number) => Promise<void>;
+  /** Close a face through its actor, holding it dark (no relight) until `releaseFace`; answers at CLOSED. */
   readonly dropFace?: (ordinal: number) => Promise<void>;
+  /** Lift the hold `dropFace` set, once the lock locked the key or let it be. */
+  readonly releaseFace?: (ordinal: number) => void;
+  /** Close every face through its actor (a whole lock): resolves once each closed or faulted. */
+  readonly closeFaces?: () => Promise<void>;
   /** What stands now. */
   readonly standing: () => string;
   /** The wiki the standing composition holds waiting on a face (its `wiki-awaits-face` line), or null. */
@@ -438,6 +443,10 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * unlock reads (`sovereignStands`); a sibling's lock leaves the sovereign composition standing.
    */
   const lockFaceOf = composing(async (ordinal: number): Promise<CustodyAnswer> => {
+    // The hold the door's close set lifts once this lock locked the key or let it be.
+    try { return await lockFaceHeld(ordinal); } finally { deps.releaseFace?.(ordinal); }
+  });
+  const lockFaceHeld = async (ordinal: number): Promise<CustodyAnswer> => {
     const named = await holder.faceStanding({ ordinal });
     if (named === null) return { op: "lock", locked: true, was: "locked", face: ordinal, standing: deps.standing() };
     const wasOpen = named.unlocked;
@@ -445,16 +454,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // The face the composition wears now, by the unlock's name or the default rule: a lock of THAT face composes again, always.
     const mountBefore = wasOpen ? await daemonMountOrdinal() : undefined;
     const namedMount = mountedFaceOrdinal() === ordinal && !mountByOpening;
-    if (wasOpen && ordinal !== mountedFaceOrdinal() && deps.dropFace) {
-      // A LOCAL LOCK RUNS THE TWO PHASES IN ONE PROCESS: the face's actor closes first (`dropFace` answers at CLOSED: no visit or
-      // work admits, its saves drained, its island told, its host side down), and only then does the key lock. A drop that
-      // faults leaves the key open and the answer an error.
-      try { await deps.dropFace(ordinal); }
-      catch (error) {
-        deps.onLog(`face h${ordinal} provider drop refused: ${String(error)}`);
-        throw new Error(`face h${ordinal} provider drop refused; the key stays open`);
-      }
-    }
+    // A LOCAL LOCK RUNS THE TWO PHASES IN ONE PROCESS, the mounted face's as every sibling's: the door closed the face through its
+    // actor AHEAD of its line (`dropFace` answered at CLOSED: no visit or work admits, its saves drained, its island told, its
+    // host side down, the face held dark), so no act queued behind this lock holds that close, and only now does the key lock.
     await holder.lockFace(named.fcid);
     deps.onLog(`locked: face h${ordinal} key dropped`);
     // A MOUNT THE OPENING (OR THE DEFAULT RULE) CHOSE SLIDES: locked, it moves to the next open face holding anchors, and the
@@ -473,7 +475,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
     }
     return { op: "lock", locked: true, was: wasOpen ? "unlocked" : "locked", face: ordinal, standing: deps.standing() };
-  });
+  };
 
   const lock = composing(async (): Promise<CustodyAnswer> => {
     if (!holder.isUnlocked()) return { op: "lock", locked: true, was: "locked", standing: deps.standing() };
@@ -535,6 +537,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (!isCustodyFrame(parsed)) return false;
     const op = parsed.op;
     let act: () => Promise<CustodyAnswer>;
+    /** A close that runs ahead of the line, before the act takes its turn (a lock), or none. */
+    let ahead: (() => Promise<void>) | null = null;
     if (op === "backup") {
       const frame = parsed as Record<string, unknown>;
       const stray = Object.keys(frame).find((k) => !BACKUP_FRAME_KEYS.has(k));
@@ -648,6 +652,17 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         return true;
       }
       act = face === undefined ? lock : () => lockFaceOf(face as number);
+      // THE CLOSE RUNS AHEAD OF THE LINE: a face's actor closes (and the whole lock's faces close) before the lock takes its
+      // turn, so the line never waits on a drain whose work (a session act) waits on the line behind this very lock.
+      // A drop that faults leaves the key open and the answer an error, and lifts the face's hold.
+      ahead = face === undefined
+        ? (deps.closeFaces ? () => deps.closeFaces!() : null)
+        : (deps.dropFace ? async () => {
+          const standing = await holder.faceStanding({ ordinal: face as number });
+          if (standing?.unlocked !== true) return;
+          try { await deps.dropFace!(face as number); }
+          catch (error) { deps.releaseFace?.(face as number); deps.onLog(`face h${String(face)} provider drop refused: ${String(error)}`); throw error; }
+        } : null);
     } else if (op === "doc-census") {
       // THE DOCUMENT CENSUS IS READ-ONLY: it reads the stores beside the chain, opens nothing for writing, removes nothing,
       // and names each document by id, never by body. No composition sitting refuses by name, never as an empty census.
@@ -711,16 +726,20 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       if (sock.destroyed) return null;
       return act();
     };
+    const refused = (e: unknown): void => {
+      const why = e instanceof Error ? e.message : String(e);
+      // An act's own fault never reaches this arm (`runAct` answers it by name); what does names no argument.
+      deps.onLog(`${op}: refused — ${why}`);
+      answer(sock, { op, status: "error", errorMessage: why, refusal: { reason: "custody-act-failed" } });
+    };
     // The fault of one act names itself to its own caller and never breaks the chain for the next.
-    chain = chain.then(turn).then(
-      (a) => { if (a) answer(sock, a); },
-      (e) => {
-        const why = e instanceof Error ? e.message : String(e);
-        // An act's own fault never reaches this arm (`runAct` answers it by name); what does names no argument.
-        deps.onLog(`${op}: refused — ${why}`);
-        answer(sock, { op, status: "error", errorMessage: why, refusal: { reason: "custody-act-failed" } });
-      },
-    );
+    const enqueue = (): void => { chain = chain.then(turn).then((a) => { if (a) answer(sock, a); }, refused); };
+    if (ahead === null) enqueue();
+    else ahead().then(enqueue, (e: unknown) => {
+      waiting -= 1;
+      deps.onLog(`${op}: the face's close faulted, so the key stays open — ${e instanceof Error ? e.message : String(e)}`);
+      answer(sock, { op, status: "error", errorMessage: `the face's close faulted, so the key stays open: ${e instanceof Error ? e.message : String(e)}`, refusal: { reason: "face-close-held" } });
+    });
     return true;
   };
   const sessionAct = async (name: string, args: unknown): Promise<CustodyAnswer> => {
