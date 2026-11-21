@@ -25,7 +25,7 @@ no full pono law spec and no Hawaiian proper name: both wake on the shape of Vis
 The //nalu// (wave) names the infrastructure concept below this; `\tick` serves as the grammar-layer
 hook into the nalu. See [[nalu|lar:///ha.ka.ba/lares/api/pono/nalu]] for the wave architecture.
 
-The concurrency runtime stands before it on the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>); the record keeps the hook's earlier
+The concurrency runtime stands before it on the founding road in the kahu workbench; the record keeps the hook's earlier
 status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
 
 <<~/ahu>>
@@ -38,6 +38,6 @@ status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;F5UkUg8wu5JwuzNaX560A_T-JWylSGH4N9XHrKCITU8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AWDExptc_13xpVuC_lZ5pDKm8XXL82LNv3sTh19naVc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -32,7 +32,7 @@ cancelling-race form.
 The puka metaphor holds: when a fish finds the gap in the net, it passes through. The net
 remains open — the others may pass through later or not. The outcome already holds.
 
-''Standing:'' the grammar table registers `puka` and its alias `\rush` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a puka block. The execution runtime rests on the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>); the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
+''Standing:'' the grammar table registers `puka` and its alias `\rush` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a puka block. The execution runtime rests on the founding road in the kahu workbench; the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
 
 <<~/ahu>>
 
@@ -77,6 +77,6 @@ A puka block MUST NOT appear directly inside a `huli` (`\for`) iteration body.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jNsbwoQxnBnoI1fQp14wnAVx-XQ3yjilvyaVWtHYOQg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3geP-XFRCh7cpXFxereeugpx3IH48o_uQyb80371Oqk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

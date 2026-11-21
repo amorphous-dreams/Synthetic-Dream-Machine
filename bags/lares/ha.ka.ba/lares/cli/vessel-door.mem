@@ -258,7 +258,7 @@ because a verification an operator has to remember to run is a verification that
 
 # Source of #/the-record-laws (records, not RPC; the `lar:` locality law): `lar:///lares_research/research-streams/lararium/LARES-CLI-DAEMON-SPRINT-PLAN`, harvested verbatim; the harvest reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/consume-archive`>>.
 # The undeclared-shore refusals of #/the-primitives rest on the Founding Walk of 2026-10-29, steps W2 and W4 (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>).
-# NO DOOR WIPES: an operator ruling; the fresh start by hand reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start`>>.
+# NO DOOR WIPES: an operator ruling; the fresh start by hand reads in the founding road's fresh-start section (#/the-collapse links it).
 
 <<~/ahu>>
 
@@ -273,6 +273,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;l1ULVDcMhn9A864aA1hFdBL4eYW4ZtpAkEoo8iogzTg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;M2vAnI8BPgsQR-u50M3cVsGLcWdOBHFK7q1m65yg_Iw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

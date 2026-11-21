@@ -27,7 +27,7 @@ holds execution until every child flow completes. English alias: `\sync`.
 Verse equivalent: `sync` — all branches inside the block run concurrently and the containing
 flow resumes only after every branch settles.
 
-''Standing:'' the grammar table registers `hui` and its alias `\sync` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a hui block. The execution runtime rests on the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>); the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
+''Standing:'' the grammar table registers `hui` and its alias `\sync` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a hui block. The execution runtime rests on the founding road in the kahu workbench; the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
 
 <<~/ahu>>
 
@@ -67,6 +67,6 @@ A hui block MUST propagate failure from any child flow to the containing flow.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;O-bpota6A_qzuxwDmbC9gPWHQqyIvOZ0NDLD0borCvw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9_yoinlSw9Qlv4AocQWNLCb6XfLk-dR7wkSfPmVQHLU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

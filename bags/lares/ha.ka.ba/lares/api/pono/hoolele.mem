@@ -36,7 +36,7 @@ task tree. `spawn` exits the tree entirely, creating a new root. It hides the
 ''Use `hoolele` (`\spawn`) only when the work MUST complete regardless of what''
 ''cancels around it.''
 
-''Standing:'' the grammar table registers `hoolele` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a hoolele call. The execution runtime rests on the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>); the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
+''Standing:'' the grammar table registers `hoolele` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a hoolele call. The execution runtime rests on the founding road in the kahu workbench; the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
 
 <<~/ahu>>
 
@@ -150,6 +150,6 @@ The record keeps the boundary's first naming (<<~ loulou uri=`lar:///ha.ka.ba/la
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IhRBHbKJoGd2f4V5pFNNF37KAvt2BGpkfFBg8o5sKZE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pkZKjrnSxm5p28du6yPmdhjqueFpKcN7ZGMxfpf_BFw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

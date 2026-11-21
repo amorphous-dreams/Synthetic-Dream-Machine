@@ -27,7 +27,7 @@ Verse equivalent: `branch` — one or more async expressions start, and the encl
 flow continues — neither waits for the other. The side flow remains bounded by the enclosing async context and
 cancels when that context completes.
 
-''Standing:'' the grammar table registers `lele` and its alias `\branch` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a lele edge. The execution runtime rests on the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>); the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
+''Standing:'' the grammar table registers `lele` and its alias `\branch` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a lele edge. The execution runtime rests on the founding road in the kahu workbench; the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
 
 <<~/ahu>>
 
@@ -62,6 +62,6 @@ A lele edge MUST NOT wait for a response from the target.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-6AqoT-Zpu3C4mykcuJQFaiIrSkgbLeCBaBjWh12jec`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nqw8UI8G1FdAUaD3zX07uuNv_nSO0HaCL-IArJ19Q_w`>>
 
 <<^ code=`&#x0004;` to=`?`>>
