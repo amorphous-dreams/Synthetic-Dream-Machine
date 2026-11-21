@@ -282,6 +282,39 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     }
   }, 180_000);
 
+  test("W8 VOTA ON THE SIBLING'S OWN TURN: a ddate votum on the lit sibling's plane is answered by its own door, under its own atom, while face 0 stands worn; the same word again names the same votum and lands no second outcome", async () => {
+    const word = ["intent", "issue", "ddate", "--face", "1", "--every", "--args", JSON.stringify({ today: { year: 2026, month: 11, day: 21 } })];
+    const doorLines = (): string => walk.bootLog().split('\n').filter((l) => /intent door|lit-set|planes mount|face-intent/.test(l)).slice(-16).join('\n');
+    const issued = await walk.cli(word);
+    expect(issued.code, `${out(issued)}\n${doorLines()}`).toBe(0);
+    const id = issued.stdout.trim().split("\n").at(-1)!.trim();
+    expect(id, out(issued)).toMatch(/^[0-9a-f]{64}$/);
+    type Shown = { outcomes?: Array<{ cause: string; signer: string; winner: boolean; result: Record<string, unknown> }> };
+    let shown: Shown = {};
+    for (let look = 0; look < 90; look++) {
+      const show = await walk.cli(["intent", "show", "--face", "1", "--json"]);
+      shown = show.code === 0 ? JSON.parse(show.stdout.trim().split("\n").at(-1)!) as Shown : {};
+      if ((shown.outcomes ?? []).some((o) => o.cause === id)) break;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    const answered = (shown.outcomes ?? []).filter((o) => o.cause === id);
+    expect(answered, `the sibling's door never answered: ${JSON.stringify(shown)}\n${doorLines()}`).toHaveLength(1);
+    expect(answered[0]!.result).toMatchObject({ status: "done" });
+    expect(typeof answered[0]!.result["text"], JSON.stringify(answered[0])).toBe("string");
+    // The worn face's plane carries no word of it.
+    const worn = await walk.cli(["intent", "show", "--face", "0", "--json"]);
+    expect(worn.code, out(worn)).toBe(0);
+    expect(worn.stdout, "the sibling's votum never reaches the worn face's plane").not.toContain(id);
+    // IDEMPOTENT BY INTENT: the same word names the same votum, and a later pass lands no second outcome.
+    const again = await walk.cli(word);
+    expect(again.code, out(again)).toBe(0);
+    expect(again.stdout.trim().split("\n").at(-1)!.trim()).toBe(id);
+    await new Promise((r) => setTimeout(r, 3000));
+    const after = await walk.cli(["intent", "show", "--face", "1", "--json"]);
+    const outcomes = (JSON.parse(after.stdout.trim().split("\n").at(-1)!) as Shown).outcomes ?? [];
+    expect(outcomes.filter((o) => o.cause === id)).toHaveLength(1);
+  }, 180_000);
+
   test("W6 EACH FACE LIVES ONE LIFE: a lock of the lit sibling closes it through its actor before its key locks; it then refuses work by name while the worn face keeps writing, and a fresh light serves it again", async () => {
     const door = await import(TEST_DOOR) as { unlockTestCustody: (root: string, act?: string, face?: number) => Promise<Record<string, unknown> | null> };
     const locked = await door.unlockTestCustody(walk.root, "lock", 1);

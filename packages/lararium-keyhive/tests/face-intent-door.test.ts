@@ -1,7 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fixtureIntentVerbs, signIntentEntry, buildAnswer, buildAsks, buildIntent, intentEntryCid, writeIntentEntry, actCid, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, intentId,
-  mintPersonaInception, signPersonaAct, type DocHandle, type LarDoc } from "@lararium/mesh";
+  mintPersonaInception, signPersonaAct, personaBagIdFor, personaSiblingBagIds, storedLarRecord, type DocHandle, type LarDoc } from "@lararium/mesh";
+import { faceDoors } from "../src/face-doors.js";
 import { makeFaceIntentDoor, requestFaceJoin, witnessedStandings } from "../src/face-intent-door.js";
 import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
@@ -307,14 +308,16 @@ describe("the boundary acquires asynchronously, then observes in one synchronous
     expect(captured.test("kelChain: daemonAuth.personaKel!.chain, anchor")).toBe(true);
     expect(asyncPort.test("standing: async (device) => x")).toBe(true);
     expect(live.test("kelChain: () => chainNow()")).toBe(true);
-    const start = source.indexOf("const door = makeFaceIntentDoor({");
+    // ONE DOOR SHAPE FOR EVERY FACE: the mounted door and each lit sibling's stand through `faceIntentDoorOver`.
+    const start = source.indexOf("const faceIntentDoorOver = async");
     expect(start).toBeGreaterThan(-1);
-    const end = source.indexOf("\n            });", start);
+    const end = source.indexOf("const standSiblingDoor = async", start);
     expect(end).toBeGreaterThan(start);
     const block = source.slice(start, end);
     expect(block).not.toMatch(captured);
     expect(block).not.toMatch(asyncPort);
     expect(block).toMatch(live);
+    expect(source.match(/makeFaceIntentDoor\(\{/g), "no door stands outside the one shape").toHaveLength(1);
   });
 });
 
@@ -380,13 +383,18 @@ describe("the door wakes on its authority and keeps what settled", () => {
     const external = /\bdyadReader\s*\(/, composed = /\bintentDoorStandings\s*\(/;
     expect(external.test("requireDyadReader(dyadReader(ctx, liveFace()), x)")).toBe(true);
     expect(composed.test("const standings = intentDoorStandings({ repo })")).toBe(true);
-    const start = source.indexOf("const attachDoor = async (): Promise<void> => {");
-    expect(start).toBeGreaterThan(-1);
-    const end = source.indexOf("const door = makeFaceIntentDoor({", start);
-    expect(end).toBeGreaterThan(start);
-    const block = source.slice(start, end);
-    expect(block).not.toMatch(external);
-    expect(block).toMatch(composed);
+    const shape = source.slice(source.indexOf("const faceIntentDoorOver = async"), source.indexOf("return makeFaceIntentDoor({"));
+    expect(shape.length).toBeGreaterThan(0);
+    expect(shape).not.toMatch(external);
+    expect(shape).toMatch(composed);
+    // Neither the mounted face's attach nor a lit sibling's stand reads through an external reader before the shape.
+    for (const [from, to] of [["const attachDoor = async (): Promise<void> => {", "const door = await faceIntentDoorOver("], ["const standSiblingDoor = async", "const door = await faceIntentDoorOver("]] as const) {
+      const start = source.indexOf(from);
+      expect(start).toBeGreaterThan(-1);
+      const end = source.indexOf(to, start);
+      expect(end).toBeGreaterThan(start);
+      expect(source.slice(start, end)).not.toMatch(external);
+    }
   });
 });
 
@@ -563,5 +571,136 @@ describe("what ran stays ran for the process, and a detached door publishes noth
     expect(detached.effects).toBe(1); expect(detached.outcomes).toBe(0); expect(detached.again).toBe(0);
     const attached = await run(false);
     expect(attached.effects).toBe(1); expect(attached.outcomes).toBe(1); expect(attached.again).toBe(0);
+  });
+});
+
+describe("vota answer on the face's own turn, and each outcome keeps its chore mark at home", () => {
+  const calendar = async (f: Awaited<ReturnType<typeof faceOf>>, shared: ReturnType<typeof plane>) => {
+    const votum = await buildIntent({ group: f.group, signer: f.joinee, verb: "ddate", args: { today: { year: 2026, month: 11, day: 21 } }, nonce: "",
+      audience: { mode: "pinned", atom: f.h1.key }, verbs: faceIntentVerbs() });
+    shared.handle.change((d) => writeIntentEntry(d, votum));
+    return intentId(votum.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
+  };
+  const outcomesOf = (shared: ReturnType<typeof plane>, group: string) =>
+    (intentEntryRecordsOfGroup(shared.doc, group) as { body: { entry: string; cause?: string } }[]).filter((r) => r.body.entry === "outcome");
+
+  test("RED: a face standing dark answers no votum; CONTROL: its lit turn answers it once and settles its ticket; POSITIVE: the same votum worded again and a second lit turn land nothing more", async () => {
+    const f = await faceOf(), shared = plane(), effect = vi.fn(async () => ({ text: "Sweetmorn" }));
+    let lit = false, admitted = 0, settled = 0;
+    const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs: faceIntentVerbs(), log: () => {},
+      atom: f.h1, standing: () => "stands", runDeclaredEffect: effect,
+      admitTurn: () => { if (!lit) return null; admitted++; return { done: () => { settled++; } }; } });
+    const id = await calendar(f, shared);
+    await door.heed();
+    expect(effect).not.toHaveBeenCalled();
+    expect(outcomesOf(shared, f.group)).toHaveLength(0);
+    lit = true;
+    await door.heed();
+    expect(effect).toHaveBeenCalledTimes(1);
+    expect(outcomesOf(shared, f.group).map((r) => r.body.cause)).toEqual([id]);
+    expect([admitted, settled]).toEqual([1, 1]);
+    expect(await calendar(f, shared)).toBe(id);
+    await door.heed();
+    expect(effect).toHaveBeenCalledTimes(1);
+    expect(outcomesOf(shared, f.group)).toHaveLength(1);
+    expect(admitted).toBe(settled);
+  });
+
+  test("RED: the signed outcome carries no handle index, hand or session; CONTROL: the door keeps the house-local mark beside it; POSITIVE: a re-run keeps one outcome and one mark", async () => {
+    const f = await faceOf(), shared = plane(), effect = vi.fn(async () => ({ text: "Sweetmorn" }));
+    const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs: faceIntentVerbs(), log: () => {},
+      atom: f.h1, standing: () => "stands", runDeclaredEffect: effect, acting: () => 7 });
+    const id = await calendar(f, shared);
+    await door.heed();
+    const [outcome] = outcomesOf(shared, f.group);
+    const bytes = JSON.stringify(outcome);
+    for (const word of ["chore", "acting", "asker", "session", "\"seat\""]) expect(bytes).not.toContain(word);
+    const { answered } = await door.describe();
+    expect(answered.get(id)).toEqual({ outcome: intentEntryCid(outcome as never), chore: { acting: 7, asker: "seat", session: null } });
+    await door.heed();
+    expect(effect).toHaveBeenCalledTimes(1);
+    expect(outcomesOf(shared, f.group)).toHaveLength(1);
+    expect([...(await door.describe()).answered.keys()]).toEqual([id]);
+  });
+
+  test("RED: a door that names no acting face keeps no mark; CONTROL: its outcome still lands", async () => {
+    const f = await faceOf(), shared = plane();
+    const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs: faceIntentVerbs(), log: () => {},
+      atom: f.h1, standing: () => "stands", runDeclaredEffect: async () => ({ text: "Sweetmorn" }), acting: () => null });
+    await calendar(f, shared);
+    await door.heed();
+    expect(outcomesOf(shared, f.group)).toHaveLength(1);
+    expect((await door.describe()).answered.size).toBe(0);
+  });
+});
+
+describe("each lit face stands its own door: the lit life bounds it, and every write names its face", () => {
+  const calendarOn = async (f: Awaited<ReturnType<typeof faceOf>>, shared: ReturnType<typeof plane>, day: number) => {
+    const votum = await buildIntent({ group: f.group, signer: f.joinee, verb: "ddate", args: { today: { year: 2026, month: 11, day } }, nonce: "",
+      audience: { mode: "pinned", atom: f.h1.key }, verbs: faceIntentVerbs() });
+    shared.handle.change((d) => writeIntentEntry(d, votum));
+  };
+  const outcomes = (shared: ReturnType<typeof plane>, group: string) =>
+    (intentEntryRecordsOfGroup(shared.doc, group) as { body: { entry: string } }[]).filter((r) => r.body.entry === "outcome").length;
+
+  test("L3 RED: a dropped face's door answers nothing more and detaches, after the votum in flight lands; CONTROL: standing, its turn answers", async () => {
+    const f = await faceOf(), shared = plane(), lot = faceDoors(() => {});
+    let release!: () => void;
+    const held = new Promise<void>((r) => { release = r; });
+    let calls = 0;
+    const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs: faceIntentVerbs(), log: () => {},
+      atom: f.h1, standing: () => "stands", admitTurn: () => (lot.open("h1") ? { done: () => {} } : null),
+      runDeclaredEffect: async () => { calls++; if (calls === 1) await held; return { text: "Sweetmorn" }; } });
+    await calendarOn(f, shared, 21); await calendarOn(f, shared, 22);
+    await lot.stand("h1", () => door);
+    for (let i = 0; i < 200 && calls === 0; i++) await new Promise((r) => setImmediate(r));
+    expect(calls).toBe(1);
+    const dropped = lot.drop("h1");
+    expect(lot.open("h1"), "a closing face answers nothing more").toBe(false);
+    release();
+    await dropped;
+    expect(outcomes(shared, f.group), "the votum in flight lands").toBe(1);
+    expect(calls, "no next votum after the close began").toBe(1);
+    expect(lot.keys()).toEqual([]);
+    // Detached: a plane change and a turn wake nothing.
+    await calendarOn(f, shared, 23);
+    lot.turn("h1");
+    await door.heed();
+    expect(calls).toBe(1);
+    expect(outcomes(shared, f.group)).toBe(1);
+  });
+
+  test("L2 RED: a lit sibling's door opens its intents plane only after its pair re-reads against its own log and KEL, and stands only through the lot; CONTROL: the census finds the planted order", () => {
+    const source = readFileSync(new URL("../src/operator-daemon-behavior.ts", import.meta.url), "utf8");
+    const start = source.indexOf("const standSiblingDoor = async"), end = source.indexOf("intentDoors.stand(key", start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const block = source.slice(start, end);
+    const read = block.indexOf("readSiblingFacePlanes("), recheck = block.indexOf("recheckSiblingPlanes("), opensIntents = block.indexOf("opened(read.planes.intents");
+    expect(read).toBeGreaterThan(-1);
+    expect(recheck).toBeGreaterThan(read);
+    expect(opensIntents, "the intents plane opens after the re-check").toBeGreaterThan(recheck);
+    expect(block).toMatch(/if \(!recheck\.ok\) return refuse\(/);
+    expect(block).toMatch(/hold: \(pending\) => holding\(provider, pending\)/);
+  });
+
+  test("L4 RED: a door handed the other face's plane lands no outcome (its receipt stays owed); CONTROL: on its own plane it lands", async () => {
+    const f = await faceOf(), worn = plane(), own = plane();
+    const wornBag = personaSiblingBagIds(personaBagIdFor("g-worn"))!.intents, ownBag = personaSiblingBagIds(personaBagIdFor(f.group))!.intents;
+    worn.handle.change((d) => { d.tiddlers[wornBag] = storedLarRecord(wornBag, { text: "automerge:worn" }, "lararium-seed"); });
+    own.handle.change((d) => { d.tiddlers[ownBag] = storedLarRecord(ownBag, { text: "automerge:own" }, "lararium-seed"); });
+    const logged: string[] = [];
+    for (const shared of [worn, own]) {
+      // The votum rides the misfiled plane under its own group, as a planted write would.
+      const votum = await buildIntent({ group: f.group, signer: f.joinee, verb: "ddate", args: { today: { year: 2026, month: 11, day: 21 } }, nonce: "",
+        audience: { mode: "pinned", atom: f.h1.key }, verbs: faceIntentVerbs() });
+      const key = `lar:///ha.ka.ba/dreamnet/intent-entry/${encodeURIComponent(f.group)}/${intentEntryCid(votum)}`;
+      shared.handle.change((d) => { d.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(votum) }, intentEntryCid(votum)); });
+      await makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs: faceIntentVerbs(),
+        log: (line) => logged.push(line), atom: f.h1, standing: () => "stands", runDeclaredEffect: async () => ({ text: "Sweetmorn" }) }).heed();
+    }
+    expect(outcomes(worn, f.group)).toBe(0);
+    expect(logged.some((line) => /receipt is owed: .*intent-plane-misfiled/.test(line))).toBe(true);
+    expect(outcomes(own, f.group)).toBe(1);
   });
 });

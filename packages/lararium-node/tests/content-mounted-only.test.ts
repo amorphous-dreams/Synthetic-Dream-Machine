@@ -43,7 +43,7 @@ async function standTwoFaces() {
     const askSig = await signAsFaceAtom(hexToBytes(auth.atom.seed), realmFeedAskImage({ requestId: "r1", realm, writer: leaf }));
     return { leaf, bond, askSig };
   };
-  return { registry, call, composite: (a.ctx as any).composite, sibling: `0x${b.daemonAuth.atom.key}`, mounted: `0x${a.daemonAuth.atom.key}`,
+  return { registry, call, ctxOf, composite: (a.ctx as any).composite, sibling: `0x${b.daemonAuth.atom.key}`, mounted: `0x${a.daemonAuth.atom.key}`,
     siblingBond: (realm: string) => bondOf(b.daemonAuth, realm), mountedBond: (realm: string) => bondOf(a.daemonAuth, realm) };
 }
 
@@ -133,6 +133,7 @@ test("THE CENSUS: every daemon verb is fenced unless it stands on the named neut
   const fed = await siblingBond("ab".repeat(32));
   const neutralArgs: Record<string, Record<string, unknown>> = {
     "realm-clock": { realm: "ab".repeat(32) },
+    "ddate": { today: { year: 2026, month: 11, day: 21 } },
     "realm-feed": { realm: "ab".repeat(32), writer: fed.leaf, bond: fed.bond, askSig: fed.askSig },
   };
   const open: string[] = [];
@@ -157,4 +158,14 @@ test("RED: realm-feed stands neutral, and a sibling feeds as its own leaf throug
   expect(String((await call("realm-feed", sibling, { realm, writer: theirs.leaf, bond: theirs.bond, askSig: theirs.askSig }, true) as Error)?.message)).toMatch(/writer-not-presenter/);
   // A synced summons naming the sibling and carrying its whole bond feeds nothing.
   expect(String((await call("realm-feed", sibling, { realm, writer: own.leaf, bond: own.bond, askSig: own.askSig }, false) as Error)?.message)).toMatch(/realm-feed-not-local/);
+});
+
+test("L2 RED: a lit sibling whose proven planes never mounted (it stands no intent door) clears no intent row, nor any other face row; CONTROL: the mounted face clears both", async () => {
+  const { registry, ctxOf, sibling, mounted } = await standTwoFaces();
+  const clear = (verb: string, presenter: string): unknown => { try { registry.admitRouted(verb, ctxOf(presenter, true) as never); return null; } catch (e) { return (e as { reason?: string }).reason; } };
+  for (const verb of ["intent-issue", "intent-show", "intent-answer", "kahua-stage"]) {
+    expect(clear(verb, sibling), `${verb} for a doorless sibling`).toBe("content-mounted-only");
+  }
+  expect(clear("intent-issue", mounted)).toBeNull();
+  expect(clear("intent-show", mounted)).toBeNull();
 });

@@ -86,6 +86,7 @@ export type {
 export { runReadmitEdge, type ReadmitEdgeInput } from "./recovery-core.js";
 export { faceOperationTitle, readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
 export { runFaceJoinOperation } from "./face-join-operation.js";
+export { faceDoors, type FaceDoors, type FaceDoorHandle } from "./face-doors.js";
 export { makeFaceIntentDoor, requestFaceJoin, faceJoinNonce, makeFaceIntentReader, admitAgentEntry, witnessed, witnessedStandings, watchHandles, settledRunsOf } from "./face-intent-door.js";
 export { makeSeatSummons, foundingHearthOf, standingOfReading, standingOwnSummons, ownSummonsOf } from "./face-seat-summons.js";
 export type { SeatSummonsPorts, SeatSummonsAnswer } from "./face-seat-summons.js";

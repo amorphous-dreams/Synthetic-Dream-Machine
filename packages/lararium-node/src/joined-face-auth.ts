@@ -1,4 +1,4 @@
-import { deriveRegisterBags, litFaceOwnBags, type IdentityAnchors, type JoinedFaceAuth } from "@lararium/mesh";
+import { deriveRegisterBags, litFaceOwnBags, personaScopedBagIds, type IdentityAnchors, type JoinedFaceAuth } from "@lararium/mesh";
 
 type FaceAnchor = JoinedFaceAuth["faceAnchor"];
 type Chain = JoinedFaceAuth["personaKel"]["chain"];
@@ -18,6 +18,9 @@ export interface JoinedFaceAuthPorts {
   readonly veilArchive: (group: string) => Promise<Uint8Array | null>;
   /** THE LIT SET: the face's relation, read off its own proved log (`faceRelationOf`); null where no proof names one. */
   readonly relation?: (group: string) => Promise<string | null>;
+  /** A LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes as its own signed log names them, mounted
+   *  for its lit life; null where no proof stands, and the sibling's door then stands none. */
+  readonly planes?: (group: string) => Promise<{ readonly persona: string; readonly intents: string } | null>;
   readonly log: (line: string) => void;
 }
 
@@ -68,12 +71,16 @@ async function oneJoinedFace(ports: JoinedFaceAuthPorts, ordinal: number): Promi
       if (!ports.current(ordinal)) return null;
       const relation = (await ports.relation?.(group)) ?? null;
       if (!ports.current(ordinal)) return null;
+      const facePlanes = (await ports.planes?.(group)) ?? null;
+      if (!ports.current(ordinal)) return null;
       return { atom: { seed: Buffer.from(seed).toString("hex"), key }, personaGroupId: group, faceAnchor: anchor, handleIndex: ordinal,
-        ...(relation ? { faceRelation: relation } : {}),
+        ...(relation ? { faceRelation: relation } : {}), ...(facePlanes ? { facePlanes } : {}),
         personaKel: { prefix: pins.personaKelPrefix, chain }, deviceEdge: pins.deviceEdge, signerDid: pins.signerDid,
         ...(pins.meshCabalDocIdHex ? { meshCabalDocIdHex: pins.meshCabalDocIdHex } : {}),
         ...(secret ? { faceAddressSecret: Buffer.from(secret).toString("hex") } : {}),
-        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags(relation, group) }) };
+        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [], wikiBags: [...litFaceOwnBags(relation, group),
+          // ITS PROVEN PLANES SEAL UNDER ITS OWN HIVE for its lit life: the intents and persona planes alone, and only where proved.
+          ...(facePlanes ? [personaScopedBagIds(group).persona, personaScopedBagIds(group).intents] : [])] }) };
     } catch (e) {
       ports.log(`joined face h${ordinal} skipped: ${e instanceof Error ? e.message : String(e)}`);
     } finally { seed?.fill(0); secret?.fill(0); }

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
-import { readIntentEntry } from "../src/intent-entry.js";
+import { readIntentEntry, signIntentEntry } from "../src/intent-entry.js";
 import { intentId } from "../src/intent-entry.js";
 import { makeHandLineage } from "../src/hand-lineage.js";
 import { readIntentPlane } from "../src/intent-read.js";
@@ -63,5 +63,26 @@ describe("intent issue", () => {
       expect(readIntentEntry(ask, { group: "face", authorize: () => true }).ok).toBe(true);
     }
     expect(cosignDigest({ act: "a", face: "f", wiki: "w", head: "h" })).not.toBe(cosignDigest({ act: "a", face: "f", wiki: "w", head: "h2" }));
+  });
+  test("RED: a cast votum without its thrown coins refuses at the word and on read; CONTROL: the calendar and a thrown cast issue idempotent; POSITIVE: the hand-only class stays unclassified", async () => {
+    const atom = await signer(1), verbs = faceIntentVerbs();
+    expect(verbs.classOfVerb("ddate")).toEqual({ class: "idempotent" });
+    expect(verbs.classOfVerb("oracle-cast")).toEqual({ class: "idempotent", fixes: ["at", "coins"] });
+    for (const verb of ["promote", "retire", "unlock", "kui"]) expect(verbs.classOfVerb(verb)).toBeNull();
+    const base = { group: "face", signer: atom, verb: "oracle-cast", nonce: "", audience: { mode: "pinned" as const, atom: atom.key }, verbs };
+    await expect(buildIntent({ ...base, args: { at: "2026-11-21" } })).rejects.toThrow("args-unfixed");
+    await expect(buildIntent({ ...base, args: { coins: "7,8,9,6,7,7" } })).rejects.toThrow("args-unfixed");
+    const cast = await buildIntent({ ...base, args: { at: "2026-11-21", coins: "7,8,9,6,7,7" } });
+    const calendar = await buildIntent({ ...base, verb: "ddate", args: { today: { year: 2026, month: 11, day: 21 } } });
+    // The same word twice names one votum: the empty nonce keeps one id.
+    const again = await buildIntent({ ...base, args: { at: "2026-11-21", coins: "7,8,9,6,7,7" } });
+    expect(intentId(again.body as never)).toBe(intentId(cast.body as never));
+    const unthrown = await signIntentEntry({ group: "face", entry: "intent", refs: [], issuer: atom.key, verb: "oracle-cast", args: { at: "2026-11-21" }, nonce: "",
+      audience: { mode: "pinned", atom: atom.key } }, atom);
+    const lineage = makeHandLineage([{ epoch: 0, signers: [atom.key], threshold: 1 }])!;
+    const face = { devices: [atom.key], rosterCids: [], admittedAt: new Map<string, string>(), lineage };
+    const view = readIntentPlane({ group: "face", records: [cast, calendar, unthrown], face, standing: () => "stands", verbs });
+    expect(view.intents.map((i) => i.verb).sort()).toEqual(["ddate", "oracle-cast"]);
+    expect(view.refused).toContainEqual({ refusal: "args-unfixed" });
   });
 });

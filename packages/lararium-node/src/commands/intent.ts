@@ -315,7 +315,9 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
           }
           nonce ??= faceJoinNonce(atom.key, audience);
         } else audience = intentAudience(opts);
-        entry = await buildIntent({ group, signer, verb: opts.verb, args: args ?? {}, nonce: nonce ?? randomBytes(16).toString("hex"), audience, bound, verbs });
+        // An idempotent verb names its votum by its word alone: the empty nonce, so the same word twice is one votum.
+        entry = await buildIntent({ group, signer, verb: opts.verb, args: args ?? {},
+          nonce: nonce ?? (verbs.classOfVerb(opts.verb)?.class === "idempotent" ? "" : randomBytes(16).toString("hex")), audience, bound, verbs });
         break;
       }
       case "ask":

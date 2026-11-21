@@ -5,10 +5,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildIntent, buildOutcome, countPlaneEntries, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   faceIntentVerbs, intentId, mintPersonaInception, signPersonaAct, actCid, writeIntentEntry, storedLarRecord,
-  personaScopedBagIds, wikiSlotUri, type DocHandle, type LarDoc } from "@lararium/mesh";
+  personaScopedBagIds, wikiSlotUri, castFields, castFromCoins, type DocHandle, type LarDoc } from "@lararium/mesh";
 import { makeFaceIntentDoor } from "@lararium/keyhive";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
+import { ddateVerb } from "../../lararium-tw5/src/ddate-verb.js";
 import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 let engine: TW5Engine;
@@ -91,5 +92,51 @@ describe("intent rubric witness", () => {
     await door.heed();
     expect(shared.writes()).toBe(writes);
     expect(effect).toHaveBeenCalledTimes(1);
+  });
+
+  test("RED: no declared enactor answers a votum the face holds no table for; CONTROL: the calendar and a thrown cast pay through the declared effect with no AI; POSITIVE: each votum worded twice and heeded twice lands one effect and one outcome, and a second answer of the cast meets the standing one", async () => {
+    const group = "synthetic-face", root = await signer(9), issuer = await signer(1), executor = await signer(2), shared = plane();
+    const inception = mintPersonaInception(`0x${root.key}`, "recovery");
+    const records = [] as Awaited<ReturnType<typeof signPersonaAct>>[];
+    for (const [act, fields] of [["founding", { personaKelPrefix: inception.prefix, rootCommitment: "root" }],
+      ["admission", { ...(await taggedAdmission(10, group, issuer.key)) }], ["admission", { ...(await taggedAdmission(11, group, executor.key)) }]] as const) {
+      const last = records.at(-1);
+      records.push(await signPersonaAct(last ? { seq: last.body.seq, cid: actCid(last.body) } : null, { group, act, epoch: 0, fields }, root));
+    }
+    // The cast's own write under `create`: a standing title answers `exists` and nothing moves.
+    const casts = new Map<string, string>();
+    const castVerb = async (args: Record<string, unknown>): Promise<Record<string, unknown>> => {
+      const cast = castFromCoins(String(args["coins"]).split(",").map(Number), { caster: String(args["caster"] ?? "votum"), at: String(args["at"]) });
+      const { title, ...fields } = castFields(cast);
+      if (casts.has(title!)) return { decision: "exists", created: false, title };
+      casts.set(title!, JSON.stringify(fields));
+      return { decision: "created", created: true, title };
+    };
+    const table: Record<string, (args: Record<string, unknown>) => Promise<Record<string, unknown>>> = { ddate: ddateVerb, "oracle-cast": castVerb };
+    const ran = vi.fn((verb: string) => verb);
+    const doorWith = (enactors: typeof table) => makeFaceIntentDoor({ group, atom: executor, plane: shared.handle, personaRecords: () => records, kelChain: () => [inception],
+      standing: () => "stands", verbs: faceIntentVerbs(), log: () => {},
+      runDeclaredEffect: async (verb, args) => { const enact = enactors[verb]; if (!enact) throw new Error(`intent effect ${verb}: no enactor`); ran(verb); return enact(args as Record<string, unknown>); } });
+    const word = async (): Promise<void> => {
+      for (const [verb, args] of [["ddate", { today: { year: 2026, month: 11, day: 21 } }], ["oracle-cast", { at: "2026-11-21", caster: "seat", coins: "7,8,9,6,7,7" }]] as const) {
+        const votum = await buildIntent({ group, signer: issuer, verb, args, nonce: "", audience: { mode: "pinned", atom: executor.key }, verbs: faceIntentVerbs() });
+        shared.handle.change((doc) => writeIntentEntry(doc, votum));
+      }
+    };
+    await word();
+    await doorWith({}).heed();
+    expect(ran).not.toHaveBeenCalled();
+    expect(countPlaneEntries(shared.doc, group)).toMatchObject({ intents: 2, outcomes: 0 });
+    const door = doorWith(table);
+    await door.heed();
+    expect(ran.mock.calls.map(([verb]) => verb).sort()).toEqual(["ddate", "oracle-cast"]);
+    expect(countPlaneEntries(shared.doc, group)).toMatchObject({ intents: 2, outcomes: 2, duplicates: 0 });
+    await word();
+    await door.heed();
+    expect(ran).toHaveBeenCalledTimes(2);
+    expect(countPlaneEntries(shared.doc, group)).toMatchObject({ intents: 2, outcomes: 2, duplicates: 0 });
+    expect(casts.size).toBe(1);
+    expect(await castVerb({ at: "2026-11-21", caster: "seat", coins: "7,8,9,6,7,7" })).toMatchObject({ decision: "exists", created: false });
+    expect(casts.size).toBe(1);
   });
 });

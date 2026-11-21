@@ -65,7 +65,7 @@ import {
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
-  faceAtomKeyFromSeed, type FaceAtomKey,
+  faceAtomKeyFromSeed, type FaceAtomKey, siblingPlaneMounts,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
   wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, type GateSweepSeat,
@@ -1024,6 +1024,9 @@ async function prepareNodeBootOn(
     if (n > 0) console.log(`[faces] ${n} Synced tree base(s) move with ${from} -> ${to}`);
   };
   const siblingFaces = new Map<string, { readonly ordinal: number; readonly relation: string | null; readonly face: string | null }>();
+  /** EACH LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes file under its own face while it stands
+   *  lit, under none once dark, and leave whole at its close; only a proof under its own log and KEL mounts them. */
+  const siblingPlanes = siblingPlaneMounts();
   /**
    * EACH FACE LIVES ONE LIFE (`face-lifecycle`): one lifecycle actor per face this composition may light, the mount's beside each
    * sibling's. The actor alone holds a face's opening, its island atom key and its custody opening; the door admits work and
@@ -1144,6 +1147,8 @@ async function prepareNodeBootOn(
     // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the browser's one order).
     const held = vesselHeldBagOf(deviceDocs, secretHomes, litDevices(), documentId);
     if (held !== undefined) return held;
+    const mountedPlane = siblingPlanes.bagOf(documentId, litDevices());
+    if (mountedPlane !== null) return mountedPlane;
     const selves = selvesRecordBagOf(documentId, carriedSelves(), litDevices());
     if (selves !== null) return selves;
     const face = sealedCells.face();
@@ -2500,10 +2505,13 @@ async function prepareNodeBootOn(
   let lightFace: (ordinal: number) => Promise<void> = async () => {};
   /** THE LIT SET: a sibling face's relation, read off its own proved log once the boot proves the faces; null before. */
   let siblingRelationOf: (group: string) => Promise<string | null> = async () => null;
+  /** A LIT SIBLING'S PROVEN PLANES, proved at its light under its own custody opening and mounted for its lit life; null before the boot proves the faces. */
+  let siblingPlanesOf: (group: string) => Promise<{ readonly persona: string; readonly intents: string } | null> = async () => null;
   /** Remove the face's owned resources together; an obsolete failure cannot remove its replacement. */
   const removeSibling = (group: string, expected = siblingFaces.get(group)): void => {
     if (!expected || siblingFaces.get(group) !== expected) return;
     siblingFaces.delete(group);
+    siblingPlanes.drop(group);
     const owned = deviceDocs.ids().filter((id) => deviceDocs.bagOf(id, [{ group, relation: expected.relation, face: expected.face }])?.face === expected.face && expected.face !== null);
     const dropped = sealedRest.forget(owned);
     for (const id of owned) void repo.removeFromCache(id as never).catch(() => {});
@@ -2544,6 +2552,9 @@ async function prepareNodeBootOn(
   /** A closed face's host side drops: what still waits unsaved (from memory, never to disk), its cache, session and keepers. */
   const teardownFaceHost = (ordinal: number): void => {
     for (const [group, held] of [...siblingFaces]) if (held.ordinal === ordinal) removeSibling(group, held);
+    // THE LIT LIFE BOUNDS A SIBLING'S PLANE MOUNT: the close takes it whole, whether or not its host side ever stood.
+    const closing = faceEntries.get(ordinal);
+    if (closing) siblingPlanes.drop(closing.personaGroupId);
     // THE CUSTODY ID STAYS PAST DARK: the lend sweep the return to dark replays reads it to skip a face its pūlama names closing
     // (the next light reads it afresh).
     faceEntries.delete(ordinal);
@@ -3581,6 +3592,14 @@ async function prepareNodeBootOn(
       const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
       return plane ? (await proofOfOtherFace(plane))?.relation ?? null : null;
     };
+    siblingPlanesOf = async (group: string) => {
+      const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
+      const proved = plane ? await proofOfOtherFace(plane) : null;
+      const intents = proved?.planes?.intents ?? null;
+      const mounted = siblingPlanes.mount(group, plane && intents ? { ok: true, planes: { persona: plane.url, intents } } : null);
+      if (!mounted.ok) { console.log(`[lit-set] ${group.slice(0, 8)}…'s planes mount nothing: ${mounted.detail}`); return null; }
+      return plane && intents ? { persona: plane.url, intents } : null;
+    };
     async function proofOfOtherFace(plane: (typeof bootstrap.personaPlanes)[number]) {
       try {
         // THE BOOTSTRAP NAMES EVERY FACE; THE VESSEL SERVES ITS LEND. A face outside what this vessel serves proves nothing here,
@@ -3769,6 +3788,7 @@ async function prepareNodeBootOn(
       atomSeed: loadFaceAtomOfGroup, atomKey: (seed, group) => faceAtomKeyFromSeed(seed, group).key,
       addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
       relation: (group: string) => siblingRelationOf(group),
+      planes: (group: string) => siblingPlanesOf(group),
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
     // EVERY OPEN READS THE SIBLINGS' CURRENT CUSTODY STANDING (Sol train #1): a sibling that locked or dropped since boot never rides a

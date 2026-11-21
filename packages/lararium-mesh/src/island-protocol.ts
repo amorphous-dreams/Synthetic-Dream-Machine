@@ -312,6 +312,10 @@ export interface IslandMsg_Manifest {
     /** This face's relation (its face plane pin, `faceRelationOf`): its daemon canon (`bags/daemon-<relation>`) stands by
      *  it. Absent: the face's daemon canon waits until a proof names it. */
     faceRelation?:     string;
+    /** A LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intent plane and the persona plane its roster folds from, as its
+     *  own signed log named them when the vessel proved it at its light. The island re-checks the pair against that log and KEL
+     *  before its door reads either; absent, the sibling's door stands none. */
+    facePlanes?:       { readonly persona: string; readonly intents: string };
     faceAnchor?: FaceAnchor | null;
     meshCabalDocIdHex?:    string;
     /** Writable bag URIs to register so verify/delegate resolve (lar: URIs). */
@@ -345,7 +349,7 @@ export interface IslandMsg_Manifest {
 /** Authentication material carried by one unlocked joined face. */
 export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>,
   "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags">> &
-  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret" | "handleIndex" | "faceRelation">;
+  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret" | "handleIndex" | "faceRelation" | "facePlanes">;
 
 /**
  * Cool the wiki slot from `wela` (hot) to `anu` (cold) — teardown; thread

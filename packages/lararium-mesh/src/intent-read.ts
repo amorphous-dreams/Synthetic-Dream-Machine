@@ -4,7 +4,7 @@ import { sha256HexBytesSync, utf8Bytes } from "./crypto.js";
 import { isCurrentEpoch, signsAtEpoch, type HandLineage } from "./hand-lineage.js";
 import { intentId, readIntentEntry, type IntentAudience, type IntentBound, type SignedIntentEntry } from "./intent-entry.js";
 import { argsWithinPolicy, verbInPrefix, type DelegationBound, type DelegationCite, type DelegationPolicy } from "./intent-delegation.js";
-import { issueCheck, WARD_COSIGN_VERBS, type IntentVerbClass, type IntentVerbRegistry } from "./intent-verbs.js";
+import { issueArgsCheck, issueCheck, WARD_COSIGN_VERBS, type IntentVerbClass, type IntentVerbRegistry } from "./intent-verbs.js";
 
 type Standing = "stands" | "aside" | "unknown";
 export interface IntentReadInput {
@@ -116,7 +116,8 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
     } else if (b.issuer !== r.entry.signer) { refused.push({ refusal: "not-issuer" }); continue; }
     const check = issueCheck(input.verbs, b.verb as string, b.audience as IntentAudience);
     if (!check.ok) { refused.push({ refusal: check.refusal }); continue; }
-    if (check.classification.class === "idempotent" && b.nonce !== "") { refused.push({ refusal: "idempotent-nonce" }); continue; }
+    const owed = issueArgsCheck(check.classification, b.nonce, b.args);
+    if (owed) { refused.push({ refusal: owed }); continue; }
     const id = intentId(b as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
     bodies.set(id, [...(bodies.get(id) ?? []), r]);
   }

@@ -4,7 +4,7 @@ import type { HandLineage } from "./hand-lineage.js";
 import { intentEntryCid, signIntentEntry, type IntentAudience, type IntentBound, type IntentEntryKind, type SignedIntentEntry } from "./intent-entry.js";
 import { argsWithinPolicy, validDelegateBody, verbInPrefix, type DelegationBound, type DelegationPolicy } from "./intent-delegation.js";
 import { INTENT_DELEGATION_DOMAIN } from "./domains.js";
-import { issueCheck, type IntentVerbRegistry } from "./intent-verbs.js";
+import { issueArgsCheck, issueCheck, type IntentVerbRegistry } from "./intent-verbs.js";
 
 export type IntentSigner = { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
 export class IntentRefusal extends Error {
@@ -19,7 +19,8 @@ export async function buildIntent(input: Base & { readonly verb: string; readonl
   const check = issueCheck(input.verbs, input.verb, input.audience);
   if (!check.ok) throw new IntentRefusal(check.refusal);
   if (input.audience.mode === "asks" && check.classification.class !== "single-effect") throw new IntentRefusal("asks-requires-single-effect");
-  if (check.classification.class === "idempotent" && input.nonce !== "") throw new IntentRefusal("idempotent-nonce");
+  const owed = issueArgsCheck(check.classification, input.nonce, input.args);
+  if (owed) throw new IntentRefusal(owed);
   return sign(input, "intent", { issuer: input.signer.key.toLowerCase(), verb: input.verb, args: input.args, nonce: input.nonce, audience: input.audience, ...(input.bound ? { bound: input.bound } : {}) });
 }
 export const delegationCid = intentEntryCid;
@@ -43,7 +44,8 @@ export async function buildAgentIntent(input: Base & { readonly delegation: stri
   const check = issueCheck(input.verbs, input.verb, input.audience);
   if (!check.ok) throw new IntentRefusal(check.refusal);
   if (input.audience.mode === "asks" && check.classification.class !== "single-effect") throw new IntentRefusal("asks-requires-single-effect");
-  if (check.classification.class === "idempotent" && input.nonce !== "") throw new IntentRefusal("idempotent-nonce");
+  const owed = issueArgsCheck(check.classification, input.nonce, input.args);
+  if (owed) throw new IntentRefusal(owed);
   return sign({ ...input, refs: [input.delegation] }, "intent", { issuer: input.signer.key.toLowerCase(), delegation: input.delegation, verb: input.verb, args: input.args, nonce: input.nonce, audience: input.audience, ...(input.bound ? { bound: input.bound } : {}) });
 }
 export const buildAsks = (input: Base & { readonly intent: string; readonly needs: "approval" | "executor" | "capability"; readonly detail?: unknown }) =>
