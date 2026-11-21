@@ -22,8 +22,8 @@ import type { Repo } from "@automerge/automerge-repo";
 import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { join, sep } from "node:path";
 import {
-  WORKSPACE_NAME_RE, SwarmRefused, WardRefused, abandonRites, beginChecked, beginRite, checkReturn, conferre, cosignPortWitness, isSwarmLeiRite, landRite, pendingBegins, riteReceipts,
-  swarmTesseraTitle, verifySwarmRecord,
+  WORKSPACE_NAME_RE, SwarmRefused, WardRefused, abandonMarkStands, abandonMarkVerifies, abandonRites, beginChecked, beginRite, checkReturn, conferre, cosignPortWitness, isSwarmLeiRite, landRite, pendingBegins, riteReceipts,
+  swarmTesseraTitle,
   type PendingBegin, type SwarmLeiRite, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort, type TesseraReading,
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
@@ -200,27 +200,31 @@ export function offerVouchesOf(text: string | null, faceOfGroup: ReadonlyMap<str
 }
 
 /**
- * THE HAND'S MARKS, LANDED: each record must form a `rite-abandoned` mark at its own title, verify as signed by a lent face's
- * HAND (`hands`), and name a half pending on `branch` under the group it names. Every record checks before any lands: one that
- * a hand never signed refuses `rite-abandon-unsigned`, one over no pending half `rite-abandon-not-pending`. Answers each half it
- * ended.
+ * THE HAND'S MARKS, LANDED: each record must name a half pending on `branch` under the group it names, and verify as the mark of
+ * the very root that strung that half's lei, binding its own guest cid (`abandonMarkVerifies`). Every record checks before any
+ * lands: one over no pending half refuses `rite-abandon-not-pending`, one any other key signed `rite-abandon-unsigned`. Answers
+ * each half it ended.
  */
-export async function acceptAbandons(wiki: SwarmWikiPort, branch: string, records: readonly unknown[], hands: (key: string) => boolean): Promise<Array<{ tessera: string; group: string; head: string }>> {
+export async function acceptAbandons(wiki: SwarmWikiPort, branch: string, records: readonly unknown[]): Promise<Array<{ tessera: string; group: string; head: string }>> {
   const pending = await pendingBegins(wiki, "kukulu", branch);
-  const trust: SwarmTrust = { hand: (key) => hands(key.toLowerCase()) || hands(key), vessel: () => false, lead: () => false };
   const ready: Array<{ title: string; text: string; half: PendingBegin }> = [];
   for (const raw of records) {
     const body = (typeof raw === "object" && raw !== null ? (raw as { body?: Record<string, unknown> }).body : undefined) ?? {};
     const tessera = typeof body["tessera"] === "string" && /^[0-9a-f]{64}$/.test(body["tessera"]) ? body["tessera"] : null;
     if (body["act"] !== "rite-abandoned" || tessera === null || typeof body["group"] !== "string") throw new SwarmRefused("rite-abandon-unsigned", "an abandon lands only the hand's `rite-abandoned` mark");
-    const title = swarmTesseraTitle(tessera, "abandoned"), text = JSON.stringify(raw);
-    if (!verifySwarmRecord(text, title, trust, body["group"]).ok) throw new SwarmRefused("rite-abandon-unsigned", `the mark over tessera ${tessera} verifies as no lent face's hand`);
     const half = pending.find((p) => p.tessera === tessera && p.group === body["group"] && body["branch"] === branch);
     if (half === undefined) throw new SwarmRefused("rite-abandon-not-pending", `no half of the group the mark names rests unlanded at tessera ${tessera} on "${branch}"`);
+    const title = swarmTesseraTitle(tessera, "abandoned"), text = JSON.stringify(raw);
+    // ONLY THE HALF'S OWN ROOT, over its own guest cid: the root that strung the lei the half spent.
+    if (!(await abandonMarkVerifies(wiki, tessera, text))) throw new SwarmRefused("rite-abandon-unsigned", `the mark over tessera ${tessera} verifies as no mark of the root that strung its lei, over its own guest half`);
     ready.push({ title, text, half });
   }
   const out: Array<{ tessera: string; group: string; head: string }> = [];
-  for (const r of ready) if (await wiki.writeNew(r.title, r.text)) out.push({ tessera: r.half.tessera, group: r.half.group, head: r.half.head });
+  for (const r of ready) {
+    // A mark resting already (one that verifies as none) yields to the hand's: the row takes the verified mark.
+    if (!(await wiki.writeNew(r.title, r.text))) await wiki.write(r.title, r.text);
+    out.push({ tessera: r.half.tessera, group: r.half.group, head: r.half.head });
+  }
   return out;
 }
 
@@ -291,32 +295,39 @@ export async function runRiteVerb(opts: {
     return { rite: "kukulu", standing: await standingKukuluBegins(lent, redOf, branchOrAll), pending, offer: offerVouchesOf(offerText, faceOf) };
   }
   if (opts.action === "abandon") {
-    // THE HAND'S ABANDON: every kūkulu half resting unlanded on the line gets the HAND's `rite-abandoned` mark, by name. Three
-    // forms: `terms` reads what the hand would sign (the face, and one part per pending half) and writes nothing; `signed` lands
-    // the marks the pūlama's hand door signed under the operator's route, each verified as a lent face's hand over a pending half;
-    // bare, it is a ward act: the operator's route (typed on the terminal, `ward-needs-fresh-unlock` with none) opens the face root
-    // here and signs each mark. A seat's session never runs the row (the store door's hand-only table). The returns stay spent.
+    // THE HAND'S ABANDON, AS ONE FACE: the face the row acts as (the operator's `--face`, else the worn face) ends the kūkulu halves
+    // of ITS OWN group resting unlanded on the line, each by a mark binding the half's guest cid that only the root which strung
+    // the half's lei verifies. Three forms: `terms` reads the parts this face's hand would sign and writes nothing; `signed` lands
+    // the marks the pūlama's hand door signed, each verified against its half's own root; bare, it is a ward act (the operator's
+    // route opens this face's root here). Halves of another lent face wait for that face's own abandon (`others`), and halves of a
+    // group no lent face carries wait for that face to stand. A seat's session never runs the row. The returns stay spent.
     if (opts.args["rite"] !== "kukulu" || !str("branch")) throw new SwarmRefused("rite-malformed", "an abandon names its rite (kukulu) and its branch");
     const branch = str("branch");
     const lent = await (opts.lentOrdinals ?? unlockedFaceOrdinals)();
     if (lent.length === 0) throw new SwarmRefused("lent-faces-empty", "an abandon signs as a lent face's hand, and this vessel serves no face");
     const faces = await Promise.all(lent.map(async (ordinal) => ({ ordinal, face: await riteFaceOf(opts.repo, opts.catalogUrl, ordinal) })));
+    const signerFace = opts.face !== undefined && lent.includes(opts.face) ? opts.face : lent[0]!;
+    const myGroup = faces.find((f) => f.ordinal === signerFace)!.face.group;
     const named = (p: PendingBegin): Record<string, unknown> => {
       const own = faces.find((f) => f.face.group === p.group);
       return { tessera: p.tessera, group: p.group, ...(own ? { face: `h${own.ordinal}` } : {}), head: p.head, ...(p.image === undefined ? { digestless: true } : { image: p.image }) };
     };
     const pending = await pendingBegins(wiki, "kukulu", branch);
-    const signerFace = opts.face !== undefined && lent.includes(opts.face) ? opts.face : lent[0]!;
-    if (opts.args["terms"] === true) return { face: signerFace, rite: "kukulu", branch, parts: pending.map((p) => ({ tessera: p.tessera, group: p.group, branch: p.branch })) };
+    const mine = pending.filter((p) => p.group === myGroup);
+    const others = pending.filter((p) => p.group !== myGroup).map(named);
+    if (opts.args["terms"] === true) return { face: signerFace, rite: "kukulu", branch, parts: mine.map((p) => ({ tessera: p.tessera, group: p.group, branch: p.branch, begun: p.begun })), others };
     if (Array.isArray(opts.args["signed"])) {
-      const landed = await acceptAbandons(wiki, branch, opts.args["signed"] as unknown[], (key) => faces.some((f) => f.face.trust.hand(key)));
-      return { rite: "kukulu", branch, abandoned: landed.map((l) => named(pending.find((p) => p.tessera === l.tessera)!)) };
+      const landed = await acceptAbandons(wiki, branch, opts.args["signed"] as unknown[]);
+      return { rite: "kukulu", branch, abandoned: landed.map((l) => named(pending.find((p) => p.tessera === l.tessera)!)), others };
     }
     if (opts.ward === undefined) throw new WardRefused("ward-needs-fresh-unlock", "an abandon is the hand's act: the face's route opens its root on the operator's terminal");
     const root = await wardRootSession(signerFace, opts.ward, `the face root at h${signerFace}, to abandon a pending kūkulu`);
     try {
-      const marked = new Set(await abandonRites(wiki, pending, root));
-      return { rite: "kukulu", branch, abandoned: pending.filter((p) => marked.has(p.tessera)).map(named) };
+      const marked = new Set(await abandonRites(wiki, mine, root));
+      // A mark this root signed that verifies as none (a half whose lei another root strung) is named, never counted.
+      const stood = new Set<string>();
+      for (const t of marked) if (await abandonMarkStands(wiki, t)) stood.add(t);
+      return { rite: "kukulu", branch, abandoned: mine.filter((p) => stood.has(p.tessera)).map(named), others };
     } finally { root.close(); }
   }
   if (opts.action === "begin" && opts.args["rite"] === "kukulu") {

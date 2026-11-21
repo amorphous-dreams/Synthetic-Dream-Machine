@@ -171,7 +171,7 @@ describe("kukulu-binds-its-image-and-spends-once", () => {
     const done = await f.begin(HEAD2);
     await f.land(done.tessera, HEAD2);
     const pending = await pendingBegins(f.wiki, "kukulu", BRANCH);
-    expect(pending).toEqual([{ tessera: open.tessera, group: GROUP, branch: BRANCH, head: HEAD, image: D1, lei: open.lei, n: open.n }]);
+    expect(pending).toEqual([{ tessera: open.tessera, group: GROUP, branch: BRANCH, head: HEAD, image: D1, lei: open.lei, n: open.n, begun: open.begun }]);
     // A rehived face's trust verifies nothing of the old half, and the raw read still names it.
     const rehived = { hand: () => false, vessel: () => false, lead: () => false };
     expect((await conferre(f.wiki, rehived, "face-group-rehived")).red.filter((r) => r.red === "landed-absent")).toEqual([]);
@@ -216,5 +216,38 @@ describe("kukulu-reuses-its-own-return-and-the-hand-abandons", () => {
     const theirs = await pendingBegins(g.wiki, "kukulu", BRANCH);
     await abandonRites(g.wiki, theirs, g.vessel);
     expect(await readSwarmRecord(g.wiki, swarmTesseraTitle(theirs[0]!.tessera, "abandoned"), g.trust, GROUP)).toMatchObject({ ok: false });
+  });
+});
+
+/**
+ * THE FOURTH READ (gate 2): an abandon mark ends a half only where it VERIFIES: signed by the very root that strung the lei the
+ * half spent (its own face's hand), binding that half's exact guest cid. Every reader (the debt, a landing, conferre) checks the
+ * signature, never the row's presence; a mark another hand or the vessel signed reads as none.
+ */
+describe("an-abandon-mark-stands-only-where-it-verifies", () => {
+  test("RED: a mark another hand signed, the vessel signed (the older form), or one naming another guest cid ends nothing: the debt still names the half, conferre reads it unlanded, and the landing goes on; CONTROL: the half's own root, over its own guest cid, ends it", async () => {
+    const f = await fixture();
+    await f.kui("kukulu", { reach: "wide", returns: 3 });
+    const one = await f.begin();
+    const title = swarmTesseraTitle(one.tessera, "abandoned");
+    for (const [signer, begun] of [[f.outsider, one.begun], [f.vessel, one.begun], [f.hand, "9".repeat(64)]] as const) {
+      f.rows.set(title, JSON.stringify(await signSwarmAct({ act: "rite-abandoned", group: GROUP, rite: "kukulu", branch: BRANCH, tessera: one.tessera, begun }, signer)));
+      expect((await pendingBegins(f.wiki, "kukulu", BRANCH)).map((p) => p.tessera)).toEqual([one.tessera]);
+      expect((await conferre(f.wiki, f.trust, GROUP)).red).toEqual([expect.objectContaining({ tessera: one.tessera, red: "landed-absent" })]);
+    }
+    f.rows.delete(title);
+    // The older form, a mark naming no guest cid that the vessel signed, reads unsigned too.
+    f.rows.set(title, JSON.stringify({ body: { act: "rite-abandoned", group: GROUP, rite: "kukulu", branch: BRANCH, tessera: one.tessera, kind: "lares-swarm-act" }, signer: f.vessel.key, sig: "00" }));
+    expect((await pendingBegins(f.wiki, "kukulu", BRANCH)).map((p) => p.tessera)).toEqual([one.tessera]);
+    f.rows.delete(title);
+    const two = await f.begin();
+    const pending = await pendingBegins(f.wiki, "kukulu", BRANCH);
+    expect(pending.map((p) => [p.tessera, p.begun])).toEqual(expect.arrayContaining([[one.tessera, one.begun], [two.tessera, two.begun]]));
+    expect(await abandonRites(f.wiki, pending.filter((p) => p.tessera === two.tessera), f.hand)).toEqual([two.tessera]);
+    expect((await pendingBegins(f.wiki, "kukulu", BRANCH)).map((p) => p.tessera)).toEqual([one.tessera]);
+    await expect(f.land(two.tessera)).rejects.toMatchObject({ code: "rite-abandoned" });
+    // A mark over the first half that only the vessel signed never stops its landing.
+    f.rows.set(title, JSON.stringify(await signSwarmAct({ act: "rite-abandoned", group: GROUP, rite: "kukulu", branch: BRANCH, tessera: one.tessera, begun: one.begun }, f.vessel)));
+    expect((await f.land(one.tessera)).par).toBe(true);
   });
 });

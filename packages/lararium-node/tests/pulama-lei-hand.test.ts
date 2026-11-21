@@ -126,20 +126,19 @@ describe("the hand strings, restrings and unstrings a lei at the pūlama's hand 
 });
 
 describe("the hand abandons a pending kūkulu at the pūlama's hand door (gate 2)", () => {
-  test("RED: under the face's route a lit pūlama signs one `rite-abandoned` mark per pending half the vessel's terms name (a rehived face's old group included), as the hand, and writes nothing; malformed parts refuse before the route; CONTROL: a wrong route signs nothing", async () => {
+  test("RED: under the face's route a lit pūlama signs one `rite-abandoned` mark per pending half of THAT face's own group, binding each half's guest cid, as the hand, and writes nothing; a part of another group, or naming no guest cid, refuses before the route; CONTROL: a wrong route signs nothing", async () => {
     const s = await stand();
     await s.light();
-    const parts = [{ tessera: "c".repeat(64), group: GROUP, branch: BRANCH }, { tessera: "d".repeat(64), group: "old-group-h1", branch: BRANCH }];
+    const parts = [{ tessera: "c".repeat(64), group: GROUP, branch: BRANCH, begun: "e".repeat(64) }];
     const out = await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts, credentials: route });
     expect(out).toMatchObject({ op: "lei", act: "abandon", reading: "signed", face: 0 });
     const records = out["records"] as Array<{ body: Record<string, unknown>; signer: string }>;
-    expect(records.map((r) => [r.body["act"], r.body["tessera"], r.body["group"], r.signer])).toEqual([
-      ["rite-abandoned", "c".repeat(64), GROUP, s.root.key], ["rite-abandoned", "d".repeat(64), "old-group-h1", s.root.key],
-    ]);
+    expect(records.map((r) => [r.body["act"], r.body["tessera"], r.body["group"], r.body["begun"], r.signer])).toEqual([["rite-abandoned", "c".repeat(64), GROUP, "e".repeat(64), s.root.key]]);
     expect(s.verify(records[0], `$:/lares/swarm/tessera/${"c".repeat(64)}/abandoned`)).toMatchObject({ ok: true });
     expect(await s.records.list("$:/")).toEqual([]);
     const opened = s.opened.length;
-    expect(await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts: [{ tessera: "nope", group: GROUP, branch: BRANCH }], credentials: route })).toMatchObject({ reading: "lei-malformed" });
+    expect(await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts: [...parts, { tessera: "d".repeat(64), group: "old-group-h1", branch: BRANCH, begun: "f".repeat(64) }], credentials: route })).toMatchObject({ reading: "abandon-other-group" });
+    expect(await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts: [{ tessera: "c".repeat(64), group: GROUP, branch: BRANCH }], credentials: route })).toMatchObject({ reading: "lei-malformed" });
     expect(await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts: [], credentials: route })).toMatchObject({ reading: "lei-malformed" });
     expect(s.opened.length).toBe(opened);
     const wrong = await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts, credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] });

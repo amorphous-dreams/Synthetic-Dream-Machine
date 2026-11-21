@@ -211,15 +211,18 @@ export function pulamaHandDoor(a: {
           const parts = Array.isArray(raw) ? raw.slice(0, 64) : [];
           const ok = typeof branch === "string" && branch !== "" && parts.length > 0 && parts.every((x) => typeof x === "object" && x !== null
             && typeof (x as Record<string, unknown>)["tessera"] === "string" && CID.test((x as Record<string, unknown>)["tessera"] as string)
+            && typeof (x as Record<string, unknown>)["begun"] === "string" && CID.test((x as Record<string, unknown>)["begun"] as string)
             && typeof (x as Record<string, unknown>)["group"] === "string" && (x as Record<string, unknown>)["group"] !== ""
             && (x as Record<string, unknown>)["branch"] === branch);
-          if (!ok) return { op: "lei", act, reading: "lei-malformed", detail: "an abandon names its branch and one part per pending half: its tessera, its group and that branch" };
+          if (!ok) return { op: "lei", act, reading: "lei-malformed", detail: "an abandon names its branch and one part per pending half: its tessera, its guest cid, its group and that branch" };
+          // EACH FACE'S HAND ENDS ITS OWN HALVES: a part of another group signs nothing, before the route reads.
+          if (parts.some((x) => (x as Record<string, unknown>)["group"] !== group)) return { op: "lei", act, reading: "abandon-other-group", face, detail: `face h${face}'s hand ends only its own group's halves; abandon another face's as that face (--face N)` };
           const credentials = credentialsOf(f["credentials"]);
           if (credentials === null) return { op: "lei", act, reading: "malformed" };
           const records: Array<Awaited<ReturnType<typeof signSwarmAct>>> = [];
           try {
             for (const x of parts as Array<Record<string, string>>) {
-              records.push(await signSwarmAct({ act: "rite-abandoned", group: x["group"]!, rite: "kukulu", branch: branch as string, tessera: x["tessera"]! }, await a.lei.signer(face, credentials)));
+              records.push(await signSwarmAct({ act: "rite-abandoned", group: x["group"]!, rite: "kukulu", branch: branch as string, tessera: x["tessera"]!, begun: x["begun"]! }, await a.lei.signer(face, credentials)));
             }
           } catch (err) {
             const e = err as { reading?: unknown; code?: unknown; message?: unknown };

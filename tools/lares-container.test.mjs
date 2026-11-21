@@ -59,7 +59,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"image inspect"*"org.opencontainers.image.revision"*) printf '%s\\n' "\${FAKE_IMAGE_REV_LABEL:-}"; exit 0;; esac\n` +
       `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
       // A container's image: the pūlama's (FAKE_PULAMA_ID) or the vessel's.
-      `case " $* " in *"inspect --format {{.Image}} "*) if [ -n "\${FAKE_PULAMA_ID:-}" ] && [ "$last" = "\${FAKE_PULAMA_ID}" ]; then printf '%s\\n' "\${FAKE_PULAMA_IMAGE:-}"; exit "\${FAKE_PULAMA_INSPECT_RC:-0}"; fi; printf '%s\\n' "\${FAKE_VESSEL_IMAGE:-}"; exit 0;; esac\n` +
+      `case " $* " in *"inspect --format {{.Image}} "*) if [ -n "\${FAKE_PULAMA_ID:-}" ] && [ "$last" = "\${FAKE_PULAMA_ID}" ]; then printf '%s\\n' "\${FAKE_PULAMA_IMAGE:-}"; exit "\${FAKE_PULAMA_INSPECT_RC:-0}"; fi; [ "\${FAKE_VESSEL_INSPECT_RC:-0}" = 0 ] || exit "\${FAKE_VESSEL_INSPECT_RC}"; printf '%s\\n' "\${FAKE_VESSEL_IMAGE:-}"; exit 0;; esac\n` +
       // A keep seat reads its route on a pty alone: the fake answers the pūlama's refusal unless the exec forces one, and
       // under one writes as a pty does, the prompt with no newline, then CRLF lines.
       `case " $* " in *"pulama-main.js keep-seat"*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '{"op":"keep-seat","reading":"refused","code":"route-needs-a-terminal","message":"a keep seat reads its route from a real terminal alone"}'; exit 1;; esac; printf '%s' 'pūlama route, to seat the house'"'"'s keep pair: '; printf '\\r\\n'; [ -z "\${FAKE_KEEP_SEAT_LINE:-}" ] || printf '%s\\r\\n' "\${FAKE_KEEP_SEAT_LINE}"; exit "\${FAKE_KEEP_SEAT_RC:-0}";; esac\n` +
@@ -72,6 +72,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       // THE ABANDON'S TERMS and the kūkulu's debt read, as the vessel answers them where a test scripts one.
       `case " $* " in *" rite abandon "*"--terms"*) printf '%s\\n' "\${FAKE_ABANDON_TERMS:-}"; exit 0;; esac\n` +
       `case " $* " in *" rite receipts "*) printf '%s\\n' "\${FAKE_RECEIPTS:-}"; exit "\${FAKE_RECEIPTS_RC:-0}";; esac\n` +
+      // THE REAL HAND VERB, where a test names its module: the pūlama's own `lei` verb (`runHandVerb`) reads the terms the shim
+      // passes, over a door that signs what it is asked, so the chain's shapes walk end to end.
+      `case " $* " in *"pulama-main.js lei "*) if [ -n "\${FAKE_REAL_HAND_VERB:-}" ]; then t1=""; t2=""; for a in "$@"; do if [ -n "$t2" ]; then terms=$a; t2=""; elif [ -n "$t1" ]; then act=$a; t1=""; t2=1; elif [ "$a" = lei ]; then t1=1; fi; done; exec node --input-type=module -e "\${FAKE_REAL_HAND_VERB}" "$act" "$terms"; fi;; esac\n` +
       `case " $* " in *"pulama-main.js lei "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_LEI_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
       `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
@@ -682,7 +685,7 @@ for (const [name, shim] of shims) {
     const cli = await fakeHostCli(0);
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: cli } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /HOSTCLI rite keep --if-due --no-json/);
+    assert.match(r.calls, /HOSTCLI rite keep --if-due --json/);
     assert.ok(r.calls.indexOf("HOSTCLI rite keep") < r.calls.indexOf("vessel census"), r.calls);
   });
   test(`${name}: down-goes-on-past-a-refused-keep: the keep's refusal is named and the down still stops the vessel`, async () => {
@@ -1176,6 +1179,25 @@ for (const [name, shim] of shims) {
     assert.match(r.stderr, /the keep a down left owed waits for the rite's landing/);
     assert.equal(r.keepOwed, true);
   });
+  test(`${name}: keep-owed-reads-the-debt-whole (the fourth read): a debt read that exits non-zero waits even where its output names no pending half; a keep that resolves no workspace keeps the mark`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, LARES_KEEP_WORKSPACE: "house-backup" };
+    const masked = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, FAKE_RECEIPTS: '{"ok":true,"data":{"pending":[]}}', FAKE_RECEIPTS_RC: "2", LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.doesNotMatch(masked.calls, /HOSTCLI/);
+    assert.equal(masked.keepOwed, true);
+    const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
+    const none = join(d, "lares");
+    await writeFile(none, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nprintf '%s\\n' '{"ok":true,"data":{"rite":"keep","due":false,"workspace":null,"why":"no keep workspace named"}}'\nexit 0\n`);
+    await chmod(none, 0o755);
+    const nothing = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, FAKE_RECEIPTS: '{"ok":true,"data":{"pending":[]}}', LARES_HOST_CLI: none } });
+    assert.match(nothing.calls, /HOSTCLI rite keep --if-due/);
+    assert.equal(nothing.keepOwed, true);
+    assert.match(nothing.stderr, /keep: no keep workspace resolved, so nothing kept; the keep stays owed/);
+  });
+  test(`${name}: vessel-image-fails-loud (the fourth read): an inspect that fails exits non-zero and prints nothing, never a digest`, async () => {
+    const r = await run(shim, ["vessel-image"], { env: { ...STANDING, FAKE_VESSEL_IMAGE: "sha256:" + "ee".repeat(32), FAKE_VESSEL_INSPECT_RC: "1" } });
+    assert.notEqual(r.status, 0);
+    assert.equal(r.stdout.trim(), "");
+  });
   test(`${name}: vessel-image-reads-the-running-image: it prints the image the running vessel runs, by digest; none running prints nothing`, async () => {
     const r = await run(shim, ["vessel-image"], { env: { ...STANDING, FAKE_VESSEL_IMAGE: "sha256:" + "ee".repeat(32) } });
     assert.equal(r.status, 0, r.stderr);
@@ -1386,6 +1408,31 @@ test(`${name}: rite-abandon-hand-door-chain: under a pūlama, rite abandon reads
   const refused = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: terms } });
   assert.notEqual(refused.status, 0);
   assert.doesNotMatch(refused.calls, /rite abandon --signed/);
+});
+// THE CHAIN END TO END (the fourth read): the terms ride as the vessel CLI's own answer (its envelope, as `emitAnswer` writes it),
+// the pūlama's own `lei` verb reads them, and the shim lands what it answers: the shapes cannot drift apart unseen.
+test(`${name}: rite-abandon-chain-walks-the-real-shapes: the CLI's terms answer, through the shim, reaches the pūlama's own lei verb as a face and its parts, and the vessel lands the marks it signs`, { skip }, async () => {
+  const { emitAnswer } = await import(join(ROOT, "packages/lares-cli/dist/src/render.js"));
+  const { parseArgs } = await import(join(ROOT, "packages/lares-cli/dist/src/parse-args.js"));
+  const data = { face: 0, rite: "kukulu", branch: "main", parts: [{ tessera: "c".repeat(64), group: "g0", branch: "main", begun: "d".repeat(64) }] };
+  let text = "";
+  const write = process.stdout.write;
+  process.stdout.write = (chunk) => { text += String(chunk); return true; };
+  try { emitAnswer(parseArgs(["rite", "abandon", "--terms"]), { ok: true, data, human: () => {} }, "terms"); } finally { process.stdout.write = write; }
+  const hand = [
+    `const { runHandVerb } = await import(${JSON.stringify(join(ROOT, "packages/lararium-node/dist/src/pulama-verbs.js"))});`,
+    "const [act, terms] = process.argv.slice(1);",
+    "const out = await runHandVerb('lei', [act, terms], { route: async () => 'a route', ask: async (f) => f.op === 'status' ? { op: 'status', lit: true }",
+    "  : Number.isInteger(f.face) && Array.isArray(f.parts) && f.parts.length > 0 ? { op: 'lei', act: f.act, reading: 'signed', face: f.face, records: f.parts.map((p) => ({ body: { act: 'rite-abandoned', tessera: p.tessera, begun: p.begun } })) }",
+    "  : { op: 'lei', reading: 'lei-malformed' } });",
+    "console.log(JSON.stringify(out, null, 2));",
+  ].join("\n");
+  const r = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: text.trim(), FAKE_REAL_HAND_VERB: hand } });
+  assert.equal(r.status, 0, r.stdout);
+  const land = r.calls.split("\n").find((l) => l.includes("rite abandon --signed ")) ?? "";
+  const answer = JSON.parse(land.slice(land.indexOf("--signed ") + "--signed ".length, land.lastIndexOf(" --rite")));
+  assert.equal(answer.reading, "signed", land);
+  assert.deepEqual(answer.records.map((x) => x.body.begun), ["d".repeat(64)]);
 });
 test(`${name}: pulama-keep-seat-writes-the-seat: the pūlama's seat line lands verbatim as config/keep-seat.json (0600), the signer never shown; an existing seat refuses without --reseat; a refusal writes nothing`, { skip }, async () => {
   const seat = { publicKey: "ab".repeat(32), stretchSalt: "11".repeat(16), tree: { slots: [{ kind: "passphrase", salt: "s1" }] }, verifyKey: "cd".repeat(32) };

@@ -796,6 +796,27 @@ describe("kukulu-survives-a-ctrl-c", () => {
     const out = await riteKukulu(f.ports, {});
     expect(out.data).toMatchObject({ debt: "unread" });
     expect(f.said.join("\n")).toMatch(/this vessel reads no raw debt, so a half whose face stands shut or was rehived reads nowhere/);
+    // RED (the fourth read): UNREAD DEBT NEVER AUTHORIZES A FRESH BEGIN: the rite raises and reads the debt in the new vessel.
+    expect(f.calls).toEqual(["checkout", STAGE, STANDS, `raise ${HEAD}`, STANDS, "keep-owed"]);
+    expect(f.said.join("\n")).toMatch(/no begin spends a return while the debt reads unread; the raise stands the new vessel, and the rite reads the debt there/);
+    // CONTROL: the halves it does read, at this head, resume (they spend nothing).
+    const seen = standingFakes({ begins: BEGUN(HEAD, undefined) });
+    expect(await riteKukulu(seen.ports, {})).toMatchObject({ code: 0, data: { resumed: true, landed: true } });
+    expect(seen.calls.some((c) => c.startsWith("rite-begin"))).toBe(false);
+  });
+
+  it("RED (the fourth read): a reply naming `standing` and no `pending` fills the debt from what it stands, read as unread, never as empty debt", () => {
+    expect(standingOf({ rite: "kukulu", standing: [{ face: "h2", ordinal: 2, tessera: TESSERA, branch: "main", head: HEAD }] }, "main")).toEqual({ begins: [{ face: "h2", ordinal: 2, tessera: TESSERA, head: HEAD }] });
+  });
+
+  it("RED (the fourth read): an image the raised vessel runs that reads nowhere (a failed inspect) lands nothing and never falls back to the staged digest; the halves wait for the next run", async () => {
+    const f = standingFakes(read([]));
+    f.ports.ranImage = async () => null;
+    const out = await riteKukulu(f.ports, {});
+    expect(out).toMatchObject({ code: 1, data: { begun: true, landed: false, refusal: "kukulu-ran-image-unread" } });
+    expect(f.calls.some((c) => c.startsWith("rite-land"))).toBe(false);
+    expect(f.calls).not.toContain("keep-owed");
+    expect(f.said.join("\n")).toMatch(/the image the raised vessel runs reads nowhere, so no landing names it: `lares rite kukulu` lands the halves once it reads, and spends no lei/);
   });
 
   it("RED: the host's abandon runs ATTACHED (the route reads on this terminal, at the ward or the pūlama's hand door): an answer that names no list says the vessel named each half", async () => {

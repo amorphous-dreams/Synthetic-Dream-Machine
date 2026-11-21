@@ -431,7 +431,9 @@ function KeepBeforeDown {
   if ($hostCli) { $cmd = $hostCli; $pre = @() }
   elseif (Get-Command node -ErrorAction SilentlyContinue) { $cmd = 'node'; $pre = @((Join-Path $Root 'packages/lares-cli/bin/lares.mjs')) }
   else { $script:KeepSaid = 'no host node answered, so nothing kept'; [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
-  & $cmd @pre rite keep --if-due --no-json
+  # THE MARK CLEARS ON A REAL KEEP: an answer naming no workspace (`"workspace":null`) kept nothing, and the keep stays owed.
+  $kbOut = ((& $cmd @pre rite keep --if-due --json) -join '') -replace '\s', ''
+  if ($LASTEXITCODE -eq 0 -and $kbOut.Contains('"workspace":null')) { $script:KeepSaid = 'no keep workspace resolved, so nothing kept; the keep stays owed'; return }
   if ($LASTEXITCODE -ne 0) {
     $script:KeepSaid = 'the keep did not complete'
     New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') | Out-Null
@@ -1180,7 +1182,12 @@ switch ($verb) {
     # THE IMAGE THE RUNNING VESSEL RUNS, by digest (the rite lands over it, never over a tag that may have moved); none prints nothing.
     if ($rest.Count -gt 0) { Die 'vessel-image takes no argument' }
     $id = ((& docker compose @Base ps -q --status running lares 2>$null) -join '').Trim()
-    if ($LASTEXITCODE -eq 0 -and $id) { [Console]::Out.WriteLine(((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()) }
+    if ($LASTEXITCODE -eq 0 -and $id) {
+      # An inspect that fails exits non-zero and prints nothing: the rite reads the image as unknown, never the staged digest.
+      $img = ((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()
+      if ($LASTEXITCODE -ne 0) { Die "vessel-image: the running vessel's image reads nowhere (docker inspect failed)" }
+      [Console]::Out.WriteLine($img)
+    }
   }
   'rite' {
     # THE ABANDON'S HAND DOOR UNDER A PŪLAMA: the vessel reads the abandon's terms, the pūlama reads the route on this terminal and

@@ -124,6 +124,8 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     if (act !== "kui" && act !== "restring" && act !== "unstring" && act !== "abandon") throw new PulamaVerbUsage();
     let terms: unknown;
     try { terms = JSON.parse(raw!); } catch { throw new PulamaVerbUsage(); }
+    // THE VESSEL CLI'S ANSWER rides its envelope (`{ ok, data }`, `emitAnswer`): the terms are its data.
+    if (typeof terms === "object" && terms !== null && (terms as Record<string, unknown>)["ok"] === true && typeof (terms as Record<string, unknown>)["data"] === "object") terms = (terms as Record<string, unknown>)["data"];
     const termsOk = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x) && !("credentials" in x) && !("op" in x) && !("act" in x);
     if (!termsOk(terms)) throw new PulamaVerbUsage();
     // ONE STRINGING FOR EVERY FACE: `faces` lists one terms object per face, each signed by that face's own hand under ONE route.

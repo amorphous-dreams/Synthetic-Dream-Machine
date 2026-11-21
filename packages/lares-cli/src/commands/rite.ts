@@ -193,6 +193,12 @@ async function runRiteVerb(args: ParsedArgs, plan: RitePlan): Promise<number> {
     const human = abandoned === null ? () => console.log(JSON.stringify(output)) : () => {
       if (abandoned.length === 0) console.error(`abandon: no kūkulu half rests unlanded on ${String(output["branch"])}; nothing abandoned`);
       for (const a of abandoned) console.error(`abandon: ${String(a["face"] ?? a["group"])} tessera ${String(a["tessera"])} (begun at ${String(a["head"]).slice(0, 12)}${a["digestless"] === true ? ", naming no image" : ""}) ends by the hand's mark; its return stays spent`);
+      // EACH FACE'S HAND ENDS ITS OWN: another lent face's halves wait for its abandon; a group no lent face carries waits for it to stand.
+      for (const o of Array.isArray(output["others"]) ? output["others"] as Array<Record<string, unknown>> : []) {
+        console.error(typeof o["face"] === "string"
+          ? `abandon: ${o["face"]} tessera ${String(o["tessera"])} waits for its own face's hand: lares rite kukulu --abandon --face ${o["face"].slice(1)} --branch ${String(output["branch"])}`
+          : `abandon: ${String(o["group"])} tessera ${String(o["tessera"])} waits: no lent face's hand carries its group, so it ends once that face stands again`);
+      }
     };
     emitAnswer(args, { ok: true, data: output, human }, `lares rite ${plan.verb}: done`);
     return 0;
@@ -369,9 +375,10 @@ export function standingOf(output: Record<string, unknown>, branch: string): { b
   const image = (r: Record<string, unknown>): { image?: string } => (typeof r["image"] === "string" ? { image: r["image"] } : {});
   if (Array.isArray(output["standing"])) {
     const begins = rows(output["standing"]).map((s) => ({ face: String(s["face"]), ...(Number.isSafeInteger(s["ordinal"]) ? { ordinal: s["ordinal"] as number } : {}), tessera: String(s["tessera"]), head: String(s["head"]), ...image(s) }));
-    const pending = rows(output["pending"]).map((p) => ({ tessera: String(p["tessera"]), group: String(p["group"]), head: String(p["head"]), ...image(p), ...(typeof p["face"] === "string" ? { face: p["face"] } : {}) }));
+    // A REPLY NAMING NO `pending` reads its debt as unread (the rite fills it from what it stands), never as empty.
+    const pending = Array.isArray(output["pending"]) ? rows(output["pending"]).map((p) => ({ tessera: String(p["tessera"]), group: String(p["group"]), head: String(p["head"]), ...image(p), ...(typeof p["face"] === "string" ? { face: p["face"] } : {}) })) : undefined;
     const offer = Array.isArray(output["offer"]) ? rows(output["offer"]).map((v) => ({ ...(typeof v["face"] === "string" ? { face: v["face"] } : {}), group: String(v["group"]), branch: String(v["branch"]), head: String(v["head"]), image: String(v["image"]) })) : null;
-    return { begins, pending, offer };
+    return { begins, ...(pending === undefined ? {} : { pending, offer }) };
   }
   // AN ANSWER THAT NAMES NO `standing` ROWS carries its worn face's receipts and conferre: its unlanded kūkulu halves on the line, with no raw debt read.
   const conf = output["conferre"];

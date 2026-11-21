@@ -236,10 +236,14 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
   // tag may move between the stage and the raise), so a landing over another image reads no par.
   const asImage = r.image === "" ? {} : { image: r.image };
   let landImage = r.image;
+  /** The image the raised vessel runs read nowhere (a failed inspect): nothing lands, never over the staged digest. */
+  let ranUnread = false;
   /** After a raise: the image the vessel runs, as its container reports it; a tag that moved since the stage says so. */
   const readRan = async (): Promise<void> => {
-    const ran = ports.ranImage ? await ports.ranImage().catch(() => null) : null;
-    if (ran === null || ran === "" || ran === r.image) return;
+    if (!ports.ranImage) return;
+    const ran = await ports.ranImage().catch(() => null);
+    if (ran === null || ran === "") { ranUnread = true; return; }
+    if (ran === r.image) return;
     ports.say(`kūkulu: the vessel runs ${ran}, not the image the begin bound (${r.image === "" ? "no digest" : r.image}); the tag moved between the stage and the raise, so the landing names the image that runs`);
     landImage = ran;
   };
@@ -308,6 +312,10 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
   };
   /** Land each begun face in the vessel that stands now; the rite reads par only where every pair reads par. */
   const landAll = async (faces: readonly StandingBegin[], data: Record<string, unknown>): Promise<{ code: number; data: Record<string, unknown> }> => {
+    if (ranUnread) {
+      ports.say(`kūkulu: the image the raised vessel runs reads nowhere, so no landing names it: \`${HAND_ACT}\` lands the halves once it reads, and spends no lei`);
+      return { code: 1, data: { ...data, begun: true, landed: false, refusal: "kukulu-ran-image-unread" } };
+    }
     let par = true;
     for (const f of faces) {
       const landed = await ports.row("rite-land", { tessera: f.tessera, head, ...(landImage === "" ? {} : { image: landImage }), ...(f.ordinal === undefined ? {} : { face: f.ordinal }) });
@@ -371,13 +379,15 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
       if (j.unread) {
         debtUnread = true;
         ports.say("kūkulu: this vessel reads no raw debt, so a half whose face stands shut or was rehived reads nowhere; the rite resumes what it reads, and the debt beyond it stays unread");
+        // UNREAD DEBT NEVER AUTHORIZES A FRESH BEGIN: with nothing to resume, the rite raises and reads the debt in the new vessel.
+        if (resume.length === 0) readAfter = true;
       }
     }
   }
   // A QUIET DAY: the vessel already runs the image under a pūlama that owes no light; nothing to raise, nothing to spend. A debt
   // matched at this head lands after the top-up: the vessel runs the image of the head it began at.
   if (r.current && !light) {
-    ports.say(resume.length > 0 ? resumeLine(resume) : readAfter ? `kūkulu: the vessel already runs the image of ${short}; the restand opens it` : `kūkulu: the vessel already runs the image of ${short}; no rite spends a return`);
+    ports.say(resume.length > 0 ? resumeLine(resume) : debtUnread ? "kūkulu: no begin spends a return while the debt reads unread; the raise stands the new vessel, and the rite reads the debt there" : readAfter ? `kūkulu: the vessel already runs the image of ${short}; the restand opens it` : `kūkulu: the vessel already runs the image of ${short}; no rite spends a return`);
     const code = await ports.raise(head);
     if (code !== 0) return { code: 1, data: { ...base, begun: false, quiet: true, stopped: "raise", ...(code === INTERRUPTED ? { interrupted: true } : {}) } };
     await readRan();
@@ -430,7 +440,8 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
       ports.say(`kūkulu: begun; each lent face's lei returned and its guest half rests (${begunFaces.map((f) => `${f.face} tessera ${f.tessera}`).join(", ")})`);
       for (const face of waits) ports.say(`kūkulu: ${face} carries no kukulu lei on this line and waits; the other faces' rite goes on`);
     }
-  } else if (r.vessel === "standing") ports.say("kūkulu: the vessel stands locked, so no rite begins; the raise opens it, and the rite lands what it reads then");
+  } else if (r.vessel === "standing" && debtUnread) ports.say("kūkulu: no begin spends a return while the debt reads unread; the raise stands the new vessel, and the rite reads the debt there");
+  else if (r.vessel === "standing") ports.say("kūkulu: the vessel stands locked, so no rite begins; the raise opens it, and the rite lands what it reads then");
   else ports.say("kūkulu: no vessel stands, so no rite begins; the raise reads the offer that rests, the admitted set, or your admit");
   const begun = begunFaces.length > 0;
   // THE ADMIT GATE: a new vessel under a pūlama enters on an admission, a kukulu offer, or the hand's admit (a route).

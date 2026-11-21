@@ -9,6 +9,7 @@ import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, sto
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
 import { acceptAbandons, beginLentFaces, lentOfferFaces, offerVouchesOf, refuseStandingBegin, standingKukuluBegins } from "../src/commands/rite.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
+import { runHandVerb } from "../src/pulama-verbs.js";
 import {
   SwarmRefused, abandonRites, beginChecked, checkReturn, conferre, landRite, pendingBegins, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiReturnedPrefix, swarmLeiReturnedTitle,
   type SwarmTrust, type SwarmWikiPort,
@@ -230,12 +231,15 @@ test("RED: the vessel lands an abandon mark only where a lent face's HAND signed
   await wiki.write(swarmLeiRecordTitle("kukulu", "main", swarmActCid(lei)), JSON.stringify(lei));
   const at = { rite: "kukulu" as const, branch: "main", head: "a".repeat(40), tree: "b".repeat(40) };
   const begun = await beginChecked(wiki, await checkReturn(wiki, at, trust, "g0", atom, { accepts: () => true }));
-  const mark = (signer: typeof hand, tessera = begun.tessera) => signSwarmAct({ act: "rite-abandoned", group: "g0", rite: "kukulu", branch: "main", tessera }, signer);
-  const hands = (key: string) => key === hand.key;
-  await expect(acceptAbandons(wiki, "main", [await mark(atom)], hands)).rejects.toMatchObject({ code: "rite-abandon-unsigned" });
-  await expect(acceptAbandons(wiki, "main", [await mark(hand, "9".repeat(64))], hands)).rejects.toMatchObject({ code: "rite-abandon-not-pending" });
+  const mark = (signer: typeof hand, tessera = begun.tessera, guest = begun.begun) => signSwarmAct({ act: "rite-abandoned", group: "g0", rite: "kukulu", branch: "main", tessera, begun: guest }, signer);
+  // THE FOURTH READ: only the root that strung the half's lei (its own face's hand) ends it, over that half's own guest cid.
+  const otherHand = await keyed(72);
+  await expect(acceptAbandons(wiki, "main", [await mark(atom)])).rejects.toMatchObject({ code: "rite-abandon-unsigned" });
+  await expect(acceptAbandons(wiki, "main", [await mark(otherHand)])).rejects.toMatchObject({ code: "rite-abandon-unsigned" });
+  await expect(acceptAbandons(wiki, "main", [await mark(hand, begun.tessera, "9".repeat(64))])).rejects.toMatchObject({ code: "rite-abandon-unsigned" });
+  await expect(acceptAbandons(wiki, "main", [await mark(hand, "9".repeat(64))])).rejects.toMatchObject({ code: "rite-abandon-not-pending" });
   expect(await pendingBegins(wiki, "kukulu", "main")).toHaveLength(1);
-  expect(await acceptAbandons(wiki, "main", [await mark(hand)], hands)).toEqual([{ tessera: begun.tessera, group: "g0", head: at.head }]);
+  expect(await acceptAbandons(wiki, "main", [await mark(hand)])).toEqual([{ tessera: begun.tessera, group: "g0", head: at.head }]);
   expect(await pendingBegins(wiki, "kukulu", "main")).toEqual([]);
   expect(storeVerbNeedsWard("rite-abandon", { rite: "kukulu", branch: "main" })).toBe(true);
   expect(storeVerbNeedsWard("rite-abandon", { rite: "kukulu", branch: "main", signed: [] })).toBe(false);
@@ -256,4 +260,18 @@ test("RED: the pūlama's reuse binds the image: a retry over another image claim
   expect(a).toMatchObject({ ok: true, n: 1 });
   expect(b).toMatchObject({ ok: true, n: 2 });
   expect(await port.begin({ lei: [lei], unstrung: [] }, at("sha256:" + "aa".repeat(32)))).toEqual(a);
+});
+
+test("RED (the fourth read): the pūlama's `lei` verb unwraps the CLI's answer envelope (`{ok, data}`) its abandon terms ride in, so the hand door reads the face and the parts; CONTROL: bare terms read as they stood", async () => {
+  const frames: Array<Record<string, unknown>> = [];
+  const ports = {
+    ask: async (f: Record<string, unknown>) => { frames.push(f); return f["op"] === "status" ? { op: "status", lit: true } : { op: "lei", reading: "signed" }; },
+    route: async () => "a route",
+  };
+  const terms = { face: 1, rite: "kukulu", branch: "main", parts: [{ tessera: "c".repeat(64), group: "g1", branch: "main", begun: "d".repeat(64) }] };
+  for (const text of [JSON.stringify({ ok: true, data: terms }), JSON.stringify(terms)]) {
+    frames.length = 0;
+    await runHandVerb("lei", ["abandon", text], ports as never);
+    expect(frames.at(-1)).toMatchObject({ op: "lei", act: "abandon", face: 1, parts: terms.parts });
+  }
 });

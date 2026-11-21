@@ -165,7 +165,10 @@ keep_before_down() {
   if [ -n "$host_cli" ]; then set -- "$host_cli"
   elif command -v node >/dev/null 2>&1; then set -- node "$ROOT/packages/lares-cli/bin/lares.mjs"
   else KEEP_SAID="no host node answered, so nothing kept"; printf '%s\n' 'lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand' >&2; return 0; fi
-  if "$@" rite keep --if-due --no-json; then KEEP_SAID="kept (rite keep --if-due)"; rm -f -- "$(keep_owed_mark)"
+  # THE MARK CLEARS ON A REAL KEEP: an answer naming no workspace (`"workspace":null`) kept nothing, and the keep stays owed.
+  if kb_out=$("$@" rite keep --if-due --json); then
+    if printf '%s' "$kb_out" | tr -d ' \t\r\n' | grep -q '"workspace":null'; then KEEP_SAID="no keep workspace resolved, so nothing kept; the keep stays owed"
+    else KEEP_SAID="kept (rite keep --if-due)"; rm -f -- "$(keep_owed_mark)"; fi
   else KEEP_SAID="the keep did not complete"; mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2; fi
 }
 
@@ -1175,7 +1178,8 @@ keep_owed_verb() {
   [ "$#" -eq 0 ] || die "keep-owed takes no argument"
   if [ ! -e "$(keep_owed_mark)" ]; then printf '%s\n' 'lares-container: keep: none owed' >&2; return 0; fi
   # THE KEEP WAITS FOR THE LANDING: a kūkulu half resting unlanded on any line, or a debt read that fails, keeps nothing.
-  ko_debt=$(compose exec -T lares node "$CLI" rite receipts --rite kukulu --json </dev/null 2>/dev/null | tr -d ' \t\r\n') || ko_debt=""
+  # The read's own exit status counts (a separate capture, never masked by a pipeline): a failed read waits.
+  if ko_raw=$(compose exec -T lares node "$CLI" rite receipts --rite kukulu --json </dev/null 2>/dev/null); then ko_debt=$(printf '%s' "$ko_raw" | tr -d ' \t\r\n'); else ko_debt=""; fi
   case "$ko_debt" in
     *'"pending":[]'*) ;;
     *) printf '%s\n' 'lares-container: keep: owed; a kūkulu half rests unlanded (or the debt reads nowhere), so the keep waits for `lares rite kukulu` to land it' >&2; return 0 ;;
@@ -1192,7 +1196,11 @@ case "$verb" in
     # THE IMAGE THE RUNNING VESSEL RUNS, by digest (the rite lands over it, never over a tag that may have moved); none prints nothing.
     [ "$#" -eq 0 ] || die "vessel-image takes no argument"
     vi_id=$(compose ps -q --status running lares 2>/dev/null) || vi_id=""
-    if [ -n "$vi_id" ]; then docker inspect --format '{{.Image}}' "$vi_id" 2>/dev/null | tr -d '\r' || true; fi ;;
+    # An inspect that fails exits non-zero and prints nothing: the rite reads the image as unknown, never the staged digest.
+    if [ -n "$vi_id" ]; then
+      vi_image=$(docker inspect --format '{{.Image}}' "$vi_id" 2>/dev/null) || die "vessel-image: the running vessel's image reads nowhere (docker inspect failed)"
+      printf '%s\n' "$vi_image" | tr -d '\r'
+    fi ;;
   rite)
     # THE ABANDON'S HAND DOOR UNDER A PŪLAMA: the vessel holds no face root, so it reads the abandon's terms (the face, one part
     # per pending half), the pūlama reads the route on THIS terminal and signs one mark per half as the hand, and the vessel lands
