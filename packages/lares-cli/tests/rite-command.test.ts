@@ -16,7 +16,7 @@ import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, foundingRecordDigests, type GenesisD
 import { genesisSeedCid } from "@lararium/node";
 import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
-import { RiteUsage, hostRefill, hostRowLine, ritePlan, rollbackOf, standingOf, syncCheckout } from "../src/commands/rite.js";
+import { RiteUsage, abandonAnswerOf, hostRefill, hostRowLine, riteAnswerName, ritePlan, rollbackOf, standingOf, syncCheckout } from "../src/commands/rite.js";
 import { storeVerbRidesWorn } from "../src/store-door.js";
 import { kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
@@ -832,5 +832,24 @@ describe("kukulu-survives-a-ctrl-c", () => {
     expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", JSON.stringify({ op: "lei", reading: "signed", records: [rec] }))).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", signed: [rec] } });
     expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", JSON.stringify([rec]))).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", signed: [rec] } });
     expect(() => plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", "not json")).toThrow(RiteUsage);
+  });
+
+  it("RED (the eighth read): the attached abandon's own answer carries its code to the host: the vessel writes its envelope to a named file in the house's config, and the host reads it (a refusal by its own code, never `rite-abandon-refused`); CONTROL: no file read keeps the exit's reading", () => {
+    expect(abandonAnswerOf(1, JSON.stringify({ ok: false, error: { code: "rite-abandon-terms-differ", message: "differ" } }))).toEqual({ ok: false, code: "rite-abandon-terms-differ", message: "differ" });
+    expect(abandonAnswerOf(0, JSON.stringify({ ok: true, data: { rite: "kukulu", abandoned: [{ tessera: TESSERA, group: "g0", head: HEAD }] } }))).toEqual({ ok: true, output: { rite: "kukulu", abandoned: [{ tessera: TESSERA, group: "g0", head: HEAD }] } });
+    expect(abandonAnswerOf(2, null)).toEqual({ ok: false, code: "rite-abandon-refused", message: "the abandon answered 2; the lines above name why" });
+    expect(abandonAnswerOf(0, null)).toEqual({ ok: true, output: { attached: true } });
+    expect(riteAnswerName(parseArgs(["rite", "abandon", "--answer", "rite-abandon-answer-0a1b.json"]))).toBe("rite-abandon-answer-0a1b.json");
+    expect(() => riteAnswerName(parseArgs(["rite", "abandon", "--answer", "../escape.json"]))).toThrow(RiteUsage);
+  });
+
+  it("RED (the eighth read): `rite abandon --signed-file <name>` reads the hand's signed batch from the house's config (never argv); a name that escapes refuses", () => {
+    const rec = { body: { act: "rite-abandoned" }, signer: "k", sig: "s" };
+    const home = join(process.env["LAR_ROOT"]!, "config");
+    mkdirSync(home, { recursive: true });
+    writeFileSync(join(home, "rite-abandon-signed-0a1b.json"), JSON.stringify({ op: "lei", reading: "signed", records: [rec] }));
+    expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed-file", "rite-abandon-signed-0a1b.json")).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", signed: [rec] } });
+    expect(() => plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed-file", "../x.json")).toThrow(RiteUsage);
+    expect(() => plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed-file", "rite-abandon-signed-ffff.json")).toThrow(RiteUsage);
   });
 });

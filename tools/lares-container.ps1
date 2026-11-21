@@ -450,6 +450,11 @@ function KeepBeforeDown {
         elseif ($wsEl.ValueKind -eq 'String' -and $wsEl.GetString().Trim()) { $verdict = 'kept' }
       }
     } catch { $verdict = 'malformed' }
+    # ANY ANSWER THAT READS AS NO REAL KEEP WRITES THE MARK (a first down holds none yet), so the next raise keeps again.
+    if ($verdict -ne 'kept') {
+      New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') | Out-Null
+      New-Item -ItemType File -Force -Path (KeepOwedMark) | Out-Null
+    }
     if ($verdict -eq 'none') { $script:KeepSaid = 'no keep workspace resolved, so nothing kept; the keep stays owed'; return }
     if ($verdict -ne 'kept') { $script:KeepSaid = 'the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed'; return }
   }
@@ -1229,8 +1234,16 @@ switch ($verb) {
       # ONLY A SIGNED ANSWER LANDS: a refusal the pūlama read (another group's half, a wrong route) lands nothing.
       $abReading = if (($answer -replace '\s', '') -match '"reading":"([^"]*)"') { $Matches[1] } else { 'no reading' }
       if ($abReading -ne 'signed') { Die "the pūlama signed nothing ($abReading); nothing lands" }
-      $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli rite abandon --signed $answer @more
-      exit $LASTEXITCODE
+      # THE SIGNED BATCH RIDES A FILE in the house's config (the vessel reads /lar/config), never argv: a large batch trips E2BIG.
+      EnsureHouse
+      $abFile = "rite-abandon-signed-$([Convert]::ToHexString([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(8)).ToLowerInvariant()).json"
+      $abPath = Join-Path (Join-Path $House 'config') $abFile
+      [System.IO.File]::WriteAllText($abPath, $answer)
+      try {
+        $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli rite abandon --signed-file $abFile @more
+        $abRc = $LASTEXITCODE
+      } finally { Remove-Item -LiteralPath $abPath -Force -ErrorAction SilentlyContinue }
+      exit $abRc
     }
     RouteCli (@($verb) + $rest) $true
   }

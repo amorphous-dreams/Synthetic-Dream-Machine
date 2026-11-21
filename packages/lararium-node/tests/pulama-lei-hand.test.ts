@@ -47,6 +47,12 @@ async function stand(opts: { readonly lei?: boolean; readonly unanchored?: boole
       if (credentials.some((c) => c.kind !== "passphrase" || c.passphrase !== FIXTURE_PASSPHRASE)) throw new WardRefused("ward-no-slot-opens", "the route opens no slot of this face's ward (2 attempt(s) left)");
       return root;
     },
+    // ONE OPENING PER ACT: the root opens once under the route and signs each mark of the act.
+    session: async (ordinal: number, credentials: readonly Credential[]) => {
+      opened.push(ordinal);
+      if (credentials.some((c) => c.kind !== "passphrase" || c.passphrase !== FIXTURE_PASSPHRASE)) throw new WardRefused("ward-no-slot-opens", "the route opens no slot of this face's ward (2 attempt(s) left)");
+      return { ...root, close: () => {} };
+    },
   };
   const lines: string[] = [];
   const door = pulamaHandDoor({ holder, server, image: pulamaImage(dir), records, onLog: (l) => lines.push(l), ...(opts.lei === false ? {} : { lei }) } as Parameters<typeof pulamaHandDoor>[0]);
@@ -152,8 +158,15 @@ describe("the hand door signs every part the vessel asks (the seventh read)", ()
     await s.light();
     const hex = (n: number, c: string) => (n.toString(16).padStart(4, "0") + c.repeat(60));
     const parts = Array.from({ length: 65 }, (_, i) => ({ tessera: hex(i, "c"), group: GROUP, branch: BRANCH, begun: hex(i, "e") }));
+    const before = s.opened.length;
     const out = await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts, credentials: route });
     expect(out).toMatchObject({ reading: "signed" });
     expect((out["records"] as unknown[]).length).toBe(65);
+    // RED (the eighth read): the ward opens ONCE for the act, never once per mark.
+    expect(s.opened.length - before).toBe(1);
+    // RED: past the per-act bound (100) the door refuses by count before the route; the vessel pages its terms within it.
+    const many = Array.from({ length: 101 }, (_, i) => ({ tessera: hex(i, "c"), group: GROUP, branch: BRANCH, begun: hex(i, "e") }));
+    expect(await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts: many, credentials: route })).toMatchObject({ reading: "abandon-batch-over-bound", detail: expect.stringContaining("101") });
+    expect(s.opened.length - before).toBe(1);
   });
 });

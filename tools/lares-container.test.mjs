@@ -70,12 +70,14 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"pulama-main.js status"*) lit='{"op":"status","lit":true}'; if [ -e "$CALL_LOG.lit" ] && [ -n "\${FAKE_PULAMA_STATUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_PULAMA_STATUS_AFTER}"; else printf '%s\\n' "\${FAKE_PULAMA_STATUS-$lit}"; fi; exit 0;; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
       // THE ABANDON'S TERMS and the kūkulu's debt read, as the vessel answers them where a test scripts one.
+      // THE SIGNED BATCH rides a file in the house's config (never argv): the fake logs its name, its size and its one-line content.
+      `case " $* " in *" rite abandon "*"--signed-file "*) nx=""; for a in "$@"; do if [ -n "$nx" ]; then sf=$a; nx=""; elif [ "$a" = --signed-file ]; then nx=1; fi; done; sp="$(dirname "$CALL_LOG")/house/config/$sf"; printf 'SIGNED-FILE %s %s\n' "$sf" "$(wc -c < "$sp" | tr -d ' ')" >> "$CALL_LOG"; printf 'SIGNED-JSON %s\n' "$(cat "$sp")" >> "$CALL_LOG"; exit "\${FAKE_EXEC_RC:-0}";; esac\n` +
       `case " $* " in *" rite abandon "*"--terms"*) printf '%s\\n' "\${FAKE_ABANDON_TERMS:-}"; exit "\${FAKE_ABANDON_TERMS_RC:-0}";; esac\n` +
       `case " $* " in *" rite receipts "*) printf '%s\\n' "\${FAKE_RECEIPTS:-}"; exit "\${FAKE_RECEIPTS_RC:-0}";; esac\n` +
       // THE REAL HAND VERB, where a test names its module: the pūlama's own `lei` verb (`runHandVerb`) reads the terms the shim
       // passes, over a door that signs what it is asked, so the chain's shapes walk end to end.
       `case " $* " in *"pulama-main.js lei "*) if [ -n "\${FAKE_REAL_HAND_VERB:-}" ]; then t1=""; t2=""; for a in "$@"; do if [ -n "$t2" ]; then terms=$a; t2=""; elif [ -n "$t1" ]; then act=$a; t1=""; t2=1; elif [ "$a" = lei ]; then t1=1; fi; done; exec node --input-type=module -e "\${FAKE_REAL_HAND_VERB}" "$act" "$terms"; fi;; esac\n` +
-      `case " $* " in *"pulama-main.js lei "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_LEI_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
+      `case " $* " in *"pulama-main.js lei "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; { if [ -n "\${FAKE_LEI_ANSWER_FILE:-}" ]; then cat "\${FAKE_LEI_ANSWER_FILE}"; elif [ -n "\${FAKE_LEI_ANSWER:-}" ]; then printf '%s\\n' "\${FAKE_LEI_ANSWER}"; fi; } | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
       `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" vessel census --json "*) printf '%s\\n' "\${FAKE_CENSUS_JSON:-}"; exit 0;; esac\n` +
@@ -148,8 +150,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const filled = Object.fromEntries(Object.entries(env).map(([k, v]) => [k, typeof v === "string" ? fill(v).replaceAll("@HEAD12@", head.slice(0, 12)).replaceAll("@HEAD@", head) : v]));
     // `tty` names the bytes typed on a pseudo-terminal (`script`), which then carries stdout and stderr as one stream.
     const r = tty === undefined
-      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
-      : spawnSync("script", ["-qec", [cmd[0], ...cmd[1]].map((a) => `'${a}'`).join(" "), "/dev/null"], { env: { ...base, ...filled }, encoding: "utf8", input: tty });
+      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
+      : spawnSync("script", ["-qec", [cmd[0], ...cmd[1]].map((a) => `'${a}'`).join(" "), "/dev/null"], { env: { ...base, ...filled, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", input: tty });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     let worn = null; try { worn = (await readFile(join(house, "config", "last-worn-face"), "utf8")).trim(); } catch {}
     let seat = null; let seatMode = null; try { seat = JSON.parse(await readFile(join(house, "config", "keep-seat.json"), "utf8")); seatMode = (await stat(join(house, "config", "keep-seat.json"))).mode & 0o777; } catch {}
@@ -1210,6 +1212,27 @@ for (const [name, shim] of shims) {
     const kept = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: await fakeHostCli(0) } });
     assert.equal(kept.keepOwed, false);
   });
+  test(`${name}: keep-marks-owed-on-the-first-failed-read (the eighth read): with no mark yet, a keep reply that reads as no real keep WRITES keep-owed; in sh a python3 that answers 127 (absent) names itself and marks the keep owed`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup" };
+    for (const out of ["", '{"ok":1,"data":{"workspace":"house-backup"}}', '{"ok":true,"data":{"workspace":null}}']) {
+      const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
+      const cli = join(d, "lares");
+      await writeFile(cli, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nprintf '%s\\n' '${out}'\nexit 0\n`);
+      await chmod(cli, 0o755);
+      const r = await run(shim, ["down"], { env: { ...env, LARES_HOST_CLI: cli } });
+      assert.equal(r.status, 0, r.stderr);
+      assert.equal(r.keepOwed, true, JSON.stringify(out));
+    }
+    if (name === "sh") {
+      const d = await mkdtemp(join(tmpdir(), "lares-keep-py-"));
+      await writeFile(join(d, "python3"), "#!/bin/sh\nexit 127\n");
+      await chmod(join(d, "python3"), 0o755);
+      const r = await run(shim, ["down"], { env: { ...env, LARES_HOST_CLI: await fakeHostCli(0), PATH: `${d}:${process.env.PATH}` } });
+      assert.equal(r.status, 0, r.stderr);
+      assert.equal(r.keepOwed, true);
+      assert.match(r.stderr, /python3 answers nowhere on this host, so the keep's answer reads unread; the keep stays owed/);
+    }
+  });
   test(`${name}: vessel-image-fails-loud (the fourth read): an inspect that fails exits non-zero and prints nothing, never a digest`, async () => {
     const r = await run(shim, ["vessel-image"], { env: { ...STANDING, FAKE_VESSEL_IMAGE: "sha256:" + "ee".repeat(32), FAKE_VESSEL_INSPECT_RC: "1" } });
     assert.notEqual(r.status, 0);
@@ -1415,9 +1438,10 @@ test(`${name}: rite-abandon-hand-door-chain: under a pūlama, rite abandon reads
   const lines = r.calls.split("\n");
   const read = lines.findIndex((l) => /exec (?:-e \S+ )*-T lares node \S+ rite abandon --terms --rite kukulu --branch main$/.test(l));
   const sign = lines.findIndex((l) => l.includes(`--profile pulama exec --no-TTY=false pulama node packages/lararium-node/dist/src/pulama-main.js lei abandon ${terms}`));
-  const land = lines.findIndex((l) => l.includes("rite abandon --signed "));
+  const land = lines.findIndex((l) => /rite abandon --signed-file rite-abandon-signed-[0-9a-f]+\.json --rite kukulu --branch main$/.test(l));
   assert.ok(read >= 0 && sign > read && land > sign, `order terms, sign (attached), land:\n${r.calls}`);
-  assert.deepEqual(JSON.parse(lines[land].slice(lines[land].indexOf("--signed ") + "--signed ".length, lines[land].lastIndexOf(" --rite"))), JSON.parse(answer));
+  const signed = lines.find((l) => l.startsWith("SIGNED-JSON ")) ?? "";
+  assert.deepEqual(JSON.parse(signed.slice("SIGNED-JSON ".length)), JSON.parse(answer));
   const noTty = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: terms, FAKE_LEI_ANSWER: answer } });
   assert.notEqual(noTty.status, 0);
   assert.match(noTty.stderr, /an abandon under a pūlama reads its route on a terminal/);
@@ -1425,6 +1449,20 @@ test(`${name}: rite-abandon-hand-door-chain: under a pūlama, rite abandon reads
   const refused = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: terms } });
   assert.notEqual(refused.status, 0);
   assert.doesNotMatch(refused.calls, /rite abandon --signed/);
+});
+// THE EIGHTH READ: a large signed batch rides a file in the house's config, never argv (E2BIG).
+test(`${name}: rite-abandon-batch-rides-a-file: a 300-mark signed answer lands through a file in the house's config, never one argument`, { skip }, async () => {
+  const terms = '{"face":0,"rite":"kukulu","branch":"main","parts":[{"tessera":"' + "c".repeat(64) + '","group":"g","branch":"main","begun":"' + "d".repeat(64) + '"}]}';
+  const records = Array.from({ length: 300 }, (_, i) => ({ body: { act: "rite-abandoned", group: "g", rite: "kukulu", branch: "main", tessera: i.toString(16).padStart(64, "c"), begun: "d".repeat(64), kind: "lares-swarm-act" }, signer: "ab".repeat(32), sig: "ef".repeat(64) }));
+  // The answer itself rides a file into the fake (an environment string that large trips the same ceiling the shim must avoid).
+  const d = await mkdtemp(join(tmpdir(), "lares-batch-"));
+  await writeFile(join(d, "answer.json"), JSON.stringify({ op: "lei", act: "abandon", reading: "signed", face: 0, records }));
+  const r = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: terms, FAKE_LEI_ANSWER_FILE: join(d, "answer.json") } });
+  assert.equal(r.status, 0, String(r.stdout ?? r.error).slice(-2000));
+  const file = r.calls.split("\n").find((l) => l.startsWith("SIGNED-FILE ")) ?? "";
+  assert.ok(Number(file.split(" ")[2]) > 131072, file);
+  assert.equal(JSON.parse((r.calls.split("\n").find((l) => l.startsWith("SIGNED-JSON ")) ?? "").slice("SIGNED-JSON ".length)).records.length, 300);
+  assert.doesNotMatch(r.calls, /--signed \{/);
 });
 // THE FIFTH READ: terms the vessel refuses (none of this face's own, an unlent face) ask no route; an answer that reads anything
 // but signed lands nothing.
@@ -1459,8 +1497,8 @@ test(`${name}: rite-abandon-chain-walks-the-real-shapes: the CLI's terms answer,
   ].join("\n");
   const r = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: text.trim(), FAKE_REAL_HAND_VERB: hand } });
   assert.equal(r.status, 0, r.stdout);
-  const land = r.calls.split("\n").find((l) => l.includes("rite abandon --signed ")) ?? "";
-  const answer = JSON.parse(land.slice(land.indexOf("--signed ") + "--signed ".length, land.lastIndexOf(" --rite")));
+  const land = r.calls.split("\n").find((l) => l.startsWith("SIGNED-JSON ")) ?? "";
+  const answer = JSON.parse(land.slice("SIGNED-JSON ".length));
   assert.equal(answer.reading, "signed", land);
   assert.deepEqual(answer.records.map((x) => x.body.begun), ["d".repeat(64)]);
 });

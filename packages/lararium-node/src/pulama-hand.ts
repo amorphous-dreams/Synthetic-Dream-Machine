@@ -72,7 +72,12 @@ export interface PulamaLeiHand {
   /** The face root's signer for ONE act, opened fresh under the operator's route (a ward act); a route that opens no slot of the
    *  face's ward throws the ward's refusal by its reading. */
   signer(ordinal: number, credentials: readonly Credential[]): Promise<SwarmSignerPort>;
+  /** The face root for ONE act that signs several marks, opened ONCE under the route and closed when the act settles. */
+  session?(ordinal: number, credentials: readonly Credential[]): Promise<SwarmSignerPort & { close(): void }>;
 }
+
+/** The most marks one abandon act signs: the vessel pages its terms within it. */
+export const ABANDON_ACT_BOUND = 100;
 
 type LeiAct = "kui" | "restring" | "unstring";
 const CID = /^[0-9a-f]{64}$/;
@@ -210,6 +215,8 @@ export function pulamaHandDoor(a: {
           const raw = src["parts"], branch = src["branch"] ?? f["branch"];
           // EVERY PART THE VESSEL ASKS signs: the vessel lands only the exact set its terms named, so none may drop.
           const parts = Array.isArray(raw) ? raw : [];
+          // A SANE PER-ACT BOUND: past it the door refuses by count, before the route; the vessel pages its terms within it.
+          if (parts.length > ABANDON_ACT_BOUND) return { op: "lei", act, reading: "abandon-batch-over-bound", face, detail: `the terms name ${parts.length} halves, past the ${ABANDON_ACT_BOUND} one abandon signs; the vessel pages them` };
           const ok = typeof branch === "string" && branch !== "" && parts.length > 0 && parts.every((x) => typeof x === "object" && x !== null
             && typeof (x as Record<string, unknown>)["tessera"] === "string" && CID.test((x as Record<string, unknown>)["tessera"] as string)
             && typeof (x as Record<string, unknown>)["begun"] === "string" && CID.test((x as Record<string, unknown>)["begun"] as string)
@@ -221,16 +228,21 @@ export function pulamaHandDoor(a: {
           const credentials = credentialsOf(f["credentials"]);
           if (credentials === null) return { op: "lei", act, reading: "malformed" };
           const records: Array<Awaited<ReturnType<typeof signSwarmAct>>> = [];
+          // ONE OPENING PER ACT where the hand offers a session (closed when the act settles); otherwise one opening per mark.
+          let session: (SwarmSignerPort & { close(): void }) | null = null;
           try {
+            if (a.lei.session) session = await a.lei.session(face, credentials);
             for (const x of parts as Array<Record<string, string>>) {
-              records.push(await signSwarmAct({ act: "rite-abandoned", group: x["group"]!, rite: "kukulu", branch: branch as string, tessera: x["tessera"]!, begun: x["begun"]! }, await a.lei.signer(face, credentials)));
+              records.push(await signSwarmAct({ act: "rite-abandoned", group: x["group"]!, rite: "kukulu", branch: branch as string, tessera: x["tessera"]!, begun: x["begun"]! }, session ?? await a.lei.signer(face, credentials)));
             }
           } catch (err) {
+            session?.close();
             const e = err as { reading?: unknown; code?: unknown; message?: unknown };
             const reading = typeof e.reading === "string" ? e.reading : typeof e.code === "string" ? e.code : "lei-sign-refused";
             log(`lei abandon: ${reading}`);
             return { op: "lei", act, reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
           }
+          session?.close();
           log(`signed by hand: ${records.length} abandon mark(s) for h${face}; the vessel lands them`);
           return { op: "lei", act, reading: "signed", face, records };
         }

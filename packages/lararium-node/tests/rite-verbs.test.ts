@@ -7,7 +7,7 @@
 import { expect, test } from "vitest";
 import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, rowRefusalName, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
-import { acceptAbandons, beginLentFaces, lentOfferFaces, offerVouchesOf, ownAbandonParts, refuseStandingBegin, signedMatchesTerms, standingKukuluBegins } from "../src/commands/rite.js";
+import { ABANDON_BATCH, abandonPage, acceptAbandons, beginLentFaces, lentOfferFaces, offerVouchesOf, ownAbandonParts, refuseStandingBegin, signedMatchesTerms, standingKukuluBegins } from "../src/commands/rite.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
 import { runHandVerb } from "../src/pulama-verbs.js";
 import {
@@ -319,4 +319,14 @@ test("RED (the seventh read): a rite row's refusal answers under its own code (`
   expect(rowRefusalName("rite-begin", new SwarmRefused("rite-begun-stands", "stands"))).toBe("rite-begun-stands");
   expect(rowRefusalName("rite-begin", new SwarmRefused("swarm-no-daemon", "no daemon"))).toBe("rite-begin-refused");
   expect(rowRefusalName("swarm-show", new SwarmRefused("swarm-lei-absent", "absent"))).toBe("swarm-show-refused");
+});
+
+test("RED (the eighth read): an abandon pages its own halves within the per-act bound, the rest named as more to come; CONTROL: a small set is one page", () => {
+  const half = (i: number) => ({ tessera: i.toString(16).padStart(64, "c"), group: "g0", branch: "main", head: "a".repeat(40), lei: "l", n: 1, begun: "b".repeat(64) });
+  const all = Array.from({ length: 150 }, (_, i) => half(i));
+  expect(ABANDON_BATCH).toBe(100);
+  const first = abandonPage(all);
+  expect([first.page.length, first.more]).toEqual([100, 50]);
+  expect(first.page.map((p) => p.tessera)).toEqual([...all].map((p) => p.tessera).sort().slice(0, 100));
+  expect(abandonPage(all.slice(0, 3))).toMatchObject({ more: 0 });
 });

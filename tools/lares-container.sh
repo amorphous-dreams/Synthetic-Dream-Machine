@@ -170,6 +170,7 @@ keep_before_down() {
   if kb_out=$("$@" rite keep --if-due --json); then
     # The envelope parses as JSON (python3: the host carries no jq); a reader that cannot parse it reads nothing kept.
     # STRICT: no NaN or Infinity, `ok` the boolean true, `data` an object, `data.workspace` a non-empty string (or null: none named).
+    kb_rc=0
     kb_read=$(printf '%s' "$kb_out" | python3 -c 'import json, sys
 def reject(name):
     raise ValueError(name)
@@ -185,12 +186,15 @@ w = data.get("workspace")
 if w is None and "workspace" in data:
     print("none")
 elif isinstance(w, str) and w.strip():
-    print("kept")' 2>/dev/null) || kb_read=""
+    print("kept")' 2>/dev/null) || { kb_rc=$?; kb_read=""; }
+    # ANY ANSWER THAT READS AS NO REAL KEEP WRITES THE MARK (a first down holds none yet), so the next raise keeps again.
     case "$kb_read" in
       kept) KEEP_SAID="kept (rite keep --if-due)"; rm -f -- "$(keep_owed_mark)" ;;
       none) KEEP_SAID="no keep workspace resolved, so nothing kept; the keep stays owed" ;;
-      *) KEEP_SAID="the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed" ;;
+      *) if [ "$kb_rc" -eq 127 ]; then KEEP_SAID="python3 answers nowhere on this host, so the keep's answer reads unread; the keep stays owed"; printf 'lares-container: %s\n' "$KEEP_SAID" >&2
+         else KEEP_SAID="the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed"; fi ;;
     esac
+    [ "$kb_read" = kept ] || { mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; }
   else KEEP_SAID="the keep did not complete"; mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2; fi
 }
 
@@ -1237,9 +1241,14 @@ case "$verb" in
       # ONLY A SIGNED ANSWER LANDS: a refusal the pūlama read (another group's half, a wrong route) lands nothing.
       ab_reading=$(printf '%s' "$answer" | tr -d ' ' | sed -n 's/.*"reading":"\([^"]*\)".*/\1/p' | head -n 1)
       [ "$ab_reading" = signed ] || die "the pūlama signed nothing (${ab_reading:-no reading}); nothing lands"
+      # THE SIGNED BATCH RIDES A FILE in the house's config (the vessel reads /lar/config), never argv: a large batch trips E2BIG.
+      ensure_house
+      ab_file="rite-abandon-signed-$(od -An -N8 -tx1 /dev/urandom | tr -d ' \n').json"
+      ( umask 077; printf '%s' "$answer" > "$HOUSE/config/$ab_file" ) || die "the signed batch could not rest in $HOUSE/config; nothing lands"
       # shellcheck disable=SC2046
-      waited_exec $(pass_env) -T lares node "$CLI" rite abandon --signed "$answer" "$@" </dev/null
-      exit $?
+      if waited_exec $(pass_env) -T lares node "$CLI" rite abandon --signed-file "$ab_file" "$@" </dev/null; then ab_rc=0; else ab_rc=$?; fi
+      rm -f -- "$HOUSE/config/$ab_file"
+      exit "$ab_rc"
     fi
     route_cli "$verb" "$@" ;;
   down) down_vessel "$@" ;;

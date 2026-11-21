@@ -270,6 +270,15 @@ export function signedMatchesTerms(records: readonly unknown[], mine: readonly P
   if (seen.size !== want.size) throw new SwarmRefused("rite-abandon-terms-differ", `the signed marks cover ${seen.size} of the ${want.size} halves this abandon asked: nothing lands`);
 }
 
+/** The most halves one abandon signs and lands: the hand door's per-act bound, and the page the vessel's terms name. */
+export const ABANDON_BATCH = 100;
+
+/** One abandon's page of a face's own halves: the first `ABANDON_BATCH` in tessera order, and how many wait for the next. */
+export function abandonPage(mine: readonly PendingBegin[]): { page: PendingBegin[]; more: number } {
+  const sorted = [...mine].sort((a, b) => a.tessera.localeCompare(b.tessera));
+  return { page: sorted.slice(0, ABANDON_BATCH), more: Math.max(0, sorted.length - ABANDON_BATCH) };
+}
+
 /** One lent face as a kūkulu row reads it: the offer's parts beside the device atom that signs its rite's halves. */
 type RiteFace = KukuluOfferFace & { readonly vessel: SwarmSignerPort };
 
@@ -354,22 +363,24 @@ export async function runRiteVerb(opts: {
     };
     const pending = await pendingBegins(wiki, "kukulu", branch);
     const own = ownAbandonParts({ pending, faces: faces.map((f) => ({ ordinal: f.ordinal, group: f.face.group })), ...(opts.face === undefined ? {} : { named: opts.face }), branch });
-    if (opts.args["terms"] === true) return { face: own.signer, rite: "kukulu", branch, parts: own.mine.map((p) => ({ tessera: p.tessera, group: p.group, branch: p.branch, begun: p.begun })), others: own.others };
+    // ONE PAGE PER ACT: the face's own halves, in tessera order, within the per-act bound; the rest wait for the next abandon.
+    const { page, more } = abandonPage(own.mine);
+    if (opts.args["terms"] === true) return { face: own.signer, rite: "kukulu", branch, parts: page.map((p) => ({ tessera: p.tessera, group: p.group, branch: p.branch, begun: p.begun })), others: own.others, more };
     let ended: string[];
     if (Array.isArray(opts.args["signed"])) {
       // THE SIGNED LANDING MATCHES THE REQUEST: exactly this face's own halves, each once, before any mark lands.
-      signedMatchesTerms(opts.args["signed"] as unknown[], own.mine);
+      signedMatchesTerms(opts.args["signed"] as unknown[], page);
       ended = (await acceptAbandons(wiki, branch, opts.args["signed"] as unknown[])).map((l) => l.tessera);
     }
     else {
       if (opts.ward === undefined) throw new WardRefused("ward-needs-fresh-unlock", "an abandon is the hand's act: the face's route opens its root on the operator's terminal");
       const root = await wardRootSession(own.signer, opts.ward, `the face root at h${own.signer}, to abandon a pending kūkulu`);
-      try { await abandonRites(wiki, own.mine, root); } finally { root.close(); }
+      try { await abandonRites(wiki, page, root); } finally { root.close(); }
       ended = [];
-      for (const p of own.mine) if (await abandonMarkStands(wiki, p.tessera)) ended.push(p.tessera);
+      for (const p of page) if (await abandonMarkStands(wiki, p.tessera)) ended.push(p.tessera);
     }
-    if (ended.length === 0) throw new SwarmRefused("rite-abandon-unlanded", `no mark of h${own.signer}'s root verifies over its halves (${own.mine.map((p) => p.tessera).join(", ")}): their lei were strung by another root, so only that root ends them`);
-    return { rite: "kukulu", branch, abandoned: own.mine.filter((p) => ended.includes(p.tessera)).map(named), others: own.others };
+    if (ended.length === 0) throw new SwarmRefused("rite-abandon-unlanded", `no mark of h${own.signer}'s root verifies over its halves (${page.map((p) => p.tessera).join(", ")}): their lei were strung by another root, so only that root ends them`);
+    return { rite: "kukulu", branch, abandoned: page.filter((p) => ended.includes(p.tessera)).map(named), others: own.others, more };
   }
   if (opts.action === "begin" && opts.args["rite"] === "kukulu") {
     // A KŪKULU BEGINS FOR EVERY LENT FACE OR FOR NONE: every face's return checks first, then each claims and rests its guest half.

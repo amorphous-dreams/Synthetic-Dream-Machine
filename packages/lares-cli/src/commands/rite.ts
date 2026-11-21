@@ -26,7 +26,9 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { execFile, spawn } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { larConfigHome } from "@lararium/node";
 import { homedir } from "node:os";
 import { createInterface } from "node:readline";
 import { dirname, join } from "node:path";
@@ -73,7 +75,13 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if (rite === undefined || branch === undefined) throw new RiteUsage("abandon names its rite and its branch: --rite kukulu --branch <name>");
     // `--terms` reads what the hand would sign; `--signed` lands the marks the pūlama's hand door signed (its answer, or a list).
     if (args.flags["terms"] === true) return { verb: "rite-abandon", args: { rite, branch, terms: true, ...face } };
-    const signedWord = word(args.options["signed"]);
+    // `--signed-file <name>`: the hand door's answer rests in the house's config (the shim writes it there, never argv).
+    const signedFile = word(args.options["signed-file"]);
+    let signedWord = word(args.options["signed"]);
+    if (signedFile !== undefined) {
+      if (!/^rite-abandon-signed-[0-9a-f]+\.json$/.test(signedFile)) throw new RiteUsage("--signed-file names a `rite-abandon-signed-<hex>.json` in the house's config");
+      try { signedWord = readFileSync(join(larConfigHome(), signedFile), "utf8"); } catch { throw new RiteUsage(`--signed-file: no ${signedFile} rests in the house's config`); }
+    }
     if (signedWord !== undefined) {
       let parsed: unknown;
       try { parsed = JSON.parse(signedWord); } catch { throw new RiteUsage("--signed takes the hand door's answer (JSON), or a list of the marks it signed"); }
@@ -186,6 +194,13 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
 }
 
 async function runRiteVerb(args: ParsedArgs, plan: RitePlan): Promise<number> {
+  // THE ANSWER FILE, where the host asked one: the envelope this row answers, success or refusal, for the host to read back.
+  let answerName: string | undefined;
+  try { answerName = riteAnswerName(args); } catch (err) { if (err instanceof RiteUsage) return refuseUsage(args, "rite", helpLines("rite"), err.message); throw err; }
+  const writeAnswer = (envelope: Record<string, unknown>): void => {
+    if (answerName === undefined) return;
+    try { mkdirSync(larConfigHome(), { recursive: true }); writeFileSync(join(larConfigHome(), answerName), JSON.stringify(envelope), { mode: 0o600 }); } catch { /* the host reads the exit alone */ }
+  };
   try {
     const { output } = await storeVerb(plan.verb, plan.args);
     // AN ABANDON THAT LANDED names each half it ended, by the hand's mark; its terms read prints as data for the hand door.
@@ -200,10 +215,12 @@ async function runRiteVerb(args: ParsedArgs, plan: RitePlan): Promise<number> {
           : `abandon: ${String(o["group"])} tessera ${String(o["tessera"])} waits: no lent face's hand carries its group, so it ends once that face stands again`);
       }
     };
+    writeAnswer({ ok: true, data: output });
     emitAnswer(args, { ok: true, data: output, human }, `lares rite ${plan.verb}: done`);
     return 0;
   } catch (err) {
     const failure = storeFailure(err);
+    writeAnswer({ ok: false, error: failure });
     emitAnswer(args, { ok: false, error: failure, human: () => console.error(`lares rite: ${failure.message}`) }, `lares rite: ${failure.message}`);
     return exitFor(failure.code);
   }
@@ -232,6 +249,38 @@ const cliVerb = (line: readonly string[]): Promise<RiteVerbAnswer> => new Promis
     else resolve({ ok: false, code: answer?.error?.code ?? "rite-row-unreached", message: answer?.error?.message ?? `the row answered no reading (exit ${code ?? "none"})` });
   });
 });
+
+/** The host house root (`LARES_HOUSE`, the environment else the operator's surface env file); null where none reads. */
+function hostHouseRoot(): string | null {
+  const envFile = surfaceEnvPath(process.env);
+  let text: string | null = null;
+  try { text = envFile === null ? null : readFileSync(envFile, "utf8"); } catch { text = null; }
+  const house = envValue("LARES_HOUSE", process.env, text);
+  return house === undefined || house === null || String(house).trim() === "" ? null : String(house).trim();
+}
+
+/**
+ * THE ATTACHED ABANDON'S ANSWER: the envelope the vessel wrote (its code, its data), else the child's exit alone (a zero names the
+ * lines it printed, any other names the plain refusal).
+ */
+export function abandonAnswerOf(code: number, text: string | null): RiteVerbAnswer {
+  if (text !== null) {
+    try {
+      const e = JSON.parse(text) as { ok?: unknown; data?: Record<string, unknown>; error?: { code?: unknown; message?: unknown } };
+      if (e.ok === true && typeof e.data === "object" && e.data !== null) return { ok: true, output: e.data };
+      if (e.ok === false && typeof e.error?.code === "string") return { ok: false, code: e.error.code, message: String(e.error.message ?? e.error.code) };
+    } catch { /* an unreadable answer reads as the exit alone */ }
+  }
+  return code === 0 ? { ok: true, output: { attached: true } } : { ok: false, code: "rite-abandon-refused", message: `the abandon answered ${code}; the lines above name why` };
+}
+
+/** `--answer <name>`: where a rite row also writes its envelope (the house's config), so an attached host reads its code back. */
+export function riteAnswerName(args: ParsedArgs): string | undefined {
+  const name = typeof args.options["answer"] === "string" ? args.options["answer"].trim() : "";
+  if (name === "") return undefined;
+  if (!/^rite-abandon-answer-[0-9a-f]+\.json$/.test(name)) throw new RiteUsage("--answer names a `rite-abandon-answer-<hex>.json` in the house's config");
+  return name;
+}
 
 /** One line of this CLI again, attached to this terminal (no output read): the bridge forwards it with the terminal, so a route reads here. */
 const cliAttached = (line: readonly string[]): Promise<number> => new Promise((resolve) => {
@@ -472,8 +521,15 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     },
     // THE ABANDON RUNS ATTACHED: the hand's route reads on this terminal (the ward in the vessel, or the pūlama's hand door).
     abandon: async (branch, face) => {
-      const code = await cliAttached(hostRowLine("rite-abandon", { rite: "kukulu", branch, ...(face === undefined ? {} : { face }) }));
-      return code === 0 ? { ok: true, output: { attached: true } } : { ok: false, code: "rite-abandon-refused", message: `the abandon answered ${code}; the lines above name why` };
+      // THE ANSWER CROSSES BY FILE: the attached child (and the vessel it reaches) writes its envelope to a named file in the house's
+      // config, which the host reads back, so the refusal's own code reaches this JSON; the terminal stays attached for the route.
+      const name = `rite-abandon-answer-${randomBytes(8).toString("hex")}.json`;
+      const code = await cliAttached([...hostRowLine("rite-abandon", { rite: "kukulu", branch, ...(face === undefined ? {} : { face }) }), "--answer", name]);
+      const house = hostHouseRoot();
+      const path = house === null ? null : join(house, "config", name);
+      let text: string | null = null;
+      if (path !== null) { try { text = readFileSync(path, "utf8"); } catch { text = null; } try { rmSync(path, { force: true }); } catch { /* the file goes with the next sweep */ } }
+      return abandonAnswerOf(code, text);
     },
     ranImage: () => shimRead(shim, ["vessel-image"]),
     // THE KEEP AFTER THE LANDING: the raise defers the keep a down left owed (`--keep-after-landing`), and the rite runs it here.
