@@ -268,6 +268,12 @@ export function servePulama(a: {
         return op === "records.read" ? claim.records.read(home, file) : claim.records.remove(home, file);
       }
       case "face.standing": { const found = await holder.faceStanding(faceOf(args["face"])); return inScope(s, found) ? found : null; }
+      case "face.opening": {
+        // The opening a lent face stands under right now, by this holder's own seat; a shut face, or one outside the lend, none.
+        if (typeof args["fcid"] !== "string" || Object.keys(args).some((k) => k !== "fcid")) throw new PulamaRefused("pulama-frame-malformed", "an opening asks by one custody id and nothing beside it");
+        const found = await holder.faceStanding({ fcid: args["fcid"] });
+        return inScope(s, found) && found!.unlocked ? holder.faceOpening?.(args["fcid"]) ?? null : null;
+      }
       case "face.ward-key": {
         const face = faceOf(args["face"]);
         const found = await holder.faceStanding(face);

@@ -78,7 +78,7 @@ import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
-import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands } from "./node-vessel-identity.js";
+import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
 import { KUKULU_OFFER_ENV, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
@@ -848,7 +848,13 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     lentOrdinals: () => unlockedFaceOrdinals(),
     // EACH HAT REACHED BY NAME: a lit sibling's session carries its own lane's chores as itself and books its own face key.
     litOrdinals:  () => result.litOrdinals(),
+    // A visit binds to its target's opening from the door's admission to its answer's write.
+    faceOpening:  (ordinal) => result.faceOpening(ordinal),
+    confirmOpening: (ordinal, opening) => result.confirmOpening(ordinal, opening),
+    faceClosing:  (ordinal) => result.faceClosing(ordinal),
     siblingFaceOf: (presenter) => result.siblingFaceOf(presenter),
+    // A LIT FACE RECEIVES VISITS (`seat-hand`): a read names its `target` face by ordinal or by the pet name this vessel holds.
+    petnames:     async () => (await makeNodePersonaPetnameStore()).entries(),
     signers:      result.sessionSigns,
     beforeSignerDrops: (signer) => result.sealedRestLock(signer),
     switchActs:   nodeSwitchActLog,

@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import type { SlotSpec } from "@lararium/mesh";
 import { FaceLocked, makeCustodyHolder } from "../src/custody-holder.js";
+import { faceOpeningFrom } from "../src/custody-seat.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { decodeFaceIndex, faceDir, faceIndexPath, FaceIndexRefused } from "../src/face-index.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
@@ -108,6 +109,34 @@ describe("each opening of a face takes its own number", () => {
     expect(typeof second).toBe("string");
     expect(second).not.toBe(first);
     expect(holder.faceOpening?.(b.fcid)).toBe(other);
+  });
+
+  test("RED (Sol 407e): the visit gate reads the holder's own standing, synchronously: a lock reads shut the moment it resolves, and a re-light before any watcher samples reads a new opening", async () => {
+    const { holder, a, b } = await twoLockedFaces();
+    const fcids = new Map<number, string>([[0, a.fcid], [1, b.fcid]]);
+    // No watcher stands here at all: the gate's reading is the holder's alone.
+    const gate = faceOpeningFrom(() => holder, (ordinal) => fcids.get(ordinal) ?? null);
+    expect(gate(0)).toBeNull();
+    await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
+    const admitted = gate(0);
+    expect(typeof admitted).toBe("string");
+    await holder.lockFace(a.fcid);
+    expect(gate(0), "shut at once: no watcher stands between the lock and the gate").toBeNull();
+    await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
+    expect(gate(0), "a re-light reads another opening, so a visit admitted before the lock never matches").not.toBe(admitted);
+    expect(gate(7), "a face the vessel holds no custody id for reads shut").toBeNull();
+    expect(faceOpeningFrom(() => null, () => a.fcid)(0), "no holder standing reads shut").toBeNull();
+  });
+
+  test("RED (Sol 407f): the holder confirms an opening against its own standing: the opening it names now, yes; a shut or re-lit face, no", async () => {
+    const { holder, a } = await twoLockedFaces();
+    await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
+    const admitted = holder.faceOpening?.(a.fcid)!;
+    expect(await holder.confirmOpening!(a.fcid, admitted)).toBe(true);
+    await holder.lockFace(a.fcid);
+    expect(await holder.confirmOpening!(a.fcid, admitted)).toBe(false);
+    await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
+    expect(await holder.confirmOpening!(a.fcid, admitted)).toBe(false);
   });
 
   test("RED restart: a fresh holder over the same home counts its opens from one again, and still never repeats an earlier boot's opening", async () => {

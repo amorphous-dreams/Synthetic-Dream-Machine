@@ -134,6 +134,34 @@ describe("RED composition-readers-ask-only-the-lend: every face-scoped reader th
     expect(light.indexOf("unlitServedFaces(")).toBeLessThan(light.indexOf("lightFace("));
   });
 
+  test("RED WELD (Sol 407c): a lock that narrows the lend (the pūlama's standing event, or the custody's own close) drops each lit sibling it no longer serves from the daemon island, so its opening ends and no visit reads it", () => {
+    const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
+    expect(source).toMatch(/onClosed\?\.\(\(\) => void lightServedFaces\(/);
+    const light = source.slice(source.indexOf("const lightServedFaces"));
+    const tend = light.slice(0, light.indexOf("stood.push"));
+    expect(tend.indexOf("staleLitFaces(")).toBeGreaterThan(-1);
+    expect(tend.indexOf("staleLitFaces(")).toBeLessThan(tend.indexOf("dropFace("));
+  });
+
+  test("RED WELD (Sol 407d): a face's drop never reads its sealed anchors before the worker hears it: the worker drops from the key held in memory, ahead of the host side", () => {
+    const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
+    const drop = source.slice(source.indexOf("const dropFace = (ordinal: number)"));
+    const body = drop.slice(0, drop.indexOf("\n  };\n"));
+    expect(body.indexOf("dropSiblingInOrder(")).toBeGreaterThan(-1);
+    expect(body, "no sealed-anchor read gates the worker's drop").not.toContain("loadIdentityAnchors(");
+  });
+
+  test("RED WELD (Sol 407e): the lit set the narrowing watcher reconciles includes every face the worker still holds lit (`workerLit`), and the visit gate reads the custody holder, never a watcher's copy", () => {
+    const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
+    const light = source.slice(source.indexOf("const lightServedFaces"));
+    const tend = light.slice(0, light.indexOf("stood.push"));
+    expect(tend).toMatch(/staleLitFaces\(served, mountedFace, litOpenings, gateOpening\)/);
+    expect(tend, "the watcher never waits on one face's drop").toMatch(/void dropFace\(ordinal\)/);
+    expect(tend).not.toMatch(/await dropFace\(/);
+    expect(source).toMatch(/const gateOpening = faceOpeningFrom\(standingCustody, /);
+    expect(source).toMatch(/faceOpening: \(ordinal\) => \(closingOrdinals\.has\(ordinal\) \? null : gateOpening\(ordinal\)\)/);
+  });
+
   test("WELD: the composition proves another face, and lists the faces it walks, only inside what the vessel serves", () => {
     const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
     const proof = source.slice(source.indexOf("async function proofOfOtherFace"));

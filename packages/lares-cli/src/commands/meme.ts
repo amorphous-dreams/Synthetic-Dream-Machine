@@ -102,6 +102,7 @@ import { vesselDid, larSealHome } from "../env.js";
 import { containerArgs } from "../container-target.js";
 import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
 import { faceOption, FaceOptionMalformed } from "../face-option.js";
+import { targetOption, TargetOptionMalformed, targetOnWriteRefusal } from "../target-option.js";
 import { storeVerb } from "../store-door.js";
 import { LocalWaitExpired } from "../local-connector.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
@@ -153,6 +154,12 @@ function faceNamed(args: ParsedArgs): { face?: number } {
   catch (error) { if (error instanceof FaceOptionMalformed) throw new UsageError(error.message); throw error; }
 }
 
+/** A read's `--target` (the lit face it visits, keeping the face worn), or nothing; a malformed one refuses as usage. */
+function targetNamed(args: ParsedArgs): { target?: string } {
+  try { return targetOption(args); }
+  catch (error) { if (error instanceof TargetOptionMalformed) throw new UsageError(error.message); throw error; }
+}
+
 /** Dispatch a plan: the worn face's one-shot, or a session of the face `--face` named. */
 function dispatch(plan: { readonly verb: string; readonly face?: number }, verbArgs: Record<string, unknown>, did: string): ReturnType<typeof runVerb> {
   return plan.face === undefined ? runVerb(plan.verb, verbArgs, did) : runVerbAsFace(plan.verb, verbArgs, plan.face);
@@ -174,7 +181,11 @@ export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemeP
   const face = faceNamed(args);
   const uri = args.positional[1];
   if (!uri) throw new UsageError(`a uri is required (e.g. \`lares meme ${sub} lar:///ha.ka.ba/... --recipe <slug>\`)`);
-  const out: Record<string, string> = { uri, ...containerArgs(args, `meme ${sub}`, sub === "put" || sub === "delete" ? "write" : "read") };
+  // A LIT FACE RECEIVES VISITS: `--target` names another lit face; a get reads it, keeping the face worn, and a put or delete
+  // naming it refuses here by name, before any door opens.
+  const target = targetNamed(args);
+  if (sub !== "get" && target.target !== undefined) throw new UsageError(targetOnWriteRefusal(`meme ${sub}`));
+  const out: Record<string, string> = { uri, ...containerArgs(args, `meme ${sub}`, sub === "put" || sub === "delete" ? "write" : "read"), ...target };
   if (sub === "put") {
     const base = typeof args.options["base"] === "string" ? args.options["base"].trim() : "";
     if (base) out["base"] = base;
@@ -192,7 +203,7 @@ export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemeP
 /** The listing addresses the SEAT, never one meme: the container alone, `tree` on request. */
 export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readonly args: Record<string, string | boolean>; readonly face?: number } {
   const face = faceNamed(args);
-  const out: Record<string, string | boolean> = { ...containerArgs(args, "meme list") };
+  const out: Record<string, string | boolean> = { ...containerArgs(args, "meme list"), ...targetNamed(args) };
   if (args.flags["tree"]) out["tree"] = true;
   return { verb: "meme-list", args: out, ...face };
 }
@@ -372,6 +383,7 @@ async function memeGet(args: ParsedArgs): Promise<number> {
  */
 export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; readonly args: Record<string, string>; readonly file: string; readonly mode: "append" | "replace"; readonly face?: number } {
   const face = faceNamed(args);
+  if (targetNamed(args).target !== undefined) throw new UsageError(targetOnWriteRefusal("meme patch"));
   const uri = args.positional[1];
   if (!uri) throw new UsageError("a uri is required (e.g. `lares meme patch lar:///ha.ka.ba/... --slot '#/x' --append note.txt --base <hash> --recipe <slug>`)");
   const out: Record<string, string> = { uri, ...containerArgs(args, "meme patch", "write") };

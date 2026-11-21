@@ -57,7 +57,7 @@ import {
   ControlHomeUnavailable,
 } from "@lararium/mesh";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, EFFECT_URI_PREFIX } from "./verb-vm.js";
+import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, isVisitResults, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
@@ -510,8 +510,14 @@ export class VerbDispatcher {
         return;
       }
       const priorDigest = String(priorOutcome.tiddler["input-digest"] ?? "");
-      if (priorDigest === inputDigest && this.replayAdmitted(invocation)) {
-        const priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>;
+      // The digests compare first; prior results read only for a match, and results that will not parse match nothing.
+      let priorResults: Record<string, VerbTargetResult> | null = null;
+      if (priorDigest === inputDigest) {
+        try { priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>; }
+        catch { console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose results do not parse — running fresh, no dedup`); }
+      }
+      // A VISIT NEVER REPLAYS: an index naming a visit's outcome copies nothing, and the reactor runs with its opening check.
+      if (priorResults !== null && !isVisitResults(priorResults) && this.replayAdmitted(invocation)) {
         await copyEffectOutcome(this.opts.daemonVm, this.opts.control, invocation, {
           priorRequestId, priorResults, inputDigest, ...this.markOf(invocation),
         });

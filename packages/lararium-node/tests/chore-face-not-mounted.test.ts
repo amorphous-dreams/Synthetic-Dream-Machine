@@ -50,7 +50,9 @@ const cleanups: Array<() => Promise<void> | void> = [];
 afterEach(async () => { for (const c of cleanups.splice(0).reverse()) await c(); });
 
 /** A seat whose daemon mounts h0 and whose holder lends {h0, h1}; a session's `faceRef` (`h<N>`) names the face it wears. */
-async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook } = {}) {
+async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly output?: (o: { verb: string; args: Record<string, unknown> }) => Record<string, unknown>;
+  readonly opening?: (face: number) => string | null; readonly onFlush?: () => void;
+  readonly confirm?: (face: number, opening: string) => Promise<boolean>; readonly closing?: (face: number) => boolean } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -62,19 +64,22 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
   const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "nexus", aid: "nexus-one.synthetic" }), open: async ({ faceRef }) => ({ ok: true, supply: {
     face: face(faceRef), ordinal: Number(faceRef.slice(1)), profile: "seat", presenter: `verified-${faceRef}`,
     anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { drop() {} } as unknown as UdsSessionSigner }) } }) };
-  const placed: Array<{ verb: string; requestId: string; ordinal?: number }> = [];
+  const placed: Array<{ verb: string; requestId: string; ordinal?: number; args: Record<string, unknown>; requestedBy: string }> = [];
   const front = serveUdsFront({ claim });
-  front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
+  front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: async (ids) => { await repo.flush(ids); lane.onFlush?.(); } }, sessions: door,
     switchActs: { write: async () => {} },
     mountOrdinal: () => 0,
     lentOrdinals: async () => [0, 1],
+    ...(lane.opening ? { faceOpening: lane.opening } : {}),
+    ...(lane.confirm ? { confirmOpening: lane.confirm } : {}),
+    ...(lane.closing ? { faceClosing: lane.closing } : {}),
     ...(lane.lit ? { litOrdinals: () => lane.lit!, siblingFaceOf: (presenter: string) => presenter === "verified-h1" && lane.lit!.includes(1) ? "atom-h1" : undefined } : {}),
     ...(lane.signers ? { signers: lane.signers } : {}),
     placeVerb: (o) => {
       placed.push(o);
       // The worker stamps the mark its placement carried, as the island's dispatcher does (`writeOutcome`).
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-worker",
-        batchMode: "best-effort", results: { summary: { ok: true, output: { landed: true } } }, ...(o.chore ? { chore: o.chore } : {}) });
+        batchMode: "best-effort", results: { summary: { ok: true, output: lane.output ? lane.output(o) : { landed: true } } }, ...(o.chore ? { chore: o.chore } : {}) });
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
     } }));
   const connect = async (): Promise<Peer> => {
@@ -236,3 +241,112 @@ test("EACH HAT REACHED BY NAME, CONTROL: the lane carries its own writes alone; 
   expect(held.filter((h) => h.verb === "meme-put")).toEqual([{ verb: "meme-put" }]);
 });
 
+/**
+ * A LIT FACE RECEIVES VISITS at the vessel's door (Sol H1, H2, H4): "the face worn" means the SESSION's own face at every pass,
+ * so a sibling's session visiting the mount keeps its target; a one-shot line presents the worn face alone (a `requestedBy` naming
+ * a lit sibling refuses); and a visit's body answers its caller once: a receipt read later under its id withholds it.
+ */
+const VISIT = { recipe: "default", title: "T" };
+const visitOut = (o: { verb: string; args: Record<string, unknown> }) => (o.args["target"] !== undefined ? { face: o.args["target"], worn: 0, visit: true, tiddler: { text: "the visited word" } } : { tiddler: { text: "own" } });
+
+test("RED XV1 (H1): a session wearing lit h1 that targets the mount keeps its target past every pass of the door", async () => {
+  const v = await stand({ lit: [1] });
+  const env = await v.open("h1");
+  const reply = await v.peer.ask({ op: "session:call", ...env, requestId: "visit-mount", verb: "tiddler-get", args: { ...VISIT, target: 0 } });
+  expect(reply).toMatchObject({ kind: "session:result", status: "done" });
+  expect(v.placed.map((p) => p.args["target"]), "the target the session named reaches the island").toEqual([0]);
+});
+
+test("RED XV2 (H4): a one-shot line naming a lit sibling as its presenter refuses, and nothing places; the worn face's line places", async () => {
+  const v = await stand({ lit: [1] });
+  const reply = await v.oneShot({ verb: "tiddler-get", args: VISIT, requestedBy: "verified-h1" });
+  expect(reply).toMatchObject({ status: "error", refusal: { reason: "presenter-rides-a-session" } });
+  expect(v.placed).toEqual([]);
+  expect(await v.oneShot({ verb: "tiddler-get", args: VISIT, requestedBy: "0xplace" })).toMatchObject({ status: "done" });
+});
+
+test("RED XV3 (H2): a visit's body answers its caller once; a receipt under its id (one-shot or session) withholds it", async () => {
+  const v = await stand({ lit: [1], output: visitOut });
+  const live = await v.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "visit-once" });
+  expect(JSON.stringify(live), "the caller reads the visit").toContain("the visited word");
+  const later = await v.oneShot({ op: "receipt", requestId: "visit-once" });
+  expect(later).toMatchObject({ requestId: "visit-once", state: "done", visit: { withheld: true } });
+  expect(JSON.stringify(later), "a receipt hands no visit body back").not.toContain("the visited word");
+  const again = await v.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "visit-once" });
+  expect(JSON.stringify(again), "a re-ask under the same id hands no stored body back").not.toContain("the visited word");
+  const env = await v.open("h0");
+  const call = await v.peer.ask({ op: "session:call", ...env, requestId: "s-visit", verb: "tiddler-get", args: { ...VISIT, target: 1 } });
+  expect(JSON.stringify(call)).toContain("the visited word");
+  const receipt = await v.peer.ask({ op: "session:receipt", ...env, requestId: "s-visit" });
+  expect(JSON.stringify(receipt), "a session receipt hands no visit body back").not.toContain("the visited word");
+  // CONTROL: an own read's body still reads back.
+  await v.oneShot({ verb: "tiddler-get", args: VISIT, requestedBy: "0xplace", requestId: "own-read" });
+  expect(JSON.stringify(await v.oneShot({ op: "receipt", requestId: "own-read" }))).toContain("own");
+});
+
+test("RED XV4 (Sol 407c H2): a visit whose target shut before the answer left delivers no body: the door reads the lit set at delivery", async () => {
+  const lit = [1];
+  const v = await stand({ lit, output: (o) => { if (o.args["target"] !== undefined) lit.splice(0); return visitOut(o); } });
+  const reply = await v.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "visit-shut" });
+  expect(JSON.stringify(reply), "the shut face's body never leaves").not.toContain("the visited word");
+  expect(reply).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+});
+
+test("RED XV5 (Sol 407d): a target that shut and lit again between the island's answer and delivery delivers no body: the door compares the face's opening, never its ordinal alone", async () => {
+  const openings = new Map<number, string>([[0, "mount"], [1, "h1:1"]]);
+  const v = await stand({ lit: [1], opening: (face) => openings.get(face) ?? null,
+    output: (o) => { if (o.args["target"] !== undefined) openings.set(1, "h1:2"); return visitOut(o); } });
+  const reply = await v.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "visit-relit" });
+  expect(JSON.stringify(reply)).not.toContain("the visited word");
+  expect(reply).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+});
+
+test("RED XV6 (Sol 407d): a lock during the session reply's durability flush delivers no body: the gate reads the opening after every await, at the write", async () => {
+  const openings = new Map<number, string>([[0, "mount"], [1, "h1:1"]]);
+  let landed = false;
+  const v = await stand({ lit: [1], opening: (face) => openings.get(face) ?? null,
+    output: (o) => { if (o.args["target"] !== undefined) landed = true; return visitOut(o); },
+    onFlush: () => { if (landed) openings.delete(1); } });
+  const env = await v.open("h0");
+  const reply = await v.peer.ask({ op: "session:call", ...env, requestId: "s-visit-locked", verb: "tiddler-get", args: { ...VISIT, target: 1 } });
+  expect(JSON.stringify(reply), "the locked face's body never leaves").not.toContain("the visited word");
+  expect(reply).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+  // CONTROL: an opening that stands through the flush delivers.
+  const steady = await stand({ lit: [1], opening: (face) => (face === 1 ? "h1:1" : "mount"), output: visitOut });
+  const env2 = await steady.open("h0");
+  expect(JSON.stringify(await steady.peer.ask({ op: "session:call", ...env2, requestId: "s-visit-steady", verb: "tiddler-get", args: { ...VISIT, target: 1 } }))).toContain("the visited word");
+});
+
+test("RED XV7 (Sol 407e): a verb outside the visit reads, carrying a numeric `target` of its own, never meets the opening gate", async () => {
+  const v = await stand({ lit: [], opening: () => null });
+  const reply = await v.oneShot({ verb: "floor-pin", args: { target: 7 }, requestedBy: "0xplace", requestId: "pin-target" });
+  expect(reply).not.toMatchObject({ refusal: { reason: "face-not-open" } });
+  expect(v.placed.map((p) => [p.verb, p.args["target"]])).toEqual([["floor-pin", 7]]);
+});
+
+test("RED XV8 (Sol 407f): the door asks the custody source at delivery whether the opening still stands: a remote lock its local reading has not heard refuses the body, and so does a source that cannot answer", async () => {
+  const opening = (face: number) => (face === 1 ? "h1:1" : "mount");
+  const remote = await stand({ lit: [1], opening, output: visitOut, confirm: async () => false });
+  const env = await remote.open("h0");
+  const locked = await remote.peer.ask({ op: "session:call", ...env, requestId: "s-remote-lock", verb: "tiddler-get", args: { ...VISIT, target: 1 } });
+  expect(JSON.stringify(locked)).not.toContain("the visited word");
+  expect(locked).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+  const silent = await stand({ lit: [1], opening, output: visitOut, confirm: () => Promise.reject(new Error("the pūlama session dropped")) });
+  const reply = await silent.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "unanswered" });
+  expect(JSON.stringify(reply)).not.toContain("the visited word");
+  expect(reply).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+  // CONTROL: a yes at delivery sends the body.
+  const yes = await stand({ lit: [1], opening, output: visitOut, confirm: async (face, o) => face === 1 && o === "h1:1" });
+  expect(JSON.stringify(await yes.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "confirmed" }))).toContain("the visited word");
+});
+
+test("RED XV9 (Sol 407f): a face closing refuses every new verb its own sessions send, by name; another face's session runs on", async () => {
+  const v = await stand({ lit: [1], closing: (face) => face === 1 });
+  const sib = await v.open("h1");
+  const put = await v.peer.ask({ op: "session:call", ...sib, requestId: "late-put", verb: "tiddler-put", args: { recipe: "default", title: "T", text: "x" } });
+  expect(put).toMatchObject({ kind: "session:refused", refusal: "face-closing" });
+  expect(v.placed).toEqual([]);
+  const other = await v.connect();
+  const worn = await v.open("h0", other);
+  expect(await other.ask({ op: "session:call", ...worn, requestId: "worn-get", verb: "tiddler-get", args: VISIT })).toMatchObject({ kind: "session:result", status: "done" });
+});

@@ -25,6 +25,10 @@ vi.mock("../src/verb-call.js", () => ({
     if (h.refuse) return { status: "error", requestId: "r", errorMessage: h.refuse };
     return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.replyFor ? h.replyFor(args) : h.reply } } };
   },
+  runVerbAsFace: async (verb: string, args: Record<string, unknown>) => {
+    h.calls.push({ verb, args });
+    return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.replyFor ? h.replyFor(args) : h.reply } } };
+  },
 }));
 vi.mock("../src/env.js", async (orig) => ({
   ...(await orig<typeof import("../src/env.js")>()),
@@ -100,6 +104,21 @@ describe("the argument law, no daemon", () => {
     expect(() => wikiRenderPlan(argv("wiki", ["T"], { recipe: "default", text: "span" }))).toThrow(/one source/);
     expect(() => wikiRenderPlan(argv("wiki", [], { recipe: "default" }))).toThrow(/one source/);
     expect(tiddlerPlan("put", argv("tiddler", ["put", "T"], { recipe: "default" }, { create: true })).args).toEqual({ recipe: "default", title: "T", create: true });
+  });
+
+  test("a write naming --target refuses at the CLI by name (writes across faces wait on the rusuban rite); nothing rides the wire", async () => {
+    for (const sub of ["put", "delete"] as const) expect(() => tiddlerPlan(sub, argv("tiddler", [sub, "T"], { recipe: "default", target: "h1" })), sub).toThrow(/cross-face-write-refused/);
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "T"], { recipe: "default", target: "h1" })).args).toEqual({ recipe: "default", title: "T", target: "h1" });
+    expect((await run(argv("tiddler", ["put", "T"], { recipe: "default", target: "h1", text: "x" }))).exit).toBe(2);
+    expect(h.calls).toEqual([]);
+  });
+
+  test("a visit from a sibling's session names the face it read: the island's `face` stands over the session's --face", async () => {
+    h.reply = { recipe: "default", title: "T", tiddler: { fields: { title: "T", text: "w" }, hash: "h", textHash: "t", bag: "b", position: "plain" }, face: 0, worn: 1, visit: true };
+    const { printed } = await run(argv("tiddler", ["get", "T"], { recipe: "default", face: "1", target: "0" }));
+    expect(printed["data"]).toMatchObject({ face: 0, worn: 1, visit: true });
+    h.reply = { recipe: "default", working: "w", layers: [] };
+    expect((await run(argv("wiki", ["status"], { recipe: "default", face: "1" }))).printed["data"], "an answer naming no face takes the session's").toMatchObject({ face: 1 });
   });
 
   test("a field patch carries no text and never waits on stdin; --text carries the words", async () => {

@@ -343,6 +343,21 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     expect(vessel.faceOpening?.(a.fcid)).toBe(other);
   });
 
+  test("RED (Sol 407f): the vessel confirms an opening with the pūlama itself, one round trip: a lock there answers no before its standing event reaches the vessel", async () => {
+    fx = await standPulama("pulama-face-confirm", () => openGate({ faces: lend(0, 2), coldReads: [] }));
+    await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    await fx.kept.foundFace({ group: personaGroupDigest(GROUP_B), ordinal: 1, slots: fixtureSlots });
+    const c = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_C), ordinal: 2, slots: fixtureSlots });
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    const admitted = vessel.faceOpening?.(c.fcid)!;
+    expect(await vessel.confirmOpening!(c.fcid, admitted)).toBe(true);
+    // The lock lands at the pūlama; the vessel asks before (or whether or not) the standing event arrived.
+    await fx.kept.lockFace(c.fcid);
+    expect(await vessel.confirmOpening!(c.fcid, admitted), "the pūlama's own answer, never the last event heard").toBe(false);
+    expect(await vessel.confirmOpening!(c.fcid, "not-an-opening")).toBe(false);
+  });
+
   test("RED re-lend: the pūlama locks and re-lends a face back to back, and the vessel reads the new opening from the pūlama's own name, never one inferred from what it observed", async () => {
     fx = await standPulama("pulama-face-relend", () => openGate({ faces: lend(0), coldReads: [] }));
     const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });

@@ -62,6 +62,29 @@ export interface BuildIslandRecipeInput {
   kahuaFaceWatch?: (fn: () => void) => () => void;
   /** The island Repo's actor door (`wearOf(repo)`'s door): each slot's store writes a worn face's change through it. */
   wear?: FaceActorDoor;
+  /**
+   * A VIEW THAT TAKES NO WRITE (a cross-face view, `face-engine`): every slot lays read-only, the engine's own temp layer
+   * included, and each store the composite hands out refuses a put, a tombstone and a removal (`readOnlyStore`), so no save
+   * and no caller holding a store moves a byte. The write-layer pointer still names the working slot, which the read gate
+   * reads as the bag the view answers for.
+   */
+  readOnly?: true;
+}
+
+/** The refusal a view's store answers a write with. */
+const VIEW_READS = "cross-face-view-reads";
+
+/** A store that reads as `store` reads and refuses every write: a put, a tombstone, a family write and a removal. */
+function readOnlyStore(store: LarTiddlerStore, slot: string): LarTiddlerStore {
+  const refuse = (): Promise<never> => Promise.reject(Object.assign(new Error(`${VIEW_READS}: ${slot} lays in a cross-face view, which reads alone and takes no write`), { reason: VIEW_READS }));
+  const writes = new Set<PropertyKey>(["put", "tombstone", "writeFamily", "remove"]);
+  return new Proxy(store, {
+    get(target, prop) {
+      if (writes.has(prop)) return typeof Reflect.get(target, prop) === "function" ? refuse : undefined;
+      const value = Reflect.get(target, prop, target) as unknown;
+      return typeof value === "function" ? (value as (...a: unknown[]) => unknown).bind(target) : value;
+    },
+  });
 }
 
 /**
@@ -83,7 +106,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   adaptor: IslandAdaptor;
   stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
 } {
-  const { tw5, composite, recipe, ready, floorRecords, writeSlot } = input;
+  const { tw5, composite, recipe, ready, floorRecords, writeSlot, readOnly } = input;
   // The titles TW5's own startup pass already ran over the preloads: these never run again.
   const STARTUP_ACTIONS = "[all[shadows+tiddlers]tag[$:/tags/StartupAction]!has[draft.of]]";
   const ranAtBoot = new Set<string>(tw5.$tw.wiki.filterTiddlers(STARTUP_ACTIONS));
@@ -92,6 +115,10 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   const slots          = expandRecipe(recipe);
   const slug           = recipe.wikiSlug;
   const tempSlot       = wikiSlotUri(slug, "temp");
+  const flagsOf = (slot: SlotUri): { writable: boolean; defaultWritable: boolean } =>
+    readOnly ? { writable: false, defaultWritable: false } : slotLayerFlags(slot, slug, writeSlot);
+  /** The store a layer lays: a view's refuses every write. */
+  const laid = (store: LarTiddlerStore, slot: SlotUri): LarTiddlerStore => (readOnly ? readOnlyStore(store, slot) : store);
   const stores: Array<{ slot: SlotUri; store: LarTiddlerStore }> = [];
 
   // Bottom-up addLayer order. Slot at index slots.length-1 (oracle, the floor) lands first.
@@ -100,7 +127,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     const slot = slots[i]!;
     if (slot === tempSlot) {
       tempStore = new MemoryTiddlerStore();
-      composite.addLayer({ bagId: slot, store: tempStore, ...slotLayerFlags(slot, slug, writeSlot) });
+      composite.addLayer({ bagId: slot, store: laid(tempStore, slot), ...flagsOf(slot) });
       stores.push({ slot, store: tempStore });
       continue;
     }
@@ -118,7 +145,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     // slot's store directly, carrying the bag on the put option — never a field on the record. The
     // default (an unbagged write or tombstone) is the working slot; without its handle no default
     // writable stands. The ONE law `slotLayerFlags` spells for the host mount and this island alike.
-    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, slug, writeSlot) });
+    composite.addLayer({ bagId: slot, store: laid(store, slot), ...flagsOf(slot) });
     stores.push({ slot, store });
   }
 

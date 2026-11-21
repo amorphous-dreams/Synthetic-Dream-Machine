@@ -265,6 +265,12 @@ export interface CustodyHolder {
    * starts over never repeats a name an earlier boot handed out.
    */
   faceOpening?(fcid: string): string | null;
+  /**
+   * Whether `fcid` stands open under `opening` NOW, by this holder's own source (Sol 407f): a local holder reads its own seat; a
+   * pūlama's holder asks the pūlama, one round trip, so a lock there answers no before its standing event reaches this vessel.
+   * A source that cannot answer refuses (the caller reads it no).
+   */
+  confirmOpening?(fcid: string, opening: string): Promise<boolean>;
   /** Hear each time one face this holder held open shuts (`lockFace`; a whole-holder `lock` drops every session instead). Returns the unsubscribe. */
   onClosed?(listener: () => void): () => void;
   /**
@@ -923,6 +929,7 @@ export function makeCustodyHolder(a: {
     },
     unlockedFaces: () => [...faces.keys()],
     faceOpening: (fcid) => { const seat = faces.get(fcid); return seat ? `${bootNonce}:${seat.opening}` : null; },
+    confirmOpening: async (fcid, opening) => { const seat = faces.get(fcid); return seat !== undefined && `${bootNonce}:${seat.opening}` === opening; },
     onClosed(listener) { closedListeners.add(listener); return () => { closedListeners.delete(listener); }; },
     async withWardKey(face, credentials, act) {
       // The derivation takes its turn on the unlock chain (attempts never race); the act runs outside it, and the key zeroes after.
