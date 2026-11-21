@@ -48,7 +48,7 @@ import { dropWardTickets, parkWardTicket, wardCredential, type WardCredential } 
 import type { Socket } from "node:net";
 import type { Credential, DocCensusReading, HeldSaves, SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
-import { clearDaemonMount, daemonMountOrdinal, mountedFaceOrdinal, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
+import { clearDaemonMount, daemonMountOrdinal, daemonMountState, mountedFaceOrdinal, restoreDaemonMount, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
 import { listFaceOrdinals, listFaceCustodyIds } from "./identity-anchors.js";
 import { CustodyLocked, CustodyRecordUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
@@ -407,6 +407,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const before = mountedFaceOrdinal();
     // A wear that names the face already worn names it by choice: the mount reads as named, and a lock of that face never slides it on as an opening's mount slides.
     if (before === face) { mountByOpening = false; tellWorn(); return { op: "wear", face, held: true, already: true, standing: deps.standing() }; }
+    // THE ROLLBACK RESTORES THE MOUNT EXACTLY: a named face, the default rule, or NO MOUNT (never the default rule in NO MOUNT's place).
+    const priorMount = daemonMountState();
     const byOpeningBefore = mountByOpening;
     setMountedFace(face);
     mountByOpening = false;
@@ -414,17 +416,18 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     let stood: CustodyStanding;
     // A RECOMPOSE THAT THROWS puts the mount back on the face it left before the fault names itself to the caller.
     try { stood = await deps.recompose(true); }
-    catch (e) { setMountedFace(before); mountByOpening = byOpeningBefore; throw e; }
+    catch (e) { restoreDaemonMount(priorMount); mountByOpening = byOpeningBefore; throw e; }
     if (stood.refused === undefined) { tellWorn(); return { op: "wear", face, held: true, ...stood }; }
-    setMountedFace(before);
+    restoreDaemonMount(priorMount);
     mountByOpening = byOpeningBefore;
     const back = await deps.recompose(true);
     if (back.refused !== undefined) {
-      // A KEY NEVER RESTS OVER A FLOOR: the face it left would not stand again either, so the vessel drops the key, as an
-      // unlock whose composition refused does, and the answer says so.
-      await holder.lock();
-      deps.onLog(`the composition wearing h${face} did not stand, nor ${before !== undefined ? `h${before} again` : "the floor's sovereign rows"}; the node key dropped`);
-      return { op: "wear", face, held: false, ...back, switchRefused: stood.refused };
+      // A SECOND REFUSAL DROPS NO KEY: a wear opened no key, so the vessel stands at the floor with every key it held (NO MOUNT),
+      // and the answer says so.
+      clearDaemonMount();
+      const floor = await deps.recompose(true);
+      deps.onLog(`the composition wearing h${face} did not stand, nor ${before !== undefined ? `h${before} again` : "the mount before it"}; the vessel stands at the floor, every key held`);
+      return { op: "wear", face, held: true, ...floor, switchRefused: stood.refused };
     }
     deps.onLog(`the composition wearing h${face} did not stand; ${before !== undefined ? `h${before} worn again` : "no face named"}, the node key held`);
     return { op: "wear", face, held: true, ...back, switchRefused: stood.refused, ...(before !== undefined ? { wornAgain: before } : {}) };

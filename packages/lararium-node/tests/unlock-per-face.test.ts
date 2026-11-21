@@ -16,7 +16,7 @@ const cred = (passphrase: string) => [{ kind: "passphrase" as const, passphrase 
 let seat: SeatedScratchCustody | null = null;
 afterEach(async () => { setMountedFace(undefined); await seat?.drop(); seat = null; });
 
-async function vessel(faceRoutes: readonly string[], refuseWearing?: number, groups?: readonly string[]) {
+async function vessel(faceRoutes: readonly string[], refuseWearing?: number | readonly number[], groups?: readonly string[]) {
   seat = await seatScratchCustody("unlock-per-face");
   const { holder } = seat;
   const fcids: string[] = [];
@@ -28,7 +28,9 @@ async function vessel(faceRoutes: readonly string[], refuseWearing?: number, gro
     recompose: async (sovereign) => {
       composed.push(sovereign);
       // A composition that refuses to stand while it would wear `refuseWearing` (a face whose memory will not open).
-      if (sovereign && refuseWearing !== undefined && mountedFaceOrdinal() === refuseWearing) return { standing: "herm", refused: `h${refuseWearing} would not stand` };
+      const refusing = refuseWearing === undefined ? [] : typeof refuseWearing === "number" ? [refuseWearing] : refuseWearing;
+      const worn = mountedFaceOrdinal();
+      if (sovereign && worn !== undefined && refusing.includes(worn)) return { standing: "herm", refused: `h${worn} would not stand` };
       return { standing: sovereign ? "hearth" : "herm" };
     },
   });
@@ -250,6 +252,32 @@ describe("the unlock answers honestly, and a failed switch wears the face it lef
     const again = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true });
     expect(again).toMatchObject({ held: true, wears: 1 });
     expect(mountedFaceOrdinal()).toBe(1);
+  });
+
+  // A REFUSED WEAR KEEPS THE STATE IT FOUND (Sol, #408 round 5): from the floor a lock left (NO MOUNT, the pending h0 open), a wear
+  // of the pending h0 refuses before anything moves; a wear whose composition refuses rolls back to NO MOUNT exactly (never to the
+  // default rule, which would pick h0); a second refusal never drops a key.
+  test("RED: a refused wear rolls back to the exact state it found (NO MOUNT), and a second refusal drops no key", async () => {
+    const landed = (i: number) => personaGroupDigest(`landed-${i}`);
+    // h0's composition refuses (its join waits: no anchors), as h2's does (its memory will not open).
+    const v = await vessel([FIXTURE_PASSPHRASE, FIXTURE_PASSPHRASE, FIXTURE_PASSPHRASE], [0, 2], [personaGroupDigest("the-pending-group"), landed(1), landed(2)]);
+    await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true, face: 1 });
+    for (const i of [1, 2]) await v.holder.writeRecord("identity", `anchors-h${i}.json`, new TextEncoder().encode(JSON.stringify({ personaGroupId: `landed-${i}`, meshCabalDocIdHex: "ab" })));
+    await v.holder.lock();
+    setMountedFace(undefined);
+    expect(await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true })).toMatchObject({ held: true, wears: 1 });
+    // Lock h1 and then h2 (the slide's landing): no open face holding anchors stays, so NO MOUNT stands at the floor.
+    await v.send({ op: "lock", face: 1 });
+    await v.send({ op: "lock", face: 2 });
+    expect(sovereignStands(), "the floor a lock left").toBe(false);
+    // THE WEAR OF THE PENDING h0 refuses to compose; the rollback restores NO MOUNT exactly (the default rule would pick h0 again,
+    // refuse again and drop every key), and no key drops.
+    const refused = await v.send({ op: "wear", face: 0 });
+    expect(refused).toMatchObject({ op: "wear", held: true, switchRefused: "h0 would not stand" });
+    expect(sovereignStands(), "the floor it found").toBe(false);
+    expect(mountedFaceOrdinal(), "never the pending h0").toBeUndefined();
+    expect(v.holder.isUnlocked(), "the node key stays held").toBe(true);
+    expect(v.holder.unlockedFaces().length, "h0's key stays open").toBe(1);
   });
 });
 

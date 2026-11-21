@@ -19,6 +19,7 @@ import { nativeKdf } from "@lararium/mesh/node";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
 import { askYesNo, gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
+import { confirmLockByCensus } from "../lock-receipt.js";
 import { importLines, restoreFromBundle, restoreFromCards, restoreLines } from "../vault-restore.js";
 import { sealedActVia } from "../sealed-act-door.js";
 import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
@@ -410,6 +411,11 @@ async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
     return 0;
   }
   const a = await sendCustodyFrame({ op: "lock" });
+  // A LOCK WHOSE LINE CLOSED WITH THE COMPOSITION IT LEFT confirms itself by a fresh census (`lock-receipt`).
+  if (a === null && (await confirmLockByCensus(undefined, () => sendCustodyFrame({ op: "census" }))).confirmed) {
+    emit(args, { ok: true, data: { locked: true, confirmedBy: "census" }, human: () => console.log("locked; confirmed by census: the vessel holds no key, and every sovereign act waits on `lares vault unlock`.") });
+    return 0;
+  }
   if (a === null || a["locked"] !== true) {
     const why = a && typeof a["errorMessage"] === "string" ? a["errorMessage"] : "the vessel stopped answering before the lock landed";
     emit(args, { ok: false, error: { code: "lock-unconfirmed", message: why }, human: () => console.error(`lares vault lock: ${why}`) });
@@ -437,6 +443,14 @@ async function vaultLockFace(args: ParsedArgs, daemonUp: boolean, face: number):
     return 0;
   }
   const a = await sendCustodyFrame({ op: "lock", face });
+  // A LOCK WHOSE LINE CLOSED WITH THE COMPOSITION IT LEFT confirms itself by a fresh census (`lock-receipt`).
+  if (a === null) {
+    const census = await confirmLockByCensus(face, () => sendCustodyFrame({ op: "census" }));
+    if (census.confirmed) {
+      emit(args, { ok: true, data: { locked: true, face, confirmedBy: "census", standing: census.census["standing"] }, human: () => console.log(`locked; confirmed by census: face h${face} holds no open key, and the vessel stands as ${String(census.census["standing"])}.`) });
+      return 0;
+    }
+  }
   if (a === null || a["locked"] !== true) {
     const why = a && typeof a["errorMessage"] === "string" ? a["errorMessage"] : "the vessel stopped answering before the lock landed";
     emit(args, { ok: false, error: { code: "lock-unconfirmed", message: why }, human: () => console.error(`lares vault lock: ${why}`) });

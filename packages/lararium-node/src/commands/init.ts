@@ -44,7 +44,7 @@ import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistVeilArchive, loadVeilArchive, requireAnchorsLand, type IdentityAnchors } from "../identity-anchors.js";
 import { faceStandingCustody, openedCustody, seatCustody } from "../custody-seat.js";
 import { personaGroupDigest } from "../persona-group-file.js";
-import { ensureFaceCustodyOfAsk, settleFaceCustody } from "../face-route.js";
+import { ensureFaceCustodyOfAsk, settleFaceCustody, takeParkedFaceRoute } from "../face-route.js";
 import { foundingVesselFaceTagDoor, settleFoundingVesselFaceTag } from "../vessel-face-tag-store.js";
 import { landFaceAddressSecret, mintFaceAddressSecret } from "../fleet-join-custody.js";
 import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, foundingCheckpointNames, recoverFoundingGroup, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
@@ -682,6 +682,12 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   await sweepFoundingSeeds();
   let born: WardCredential | null = null;
   await ensureFaceCustodyOfAsk(foundingAskDigest(foundingAsk), `h${handleIndex}`, handleIndex, (slots) => { born = wardCredentialOfRoute(slots); });
+  // A FACE WHOSE CUSTODY ALREADY STOOD (a reserved handle, or a founding that stopped and runs again) gathered no route, so the
+  // route the CLI parked for this act seats the ward instead: a retry rides the road a fresh founding rides.
+  if (born === null && opts.ward === undefined) {
+    const parkedRoute = takeParkedFaceRoute();
+    if (parkedRoute !== null) born = wardCredentialOfRoute(parkedRoute);
+  }
   const ward = opts.ward ?? born ?? undefined;
   await generateOrLoadPersonaGroupRoot(handleIndex, ward!);
   const signerSeed = await loadPersonaGroupRootSeed(handleIndex, ward);

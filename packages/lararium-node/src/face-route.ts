@@ -73,6 +73,18 @@ export class FaceRouteAbsent extends Error {
 /** Hands a founding the route it gathered, so the founding's own ward act (its root's mint) rides that route: one prompt, one act. */
 export type OnFaceRoute = (slots: readonly SlotSpec[]) => void;
 
+/**
+ * The route a caller parked for THIS operation (`withFaceRoute`: the CLI's `face-route` frame), spent here, or null where none was
+ * parked. A founding whose face custody already stands (a reserved handle, or a founding that stopped and runs again) gathers no
+ * route for its custody, yet its root acts still ride the face's route as their ward: it takes the parked one here.
+ */
+export function takeParkedFaceRoute(): readonly SlotSpec[] | null {
+  const scoped = operationRoute.getStore();
+  const handed = scoped?.slots ?? null;
+  if (scoped) scoped.slots = null;
+  return handed;
+}
+
 export async function gatherFaceRoute(label: string): Promise<readonly SlotSpec[]> {
   const scoped = operationRoute.getStore();
   const handed = scoped?.slots ?? null;

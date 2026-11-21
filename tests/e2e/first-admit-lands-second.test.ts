@@ -74,10 +74,12 @@ describe("e2e/first-admit-lands-second", () => {
   }, 120_000);
 
   test("L2 RED: lock --face 1 never slides onto the pending h0, and a second unlock --all wears h1 again", async () => {
-    // The lock composes the vessel again, down to the floor; the caller's line may close with the sovereign composition it
-    // leaves (its answer then reads null), so the census below reads what stands once the floor answers.
-    const locked = await send({ op: "lock", face: 1 });
-    if (locked !== null) expect(locked, JSON.stringify(locked)).toMatchObject({ op: "lock", locked: true });
+    // THE OPERATOR'S OWN LOCK, through the CLI: it composes the vessel again, down to the floor, and where its line closes with the
+    // sovereign composition it leaves, it confirms by a fresh census and exits 0 (`lock-receipt`).
+    const cliB = cliFor({ LAR_ROOT: joinee.rootB, LAR_PORT: String(joinee.portB) });
+    const locked = await cliB(["vault", "lock", "--face", "1", "--json"]);
+    expect(locked.code, `${locked.stdout.slice(-800)}\n${locked.stderr.slice(-800)}`).toBe(0);
+    expect(JSON.stringify(locked.json)).toContain('"locked":true');
     expect(B!.bootLog()).toContain("no open face holding anchors takes h1's mount; the vessel stands at the floor");
     // BETWEEN THE LOCK AND THE REOPEN: no composition stands for h1 (its key dropped), and no default mount stands on the pending h0;
     // the vessel reads the floor.

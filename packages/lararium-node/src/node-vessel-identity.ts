@@ -786,6 +786,10 @@ const NO_MOUNT = -1;
 export function setMountedFace(handleIndex: number | undefined): void { mountedFace = handleIndex; }
 /** Clear the mount to NO MOUNT: the vessel stands at the floor, and the next opening chooses afresh. */
 export function clearDaemonMount(): void { mountedFace = NO_MOUNT; }
+/** The mount exactly as it stands (a named face, the default rule, or NO MOUNT), for a rollback that restores it whole. */
+export type DaemonMountState = { readonly raw: number | undefined };
+export function daemonMountState(): DaemonMountState { return { raw: mountedFace }; }
+export function restoreDaemonMount(state: DaemonMountState): void { mountedFace = state.raw; }
 
 /** The face the composition mounts among the faces standing open (ascending): the face the unlock named where it stands open,
  *  else the first open face (the steward's face 0 where it stands open); undefined where the named face or every face rests shut. */
