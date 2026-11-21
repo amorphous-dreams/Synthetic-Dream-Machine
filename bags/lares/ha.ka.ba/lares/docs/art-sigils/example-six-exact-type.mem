@@ -17,7 +17,7 @@ retain   = true
 ! Exact typography
 
 ```tiddlywiki
-<<art worktype=`minimal typographic poster` subject=`a short instruction to notice the present moment` read=`a quiet invitation, not an advertisement` imagery=`one large line of lettering above ample visual rest` treatment=`warm restrained ink impression with subtle letterpress-like edge character` composition=`one asymmetrically balanced line with generous margins` relation=`the text and unprinted space establish a deliberate pause` depiction-scope=`only the poster; no maker, photographed office, or metadata labels`>>
+<<~ art worktype=`minimal typographic poster` subject=`a short instruction to notice the present moment` read=`a quiet invitation, not an advertisement` imagery=`one large line of lettering above ample visual rest` treatment=`warm restrained ink impression with subtle letterpress-like edge character` composition=`one asymmetrically balanced line with generous margins` relation=`the text and unprinted space establish a deliberate pause` depiction-scope=`only the poster; no maker, photographed office, or metadata labels`>>
 ```
 <<~/ahu>>
 
@@ -37,5 +37,5 @@ validation = "inspect final letters or typeset deterministically"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cj9oreCSYa3TG3x72m7kjLs0nzxKT_ldCNoCUnQq0z0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kkM8o44UC0FcGfH6-CR1dYXqCkjSOQJnWQ-8yr4AqGI`>>
 <<^ code=`&#x0004;` to=`?`>>

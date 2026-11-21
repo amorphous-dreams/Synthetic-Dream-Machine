@@ -16,7 +16,7 @@ retain   = true
 <<~ ahu slot=`#/bearing`>>
 ! Artifact Contract
 
-Keep the artistic invitation, artifact requirements, and actual execution record distinct. Use this companion only when output properties need to be checked or enforced. Do not add new `art()` parameters.
+Keep the artistic invitation, artifact requirements, and actual execution record distinct. Use this companion only when output properties need to be checked or enforced. Do not add new `~art` parameters.
 
 <<~/ahu>>
 
@@ -73,5 +73,5 @@ Keep references in [[Reference Roles|ha.ka.ba/lares/api/art-sigils/reference-rol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;80XPj6Q0IKE8CmwTh6CfmBPYZw2QAfg-ci58P4p-BRA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oNtw3EKW1DJl5B3ZWQ_mXz8gC2OyKD6Jy8D2uIjQ35w`>>
 <<^ code=`&#x0004;` to=`?`>>

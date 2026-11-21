@@ -17,7 +17,7 @@ retain   = true
 ! Transparent veil
 
 ```tiddlywiki
-<<art worktype=`isolated atmospheric overlay for an existing composition` subject=`passing bands of luminous haze` read=`soft depth that leaves the underlying picture intelligible` imagery=`a few uneven veils of delicate color with large untouched intervals` treatment=`diffuse watercolor-like diffusion and gentle edge falloff` composition=`asymmetric partial coverage with broad clear margins` relation=`modulates the unseen base image without replacing its subjects or lettering` depiction-scope=`only the overlay component; no complete scene, page, or studio setup`>>
+<<~ art worktype=`isolated atmospheric overlay for an existing composition` subject=`passing bands of luminous haze` read=`soft depth that leaves the underlying picture intelligible` imagery=`a few uneven veils of delicate color with large untouched intervals` treatment=`diffuse watercolor-like diffusion and gentle edge falloff` composition=`asymmetric partial coverage with broad clear margins` relation=`modulates the unseen base image without replacing its subjects or lettering` depiction-scope=`only the overlay component; no complete scene, page, or studio setup`>>
 ```
 <<~/ahu>>
 
@@ -26,7 +26,7 @@ retain   = true
 
 Check actual pixel alpha and compositing against a reference canvas. A translucent appearance alone does not satisfy an RGBA requirement.
 
-Keep canvas size, format and transparency tests in an artifact contract, not inside the Art Sigil.
+Keep canvas size, format and transparency tests in an artifact contract, not inside the Art Sigil. [[Technical-Art Plate Fieldcraft|ha.ka.ba/lares/api/art-sigils/technical-art]] carries the fieldcraft for such plates.
 
 ```toml
 [artifact]
@@ -39,5 +39,5 @@ test = "inspect pixel alpha and the assembled composite"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pVy26Q0LSqhVJo1bGuFtYpZ6nc4m5YzTmEZnuAF6yYw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;upK6IsNrtnc4pEIlGRgFvxljfr1qIwSlQPxdhzbbkCQ`>>
 <<^ code=`&#x0004;` to=`?`>>

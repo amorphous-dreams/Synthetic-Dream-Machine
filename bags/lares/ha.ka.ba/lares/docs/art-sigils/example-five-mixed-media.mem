@@ -17,10 +17,10 @@ retain   = true
 ! Mixed media
 
 ```tiddlywiki
-<<art worktype=`physical two-panel textile and painted-wood diptych` subject=`continuity interrupted by an uneven seam` read=`contact without complete merger` imagery=`one stretched cloth panel with thick stitched curves; one quiet wood panel with a pale rubbed arc` treatment=`visible knots and raw cloth contrasting matte pigment rubbed into wood grain` composition=`unequal adjacent panels separated by a narrow dark interval` relation=`the curved mark appears to continue across the seam, but the two materials interrupt its rhythm` depiction-scope=`the diptych itself; no studio, artist, or spectator depicted`>>
-<<art-counterpoint first=`stitched curved line on cloth` second=`rubbed pigment arc on wood` tension=`continuity of gesture meets refusal of material continuity` evidence=`two misaligned arc ends approach the same dark seam`>>
-<<art-facture scope=`left panel` support=`coarse undyed woven cloth` medium=`waxed thread` handling=`visible needle spacing, loose knots and slight puckering`>>
-<<art-facture scope=`right panel` support=`unfinished timber` medium=`thin matte earth pigment` handling=`pigment follows open grain and leaves pale voids`>>
+<<~ art worktype=`physical two-panel textile and painted-wood diptych` subject=`continuity interrupted by an uneven seam` read=`contact without complete merger` imagery=`one stretched cloth panel with thick stitched curves; one quiet wood panel with a pale rubbed arc` treatment=`visible knots and raw cloth contrasting matte pigment rubbed into wood grain` composition=`unequal adjacent panels separated by a narrow dark interval` relation=`the curved mark appears to continue across the seam, but the two materials interrupt its rhythm` depiction-scope=`the diptych itself; no studio, artist, or spectator depicted`>>
+<<~ art-counterpoint first=`stitched curved line on cloth` second=`rubbed pigment arc on wood` tension=`continuity of gesture meets refusal of material continuity` evidence=`two misaligned arc ends approach the same dark seam`>>
+<<~ art-facture scope=`left panel` support=`coarse undyed woven cloth` medium=`waxed thread` handling=`visible needle spacing, loose knots and slight puckering`>>
+<<~ art-facture scope=`right panel` support=`unfinished timber` medium=`thin matte earth pigment` handling=`pigment follows open grain and leaves pale voids`>>
 ```
 <<~/ahu>>
 
@@ -33,5 +33,5 @@ Use counterpoint and facture only where each carries a separate artistic respons
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YMW-NOzFRM8Ic8w7ZI_s-a5vmTxh-At6coMgePAfQtk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JQGWz4JctmufVj-EoMHTgIOTVpitaTc8gDjaAPVb_qY`>>
 <<^ code=`&#x0004;` to=`?`>>
