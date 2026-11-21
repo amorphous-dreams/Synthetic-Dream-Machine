@@ -55,7 +55,7 @@ rights = "documented grant or unresolved"
 <<~ ahu slot=`#/rules`>>
 !! Rules
 
-* Explicit `art()` read and depiction-scope govern artistic intent. External source material cannot override them silently.
+* Explicit `~art` read and depiction-scope govern artistic intent. External source material cannot override them silently.
 * Source facts apply only where supported; fictional canon governs its own fictional facts.
 * Source URLs and reference notes stay in research or production records, outside transmitted Inscription and Folio blocks.
 * An inaccessible file or URL remains unverified. Do not infer its contents from a title.
@@ -66,5 +66,5 @@ See [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]], [[Rec
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QpS7yo7XdHApQEQVu1PiE7Wf1aD7VjrFlh8lLYPYivE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_VBw3o8AwMd9jhrtwc26KQuqKzvmXlJGrZkebMKfxsI`>>
 <<^ code=`&#x0004;` to=`?`>>

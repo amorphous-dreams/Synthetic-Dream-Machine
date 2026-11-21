@@ -17,7 +17,7 @@ retain   = true
 ! Single photograph
 
 ```tiddlywiki
-<<art worktype=`single observational photograph` subject=`an empty public bench after rainfall` read=`human presence suggested through absence, without inventing its occupants`>>
+<<~ art worktype=`single observational photograph` subject=`an empty public bench after rainfall` read=`human presence suggested through absence, without inventing its occupants`>>
 ```
 <<~/ahu>>
 
@@ -30,5 +30,5 @@ The unspecified treatment and composition remain delegated; no Folio is required
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OK6yHT3egkJD75aO87YtEkHNQoYAD33byqHWWlh6BfA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oxNObndh28U3wQQTVY8DdpHZoPU5ardrfAly7gGtYCg`>>
 <<^ code=`&#x0004;` to=`?`>>
