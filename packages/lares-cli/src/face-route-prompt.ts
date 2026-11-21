@@ -10,7 +10,6 @@ import type { SlotSpec } from "@lararium/mesh";
 import { faceRouteBindDigest, faceRouteSeated, gatherFaceRoute, seatFaceRoute } from "@lararium/node";
 import { sendCustodyFrame } from "./custody-door.js";
 import { askYesNo, gatherFoundingRoute, requireTty } from "./custody-prompt.js";
-import { gatherWardRoute } from "./ward-door.js";
 
 /**
  * The node route a founding just gathered, held for the ONE question persona zero's face founding asks next. A face founded any
@@ -74,6 +73,9 @@ export async function handFaceRouteToVessel(label: string, purpose: "persona-new
  * nothing binds a new one (`persona-route-rebind`). The route rides the custody frame alone, as a new face's does.
  */
 export async function handExistingFaceRouteToVessel(face: number, purpose: "persona-new", args: Readonly<Record<string, unknown>>): Promise<string> {
+  // LOADED WHEN ASKED: the ward door reaches the store door and its session connector, and this module rides every founding's import
+  // graph (a suite's setup loads it), so a static import would load the connector before a suite can mock it.
+  const { gatherWardRoute } = await import("./ward-door.js");
   const route = await gatherWardRoute(`lares persona new ${face} (completing h${face}'s founding)`, face);
   const slots: SlotSpec[] = route.flatMap((c) => (c.kind === "passphrase" ? [{ t: 1, pins: [{ kind: "passphrase" as const, passphrase: c.passphrase }] }] : []));
   if (slots.length === 0) throw new Error(STANDING_VESSEL_PASSPHRASE_ONLY);
