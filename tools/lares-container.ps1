@@ -437,12 +437,21 @@ function KeepBeforeDown {
   # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty),
   # parsed as JSON; an answer that parses as none reads nothing kept.
   if ($kbRc -eq 0) {
-    $kb = $null
+    # STRICT JSON (System.Text.Json: no trailing commas, no NaN), each type checked: the root an object, `ok` the boolean true,
+    # `data` an object, `data.workspace` a non-empty string (or null: none named).
     $last = @($kbLines | Where-Object { "$_".Trim() }) | Select-Object -Last 1
-    try { $kb = "$last" | ConvertFrom-Json -ErrorAction Stop } catch { $kb = $null }
-    $hasWs = $null -ne $kb -and $kb.ok -eq $true -and $null -ne $kb.data -and ($kb.data.PSObject.Properties.Name -contains 'workspace')
-    if ($hasWs -and $null -eq $kb.data.workspace) { $script:KeepSaid = 'no keep workspace resolved, so nothing kept; the keep stays owed'; return }
-    if (-not ($hasWs -and $kb.data.workspace -is [string] -and $kb.data.workspace.Trim())) { $script:KeepSaid = 'the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed'; return }
+    $verdict = 'malformed'
+    try {
+      $doc = [System.Text.Json.JsonDocument]::Parse("$last")
+      $rootEl = $doc.RootElement
+      $okEl = [System.Text.Json.JsonElement]::new(); $dataEl = [System.Text.Json.JsonElement]::new(); $wsEl = [System.Text.Json.JsonElement]::new()
+      if ($rootEl.ValueKind -eq 'Object' -and $rootEl.TryGetProperty('ok', [ref]$okEl) -and $okEl.ValueKind -eq 'True' -and $rootEl.TryGetProperty('data', [ref]$dataEl) -and $dataEl.ValueKind -eq 'Object' -and $dataEl.TryGetProperty('workspace', [ref]$wsEl)) {
+        if ($wsEl.ValueKind -eq 'Null') { $verdict = 'none' }
+        elseif ($wsEl.ValueKind -eq 'String' -and $wsEl.GetString().Trim()) { $verdict = 'kept' }
+      }
+    } catch { $verdict = 'malformed' }
+    if ($verdict -eq 'none') { $script:KeepSaid = 'no keep workspace resolved, so nothing kept; the keep stays owed'; return }
+    if ($verdict -ne 'kept') { $script:KeepSaid = 'the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed'; return }
   }
   $global:LASTEXITCODE = $kbRc
   if ($LASTEXITCODE -ne 0) {

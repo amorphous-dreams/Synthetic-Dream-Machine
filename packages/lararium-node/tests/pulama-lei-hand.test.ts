@@ -145,3 +145,15 @@ describe("the hand abandons a pending kūkulu at the pūlama's hand door (gate 2
     expect(wrong["records"]).toBeUndefined();
   });
 });
+
+describe("the hand door signs every part the vessel asks (the seventh read)", () => {
+  test("RED: 65 pending halves of the face's own group sign as 65 marks, so the vessel's exact-terms landing accepts them; none drops past 64", async () => {
+    const s = await stand();
+    await s.light();
+    const hex = (n: number, c: string) => (n.toString(16).padStart(4, "0") + c.repeat(60));
+    const parts = Array.from({ length: 65 }, (_, i) => ({ tessera: hex(i, "c"), group: GROUP, branch: BRANCH, begun: hex(i, "e") }));
+    const out = await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts, credentials: route });
+    expect(out).toMatchObject({ reading: "signed" });
+    expect((out["records"] as unknown[]).length).toBe(65);
+  });
+});

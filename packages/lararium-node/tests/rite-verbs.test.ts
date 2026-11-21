@@ -5,7 +5,7 @@
  * Every red pairs with a CONTROL. Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { expect, test } from "vitest";
-import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
+import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, rowRefusalName, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
 import { acceptAbandons, beginLentFaces, lentOfferFaces, offerVouchesOf, ownAbandonParts, refuseStandingBegin, signedMatchesTerms, standingKukuluBegins } from "../src/commands/rite.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
@@ -311,4 +311,12 @@ test("RED (the sixth read): a signed landing matches the operator's request: the
   expect(() => signedMatchesTerms([rec("c".repeat(64)), rec("d".repeat(64), "g1")], mine)).toThrow(expect.objectContaining({ code: "rite-abandon-terms-differ" }));
   expect(() => signedMatchesTerms([rec("c".repeat(64)), rec("c".repeat(64)), rec("d".repeat(64))], mine)).toThrow(expect.objectContaining({ code: "rite-abandon-terms-differ" }));
   expect(() => signedMatchesTerms([rec("d".repeat(64)), rec("c".repeat(64))], mine)).not.toThrow();
+});
+
+test("RED (the seventh read): a rite row's refusal answers under its own code (`rite-abandon-terms-differ`, `face-not-lent`), so the CLI's JSON names it; CONTROL: a store with no daemon still answers under the row's name, and another row's refusal keeps the row's name", () => {
+  expect(rowRefusalName("rite-abandon", new SwarmRefused("rite-abandon-terms-differ", "differ"))).toBe("rite-abandon-terms-differ");
+  expect(rowRefusalName("rite-abandon", new SwarmRefused("face-not-lent", "unlent"))).toBe("face-not-lent");
+  expect(rowRefusalName("rite-begin", new SwarmRefused("rite-begun-stands", "stands"))).toBe("rite-begun-stands");
+  expect(rowRefusalName("rite-begin", new SwarmRefused("swarm-no-daemon", "no daemon"))).toBe("rite-begin-refused");
+  expect(rowRefusalName("swarm-show", new SwarmRefused("swarm-lei-absent", "absent"))).toBe("swarm-show-refused");
 });

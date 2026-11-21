@@ -322,6 +322,14 @@ function relayFace(args: Readonly<Record<string, unknown>>): { face?: number } {
 /** The name a row's refusal answers under: the row's own verb, so no two doors share one word for "refused". */
 export const storeRefusalName = (verb: string): string => `${verb}-refused`;
 
+/**
+ * The name a row's swarm refusal answers under: a rite row carries the refusal's own code (`rite-abandon-terms-differ`,
+ * `face-not-lent`, `rite-begun-stands`), so the CLI's JSON names what refused; a store with no daemon, and every other row,
+ * answers under the row's own name.
+ */
+export const rowRefusalName = (verb: string, err: SwarmRefused): string =>
+  verb.startsWith("rite-") && err.code !== "swarm-no-daemon" ? err.code : storeRefusalName(verb);
+
 /** Run a row, answering a refusal as `{ refused, refusal }`: the door's words, and the name it refuses under. */
 async function answer(verb: string, run: () => Promise<Record<string, unknown>>): Promise<Record<string, unknown>> {
   try { return { verb, ...(await run()) }; }
@@ -329,6 +337,7 @@ async function answer(verb: string, run: () => Promise<Record<string, unknown>>)
     if (err instanceof FaceRouteRefused) return { verb, refused: err.message, refusal: "face-route-refused" };
     // A floor door's refusal carries its own name (`floor-no-charter`, `floor-cut-thin`): the row answers under it, never the verb's.
     if (err instanceof FloorRefused) return { verb, refused: err.message, refusal: err.refusal };
+    if (err instanceof SwarmRefused) return { verb, refused: err.message, refusal: rowRefusalName(verb, err) };
     if (REFUSALS.some((R) => err instanceof R)) return { verb, refused: (err as Error).message, refusal: storeRefusalName(verb) };
     throw err;
   }

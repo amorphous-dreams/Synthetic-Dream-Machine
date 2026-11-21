@@ -169,19 +169,23 @@ keep_before_down() {
   # An answer naming no workspace kept nothing; an empty or malformed one reads as nothing kept. Either way the keep stays owed.
   if kb_out=$("$@" rite keep --if-due --json); then
     # The envelope parses as JSON (python3: the host carries no jq); a reader that cannot parse it reads nothing kept.
+    # STRICT: no NaN or Infinity, `ok` the boolean true, `data` an object, `data.workspace` a non-empty string (or null: none named).
     kb_read=$(printf '%s' "$kb_out" | python3 -c 'import json, sys
+def reject(name):
+    raise ValueError(name)
 lines = [l for l in sys.stdin.read().splitlines() if l.strip()]
 try:
-    d = json.loads(lines[-1])
+    d = json.loads(lines[-1], parse_constant=reject)
 except Exception:
     sys.exit(0)
-data = d.get("data") if isinstance(d, dict) else None
-if d.get("ok") is True and isinstance(data, dict):
-    w = data.get("workspace")
-    if w is None and "workspace" in data:
-        print("none")
-    elif isinstance(w, str) and w.strip():
-        print("kept")' 2>/dev/null) || kb_read=""
+if not isinstance(d, dict) or d.get("ok") is not True or not isinstance(d.get("data"), dict):
+    sys.exit(0)
+data = d["data"]
+w = data.get("workspace")
+if w is None and "workspace" in data:
+    print("none")
+elif isinstance(w, str) and w.strip():
+    print("kept")' 2>/dev/null) || kb_read=""
     case "$kb_read" in
       kept) KEEP_SAID="kept (rite keep --if-due)"; rm -f -- "$(keep_owed_mark)" ;;
       none) KEEP_SAID="no keep workspace resolved, so nothing kept; the keep stays owed" ;;

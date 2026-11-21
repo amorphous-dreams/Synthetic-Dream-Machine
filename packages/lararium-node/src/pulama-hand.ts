@@ -208,7 +208,8 @@ export function pulamaHandDoor(a: {
           // group), each a `rite-abandoned` record the face's root signs under the operator's route. Malformed parts sign nothing.
           const src = typeof f["data"] === "object" && f["data"] !== null ? f["data"] as Record<string, unknown> : f;
           const raw = src["parts"], branch = src["branch"] ?? f["branch"];
-          const parts = Array.isArray(raw) ? raw.slice(0, 64) : [];
+          // EVERY PART THE VESSEL ASKS signs: the vessel lands only the exact set its terms named, so none may drop.
+          const parts = Array.isArray(raw) ? raw : [];
           const ok = typeof branch === "string" && branch !== "" && parts.length > 0 && parts.every((x) => typeof x === "object" && x !== null
             && typeof (x as Record<string, unknown>)["tessera"] === "string" && CID.test((x as Record<string, unknown>)["tessera"] as string)
             && typeof (x as Record<string, unknown>)["begun"] === "string" && CID.test((x as Record<string, unknown>)["begun"] as string)
