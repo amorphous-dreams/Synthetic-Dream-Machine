@@ -143,6 +143,14 @@ describe("RED composition-readers-ask-only-the-lend: every face-scoped reader th
     expect(tend.indexOf("unservedLitFaces(")).toBeLessThan(tend.indexOf("dropFace("));
   });
 
+  test("RED WELD (Sol 407d): a face's drop never reads its sealed anchors before the worker hears it: the worker drops from the key held in memory, ahead of the host side", () => {
+    const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
+    const drop = source.slice(source.indexOf("const dropFace = (ordinal: number)"));
+    const body = drop.slice(0, drop.indexOf("\n  };\n"));
+    expect(body.indexOf("dropSiblingInOrder(")).toBeGreaterThan(-1);
+    expect(body, "no sealed-anchor read gates the worker's drop").not.toContain("loadIdentityAnchors(");
+  });
+
   test("WELD: the composition proves another face, and lists the faces it walks, only inside what the vessel serves", () => {
     const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
     const proof = source.slice(source.indexOf("async function proofOfOtherFace"));

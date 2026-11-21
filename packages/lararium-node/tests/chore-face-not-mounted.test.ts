@@ -50,7 +50,8 @@ const cleanups: Array<() => Promise<void> | void> = [];
 afterEach(async () => { for (const c of cleanups.splice(0).reverse()) await c(); });
 
 /** A seat whose daemon mounts h0 and whose holder lends {h0, h1}; a session's `faceRef` (`h<N>`) names the face it wears. */
-async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly output?: (o: { verb: string; args: Record<string, unknown> }) => Record<string, unknown> } = {}) {
+async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly output?: (o: { verb: string; args: Record<string, unknown> }) => Record<string, unknown>;
+  readonly opening?: (face: number) => string | null; readonly onFlush?: () => void } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -64,10 +65,11 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
     anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { drop() {} } as unknown as UdsSessionSigner }) } }) };
   const placed: Array<{ verb: string; requestId: string; ordinal?: number; args: Record<string, unknown>; requestedBy: string }> = [];
   const front = serveUdsFront({ claim });
-  front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
+  front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: async (ids) => { await repo.flush(ids); lane.onFlush?.(); } }, sessions: door,
     switchActs: { write: async () => {} },
     mountOrdinal: () => 0,
     lentOrdinals: async () => [0, 1],
+    ...(lane.opening ? { faceOpening: lane.opening } : {}),
     ...(lane.lit ? { litOrdinals: () => lane.lit!, siblingFaceOf: (presenter: string) => presenter === "verified-h1" && lane.lit!.includes(1) ? "atom-h1" : undefined } : {}),
     ...(lane.signers ? { signers: lane.signers } : {}),
     placeVerb: (o) => {
@@ -285,4 +287,29 @@ test("RED XV4 (Sol 407c H2): a visit whose target shut before the answer left de
   const reply = await v.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "visit-shut" });
   expect(JSON.stringify(reply), "the shut face's body never leaves").not.toContain("the visited word");
   expect(reply).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+});
+
+test("RED XV5 (Sol 407d): a target that shut and lit again between the island's answer and delivery delivers no body: the door compares the face's opening, never its ordinal alone", async () => {
+  const openings = new Map<number, string>([[0, "mount"], [1, "h1:1"]]);
+  const v = await stand({ lit: [1], opening: (face) => openings.get(face) ?? null,
+    output: (o) => { if (o.args["target"] !== undefined) openings.set(1, "h1:2"); return visitOut(o); } });
+  const reply = await v.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "visit-relit" });
+  expect(JSON.stringify(reply)).not.toContain("the visited word");
+  expect(reply).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+});
+
+test("RED XV6 (Sol 407d): a lock during the session reply's durability flush delivers no body: the gate reads the opening after every await, at the write", async () => {
+  const openings = new Map<number, string>([[0, "mount"], [1, "h1:1"]]);
+  let landed = false;
+  const v = await stand({ lit: [1], opening: (face) => openings.get(face) ?? null,
+    output: (o) => { if (o.args["target"] !== undefined) landed = true; return visitOut(o); },
+    onFlush: () => { if (landed) openings.delete(1); } });
+  const env = await v.open("h0");
+  const reply = await v.peer.ask({ op: "session:call", ...env, requestId: "s-visit-locked", verb: "tiddler-get", args: { ...VISIT, target: 1 } });
+  expect(JSON.stringify(reply), "the locked face's body never leaves").not.toContain("the visited word");
+  expect(reply).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+  // CONTROL: an opening that stands through the flush delivers.
+  const steady = await stand({ lit: [1], opening: (face) => (face === 1 ? "h1:1" : "mount"), output: visitOut });
+  const env2 = await steady.open("h0");
+  expect(JSON.stringify(await steady.peer.ask({ op: "session:call", ...env2, requestId: "s-visit-steady", verb: "tiddler-get", args: { ...VISIT, target: 1 } }))).toContain("the visited word");
 });

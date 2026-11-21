@@ -174,7 +174,7 @@ import { readFacePersonaRecords, proveSiblingFromRest, SIBLING_PLANE_USE } from 
 import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
-import { joinedFaceAuth, unlitServedFaces, unservedLitFaces, siblingFaceWork, litSiblingOrdinals, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
+import { joinedFaceAuth, unlitServedFaces, unservedLitFaces, siblingFaceWork, litSiblingOrdinals, dropSiblingInOrder, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
@@ -603,6 +603,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   mountOrdinal: () => number | null;
   /** EACH HAT REACHED BY NAME: the ordinals of the sibling faces lit beside the mount, each with its own place session. */
   litOrdinals: () => readonly number[];
+  /** The opening a lit face stands under (the mount's, or a sibling's light), or null where it stands shut (a visit binds to it). */
+  faceOpening: (ordinal: number) => string | null;
   /** The bare atom key of the lit sibling a verified presenter names (its place session stands), or undefined. */
   siblingFaceOf: (presenter: string) => string | undefined;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
@@ -801,6 +803,7 @@ interface NodeBootPrep {
   dropFace: (ordinal: number) => Promise<void>;
   mountOrdinal: () => number | null;
   litOrdinals: () => readonly number[];
+  faceOpening: (ordinal: number) => string | null;
   siblingFaceOf: (presenter: string) => string | undefined;
   daemonVm:         () => DaemonVmCore;
   /** The host working layer's mount (slice 5b, red 3): the composition awaits it before it returns, so no caller mounts. */
@@ -988,7 +991,13 @@ async function prepareNodeBootOn(
     const n = openSyncedTree().movePaths(from, to);
     if (n > 0) console.log(`[faces] ${n} Synced tree base(s) move with ${from} -> ${to}`);
   };
-  const siblingFaces = new Map<string, { readonly ordinal: number; readonly relation: string | null; readonly face: string | null }>();
+  /** Each lit sibling by group: its ordinal, relation and place subject, the atom key the daemon island knows it by, and its
+   *  OPENING (each light names a fresh number; a visit binds to it from the door's admission to its answer's write). */
+  const siblingFaces = new Map<string, { readonly ordinal: number; readonly relation: string | null; readonly face: string | null; readonly atomKey: string; readonly opening: number }>();
+  let siblingLights = 0;
+  /** The atom key the daemon island lit each sibling ordinal under, held in memory from its light to its drop: a drop tells the
+   *  island from here, never from a read a lock could have sealed. */
+  const workerLit = new Map<number, string>();
   const siblingWork = siblingFaceWork();
   const litDevices = (): LitDeviceFaces => [
     ...(wornDeviceGroup !== null ? [{ group: wornDeviceGroup, relation: wornDeviceRelation, face: sealedCells.face() }] : []),
@@ -2434,9 +2443,17 @@ async function prepareNodeBootOn(
   let siblingRelationOf: (group: string) => Promise<string | null> = async () => null;
   /** Remove the face's owned resources together; an obsolete failure cannot remove its replacement. */
   const removeSibling = (group: string, expected = siblingFaces.get(group), invalidate = true): void => {
-    if (!expected || siblingFaces.get(group) !== expected) return;
+    if (detachSibling(group, expected, invalidate)) teardownSiblingHost(group, expected!);
+  };
+  /** The face leaves the lit set at once (the door reads it shut): its entry drops and its in-flight proofs void. */
+  const detachSibling = (group: string, expected = siblingFaces.get(group), invalidate = true): boolean => {
+    if (!expected || siblingFaces.get(group) !== expected) return false;
     if (invalidate) siblingWork.invalidate(expected.ordinal);
     siblingFaces.delete(group);
+    return true;
+  };
+  /** The face's host side drops: its documents' waiting saves (from memory, never to disk), its cache, session and keepers. */
+  const teardownSiblingHost = (group: string, expected: { readonly ordinal: number; readonly relation: string | null; readonly face: string | null }): void => {
     const owned = deviceDocs.ids().filter((id) => deviceDocs.bagOf(id, [{ group, relation: expected.relation, face: expected.face }])?.face === expected.face && expected.face !== null);
     const dropped = sealedRest.forget(owned);
     for (const id of owned) void repo.removeFromCache(id as never).catch(() => {});
@@ -2447,14 +2464,33 @@ async function prepareNodeBootOn(
     sealedRest.store.mapMoved();
   };
   const dropFace = (ordinal: number): Promise<void> => {
-    // Invalidate before the first await, including proof flights that have not named a group yet.
-    for (const [group, held] of siblingFaces) if (held.ordinal === ordinal) removeSibling(group, held);
+    // The face leaves the lit set before the first await (the door reads it shut), and its proof flights void, including those
+    // that have not named a group yet; its host side waits until the worker heard the drop.
+    siblingWork.invalidate(ordinal);
+    const leaving = [...siblingFaces].filter(([, held]) => held.ordinal === ordinal);
+    for (const [group, held] of leaving) detachSibling(group, held, false);
     return siblingWork.remove(ordinal, async () => {
-      const pins = await loadIdentityAnchors(ordinal);
-      if (!pins?.deviceEdge?.deviceVerifyingKey) throw new Error(`face h${ordinal} has no device edge`);
-      // A pending provider admission settles before its removal; a replacement light waits for both.
-      await daemonVm.dropFace(pins.deviceEdge.deviceVerifyingKey);
-      await intentRelay?.refresh();
+      // THE WORKER FIRST, FROM MEMORY (Sol 407d): no read a lock could have sealed gates the island's drop. A pending provider
+      // admission settles before its removal; a replacement light waits for both. Then the face's queued saves flush under its
+      // own session, and its host side drops.
+      try {
+        const workers = [...leaving.map(([, held]) => held.atomKey), ...(workerLit.has(ordinal) ? [workerLit.get(ordinal)!] : [])];
+        workerLit.delete(ordinal);
+        await dropSiblingInOrder({
+          workers, groups: leaving.map(([group]) => group),
+          dropWorker: (atomKey) => daemonVm.dropFace(atomKey),
+          flushSaves: async (group) => {
+            const session = siblingSessions.get(group)?.cell.session() ?? null;
+            if (session === null) return;
+            // As the lock ritual seals: every waiting save of the face books under its own session, then the rest flushes.
+            const saving = saveSessionOf(session);
+            try { await sealedRest.rebook(saving); } catch { /* it keeps waiting, and the host side forgets it below */ }
+            await sealedRest.lock(saving.id);
+          },
+          teardownHost: (group) => teardownSiblingHost(group, leaving.find(([g]) => g === group)![1]),
+          log: (line) => console.warn(line),
+        });
+      } finally { await intentRelay?.refresh(); }
     });
   };
   let daemonHolder!: DaemonVmHolder;
@@ -3670,13 +3706,14 @@ async function prepareNodeBootOn(
       const group = entry.personaGroupId, relation = entry.faceRelation ?? null;
       const face = placeProofSubjectRef({ atomKey: entry.atom.key, place: placeAid } as never);
       let held = siblingFaces.get(group);
-      if (held && (held.ordinal !== entry.handleIndex || held.relation !== relation || held.face !== face)) {
+      if (held && (held.ordinal !== entry.handleIndex || held.relation !== relation || held.face !== face || held.atomKey !== entry.atom.key)) {
         removeSibling(group, held, false);
         held = undefined;
       }
       if (!held) {
-        held = { ordinal: entry.handleIndex, relation, face };
+        held = { ordinal: entry.handleIndex, relation, face, atomKey: entry.atom.key, opening: ++siblingLights };
         siblingFaces.set(group, held);
+        workerLit.set(entry.handleIndex, entry.atom.key);
       }
       const mine = held;
       const current = (): boolean => live() && siblingFaces.get(group) === mine;
@@ -3748,11 +3785,13 @@ async function prepareNodeBootOn(
       if (entry) {
         classDeviceLedgers(vesselPrivate, [entry.atom.key]);
         await daemonVm.lightFace(entry);
+        workerLit.set(ordinal, entry.atom.key);
         if (!live()) return;
         try { await litSibling(entry, live); }
         catch (error) {
           // The awaited mint refused. Release its provider too; an explicit light starts a fresh generation.
           await daemonVm.dropFace(entry.atom.key);
+          workerLit.delete(ordinal);
           throw error;
         }
         if (!live()) return;
@@ -5060,6 +5099,12 @@ async function prepareNodeBootOn(
     lightFace: (ordinal) => lightFace(ordinal), dropFace, mountOrdinal: () => mountFace,
     // A lit sibling counts once its own place session stands: its lane books under its own chain, or not at all.
     litOrdinals: () => [...siblingFaces].filter(([group]) => siblingSessions.get(group)?.cell.session() != null).map(([, f]) => f.ordinal),
+    // The opening a lit face stands under: the mount's one standing, a sibling's light (each names a fresh one), none once shut.
+    faceOpening: (ordinal) => {
+      if (ordinal === mountFace) return "mount";
+      const lit = [...siblingFaces].find(([group, f]) => f.ordinal === ordinal && siblingSessions.get(group)?.cell.session() != null);
+      return lit ? `h${ordinal}:${lit[1].opening}` : null;
+    },
     siblingFaceOf: (presenter) => { const key = bareFaceKey(presenter); return siblingOfFace(key) !== null ? key : undefined; },
     daemonVm:         () => daemonVm,
     hostWorkingMounted: () => mountHostWorking(),
@@ -5195,7 +5240,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
+    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceOpening: p.faceOpening, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),

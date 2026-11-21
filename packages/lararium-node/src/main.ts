@@ -848,6 +848,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     lentOrdinals: () => unlockedFaceOrdinals(),
     // EACH HAT REACHED BY NAME: a lit sibling's session carries its own lane's chores as itself and books its own face key.
     litOrdinals:  () => result.litOrdinals(),
+    // A visit binds to its target's opening from the door's admission to its answer's write.
+    faceOpening:  (ordinal) => result.faceOpening(ordinal),
     siblingFaceOf: (presenter) => result.siblingFaceOf(presenter),
     // A LIT FACE RECEIVES VISITS (`seat-hand`): a read names its `target` face by ordinal or by the pet name this vessel holds.
     petnames:     async () => (await makeNodePersonaPetnameStore()).entries(),

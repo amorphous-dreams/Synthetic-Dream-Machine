@@ -82,6 +82,9 @@ export interface UdsChannelOptions {
   /** A LIT FACE RECEIVES VISITS (`seat-hand`): the pet names this vessel holds for its faces, read when a call names its
    *  `target` face by name. Absent: a target names a face by its handle index alone. */
   readonly petnames?: () => Promise<ReadonlyArray<readonly [number, string]>>;
+  /** The opening a lit face stands under (each light names a fresh one; a lock names none, null), which a visit binds to from
+   *  the door's admission to its answer's write. Absent: a face reads as its standing in the lit set alone. */
+  readonly faceOpening?: (face: number) => string | null;
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
   readonly switchActs?: SwitchActLog;
   /**
@@ -921,22 +924,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       ...(inv.chore !== undefined && { chore: inv.chore }),
       ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
     });
-    try { return deliveredVisit(await awaitOutcome(inv.verb, requestId, inv.timeoutMs), requestId); }
+    try { return await awaitOutcome(inv.verb, requestId, inv.timeoutMs); }
     finally { opts.retireAsk?.(requestId); }
-  };
-
-  /**
-   * A VISIT'S BODY LEAVES ONLY WHILE ITS TARGET STANDS LIT (Sol 407c H2): the island read the target's opening before it answered;
-   * the door reads the lit set again as the answer leaves, so a face that shut between the island's answer and this delivery
-   * hands its caller `face-not-open` and no body.
-   */
-  const deliveredVisit = (outcome: Record<string, unknown>, requestId: string): Record<string, unknown> => {
-    if (!isVisitOutcome(outcome)) return outcome;
-    const output = ((outcome["results"] as Record<string, unknown>)["summary"] as Record<string, unknown>)["output"] as Record<string, unknown>;
-    const face = output["face"];
-    if (typeof face === "number" && litFaces().includes(face)) return outcome;
-    const message = `face-not-open: the visited face${typeof face === "number" ? ` h${face}` : ""} shut before its answer left; nothing is delivered`;
-    return { status: "error", requestId, errorMessage: message, refusal: { reason: "face-not-open" } };
   };
 
   /** Answer a `{op:"receipt"}` query (H1, now durable) — a READ, built from the fact ledger plus
@@ -1064,6 +1053,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   /** The lit set a visit reaches (`crossFaceTargetAtDoor`): the mount and every sibling lit beside it. */
   const litFaces = (): readonly number[] => { const mount = mountOf(); return [...(mount !== null ? [mount] : []), ...(opts.litOrdinals?.() ?? [])]; };
   const petnames = async (): Promise<ReadonlyArray<readonly [number, string]>> => (opts.petnames ? opts.petnames() : []);
+  /** The opening a face stands under now, or null where it stands shut. */
+  const openingOf = (face: number): string | null => (opts.faceOpening ? opts.faceOpening(face) : litFaces().includes(face) ? "lit" : null);
   const sessionState = (sock: Socket) => {
     let state = sessionSockets.get(sock);
     if (!state) {
@@ -1394,12 +1385,26 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     // The receipt mark of a dispatched chore (`ChoreReceiptMark`: the acting face, the asker's hand, its session), carried on
     // its answer as `chore`; unset for a read or a refusal. A session's door hands it in; a one-shot's deferred tick reads it.
     let choreMark: ChoreReceiptMark | undefined = mark;
+    // A VISIT BINDS TO ITS TARGET'S OPENING from the door's admission to its answer's write (Sol 407d): the door records the
+    // opening it admitted under, and the answer leaves only where that same opening stands at the write, after every await.
+    let visitOpening: { readonly face: number; readonly opening: string } | null = null;
+    const visitGate = (answer: Record<string, unknown>): Record<string, unknown> => {
+      if (!isVisitOutcome(answer)) return answer;
+      const output = ((answer["results"] as Record<string, unknown>)["summary"] as Record<string, unknown>)["output"] as Record<string, unknown>;
+      const face = output["face"];
+      if (visitOpening !== null && face === visitOpening.face && openingOf(visitOpening.face) === visitOpening.opening) return answer;
+      const message = `face-not-open: the visited face${typeof face === "number" ? ` h${face}` : ""} shut, or shut and lit again, before its answer left; nothing is delivered`;
+      return { status: "error", ...(answer["requestId"] !== undefined ? { requestId: answer["requestId"] } : {}), errorMessage: message, refusal: { reason: "face-not-open" } };
+    };
     const respond = (answer: Record<string, unknown>): void => {
       void (async () => {
-        const named = choreMark !== undefined ? { ...answer, chore: choreMark } : answer;
+        const durable = sessionRequestId !== undefined && (answer["status"] === "done" || answer["status"] === "error") && controlHomeRefusal(controlHandle) === null
+          ? await settleDurably() : undefined;
+        // THE LAST MOMENT: past every await, the visit gate reads the opening right before the write.
+        const gated = visitGate(answer);
+        const named = choreMark !== undefined ? { ...gated, chore: choreMark } : gated;
         const payload = sessionRequestId === undefined ? named : {
-          kind: "session:result", ...named, requestId: sessionRequestId,
-          ...((answer["status"] === "done" || answer["status"] === "error") && controlHomeRefusal(controlHandle) === null ? { durable: await settleDurably() } : {}),
+          kind: "session:result", ...named, requestId: sessionRequestId, ...(durable !== undefined ? { durable } : {}),
         };
         try {
           const line = JSON.stringify(payload) + "\n";
@@ -1523,6 +1528,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         const visit = await crossFaceTargetAtDoor({ verb: inv.verb, args: inv.args, worn: sessionRequestId === undefined ? mount : inv.ordinal ?? mount, lit: litFaces(), petnames });
         if (!visit.ok) return fail(visit.message, visit.refusal);
         if (visit.args !== undefined) inv.args = visit.args;
+        const visited = inv.args?.["target"];
+        if (typeof visited === "number") {
+          const opening = openingOf(visited);
+          if (opening === null) return fail(`face-not-open: ${inv.verb} — face h${visited} stands shut; a visit reads a lit face alone, and nothing ran`, "face-not-open");
+          visitOpening = { face: visited, opening };
+        }
         if (oneShotChore) {
           const chore = choreAtDoor({ verb: inv.verb, face: named ?? mount!, mount, lent, hand: seat !== null ? "seat" : "cli", session: null, generation: null });
           if (chore !== null && !chore.ok) return fail(chore.message, chore.refusal);

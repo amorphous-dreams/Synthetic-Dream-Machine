@@ -41,6 +41,40 @@ export function unservedLitFaces(served: readonly number[], mount: number | null
   return [...lit].filter((o) => o !== mount && !serving.has(o)).sort((a, b) => a - b);
 }
 
+/** What a leaving face's drop needs, every piece held in memory: no sealed read gates it. */
+export interface SiblingDropOrder {
+  /** The atom keys the daemon island knows the face by, as the vessel holds them in memory. */
+  readonly workers: readonly string[];
+  /** The face's host entries, by group. */
+  readonly groups: readonly string[];
+  /** The daemon island drops the face (its provider, engine, view and opening), draining its in-flight verbs first. */
+  readonly dropWorker: (atomKey: string) => Promise<void>;
+  /** The face's queued saves flush and land sealed under its own session before that session drops. */
+  readonly flushSaves: (group: string) => Promise<void>;
+  /** The host side drops: what still waits unsaved, the cache, the face's session and its keepers. */
+  readonly teardownHost: (group: string) => void;
+  readonly log: (line: string) => void;
+}
+
+/**
+ * A FACE THAT LEAVES DROPS FROM THE WORKER FIRST (Sol 407d): the daemon island hears the drop from the key held in memory, before
+ * any host teardown and before any read a lock could have sealed, so its opening ends whatever follows. Then the face's queued
+ * saves flush under its own session, and the host side drops. A worker drop that fails still tears the host side down, and a
+ * host teardown that fails leaves the worker dropped; each failure answers after the order ran.
+ */
+export async function dropSiblingInOrder(order: SiblingDropOrder): Promise<void> {
+  let workerFault: unknown = null;
+  for (const atomKey of new Set(order.workers)) {
+    try { await order.dropWorker(atomKey); } catch (error) { workerFault ??= error; }
+  }
+  for (const group of order.groups) {
+    try { await order.flushSaves(group); }
+    catch (error) { order.log(`[lit-set] face ${group}'s queued saves did not flush before it dropped: ${error instanceof Error ? error.message : String(error)}`); }
+    order.teardownHost(group);
+  }
+  if (workerFault !== null) throw workerFault;
+}
+
 /** A torn sibling cannot take the mounted face's boot down. A sibling receives the vessel ground and the bags it OWNS while lit
  *  (`litFaceOwnBags`: the daemon wiki's device slots, its daemon canon by its relation, its catalog half, its selves record), so its own memory seals
  *  under its own hive; its planes need their own face proof, and the mounted slot's user wiki bags and the house canon belong to
